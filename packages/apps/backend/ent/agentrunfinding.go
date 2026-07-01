@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentrunfinding"
+	"github.com/rezible/rezible/ent/agentrunresult"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -26,10 +26,8 @@ type AgentRunFinding struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// AgentRunID holds the value of the "agent_run_id" field.
-	AgentRunID uuid.UUID `json:"agent_run_id,omitempty"`
-	// Sequence holds the value of the "sequence" field.
-	Sequence int `json:"sequence,omitempty"`
+	// AgentRunResultID holds the value of the "agent_run_result_id" field.
+	AgentRunResultID uuid.UUID `json:"agent_run_result_id,omitempty"`
 	// FindingKind holds the value of the "finding_kind" field.
 	FindingKind string `json:"finding_kind,omitempty"`
 	// Content holds the value of the "content" field.
@@ -44,8 +42,8 @@ type AgentRunFinding struct {
 type AgentRunFindingEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// AgentRun holds the value of the agent_run edge.
-	AgentRun *AgentRun `json:"agent_run,omitempty"`
+	// AgentRunResult holds the value of the agent_run_result edge.
+	AgentRunResult *AgentRunResult `json:"agent_run_result,omitempty"`
 	// Citations holds the value of the citations edge.
 	Citations []*AgentRunCitation `json:"citations,omitempty"`
 	// FindingCitations holds the value of the finding_citations edge.
@@ -66,15 +64,15 @@ func (e AgentRunFindingEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AgentRunOrErr returns the AgentRun value or an error if the edge
+// AgentRunResultOrErr returns the AgentRunResult value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AgentRunFindingEdges) AgentRunOrErr() (*AgentRun, error) {
-	if e.AgentRun != nil {
-		return e.AgentRun, nil
+func (e AgentRunFindingEdges) AgentRunResultOrErr() (*AgentRunResult, error) {
+	if e.AgentRunResult != nil {
+		return e.AgentRunResult, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: agentrun.Label}
+		return nil, &NotFoundError{label: agentrunresult.Label}
 	}
-	return nil, &NotLoadedError{edge: "agent_run"}
+	return nil, &NotLoadedError{edge: "agent_run_result"}
 }
 
 // CitationsOrErr returns the Citations value or an error if the edge
@@ -100,13 +98,13 @@ func (*AgentRunFinding) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentrunfinding.FieldTenantID, agentrunfinding.FieldSequence:
+		case agentrunfinding.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case agentrunfinding.FieldFindingKind, agentrunfinding.FieldContent:
 			values[i] = new(sql.NullString)
 		case agentrunfinding.FieldCreatedAt, agentrunfinding.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case agentrunfinding.FieldID, agentrunfinding.FieldAgentRunID:
+		case agentrunfinding.FieldID, agentrunfinding.FieldAgentRunResultID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -147,17 +145,11 @@ func (_m *AgentRunFinding) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case agentrunfinding.FieldAgentRunID:
+		case agentrunfinding.FieldAgentRunResultID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field agent_run_id", values[i])
+				return fmt.Errorf("unexpected type %T for field agent_run_result_id", values[i])
 			} else if value != nil {
-				_m.AgentRunID = *value
-			}
-		case agentrunfinding.FieldSequence:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field sequence", values[i])
-			} else if value.Valid {
-				_m.Sequence = int(value.Int64)
+				_m.AgentRunResultID = *value
 			}
 		case agentrunfinding.FieldFindingKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -189,9 +181,9 @@ func (_m *AgentRunFinding) QueryTenant() *TenantQuery {
 	return NewAgentRunFindingClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAgentRun queries the "agent_run" edge of the AgentRunFinding entity.
-func (_m *AgentRunFinding) QueryAgentRun() *AgentRunQuery {
-	return NewAgentRunFindingClient(_m.config).QueryAgentRun(_m)
+// QueryAgentRunResult queries the "agent_run_result" edge of the AgentRunFinding entity.
+func (_m *AgentRunFinding) QueryAgentRunResult() *AgentRunResultQuery {
+	return NewAgentRunFindingClient(_m.config).QueryAgentRunResult(_m)
 }
 
 // QueryCitations queries the "citations" edge of the AgentRunFinding entity.
@@ -236,11 +228,8 @@ func (_m *AgentRunFinding) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("agent_run_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunID))
-	builder.WriteString(", ")
-	builder.WriteString("sequence=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Sequence))
+	builder.WriteString("agent_run_result_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunResultID))
 	builder.WriteString(", ")
 	builder.WriteString("finding_kind=")
 	builder.WriteString(_m.FindingKind)

@@ -3,6 +3,7 @@
 package agentrun
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -22,26 +23,26 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldAgentTaskID holds the string denoting the agent_task_id field in the database.
-	FieldAgentTaskID = "agent_task_id"
-	// FieldAttempt holds the string denoting the attempt field in the database.
-	FieldAttempt = "attempt"
-	// FieldStartedAt holds the string denoting the started_at field in the database.
-	FieldStartedAt = "started_at"
-	// FieldCancelledAt holds the string denoting the cancelled_at field in the database.
-	FieldCancelledAt = "cancelled_at"
+	// FieldOwnerUserID holds the string denoting the owner_user_id field in the database.
+	FieldOwnerUserID = "owner_user_id"
+	// FieldWorkflow holds the string denoting the workflow field in the database.
+	FieldWorkflow = "workflow"
+	// FieldInput holds the string denoting the input field in the database.
+	FieldInput = "input"
+	// FieldTriggerKind holds the string denoting the trigger_kind field in the database.
+	FieldTriggerKind = "trigger_kind"
+	// FieldTriggerMetadata holds the string denoting the trigger_metadata field in the database.
+	FieldTriggerMetadata = "trigger_metadata"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeTask holds the string denoting the task edge name in mutations.
-	EdgeTask = "task"
+	// EdgeOwnerUser holds the string denoting the owner_user edge name in mutations.
+	EdgeOwnerUser = "owner_user"
+	// EdgeSubjects holds the string denoting the subjects edge name in mutations.
+	EdgeSubjects = "subjects"
+	// EdgeSnapshots holds the string denoting the snapshots edge name in mutations.
+	EdgeSnapshots = "snapshots"
 	// EdgeResult holds the string denoting the result edge name in mutations.
 	EdgeResult = "result"
-	// EdgeCitations holds the string denoting the citations edge name in mutations.
-	EdgeCitations = "citations"
-	// EdgeFindings holds the string denoting the findings edge name in mutations.
-	EdgeFindings = "findings"
-	// EdgeToolCalls holds the string denoting the tool_calls edge name in mutations.
-	EdgeToolCalls = "tool_calls"
 	// Table holds the table name of the agentrun in the database.
 	Table = "agent_runs"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -51,13 +52,27 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// TaskTable is the table that holds the task relation/edge.
-	TaskTable = "agent_runs"
-	// TaskInverseTable is the table name for the AgentTask entity.
-	// It exists in this package in order to avoid circular dependency with the "agenttask" package.
-	TaskInverseTable = "agent_tasks"
-	// TaskColumn is the table column denoting the task relation/edge.
-	TaskColumn = "agent_task_id"
+	// OwnerUserTable is the table that holds the owner_user relation/edge.
+	OwnerUserTable = "agent_runs"
+	// OwnerUserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	OwnerUserInverseTable = "users"
+	// OwnerUserColumn is the table column denoting the owner_user relation/edge.
+	OwnerUserColumn = "owner_user_id"
+	// SubjectsTable is the table that holds the subjects relation/edge.
+	SubjectsTable = "agent_run_subjects"
+	// SubjectsInverseTable is the table name for the AgentRunSubject entity.
+	// It exists in this package in order to avoid circular dependency with the "agentrunsubject" package.
+	SubjectsInverseTable = "agent_run_subjects"
+	// SubjectsColumn is the table column denoting the subjects relation/edge.
+	SubjectsColumn = "agent_run_id"
+	// SnapshotsTable is the table that holds the snapshots relation/edge.
+	SnapshotsTable = "agent_run_snapshots"
+	// SnapshotsInverseTable is the table name for the AgentRunSnapshot entity.
+	// It exists in this package in order to avoid circular dependency with the "agentrunsnapshot" package.
+	SnapshotsInverseTable = "agent_run_snapshots"
+	// SnapshotsColumn is the table column denoting the snapshots relation/edge.
+	SnapshotsColumn = "agent_run_id"
 	// ResultTable is the table that holds the result relation/edge.
 	ResultTable = "agent_runs"
 	// ResultInverseTable is the table name for the AgentRunResult entity.
@@ -65,27 +80,6 @@ const (
 	ResultInverseTable = "agent_run_results"
 	// ResultColumn is the table column denoting the result relation/edge.
 	ResultColumn = "agent_run_result"
-	// CitationsTable is the table that holds the citations relation/edge.
-	CitationsTable = "agent_run_citations"
-	// CitationsInverseTable is the table name for the AgentRunCitation entity.
-	// It exists in this package in order to avoid circular dependency with the "agentruncitation" package.
-	CitationsInverseTable = "agent_run_citations"
-	// CitationsColumn is the table column denoting the citations relation/edge.
-	CitationsColumn = "agent_run_id"
-	// FindingsTable is the table that holds the findings relation/edge.
-	FindingsTable = "agent_run_findings"
-	// FindingsInverseTable is the table name for the AgentRunFinding entity.
-	// It exists in this package in order to avoid circular dependency with the "agentrunfinding" package.
-	FindingsInverseTable = "agent_run_findings"
-	// FindingsColumn is the table column denoting the findings relation/edge.
-	FindingsColumn = "agent_run_id"
-	// ToolCallsTable is the table that holds the tool_calls relation/edge.
-	ToolCallsTable = "agent_run_tool_calls"
-	// ToolCallsInverseTable is the table name for the AgentRunToolCall entity.
-	// It exists in this package in order to avoid circular dependency with the "agentruntoolcall" package.
-	ToolCallsInverseTable = "agent_run_tool_calls"
-	// ToolCallsColumn is the table column denoting the tool_calls relation/edge.
-	ToolCallsColumn = "agent_run_id"
 )
 
 // Columns holds all SQL columns for agentrun fields.
@@ -94,10 +88,11 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldAgentTaskID,
-	FieldAttempt,
-	FieldStartedAt,
-	FieldCancelledAt,
+	FieldOwnerUserID,
+	FieldWorkflow,
+	FieldInput,
+	FieldTriggerKind,
+	FieldTriggerMetadata,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "agent_runs"
@@ -135,11 +130,36 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// AttemptValidator is a validator for the "attempt" field. It is called by the builders before save.
-	AttemptValidator func(int) error
+	// WorkflowValidator is a validator for the "workflow" field. It is called by the builders before save.
+	WorkflowValidator func(string) error
+	// InputValidator is a validator for the "input" field. It is called by the builders before save.
+	InputValidator func([]byte) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// TriggerKind defines the type for the "trigger_kind" enum field.
+type TriggerKind string
+
+// TriggerKind values.
+const (
+	TriggerKindManual TriggerKind = "manual"
+	TriggerKindSystem TriggerKind = "system"
+)
+
+func (tk TriggerKind) String() string {
+	return string(tk)
+}
+
+// TriggerKindValidator is a validator for the "trigger_kind" field enum values. It is called by the builders before save.
+func TriggerKindValidator(tk TriggerKind) error {
+	switch tk {
+	case TriggerKindManual, TriggerKindSystem:
+		return nil
+	default:
+		return fmt.Errorf("agentrun: invalid enum value for trigger_kind field: %q", tk)
+	}
+}
 
 // OrderOption defines the ordering options for the AgentRun queries.
 type OrderOption func(*sql.Selector)
@@ -164,24 +184,19 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByAgentTaskID orders the results by the agent_task_id field.
-func ByAgentTaskID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAgentTaskID, opts...).ToFunc()
+// ByOwnerUserID orders the results by the owner_user_id field.
+func ByOwnerUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOwnerUserID, opts...).ToFunc()
 }
 
-// ByAttempt orders the results by the attempt field.
-func ByAttempt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAttempt, opts...).ToFunc()
+// ByWorkflow orders the results by the workflow field.
+func ByWorkflow(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWorkflow, opts...).ToFunc()
 }
 
-// ByStartedAt orders the results by the started_at field.
-func ByStartedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStartedAt, opts...).ToFunc()
-}
-
-// ByCancelledAt orders the results by the cancelled_at field.
-func ByCancelledAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCancelledAt, opts...).ToFunc()
+// ByTriggerKind orders the results by the trigger_kind field.
+func ByTriggerKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTriggerKind, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -191,10 +206,38 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByTaskField orders the results by task field.
-func ByTaskField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByOwnerUserField orders the results by owner_user field.
+func ByOwnerUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTaskStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newOwnerUserStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// BySubjectsCount orders the results by subjects count.
+func BySubjectsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSubjectsStep(), opts...)
+	}
+}
+
+// BySubjects orders the results by subjects terms.
+func BySubjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSubjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySnapshotsCount orders the results by snapshots count.
+func BySnapshotsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSnapshotsStep(), opts...)
+	}
+}
+
+// BySnapshots orders the results by snapshots terms.
+func BySnapshots(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSnapshotsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -204,48 +247,6 @@ func ByResultField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newResultStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByCitationsCount orders the results by citations count.
-func ByCitationsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCitationsStep(), opts...)
-	}
-}
-
-// ByCitations orders the results by citations terms.
-func ByCitations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCitationsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByFindingsCount orders the results by findings count.
-func ByFindingsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newFindingsStep(), opts...)
-	}
-}
-
-// ByFindings orders the results by findings terms.
-func ByFindings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newFindingsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByToolCallsCount orders the results by tool_calls count.
-func ByToolCallsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newToolCallsStep(), opts...)
-	}
-}
-
-// ByToolCalls orders the results by tool_calls terms.
-func ByToolCalls(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newToolCallsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -253,11 +254,25 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newTaskStep() *sqlgraph.Step {
+func newOwnerUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(TaskInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, TaskTable, TaskColumn),
+		sqlgraph.To(OwnerUserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, OwnerUserTable, OwnerUserColumn),
+	)
+}
+func newSubjectsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SubjectsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SubjectsTable, SubjectsColumn),
+	)
+}
+func newSnapshotsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SnapshotsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SnapshotsTable, SnapshotsColumn),
 	)
 }
 func newResultStep() *sqlgraph.Step {
@@ -265,26 +280,5 @@ func newResultStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ResultInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, ResultTable, ResultColumn),
-	)
-}
-func newCitationsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CitationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, CitationsTable, CitationsColumn),
-	)
-}
-func newFindingsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(FindingsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, FindingsTable, FindingsColumn),
-	)
-}
-func newToolCallsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ToolCallsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ToolCallsTable, ToolCallsColumn),
 	)
 }

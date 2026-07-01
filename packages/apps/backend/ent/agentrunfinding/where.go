@@ -72,14 +72,9 @@ func UpdatedAt(v time.Time) predicate.AgentRunFinding {
 	return predicate.AgentRunFinding(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// AgentRunID applies equality check predicate on the "agent_run_id" field. It's identical to AgentRunIDEQ.
-func AgentRunID(v uuid.UUID) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldEQ(FieldAgentRunID, v))
-}
-
-// Sequence applies equality check predicate on the "sequence" field. It's identical to SequenceEQ.
-func Sequence(v int) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldEQ(FieldSequence, v))
+// AgentRunResultID applies equality check predicate on the "agent_run_result_id" field. It's identical to AgentRunResultIDEQ.
+func AgentRunResultID(v uuid.UUID) predicate.AgentRunFinding {
+	return predicate.AgentRunFinding(sql.FieldEQ(FieldAgentRunResultID, v))
 }
 
 // FindingKind applies equality check predicate on the "finding_kind" field. It's identical to FindingKindEQ.
@@ -192,64 +187,24 @@ func UpdatedAtLTE(v time.Time) predicate.AgentRunFinding {
 	return predicate.AgentRunFinding(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// AgentRunIDEQ applies the EQ predicate on the "agent_run_id" field.
-func AgentRunIDEQ(v uuid.UUID) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldEQ(FieldAgentRunID, v))
+// AgentRunResultIDEQ applies the EQ predicate on the "agent_run_result_id" field.
+func AgentRunResultIDEQ(v uuid.UUID) predicate.AgentRunFinding {
+	return predicate.AgentRunFinding(sql.FieldEQ(FieldAgentRunResultID, v))
 }
 
-// AgentRunIDNEQ applies the NEQ predicate on the "agent_run_id" field.
-func AgentRunIDNEQ(v uuid.UUID) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldNEQ(FieldAgentRunID, v))
+// AgentRunResultIDNEQ applies the NEQ predicate on the "agent_run_result_id" field.
+func AgentRunResultIDNEQ(v uuid.UUID) predicate.AgentRunFinding {
+	return predicate.AgentRunFinding(sql.FieldNEQ(FieldAgentRunResultID, v))
 }
 
-// AgentRunIDIn applies the In predicate on the "agent_run_id" field.
-func AgentRunIDIn(vs ...uuid.UUID) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldIn(FieldAgentRunID, vs...))
+// AgentRunResultIDIn applies the In predicate on the "agent_run_result_id" field.
+func AgentRunResultIDIn(vs ...uuid.UUID) predicate.AgentRunFinding {
+	return predicate.AgentRunFinding(sql.FieldIn(FieldAgentRunResultID, vs...))
 }
 
-// AgentRunIDNotIn applies the NotIn predicate on the "agent_run_id" field.
-func AgentRunIDNotIn(vs ...uuid.UUID) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldNotIn(FieldAgentRunID, vs...))
-}
-
-// SequenceEQ applies the EQ predicate on the "sequence" field.
-func SequenceEQ(v int) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldEQ(FieldSequence, v))
-}
-
-// SequenceNEQ applies the NEQ predicate on the "sequence" field.
-func SequenceNEQ(v int) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldNEQ(FieldSequence, v))
-}
-
-// SequenceIn applies the In predicate on the "sequence" field.
-func SequenceIn(vs ...int) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldIn(FieldSequence, vs...))
-}
-
-// SequenceNotIn applies the NotIn predicate on the "sequence" field.
-func SequenceNotIn(vs ...int) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldNotIn(FieldSequence, vs...))
-}
-
-// SequenceGT applies the GT predicate on the "sequence" field.
-func SequenceGT(v int) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldGT(FieldSequence, v))
-}
-
-// SequenceGTE applies the GTE predicate on the "sequence" field.
-func SequenceGTE(v int) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldGTE(FieldSequence, v))
-}
-
-// SequenceLT applies the LT predicate on the "sequence" field.
-func SequenceLT(v int) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldLT(FieldSequence, v))
-}
-
-// SequenceLTE applies the LTE predicate on the "sequence" field.
-func SequenceLTE(v int) predicate.AgentRunFinding {
-	return predicate.AgentRunFinding(sql.FieldLTE(FieldSequence, v))
+// AgentRunResultIDNotIn applies the NotIn predicate on the "agent_run_result_id" field.
+func AgentRunResultIDNotIn(vs ...uuid.UUID) predicate.AgentRunFinding {
+	return predicate.AgentRunFinding(sql.FieldNotIn(FieldAgentRunResultID, vs...))
 }
 
 // FindingKindEQ applies the EQ predicate on the "finding_kind" field.
@@ -411,26 +366,26 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.AgentRunFinding {
 	})
 }
 
-// HasAgentRun applies the HasEdge predicate on the "agent_run" edge.
-func HasAgentRun() predicate.AgentRunFinding {
+// HasAgentRunResult applies the HasEdge predicate on the "agent_run_result" edge.
+func HasAgentRunResult() predicate.AgentRunFinding {
 	return predicate.AgentRunFinding(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AgentRunTable, AgentRunColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, AgentRunResultTable, AgentRunResultColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRun
+		step.To.Schema = schemaConfig.AgentRunResult
 		step.Edge.Schema = schemaConfig.AgentRunFinding
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAgentRunWith applies the HasEdge predicate on the "agent_run" edge with a given conditions (other predicates).
-func HasAgentRunWith(preds ...predicate.AgentRun) predicate.AgentRunFinding {
+// HasAgentRunResultWith applies the HasEdge predicate on the "agent_run_result" edge with a given conditions (other predicates).
+func HasAgentRunResultWith(preds ...predicate.AgentRunResult) predicate.AgentRunFinding {
 	return predicate.AgentRunFinding(func(s *sql.Selector) {
-		step := newAgentRunStep()
+		step := newAgentRunResultStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRun
+		step.To.Schema = schemaConfig.AgentRunResult
 		step.Edge.Schema = schemaConfig.AgentRunFinding
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

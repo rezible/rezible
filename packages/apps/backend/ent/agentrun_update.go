@@ -13,13 +13,12 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentruncitation"
-	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunresult"
-	"github.com/rezible/rezible/ent/agentruntoolcall"
-	"github.com/rezible/rezible/ent/agenttask"
+	"github.com/rezible/rezible/ent/agentrunsnapshot"
+	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // AgentRunUpdate is the builder for updating AgentRun entities.
@@ -56,90 +55,99 @@ func (_u *AgentRunUpdate) SetUpdatedAt(v time.Time) *AgentRunUpdate {
 	return _u
 }
 
-// SetAgentTaskID sets the "agent_task_id" field.
-func (_u *AgentRunUpdate) SetAgentTaskID(v uuid.UUID) *AgentRunUpdate {
-	_u.mutation.SetAgentTaskID(v)
+// SetOwnerUserID sets the "owner_user_id" field.
+func (_u *AgentRunUpdate) SetOwnerUserID(v uuid.UUID) *AgentRunUpdate {
+	_u.mutation.SetOwnerUserID(v)
 	return _u
 }
 
-// SetNillableAgentTaskID sets the "agent_task_id" field if the given value is not nil.
-func (_u *AgentRunUpdate) SetNillableAgentTaskID(v *uuid.UUID) *AgentRunUpdate {
+// SetNillableOwnerUserID sets the "owner_user_id" field if the given value is not nil.
+func (_u *AgentRunUpdate) SetNillableOwnerUserID(v *uuid.UUID) *AgentRunUpdate {
 	if v != nil {
-		_u.SetAgentTaskID(*v)
+		_u.SetOwnerUserID(*v)
 	}
 	return _u
 }
 
-// SetAttempt sets the "attempt" field.
-func (_u *AgentRunUpdate) SetAttempt(v int) *AgentRunUpdate {
-	_u.mutation.ResetAttempt()
-	_u.mutation.SetAttempt(v)
+// SetWorkflow sets the "workflow" field.
+func (_u *AgentRunUpdate) SetWorkflow(v string) *AgentRunUpdate {
+	_u.mutation.SetWorkflow(v)
 	return _u
 }
 
-// SetNillableAttempt sets the "attempt" field if the given value is not nil.
-func (_u *AgentRunUpdate) SetNillableAttempt(v *int) *AgentRunUpdate {
+// SetNillableWorkflow sets the "workflow" field if the given value is not nil.
+func (_u *AgentRunUpdate) SetNillableWorkflow(v *string) *AgentRunUpdate {
 	if v != nil {
-		_u.SetAttempt(*v)
+		_u.SetWorkflow(*v)
 	}
 	return _u
 }
 
-// AddAttempt adds value to the "attempt" field.
-func (_u *AgentRunUpdate) AddAttempt(v int) *AgentRunUpdate {
-	_u.mutation.AddAttempt(v)
+// SetInput sets the "input" field.
+func (_u *AgentRunUpdate) SetInput(v []byte) *AgentRunUpdate {
+	_u.mutation.SetInput(v)
 	return _u
 }
 
-// SetStartedAt sets the "started_at" field.
-func (_u *AgentRunUpdate) SetStartedAt(v time.Time) *AgentRunUpdate {
-	_u.mutation.SetStartedAt(v)
+// SetTriggerKind sets the "trigger_kind" field.
+func (_u *AgentRunUpdate) SetTriggerKind(v agentrun.TriggerKind) *AgentRunUpdate {
+	_u.mutation.SetTriggerKind(v)
 	return _u
 }
 
-// SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (_u *AgentRunUpdate) SetNillableStartedAt(v *time.Time) *AgentRunUpdate {
+// SetNillableTriggerKind sets the "trigger_kind" field if the given value is not nil.
+func (_u *AgentRunUpdate) SetNillableTriggerKind(v *agentrun.TriggerKind) *AgentRunUpdate {
 	if v != nil {
-		_u.SetStartedAt(*v)
+		_u.SetTriggerKind(*v)
 	}
 	return _u
 }
 
-// ClearStartedAt clears the value of the "started_at" field.
-func (_u *AgentRunUpdate) ClearStartedAt() *AgentRunUpdate {
-	_u.mutation.ClearStartedAt()
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (_u *AgentRunUpdate) SetTriggerMetadata(v map[string]interface{}) *AgentRunUpdate {
+	_u.mutation.SetTriggerMetadata(v)
 	return _u
 }
 
-// SetCancelledAt sets the "cancelled_at" field.
-func (_u *AgentRunUpdate) SetCancelledAt(v time.Time) *AgentRunUpdate {
-	_u.mutation.SetCancelledAt(v)
+// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
+func (_u *AgentRunUpdate) ClearTriggerMetadata() *AgentRunUpdate {
+	_u.mutation.ClearTriggerMetadata()
 	return _u
 }
 
-// SetNillableCancelledAt sets the "cancelled_at" field if the given value is not nil.
-func (_u *AgentRunUpdate) SetNillableCancelledAt(v *time.Time) *AgentRunUpdate {
-	if v != nil {
-		_u.SetCancelledAt(*v)
+// SetOwnerUser sets the "owner_user" edge to the User entity.
+func (_u *AgentRunUpdate) SetOwnerUser(v *User) *AgentRunUpdate {
+	return _u.SetOwnerUserID(v.ID)
+}
+
+// AddSubjectIDs adds the "subjects" edge to the AgentRunSubject entity by IDs.
+func (_u *AgentRunUpdate) AddSubjectIDs(ids ...uuid.UUID) *AgentRunUpdate {
+	_u.mutation.AddSubjectIDs(ids...)
+	return _u
+}
+
+// AddSubjects adds the "subjects" edges to the AgentRunSubject entity.
+func (_u *AgentRunUpdate) AddSubjects(v ...*AgentRunSubject) *AgentRunUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
+	return _u.AddSubjectIDs(ids...)
+}
+
+// AddSnapshotIDs adds the "snapshots" edge to the AgentRunSnapshot entity by IDs.
+func (_u *AgentRunUpdate) AddSnapshotIDs(ids ...uuid.UUID) *AgentRunUpdate {
+	_u.mutation.AddSnapshotIDs(ids...)
 	return _u
 }
 
-// ClearCancelledAt clears the value of the "cancelled_at" field.
-func (_u *AgentRunUpdate) ClearCancelledAt() *AgentRunUpdate {
-	_u.mutation.ClearCancelledAt()
-	return _u
-}
-
-// SetTaskID sets the "task" edge to the AgentTask entity by ID.
-func (_u *AgentRunUpdate) SetTaskID(id uuid.UUID) *AgentRunUpdate {
-	_u.mutation.SetTaskID(id)
-	return _u
-}
-
-// SetTask sets the "task" edge to the AgentTask entity.
-func (_u *AgentRunUpdate) SetTask(v *AgentTask) *AgentRunUpdate {
-	return _u.SetTaskID(v.ID)
+// AddSnapshots adds the "snapshots" edges to the AgentRunSnapshot entity.
+func (_u *AgentRunUpdate) AddSnapshots(v ...*AgentRunSnapshot) *AgentRunUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSnapshotIDs(ids...)
 }
 
 // SetResultID sets the "result" edge to the AgentRunResult entity by ID.
@@ -161,129 +169,63 @@ func (_u *AgentRunUpdate) SetResult(v *AgentRunResult) *AgentRunUpdate {
 	return _u.SetResultID(v.ID)
 }
 
-// AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by IDs.
-func (_u *AgentRunUpdate) AddCitationIDs(ids ...uuid.UUID) *AgentRunUpdate {
-	_u.mutation.AddCitationIDs(ids...)
-	return _u
-}
-
-// AddCitations adds the "citations" edges to the AgentRunCitation entity.
-func (_u *AgentRunUpdate) AddCitations(v ...*AgentRunCitation) *AgentRunUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddCitationIDs(ids...)
-}
-
-// AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
-func (_u *AgentRunUpdate) AddFindingIDs(ids ...uuid.UUID) *AgentRunUpdate {
-	_u.mutation.AddFindingIDs(ids...)
-	return _u
-}
-
-// AddFindings adds the "findings" edges to the AgentRunFinding entity.
-func (_u *AgentRunUpdate) AddFindings(v ...*AgentRunFinding) *AgentRunUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddFindingIDs(ids...)
-}
-
-// AddToolCallIDs adds the "tool_calls" edge to the AgentRunToolCall entity by IDs.
-func (_u *AgentRunUpdate) AddToolCallIDs(ids ...uuid.UUID) *AgentRunUpdate {
-	_u.mutation.AddToolCallIDs(ids...)
-	return _u
-}
-
-// AddToolCalls adds the "tool_calls" edges to the AgentRunToolCall entity.
-func (_u *AgentRunUpdate) AddToolCalls(v ...*AgentRunToolCall) *AgentRunUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddToolCallIDs(ids...)
-}
-
 // Mutation returns the AgentRunMutation object of the builder.
 func (_u *AgentRunUpdate) Mutation() *AgentRunMutation {
 	return _u.mutation
 }
 
-// ClearTask clears the "task" edge to the AgentTask entity.
-func (_u *AgentRunUpdate) ClearTask() *AgentRunUpdate {
-	_u.mutation.ClearTask()
+// ClearOwnerUser clears the "owner_user" edge to the User entity.
+func (_u *AgentRunUpdate) ClearOwnerUser() *AgentRunUpdate {
+	_u.mutation.ClearOwnerUser()
 	return _u
+}
+
+// ClearSubjects clears all "subjects" edges to the AgentRunSubject entity.
+func (_u *AgentRunUpdate) ClearSubjects() *AgentRunUpdate {
+	_u.mutation.ClearSubjects()
+	return _u
+}
+
+// RemoveSubjectIDs removes the "subjects" edge to AgentRunSubject entities by IDs.
+func (_u *AgentRunUpdate) RemoveSubjectIDs(ids ...uuid.UUID) *AgentRunUpdate {
+	_u.mutation.RemoveSubjectIDs(ids...)
+	return _u
+}
+
+// RemoveSubjects removes "subjects" edges to AgentRunSubject entities.
+func (_u *AgentRunUpdate) RemoveSubjects(v ...*AgentRunSubject) *AgentRunUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSubjectIDs(ids...)
+}
+
+// ClearSnapshots clears all "snapshots" edges to the AgentRunSnapshot entity.
+func (_u *AgentRunUpdate) ClearSnapshots() *AgentRunUpdate {
+	_u.mutation.ClearSnapshots()
+	return _u
+}
+
+// RemoveSnapshotIDs removes the "snapshots" edge to AgentRunSnapshot entities by IDs.
+func (_u *AgentRunUpdate) RemoveSnapshotIDs(ids ...uuid.UUID) *AgentRunUpdate {
+	_u.mutation.RemoveSnapshotIDs(ids...)
+	return _u
+}
+
+// RemoveSnapshots removes "snapshots" edges to AgentRunSnapshot entities.
+func (_u *AgentRunUpdate) RemoveSnapshots(v ...*AgentRunSnapshot) *AgentRunUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSnapshotIDs(ids...)
 }
 
 // ClearResult clears the "result" edge to the AgentRunResult entity.
 func (_u *AgentRunUpdate) ClearResult() *AgentRunUpdate {
 	_u.mutation.ClearResult()
 	return _u
-}
-
-// ClearCitations clears all "citations" edges to the AgentRunCitation entity.
-func (_u *AgentRunUpdate) ClearCitations() *AgentRunUpdate {
-	_u.mutation.ClearCitations()
-	return _u
-}
-
-// RemoveCitationIDs removes the "citations" edge to AgentRunCitation entities by IDs.
-func (_u *AgentRunUpdate) RemoveCitationIDs(ids ...uuid.UUID) *AgentRunUpdate {
-	_u.mutation.RemoveCitationIDs(ids...)
-	return _u
-}
-
-// RemoveCitations removes "citations" edges to AgentRunCitation entities.
-func (_u *AgentRunUpdate) RemoveCitations(v ...*AgentRunCitation) *AgentRunUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveCitationIDs(ids...)
-}
-
-// ClearFindings clears all "findings" edges to the AgentRunFinding entity.
-func (_u *AgentRunUpdate) ClearFindings() *AgentRunUpdate {
-	_u.mutation.ClearFindings()
-	return _u
-}
-
-// RemoveFindingIDs removes the "findings" edge to AgentRunFinding entities by IDs.
-func (_u *AgentRunUpdate) RemoveFindingIDs(ids ...uuid.UUID) *AgentRunUpdate {
-	_u.mutation.RemoveFindingIDs(ids...)
-	return _u
-}
-
-// RemoveFindings removes "findings" edges to AgentRunFinding entities.
-func (_u *AgentRunUpdate) RemoveFindings(v ...*AgentRunFinding) *AgentRunUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveFindingIDs(ids...)
-}
-
-// ClearToolCalls clears all "tool_calls" edges to the AgentRunToolCall entity.
-func (_u *AgentRunUpdate) ClearToolCalls() *AgentRunUpdate {
-	_u.mutation.ClearToolCalls()
-	return _u
-}
-
-// RemoveToolCallIDs removes the "tool_calls" edge to AgentRunToolCall entities by IDs.
-func (_u *AgentRunUpdate) RemoveToolCallIDs(ids ...uuid.UUID) *AgentRunUpdate {
-	_u.mutation.RemoveToolCallIDs(ids...)
-	return _u
-}
-
-// RemoveToolCalls removes "tool_calls" edges to AgentRunToolCall entities.
-func (_u *AgentRunUpdate) RemoveToolCalls(v ...*AgentRunToolCall) *AgentRunUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveToolCallIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -330,16 +272,26 @@ func (_u *AgentRunUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunUpdate) check() error {
-	if v, ok := _u.mutation.Attempt(); ok {
-		if err := agentrun.AttemptValidator(v); err != nil {
-			return &ValidationError{Name: "attempt", err: fmt.Errorf(`ent: validator failed for field "AgentRun.attempt": %w`, err)}
+	if v, ok := _u.mutation.Workflow(); ok {
+		if err := agentrun.WorkflowValidator(v); err != nil {
+			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "AgentRun.workflow": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Input(); ok {
+		if err := agentrun.InputValidator(v); err != nil {
+			return &ValidationError{Name: "input", err: fmt.Errorf(`ent: validator failed for field "AgentRun.input": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.TriggerKind(); ok {
+		if err := agentrun.TriggerKindValidator(v); err != nil {
+			return &ValidationError{Name: "trigger_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRun.trigger_kind": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRun.tenant"`)
 	}
-	if _u.mutation.TaskCleared() && len(_u.mutation.TaskIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRun.task"`)
+	if _u.mutation.OwnerUserCleared() && len(_u.mutation.OwnerUserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AgentRun.owner_user"`)
 	}
 	return nil
 }
@@ -368,50 +320,143 @@ func (_u *AgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentrun.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Attempt(); ok {
-		_spec.SetField(agentrun.FieldAttempt, field.TypeInt, value)
+	if value, ok := _u.mutation.Workflow(); ok {
+		_spec.SetField(agentrun.FieldWorkflow, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.AddedAttempt(); ok {
-		_spec.AddField(agentrun.FieldAttempt, field.TypeInt, value)
+	if value, ok := _u.mutation.Input(); ok {
+		_spec.SetField(agentrun.FieldInput, field.TypeBytes, value)
 	}
-	if value, ok := _u.mutation.StartedAt(); ok {
-		_spec.SetField(agentrun.FieldStartedAt, field.TypeTime, value)
+	if value, ok := _u.mutation.TriggerKind(); ok {
+		_spec.SetField(agentrun.FieldTriggerKind, field.TypeEnum, value)
 	}
-	if _u.mutation.StartedAtCleared() {
-		_spec.ClearField(agentrun.FieldStartedAt, field.TypeTime)
+	if value, ok := _u.mutation.TriggerMetadata(); ok {
+		_spec.SetField(agentrun.FieldTriggerMetadata, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.CancelledAt(); ok {
-		_spec.SetField(agentrun.FieldCancelledAt, field.TypeTime, value)
+	if _u.mutation.TriggerMetadataCleared() {
+		_spec.ClearField(agentrun.FieldTriggerMetadata, field.TypeJSON)
 	}
-	if _u.mutation.CancelledAtCleared() {
-		_spec.ClearField(agentrun.FieldCancelledAt, field.TypeTime)
-	}
-	if _u.mutation.TaskCleared() {
+	if _u.mutation.OwnerUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrun.TaskTable,
-			Columns: []string{agentrun.TaskColumn},
+			Table:   agentrun.OwnerUserTable,
+			Columns: []string{agentrun.OwnerUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRun
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.TaskIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.OwnerUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrun.TaskTable,
-			Columns: []string{agentrun.TaskColumn},
+			Table:   agentrun.OwnerUserTable,
+			Columns: []string{agentrun.OwnerUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRun
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SubjectsTable,
+			Columns: []string{agentrun.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSubject
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSubjectsIDs(); len(nodes) > 0 && !_u.mutation.SubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SubjectsTable,
+			Columns: []string{agentrun.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SubjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SubjectsTable,
+			Columns: []string{agentrun.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SnapshotsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SnapshotsTable,
+			Columns: []string{agentrun.SnapshotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSnapshot
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSnapshotsIDs(); len(nodes) > 0 && !_u.mutation.SnapshotsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SnapshotsTable,
+			Columns: []string{agentrun.SnapshotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SnapshotsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SnapshotsTable,
+			Columns: []string{agentrun.SnapshotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSnapshot
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -443,150 +488,6 @@ func (_u *AgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRun
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.CitationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.CitationsTable,
-			Columns: []string{agentrun.CitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedCitationsIDs(); len(nodes) > 0 && !_u.mutation.CitationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.CitationsTable,
-			Columns: []string{agentrun.CitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.CitationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.CitationsTable,
-			Columns: []string{agentrun.CitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.FindingsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.FindingsTable,
-			Columns: []string{agentrun.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunFinding
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !_u.mutation.FindingsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.FindingsTable,
-			Columns: []string{agentrun.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunFinding
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.FindingsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.FindingsTable,
-			Columns: []string{agentrun.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunFinding
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ToolCallsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.ToolCallsTable,
-			Columns: []string{agentrun.ToolCallsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunToolCall
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedToolCallsIDs(); len(nodes) > 0 && !_u.mutation.ToolCallsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.ToolCallsTable,
-			Columns: []string{agentrun.ToolCallsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunToolCall
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ToolCallsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.ToolCallsTable,
-			Columns: []string{agentrun.ToolCallsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunToolCall
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -636,90 +537,99 @@ func (_u *AgentRunUpdateOne) SetUpdatedAt(v time.Time) *AgentRunUpdateOne {
 	return _u
 }
 
-// SetAgentTaskID sets the "agent_task_id" field.
-func (_u *AgentRunUpdateOne) SetAgentTaskID(v uuid.UUID) *AgentRunUpdateOne {
-	_u.mutation.SetAgentTaskID(v)
+// SetOwnerUserID sets the "owner_user_id" field.
+func (_u *AgentRunUpdateOne) SetOwnerUserID(v uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.SetOwnerUserID(v)
 	return _u
 }
 
-// SetNillableAgentTaskID sets the "agent_task_id" field if the given value is not nil.
-func (_u *AgentRunUpdateOne) SetNillableAgentTaskID(v *uuid.UUID) *AgentRunUpdateOne {
+// SetNillableOwnerUserID sets the "owner_user_id" field if the given value is not nil.
+func (_u *AgentRunUpdateOne) SetNillableOwnerUserID(v *uuid.UUID) *AgentRunUpdateOne {
 	if v != nil {
-		_u.SetAgentTaskID(*v)
+		_u.SetOwnerUserID(*v)
 	}
 	return _u
 }
 
-// SetAttempt sets the "attempt" field.
-func (_u *AgentRunUpdateOne) SetAttempt(v int) *AgentRunUpdateOne {
-	_u.mutation.ResetAttempt()
-	_u.mutation.SetAttempt(v)
+// SetWorkflow sets the "workflow" field.
+func (_u *AgentRunUpdateOne) SetWorkflow(v string) *AgentRunUpdateOne {
+	_u.mutation.SetWorkflow(v)
 	return _u
 }
 
-// SetNillableAttempt sets the "attempt" field if the given value is not nil.
-func (_u *AgentRunUpdateOne) SetNillableAttempt(v *int) *AgentRunUpdateOne {
+// SetNillableWorkflow sets the "workflow" field if the given value is not nil.
+func (_u *AgentRunUpdateOne) SetNillableWorkflow(v *string) *AgentRunUpdateOne {
 	if v != nil {
-		_u.SetAttempt(*v)
+		_u.SetWorkflow(*v)
 	}
 	return _u
 }
 
-// AddAttempt adds value to the "attempt" field.
-func (_u *AgentRunUpdateOne) AddAttempt(v int) *AgentRunUpdateOne {
-	_u.mutation.AddAttempt(v)
+// SetInput sets the "input" field.
+func (_u *AgentRunUpdateOne) SetInput(v []byte) *AgentRunUpdateOne {
+	_u.mutation.SetInput(v)
 	return _u
 }
 
-// SetStartedAt sets the "started_at" field.
-func (_u *AgentRunUpdateOne) SetStartedAt(v time.Time) *AgentRunUpdateOne {
-	_u.mutation.SetStartedAt(v)
+// SetTriggerKind sets the "trigger_kind" field.
+func (_u *AgentRunUpdateOne) SetTriggerKind(v agentrun.TriggerKind) *AgentRunUpdateOne {
+	_u.mutation.SetTriggerKind(v)
 	return _u
 }
 
-// SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (_u *AgentRunUpdateOne) SetNillableStartedAt(v *time.Time) *AgentRunUpdateOne {
+// SetNillableTriggerKind sets the "trigger_kind" field if the given value is not nil.
+func (_u *AgentRunUpdateOne) SetNillableTriggerKind(v *agentrun.TriggerKind) *AgentRunUpdateOne {
 	if v != nil {
-		_u.SetStartedAt(*v)
+		_u.SetTriggerKind(*v)
 	}
 	return _u
 }
 
-// ClearStartedAt clears the value of the "started_at" field.
-func (_u *AgentRunUpdateOne) ClearStartedAt() *AgentRunUpdateOne {
-	_u.mutation.ClearStartedAt()
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (_u *AgentRunUpdateOne) SetTriggerMetadata(v map[string]interface{}) *AgentRunUpdateOne {
+	_u.mutation.SetTriggerMetadata(v)
 	return _u
 }
 
-// SetCancelledAt sets the "cancelled_at" field.
-func (_u *AgentRunUpdateOne) SetCancelledAt(v time.Time) *AgentRunUpdateOne {
-	_u.mutation.SetCancelledAt(v)
+// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
+func (_u *AgentRunUpdateOne) ClearTriggerMetadata() *AgentRunUpdateOne {
+	_u.mutation.ClearTriggerMetadata()
 	return _u
 }
 
-// SetNillableCancelledAt sets the "cancelled_at" field if the given value is not nil.
-func (_u *AgentRunUpdateOne) SetNillableCancelledAt(v *time.Time) *AgentRunUpdateOne {
-	if v != nil {
-		_u.SetCancelledAt(*v)
+// SetOwnerUser sets the "owner_user" edge to the User entity.
+func (_u *AgentRunUpdateOne) SetOwnerUser(v *User) *AgentRunUpdateOne {
+	return _u.SetOwnerUserID(v.ID)
+}
+
+// AddSubjectIDs adds the "subjects" edge to the AgentRunSubject entity by IDs.
+func (_u *AgentRunUpdateOne) AddSubjectIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.AddSubjectIDs(ids...)
+	return _u
+}
+
+// AddSubjects adds the "subjects" edges to the AgentRunSubject entity.
+func (_u *AgentRunUpdateOne) AddSubjects(v ...*AgentRunSubject) *AgentRunUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
+	return _u.AddSubjectIDs(ids...)
+}
+
+// AddSnapshotIDs adds the "snapshots" edge to the AgentRunSnapshot entity by IDs.
+func (_u *AgentRunUpdateOne) AddSnapshotIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.AddSnapshotIDs(ids...)
 	return _u
 }
 
-// ClearCancelledAt clears the value of the "cancelled_at" field.
-func (_u *AgentRunUpdateOne) ClearCancelledAt() *AgentRunUpdateOne {
-	_u.mutation.ClearCancelledAt()
-	return _u
-}
-
-// SetTaskID sets the "task" edge to the AgentTask entity by ID.
-func (_u *AgentRunUpdateOne) SetTaskID(id uuid.UUID) *AgentRunUpdateOne {
-	_u.mutation.SetTaskID(id)
-	return _u
-}
-
-// SetTask sets the "task" edge to the AgentTask entity.
-func (_u *AgentRunUpdateOne) SetTask(v *AgentTask) *AgentRunUpdateOne {
-	return _u.SetTaskID(v.ID)
+// AddSnapshots adds the "snapshots" edges to the AgentRunSnapshot entity.
+func (_u *AgentRunUpdateOne) AddSnapshots(v ...*AgentRunSnapshot) *AgentRunUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSnapshotIDs(ids...)
 }
 
 // SetResultID sets the "result" edge to the AgentRunResult entity by ID.
@@ -741,129 +651,63 @@ func (_u *AgentRunUpdateOne) SetResult(v *AgentRunResult) *AgentRunUpdateOne {
 	return _u.SetResultID(v.ID)
 }
 
-// AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by IDs.
-func (_u *AgentRunUpdateOne) AddCitationIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
-	_u.mutation.AddCitationIDs(ids...)
-	return _u
-}
-
-// AddCitations adds the "citations" edges to the AgentRunCitation entity.
-func (_u *AgentRunUpdateOne) AddCitations(v ...*AgentRunCitation) *AgentRunUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddCitationIDs(ids...)
-}
-
-// AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
-func (_u *AgentRunUpdateOne) AddFindingIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
-	_u.mutation.AddFindingIDs(ids...)
-	return _u
-}
-
-// AddFindings adds the "findings" edges to the AgentRunFinding entity.
-func (_u *AgentRunUpdateOne) AddFindings(v ...*AgentRunFinding) *AgentRunUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddFindingIDs(ids...)
-}
-
-// AddToolCallIDs adds the "tool_calls" edge to the AgentRunToolCall entity by IDs.
-func (_u *AgentRunUpdateOne) AddToolCallIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
-	_u.mutation.AddToolCallIDs(ids...)
-	return _u
-}
-
-// AddToolCalls adds the "tool_calls" edges to the AgentRunToolCall entity.
-func (_u *AgentRunUpdateOne) AddToolCalls(v ...*AgentRunToolCall) *AgentRunUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddToolCallIDs(ids...)
-}
-
 // Mutation returns the AgentRunMutation object of the builder.
 func (_u *AgentRunUpdateOne) Mutation() *AgentRunMutation {
 	return _u.mutation
 }
 
-// ClearTask clears the "task" edge to the AgentTask entity.
-func (_u *AgentRunUpdateOne) ClearTask() *AgentRunUpdateOne {
-	_u.mutation.ClearTask()
+// ClearOwnerUser clears the "owner_user" edge to the User entity.
+func (_u *AgentRunUpdateOne) ClearOwnerUser() *AgentRunUpdateOne {
+	_u.mutation.ClearOwnerUser()
 	return _u
+}
+
+// ClearSubjects clears all "subjects" edges to the AgentRunSubject entity.
+func (_u *AgentRunUpdateOne) ClearSubjects() *AgentRunUpdateOne {
+	_u.mutation.ClearSubjects()
+	return _u
+}
+
+// RemoveSubjectIDs removes the "subjects" edge to AgentRunSubject entities by IDs.
+func (_u *AgentRunUpdateOne) RemoveSubjectIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.RemoveSubjectIDs(ids...)
+	return _u
+}
+
+// RemoveSubjects removes "subjects" edges to AgentRunSubject entities.
+func (_u *AgentRunUpdateOne) RemoveSubjects(v ...*AgentRunSubject) *AgentRunUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSubjectIDs(ids...)
+}
+
+// ClearSnapshots clears all "snapshots" edges to the AgentRunSnapshot entity.
+func (_u *AgentRunUpdateOne) ClearSnapshots() *AgentRunUpdateOne {
+	_u.mutation.ClearSnapshots()
+	return _u
+}
+
+// RemoveSnapshotIDs removes the "snapshots" edge to AgentRunSnapshot entities by IDs.
+func (_u *AgentRunUpdateOne) RemoveSnapshotIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.RemoveSnapshotIDs(ids...)
+	return _u
+}
+
+// RemoveSnapshots removes "snapshots" edges to AgentRunSnapshot entities.
+func (_u *AgentRunUpdateOne) RemoveSnapshots(v ...*AgentRunSnapshot) *AgentRunUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSnapshotIDs(ids...)
 }
 
 // ClearResult clears the "result" edge to the AgentRunResult entity.
 func (_u *AgentRunUpdateOne) ClearResult() *AgentRunUpdateOne {
 	_u.mutation.ClearResult()
 	return _u
-}
-
-// ClearCitations clears all "citations" edges to the AgentRunCitation entity.
-func (_u *AgentRunUpdateOne) ClearCitations() *AgentRunUpdateOne {
-	_u.mutation.ClearCitations()
-	return _u
-}
-
-// RemoveCitationIDs removes the "citations" edge to AgentRunCitation entities by IDs.
-func (_u *AgentRunUpdateOne) RemoveCitationIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
-	_u.mutation.RemoveCitationIDs(ids...)
-	return _u
-}
-
-// RemoveCitations removes "citations" edges to AgentRunCitation entities.
-func (_u *AgentRunUpdateOne) RemoveCitations(v ...*AgentRunCitation) *AgentRunUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveCitationIDs(ids...)
-}
-
-// ClearFindings clears all "findings" edges to the AgentRunFinding entity.
-func (_u *AgentRunUpdateOne) ClearFindings() *AgentRunUpdateOne {
-	_u.mutation.ClearFindings()
-	return _u
-}
-
-// RemoveFindingIDs removes the "findings" edge to AgentRunFinding entities by IDs.
-func (_u *AgentRunUpdateOne) RemoveFindingIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
-	_u.mutation.RemoveFindingIDs(ids...)
-	return _u
-}
-
-// RemoveFindings removes "findings" edges to AgentRunFinding entities.
-func (_u *AgentRunUpdateOne) RemoveFindings(v ...*AgentRunFinding) *AgentRunUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveFindingIDs(ids...)
-}
-
-// ClearToolCalls clears all "tool_calls" edges to the AgentRunToolCall entity.
-func (_u *AgentRunUpdateOne) ClearToolCalls() *AgentRunUpdateOne {
-	_u.mutation.ClearToolCalls()
-	return _u
-}
-
-// RemoveToolCallIDs removes the "tool_calls" edge to AgentRunToolCall entities by IDs.
-func (_u *AgentRunUpdateOne) RemoveToolCallIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
-	_u.mutation.RemoveToolCallIDs(ids...)
-	return _u
-}
-
-// RemoveToolCalls removes "tool_calls" edges to AgentRunToolCall entities.
-func (_u *AgentRunUpdateOne) RemoveToolCalls(v ...*AgentRunToolCall) *AgentRunUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveToolCallIDs(ids...)
 }
 
 // Where appends a list predicates to the AgentRunUpdate builder.
@@ -923,16 +767,26 @@ func (_u *AgentRunUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunUpdateOne) check() error {
-	if v, ok := _u.mutation.Attempt(); ok {
-		if err := agentrun.AttemptValidator(v); err != nil {
-			return &ValidationError{Name: "attempt", err: fmt.Errorf(`ent: validator failed for field "AgentRun.attempt": %w`, err)}
+	if v, ok := _u.mutation.Workflow(); ok {
+		if err := agentrun.WorkflowValidator(v); err != nil {
+			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "AgentRun.workflow": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Input(); ok {
+		if err := agentrun.InputValidator(v); err != nil {
+			return &ValidationError{Name: "input", err: fmt.Errorf(`ent: validator failed for field "AgentRun.input": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.TriggerKind(); ok {
+		if err := agentrun.TriggerKindValidator(v); err != nil {
+			return &ValidationError{Name: "trigger_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRun.trigger_kind": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRun.tenant"`)
 	}
-	if _u.mutation.TaskCleared() && len(_u.mutation.TaskIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRun.task"`)
+	if _u.mutation.OwnerUserCleared() && len(_u.mutation.OwnerUserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AgentRun.owner_user"`)
 	}
 	return nil
 }
@@ -978,50 +832,143 @@ func (_u *AgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun, err 
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentrun.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Attempt(); ok {
-		_spec.SetField(agentrun.FieldAttempt, field.TypeInt, value)
+	if value, ok := _u.mutation.Workflow(); ok {
+		_spec.SetField(agentrun.FieldWorkflow, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.AddedAttempt(); ok {
-		_spec.AddField(agentrun.FieldAttempt, field.TypeInt, value)
+	if value, ok := _u.mutation.Input(); ok {
+		_spec.SetField(agentrun.FieldInput, field.TypeBytes, value)
 	}
-	if value, ok := _u.mutation.StartedAt(); ok {
-		_spec.SetField(agentrun.FieldStartedAt, field.TypeTime, value)
+	if value, ok := _u.mutation.TriggerKind(); ok {
+		_spec.SetField(agentrun.FieldTriggerKind, field.TypeEnum, value)
 	}
-	if _u.mutation.StartedAtCleared() {
-		_spec.ClearField(agentrun.FieldStartedAt, field.TypeTime)
+	if value, ok := _u.mutation.TriggerMetadata(); ok {
+		_spec.SetField(agentrun.FieldTriggerMetadata, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.CancelledAt(); ok {
-		_spec.SetField(agentrun.FieldCancelledAt, field.TypeTime, value)
+	if _u.mutation.TriggerMetadataCleared() {
+		_spec.ClearField(agentrun.FieldTriggerMetadata, field.TypeJSON)
 	}
-	if _u.mutation.CancelledAtCleared() {
-		_spec.ClearField(agentrun.FieldCancelledAt, field.TypeTime)
-	}
-	if _u.mutation.TaskCleared() {
+	if _u.mutation.OwnerUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrun.TaskTable,
-			Columns: []string{agentrun.TaskColumn},
+			Table:   agentrun.OwnerUserTable,
+			Columns: []string{agentrun.OwnerUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRun
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.TaskIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.OwnerUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrun.TaskTable,
-			Columns: []string{agentrun.TaskColumn},
+			Table:   agentrun.OwnerUserTable,
+			Columns: []string{agentrun.OwnerUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRun
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SubjectsTable,
+			Columns: []string{agentrun.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSubject
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSubjectsIDs(); len(nodes) > 0 && !_u.mutation.SubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SubjectsTable,
+			Columns: []string{agentrun.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SubjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SubjectsTable,
+			Columns: []string{agentrun.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SnapshotsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SnapshotsTable,
+			Columns: []string{agentrun.SnapshotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSnapshot
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSnapshotsIDs(); len(nodes) > 0 && !_u.mutation.SnapshotsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SnapshotsTable,
+			Columns: []string{agentrun.SnapshotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SnapshotsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SnapshotsTable,
+			Columns: []string{agentrun.SnapshotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSnapshot
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1053,150 +1000,6 @@ func (_u *AgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun, err 
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRun
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.CitationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.CitationsTable,
-			Columns: []string{agentrun.CitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedCitationsIDs(); len(nodes) > 0 && !_u.mutation.CitationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.CitationsTable,
-			Columns: []string{agentrun.CitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.CitationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.CitationsTable,
-			Columns: []string{agentrun.CitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.FindingsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.FindingsTable,
-			Columns: []string{agentrun.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunFinding
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !_u.mutation.FindingsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.FindingsTable,
-			Columns: []string{agentrun.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunFinding
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.FindingsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.FindingsTable,
-			Columns: []string{agentrun.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunFinding
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ToolCallsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.ToolCallsTable,
-			Columns: []string{agentrun.ToolCallsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunToolCall
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedToolCallsIDs(); len(nodes) > 0 && !_u.mutation.ToolCallsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.ToolCallsTable,
-			Columns: []string{agentrun.ToolCallsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunToolCall
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ToolCallsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.ToolCallsTable,
-			Columns: []string{agentrun.ToolCallsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunToolCall
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

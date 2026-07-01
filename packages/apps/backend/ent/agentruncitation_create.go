@@ -13,12 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentruncitation"
 	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
-	"github.com/rezible/rezible/ent/agentruntoolcall"
-	"github.com/rezible/rezible/ent/agenttask"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
@@ -64,12 +61,6 @@ func (_c *AgentRunCitationCreate) SetNillableUpdatedAt(v *time.Time) *AgentRunCi
 	if v != nil {
 		_c.SetUpdatedAt(*v)
 	}
-	return _c
-}
-
-// SetAgentRunID sets the "agent_run_id" field.
-func (_c *AgentRunCitationCreate) SetAgentRunID(v uuid.UUID) *AgentRunCitationCreate {
-	_c.mutation.SetAgentRunID(v)
 	return _c
 }
 
@@ -127,34 +118,6 @@ func (_c *AgentRunCitationCreate) SetNillableKnowledgeEvidenceID(v *uuid.UUID) *
 	return _c
 }
 
-// SetAgentTaskID sets the "agent_task_id" field.
-func (_c *AgentRunCitationCreate) SetAgentTaskID(v uuid.UUID) *AgentRunCitationCreate {
-	_c.mutation.SetAgentTaskID(v)
-	return _c
-}
-
-// SetNillableAgentTaskID sets the "agent_task_id" field if the given value is not nil.
-func (_c *AgentRunCitationCreate) SetNillableAgentTaskID(v *uuid.UUID) *AgentRunCitationCreate {
-	if v != nil {
-		_c.SetAgentTaskID(*v)
-	}
-	return _c
-}
-
-// SetAgentRunToolCallID sets the "agent_run_tool_call_id" field.
-func (_c *AgentRunCitationCreate) SetAgentRunToolCallID(v uuid.UUID) *AgentRunCitationCreate {
-	_c.mutation.SetAgentRunToolCallID(v)
-	return _c
-}
-
-// SetNillableAgentRunToolCallID sets the "agent_run_tool_call_id" field if the given value is not nil.
-func (_c *AgentRunCitationCreate) SetNillableAgentRunToolCallID(v *uuid.UUID) *AgentRunCitationCreate {
-	if v != nil {
-		_c.SetAgentRunToolCallID(*v)
-	}
-	return _c
-}
-
 // SetDomainEntityType sets the "domain_entity_type" field.
 func (_c *AgentRunCitationCreate) SetDomainEntityType(v string) *AgentRunCitationCreate {
 	_c.mutation.SetDomainEntityType(v)
@@ -208,11 +171,6 @@ func (_c *AgentRunCitationCreate) SetTenant(v *Tenant) *AgentRunCitationCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_c *AgentRunCitationCreate) SetAgentRun(v *AgentRun) *AgentRunCitationCreate {
-	return _c.SetAgentRunID(v.ID)
-}
-
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_c *AgentRunCitationCreate) SetKnowledgeEntity(v *KnowledgeEntity) *AgentRunCitationCreate {
 	return _c.SetKnowledgeEntityID(v.ID)
@@ -226,16 +184,6 @@ func (_c *AgentRunCitationCreate) SetKnowledgeRelationship(v *KnowledgeRelations
 // SetKnowledgeEvidence sets the "knowledge_evidence" edge to the KnowledgeEvidence entity.
 func (_c *AgentRunCitationCreate) SetKnowledgeEvidence(v *KnowledgeEvidence) *AgentRunCitationCreate {
 	return _c.SetKnowledgeEvidenceID(v.ID)
-}
-
-// SetAgentTask sets the "agent_task" edge to the AgentTask entity.
-func (_c *AgentRunCitationCreate) SetAgentTask(v *AgentTask) *AgentRunCitationCreate {
-	return _c.SetAgentTaskID(v.ID)
-}
-
-// SetAgentRunToolCall sets the "agent_run_tool_call" edge to the AgentRunToolCall entity.
-func (_c *AgentRunCitationCreate) SetAgentRunToolCall(v *AgentRunToolCall) *AgentRunCitationCreate {
-	return _c.SetAgentRunToolCallID(v.ID)
 }
 
 // AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
@@ -340,9 +288,6 @@ func (_c *AgentRunCitationCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "AgentRunCitation.updated_at"`)}
 	}
-	if _, ok := _c.mutation.AgentRunID(); !ok {
-		return &ValidationError{Name: "agent_run_id", err: errors.New(`ent: missing required field "AgentRunCitation.agent_run_id"`)}
-	}
 	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "AgentRunCitation.kind"`)}
 	}
@@ -361,9 +306,6 @@ func (_c *AgentRunCitationCreate) check() error {
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentRunCitation.tenant"`)}
-	}
-	if len(_c.mutation.AgentRunIDs()) == 0 {
-		return &ValidationError{Name: "agent_run", err: errors.New(`ent: missing required edge "AgentRunCitation.agent_run"`)}
 	}
 	return nil
 }
@@ -448,24 +390,6 @@ func (_c *AgentRunCitationCreate) createSpec() (*AgentRunCitation, *sqlgraph.Cre
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AgentRunIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentRunTable,
-			Columns: []string{agentruncitation.AgentRunColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.AgentRunID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -518,42 +442,6 @@ func (_c *AgentRunCitationCreate) createSpec() (*AgentRunCitation, *sqlgraph.Cre
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.KnowledgeEvidenceID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AgentTaskIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentTaskTable,
-			Columns: []string{agentruncitation.AgentTaskColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.AgentTaskID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AgentRunToolCallIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentRunToolCallTable,
-			Columns: []string{agentruncitation.AgentRunToolCallColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.AgentRunToolCallID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.FindingsIDs(); len(nodes) > 0 {
@@ -673,18 +561,6 @@ func (u *AgentRunCitationUpsert) UpdateUpdatedAt() *AgentRunCitationUpsert {
 	return u
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (u *AgentRunCitationUpsert) SetAgentRunID(v uuid.UUID) *AgentRunCitationUpsert {
-	u.Set(agentruncitation.FieldAgentRunID, v)
-	return u
-}
-
-// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsert) UpdateAgentRunID() *AgentRunCitationUpsert {
-	u.SetExcluded(agentruncitation.FieldAgentRunID)
-	return u
-}
-
 // SetKind sets the "kind" field.
 func (u *AgentRunCitationUpsert) SetKind(v string) *AgentRunCitationUpsert {
 	u.Set(agentruncitation.FieldKind, v)
@@ -760,42 +636,6 @@ func (u *AgentRunCitationUpsert) UpdateKnowledgeEvidenceID() *AgentRunCitationUp
 // ClearKnowledgeEvidenceID clears the value of the "knowledge_evidence_id" field.
 func (u *AgentRunCitationUpsert) ClearKnowledgeEvidenceID() *AgentRunCitationUpsert {
 	u.SetNull(agentruncitation.FieldKnowledgeEvidenceID)
-	return u
-}
-
-// SetAgentTaskID sets the "agent_task_id" field.
-func (u *AgentRunCitationUpsert) SetAgentTaskID(v uuid.UUID) *AgentRunCitationUpsert {
-	u.Set(agentruncitation.FieldAgentTaskID, v)
-	return u
-}
-
-// UpdateAgentTaskID sets the "agent_task_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsert) UpdateAgentTaskID() *AgentRunCitationUpsert {
-	u.SetExcluded(agentruncitation.FieldAgentTaskID)
-	return u
-}
-
-// ClearAgentTaskID clears the value of the "agent_task_id" field.
-func (u *AgentRunCitationUpsert) ClearAgentTaskID() *AgentRunCitationUpsert {
-	u.SetNull(agentruncitation.FieldAgentTaskID)
-	return u
-}
-
-// SetAgentRunToolCallID sets the "agent_run_tool_call_id" field.
-func (u *AgentRunCitationUpsert) SetAgentRunToolCallID(v uuid.UUID) *AgentRunCitationUpsert {
-	u.Set(agentruncitation.FieldAgentRunToolCallID, v)
-	return u
-}
-
-// UpdateAgentRunToolCallID sets the "agent_run_tool_call_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsert) UpdateAgentRunToolCallID() *AgentRunCitationUpsert {
-	u.SetExcluded(agentruncitation.FieldAgentRunToolCallID)
-	return u
-}
-
-// ClearAgentRunToolCallID clears the value of the "agent_run_tool_call_id" field.
-func (u *AgentRunCitationUpsert) ClearAgentRunToolCallID() *AgentRunCitationUpsert {
-	u.SetNull(agentruncitation.FieldAgentRunToolCallID)
 	return u
 }
 
@@ -932,20 +772,6 @@ func (u *AgentRunCitationUpsertOne) UpdateUpdatedAt() *AgentRunCitationUpsertOne
 	})
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (u *AgentRunCitationUpsertOne) SetAgentRunID(v uuid.UUID) *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetAgentRunID(v)
-	})
-}
-
-// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertOne) UpdateAgentRunID() *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateAgentRunID()
-	})
-}
-
 // SetKind sets the "kind" field.
 func (u *AgentRunCitationUpsertOne) SetKind(v string) *AgentRunCitationUpsertOne {
 	return u.Update(func(s *AgentRunCitationUpsert) {
@@ -1034,48 +860,6 @@ func (u *AgentRunCitationUpsertOne) UpdateKnowledgeEvidenceID() *AgentRunCitatio
 func (u *AgentRunCitationUpsertOne) ClearKnowledgeEvidenceID() *AgentRunCitationUpsertOne {
 	return u.Update(func(s *AgentRunCitationUpsert) {
 		s.ClearKnowledgeEvidenceID()
-	})
-}
-
-// SetAgentTaskID sets the "agent_task_id" field.
-func (u *AgentRunCitationUpsertOne) SetAgentTaskID(v uuid.UUID) *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetAgentTaskID(v)
-	})
-}
-
-// UpdateAgentTaskID sets the "agent_task_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertOne) UpdateAgentTaskID() *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateAgentTaskID()
-	})
-}
-
-// ClearAgentTaskID clears the value of the "agent_task_id" field.
-func (u *AgentRunCitationUpsertOne) ClearAgentTaskID() *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.ClearAgentTaskID()
-	})
-}
-
-// SetAgentRunToolCallID sets the "agent_run_tool_call_id" field.
-func (u *AgentRunCitationUpsertOne) SetAgentRunToolCallID(v uuid.UUID) *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetAgentRunToolCallID(v)
-	})
-}
-
-// UpdateAgentRunToolCallID sets the "agent_run_tool_call_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertOne) UpdateAgentRunToolCallID() *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateAgentRunToolCallID()
-	})
-}
-
-// ClearAgentRunToolCallID clears the value of the "agent_run_tool_call_id" field.
-func (u *AgentRunCitationUpsertOne) ClearAgentRunToolCallID() *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.ClearAgentRunToolCallID()
 	})
 }
 
@@ -1388,20 +1172,6 @@ func (u *AgentRunCitationUpsertBulk) UpdateUpdatedAt() *AgentRunCitationUpsertBu
 	})
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (u *AgentRunCitationUpsertBulk) SetAgentRunID(v uuid.UUID) *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetAgentRunID(v)
-	})
-}
-
-// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertBulk) UpdateAgentRunID() *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateAgentRunID()
-	})
-}
-
 // SetKind sets the "kind" field.
 func (u *AgentRunCitationUpsertBulk) SetKind(v string) *AgentRunCitationUpsertBulk {
 	return u.Update(func(s *AgentRunCitationUpsert) {
@@ -1490,48 +1260,6 @@ func (u *AgentRunCitationUpsertBulk) UpdateKnowledgeEvidenceID() *AgentRunCitati
 func (u *AgentRunCitationUpsertBulk) ClearKnowledgeEvidenceID() *AgentRunCitationUpsertBulk {
 	return u.Update(func(s *AgentRunCitationUpsert) {
 		s.ClearKnowledgeEvidenceID()
-	})
-}
-
-// SetAgentTaskID sets the "agent_task_id" field.
-func (u *AgentRunCitationUpsertBulk) SetAgentTaskID(v uuid.UUID) *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetAgentTaskID(v)
-	})
-}
-
-// UpdateAgentTaskID sets the "agent_task_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertBulk) UpdateAgentTaskID() *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateAgentTaskID()
-	})
-}
-
-// ClearAgentTaskID clears the value of the "agent_task_id" field.
-func (u *AgentRunCitationUpsertBulk) ClearAgentTaskID() *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.ClearAgentTaskID()
-	})
-}
-
-// SetAgentRunToolCallID sets the "agent_run_tool_call_id" field.
-func (u *AgentRunCitationUpsertBulk) SetAgentRunToolCallID(v uuid.UUID) *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetAgentRunToolCallID(v)
-	})
-}
-
-// UpdateAgentRunToolCallID sets the "agent_run_tool_call_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertBulk) UpdateAgentRunToolCallID() *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateAgentRunToolCallID()
-	})
-}
-
-// ClearAgentRunToolCallID clears the value of the "agent_run_tool_call_id" field.
-func (u *AgentRunCitationUpsertBulk) ClearAgentRunToolCallID() *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.ClearAgentRunToolCallID()
 	})
 }
 

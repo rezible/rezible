@@ -21,14 +21,11 @@ type AgentRunFindingCitation func(*sql.Selector)
 // AgentRunResult is the predicate function for agentrunresult builders.
 type AgentRunResult func(*sql.Selector)
 
-// AgentRunToolCall is the predicate function for agentruntoolcall builders.
-type AgentRunToolCall func(*sql.Selector)
+// AgentRunSnapshot is the predicate function for agentrunsnapshot builders.
+type AgentRunSnapshot func(*sql.Selector)
 
-// AgentTask is the predicate function for agenttask builders.
-type AgentTask func(*sql.Selector)
-
-// AgentTaskSubject is the predicate function for agenttasksubject builders.
-type AgentTaskSubject func(*sql.Selector)
+// AgentRunSubject is the predicate function for agentrunsubject builders.
+type AgentRunSubject func(*sql.Selector)
 
 // Alert is the predicate function for alert builders.
 type Alert func(*sql.Selector)

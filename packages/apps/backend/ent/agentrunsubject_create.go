@@ -12,45 +12,45 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agenttask"
-	"github.com/rezible/rezible/ent/agenttasksubject"
+	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// AgentTaskSubjectCreate is the builder for creating a AgentTaskSubject entity.
-type AgentTaskSubjectCreate struct {
+// AgentRunSubjectCreate is the builder for creating a AgentRunSubject entity.
+type AgentRunSubjectCreate struct {
 	config
-	mutation *AgentTaskSubjectMutation
+	mutation *AgentRunSubjectMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (_c *AgentTaskSubjectCreate) SetTenantID(v int) *AgentTaskSubjectCreate {
+func (_c *AgentRunSubjectCreate) SetTenantID(v int) *AgentRunSubjectCreate {
 	_c.mutation.SetTenantID(v)
 	return _c
 }
 
-// SetTaskID sets the "task_id" field.
-func (_c *AgentTaskSubjectCreate) SetTaskID(v uuid.UUID) *AgentTaskSubjectCreate {
-	_c.mutation.SetTaskID(v)
+// SetAgentRunID sets the "agent_run_id" field.
+func (_c *AgentRunSubjectCreate) SetAgentRunID(v uuid.UUID) *AgentRunSubjectCreate {
+	_c.mutation.SetAgentRunID(v)
 	return _c
 }
 
 // SetSubjectKind sets the "subject_kind" field.
-func (_c *AgentTaskSubjectCreate) SetSubjectKind(v string) *AgentTaskSubjectCreate {
+func (_c *AgentRunSubjectCreate) SetSubjectKind(v string) *AgentRunSubjectCreate {
 	_c.mutation.SetSubjectKind(v)
 	return _c
 }
 
 // SetDomainEntityID sets the "domain_entity_id" field.
-func (_c *AgentTaskSubjectCreate) SetDomainEntityID(v uuid.UUID) *AgentTaskSubjectCreate {
+func (_c *AgentRunSubjectCreate) SetDomainEntityID(v uuid.UUID) *AgentRunSubjectCreate {
 	_c.mutation.SetDomainEntityID(v)
 	return _c
 }
 
 // SetNillableDomainEntityID sets the "domain_entity_id" field if the given value is not nil.
-func (_c *AgentTaskSubjectCreate) SetNillableDomainEntityID(v *uuid.UUID) *AgentTaskSubjectCreate {
+func (_c *AgentRunSubjectCreate) SetNillableDomainEntityID(v *uuid.UUID) *AgentRunSubjectCreate {
 	if v != nil {
 		_c.SetDomainEntityID(*v)
 	}
@@ -58,19 +58,19 @@ func (_c *AgentTaskSubjectCreate) SetNillableDomainEntityID(v *uuid.UUID) *Agent
 }
 
 // SetSubjectProperties sets the "subject_properties" field.
-func (_c *AgentTaskSubjectCreate) SetSubjectProperties(v map[string]interface{}) *AgentTaskSubjectCreate {
+func (_c *AgentRunSubjectCreate) SetSubjectProperties(v map[string]interface{}) *AgentRunSubjectCreate {
 	_c.mutation.SetSubjectProperties(v)
 	return _c
 }
 
 // SetID sets the "id" field.
-func (_c *AgentTaskSubjectCreate) SetID(v uuid.UUID) *AgentTaskSubjectCreate {
+func (_c *AgentRunSubjectCreate) SetID(v uuid.UUID) *AgentRunSubjectCreate {
 	_c.mutation.SetID(v)
 	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (_c *AgentTaskSubjectCreate) SetNillableID(v *uuid.UUID) *AgentTaskSubjectCreate {
+func (_c *AgentRunSubjectCreate) SetNillableID(v *uuid.UUID) *AgentRunSubjectCreate {
 	if v != nil {
 		_c.SetID(*v)
 	}
@@ -78,22 +78,22 @@ func (_c *AgentTaskSubjectCreate) SetNillableID(v *uuid.UUID) *AgentTaskSubjectC
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (_c *AgentTaskSubjectCreate) SetTenant(v *Tenant) *AgentTaskSubjectCreate {
+func (_c *AgentRunSubjectCreate) SetTenant(v *Tenant) *AgentRunSubjectCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetTask sets the "task" edge to the AgentTask entity.
-func (_c *AgentTaskSubjectCreate) SetTask(v *AgentTask) *AgentTaskSubjectCreate {
-	return _c.SetTaskID(v.ID)
+// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
+func (_c *AgentRunSubjectCreate) SetAgentRun(v *AgentRun) *AgentRunSubjectCreate {
+	return _c.SetAgentRunID(v.ID)
 }
 
-// Mutation returns the AgentTaskSubjectMutation object of the builder.
-func (_c *AgentTaskSubjectCreate) Mutation() *AgentTaskSubjectMutation {
+// Mutation returns the AgentRunSubjectMutation object of the builder.
+func (_c *AgentRunSubjectCreate) Mutation() *AgentRunSubjectMutation {
 	return _c.mutation
 }
 
-// Save creates the AgentTaskSubject in the database.
-func (_c *AgentTaskSubjectCreate) Save(ctx context.Context) (*AgentTaskSubject, error) {
+// Save creates the AgentRunSubject in the database.
+func (_c *AgentRunSubjectCreate) Save(ctx context.Context) (*AgentRunSubject, error) {
 	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (_c *AgentTaskSubjectCreate) Save(ctx context.Context) (*AgentTaskSubject, 
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (_c *AgentTaskSubjectCreate) SaveX(ctx context.Context) *AgentTaskSubject {
+func (_c *AgentRunSubjectCreate) SaveX(ctx context.Context) *AgentRunSubject {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -110,56 +110,56 @@ func (_c *AgentTaskSubjectCreate) SaveX(ctx context.Context) *AgentTaskSubject {
 }
 
 // Exec executes the query.
-func (_c *AgentTaskSubjectCreate) Exec(ctx context.Context) error {
+func (_c *AgentRunSubjectCreate) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *AgentTaskSubjectCreate) ExecX(ctx context.Context) {
+func (_c *AgentRunSubjectCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *AgentTaskSubjectCreate) defaults() error {
+func (_c *AgentRunSubjectCreate) defaults() error {
 	if _, ok := _c.mutation.ID(); !ok {
-		if agenttasksubject.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized agenttasksubject.DefaultID (forgotten import ent/runtime?)")
+		if agentrunsubject.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized agentrunsubject.DefaultID (forgotten import ent/runtime?)")
 		}
-		v := agenttasksubject.DefaultID()
+		v := agentrunsubject.DefaultID()
 		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_c *AgentTaskSubjectCreate) check() error {
+func (_c *AgentRunSubjectCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
-		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "AgentTaskSubject.tenant_id"`)}
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "AgentRunSubject.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.TaskID(); !ok {
-		return &ValidationError{Name: "task_id", err: errors.New(`ent: missing required field "AgentTaskSubject.task_id"`)}
+	if _, ok := _c.mutation.AgentRunID(); !ok {
+		return &ValidationError{Name: "agent_run_id", err: errors.New(`ent: missing required field "AgentRunSubject.agent_run_id"`)}
 	}
 	if _, ok := _c.mutation.SubjectKind(); !ok {
-		return &ValidationError{Name: "subject_kind", err: errors.New(`ent: missing required field "AgentTaskSubject.subject_kind"`)}
+		return &ValidationError{Name: "subject_kind", err: errors.New(`ent: missing required field "AgentRunSubject.subject_kind"`)}
 	}
 	if v, ok := _c.mutation.SubjectKind(); ok {
-		if err := agenttasksubject.SubjectKindValidator(v); err != nil {
-			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "AgentTaskSubject.subject_kind": %w`, err)}
+		if err := agentrunsubject.SubjectKindValidator(v); err != nil {
+			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRunSubject.subject_kind": %w`, err)}
 		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
-		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentTaskSubject.tenant"`)}
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentRunSubject.tenant"`)}
 	}
-	if len(_c.mutation.TaskIDs()) == 0 {
-		return &ValidationError{Name: "task", err: errors.New(`ent: missing required edge "AgentTaskSubject.task"`)}
+	if len(_c.mutation.AgentRunIDs()) == 0 {
+		return &ValidationError{Name: "agent_run", err: errors.New(`ent: missing required edge "AgentRunSubject.agent_run"`)}
 	}
 	return nil
 }
 
-func (_c *AgentTaskSubjectCreate) sqlSave(ctx context.Context) (*AgentTaskSubject, error) {
+func (_c *AgentRunSubjectCreate) sqlSave(ctx context.Context) (*AgentRunSubject, error) {
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
@@ -182,63 +182,63 @@ func (_c *AgentTaskSubjectCreate) sqlSave(ctx context.Context) (*AgentTaskSubjec
 	return _node, nil
 }
 
-func (_c *AgentTaskSubjectCreate) createSpec() (*AgentTaskSubject, *sqlgraph.CreateSpec) {
+func (_c *AgentRunSubjectCreate) createSpec() (*AgentRunSubject, *sqlgraph.CreateSpec) {
 	var (
-		_node = &AgentTaskSubject{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(agenttasksubject.Table, sqlgraph.NewFieldSpec(agenttasksubject.FieldID, field.TypeUUID))
+		_node = &AgentRunSubject{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(agentrunsubject.Table, sqlgraph.NewFieldSpec(agentrunsubject.FieldID, field.TypeUUID))
 	)
-	_spec.Schema = _c.schemaConfig.AgentTaskSubject
+	_spec.Schema = _c.schemaConfig.AgentRunSubject
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := _c.mutation.SubjectKind(); ok {
-		_spec.SetField(agenttasksubject.FieldSubjectKind, field.TypeString, value)
+		_spec.SetField(agentrunsubject.FieldSubjectKind, field.TypeString, value)
 		_node.SubjectKind = value
 	}
 	if value, ok := _c.mutation.DomainEntityID(); ok {
-		_spec.SetField(agenttasksubject.FieldDomainEntityID, field.TypeUUID, value)
+		_spec.SetField(agentrunsubject.FieldDomainEntityID, field.TypeUUID, value)
 		_node.DomainEntityID = &value
 	}
 	if value, ok := _c.mutation.SubjectProperties(); ok {
-		_spec.SetField(agenttasksubject.FieldSubjectProperties, field.TypeJSON, value)
+		_spec.SetField(agentrunsubject.FieldSubjectProperties, field.TypeJSON, value)
 		_node.SubjectProperties = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agenttasksubject.TenantTable,
-			Columns: []string{agenttasksubject.TenantColumn},
+			Table:   agentrunsubject.TenantTable,
+			Columns: []string{agentrunsubject.TenantColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
-		edge.Schema = _c.schemaConfig.AgentTaskSubject
+		edge.Schema = _c.schemaConfig.AgentRunSubject
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.TaskIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AgentRunIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agenttasksubject.TaskTable,
-			Columns: []string{agenttasksubject.TaskColumn},
+			Table:   agentrunsubject.AgentRunTable,
+			Columns: []string{agentrunsubject.AgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.AgentTaskSubject
+		edge.Schema = _c.schemaConfig.AgentRunSubject
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.TaskID = nodes[0]
+		_node.AgentRunID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -247,7 +247,7 @@ func (_c *AgentTaskSubjectCreate) createSpec() (*AgentTaskSubject, *sqlgraph.Cre
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
 // of the `INSERT` statement. For example:
 //
-//	client.AgentTaskSubject.Create().
+//	client.AgentRunSubject.Create().
 //		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
@@ -256,13 +256,13 @@ func (_c *AgentTaskSubjectCreate) createSpec() (*AgentTaskSubject, *sqlgraph.Cre
 //		).
 //		// Override some of the fields with custom
 //		// update values.
-//		Update(func(u *ent.AgentTaskSubjectUpsert) {
+//		Update(func(u *ent.AgentRunSubjectUpsert) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (_c *AgentTaskSubjectCreate) OnConflict(opts ...sql.ConflictOption) *AgentTaskSubjectUpsertOne {
+func (_c *AgentRunSubjectCreate) OnConflict(opts ...sql.ConflictOption) *AgentRunSubjectUpsertOne {
 	_c.conflict = opts
-	return &AgentTaskSubjectUpsertOne{
+	return &AgentRunSubjectUpsertOne{
 		create: _c,
 	}
 }
@@ -270,108 +270,108 @@ func (_c *AgentTaskSubjectCreate) OnConflict(opts ...sql.ConflictOption) *AgentT
 // OnConflictColumns calls `OnConflict` and configures the columns
 // as conflict target. Using this option is equivalent to using:
 //
-//	client.AgentTaskSubject.Create().
+//	client.AgentRunSubject.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (_c *AgentTaskSubjectCreate) OnConflictColumns(columns ...string) *AgentTaskSubjectUpsertOne {
+func (_c *AgentRunSubjectCreate) OnConflictColumns(columns ...string) *AgentRunSubjectUpsertOne {
 	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
-	return &AgentTaskSubjectUpsertOne{
+	return &AgentRunSubjectUpsertOne{
 		create: _c,
 	}
 }
 
 type (
-	// AgentTaskSubjectUpsertOne is the builder for "upsert"-ing
-	//  one AgentTaskSubject node.
-	AgentTaskSubjectUpsertOne struct {
-		create *AgentTaskSubjectCreate
+	// AgentRunSubjectUpsertOne is the builder for "upsert"-ing
+	//  one AgentRunSubject node.
+	AgentRunSubjectUpsertOne struct {
+		create *AgentRunSubjectCreate
 	}
 
-	// AgentTaskSubjectUpsert is the "OnConflict" setter.
-	AgentTaskSubjectUpsert struct {
+	// AgentRunSubjectUpsert is the "OnConflict" setter.
+	AgentRunSubjectUpsert struct {
 		*sql.UpdateSet
 	}
 )
 
-// SetTaskID sets the "task_id" field.
-func (u *AgentTaskSubjectUpsert) SetTaskID(v uuid.UUID) *AgentTaskSubjectUpsert {
-	u.Set(agenttasksubject.FieldTaskID, v)
+// SetAgentRunID sets the "agent_run_id" field.
+func (u *AgentRunSubjectUpsert) SetAgentRunID(v uuid.UUID) *AgentRunSubjectUpsert {
+	u.Set(agentrunsubject.FieldAgentRunID, v)
 	return u
 }
 
-// UpdateTaskID sets the "task_id" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsert) UpdateTaskID() *AgentTaskSubjectUpsert {
-	u.SetExcluded(agenttasksubject.FieldTaskID)
+// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsert) UpdateAgentRunID() *AgentRunSubjectUpsert {
+	u.SetExcluded(agentrunsubject.FieldAgentRunID)
 	return u
 }
 
 // SetSubjectKind sets the "subject_kind" field.
-func (u *AgentTaskSubjectUpsert) SetSubjectKind(v string) *AgentTaskSubjectUpsert {
-	u.Set(agenttasksubject.FieldSubjectKind, v)
+func (u *AgentRunSubjectUpsert) SetSubjectKind(v string) *AgentRunSubjectUpsert {
+	u.Set(agentrunsubject.FieldSubjectKind, v)
 	return u
 }
 
 // UpdateSubjectKind sets the "subject_kind" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsert) UpdateSubjectKind() *AgentTaskSubjectUpsert {
-	u.SetExcluded(agenttasksubject.FieldSubjectKind)
+func (u *AgentRunSubjectUpsert) UpdateSubjectKind() *AgentRunSubjectUpsert {
+	u.SetExcluded(agentrunsubject.FieldSubjectKind)
 	return u
 }
 
 // SetDomainEntityID sets the "domain_entity_id" field.
-func (u *AgentTaskSubjectUpsert) SetDomainEntityID(v uuid.UUID) *AgentTaskSubjectUpsert {
-	u.Set(agenttasksubject.FieldDomainEntityID, v)
+func (u *AgentRunSubjectUpsert) SetDomainEntityID(v uuid.UUID) *AgentRunSubjectUpsert {
+	u.Set(agentrunsubject.FieldDomainEntityID, v)
 	return u
 }
 
 // UpdateDomainEntityID sets the "domain_entity_id" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsert) UpdateDomainEntityID() *AgentTaskSubjectUpsert {
-	u.SetExcluded(agenttasksubject.FieldDomainEntityID)
+func (u *AgentRunSubjectUpsert) UpdateDomainEntityID() *AgentRunSubjectUpsert {
+	u.SetExcluded(agentrunsubject.FieldDomainEntityID)
 	return u
 }
 
 // ClearDomainEntityID clears the value of the "domain_entity_id" field.
-func (u *AgentTaskSubjectUpsert) ClearDomainEntityID() *AgentTaskSubjectUpsert {
-	u.SetNull(agenttasksubject.FieldDomainEntityID)
+func (u *AgentRunSubjectUpsert) ClearDomainEntityID() *AgentRunSubjectUpsert {
+	u.SetNull(agentrunsubject.FieldDomainEntityID)
 	return u
 }
 
 // SetSubjectProperties sets the "subject_properties" field.
-func (u *AgentTaskSubjectUpsert) SetSubjectProperties(v map[string]interface{}) *AgentTaskSubjectUpsert {
-	u.Set(agenttasksubject.FieldSubjectProperties, v)
+func (u *AgentRunSubjectUpsert) SetSubjectProperties(v map[string]interface{}) *AgentRunSubjectUpsert {
+	u.Set(agentrunsubject.FieldSubjectProperties, v)
 	return u
 }
 
 // UpdateSubjectProperties sets the "subject_properties" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsert) UpdateSubjectProperties() *AgentTaskSubjectUpsert {
-	u.SetExcluded(agenttasksubject.FieldSubjectProperties)
+func (u *AgentRunSubjectUpsert) UpdateSubjectProperties() *AgentRunSubjectUpsert {
+	u.SetExcluded(agentrunsubject.FieldSubjectProperties)
 	return u
 }
 
 // ClearSubjectProperties clears the value of the "subject_properties" field.
-func (u *AgentTaskSubjectUpsert) ClearSubjectProperties() *AgentTaskSubjectUpsert {
-	u.SetNull(agenttasksubject.FieldSubjectProperties)
+func (u *AgentRunSubjectUpsert) ClearSubjectProperties() *AgentRunSubjectUpsert {
+	u.SetNull(agentrunsubject.FieldSubjectProperties)
 	return u
 }
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
-//	client.AgentTaskSubject.Create().
+//	client.AgentRunSubject.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
 //			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(agenttasksubject.FieldID)
+//				u.SetIgnore(agentrunsubject.FieldID)
 //			}),
 //		).
 //		Exec(ctx)
-func (u *AgentTaskSubjectUpsertOne) UpdateNewValues() *AgentTaskSubjectUpsertOne {
+func (u *AgentRunSubjectUpsertOne) UpdateNewValues() *AgentRunSubjectUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
-			s.SetIgnore(agenttasksubject.FieldID)
+			s.SetIgnore(agentrunsubject.FieldID)
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
-			s.SetIgnore(agenttasksubject.FieldTenantID)
+			s.SetIgnore(agentrunsubject.FieldTenantID)
 		}
 	}))
 	return u
@@ -380,121 +380,121 @@ func (u *AgentTaskSubjectUpsertOne) UpdateNewValues() *AgentTaskSubjectUpsertOne
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//	client.AgentTaskSubject.Create().
+//	client.AgentRunSubject.Create().
 //	    OnConflict(sql.ResolveWithIgnore()).
 //	    Exec(ctx)
-func (u *AgentTaskSubjectUpsertOne) Ignore() *AgentTaskSubjectUpsertOne {
+func (u *AgentRunSubjectUpsertOne) Ignore() *AgentRunSubjectUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
 }
 
 // DoNothing configures the conflict_action to `DO NOTHING`.
 // Supported only by SQLite and PostgreSQL.
-func (u *AgentTaskSubjectUpsertOne) DoNothing() *AgentTaskSubjectUpsertOne {
+func (u *AgentRunSubjectUpsertOne) DoNothing() *AgentRunSubjectUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.DoNothing())
 	return u
 }
 
-// Update allows overriding fields `UPDATE` values. See the AgentTaskSubjectCreate.OnConflict
+// Update allows overriding fields `UPDATE` values. See the AgentRunSubjectCreate.OnConflict
 // documentation for more info.
-func (u *AgentTaskSubjectUpsertOne) Update(set func(*AgentTaskSubjectUpsert)) *AgentTaskSubjectUpsertOne {
+func (u *AgentRunSubjectUpsertOne) Update(set func(*AgentRunSubjectUpsert)) *AgentRunSubjectUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&AgentTaskSubjectUpsert{UpdateSet: update})
+		set(&AgentRunSubjectUpsert{UpdateSet: update})
 	}))
 	return u
 }
 
-// SetTaskID sets the "task_id" field.
-func (u *AgentTaskSubjectUpsertOne) SetTaskID(v uuid.UUID) *AgentTaskSubjectUpsertOne {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
-		s.SetTaskID(v)
+// SetAgentRunID sets the "agent_run_id" field.
+func (u *AgentRunSubjectUpsertOne) SetAgentRunID(v uuid.UUID) *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.SetAgentRunID(v)
 	})
 }
 
-// UpdateTaskID sets the "task_id" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsertOne) UpdateTaskID() *AgentTaskSubjectUpsertOne {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
-		s.UpdateTaskID()
+// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsertOne) UpdateAgentRunID() *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.UpdateAgentRunID()
 	})
 }
 
 // SetSubjectKind sets the "subject_kind" field.
-func (u *AgentTaskSubjectUpsertOne) SetSubjectKind(v string) *AgentTaskSubjectUpsertOne {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertOne) SetSubjectKind(v string) *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.SetSubjectKind(v)
 	})
 }
 
 // UpdateSubjectKind sets the "subject_kind" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsertOne) UpdateSubjectKind() *AgentTaskSubjectUpsertOne {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertOne) UpdateSubjectKind() *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.UpdateSubjectKind()
 	})
 }
 
 // SetDomainEntityID sets the "domain_entity_id" field.
-func (u *AgentTaskSubjectUpsertOne) SetDomainEntityID(v uuid.UUID) *AgentTaskSubjectUpsertOne {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertOne) SetDomainEntityID(v uuid.UUID) *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.SetDomainEntityID(v)
 	})
 }
 
 // UpdateDomainEntityID sets the "domain_entity_id" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsertOne) UpdateDomainEntityID() *AgentTaskSubjectUpsertOne {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertOne) UpdateDomainEntityID() *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.UpdateDomainEntityID()
 	})
 }
 
 // ClearDomainEntityID clears the value of the "domain_entity_id" field.
-func (u *AgentTaskSubjectUpsertOne) ClearDomainEntityID() *AgentTaskSubjectUpsertOne {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertOne) ClearDomainEntityID() *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.ClearDomainEntityID()
 	})
 }
 
 // SetSubjectProperties sets the "subject_properties" field.
-func (u *AgentTaskSubjectUpsertOne) SetSubjectProperties(v map[string]interface{}) *AgentTaskSubjectUpsertOne {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertOne) SetSubjectProperties(v map[string]interface{}) *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.SetSubjectProperties(v)
 	})
 }
 
 // UpdateSubjectProperties sets the "subject_properties" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsertOne) UpdateSubjectProperties() *AgentTaskSubjectUpsertOne {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertOne) UpdateSubjectProperties() *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.UpdateSubjectProperties()
 	})
 }
 
 // ClearSubjectProperties clears the value of the "subject_properties" field.
-func (u *AgentTaskSubjectUpsertOne) ClearSubjectProperties() *AgentTaskSubjectUpsertOne {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertOne) ClearSubjectProperties() *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.ClearSubjectProperties()
 	})
 }
 
 // Exec executes the query.
-func (u *AgentTaskSubjectUpsertOne) Exec(ctx context.Context) error {
+func (u *AgentRunSubjectUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for AgentTaskSubjectCreate.OnConflict")
+		return errors.New("ent: missing options for AgentRunSubjectCreate.OnConflict")
 	}
 	return u.create.Exec(ctx)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (u *AgentTaskSubjectUpsertOne) ExecX(ctx context.Context) {
+func (u *AgentRunSubjectUpsertOne) ExecX(ctx context.Context) {
 	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *AgentTaskSubjectUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+func (u *AgentRunSubjectUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
 	if u.create.driver.Dialect() == dialect.MySQL {
 		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
 		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: AgentTaskSubjectUpsertOne.ID is not supported by MySQL driver. Use AgentTaskSubjectUpsertOne.Exec instead")
+		return id, errors.New("ent: AgentRunSubjectUpsertOne.ID is not supported by MySQL driver. Use AgentRunSubjectUpsertOne.Exec instead")
 	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
@@ -504,7 +504,7 @@ func (u *AgentTaskSubjectUpsertOne) ID(ctx context.Context) (id uuid.UUID, err e
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *AgentTaskSubjectUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *AgentRunSubjectUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -512,28 +512,28 @@ func (u *AgentTaskSubjectUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// AgentTaskSubjectCreateBulk is the builder for creating many AgentTaskSubject entities in bulk.
-type AgentTaskSubjectCreateBulk struct {
+// AgentRunSubjectCreateBulk is the builder for creating many AgentRunSubject entities in bulk.
+type AgentRunSubjectCreateBulk struct {
 	config
 	err      error
-	builders []*AgentTaskSubjectCreate
+	builders []*AgentRunSubjectCreate
 	conflict []sql.ConflictOption
 }
 
-// Save creates the AgentTaskSubject entities in the database.
-func (_c *AgentTaskSubjectCreateBulk) Save(ctx context.Context) ([]*AgentTaskSubject, error) {
+// Save creates the AgentRunSubject entities in the database.
+func (_c *AgentRunSubjectCreateBulk) Save(ctx context.Context) ([]*AgentRunSubject, error) {
 	if _c.err != nil {
 		return nil, _c.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
-	nodes := make([]*AgentTaskSubject, len(_c.builders))
+	nodes := make([]*AgentRunSubject, len(_c.builders))
 	mutators := make([]Mutator, len(_c.builders))
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*AgentTaskSubjectMutation)
+				mutation, ok := m.(*AgentRunSubjectMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -577,7 +577,7 @@ func (_c *AgentTaskSubjectCreateBulk) Save(ctx context.Context) ([]*AgentTaskSub
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_c *AgentTaskSubjectCreateBulk) SaveX(ctx context.Context) []*AgentTaskSubject {
+func (_c *AgentRunSubjectCreateBulk) SaveX(ctx context.Context) []*AgentRunSubject {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -586,13 +586,13 @@ func (_c *AgentTaskSubjectCreateBulk) SaveX(ctx context.Context) []*AgentTaskSub
 }
 
 // Exec executes the query.
-func (_c *AgentTaskSubjectCreateBulk) Exec(ctx context.Context) error {
+func (_c *AgentRunSubjectCreateBulk) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *AgentTaskSubjectCreateBulk) ExecX(ctx context.Context) {
+func (_c *AgentRunSubjectCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
@@ -601,7 +601,7 @@ func (_c *AgentTaskSubjectCreateBulk) ExecX(ctx context.Context) {
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
 // of the `INSERT` statement. For example:
 //
-//	client.AgentTaskSubject.CreateBulk(builders...).
+//	client.AgentRunSubject.CreateBulk(builders...).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -609,13 +609,13 @@ func (_c *AgentTaskSubjectCreateBulk) ExecX(ctx context.Context) {
 //		).
 //		// Override some of the fields with custom
 //		// update values.
-//		Update(func(u *ent.AgentTaskSubjectUpsert) {
+//		Update(func(u *ent.AgentRunSubjectUpsert) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (_c *AgentTaskSubjectCreateBulk) OnConflict(opts ...sql.ConflictOption) *AgentTaskSubjectUpsertBulk {
+func (_c *AgentRunSubjectCreateBulk) OnConflict(opts ...sql.ConflictOption) *AgentRunSubjectUpsertBulk {
 	_c.conflict = opts
-	return &AgentTaskSubjectUpsertBulk{
+	return &AgentRunSubjectUpsertBulk{
 		create: _c,
 	}
 }
@@ -623,42 +623,42 @@ func (_c *AgentTaskSubjectCreateBulk) OnConflict(opts ...sql.ConflictOption) *Ag
 // OnConflictColumns calls `OnConflict` and configures the columns
 // as conflict target. Using this option is equivalent to using:
 //
-//	client.AgentTaskSubject.Create().
+//	client.AgentRunSubject.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (_c *AgentTaskSubjectCreateBulk) OnConflictColumns(columns ...string) *AgentTaskSubjectUpsertBulk {
+func (_c *AgentRunSubjectCreateBulk) OnConflictColumns(columns ...string) *AgentRunSubjectUpsertBulk {
 	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
-	return &AgentTaskSubjectUpsertBulk{
+	return &AgentRunSubjectUpsertBulk{
 		create: _c,
 	}
 }
 
-// AgentTaskSubjectUpsertBulk is the builder for "upsert"-ing
-// a bulk of AgentTaskSubject nodes.
-type AgentTaskSubjectUpsertBulk struct {
-	create *AgentTaskSubjectCreateBulk
+// AgentRunSubjectUpsertBulk is the builder for "upsert"-ing
+// a bulk of AgentRunSubject nodes.
+type AgentRunSubjectUpsertBulk struct {
+	create *AgentRunSubjectCreateBulk
 }
 
 // UpdateNewValues updates the mutable fields using the new values that
 // were set on create. Using this option is equivalent to using:
 //
-//	client.AgentTaskSubject.Create().
+//	client.AgentRunSubject.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
 //			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(agenttasksubject.FieldID)
+//				u.SetIgnore(agentrunsubject.FieldID)
 //			}),
 //		).
 //		Exec(ctx)
-func (u *AgentTaskSubjectUpsertBulk) UpdateNewValues() *AgentTaskSubjectUpsertBulk {
+func (u *AgentRunSubjectUpsertBulk) UpdateNewValues() *AgentRunSubjectUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
-				s.SetIgnore(agenttasksubject.FieldID)
+				s.SetIgnore(agentrunsubject.FieldID)
 			}
 			if _, exists := b.mutation.TenantID(); exists {
-				s.SetIgnore(agenttasksubject.FieldTenantID)
+				s.SetIgnore(agentrunsubject.FieldTenantID)
 			}
 		}
 	}))
@@ -668,118 +668,118 @@ func (u *AgentTaskSubjectUpsertBulk) UpdateNewValues() *AgentTaskSubjectUpsertBu
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//	client.AgentTaskSubject.Create().
+//	client.AgentRunSubject.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-func (u *AgentTaskSubjectUpsertBulk) Ignore() *AgentTaskSubjectUpsertBulk {
+func (u *AgentRunSubjectUpsertBulk) Ignore() *AgentRunSubjectUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
 }
 
 // DoNothing configures the conflict_action to `DO NOTHING`.
 // Supported only by SQLite and PostgreSQL.
-func (u *AgentTaskSubjectUpsertBulk) DoNothing() *AgentTaskSubjectUpsertBulk {
+func (u *AgentRunSubjectUpsertBulk) DoNothing() *AgentRunSubjectUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.DoNothing())
 	return u
 }
 
-// Update allows overriding fields `UPDATE` values. See the AgentTaskSubjectCreateBulk.OnConflict
+// Update allows overriding fields `UPDATE` values. See the AgentRunSubjectCreateBulk.OnConflict
 // documentation for more info.
-func (u *AgentTaskSubjectUpsertBulk) Update(set func(*AgentTaskSubjectUpsert)) *AgentTaskSubjectUpsertBulk {
+func (u *AgentRunSubjectUpsertBulk) Update(set func(*AgentRunSubjectUpsert)) *AgentRunSubjectUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&AgentTaskSubjectUpsert{UpdateSet: update})
+		set(&AgentRunSubjectUpsert{UpdateSet: update})
 	}))
 	return u
 }
 
-// SetTaskID sets the "task_id" field.
-func (u *AgentTaskSubjectUpsertBulk) SetTaskID(v uuid.UUID) *AgentTaskSubjectUpsertBulk {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
-		s.SetTaskID(v)
+// SetAgentRunID sets the "agent_run_id" field.
+func (u *AgentRunSubjectUpsertBulk) SetAgentRunID(v uuid.UUID) *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.SetAgentRunID(v)
 	})
 }
 
-// UpdateTaskID sets the "task_id" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsertBulk) UpdateTaskID() *AgentTaskSubjectUpsertBulk {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
-		s.UpdateTaskID()
+// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsertBulk) UpdateAgentRunID() *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.UpdateAgentRunID()
 	})
 }
 
 // SetSubjectKind sets the "subject_kind" field.
-func (u *AgentTaskSubjectUpsertBulk) SetSubjectKind(v string) *AgentTaskSubjectUpsertBulk {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertBulk) SetSubjectKind(v string) *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.SetSubjectKind(v)
 	})
 }
 
 // UpdateSubjectKind sets the "subject_kind" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsertBulk) UpdateSubjectKind() *AgentTaskSubjectUpsertBulk {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertBulk) UpdateSubjectKind() *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.UpdateSubjectKind()
 	})
 }
 
 // SetDomainEntityID sets the "domain_entity_id" field.
-func (u *AgentTaskSubjectUpsertBulk) SetDomainEntityID(v uuid.UUID) *AgentTaskSubjectUpsertBulk {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertBulk) SetDomainEntityID(v uuid.UUID) *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.SetDomainEntityID(v)
 	})
 }
 
 // UpdateDomainEntityID sets the "domain_entity_id" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsertBulk) UpdateDomainEntityID() *AgentTaskSubjectUpsertBulk {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertBulk) UpdateDomainEntityID() *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.UpdateDomainEntityID()
 	})
 }
 
 // ClearDomainEntityID clears the value of the "domain_entity_id" field.
-func (u *AgentTaskSubjectUpsertBulk) ClearDomainEntityID() *AgentTaskSubjectUpsertBulk {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertBulk) ClearDomainEntityID() *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.ClearDomainEntityID()
 	})
 }
 
 // SetSubjectProperties sets the "subject_properties" field.
-func (u *AgentTaskSubjectUpsertBulk) SetSubjectProperties(v map[string]interface{}) *AgentTaskSubjectUpsertBulk {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertBulk) SetSubjectProperties(v map[string]interface{}) *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.SetSubjectProperties(v)
 	})
 }
 
 // UpdateSubjectProperties sets the "subject_properties" field to the value that was provided on create.
-func (u *AgentTaskSubjectUpsertBulk) UpdateSubjectProperties() *AgentTaskSubjectUpsertBulk {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertBulk) UpdateSubjectProperties() *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.UpdateSubjectProperties()
 	})
 }
 
 // ClearSubjectProperties clears the value of the "subject_properties" field.
-func (u *AgentTaskSubjectUpsertBulk) ClearSubjectProperties() *AgentTaskSubjectUpsertBulk {
-	return u.Update(func(s *AgentTaskSubjectUpsert) {
+func (u *AgentRunSubjectUpsertBulk) ClearSubjectProperties() *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.ClearSubjectProperties()
 	})
 }
 
 // Exec executes the query.
-func (u *AgentTaskSubjectUpsertBulk) Exec(ctx context.Context) error {
+func (u *AgentRunSubjectUpsertBulk) Exec(ctx context.Context) error {
 	if u.create.err != nil {
 		return u.create.err
 	}
 	for i, b := range u.create.builders {
 		if len(b.conflict) != 0 {
-			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the AgentTaskSubjectCreateBulk instead", i)
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the AgentRunSubjectCreateBulk instead", i)
 		}
 	}
 	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for AgentTaskSubjectCreateBulk.OnConflict")
+		return errors.New("ent: missing options for AgentRunSubjectCreateBulk.OnConflict")
 	}
 	return u.create.Exec(ctx)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (u *AgentTaskSubjectUpsertBulk) ExecX(ctx context.Context) {
+func (u *AgentRunSubjectUpsertBulk) ExecX(ctx context.Context) {
 	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}

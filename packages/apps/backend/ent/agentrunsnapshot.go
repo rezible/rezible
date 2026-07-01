@@ -10,13 +10,13 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrunresult"
+	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentrunsnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// AgentRunResult is the model entity for the AgentRunResult schema.
-type AgentRunResult struct {
+// AgentRunSnapshot is the model entity for the AgentRunSnapshot schema.
+type AgentRunSnapshot struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -28,30 +28,28 @@ type AgentRunResult struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AgentRunID holds the value of the "agent_run_id" field.
 	AgentRunID uuid.UUID `json:"agent_run_id,omitempty"`
-	// Output holds the value of the "output" field.
-	Output []byte `json:"output,omitempty"`
+	// Data holds the value of the "data" field.
+	Data []byte `json:"data,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the AgentRunResultQuery when eager-loading is set.
-	Edges        AgentRunResultEdges `json:"edges"`
+	// The values are being populated by the AgentRunSnapshotQuery when eager-loading is set.
+	Edges        AgentRunSnapshotEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// AgentRunResultEdges holds the relations/edges for other nodes in the graph.
-type AgentRunResultEdges struct {
+// AgentRunSnapshotEdges holds the relations/edges for other nodes in the graph.
+type AgentRunSnapshotEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// AgentRun holds the value of the agent_run edge.
-	AgentRun *AgentRunSnapshot `json:"agent_run,omitempty"`
-	// Findings holds the value of the findings edge.
-	Findings []*AgentRunFinding `json:"findings,omitempty"`
+	AgentRun *AgentRun `json:"agent_run,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AgentRunResultEdges) TenantOrErr() (*Tenant, error) {
+func (e AgentRunSnapshotEdges) TenantOrErr() (*Tenant, error) {
 	if e.Tenant != nil {
 		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
@@ -62,36 +60,27 @@ func (e AgentRunResultEdges) TenantOrErr() (*Tenant, error) {
 
 // AgentRunOrErr returns the AgentRun value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AgentRunResultEdges) AgentRunOrErr() (*AgentRunSnapshot, error) {
+func (e AgentRunSnapshotEdges) AgentRunOrErr() (*AgentRun, error) {
 	if e.AgentRun != nil {
 		return e.AgentRun, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: agentrunsnapshot.Label}
+		return nil, &NotFoundError{label: agentrun.Label}
 	}
 	return nil, &NotLoadedError{edge: "agent_run"}
 }
 
-// FindingsOrErr returns the Findings value or an error if the edge
-// was not loaded in eager-loading.
-func (e AgentRunResultEdges) FindingsOrErr() ([]*AgentRunFinding, error) {
-	if e.loadedTypes[2] {
-		return e.Findings, nil
-	}
-	return nil, &NotLoadedError{edge: "findings"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
-func (*AgentRunResult) scanValues(columns []string) ([]any, error) {
+func (*AgentRunSnapshot) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentrunresult.FieldOutput:
+		case agentrunsnapshot.FieldData:
 			values[i] = new([]byte)
-		case agentrunresult.FieldTenantID:
+		case agentrunsnapshot.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case agentrunresult.FieldCreatedAt, agentrunresult.FieldUpdatedAt:
+		case agentrunsnapshot.FieldCreatedAt, agentrunsnapshot.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case agentrunresult.FieldID, agentrunresult.FieldAgentRunID:
+		case agentrunsnapshot.FieldID, agentrunsnapshot.FieldAgentRunID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -101,48 +90,48 @@ func (*AgentRunResult) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the AgentRunResult fields.
-func (_m *AgentRunResult) assignValues(columns []string, values []any) error {
+// to the AgentRunSnapshot fields.
+func (_m *AgentRunSnapshot) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case agentrunresult.FieldID:
+		case agentrunsnapshot.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case agentrunresult.FieldTenantID:
+		case agentrunsnapshot.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case agentrunresult.FieldCreatedAt:
+		case agentrunsnapshot.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
 			}
-		case agentrunresult.FieldUpdatedAt:
+		case agentrunsnapshot.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case agentrunresult.FieldAgentRunID:
+		case agentrunsnapshot.FieldAgentRunID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field agent_run_id", values[i])
 			} else if value != nil {
 				_m.AgentRunID = *value
 			}
-		case agentrunresult.FieldOutput:
+		case agentrunsnapshot.FieldData:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field output", values[i])
+				return fmt.Errorf("unexpected type %T for field data", values[i])
 			} else if value != nil {
-				_m.Output = *value
+				_m.Data = *value
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -151,49 +140,44 @@ func (_m *AgentRunResult) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the AgentRunResult.
+// Value returns the ent.Value that was dynamically selected and assigned to the AgentRunSnapshot.
 // This includes values selected through modifiers, order, etc.
-func (_m *AgentRunResult) Value(name string) (ent.Value, error) {
+func (_m *AgentRunSnapshot) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryTenant queries the "tenant" edge of the AgentRunResult entity.
-func (_m *AgentRunResult) QueryTenant() *TenantQuery {
-	return NewAgentRunResultClient(_m.config).QueryTenant(_m)
+// QueryTenant queries the "tenant" edge of the AgentRunSnapshot entity.
+func (_m *AgentRunSnapshot) QueryTenant() *TenantQuery {
+	return NewAgentRunSnapshotClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAgentRun queries the "agent_run" edge of the AgentRunResult entity.
-func (_m *AgentRunResult) QueryAgentRun() *AgentRunSnapshotQuery {
-	return NewAgentRunResultClient(_m.config).QueryAgentRun(_m)
+// QueryAgentRun queries the "agent_run" edge of the AgentRunSnapshot entity.
+func (_m *AgentRunSnapshot) QueryAgentRun() *AgentRunQuery {
+	return NewAgentRunSnapshotClient(_m.config).QueryAgentRun(_m)
 }
 
-// QueryFindings queries the "findings" edge of the AgentRunResult entity.
-func (_m *AgentRunResult) QueryFindings() *AgentRunFindingQuery {
-	return NewAgentRunResultClient(_m.config).QueryFindings(_m)
-}
-
-// Update returns a builder for updating this AgentRunResult.
-// Note that you need to call AgentRunResult.Unwrap() before calling this method if this AgentRunResult
+// Update returns a builder for updating this AgentRunSnapshot.
+// Note that you need to call AgentRunSnapshot.Unwrap() before calling this method if this AgentRunSnapshot
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *AgentRunResult) Update() *AgentRunResultUpdateOne {
-	return NewAgentRunResultClient(_m.config).UpdateOne(_m)
+func (_m *AgentRunSnapshot) Update() *AgentRunSnapshotUpdateOne {
+	return NewAgentRunSnapshotClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the AgentRunResult entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the AgentRunSnapshot entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *AgentRunResult) Unwrap() *AgentRunResult {
+func (_m *AgentRunSnapshot) Unwrap() *AgentRunSnapshot {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: AgentRunResult is not a transactional entity")
+		panic("ent: AgentRunSnapshot is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *AgentRunResult) String() string {
+func (_m *AgentRunSnapshot) String() string {
 	var builder strings.Builder
-	builder.WriteString("AgentRunResult(")
+	builder.WriteString("AgentRunSnapshot(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
@@ -207,11 +191,11 @@ func (_m *AgentRunResult) String() string {
 	builder.WriteString("agent_run_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunID))
 	builder.WriteString(", ")
-	builder.WriteString("output=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Output))
+	builder.WriteString("data=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Data))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// AgentRunResults is a parsable slice of AgentRunResult.
-type AgentRunResults []*AgentRunResult
+// AgentRunSnapshots is a parsable slice of AgentRunSnapshot.
+type AgentRunSnapshots []*AgentRunSnapshot

@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentruncitation"
 	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
+	"github.com/rezible/rezible/ent/agentrunresult"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -54,38 +54,17 @@ func (_u *AgentRunFindingUpdate) SetUpdatedAt(v time.Time) *AgentRunFindingUpdat
 	return _u
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (_u *AgentRunFindingUpdate) SetAgentRunID(v uuid.UUID) *AgentRunFindingUpdate {
-	_u.mutation.SetAgentRunID(v)
+// SetAgentRunResultID sets the "agent_run_result_id" field.
+func (_u *AgentRunFindingUpdate) SetAgentRunResultID(v uuid.UUID) *AgentRunFindingUpdate {
+	_u.mutation.SetAgentRunResultID(v)
 	return _u
 }
 
-// SetNillableAgentRunID sets the "agent_run_id" field if the given value is not nil.
-func (_u *AgentRunFindingUpdate) SetNillableAgentRunID(v *uuid.UUID) *AgentRunFindingUpdate {
+// SetNillableAgentRunResultID sets the "agent_run_result_id" field if the given value is not nil.
+func (_u *AgentRunFindingUpdate) SetNillableAgentRunResultID(v *uuid.UUID) *AgentRunFindingUpdate {
 	if v != nil {
-		_u.SetAgentRunID(*v)
+		_u.SetAgentRunResultID(*v)
 	}
-	return _u
-}
-
-// SetSequence sets the "sequence" field.
-func (_u *AgentRunFindingUpdate) SetSequence(v int) *AgentRunFindingUpdate {
-	_u.mutation.ResetSequence()
-	_u.mutation.SetSequence(v)
-	return _u
-}
-
-// SetNillableSequence sets the "sequence" field if the given value is not nil.
-func (_u *AgentRunFindingUpdate) SetNillableSequence(v *int) *AgentRunFindingUpdate {
-	if v != nil {
-		_u.SetSequence(*v)
-	}
-	return _u
-}
-
-// AddSequence adds value to the "sequence" field.
-func (_u *AgentRunFindingUpdate) AddSequence(v int) *AgentRunFindingUpdate {
-	_u.mutation.AddSequence(v)
 	return _u
 }
 
@@ -117,9 +96,9 @@ func (_u *AgentRunFindingUpdate) SetNillableContent(v *string) *AgentRunFindingU
 	return _u
 }
 
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunFindingUpdate) SetAgentRun(v *AgentRun) *AgentRunFindingUpdate {
-	return _u.SetAgentRunID(v.ID)
+// SetAgentRunResult sets the "agent_run_result" edge to the AgentRunResult entity.
+func (_u *AgentRunFindingUpdate) SetAgentRunResult(v *AgentRunResult) *AgentRunFindingUpdate {
+	return _u.SetAgentRunResultID(v.ID)
 }
 
 // AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by IDs.
@@ -157,9 +136,9 @@ func (_u *AgentRunFindingUpdate) Mutation() *AgentRunFindingMutation {
 	return _u.mutation
 }
 
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunFindingUpdate) ClearAgentRun() *AgentRunFindingUpdate {
-	_u.mutation.ClearAgentRun()
+// ClearAgentRunResult clears the "agent_run_result" edge to the AgentRunResult entity.
+func (_u *AgentRunFindingUpdate) ClearAgentRunResult() *AgentRunFindingUpdate {
+	_u.mutation.ClearAgentRunResult()
 	return _u
 }
 
@@ -249,11 +228,6 @@ func (_u *AgentRunFindingUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunFindingUpdate) check() error {
-	if v, ok := _u.mutation.Sequence(); ok {
-		if err := agentrunfinding.SequenceValidator(v); err != nil {
-			return &ValidationError{Name: "sequence", err: fmt.Errorf(`ent: validator failed for field "AgentRunFinding.sequence": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.FindingKind(); ok {
 		if err := agentrunfinding.FindingKindValidator(v); err != nil {
 			return &ValidationError{Name: "finding_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRunFinding.finding_kind": %w`, err)}
@@ -267,8 +241,8 @@ func (_u *AgentRunFindingUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunFinding.tenant"`)
 	}
-	if _u.mutation.AgentRunCleared() && len(_u.mutation.AgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRunFinding.agent_run"`)
+	if _u.mutation.AgentRunResultCleared() && len(_u.mutation.AgentRunResultIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AgentRunFinding.agent_run_result"`)
 	}
 	return nil
 }
@@ -297,41 +271,35 @@ func (_u *AgentRunFindingUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentrunfinding.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Sequence(); ok {
-		_spec.SetField(agentrunfinding.FieldSequence, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.AddedSequence(); ok {
-		_spec.AddField(agentrunfinding.FieldSequence, field.TypeInt, value)
-	}
 	if value, ok := _u.mutation.FindingKind(); ok {
 		_spec.SetField(agentrunfinding.FieldFindingKind, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(agentrunfinding.FieldContent, field.TypeString, value)
 	}
-	if _u.mutation.AgentRunCleared() {
+	if _u.mutation.AgentRunResultCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfinding.AgentRunTable,
-			Columns: []string{agentrunfinding.AgentRunColumn},
+			Table:   agentrunfinding.AgentRunResultTable,
+			Columns: []string{agentrunfinding.AgentRunResultColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunFinding
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AgentRunIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AgentRunResultIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfinding.AgentRunTable,
-			Columns: []string{agentrunfinding.AgentRunColumn},
+			Table:   agentrunfinding.AgentRunResultTable,
+			Columns: []string{agentrunfinding.AgentRunResultColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunFinding
@@ -501,38 +469,17 @@ func (_u *AgentRunFindingUpdateOne) SetUpdatedAt(v time.Time) *AgentRunFindingUp
 	return _u
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (_u *AgentRunFindingUpdateOne) SetAgentRunID(v uuid.UUID) *AgentRunFindingUpdateOne {
-	_u.mutation.SetAgentRunID(v)
+// SetAgentRunResultID sets the "agent_run_result_id" field.
+func (_u *AgentRunFindingUpdateOne) SetAgentRunResultID(v uuid.UUID) *AgentRunFindingUpdateOne {
+	_u.mutation.SetAgentRunResultID(v)
 	return _u
 }
 
-// SetNillableAgentRunID sets the "agent_run_id" field if the given value is not nil.
-func (_u *AgentRunFindingUpdateOne) SetNillableAgentRunID(v *uuid.UUID) *AgentRunFindingUpdateOne {
+// SetNillableAgentRunResultID sets the "agent_run_result_id" field if the given value is not nil.
+func (_u *AgentRunFindingUpdateOne) SetNillableAgentRunResultID(v *uuid.UUID) *AgentRunFindingUpdateOne {
 	if v != nil {
-		_u.SetAgentRunID(*v)
+		_u.SetAgentRunResultID(*v)
 	}
-	return _u
-}
-
-// SetSequence sets the "sequence" field.
-func (_u *AgentRunFindingUpdateOne) SetSequence(v int) *AgentRunFindingUpdateOne {
-	_u.mutation.ResetSequence()
-	_u.mutation.SetSequence(v)
-	return _u
-}
-
-// SetNillableSequence sets the "sequence" field if the given value is not nil.
-func (_u *AgentRunFindingUpdateOne) SetNillableSequence(v *int) *AgentRunFindingUpdateOne {
-	if v != nil {
-		_u.SetSequence(*v)
-	}
-	return _u
-}
-
-// AddSequence adds value to the "sequence" field.
-func (_u *AgentRunFindingUpdateOne) AddSequence(v int) *AgentRunFindingUpdateOne {
-	_u.mutation.AddSequence(v)
 	return _u
 }
 
@@ -564,9 +511,9 @@ func (_u *AgentRunFindingUpdateOne) SetNillableContent(v *string) *AgentRunFindi
 	return _u
 }
 
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunFindingUpdateOne) SetAgentRun(v *AgentRun) *AgentRunFindingUpdateOne {
-	return _u.SetAgentRunID(v.ID)
+// SetAgentRunResult sets the "agent_run_result" edge to the AgentRunResult entity.
+func (_u *AgentRunFindingUpdateOne) SetAgentRunResult(v *AgentRunResult) *AgentRunFindingUpdateOne {
+	return _u.SetAgentRunResultID(v.ID)
 }
 
 // AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by IDs.
@@ -604,9 +551,9 @@ func (_u *AgentRunFindingUpdateOne) Mutation() *AgentRunFindingMutation {
 	return _u.mutation
 }
 
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunFindingUpdateOne) ClearAgentRun() *AgentRunFindingUpdateOne {
-	_u.mutation.ClearAgentRun()
+// ClearAgentRunResult clears the "agent_run_result" edge to the AgentRunResult entity.
+func (_u *AgentRunFindingUpdateOne) ClearAgentRunResult() *AgentRunFindingUpdateOne {
+	_u.mutation.ClearAgentRunResult()
 	return _u
 }
 
@@ -709,11 +656,6 @@ func (_u *AgentRunFindingUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunFindingUpdateOne) check() error {
-	if v, ok := _u.mutation.Sequence(); ok {
-		if err := agentrunfinding.SequenceValidator(v); err != nil {
-			return &ValidationError{Name: "sequence", err: fmt.Errorf(`ent: validator failed for field "AgentRunFinding.sequence": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.FindingKind(); ok {
 		if err := agentrunfinding.FindingKindValidator(v); err != nil {
 			return &ValidationError{Name: "finding_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRunFinding.finding_kind": %w`, err)}
@@ -727,8 +669,8 @@ func (_u *AgentRunFindingUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunFinding.tenant"`)
 	}
-	if _u.mutation.AgentRunCleared() && len(_u.mutation.AgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRunFinding.agent_run"`)
+	if _u.mutation.AgentRunResultCleared() && len(_u.mutation.AgentRunResultIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AgentRunFinding.agent_run_result"`)
 	}
 	return nil
 }
@@ -774,41 +716,35 @@ func (_u *AgentRunFindingUpdateOne) sqlSave(ctx context.Context) (_node *AgentRu
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentrunfinding.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Sequence(); ok {
-		_spec.SetField(agentrunfinding.FieldSequence, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.AddedSequence(); ok {
-		_spec.AddField(agentrunfinding.FieldSequence, field.TypeInt, value)
-	}
 	if value, ok := _u.mutation.FindingKind(); ok {
 		_spec.SetField(agentrunfinding.FieldFindingKind, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(agentrunfinding.FieldContent, field.TypeString, value)
 	}
-	if _u.mutation.AgentRunCleared() {
+	if _u.mutation.AgentRunResultCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfinding.AgentRunTable,
-			Columns: []string{agentrunfinding.AgentRunColumn},
+			Table:   agentrunfinding.AgentRunResultTable,
+			Columns: []string{agentrunfinding.AgentRunResultColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunFinding
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AgentRunIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AgentRunResultIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfinding.AgentRunTable,
-			Columns: []string{agentrunfinding.AgentRunColumn},
+			Table:   agentrunfinding.AgentRunResultTable,
+			Columns: []string{agentrunfinding.AgentRunResultColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunFinding

@@ -44,28 +44,20 @@ func (c *AgentRunResultClient) Debug() *AgentRunResultClient {
 	return &AgentRunResultClient{config: cfg}
 }
 
-func (c *AgentRunToolCallClient) Debug() *AgentRunToolCallClient {
+func (c *AgentRunSnapshotClient) Debug() *AgentRunSnapshotClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AgentRunToolCallClient{config: cfg}
+	return &AgentRunSnapshotClient{config: cfg}
 }
 
-func (c *AgentTaskClient) Debug() *AgentTaskClient {
+func (c *AgentRunSubjectClient) Debug() *AgentRunSubjectClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AgentTaskClient{config: cfg}
-}
-
-func (c *AgentTaskSubjectClient) Debug() *AgentTaskSubjectClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AgentTaskSubjectClient{config: cfg}
+	return &AgentRunSubjectClient{config: cfg}
 }
 
 func (c *AlertClient) Debug() *AlertClient {

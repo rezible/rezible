@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentruncitation"
 	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
+	"github.com/rezible/rezible/ent/agentrunresult"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -62,15 +62,9 @@ func (_c *AgentRunFindingCreate) SetNillableUpdatedAt(v *time.Time) *AgentRunFin
 	return _c
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (_c *AgentRunFindingCreate) SetAgentRunID(v uuid.UUID) *AgentRunFindingCreate {
-	_c.mutation.SetAgentRunID(v)
-	return _c
-}
-
-// SetSequence sets the "sequence" field.
-func (_c *AgentRunFindingCreate) SetSequence(v int) *AgentRunFindingCreate {
-	_c.mutation.SetSequence(v)
+// SetAgentRunResultID sets the "agent_run_result_id" field.
+func (_c *AgentRunFindingCreate) SetAgentRunResultID(v uuid.UUID) *AgentRunFindingCreate {
+	_c.mutation.SetAgentRunResultID(v)
 	return _c
 }
 
@@ -105,9 +99,9 @@ func (_c *AgentRunFindingCreate) SetTenant(v *Tenant) *AgentRunFindingCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_c *AgentRunFindingCreate) SetAgentRun(v *AgentRun) *AgentRunFindingCreate {
-	return _c.SetAgentRunID(v.ID)
+// SetAgentRunResult sets the "agent_run_result" edge to the AgentRunResult entity.
+func (_c *AgentRunFindingCreate) SetAgentRunResult(v *AgentRunResult) *AgentRunFindingCreate {
+	return _c.SetAgentRunResultID(v.ID)
 }
 
 // AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by IDs.
@@ -212,16 +206,8 @@ func (_c *AgentRunFindingCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "AgentRunFinding.updated_at"`)}
 	}
-	if _, ok := _c.mutation.AgentRunID(); !ok {
-		return &ValidationError{Name: "agent_run_id", err: errors.New(`ent: missing required field "AgentRunFinding.agent_run_id"`)}
-	}
-	if _, ok := _c.mutation.Sequence(); !ok {
-		return &ValidationError{Name: "sequence", err: errors.New(`ent: missing required field "AgentRunFinding.sequence"`)}
-	}
-	if v, ok := _c.mutation.Sequence(); ok {
-		if err := agentrunfinding.SequenceValidator(v); err != nil {
-			return &ValidationError{Name: "sequence", err: fmt.Errorf(`ent: validator failed for field "AgentRunFinding.sequence": %w`, err)}
-		}
+	if _, ok := _c.mutation.AgentRunResultID(); !ok {
+		return &ValidationError{Name: "agent_run_result_id", err: errors.New(`ent: missing required field "AgentRunFinding.agent_run_result_id"`)}
 	}
 	if _, ok := _c.mutation.FindingKind(); !ok {
 		return &ValidationError{Name: "finding_kind", err: errors.New(`ent: missing required field "AgentRunFinding.finding_kind"`)}
@@ -242,8 +228,8 @@ func (_c *AgentRunFindingCreate) check() error {
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentRunFinding.tenant"`)}
 	}
-	if len(_c.mutation.AgentRunIDs()) == 0 {
-		return &ValidationError{Name: "agent_run", err: errors.New(`ent: missing required edge "AgentRunFinding.agent_run"`)}
+	if len(_c.mutation.AgentRunResultIDs()) == 0 {
+		return &ValidationError{Name: "agent_run_result", err: errors.New(`ent: missing required edge "AgentRunFinding.agent_run_result"`)}
 	}
 	return nil
 }
@@ -290,10 +276,6 @@ func (_c *AgentRunFindingCreate) createSpec() (*AgentRunFinding, *sqlgraph.Creat
 		_spec.SetField(agentrunfinding.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.Sequence(); ok {
-		_spec.SetField(agentrunfinding.FieldSequence, field.TypeInt, value)
-		_node.Sequence = value
-	}
 	if value, ok := _c.mutation.FindingKind(); ok {
 		_spec.SetField(agentrunfinding.FieldFindingKind, field.TypeString, value)
 		_node.FindingKind = value
@@ -320,22 +302,22 @@ func (_c *AgentRunFindingCreate) createSpec() (*AgentRunFinding, *sqlgraph.Creat
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AgentRunIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AgentRunResultIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfinding.AgentRunTable,
-			Columns: []string{agentrunfinding.AgentRunColumn},
+			Table:   agentrunfinding.AgentRunResultTable,
+			Columns: []string{agentrunfinding.AgentRunResultColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentRunFinding
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.AgentRunID = nodes[0]
+		_node.AgentRunResultID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.CitationsIDs(); len(nodes) > 0 {
@@ -455,33 +437,15 @@ func (u *AgentRunFindingUpsert) UpdateUpdatedAt() *AgentRunFindingUpsert {
 	return u
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (u *AgentRunFindingUpsert) SetAgentRunID(v uuid.UUID) *AgentRunFindingUpsert {
-	u.Set(agentrunfinding.FieldAgentRunID, v)
+// SetAgentRunResultID sets the "agent_run_result_id" field.
+func (u *AgentRunFindingUpsert) SetAgentRunResultID(v uuid.UUID) *AgentRunFindingUpsert {
+	u.Set(agentrunfinding.FieldAgentRunResultID, v)
 	return u
 }
 
-// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
-func (u *AgentRunFindingUpsert) UpdateAgentRunID() *AgentRunFindingUpsert {
-	u.SetExcluded(agentrunfinding.FieldAgentRunID)
-	return u
-}
-
-// SetSequence sets the "sequence" field.
-func (u *AgentRunFindingUpsert) SetSequence(v int) *AgentRunFindingUpsert {
-	u.Set(agentrunfinding.FieldSequence, v)
-	return u
-}
-
-// UpdateSequence sets the "sequence" field to the value that was provided on create.
-func (u *AgentRunFindingUpsert) UpdateSequence() *AgentRunFindingUpsert {
-	u.SetExcluded(agentrunfinding.FieldSequence)
-	return u
-}
-
-// AddSequence adds v to the "sequence" field.
-func (u *AgentRunFindingUpsert) AddSequence(v int) *AgentRunFindingUpsert {
-	u.Add(agentrunfinding.FieldSequence, v)
+// UpdateAgentRunResultID sets the "agent_run_result_id" field to the value that was provided on create.
+func (u *AgentRunFindingUpsert) UpdateAgentRunResultID() *AgentRunFindingUpsert {
+	u.SetExcluded(agentrunfinding.FieldAgentRunResultID)
 	return u
 }
 
@@ -588,38 +552,17 @@ func (u *AgentRunFindingUpsertOne) UpdateUpdatedAt() *AgentRunFindingUpsertOne {
 	})
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (u *AgentRunFindingUpsertOne) SetAgentRunID(v uuid.UUID) *AgentRunFindingUpsertOne {
+// SetAgentRunResultID sets the "agent_run_result_id" field.
+func (u *AgentRunFindingUpsertOne) SetAgentRunResultID(v uuid.UUID) *AgentRunFindingUpsertOne {
 	return u.Update(func(s *AgentRunFindingUpsert) {
-		s.SetAgentRunID(v)
+		s.SetAgentRunResultID(v)
 	})
 }
 
-// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
-func (u *AgentRunFindingUpsertOne) UpdateAgentRunID() *AgentRunFindingUpsertOne {
+// UpdateAgentRunResultID sets the "agent_run_result_id" field to the value that was provided on create.
+func (u *AgentRunFindingUpsertOne) UpdateAgentRunResultID() *AgentRunFindingUpsertOne {
 	return u.Update(func(s *AgentRunFindingUpsert) {
-		s.UpdateAgentRunID()
-	})
-}
-
-// SetSequence sets the "sequence" field.
-func (u *AgentRunFindingUpsertOne) SetSequence(v int) *AgentRunFindingUpsertOne {
-	return u.Update(func(s *AgentRunFindingUpsert) {
-		s.SetSequence(v)
-	})
-}
-
-// AddSequence adds v to the "sequence" field.
-func (u *AgentRunFindingUpsertOne) AddSequence(v int) *AgentRunFindingUpsertOne {
-	return u.Update(func(s *AgentRunFindingUpsert) {
-		s.AddSequence(v)
-	})
-}
-
-// UpdateSequence sets the "sequence" field to the value that was provided on create.
-func (u *AgentRunFindingUpsertOne) UpdateSequence() *AgentRunFindingUpsertOne {
-	return u.Update(func(s *AgentRunFindingUpsert) {
-		s.UpdateSequence()
+		s.UpdateAgentRunResultID()
 	})
 }
 
@@ -897,38 +840,17 @@ func (u *AgentRunFindingUpsertBulk) UpdateUpdatedAt() *AgentRunFindingUpsertBulk
 	})
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (u *AgentRunFindingUpsertBulk) SetAgentRunID(v uuid.UUID) *AgentRunFindingUpsertBulk {
+// SetAgentRunResultID sets the "agent_run_result_id" field.
+func (u *AgentRunFindingUpsertBulk) SetAgentRunResultID(v uuid.UUID) *AgentRunFindingUpsertBulk {
 	return u.Update(func(s *AgentRunFindingUpsert) {
-		s.SetAgentRunID(v)
+		s.SetAgentRunResultID(v)
 	})
 }
 
-// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
-func (u *AgentRunFindingUpsertBulk) UpdateAgentRunID() *AgentRunFindingUpsertBulk {
+// UpdateAgentRunResultID sets the "agent_run_result_id" field to the value that was provided on create.
+func (u *AgentRunFindingUpsertBulk) UpdateAgentRunResultID() *AgentRunFindingUpsertBulk {
 	return u.Update(func(s *AgentRunFindingUpsert) {
-		s.UpdateAgentRunID()
-	})
-}
-
-// SetSequence sets the "sequence" field.
-func (u *AgentRunFindingUpsertBulk) SetSequence(v int) *AgentRunFindingUpsertBulk {
-	return u.Update(func(s *AgentRunFindingUpsert) {
-		s.SetSequence(v)
-	})
-}
-
-// AddSequence adds v to the "sequence" field.
-func (u *AgentRunFindingUpsertBulk) AddSequence(v int) *AgentRunFindingUpsertBulk {
-	return u.Update(func(s *AgentRunFindingUpsert) {
-		s.AddSequence(v)
-	})
-}
-
-// UpdateSequence sets the "sequence" field to the value that was provided on create.
-func (u *AgentRunFindingUpsertBulk) UpdateSequence() *AgentRunFindingUpsertBulk {
-	return u.Update(func(s *AgentRunFindingUpsert) {
-		s.UpdateSequence()
+		s.UpdateAgentRunResultID()
 	})
 }
 

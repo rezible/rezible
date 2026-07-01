@@ -12,12 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentruncitation"
 	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
-	"github.com/rezible/rezible/ent/agentruntoolcall"
-	"github.com/rezible/rezible/ent/agenttask"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -56,20 +53,6 @@ func (_u *AgentRunCitationUpdate) SetNillableCreatedAt(v *time.Time) *AgentRunCi
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AgentRunCitationUpdate) SetUpdatedAt(v time.Time) *AgentRunCitationUpdate {
 	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetAgentRunID sets the "agent_run_id" field.
-func (_u *AgentRunCitationUpdate) SetAgentRunID(v uuid.UUID) *AgentRunCitationUpdate {
-	_u.mutation.SetAgentRunID(v)
-	return _u
-}
-
-// SetNillableAgentRunID sets the "agent_run_id" field if the given value is not nil.
-func (_u *AgentRunCitationUpdate) SetNillableAgentRunID(v *uuid.UUID) *AgentRunCitationUpdate {
-	if v != nil {
-		_u.SetAgentRunID(*v)
-	}
 	return _u
 }
 
@@ -161,46 +144,6 @@ func (_u *AgentRunCitationUpdate) ClearKnowledgeEvidenceID() *AgentRunCitationUp
 	return _u
 }
 
-// SetAgentTaskID sets the "agent_task_id" field.
-func (_u *AgentRunCitationUpdate) SetAgentTaskID(v uuid.UUID) *AgentRunCitationUpdate {
-	_u.mutation.SetAgentTaskID(v)
-	return _u
-}
-
-// SetNillableAgentTaskID sets the "agent_task_id" field if the given value is not nil.
-func (_u *AgentRunCitationUpdate) SetNillableAgentTaskID(v *uuid.UUID) *AgentRunCitationUpdate {
-	if v != nil {
-		_u.SetAgentTaskID(*v)
-	}
-	return _u
-}
-
-// ClearAgentTaskID clears the value of the "agent_task_id" field.
-func (_u *AgentRunCitationUpdate) ClearAgentTaskID() *AgentRunCitationUpdate {
-	_u.mutation.ClearAgentTaskID()
-	return _u
-}
-
-// SetAgentRunToolCallID sets the "agent_run_tool_call_id" field.
-func (_u *AgentRunCitationUpdate) SetAgentRunToolCallID(v uuid.UUID) *AgentRunCitationUpdate {
-	_u.mutation.SetAgentRunToolCallID(v)
-	return _u
-}
-
-// SetNillableAgentRunToolCallID sets the "agent_run_tool_call_id" field if the given value is not nil.
-func (_u *AgentRunCitationUpdate) SetNillableAgentRunToolCallID(v *uuid.UUID) *AgentRunCitationUpdate {
-	if v != nil {
-		_u.SetAgentRunToolCallID(*v)
-	}
-	return _u
-}
-
-// ClearAgentRunToolCallID clears the value of the "agent_run_tool_call_id" field.
-func (_u *AgentRunCitationUpdate) ClearAgentRunToolCallID() *AgentRunCitationUpdate {
-	_u.mutation.ClearAgentRunToolCallID()
-	return _u
-}
-
 // SetDomainEntityType sets the "domain_entity_type" field.
 func (_u *AgentRunCitationUpdate) SetDomainEntityType(v string) *AgentRunCitationUpdate {
 	_u.mutation.SetDomainEntityType(v)
@@ -253,11 +196,6 @@ func (_u *AgentRunCitationUpdate) ClearDomainEntitySnapshot() *AgentRunCitationU
 	return _u
 }
 
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunCitationUpdate) SetAgentRun(v *AgentRun) *AgentRunCitationUpdate {
-	return _u.SetAgentRunID(v.ID)
-}
-
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *AgentRunCitationUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *AgentRunCitationUpdate {
 	return _u.SetKnowledgeEntityID(v.ID)
@@ -271,16 +209,6 @@ func (_u *AgentRunCitationUpdate) SetKnowledgeRelationship(v *KnowledgeRelations
 // SetKnowledgeEvidence sets the "knowledge_evidence" edge to the KnowledgeEvidence entity.
 func (_u *AgentRunCitationUpdate) SetKnowledgeEvidence(v *KnowledgeEvidence) *AgentRunCitationUpdate {
 	return _u.SetKnowledgeEvidenceID(v.ID)
-}
-
-// SetAgentTask sets the "agent_task" edge to the AgentTask entity.
-func (_u *AgentRunCitationUpdate) SetAgentTask(v *AgentTask) *AgentRunCitationUpdate {
-	return _u.SetAgentTaskID(v.ID)
-}
-
-// SetAgentRunToolCall sets the "agent_run_tool_call" edge to the AgentRunToolCall entity.
-func (_u *AgentRunCitationUpdate) SetAgentRunToolCall(v *AgentRunToolCall) *AgentRunCitationUpdate {
-	return _u.SetAgentRunToolCallID(v.ID)
 }
 
 // AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
@@ -318,12 +246,6 @@ func (_u *AgentRunCitationUpdate) Mutation() *AgentRunCitationMutation {
 	return _u.mutation
 }
 
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunCitationUpdate) ClearAgentRun() *AgentRunCitationUpdate {
-	_u.mutation.ClearAgentRun()
-	return _u
-}
-
 // ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *AgentRunCitationUpdate) ClearKnowledgeEntity() *AgentRunCitationUpdate {
 	_u.mutation.ClearKnowledgeEntity()
@@ -339,18 +261,6 @@ func (_u *AgentRunCitationUpdate) ClearKnowledgeRelationship() *AgentRunCitation
 // ClearKnowledgeEvidence clears the "knowledge_evidence" edge to the KnowledgeEvidence entity.
 func (_u *AgentRunCitationUpdate) ClearKnowledgeEvidence() *AgentRunCitationUpdate {
 	_u.mutation.ClearKnowledgeEvidence()
-	return _u
-}
-
-// ClearAgentTask clears the "agent_task" edge to the AgentTask entity.
-func (_u *AgentRunCitationUpdate) ClearAgentTask() *AgentRunCitationUpdate {
-	_u.mutation.ClearAgentTask()
-	return _u
-}
-
-// ClearAgentRunToolCall clears the "agent_run_tool_call" edge to the AgentRunToolCall entity.
-func (_u *AgentRunCitationUpdate) ClearAgentRunToolCall() *AgentRunCitationUpdate {
-	_u.mutation.ClearAgentRunToolCall()
 	return _u
 }
 
@@ -453,9 +363,6 @@ func (_u *AgentRunCitationUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunCitation.tenant"`)
 	}
-	if _u.mutation.AgentRunCleared() && len(_u.mutation.AgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRunCitation.agent_run"`)
-	}
 	return nil
 }
 
@@ -506,37 +413,6 @@ func (_u *AgentRunCitationUpdate) sqlSave(ctx context.Context) (_node int, err e
 	}
 	if _u.mutation.DomainEntitySnapshotCleared() {
 		_spec.ClearField(agentruncitation.FieldDomainEntitySnapshot, field.TypeJSON)
-	}
-	if _u.mutation.AgentRunCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentRunTable,
-			Columns: []string{agentruncitation.AgentRunColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AgentRunIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentRunTable,
-			Columns: []string{agentruncitation.AgentRunColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -623,68 +499,6 @@ func (_u *AgentRunCitationUpdate) sqlSave(ctx context.Context) (_node int, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeevidence.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.AgentTaskCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentTaskTable,
-			Columns: []string{agentruncitation.AgentTaskColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AgentTaskIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentTaskTable,
-			Columns: []string{agentruncitation.AgentTaskColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.AgentRunToolCallCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentRunToolCallTable,
-			Columns: []string{agentruncitation.AgentRunToolCallColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AgentRunToolCallIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentRunToolCallTable,
-			Columns: []string{agentruncitation.AgentRunToolCallColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunCitation
@@ -854,20 +668,6 @@ func (_u *AgentRunCitationUpdateOne) SetUpdatedAt(v time.Time) *AgentRunCitation
 	return _u
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (_u *AgentRunCitationUpdateOne) SetAgentRunID(v uuid.UUID) *AgentRunCitationUpdateOne {
-	_u.mutation.SetAgentRunID(v)
-	return _u
-}
-
-// SetNillableAgentRunID sets the "agent_run_id" field if the given value is not nil.
-func (_u *AgentRunCitationUpdateOne) SetNillableAgentRunID(v *uuid.UUID) *AgentRunCitationUpdateOne {
-	if v != nil {
-		_u.SetAgentRunID(*v)
-	}
-	return _u
-}
-
 // SetKind sets the "kind" field.
 func (_u *AgentRunCitationUpdateOne) SetKind(v string) *AgentRunCitationUpdateOne {
 	_u.mutation.SetKind(v)
@@ -956,46 +756,6 @@ func (_u *AgentRunCitationUpdateOne) ClearKnowledgeEvidenceID() *AgentRunCitatio
 	return _u
 }
 
-// SetAgentTaskID sets the "agent_task_id" field.
-func (_u *AgentRunCitationUpdateOne) SetAgentTaskID(v uuid.UUID) *AgentRunCitationUpdateOne {
-	_u.mutation.SetAgentTaskID(v)
-	return _u
-}
-
-// SetNillableAgentTaskID sets the "agent_task_id" field if the given value is not nil.
-func (_u *AgentRunCitationUpdateOne) SetNillableAgentTaskID(v *uuid.UUID) *AgentRunCitationUpdateOne {
-	if v != nil {
-		_u.SetAgentTaskID(*v)
-	}
-	return _u
-}
-
-// ClearAgentTaskID clears the value of the "agent_task_id" field.
-func (_u *AgentRunCitationUpdateOne) ClearAgentTaskID() *AgentRunCitationUpdateOne {
-	_u.mutation.ClearAgentTaskID()
-	return _u
-}
-
-// SetAgentRunToolCallID sets the "agent_run_tool_call_id" field.
-func (_u *AgentRunCitationUpdateOne) SetAgentRunToolCallID(v uuid.UUID) *AgentRunCitationUpdateOne {
-	_u.mutation.SetAgentRunToolCallID(v)
-	return _u
-}
-
-// SetNillableAgentRunToolCallID sets the "agent_run_tool_call_id" field if the given value is not nil.
-func (_u *AgentRunCitationUpdateOne) SetNillableAgentRunToolCallID(v *uuid.UUID) *AgentRunCitationUpdateOne {
-	if v != nil {
-		_u.SetAgentRunToolCallID(*v)
-	}
-	return _u
-}
-
-// ClearAgentRunToolCallID clears the value of the "agent_run_tool_call_id" field.
-func (_u *AgentRunCitationUpdateOne) ClearAgentRunToolCallID() *AgentRunCitationUpdateOne {
-	_u.mutation.ClearAgentRunToolCallID()
-	return _u
-}
-
 // SetDomainEntityType sets the "domain_entity_type" field.
 func (_u *AgentRunCitationUpdateOne) SetDomainEntityType(v string) *AgentRunCitationUpdateOne {
 	_u.mutation.SetDomainEntityType(v)
@@ -1048,11 +808,6 @@ func (_u *AgentRunCitationUpdateOne) ClearDomainEntitySnapshot() *AgentRunCitati
 	return _u
 }
 
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunCitationUpdateOne) SetAgentRun(v *AgentRun) *AgentRunCitationUpdateOne {
-	return _u.SetAgentRunID(v.ID)
-}
-
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *AgentRunCitationUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *AgentRunCitationUpdateOne {
 	return _u.SetKnowledgeEntityID(v.ID)
@@ -1066,16 +821,6 @@ func (_u *AgentRunCitationUpdateOne) SetKnowledgeRelationship(v *KnowledgeRelati
 // SetKnowledgeEvidence sets the "knowledge_evidence" edge to the KnowledgeEvidence entity.
 func (_u *AgentRunCitationUpdateOne) SetKnowledgeEvidence(v *KnowledgeEvidence) *AgentRunCitationUpdateOne {
 	return _u.SetKnowledgeEvidenceID(v.ID)
-}
-
-// SetAgentTask sets the "agent_task" edge to the AgentTask entity.
-func (_u *AgentRunCitationUpdateOne) SetAgentTask(v *AgentTask) *AgentRunCitationUpdateOne {
-	return _u.SetAgentTaskID(v.ID)
-}
-
-// SetAgentRunToolCall sets the "agent_run_tool_call" edge to the AgentRunToolCall entity.
-func (_u *AgentRunCitationUpdateOne) SetAgentRunToolCall(v *AgentRunToolCall) *AgentRunCitationUpdateOne {
-	return _u.SetAgentRunToolCallID(v.ID)
 }
 
 // AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
@@ -1113,12 +858,6 @@ func (_u *AgentRunCitationUpdateOne) Mutation() *AgentRunCitationMutation {
 	return _u.mutation
 }
 
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunCitationUpdateOne) ClearAgentRun() *AgentRunCitationUpdateOne {
-	_u.mutation.ClearAgentRun()
-	return _u
-}
-
 // ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *AgentRunCitationUpdateOne) ClearKnowledgeEntity() *AgentRunCitationUpdateOne {
 	_u.mutation.ClearKnowledgeEntity()
@@ -1134,18 +873,6 @@ func (_u *AgentRunCitationUpdateOne) ClearKnowledgeRelationship() *AgentRunCitat
 // ClearKnowledgeEvidence clears the "knowledge_evidence" edge to the KnowledgeEvidence entity.
 func (_u *AgentRunCitationUpdateOne) ClearKnowledgeEvidence() *AgentRunCitationUpdateOne {
 	_u.mutation.ClearKnowledgeEvidence()
-	return _u
-}
-
-// ClearAgentTask clears the "agent_task" edge to the AgentTask entity.
-func (_u *AgentRunCitationUpdateOne) ClearAgentTask() *AgentRunCitationUpdateOne {
-	_u.mutation.ClearAgentTask()
-	return _u
-}
-
-// ClearAgentRunToolCall clears the "agent_run_tool_call" edge to the AgentRunToolCall entity.
-func (_u *AgentRunCitationUpdateOne) ClearAgentRunToolCall() *AgentRunCitationUpdateOne {
-	_u.mutation.ClearAgentRunToolCall()
 	return _u
 }
 
@@ -1261,9 +988,6 @@ func (_u *AgentRunCitationUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunCitation.tenant"`)
 	}
-	if _u.mutation.AgentRunCleared() && len(_u.mutation.AgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRunCitation.agent_run"`)
-	}
 	return nil
 }
 
@@ -1331,37 +1055,6 @@ func (_u *AgentRunCitationUpdateOne) sqlSave(ctx context.Context) (_node *AgentR
 	}
 	if _u.mutation.DomainEntitySnapshotCleared() {
 		_spec.ClearField(agentruncitation.FieldDomainEntitySnapshot, field.TypeJSON)
-	}
-	if _u.mutation.AgentRunCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentRunTable,
-			Columns: []string{agentruncitation.AgentRunColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AgentRunIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentRunTable,
-			Columns: []string{agentruncitation.AgentRunColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1448,68 +1141,6 @@ func (_u *AgentRunCitationUpdateOne) sqlSave(ctx context.Context) (_node *AgentR
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeevidence.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.AgentTaskCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentTaskTable,
-			Columns: []string{agentruncitation.AgentTaskColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AgentTaskIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentTaskTable,
-			Columns: []string{agentruncitation.AgentTaskColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.AgentRunToolCallCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentRunToolCallTable,
-			Columns: []string{agentruncitation.AgentRunToolCallColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AgentRunToolCallIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentruncitation.AgentRunToolCallTable,
-			Columns: []string{agentruncitation.AgentRunToolCallColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunCitation

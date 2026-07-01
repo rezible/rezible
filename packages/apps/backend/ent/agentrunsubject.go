@@ -10,20 +10,20 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agenttask"
-	"github.com/rezible/rezible/ent/agenttasksubject"
+	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// AgentTaskSubject is the model entity for the AgentTaskSubject schema.
-type AgentTaskSubject struct {
+// AgentRunSubject is the model entity for the AgentRunSubject schema.
+type AgentRunSubject struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// TaskID holds the value of the "task_id" field.
-	TaskID uuid.UUID `json:"task_id,omitempty"`
+	// AgentRunID holds the value of the "agent_run_id" field.
+	AgentRunID uuid.UUID `json:"agent_run_id,omitempty"`
 	// SubjectKind holds the value of the "subject_kind" field.
 	SubjectKind string `json:"subject_kind,omitempty"`
 	// DomainEntityID holds the value of the "domain_entity_id" field.
@@ -31,17 +31,17 @@ type AgentTaskSubject struct {
 	// SubjectProperties holds the value of the "subject_properties" field.
 	SubjectProperties map[string]interface{} `json:"subject_properties,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the AgentTaskSubjectQuery when eager-loading is set.
-	Edges        AgentTaskSubjectEdges `json:"edges"`
+	// The values are being populated by the AgentRunSubjectQuery when eager-loading is set.
+	Edges        AgentRunSubjectEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// AgentTaskSubjectEdges holds the relations/edges for other nodes in the graph.
-type AgentTaskSubjectEdges struct {
+// AgentRunSubjectEdges holds the relations/edges for other nodes in the graph.
+type AgentRunSubjectEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// Task holds the value of the task edge.
-	Task *AgentTask `json:"task,omitempty"`
+	// AgentRun holds the value of the agent_run edge.
+	AgentRun *AgentRun `json:"agent_run,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -49,7 +49,7 @@ type AgentTaskSubjectEdges struct {
 
 // TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AgentTaskSubjectEdges) TenantOrErr() (*Tenant, error) {
+func (e AgentRunSubjectEdges) TenantOrErr() (*Tenant, error) {
 	if e.Tenant != nil {
 		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
@@ -58,31 +58,31 @@ func (e AgentTaskSubjectEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// TaskOrErr returns the Task value or an error if the edge
+// AgentRunOrErr returns the AgentRun value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AgentTaskSubjectEdges) TaskOrErr() (*AgentTask, error) {
-	if e.Task != nil {
-		return e.Task, nil
+func (e AgentRunSubjectEdges) AgentRunOrErr() (*AgentRun, error) {
+	if e.AgentRun != nil {
+		return e.AgentRun, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: agenttask.Label}
+		return nil, &NotFoundError{label: agentrun.Label}
 	}
-	return nil, &NotLoadedError{edge: "task"}
+	return nil, &NotLoadedError{edge: "agent_run"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*AgentTaskSubject) scanValues(columns []string) ([]any, error) {
+func (*AgentRunSubject) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agenttasksubject.FieldDomainEntityID:
+		case agentrunsubject.FieldDomainEntityID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case agenttasksubject.FieldSubjectProperties:
+		case agentrunsubject.FieldSubjectProperties:
 			values[i] = new([]byte)
-		case agenttasksubject.FieldTenantID:
+		case agentrunsubject.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case agenttasksubject.FieldSubjectKind:
+		case agentrunsubject.FieldSubjectKind:
 			values[i] = new(sql.NullString)
-		case agenttasksubject.FieldID, agenttasksubject.FieldTaskID:
+		case agentrunsubject.FieldID, agentrunsubject.FieldAgentRunID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -92,45 +92,45 @@ func (*AgentTaskSubject) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the AgentTaskSubject fields.
-func (_m *AgentTaskSubject) assignValues(columns []string, values []any) error {
+// to the AgentRunSubject fields.
+func (_m *AgentRunSubject) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case agenttasksubject.FieldID:
+		case agentrunsubject.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case agenttasksubject.FieldTenantID:
+		case agentrunsubject.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case agenttasksubject.FieldTaskID:
+		case agentrunsubject.FieldAgentRunID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field task_id", values[i])
+				return fmt.Errorf("unexpected type %T for field agent_run_id", values[i])
 			} else if value != nil {
-				_m.TaskID = *value
+				_m.AgentRunID = *value
 			}
-		case agenttasksubject.FieldSubjectKind:
+		case agentrunsubject.FieldSubjectKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field subject_kind", values[i])
 			} else if value.Valid {
 				_m.SubjectKind = value.String
 			}
-		case agenttasksubject.FieldDomainEntityID:
+		case agentrunsubject.FieldDomainEntityID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field domain_entity_id", values[i])
 			} else if value.Valid {
 				_m.DomainEntityID = new(uuid.UUID)
 				*_m.DomainEntityID = *value.S.(*uuid.UUID)
 			}
-		case agenttasksubject.FieldSubjectProperties:
+		case agentrunsubject.FieldSubjectProperties:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field subject_properties", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -145,50 +145,50 @@ func (_m *AgentTaskSubject) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the AgentTaskSubject.
+// Value returns the ent.Value that was dynamically selected and assigned to the AgentRunSubject.
 // This includes values selected through modifiers, order, etc.
-func (_m *AgentTaskSubject) Value(name string) (ent.Value, error) {
+func (_m *AgentRunSubject) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryTenant queries the "tenant" edge of the AgentTaskSubject entity.
-func (_m *AgentTaskSubject) QueryTenant() *TenantQuery {
-	return NewAgentTaskSubjectClient(_m.config).QueryTenant(_m)
+// QueryTenant queries the "tenant" edge of the AgentRunSubject entity.
+func (_m *AgentRunSubject) QueryTenant() *TenantQuery {
+	return NewAgentRunSubjectClient(_m.config).QueryTenant(_m)
 }
 
-// QueryTask queries the "task" edge of the AgentTaskSubject entity.
-func (_m *AgentTaskSubject) QueryTask() *AgentTaskQuery {
-	return NewAgentTaskSubjectClient(_m.config).QueryTask(_m)
+// QueryAgentRun queries the "agent_run" edge of the AgentRunSubject entity.
+func (_m *AgentRunSubject) QueryAgentRun() *AgentRunQuery {
+	return NewAgentRunSubjectClient(_m.config).QueryAgentRun(_m)
 }
 
-// Update returns a builder for updating this AgentTaskSubject.
-// Note that you need to call AgentTaskSubject.Unwrap() before calling this method if this AgentTaskSubject
+// Update returns a builder for updating this AgentRunSubject.
+// Note that you need to call AgentRunSubject.Unwrap() before calling this method if this AgentRunSubject
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *AgentTaskSubject) Update() *AgentTaskSubjectUpdateOne {
-	return NewAgentTaskSubjectClient(_m.config).UpdateOne(_m)
+func (_m *AgentRunSubject) Update() *AgentRunSubjectUpdateOne {
+	return NewAgentRunSubjectClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the AgentTaskSubject entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the AgentRunSubject entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *AgentTaskSubject) Unwrap() *AgentTaskSubject {
+func (_m *AgentRunSubject) Unwrap() *AgentRunSubject {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: AgentTaskSubject is not a transactional entity")
+		panic("ent: AgentRunSubject is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *AgentTaskSubject) String() string {
+func (_m *AgentRunSubject) String() string {
 	var builder strings.Builder
-	builder.WriteString("AgentTaskSubject(")
+	builder.WriteString("AgentRunSubject(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("task_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.TaskID))
+	builder.WriteString("agent_run_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunID))
 	builder.WriteString(", ")
 	builder.WriteString("subject_kind=")
 	builder.WriteString(_m.SubjectKind)
@@ -204,5 +204,5 @@ func (_m *AgentTaskSubject) String() string {
 	return builder.String()
 }
 
-// AgentTaskSubjects is a parsable slice of AgentTaskSubject.
-type AgentTaskSubjects []*AgentTaskSubject
+// AgentRunSubjects is a parsable slice of AgentRunSubject.
+type AgentRunSubjects []*AgentRunSubject

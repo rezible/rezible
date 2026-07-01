@@ -12,8 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunresult"
+	"github.com/rezible/rezible/ent/agentrunsnapshot"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -72,29 +73,24 @@ func (_u *AgentRunResultUpdate) SetOutput(v []byte) *AgentRunResultUpdate {
 	return _u
 }
 
-// SetErrorMessage sets the "error_message" field.
-func (_u *AgentRunResultUpdate) SetErrorMessage(v string) *AgentRunResultUpdate {
-	_u.mutation.SetErrorMessage(v)
-	return _u
-}
-
-// SetNillableErrorMessage sets the "error_message" field if the given value is not nil.
-func (_u *AgentRunResultUpdate) SetNillableErrorMessage(v *string) *AgentRunResultUpdate {
-	if v != nil {
-		_u.SetErrorMessage(*v)
-	}
-	return _u
-}
-
-// ClearErrorMessage clears the value of the "error_message" field.
-func (_u *AgentRunResultUpdate) ClearErrorMessage() *AgentRunResultUpdate {
-	_u.mutation.ClearErrorMessage()
-	return _u
-}
-
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunResultUpdate) SetAgentRun(v *AgentRun) *AgentRunResultUpdate {
+// SetAgentRun sets the "agent_run" edge to the AgentRunSnapshot entity.
+func (_u *AgentRunResultUpdate) SetAgentRun(v *AgentRunSnapshot) *AgentRunResultUpdate {
 	return _u.SetAgentRunID(v.ID)
+}
+
+// AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
+func (_u *AgentRunResultUpdate) AddFindingIDs(ids ...uuid.UUID) *AgentRunResultUpdate {
+	_u.mutation.AddFindingIDs(ids...)
+	return _u
+}
+
+// AddFindings adds the "findings" edges to the AgentRunFinding entity.
+func (_u *AgentRunResultUpdate) AddFindings(v ...*AgentRunFinding) *AgentRunResultUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFindingIDs(ids...)
 }
 
 // Mutation returns the AgentRunResultMutation object of the builder.
@@ -102,10 +98,31 @@ func (_u *AgentRunResultUpdate) Mutation() *AgentRunResultMutation {
 	return _u.mutation
 }
 
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
+// ClearAgentRun clears the "agent_run" edge to the AgentRunSnapshot entity.
 func (_u *AgentRunResultUpdate) ClearAgentRun() *AgentRunResultUpdate {
 	_u.mutation.ClearAgentRun()
 	return _u
+}
+
+// ClearFindings clears all "findings" edges to the AgentRunFinding entity.
+func (_u *AgentRunResultUpdate) ClearFindings() *AgentRunResultUpdate {
+	_u.mutation.ClearFindings()
+	return _u
+}
+
+// RemoveFindingIDs removes the "findings" edge to AgentRunFinding entities by IDs.
+func (_u *AgentRunResultUpdate) RemoveFindingIDs(ids ...uuid.UUID) *AgentRunResultUpdate {
+	_u.mutation.RemoveFindingIDs(ids...)
+	return _u
+}
+
+// RemoveFindings removes "findings" edges to AgentRunFinding entities.
+func (_u *AgentRunResultUpdate) RemoveFindings(v ...*AgentRunFinding) *AgentRunResultUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFindingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -188,12 +205,6 @@ func (_u *AgentRunResultUpdate) sqlSave(ctx context.Context) (_node int, err err
 	if value, ok := _u.mutation.Output(); ok {
 		_spec.SetField(agentrunresult.FieldOutput, field.TypeBytes, value)
 	}
-	if value, ok := _u.mutation.ErrorMessage(); ok {
-		_spec.SetField(agentrunresult.FieldErrorMessage, field.TypeString, value)
-	}
-	if _u.mutation.ErrorMessageCleared() {
-		_spec.ClearField(agentrunresult.FieldErrorMessage, field.TypeString)
-	}
 	if _u.mutation.AgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -202,7 +213,7 @@ func (_u *AgentRunResultUpdate) sqlSave(ctx context.Context) (_node int, err err
 			Columns: []string{agentrunresult.AgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunResult
@@ -216,10 +227,58 @@ func (_u *AgentRunResultUpdate) sqlSave(ctx context.Context) (_node int, err err
 			Columns: []string{agentrunresult.AgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunResult
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrunresult.FindingsTable,
+			Columns: []string{agentrunresult.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFinding
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !_u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrunresult.FindingsTable,
+			Columns: []string{agentrunresult.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFinding
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrunresult.FindingsTable,
+			Columns: []string{agentrunresult.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFinding
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -289,29 +348,24 @@ func (_u *AgentRunResultUpdateOne) SetOutput(v []byte) *AgentRunResultUpdateOne 
 	return _u
 }
 
-// SetErrorMessage sets the "error_message" field.
-func (_u *AgentRunResultUpdateOne) SetErrorMessage(v string) *AgentRunResultUpdateOne {
-	_u.mutation.SetErrorMessage(v)
-	return _u
-}
-
-// SetNillableErrorMessage sets the "error_message" field if the given value is not nil.
-func (_u *AgentRunResultUpdateOne) SetNillableErrorMessage(v *string) *AgentRunResultUpdateOne {
-	if v != nil {
-		_u.SetErrorMessage(*v)
-	}
-	return _u
-}
-
-// ClearErrorMessage clears the value of the "error_message" field.
-func (_u *AgentRunResultUpdateOne) ClearErrorMessage() *AgentRunResultUpdateOne {
-	_u.mutation.ClearErrorMessage()
-	return _u
-}
-
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunResultUpdateOne) SetAgentRun(v *AgentRun) *AgentRunResultUpdateOne {
+// SetAgentRun sets the "agent_run" edge to the AgentRunSnapshot entity.
+func (_u *AgentRunResultUpdateOne) SetAgentRun(v *AgentRunSnapshot) *AgentRunResultUpdateOne {
 	return _u.SetAgentRunID(v.ID)
+}
+
+// AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
+func (_u *AgentRunResultUpdateOne) AddFindingIDs(ids ...uuid.UUID) *AgentRunResultUpdateOne {
+	_u.mutation.AddFindingIDs(ids...)
+	return _u
+}
+
+// AddFindings adds the "findings" edges to the AgentRunFinding entity.
+func (_u *AgentRunResultUpdateOne) AddFindings(v ...*AgentRunFinding) *AgentRunResultUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFindingIDs(ids...)
 }
 
 // Mutation returns the AgentRunResultMutation object of the builder.
@@ -319,10 +373,31 @@ func (_u *AgentRunResultUpdateOne) Mutation() *AgentRunResultMutation {
 	return _u.mutation
 }
 
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
+// ClearAgentRun clears the "agent_run" edge to the AgentRunSnapshot entity.
 func (_u *AgentRunResultUpdateOne) ClearAgentRun() *AgentRunResultUpdateOne {
 	_u.mutation.ClearAgentRun()
 	return _u
+}
+
+// ClearFindings clears all "findings" edges to the AgentRunFinding entity.
+func (_u *AgentRunResultUpdateOne) ClearFindings() *AgentRunResultUpdateOne {
+	_u.mutation.ClearFindings()
+	return _u
+}
+
+// RemoveFindingIDs removes the "findings" edge to AgentRunFinding entities by IDs.
+func (_u *AgentRunResultUpdateOne) RemoveFindingIDs(ids ...uuid.UUID) *AgentRunResultUpdateOne {
+	_u.mutation.RemoveFindingIDs(ids...)
+	return _u
+}
+
+// RemoveFindings removes "findings" edges to AgentRunFinding entities.
+func (_u *AgentRunResultUpdateOne) RemoveFindings(v ...*AgentRunFinding) *AgentRunResultUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFindingIDs(ids...)
 }
 
 // Where appends a list predicates to the AgentRunResultUpdate builder.
@@ -435,12 +510,6 @@ func (_u *AgentRunResultUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun
 	if value, ok := _u.mutation.Output(); ok {
 		_spec.SetField(agentrunresult.FieldOutput, field.TypeBytes, value)
 	}
-	if value, ok := _u.mutation.ErrorMessage(); ok {
-		_spec.SetField(agentrunresult.FieldErrorMessage, field.TypeString, value)
-	}
-	if _u.mutation.ErrorMessageCleared() {
-		_spec.ClearField(agentrunresult.FieldErrorMessage, field.TypeString)
-	}
 	if _u.mutation.AgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -449,7 +518,7 @@ func (_u *AgentRunResultUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun
 			Columns: []string{agentrunresult.AgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunResult
@@ -463,10 +532,58 @@ func (_u *AgentRunResultUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun
 			Columns: []string{agentrunresult.AgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunResult
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrunresult.FindingsTable,
+			Columns: []string{agentrunresult.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFinding
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !_u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrunresult.FindingsTable,
+			Columns: []string{agentrunresult.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFinding
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrunresult.FindingsTable,
+			Columns: []string{agentrunresult.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFinding
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -72,11 +72,6 @@ func UpdatedAt(v time.Time) predicate.AgentRunCitation {
 	return predicate.AgentRunCitation(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// AgentRunID applies equality check predicate on the "agent_run_id" field. It's identical to AgentRunIDEQ.
-func AgentRunID(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldAgentRunID, v))
-}
-
 // Kind applies equality check predicate on the "kind" field. It's identical to KindEQ.
 func Kind(v string) predicate.AgentRunCitation {
 	return predicate.AgentRunCitation(sql.FieldEQ(FieldKind, v))
@@ -100,16 +95,6 @@ func KnowledgeRelationshipID(v uuid.UUID) predicate.AgentRunCitation {
 // KnowledgeEvidenceID applies equality check predicate on the "knowledge_evidence_id" field. It's identical to KnowledgeEvidenceIDEQ.
 func KnowledgeEvidenceID(v uuid.UUID) predicate.AgentRunCitation {
 	return predicate.AgentRunCitation(sql.FieldEQ(FieldKnowledgeEvidenceID, v))
-}
-
-// AgentTaskID applies equality check predicate on the "agent_task_id" field. It's identical to AgentTaskIDEQ.
-func AgentTaskID(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldAgentTaskID, v))
-}
-
-// AgentRunToolCallID applies equality check predicate on the "agent_run_tool_call_id" field. It's identical to AgentRunToolCallIDEQ.
-func AgentRunToolCallID(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldAgentRunToolCallID, v))
 }
 
 // DomainEntityType applies equality check predicate on the "domain_entity_type" field. It's identical to DomainEntityTypeEQ.
@@ -220,26 +205,6 @@ func UpdatedAtLT(v time.Time) predicate.AgentRunCitation {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.AgentRunCitation {
 	return predicate.AgentRunCitation(sql.FieldLTE(FieldUpdatedAt, v))
-}
-
-// AgentRunIDEQ applies the EQ predicate on the "agent_run_id" field.
-func AgentRunIDEQ(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldAgentRunID, v))
-}
-
-// AgentRunIDNEQ applies the NEQ predicate on the "agent_run_id" field.
-func AgentRunIDNEQ(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNEQ(FieldAgentRunID, v))
-}
-
-// AgentRunIDIn applies the In predicate on the "agent_run_id" field.
-func AgentRunIDIn(vs ...uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIn(FieldAgentRunID, vs...))
-}
-
-// AgentRunIDNotIn applies the NotIn predicate on the "agent_run_id" field.
-func AgentRunIDNotIn(vs ...uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotIn(FieldAgentRunID, vs...))
 }
 
 // KindEQ applies the EQ predicate on the "kind" field.
@@ -462,66 +427,6 @@ func KnowledgeEvidenceIDNotNil() predicate.AgentRunCitation {
 	return predicate.AgentRunCitation(sql.FieldNotNull(FieldKnowledgeEvidenceID))
 }
 
-// AgentTaskIDEQ applies the EQ predicate on the "agent_task_id" field.
-func AgentTaskIDEQ(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldAgentTaskID, v))
-}
-
-// AgentTaskIDNEQ applies the NEQ predicate on the "agent_task_id" field.
-func AgentTaskIDNEQ(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNEQ(FieldAgentTaskID, v))
-}
-
-// AgentTaskIDIn applies the In predicate on the "agent_task_id" field.
-func AgentTaskIDIn(vs ...uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIn(FieldAgentTaskID, vs...))
-}
-
-// AgentTaskIDNotIn applies the NotIn predicate on the "agent_task_id" field.
-func AgentTaskIDNotIn(vs ...uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotIn(FieldAgentTaskID, vs...))
-}
-
-// AgentTaskIDIsNil applies the IsNil predicate on the "agent_task_id" field.
-func AgentTaskIDIsNil() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIsNull(FieldAgentTaskID))
-}
-
-// AgentTaskIDNotNil applies the NotNil predicate on the "agent_task_id" field.
-func AgentTaskIDNotNil() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotNull(FieldAgentTaskID))
-}
-
-// AgentRunToolCallIDEQ applies the EQ predicate on the "agent_run_tool_call_id" field.
-func AgentRunToolCallIDEQ(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldAgentRunToolCallID, v))
-}
-
-// AgentRunToolCallIDNEQ applies the NEQ predicate on the "agent_run_tool_call_id" field.
-func AgentRunToolCallIDNEQ(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNEQ(FieldAgentRunToolCallID, v))
-}
-
-// AgentRunToolCallIDIn applies the In predicate on the "agent_run_tool_call_id" field.
-func AgentRunToolCallIDIn(vs ...uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIn(FieldAgentRunToolCallID, vs...))
-}
-
-// AgentRunToolCallIDNotIn applies the NotIn predicate on the "agent_run_tool_call_id" field.
-func AgentRunToolCallIDNotIn(vs ...uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotIn(FieldAgentRunToolCallID, vs...))
-}
-
-// AgentRunToolCallIDIsNil applies the IsNil predicate on the "agent_run_tool_call_id" field.
-func AgentRunToolCallIDIsNil() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIsNull(FieldAgentRunToolCallID))
-}
-
-// AgentRunToolCallIDNotNil applies the NotNil predicate on the "agent_run_tool_call_id" field.
-func AgentRunToolCallIDNotNil() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotNull(FieldAgentRunToolCallID))
-}
-
 // DomainEntityTypeEQ applies the EQ predicate on the "domain_entity_type" field.
 func DomainEntityTypeEQ(v string) predicate.AgentRunCitation {
 	return predicate.AgentRunCitation(sql.FieldEQ(FieldDomainEntityType, v))
@@ -686,35 +591,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.AgentRunCitation {
 	})
 }
 
-// HasAgentRun applies the HasEdge predicate on the "agent_run" edge.
-func HasAgentRun() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AgentRunTable, AgentRunColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRun
-		step.Edge.Schema = schemaConfig.AgentRunCitation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAgentRunWith applies the HasEdge predicate on the "agent_run" edge with a given conditions (other predicates).
-func HasAgentRunWith(preds ...predicate.AgentRun) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(func(s *sql.Selector) {
-		step := newAgentRunStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRun
-		step.Edge.Schema = schemaConfig.AgentRunCitation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasKnowledgeEntity applies the HasEdge predicate on the "knowledge_entity" edge.
 func HasKnowledgeEntity() predicate.AgentRunCitation {
 	return predicate.AgentRunCitation(func(s *sql.Selector) {
@@ -793,64 +669,6 @@ func HasKnowledgeEvidenceWith(preds ...predicate.KnowledgeEvidence) predicate.Ag
 		step := newKnowledgeEvidenceStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeEvidence
-		step.Edge.Schema = schemaConfig.AgentRunCitation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasAgentTask applies the HasEdge predicate on the "agent_task" edge.
-func HasAgentTask() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AgentTaskTable, AgentTaskColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentTask
-		step.Edge.Schema = schemaConfig.AgentRunCitation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAgentTaskWith applies the HasEdge predicate on the "agent_task" edge with a given conditions (other predicates).
-func HasAgentTaskWith(preds ...predicate.AgentTask) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(func(s *sql.Selector) {
-		step := newAgentTaskStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentTask
-		step.Edge.Schema = schemaConfig.AgentRunCitation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasAgentRunToolCall applies the HasEdge predicate on the "agent_run_tool_call" edge.
-func HasAgentRunToolCall() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AgentRunToolCallTable, AgentRunToolCallColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRunToolCall
-		step.Edge.Schema = schemaConfig.AgentRunCitation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAgentRunToolCallWith applies the HasEdge predicate on the "agent_run_tool_call" edge with a given conditions (other predicates).
-func HasAgentRunToolCallWith(preds ...predicate.AgentRunToolCall) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(func(s *sql.Selector) {
-		step := newAgentRunToolCallStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRunToolCall
 		step.Edge.Schema = schemaConfig.AgentRunCitation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

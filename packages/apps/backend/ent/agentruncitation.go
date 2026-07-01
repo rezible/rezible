@@ -11,10 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentruncitation"
-	"github.com/rezible/rezible/ent/agentruntoolcall"
-	"github.com/rezible/rezible/ent/agenttask"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
@@ -32,8 +29,6 @@ type AgentRunCitation struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// AgentRunID holds the value of the "agent_run_id" field.
-	AgentRunID uuid.UUID `json:"agent_run_id,omitempty"`
 	// Kind holds the value of the "kind" field.
 	Kind string `json:"kind,omitempty"`
 	// Summary holds the value of the "summary" field.
@@ -44,10 +39,6 @@ type AgentRunCitation struct {
 	KnowledgeRelationshipID *uuid.UUID `json:"knowledge_relationship_id,omitempty"`
 	// KnowledgeEvidenceID holds the value of the "knowledge_evidence_id" field.
 	KnowledgeEvidenceID *uuid.UUID `json:"knowledge_evidence_id,omitempty"`
-	// AgentTaskID holds the value of the "agent_task_id" field.
-	AgentTaskID *uuid.UUID `json:"agent_task_id,omitempty"`
-	// AgentRunToolCallID holds the value of the "agent_run_tool_call_id" field.
-	AgentRunToolCallID *uuid.UUID `json:"agent_run_tool_call_id,omitempty"`
 	// DomainEntityType holds the value of the "domain_entity_type" field.
 	DomainEntityType string `json:"domain_entity_type,omitempty"`
 	// DomainEntityID holds the value of the "domain_entity_id" field.
@@ -64,25 +55,19 @@ type AgentRunCitation struct {
 type AgentRunCitationEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// AgentRun holds the value of the agent_run edge.
-	AgentRun *AgentRun `json:"agent_run,omitempty"`
 	// KnowledgeEntity holds the value of the knowledge_entity edge.
 	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// KnowledgeRelationship holds the value of the knowledge_relationship edge.
 	KnowledgeRelationship *KnowledgeRelationship `json:"knowledge_relationship,omitempty"`
 	// KnowledgeEvidence holds the value of the knowledge_evidence edge.
 	KnowledgeEvidence *KnowledgeEvidence `json:"knowledge_evidence,omitempty"`
-	// AgentTask holds the value of the agent_task edge.
-	AgentTask *AgentTask `json:"agent_task,omitempty"`
-	// AgentRunToolCall holds the value of the agent_run_tool_call edge.
-	AgentRunToolCall *AgentRunToolCall `json:"agent_run_tool_call,omitempty"`
 	// Findings holds the value of the findings edge.
 	Findings []*AgentRunFinding `json:"findings,omitempty"`
 	// FindingCitations holds the value of the finding_citations edge.
 	FindingCitations []*AgentRunFindingCitation `json:"finding_citations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -96,23 +81,12 @@ func (e AgentRunCitationEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AgentRunOrErr returns the AgentRun value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AgentRunCitationEdges) AgentRunOrErr() (*AgentRun, error) {
-	if e.AgentRun != nil {
-		return e.AgentRun, nil
-	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: agentrun.Label}
-	}
-	return nil, &NotLoadedError{edge: "agent_run"}
-}
-
 // KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e AgentRunCitationEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
 	if e.KnowledgeEntity != nil {
 		return e.KnowledgeEntity, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: knowledgeentity.Label}
 	}
 	return nil, &NotLoadedError{edge: "knowledge_entity"}
@@ -123,7 +97,7 @@ func (e AgentRunCitationEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) 
 func (e AgentRunCitationEdges) KnowledgeRelationshipOrErr() (*KnowledgeRelationship, error) {
 	if e.KnowledgeRelationship != nil {
 		return e.KnowledgeRelationship, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: knowledgerelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "knowledge_relationship"}
@@ -134,38 +108,16 @@ func (e AgentRunCitationEdges) KnowledgeRelationshipOrErr() (*KnowledgeRelations
 func (e AgentRunCitationEdges) KnowledgeEvidenceOrErr() (*KnowledgeEvidence, error) {
 	if e.KnowledgeEvidence != nil {
 		return e.KnowledgeEvidence, nil
-	} else if e.loadedTypes[4] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: knowledgeevidence.Label}
 	}
 	return nil, &NotLoadedError{edge: "knowledge_evidence"}
 }
 
-// AgentTaskOrErr returns the AgentTask value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AgentRunCitationEdges) AgentTaskOrErr() (*AgentTask, error) {
-	if e.AgentTask != nil {
-		return e.AgentTask, nil
-	} else if e.loadedTypes[5] {
-		return nil, &NotFoundError{label: agenttask.Label}
-	}
-	return nil, &NotLoadedError{edge: "agent_task"}
-}
-
-// AgentRunToolCallOrErr returns the AgentRunToolCall value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AgentRunCitationEdges) AgentRunToolCallOrErr() (*AgentRunToolCall, error) {
-	if e.AgentRunToolCall != nil {
-		return e.AgentRunToolCall, nil
-	} else if e.loadedTypes[6] {
-		return nil, &NotFoundError{label: agentruntoolcall.Label}
-	}
-	return nil, &NotLoadedError{edge: "agent_run_tool_call"}
-}
-
 // FindingsOrErr returns the Findings value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentRunCitationEdges) FindingsOrErr() ([]*AgentRunFinding, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[4] {
 		return e.Findings, nil
 	}
 	return nil, &NotLoadedError{edge: "findings"}
@@ -174,7 +126,7 @@ func (e AgentRunCitationEdges) FindingsOrErr() ([]*AgentRunFinding, error) {
 // FindingCitationsOrErr returns the FindingCitations value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentRunCitationEdges) FindingCitationsOrErr() ([]*AgentRunFindingCitation, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[5] {
 		return e.FindingCitations, nil
 	}
 	return nil, &NotLoadedError{edge: "finding_citations"}
@@ -185,7 +137,7 @@ func (*AgentRunCitation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentruncitation.FieldKnowledgeEntityID, agentruncitation.FieldKnowledgeRelationshipID, agentruncitation.FieldKnowledgeEvidenceID, agentruncitation.FieldAgentTaskID, agentruncitation.FieldAgentRunToolCallID, agentruncitation.FieldDomainEntityID:
+		case agentruncitation.FieldKnowledgeEntityID, agentruncitation.FieldKnowledgeRelationshipID, agentruncitation.FieldKnowledgeEvidenceID, agentruncitation.FieldDomainEntityID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case agentruncitation.FieldDomainEntitySnapshot:
 			values[i] = new([]byte)
@@ -195,7 +147,7 @@ func (*AgentRunCitation) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case agentruncitation.FieldCreatedAt, agentruncitation.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case agentruncitation.FieldID, agentruncitation.FieldAgentRunID:
+		case agentruncitation.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -236,12 +188,6 @@ func (_m *AgentRunCitation) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case agentruncitation.FieldAgentRunID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field agent_run_id", values[i])
-			} else if value != nil {
-				_m.AgentRunID = *value
-			}
 		case agentruncitation.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
@@ -274,20 +220,6 @@ func (_m *AgentRunCitation) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.KnowledgeEvidenceID = new(uuid.UUID)
 				*_m.KnowledgeEvidenceID = *value.S.(*uuid.UUID)
-			}
-		case agentruncitation.FieldAgentTaskID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field agent_task_id", values[i])
-			} else if value.Valid {
-				_m.AgentTaskID = new(uuid.UUID)
-				*_m.AgentTaskID = *value.S.(*uuid.UUID)
-			}
-		case agentruncitation.FieldAgentRunToolCallID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field agent_run_tool_call_id", values[i])
-			} else if value.Valid {
-				_m.AgentRunToolCallID = new(uuid.UUID)
-				*_m.AgentRunToolCallID = *value.S.(*uuid.UUID)
 			}
 		case agentruncitation.FieldDomainEntityType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -328,11 +260,6 @@ func (_m *AgentRunCitation) QueryTenant() *TenantQuery {
 	return NewAgentRunCitationClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAgentRun queries the "agent_run" edge of the AgentRunCitation entity.
-func (_m *AgentRunCitation) QueryAgentRun() *AgentRunQuery {
-	return NewAgentRunCitationClient(_m.config).QueryAgentRun(_m)
-}
-
 // QueryKnowledgeEntity queries the "knowledge_entity" edge of the AgentRunCitation entity.
 func (_m *AgentRunCitation) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 	return NewAgentRunCitationClient(_m.config).QueryKnowledgeEntity(_m)
@@ -346,16 +273,6 @@ func (_m *AgentRunCitation) QueryKnowledgeRelationship() *KnowledgeRelationshipQ
 // QueryKnowledgeEvidence queries the "knowledge_evidence" edge of the AgentRunCitation entity.
 func (_m *AgentRunCitation) QueryKnowledgeEvidence() *KnowledgeEvidenceQuery {
 	return NewAgentRunCitationClient(_m.config).QueryKnowledgeEvidence(_m)
-}
-
-// QueryAgentTask queries the "agent_task" edge of the AgentRunCitation entity.
-func (_m *AgentRunCitation) QueryAgentTask() *AgentTaskQuery {
-	return NewAgentRunCitationClient(_m.config).QueryAgentTask(_m)
-}
-
-// QueryAgentRunToolCall queries the "agent_run_tool_call" edge of the AgentRunCitation entity.
-func (_m *AgentRunCitation) QueryAgentRunToolCall() *AgentRunToolCallQuery {
-	return NewAgentRunCitationClient(_m.config).QueryAgentRunToolCall(_m)
 }
 
 // QueryFindings queries the "findings" edge of the AgentRunCitation entity.
@@ -400,9 +317,6 @@ func (_m *AgentRunCitation) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("agent_run_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunID))
-	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(_m.Kind)
 	builder.WriteString(", ")
@@ -421,16 +335,6 @@ func (_m *AgentRunCitation) String() string {
 	builder.WriteString(", ")
 	if v := _m.KnowledgeEvidenceID; v != nil {
 		builder.WriteString("knowledge_evidence_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := _m.AgentTaskID; v != nil {
-		builder.WriteString("agent_task_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := _m.AgentRunToolCallID; v != nil {
-		builder.WriteString("agent_run_tool_call_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")

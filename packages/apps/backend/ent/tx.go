@@ -22,12 +22,10 @@ type Tx struct {
 	AgentRunFindingCitation *AgentRunFindingCitationClient
 	// AgentRunResult is the client for interacting with the AgentRunResult builders.
 	AgentRunResult *AgentRunResultClient
-	// AgentRunToolCall is the client for interacting with the AgentRunToolCall builders.
-	AgentRunToolCall *AgentRunToolCallClient
-	// AgentTask is the client for interacting with the AgentTask builders.
-	AgentTask *AgentTaskClient
-	// AgentTaskSubject is the client for interacting with the AgentTaskSubject builders.
-	AgentTaskSubject *AgentTaskSubjectClient
+	// AgentRunSnapshot is the client for interacting with the AgentRunSnapshot builders.
+	AgentRunSnapshot *AgentRunSnapshotClient
+	// AgentRunSubject is the client for interacting with the AgentRunSubject builders.
+	AgentRunSubject *AgentRunSubjectClient
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
@@ -302,9 +300,8 @@ func (tx *Tx) init() {
 	tx.AgentRunFinding = NewAgentRunFindingClient(tx.config)
 	tx.AgentRunFindingCitation = NewAgentRunFindingCitationClient(tx.config)
 	tx.AgentRunResult = NewAgentRunResultClient(tx.config)
-	tx.AgentRunToolCall = NewAgentRunToolCallClient(tx.config)
-	tx.AgentTask = NewAgentTaskClient(tx.config)
-	tx.AgentTaskSubject = NewAgentTaskSubjectClient(tx.config)
+	tx.AgentRunSnapshot = NewAgentRunSnapshotClient(tx.config)
+	tx.AgentRunSubject = NewAgentRunSubjectClient(tx.config)
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertInstance = NewAlertInstanceClient(tx.config)

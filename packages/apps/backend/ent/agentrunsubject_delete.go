@@ -8,31 +8,31 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/rezible/rezible/ent/agenttask"
+	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
-// AgentTaskDelete is the builder for deleting a AgentTask entity.
-type AgentTaskDelete struct {
+// AgentRunSubjectDelete is the builder for deleting a AgentRunSubject entity.
+type AgentRunSubjectDelete struct {
 	config
 	hooks    []Hook
-	mutation *AgentTaskMutation
+	mutation *AgentRunSubjectMutation
 }
 
-// Where appends a list predicates to the AgentTaskDelete builder.
-func (_d *AgentTaskDelete) Where(ps ...predicate.AgentTask) *AgentTaskDelete {
+// Where appends a list predicates to the AgentRunSubjectDelete builder.
+func (_d *AgentRunSubjectDelete) Where(ps ...predicate.AgentRunSubject) *AgentRunSubjectDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *AgentTaskDelete) Exec(ctx context.Context) (int, error) {
+func (_d *AgentRunSubjectDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *AgentTaskDelete) ExecX(ctx context.Context) int {
+func (_d *AgentRunSubjectDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -40,9 +40,9 @@ func (_d *AgentTaskDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *AgentTaskDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(agenttask.Table, sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID))
-	_spec.Node.Schema = _d.schemaConfig.AgentTask
+func (_d *AgentRunSubjectDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(agentrunsubject.Table, sqlgraph.NewFieldSpec(agentrunsubject.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.AgentRunSubject
 	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -59,32 +59,32 @@ func (_d *AgentTaskDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// AgentTaskDeleteOne is the builder for deleting a single AgentTask entity.
-type AgentTaskDeleteOne struct {
-	_d *AgentTaskDelete
+// AgentRunSubjectDeleteOne is the builder for deleting a single AgentRunSubject entity.
+type AgentRunSubjectDeleteOne struct {
+	_d *AgentRunSubjectDelete
 }
 
-// Where appends a list predicates to the AgentTaskDelete builder.
-func (_d *AgentTaskDeleteOne) Where(ps ...predicate.AgentTask) *AgentTaskDeleteOne {
+// Where appends a list predicates to the AgentRunSubjectDelete builder.
+func (_d *AgentRunSubjectDeleteOne) Where(ps ...predicate.AgentRunSubject) *AgentRunSubjectDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *AgentTaskDeleteOne) Exec(ctx context.Context) error {
+func (_d *AgentRunSubjectDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{agenttask.Label}
+		return &NotFoundError{agentrunsubject.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *AgentTaskDeleteOne) ExecX(ctx context.Context) {
+func (_d *AgentRunSubjectDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

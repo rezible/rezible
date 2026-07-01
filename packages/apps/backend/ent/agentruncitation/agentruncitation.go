@@ -22,8 +22,6 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldAgentRunID holds the string denoting the agent_run_id field in the database.
-	FieldAgentRunID = "agent_run_id"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
 	// FieldSummary holds the string denoting the summary field in the database.
@@ -34,10 +32,6 @@ const (
 	FieldKnowledgeRelationshipID = "knowledge_relationship_id"
 	// FieldKnowledgeEvidenceID holds the string denoting the knowledge_evidence_id field in the database.
 	FieldKnowledgeEvidenceID = "knowledge_evidence_id"
-	// FieldAgentTaskID holds the string denoting the agent_task_id field in the database.
-	FieldAgentTaskID = "agent_task_id"
-	// FieldAgentRunToolCallID holds the string denoting the agent_run_tool_call_id field in the database.
-	FieldAgentRunToolCallID = "agent_run_tool_call_id"
 	// FieldDomainEntityType holds the string denoting the domain_entity_type field in the database.
 	FieldDomainEntityType = "domain_entity_type"
 	// FieldDomainEntityID holds the string denoting the domain_entity_id field in the database.
@@ -46,18 +40,12 @@ const (
 	FieldDomainEntitySnapshot = "domain_entity_snapshot"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeAgentRun holds the string denoting the agent_run edge name in mutations.
-	EdgeAgentRun = "agent_run"
 	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
 	EdgeKnowledgeEntity = "knowledge_entity"
 	// EdgeKnowledgeRelationship holds the string denoting the knowledge_relationship edge name in mutations.
 	EdgeKnowledgeRelationship = "knowledge_relationship"
 	// EdgeKnowledgeEvidence holds the string denoting the knowledge_evidence edge name in mutations.
 	EdgeKnowledgeEvidence = "knowledge_evidence"
-	// EdgeAgentTask holds the string denoting the agent_task edge name in mutations.
-	EdgeAgentTask = "agent_task"
-	// EdgeAgentRunToolCall holds the string denoting the agent_run_tool_call edge name in mutations.
-	EdgeAgentRunToolCall = "agent_run_tool_call"
 	// EdgeFindings holds the string denoting the findings edge name in mutations.
 	EdgeFindings = "findings"
 	// EdgeFindingCitations holds the string denoting the finding_citations edge name in mutations.
@@ -71,13 +59,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// AgentRunTable is the table that holds the agent_run relation/edge.
-	AgentRunTable = "agent_run_citations"
-	// AgentRunInverseTable is the table name for the AgentRun entity.
-	// It exists in this package in order to avoid circular dependency with the "agentrun" package.
-	AgentRunInverseTable = "agent_runs"
-	// AgentRunColumn is the table column denoting the agent_run relation/edge.
-	AgentRunColumn = "agent_run_id"
 	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
 	KnowledgeEntityTable = "agent_run_citations"
 	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
@@ -99,20 +80,6 @@ const (
 	KnowledgeEvidenceInverseTable = "knowledge_evidences"
 	// KnowledgeEvidenceColumn is the table column denoting the knowledge_evidence relation/edge.
 	KnowledgeEvidenceColumn = "knowledge_evidence_id"
-	// AgentTaskTable is the table that holds the agent_task relation/edge.
-	AgentTaskTable = "agent_run_citations"
-	// AgentTaskInverseTable is the table name for the AgentTask entity.
-	// It exists in this package in order to avoid circular dependency with the "agenttask" package.
-	AgentTaskInverseTable = "agent_tasks"
-	// AgentTaskColumn is the table column denoting the agent_task relation/edge.
-	AgentTaskColumn = "agent_task_id"
-	// AgentRunToolCallTable is the table that holds the agent_run_tool_call relation/edge.
-	AgentRunToolCallTable = "agent_run_citations"
-	// AgentRunToolCallInverseTable is the table name for the AgentRunToolCall entity.
-	// It exists in this package in order to avoid circular dependency with the "agentruntoolcall" package.
-	AgentRunToolCallInverseTable = "agent_run_tool_calls"
-	// AgentRunToolCallColumn is the table column denoting the agent_run_tool_call relation/edge.
-	AgentRunToolCallColumn = "agent_run_tool_call_id"
 	// FindingsTable is the table that holds the findings relation/edge. The primary key declared below.
 	FindingsTable = "agent_run_finding_citations"
 	// FindingsInverseTable is the table name for the AgentRunFinding entity.
@@ -133,14 +100,11 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldAgentRunID,
 	FieldKind,
 	FieldSummary,
 	FieldKnowledgeEntityID,
 	FieldKnowledgeRelationshipID,
 	FieldKnowledgeEvidenceID,
-	FieldAgentTaskID,
-	FieldAgentRunToolCallID,
 	FieldDomainEntityType,
 	FieldDomainEntityID,
 	FieldDomainEntitySnapshot,
@@ -207,11 +171,6 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByAgentRunID orders the results by the agent_run_id field.
-func ByAgentRunID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAgentRunID, opts...).ToFunc()
-}
-
 // ByKind orders the results by the kind field.
 func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
@@ -237,16 +196,6 @@ func ByKnowledgeEvidenceID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKnowledgeEvidenceID, opts...).ToFunc()
 }
 
-// ByAgentTaskID orders the results by the agent_task_id field.
-func ByAgentTaskID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAgentTaskID, opts...).ToFunc()
-}
-
-// ByAgentRunToolCallID orders the results by the agent_run_tool_call_id field.
-func ByAgentRunToolCallID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAgentRunToolCallID, opts...).ToFunc()
-}
-
 // ByDomainEntityType orders the results by the domain_entity_type field.
 func ByDomainEntityType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDomainEntityType, opts...).ToFunc()
@@ -261,13 +210,6 @@ func ByDomainEntityID(opts ...sql.OrderTermOption) OrderOption {
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByAgentRunField orders the results by agent_run field.
-func ByAgentRunField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAgentRunStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -289,20 +231,6 @@ func ByKnowledgeRelationshipField(field string, opts ...sql.OrderTermOption) Ord
 func ByKnowledgeEvidenceField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEvidenceStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByAgentTaskField orders the results by agent_task field.
-func ByAgentTaskField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAgentTaskStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByAgentRunToolCallField orders the results by agent_run_tool_call field.
-func ByAgentRunToolCallField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAgentRunToolCallStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -340,13 +268,6 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newAgentRunStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AgentRunInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AgentRunTable, AgentRunColumn),
-	)
-}
 func newKnowledgeEntityStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -366,20 +287,6 @@ func newKnowledgeEvidenceStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(KnowledgeEvidenceInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEvidenceTable, KnowledgeEvidenceColumn),
-	)
-}
-func newAgentTaskStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AgentTaskInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AgentTaskTable, AgentTaskColumn),
-	)
-}
-func newAgentRunToolCallStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AgentRunToolCallInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AgentRunToolCallTable, AgentRunToolCallColumn),
 	)
 }
 func newFindingsStep() *sqlgraph.Step {

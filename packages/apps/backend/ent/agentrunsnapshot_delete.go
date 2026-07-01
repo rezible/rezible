@@ -8,31 +8,31 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/rezible/rezible/ent/agentruntoolcall"
+	"github.com/rezible/rezible/ent/agentrunsnapshot"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
-// AgentRunToolCallDelete is the builder for deleting a AgentRunToolCall entity.
-type AgentRunToolCallDelete struct {
+// AgentRunSnapshotDelete is the builder for deleting a AgentRunSnapshot entity.
+type AgentRunSnapshotDelete struct {
 	config
 	hooks    []Hook
-	mutation *AgentRunToolCallMutation
+	mutation *AgentRunSnapshotMutation
 }
 
-// Where appends a list predicates to the AgentRunToolCallDelete builder.
-func (_d *AgentRunToolCallDelete) Where(ps ...predicate.AgentRunToolCall) *AgentRunToolCallDelete {
+// Where appends a list predicates to the AgentRunSnapshotDelete builder.
+func (_d *AgentRunSnapshotDelete) Where(ps ...predicate.AgentRunSnapshot) *AgentRunSnapshotDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *AgentRunToolCallDelete) Exec(ctx context.Context) (int, error) {
+func (_d *AgentRunSnapshotDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *AgentRunToolCallDelete) ExecX(ctx context.Context) int {
+func (_d *AgentRunSnapshotDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -40,9 +40,9 @@ func (_d *AgentRunToolCallDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *AgentRunToolCallDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(agentruntoolcall.Table, sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID))
-	_spec.Node.Schema = _d.schemaConfig.AgentRunToolCall
+func (_d *AgentRunSnapshotDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(agentrunsnapshot.Table, sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.AgentRunSnapshot
 	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -59,32 +59,32 @@ func (_d *AgentRunToolCallDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// AgentRunToolCallDeleteOne is the builder for deleting a single AgentRunToolCall entity.
-type AgentRunToolCallDeleteOne struct {
-	_d *AgentRunToolCallDelete
+// AgentRunSnapshotDeleteOne is the builder for deleting a single AgentRunSnapshot entity.
+type AgentRunSnapshotDeleteOne struct {
+	_d *AgentRunSnapshotDelete
 }
 
-// Where appends a list predicates to the AgentRunToolCallDelete builder.
-func (_d *AgentRunToolCallDeleteOne) Where(ps ...predicate.AgentRunToolCall) *AgentRunToolCallDeleteOne {
+// Where appends a list predicates to the AgentRunSnapshotDelete builder.
+func (_d *AgentRunSnapshotDeleteOne) Where(ps ...predicate.AgentRunSnapshot) *AgentRunSnapshotDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *AgentRunToolCallDeleteOne) Exec(ctx context.Context) error {
+func (_d *AgentRunSnapshotDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{agentruntoolcall.Label}
+		return &NotFoundError{agentrunsnapshot.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *AgentRunToolCallDeleteOne) ExecX(ctx context.Context) {
+func (_d *AgentRunSnapshotDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

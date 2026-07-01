@@ -69,40 +69,28 @@ func (f AgentRunResultFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunResultMutation", m)
 }
 
-// The AgentRunToolCallFunc type is an adapter to allow the use of ordinary
-// function as AgentRunToolCall mutator.
-type AgentRunToolCallFunc func(context.Context, *ent.AgentRunToolCallMutation) (ent.Value, error)
+// The AgentRunSnapshotFunc type is an adapter to allow the use of ordinary
+// function as AgentRunSnapshot mutator.
+type AgentRunSnapshotFunc func(context.Context, *ent.AgentRunSnapshotMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AgentRunToolCallFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentRunToolCallMutation); ok {
+func (f AgentRunSnapshotFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentRunSnapshotMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunToolCallMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunSnapshotMutation", m)
 }
 
-// The AgentTaskFunc type is an adapter to allow the use of ordinary
-// function as AgentTask mutator.
-type AgentTaskFunc func(context.Context, *ent.AgentTaskMutation) (ent.Value, error)
+// The AgentRunSubjectFunc type is an adapter to allow the use of ordinary
+// function as AgentRunSubject mutator.
+type AgentRunSubjectFunc func(context.Context, *ent.AgentRunSubjectMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AgentTaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentTaskMutation); ok {
+func (f AgentRunSubjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentRunSubjectMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentTaskMutation", m)
-}
-
-// The AgentTaskSubjectFunc type is an adapter to allow the use of ordinary
-// function as AgentTaskSubject mutator.
-type AgentTaskSubjectFunc func(context.Context, *ent.AgentTaskSubjectMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AgentTaskSubjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentTaskSubjectMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentTaskSubjectMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunSubjectMutation", m)
 }
 
 // The AlertFunc type is an adapter to allow the use of ordinary

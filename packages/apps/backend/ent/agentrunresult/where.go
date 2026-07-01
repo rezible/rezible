@@ -82,11 +82,6 @@ func Output(v []byte) predicate.AgentRunResult {
 	return predicate.AgentRunResult(sql.FieldEQ(FieldOutput, v))
 }
 
-// ErrorMessage applies equality check predicate on the "error_message" field. It's identical to ErrorMessageEQ.
-func ErrorMessage(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldEQ(FieldErrorMessage, v))
-}
-
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.AgentRunResult {
 	return predicate.AgentRunResult(sql.FieldEQ(FieldTenantID, v))
@@ -247,81 +242,6 @@ func OutputLTE(v []byte) predicate.AgentRunResult {
 	return predicate.AgentRunResult(sql.FieldLTE(FieldOutput, v))
 }
 
-// ErrorMessageEQ applies the EQ predicate on the "error_message" field.
-func ErrorMessageEQ(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldEQ(FieldErrorMessage, v))
-}
-
-// ErrorMessageNEQ applies the NEQ predicate on the "error_message" field.
-func ErrorMessageNEQ(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldNEQ(FieldErrorMessage, v))
-}
-
-// ErrorMessageIn applies the In predicate on the "error_message" field.
-func ErrorMessageIn(vs ...string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldIn(FieldErrorMessage, vs...))
-}
-
-// ErrorMessageNotIn applies the NotIn predicate on the "error_message" field.
-func ErrorMessageNotIn(vs ...string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldNotIn(FieldErrorMessage, vs...))
-}
-
-// ErrorMessageGT applies the GT predicate on the "error_message" field.
-func ErrorMessageGT(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldGT(FieldErrorMessage, v))
-}
-
-// ErrorMessageGTE applies the GTE predicate on the "error_message" field.
-func ErrorMessageGTE(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldGTE(FieldErrorMessage, v))
-}
-
-// ErrorMessageLT applies the LT predicate on the "error_message" field.
-func ErrorMessageLT(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldLT(FieldErrorMessage, v))
-}
-
-// ErrorMessageLTE applies the LTE predicate on the "error_message" field.
-func ErrorMessageLTE(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldLTE(FieldErrorMessage, v))
-}
-
-// ErrorMessageContains applies the Contains predicate on the "error_message" field.
-func ErrorMessageContains(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldContains(FieldErrorMessage, v))
-}
-
-// ErrorMessageHasPrefix applies the HasPrefix predicate on the "error_message" field.
-func ErrorMessageHasPrefix(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldHasPrefix(FieldErrorMessage, v))
-}
-
-// ErrorMessageHasSuffix applies the HasSuffix predicate on the "error_message" field.
-func ErrorMessageHasSuffix(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldHasSuffix(FieldErrorMessage, v))
-}
-
-// ErrorMessageIsNil applies the IsNil predicate on the "error_message" field.
-func ErrorMessageIsNil() predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldIsNull(FieldErrorMessage))
-}
-
-// ErrorMessageNotNil applies the NotNil predicate on the "error_message" field.
-func ErrorMessageNotNil() predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldNotNull(FieldErrorMessage))
-}
-
-// ErrorMessageEqualFold applies the EqualFold predicate on the "error_message" field.
-func ErrorMessageEqualFold(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldEqualFold(FieldErrorMessage, v))
-}
-
-// ErrorMessageContainsFold applies the ContainsFold predicate on the "error_message" field.
-func ErrorMessageContainsFold(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldContainsFold(FieldErrorMessage, v))
-}
-
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.AgentRunResult {
 	return predicate.AgentRunResult(func(s *sql.Selector) {
@@ -359,19 +279,48 @@ func HasAgentRun() predicate.AgentRunResult {
 			sqlgraph.Edge(sqlgraph.M2O, false, AgentRunTable, AgentRunColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRun
+		step.To.Schema = schemaConfig.AgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AgentRunResult
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
 // HasAgentRunWith applies the HasEdge predicate on the "agent_run" edge with a given conditions (other predicates).
-func HasAgentRunWith(preds ...predicate.AgentRun) predicate.AgentRunResult {
+func HasAgentRunWith(preds ...predicate.AgentRunSnapshot) predicate.AgentRunResult {
 	return predicate.AgentRunResult(func(s *sql.Selector) {
 		step := newAgentRunStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRun
+		step.To.Schema = schemaConfig.AgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AgentRunResult
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasFindings applies the HasEdge predicate on the "findings" edge.
+func HasFindings() predicate.AgentRunResult {
+	return predicate.AgentRunResult(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, FindingsTable, FindingsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunFinding
+		step.Edge.Schema = schemaConfig.AgentRunFinding
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasFindingsWith applies the HasEdge predicate on the "findings" edge with a given conditions (other predicates).
+func HasFindingsWith(preds ...predicate.AgentRunFinding) predicate.AgentRunResult {
+	return predicate.AgentRunResult(func(s *sql.Selector) {
+		step := newFindingsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunFinding
+		step.Edge.Schema = schemaConfig.AgentRunFinding
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

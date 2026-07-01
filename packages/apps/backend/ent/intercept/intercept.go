@@ -13,9 +13,8 @@ import (
 	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
 	"github.com/rezible/rezible/ent/agentrunresult"
-	"github.com/rezible/rezible/ent/agentruntoolcall"
-	"github.com/rezible/rezible/ent/agenttask"
-	"github.com/rezible/rezible/ent/agenttasksubject"
+	"github.com/rezible/rezible/ent/agentrunsnapshot"
+	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
@@ -279,85 +278,58 @@ func (f TraverseAgentRunResult) Traverse(ctx context.Context, q ent.Query) error
 	return fmt.Errorf("unexpected query type %T. expect *ent.AgentRunResultQuery", q)
 }
 
-// The AgentRunToolCallFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AgentRunToolCallFunc func(context.Context, *ent.AgentRunToolCallQuery) (ent.Value, error)
+// The AgentRunSnapshotFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentRunSnapshotFunc func(context.Context, *ent.AgentRunSnapshotQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f AgentRunToolCallFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AgentRunToolCallQuery); ok {
+func (f AgentRunSnapshotFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentRunSnapshotQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentRunToolCallQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentRunSnapshotQuery", q)
 }
 
-// The TraverseAgentRunToolCall type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAgentRunToolCall func(context.Context, *ent.AgentRunToolCallQuery) error
+// The TraverseAgentRunSnapshot type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentRunSnapshot func(context.Context, *ent.AgentRunSnapshotQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAgentRunToolCall) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseAgentRunSnapshot) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseAgentRunToolCall) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AgentRunToolCallQuery); ok {
+func (f TraverseAgentRunSnapshot) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentRunSnapshotQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AgentRunToolCallQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentRunSnapshotQuery", q)
 }
 
-// The AgentTaskFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AgentTaskFunc func(context.Context, *ent.AgentTaskQuery) (ent.Value, error)
+// The AgentRunSubjectFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentRunSubjectFunc func(context.Context, *ent.AgentRunSubjectQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f AgentTaskFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AgentTaskQuery); ok {
+func (f AgentRunSubjectFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentRunSubjectQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentTaskQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentRunSubjectQuery", q)
 }
 
-// The TraverseAgentTask type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAgentTask func(context.Context, *ent.AgentTaskQuery) error
+// The TraverseAgentRunSubject type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentRunSubject func(context.Context, *ent.AgentRunSubjectQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAgentTask) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseAgentRunSubject) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseAgentTask) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AgentTaskQuery); ok {
+func (f TraverseAgentRunSubject) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentRunSubjectQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AgentTaskQuery", q)
-}
-
-// The AgentTaskSubjectFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AgentTaskSubjectFunc func(context.Context, *ent.AgentTaskSubjectQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f AgentTaskSubjectFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AgentTaskSubjectQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentTaskSubjectQuery", q)
-}
-
-// The TraverseAgentTaskSubject type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAgentTaskSubject func(context.Context, *ent.AgentTaskSubjectQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAgentTaskSubject) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseAgentTaskSubject) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AgentTaskSubjectQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AgentTaskSubjectQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentRunSubjectQuery", q)
 }
 
 // The AlertFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2236,12 +2208,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AgentRunFindingCitationQuery, predicate.AgentRunFindingCitation, agentrunfindingcitation.OrderOption]{typ: ent.TypeAgentRunFindingCitation, tq: q}, nil
 	case *ent.AgentRunResultQuery:
 		return &query[*ent.AgentRunResultQuery, predicate.AgentRunResult, agentrunresult.OrderOption]{typ: ent.TypeAgentRunResult, tq: q}, nil
-	case *ent.AgentRunToolCallQuery:
-		return &query[*ent.AgentRunToolCallQuery, predicate.AgentRunToolCall, agentruntoolcall.OrderOption]{typ: ent.TypeAgentRunToolCall, tq: q}, nil
-	case *ent.AgentTaskQuery:
-		return &query[*ent.AgentTaskQuery, predicate.AgentTask, agenttask.OrderOption]{typ: ent.TypeAgentTask, tq: q}, nil
-	case *ent.AgentTaskSubjectQuery:
-		return &query[*ent.AgentTaskSubjectQuery, predicate.AgentTaskSubject, agenttasksubject.OrderOption]{typ: ent.TypeAgentTaskSubject, tq: q}, nil
+	case *ent.AgentRunSnapshotQuery:
+		return &query[*ent.AgentRunSnapshotQuery, predicate.AgentRunSnapshot, agentrunsnapshot.OrderOption]{typ: ent.TypeAgentRunSnapshot, tq: q}, nil
+	case *ent.AgentRunSubjectQuery:
+		return &query[*ent.AgentRunSubjectQuery, predicate.AgentRunSubject, agentrunsubject.OrderOption]{typ: ent.TypeAgentRunSubject, tq: q}, nil
 	case *ent.AlertQuery:
 		return &query[*ent.AlertQuery, predicate.Alert, alert.OrderOption]{typ: ent.TypeAlert, tq: q}, nil
 	case *ent.AlertFeedbackQuery:

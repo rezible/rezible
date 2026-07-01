@@ -13,8 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunresult"
+	"github.com/rezible/rezible/ent/agentrunsnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -72,20 +73,6 @@ func (_c *AgentRunResultCreate) SetOutput(v []byte) *AgentRunResultCreate {
 	return _c
 }
 
-// SetErrorMessage sets the "error_message" field.
-func (_c *AgentRunResultCreate) SetErrorMessage(v string) *AgentRunResultCreate {
-	_c.mutation.SetErrorMessage(v)
-	return _c
-}
-
-// SetNillableErrorMessage sets the "error_message" field if the given value is not nil.
-func (_c *AgentRunResultCreate) SetNillableErrorMessage(v *string) *AgentRunResultCreate {
-	if v != nil {
-		_c.SetErrorMessage(*v)
-	}
-	return _c
-}
-
 // SetID sets the "id" field.
 func (_c *AgentRunResultCreate) SetID(v uuid.UUID) *AgentRunResultCreate {
 	_c.mutation.SetID(v)
@@ -105,9 +92,24 @@ func (_c *AgentRunResultCreate) SetTenant(v *Tenant) *AgentRunResultCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_c *AgentRunResultCreate) SetAgentRun(v *AgentRun) *AgentRunResultCreate {
+// SetAgentRun sets the "agent_run" edge to the AgentRunSnapshot entity.
+func (_c *AgentRunResultCreate) SetAgentRun(v *AgentRunSnapshot) *AgentRunResultCreate {
 	return _c.SetAgentRunID(v.ID)
+}
+
+// AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
+func (_c *AgentRunResultCreate) AddFindingIDs(ids ...uuid.UUID) *AgentRunResultCreate {
+	_c.mutation.AddFindingIDs(ids...)
+	return _c
+}
+
+// AddFindings adds the "findings" edges to the AgentRunFinding entity.
+func (_c *AgentRunResultCreate) AddFindings(v ...*AgentRunFinding) *AgentRunResultCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddFindingIDs(ids...)
 }
 
 // Mutation returns the AgentRunResultMutation object of the builder.
@@ -243,10 +245,6 @@ func (_c *AgentRunResultCreate) createSpec() (*AgentRunResult, *sqlgraph.CreateS
 		_spec.SetField(agentrunresult.FieldOutput, field.TypeBytes, value)
 		_node.Output = value
 	}
-	if value, ok := _c.mutation.ErrorMessage(); ok {
-		_spec.SetField(agentrunresult.FieldErrorMessage, field.TypeString, value)
-		_node.ErrorMessage = value
-	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -273,7 +271,7 @@ func (_c *AgentRunResultCreate) createSpec() (*AgentRunResult, *sqlgraph.CreateS
 			Columns: []string{agentrunresult.AgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentRunResult
@@ -281,6 +279,23 @@ func (_c *AgentRunResultCreate) createSpec() (*AgentRunResult, *sqlgraph.CreateS
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.AgentRunID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.FindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrunresult.FindingsTable,
+			Columns: []string{agentrunresult.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentRunFinding
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -380,24 +395,6 @@ func (u *AgentRunResultUpsert) SetOutput(v []byte) *AgentRunResultUpsert {
 // UpdateOutput sets the "output" field to the value that was provided on create.
 func (u *AgentRunResultUpsert) UpdateOutput() *AgentRunResultUpsert {
 	u.SetExcluded(agentrunresult.FieldOutput)
-	return u
-}
-
-// SetErrorMessage sets the "error_message" field.
-func (u *AgentRunResultUpsert) SetErrorMessage(v string) *AgentRunResultUpsert {
-	u.Set(agentrunresult.FieldErrorMessage, v)
-	return u
-}
-
-// UpdateErrorMessage sets the "error_message" field to the value that was provided on create.
-func (u *AgentRunResultUpsert) UpdateErrorMessage() *AgentRunResultUpsert {
-	u.SetExcluded(agentrunresult.FieldErrorMessage)
-	return u
-}
-
-// ClearErrorMessage clears the value of the "error_message" field.
-func (u *AgentRunResultUpsert) ClearErrorMessage() *AgentRunResultUpsert {
-	u.SetNull(agentrunresult.FieldErrorMessage)
 	return u
 }
 
@@ -505,27 +502,6 @@ func (u *AgentRunResultUpsertOne) SetOutput(v []byte) *AgentRunResultUpsertOne {
 func (u *AgentRunResultUpsertOne) UpdateOutput() *AgentRunResultUpsertOne {
 	return u.Update(func(s *AgentRunResultUpsert) {
 		s.UpdateOutput()
-	})
-}
-
-// SetErrorMessage sets the "error_message" field.
-func (u *AgentRunResultUpsertOne) SetErrorMessage(v string) *AgentRunResultUpsertOne {
-	return u.Update(func(s *AgentRunResultUpsert) {
-		s.SetErrorMessage(v)
-	})
-}
-
-// UpdateErrorMessage sets the "error_message" field to the value that was provided on create.
-func (u *AgentRunResultUpsertOne) UpdateErrorMessage() *AgentRunResultUpsertOne {
-	return u.Update(func(s *AgentRunResultUpsert) {
-		s.UpdateErrorMessage()
-	})
-}
-
-// ClearErrorMessage clears the value of the "error_message" field.
-func (u *AgentRunResultUpsertOne) ClearErrorMessage() *AgentRunResultUpsertOne {
-	return u.Update(func(s *AgentRunResultUpsert) {
-		s.ClearErrorMessage()
 	})
 }
 
@@ -800,27 +776,6 @@ func (u *AgentRunResultUpsertBulk) SetOutput(v []byte) *AgentRunResultUpsertBulk
 func (u *AgentRunResultUpsertBulk) UpdateOutput() *AgentRunResultUpsertBulk {
 	return u.Update(func(s *AgentRunResultUpsert) {
 		s.UpdateOutput()
-	})
-}
-
-// SetErrorMessage sets the "error_message" field.
-func (u *AgentRunResultUpsertBulk) SetErrorMessage(v string) *AgentRunResultUpsertBulk {
-	return u.Update(func(s *AgentRunResultUpsert) {
-		s.SetErrorMessage(v)
-	})
-}
-
-// UpdateErrorMessage sets the "error_message" field to the value that was provided on create.
-func (u *AgentRunResultUpsertBulk) UpdateErrorMessage() *AgentRunResultUpsertBulk {
-	return u.Update(func(s *AgentRunResultUpsert) {
-		s.UpdateErrorMessage()
-	})
-}
-
-// ClearErrorMessage clears the value of the "error_message" field.
-func (u *AgentRunResultUpsertBulk) ClearErrorMessage() *AgentRunResultUpsertBulk {
-	return u.Update(func(s *AgentRunResultUpsert) {
-		s.ClearErrorMessage()
 	})
 }
 

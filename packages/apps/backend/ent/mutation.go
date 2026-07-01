@@ -18,9 +18,8 @@ import (
 	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
 	"github.com/rezible/rezible/ent/agentrunresult"
-	"github.com/rezible/rezible/ent/agentruntoolcall"
-	"github.com/rezible/rezible/ent/agenttask"
-	"github.com/rezible/rezible/ent/agenttasksubject"
+	"github.com/rezible/rezible/ent/agentrunsnapshot"
+	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
@@ -105,9 +104,8 @@ const (
 	TypeAgentRunFinding                         = "AgentRunFinding"
 	TypeAgentRunFindingCitation                 = "AgentRunFindingCitation"
 	TypeAgentRunResult                          = "AgentRunResult"
-	TypeAgentRunToolCall                        = "AgentRunToolCall"
-	TypeAgentTask                               = "AgentTask"
-	TypeAgentTaskSubject                        = "AgentTaskSubject"
+	TypeAgentRunSnapshot                        = "AgentRunSnapshot"
+	TypeAgentRunSubject                         = "AgentRunSubject"
 	TypeAlert                                   = "Alert"
 	TypeAlertFeedback                           = "AlertFeedback"
 	TypeAlertInstance                           = "AlertInstance"
@@ -187,26 +185,23 @@ type AgentRunMutation struct {
 	id                *uuid.UUID
 	created_at        *time.Time
 	updated_at        *time.Time
-	attempt           *int
-	addattempt        *int
-	started_at        *time.Time
-	cancelled_at      *time.Time
+	workflow          *string
+	input             *[]byte
+	trigger_kind      *agentrun.TriggerKind
+	trigger_metadata  *map[string]interface{}
 	clearedFields     map[string]struct{}
 	tenant            *int
 	clearedtenant     bool
-	task              *uuid.UUID
-	clearedtask       bool
+	owner_user        *uuid.UUID
+	clearedowner_user bool
+	subjects          map[uuid.UUID]struct{}
+	removedsubjects   map[uuid.UUID]struct{}
+	clearedsubjects   bool
+	snapshots         map[uuid.UUID]struct{}
+	removedsnapshots  map[uuid.UUID]struct{}
+	clearedsnapshots  bool
 	result            *uuid.UUID
 	clearedresult     bool
-	citations         map[uuid.UUID]struct{}
-	removedcitations  map[uuid.UUID]struct{}
-	clearedcitations  bool
-	findings          map[uuid.UUID]struct{}
-	removedfindings   map[uuid.UUID]struct{}
-	clearedfindings   bool
-	tool_calls        map[uuid.UUID]struct{}
-	removedtool_calls map[uuid.UUID]struct{}
-	clearedtool_calls bool
 	done              bool
 	oldValue          func(context.Context) (*AgentRun, error)
 	predicates        []predicate.AgentRun
@@ -424,194 +419,197 @@ func (m *AgentRunMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetAgentTaskID sets the "agent_task_id" field.
-func (m *AgentRunMutation) SetAgentTaskID(u uuid.UUID) {
-	m.task = &u
+// SetOwnerUserID sets the "owner_user_id" field.
+func (m *AgentRunMutation) SetOwnerUserID(u uuid.UUID) {
+	m.owner_user = &u
 }
 
-// AgentTaskID returns the value of the "agent_task_id" field in the mutation.
-func (m *AgentRunMutation) AgentTaskID() (r uuid.UUID, exists bool) {
-	v := m.task
+// OwnerUserID returns the value of the "owner_user_id" field in the mutation.
+func (m *AgentRunMutation) OwnerUserID() (r uuid.UUID, exists bool) {
+	v := m.owner_user
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAgentTaskID returns the old "agent_task_id" field's value of the AgentRun entity.
+// OldOwnerUserID returns the old "owner_user_id" field's value of the AgentRun entity.
 // If the AgentRun object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunMutation) OldAgentTaskID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *AgentRunMutation) OldOwnerUserID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAgentTaskID is only allowed on UpdateOne operations")
+		return v, errors.New("OldOwnerUserID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAgentTaskID requires an ID field in the mutation")
+		return v, errors.New("OldOwnerUserID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAgentTaskID: %w", err)
+		return v, fmt.Errorf("querying old value for OldOwnerUserID: %w", err)
 	}
-	return oldValue.AgentTaskID, nil
+	return oldValue.OwnerUserID, nil
 }
 
-// ResetAgentTaskID resets all changes to the "agent_task_id" field.
-func (m *AgentRunMutation) ResetAgentTaskID() {
-	m.task = nil
+// ResetOwnerUserID resets all changes to the "owner_user_id" field.
+func (m *AgentRunMutation) ResetOwnerUserID() {
+	m.owner_user = nil
 }
 
-// SetAttempt sets the "attempt" field.
-func (m *AgentRunMutation) SetAttempt(i int) {
-	m.attempt = &i
-	m.addattempt = nil
+// SetWorkflow sets the "workflow" field.
+func (m *AgentRunMutation) SetWorkflow(s string) {
+	m.workflow = &s
 }
 
-// Attempt returns the value of the "attempt" field in the mutation.
-func (m *AgentRunMutation) Attempt() (r int, exists bool) {
-	v := m.attempt
+// Workflow returns the value of the "workflow" field in the mutation.
+func (m *AgentRunMutation) Workflow() (r string, exists bool) {
+	v := m.workflow
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAttempt returns the old "attempt" field's value of the AgentRun entity.
+// OldWorkflow returns the old "workflow" field's value of the AgentRun entity.
 // If the AgentRun object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunMutation) OldAttempt(ctx context.Context) (v int, err error) {
+func (m *AgentRunMutation) OldWorkflow(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAttempt is only allowed on UpdateOne operations")
+		return v, errors.New("OldWorkflow is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAttempt requires an ID field in the mutation")
+		return v, errors.New("OldWorkflow requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAttempt: %w", err)
+		return v, fmt.Errorf("querying old value for OldWorkflow: %w", err)
 	}
-	return oldValue.Attempt, nil
+	return oldValue.Workflow, nil
 }
 
-// AddAttempt adds i to the "attempt" field.
-func (m *AgentRunMutation) AddAttempt(i int) {
-	if m.addattempt != nil {
-		*m.addattempt += i
-	} else {
-		m.addattempt = &i
-	}
+// ResetWorkflow resets all changes to the "workflow" field.
+func (m *AgentRunMutation) ResetWorkflow() {
+	m.workflow = nil
 }
 
-// AddedAttempt returns the value that was added to the "attempt" field in this mutation.
-func (m *AgentRunMutation) AddedAttempt() (r int, exists bool) {
-	v := m.addattempt
+// SetInput sets the "input" field.
+func (m *AgentRunMutation) SetInput(b []byte) {
+	m.input = &b
+}
+
+// Input returns the value of the "input" field in the mutation.
+func (m *AgentRunMutation) Input() (r []byte, exists bool) {
+	v := m.input
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetAttempt resets all changes to the "attempt" field.
-func (m *AgentRunMutation) ResetAttempt() {
-	m.attempt = nil
-	m.addattempt = nil
-}
-
-// SetStartedAt sets the "started_at" field.
-func (m *AgentRunMutation) SetStartedAt(t time.Time) {
-	m.started_at = &t
-}
-
-// StartedAt returns the value of the "started_at" field in the mutation.
-func (m *AgentRunMutation) StartedAt() (r time.Time, exists bool) {
-	v := m.started_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStartedAt returns the old "started_at" field's value of the AgentRun entity.
+// OldInput returns the old "input" field's value of the AgentRun entity.
 // If the AgentRun object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunMutation) OldStartedAt(ctx context.Context) (v *time.Time, err error) {
+func (m *AgentRunMutation) OldInput(ctx context.Context) (v []byte, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStartedAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldInput is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStartedAt requires an ID field in the mutation")
+		return v, errors.New("OldInput requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStartedAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldInput: %w", err)
 	}
-	return oldValue.StartedAt, nil
+	return oldValue.Input, nil
 }
 
-// ClearStartedAt clears the value of the "started_at" field.
-func (m *AgentRunMutation) ClearStartedAt() {
-	m.started_at = nil
-	m.clearedFields[agentrun.FieldStartedAt] = struct{}{}
+// ResetInput resets all changes to the "input" field.
+func (m *AgentRunMutation) ResetInput() {
+	m.input = nil
 }
 
-// StartedAtCleared returns if the "started_at" field was cleared in this mutation.
-func (m *AgentRunMutation) StartedAtCleared() bool {
-	_, ok := m.clearedFields[agentrun.FieldStartedAt]
+// SetTriggerKind sets the "trigger_kind" field.
+func (m *AgentRunMutation) SetTriggerKind(ak agentrun.TriggerKind) {
+	m.trigger_kind = &ak
+}
+
+// TriggerKind returns the value of the "trigger_kind" field in the mutation.
+func (m *AgentRunMutation) TriggerKind() (r agentrun.TriggerKind, exists bool) {
+	v := m.trigger_kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTriggerKind returns the old "trigger_kind" field's value of the AgentRun entity.
+// If the AgentRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRunMutation) OldTriggerKind(ctx context.Context) (v agentrun.TriggerKind, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTriggerKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTriggerKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTriggerKind: %w", err)
+	}
+	return oldValue.TriggerKind, nil
+}
+
+// ResetTriggerKind resets all changes to the "trigger_kind" field.
+func (m *AgentRunMutation) ResetTriggerKind() {
+	m.trigger_kind = nil
+}
+
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (m *AgentRunMutation) SetTriggerMetadata(value map[string]interface{}) {
+	m.trigger_metadata = &value
+}
+
+// TriggerMetadata returns the value of the "trigger_metadata" field in the mutation.
+func (m *AgentRunMutation) TriggerMetadata() (r map[string]interface{}, exists bool) {
+	v := m.trigger_metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTriggerMetadata returns the old "trigger_metadata" field's value of the AgentRun entity.
+// If the AgentRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRunMutation) OldTriggerMetadata(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTriggerMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTriggerMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTriggerMetadata: %w", err)
+	}
+	return oldValue.TriggerMetadata, nil
+}
+
+// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
+func (m *AgentRunMutation) ClearTriggerMetadata() {
+	m.trigger_metadata = nil
+	m.clearedFields[agentrun.FieldTriggerMetadata] = struct{}{}
+}
+
+// TriggerMetadataCleared returns if the "trigger_metadata" field was cleared in this mutation.
+func (m *AgentRunMutation) TriggerMetadataCleared() bool {
+	_, ok := m.clearedFields[agentrun.FieldTriggerMetadata]
 	return ok
 }
 
-// ResetStartedAt resets all changes to the "started_at" field.
-func (m *AgentRunMutation) ResetStartedAt() {
-	m.started_at = nil
-	delete(m.clearedFields, agentrun.FieldStartedAt)
-}
-
-// SetCancelledAt sets the "cancelled_at" field.
-func (m *AgentRunMutation) SetCancelledAt(t time.Time) {
-	m.cancelled_at = &t
-}
-
-// CancelledAt returns the value of the "cancelled_at" field in the mutation.
-func (m *AgentRunMutation) CancelledAt() (r time.Time, exists bool) {
-	v := m.cancelled_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCancelledAt returns the old "cancelled_at" field's value of the AgentRun entity.
-// If the AgentRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunMutation) OldCancelledAt(ctx context.Context) (v *time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCancelledAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCancelledAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCancelledAt: %w", err)
-	}
-	return oldValue.CancelledAt, nil
-}
-
-// ClearCancelledAt clears the value of the "cancelled_at" field.
-func (m *AgentRunMutation) ClearCancelledAt() {
-	m.cancelled_at = nil
-	m.clearedFields[agentrun.FieldCancelledAt] = struct{}{}
-}
-
-// CancelledAtCleared returns if the "cancelled_at" field was cleared in this mutation.
-func (m *AgentRunMutation) CancelledAtCleared() bool {
-	_, ok := m.clearedFields[agentrun.FieldCancelledAt]
-	return ok
-}
-
-// ResetCancelledAt resets all changes to the "cancelled_at" field.
-func (m *AgentRunMutation) ResetCancelledAt() {
-	m.cancelled_at = nil
-	delete(m.clearedFields, agentrun.FieldCancelledAt)
+// ResetTriggerMetadata resets all changes to the "trigger_metadata" field.
+func (m *AgentRunMutation) ResetTriggerMetadata() {
+	m.trigger_metadata = nil
+	delete(m.clearedFields, agentrun.FieldTriggerMetadata)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -641,44 +639,139 @@ func (m *AgentRunMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// SetTaskID sets the "task" edge to the AgentTask entity by id.
-func (m *AgentRunMutation) SetTaskID(id uuid.UUID) {
-	m.task = &id
+// ClearOwnerUser clears the "owner_user" edge to the User entity.
+func (m *AgentRunMutation) ClearOwnerUser() {
+	m.clearedowner_user = true
+	m.clearedFields[agentrun.FieldOwnerUserID] = struct{}{}
 }
 
-// ClearTask clears the "task" edge to the AgentTask entity.
-func (m *AgentRunMutation) ClearTask() {
-	m.clearedtask = true
-	m.clearedFields[agentrun.FieldAgentTaskID] = struct{}{}
+// OwnerUserCleared reports if the "owner_user" edge to the User entity was cleared.
+func (m *AgentRunMutation) OwnerUserCleared() bool {
+	return m.clearedowner_user
 }
 
-// TaskCleared reports if the "task" edge to the AgentTask entity was cleared.
-func (m *AgentRunMutation) TaskCleared() bool {
-	return m.clearedtask
-}
-
-// TaskID returns the "task" edge ID in the mutation.
-func (m *AgentRunMutation) TaskID() (id uuid.UUID, exists bool) {
-	if m.task != nil {
-		return *m.task, true
-	}
-	return
-}
-
-// TaskIDs returns the "task" edge IDs in the mutation.
+// OwnerUserIDs returns the "owner_user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TaskID instead. It exists only for internal usage by the builders.
-func (m *AgentRunMutation) TaskIDs() (ids []uuid.UUID) {
-	if id := m.task; id != nil {
+// OwnerUserID instead. It exists only for internal usage by the builders.
+func (m *AgentRunMutation) OwnerUserIDs() (ids []uuid.UUID) {
+	if id := m.owner_user; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetTask resets all changes to the "task" edge.
-func (m *AgentRunMutation) ResetTask() {
-	m.task = nil
-	m.clearedtask = false
+// ResetOwnerUser resets all changes to the "owner_user" edge.
+func (m *AgentRunMutation) ResetOwnerUser() {
+	m.owner_user = nil
+	m.clearedowner_user = false
+}
+
+// AddSubjectIDs adds the "subjects" edge to the AgentRunSubject entity by ids.
+func (m *AgentRunMutation) AddSubjectIDs(ids ...uuid.UUID) {
+	if m.subjects == nil {
+		m.subjects = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.subjects[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSubjects clears the "subjects" edge to the AgentRunSubject entity.
+func (m *AgentRunMutation) ClearSubjects() {
+	m.clearedsubjects = true
+}
+
+// SubjectsCleared reports if the "subjects" edge to the AgentRunSubject entity was cleared.
+func (m *AgentRunMutation) SubjectsCleared() bool {
+	return m.clearedsubjects
+}
+
+// RemoveSubjectIDs removes the "subjects" edge to the AgentRunSubject entity by IDs.
+func (m *AgentRunMutation) RemoveSubjectIDs(ids ...uuid.UUID) {
+	if m.removedsubjects == nil {
+		m.removedsubjects = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.subjects, ids[i])
+		m.removedsubjects[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSubjects returns the removed IDs of the "subjects" edge to the AgentRunSubject entity.
+func (m *AgentRunMutation) RemovedSubjectsIDs() (ids []uuid.UUID) {
+	for id := range m.removedsubjects {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SubjectsIDs returns the "subjects" edge IDs in the mutation.
+func (m *AgentRunMutation) SubjectsIDs() (ids []uuid.UUID) {
+	for id := range m.subjects {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSubjects resets all changes to the "subjects" edge.
+func (m *AgentRunMutation) ResetSubjects() {
+	m.subjects = nil
+	m.clearedsubjects = false
+	m.removedsubjects = nil
+}
+
+// AddSnapshotIDs adds the "snapshots" edge to the AgentRunSnapshot entity by ids.
+func (m *AgentRunMutation) AddSnapshotIDs(ids ...uuid.UUID) {
+	if m.snapshots == nil {
+		m.snapshots = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.snapshots[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSnapshots clears the "snapshots" edge to the AgentRunSnapshot entity.
+func (m *AgentRunMutation) ClearSnapshots() {
+	m.clearedsnapshots = true
+}
+
+// SnapshotsCleared reports if the "snapshots" edge to the AgentRunSnapshot entity was cleared.
+func (m *AgentRunMutation) SnapshotsCleared() bool {
+	return m.clearedsnapshots
+}
+
+// RemoveSnapshotIDs removes the "snapshots" edge to the AgentRunSnapshot entity by IDs.
+func (m *AgentRunMutation) RemoveSnapshotIDs(ids ...uuid.UUID) {
+	if m.removedsnapshots == nil {
+		m.removedsnapshots = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.snapshots, ids[i])
+		m.removedsnapshots[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSnapshots returns the removed IDs of the "snapshots" edge to the AgentRunSnapshot entity.
+func (m *AgentRunMutation) RemovedSnapshotsIDs() (ids []uuid.UUID) {
+	for id := range m.removedsnapshots {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SnapshotsIDs returns the "snapshots" edge IDs in the mutation.
+func (m *AgentRunMutation) SnapshotsIDs() (ids []uuid.UUID) {
+	for id := range m.snapshots {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSnapshots resets all changes to the "snapshots" edge.
+func (m *AgentRunMutation) ResetSnapshots() {
+	m.snapshots = nil
+	m.clearedsnapshots = false
+	m.removedsnapshots = nil
 }
 
 // SetResultID sets the "result" edge to the AgentRunResult entity by id.
@@ -720,168 +813,6 @@ func (m *AgentRunMutation) ResetResult() {
 	m.clearedresult = false
 }
 
-// AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by ids.
-func (m *AgentRunMutation) AddCitationIDs(ids ...uuid.UUID) {
-	if m.citations == nil {
-		m.citations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.citations[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCitations clears the "citations" edge to the AgentRunCitation entity.
-func (m *AgentRunMutation) ClearCitations() {
-	m.clearedcitations = true
-}
-
-// CitationsCleared reports if the "citations" edge to the AgentRunCitation entity was cleared.
-func (m *AgentRunMutation) CitationsCleared() bool {
-	return m.clearedcitations
-}
-
-// RemoveCitationIDs removes the "citations" edge to the AgentRunCitation entity by IDs.
-func (m *AgentRunMutation) RemoveCitationIDs(ids ...uuid.UUID) {
-	if m.removedcitations == nil {
-		m.removedcitations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.citations, ids[i])
-		m.removedcitations[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCitations returns the removed IDs of the "citations" edge to the AgentRunCitation entity.
-func (m *AgentRunMutation) RemovedCitationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedcitations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CitationsIDs returns the "citations" edge IDs in the mutation.
-func (m *AgentRunMutation) CitationsIDs() (ids []uuid.UUID) {
-	for id := range m.citations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCitations resets all changes to the "citations" edge.
-func (m *AgentRunMutation) ResetCitations() {
-	m.citations = nil
-	m.clearedcitations = false
-	m.removedcitations = nil
-}
-
-// AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by ids.
-func (m *AgentRunMutation) AddFindingIDs(ids ...uuid.UUID) {
-	if m.findings == nil {
-		m.findings = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.findings[ids[i]] = struct{}{}
-	}
-}
-
-// ClearFindings clears the "findings" edge to the AgentRunFinding entity.
-func (m *AgentRunMutation) ClearFindings() {
-	m.clearedfindings = true
-}
-
-// FindingsCleared reports if the "findings" edge to the AgentRunFinding entity was cleared.
-func (m *AgentRunMutation) FindingsCleared() bool {
-	return m.clearedfindings
-}
-
-// RemoveFindingIDs removes the "findings" edge to the AgentRunFinding entity by IDs.
-func (m *AgentRunMutation) RemoveFindingIDs(ids ...uuid.UUID) {
-	if m.removedfindings == nil {
-		m.removedfindings = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.findings, ids[i])
-		m.removedfindings[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFindings returns the removed IDs of the "findings" edge to the AgentRunFinding entity.
-func (m *AgentRunMutation) RemovedFindingsIDs() (ids []uuid.UUID) {
-	for id := range m.removedfindings {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// FindingsIDs returns the "findings" edge IDs in the mutation.
-func (m *AgentRunMutation) FindingsIDs() (ids []uuid.UUID) {
-	for id := range m.findings {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetFindings resets all changes to the "findings" edge.
-func (m *AgentRunMutation) ResetFindings() {
-	m.findings = nil
-	m.clearedfindings = false
-	m.removedfindings = nil
-}
-
-// AddToolCallIDs adds the "tool_calls" edge to the AgentRunToolCall entity by ids.
-func (m *AgentRunMutation) AddToolCallIDs(ids ...uuid.UUID) {
-	if m.tool_calls == nil {
-		m.tool_calls = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.tool_calls[ids[i]] = struct{}{}
-	}
-}
-
-// ClearToolCalls clears the "tool_calls" edge to the AgentRunToolCall entity.
-func (m *AgentRunMutation) ClearToolCalls() {
-	m.clearedtool_calls = true
-}
-
-// ToolCallsCleared reports if the "tool_calls" edge to the AgentRunToolCall entity was cleared.
-func (m *AgentRunMutation) ToolCallsCleared() bool {
-	return m.clearedtool_calls
-}
-
-// RemoveToolCallIDs removes the "tool_calls" edge to the AgentRunToolCall entity by IDs.
-func (m *AgentRunMutation) RemoveToolCallIDs(ids ...uuid.UUID) {
-	if m.removedtool_calls == nil {
-		m.removedtool_calls = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.tool_calls, ids[i])
-		m.removedtool_calls[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedToolCalls returns the removed IDs of the "tool_calls" edge to the AgentRunToolCall entity.
-func (m *AgentRunMutation) RemovedToolCallsIDs() (ids []uuid.UUID) {
-	for id := range m.removedtool_calls {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ToolCallsIDs returns the "tool_calls" edge IDs in the mutation.
-func (m *AgentRunMutation) ToolCallsIDs() (ids []uuid.UUID) {
-	for id := range m.tool_calls {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetToolCalls resets all changes to the "tool_calls" edge.
-func (m *AgentRunMutation) ResetToolCalls() {
-	m.tool_calls = nil
-	m.clearedtool_calls = false
-	m.removedtool_calls = nil
-}
-
 // Where appends a list predicates to the AgentRunMutation builder.
 func (m *AgentRunMutation) Where(ps ...predicate.AgentRun) {
 	m.predicates = append(m.predicates, ps...)
@@ -916,7 +847,7 @@ func (m *AgentRunMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentRunMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, agentrun.FieldTenantID)
 	}
@@ -926,17 +857,20 @@ func (m *AgentRunMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, agentrun.FieldUpdatedAt)
 	}
-	if m.task != nil {
-		fields = append(fields, agentrun.FieldAgentTaskID)
+	if m.owner_user != nil {
+		fields = append(fields, agentrun.FieldOwnerUserID)
 	}
-	if m.attempt != nil {
-		fields = append(fields, agentrun.FieldAttempt)
+	if m.workflow != nil {
+		fields = append(fields, agentrun.FieldWorkflow)
 	}
-	if m.started_at != nil {
-		fields = append(fields, agentrun.FieldStartedAt)
+	if m.input != nil {
+		fields = append(fields, agentrun.FieldInput)
 	}
-	if m.cancelled_at != nil {
-		fields = append(fields, agentrun.FieldCancelledAt)
+	if m.trigger_kind != nil {
+		fields = append(fields, agentrun.FieldTriggerKind)
+	}
+	if m.trigger_metadata != nil {
+		fields = append(fields, agentrun.FieldTriggerMetadata)
 	}
 	return fields
 }
@@ -952,14 +886,16 @@ func (m *AgentRunMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case agentrun.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case agentrun.FieldAgentTaskID:
-		return m.AgentTaskID()
-	case agentrun.FieldAttempt:
-		return m.Attempt()
-	case agentrun.FieldStartedAt:
-		return m.StartedAt()
-	case agentrun.FieldCancelledAt:
-		return m.CancelledAt()
+	case agentrun.FieldOwnerUserID:
+		return m.OwnerUserID()
+	case agentrun.FieldWorkflow:
+		return m.Workflow()
+	case agentrun.FieldInput:
+		return m.Input()
+	case agentrun.FieldTriggerKind:
+		return m.TriggerKind()
+	case agentrun.FieldTriggerMetadata:
+		return m.TriggerMetadata()
 	}
 	return nil, false
 }
@@ -975,14 +911,16 @@ func (m *AgentRunMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldCreatedAt(ctx)
 	case agentrun.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case agentrun.FieldAgentTaskID:
-		return m.OldAgentTaskID(ctx)
-	case agentrun.FieldAttempt:
-		return m.OldAttempt(ctx)
-	case agentrun.FieldStartedAt:
-		return m.OldStartedAt(ctx)
-	case agentrun.FieldCancelledAt:
-		return m.OldCancelledAt(ctx)
+	case agentrun.FieldOwnerUserID:
+		return m.OldOwnerUserID(ctx)
+	case agentrun.FieldWorkflow:
+		return m.OldWorkflow(ctx)
+	case agentrun.FieldInput:
+		return m.OldInput(ctx)
+	case agentrun.FieldTriggerKind:
+		return m.OldTriggerKind(ctx)
+	case agentrun.FieldTriggerMetadata:
+		return m.OldTriggerMetadata(ctx)
 	}
 	return nil, fmt.Errorf("unknown AgentRun field %s", name)
 }
@@ -1013,33 +951,40 @@ func (m *AgentRunMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case agentrun.FieldAgentTaskID:
+	case agentrun.FieldOwnerUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetAgentTaskID(v)
+		m.SetOwnerUserID(v)
 		return nil
-	case agentrun.FieldAttempt:
-		v, ok := value.(int)
+	case agentrun.FieldWorkflow:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetAttempt(v)
+		m.SetWorkflow(v)
 		return nil
-	case agentrun.FieldStartedAt:
-		v, ok := value.(time.Time)
+	case agentrun.FieldInput:
+		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetStartedAt(v)
+		m.SetInput(v)
 		return nil
-	case agentrun.FieldCancelledAt:
-		v, ok := value.(time.Time)
+	case agentrun.FieldTriggerKind:
+		v, ok := value.(agentrun.TriggerKind)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCancelledAt(v)
+		m.SetTriggerKind(v)
+		return nil
+	case agentrun.FieldTriggerMetadata:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTriggerMetadata(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRun field %s", name)
@@ -1049,9 +994,6 @@ func (m *AgentRunMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *AgentRunMutation) AddedFields() []string {
 	var fields []string
-	if m.addattempt != nil {
-		fields = append(fields, agentrun.FieldAttempt)
-	}
 	return fields
 }
 
@@ -1060,8 +1002,6 @@ func (m *AgentRunMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *AgentRunMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case agentrun.FieldAttempt:
-		return m.AddedAttempt()
 	}
 	return nil, false
 }
@@ -1071,13 +1011,6 @@ func (m *AgentRunMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *AgentRunMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case agentrun.FieldAttempt:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddAttempt(v)
-		return nil
 	}
 	return fmt.Errorf("unknown AgentRun numeric field %s", name)
 }
@@ -1086,11 +1019,8 @@ func (m *AgentRunMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AgentRunMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(agentrun.FieldStartedAt) {
-		fields = append(fields, agentrun.FieldStartedAt)
-	}
-	if m.FieldCleared(agentrun.FieldCancelledAt) {
-		fields = append(fields, agentrun.FieldCancelledAt)
+	if m.FieldCleared(agentrun.FieldTriggerMetadata) {
+		fields = append(fields, agentrun.FieldTriggerMetadata)
 	}
 	return fields
 }
@@ -1106,11 +1036,8 @@ func (m *AgentRunMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AgentRunMutation) ClearField(name string) error {
 	switch name {
-	case agentrun.FieldStartedAt:
-		m.ClearStartedAt()
-		return nil
-	case agentrun.FieldCancelledAt:
-		m.ClearCancelledAt()
+	case agentrun.FieldTriggerMetadata:
+		m.ClearTriggerMetadata()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRun nullable field %s", name)
@@ -1129,17 +1056,20 @@ func (m *AgentRunMutation) ResetField(name string) error {
 	case agentrun.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case agentrun.FieldAgentTaskID:
-		m.ResetAgentTaskID()
+	case agentrun.FieldOwnerUserID:
+		m.ResetOwnerUserID()
 		return nil
-	case agentrun.FieldAttempt:
-		m.ResetAttempt()
+	case agentrun.FieldWorkflow:
+		m.ResetWorkflow()
 		return nil
-	case agentrun.FieldStartedAt:
-		m.ResetStartedAt()
+	case agentrun.FieldInput:
+		m.ResetInput()
 		return nil
-	case agentrun.FieldCancelledAt:
-		m.ResetCancelledAt()
+	case agentrun.FieldTriggerKind:
+		m.ResetTriggerKind()
+		return nil
+	case agentrun.FieldTriggerMetadata:
+		m.ResetTriggerMetadata()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRun field %s", name)
@@ -1147,24 +1077,21 @@ func (m *AgentRunMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentRunMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.tenant != nil {
 		edges = append(edges, agentrun.EdgeTenant)
 	}
-	if m.task != nil {
-		edges = append(edges, agentrun.EdgeTask)
+	if m.owner_user != nil {
+		edges = append(edges, agentrun.EdgeOwnerUser)
+	}
+	if m.subjects != nil {
+		edges = append(edges, agentrun.EdgeSubjects)
+	}
+	if m.snapshots != nil {
+		edges = append(edges, agentrun.EdgeSnapshots)
 	}
 	if m.result != nil {
 		edges = append(edges, agentrun.EdgeResult)
-	}
-	if m.citations != nil {
-		edges = append(edges, agentrun.EdgeCitations)
-	}
-	if m.findings != nil {
-		edges = append(edges, agentrun.EdgeFindings)
-	}
-	if m.tool_calls != nil {
-		edges = append(edges, agentrun.EdgeToolCalls)
 	}
 	return edges
 }
@@ -1177,47 +1104,38 @@ func (m *AgentRunMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case agentrun.EdgeTask:
-		if id := m.task; id != nil {
+	case agentrun.EdgeOwnerUser:
+		if id := m.owner_user; id != nil {
 			return []ent.Value{*id}
 		}
+	case agentrun.EdgeSubjects:
+		ids := make([]ent.Value, 0, len(m.subjects))
+		for id := range m.subjects {
+			ids = append(ids, id)
+		}
+		return ids
+	case agentrun.EdgeSnapshots:
+		ids := make([]ent.Value, 0, len(m.snapshots))
+		for id := range m.snapshots {
+			ids = append(ids, id)
+		}
+		return ids
 	case agentrun.EdgeResult:
 		if id := m.result; id != nil {
 			return []ent.Value{*id}
 		}
-	case agentrun.EdgeCitations:
-		ids := make([]ent.Value, 0, len(m.citations))
-		for id := range m.citations {
-			ids = append(ids, id)
-		}
-		return ids
-	case agentrun.EdgeFindings:
-		ids := make([]ent.Value, 0, len(m.findings))
-		for id := range m.findings {
-			ids = append(ids, id)
-		}
-		return ids
-	case agentrun.EdgeToolCalls:
-		ids := make([]ent.Value, 0, len(m.tool_calls))
-		for id := range m.tool_calls {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentRunMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.removedcitations != nil {
-		edges = append(edges, agentrun.EdgeCitations)
+	edges := make([]string, 0, 5)
+	if m.removedsubjects != nil {
+		edges = append(edges, agentrun.EdgeSubjects)
 	}
-	if m.removedfindings != nil {
-		edges = append(edges, agentrun.EdgeFindings)
-	}
-	if m.removedtool_calls != nil {
-		edges = append(edges, agentrun.EdgeToolCalls)
+	if m.removedsnapshots != nil {
+		edges = append(edges, agentrun.EdgeSnapshots)
 	}
 	return edges
 }
@@ -1226,21 +1144,15 @@ func (m *AgentRunMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *AgentRunMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case agentrun.EdgeCitations:
-		ids := make([]ent.Value, 0, len(m.removedcitations))
-		for id := range m.removedcitations {
+	case agentrun.EdgeSubjects:
+		ids := make([]ent.Value, 0, len(m.removedsubjects))
+		for id := range m.removedsubjects {
 			ids = append(ids, id)
 		}
 		return ids
-	case agentrun.EdgeFindings:
-		ids := make([]ent.Value, 0, len(m.removedfindings))
-		for id := range m.removedfindings {
-			ids = append(ids, id)
-		}
-		return ids
-	case agentrun.EdgeToolCalls:
-		ids := make([]ent.Value, 0, len(m.removedtool_calls))
-		for id := range m.removedtool_calls {
+	case agentrun.EdgeSnapshots:
+		ids := make([]ent.Value, 0, len(m.removedsnapshots))
+		for id := range m.removedsnapshots {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1250,24 +1162,21 @@ func (m *AgentRunMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentRunMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.clearedtenant {
 		edges = append(edges, agentrun.EdgeTenant)
 	}
-	if m.clearedtask {
-		edges = append(edges, agentrun.EdgeTask)
+	if m.clearedowner_user {
+		edges = append(edges, agentrun.EdgeOwnerUser)
+	}
+	if m.clearedsubjects {
+		edges = append(edges, agentrun.EdgeSubjects)
+	}
+	if m.clearedsnapshots {
+		edges = append(edges, agentrun.EdgeSnapshots)
 	}
 	if m.clearedresult {
 		edges = append(edges, agentrun.EdgeResult)
-	}
-	if m.clearedcitations {
-		edges = append(edges, agentrun.EdgeCitations)
-	}
-	if m.clearedfindings {
-		edges = append(edges, agentrun.EdgeFindings)
-	}
-	if m.clearedtool_calls {
-		edges = append(edges, agentrun.EdgeToolCalls)
 	}
 	return edges
 }
@@ -1278,16 +1187,14 @@ func (m *AgentRunMutation) EdgeCleared(name string) bool {
 	switch name {
 	case agentrun.EdgeTenant:
 		return m.clearedtenant
-	case agentrun.EdgeTask:
-		return m.clearedtask
+	case agentrun.EdgeOwnerUser:
+		return m.clearedowner_user
+	case agentrun.EdgeSubjects:
+		return m.clearedsubjects
+	case agentrun.EdgeSnapshots:
+		return m.clearedsnapshots
 	case agentrun.EdgeResult:
 		return m.clearedresult
-	case agentrun.EdgeCitations:
-		return m.clearedcitations
-	case agentrun.EdgeFindings:
-		return m.clearedfindings
-	case agentrun.EdgeToolCalls:
-		return m.clearedtool_calls
 	}
 	return false
 }
@@ -1299,8 +1206,8 @@ func (m *AgentRunMutation) ClearEdge(name string) error {
 	case agentrun.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case agentrun.EdgeTask:
-		m.ClearTask()
+	case agentrun.EdgeOwnerUser:
+		m.ClearOwnerUser()
 		return nil
 	case agentrun.EdgeResult:
 		m.ClearResult()
@@ -1316,20 +1223,17 @@ func (m *AgentRunMutation) ResetEdge(name string) error {
 	case agentrun.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case agentrun.EdgeTask:
-		m.ResetTask()
+	case agentrun.EdgeOwnerUser:
+		m.ResetOwnerUser()
+		return nil
+	case agentrun.EdgeSubjects:
+		m.ResetSubjects()
+		return nil
+	case agentrun.EdgeSnapshots:
+		m.ResetSnapshots()
 		return nil
 	case agentrun.EdgeResult:
 		m.ResetResult()
-		return nil
-	case agentrun.EdgeCitations:
-		m.ResetCitations()
-		return nil
-	case agentrun.EdgeFindings:
-		m.ResetFindings()
-		return nil
-	case agentrun.EdgeToolCalls:
-		m.ResetToolCalls()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRun edge %s", name)
@@ -1351,18 +1255,12 @@ type AgentRunCitationMutation struct {
 	clearedFields                 map[string]struct{}
 	tenant                        *int
 	clearedtenant                 bool
-	agent_run                     *uuid.UUID
-	clearedagent_run              bool
 	knowledge_entity              *uuid.UUID
 	clearedknowledge_entity       bool
 	knowledge_relationship        *uuid.UUID
 	clearedknowledge_relationship bool
 	knowledge_evidence            *uuid.UUID
 	clearedknowledge_evidence     bool
-	agent_task                    *uuid.UUID
-	clearedagent_task             bool
-	agent_run_tool_call           *uuid.UUID
-	clearedagent_run_tool_call    bool
 	findings                      map[uuid.UUID]struct{}
 	removedfindings               map[uuid.UUID]struct{}
 	clearedfindings               bool
@@ -1586,42 +1484,6 @@ func (m *AgentRunCitationMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (m *AgentRunCitationMutation) SetAgentRunID(u uuid.UUID) {
-	m.agent_run = &u
-}
-
-// AgentRunID returns the value of the "agent_run_id" field in the mutation.
-func (m *AgentRunCitationMutation) AgentRunID() (r uuid.UUID, exists bool) {
-	v := m.agent_run
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAgentRunID returns the old "agent_run_id" field's value of the AgentRunCitation entity.
-// If the AgentRunCitation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunCitationMutation) OldAgentRunID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAgentRunID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAgentRunID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAgentRunID: %w", err)
-	}
-	return oldValue.AgentRunID, nil
-}
-
-// ResetAgentRunID resets all changes to the "agent_run_id" field.
-func (m *AgentRunCitationMutation) ResetAgentRunID() {
-	m.agent_run = nil
-}
-
 // SetKind sets the "kind" field.
 func (m *AgentRunCitationMutation) SetKind(s string) {
 	m.kind = &s
@@ -1841,104 +1703,6 @@ func (m *AgentRunCitationMutation) ResetKnowledgeEvidenceID() {
 	delete(m.clearedFields, agentruncitation.FieldKnowledgeEvidenceID)
 }
 
-// SetAgentTaskID sets the "agent_task_id" field.
-func (m *AgentRunCitationMutation) SetAgentTaskID(u uuid.UUID) {
-	m.agent_task = &u
-}
-
-// AgentTaskID returns the value of the "agent_task_id" field in the mutation.
-func (m *AgentRunCitationMutation) AgentTaskID() (r uuid.UUID, exists bool) {
-	v := m.agent_task
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAgentTaskID returns the old "agent_task_id" field's value of the AgentRunCitation entity.
-// If the AgentRunCitation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunCitationMutation) OldAgentTaskID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAgentTaskID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAgentTaskID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAgentTaskID: %w", err)
-	}
-	return oldValue.AgentTaskID, nil
-}
-
-// ClearAgentTaskID clears the value of the "agent_task_id" field.
-func (m *AgentRunCitationMutation) ClearAgentTaskID() {
-	m.agent_task = nil
-	m.clearedFields[agentruncitation.FieldAgentTaskID] = struct{}{}
-}
-
-// AgentTaskIDCleared returns if the "agent_task_id" field was cleared in this mutation.
-func (m *AgentRunCitationMutation) AgentTaskIDCleared() bool {
-	_, ok := m.clearedFields[agentruncitation.FieldAgentTaskID]
-	return ok
-}
-
-// ResetAgentTaskID resets all changes to the "agent_task_id" field.
-func (m *AgentRunCitationMutation) ResetAgentTaskID() {
-	m.agent_task = nil
-	delete(m.clearedFields, agentruncitation.FieldAgentTaskID)
-}
-
-// SetAgentRunToolCallID sets the "agent_run_tool_call_id" field.
-func (m *AgentRunCitationMutation) SetAgentRunToolCallID(u uuid.UUID) {
-	m.agent_run_tool_call = &u
-}
-
-// AgentRunToolCallID returns the value of the "agent_run_tool_call_id" field in the mutation.
-func (m *AgentRunCitationMutation) AgentRunToolCallID() (r uuid.UUID, exists bool) {
-	v := m.agent_run_tool_call
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAgentRunToolCallID returns the old "agent_run_tool_call_id" field's value of the AgentRunCitation entity.
-// If the AgentRunCitation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunCitationMutation) OldAgentRunToolCallID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAgentRunToolCallID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAgentRunToolCallID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAgentRunToolCallID: %w", err)
-	}
-	return oldValue.AgentRunToolCallID, nil
-}
-
-// ClearAgentRunToolCallID clears the value of the "agent_run_tool_call_id" field.
-func (m *AgentRunCitationMutation) ClearAgentRunToolCallID() {
-	m.agent_run_tool_call = nil
-	m.clearedFields[agentruncitation.FieldAgentRunToolCallID] = struct{}{}
-}
-
-// AgentRunToolCallIDCleared returns if the "agent_run_tool_call_id" field was cleared in this mutation.
-func (m *AgentRunCitationMutation) AgentRunToolCallIDCleared() bool {
-	_, ok := m.clearedFields[agentruncitation.FieldAgentRunToolCallID]
-	return ok
-}
-
-// ResetAgentRunToolCallID resets all changes to the "agent_run_tool_call_id" field.
-func (m *AgentRunCitationMutation) ResetAgentRunToolCallID() {
-	m.agent_run_tool_call = nil
-	delete(m.clearedFields, agentruncitation.FieldAgentRunToolCallID)
-}
-
 // SetDomainEntityType sets the "domain_entity_type" field.
 func (m *AgentRunCitationMutation) SetDomainEntityType(s string) {
 	m.domain_entity_type = &s
@@ -2113,33 +1877,6 @@ func (m *AgentRunCitationMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
-func (m *AgentRunCitationMutation) ClearAgentRun() {
-	m.clearedagent_run = true
-	m.clearedFields[agentruncitation.FieldAgentRunID] = struct{}{}
-}
-
-// AgentRunCleared reports if the "agent_run" edge to the AgentRun entity was cleared.
-func (m *AgentRunCitationMutation) AgentRunCleared() bool {
-	return m.clearedagent_run
-}
-
-// AgentRunIDs returns the "agent_run" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// AgentRunID instead. It exists only for internal usage by the builders.
-func (m *AgentRunCitationMutation) AgentRunIDs() (ids []uuid.UUID) {
-	if id := m.agent_run; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetAgentRun resets all changes to the "agent_run" edge.
-func (m *AgentRunCitationMutation) ResetAgentRun() {
-	m.agent_run = nil
-	m.clearedagent_run = false
-}
-
 // ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (m *AgentRunCitationMutation) ClearKnowledgeEntity() {
 	m.clearedknowledge_entity = true
@@ -2219,60 +1956,6 @@ func (m *AgentRunCitationMutation) KnowledgeEvidenceIDs() (ids []uuid.UUID) {
 func (m *AgentRunCitationMutation) ResetKnowledgeEvidence() {
 	m.knowledge_evidence = nil
 	m.clearedknowledge_evidence = false
-}
-
-// ClearAgentTask clears the "agent_task" edge to the AgentTask entity.
-func (m *AgentRunCitationMutation) ClearAgentTask() {
-	m.clearedagent_task = true
-	m.clearedFields[agentruncitation.FieldAgentTaskID] = struct{}{}
-}
-
-// AgentTaskCleared reports if the "agent_task" edge to the AgentTask entity was cleared.
-func (m *AgentRunCitationMutation) AgentTaskCleared() bool {
-	return m.AgentTaskIDCleared() || m.clearedagent_task
-}
-
-// AgentTaskIDs returns the "agent_task" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// AgentTaskID instead. It exists only for internal usage by the builders.
-func (m *AgentRunCitationMutation) AgentTaskIDs() (ids []uuid.UUID) {
-	if id := m.agent_task; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetAgentTask resets all changes to the "agent_task" edge.
-func (m *AgentRunCitationMutation) ResetAgentTask() {
-	m.agent_task = nil
-	m.clearedagent_task = false
-}
-
-// ClearAgentRunToolCall clears the "agent_run_tool_call" edge to the AgentRunToolCall entity.
-func (m *AgentRunCitationMutation) ClearAgentRunToolCall() {
-	m.clearedagent_run_tool_call = true
-	m.clearedFields[agentruncitation.FieldAgentRunToolCallID] = struct{}{}
-}
-
-// AgentRunToolCallCleared reports if the "agent_run_tool_call" edge to the AgentRunToolCall entity was cleared.
-func (m *AgentRunCitationMutation) AgentRunToolCallCleared() bool {
-	return m.AgentRunToolCallIDCleared() || m.clearedagent_run_tool_call
-}
-
-// AgentRunToolCallIDs returns the "agent_run_tool_call" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// AgentRunToolCallID instead. It exists only for internal usage by the builders.
-func (m *AgentRunCitationMutation) AgentRunToolCallIDs() (ids []uuid.UUID) {
-	if id := m.agent_run_tool_call; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetAgentRunToolCall resets all changes to the "agent_run_tool_call" edge.
-func (m *AgentRunCitationMutation) ResetAgentRunToolCall() {
-	m.agent_run_tool_call = nil
-	m.clearedagent_run_tool_call = false
 }
 
 // AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by ids.
@@ -2417,7 +2100,7 @@ func (m *AgentRunCitationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentRunCitationMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 11)
 	if m.tenant != nil {
 		fields = append(fields, agentruncitation.FieldTenantID)
 	}
@@ -2426,9 +2109,6 @@ func (m *AgentRunCitationMutation) Fields() []string {
 	}
 	if m.updated_at != nil {
 		fields = append(fields, agentruncitation.FieldUpdatedAt)
-	}
-	if m.agent_run != nil {
-		fields = append(fields, agentruncitation.FieldAgentRunID)
 	}
 	if m.kind != nil {
 		fields = append(fields, agentruncitation.FieldKind)
@@ -2444,12 +2124,6 @@ func (m *AgentRunCitationMutation) Fields() []string {
 	}
 	if m.knowledge_evidence != nil {
 		fields = append(fields, agentruncitation.FieldKnowledgeEvidenceID)
-	}
-	if m.agent_task != nil {
-		fields = append(fields, agentruncitation.FieldAgentTaskID)
-	}
-	if m.agent_run_tool_call != nil {
-		fields = append(fields, agentruncitation.FieldAgentRunToolCallID)
 	}
 	if m.domain_entity_type != nil {
 		fields = append(fields, agentruncitation.FieldDomainEntityType)
@@ -2474,8 +2148,6 @@ func (m *AgentRunCitationMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case agentruncitation.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case agentruncitation.FieldAgentRunID:
-		return m.AgentRunID()
 	case agentruncitation.FieldKind:
 		return m.Kind()
 	case agentruncitation.FieldSummary:
@@ -2486,10 +2158,6 @@ func (m *AgentRunCitationMutation) Field(name string) (ent.Value, bool) {
 		return m.KnowledgeRelationshipID()
 	case agentruncitation.FieldKnowledgeEvidenceID:
 		return m.KnowledgeEvidenceID()
-	case agentruncitation.FieldAgentTaskID:
-		return m.AgentTaskID()
-	case agentruncitation.FieldAgentRunToolCallID:
-		return m.AgentRunToolCallID()
 	case agentruncitation.FieldDomainEntityType:
 		return m.DomainEntityType()
 	case agentruncitation.FieldDomainEntityID:
@@ -2511,8 +2179,6 @@ func (m *AgentRunCitationMutation) OldField(ctx context.Context, name string) (e
 		return m.OldCreatedAt(ctx)
 	case agentruncitation.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case agentruncitation.FieldAgentRunID:
-		return m.OldAgentRunID(ctx)
 	case agentruncitation.FieldKind:
 		return m.OldKind(ctx)
 	case agentruncitation.FieldSummary:
@@ -2523,10 +2189,6 @@ func (m *AgentRunCitationMutation) OldField(ctx context.Context, name string) (e
 		return m.OldKnowledgeRelationshipID(ctx)
 	case agentruncitation.FieldKnowledgeEvidenceID:
 		return m.OldKnowledgeEvidenceID(ctx)
-	case agentruncitation.FieldAgentTaskID:
-		return m.OldAgentTaskID(ctx)
-	case agentruncitation.FieldAgentRunToolCallID:
-		return m.OldAgentRunToolCallID(ctx)
 	case agentruncitation.FieldDomainEntityType:
 		return m.OldDomainEntityType(ctx)
 	case agentruncitation.FieldDomainEntityID:
@@ -2563,13 +2225,6 @@ func (m *AgentRunCitationMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case agentruncitation.FieldAgentRunID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAgentRunID(v)
-		return nil
 	case agentruncitation.FieldKind:
 		v, ok := value.(string)
 		if !ok {
@@ -2604,20 +2259,6 @@ func (m *AgentRunCitationMutation) SetField(name string, value ent.Value) error 
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetKnowledgeEvidenceID(v)
-		return nil
-	case agentruncitation.FieldAgentTaskID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAgentTaskID(v)
-		return nil
-	case agentruncitation.FieldAgentRunToolCallID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAgentRunToolCallID(v)
 		return nil
 	case agentruncitation.FieldDomainEntityType:
 		v, ok := value.(string)
@@ -2682,12 +2323,6 @@ func (m *AgentRunCitationMutation) ClearedFields() []string {
 	if m.FieldCleared(agentruncitation.FieldKnowledgeEvidenceID) {
 		fields = append(fields, agentruncitation.FieldKnowledgeEvidenceID)
 	}
-	if m.FieldCleared(agentruncitation.FieldAgentTaskID) {
-		fields = append(fields, agentruncitation.FieldAgentTaskID)
-	}
-	if m.FieldCleared(agentruncitation.FieldAgentRunToolCallID) {
-		fields = append(fields, agentruncitation.FieldAgentRunToolCallID)
-	}
 	if m.FieldCleared(agentruncitation.FieldDomainEntityType) {
 		fields = append(fields, agentruncitation.FieldDomainEntityType)
 	}
@@ -2720,12 +2355,6 @@ func (m *AgentRunCitationMutation) ClearField(name string) error {
 	case agentruncitation.FieldKnowledgeEvidenceID:
 		m.ClearKnowledgeEvidenceID()
 		return nil
-	case agentruncitation.FieldAgentTaskID:
-		m.ClearAgentTaskID()
-		return nil
-	case agentruncitation.FieldAgentRunToolCallID:
-		m.ClearAgentRunToolCallID()
-		return nil
 	case agentruncitation.FieldDomainEntityType:
 		m.ClearDomainEntityType()
 		return nil
@@ -2752,9 +2381,6 @@ func (m *AgentRunCitationMutation) ResetField(name string) error {
 	case agentruncitation.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case agentruncitation.FieldAgentRunID:
-		m.ResetAgentRunID()
-		return nil
 	case agentruncitation.FieldKind:
 		m.ResetKind()
 		return nil
@@ -2769,12 +2395,6 @@ func (m *AgentRunCitationMutation) ResetField(name string) error {
 		return nil
 	case agentruncitation.FieldKnowledgeEvidenceID:
 		m.ResetKnowledgeEvidenceID()
-		return nil
-	case agentruncitation.FieldAgentTaskID:
-		m.ResetAgentTaskID()
-		return nil
-	case agentruncitation.FieldAgentRunToolCallID:
-		m.ResetAgentRunToolCallID()
 		return nil
 	case agentruncitation.FieldDomainEntityType:
 		m.ResetDomainEntityType()
@@ -2791,12 +2411,9 @@ func (m *AgentRunCitationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentRunCitationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, agentruncitation.EdgeTenant)
-	}
-	if m.agent_run != nil {
-		edges = append(edges, agentruncitation.EdgeAgentRun)
 	}
 	if m.knowledge_entity != nil {
 		edges = append(edges, agentruncitation.EdgeKnowledgeEntity)
@@ -2806,12 +2423,6 @@ func (m *AgentRunCitationMutation) AddedEdges() []string {
 	}
 	if m.knowledge_evidence != nil {
 		edges = append(edges, agentruncitation.EdgeKnowledgeEvidence)
-	}
-	if m.agent_task != nil {
-		edges = append(edges, agentruncitation.EdgeAgentTask)
-	}
-	if m.agent_run_tool_call != nil {
-		edges = append(edges, agentruncitation.EdgeAgentRunToolCall)
 	}
 	if m.findings != nil {
 		edges = append(edges, agentruncitation.EdgeFindings)
@@ -2830,10 +2441,6 @@ func (m *AgentRunCitationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case agentruncitation.EdgeAgentRun:
-		if id := m.agent_run; id != nil {
-			return []ent.Value{*id}
-		}
 	case agentruncitation.EdgeKnowledgeEntity:
 		if id := m.knowledge_entity; id != nil {
 			return []ent.Value{*id}
@@ -2844,14 +2451,6 @@ func (m *AgentRunCitationMutation) AddedIDs(name string) []ent.Value {
 		}
 	case agentruncitation.EdgeKnowledgeEvidence:
 		if id := m.knowledge_evidence; id != nil {
-			return []ent.Value{*id}
-		}
-	case agentruncitation.EdgeAgentTask:
-		if id := m.agent_task; id != nil {
-			return []ent.Value{*id}
-		}
-	case agentruncitation.EdgeAgentRunToolCall:
-		if id := m.agent_run_tool_call; id != nil {
 			return []ent.Value{*id}
 		}
 	case agentruncitation.EdgeFindings:
@@ -2872,7 +2471,7 @@ func (m *AgentRunCitationMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentRunCitationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 6)
 	if m.removedfindings != nil {
 		edges = append(edges, agentruncitation.EdgeFindings)
 	}
@@ -2904,12 +2503,9 @@ func (m *AgentRunCitationMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentRunCitationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, agentruncitation.EdgeTenant)
-	}
-	if m.clearedagent_run {
-		edges = append(edges, agentruncitation.EdgeAgentRun)
 	}
 	if m.clearedknowledge_entity {
 		edges = append(edges, agentruncitation.EdgeKnowledgeEntity)
@@ -2919,12 +2515,6 @@ func (m *AgentRunCitationMutation) ClearedEdges() []string {
 	}
 	if m.clearedknowledge_evidence {
 		edges = append(edges, agentruncitation.EdgeKnowledgeEvidence)
-	}
-	if m.clearedagent_task {
-		edges = append(edges, agentruncitation.EdgeAgentTask)
-	}
-	if m.clearedagent_run_tool_call {
-		edges = append(edges, agentruncitation.EdgeAgentRunToolCall)
 	}
 	if m.clearedfindings {
 		edges = append(edges, agentruncitation.EdgeFindings)
@@ -2941,18 +2531,12 @@ func (m *AgentRunCitationMutation) EdgeCleared(name string) bool {
 	switch name {
 	case agentruncitation.EdgeTenant:
 		return m.clearedtenant
-	case agentruncitation.EdgeAgentRun:
-		return m.clearedagent_run
 	case agentruncitation.EdgeKnowledgeEntity:
 		return m.clearedknowledge_entity
 	case agentruncitation.EdgeKnowledgeRelationship:
 		return m.clearedknowledge_relationship
 	case agentruncitation.EdgeKnowledgeEvidence:
 		return m.clearedknowledge_evidence
-	case agentruncitation.EdgeAgentTask:
-		return m.clearedagent_task
-	case agentruncitation.EdgeAgentRunToolCall:
-		return m.clearedagent_run_tool_call
 	case agentruncitation.EdgeFindings:
 		return m.clearedfindings
 	case agentruncitation.EdgeFindingCitations:
@@ -2968,9 +2552,6 @@ func (m *AgentRunCitationMutation) ClearEdge(name string) error {
 	case agentruncitation.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case agentruncitation.EdgeAgentRun:
-		m.ClearAgentRun()
-		return nil
 	case agentruncitation.EdgeKnowledgeEntity:
 		m.ClearKnowledgeEntity()
 		return nil
@@ -2979,12 +2560,6 @@ func (m *AgentRunCitationMutation) ClearEdge(name string) error {
 		return nil
 	case agentruncitation.EdgeKnowledgeEvidence:
 		m.ClearKnowledgeEvidence()
-		return nil
-	case agentruncitation.EdgeAgentTask:
-		m.ClearAgentTask()
-		return nil
-	case agentruncitation.EdgeAgentRunToolCall:
-		m.ClearAgentRunToolCall()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRunCitation unique edge %s", name)
@@ -2997,9 +2572,6 @@ func (m *AgentRunCitationMutation) ResetEdge(name string) error {
 	case agentruncitation.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case agentruncitation.EdgeAgentRun:
-		m.ResetAgentRun()
-		return nil
 	case agentruncitation.EdgeKnowledgeEntity:
 		m.ResetKnowledgeEntity()
 		return nil
@@ -3008,12 +2580,6 @@ func (m *AgentRunCitationMutation) ResetEdge(name string) error {
 		return nil
 	case agentruncitation.EdgeKnowledgeEvidence:
 		m.ResetKnowledgeEvidence()
-		return nil
-	case agentruncitation.EdgeAgentTask:
-		m.ResetAgentTask()
-		return nil
-	case agentruncitation.EdgeAgentRunToolCall:
-		m.ResetAgentRunToolCall()
 		return nil
 	case agentruncitation.EdgeFindings:
 		m.ResetFindings()
@@ -3033,15 +2599,13 @@ type AgentRunFindingMutation struct {
 	id                       *uuid.UUID
 	created_at               *time.Time
 	updated_at               *time.Time
-	sequence                 *int
-	addsequence              *int
 	finding_kind             *string
 	content                  *string
 	clearedFields            map[string]struct{}
 	tenant                   *int
 	clearedtenant            bool
-	agent_run                *uuid.UUID
-	clearedagent_run         bool
+	agent_run_result         *uuid.UUID
+	clearedagent_run_result  bool
 	citations                map[uuid.UUID]struct{}
 	removedcitations         map[uuid.UUID]struct{}
 	clearedcitations         bool
@@ -3265,96 +2829,40 @@ func (m *AgentRunFindingMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (m *AgentRunFindingMutation) SetAgentRunID(u uuid.UUID) {
-	m.agent_run = &u
+// SetAgentRunResultID sets the "agent_run_result_id" field.
+func (m *AgentRunFindingMutation) SetAgentRunResultID(u uuid.UUID) {
+	m.agent_run_result = &u
 }
 
-// AgentRunID returns the value of the "agent_run_id" field in the mutation.
-func (m *AgentRunFindingMutation) AgentRunID() (r uuid.UUID, exists bool) {
-	v := m.agent_run
+// AgentRunResultID returns the value of the "agent_run_result_id" field in the mutation.
+func (m *AgentRunFindingMutation) AgentRunResultID() (r uuid.UUID, exists bool) {
+	v := m.agent_run_result
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAgentRunID returns the old "agent_run_id" field's value of the AgentRunFinding entity.
+// OldAgentRunResultID returns the old "agent_run_result_id" field's value of the AgentRunFinding entity.
 // If the AgentRunFinding object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunFindingMutation) OldAgentRunID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *AgentRunFindingMutation) OldAgentRunResultID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAgentRunID is only allowed on UpdateOne operations")
+		return v, errors.New("OldAgentRunResultID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAgentRunID requires an ID field in the mutation")
+		return v, errors.New("OldAgentRunResultID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAgentRunID: %w", err)
+		return v, fmt.Errorf("querying old value for OldAgentRunResultID: %w", err)
 	}
-	return oldValue.AgentRunID, nil
+	return oldValue.AgentRunResultID, nil
 }
 
-// ResetAgentRunID resets all changes to the "agent_run_id" field.
-func (m *AgentRunFindingMutation) ResetAgentRunID() {
-	m.agent_run = nil
-}
-
-// SetSequence sets the "sequence" field.
-func (m *AgentRunFindingMutation) SetSequence(i int) {
-	m.sequence = &i
-	m.addsequence = nil
-}
-
-// Sequence returns the value of the "sequence" field in the mutation.
-func (m *AgentRunFindingMutation) Sequence() (r int, exists bool) {
-	v := m.sequence
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSequence returns the old "sequence" field's value of the AgentRunFinding entity.
-// If the AgentRunFinding object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunFindingMutation) OldSequence(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSequence is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSequence requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSequence: %w", err)
-	}
-	return oldValue.Sequence, nil
-}
-
-// AddSequence adds i to the "sequence" field.
-func (m *AgentRunFindingMutation) AddSequence(i int) {
-	if m.addsequence != nil {
-		*m.addsequence += i
-	} else {
-		m.addsequence = &i
-	}
-}
-
-// AddedSequence returns the value that was added to the "sequence" field in this mutation.
-func (m *AgentRunFindingMutation) AddedSequence() (r int, exists bool) {
-	v := m.addsequence
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetSequence resets all changes to the "sequence" field.
-func (m *AgentRunFindingMutation) ResetSequence() {
-	m.sequence = nil
-	m.addsequence = nil
+// ResetAgentRunResultID resets all changes to the "agent_run_result_id" field.
+func (m *AgentRunFindingMutation) ResetAgentRunResultID() {
+	m.agent_run_result = nil
 }
 
 // SetFindingKind sets the "finding_kind" field.
@@ -3456,31 +2964,31 @@ func (m *AgentRunFindingMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
-func (m *AgentRunFindingMutation) ClearAgentRun() {
-	m.clearedagent_run = true
-	m.clearedFields[agentrunfinding.FieldAgentRunID] = struct{}{}
+// ClearAgentRunResult clears the "agent_run_result" edge to the AgentRunResult entity.
+func (m *AgentRunFindingMutation) ClearAgentRunResult() {
+	m.clearedagent_run_result = true
+	m.clearedFields[agentrunfinding.FieldAgentRunResultID] = struct{}{}
 }
 
-// AgentRunCleared reports if the "agent_run" edge to the AgentRun entity was cleared.
-func (m *AgentRunFindingMutation) AgentRunCleared() bool {
-	return m.clearedagent_run
+// AgentRunResultCleared reports if the "agent_run_result" edge to the AgentRunResult entity was cleared.
+func (m *AgentRunFindingMutation) AgentRunResultCleared() bool {
+	return m.clearedagent_run_result
 }
 
-// AgentRunIDs returns the "agent_run" edge IDs in the mutation.
+// AgentRunResultIDs returns the "agent_run_result" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// AgentRunID instead. It exists only for internal usage by the builders.
-func (m *AgentRunFindingMutation) AgentRunIDs() (ids []uuid.UUID) {
-	if id := m.agent_run; id != nil {
+// AgentRunResultID instead. It exists only for internal usage by the builders.
+func (m *AgentRunFindingMutation) AgentRunResultIDs() (ids []uuid.UUID) {
+	if id := m.agent_run_result; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetAgentRun resets all changes to the "agent_run" edge.
-func (m *AgentRunFindingMutation) ResetAgentRun() {
-	m.agent_run = nil
-	m.clearedagent_run = false
+// ResetAgentRunResult resets all changes to the "agent_run_result" edge.
+func (m *AgentRunFindingMutation) ResetAgentRunResult() {
+	m.agent_run_result = nil
+	m.clearedagent_run_result = false
 }
 
 // AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by ids.
@@ -3625,7 +3133,7 @@ func (m *AgentRunFindingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentRunFindingMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, agentrunfinding.FieldTenantID)
 	}
@@ -3635,11 +3143,8 @@ func (m *AgentRunFindingMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, agentrunfinding.FieldUpdatedAt)
 	}
-	if m.agent_run != nil {
-		fields = append(fields, agentrunfinding.FieldAgentRunID)
-	}
-	if m.sequence != nil {
-		fields = append(fields, agentrunfinding.FieldSequence)
+	if m.agent_run_result != nil {
+		fields = append(fields, agentrunfinding.FieldAgentRunResultID)
 	}
 	if m.finding_kind != nil {
 		fields = append(fields, agentrunfinding.FieldFindingKind)
@@ -3661,10 +3166,8 @@ func (m *AgentRunFindingMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case agentrunfinding.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case agentrunfinding.FieldAgentRunID:
-		return m.AgentRunID()
-	case agentrunfinding.FieldSequence:
-		return m.Sequence()
+	case agentrunfinding.FieldAgentRunResultID:
+		return m.AgentRunResultID()
 	case agentrunfinding.FieldFindingKind:
 		return m.FindingKind()
 	case agentrunfinding.FieldContent:
@@ -3684,10 +3187,8 @@ func (m *AgentRunFindingMutation) OldField(ctx context.Context, name string) (en
 		return m.OldCreatedAt(ctx)
 	case agentrunfinding.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case agentrunfinding.FieldAgentRunID:
-		return m.OldAgentRunID(ctx)
-	case agentrunfinding.FieldSequence:
-		return m.OldSequence(ctx)
+	case agentrunfinding.FieldAgentRunResultID:
+		return m.OldAgentRunResultID(ctx)
 	case agentrunfinding.FieldFindingKind:
 		return m.OldFindingKind(ctx)
 	case agentrunfinding.FieldContent:
@@ -3722,19 +3223,12 @@ func (m *AgentRunFindingMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case agentrunfinding.FieldAgentRunID:
+	case agentrunfinding.FieldAgentRunResultID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetAgentRunID(v)
-		return nil
-	case agentrunfinding.FieldSequence:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSequence(v)
+		m.SetAgentRunResultID(v)
 		return nil
 	case agentrunfinding.FieldFindingKind:
 		v, ok := value.(string)
@@ -3758,9 +3252,6 @@ func (m *AgentRunFindingMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *AgentRunFindingMutation) AddedFields() []string {
 	var fields []string
-	if m.addsequence != nil {
-		fields = append(fields, agentrunfinding.FieldSequence)
-	}
 	return fields
 }
 
@@ -3769,8 +3260,6 @@ func (m *AgentRunFindingMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *AgentRunFindingMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case agentrunfinding.FieldSequence:
-		return m.AddedSequence()
 	}
 	return nil, false
 }
@@ -3780,13 +3269,6 @@ func (m *AgentRunFindingMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *AgentRunFindingMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case agentrunfinding.FieldSequence:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddSequence(v)
-		return nil
 	}
 	return fmt.Errorf("unknown AgentRunFinding numeric field %s", name)
 }
@@ -3823,11 +3305,8 @@ func (m *AgentRunFindingMutation) ResetField(name string) error {
 	case agentrunfinding.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case agentrunfinding.FieldAgentRunID:
-		m.ResetAgentRunID()
-		return nil
-	case agentrunfinding.FieldSequence:
-		m.ResetSequence()
+	case agentrunfinding.FieldAgentRunResultID:
+		m.ResetAgentRunResultID()
 		return nil
 	case agentrunfinding.FieldFindingKind:
 		m.ResetFindingKind()
@@ -3845,8 +3324,8 @@ func (m *AgentRunFindingMutation) AddedEdges() []string {
 	if m.tenant != nil {
 		edges = append(edges, agentrunfinding.EdgeTenant)
 	}
-	if m.agent_run != nil {
-		edges = append(edges, agentrunfinding.EdgeAgentRun)
+	if m.agent_run_result != nil {
+		edges = append(edges, agentrunfinding.EdgeAgentRunResult)
 	}
 	if m.citations != nil {
 		edges = append(edges, agentrunfinding.EdgeCitations)
@@ -3865,8 +3344,8 @@ func (m *AgentRunFindingMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case agentrunfinding.EdgeAgentRun:
-		if id := m.agent_run; id != nil {
+	case agentrunfinding.EdgeAgentRunResult:
+		if id := m.agent_run_result; id != nil {
 			return []ent.Value{*id}
 		}
 	case agentrunfinding.EdgeCitations:
@@ -3923,8 +3402,8 @@ func (m *AgentRunFindingMutation) ClearedEdges() []string {
 	if m.clearedtenant {
 		edges = append(edges, agentrunfinding.EdgeTenant)
 	}
-	if m.clearedagent_run {
-		edges = append(edges, agentrunfinding.EdgeAgentRun)
+	if m.clearedagent_run_result {
+		edges = append(edges, agentrunfinding.EdgeAgentRunResult)
 	}
 	if m.clearedcitations {
 		edges = append(edges, agentrunfinding.EdgeCitations)
@@ -3941,8 +3420,8 @@ func (m *AgentRunFindingMutation) EdgeCleared(name string) bool {
 	switch name {
 	case agentrunfinding.EdgeTenant:
 		return m.clearedtenant
-	case agentrunfinding.EdgeAgentRun:
-		return m.clearedagent_run
+	case agentrunfinding.EdgeAgentRunResult:
+		return m.clearedagent_run_result
 	case agentrunfinding.EdgeCitations:
 		return m.clearedcitations
 	case agentrunfinding.EdgeFindingCitations:
@@ -3958,8 +3437,8 @@ func (m *AgentRunFindingMutation) ClearEdge(name string) error {
 	case agentrunfinding.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case agentrunfinding.EdgeAgentRun:
-		m.ClearAgentRun()
+	case agentrunfinding.EdgeAgentRunResult:
+		m.ClearAgentRunResult()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRunFinding unique edge %s", name)
@@ -3972,8 +3451,8 @@ func (m *AgentRunFindingMutation) ResetEdge(name string) error {
 	case agentrunfinding.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case agentrunfinding.EdgeAgentRun:
-		m.ResetAgentRun()
+	case agentrunfinding.EdgeAgentRunResult:
+		m.ResetAgentRunResult()
 		return nil
 	case agentrunfinding.EdgeCitations:
 		m.ResetCitations()
@@ -4745,12 +4224,14 @@ type AgentRunResultMutation struct {
 	created_at       *time.Time
 	updated_at       *time.Time
 	output           *[]byte
-	error_message    *string
 	clearedFields    map[string]struct{}
 	tenant           *int
 	clearedtenant    bool
 	agent_run        *uuid.UUID
 	clearedagent_run bool
+	findings         map[uuid.UUID]struct{}
+	removedfindings  map[uuid.UUID]struct{}
+	clearedfindings  bool
 	done             bool
 	oldValue         func(context.Context) (*AgentRunResult, error)
 	predicates       []predicate.AgentRunResult
@@ -5040,55 +4521,6 @@ func (m *AgentRunResultMutation) ResetOutput() {
 	m.output = nil
 }
 
-// SetErrorMessage sets the "error_message" field.
-func (m *AgentRunResultMutation) SetErrorMessage(s string) {
-	m.error_message = &s
-}
-
-// ErrorMessage returns the value of the "error_message" field in the mutation.
-func (m *AgentRunResultMutation) ErrorMessage() (r string, exists bool) {
-	v := m.error_message
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldErrorMessage returns the old "error_message" field's value of the AgentRunResult entity.
-// If the AgentRunResult object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunResultMutation) OldErrorMessage(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldErrorMessage is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldErrorMessage requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldErrorMessage: %w", err)
-	}
-	return oldValue.ErrorMessage, nil
-}
-
-// ClearErrorMessage clears the value of the "error_message" field.
-func (m *AgentRunResultMutation) ClearErrorMessage() {
-	m.error_message = nil
-	m.clearedFields[agentrunresult.FieldErrorMessage] = struct{}{}
-}
-
-// ErrorMessageCleared returns if the "error_message" field was cleared in this mutation.
-func (m *AgentRunResultMutation) ErrorMessageCleared() bool {
-	_, ok := m.clearedFields[agentrunresult.FieldErrorMessage]
-	return ok
-}
-
-// ResetErrorMessage resets all changes to the "error_message" field.
-func (m *AgentRunResultMutation) ResetErrorMessage() {
-	m.error_message = nil
-	delete(m.clearedFields, agentrunresult.FieldErrorMessage)
-}
-
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *AgentRunResultMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -5116,13 +4548,13 @@ func (m *AgentRunResultMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
+// ClearAgentRun clears the "agent_run" edge to the AgentRunSnapshot entity.
 func (m *AgentRunResultMutation) ClearAgentRun() {
 	m.clearedagent_run = true
 	m.clearedFields[agentrunresult.FieldAgentRunID] = struct{}{}
 }
 
-// AgentRunCleared reports if the "agent_run" edge to the AgentRun entity was cleared.
+// AgentRunCleared reports if the "agent_run" edge to the AgentRunSnapshot entity was cleared.
 func (m *AgentRunResultMutation) AgentRunCleared() bool {
 	return m.clearedagent_run
 }
@@ -5141,6 +4573,60 @@ func (m *AgentRunResultMutation) AgentRunIDs() (ids []uuid.UUID) {
 func (m *AgentRunResultMutation) ResetAgentRun() {
 	m.agent_run = nil
 	m.clearedagent_run = false
+}
+
+// AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by ids.
+func (m *AgentRunResultMutation) AddFindingIDs(ids ...uuid.UUID) {
+	if m.findings == nil {
+		m.findings = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.findings[ids[i]] = struct{}{}
+	}
+}
+
+// ClearFindings clears the "findings" edge to the AgentRunFinding entity.
+func (m *AgentRunResultMutation) ClearFindings() {
+	m.clearedfindings = true
+}
+
+// FindingsCleared reports if the "findings" edge to the AgentRunFinding entity was cleared.
+func (m *AgentRunResultMutation) FindingsCleared() bool {
+	return m.clearedfindings
+}
+
+// RemoveFindingIDs removes the "findings" edge to the AgentRunFinding entity by IDs.
+func (m *AgentRunResultMutation) RemoveFindingIDs(ids ...uuid.UUID) {
+	if m.removedfindings == nil {
+		m.removedfindings = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.findings, ids[i])
+		m.removedfindings[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedFindings returns the removed IDs of the "findings" edge to the AgentRunFinding entity.
+func (m *AgentRunResultMutation) RemovedFindingsIDs() (ids []uuid.UUID) {
+	for id := range m.removedfindings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// FindingsIDs returns the "findings" edge IDs in the mutation.
+func (m *AgentRunResultMutation) FindingsIDs() (ids []uuid.UUID) {
+	for id := range m.findings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetFindings resets all changes to the "findings" edge.
+func (m *AgentRunResultMutation) ResetFindings() {
+	m.findings = nil
+	m.clearedfindings = false
+	m.removedfindings = nil
 }
 
 // Where appends a list predicates to the AgentRunResultMutation builder.
@@ -5177,7 +4663,7 @@ func (m *AgentRunResultMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentRunResultMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, agentrunresult.FieldTenantID)
 	}
@@ -5192,9 +4678,6 @@ func (m *AgentRunResultMutation) Fields() []string {
 	}
 	if m.output != nil {
 		fields = append(fields, agentrunresult.FieldOutput)
-	}
-	if m.error_message != nil {
-		fields = append(fields, agentrunresult.FieldErrorMessage)
 	}
 	return fields
 }
@@ -5214,8 +4697,6 @@ func (m *AgentRunResultMutation) Field(name string) (ent.Value, bool) {
 		return m.AgentRunID()
 	case agentrunresult.FieldOutput:
 		return m.Output()
-	case agentrunresult.FieldErrorMessage:
-		return m.ErrorMessage()
 	}
 	return nil, false
 }
@@ -5235,8 +4716,6 @@ func (m *AgentRunResultMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldAgentRunID(ctx)
 	case agentrunresult.FieldOutput:
 		return m.OldOutput(ctx)
-	case agentrunresult.FieldErrorMessage:
-		return m.OldErrorMessage(ctx)
 	}
 	return nil, fmt.Errorf("unknown AgentRunResult field %s", name)
 }
@@ -5281,13 +4760,6 @@ func (m *AgentRunResultMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetOutput(v)
 		return nil
-	case agentrunresult.FieldErrorMessage:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetErrorMessage(v)
-		return nil
 	}
 	return fmt.Errorf("unknown AgentRunResult field %s", name)
 }
@@ -5320,11 +4792,7 @@ func (m *AgentRunResultMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AgentRunResultMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(agentrunresult.FieldErrorMessage) {
-		fields = append(fields, agentrunresult.FieldErrorMessage)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -5337,11 +4805,6 @@ func (m *AgentRunResultMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AgentRunResultMutation) ClearField(name string) error {
-	switch name {
-	case agentrunresult.FieldErrorMessage:
-		m.ClearErrorMessage()
-		return nil
-	}
 	return fmt.Errorf("unknown AgentRunResult nullable field %s", name)
 }
 
@@ -5364,21 +4827,21 @@ func (m *AgentRunResultMutation) ResetField(name string) error {
 	case agentrunresult.FieldOutput:
 		m.ResetOutput()
 		return nil
-	case agentrunresult.FieldErrorMessage:
-		m.ResetErrorMessage()
-		return nil
 	}
 	return fmt.Errorf("unknown AgentRunResult field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentRunResultMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, agentrunresult.EdgeTenant)
 	}
 	if m.agent_run != nil {
 		edges = append(edges, agentrunresult.EdgeAgentRun)
+	}
+	if m.findings != nil {
+		edges = append(edges, agentrunresult.EdgeFindings)
 	}
 	return edges
 }
@@ -5395,30 +4858,50 @@ func (m *AgentRunResultMutation) AddedIDs(name string) []ent.Value {
 		if id := m.agent_run; id != nil {
 			return []ent.Value{*id}
 		}
+	case agentrunresult.EdgeFindings:
+		ids := make([]ent.Value, 0, len(m.findings))
+		for id := range m.findings {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentRunResultMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
+	if m.removedfindings != nil {
+		edges = append(edges, agentrunresult.EdgeFindings)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *AgentRunResultMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case agentrunresult.EdgeFindings:
+		ids := make([]ent.Value, 0, len(m.removedfindings))
+		for id := range m.removedfindings {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentRunResultMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, agentrunresult.EdgeTenant)
 	}
 	if m.clearedagent_run {
 		edges = append(edges, agentrunresult.EdgeAgentRun)
+	}
+	if m.clearedfindings {
+		edges = append(edges, agentrunresult.EdgeFindings)
 	}
 	return edges
 }
@@ -5431,6 +4914,8 @@ func (m *AgentRunResultMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case agentrunresult.EdgeAgentRun:
 		return m.clearedagent_run
+	case agentrunresult.EdgeFindings:
+		return m.clearedfindings
 	}
 	return false
 }
@@ -5459,49 +4944,43 @@ func (m *AgentRunResultMutation) ResetEdge(name string) error {
 	case agentrunresult.EdgeAgentRun:
 		m.ResetAgentRun()
 		return nil
+	case agentrunresult.EdgeFindings:
+		m.ResetFindings()
+		return nil
 	}
 	return fmt.Errorf("unknown AgentRunResult edge %s", name)
 }
 
-// AgentRunToolCallMutation represents an operation that mutates the AgentRunToolCall nodes in the graph.
-type AgentRunToolCallMutation struct {
+// AgentRunSnapshotMutation represents an operation that mutates the AgentRunSnapshot nodes in the graph.
+type AgentRunSnapshotMutation struct {
 	config
 	op               Op
 	typ              string
 	id               *uuid.UUID
 	created_at       *time.Time
 	updated_at       *time.Time
-	tool_id          *string
-	status           *agentruntoolcall.Status
-	tool_params      *map[string]interface{}
-	result           *map[string]interface{}
-	error_message    *string
-	started_at       *time.Time
-	finished_at      *time.Time
+	data             *[]byte
 	clearedFields    map[string]struct{}
 	tenant           *int
 	clearedtenant    bool
 	agent_run        *uuid.UUID
 	clearedagent_run bool
-	citations        map[uuid.UUID]struct{}
-	removedcitations map[uuid.UUID]struct{}
-	clearedcitations bool
 	done             bool
-	oldValue         func(context.Context) (*AgentRunToolCall, error)
-	predicates       []predicate.AgentRunToolCall
+	oldValue         func(context.Context) (*AgentRunSnapshot, error)
+	predicates       []predicate.AgentRunSnapshot
 }
 
-var _ ent.Mutation = (*AgentRunToolCallMutation)(nil)
+var _ ent.Mutation = (*AgentRunSnapshotMutation)(nil)
 
-// agentruntoolcallOption allows management of the mutation configuration using functional options.
-type agentruntoolcallOption func(*AgentRunToolCallMutation)
+// agentrunsnapshotOption allows management of the mutation configuration using functional options.
+type agentrunsnapshotOption func(*AgentRunSnapshotMutation)
 
-// newAgentRunToolCallMutation creates new mutation for the AgentRunToolCall entity.
-func newAgentRunToolCallMutation(c config, op Op, opts ...agentruntoolcallOption) *AgentRunToolCallMutation {
-	m := &AgentRunToolCallMutation{
+// newAgentRunSnapshotMutation creates new mutation for the AgentRunSnapshot entity.
+func newAgentRunSnapshotMutation(c config, op Op, opts ...agentrunsnapshotOption) *AgentRunSnapshotMutation {
+	m := &AgentRunSnapshotMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeAgentRunToolCall,
+		typ:           TypeAgentRunSnapshot,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -5510,20 +4989,20 @@ func newAgentRunToolCallMutation(c config, op Op, opts ...agentruntoolcallOption
 	return m
 }
 
-// withAgentRunToolCallID sets the ID field of the mutation.
-func withAgentRunToolCallID(id uuid.UUID) agentruntoolcallOption {
-	return func(m *AgentRunToolCallMutation) {
+// withAgentRunSnapshotID sets the ID field of the mutation.
+func withAgentRunSnapshotID(id uuid.UUID) agentrunsnapshotOption {
+	return func(m *AgentRunSnapshotMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *AgentRunToolCall
+			value *AgentRunSnapshot
 		)
-		m.oldValue = func(ctx context.Context) (*AgentRunToolCall, error) {
+		m.oldValue = func(ctx context.Context) (*AgentRunSnapshot, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().AgentRunToolCall.Get(ctx, id)
+					value, err = m.Client().AgentRunSnapshot.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -5532,10 +5011,10 @@ func withAgentRunToolCallID(id uuid.UUID) agentruntoolcallOption {
 	}
 }
 
-// withAgentRunToolCall sets the old AgentRunToolCall of the mutation.
-func withAgentRunToolCall(node *AgentRunToolCall) agentruntoolcallOption {
-	return func(m *AgentRunToolCallMutation) {
-		m.oldValue = func(context.Context) (*AgentRunToolCall, error) {
+// withAgentRunSnapshot sets the old AgentRunSnapshot of the mutation.
+func withAgentRunSnapshot(node *AgentRunSnapshot) agentrunsnapshotOption {
+	return func(m *AgentRunSnapshotMutation) {
+		m.oldValue = func(context.Context) (*AgentRunSnapshot, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -5544,7 +5023,7 @@ func withAgentRunToolCall(node *AgentRunToolCall) agentruntoolcallOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m AgentRunToolCallMutation) Client() *Client {
+func (m AgentRunSnapshotMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -5552,7 +5031,7 @@ func (m AgentRunToolCallMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m AgentRunToolCallMutation) Tx() (*Tx, error) {
+func (m AgentRunSnapshotMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -5562,14 +5041,14 @@ func (m AgentRunToolCallMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of AgentRunToolCall entities.
-func (m *AgentRunToolCallMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of AgentRunSnapshot entities.
+func (m *AgentRunSnapshotMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *AgentRunToolCallMutation) ID() (id uuid.UUID, exists bool) {
+func (m *AgentRunSnapshotMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -5580,7 +5059,7 @@ func (m *AgentRunToolCallMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *AgentRunToolCallMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *AgentRunSnapshotMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -5589,19 +5068,19 @@ func (m *AgentRunToolCallMutation) IDs(ctx context.Context) ([]uuid.UUID, error)
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().AgentRunToolCall.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().AgentRunSnapshot.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (m *AgentRunToolCallMutation) SetTenantID(i int) {
+func (m *AgentRunSnapshotMutation) SetTenantID(i int) {
 	m.tenant = &i
 }
 
 // TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *AgentRunToolCallMutation) TenantID() (r int, exists bool) {
+func (m *AgentRunSnapshotMutation) TenantID() (r int, exists bool) {
 	v := m.tenant
 	if v == nil {
 		return
@@ -5609,10 +5088,10 @@ func (m *AgentRunToolCallMutation) TenantID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the AgentRunToolCall entity.
-// If the AgentRunToolCall object wasn't provided to the builder, the object is fetched from the database.
+// OldTenantID returns the old "tenant_id" field's value of the AgentRunSnapshot entity.
+// If the AgentRunSnapshot object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunToolCallMutation) OldTenantID(ctx context.Context) (v int, err error) {
+func (m *AgentRunSnapshotMutation) OldTenantID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
 	}
@@ -5627,17 +5106,17 @@ func (m *AgentRunToolCallMutation) OldTenantID(ctx context.Context) (v int, err 
 }
 
 // ResetTenantID resets all changes to the "tenant_id" field.
-func (m *AgentRunToolCallMutation) ResetTenantID() {
+func (m *AgentRunSnapshotMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *AgentRunToolCallMutation) SetCreatedAt(t time.Time) {
+func (m *AgentRunSnapshotMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *AgentRunToolCallMutation) CreatedAt() (r time.Time, exists bool) {
+func (m *AgentRunSnapshotMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -5645,10 +5124,10 @@ func (m *AgentRunToolCallMutation) CreatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the AgentRunToolCall entity.
-// If the AgentRunToolCall object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the AgentRunSnapshot entity.
+// If the AgentRunSnapshot object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunToolCallMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *AgentRunSnapshotMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -5663,17 +5142,17 @@ func (m *AgentRunToolCallMutation) OldCreatedAt(ctx context.Context) (v time.Tim
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *AgentRunToolCallMutation) ResetCreatedAt() {
+func (m *AgentRunSnapshotMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (m *AgentRunToolCallMutation) SetUpdatedAt(t time.Time) {
+func (m *AgentRunSnapshotMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
 }
 
 // UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *AgentRunToolCallMutation) UpdatedAt() (r time.Time, exists bool) {
+func (m *AgentRunSnapshotMutation) UpdatedAt() (r time.Time, exists bool) {
 	v := m.updated_at
 	if v == nil {
 		return
@@ -5681,10 +5160,10 @@ func (m *AgentRunToolCallMutation) UpdatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldUpdatedAt returns the old "updated_at" field's value of the AgentRunToolCall entity.
-// If the AgentRunToolCall object wasn't provided to the builder, the object is fetched from the database.
+// OldUpdatedAt returns the old "updated_at" field's value of the AgentRunSnapshot entity.
+// If the AgentRunSnapshot object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunToolCallMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *AgentRunSnapshotMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
 	}
@@ -5699,17 +5178,17 @@ func (m *AgentRunToolCallMutation) OldUpdatedAt(ctx context.Context) (v time.Tim
 }
 
 // ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *AgentRunToolCallMutation) ResetUpdatedAt() {
+func (m *AgentRunSnapshotMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
 // SetAgentRunID sets the "agent_run_id" field.
-func (m *AgentRunToolCallMutation) SetAgentRunID(u uuid.UUID) {
+func (m *AgentRunSnapshotMutation) SetAgentRunID(u uuid.UUID) {
 	m.agent_run = &u
 }
 
 // AgentRunID returns the value of the "agent_run_id" field in the mutation.
-func (m *AgentRunToolCallMutation) AgentRunID() (r uuid.UUID, exists bool) {
+func (m *AgentRunSnapshotMutation) AgentRunID() (r uuid.UUID, exists bool) {
 	v := m.agent_run
 	if v == nil {
 		return
@@ -5717,10 +5196,10 @@ func (m *AgentRunToolCallMutation) AgentRunID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldAgentRunID returns the old "agent_run_id" field's value of the AgentRunToolCall entity.
-// If the AgentRunToolCall object wasn't provided to the builder, the object is fetched from the database.
+// OldAgentRunID returns the old "agent_run_id" field's value of the AgentRunSnapshot entity.
+// If the AgentRunSnapshot object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunToolCallMutation) OldAgentRunID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *AgentRunSnapshotMutation) OldAgentRunID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAgentRunID is only allowed on UpdateOne operations")
 	}
@@ -5735,342 +5214,61 @@ func (m *AgentRunToolCallMutation) OldAgentRunID(ctx context.Context) (v uuid.UU
 }
 
 // ResetAgentRunID resets all changes to the "agent_run_id" field.
-func (m *AgentRunToolCallMutation) ResetAgentRunID() {
+func (m *AgentRunSnapshotMutation) ResetAgentRunID() {
 	m.agent_run = nil
 }
 
-// SetToolID sets the "tool_id" field.
-func (m *AgentRunToolCallMutation) SetToolID(s string) {
-	m.tool_id = &s
+// SetData sets the "data" field.
+func (m *AgentRunSnapshotMutation) SetData(b []byte) {
+	m.data = &b
 }
 
-// ToolID returns the value of the "tool_id" field in the mutation.
-func (m *AgentRunToolCallMutation) ToolID() (r string, exists bool) {
-	v := m.tool_id
+// Data returns the value of the "data" field in the mutation.
+func (m *AgentRunSnapshotMutation) Data() (r []byte, exists bool) {
+	v := m.data
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldToolID returns the old "tool_id" field's value of the AgentRunToolCall entity.
-// If the AgentRunToolCall object wasn't provided to the builder, the object is fetched from the database.
+// OldData returns the old "data" field's value of the AgentRunSnapshot entity.
+// If the AgentRunSnapshot object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunToolCallMutation) OldToolID(ctx context.Context) (v string, err error) {
+func (m *AgentRunSnapshotMutation) OldData(ctx context.Context) (v []byte, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldToolID is only allowed on UpdateOne operations")
+		return v, errors.New("OldData is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldToolID requires an ID field in the mutation")
+		return v, errors.New("OldData requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldToolID: %w", err)
+		return v, fmt.Errorf("querying old value for OldData: %w", err)
 	}
-	return oldValue.ToolID, nil
+	return oldValue.Data, nil
 }
 
-// ResetToolID resets all changes to the "tool_id" field.
-func (m *AgentRunToolCallMutation) ResetToolID() {
-	m.tool_id = nil
-}
-
-// SetStatus sets the "status" field.
-func (m *AgentRunToolCallMutation) SetStatus(a agentruntoolcall.Status) {
-	m.status = &a
-}
-
-// Status returns the value of the "status" field in the mutation.
-func (m *AgentRunToolCallMutation) Status() (r agentruntoolcall.Status, exists bool) {
-	v := m.status
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStatus returns the old "status" field's value of the AgentRunToolCall entity.
-// If the AgentRunToolCall object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunToolCallMutation) OldStatus(ctx context.Context) (v agentruntoolcall.Status, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
-	}
-	return oldValue.Status, nil
-}
-
-// ResetStatus resets all changes to the "status" field.
-func (m *AgentRunToolCallMutation) ResetStatus() {
-	m.status = nil
-}
-
-// SetToolParams sets the "tool_params" field.
-func (m *AgentRunToolCallMutation) SetToolParams(value map[string]interface{}) {
-	m.tool_params = &value
-}
-
-// ToolParams returns the value of the "tool_params" field in the mutation.
-func (m *AgentRunToolCallMutation) ToolParams() (r map[string]interface{}, exists bool) {
-	v := m.tool_params
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldToolParams returns the old "tool_params" field's value of the AgentRunToolCall entity.
-// If the AgentRunToolCall object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunToolCallMutation) OldToolParams(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldToolParams is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldToolParams requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldToolParams: %w", err)
-	}
-	return oldValue.ToolParams, nil
-}
-
-// ClearToolParams clears the value of the "tool_params" field.
-func (m *AgentRunToolCallMutation) ClearToolParams() {
-	m.tool_params = nil
-	m.clearedFields[agentruntoolcall.FieldToolParams] = struct{}{}
-}
-
-// ToolParamsCleared returns if the "tool_params" field was cleared in this mutation.
-func (m *AgentRunToolCallMutation) ToolParamsCleared() bool {
-	_, ok := m.clearedFields[agentruntoolcall.FieldToolParams]
-	return ok
-}
-
-// ResetToolParams resets all changes to the "tool_params" field.
-func (m *AgentRunToolCallMutation) ResetToolParams() {
-	m.tool_params = nil
-	delete(m.clearedFields, agentruntoolcall.FieldToolParams)
-}
-
-// SetResult sets the "result" field.
-func (m *AgentRunToolCallMutation) SetResult(value map[string]interface{}) {
-	m.result = &value
-}
-
-// Result returns the value of the "result" field in the mutation.
-func (m *AgentRunToolCallMutation) Result() (r map[string]interface{}, exists bool) {
-	v := m.result
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldResult returns the old "result" field's value of the AgentRunToolCall entity.
-// If the AgentRunToolCall object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunToolCallMutation) OldResult(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldResult is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldResult requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldResult: %w", err)
-	}
-	return oldValue.Result, nil
-}
-
-// ClearResult clears the value of the "result" field.
-func (m *AgentRunToolCallMutation) ClearResult() {
-	m.result = nil
-	m.clearedFields[agentruntoolcall.FieldResult] = struct{}{}
-}
-
-// ResultCleared returns if the "result" field was cleared in this mutation.
-func (m *AgentRunToolCallMutation) ResultCleared() bool {
-	_, ok := m.clearedFields[agentruntoolcall.FieldResult]
-	return ok
-}
-
-// ResetResult resets all changes to the "result" field.
-func (m *AgentRunToolCallMutation) ResetResult() {
-	m.result = nil
-	delete(m.clearedFields, agentruntoolcall.FieldResult)
-}
-
-// SetErrorMessage sets the "error_message" field.
-func (m *AgentRunToolCallMutation) SetErrorMessage(s string) {
-	m.error_message = &s
-}
-
-// ErrorMessage returns the value of the "error_message" field in the mutation.
-func (m *AgentRunToolCallMutation) ErrorMessage() (r string, exists bool) {
-	v := m.error_message
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldErrorMessage returns the old "error_message" field's value of the AgentRunToolCall entity.
-// If the AgentRunToolCall object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunToolCallMutation) OldErrorMessage(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldErrorMessage is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldErrorMessage requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldErrorMessage: %w", err)
-	}
-	return oldValue.ErrorMessage, nil
-}
-
-// ClearErrorMessage clears the value of the "error_message" field.
-func (m *AgentRunToolCallMutation) ClearErrorMessage() {
-	m.error_message = nil
-	m.clearedFields[agentruntoolcall.FieldErrorMessage] = struct{}{}
-}
-
-// ErrorMessageCleared returns if the "error_message" field was cleared in this mutation.
-func (m *AgentRunToolCallMutation) ErrorMessageCleared() bool {
-	_, ok := m.clearedFields[agentruntoolcall.FieldErrorMessage]
-	return ok
-}
-
-// ResetErrorMessage resets all changes to the "error_message" field.
-func (m *AgentRunToolCallMutation) ResetErrorMessage() {
-	m.error_message = nil
-	delete(m.clearedFields, agentruntoolcall.FieldErrorMessage)
-}
-
-// SetStartedAt sets the "started_at" field.
-func (m *AgentRunToolCallMutation) SetStartedAt(t time.Time) {
-	m.started_at = &t
-}
-
-// StartedAt returns the value of the "started_at" field in the mutation.
-func (m *AgentRunToolCallMutation) StartedAt() (r time.Time, exists bool) {
-	v := m.started_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStartedAt returns the old "started_at" field's value of the AgentRunToolCall entity.
-// If the AgentRunToolCall object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunToolCallMutation) OldStartedAt(ctx context.Context) (v *time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStartedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStartedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStartedAt: %w", err)
-	}
-	return oldValue.StartedAt, nil
-}
-
-// ClearStartedAt clears the value of the "started_at" field.
-func (m *AgentRunToolCallMutation) ClearStartedAt() {
-	m.started_at = nil
-	m.clearedFields[agentruntoolcall.FieldStartedAt] = struct{}{}
-}
-
-// StartedAtCleared returns if the "started_at" field was cleared in this mutation.
-func (m *AgentRunToolCallMutation) StartedAtCleared() bool {
-	_, ok := m.clearedFields[agentruntoolcall.FieldStartedAt]
-	return ok
-}
-
-// ResetStartedAt resets all changes to the "started_at" field.
-func (m *AgentRunToolCallMutation) ResetStartedAt() {
-	m.started_at = nil
-	delete(m.clearedFields, agentruntoolcall.FieldStartedAt)
-}
-
-// SetFinishedAt sets the "finished_at" field.
-func (m *AgentRunToolCallMutation) SetFinishedAt(t time.Time) {
-	m.finished_at = &t
-}
-
-// FinishedAt returns the value of the "finished_at" field in the mutation.
-func (m *AgentRunToolCallMutation) FinishedAt() (r time.Time, exists bool) {
-	v := m.finished_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldFinishedAt returns the old "finished_at" field's value of the AgentRunToolCall entity.
-// If the AgentRunToolCall object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunToolCallMutation) OldFinishedAt(ctx context.Context) (v *time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFinishedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFinishedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFinishedAt: %w", err)
-	}
-	return oldValue.FinishedAt, nil
-}
-
-// ClearFinishedAt clears the value of the "finished_at" field.
-func (m *AgentRunToolCallMutation) ClearFinishedAt() {
-	m.finished_at = nil
-	m.clearedFields[agentruntoolcall.FieldFinishedAt] = struct{}{}
-}
-
-// FinishedAtCleared returns if the "finished_at" field was cleared in this mutation.
-func (m *AgentRunToolCallMutation) FinishedAtCleared() bool {
-	_, ok := m.clearedFields[agentruntoolcall.FieldFinishedAt]
-	return ok
-}
-
-// ResetFinishedAt resets all changes to the "finished_at" field.
-func (m *AgentRunToolCallMutation) ResetFinishedAt() {
-	m.finished_at = nil
-	delete(m.clearedFields, agentruntoolcall.FieldFinishedAt)
+// ResetData resets all changes to the "data" field.
+func (m *AgentRunSnapshotMutation) ResetData() {
+	m.data = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *AgentRunToolCallMutation) ClearTenant() {
+func (m *AgentRunSnapshotMutation) ClearTenant() {
 	m.clearedtenant = true
-	m.clearedFields[agentruntoolcall.FieldTenantID] = struct{}{}
+	m.clearedFields[agentrunsnapshot.FieldTenantID] = struct{}{}
 }
 
 // TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *AgentRunToolCallMutation) TenantCleared() bool {
+func (m *AgentRunSnapshotMutation) TenantCleared() bool {
 	return m.clearedtenant
 }
 
 // TenantIDs returns the "tenant" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TenantID instead. It exists only for internal usage by the builders.
-func (m *AgentRunToolCallMutation) TenantIDs() (ids []int) {
+func (m *AgentRunSnapshotMutation) TenantIDs() (ids []int) {
 	if id := m.tenant; id != nil {
 		ids = append(ids, *id)
 	}
@@ -6078,26 +5276,26 @@ func (m *AgentRunToolCallMutation) TenantIDs() (ids []int) {
 }
 
 // ResetTenant resets all changes to the "tenant" edge.
-func (m *AgentRunToolCallMutation) ResetTenant() {
+func (m *AgentRunSnapshotMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
 }
 
 // ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
-func (m *AgentRunToolCallMutation) ClearAgentRun() {
+func (m *AgentRunSnapshotMutation) ClearAgentRun() {
 	m.clearedagent_run = true
-	m.clearedFields[agentruntoolcall.FieldAgentRunID] = struct{}{}
+	m.clearedFields[agentrunsnapshot.FieldAgentRunID] = struct{}{}
 }
 
 // AgentRunCleared reports if the "agent_run" edge to the AgentRun entity was cleared.
-func (m *AgentRunToolCallMutation) AgentRunCleared() bool {
+func (m *AgentRunSnapshotMutation) AgentRunCleared() bool {
 	return m.clearedagent_run
 }
 
 // AgentRunIDs returns the "agent_run" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // AgentRunID instead. It exists only for internal usage by the builders.
-func (m *AgentRunToolCallMutation) AgentRunIDs() (ids []uuid.UUID) {
+func (m *AgentRunSnapshotMutation) AgentRunIDs() (ids []uuid.UUID) {
 	if id := m.agent_run; id != nil {
 		ids = append(ids, *id)
 	}
@@ -6105,74 +5303,20 @@ func (m *AgentRunToolCallMutation) AgentRunIDs() (ids []uuid.UUID) {
 }
 
 // ResetAgentRun resets all changes to the "agent_run" edge.
-func (m *AgentRunToolCallMutation) ResetAgentRun() {
+func (m *AgentRunSnapshotMutation) ResetAgentRun() {
 	m.agent_run = nil
 	m.clearedagent_run = false
 }
 
-// AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by ids.
-func (m *AgentRunToolCallMutation) AddCitationIDs(ids ...uuid.UUID) {
-	if m.citations == nil {
-		m.citations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.citations[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCitations clears the "citations" edge to the AgentRunCitation entity.
-func (m *AgentRunToolCallMutation) ClearCitations() {
-	m.clearedcitations = true
-}
-
-// CitationsCleared reports if the "citations" edge to the AgentRunCitation entity was cleared.
-func (m *AgentRunToolCallMutation) CitationsCleared() bool {
-	return m.clearedcitations
-}
-
-// RemoveCitationIDs removes the "citations" edge to the AgentRunCitation entity by IDs.
-func (m *AgentRunToolCallMutation) RemoveCitationIDs(ids ...uuid.UUID) {
-	if m.removedcitations == nil {
-		m.removedcitations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.citations, ids[i])
-		m.removedcitations[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCitations returns the removed IDs of the "citations" edge to the AgentRunCitation entity.
-func (m *AgentRunToolCallMutation) RemovedCitationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedcitations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CitationsIDs returns the "citations" edge IDs in the mutation.
-func (m *AgentRunToolCallMutation) CitationsIDs() (ids []uuid.UUID) {
-	for id := range m.citations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCitations resets all changes to the "citations" edge.
-func (m *AgentRunToolCallMutation) ResetCitations() {
-	m.citations = nil
-	m.clearedcitations = false
-	m.removedcitations = nil
-}
-
-// Where appends a list predicates to the AgentRunToolCallMutation builder.
-func (m *AgentRunToolCallMutation) Where(ps ...predicate.AgentRunToolCall) {
+// Where appends a list predicates to the AgentRunSnapshotMutation builder.
+func (m *AgentRunSnapshotMutation) Where(ps ...predicate.AgentRunSnapshot) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the AgentRunToolCallMutation builder. Using this method,
+// WhereP appends storage-level predicates to the AgentRunSnapshotMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *AgentRunToolCallMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.AgentRunToolCall, len(ps))
+func (m *AgentRunSnapshotMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.AgentRunSnapshot, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -6180,57 +5324,39 @@ func (m *AgentRunToolCallMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *AgentRunToolCallMutation) Op() Op {
+func (m *AgentRunSnapshotMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *AgentRunToolCallMutation) SetOp(op Op) {
+func (m *AgentRunSnapshotMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (AgentRunToolCall).
-func (m *AgentRunToolCallMutation) Type() string {
+// Type returns the node type of this mutation (AgentRunSnapshot).
+func (m *AgentRunSnapshotMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *AgentRunToolCallMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+func (m *AgentRunSnapshotMutation) Fields() []string {
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
-		fields = append(fields, agentruntoolcall.FieldTenantID)
+		fields = append(fields, agentrunsnapshot.FieldTenantID)
 	}
 	if m.created_at != nil {
-		fields = append(fields, agentruntoolcall.FieldCreatedAt)
+		fields = append(fields, agentrunsnapshot.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
-		fields = append(fields, agentruntoolcall.FieldUpdatedAt)
+		fields = append(fields, agentrunsnapshot.FieldUpdatedAt)
 	}
 	if m.agent_run != nil {
-		fields = append(fields, agentruntoolcall.FieldAgentRunID)
+		fields = append(fields, agentrunsnapshot.FieldAgentRunID)
 	}
-	if m.tool_id != nil {
-		fields = append(fields, agentruntoolcall.FieldToolID)
-	}
-	if m.status != nil {
-		fields = append(fields, agentruntoolcall.FieldStatus)
-	}
-	if m.tool_params != nil {
-		fields = append(fields, agentruntoolcall.FieldToolParams)
-	}
-	if m.result != nil {
-		fields = append(fields, agentruntoolcall.FieldResult)
-	}
-	if m.error_message != nil {
-		fields = append(fields, agentruntoolcall.FieldErrorMessage)
-	}
-	if m.started_at != nil {
-		fields = append(fields, agentruntoolcall.FieldStartedAt)
-	}
-	if m.finished_at != nil {
-		fields = append(fields, agentruntoolcall.FieldFinishedAt)
+	if m.data != nil {
+		fields = append(fields, agentrunsnapshot.FieldData)
 	}
 	return fields
 }
@@ -6238,30 +5364,18 @@ func (m *AgentRunToolCallMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *AgentRunToolCallMutation) Field(name string) (ent.Value, bool) {
+func (m *AgentRunSnapshotMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case agentruntoolcall.FieldTenantID:
+	case agentrunsnapshot.FieldTenantID:
 		return m.TenantID()
-	case agentruntoolcall.FieldCreatedAt:
+	case agentrunsnapshot.FieldCreatedAt:
 		return m.CreatedAt()
-	case agentruntoolcall.FieldUpdatedAt:
+	case agentrunsnapshot.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case agentruntoolcall.FieldAgentRunID:
+	case agentrunsnapshot.FieldAgentRunID:
 		return m.AgentRunID()
-	case agentruntoolcall.FieldToolID:
-		return m.ToolID()
-	case agentruntoolcall.FieldStatus:
-		return m.Status()
-	case agentruntoolcall.FieldToolParams:
-		return m.ToolParams()
-	case agentruntoolcall.FieldResult:
-		return m.Result()
-	case agentruntoolcall.FieldErrorMessage:
-		return m.ErrorMessage()
-	case agentruntoolcall.FieldStartedAt:
-		return m.StartedAt()
-	case agentruntoolcall.FieldFinishedAt:
-		return m.FinishedAt()
+	case agentrunsnapshot.FieldData:
+		return m.Data()
 	}
 	return nil, false
 }
@@ -6269,1190 +5383,69 @@ func (m *AgentRunToolCallMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *AgentRunToolCallMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *AgentRunSnapshotMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case agentruntoolcall.FieldTenantID:
+	case agentrunsnapshot.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case agentruntoolcall.FieldCreatedAt:
+	case agentrunsnapshot.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case agentruntoolcall.FieldUpdatedAt:
+	case agentrunsnapshot.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case agentruntoolcall.FieldAgentRunID:
+	case agentrunsnapshot.FieldAgentRunID:
 		return m.OldAgentRunID(ctx)
-	case agentruntoolcall.FieldToolID:
-		return m.OldToolID(ctx)
-	case agentruntoolcall.FieldStatus:
-		return m.OldStatus(ctx)
-	case agentruntoolcall.FieldToolParams:
-		return m.OldToolParams(ctx)
-	case agentruntoolcall.FieldResult:
-		return m.OldResult(ctx)
-	case agentruntoolcall.FieldErrorMessage:
-		return m.OldErrorMessage(ctx)
-	case agentruntoolcall.FieldStartedAt:
-		return m.OldStartedAt(ctx)
-	case agentruntoolcall.FieldFinishedAt:
-		return m.OldFinishedAt(ctx)
+	case agentrunsnapshot.FieldData:
+		return m.OldData(ctx)
 	}
-	return nil, fmt.Errorf("unknown AgentRunToolCall field %s", name)
+	return nil, fmt.Errorf("unknown AgentRunSnapshot field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *AgentRunToolCallMutation) SetField(name string, value ent.Value) error {
+func (m *AgentRunSnapshotMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case agentruntoolcall.FieldTenantID:
+	case agentrunsnapshot.FieldTenantID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
 		return nil
-	case agentruntoolcall.FieldCreatedAt:
+	case agentrunsnapshot.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case agentruntoolcall.FieldUpdatedAt:
+	case agentrunsnapshot.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case agentruntoolcall.FieldAgentRunID:
+	case agentrunsnapshot.FieldAgentRunID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAgentRunID(v)
 		return nil
-	case agentruntoolcall.FieldToolID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetToolID(v)
-		return nil
-	case agentruntoolcall.FieldStatus:
-		v, ok := value.(agentruntoolcall.Status)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStatus(v)
-		return nil
-	case agentruntoolcall.FieldToolParams:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetToolParams(v)
-		return nil
-	case agentruntoolcall.FieldResult:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetResult(v)
-		return nil
-	case agentruntoolcall.FieldErrorMessage:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetErrorMessage(v)
-		return nil
-	case agentruntoolcall.FieldStartedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStartedAt(v)
-		return nil
-	case agentruntoolcall.FieldFinishedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetFinishedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown AgentRunToolCall field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *AgentRunToolCallMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *AgentRunToolCallMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *AgentRunToolCallMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown AgentRunToolCall numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *AgentRunToolCallMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(agentruntoolcall.FieldToolParams) {
-		fields = append(fields, agentruntoolcall.FieldToolParams)
-	}
-	if m.FieldCleared(agentruntoolcall.FieldResult) {
-		fields = append(fields, agentruntoolcall.FieldResult)
-	}
-	if m.FieldCleared(agentruntoolcall.FieldErrorMessage) {
-		fields = append(fields, agentruntoolcall.FieldErrorMessage)
-	}
-	if m.FieldCleared(agentruntoolcall.FieldStartedAt) {
-		fields = append(fields, agentruntoolcall.FieldStartedAt)
-	}
-	if m.FieldCleared(agentruntoolcall.FieldFinishedAt) {
-		fields = append(fields, agentruntoolcall.FieldFinishedAt)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *AgentRunToolCallMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *AgentRunToolCallMutation) ClearField(name string) error {
-	switch name {
-	case agentruntoolcall.FieldToolParams:
-		m.ClearToolParams()
-		return nil
-	case agentruntoolcall.FieldResult:
-		m.ClearResult()
-		return nil
-	case agentruntoolcall.FieldErrorMessage:
-		m.ClearErrorMessage()
-		return nil
-	case agentruntoolcall.FieldStartedAt:
-		m.ClearStartedAt()
-		return nil
-	case agentruntoolcall.FieldFinishedAt:
-		m.ClearFinishedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown AgentRunToolCall nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *AgentRunToolCallMutation) ResetField(name string) error {
-	switch name {
-	case agentruntoolcall.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case agentruntoolcall.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case agentruntoolcall.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	case agentruntoolcall.FieldAgentRunID:
-		m.ResetAgentRunID()
-		return nil
-	case agentruntoolcall.FieldToolID:
-		m.ResetToolID()
-		return nil
-	case agentruntoolcall.FieldStatus:
-		m.ResetStatus()
-		return nil
-	case agentruntoolcall.FieldToolParams:
-		m.ResetToolParams()
-		return nil
-	case agentruntoolcall.FieldResult:
-		m.ResetResult()
-		return nil
-	case agentruntoolcall.FieldErrorMessage:
-		m.ResetErrorMessage()
-		return nil
-	case agentruntoolcall.FieldStartedAt:
-		m.ResetStartedAt()
-		return nil
-	case agentruntoolcall.FieldFinishedAt:
-		m.ResetFinishedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown AgentRunToolCall field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *AgentRunToolCallMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.tenant != nil {
-		edges = append(edges, agentruntoolcall.EdgeTenant)
-	}
-	if m.agent_run != nil {
-		edges = append(edges, agentruntoolcall.EdgeAgentRun)
-	}
-	if m.citations != nil {
-		edges = append(edges, agentruntoolcall.EdgeCitations)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *AgentRunToolCallMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case agentruntoolcall.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case agentruntoolcall.EdgeAgentRun:
-		if id := m.agent_run; id != nil {
-			return []ent.Value{*id}
-		}
-	case agentruntoolcall.EdgeCitations:
-		ids := make([]ent.Value, 0, len(m.citations))
-		for id := range m.citations {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *AgentRunToolCallMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.removedcitations != nil {
-		edges = append(edges, agentruntoolcall.EdgeCitations)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *AgentRunToolCallMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case agentruntoolcall.EdgeCitations:
-		ids := make([]ent.Value, 0, len(m.removedcitations))
-		for id := range m.removedcitations {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *AgentRunToolCallMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.clearedtenant {
-		edges = append(edges, agentruntoolcall.EdgeTenant)
-	}
-	if m.clearedagent_run {
-		edges = append(edges, agentruntoolcall.EdgeAgentRun)
-	}
-	if m.clearedcitations {
-		edges = append(edges, agentruntoolcall.EdgeCitations)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *AgentRunToolCallMutation) EdgeCleared(name string) bool {
-	switch name {
-	case agentruntoolcall.EdgeTenant:
-		return m.clearedtenant
-	case agentruntoolcall.EdgeAgentRun:
-		return m.clearedagent_run
-	case agentruntoolcall.EdgeCitations:
-		return m.clearedcitations
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *AgentRunToolCallMutation) ClearEdge(name string) error {
-	switch name {
-	case agentruntoolcall.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	case agentruntoolcall.EdgeAgentRun:
-		m.ClearAgentRun()
-		return nil
-	}
-	return fmt.Errorf("unknown AgentRunToolCall unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *AgentRunToolCallMutation) ResetEdge(name string) error {
-	switch name {
-	case agentruntoolcall.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	case agentruntoolcall.EdgeAgentRun:
-		m.ResetAgentRun()
-		return nil
-	case agentruntoolcall.EdgeCitations:
-		m.ResetCitations()
-		return nil
-	}
-	return fmt.Errorf("unknown AgentRunToolCall edge %s", name)
-}
-
-// AgentTaskMutation represents an operation that mutates the AgentTask nodes in the graph.
-type AgentTaskMutation struct {
-	config
-	op                Op
-	typ               string
-	id                *uuid.UUID
-	created_at        *time.Time
-	updated_at        *time.Time
-	workflow          *string
-	input             *[]byte
-	trigger_kind      *string
-	trigger_metadata  *map[string]interface{}
-	clearedFields     map[string]struct{}
-	tenant            *int
-	clearedtenant     bool
-	owner_user        *uuid.UUID
-	clearedowner_user bool
-	subjects          map[uuid.UUID]struct{}
-	removedsubjects   map[uuid.UUID]struct{}
-	clearedsubjects   bool
-	runs              map[uuid.UUID]struct{}
-	removedruns       map[uuid.UUID]struct{}
-	clearedruns       bool
-	citations         map[uuid.UUID]struct{}
-	removedcitations  map[uuid.UUID]struct{}
-	clearedcitations  bool
-	done              bool
-	oldValue          func(context.Context) (*AgentTask, error)
-	predicates        []predicate.AgentTask
-}
-
-var _ ent.Mutation = (*AgentTaskMutation)(nil)
-
-// agenttaskOption allows management of the mutation configuration using functional options.
-type agenttaskOption func(*AgentTaskMutation)
-
-// newAgentTaskMutation creates new mutation for the AgentTask entity.
-func newAgentTaskMutation(c config, op Op, opts ...agenttaskOption) *AgentTaskMutation {
-	m := &AgentTaskMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeAgentTask,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withAgentTaskID sets the ID field of the mutation.
-func withAgentTaskID(id uuid.UUID) agenttaskOption {
-	return func(m *AgentTaskMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *AgentTask
-		)
-		m.oldValue = func(ctx context.Context) (*AgentTask, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().AgentTask.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withAgentTask sets the old AgentTask of the mutation.
-func withAgentTask(node *AgentTask) agenttaskOption {
-	return func(m *AgentTaskMutation) {
-		m.oldValue = func(context.Context) (*AgentTask, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m AgentTaskMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m AgentTaskMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of AgentTask entities.
-func (m *AgentTaskMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *AgentTaskMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *AgentTaskMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().AgentTask.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *AgentTaskMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *AgentTaskMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the AgentTask entity.
-// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *AgentTaskMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *AgentTaskMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *AgentTaskMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the AgentTask entity.
-// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *AgentTaskMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *AgentTaskMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *AgentTaskMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the AgentTask entity.
-// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *AgentTaskMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetOwnerUserID sets the "owner_user_id" field.
-func (m *AgentTaskMutation) SetOwnerUserID(u uuid.UUID) {
-	m.owner_user = &u
-}
-
-// OwnerUserID returns the value of the "owner_user_id" field in the mutation.
-func (m *AgentTaskMutation) OwnerUserID() (r uuid.UUID, exists bool) {
-	v := m.owner_user
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldOwnerUserID returns the old "owner_user_id" field's value of the AgentTask entity.
-// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskMutation) OldOwnerUserID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldOwnerUserID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldOwnerUserID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldOwnerUserID: %w", err)
-	}
-	return oldValue.OwnerUserID, nil
-}
-
-// ResetOwnerUserID resets all changes to the "owner_user_id" field.
-func (m *AgentTaskMutation) ResetOwnerUserID() {
-	m.owner_user = nil
-}
-
-// SetWorkflow sets the "workflow" field.
-func (m *AgentTaskMutation) SetWorkflow(s string) {
-	m.workflow = &s
-}
-
-// Workflow returns the value of the "workflow" field in the mutation.
-func (m *AgentTaskMutation) Workflow() (r string, exists bool) {
-	v := m.workflow
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldWorkflow returns the old "workflow" field's value of the AgentTask entity.
-// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskMutation) OldWorkflow(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkflow is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkflow requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkflow: %w", err)
-	}
-	return oldValue.Workflow, nil
-}
-
-// ResetWorkflow resets all changes to the "workflow" field.
-func (m *AgentTaskMutation) ResetWorkflow() {
-	m.workflow = nil
-}
-
-// SetInput sets the "input" field.
-func (m *AgentTaskMutation) SetInput(b []byte) {
-	m.input = &b
-}
-
-// Input returns the value of the "input" field in the mutation.
-func (m *AgentTaskMutation) Input() (r []byte, exists bool) {
-	v := m.input
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldInput returns the old "input" field's value of the AgentTask entity.
-// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskMutation) OldInput(ctx context.Context) (v []byte, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldInput is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldInput requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldInput: %w", err)
-	}
-	return oldValue.Input, nil
-}
-
-// ResetInput resets all changes to the "input" field.
-func (m *AgentTaskMutation) ResetInput() {
-	m.input = nil
-}
-
-// SetTriggerKind sets the "trigger_kind" field.
-func (m *AgentTaskMutation) SetTriggerKind(s string) {
-	m.trigger_kind = &s
-}
-
-// TriggerKind returns the value of the "trigger_kind" field in the mutation.
-func (m *AgentTaskMutation) TriggerKind() (r string, exists bool) {
-	v := m.trigger_kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTriggerKind returns the old "trigger_kind" field's value of the AgentTask entity.
-// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskMutation) OldTriggerKind(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTriggerKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTriggerKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTriggerKind: %w", err)
-	}
-	return oldValue.TriggerKind, nil
-}
-
-// ResetTriggerKind resets all changes to the "trigger_kind" field.
-func (m *AgentTaskMutation) ResetTriggerKind() {
-	m.trigger_kind = nil
-}
-
-// SetTriggerMetadata sets the "trigger_metadata" field.
-func (m *AgentTaskMutation) SetTriggerMetadata(value map[string]interface{}) {
-	m.trigger_metadata = &value
-}
-
-// TriggerMetadata returns the value of the "trigger_metadata" field in the mutation.
-func (m *AgentTaskMutation) TriggerMetadata() (r map[string]interface{}, exists bool) {
-	v := m.trigger_metadata
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTriggerMetadata returns the old "trigger_metadata" field's value of the AgentTask entity.
-// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskMutation) OldTriggerMetadata(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTriggerMetadata is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTriggerMetadata requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTriggerMetadata: %w", err)
-	}
-	return oldValue.TriggerMetadata, nil
-}
-
-// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
-func (m *AgentTaskMutation) ClearTriggerMetadata() {
-	m.trigger_metadata = nil
-	m.clearedFields[agenttask.FieldTriggerMetadata] = struct{}{}
-}
-
-// TriggerMetadataCleared returns if the "trigger_metadata" field was cleared in this mutation.
-func (m *AgentTaskMutation) TriggerMetadataCleared() bool {
-	_, ok := m.clearedFields[agenttask.FieldTriggerMetadata]
-	return ok
-}
-
-// ResetTriggerMetadata resets all changes to the "trigger_metadata" field.
-func (m *AgentTaskMutation) ResetTriggerMetadata() {
-	m.trigger_metadata = nil
-	delete(m.clearedFields, agenttask.FieldTriggerMetadata)
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *AgentTaskMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[agenttask.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *AgentTaskMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *AgentTaskMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *AgentTaskMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// ClearOwnerUser clears the "owner_user" edge to the User entity.
-func (m *AgentTaskMutation) ClearOwnerUser() {
-	m.clearedowner_user = true
-	m.clearedFields[agenttask.FieldOwnerUserID] = struct{}{}
-}
-
-// OwnerUserCleared reports if the "owner_user" edge to the User entity was cleared.
-func (m *AgentTaskMutation) OwnerUserCleared() bool {
-	return m.clearedowner_user
-}
-
-// OwnerUserIDs returns the "owner_user" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// OwnerUserID instead. It exists only for internal usage by the builders.
-func (m *AgentTaskMutation) OwnerUserIDs() (ids []uuid.UUID) {
-	if id := m.owner_user; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetOwnerUser resets all changes to the "owner_user" edge.
-func (m *AgentTaskMutation) ResetOwnerUser() {
-	m.owner_user = nil
-	m.clearedowner_user = false
-}
-
-// AddSubjectIDs adds the "subjects" edge to the AgentTaskSubject entity by ids.
-func (m *AgentTaskMutation) AddSubjectIDs(ids ...uuid.UUID) {
-	if m.subjects == nil {
-		m.subjects = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.subjects[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSubjects clears the "subjects" edge to the AgentTaskSubject entity.
-func (m *AgentTaskMutation) ClearSubjects() {
-	m.clearedsubjects = true
-}
-
-// SubjectsCleared reports if the "subjects" edge to the AgentTaskSubject entity was cleared.
-func (m *AgentTaskMutation) SubjectsCleared() bool {
-	return m.clearedsubjects
-}
-
-// RemoveSubjectIDs removes the "subjects" edge to the AgentTaskSubject entity by IDs.
-func (m *AgentTaskMutation) RemoveSubjectIDs(ids ...uuid.UUID) {
-	if m.removedsubjects == nil {
-		m.removedsubjects = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.subjects, ids[i])
-		m.removedsubjects[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSubjects returns the removed IDs of the "subjects" edge to the AgentTaskSubject entity.
-func (m *AgentTaskMutation) RemovedSubjectsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsubjects {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SubjectsIDs returns the "subjects" edge IDs in the mutation.
-func (m *AgentTaskMutation) SubjectsIDs() (ids []uuid.UUID) {
-	for id := range m.subjects {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSubjects resets all changes to the "subjects" edge.
-func (m *AgentTaskMutation) ResetSubjects() {
-	m.subjects = nil
-	m.clearedsubjects = false
-	m.removedsubjects = nil
-}
-
-// AddRunIDs adds the "runs" edge to the AgentRun entity by ids.
-func (m *AgentTaskMutation) AddRunIDs(ids ...uuid.UUID) {
-	if m.runs == nil {
-		m.runs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.runs[ids[i]] = struct{}{}
-	}
-}
-
-// ClearRuns clears the "runs" edge to the AgentRun entity.
-func (m *AgentTaskMutation) ClearRuns() {
-	m.clearedruns = true
-}
-
-// RunsCleared reports if the "runs" edge to the AgentRun entity was cleared.
-func (m *AgentTaskMutation) RunsCleared() bool {
-	return m.clearedruns
-}
-
-// RemoveRunIDs removes the "runs" edge to the AgentRun entity by IDs.
-func (m *AgentTaskMutation) RemoveRunIDs(ids ...uuid.UUID) {
-	if m.removedruns == nil {
-		m.removedruns = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.runs, ids[i])
-		m.removedruns[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRuns returns the removed IDs of the "runs" edge to the AgentRun entity.
-func (m *AgentTaskMutation) RemovedRunsIDs() (ids []uuid.UUID) {
-	for id := range m.removedruns {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// RunsIDs returns the "runs" edge IDs in the mutation.
-func (m *AgentTaskMutation) RunsIDs() (ids []uuid.UUID) {
-	for id := range m.runs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetRuns resets all changes to the "runs" edge.
-func (m *AgentTaskMutation) ResetRuns() {
-	m.runs = nil
-	m.clearedruns = false
-	m.removedruns = nil
-}
-
-// AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by ids.
-func (m *AgentTaskMutation) AddCitationIDs(ids ...uuid.UUID) {
-	if m.citations == nil {
-		m.citations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.citations[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCitations clears the "citations" edge to the AgentRunCitation entity.
-func (m *AgentTaskMutation) ClearCitations() {
-	m.clearedcitations = true
-}
-
-// CitationsCleared reports if the "citations" edge to the AgentRunCitation entity was cleared.
-func (m *AgentTaskMutation) CitationsCleared() bool {
-	return m.clearedcitations
-}
-
-// RemoveCitationIDs removes the "citations" edge to the AgentRunCitation entity by IDs.
-func (m *AgentTaskMutation) RemoveCitationIDs(ids ...uuid.UUID) {
-	if m.removedcitations == nil {
-		m.removedcitations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.citations, ids[i])
-		m.removedcitations[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCitations returns the removed IDs of the "citations" edge to the AgentRunCitation entity.
-func (m *AgentTaskMutation) RemovedCitationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedcitations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CitationsIDs returns the "citations" edge IDs in the mutation.
-func (m *AgentTaskMutation) CitationsIDs() (ids []uuid.UUID) {
-	for id := range m.citations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCitations resets all changes to the "citations" edge.
-func (m *AgentTaskMutation) ResetCitations() {
-	m.citations = nil
-	m.clearedcitations = false
-	m.removedcitations = nil
-}
-
-// Where appends a list predicates to the AgentTaskMutation builder.
-func (m *AgentTaskMutation) Where(ps ...predicate.AgentTask) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the AgentTaskMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *AgentTaskMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.AgentTask, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *AgentTaskMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *AgentTaskMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (AgentTask).
-func (m *AgentTaskMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *AgentTaskMutation) Fields() []string {
-	fields := make([]string, 0, 8)
-	if m.tenant != nil {
-		fields = append(fields, agenttask.FieldTenantID)
-	}
-	if m.created_at != nil {
-		fields = append(fields, agenttask.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, agenttask.FieldUpdatedAt)
-	}
-	if m.owner_user != nil {
-		fields = append(fields, agenttask.FieldOwnerUserID)
-	}
-	if m.workflow != nil {
-		fields = append(fields, agenttask.FieldWorkflow)
-	}
-	if m.input != nil {
-		fields = append(fields, agenttask.FieldInput)
-	}
-	if m.trigger_kind != nil {
-		fields = append(fields, agenttask.FieldTriggerKind)
-	}
-	if m.trigger_metadata != nil {
-		fields = append(fields, agenttask.FieldTriggerMetadata)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *AgentTaskMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case agenttask.FieldTenantID:
-		return m.TenantID()
-	case agenttask.FieldCreatedAt:
-		return m.CreatedAt()
-	case agenttask.FieldUpdatedAt:
-		return m.UpdatedAt()
-	case agenttask.FieldOwnerUserID:
-		return m.OwnerUserID()
-	case agenttask.FieldWorkflow:
-		return m.Workflow()
-	case agenttask.FieldInput:
-		return m.Input()
-	case agenttask.FieldTriggerKind:
-		return m.TriggerKind()
-	case agenttask.FieldTriggerMetadata:
-		return m.TriggerMetadata()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *AgentTaskMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case agenttask.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case agenttask.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case agenttask.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	case agenttask.FieldOwnerUserID:
-		return m.OldOwnerUserID(ctx)
-	case agenttask.FieldWorkflow:
-		return m.OldWorkflow(ctx)
-	case agenttask.FieldInput:
-		return m.OldInput(ctx)
-	case agenttask.FieldTriggerKind:
-		return m.OldTriggerKind(ctx)
-	case agenttask.FieldTriggerMetadata:
-		return m.OldTriggerMetadata(ctx)
-	}
-	return nil, fmt.Errorf("unknown AgentTask field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *AgentTaskMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case agenttask.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case agenttask.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case agenttask.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	case agenttask.FieldOwnerUserID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetOwnerUserID(v)
-		return nil
-	case agenttask.FieldWorkflow:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetWorkflow(v)
-		return nil
-	case agenttask.FieldInput:
+	case agentrunsnapshot.FieldData:
 		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetInput(v)
-		return nil
-	case agenttask.FieldTriggerKind:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTriggerKind(v)
-		return nil
-	case agenttask.FieldTriggerMetadata:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTriggerMetadata(v)
+		m.SetData(v)
 		return nil
 	}
-	return fmt.Errorf("unknown AgentTask field %s", name)
+	return fmt.Errorf("unknown AgentRunSnapshot field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *AgentTaskMutation) AddedFields() []string {
+func (m *AgentRunSnapshotMutation) AddedFields() []string {
 	var fields []string
 	return fields
 }
@@ -7460,7 +5453,7 @@ func (m *AgentTaskMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *AgentTaskMutation) AddedField(name string) (ent.Value, bool) {
+func (m *AgentRunSnapshotMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	}
 	return nil, false
@@ -7469,246 +5462,148 @@ func (m *AgentTaskMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *AgentTaskMutation) AddField(name string, value ent.Value) error {
+func (m *AgentRunSnapshotMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown AgentTask numeric field %s", name)
+	return fmt.Errorf("unknown AgentRunSnapshot numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *AgentTaskMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(agenttask.FieldTriggerMetadata) {
-		fields = append(fields, agenttask.FieldTriggerMetadata)
-	}
-	return fields
+func (m *AgentRunSnapshotMutation) ClearedFields() []string {
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *AgentTaskMutation) FieldCleared(name string) bool {
+func (m *AgentRunSnapshotMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *AgentTaskMutation) ClearField(name string) error {
-	switch name {
-	case agenttask.FieldTriggerMetadata:
-		m.ClearTriggerMetadata()
-		return nil
-	}
-	return fmt.Errorf("unknown AgentTask nullable field %s", name)
+func (m *AgentRunSnapshotMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown AgentRunSnapshot nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *AgentTaskMutation) ResetField(name string) error {
+func (m *AgentRunSnapshotMutation) ResetField(name string) error {
 	switch name {
-	case agenttask.FieldTenantID:
+	case agentrunsnapshot.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case agenttask.FieldCreatedAt:
+	case agentrunsnapshot.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case agenttask.FieldUpdatedAt:
+	case agentrunsnapshot.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case agenttask.FieldOwnerUserID:
-		m.ResetOwnerUserID()
+	case agentrunsnapshot.FieldAgentRunID:
+		m.ResetAgentRunID()
 		return nil
-	case agenttask.FieldWorkflow:
-		m.ResetWorkflow()
-		return nil
-	case agenttask.FieldInput:
-		m.ResetInput()
-		return nil
-	case agenttask.FieldTriggerKind:
-		m.ResetTriggerKind()
-		return nil
-	case agenttask.FieldTriggerMetadata:
-		m.ResetTriggerMetadata()
+	case agentrunsnapshot.FieldData:
+		m.ResetData()
 		return nil
 	}
-	return fmt.Errorf("unknown AgentTask field %s", name)
+	return fmt.Errorf("unknown AgentRunSnapshot field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *AgentTaskMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+func (m *AgentRunSnapshotMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
 	if m.tenant != nil {
-		edges = append(edges, agenttask.EdgeTenant)
+		edges = append(edges, agentrunsnapshot.EdgeTenant)
 	}
-	if m.owner_user != nil {
-		edges = append(edges, agenttask.EdgeOwnerUser)
-	}
-	if m.subjects != nil {
-		edges = append(edges, agenttask.EdgeSubjects)
-	}
-	if m.runs != nil {
-		edges = append(edges, agenttask.EdgeRuns)
-	}
-	if m.citations != nil {
-		edges = append(edges, agenttask.EdgeCitations)
+	if m.agent_run != nil {
+		edges = append(edges, agentrunsnapshot.EdgeAgentRun)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *AgentTaskMutation) AddedIDs(name string) []ent.Value {
+func (m *AgentRunSnapshotMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case agenttask.EdgeTenant:
+	case agentrunsnapshot.EdgeTenant:
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case agenttask.EdgeOwnerUser:
-		if id := m.owner_user; id != nil {
+	case agentrunsnapshot.EdgeAgentRun:
+		if id := m.agent_run; id != nil {
 			return []ent.Value{*id}
 		}
-	case agenttask.EdgeSubjects:
-		ids := make([]ent.Value, 0, len(m.subjects))
-		for id := range m.subjects {
-			ids = append(ids, id)
-		}
-		return ids
-	case agenttask.EdgeRuns:
-		ids := make([]ent.Value, 0, len(m.runs))
-		for id := range m.runs {
-			ids = append(ids, id)
-		}
-		return ids
-	case agenttask.EdgeCitations:
-		ids := make([]ent.Value, 0, len(m.citations))
-		for id := range m.citations {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *AgentTaskMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.removedsubjects != nil {
-		edges = append(edges, agenttask.EdgeSubjects)
-	}
-	if m.removedruns != nil {
-		edges = append(edges, agenttask.EdgeRuns)
-	}
-	if m.removedcitations != nil {
-		edges = append(edges, agenttask.EdgeCitations)
-	}
+func (m *AgentRunSnapshotMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *AgentTaskMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case agenttask.EdgeSubjects:
-		ids := make([]ent.Value, 0, len(m.removedsubjects))
-		for id := range m.removedsubjects {
-			ids = append(ids, id)
-		}
-		return ids
-	case agenttask.EdgeRuns:
-		ids := make([]ent.Value, 0, len(m.removedruns))
-		for id := range m.removedruns {
-			ids = append(ids, id)
-		}
-		return ids
-	case agenttask.EdgeCitations:
-		ids := make([]ent.Value, 0, len(m.removedcitations))
-		for id := range m.removedcitations {
-			ids = append(ids, id)
-		}
-		return ids
-	}
+func (m *AgentRunSnapshotMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *AgentTaskMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+func (m *AgentRunSnapshotMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
 	if m.clearedtenant {
-		edges = append(edges, agenttask.EdgeTenant)
+		edges = append(edges, agentrunsnapshot.EdgeTenant)
 	}
-	if m.clearedowner_user {
-		edges = append(edges, agenttask.EdgeOwnerUser)
-	}
-	if m.clearedsubjects {
-		edges = append(edges, agenttask.EdgeSubjects)
-	}
-	if m.clearedruns {
-		edges = append(edges, agenttask.EdgeRuns)
-	}
-	if m.clearedcitations {
-		edges = append(edges, agenttask.EdgeCitations)
+	if m.clearedagent_run {
+		edges = append(edges, agentrunsnapshot.EdgeAgentRun)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *AgentTaskMutation) EdgeCleared(name string) bool {
+func (m *AgentRunSnapshotMutation) EdgeCleared(name string) bool {
 	switch name {
-	case agenttask.EdgeTenant:
+	case agentrunsnapshot.EdgeTenant:
 		return m.clearedtenant
-	case agenttask.EdgeOwnerUser:
-		return m.clearedowner_user
-	case agenttask.EdgeSubjects:
-		return m.clearedsubjects
-	case agenttask.EdgeRuns:
-		return m.clearedruns
-	case agenttask.EdgeCitations:
-		return m.clearedcitations
+	case agentrunsnapshot.EdgeAgentRun:
+		return m.clearedagent_run
 	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *AgentTaskMutation) ClearEdge(name string) error {
+func (m *AgentRunSnapshotMutation) ClearEdge(name string) error {
 	switch name {
-	case agenttask.EdgeTenant:
+	case agentrunsnapshot.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case agenttask.EdgeOwnerUser:
-		m.ClearOwnerUser()
+	case agentrunsnapshot.EdgeAgentRun:
+		m.ClearAgentRun()
 		return nil
 	}
-	return fmt.Errorf("unknown AgentTask unique edge %s", name)
+	return fmt.Errorf("unknown AgentRunSnapshot unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *AgentTaskMutation) ResetEdge(name string) error {
+func (m *AgentRunSnapshotMutation) ResetEdge(name string) error {
 	switch name {
-	case agenttask.EdgeTenant:
+	case agentrunsnapshot.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case agenttask.EdgeOwnerUser:
-		m.ResetOwnerUser()
-		return nil
-	case agenttask.EdgeSubjects:
-		m.ResetSubjects()
-		return nil
-	case agenttask.EdgeRuns:
-		m.ResetRuns()
-		return nil
-	case agenttask.EdgeCitations:
-		m.ResetCitations()
+	case agentrunsnapshot.EdgeAgentRun:
+		m.ResetAgentRun()
 		return nil
 	}
-	return fmt.Errorf("unknown AgentTask edge %s", name)
+	return fmt.Errorf("unknown AgentRunSnapshot edge %s", name)
 }
 
-// AgentTaskSubjectMutation represents an operation that mutates the AgentTaskSubject nodes in the graph.
-type AgentTaskSubjectMutation struct {
+// AgentRunSubjectMutation represents an operation that mutates the AgentRunSubject nodes in the graph.
+type AgentRunSubjectMutation struct {
 	config
 	op                 Op
 	typ                string
@@ -7719,24 +5614,24 @@ type AgentTaskSubjectMutation struct {
 	clearedFields      map[string]struct{}
 	tenant             *int
 	clearedtenant      bool
-	task               *uuid.UUID
-	clearedtask        bool
+	agent_run          *uuid.UUID
+	clearedagent_run   bool
 	done               bool
-	oldValue           func(context.Context) (*AgentTaskSubject, error)
-	predicates         []predicate.AgentTaskSubject
+	oldValue           func(context.Context) (*AgentRunSubject, error)
+	predicates         []predicate.AgentRunSubject
 }
 
-var _ ent.Mutation = (*AgentTaskSubjectMutation)(nil)
+var _ ent.Mutation = (*AgentRunSubjectMutation)(nil)
 
-// agenttasksubjectOption allows management of the mutation configuration using functional options.
-type agenttasksubjectOption func(*AgentTaskSubjectMutation)
+// agentrunsubjectOption allows management of the mutation configuration using functional options.
+type agentrunsubjectOption func(*AgentRunSubjectMutation)
 
-// newAgentTaskSubjectMutation creates new mutation for the AgentTaskSubject entity.
-func newAgentTaskSubjectMutation(c config, op Op, opts ...agenttasksubjectOption) *AgentTaskSubjectMutation {
-	m := &AgentTaskSubjectMutation{
+// newAgentRunSubjectMutation creates new mutation for the AgentRunSubject entity.
+func newAgentRunSubjectMutation(c config, op Op, opts ...agentrunsubjectOption) *AgentRunSubjectMutation {
+	m := &AgentRunSubjectMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeAgentTaskSubject,
+		typ:           TypeAgentRunSubject,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -7745,20 +5640,20 @@ func newAgentTaskSubjectMutation(c config, op Op, opts ...agenttasksubjectOption
 	return m
 }
 
-// withAgentTaskSubjectID sets the ID field of the mutation.
-func withAgentTaskSubjectID(id uuid.UUID) agenttasksubjectOption {
-	return func(m *AgentTaskSubjectMutation) {
+// withAgentRunSubjectID sets the ID field of the mutation.
+func withAgentRunSubjectID(id uuid.UUID) agentrunsubjectOption {
+	return func(m *AgentRunSubjectMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *AgentTaskSubject
+			value *AgentRunSubject
 		)
-		m.oldValue = func(ctx context.Context) (*AgentTaskSubject, error) {
+		m.oldValue = func(ctx context.Context) (*AgentRunSubject, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().AgentTaskSubject.Get(ctx, id)
+					value, err = m.Client().AgentRunSubject.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -7767,10 +5662,10 @@ func withAgentTaskSubjectID(id uuid.UUID) agenttasksubjectOption {
 	}
 }
 
-// withAgentTaskSubject sets the old AgentTaskSubject of the mutation.
-func withAgentTaskSubject(node *AgentTaskSubject) agenttasksubjectOption {
-	return func(m *AgentTaskSubjectMutation) {
-		m.oldValue = func(context.Context) (*AgentTaskSubject, error) {
+// withAgentRunSubject sets the old AgentRunSubject of the mutation.
+func withAgentRunSubject(node *AgentRunSubject) agentrunsubjectOption {
+	return func(m *AgentRunSubjectMutation) {
+		m.oldValue = func(context.Context) (*AgentRunSubject, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -7779,7 +5674,7 @@ func withAgentTaskSubject(node *AgentTaskSubject) agenttasksubjectOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m AgentTaskSubjectMutation) Client() *Client {
+func (m AgentRunSubjectMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -7787,7 +5682,7 @@ func (m AgentTaskSubjectMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m AgentTaskSubjectMutation) Tx() (*Tx, error) {
+func (m AgentRunSubjectMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -7797,14 +5692,14 @@ func (m AgentTaskSubjectMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of AgentTaskSubject entities.
-func (m *AgentTaskSubjectMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of AgentRunSubject entities.
+func (m *AgentRunSubjectMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *AgentTaskSubjectMutation) ID() (id uuid.UUID, exists bool) {
+func (m *AgentRunSubjectMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -7815,7 +5710,7 @@ func (m *AgentTaskSubjectMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *AgentTaskSubjectMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *AgentRunSubjectMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -7824,19 +5719,19 @@ func (m *AgentTaskSubjectMutation) IDs(ctx context.Context) ([]uuid.UUID, error)
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().AgentTaskSubject.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().AgentRunSubject.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (m *AgentTaskSubjectMutation) SetTenantID(i int) {
+func (m *AgentRunSubjectMutation) SetTenantID(i int) {
 	m.tenant = &i
 }
 
 // TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *AgentTaskSubjectMutation) TenantID() (r int, exists bool) {
+func (m *AgentRunSubjectMutation) TenantID() (r int, exists bool) {
 	v := m.tenant
 	if v == nil {
 		return
@@ -7844,10 +5739,10 @@ func (m *AgentTaskSubjectMutation) TenantID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the AgentTaskSubject entity.
-// If the AgentTaskSubject object wasn't provided to the builder, the object is fetched from the database.
+// OldTenantID returns the old "tenant_id" field's value of the AgentRunSubject entity.
+// If the AgentRunSubject object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskSubjectMutation) OldTenantID(ctx context.Context) (v int, err error) {
+func (m *AgentRunSubjectMutation) OldTenantID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
 	}
@@ -7862,53 +5757,53 @@ func (m *AgentTaskSubjectMutation) OldTenantID(ctx context.Context) (v int, err 
 }
 
 // ResetTenantID resets all changes to the "tenant_id" field.
-func (m *AgentTaskSubjectMutation) ResetTenantID() {
+func (m *AgentRunSubjectMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetTaskID sets the "task_id" field.
-func (m *AgentTaskSubjectMutation) SetTaskID(u uuid.UUID) {
-	m.task = &u
+// SetAgentRunID sets the "agent_run_id" field.
+func (m *AgentRunSubjectMutation) SetAgentRunID(u uuid.UUID) {
+	m.agent_run = &u
 }
 
-// TaskID returns the value of the "task_id" field in the mutation.
-func (m *AgentTaskSubjectMutation) TaskID() (r uuid.UUID, exists bool) {
-	v := m.task
+// AgentRunID returns the value of the "agent_run_id" field in the mutation.
+func (m *AgentRunSubjectMutation) AgentRunID() (r uuid.UUID, exists bool) {
+	v := m.agent_run
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTaskID returns the old "task_id" field's value of the AgentTaskSubject entity.
-// If the AgentTaskSubject object wasn't provided to the builder, the object is fetched from the database.
+// OldAgentRunID returns the old "agent_run_id" field's value of the AgentRunSubject entity.
+// If the AgentRunSubject object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskSubjectMutation) OldTaskID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *AgentRunSubjectMutation) OldAgentRunID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTaskID is only allowed on UpdateOne operations")
+		return v, errors.New("OldAgentRunID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTaskID requires an ID field in the mutation")
+		return v, errors.New("OldAgentRunID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTaskID: %w", err)
+		return v, fmt.Errorf("querying old value for OldAgentRunID: %w", err)
 	}
-	return oldValue.TaskID, nil
+	return oldValue.AgentRunID, nil
 }
 
-// ResetTaskID resets all changes to the "task_id" field.
-func (m *AgentTaskSubjectMutation) ResetTaskID() {
-	m.task = nil
+// ResetAgentRunID resets all changes to the "agent_run_id" field.
+func (m *AgentRunSubjectMutation) ResetAgentRunID() {
+	m.agent_run = nil
 }
 
 // SetSubjectKind sets the "subject_kind" field.
-func (m *AgentTaskSubjectMutation) SetSubjectKind(s string) {
+func (m *AgentRunSubjectMutation) SetSubjectKind(s string) {
 	m.subject_kind = &s
 }
 
 // SubjectKind returns the value of the "subject_kind" field in the mutation.
-func (m *AgentTaskSubjectMutation) SubjectKind() (r string, exists bool) {
+func (m *AgentRunSubjectMutation) SubjectKind() (r string, exists bool) {
 	v := m.subject_kind
 	if v == nil {
 		return
@@ -7916,10 +5811,10 @@ func (m *AgentTaskSubjectMutation) SubjectKind() (r string, exists bool) {
 	return *v, true
 }
 
-// OldSubjectKind returns the old "subject_kind" field's value of the AgentTaskSubject entity.
-// If the AgentTaskSubject object wasn't provided to the builder, the object is fetched from the database.
+// OldSubjectKind returns the old "subject_kind" field's value of the AgentRunSubject entity.
+// If the AgentRunSubject object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskSubjectMutation) OldSubjectKind(ctx context.Context) (v string, err error) {
+func (m *AgentRunSubjectMutation) OldSubjectKind(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSubjectKind is only allowed on UpdateOne operations")
 	}
@@ -7934,17 +5829,17 @@ func (m *AgentTaskSubjectMutation) OldSubjectKind(ctx context.Context) (v string
 }
 
 // ResetSubjectKind resets all changes to the "subject_kind" field.
-func (m *AgentTaskSubjectMutation) ResetSubjectKind() {
+func (m *AgentRunSubjectMutation) ResetSubjectKind() {
 	m.subject_kind = nil
 }
 
 // SetDomainEntityID sets the "domain_entity_id" field.
-func (m *AgentTaskSubjectMutation) SetDomainEntityID(u uuid.UUID) {
+func (m *AgentRunSubjectMutation) SetDomainEntityID(u uuid.UUID) {
 	m.domain_entity_id = &u
 }
 
 // DomainEntityID returns the value of the "domain_entity_id" field in the mutation.
-func (m *AgentTaskSubjectMutation) DomainEntityID() (r uuid.UUID, exists bool) {
+func (m *AgentRunSubjectMutation) DomainEntityID() (r uuid.UUID, exists bool) {
 	v := m.domain_entity_id
 	if v == nil {
 		return
@@ -7952,10 +5847,10 @@ func (m *AgentTaskSubjectMutation) DomainEntityID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldDomainEntityID returns the old "domain_entity_id" field's value of the AgentTaskSubject entity.
-// If the AgentTaskSubject object wasn't provided to the builder, the object is fetched from the database.
+// OldDomainEntityID returns the old "domain_entity_id" field's value of the AgentRunSubject entity.
+// If the AgentRunSubject object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskSubjectMutation) OldDomainEntityID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *AgentRunSubjectMutation) OldDomainEntityID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDomainEntityID is only allowed on UpdateOne operations")
 	}
@@ -7970,30 +5865,30 @@ func (m *AgentTaskSubjectMutation) OldDomainEntityID(ctx context.Context) (v *uu
 }
 
 // ClearDomainEntityID clears the value of the "domain_entity_id" field.
-func (m *AgentTaskSubjectMutation) ClearDomainEntityID() {
+func (m *AgentRunSubjectMutation) ClearDomainEntityID() {
 	m.domain_entity_id = nil
-	m.clearedFields[agenttasksubject.FieldDomainEntityID] = struct{}{}
+	m.clearedFields[agentrunsubject.FieldDomainEntityID] = struct{}{}
 }
 
 // DomainEntityIDCleared returns if the "domain_entity_id" field was cleared in this mutation.
-func (m *AgentTaskSubjectMutation) DomainEntityIDCleared() bool {
-	_, ok := m.clearedFields[agenttasksubject.FieldDomainEntityID]
+func (m *AgentRunSubjectMutation) DomainEntityIDCleared() bool {
+	_, ok := m.clearedFields[agentrunsubject.FieldDomainEntityID]
 	return ok
 }
 
 // ResetDomainEntityID resets all changes to the "domain_entity_id" field.
-func (m *AgentTaskSubjectMutation) ResetDomainEntityID() {
+func (m *AgentRunSubjectMutation) ResetDomainEntityID() {
 	m.domain_entity_id = nil
-	delete(m.clearedFields, agenttasksubject.FieldDomainEntityID)
+	delete(m.clearedFields, agentrunsubject.FieldDomainEntityID)
 }
 
 // SetSubjectProperties sets the "subject_properties" field.
-func (m *AgentTaskSubjectMutation) SetSubjectProperties(value map[string]interface{}) {
+func (m *AgentRunSubjectMutation) SetSubjectProperties(value map[string]interface{}) {
 	m.subject_properties = &value
 }
 
 // SubjectProperties returns the value of the "subject_properties" field in the mutation.
-func (m *AgentTaskSubjectMutation) SubjectProperties() (r map[string]interface{}, exists bool) {
+func (m *AgentRunSubjectMutation) SubjectProperties() (r map[string]interface{}, exists bool) {
 	v := m.subject_properties
 	if v == nil {
 		return
@@ -8001,10 +5896,10 @@ func (m *AgentTaskSubjectMutation) SubjectProperties() (r map[string]interface{}
 	return *v, true
 }
 
-// OldSubjectProperties returns the old "subject_properties" field's value of the AgentTaskSubject entity.
-// If the AgentTaskSubject object wasn't provided to the builder, the object is fetched from the database.
+// OldSubjectProperties returns the old "subject_properties" field's value of the AgentRunSubject entity.
+// If the AgentRunSubject object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskSubjectMutation) OldSubjectProperties(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *AgentRunSubjectMutation) OldSubjectProperties(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSubjectProperties is only allowed on UpdateOne operations")
 	}
@@ -8019,38 +5914,38 @@ func (m *AgentTaskSubjectMutation) OldSubjectProperties(ctx context.Context) (v 
 }
 
 // ClearSubjectProperties clears the value of the "subject_properties" field.
-func (m *AgentTaskSubjectMutation) ClearSubjectProperties() {
+func (m *AgentRunSubjectMutation) ClearSubjectProperties() {
 	m.subject_properties = nil
-	m.clearedFields[agenttasksubject.FieldSubjectProperties] = struct{}{}
+	m.clearedFields[agentrunsubject.FieldSubjectProperties] = struct{}{}
 }
 
 // SubjectPropertiesCleared returns if the "subject_properties" field was cleared in this mutation.
-func (m *AgentTaskSubjectMutation) SubjectPropertiesCleared() bool {
-	_, ok := m.clearedFields[agenttasksubject.FieldSubjectProperties]
+func (m *AgentRunSubjectMutation) SubjectPropertiesCleared() bool {
+	_, ok := m.clearedFields[agentrunsubject.FieldSubjectProperties]
 	return ok
 }
 
 // ResetSubjectProperties resets all changes to the "subject_properties" field.
-func (m *AgentTaskSubjectMutation) ResetSubjectProperties() {
+func (m *AgentRunSubjectMutation) ResetSubjectProperties() {
 	m.subject_properties = nil
-	delete(m.clearedFields, agenttasksubject.FieldSubjectProperties)
+	delete(m.clearedFields, agentrunsubject.FieldSubjectProperties)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *AgentTaskSubjectMutation) ClearTenant() {
+func (m *AgentRunSubjectMutation) ClearTenant() {
 	m.clearedtenant = true
-	m.clearedFields[agenttasksubject.FieldTenantID] = struct{}{}
+	m.clearedFields[agentrunsubject.FieldTenantID] = struct{}{}
 }
 
 // TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *AgentTaskSubjectMutation) TenantCleared() bool {
+func (m *AgentRunSubjectMutation) TenantCleared() bool {
 	return m.clearedtenant
 }
 
 // TenantIDs returns the "tenant" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TenantID instead. It exists only for internal usage by the builders.
-func (m *AgentTaskSubjectMutation) TenantIDs() (ids []int) {
+func (m *AgentRunSubjectMutation) TenantIDs() (ids []int) {
 	if id := m.tenant; id != nil {
 		ids = append(ids, *id)
 	}
@@ -8058,47 +5953,47 @@ func (m *AgentTaskSubjectMutation) TenantIDs() (ids []int) {
 }
 
 // ResetTenant resets all changes to the "tenant" edge.
-func (m *AgentTaskSubjectMutation) ResetTenant() {
+func (m *AgentRunSubjectMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
 }
 
-// ClearTask clears the "task" edge to the AgentTask entity.
-func (m *AgentTaskSubjectMutation) ClearTask() {
-	m.clearedtask = true
-	m.clearedFields[agenttasksubject.FieldTaskID] = struct{}{}
+// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
+func (m *AgentRunSubjectMutation) ClearAgentRun() {
+	m.clearedagent_run = true
+	m.clearedFields[agentrunsubject.FieldAgentRunID] = struct{}{}
 }
 
-// TaskCleared reports if the "task" edge to the AgentTask entity was cleared.
-func (m *AgentTaskSubjectMutation) TaskCleared() bool {
-	return m.clearedtask
+// AgentRunCleared reports if the "agent_run" edge to the AgentRun entity was cleared.
+func (m *AgentRunSubjectMutation) AgentRunCleared() bool {
+	return m.clearedagent_run
 }
 
-// TaskIDs returns the "task" edge IDs in the mutation.
+// AgentRunIDs returns the "agent_run" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TaskID instead. It exists only for internal usage by the builders.
-func (m *AgentTaskSubjectMutation) TaskIDs() (ids []uuid.UUID) {
-	if id := m.task; id != nil {
+// AgentRunID instead. It exists only for internal usage by the builders.
+func (m *AgentRunSubjectMutation) AgentRunIDs() (ids []uuid.UUID) {
+	if id := m.agent_run; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetTask resets all changes to the "task" edge.
-func (m *AgentTaskSubjectMutation) ResetTask() {
-	m.task = nil
-	m.clearedtask = false
+// ResetAgentRun resets all changes to the "agent_run" edge.
+func (m *AgentRunSubjectMutation) ResetAgentRun() {
+	m.agent_run = nil
+	m.clearedagent_run = false
 }
 
-// Where appends a list predicates to the AgentTaskSubjectMutation builder.
-func (m *AgentTaskSubjectMutation) Where(ps ...predicate.AgentTaskSubject) {
+// Where appends a list predicates to the AgentRunSubjectMutation builder.
+func (m *AgentRunSubjectMutation) Where(ps ...predicate.AgentRunSubject) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the AgentTaskSubjectMutation builder. Using this method,
+// WhereP appends storage-level predicates to the AgentRunSubjectMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *AgentTaskSubjectMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.AgentTaskSubject, len(ps))
+func (m *AgentRunSubjectMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.AgentRunSubject, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -8106,39 +6001,39 @@ func (m *AgentTaskSubjectMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *AgentTaskSubjectMutation) Op() Op {
+func (m *AgentRunSubjectMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *AgentTaskSubjectMutation) SetOp(op Op) {
+func (m *AgentRunSubjectMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (AgentTaskSubject).
-func (m *AgentTaskSubjectMutation) Type() string {
+// Type returns the node type of this mutation (AgentRunSubject).
+func (m *AgentRunSubjectMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *AgentTaskSubjectMutation) Fields() []string {
+func (m *AgentRunSubjectMutation) Fields() []string {
 	fields := make([]string, 0, 5)
 	if m.tenant != nil {
-		fields = append(fields, agenttasksubject.FieldTenantID)
+		fields = append(fields, agentrunsubject.FieldTenantID)
 	}
-	if m.task != nil {
-		fields = append(fields, agenttasksubject.FieldTaskID)
+	if m.agent_run != nil {
+		fields = append(fields, agentrunsubject.FieldAgentRunID)
 	}
 	if m.subject_kind != nil {
-		fields = append(fields, agenttasksubject.FieldSubjectKind)
+		fields = append(fields, agentrunsubject.FieldSubjectKind)
 	}
 	if m.domain_entity_id != nil {
-		fields = append(fields, agenttasksubject.FieldDomainEntityID)
+		fields = append(fields, agentrunsubject.FieldDomainEntityID)
 	}
 	if m.subject_properties != nil {
-		fields = append(fields, agenttasksubject.FieldSubjectProperties)
+		fields = append(fields, agentrunsubject.FieldSubjectProperties)
 	}
 	return fields
 }
@@ -8146,17 +6041,17 @@ func (m *AgentTaskSubjectMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *AgentTaskSubjectMutation) Field(name string) (ent.Value, bool) {
+func (m *AgentRunSubjectMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case agenttasksubject.FieldTenantID:
+	case agentrunsubject.FieldTenantID:
 		return m.TenantID()
-	case agenttasksubject.FieldTaskID:
-		return m.TaskID()
-	case agenttasksubject.FieldSubjectKind:
+	case agentrunsubject.FieldAgentRunID:
+		return m.AgentRunID()
+	case agentrunsubject.FieldSubjectKind:
 		return m.SubjectKind()
-	case agenttasksubject.FieldDomainEntityID:
+	case agentrunsubject.FieldDomainEntityID:
 		return m.DomainEntityID()
-	case agenttasksubject.FieldSubjectProperties:
+	case agentrunsubject.FieldSubjectProperties:
 		return m.SubjectProperties()
 	}
 	return nil, false
@@ -8165,56 +6060,56 @@ func (m *AgentTaskSubjectMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *AgentTaskSubjectMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *AgentRunSubjectMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case agenttasksubject.FieldTenantID:
+	case agentrunsubject.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case agenttasksubject.FieldTaskID:
-		return m.OldTaskID(ctx)
-	case agenttasksubject.FieldSubjectKind:
+	case agentrunsubject.FieldAgentRunID:
+		return m.OldAgentRunID(ctx)
+	case agentrunsubject.FieldSubjectKind:
 		return m.OldSubjectKind(ctx)
-	case agenttasksubject.FieldDomainEntityID:
+	case agentrunsubject.FieldDomainEntityID:
 		return m.OldDomainEntityID(ctx)
-	case agenttasksubject.FieldSubjectProperties:
+	case agentrunsubject.FieldSubjectProperties:
 		return m.OldSubjectProperties(ctx)
 	}
-	return nil, fmt.Errorf("unknown AgentTaskSubject field %s", name)
+	return nil, fmt.Errorf("unknown AgentRunSubject field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *AgentTaskSubjectMutation) SetField(name string, value ent.Value) error {
+func (m *AgentRunSubjectMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case agenttasksubject.FieldTenantID:
+	case agentrunsubject.FieldTenantID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
 		return nil
-	case agenttasksubject.FieldTaskID:
+	case agentrunsubject.FieldAgentRunID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTaskID(v)
+		m.SetAgentRunID(v)
 		return nil
-	case agenttasksubject.FieldSubjectKind:
+	case agentrunsubject.FieldSubjectKind:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSubjectKind(v)
 		return nil
-	case agenttasksubject.FieldDomainEntityID:
+	case agentrunsubject.FieldDomainEntityID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDomainEntityID(v)
 		return nil
-	case agenttasksubject.FieldSubjectProperties:
+	case agentrunsubject.FieldSubjectProperties:
 		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -8222,12 +6117,12 @@ func (m *AgentTaskSubjectMutation) SetField(name string, value ent.Value) error 
 		m.SetSubjectProperties(v)
 		return nil
 	}
-	return fmt.Errorf("unknown AgentTaskSubject field %s", name)
+	return fmt.Errorf("unknown AgentRunSubject field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *AgentTaskSubjectMutation) AddedFields() []string {
+func (m *AgentRunSubjectMutation) AddedFields() []string {
 	var fields []string
 	return fields
 }
@@ -8235,7 +6130,7 @@ func (m *AgentTaskSubjectMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *AgentTaskSubjectMutation) AddedField(name string) (ent.Value, bool) {
+func (m *AgentRunSubjectMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	}
 	return nil, false
@@ -8244,91 +6139,91 @@ func (m *AgentTaskSubjectMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *AgentTaskSubjectMutation) AddField(name string, value ent.Value) error {
+func (m *AgentRunSubjectMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown AgentTaskSubject numeric field %s", name)
+	return fmt.Errorf("unknown AgentRunSubject numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *AgentTaskSubjectMutation) ClearedFields() []string {
+func (m *AgentRunSubjectMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(agenttasksubject.FieldDomainEntityID) {
-		fields = append(fields, agenttasksubject.FieldDomainEntityID)
+	if m.FieldCleared(agentrunsubject.FieldDomainEntityID) {
+		fields = append(fields, agentrunsubject.FieldDomainEntityID)
 	}
-	if m.FieldCleared(agenttasksubject.FieldSubjectProperties) {
-		fields = append(fields, agenttasksubject.FieldSubjectProperties)
+	if m.FieldCleared(agentrunsubject.FieldSubjectProperties) {
+		fields = append(fields, agentrunsubject.FieldSubjectProperties)
 	}
 	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *AgentTaskSubjectMutation) FieldCleared(name string) bool {
+func (m *AgentRunSubjectMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *AgentTaskSubjectMutation) ClearField(name string) error {
+func (m *AgentRunSubjectMutation) ClearField(name string) error {
 	switch name {
-	case agenttasksubject.FieldDomainEntityID:
+	case agentrunsubject.FieldDomainEntityID:
 		m.ClearDomainEntityID()
 		return nil
-	case agenttasksubject.FieldSubjectProperties:
+	case agentrunsubject.FieldSubjectProperties:
 		m.ClearSubjectProperties()
 		return nil
 	}
-	return fmt.Errorf("unknown AgentTaskSubject nullable field %s", name)
+	return fmt.Errorf("unknown AgentRunSubject nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *AgentTaskSubjectMutation) ResetField(name string) error {
+func (m *AgentRunSubjectMutation) ResetField(name string) error {
 	switch name {
-	case agenttasksubject.FieldTenantID:
+	case agentrunsubject.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case agenttasksubject.FieldTaskID:
-		m.ResetTaskID()
+	case agentrunsubject.FieldAgentRunID:
+		m.ResetAgentRunID()
 		return nil
-	case agenttasksubject.FieldSubjectKind:
+	case agentrunsubject.FieldSubjectKind:
 		m.ResetSubjectKind()
 		return nil
-	case agenttasksubject.FieldDomainEntityID:
+	case agentrunsubject.FieldDomainEntityID:
 		m.ResetDomainEntityID()
 		return nil
-	case agenttasksubject.FieldSubjectProperties:
+	case agentrunsubject.FieldSubjectProperties:
 		m.ResetSubjectProperties()
 		return nil
 	}
-	return fmt.Errorf("unknown AgentTaskSubject field %s", name)
+	return fmt.Errorf("unknown AgentRunSubject field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *AgentTaskSubjectMutation) AddedEdges() []string {
+func (m *AgentRunSubjectMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.tenant != nil {
-		edges = append(edges, agenttasksubject.EdgeTenant)
+		edges = append(edges, agentrunsubject.EdgeTenant)
 	}
-	if m.task != nil {
-		edges = append(edges, agenttasksubject.EdgeTask)
+	if m.agent_run != nil {
+		edges = append(edges, agentrunsubject.EdgeAgentRun)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *AgentTaskSubjectMutation) AddedIDs(name string) []ent.Value {
+func (m *AgentRunSubjectMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case agenttasksubject.EdgeTenant:
+	case agentrunsubject.EdgeTenant:
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case agenttasksubject.EdgeTask:
-		if id := m.task; id != nil {
+	case agentrunsubject.EdgeAgentRun:
+		if id := m.agent_run; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -8336,67 +6231,67 @@ func (m *AgentTaskSubjectMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *AgentTaskSubjectMutation) RemovedEdges() []string {
+func (m *AgentRunSubjectMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *AgentTaskSubjectMutation) RemovedIDs(name string) []ent.Value {
+func (m *AgentRunSubjectMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *AgentTaskSubjectMutation) ClearedEdges() []string {
+func (m *AgentRunSubjectMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.clearedtenant {
-		edges = append(edges, agenttasksubject.EdgeTenant)
+		edges = append(edges, agentrunsubject.EdgeTenant)
 	}
-	if m.clearedtask {
-		edges = append(edges, agenttasksubject.EdgeTask)
+	if m.clearedagent_run {
+		edges = append(edges, agentrunsubject.EdgeAgentRun)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *AgentTaskSubjectMutation) EdgeCleared(name string) bool {
+func (m *AgentRunSubjectMutation) EdgeCleared(name string) bool {
 	switch name {
-	case agenttasksubject.EdgeTenant:
+	case agentrunsubject.EdgeTenant:
 		return m.clearedtenant
-	case agenttasksubject.EdgeTask:
-		return m.clearedtask
+	case agentrunsubject.EdgeAgentRun:
+		return m.clearedagent_run
 	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *AgentTaskSubjectMutation) ClearEdge(name string) error {
+func (m *AgentRunSubjectMutation) ClearEdge(name string) error {
 	switch name {
-	case agenttasksubject.EdgeTenant:
+	case agentrunsubject.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case agenttasksubject.EdgeTask:
-		m.ClearTask()
+	case agentrunsubject.EdgeAgentRun:
+		m.ClearAgentRun()
 		return nil
 	}
-	return fmt.Errorf("unknown AgentTaskSubject unique edge %s", name)
+	return fmt.Errorf("unknown AgentRunSubject unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *AgentTaskSubjectMutation) ResetEdge(name string) error {
+func (m *AgentRunSubjectMutation) ResetEdge(name string) error {
 	switch name {
-	case agenttasksubject.EdgeTenant:
+	case agentrunsubject.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case agenttasksubject.EdgeTask:
-		m.ResetTask()
+	case agentrunsubject.EdgeAgentRun:
+		m.ResetAgentRun()
 		return nil
 	}
-	return fmt.Errorf("unknown AgentTaskSubject edge %s", name)
+	return fmt.Errorf("unknown AgentRunSubject edge %s", name)
 }
 
 // AlertMutation represents an operation that mutates the Alert nodes in the graph.

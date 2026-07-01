@@ -17,9 +17,8 @@ import (
 	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
 	"github.com/rezible/rezible/ent/agentrunresult"
-	"github.com/rezible/rezible/ent/agentruntoolcall"
-	"github.com/rezible/rezible/ent/agenttask"
-	"github.com/rezible/rezible/ent/agenttasksubject"
+	"github.com/rezible/rezible/ent/agentrunsnapshot"
+	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
@@ -154,9 +153,8 @@ func checkColumn(t, c string) error {
 			agentrunfinding.Table:                         agentrunfinding.ValidColumn,
 			agentrunfindingcitation.Table:                 agentrunfindingcitation.ValidColumn,
 			agentrunresult.Table:                          agentrunresult.ValidColumn,
-			agentruntoolcall.Table:                        agentruntoolcall.ValidColumn,
-			agenttask.Table:                               agenttask.ValidColumn,
-			agenttasksubject.Table:                        agenttasksubject.ValidColumn,
+			agentrunsnapshot.Table:                        agentrunsnapshot.ValidColumn,
+			agentrunsubject.Table:                         agentrunsubject.ValidColumn,
 			alert.Table:                                   alert.ValidColumn,
 			alertfeedback.Table:                           alertfeedback.ValidColumn,
 			alertinstance.Table:                           alertinstance.ValidColumn,

@@ -26,12 +26,12 @@ const (
 	FieldAgentRunID = "agent_run_id"
 	// FieldOutput holds the string denoting the output field in the database.
 	FieldOutput = "output"
-	// FieldErrorMessage holds the string denoting the error_message field in the database.
-	FieldErrorMessage = "error_message"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAgentRun holds the string denoting the agent_run edge name in mutations.
 	EdgeAgentRun = "agent_run"
+	// EdgeFindings holds the string denoting the findings edge name in mutations.
+	EdgeFindings = "findings"
 	// Table holds the table name of the agentrunresult in the database.
 	Table = "agent_run_results"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -43,11 +43,18 @@ const (
 	TenantColumn = "tenant_id"
 	// AgentRunTable is the table that holds the agent_run relation/edge.
 	AgentRunTable = "agent_run_results"
-	// AgentRunInverseTable is the table name for the AgentRun entity.
-	// It exists in this package in order to avoid circular dependency with the "agentrun" package.
-	AgentRunInverseTable = "agent_runs"
+	// AgentRunInverseTable is the table name for the AgentRunSnapshot entity.
+	// It exists in this package in order to avoid circular dependency with the "agentrunsnapshot" package.
+	AgentRunInverseTable = "agent_run_snapshots"
 	// AgentRunColumn is the table column denoting the agent_run relation/edge.
 	AgentRunColumn = "agent_run_id"
+	// FindingsTable is the table that holds the findings relation/edge.
+	FindingsTable = "agent_run_findings"
+	// FindingsInverseTable is the table name for the AgentRunFinding entity.
+	// It exists in this package in order to avoid circular dependency with the "agentrunfinding" package.
+	FindingsInverseTable = "agent_run_findings"
+	// FindingsColumn is the table column denoting the findings relation/edge.
+	FindingsColumn = "agent_run_result_id"
 )
 
 // Columns holds all SQL columns for agentrunresult fields.
@@ -58,7 +65,6 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldAgentRunID,
 	FieldOutput,
-	FieldErrorMessage,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -117,11 +123,6 @@ func ByAgentRunID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentRunID, opts...).ToFunc()
 }
 
-// ByErrorMessage orders the results by the error_message field.
-func ByErrorMessage(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldErrorMessage, opts...).ToFunc()
-}
-
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -133,6 +134,20 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByAgentRunField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newAgentRunStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByFindingsCount orders the results by findings count.
+func ByFindingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newFindingsStep(), opts...)
+	}
+}
+
+// ByFindings orders the results by findings terms.
+func ByFindings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newFindingsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -147,5 +162,12 @@ func newAgentRunStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AgentRunInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, AgentRunTable, AgentRunColumn),
+	)
+}
+func newFindingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(FindingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, FindingsTable, FindingsColumn),
 	)
 }

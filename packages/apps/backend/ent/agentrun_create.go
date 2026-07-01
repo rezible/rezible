@@ -14,12 +14,11 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentruncitation"
-	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunresult"
-	"github.com/rezible/rezible/ent/agentruntoolcall"
-	"github.com/rezible/rezible/ent/agenttask"
+	"github.com/rezible/rezible/ent/agentrunsnapshot"
+	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // AgentRunCreate is the builder for creating a AgentRun entity.
@@ -64,43 +63,33 @@ func (_c *AgentRunCreate) SetNillableUpdatedAt(v *time.Time) *AgentRunCreate {
 	return _c
 }
 
-// SetAgentTaskID sets the "agent_task_id" field.
-func (_c *AgentRunCreate) SetAgentTaskID(v uuid.UUID) *AgentRunCreate {
-	_c.mutation.SetAgentTaskID(v)
+// SetOwnerUserID sets the "owner_user_id" field.
+func (_c *AgentRunCreate) SetOwnerUserID(v uuid.UUID) *AgentRunCreate {
+	_c.mutation.SetOwnerUserID(v)
 	return _c
 }
 
-// SetAttempt sets the "attempt" field.
-func (_c *AgentRunCreate) SetAttempt(v int) *AgentRunCreate {
-	_c.mutation.SetAttempt(v)
+// SetWorkflow sets the "workflow" field.
+func (_c *AgentRunCreate) SetWorkflow(v string) *AgentRunCreate {
+	_c.mutation.SetWorkflow(v)
 	return _c
 }
 
-// SetStartedAt sets the "started_at" field.
-func (_c *AgentRunCreate) SetStartedAt(v time.Time) *AgentRunCreate {
-	_c.mutation.SetStartedAt(v)
+// SetInput sets the "input" field.
+func (_c *AgentRunCreate) SetInput(v []byte) *AgentRunCreate {
+	_c.mutation.SetInput(v)
 	return _c
 }
 
-// SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (_c *AgentRunCreate) SetNillableStartedAt(v *time.Time) *AgentRunCreate {
-	if v != nil {
-		_c.SetStartedAt(*v)
-	}
+// SetTriggerKind sets the "trigger_kind" field.
+func (_c *AgentRunCreate) SetTriggerKind(v agentrun.TriggerKind) *AgentRunCreate {
+	_c.mutation.SetTriggerKind(v)
 	return _c
 }
 
-// SetCancelledAt sets the "cancelled_at" field.
-func (_c *AgentRunCreate) SetCancelledAt(v time.Time) *AgentRunCreate {
-	_c.mutation.SetCancelledAt(v)
-	return _c
-}
-
-// SetNillableCancelledAt sets the "cancelled_at" field if the given value is not nil.
-func (_c *AgentRunCreate) SetNillableCancelledAt(v *time.Time) *AgentRunCreate {
-	if v != nil {
-		_c.SetCancelledAt(*v)
-	}
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (_c *AgentRunCreate) SetTriggerMetadata(v map[string]interface{}) *AgentRunCreate {
+	_c.mutation.SetTriggerMetadata(v)
 	return _c
 }
 
@@ -123,15 +112,39 @@ func (_c *AgentRunCreate) SetTenant(v *Tenant) *AgentRunCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetTaskID sets the "task" edge to the AgentTask entity by ID.
-func (_c *AgentRunCreate) SetTaskID(id uuid.UUID) *AgentRunCreate {
-	_c.mutation.SetTaskID(id)
+// SetOwnerUser sets the "owner_user" edge to the User entity.
+func (_c *AgentRunCreate) SetOwnerUser(v *User) *AgentRunCreate {
+	return _c.SetOwnerUserID(v.ID)
+}
+
+// AddSubjectIDs adds the "subjects" edge to the AgentRunSubject entity by IDs.
+func (_c *AgentRunCreate) AddSubjectIDs(ids ...uuid.UUID) *AgentRunCreate {
+	_c.mutation.AddSubjectIDs(ids...)
 	return _c
 }
 
-// SetTask sets the "task" edge to the AgentTask entity.
-func (_c *AgentRunCreate) SetTask(v *AgentTask) *AgentRunCreate {
-	return _c.SetTaskID(v.ID)
+// AddSubjects adds the "subjects" edges to the AgentRunSubject entity.
+func (_c *AgentRunCreate) AddSubjects(v ...*AgentRunSubject) *AgentRunCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSubjectIDs(ids...)
+}
+
+// AddSnapshotIDs adds the "snapshots" edge to the AgentRunSnapshot entity by IDs.
+func (_c *AgentRunCreate) AddSnapshotIDs(ids ...uuid.UUID) *AgentRunCreate {
+	_c.mutation.AddSnapshotIDs(ids...)
+	return _c
+}
+
+// AddSnapshots adds the "snapshots" edges to the AgentRunSnapshot entity.
+func (_c *AgentRunCreate) AddSnapshots(v ...*AgentRunSnapshot) *AgentRunCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSnapshotIDs(ids...)
 }
 
 // SetResultID sets the "result" edge to the AgentRunResult entity by ID.
@@ -151,51 +164,6 @@ func (_c *AgentRunCreate) SetNillableResultID(id *uuid.UUID) *AgentRunCreate {
 // SetResult sets the "result" edge to the AgentRunResult entity.
 func (_c *AgentRunCreate) SetResult(v *AgentRunResult) *AgentRunCreate {
 	return _c.SetResultID(v.ID)
-}
-
-// AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by IDs.
-func (_c *AgentRunCreate) AddCitationIDs(ids ...uuid.UUID) *AgentRunCreate {
-	_c.mutation.AddCitationIDs(ids...)
-	return _c
-}
-
-// AddCitations adds the "citations" edges to the AgentRunCitation entity.
-func (_c *AgentRunCreate) AddCitations(v ...*AgentRunCitation) *AgentRunCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddCitationIDs(ids...)
-}
-
-// AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
-func (_c *AgentRunCreate) AddFindingIDs(ids ...uuid.UUID) *AgentRunCreate {
-	_c.mutation.AddFindingIDs(ids...)
-	return _c
-}
-
-// AddFindings adds the "findings" edges to the AgentRunFinding entity.
-func (_c *AgentRunCreate) AddFindings(v ...*AgentRunFinding) *AgentRunCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddFindingIDs(ids...)
-}
-
-// AddToolCallIDs adds the "tool_calls" edge to the AgentRunToolCall entity by IDs.
-func (_c *AgentRunCreate) AddToolCallIDs(ids ...uuid.UUID) *AgentRunCreate {
-	_c.mutation.AddToolCallIDs(ids...)
-	return _c
-}
-
-// AddToolCalls adds the "tool_calls" edges to the AgentRunToolCall entity.
-func (_c *AgentRunCreate) AddToolCalls(v ...*AgentRunToolCall) *AgentRunCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddToolCallIDs(ids...)
 }
 
 // Mutation returns the AgentRunMutation object of the builder.
@@ -270,22 +238,38 @@ func (_c *AgentRunCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "AgentRun.updated_at"`)}
 	}
-	if _, ok := _c.mutation.AgentTaskID(); !ok {
-		return &ValidationError{Name: "agent_task_id", err: errors.New(`ent: missing required field "AgentRun.agent_task_id"`)}
+	if _, ok := _c.mutation.OwnerUserID(); !ok {
+		return &ValidationError{Name: "owner_user_id", err: errors.New(`ent: missing required field "AgentRun.owner_user_id"`)}
 	}
-	if _, ok := _c.mutation.Attempt(); !ok {
-		return &ValidationError{Name: "attempt", err: errors.New(`ent: missing required field "AgentRun.attempt"`)}
+	if _, ok := _c.mutation.Workflow(); !ok {
+		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required field "AgentRun.workflow"`)}
 	}
-	if v, ok := _c.mutation.Attempt(); ok {
-		if err := agentrun.AttemptValidator(v); err != nil {
-			return &ValidationError{Name: "attempt", err: fmt.Errorf(`ent: validator failed for field "AgentRun.attempt": %w`, err)}
+	if v, ok := _c.mutation.Workflow(); ok {
+		if err := agentrun.WorkflowValidator(v); err != nil {
+			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "AgentRun.workflow": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.Input(); !ok {
+		return &ValidationError{Name: "input", err: errors.New(`ent: missing required field "AgentRun.input"`)}
+	}
+	if v, ok := _c.mutation.Input(); ok {
+		if err := agentrun.InputValidator(v); err != nil {
+			return &ValidationError{Name: "input", err: fmt.Errorf(`ent: validator failed for field "AgentRun.input": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.TriggerKind(); !ok {
+		return &ValidationError{Name: "trigger_kind", err: errors.New(`ent: missing required field "AgentRun.trigger_kind"`)}
+	}
+	if v, ok := _c.mutation.TriggerKind(); ok {
+		if err := agentrun.TriggerKindValidator(v); err != nil {
+			return &ValidationError{Name: "trigger_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRun.trigger_kind": %w`, err)}
 		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentRun.tenant"`)}
 	}
-	if len(_c.mutation.TaskIDs()) == 0 {
-		return &ValidationError{Name: "task", err: errors.New(`ent: missing required edge "AgentRun.task"`)}
+	if len(_c.mutation.OwnerUserIDs()) == 0 {
+		return &ValidationError{Name: "owner_user", err: errors.New(`ent: missing required edge "AgentRun.owner_user"`)}
 	}
 	return nil
 }
@@ -332,17 +316,21 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 		_spec.SetField(agentrun.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.Attempt(); ok {
-		_spec.SetField(agentrun.FieldAttempt, field.TypeInt, value)
-		_node.Attempt = value
+	if value, ok := _c.mutation.Workflow(); ok {
+		_spec.SetField(agentrun.FieldWorkflow, field.TypeString, value)
+		_node.Workflow = value
 	}
-	if value, ok := _c.mutation.StartedAt(); ok {
-		_spec.SetField(agentrun.FieldStartedAt, field.TypeTime, value)
-		_node.StartedAt = &value
+	if value, ok := _c.mutation.Input(); ok {
+		_spec.SetField(agentrun.FieldInput, field.TypeBytes, value)
+		_node.Input = value
 	}
-	if value, ok := _c.mutation.CancelledAt(); ok {
-		_spec.SetField(agentrun.FieldCancelledAt, field.TypeTime, value)
-		_node.CancelledAt = &value
+	if value, ok := _c.mutation.TriggerKind(); ok {
+		_spec.SetField(agentrun.FieldTriggerKind, field.TypeEnum, value)
+		_node.TriggerKind = value
+	}
+	if value, ok := _c.mutation.TriggerMetadata(); ok {
+		_spec.SetField(agentrun.FieldTriggerMetadata, field.TypeJSON, value)
+		_node.TriggerMetadata = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -362,22 +350,56 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.TaskIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.OwnerUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrun.TaskTable,
-			Columns: []string{agentrun.TaskColumn},
+			Table:   agentrun.OwnerUserTable,
+			Columns: []string{agentrun.OwnerUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentRun
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.AgentTaskID = nodes[0]
+		_node.OwnerUserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SubjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SubjectsTable,
+			Columns: []string{agentrun.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentRunSubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SnapshotsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SnapshotsTable,
+			Columns: []string{agentrun.SnapshotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ResultIDs(); len(nodes) > 0 {
@@ -396,57 +418,6 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.agent_run_result = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.CitationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.CitationsTable,
-			Columns: []string{agentrun.CitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AgentRunCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.FindingsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.FindingsTable,
-			Columns: []string{agentrun.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AgentRunFinding
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.ToolCallsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.ToolCallsTable,
-			Columns: []string{agentrun.ToolCallsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentruntoolcall.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AgentRunToolCall
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -525,69 +496,69 @@ func (u *AgentRunUpsert) UpdateUpdatedAt() *AgentRunUpsert {
 	return u
 }
 
-// SetAgentTaskID sets the "agent_task_id" field.
-func (u *AgentRunUpsert) SetAgentTaskID(v uuid.UUID) *AgentRunUpsert {
-	u.Set(agentrun.FieldAgentTaskID, v)
+// SetOwnerUserID sets the "owner_user_id" field.
+func (u *AgentRunUpsert) SetOwnerUserID(v uuid.UUID) *AgentRunUpsert {
+	u.Set(agentrun.FieldOwnerUserID, v)
 	return u
 }
 
-// UpdateAgentTaskID sets the "agent_task_id" field to the value that was provided on create.
-func (u *AgentRunUpsert) UpdateAgentTaskID() *AgentRunUpsert {
-	u.SetExcluded(agentrun.FieldAgentTaskID)
+// UpdateOwnerUserID sets the "owner_user_id" field to the value that was provided on create.
+func (u *AgentRunUpsert) UpdateOwnerUserID() *AgentRunUpsert {
+	u.SetExcluded(agentrun.FieldOwnerUserID)
 	return u
 }
 
-// SetAttempt sets the "attempt" field.
-func (u *AgentRunUpsert) SetAttempt(v int) *AgentRunUpsert {
-	u.Set(agentrun.FieldAttempt, v)
+// SetWorkflow sets the "workflow" field.
+func (u *AgentRunUpsert) SetWorkflow(v string) *AgentRunUpsert {
+	u.Set(agentrun.FieldWorkflow, v)
 	return u
 }
 
-// UpdateAttempt sets the "attempt" field to the value that was provided on create.
-func (u *AgentRunUpsert) UpdateAttempt() *AgentRunUpsert {
-	u.SetExcluded(agentrun.FieldAttempt)
+// UpdateWorkflow sets the "workflow" field to the value that was provided on create.
+func (u *AgentRunUpsert) UpdateWorkflow() *AgentRunUpsert {
+	u.SetExcluded(agentrun.FieldWorkflow)
 	return u
 }
 
-// AddAttempt adds v to the "attempt" field.
-func (u *AgentRunUpsert) AddAttempt(v int) *AgentRunUpsert {
-	u.Add(agentrun.FieldAttempt, v)
+// SetInput sets the "input" field.
+func (u *AgentRunUpsert) SetInput(v []byte) *AgentRunUpsert {
+	u.Set(agentrun.FieldInput, v)
 	return u
 }
 
-// SetStartedAt sets the "started_at" field.
-func (u *AgentRunUpsert) SetStartedAt(v time.Time) *AgentRunUpsert {
-	u.Set(agentrun.FieldStartedAt, v)
+// UpdateInput sets the "input" field to the value that was provided on create.
+func (u *AgentRunUpsert) UpdateInput() *AgentRunUpsert {
+	u.SetExcluded(agentrun.FieldInput)
 	return u
 }
 
-// UpdateStartedAt sets the "started_at" field to the value that was provided on create.
-func (u *AgentRunUpsert) UpdateStartedAt() *AgentRunUpsert {
-	u.SetExcluded(agentrun.FieldStartedAt)
+// SetTriggerKind sets the "trigger_kind" field.
+func (u *AgentRunUpsert) SetTriggerKind(v agentrun.TriggerKind) *AgentRunUpsert {
+	u.Set(agentrun.FieldTriggerKind, v)
 	return u
 }
 
-// ClearStartedAt clears the value of the "started_at" field.
-func (u *AgentRunUpsert) ClearStartedAt() *AgentRunUpsert {
-	u.SetNull(agentrun.FieldStartedAt)
+// UpdateTriggerKind sets the "trigger_kind" field to the value that was provided on create.
+func (u *AgentRunUpsert) UpdateTriggerKind() *AgentRunUpsert {
+	u.SetExcluded(agentrun.FieldTriggerKind)
 	return u
 }
 
-// SetCancelledAt sets the "cancelled_at" field.
-func (u *AgentRunUpsert) SetCancelledAt(v time.Time) *AgentRunUpsert {
-	u.Set(agentrun.FieldCancelledAt, v)
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (u *AgentRunUpsert) SetTriggerMetadata(v map[string]interface{}) *AgentRunUpsert {
+	u.Set(agentrun.FieldTriggerMetadata, v)
 	return u
 }
 
-// UpdateCancelledAt sets the "cancelled_at" field to the value that was provided on create.
-func (u *AgentRunUpsert) UpdateCancelledAt() *AgentRunUpsert {
-	u.SetExcluded(agentrun.FieldCancelledAt)
+// UpdateTriggerMetadata sets the "trigger_metadata" field to the value that was provided on create.
+func (u *AgentRunUpsert) UpdateTriggerMetadata() *AgentRunUpsert {
+	u.SetExcluded(agentrun.FieldTriggerMetadata)
 	return u
 }
 
-// ClearCancelledAt clears the value of the "cancelled_at" field.
-func (u *AgentRunUpsert) ClearCancelledAt() *AgentRunUpsert {
-	u.SetNull(agentrun.FieldCancelledAt)
+// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
+func (u *AgentRunUpsert) ClearTriggerMetadata() *AgentRunUpsert {
+	u.SetNull(agentrun.FieldTriggerMetadata)
 	return u
 }
 
@@ -670,80 +641,80 @@ func (u *AgentRunUpsertOne) UpdateUpdatedAt() *AgentRunUpsertOne {
 	})
 }
 
-// SetAgentTaskID sets the "agent_task_id" field.
-func (u *AgentRunUpsertOne) SetAgentTaskID(v uuid.UUID) *AgentRunUpsertOne {
+// SetOwnerUserID sets the "owner_user_id" field.
+func (u *AgentRunUpsertOne) SetOwnerUserID(v uuid.UUID) *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetAgentTaskID(v)
+		s.SetOwnerUserID(v)
 	})
 }
 
-// UpdateAgentTaskID sets the "agent_task_id" field to the value that was provided on create.
-func (u *AgentRunUpsertOne) UpdateAgentTaskID() *AgentRunUpsertOne {
+// UpdateOwnerUserID sets the "owner_user_id" field to the value that was provided on create.
+func (u *AgentRunUpsertOne) UpdateOwnerUserID() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateAgentTaskID()
+		s.UpdateOwnerUserID()
 	})
 }
 
-// SetAttempt sets the "attempt" field.
-func (u *AgentRunUpsertOne) SetAttempt(v int) *AgentRunUpsertOne {
+// SetWorkflow sets the "workflow" field.
+func (u *AgentRunUpsertOne) SetWorkflow(v string) *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetAttempt(v)
+		s.SetWorkflow(v)
 	})
 }
 
-// AddAttempt adds v to the "attempt" field.
-func (u *AgentRunUpsertOne) AddAttempt(v int) *AgentRunUpsertOne {
+// UpdateWorkflow sets the "workflow" field to the value that was provided on create.
+func (u *AgentRunUpsertOne) UpdateWorkflow() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.AddAttempt(v)
+		s.UpdateWorkflow()
 	})
 }
 
-// UpdateAttempt sets the "attempt" field to the value that was provided on create.
-func (u *AgentRunUpsertOne) UpdateAttempt() *AgentRunUpsertOne {
+// SetInput sets the "input" field.
+func (u *AgentRunUpsertOne) SetInput(v []byte) *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateAttempt()
+		s.SetInput(v)
 	})
 }
 
-// SetStartedAt sets the "started_at" field.
-func (u *AgentRunUpsertOne) SetStartedAt(v time.Time) *AgentRunUpsertOne {
+// UpdateInput sets the "input" field to the value that was provided on create.
+func (u *AgentRunUpsertOne) UpdateInput() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetStartedAt(v)
+		s.UpdateInput()
 	})
 }
 
-// UpdateStartedAt sets the "started_at" field to the value that was provided on create.
-func (u *AgentRunUpsertOne) UpdateStartedAt() *AgentRunUpsertOne {
+// SetTriggerKind sets the "trigger_kind" field.
+func (u *AgentRunUpsertOne) SetTriggerKind(v agentrun.TriggerKind) *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateStartedAt()
+		s.SetTriggerKind(v)
 	})
 }
 
-// ClearStartedAt clears the value of the "started_at" field.
-func (u *AgentRunUpsertOne) ClearStartedAt() *AgentRunUpsertOne {
+// UpdateTriggerKind sets the "trigger_kind" field to the value that was provided on create.
+func (u *AgentRunUpsertOne) UpdateTriggerKind() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.ClearStartedAt()
+		s.UpdateTriggerKind()
 	})
 }
 
-// SetCancelledAt sets the "cancelled_at" field.
-func (u *AgentRunUpsertOne) SetCancelledAt(v time.Time) *AgentRunUpsertOne {
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (u *AgentRunUpsertOne) SetTriggerMetadata(v map[string]interface{}) *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetCancelledAt(v)
+		s.SetTriggerMetadata(v)
 	})
 }
 
-// UpdateCancelledAt sets the "cancelled_at" field to the value that was provided on create.
-func (u *AgentRunUpsertOne) UpdateCancelledAt() *AgentRunUpsertOne {
+// UpdateTriggerMetadata sets the "trigger_metadata" field to the value that was provided on create.
+func (u *AgentRunUpsertOne) UpdateTriggerMetadata() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateCancelledAt()
+		s.UpdateTriggerMetadata()
 	})
 }
 
-// ClearCancelledAt clears the value of the "cancelled_at" field.
-func (u *AgentRunUpsertOne) ClearCancelledAt() *AgentRunUpsertOne {
+// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
+func (u *AgentRunUpsertOne) ClearTriggerMetadata() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.ClearCancelledAt()
+		s.ClearTriggerMetadata()
 	})
 }
 
@@ -993,80 +964,80 @@ func (u *AgentRunUpsertBulk) UpdateUpdatedAt() *AgentRunUpsertBulk {
 	})
 }
 
-// SetAgentTaskID sets the "agent_task_id" field.
-func (u *AgentRunUpsertBulk) SetAgentTaskID(v uuid.UUID) *AgentRunUpsertBulk {
+// SetOwnerUserID sets the "owner_user_id" field.
+func (u *AgentRunUpsertBulk) SetOwnerUserID(v uuid.UUID) *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetAgentTaskID(v)
+		s.SetOwnerUserID(v)
 	})
 }
 
-// UpdateAgentTaskID sets the "agent_task_id" field to the value that was provided on create.
-func (u *AgentRunUpsertBulk) UpdateAgentTaskID() *AgentRunUpsertBulk {
+// UpdateOwnerUserID sets the "owner_user_id" field to the value that was provided on create.
+func (u *AgentRunUpsertBulk) UpdateOwnerUserID() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateAgentTaskID()
+		s.UpdateOwnerUserID()
 	})
 }
 
-// SetAttempt sets the "attempt" field.
-func (u *AgentRunUpsertBulk) SetAttempt(v int) *AgentRunUpsertBulk {
+// SetWorkflow sets the "workflow" field.
+func (u *AgentRunUpsertBulk) SetWorkflow(v string) *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetAttempt(v)
+		s.SetWorkflow(v)
 	})
 }
 
-// AddAttempt adds v to the "attempt" field.
-func (u *AgentRunUpsertBulk) AddAttempt(v int) *AgentRunUpsertBulk {
+// UpdateWorkflow sets the "workflow" field to the value that was provided on create.
+func (u *AgentRunUpsertBulk) UpdateWorkflow() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.AddAttempt(v)
+		s.UpdateWorkflow()
 	})
 }
 
-// UpdateAttempt sets the "attempt" field to the value that was provided on create.
-func (u *AgentRunUpsertBulk) UpdateAttempt() *AgentRunUpsertBulk {
+// SetInput sets the "input" field.
+func (u *AgentRunUpsertBulk) SetInput(v []byte) *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateAttempt()
+		s.SetInput(v)
 	})
 }
 
-// SetStartedAt sets the "started_at" field.
-func (u *AgentRunUpsertBulk) SetStartedAt(v time.Time) *AgentRunUpsertBulk {
+// UpdateInput sets the "input" field to the value that was provided on create.
+func (u *AgentRunUpsertBulk) UpdateInput() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetStartedAt(v)
+		s.UpdateInput()
 	})
 }
 
-// UpdateStartedAt sets the "started_at" field to the value that was provided on create.
-func (u *AgentRunUpsertBulk) UpdateStartedAt() *AgentRunUpsertBulk {
+// SetTriggerKind sets the "trigger_kind" field.
+func (u *AgentRunUpsertBulk) SetTriggerKind(v agentrun.TriggerKind) *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateStartedAt()
+		s.SetTriggerKind(v)
 	})
 }
 
-// ClearStartedAt clears the value of the "started_at" field.
-func (u *AgentRunUpsertBulk) ClearStartedAt() *AgentRunUpsertBulk {
+// UpdateTriggerKind sets the "trigger_kind" field to the value that was provided on create.
+func (u *AgentRunUpsertBulk) UpdateTriggerKind() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.ClearStartedAt()
+		s.UpdateTriggerKind()
 	})
 }
 
-// SetCancelledAt sets the "cancelled_at" field.
-func (u *AgentRunUpsertBulk) SetCancelledAt(v time.Time) *AgentRunUpsertBulk {
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (u *AgentRunUpsertBulk) SetTriggerMetadata(v map[string]interface{}) *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetCancelledAt(v)
+		s.SetTriggerMetadata(v)
 	})
 }
 
-// UpdateCancelledAt sets the "cancelled_at" field to the value that was provided on create.
-func (u *AgentRunUpsertBulk) UpdateCancelledAt() *AgentRunUpsertBulk {
+// UpdateTriggerMetadata sets the "trigger_metadata" field to the value that was provided on create.
+func (u *AgentRunUpsertBulk) UpdateTriggerMetadata() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateCancelledAt()
+		s.UpdateTriggerMetadata()
 	})
 }
 
-// ClearCancelledAt clears the value of the "cancelled_at" field.
-func (u *AgentRunUpsertBulk) ClearCancelledAt() *AgentRunUpsertBulk {
+// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
+func (u *AgentRunUpsertBulk) ClearTriggerMetadata() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.ClearCancelledAt()
+		s.ClearTriggerMetadata()
 	})
 }
 

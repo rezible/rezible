@@ -22,18 +22,16 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldAgentRunID holds the string denoting the agent_run_id field in the database.
-	FieldAgentRunID = "agent_run_id"
-	// FieldSequence holds the string denoting the sequence field in the database.
-	FieldSequence = "sequence"
+	// FieldAgentRunResultID holds the string denoting the agent_run_result_id field in the database.
+	FieldAgentRunResultID = "agent_run_result_id"
 	// FieldFindingKind holds the string denoting the finding_kind field in the database.
 	FieldFindingKind = "finding_kind"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeAgentRun holds the string denoting the agent_run edge name in mutations.
-	EdgeAgentRun = "agent_run"
+	// EdgeAgentRunResult holds the string denoting the agent_run_result edge name in mutations.
+	EdgeAgentRunResult = "agent_run_result"
 	// EdgeCitations holds the string denoting the citations edge name in mutations.
 	EdgeCitations = "citations"
 	// EdgeFindingCitations holds the string denoting the finding_citations edge name in mutations.
@@ -47,13 +45,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// AgentRunTable is the table that holds the agent_run relation/edge.
-	AgentRunTable = "agent_run_findings"
-	// AgentRunInverseTable is the table name for the AgentRun entity.
-	// It exists in this package in order to avoid circular dependency with the "agentrun" package.
-	AgentRunInverseTable = "agent_runs"
-	// AgentRunColumn is the table column denoting the agent_run relation/edge.
-	AgentRunColumn = "agent_run_id"
+	// AgentRunResultTable is the table that holds the agent_run_result relation/edge.
+	AgentRunResultTable = "agent_run_findings"
+	// AgentRunResultInverseTable is the table name for the AgentRunResult entity.
+	// It exists in this package in order to avoid circular dependency with the "agentrunresult" package.
+	AgentRunResultInverseTable = "agent_run_results"
+	// AgentRunResultColumn is the table column denoting the agent_run_result relation/edge.
+	AgentRunResultColumn = "agent_run_result_id"
 	// CitationsTable is the table that holds the citations relation/edge. The primary key declared below.
 	CitationsTable = "agent_run_finding_citations"
 	// CitationsInverseTable is the table name for the AgentRunCitation entity.
@@ -74,8 +72,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldAgentRunID,
-	FieldSequence,
+	FieldAgentRunResultID,
 	FieldFindingKind,
 	FieldContent,
 }
@@ -110,8 +107,6 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// SequenceValidator is a validator for the "sequence" field. It is called by the builders before save.
-	SequenceValidator func(int) error
 	// FindingKindValidator is a validator for the "finding_kind" field. It is called by the builders before save.
 	FindingKindValidator func(string) error
 	// ContentValidator is a validator for the "content" field. It is called by the builders before save.
@@ -143,14 +138,9 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByAgentRunID orders the results by the agent_run_id field.
-func ByAgentRunID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAgentRunID, opts...).ToFunc()
-}
-
-// BySequence orders the results by the sequence field.
-func BySequence(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSequence, opts...).ToFunc()
+// ByAgentRunResultID orders the results by the agent_run_result_id field.
+func ByAgentRunResultID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAgentRunResultID, opts...).ToFunc()
 }
 
 // ByFindingKind orders the results by the finding_kind field.
@@ -170,10 +160,10 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByAgentRunField orders the results by agent_run field.
-func ByAgentRunField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByAgentRunResultField orders the results by agent_run_result field.
+func ByAgentRunResultField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAgentRunStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newAgentRunResultStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -211,11 +201,11 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newAgentRunStep() *sqlgraph.Step {
+func newAgentRunResultStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AgentRunInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AgentRunTable, AgentRunColumn),
+		sqlgraph.To(AgentRunResultInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, AgentRunResultTable, AgentRunResultColumn),
 	)
 }
 func newCitationsStep() *sqlgraph.Step {
