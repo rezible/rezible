@@ -433,7 +433,7 @@ type (
 	RunAgentOpts struct {
 		Detach bool
 	}
-	Agent interface {
+	WorkflowAgent interface {
 		WorkflowName() string
 		ValidateInput(input []byte) error
 		Run(context.Context, *ent.AgentRun, *RunAgentOpts) (uuid.UUID, error)
@@ -441,8 +441,8 @@ type (
 	}
 
 	AgentRegistry interface {
-		ValidateWorkflowInput(workflow string, input []byte) error
-		GetAgent(string) (Agent, bool)
+		Register(WorkflowAgent)
+		Get(string) (WorkflowAgent, bool)
 	}
 
 	CreateAgentRunParams struct {

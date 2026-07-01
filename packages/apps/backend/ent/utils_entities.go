@@ -84,8 +84,8 @@ func (ref KnowledgeEntityAliasRef) SortKey() string {
 	return ref.Provider + "\x1f" + ref.ProviderSubjectRef
 }
 
-func (r *AgentRun) GetSubjectEntityId(subjectKind string) (uuid.UUID, error) {
-	subjects, subjectsErr := r.Edges.SubjectsOrErr()
+func (are AgentRunEdges) GetSubjectEntityId(subjectKind string) (uuid.UUID, error) {
+	subjects, subjectsErr := are.SubjectsOrErr()
 	if subjectsErr != nil {
 		return uuid.Nil, subjectsErr
 	}

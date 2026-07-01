@@ -74,7 +74,7 @@ exclude_test_packages_pattern := "/ent/"
     go generate ./ent
 
 @gen-mocks:
-    go generate ./testkit/mocks
+    go generate ./test/mocks
 
 @gen-migration NAME:
     just run migrations create '{{NAME}}'

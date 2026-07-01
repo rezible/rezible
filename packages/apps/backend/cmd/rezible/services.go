@@ -149,12 +149,12 @@ func declareServices(ctx context.Context, i do.Injector) {
 	})
 
 	do.Provide(i, func(i do.Injector) (rez.AgentRegistry, error) {
-		reg := genkit.NewAgentRegistry(ctx,
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.AgentRunSnapshotService](i),
-		)
-		reg.RegisterAlertInvestigationAgent(do.MustInvoke[rez.AlertService](i))
-		return reg, nil
+		ar := genkit.NewAgentRegistry(ctx, do.MustInvoke[rez.Config](i))
+		s := do.MustInvoke[rez.AgentRunSnapshotService](i)
+
+		alertAgent := genkit.NewAlertInvestigationAgent(do.MustInvoke[rez.AlertService](i))
+		ar.Register(genkit.WrapWorkflowAgent(ar, s, alertAgent))
+		return ar, nil
 	})
 
 	do.Provide(i, func(i do.Injector) (rez.MigrationService, error) {

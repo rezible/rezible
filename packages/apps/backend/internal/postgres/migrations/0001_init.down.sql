@@ -160,22 +160,20 @@ ALTER TABLE "alert_instances" DROP CONSTRAINT "alert_instances_knowledge_entitie
 ALTER TABLE "alert_feedbacks" DROP CONSTRAINT "alert_feedbacks_alert_instances_alert_instance", DROP CONSTRAINT "alert_feedbacks_tenants_tenant";
 -- reverse: modify "alerts" table
 ALTER TABLE "alerts" DROP CONSTRAINT "alerts_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alerts_tenants_tenant";
--- reverse: modify "agent_task_subjects" table
-ALTER TABLE "agent_task_subjects" DROP CONSTRAINT "agent_task_subjects_agent_tasks_task", DROP CONSTRAINT "agent_task_subjects_tenants_tenant";
--- reverse: modify "agent_tasks" table
-ALTER TABLE "agent_tasks" DROP CONSTRAINT "agent_tasks_users_owner_user", DROP CONSTRAINT "agent_tasks_tenants_tenant";
--- reverse: modify "agent_run_tool_calls" table
-ALTER TABLE "agent_run_tool_calls" DROP CONSTRAINT "agent_run_tool_calls_agent_runs_agent_run", DROP CONSTRAINT "agent_run_tool_calls_tenants_tenant";
+-- reverse: modify "agent_run_subjects" table
+ALTER TABLE "agent_run_subjects" DROP CONSTRAINT "agent_run_subjects_agent_runs_agent_run", DROP CONSTRAINT "agent_run_subjects_tenants_tenant";
+-- reverse: modify "agent_run_snapshots" table
+ALTER TABLE "agent_run_snapshots" DROP CONSTRAINT "agent_run_snapshots_agent_runs_agent_run", DROP CONSTRAINT "agent_run_snapshots_tenants_tenant";
 -- reverse: modify "agent_run_results" table
-ALTER TABLE "agent_run_results" DROP CONSTRAINT "agent_run_results_agent_runs_agent_run", DROP CONSTRAINT "agent_run_results_tenants_tenant";
+ALTER TABLE "agent_run_results" DROP CONSTRAINT "agent_run_results_agent_run_snapshots_agent_run", DROP CONSTRAINT "agent_run_results_tenants_tenant";
 -- reverse: modify "agent_run_finding_citations" table
 ALTER TABLE "agent_run_finding_citations" DROP CONSTRAINT "agent_run_finding_citations_agent_run_citations_citation", DROP CONSTRAINT "agent_run_finding_citations_agent_run_findings_finding", DROP CONSTRAINT "agent_run_finding_citations_tenants_tenant";
 -- reverse: modify "agent_run_findings" table
-ALTER TABLE "agent_run_findings" DROP CONSTRAINT "agent_run_findings_agent_runs_agent_run", DROP CONSTRAINT "agent_run_findings_tenants_tenant";
+ALTER TABLE "agent_run_findings" DROP CONSTRAINT "agent_run_findings_agent_run_results_agent_run_result", DROP CONSTRAINT "agent_run_findings_tenants_tenant";
 -- reverse: modify "agent_run_citations" table
-ALTER TABLE "agent_run_citations" DROP CONSTRAINT "agent_run_citations_agent_run_tool_calls_agent_run_tool_call", DROP CONSTRAINT "agent_run_citations_agent_tasks_agent_task", DROP CONSTRAINT "agent_run_citations_knowledge_evidences_knowledge_evidence", DROP CONSTRAINT "agent_run_citations_knowledge__2174aff27b8bc3fd37438d763b4bd03b", DROP CONSTRAINT "agent_run_citations_knowledge_entities_knowledge_entity", DROP CONSTRAINT "agent_run_citations_agent_runs_agent_run", DROP CONSTRAINT "agent_run_citations_tenants_tenant";
+ALTER TABLE "agent_run_citations" DROP CONSTRAINT "agent_run_citations_knowledge_evidences_knowledge_evidence", DROP CONSTRAINT "agent_run_citations_knowledge__2174aff27b8bc3fd37438d763b4bd03b", DROP CONSTRAINT "agent_run_citations_knowledge_entities_knowledge_entity", DROP CONSTRAINT "agent_run_citations_tenants_tenant";
 -- reverse: modify "agent_runs" table
-ALTER TABLE "agent_runs" DROP CONSTRAINT "agent_runs_agent_run_results_result", DROP CONSTRAINT "agent_runs_agent_tasks_task", DROP CONSTRAINT "agent_runs_tenants_tenant";
+ALTER TABLE "agent_runs" DROP CONSTRAINT "agent_runs_agent_run_results_result", DROP CONSTRAINT "agent_runs_users_owner_user", DROP CONSTRAINT "agent_runs_tenants_tenant";
 -- reverse: create "user_watched_oncall_rosters" table
 DROP TABLE "user_watched_oncall_rosters";
 -- reverse: create "team_oncall_rosters" table
@@ -618,30 +616,20 @@ DROP INDEX "alert_tenant_id_knowledge_entity_id";
 DROP INDEX "alert_tenant_id";
 -- reverse: create "alerts" table
 DROP TABLE "alerts";
--- reverse: create index "agenttasksubject_tenant_id_task_id" to table: "agent_task_subjects"
-DROP INDEX "agenttasksubject_tenant_id_task_id";
--- reverse: create index "agenttasksubject_tenant_id" to table: "agent_task_subjects"
-DROP INDEX "agenttasksubject_tenant_id";
--- reverse: create "agent_task_subjects" table
-DROP TABLE "agent_task_subjects";
--- reverse: create index "agenttask_tenant_id_workflow_created_at" to table: "agent_tasks"
-DROP INDEX "agenttask_tenant_id_workflow_created_at";
--- reverse: create index "agenttask_tenant_id_owner_user_id_created_at" to table: "agent_tasks"
-DROP INDEX "agenttask_tenant_id_owner_user_id_created_at";
--- reverse: create index "agenttask_tenant_id" to table: "agent_tasks"
-DROP INDEX "agenttask_tenant_id";
--- reverse: create "agent_tasks" table
-DROP TABLE "agent_tasks";
--- reverse: create index "agentruntoolcall_tenant_id_status_created_at" to table: "agent_run_tool_calls"
-DROP INDEX "agentruntoolcall_tenant_id_status_created_at";
--- reverse: create index "agentruntoolcall_tenant_id_tool_id_created_at" to table: "agent_run_tool_calls"
-DROP INDEX "agentruntoolcall_tenant_id_tool_id_created_at";
--- reverse: create index "agentruntoolcall_tenant_id_agent_run_id_created_at" to table: "agent_run_tool_calls"
-DROP INDEX "agentruntoolcall_tenant_id_agent_run_id_created_at";
--- reverse: create index "agentruntoolcall_tenant_id" to table: "agent_run_tool_calls"
-DROP INDEX "agentruntoolcall_tenant_id";
--- reverse: create "agent_run_tool_calls" table
-DROP TABLE "agent_run_tool_calls";
+-- reverse: create index "agentrunsubject_tenant_id_agent_run_id" to table: "agent_run_subjects"
+DROP INDEX "agentrunsubject_tenant_id_agent_run_id";
+-- reverse: create index "agentrunsubject_tenant_id" to table: "agent_run_subjects"
+DROP INDEX "agentrunsubject_tenant_id";
+-- reverse: create "agent_run_subjects" table
+DROP TABLE "agent_run_subjects";
+-- reverse: create index "agentrunsnapshot_tenant_id_agent_run_id_created_at" to table: "agent_run_snapshots"
+DROP INDEX "agentrunsnapshot_tenant_id_agent_run_id_created_at";
+-- reverse: create index "agentrunsnapshot_tenant_id_agent_run_id" to table: "agent_run_snapshots"
+DROP INDEX "agentrunsnapshot_tenant_id_agent_run_id";
+-- reverse: create index "agentrunsnapshot_tenant_id" to table: "agent_run_snapshots"
+DROP INDEX "agentrunsnapshot_tenant_id";
+-- reverse: create "agent_run_snapshots" table
+DROP TABLE "agent_run_snapshots";
 -- reverse: create index "agentrunresult_tenant_id_agent_run_id" to table: "agent_run_results"
 DROP INDEX "agentrunresult_tenant_id_agent_run_id";
 -- reverse: create index "agentrunresult_tenant_id" to table: "agent_run_results"
@@ -658,16 +646,12 @@ DROP INDEX "agentrunfindingcitation_tenant_id_finding_id";
 DROP INDEX "agentrunfindingcitation_tenant_id";
 -- reverse: create "agent_run_finding_citations" table
 DROP TABLE "agent_run_finding_citations";
--- reverse: create index "agentrunfinding_tenant_id_agent_run_id_sequence" to table: "agent_run_findings"
-DROP INDEX "agentrunfinding_tenant_id_agent_run_id_sequence";
+-- reverse: create index "agentrunfinding_tenant_id_agent_run_result_id" to table: "agent_run_findings"
+DROP INDEX "agentrunfinding_tenant_id_agent_run_result_id";
 -- reverse: create index "agentrunfinding_tenant_id" to table: "agent_run_findings"
 DROP INDEX "agentrunfinding_tenant_id";
 -- reverse: create "agent_run_findings" table
 DROP TABLE "agent_run_findings";
--- reverse: create index "agentruncitation_tenant_id_agent_run_tool_call_id" to table: "agent_run_citations"
-DROP INDEX "agentruncitation_tenant_id_agent_run_tool_call_id";
--- reverse: create index "agentruncitation_tenant_id_agent_task_id" to table: "agent_run_citations"
-DROP INDEX "agentruncitation_tenant_id_agent_task_id";
 -- reverse: create index "agentruncitation_tenant_id_knowledge_evidence_id" to table: "agent_run_citations"
 DROP INDEX "agentruncitation_tenant_id_knowledge_evidence_id";
 -- reverse: create index "agentruncitation_tenant_id_knowledge_relationship_id" to table: "agent_run_citations"
@@ -678,16 +662,14 @@ DROP INDEX "agentruncitation_tenant_id_knowledge_entity_id";
 DROP INDEX "agentruncitation_tenant_id_domain_entity_type_domain_entity_id";
 -- reverse: create index "agentruncitation_tenant_id_kind" to table: "agent_run_citations"
 DROP INDEX "agentruncitation_tenant_id_kind";
--- reverse: create index "agentruncitation_tenant_id_agent_run_id_created_at" to table: "agent_run_citations"
-DROP INDEX "agentruncitation_tenant_id_agent_run_id_created_at";
 -- reverse: create index "agentruncitation_tenant_id" to table: "agent_run_citations"
 DROP INDEX "agentruncitation_tenant_id";
 -- reverse: create "agent_run_citations" table
 DROP TABLE "agent_run_citations";
--- reverse: create index "agentrun_tenant_id_started_at" to table: "agent_runs"
-DROP INDEX "agentrun_tenant_id_started_at";
--- reverse: create index "agentrun_tenant_id_agent_task_id_attempt" to table: "agent_runs"
-DROP INDEX "agentrun_tenant_id_agent_task_id_attempt";
+-- reverse: create index "agentrun_tenant_id_workflow_created_at" to table: "agent_runs"
+DROP INDEX "agentrun_tenant_id_workflow_created_at";
+-- reverse: create index "agentrun_tenant_id_owner_user_id_created_at" to table: "agent_runs"
+DROP INDEX "agentrun_tenant_id_owner_user_id_created_at";
 -- reverse: create index "agentrun_tenant_id" to table: "agent_runs"
 DROP INDEX "agentrun_tenant_id";
 -- reverse: create "agent_runs" table

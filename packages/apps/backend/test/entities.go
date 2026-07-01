@@ -15,6 +15,7 @@ func (s *Suite) SeedTestEntities() {
 	ctx = s.SeedTenantContext()
 
 	if s.opts.skipSeedOrganization {
+		s.T().Logf("skipping seeding organization")
 		return
 	}
 	org, orgErr := client.Organization.Create().
@@ -25,11 +26,13 @@ func (s *Suite) SeedTestEntities() {
 	s.SeedOrganization = org
 
 	if s.opts.skipSeedUser {
+		s.T().Logf("skipping seeding user")
 		return
 	}
-	_, usrErr := client.User.Create().
+	usr, usrErr := client.User.Create().
 		SetEmail("owner+" + uuid.NewString() + "@example.com").
 		SetName("Owner").
 		Save(ctx)
 	s.Require().NoError(usrErr, "failed to create user")
+	s.SeedUser = usr
 }

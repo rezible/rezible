@@ -15,11 +15,11 @@ func (w Workflow[S, O]) Description() string {
 	return w.description
 }
 
-func defineWorkflow[State any, Output any](name string) Workflow[State, Output] {
-	return Workflow[State, Output]{name: name, description: "TODO"}
+func NewWorkflow[S any, O any](name string, description string) Workflow[S, O] {
+	return Workflow[S, O]{name: name, description: description}
 }
 
-var WorkflowAlertInvestigation = defineWorkflow[AlertInvestigationState, AlertInvestigationOutput]("alert_investigation")
+var WorkflowAlertInvestigation = NewWorkflow[AlertInvestigationState, AlertInvestigationOutput]("alert_investigation", "TODO")
 
 type (
 	AlertInvestigationState struct {

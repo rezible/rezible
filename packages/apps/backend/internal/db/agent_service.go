@@ -66,7 +66,9 @@ var runAgentWorkflowJobOpts = &river.InsertOpts{
 }
 
 func (s *AgentService) CreateRun(ctx context.Context, params rez.CreateAgentRunParams) (*ent.AgentRun, error) {
-	if validationErr := s.agents.ValidateWorkflowInput(params.Workflow, params.Input); validationErr != nil {
+	if agent, agentOk := s.agents.Get(params.Workflow); !agentOk {
+		return nil, fmt.Errorf("agent not found for workflow %q", params.Workflow)
+	} else if validationErr := agent.ValidateInput(params.Input); validationErr != nil {
 		return nil, fmt.Errorf("input validation: %w", validationErr)
 	}
 
@@ -117,7 +119,7 @@ func (s *AgentService) handleRunAgent(ctx context.Context, args jobs.RunAgent) e
 	}
 	ctx = execution.NewAgentContext(ctx, run)
 
-	agent, agentOk := s.agents.GetAgent(run.Workflow)
+	agent, agentOk := s.agents.Get(run.Workflow)
 	if !agentOk {
 		return fmt.Errorf("agent not found for workflow '%s'", run.Workflow)
 	}

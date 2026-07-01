@@ -8,37 +8,57 @@ import (
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
+	"github.com/firebase/genkit/go/genkit"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/agents"
 )
 
-type alertInvestigationAgent struct {
+type AlertInvestigationAgent struct {
 	alerts rez.AlertService
 }
 
-func newAlertInvestigationAgent(alerts rez.AlertService) *alertInvestigationAgent {
-	return &alertInvestigationAgent{alerts: alerts}
+func NewAlertInvestigationAgent(alerts rez.AlertService) *AlertInvestigationAgent {
+	return &AlertInvestigationAgent{alerts: alerts}
 }
 
-func (a *alertInvestigationAgent) workflow() agents.Workflow[agents.AlertInvestigationState, agents.AlertInvestigationOutput] {
+func (a *AlertInvestigationAgent) workflow() agents.Workflow[agents.AlertInvestigationState, agents.AlertInvestigationOutput] {
 	return agents.WorkflowAlertInvestigation
 }
 
-func (a *alertInvestigationAgent) validateInput(input []byte) error {
+func (a *AlertInvestigationAgent) validateInput(input []byte) error {
 	if input == nil || len(input) == 0 {
 		return fmt.Errorf("empty input")
 	}
 	return nil
 }
 
-func (a *alertInvestigationAgent) makeInitialMessage(run *ent.AgentRun) (*ai.Message, error) {
+func (a *AlertInvestigationAgent) makeInitial(run *ent.AgentRun) (*ai.Message, *agents.AlertInvestigationState, error) {
 	if validErr := a.validateInput(run.Input); validErr != nil {
-		return nil, validErr
+		return nil, nil, validErr
+	}
+	alertId, idErr := run.Edges.GetSubjectEntityId("alert")
+	if idErr != nil {
+		return nil, nil, fmt.Errorf("id error: %w", idErr)
 	}
 	inp := ai.NewUserTextMessage("foo bar")
-	return inp, nil
+	st := &agents.AlertInvestigationState{AlertID: alertId}
+	return inp, st, nil
+}
+
+func (a *AlertInvestigationAgent) agentFunc(g *genkit.Genkit) aix.AgentFunc[agents.AlertInvestigationState] {
+	return func(ctx context.Context, resp aix.Responder, sess *aix.SessionRunner[agents.AlertInvestigationState]) (*aix.AgentResult, error) {
+		alrt, alrtErr := a.alerts.GetAlert(ctx, uuid.Nil)
+		if alrtErr != nil {
+			return nil, fmt.Errorf("get alert: %w", alrtErr)
+		}
+
+		slog.DebugContext(ctx, "agent alert investigation", "title", alrt.Title)
+		_ = &agents.AlertInvestigationOutput{}
+
+		return nil, fmt.Errorf("not implemented")
+	}
 }
 
 type alertInvestigationSynthesis struct {
@@ -65,17 +85,3 @@ Use only the supplied JSON context. Produce concise JSON with this schema:
 }
 Do not invent systems, incidents, alerts, or evidence that are not present in the context.
 `)
-
-func (a *alertInvestigationAgent) agentFunc() aix.AgentFunc[agents.AlertInvestigationState] {
-	return func(ctx context.Context, resp aix.Responder, sess *aix.SessionRunner[agents.AlertInvestigationState]) (*aix.AgentResult, error) {
-		alrt, alrtErr := a.alerts.GetAlert(ctx, uuid.Nil)
-		if alrtErr != nil {
-			return nil, fmt.Errorf("get alert: %w", alrtErr)
-		}
-
-		slog.DebugContext(ctx, "agent alert investigation", "title", alrt.Title)
-		_ = &agents.AlertInvestigationOutput{}
-
-		return nil, fmt.Errorf("not implemented")
-	}
-}
