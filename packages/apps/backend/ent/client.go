@@ -2067,6 +2067,25 @@ func (c *AgentRunSnapshotClient) QueryAgentRun(_m *AgentRunSnapshot) *AgentRunQu
 	return query
 }
 
+// QueryParent queries the parent edge of a AgentRunSnapshot.
+func (c *AgentRunSnapshotClient) QueryParent(_m *AgentRunSnapshot) *AgentRunSnapshotQuery {
+	query := (&AgentRunSnapshotClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrunsnapshot.Table, agentrunsnapshot.FieldID, id),
+			sqlgraph.To(agentrunsnapshot.Table, agentrunsnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, agentrunsnapshot.ParentTable, agentrunsnapshot.ParentColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentRunSnapshot
+		step.Edge.Schema = schemaConfig.AgentRunSnapshot
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *AgentRunSnapshotClient) Hooks() []Hook {
 	hooks := c.hooks.AgentRunSnapshot

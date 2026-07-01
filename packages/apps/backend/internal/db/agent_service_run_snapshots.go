@@ -41,6 +41,25 @@ func (s *AgentRunSnapshotService) GetSnapshot(ctx context.Context, id uuid.UUID)
 	return res, nil
 }
 
+func (s *AgentRunSnapshotService) SetSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AgentRunSnapshotMutation)) (*ent.AgentRunSnapshot, error) {
+	var snapshot *ent.AgentRunSnapshot
+	return snapshot, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		var mutator ent.EntityMutator[*ent.AgentRunSnapshot, *ent.AgentRunSnapshotMutation]
+		if id != uuid.Nil {
+			mutator = tx.AgentRunSnapshot.UpdateOneID(id)
+		} else {
+			mutator = tx.AgentRunSnapshot.Create()
+		}
+		setFn(mutator.Mutation())
+		saved, saveErr := mutator.Save(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("failed to save: %w", saveErr)
+		}
+		snapshot = saved.Unwrap()
+		return nil
+	})
+}
+
 func (s *AgentRunSnapshotService) UpdateSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AgentRunSnapshot, *ent.AgentRunSnapshotMutation) error) (*ent.AgentRunSnapshot, error) {
 	var snapshot *ent.AgentRunSnapshot
 	return snapshot, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
@@ -48,9 +67,11 @@ func (s *AgentRunSnapshotService) UpdateSnapshot(ctx context.Context, id uuid.UU
 		var mutator ent.EntityMutator[*ent.AgentRunSnapshot, *ent.AgentRunSnapshotMutation]
 		if id != uuid.Nil {
 			var getErr error
-			if curr, getErr = tx.AgentRunSnapshot.Get(ctx, id); getErr != nil {
-				return fmt.Errorf("failed to lookup existing snapshot: %w", getErr)
+			if curr, getErr = tx.AgentRunSnapshot.Get(ctx, id); getErr != nil && !ent.IsNotFound(getErr) {
+				return fmt.Errorf("failed to lookup existing (%s): %w", id, getErr)
 			}
+		}
+		if curr != nil {
 			mutator = curr.Update()
 		} else {
 			mutator = tx.AgentRunSnapshot.Create()

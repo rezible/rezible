@@ -29,6 +29,7 @@ type AgentRunSnapshotQuery struct {
 	predicates   []predicate.AgentRunSnapshot
 	withTenant   *TenantQuery
 	withAgentRun *AgentRunQuery
+	withParent   *AgentRunSnapshotQuery
 	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -109,6 +110,31 @@ func (_q *AgentRunSnapshotQuery) QueryAgentRun() *AgentRunQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentRun
+		step.Edge.Schema = schemaConfig.AgentRunSnapshot
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryParent chains the current query on the "parent" edge.
+func (_q *AgentRunSnapshotQuery) QueryParent() *AgentRunSnapshotQuery {
+	query := (&AgentRunSnapshotClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrunsnapshot.Table, agentrunsnapshot.FieldID, selector),
+			sqlgraph.To(agentrunsnapshot.Table, agentrunsnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, agentrunsnapshot.ParentTable, agentrunsnapshot.ParentColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AgentRunSnapshot
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -310,6 +336,7 @@ func (_q *AgentRunSnapshotQuery) Clone() *AgentRunSnapshotQuery {
 		predicates:   append([]predicate.AgentRunSnapshot{}, _q.predicates...),
 		withTenant:   _q.withTenant.Clone(),
 		withAgentRun: _q.withAgentRun.Clone(),
+		withParent:   _q.withParent.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -336,6 +363,17 @@ func (_q *AgentRunSnapshotQuery) WithAgentRun(opts ...func(*AgentRunQuery)) *Age
 		opt(query)
 	}
 	_q.withAgentRun = query
+	return _q
+}
+
+// WithParent tells the query-builder to eager-load the nodes that are connected to
+// the "parent" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentRunSnapshotQuery) WithParent(opts ...func(*AgentRunSnapshotQuery)) *AgentRunSnapshotQuery {
+	query := (&AgentRunSnapshotClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withParent = query
 	return _q
 }
 
@@ -423,9 +461,10 @@ func (_q *AgentRunSnapshotQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	var (
 		nodes       = []*AgentRunSnapshot{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withAgentRun != nil,
+			_q.withParent != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -460,6 +499,12 @@ func (_q *AgentRunSnapshotQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	if query := _q.withAgentRun; query != nil {
 		if err := _q.loadAgentRun(ctx, query, nodes, nil,
 			func(n *AgentRunSnapshot, e *AgentRun) { n.Edges.AgentRun = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withParent; query != nil {
+		if err := _q.loadParent(ctx, query, nodes, nil,
+			func(n *AgentRunSnapshot, e *AgentRunSnapshot) { n.Edges.Parent = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -524,6 +569,38 @@ func (_q *AgentRunSnapshotQuery) loadAgentRun(ctx context.Context, query *AgentR
 	}
 	return nil
 }
+func (_q *AgentRunSnapshotQuery) loadParent(ctx context.Context, query *AgentRunSnapshotQuery, nodes []*AgentRunSnapshot, init func(*AgentRunSnapshot), assign func(*AgentRunSnapshot, *AgentRunSnapshot)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*AgentRunSnapshot)
+	for i := range nodes {
+		if nodes[i].ParentID == nil {
+			continue
+		}
+		fk := *nodes[i].ParentID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(agentrunsnapshot.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "parent_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (_q *AgentRunSnapshotQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -560,6 +637,9 @@ func (_q *AgentRunSnapshotQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withAgentRun != nil {
 			_spec.Node.AddColumnOnce(agentrunsnapshot.FieldAgentRunID)
+		}
+		if _q.withParent != nil {
+			_spec.Node.AddColumnOnce(agentrunsnapshot.FieldParentID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

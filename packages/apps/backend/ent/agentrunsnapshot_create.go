@@ -66,9 +66,55 @@ func (_c *AgentRunSnapshotCreate) SetAgentRunID(v uuid.UUID) *AgentRunSnapshotCr
 	return _c
 }
 
-// SetData sets the "data" field.
-func (_c *AgentRunSnapshotCreate) SetData(v []byte) *AgentRunSnapshotCreate {
-	_c.mutation.SetData(v)
+// SetParentID sets the "parent_id" field.
+func (_c *AgentRunSnapshotCreate) SetParentID(v uuid.UUID) *AgentRunSnapshotCreate {
+	_c.mutation.SetParentID(v)
+	return _c
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (_c *AgentRunSnapshotCreate) SetNillableParentID(v *uuid.UUID) *AgentRunSnapshotCreate {
+	if v != nil {
+		_c.SetParentID(*v)
+	}
+	return _c
+}
+
+// SetStatus sets the "status" field.
+func (_c *AgentRunSnapshotCreate) SetStatus(v agentrunsnapshot.Status) *AgentRunSnapshotCreate {
+	_c.mutation.SetStatus(v)
+	return _c
+}
+
+// SetFinishReason sets the "finish_reason" field.
+func (_c *AgentRunSnapshotCreate) SetFinishReason(v string) *AgentRunSnapshotCreate {
+	_c.mutation.SetFinishReason(v)
+	return _c
+}
+
+// SetHeartbeatAt sets the "heartbeat_at" field.
+func (_c *AgentRunSnapshotCreate) SetHeartbeatAt(v time.Time) *AgentRunSnapshotCreate {
+	_c.mutation.SetHeartbeatAt(v)
+	return _c
+}
+
+// SetNillableHeartbeatAt sets the "heartbeat_at" field if the given value is not nil.
+func (_c *AgentRunSnapshotCreate) SetNillableHeartbeatAt(v *time.Time) *AgentRunSnapshotCreate {
+	if v != nil {
+		_c.SetHeartbeatAt(*v)
+	}
+	return _c
+}
+
+// SetState sets the "state" field.
+func (_c *AgentRunSnapshotCreate) SetState(v []byte) *AgentRunSnapshotCreate {
+	_c.mutation.SetState(v)
+	return _c
+}
+
+// SetError sets the "error" field.
+func (_c *AgentRunSnapshotCreate) SetError(v []byte) *AgentRunSnapshotCreate {
+	_c.mutation.SetError(v)
 	return _c
 }
 
@@ -94,6 +140,11 @@ func (_c *AgentRunSnapshotCreate) SetTenant(v *Tenant) *AgentRunSnapshotCreate {
 // SetAgentRun sets the "agent_run" edge to the AgentRun entity.
 func (_c *AgentRunSnapshotCreate) SetAgentRun(v *AgentRun) *AgentRunSnapshotCreate {
 	return _c.SetAgentRunID(v.ID)
+}
+
+// SetParent sets the "parent" edge to the AgentRunSnapshot entity.
+func (_c *AgentRunSnapshotCreate) SetParent(v *AgentRunSnapshot) *AgentRunSnapshotCreate {
+	return _c.SetParentID(v.ID)
 }
 
 // Mutation returns the AgentRunSnapshotMutation object of the builder.
@@ -171,8 +222,19 @@ func (_c *AgentRunSnapshotCreate) check() error {
 	if _, ok := _c.mutation.AgentRunID(); !ok {
 		return &ValidationError{Name: "agent_run_id", err: errors.New(`ent: missing required field "AgentRunSnapshot.agent_run_id"`)}
 	}
-	if _, ok := _c.mutation.Data(); !ok {
-		return &ValidationError{Name: "data", err: errors.New(`ent: missing required field "AgentRunSnapshot.data"`)}
+	if _, ok := _c.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "AgentRunSnapshot.status"`)}
+	}
+	if v, ok := _c.mutation.Status(); ok {
+		if err := agentrunsnapshot.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AgentRunSnapshot.status": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.FinishReason(); !ok {
+		return &ValidationError{Name: "finish_reason", err: errors.New(`ent: missing required field "AgentRunSnapshot.finish_reason"`)}
+	}
+	if _, ok := _c.mutation.State(); !ok {
+		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "AgentRunSnapshot.state"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentRunSnapshot.tenant"`)}
@@ -225,9 +287,25 @@ func (_c *AgentRunSnapshotCreate) createSpec() (*AgentRunSnapshot, *sqlgraph.Cre
 		_spec.SetField(agentrunsnapshot.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.Data(); ok {
-		_spec.SetField(agentrunsnapshot.FieldData, field.TypeBytes, value)
-		_node.Data = value
+	if value, ok := _c.mutation.Status(); ok {
+		_spec.SetField(agentrunsnapshot.FieldStatus, field.TypeEnum, value)
+		_node.Status = value
+	}
+	if value, ok := _c.mutation.FinishReason(); ok {
+		_spec.SetField(agentrunsnapshot.FieldFinishReason, field.TypeString, value)
+		_node.FinishReason = value
+	}
+	if value, ok := _c.mutation.HeartbeatAt(); ok {
+		_spec.SetField(agentrunsnapshot.FieldHeartbeatAt, field.TypeTime, value)
+		_node.HeartbeatAt = &value
+	}
+	if value, ok := _c.mutation.State(); ok {
+		_spec.SetField(agentrunsnapshot.FieldState, field.TypeBytes, value)
+		_node.State = &value
+	}
+	if value, ok := _c.mutation.Error(); ok {
+		_spec.SetField(agentrunsnapshot.FieldError, field.TypeBytes, value)
+		_node.Error = &value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -263,6 +341,24 @@ func (_c *AgentRunSnapshotCreate) createSpec() (*AgentRunSnapshot, *sqlgraph.Cre
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.AgentRunID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   agentrunsnapshot.ParentTable,
+			Columns: []string{agentrunsnapshot.ParentColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ParentID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -353,15 +449,93 @@ func (u *AgentRunSnapshotUpsert) UpdateAgentRunID() *AgentRunSnapshotUpsert {
 	return u
 }
 
-// SetData sets the "data" field.
-func (u *AgentRunSnapshotUpsert) SetData(v []byte) *AgentRunSnapshotUpsert {
-	u.Set(agentrunsnapshot.FieldData, v)
+// SetParentID sets the "parent_id" field.
+func (u *AgentRunSnapshotUpsert) SetParentID(v uuid.UUID) *AgentRunSnapshotUpsert {
+	u.Set(agentrunsnapshot.FieldParentID, v)
 	return u
 }
 
-// UpdateData sets the "data" field to the value that was provided on create.
-func (u *AgentRunSnapshotUpsert) UpdateData() *AgentRunSnapshotUpsert {
-	u.SetExcluded(agentrunsnapshot.FieldData)
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsert) UpdateParentID() *AgentRunSnapshotUpsert {
+	u.SetExcluded(agentrunsnapshot.FieldParentID)
+	return u
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *AgentRunSnapshotUpsert) ClearParentID() *AgentRunSnapshotUpsert {
+	u.SetNull(agentrunsnapshot.FieldParentID)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *AgentRunSnapshotUpsert) SetStatus(v agentrunsnapshot.Status) *AgentRunSnapshotUpsert {
+	u.Set(agentrunsnapshot.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsert) UpdateStatus() *AgentRunSnapshotUpsert {
+	u.SetExcluded(agentrunsnapshot.FieldStatus)
+	return u
+}
+
+// SetFinishReason sets the "finish_reason" field.
+func (u *AgentRunSnapshotUpsert) SetFinishReason(v string) *AgentRunSnapshotUpsert {
+	u.Set(agentrunsnapshot.FieldFinishReason, v)
+	return u
+}
+
+// UpdateFinishReason sets the "finish_reason" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsert) UpdateFinishReason() *AgentRunSnapshotUpsert {
+	u.SetExcluded(agentrunsnapshot.FieldFinishReason)
+	return u
+}
+
+// SetHeartbeatAt sets the "heartbeat_at" field.
+func (u *AgentRunSnapshotUpsert) SetHeartbeatAt(v time.Time) *AgentRunSnapshotUpsert {
+	u.Set(agentrunsnapshot.FieldHeartbeatAt, v)
+	return u
+}
+
+// UpdateHeartbeatAt sets the "heartbeat_at" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsert) UpdateHeartbeatAt() *AgentRunSnapshotUpsert {
+	u.SetExcluded(agentrunsnapshot.FieldHeartbeatAt)
+	return u
+}
+
+// ClearHeartbeatAt clears the value of the "heartbeat_at" field.
+func (u *AgentRunSnapshotUpsert) ClearHeartbeatAt() *AgentRunSnapshotUpsert {
+	u.SetNull(agentrunsnapshot.FieldHeartbeatAt)
+	return u
+}
+
+// SetState sets the "state" field.
+func (u *AgentRunSnapshotUpsert) SetState(v []byte) *AgentRunSnapshotUpsert {
+	u.Set(agentrunsnapshot.FieldState, v)
+	return u
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsert) UpdateState() *AgentRunSnapshotUpsert {
+	u.SetExcluded(agentrunsnapshot.FieldState)
+	return u
+}
+
+// SetError sets the "error" field.
+func (u *AgentRunSnapshotUpsert) SetError(v []byte) *AgentRunSnapshotUpsert {
+	u.Set(agentrunsnapshot.FieldError, v)
+	return u
+}
+
+// UpdateError sets the "error" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsert) UpdateError() *AgentRunSnapshotUpsert {
+	u.SetExcluded(agentrunsnapshot.FieldError)
+	return u
+}
+
+// ClearError clears the value of the "error" field.
+func (u *AgentRunSnapshotUpsert) ClearError() *AgentRunSnapshotUpsert {
+	u.SetNull(agentrunsnapshot.FieldError)
 	return u
 }
 
@@ -458,17 +632,108 @@ func (u *AgentRunSnapshotUpsertOne) UpdateAgentRunID() *AgentRunSnapshotUpsertOn
 	})
 }
 
-// SetData sets the "data" field.
-func (u *AgentRunSnapshotUpsertOne) SetData(v []byte) *AgentRunSnapshotUpsertOne {
+// SetParentID sets the "parent_id" field.
+func (u *AgentRunSnapshotUpsertOne) SetParentID(v uuid.UUID) *AgentRunSnapshotUpsertOne {
 	return u.Update(func(s *AgentRunSnapshotUpsert) {
-		s.SetData(v)
+		s.SetParentID(v)
 	})
 }
 
-// UpdateData sets the "data" field to the value that was provided on create.
-func (u *AgentRunSnapshotUpsertOne) UpdateData() *AgentRunSnapshotUpsertOne {
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertOne) UpdateParentID() *AgentRunSnapshotUpsertOne {
 	return u.Update(func(s *AgentRunSnapshotUpsert) {
-		s.UpdateData()
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *AgentRunSnapshotUpsertOne) ClearParentID() *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.ClearParentID()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *AgentRunSnapshotUpsertOne) SetStatus(v agentrunsnapshot.Status) *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertOne) UpdateStatus() *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetFinishReason sets the "finish_reason" field.
+func (u *AgentRunSnapshotUpsertOne) SetFinishReason(v string) *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.SetFinishReason(v)
+	})
+}
+
+// UpdateFinishReason sets the "finish_reason" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertOne) UpdateFinishReason() *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.UpdateFinishReason()
+	})
+}
+
+// SetHeartbeatAt sets the "heartbeat_at" field.
+func (u *AgentRunSnapshotUpsertOne) SetHeartbeatAt(v time.Time) *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.SetHeartbeatAt(v)
+	})
+}
+
+// UpdateHeartbeatAt sets the "heartbeat_at" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertOne) UpdateHeartbeatAt() *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.UpdateHeartbeatAt()
+	})
+}
+
+// ClearHeartbeatAt clears the value of the "heartbeat_at" field.
+func (u *AgentRunSnapshotUpsertOne) ClearHeartbeatAt() *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.ClearHeartbeatAt()
+	})
+}
+
+// SetState sets the "state" field.
+func (u *AgentRunSnapshotUpsertOne) SetState(v []byte) *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertOne) UpdateState() *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.UpdateState()
+	})
+}
+
+// SetError sets the "error" field.
+func (u *AgentRunSnapshotUpsertOne) SetError(v []byte) *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.SetError(v)
+	})
+}
+
+// UpdateError sets the "error" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertOne) UpdateError() *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.UpdateError()
+	})
+}
+
+// ClearError clears the value of the "error" field.
+func (u *AgentRunSnapshotUpsertOne) ClearError() *AgentRunSnapshotUpsertOne {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.ClearError()
 	})
 }
 
@@ -732,17 +997,108 @@ func (u *AgentRunSnapshotUpsertBulk) UpdateAgentRunID() *AgentRunSnapshotUpsertB
 	})
 }
 
-// SetData sets the "data" field.
-func (u *AgentRunSnapshotUpsertBulk) SetData(v []byte) *AgentRunSnapshotUpsertBulk {
+// SetParentID sets the "parent_id" field.
+func (u *AgentRunSnapshotUpsertBulk) SetParentID(v uuid.UUID) *AgentRunSnapshotUpsertBulk {
 	return u.Update(func(s *AgentRunSnapshotUpsert) {
-		s.SetData(v)
+		s.SetParentID(v)
 	})
 }
 
-// UpdateData sets the "data" field to the value that was provided on create.
-func (u *AgentRunSnapshotUpsertBulk) UpdateData() *AgentRunSnapshotUpsertBulk {
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertBulk) UpdateParentID() *AgentRunSnapshotUpsertBulk {
 	return u.Update(func(s *AgentRunSnapshotUpsert) {
-		s.UpdateData()
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *AgentRunSnapshotUpsertBulk) ClearParentID() *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.ClearParentID()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *AgentRunSnapshotUpsertBulk) SetStatus(v agentrunsnapshot.Status) *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertBulk) UpdateStatus() *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetFinishReason sets the "finish_reason" field.
+func (u *AgentRunSnapshotUpsertBulk) SetFinishReason(v string) *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.SetFinishReason(v)
+	})
+}
+
+// UpdateFinishReason sets the "finish_reason" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertBulk) UpdateFinishReason() *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.UpdateFinishReason()
+	})
+}
+
+// SetHeartbeatAt sets the "heartbeat_at" field.
+func (u *AgentRunSnapshotUpsertBulk) SetHeartbeatAt(v time.Time) *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.SetHeartbeatAt(v)
+	})
+}
+
+// UpdateHeartbeatAt sets the "heartbeat_at" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertBulk) UpdateHeartbeatAt() *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.UpdateHeartbeatAt()
+	})
+}
+
+// ClearHeartbeatAt clears the value of the "heartbeat_at" field.
+func (u *AgentRunSnapshotUpsertBulk) ClearHeartbeatAt() *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.ClearHeartbeatAt()
+	})
+}
+
+// SetState sets the "state" field.
+func (u *AgentRunSnapshotUpsertBulk) SetState(v []byte) *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertBulk) UpdateState() *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.UpdateState()
+	})
+}
+
+// SetError sets the "error" field.
+func (u *AgentRunSnapshotUpsertBulk) SetError(v []byte) *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.SetError(v)
+	})
+}
+
+// UpdateError sets the "error" field to the value that was provided on create.
+func (u *AgentRunSnapshotUpsertBulk) UpdateError() *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.UpdateError()
+	})
+}
+
+// ClearError clears the value of the "error" field.
+func (u *AgentRunSnapshotUpsertBulk) ClearError() *AgentRunSnapshotUpsertBulk {
+	return u.Update(func(s *AgentRunSnapshotUpsert) {
+		s.ClearError()
 	})
 }
 

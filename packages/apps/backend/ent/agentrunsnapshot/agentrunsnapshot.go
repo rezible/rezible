@@ -3,6 +3,7 @@
 package agentrunsnapshot
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -24,12 +25,24 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldAgentRunID holds the string denoting the agent_run_id field in the database.
 	FieldAgentRunID = "agent_run_id"
-	// FieldData holds the string denoting the data field in the database.
-	FieldData = "data"
+	// FieldParentID holds the string denoting the parent_id field in the database.
+	FieldParentID = "parent_id"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
+	// FieldFinishReason holds the string denoting the finish_reason field in the database.
+	FieldFinishReason = "finish_reason"
+	// FieldHeartbeatAt holds the string denoting the heartbeat_at field in the database.
+	FieldHeartbeatAt = "heartbeat_at"
+	// FieldState holds the string denoting the state field in the database.
+	FieldState = "state"
+	// FieldError holds the string denoting the error field in the database.
+	FieldError = "error"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAgentRun holds the string denoting the agent_run edge name in mutations.
 	EdgeAgentRun = "agent_run"
+	// EdgeParent holds the string denoting the parent edge name in mutations.
+	EdgeParent = "parent"
 	// Table holds the table name of the agentrunsnapshot in the database.
 	Table = "agent_run_snapshots"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -46,6 +59,10 @@ const (
 	AgentRunInverseTable = "agent_runs"
 	// AgentRunColumn is the table column denoting the agent_run relation/edge.
 	AgentRunColumn = "agent_run_id"
+	// ParentTable is the table that holds the parent relation/edge.
+	ParentTable = "agent_run_snapshots"
+	// ParentColumn is the table column denoting the parent relation/edge.
+	ParentColumn = "parent_id"
 )
 
 // Columns holds all SQL columns for agentrunsnapshot fields.
@@ -55,7 +72,12 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldAgentRunID,
-	FieldData,
+	FieldParentID,
+	FieldStatus,
+	FieldFinishReason,
+	FieldHeartbeatAt,
+	FieldState,
+	FieldError,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -86,6 +108,31 @@ var (
 	DefaultID func() uuid.UUID
 )
 
+// Status defines the type for the "status" enum field.
+type Status string
+
+// Status values.
+const (
+	StatusPending   Status = "pending"
+	StatusCompleted Status = "completed"
+	StatusAborted   Status = "aborted"
+	StatusFailed    Status = "failed"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusPending, StatusCompleted, StatusAborted, StatusFailed:
+		return nil
+	default:
+		return fmt.Errorf("agentrunsnapshot: invalid enum value for status field: %q", s)
+	}
+}
+
 // OrderOption defines the ordering options for the AgentRunSnapshot queries.
 type OrderOption func(*sql.Selector)
 
@@ -114,6 +161,26 @@ func ByAgentRunID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentRunID, opts...).ToFunc()
 }
 
+// ByParentID orders the results by the parent_id field.
+func ByParentID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldParentID, opts...).ToFunc()
+}
+
+// ByStatus orders the results by the status field.
+func ByStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByFinishReason orders the results by the finish_reason field.
+func ByFinishReason(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFinishReason, opts...).ToFunc()
+}
+
+// ByHeartbeatAt orders the results by the heartbeat_at field.
+func ByHeartbeatAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHeartbeatAt, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -125,6 +192,13 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByAgentRunField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newAgentRunStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByParentField orders the results by parent field.
+func ByParentField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newParentStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -139,5 +213,12 @@ func newAgentRunStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AgentRunInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, AgentRunTable, AgentRunColumn),
+	)
+}
+func newParentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, ParentTable, ParentColumn),
 	)
 }

@@ -628,6 +628,8 @@ DROP INDEX "agentrunsnapshot_tenant_id_agent_run_id_created_at";
 DROP INDEX "agentrunsnapshot_tenant_id_agent_run_id";
 -- reverse: create index "agentrunsnapshot_tenant_id" to table: "agent_run_snapshots"
 DROP INDEX "agentrunsnapshot_tenant_id";
+-- reverse: create index "agent_run_snapshots_parent_id_key" to table: "agent_run_snapshots"
+DROP INDEX "agent_run_snapshots_parent_id_key";
 -- reverse: create "agent_run_snapshots" table
 DROP TABLE "agent_run_snapshots";
 -- reverse: create index "agentrunresult_tenant_id_agent_run_id" to table: "agent_run_results"

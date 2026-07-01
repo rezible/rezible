@@ -77,9 +77,29 @@ func AgentRunID(v uuid.UUID) predicate.AgentRunSnapshot {
 	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldAgentRunID, v))
 }
 
-// Data applies equality check predicate on the "data" field. It's identical to DataEQ.
-func Data(v []byte) predicate.AgentRunSnapshot {
-	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldData, v))
+// ParentID applies equality check predicate on the "parent_id" field. It's identical to ParentIDEQ.
+func ParentID(v uuid.UUID) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldParentID, v))
+}
+
+// FinishReason applies equality check predicate on the "finish_reason" field. It's identical to FinishReasonEQ.
+func FinishReason(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldFinishReason, v))
+}
+
+// HeartbeatAt applies equality check predicate on the "heartbeat_at" field. It's identical to HeartbeatAtEQ.
+func HeartbeatAt(v time.Time) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldHeartbeatAt, v))
+}
+
+// State applies equality check predicate on the "state" field. It's identical to StateEQ.
+func State(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldState, v))
+}
+
+// Error applies equality check predicate on the "error" field. It's identical to ErrorEQ.
+func Error(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldError, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -202,44 +222,259 @@ func AgentRunIDNotIn(vs ...uuid.UUID) predicate.AgentRunSnapshot {
 	return predicate.AgentRunSnapshot(sql.FieldNotIn(FieldAgentRunID, vs...))
 }
 
-// DataEQ applies the EQ predicate on the "data" field.
-func DataEQ(v []byte) predicate.AgentRunSnapshot {
-	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldData, v))
+// ParentIDEQ applies the EQ predicate on the "parent_id" field.
+func ParentIDEQ(v uuid.UUID) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldParentID, v))
 }
 
-// DataNEQ applies the NEQ predicate on the "data" field.
-func DataNEQ(v []byte) predicate.AgentRunSnapshot {
-	return predicate.AgentRunSnapshot(sql.FieldNEQ(FieldData, v))
+// ParentIDNEQ applies the NEQ predicate on the "parent_id" field.
+func ParentIDNEQ(v uuid.UUID) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNEQ(FieldParentID, v))
 }
 
-// DataIn applies the In predicate on the "data" field.
-func DataIn(vs ...[]byte) predicate.AgentRunSnapshot {
-	return predicate.AgentRunSnapshot(sql.FieldIn(FieldData, vs...))
+// ParentIDIn applies the In predicate on the "parent_id" field.
+func ParentIDIn(vs ...uuid.UUID) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldIn(FieldParentID, vs...))
 }
 
-// DataNotIn applies the NotIn predicate on the "data" field.
-func DataNotIn(vs ...[]byte) predicate.AgentRunSnapshot {
-	return predicate.AgentRunSnapshot(sql.FieldNotIn(FieldData, vs...))
+// ParentIDNotIn applies the NotIn predicate on the "parent_id" field.
+func ParentIDNotIn(vs ...uuid.UUID) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNotIn(FieldParentID, vs...))
 }
 
-// DataGT applies the GT predicate on the "data" field.
-func DataGT(v []byte) predicate.AgentRunSnapshot {
-	return predicate.AgentRunSnapshot(sql.FieldGT(FieldData, v))
+// ParentIDIsNil applies the IsNil predicate on the "parent_id" field.
+func ParentIDIsNil() predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldIsNull(FieldParentID))
 }
 
-// DataGTE applies the GTE predicate on the "data" field.
-func DataGTE(v []byte) predicate.AgentRunSnapshot {
-	return predicate.AgentRunSnapshot(sql.FieldGTE(FieldData, v))
+// ParentIDNotNil applies the NotNil predicate on the "parent_id" field.
+func ParentIDNotNil() predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNotNull(FieldParentID))
 }
 
-// DataLT applies the LT predicate on the "data" field.
-func DataLT(v []byte) predicate.AgentRunSnapshot {
-	return predicate.AgentRunSnapshot(sql.FieldLT(FieldData, v))
+// StatusEQ applies the EQ predicate on the "status" field.
+func StatusEQ(v Status) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldStatus, v))
 }
 
-// DataLTE applies the LTE predicate on the "data" field.
-func DataLTE(v []byte) predicate.AgentRunSnapshot {
-	return predicate.AgentRunSnapshot(sql.FieldLTE(FieldData, v))
+// StatusNEQ applies the NEQ predicate on the "status" field.
+func StatusNEQ(v Status) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNEQ(FieldStatus, v))
+}
+
+// StatusIn applies the In predicate on the "status" field.
+func StatusIn(vs ...Status) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldIn(FieldStatus, vs...))
+}
+
+// StatusNotIn applies the NotIn predicate on the "status" field.
+func StatusNotIn(vs ...Status) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNotIn(FieldStatus, vs...))
+}
+
+// FinishReasonEQ applies the EQ predicate on the "finish_reason" field.
+func FinishReasonEQ(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldFinishReason, v))
+}
+
+// FinishReasonNEQ applies the NEQ predicate on the "finish_reason" field.
+func FinishReasonNEQ(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNEQ(FieldFinishReason, v))
+}
+
+// FinishReasonIn applies the In predicate on the "finish_reason" field.
+func FinishReasonIn(vs ...string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldIn(FieldFinishReason, vs...))
+}
+
+// FinishReasonNotIn applies the NotIn predicate on the "finish_reason" field.
+func FinishReasonNotIn(vs ...string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNotIn(FieldFinishReason, vs...))
+}
+
+// FinishReasonGT applies the GT predicate on the "finish_reason" field.
+func FinishReasonGT(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldGT(FieldFinishReason, v))
+}
+
+// FinishReasonGTE applies the GTE predicate on the "finish_reason" field.
+func FinishReasonGTE(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldGTE(FieldFinishReason, v))
+}
+
+// FinishReasonLT applies the LT predicate on the "finish_reason" field.
+func FinishReasonLT(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldLT(FieldFinishReason, v))
+}
+
+// FinishReasonLTE applies the LTE predicate on the "finish_reason" field.
+func FinishReasonLTE(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldLTE(FieldFinishReason, v))
+}
+
+// FinishReasonContains applies the Contains predicate on the "finish_reason" field.
+func FinishReasonContains(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldContains(FieldFinishReason, v))
+}
+
+// FinishReasonHasPrefix applies the HasPrefix predicate on the "finish_reason" field.
+func FinishReasonHasPrefix(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldHasPrefix(FieldFinishReason, v))
+}
+
+// FinishReasonHasSuffix applies the HasSuffix predicate on the "finish_reason" field.
+func FinishReasonHasSuffix(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldHasSuffix(FieldFinishReason, v))
+}
+
+// FinishReasonEqualFold applies the EqualFold predicate on the "finish_reason" field.
+func FinishReasonEqualFold(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEqualFold(FieldFinishReason, v))
+}
+
+// FinishReasonContainsFold applies the ContainsFold predicate on the "finish_reason" field.
+func FinishReasonContainsFold(v string) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldContainsFold(FieldFinishReason, v))
+}
+
+// HeartbeatAtEQ applies the EQ predicate on the "heartbeat_at" field.
+func HeartbeatAtEQ(v time.Time) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldHeartbeatAt, v))
+}
+
+// HeartbeatAtNEQ applies the NEQ predicate on the "heartbeat_at" field.
+func HeartbeatAtNEQ(v time.Time) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNEQ(FieldHeartbeatAt, v))
+}
+
+// HeartbeatAtIn applies the In predicate on the "heartbeat_at" field.
+func HeartbeatAtIn(vs ...time.Time) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldIn(FieldHeartbeatAt, vs...))
+}
+
+// HeartbeatAtNotIn applies the NotIn predicate on the "heartbeat_at" field.
+func HeartbeatAtNotIn(vs ...time.Time) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNotIn(FieldHeartbeatAt, vs...))
+}
+
+// HeartbeatAtGT applies the GT predicate on the "heartbeat_at" field.
+func HeartbeatAtGT(v time.Time) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldGT(FieldHeartbeatAt, v))
+}
+
+// HeartbeatAtGTE applies the GTE predicate on the "heartbeat_at" field.
+func HeartbeatAtGTE(v time.Time) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldGTE(FieldHeartbeatAt, v))
+}
+
+// HeartbeatAtLT applies the LT predicate on the "heartbeat_at" field.
+func HeartbeatAtLT(v time.Time) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldLT(FieldHeartbeatAt, v))
+}
+
+// HeartbeatAtLTE applies the LTE predicate on the "heartbeat_at" field.
+func HeartbeatAtLTE(v time.Time) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldLTE(FieldHeartbeatAt, v))
+}
+
+// HeartbeatAtIsNil applies the IsNil predicate on the "heartbeat_at" field.
+func HeartbeatAtIsNil() predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldIsNull(FieldHeartbeatAt))
+}
+
+// HeartbeatAtNotNil applies the NotNil predicate on the "heartbeat_at" field.
+func HeartbeatAtNotNil() predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNotNull(FieldHeartbeatAt))
+}
+
+// StateEQ applies the EQ predicate on the "state" field.
+func StateEQ(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldState, v))
+}
+
+// StateNEQ applies the NEQ predicate on the "state" field.
+func StateNEQ(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNEQ(FieldState, v))
+}
+
+// StateIn applies the In predicate on the "state" field.
+func StateIn(vs ...[]byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldIn(FieldState, vs...))
+}
+
+// StateNotIn applies the NotIn predicate on the "state" field.
+func StateNotIn(vs ...[]byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNotIn(FieldState, vs...))
+}
+
+// StateGT applies the GT predicate on the "state" field.
+func StateGT(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldGT(FieldState, v))
+}
+
+// StateGTE applies the GTE predicate on the "state" field.
+func StateGTE(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldGTE(FieldState, v))
+}
+
+// StateLT applies the LT predicate on the "state" field.
+func StateLT(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldLT(FieldState, v))
+}
+
+// StateLTE applies the LTE predicate on the "state" field.
+func StateLTE(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldLTE(FieldState, v))
+}
+
+// ErrorEQ applies the EQ predicate on the "error" field.
+func ErrorEQ(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldEQ(FieldError, v))
+}
+
+// ErrorNEQ applies the NEQ predicate on the "error" field.
+func ErrorNEQ(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNEQ(FieldError, v))
+}
+
+// ErrorIn applies the In predicate on the "error" field.
+func ErrorIn(vs ...[]byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldIn(FieldError, vs...))
+}
+
+// ErrorNotIn applies the NotIn predicate on the "error" field.
+func ErrorNotIn(vs ...[]byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNotIn(FieldError, vs...))
+}
+
+// ErrorGT applies the GT predicate on the "error" field.
+func ErrorGT(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldGT(FieldError, v))
+}
+
+// ErrorGTE applies the GTE predicate on the "error" field.
+func ErrorGTE(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldGTE(FieldError, v))
+}
+
+// ErrorLT applies the LT predicate on the "error" field.
+func ErrorLT(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldLT(FieldError, v))
+}
+
+// ErrorLTE applies the LTE predicate on the "error" field.
+func ErrorLTE(v []byte) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldLTE(FieldError, v))
+}
+
+// ErrorIsNil applies the IsNil predicate on the "error" field.
+func ErrorIsNil() predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldIsNull(FieldError))
+}
+
+// ErrorNotNil applies the NotNil predicate on the "error" field.
+func ErrorNotNil() predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(sql.FieldNotNull(FieldError))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -291,6 +526,35 @@ func HasAgentRunWith(preds ...predicate.AgentRun) predicate.AgentRunSnapshot {
 		step := newAgentRunStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentRun
+		step.Edge.Schema = schemaConfig.AgentRunSnapshot
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasParent applies the HasEdge predicate on the "parent" edge.
+func HasParent() predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, ParentTable, ParentColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunSnapshot
+		step.Edge.Schema = schemaConfig.AgentRunSnapshot
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasParentWith applies the HasEdge predicate on the "parent" edge with a given conditions (other predicates).
+func HasParentWith(preds ...predicate.AgentRunSnapshot) predicate.AgentRunSnapshot {
+	return predicate.AgentRunSnapshot(func(s *sql.Selector) {
+		step := newParentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AgentRunSnapshot
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

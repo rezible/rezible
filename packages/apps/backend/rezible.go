@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
+	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
@@ -427,16 +428,14 @@ type (
 	AgentRunSnapshotService interface {
 		GetLatestSnapshot(ctx context.Context, runId uuid.UUID) (*ent.AgentRunSnapshot, error)
 		GetSnapshot(context.Context, uuid.UUID) (*ent.AgentRunSnapshot, error)
+		SetSnapshot(context.Context, uuid.UUID, func(*ent.AgentRunSnapshotMutation)) (*ent.AgentRunSnapshot, error)
 		UpdateSnapshot(context.Context, uuid.UUID, func(*ent.AgentRunSnapshot, *ent.AgentRunSnapshotMutation) error) (*ent.AgentRunSnapshot, error)
 	}
 
-	RunAgentOpts struct {
-		Detach bool
-	}
 	WorkflowAgent interface {
 		WorkflowName() string
 		ValidateInput(input []byte) error
-		Run(context.Context, *ent.AgentRun, *RunAgentOpts) (uuid.UUID, error)
+		Invoke(context.Context, *ent.AgentRun, *ai.Message) (uuid.UUID, error)
 		GetStatus(context.Context, uuid.UUID) error
 	}
 

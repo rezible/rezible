@@ -109,7 +109,12 @@ func (AgentRunSnapshot) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("agent_run_id", uuid.UUID{}),
-		field.Bytes("data"),
+		field.UUID("parent_id", uuid.UUID{}).Optional().Nillable(),
+		field.Enum("status").Values("pending", "completed", "aborted", "failed"),
+		field.String("finish_reason"),
+		field.Time("heartbeat_at").Optional().Nillable(),
+		field.Bytes("state").Nillable(),
+		field.Bytes("error").Optional().Nillable(),
 	}
 }
 
@@ -119,6 +124,10 @@ func (AgentRunSnapshot) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("agent_run_id"),
+
+		edge.To("parent", AgentRunSnapshot.Type).
+			Unique().
+			Field("parent_id"),
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	ars "github.com/rezible/rezible/ent/agentrunsnapshot"
 )
 
 type agentSessionStore[S any] struct {
@@ -19,15 +20,33 @@ func makeAgentSessionStore[S any](snapshots rez.AgentRunSnapshotService) *agentS
 	return &agentSessionStore[S]{snapshots: snapshots}
 }
 
-func (s *agentSessionStore[S]) asSnapshot(rs *ent.AgentRunSnapshot) (*aix.SessionSnapshot[S], error) {
+func asSnapshot[S any](rs *ent.AgentRunSnapshot) (*aix.SessionSnapshot[S], error) {
 	if rs == nil {
 		return nil, nil
 	}
-	var snapshot aix.SessionSnapshot[S]
-	if jsonErr := json.Unmarshal(rs.Data, &snapshot); jsonErr != nil {
-		return nil, fmt.Errorf("unable to unmarshal session snapshot %q: %w", rs.ID, jsonErr)
+	snapshot := &aix.SessionSnapshot[S]{
+		SessionID:    rs.AgentRunID.String(),
+		SnapshotID:   rs.ID.String(),
+		FinishReason: aix.AgentFinishReason(rs.FinishReason),
+		Status:       aix.SnapshotStatus(rs.Status.String()),
+		HeartbeatAt:  rs.HeartbeatAt,
+		CreatedAt:    rs.CreatedAt,
+		UpdatedAt:    rs.UpdatedAt,
 	}
-	return &snapshot, nil
+	if parentId := rs.ParentID; parentId != nil && *parentId != uuid.Nil {
+		snapshot.ParentID = (*parentId).String()
+	}
+	if rs.State != nil && len(*rs.State) > 0 {
+		if jsonErr := json.Unmarshal(*rs.State, &snapshot.State); jsonErr != nil {
+			return nil, fmt.Errorf("unmarshal session state: %w", jsonErr)
+		}
+	}
+	if rs.Error != nil && len(*rs.Error) > 0 {
+		if jsonErr := json.Unmarshal(*rs.Error, &snapshot.Error); jsonErr != nil {
+			return nil, fmt.Errorf("unmarshal session error: %w", jsonErr)
+		}
+	}
+	return snapshot, nil
 }
 
 func (s *agentSessionStore[S]) GetLatestSnapshot(ctx context.Context, sessionID string) (*aix.SessionSnapshot[S], error) {
@@ -39,7 +58,7 @@ func (s *agentSessionStore[S]) GetLatestSnapshot(ctx context.Context, sessionID 
 	if queryErr != nil {
 		return nil, fmt.Errorf("lookup snapshot: %w", queryErr)
 	}
-	return s.asSnapshot(rs)
+	return asSnapshot[S](rs)
 }
 
 func (s *agentSessionStore[S]) GetSnapshot(ctx context.Context, snapshotID string) (*aix.SessionSnapshot[S], error) {
@@ -51,39 +70,72 @@ func (s *agentSessionStore[S]) GetSnapshot(ctx context.Context, snapshotID strin
 	if queryErr != nil {
 		return nil, fmt.Errorf("lookup snapshot: %w", queryErr)
 	}
-	return s.asSnapshot(rs)
+	return asSnapshot[S](rs)
 }
 
-func (s *agentSessionStore[S]) SaveSnapshot(ctx context.Context, snapshotID string, setFn func(*aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error)) (*aix.SessionSnapshot[S], error) {
-	var id uuid.UUID
-	if snapshotID != "" {
+func (s *agentSessionStore[S]) SaveSnapshot(ctx context.Context, id string, setFn func(*aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error)) (*aix.SessionSnapshot[S], error) {
+	var snapshotId uuid.UUID
+	if id != "" {
 		var idErr error
-		id, idErr = uuid.Parse(snapshotID)
-		if idErr != nil {
-			return nil, fmt.Errorf("invalid snapshot ID: %s", snapshotID)
+		if snapshotId, idErr = uuid.Parse(id); idErr != nil {
+			return nil, fmt.Errorf("invalid ID: %s", id)
 		}
 	}
 	setSnapshotDataFn := func(rs *ent.AgentRunSnapshot, m *ent.AgentRunSnapshotMutation) error {
-		existing, convErr := s.asSnapshot(rs)
+		existing, convErr := asSnapshot[S](rs)
 		if convErr != nil {
 			return fmt.Errorf("convert existing snapshot: %w", convErr)
 		}
-		updated, updateErr := setFn(existing)
+
+		snapshot, updateErr := setFn(existing)
 		if updateErr != nil {
 			return fmt.Errorf("update existing snapshot: %w", updateErr)
+		} else if snapshot == nil {
+			return nil
 		}
-		if updated != nil {
-			data, dataErr := json.Marshal(updated)
-			if dataErr != nil {
-				return fmt.Errorf("marshal updated snapshot: %w", dataErr)
+
+		m.SetStatus(ars.Status(snapshot.Status))
+		m.SetFinishReason(string(snapshot.FinishReason))
+		m.SetCreatedAt(snapshot.CreatedAt)
+		m.SetUpdatedAt(snapshot.UpdatedAt)
+
+		runId, runIdErr := uuid.Parse(snapshot.SessionID)
+		if runIdErr != nil {
+			return fmt.Errorf("invalid session ID: %s", snapshot.SessionID)
+		}
+		m.SetAgentRunID(runId)
+
+		if len(snapshot.ParentID) > 0 {
+			parentId, parentIdErr := uuid.Parse(snapshot.ParentID)
+			if parentIdErr != nil {
+				return fmt.Errorf("invalid parent ID: %s", snapshot.ParentID)
 			}
-			m.SetData(data)
+			m.SetParentID(parentId)
+		}
+
+		if snapshot.HeartbeatAt != nil {
+			m.SetHeartbeatAt(*snapshot.HeartbeatAt)
+		}
+
+		if snapshot.State != nil {
+			state, jsonErr := json.Marshal(snapshot.State)
+			if jsonErr != nil {
+				return fmt.Errorf("marshal state: %w", jsonErr)
+			}
+			m.SetState(state)
+		}
+		if snapshot.Error != nil {
+			sessErr, jsonErr := json.Marshal(snapshot.State)
+			if jsonErr != nil {
+				return fmt.Errorf("marshal error: %w", jsonErr)
+			}
+			m.SetError(sessErr)
 		}
 		return nil
 	}
-	updated, updateErr := s.snapshots.UpdateSnapshot(ctx, id, setSnapshotDataFn)
+	updated, updateErr := s.snapshots.UpdateSnapshot(ctx, snapshotId, setSnapshotDataFn)
 	if updateErr != nil {
-		return nil, fmt.Errorf("update existing snapshot: %w", updateErr)
+		return nil, fmt.Errorf("save snapshot: %w", updateErr)
 	}
-	return s.asSnapshot(updated)
+	return asSnapshot[S](updated)
 }

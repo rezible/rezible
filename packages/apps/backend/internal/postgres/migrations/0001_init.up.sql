@@ -43,7 +43,9 @@ CREATE INDEX "agentrunresult_tenant_id" ON "agent_run_results" ("tenant_id");
 -- create index "agentrunresult_tenant_id_agent_run_id" to table: "agent_run_results"
 CREATE UNIQUE INDEX "agentrunresult_tenant_id_agent_run_id" ON "agent_run_results" ("tenant_id", "agent_run_id");
 -- create "agent_run_snapshots" table
-CREATE TABLE "agent_run_snapshots" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "data" bytea NOT NULL, "tenant_id" bigint NOT NULL, "agent_run_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "agent_run_snapshots" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "status" character varying NOT NULL, "finish_reason" character varying NOT NULL, "heartbeat_at" timestamptz NULL, "state" bytea NOT NULL, "error" bytea NULL, "tenant_id" bigint NOT NULL, "agent_run_id" uuid NOT NULL, "parent_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "agent_run_snapshots_agent_run_snapshots_parent" FOREIGN KEY ("parent_id") REFERENCES "agent_run_snapshots" ("id") ON DELETE SET NULL);
+-- create index "agent_run_snapshots_parent_id_key" to table: "agent_run_snapshots"
+CREATE UNIQUE INDEX "agent_run_snapshots_parent_id_key" ON "agent_run_snapshots" ("parent_id");
 -- create index "agentrunsnapshot_tenant_id" to table: "agent_run_snapshots"
 CREATE INDEX "agentrunsnapshot_tenant_id" ON "agent_run_snapshots" ("tenant_id");
 -- create index "agentrunsnapshot_tenant_id_agent_run_id" to table: "agent_run_snapshots"

@@ -28,27 +28,29 @@ func (a *AlertInvestigationAgent) workflow() agents.Workflow[agents.AlertInvesti
 }
 
 func (a *AlertInvestigationAgent) validateInput(input []byte) error {
-	if input == nil || len(input) == 0 {
-		return fmt.Errorf("empty input")
-	}
 	return nil
 }
 
-func (a *AlertInvestigationAgent) makeInitial(run *ent.AgentRun) (*ai.Message, *agents.AlertInvestigationState, error) {
+func (a *AlertInvestigationAgent) makeInitialState(run *ent.AgentRun) (*aix.SessionState[agents.AlertInvestigationState], error) {
 	if validErr := a.validateInput(run.Input); validErr != nil {
-		return nil, nil, validErr
+		return nil, validErr
 	}
 	alertId, idErr := run.Edges.GetSubjectEntityId("alert")
 	if idErr != nil {
-		return nil, nil, fmt.Errorf("id error: %w", idErr)
+		return nil, fmt.Errorf("id error: %w", idErr)
 	}
-	inp := ai.NewUserTextMessage("foo bar")
-	st := &agents.AlertInvestigationState{AlertID: alertId}
-	return inp, st, nil
+	initial := &aix.SessionState[agents.AlertInvestigationState]{
+		SessionID: run.ID.String(),
+		Messages:  []*ai.Message{ai.NewUserTextMessage("foo bar")},
+		Custom:    agents.AlertInvestigationState{AlertID: alertId},
+	}
+	return initial, nil
 }
 
 func (a *AlertInvestigationAgent) agentFunc(g *genkit.Genkit) aix.AgentFunc[agents.AlertInvestigationState] {
-	return func(ctx context.Context, resp aix.Responder, sess *aix.SessionRunner[agents.AlertInvestigationState]) (*aix.AgentResult, error) {
+	return func(ctx context.Context, resp aix.Responder, sr *aix.SessionRunner[agents.AlertInvestigationState]) (*aix.AgentResult, error) {
+		alertId := sr.Custom().AlertID
+		fmt.Printf("alert id: %+v\n", alertId)
 		alrt, alrtErr := a.alerts.GetAlert(ctx, uuid.Nil)
 		if alrtErr != nil {
 			return nil, fmt.Errorf("get alert: %w", alrtErr)

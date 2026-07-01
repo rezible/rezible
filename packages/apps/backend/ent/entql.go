@@ -202,11 +202,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "AgentRunSnapshot",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			agentrunsnapshot.FieldTenantID:   {Type: field.TypeInt, Column: agentrunsnapshot.FieldTenantID},
-			agentrunsnapshot.FieldCreatedAt:  {Type: field.TypeTime, Column: agentrunsnapshot.FieldCreatedAt},
-			agentrunsnapshot.FieldUpdatedAt:  {Type: field.TypeTime, Column: agentrunsnapshot.FieldUpdatedAt},
-			agentrunsnapshot.FieldAgentRunID: {Type: field.TypeUUID, Column: agentrunsnapshot.FieldAgentRunID},
-			agentrunsnapshot.FieldData:       {Type: field.TypeBytes, Column: agentrunsnapshot.FieldData},
+			agentrunsnapshot.FieldTenantID:     {Type: field.TypeInt, Column: agentrunsnapshot.FieldTenantID},
+			agentrunsnapshot.FieldCreatedAt:    {Type: field.TypeTime, Column: agentrunsnapshot.FieldCreatedAt},
+			agentrunsnapshot.FieldUpdatedAt:    {Type: field.TypeTime, Column: agentrunsnapshot.FieldUpdatedAt},
+			agentrunsnapshot.FieldAgentRunID:   {Type: field.TypeUUID, Column: agentrunsnapshot.FieldAgentRunID},
+			agentrunsnapshot.FieldParentID:     {Type: field.TypeUUID, Column: agentrunsnapshot.FieldParentID},
+			agentrunsnapshot.FieldStatus:       {Type: field.TypeEnum, Column: agentrunsnapshot.FieldStatus},
+			agentrunsnapshot.FieldFinishReason: {Type: field.TypeString, Column: agentrunsnapshot.FieldFinishReason},
+			agentrunsnapshot.FieldHeartbeatAt:  {Type: field.TypeTime, Column: agentrunsnapshot.FieldHeartbeatAt},
+			agentrunsnapshot.FieldState:        {Type: field.TypeBytes, Column: agentrunsnapshot.FieldState},
+			agentrunsnapshot.FieldError:        {Type: field.TypeBytes, Column: agentrunsnapshot.FieldError},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
@@ -1831,6 +1836,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"AgentRunSnapshot",
 		"AgentRun",
+	)
+	graph.MustAddE(
+		"parent",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   agentrunsnapshot.ParentTable,
+			Columns: []string{agentrunsnapshot.ParentColumn},
+			Bidi:    true,
+		},
+		"AgentRunSnapshot",
+		"AgentRunSnapshot",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -5779,9 +5796,34 @@ func (f *AgentRunSnapshotFilter) WhereAgentRunID(p entql.ValueP) {
 	f.Where(p.Field(agentrunsnapshot.FieldAgentRunID))
 }
 
-// WhereData applies the entql []byte predicate on the data field.
-func (f *AgentRunSnapshotFilter) WhereData(p entql.BytesP) {
-	f.Where(p.Field(agentrunsnapshot.FieldData))
+// WhereParentID applies the entql [16]byte predicate on the parent_id field.
+func (f *AgentRunSnapshotFilter) WhereParentID(p entql.ValueP) {
+	f.Where(p.Field(agentrunsnapshot.FieldParentID))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *AgentRunSnapshotFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(agentrunsnapshot.FieldStatus))
+}
+
+// WhereFinishReason applies the entql string predicate on the finish_reason field.
+func (f *AgentRunSnapshotFilter) WhereFinishReason(p entql.StringP) {
+	f.Where(p.Field(agentrunsnapshot.FieldFinishReason))
+}
+
+// WhereHeartbeatAt applies the entql time.Time predicate on the heartbeat_at field.
+func (f *AgentRunSnapshotFilter) WhereHeartbeatAt(p entql.TimeP) {
+	f.Where(p.Field(agentrunsnapshot.FieldHeartbeatAt))
+}
+
+// WhereState applies the entql []byte predicate on the state field.
+func (f *AgentRunSnapshotFilter) WhereState(p entql.BytesP) {
+	f.Where(p.Field(agentrunsnapshot.FieldState))
+}
+
+// WhereError applies the entql []byte predicate on the error field.
+func (f *AgentRunSnapshotFilter) WhereError(p entql.BytesP) {
+	f.Where(p.Field(agentrunsnapshot.FieldError))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -5806,6 +5848,20 @@ func (f *AgentRunSnapshotFilter) WhereHasAgentRun() {
 // WhereHasAgentRunWith applies a predicate to check if query has an edge agent_run with a given conditions (other predicates).
 func (f *AgentRunSnapshotFilter) WhereHasAgentRunWith(preds ...predicate.AgentRun) {
 	f.Where(entql.HasEdgeWith("agent_run", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasParent applies a predicate to check if query has an edge parent.
+func (f *AgentRunSnapshotFilter) WhereHasParent() {
+	f.Where(entql.HasEdge("parent"))
+}
+
+// WhereHasParentWith applies a predicate to check if query has an edge parent with a given conditions (other predicates).
+func (f *AgentRunSnapshotFilter) WhereHasParentWith(preds ...predicate.AgentRunSnapshot) {
+	f.Where(entql.HasEdgeWith("parent", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

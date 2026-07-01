@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
-
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/openapi"
 )
@@ -33,12 +33,40 @@ type (
 	}
 
 	AgentRunAttributes struct {
-		OwnerUserId uuid.UUID       `json:"ownerUserId"`
-		Workflow    string          `json:"workflow"`
-		TriggerKind string          `json:"triggerKind"`
-		CreatedAt   time.Time       `json:"createdAt"`
-		UpdatedAt   time.Time       `json:"updatedAt"`
-		Result      *AgentRunResult `json:"result,omitempty"`
+		OwnerUserId uuid.UUID          `json:"ownerUserId"`
+		Workflow    string             `json:"workflow"`
+		TriggerKind string             `json:"triggerKind"`
+		CreatedAt   time.Time          `json:"createdAt"`
+		UpdatedAt   time.Time          `json:"updatedAt"`
+		Snapshots   []AgentRunSnapshot `json:"latestSnapshot"`
+	}
+
+	AgentRunSnapshot struct {
+		Id         uuid.UUID                  `json:"id"`
+		Attributes AgentRunSnapshotAttributes `json:"attributes"`
+	}
+
+	AgentRunSnapshotAttributes struct {
+		Status       string                 `json:"status"`
+		FinishReason string                 `json:"finish_reason"`
+		ParentID     *uuid.UUID             `json:"parent_id"`
+		HeartbeatAt  *time.Time             `json:"heartbeat_at"`
+		CreatedAt    time.Time              `json:"created_at"`
+		UpdatedAt    time.Time              `json:"updated_at"`
+		Error        *string                `json:"error,omitempty"`
+		State        *AgentRunSnapshotState `json:"state,omitempty"`
+	}
+
+	AgentRunSnapshotState struct {
+		Artifacts []AgentRunSnapshotStateArtifact `json:"artifacts"`
+		Messages  []*ai.Message                   `json:"messages"`
+		Custom    map[string]any                  `json:"custom"`
+	}
+
+	AgentRunSnapshotStateArtifact struct {
+		Metadata map[string]any `json:"metadata,omitempty"`
+		Name     string         `json:"name,omitempty"`
+		Parts    []*ai.Part     `json:"parts"`
 	}
 
 	AgentRunResult struct {
@@ -47,12 +75,11 @@ type (
 	}
 
 	AgentRunResultAttributes struct {
-		AgentRunId   uuid.UUID         `json:"agentRunId"`
-		Output       map[string]any    `json:"output,omitempty"`
-		ErrorMessage string            `json:"errorMessage,omitempty"`
-		CreatedAt    time.Time         `json:"createdAt"`
-		UpdatedAt    time.Time         `json:"updatedAt"`
-		Findings     []AgentRunFinding `json:"findings"`
+		Output       map[string]any `json:"output,omitempty"`
+		ErrorMessage string         `json:"errorMessage,omitempty"`
+		CreatedAt    time.Time      `json:"createdAt"`
+		UpdatedAt    time.Time      `json:"updatedAt"`
+		//Findings     []AgentRunFinding `json:"findings"`
 	}
 
 	AgentRunFinding struct {
@@ -101,15 +128,44 @@ func AgentRunFromEnt(run *ent.AgentRun) AgentRun {
 		CreatedAt:   run.CreatedAt,
 		UpdatedAt:   run.UpdatedAt,
 	}
-	if run.Edges.Result != nil {
-		attrs.Result = new(AgentRunResultFromEnt(run.Edges.Result))
+	if run.Edges.Snapshots != nil {
+		attrs.Snapshots = make([]AgentRunSnapshot, len(run.Edges.Snapshots))
+		for i, snapshot := range run.Edges.Snapshots {
+			attrs.Snapshots[i] = AgentRunSnapshotFromEnt(snapshot)
+		}
 	}
+	//if run.Edges.Result != nil {
+	//	attrs.Result = new(AgentRunResultFromEnt(run.Edges.Result))
+	//}
 	return AgentRun{Id: run.ID, Attributes: attrs}
+}
+
+func AgentRunSnapshotFromEnt(s *ent.AgentRunSnapshot) AgentRunSnapshot {
+	attrs := AgentRunSnapshotAttributes{
+		Status:       s.Status.String(),
+		FinishReason: s.FinishReason,
+		ParentID:     s.ParentID,
+		HeartbeatAt:  s.HeartbeatAt,
+		CreatedAt:    s.CreatedAt,
+		UpdatedAt:    s.UpdatedAt,
+		Error:        nil,
+	}
+	if s.Error != nil {
+		attrs.Error = new("error")
+	}
+	if s.State != nil {
+		var state AgentRunSnapshotState
+		if jsonErr := json.Unmarshal(*s.State, &state); jsonErr != nil {
+			slog.Error("failed to unmarshal state", "err", jsonErr.Error())
+		} else {
+			attrs.State = &state
+		}
+	}
+	return AgentRunSnapshot{Id: s.ID, Attributes: attrs}
 }
 
 func AgentRunResultFromEnt(result *ent.AgentRunResult) AgentRunResult {
 	attrs := AgentRunResultAttributes{
-		AgentRunId:   result.AgentRunID,
 		Output:       nil,
 		ErrorMessage: "",
 		CreatedAt:    result.CreatedAt,
@@ -118,12 +174,12 @@ func AgentRunResultFromEnt(result *ent.AgentRunResult) AgentRunResult {
 	if jsonErr := json.Unmarshal(result.Output, &attrs.Output); jsonErr != nil {
 		slog.Error("failed to unmarshal result output", "error", jsonErr.Error())
 	}
-	if len(result.Edges.Findings) > 0 {
-		attrs.Findings = make([]AgentRunFinding, len(result.Edges.Findings))
-		for i, finding := range result.Edges.Findings {
-			attrs.Findings[i] = AgentRunFindingFromEnt(finding)
-		}
-	}
+	//if len(result.Edges.Findings) > 0 {
+	//	attrs.Findings = make([]AgentRunFinding, len(result.Edges.Findings))
+	//	for i, finding := range result.Edges.Findings {
+	//		attrs.Findings[i] = AgentRunFindingFromEnt(finding)
+	//	}
+	//}
 	return AgentRunResult{Id: result.ID, Attributes: attrs}
 }
 

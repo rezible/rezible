@@ -66,15 +66,100 @@ func (_u *AgentRunSnapshotUpdate) SetNillableAgentRunID(v *uuid.UUID) *AgentRunS
 	return _u
 }
 
-// SetData sets the "data" field.
-func (_u *AgentRunSnapshotUpdate) SetData(v []byte) *AgentRunSnapshotUpdate {
-	_u.mutation.SetData(v)
+// SetParentID sets the "parent_id" field.
+func (_u *AgentRunSnapshotUpdate) SetParentID(v uuid.UUID) *AgentRunSnapshotUpdate {
+	_u.mutation.SetParentID(v)
+	return _u
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (_u *AgentRunSnapshotUpdate) SetNillableParentID(v *uuid.UUID) *AgentRunSnapshotUpdate {
+	if v != nil {
+		_u.SetParentID(*v)
+	}
+	return _u
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (_u *AgentRunSnapshotUpdate) ClearParentID() *AgentRunSnapshotUpdate {
+	_u.mutation.ClearParentID()
+	return _u
+}
+
+// SetStatus sets the "status" field.
+func (_u *AgentRunSnapshotUpdate) SetStatus(v agentrunsnapshot.Status) *AgentRunSnapshotUpdate {
+	_u.mutation.SetStatus(v)
+	return _u
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *AgentRunSnapshotUpdate) SetNillableStatus(v *agentrunsnapshot.Status) *AgentRunSnapshotUpdate {
+	if v != nil {
+		_u.SetStatus(*v)
+	}
+	return _u
+}
+
+// SetFinishReason sets the "finish_reason" field.
+func (_u *AgentRunSnapshotUpdate) SetFinishReason(v string) *AgentRunSnapshotUpdate {
+	_u.mutation.SetFinishReason(v)
+	return _u
+}
+
+// SetNillableFinishReason sets the "finish_reason" field if the given value is not nil.
+func (_u *AgentRunSnapshotUpdate) SetNillableFinishReason(v *string) *AgentRunSnapshotUpdate {
+	if v != nil {
+		_u.SetFinishReason(*v)
+	}
+	return _u
+}
+
+// SetHeartbeatAt sets the "heartbeat_at" field.
+func (_u *AgentRunSnapshotUpdate) SetHeartbeatAt(v time.Time) *AgentRunSnapshotUpdate {
+	_u.mutation.SetHeartbeatAt(v)
+	return _u
+}
+
+// SetNillableHeartbeatAt sets the "heartbeat_at" field if the given value is not nil.
+func (_u *AgentRunSnapshotUpdate) SetNillableHeartbeatAt(v *time.Time) *AgentRunSnapshotUpdate {
+	if v != nil {
+		_u.SetHeartbeatAt(*v)
+	}
+	return _u
+}
+
+// ClearHeartbeatAt clears the value of the "heartbeat_at" field.
+func (_u *AgentRunSnapshotUpdate) ClearHeartbeatAt() *AgentRunSnapshotUpdate {
+	_u.mutation.ClearHeartbeatAt()
+	return _u
+}
+
+// SetState sets the "state" field.
+func (_u *AgentRunSnapshotUpdate) SetState(v []byte) *AgentRunSnapshotUpdate {
+	_u.mutation.SetState(v)
+	return _u
+}
+
+// SetError sets the "error" field.
+func (_u *AgentRunSnapshotUpdate) SetError(v []byte) *AgentRunSnapshotUpdate {
+	_u.mutation.SetError(v)
+	return _u
+}
+
+// ClearError clears the value of the "error" field.
+func (_u *AgentRunSnapshotUpdate) ClearError() *AgentRunSnapshotUpdate {
+	_u.mutation.ClearError()
 	return _u
 }
 
 // SetAgentRun sets the "agent_run" edge to the AgentRun entity.
 func (_u *AgentRunSnapshotUpdate) SetAgentRun(v *AgentRun) *AgentRunSnapshotUpdate {
 	return _u.SetAgentRunID(v.ID)
+}
+
+// SetParent sets the "parent" edge to the AgentRunSnapshot entity.
+func (_u *AgentRunSnapshotUpdate) SetParent(v *AgentRunSnapshot) *AgentRunSnapshotUpdate {
+	return _u.SetParentID(v.ID)
 }
 
 // Mutation returns the AgentRunSnapshotMutation object of the builder.
@@ -85,6 +170,12 @@ func (_u *AgentRunSnapshotUpdate) Mutation() *AgentRunSnapshotMutation {
 // ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
 func (_u *AgentRunSnapshotUpdate) ClearAgentRun() *AgentRunSnapshotUpdate {
 	_u.mutation.ClearAgentRun()
+	return _u
+}
+
+// ClearParent clears the "parent" edge to the AgentRunSnapshot entity.
+func (_u *AgentRunSnapshotUpdate) ClearParent() *AgentRunSnapshotUpdate {
+	_u.mutation.ClearParent()
 	return _u
 }
 
@@ -132,6 +223,11 @@ func (_u *AgentRunSnapshotUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunSnapshotUpdate) check() error {
+	if v, ok := _u.mutation.Status(); ok {
+		if err := agentrunsnapshot.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AgentRunSnapshot.status": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunSnapshot.tenant"`)
 	}
@@ -165,8 +261,26 @@ func (_u *AgentRunSnapshotUpdate) sqlSave(ctx context.Context) (_node int, err e
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentrunsnapshot.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Data(); ok {
-		_spec.SetField(agentrunsnapshot.FieldData, field.TypeBytes, value)
+	if value, ok := _u.mutation.Status(); ok {
+		_spec.SetField(agentrunsnapshot.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.FinishReason(); ok {
+		_spec.SetField(agentrunsnapshot.FieldFinishReason, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.HeartbeatAt(); ok {
+		_spec.SetField(agentrunsnapshot.FieldHeartbeatAt, field.TypeTime, value)
+	}
+	if _u.mutation.HeartbeatAtCleared() {
+		_spec.ClearField(agentrunsnapshot.FieldHeartbeatAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.State(); ok {
+		_spec.SetField(agentrunsnapshot.FieldState, field.TypeBytes, value)
+	}
+	if value, ok := _u.mutation.Error(); ok {
+		_spec.SetField(agentrunsnapshot.FieldError, field.TypeBytes, value)
+	}
+	if _u.mutation.ErrorCleared() {
+		_spec.ClearField(agentrunsnapshot.FieldError, field.TypeBytes)
 	}
 	if _u.mutation.AgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -191,6 +305,37 @@ func (_u *AgentRunSnapshotUpdate) sqlSave(ctx context.Context) (_node int, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ParentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   agentrunsnapshot.ParentTable,
+			Columns: []string{agentrunsnapshot.ParentColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSnapshot
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   agentrunsnapshot.ParentTable,
+			Columns: []string{agentrunsnapshot.ParentColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunSnapshot
@@ -257,15 +402,100 @@ func (_u *AgentRunSnapshotUpdateOne) SetNillableAgentRunID(v *uuid.UUID) *AgentR
 	return _u
 }
 
-// SetData sets the "data" field.
-func (_u *AgentRunSnapshotUpdateOne) SetData(v []byte) *AgentRunSnapshotUpdateOne {
-	_u.mutation.SetData(v)
+// SetParentID sets the "parent_id" field.
+func (_u *AgentRunSnapshotUpdateOne) SetParentID(v uuid.UUID) *AgentRunSnapshotUpdateOne {
+	_u.mutation.SetParentID(v)
+	return _u
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (_u *AgentRunSnapshotUpdateOne) SetNillableParentID(v *uuid.UUID) *AgentRunSnapshotUpdateOne {
+	if v != nil {
+		_u.SetParentID(*v)
+	}
+	return _u
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (_u *AgentRunSnapshotUpdateOne) ClearParentID() *AgentRunSnapshotUpdateOne {
+	_u.mutation.ClearParentID()
+	return _u
+}
+
+// SetStatus sets the "status" field.
+func (_u *AgentRunSnapshotUpdateOne) SetStatus(v agentrunsnapshot.Status) *AgentRunSnapshotUpdateOne {
+	_u.mutation.SetStatus(v)
+	return _u
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *AgentRunSnapshotUpdateOne) SetNillableStatus(v *agentrunsnapshot.Status) *AgentRunSnapshotUpdateOne {
+	if v != nil {
+		_u.SetStatus(*v)
+	}
+	return _u
+}
+
+// SetFinishReason sets the "finish_reason" field.
+func (_u *AgentRunSnapshotUpdateOne) SetFinishReason(v string) *AgentRunSnapshotUpdateOne {
+	_u.mutation.SetFinishReason(v)
+	return _u
+}
+
+// SetNillableFinishReason sets the "finish_reason" field if the given value is not nil.
+func (_u *AgentRunSnapshotUpdateOne) SetNillableFinishReason(v *string) *AgentRunSnapshotUpdateOne {
+	if v != nil {
+		_u.SetFinishReason(*v)
+	}
+	return _u
+}
+
+// SetHeartbeatAt sets the "heartbeat_at" field.
+func (_u *AgentRunSnapshotUpdateOne) SetHeartbeatAt(v time.Time) *AgentRunSnapshotUpdateOne {
+	_u.mutation.SetHeartbeatAt(v)
+	return _u
+}
+
+// SetNillableHeartbeatAt sets the "heartbeat_at" field if the given value is not nil.
+func (_u *AgentRunSnapshotUpdateOne) SetNillableHeartbeatAt(v *time.Time) *AgentRunSnapshotUpdateOne {
+	if v != nil {
+		_u.SetHeartbeatAt(*v)
+	}
+	return _u
+}
+
+// ClearHeartbeatAt clears the value of the "heartbeat_at" field.
+func (_u *AgentRunSnapshotUpdateOne) ClearHeartbeatAt() *AgentRunSnapshotUpdateOne {
+	_u.mutation.ClearHeartbeatAt()
+	return _u
+}
+
+// SetState sets the "state" field.
+func (_u *AgentRunSnapshotUpdateOne) SetState(v []byte) *AgentRunSnapshotUpdateOne {
+	_u.mutation.SetState(v)
+	return _u
+}
+
+// SetError sets the "error" field.
+func (_u *AgentRunSnapshotUpdateOne) SetError(v []byte) *AgentRunSnapshotUpdateOne {
+	_u.mutation.SetError(v)
+	return _u
+}
+
+// ClearError clears the value of the "error" field.
+func (_u *AgentRunSnapshotUpdateOne) ClearError() *AgentRunSnapshotUpdateOne {
+	_u.mutation.ClearError()
 	return _u
 }
 
 // SetAgentRun sets the "agent_run" edge to the AgentRun entity.
 func (_u *AgentRunSnapshotUpdateOne) SetAgentRun(v *AgentRun) *AgentRunSnapshotUpdateOne {
 	return _u.SetAgentRunID(v.ID)
+}
+
+// SetParent sets the "parent" edge to the AgentRunSnapshot entity.
+func (_u *AgentRunSnapshotUpdateOne) SetParent(v *AgentRunSnapshot) *AgentRunSnapshotUpdateOne {
+	return _u.SetParentID(v.ID)
 }
 
 // Mutation returns the AgentRunSnapshotMutation object of the builder.
@@ -276,6 +506,12 @@ func (_u *AgentRunSnapshotUpdateOne) Mutation() *AgentRunSnapshotMutation {
 // ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
 func (_u *AgentRunSnapshotUpdateOne) ClearAgentRun() *AgentRunSnapshotUpdateOne {
 	_u.mutation.ClearAgentRun()
+	return _u
+}
+
+// ClearParent clears the "parent" edge to the AgentRunSnapshot entity.
+func (_u *AgentRunSnapshotUpdateOne) ClearParent() *AgentRunSnapshotUpdateOne {
+	_u.mutation.ClearParent()
 	return _u
 }
 
@@ -336,6 +572,11 @@ func (_u *AgentRunSnapshotUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunSnapshotUpdateOne) check() error {
+	if v, ok := _u.mutation.Status(); ok {
+		if err := agentrunsnapshot.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AgentRunSnapshot.status": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunSnapshot.tenant"`)
 	}
@@ -386,8 +627,26 @@ func (_u *AgentRunSnapshotUpdateOne) sqlSave(ctx context.Context) (_node *AgentR
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentrunsnapshot.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Data(); ok {
-		_spec.SetField(agentrunsnapshot.FieldData, field.TypeBytes, value)
+	if value, ok := _u.mutation.Status(); ok {
+		_spec.SetField(agentrunsnapshot.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.FinishReason(); ok {
+		_spec.SetField(agentrunsnapshot.FieldFinishReason, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.HeartbeatAt(); ok {
+		_spec.SetField(agentrunsnapshot.FieldHeartbeatAt, field.TypeTime, value)
+	}
+	if _u.mutation.HeartbeatAtCleared() {
+		_spec.ClearField(agentrunsnapshot.FieldHeartbeatAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.State(); ok {
+		_spec.SetField(agentrunsnapshot.FieldState, field.TypeBytes, value)
+	}
+	if value, ok := _u.mutation.Error(); ok {
+		_spec.SetField(agentrunsnapshot.FieldError, field.TypeBytes, value)
+	}
+	if _u.mutation.ErrorCleared() {
+		_spec.ClearField(agentrunsnapshot.FieldError, field.TypeBytes)
 	}
 	if _u.mutation.AgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -412,6 +671,37 @@ func (_u *AgentRunSnapshotUpdateOne) sqlSave(ctx context.Context) (_node *AgentR
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ParentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   agentrunsnapshot.ParentTable,
+			Columns: []string{agentrunsnapshot.ParentColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunSnapshot
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   agentrunsnapshot.ParentTable,
+			Columns: []string{agentrunsnapshot.ParentColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunSnapshot

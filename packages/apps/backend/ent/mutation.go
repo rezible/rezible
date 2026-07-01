@@ -4959,12 +4959,18 @@ type AgentRunSnapshotMutation struct {
 	id               *uuid.UUID
 	created_at       *time.Time
 	updated_at       *time.Time
-	data             *[]byte
+	status           *agentrunsnapshot.Status
+	finish_reason    *string
+	heartbeat_at     *time.Time
+	state            *[]byte
+	error            *[]byte
 	clearedFields    map[string]struct{}
 	tenant           *int
 	clearedtenant    bool
 	agent_run        *uuid.UUID
 	clearedagent_run bool
+	parent           *uuid.UUID
+	clearedparent    bool
 	done             bool
 	oldValue         func(context.Context) (*AgentRunSnapshot, error)
 	predicates       []predicate.AgentRunSnapshot
@@ -5218,40 +5224,259 @@ func (m *AgentRunSnapshotMutation) ResetAgentRunID() {
 	m.agent_run = nil
 }
 
-// SetData sets the "data" field.
-func (m *AgentRunSnapshotMutation) SetData(b []byte) {
-	m.data = &b
+// SetParentID sets the "parent_id" field.
+func (m *AgentRunSnapshotMutation) SetParentID(u uuid.UUID) {
+	m.parent = &u
 }
 
-// Data returns the value of the "data" field in the mutation.
-func (m *AgentRunSnapshotMutation) Data() (r []byte, exists bool) {
-	v := m.data
+// ParentID returns the value of the "parent_id" field in the mutation.
+func (m *AgentRunSnapshotMutation) ParentID() (r uuid.UUID, exists bool) {
+	v := m.parent
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldData returns the old "data" field's value of the AgentRunSnapshot entity.
+// OldParentID returns the old "parent_id" field's value of the AgentRunSnapshot entity.
 // If the AgentRunSnapshot object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunSnapshotMutation) OldData(ctx context.Context) (v []byte, err error) {
+func (m *AgentRunSnapshotMutation) OldParentID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldData is only allowed on UpdateOne operations")
+		return v, errors.New("OldParentID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldData requires an ID field in the mutation")
+		return v, errors.New("OldParentID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldData: %w", err)
+		return v, fmt.Errorf("querying old value for OldParentID: %w", err)
 	}
-	return oldValue.Data, nil
+	return oldValue.ParentID, nil
 }
 
-// ResetData resets all changes to the "data" field.
-func (m *AgentRunSnapshotMutation) ResetData() {
-	m.data = nil
+// ClearParentID clears the value of the "parent_id" field.
+func (m *AgentRunSnapshotMutation) ClearParentID() {
+	m.parent = nil
+	m.clearedFields[agentrunsnapshot.FieldParentID] = struct{}{}
+}
+
+// ParentIDCleared returns if the "parent_id" field was cleared in this mutation.
+func (m *AgentRunSnapshotMutation) ParentIDCleared() bool {
+	_, ok := m.clearedFields[agentrunsnapshot.FieldParentID]
+	return ok
+}
+
+// ResetParentID resets all changes to the "parent_id" field.
+func (m *AgentRunSnapshotMutation) ResetParentID() {
+	m.parent = nil
+	delete(m.clearedFields, agentrunsnapshot.FieldParentID)
+}
+
+// SetStatus sets the "status" field.
+func (m *AgentRunSnapshotMutation) SetStatus(a agentrunsnapshot.Status) {
+	m.status = &a
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *AgentRunSnapshotMutation) Status() (r agentrunsnapshot.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the AgentRunSnapshot entity.
+// If the AgentRunSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRunSnapshotMutation) OldStatus(ctx context.Context) (v agentrunsnapshot.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *AgentRunSnapshotMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetFinishReason sets the "finish_reason" field.
+func (m *AgentRunSnapshotMutation) SetFinishReason(s string) {
+	m.finish_reason = &s
+}
+
+// FinishReason returns the value of the "finish_reason" field in the mutation.
+func (m *AgentRunSnapshotMutation) FinishReason() (r string, exists bool) {
+	v := m.finish_reason
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFinishReason returns the old "finish_reason" field's value of the AgentRunSnapshot entity.
+// If the AgentRunSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRunSnapshotMutation) OldFinishReason(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFinishReason is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFinishReason requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFinishReason: %w", err)
+	}
+	return oldValue.FinishReason, nil
+}
+
+// ResetFinishReason resets all changes to the "finish_reason" field.
+func (m *AgentRunSnapshotMutation) ResetFinishReason() {
+	m.finish_reason = nil
+}
+
+// SetHeartbeatAt sets the "heartbeat_at" field.
+func (m *AgentRunSnapshotMutation) SetHeartbeatAt(t time.Time) {
+	m.heartbeat_at = &t
+}
+
+// HeartbeatAt returns the value of the "heartbeat_at" field in the mutation.
+func (m *AgentRunSnapshotMutation) HeartbeatAt() (r time.Time, exists bool) {
+	v := m.heartbeat_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHeartbeatAt returns the old "heartbeat_at" field's value of the AgentRunSnapshot entity.
+// If the AgentRunSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRunSnapshotMutation) OldHeartbeatAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHeartbeatAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHeartbeatAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHeartbeatAt: %w", err)
+	}
+	return oldValue.HeartbeatAt, nil
+}
+
+// ClearHeartbeatAt clears the value of the "heartbeat_at" field.
+func (m *AgentRunSnapshotMutation) ClearHeartbeatAt() {
+	m.heartbeat_at = nil
+	m.clearedFields[agentrunsnapshot.FieldHeartbeatAt] = struct{}{}
+}
+
+// HeartbeatAtCleared returns if the "heartbeat_at" field was cleared in this mutation.
+func (m *AgentRunSnapshotMutation) HeartbeatAtCleared() bool {
+	_, ok := m.clearedFields[agentrunsnapshot.FieldHeartbeatAt]
+	return ok
+}
+
+// ResetHeartbeatAt resets all changes to the "heartbeat_at" field.
+func (m *AgentRunSnapshotMutation) ResetHeartbeatAt() {
+	m.heartbeat_at = nil
+	delete(m.clearedFields, agentrunsnapshot.FieldHeartbeatAt)
+}
+
+// SetState sets the "state" field.
+func (m *AgentRunSnapshotMutation) SetState(b []byte) {
+	m.state = &b
+}
+
+// State returns the value of the "state" field in the mutation.
+func (m *AgentRunSnapshotMutation) State() (r []byte, exists bool) {
+	v := m.state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldState returns the old "state" field's value of the AgentRunSnapshot entity.
+// If the AgentRunSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRunSnapshotMutation) OldState(ctx context.Context) (v *[]byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldState: %w", err)
+	}
+	return oldValue.State, nil
+}
+
+// ResetState resets all changes to the "state" field.
+func (m *AgentRunSnapshotMutation) ResetState() {
+	m.state = nil
+}
+
+// SetError sets the "error" field.
+func (m *AgentRunSnapshotMutation) SetError(b []byte) {
+	m.error = &b
+}
+
+// Error returns the value of the "error" field in the mutation.
+func (m *AgentRunSnapshotMutation) Error() (r []byte, exists bool) {
+	v := m.error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldError returns the old "error" field's value of the AgentRunSnapshot entity.
+// If the AgentRunSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRunSnapshotMutation) OldError(ctx context.Context) (v *[]byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldError: %w", err)
+	}
+	return oldValue.Error, nil
+}
+
+// ClearError clears the value of the "error" field.
+func (m *AgentRunSnapshotMutation) ClearError() {
+	m.error = nil
+	m.clearedFields[agentrunsnapshot.FieldError] = struct{}{}
+}
+
+// ErrorCleared returns if the "error" field was cleared in this mutation.
+func (m *AgentRunSnapshotMutation) ErrorCleared() bool {
+	_, ok := m.clearedFields[agentrunsnapshot.FieldError]
+	return ok
+}
+
+// ResetError resets all changes to the "error" field.
+func (m *AgentRunSnapshotMutation) ResetError() {
+	m.error = nil
+	delete(m.clearedFields, agentrunsnapshot.FieldError)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -5308,6 +5533,33 @@ func (m *AgentRunSnapshotMutation) ResetAgentRun() {
 	m.clearedagent_run = false
 }
 
+// ClearParent clears the "parent" edge to the AgentRunSnapshot entity.
+func (m *AgentRunSnapshotMutation) ClearParent() {
+	m.clearedparent = true
+	m.clearedFields[agentrunsnapshot.FieldParentID] = struct{}{}
+}
+
+// ParentCleared reports if the "parent" edge to the AgentRunSnapshot entity was cleared.
+func (m *AgentRunSnapshotMutation) ParentCleared() bool {
+	return m.ParentIDCleared() || m.clearedparent
+}
+
+// ParentIDs returns the "parent" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ParentID instead. It exists only for internal usage by the builders.
+func (m *AgentRunSnapshotMutation) ParentIDs() (ids []uuid.UUID) {
+	if id := m.parent; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetParent resets all changes to the "parent" edge.
+func (m *AgentRunSnapshotMutation) ResetParent() {
+	m.parent = nil
+	m.clearedparent = false
+}
+
 // Where appends a list predicates to the AgentRunSnapshotMutation builder.
 func (m *AgentRunSnapshotMutation) Where(ps ...predicate.AgentRunSnapshot) {
 	m.predicates = append(m.predicates, ps...)
@@ -5342,7 +5594,7 @@ func (m *AgentRunSnapshotMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentRunSnapshotMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 10)
 	if m.tenant != nil {
 		fields = append(fields, agentrunsnapshot.FieldTenantID)
 	}
@@ -5355,8 +5607,23 @@ func (m *AgentRunSnapshotMutation) Fields() []string {
 	if m.agent_run != nil {
 		fields = append(fields, agentrunsnapshot.FieldAgentRunID)
 	}
-	if m.data != nil {
-		fields = append(fields, agentrunsnapshot.FieldData)
+	if m.parent != nil {
+		fields = append(fields, agentrunsnapshot.FieldParentID)
+	}
+	if m.status != nil {
+		fields = append(fields, agentrunsnapshot.FieldStatus)
+	}
+	if m.finish_reason != nil {
+		fields = append(fields, agentrunsnapshot.FieldFinishReason)
+	}
+	if m.heartbeat_at != nil {
+		fields = append(fields, agentrunsnapshot.FieldHeartbeatAt)
+	}
+	if m.state != nil {
+		fields = append(fields, agentrunsnapshot.FieldState)
+	}
+	if m.error != nil {
+		fields = append(fields, agentrunsnapshot.FieldError)
 	}
 	return fields
 }
@@ -5374,8 +5641,18 @@ func (m *AgentRunSnapshotMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case agentrunsnapshot.FieldAgentRunID:
 		return m.AgentRunID()
-	case agentrunsnapshot.FieldData:
-		return m.Data()
+	case agentrunsnapshot.FieldParentID:
+		return m.ParentID()
+	case agentrunsnapshot.FieldStatus:
+		return m.Status()
+	case agentrunsnapshot.FieldFinishReason:
+		return m.FinishReason()
+	case agentrunsnapshot.FieldHeartbeatAt:
+		return m.HeartbeatAt()
+	case agentrunsnapshot.FieldState:
+		return m.State()
+	case agentrunsnapshot.FieldError:
+		return m.Error()
 	}
 	return nil, false
 }
@@ -5393,8 +5670,18 @@ func (m *AgentRunSnapshotMutation) OldField(ctx context.Context, name string) (e
 		return m.OldUpdatedAt(ctx)
 	case agentrunsnapshot.FieldAgentRunID:
 		return m.OldAgentRunID(ctx)
-	case agentrunsnapshot.FieldData:
-		return m.OldData(ctx)
+	case agentrunsnapshot.FieldParentID:
+		return m.OldParentID(ctx)
+	case agentrunsnapshot.FieldStatus:
+		return m.OldStatus(ctx)
+	case agentrunsnapshot.FieldFinishReason:
+		return m.OldFinishReason(ctx)
+	case agentrunsnapshot.FieldHeartbeatAt:
+		return m.OldHeartbeatAt(ctx)
+	case agentrunsnapshot.FieldState:
+		return m.OldState(ctx)
+	case agentrunsnapshot.FieldError:
+		return m.OldError(ctx)
 	}
 	return nil, fmt.Errorf("unknown AgentRunSnapshot field %s", name)
 }
@@ -5432,12 +5719,47 @@ func (m *AgentRunSnapshotMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetAgentRunID(v)
 		return nil
-	case agentrunsnapshot.FieldData:
+	case agentrunsnapshot.FieldParentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParentID(v)
+		return nil
+	case agentrunsnapshot.FieldStatus:
+		v, ok := value.(agentrunsnapshot.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case agentrunsnapshot.FieldFinishReason:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFinishReason(v)
+		return nil
+	case agentrunsnapshot.FieldHeartbeatAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHeartbeatAt(v)
+		return nil
+	case agentrunsnapshot.FieldState:
 		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetData(v)
+		m.SetState(v)
+		return nil
+	case agentrunsnapshot.FieldError:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetError(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRunSnapshot field %s", name)
@@ -5471,7 +5793,17 @@ func (m *AgentRunSnapshotMutation) AddField(name string, value ent.Value) error 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AgentRunSnapshotMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(agentrunsnapshot.FieldParentID) {
+		fields = append(fields, agentrunsnapshot.FieldParentID)
+	}
+	if m.FieldCleared(agentrunsnapshot.FieldHeartbeatAt) {
+		fields = append(fields, agentrunsnapshot.FieldHeartbeatAt)
+	}
+	if m.FieldCleared(agentrunsnapshot.FieldError) {
+		fields = append(fields, agentrunsnapshot.FieldError)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -5484,6 +5816,17 @@ func (m *AgentRunSnapshotMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AgentRunSnapshotMutation) ClearField(name string) error {
+	switch name {
+	case agentrunsnapshot.FieldParentID:
+		m.ClearParentID()
+		return nil
+	case agentrunsnapshot.FieldHeartbeatAt:
+		m.ClearHeartbeatAt()
+		return nil
+	case agentrunsnapshot.FieldError:
+		m.ClearError()
+		return nil
+	}
 	return fmt.Errorf("unknown AgentRunSnapshot nullable field %s", name)
 }
 
@@ -5503,8 +5846,23 @@ func (m *AgentRunSnapshotMutation) ResetField(name string) error {
 	case agentrunsnapshot.FieldAgentRunID:
 		m.ResetAgentRunID()
 		return nil
-	case agentrunsnapshot.FieldData:
-		m.ResetData()
+	case agentrunsnapshot.FieldParentID:
+		m.ResetParentID()
+		return nil
+	case agentrunsnapshot.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case agentrunsnapshot.FieldFinishReason:
+		m.ResetFinishReason()
+		return nil
+	case agentrunsnapshot.FieldHeartbeatAt:
+		m.ResetHeartbeatAt()
+		return nil
+	case agentrunsnapshot.FieldState:
+		m.ResetState()
+		return nil
+	case agentrunsnapshot.FieldError:
+		m.ResetError()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRunSnapshot field %s", name)
@@ -5512,12 +5870,15 @@ func (m *AgentRunSnapshotMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentRunSnapshotMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, agentrunsnapshot.EdgeTenant)
 	}
 	if m.agent_run != nil {
 		edges = append(edges, agentrunsnapshot.EdgeAgentRun)
+	}
+	if m.parent != nil {
+		edges = append(edges, agentrunsnapshot.EdgeParent)
 	}
 	return edges
 }
@@ -5534,13 +5895,17 @@ func (m *AgentRunSnapshotMutation) AddedIDs(name string) []ent.Value {
 		if id := m.agent_run; id != nil {
 			return []ent.Value{*id}
 		}
+	case agentrunsnapshot.EdgeParent:
+		if id := m.parent; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentRunSnapshotMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	return edges
 }
 
@@ -5552,12 +5917,15 @@ func (m *AgentRunSnapshotMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentRunSnapshotMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, agentrunsnapshot.EdgeTenant)
 	}
 	if m.clearedagent_run {
 		edges = append(edges, agentrunsnapshot.EdgeAgentRun)
+	}
+	if m.clearedparent {
+		edges = append(edges, agentrunsnapshot.EdgeParent)
 	}
 	return edges
 }
@@ -5570,6 +5938,8 @@ func (m *AgentRunSnapshotMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case agentrunsnapshot.EdgeAgentRun:
 		return m.clearedagent_run
+	case agentrunsnapshot.EdgeParent:
+		return m.clearedparent
 	}
 	return false
 }
@@ -5584,6 +5954,9 @@ func (m *AgentRunSnapshotMutation) ClearEdge(name string) error {
 	case agentrunsnapshot.EdgeAgentRun:
 		m.ClearAgentRun()
 		return nil
+	case agentrunsnapshot.EdgeParent:
+		m.ClearParent()
+		return nil
 	}
 	return fmt.Errorf("unknown AgentRunSnapshot unique edge %s", name)
 }
@@ -5597,6 +5970,9 @@ func (m *AgentRunSnapshotMutation) ResetEdge(name string) error {
 		return nil
 	case agentrunsnapshot.EdgeAgentRun:
 		m.ResetAgentRun()
+		return nil
+	case agentrunsnapshot.EdgeParent:
+		m.ResetParent()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRunSnapshot edge %s", name)

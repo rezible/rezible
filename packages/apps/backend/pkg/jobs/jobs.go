@@ -72,10 +72,10 @@ func (GenerateShiftMetrics) Kind() string {
 	return "generate-shift-metrics"
 }
 
-type RunAgent struct {
+type InvokeAgent struct {
 	AgentRunID uuid.UUID `json:"agent_run_id"`
 }
 
-func (RunAgent) Kind() string {
+func (InvokeAgent) Kind() string {
 	return "run-agent"
 }

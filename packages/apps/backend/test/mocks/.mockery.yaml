@@ -14,3 +14,4 @@ packages:
       ProviderEventPipelineService: {}
       OrganizationService: {}
       UserService: {}
+      AlertService: {}

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 
@@ -33,7 +34,7 @@ func NewAgentService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobSe
 		msgs:   msgSvc,
 		agents: agents,
 	}
-	jobs.RegisterWorkerFunc(s.handleRunAgent)
+	jobs.RegisterWorkerFunc(s.handleInvokeAgent)
 	return s, nil
 }
 
@@ -86,30 +87,31 @@ func (s *AgentService) CreateRun(ctx context.Context, params rez.CreateAgentRunP
 		triggerKind = tk
 	}
 
-	var created *ent.AgentRun
-	return created, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	var run *ent.AgentRun
+	return run, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		create := tx.AgentRun.Create().
 			SetOwnerUserID(ownerID).
 			SetWorkflow(params.Workflow).
 			SetInput(params.Input).
 			SetTriggerKind(triggerKind).
 			SetTriggerMetadata(params.TriggerPayload)
-		task, createErr := create.Save(ctx)
+		created, createErr := create.Save(ctx)
 		if createErr != nil {
 			return fmt.Errorf("create agent task: %w", createErr)
 		}
-		created = task.Unwrap()
 
-		_, jobErr := s.jobs.Insert(ctx, jobs.RunAgent{AgentRunID: created.ID}, runAgentWorkflowJobOpts)
+		_, jobErr := s.jobs.Insert(ctx, jobs.InvokeAgent{AgentRunID: created.ID}, runAgentWorkflowJobOpts)
 		if jobErr != nil {
 			return fmt.Errorf("enqueue agent workflow: %w", jobErr)
 		}
+
+		run = created.Unwrap()
 
 		return nil
 	})
 }
 
-func (s *AgentService) handleRunAgent(ctx context.Context, args jobs.RunAgent) error {
+func (s *AgentService) handleInvokeAgent(ctx context.Context, args jobs.InvokeAgent) error {
 	queryRun := s.db.Client(ctx).AgentRun.Query().
 		Where(agentrun.ID(args.AgentRunID)).
 		WithResult()
@@ -124,13 +126,14 @@ func (s *AgentService) handleRunAgent(ctx context.Context, args jobs.RunAgent) e
 		return fmt.Errorf("agent not found for workflow '%s'", run.Workflow)
 	}
 
-	snapshotId, runErr := agent.Run(ctx, run, nil)
+	snapshotId, runErr := agent.Invoke(ctx, run, ai.NewSystemTextMessage("look into this"))
 	if runErr != nil {
 		return fmt.Errorf("run agent: %w", runErr)
 	}
+
 	slog.InfoContext(ctx, "invoked agent",
 		"workflow", run.Workflow,
-		"snapshot", snapshotId)
+		"snapshot", snapshotId.String())
 
 	return nil
 }

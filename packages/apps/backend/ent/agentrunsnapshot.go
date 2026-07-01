@@ -28,8 +28,18 @@ type AgentRunSnapshot struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AgentRunID holds the value of the "agent_run_id" field.
 	AgentRunID uuid.UUID `json:"agent_run_id,omitempty"`
-	// Data holds the value of the "data" field.
-	Data []byte `json:"data,omitempty"`
+	// ParentID holds the value of the "parent_id" field.
+	ParentID *uuid.UUID `json:"parent_id,omitempty"`
+	// Status holds the value of the "status" field.
+	Status agentrunsnapshot.Status `json:"status,omitempty"`
+	// FinishReason holds the value of the "finish_reason" field.
+	FinishReason string `json:"finish_reason,omitempty"`
+	// HeartbeatAt holds the value of the "heartbeat_at" field.
+	HeartbeatAt *time.Time `json:"heartbeat_at,omitempty"`
+	// State holds the value of the "state" field.
+	State *[]byte `json:"state,omitempty"`
+	// Error holds the value of the "error" field.
+	Error *[]byte `json:"error,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentRunSnapshotQuery when eager-loading is set.
 	Edges        AgentRunSnapshotEdges `json:"edges"`
@@ -42,9 +52,11 @@ type AgentRunSnapshotEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// AgentRun holds the value of the agent_run edge.
 	AgentRun *AgentRun `json:"agent_run,omitempty"`
+	// Parent holds the value of the parent edge.
+	Parent *AgentRunSnapshot `json:"parent,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -69,16 +81,31 @@ func (e AgentRunSnapshotEdges) AgentRunOrErr() (*AgentRun, error) {
 	return nil, &NotLoadedError{edge: "agent_run"}
 }
 
+// ParentOrErr returns the Parent value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AgentRunSnapshotEdges) ParentOrErr() (*AgentRunSnapshot, error) {
+	if e.Parent != nil {
+		return e.Parent, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: agentrunsnapshot.Label}
+	}
+	return nil, &NotLoadedError{edge: "parent"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*AgentRunSnapshot) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentrunsnapshot.FieldData:
+		case agentrunsnapshot.FieldParentID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case agentrunsnapshot.FieldState, agentrunsnapshot.FieldError:
 			values[i] = new([]byte)
 		case agentrunsnapshot.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case agentrunsnapshot.FieldCreatedAt, agentrunsnapshot.FieldUpdatedAt:
+		case agentrunsnapshot.FieldStatus, agentrunsnapshot.FieldFinishReason:
+			values[i] = new(sql.NullString)
+		case agentrunsnapshot.FieldCreatedAt, agentrunsnapshot.FieldUpdatedAt, agentrunsnapshot.FieldHeartbeatAt:
 			values[i] = new(sql.NullTime)
 		case agentrunsnapshot.FieldID, agentrunsnapshot.FieldAgentRunID:
 			values[i] = new(uuid.UUID)
@@ -127,11 +154,43 @@ func (_m *AgentRunSnapshot) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.AgentRunID = *value
 			}
-		case agentrunsnapshot.FieldData:
+		case agentrunsnapshot.FieldParentID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
+			} else if value.Valid {
+				_m.ParentID = new(uuid.UUID)
+				*_m.ParentID = *value.S.(*uuid.UUID)
+			}
+		case agentrunsnapshot.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				_m.Status = agentrunsnapshot.Status(value.String)
+			}
+		case agentrunsnapshot.FieldFinishReason:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field finish_reason", values[i])
+			} else if value.Valid {
+				_m.FinishReason = value.String
+			}
+		case agentrunsnapshot.FieldHeartbeatAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field heartbeat_at", values[i])
+			} else if value.Valid {
+				_m.HeartbeatAt = new(time.Time)
+				*_m.HeartbeatAt = value.Time
+			}
+		case agentrunsnapshot.FieldState:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field data", values[i])
+				return fmt.Errorf("unexpected type %T for field state", values[i])
 			} else if value != nil {
-				_m.Data = *value
+				_m.State = value
+			}
+		case agentrunsnapshot.FieldError:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field error", values[i])
+			} else if value != nil {
+				_m.Error = value
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -154,6 +213,11 @@ func (_m *AgentRunSnapshot) QueryTenant() *TenantQuery {
 // QueryAgentRun queries the "agent_run" edge of the AgentRunSnapshot entity.
 func (_m *AgentRunSnapshot) QueryAgentRun() *AgentRunQuery {
 	return NewAgentRunSnapshotClient(_m.config).QueryAgentRun(_m)
+}
+
+// QueryParent queries the "parent" edge of the AgentRunSnapshot entity.
+func (_m *AgentRunSnapshot) QueryParent() *AgentRunSnapshotQuery {
+	return NewAgentRunSnapshotClient(_m.config).QueryParent(_m)
 }
 
 // Update returns a builder for updating this AgentRunSnapshot.
@@ -191,8 +255,31 @@ func (_m *AgentRunSnapshot) String() string {
 	builder.WriteString("agent_run_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunID))
 	builder.WriteString(", ")
-	builder.WriteString("data=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Data))
+	if v := _m.ParentID; v != nil {
+		builder.WriteString("parent_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("status=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	builder.WriteString("finish_reason=")
+	builder.WriteString(_m.FinishReason)
+	builder.WriteString(", ")
+	if v := _m.HeartbeatAt; v != nil {
+		builder.WriteString("heartbeat_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.State; v != nil {
+		builder.WriteString("state=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.Error; v != nil {
+		builder.WriteString("error=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

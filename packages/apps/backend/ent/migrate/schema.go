@@ -289,9 +289,14 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "data", Type: field.TypeBytes},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "completed", "aborted", "failed"}},
+		{Name: "finish_reason", Type: field.TypeString},
+		{Name: "heartbeat_at", Type: field.TypeTime, Nullable: true},
+		{Name: "state", Type: field.TypeBytes},
+		{Name: "error", Type: field.TypeBytes, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "agent_run_id", Type: field.TypeUUID},
+		{Name: "parent_id", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// AgentRunSnapshotsTable holds the schema information for the "agent_run_snapshots" table.
 	AgentRunSnapshotsTable = &schema.Table{
@@ -301,32 +306,38 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "agent_run_snapshots_tenants_tenant",
-				Columns:    []*schema.Column{AgentRunSnapshotsColumns[4]},
+				Columns:    []*schema.Column{AgentRunSnapshotsColumns[8]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "agent_run_snapshots_agent_runs_agent_run",
-				Columns:    []*schema.Column{AgentRunSnapshotsColumns[5]},
+				Columns:    []*schema.Column{AgentRunSnapshotsColumns[9]},
 				RefColumns: []*schema.Column{AgentRunsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_run_snapshots_agent_run_snapshots_parent",
+				Columns:    []*schema.Column{AgentRunSnapshotsColumns[10]},
+				RefColumns: []*schema.Column{AgentRunSnapshotsColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "agentrunsnapshot_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunSnapshotsColumns[4]},
+				Columns: []*schema.Column{AgentRunSnapshotsColumns[8]},
 			},
 			{
 				Name:    "agentrunsnapshot_tenant_id_agent_run_id",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunSnapshotsColumns[4], AgentRunSnapshotsColumns[5]},
+				Columns: []*schema.Column{AgentRunSnapshotsColumns[8], AgentRunSnapshotsColumns[9]},
 			},
 			{
 				Name:    "agentrunsnapshot_tenant_id_agent_run_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunSnapshotsColumns[4], AgentRunSnapshotsColumns[5], AgentRunSnapshotsColumns[1]},
+				Columns: []*schema.Column{AgentRunSnapshotsColumns[8], AgentRunSnapshotsColumns[9], AgentRunSnapshotsColumns[1]},
 			},
 		},
 	}
@@ -3801,6 +3812,7 @@ func init() {
 	AgentRunResultsTable.ForeignKeys[1].RefTable = AgentRunSnapshotsTable
 	AgentRunSnapshotsTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentRunSnapshotsTable.ForeignKeys[1].RefTable = AgentRunsTable
+	AgentRunSnapshotsTable.ForeignKeys[2].RefTable = AgentRunSnapshotsTable
 	AgentRunSubjectsTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentRunSubjectsTable.ForeignKeys[1].RefTable = AgentRunsTable
 	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
