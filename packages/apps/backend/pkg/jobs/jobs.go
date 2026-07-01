@@ -72,10 +72,10 @@ func (GenerateShiftMetrics) Kind() string {
 	return "generate-shift-metrics"
 }
 
-type RunAgentWorkflow struct {
+type RunAgent struct {
 	AgentRunID uuid.UUID `json:"agent_run_id"`
 }
 
-func (RunAgentWorkflow) Kind() string {
-	return "run-agent-workflow"
+func (RunAgent) Kind() string {
+	return "run-agent"
 }

@@ -21,6 +21,7 @@ type (
 	Auth struct {
 		TenantID            *int       `json:"tenant_id,omitempty"`
 		UserID              *uuid.UUID `json:"user_id,omitempty"`
+		AgentRunID          *uuid.UUID `json:"agent_run_id,omitempty"`
 		ImpersonatingUserID *uuid.UUID `json:"impersonating_user_id,omitempty"`
 		Scopes              []string   `json:"scopes,omitempty"`
 		ExpiresAt           time.Time  `json:"exp"`
@@ -37,6 +38,7 @@ type (
 const (
 	KindAnonymous ActorKind = "anonymous"
 	KindUser      ActorKind = "user"
+	KindAgent     ActorKind = "agent"
 	KindSystem    ActorKind = "system"
 
 	SourceHTTP     SourceKind = "http"
@@ -152,6 +154,17 @@ func NewUserContext(ctx context.Context, sess *ent.UserAuthSession) context.Cont
 	return SetContext(ctx, c)
 }
 
+func NewAgentContext(ctx context.Context, run *ent.AgentRun) context.Context {
+	c := GetContext(ctx)
+	c.ActorKind = KindAgent
+	c.Auth = Auth{
+		TenantID:   &run.TenantID,
+		UserID:     &run.OwnerUserID,
+		AgentRunID: &run.ID,
+	}
+	return SetContext(ctx, c)
+}
+
 func (c Context) validate() error {
 	switch c.ActorKind {
 	case KindAnonymous:
@@ -164,6 +177,16 @@ func (c Context) validate() error {
 		}
 		if c.Auth.UserID == nil {
 			return fmt.Errorf("user actor missing user id")
+		}
+	case KindAgent:
+		if c.Auth.TenantID == nil {
+			return fmt.Errorf("agent actor missing tenant id")
+		}
+		if c.Auth.UserID == nil {
+			return fmt.Errorf("agent actor missing user id")
+		}
+		if c.Auth.AgentRunID == nil {
+			return fmt.Errorf("agent actor missing run id")
 		}
 	case KindSystem:
 	default:

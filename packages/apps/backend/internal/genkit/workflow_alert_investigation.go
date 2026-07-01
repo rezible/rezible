@@ -26,7 +26,17 @@ func (a *alertInvestigationAgent) workflow() agents.Workflow[agents.AlertInvesti
 	return agents.WorkflowAlertInvestigation
 }
 
-func (a *alertInvestigationAgent) makeInitialMessage(task *ent.AgentTask) (*ai.Message, error) {
+func (a *alertInvestigationAgent) validateInput(input []byte) error {
+	if input == nil || len(input) == 0 {
+		return fmt.Errorf("empty input")
+	}
+	return nil
+}
+
+func (a *alertInvestigationAgent) makeInitialMessage(run *ent.AgentRun) (*ai.Message, error) {
+	if validErr := a.validateInput(run.Input); validErr != nil {
+		return nil, validErr
+	}
 	inp := ai.NewUserTextMessage("foo bar")
 	return inp, nil
 }

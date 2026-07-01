@@ -424,44 +424,42 @@ type (
 )
 
 type (
-	WorkflowAgent interface {
+	AgentRunSnapshotService interface {
+		GetLatestSnapshot(ctx context.Context, runId uuid.UUID) (*ent.AgentRunSnapshot, error)
+		GetSnapshot(context.Context, uuid.UUID) (*ent.AgentRunSnapshot, error)
+		UpdateSnapshot(context.Context, uuid.UUID, func(*ent.AgentRunSnapshot, *ent.AgentRunSnapshotMutation) error) (*ent.AgentRunSnapshot, error)
+	}
+
+	RunAgentOpts struct {
+		Detach bool
+	}
+	Agent interface {
 		WorkflowName() string
-		RunTask(context.Context, *ent.AgentTask) (string, error)
-		GetStatus(context.Context, uuid.UUID) (string, error)
+		ValidateInput(input []byte) error
+		Run(context.Context, *ent.AgentRun, *RunAgentOpts) (uuid.UUID, error)
+		GetStatus(context.Context, uuid.UUID) error
 	}
 
 	AgentRegistry interface {
-		GetWorkflowAgent(string) (WorkflowAgent, bool)
+		ValidateWorkflowInput(workflow string, input []byte) error
+		GetAgent(string) (Agent, bool)
 	}
 
-	CreateAgentTaskParams struct {
+	CreateAgentRunParams struct {
 		OwnerUserID    uuid.UUID
 		Workflow       string
-		WorkflowInput  map[string]any
+		Input          []byte
 		TriggerKind    string
 		TriggerPayload map[string]any
 	}
 
-	ListAgentTasksParams struct {
-		ent.ListParams
-		Workflow          string
-		TriggerKind       string
-		SubjectPredicates []predicate.AgentTaskSubject
-	}
-
 	ListAgentRunsParams struct {
 		ent.ListParams
-		AgentTaskID uuid.UUID
-		Workflow    string
-		Predicates  []predicate.AgentRun
+		Predicates []predicate.AgentRun
 	}
 
 	AgentService interface {
-		CreateTask(context.Context, CreateAgentTaskParams) (*ent.AgentTask, error)
-		GetTask(context.Context, uuid.UUID) (*ent.AgentTask, error)
-		ListTasks(context.Context, ListAgentTasksParams) (*ent.ListResult[ent.AgentTask], error)
-
-		RequestNewTaskRun(context.Context, uuid.UUID) (*ent.AgentRun, error)
+		CreateRun(context.Context, CreateAgentRunParams) (*ent.AgentRun, error)
 		GetRun(context.Context, uuid.UUID) (*ent.AgentRun, error)
 		ListRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AgentRun], error)
 	}

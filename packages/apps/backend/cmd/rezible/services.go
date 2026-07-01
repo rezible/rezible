@@ -104,10 +104,6 @@ func shutdownServices(baseCtx context.Context, i do.Injector) error {
 }
 
 func doRegistrations(i do.Injector) error {
-	//agentRunner := do.MustInvoke[rez.AgentWorkflowRunner](i)
-	//agentWorkflowsReg := do.MustInvoke[*agents.WorkflowRegistry](i)
-	//agentRunner.RegisterWorkflows(agentWorkflowsReg)
-
 	intgReg := do.MustInvoke[*integrations.PackageRegistry](i)
 	pipelineReg := do.MustInvoke[*projections.PipelineRegistry](i)
 
@@ -153,7 +149,12 @@ func declareServices(ctx context.Context, i do.Injector) {
 	})
 
 	do.Provide(i, func(i do.Injector) (rez.AgentRegistry, error) {
-		return genkit.NewAgentRegistry(ctx, do.MustInvoke[rez.Config](i))
+		reg := genkit.NewAgentRegistry(ctx,
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.AgentRunSnapshotService](i),
+		)
+		reg.RegisterAlertInvestigationAgent(do.MustInvoke[rez.AlertService](i))
+		return reg, nil
 	})
 
 	do.Provide(i, func(i do.Injector) (rez.MigrationService, error) {
@@ -429,6 +430,11 @@ var provideServices = do.Package(
 		)
 	}),
 	do.Bind[*db.DocumentsService, rez.DocumentsService](),
+
+	do.Lazy(func(i do.Injector) (*db.AgentRunSnapshotService, error) {
+		return db.NewAgentRunSnapshotService(do.MustInvoke[rez.Database](i))
+	}),
+	do.Bind[*db.AgentRunSnapshotService, rez.AgentRunSnapshotService](),
 
 	do.Lazy(func(i do.Injector) (*db.AgentService, error) {
 		return db.NewAgentService(

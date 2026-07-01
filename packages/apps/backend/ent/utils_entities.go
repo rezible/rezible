@@ -1,8 +1,10 @@
 package ent
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/predicate"
 	vc "github.com/rezible/rezible/ent/videoconference"
@@ -80,4 +82,20 @@ func (ref KnowledgeEntityAliasRef) Predicate() predicate.KnowledgeEntityAlias {
 
 func (ref KnowledgeEntityAliasRef) SortKey() string {
 	return ref.Provider + "\x1f" + ref.ProviderSubjectRef
+}
+
+func (r *AgentRun) GetSubjectEntityId(subjectKind string) (uuid.UUID, error) {
+	subjects, subjectsErr := r.Edges.SubjectsOrErr()
+	if subjectsErr != nil {
+		return uuid.Nil, subjectsErr
+	}
+	for _, sub := range subjects {
+		if sub.SubjectKind == subjectKind {
+			if sub.DomainEntityID == nil {
+				return uuid.Nil, fmt.Errorf("subject kind with nil domain entity id")
+			}
+			return *sub.DomainEntityID, nil
+		}
+	}
+	return uuid.Nil, fmt.Errorf("subject kind %s not found", subjectKind)
 }
