@@ -75,6 +75,20 @@ func (_c *AgentRunCreate) SetWorkflow(v string) *AgentRunCreate {
 	return _c
 }
 
+// SetStartedAt sets the "started_at" field.
+func (_c *AgentRunCreate) SetStartedAt(v time.Time) *AgentRunCreate {
+	_c.mutation.SetStartedAt(v)
+	return _c
+}
+
+// SetNillableStartedAt sets the "started_at" field if the given value is not nil.
+func (_c *AgentRunCreate) SetNillableStartedAt(v *time.Time) *AgentRunCreate {
+	if v != nil {
+		_c.SetStartedAt(*v)
+	}
+	return _c
+}
+
 // SetInput sets the "input" field.
 func (_c *AgentRunCreate) SetInput(v []byte) *AgentRunCreate {
 	_c.mutation.SetInput(v)
@@ -301,6 +315,10 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 		_spec.SetField(agentrun.FieldWorkflow, field.TypeString, value)
 		_node.Workflow = value
 	}
+	if value, ok := _c.mutation.StartedAt(); ok {
+		_spec.SetField(agentrun.FieldStartedAt, field.TypeTime, value)
+		_node.StartedAt = &value
+	}
 	if value, ok := _c.mutation.Input(); ok {
 		_spec.SetField(agentrun.FieldInput, field.TypeBytes, value)
 		_node.Input = value
@@ -497,6 +515,24 @@ func (u *AgentRunUpsert) UpdateWorkflow() *AgentRunUpsert {
 	return u
 }
 
+// SetStartedAt sets the "started_at" field.
+func (u *AgentRunUpsert) SetStartedAt(v time.Time) *AgentRunUpsert {
+	u.Set(agentrun.FieldStartedAt, v)
+	return u
+}
+
+// UpdateStartedAt sets the "started_at" field to the value that was provided on create.
+func (u *AgentRunUpsert) UpdateStartedAt() *AgentRunUpsert {
+	u.SetExcluded(agentrun.FieldStartedAt)
+	return u
+}
+
+// ClearStartedAt clears the value of the "started_at" field.
+func (u *AgentRunUpsert) ClearStartedAt() *AgentRunUpsert {
+	u.SetNull(agentrun.FieldStartedAt)
+	return u
+}
+
 // SetInput sets the "input" field.
 func (u *AgentRunUpsert) SetInput(v []byte) *AgentRunUpsert {
 	u.Set(agentrun.FieldInput, v)
@@ -631,6 +667,27 @@ func (u *AgentRunUpsertOne) SetWorkflow(v string) *AgentRunUpsertOne {
 func (u *AgentRunUpsertOne) UpdateWorkflow() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
 		s.UpdateWorkflow()
+	})
+}
+
+// SetStartedAt sets the "started_at" field.
+func (u *AgentRunUpsertOne) SetStartedAt(v time.Time) *AgentRunUpsertOne {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.SetStartedAt(v)
+	})
+}
+
+// UpdateStartedAt sets the "started_at" field to the value that was provided on create.
+func (u *AgentRunUpsertOne) UpdateStartedAt() *AgentRunUpsertOne {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.UpdateStartedAt()
+	})
+}
+
+// ClearStartedAt clears the value of the "started_at" field.
+func (u *AgentRunUpsertOne) ClearStartedAt() *AgentRunUpsertOne {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.ClearStartedAt()
 	})
 }
 
@@ -940,6 +997,27 @@ func (u *AgentRunUpsertBulk) SetWorkflow(v string) *AgentRunUpsertBulk {
 func (u *AgentRunUpsertBulk) UpdateWorkflow() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
 		s.UpdateWorkflow()
+	})
+}
+
+// SetStartedAt sets the "started_at" field.
+func (u *AgentRunUpsertBulk) SetStartedAt(v time.Time) *AgentRunUpsertBulk {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.SetStartedAt(v)
+	})
+}
+
+// UpdateStartedAt sets the "started_at" field to the value that was provided on create.
+func (u *AgentRunUpsertBulk) UpdateStartedAt() *AgentRunUpsertBulk {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.UpdateStartedAt()
+	})
+}
+
+// ClearStartedAt clears the value of the "started_at" field.
+func (u *AgentRunUpsertBulk) ClearStartedAt() *AgentRunUpsertBulk {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.ClearStartedAt()
 	})
 }
 

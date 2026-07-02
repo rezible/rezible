@@ -186,6 +186,7 @@ type AgentRunMutation struct {
 	created_at        *time.Time
 	updated_at        *time.Time
 	workflow          *string
+	started_at        *time.Time
 	input             *[]byte
 	metadata          *map[string]interface{}
 	clearedFields     map[string]struct{}
@@ -488,6 +489,55 @@ func (m *AgentRunMutation) OldWorkflow(ctx context.Context) (v string, err error
 // ResetWorkflow resets all changes to the "workflow" field.
 func (m *AgentRunMutation) ResetWorkflow() {
 	m.workflow = nil
+}
+
+// SetStartedAt sets the "started_at" field.
+func (m *AgentRunMutation) SetStartedAt(t time.Time) {
+	m.started_at = &t
+}
+
+// StartedAt returns the value of the "started_at" field in the mutation.
+func (m *AgentRunMutation) StartedAt() (r time.Time, exists bool) {
+	v := m.started_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStartedAt returns the old "started_at" field's value of the AgentRun entity.
+// If the AgentRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRunMutation) OldStartedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStartedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStartedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStartedAt: %w", err)
+	}
+	return oldValue.StartedAt, nil
+}
+
+// ClearStartedAt clears the value of the "started_at" field.
+func (m *AgentRunMutation) ClearStartedAt() {
+	m.started_at = nil
+	m.clearedFields[agentrun.FieldStartedAt] = struct{}{}
+}
+
+// StartedAtCleared returns if the "started_at" field was cleared in this mutation.
+func (m *AgentRunMutation) StartedAtCleared() bool {
+	_, ok := m.clearedFields[agentrun.FieldStartedAt]
+	return ok
+}
+
+// ResetStartedAt resets all changes to the "started_at" field.
+func (m *AgentRunMutation) ResetStartedAt() {
+	m.started_at = nil
+	delete(m.clearedFields, agentrun.FieldStartedAt)
 }
 
 // SetInput sets the "input" field.
@@ -810,7 +860,7 @@ func (m *AgentRunMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentRunMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, agentrun.FieldTenantID)
 	}
@@ -825,6 +875,9 @@ func (m *AgentRunMutation) Fields() []string {
 	}
 	if m.workflow != nil {
 		fields = append(fields, agentrun.FieldWorkflow)
+	}
+	if m.started_at != nil {
+		fields = append(fields, agentrun.FieldStartedAt)
 	}
 	if m.input != nil {
 		fields = append(fields, agentrun.FieldInput)
@@ -850,6 +903,8 @@ func (m *AgentRunMutation) Field(name string) (ent.Value, bool) {
 		return m.OwnerUserID()
 	case agentrun.FieldWorkflow:
 		return m.Workflow()
+	case agentrun.FieldStartedAt:
+		return m.StartedAt()
 	case agentrun.FieldInput:
 		return m.Input()
 	case agentrun.FieldMetadata:
@@ -873,6 +928,8 @@ func (m *AgentRunMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldOwnerUserID(ctx)
 	case agentrun.FieldWorkflow:
 		return m.OldWorkflow(ctx)
+	case agentrun.FieldStartedAt:
+		return m.OldStartedAt(ctx)
 	case agentrun.FieldInput:
 		return m.OldInput(ctx)
 	case agentrun.FieldMetadata:
@@ -921,6 +978,13 @@ func (m *AgentRunMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetWorkflow(v)
 		return nil
+	case agentrun.FieldStartedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStartedAt(v)
+		return nil
 	case agentrun.FieldInput:
 		v, ok := value.([]byte)
 		if !ok {
@@ -968,6 +1032,9 @@ func (m *AgentRunMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AgentRunMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(agentrun.FieldStartedAt) {
+		fields = append(fields, agentrun.FieldStartedAt)
+	}
 	if m.FieldCleared(agentrun.FieldMetadata) {
 		fields = append(fields, agentrun.FieldMetadata)
 	}
@@ -985,6 +1052,9 @@ func (m *AgentRunMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AgentRunMutation) ClearField(name string) error {
 	switch name {
+	case agentrun.FieldStartedAt:
+		m.ClearStartedAt()
+		return nil
 	case agentrun.FieldMetadata:
 		m.ClearMetadata()
 		return nil
@@ -1010,6 +1080,9 @@ func (m *AgentRunMutation) ResetField(name string) error {
 		return nil
 	case agentrun.FieldWorkflow:
 		m.ResetWorkflow()
+		return nil
+	case agentrun.FieldStartedAt:
+		m.ResetStartedAt()
 		return nil
 	case agentrun.FieldInput:
 		m.ResetInput()

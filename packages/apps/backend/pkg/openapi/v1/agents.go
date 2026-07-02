@@ -35,9 +35,8 @@ type (
 	AgentRunAttributes struct {
 		OwnerUserId uuid.UUID          `json:"ownerUserId"`
 		Workflow    string             `json:"workflow"`
-		TriggerKind string             `json:"triggerKind"`
 		CreatedAt   time.Time          `json:"createdAt"`
-		UpdatedAt   time.Time          `json:"updatedAt"`
+		StartedAt   *time.Time         `json:"startedAt,omitempty"`
 		Snapshots   []AgentRunSnapshot `json:"latestSnapshot"`
 	}
 
@@ -52,7 +51,6 @@ type (
 		ParentID     *uuid.UUID             `json:"parent_id"`
 		HeartbeatAt  *time.Time             `json:"heartbeat_at"`
 		CreatedAt    time.Time              `json:"created_at"`
-		UpdatedAt    time.Time              `json:"updated_at"`
 		Error        *string                `json:"error,omitempty"`
 		State        *AgentRunSnapshotState `json:"state,omitempty"`
 	}
@@ -125,10 +123,10 @@ func AgentRunFromEnt(run *ent.AgentRun) AgentRun {
 		OwnerUserId: run.OwnerUserID,
 		Workflow:    run.Workflow,
 		CreatedAt:   run.CreatedAt,
-		UpdatedAt:   run.UpdatedAt,
+		StartedAt:   nil,
+		Snapshots:   make([]AgentRunSnapshot, len(run.Edges.Snapshots)),
 	}
 	if run.Edges.Snapshots != nil {
-		attrs.Snapshots = make([]AgentRunSnapshot, len(run.Edges.Snapshots))
 		for i, snapshot := range run.Edges.Snapshots {
 			attrs.Snapshots[i] = AgentRunSnapshotFromEnt(snapshot)
 		}
@@ -146,7 +144,6 @@ func AgentRunSnapshotFromEnt(s *ent.AgentRunSnapshot) AgentRunSnapshot {
 		ParentID:     s.ParentID,
 		HeartbeatAt:  s.HeartbeatAt,
 		CreatedAt:    s.CreatedAt,
-		UpdatedAt:    s.UpdatedAt,
 		Error:        nil,
 	}
 	if s.Error != nil {

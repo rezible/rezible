@@ -83,6 +83,26 @@ func (_u *AgentRunUpdate) SetNillableWorkflow(v *string) *AgentRunUpdate {
 	return _u
 }
 
+// SetStartedAt sets the "started_at" field.
+func (_u *AgentRunUpdate) SetStartedAt(v time.Time) *AgentRunUpdate {
+	_u.mutation.SetStartedAt(v)
+	return _u
+}
+
+// SetNillableStartedAt sets the "started_at" field if the given value is not nil.
+func (_u *AgentRunUpdate) SetNillableStartedAt(v *time.Time) *AgentRunUpdate {
+	if v != nil {
+		_u.SetStartedAt(*v)
+	}
+	return _u
+}
+
+// ClearStartedAt clears the value of the "started_at" field.
+func (_u *AgentRunUpdate) ClearStartedAt() *AgentRunUpdate {
+	_u.mutation.ClearStartedAt()
+	return _u
+}
+
 // SetInput sets the "input" field.
 func (_u *AgentRunUpdate) SetInput(v []byte) *AgentRunUpdate {
 	_u.mutation.SetInput(v)
@@ -298,6 +318,12 @@ func (_u *AgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Workflow(); ok {
 		_spec.SetField(agentrun.FieldWorkflow, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.StartedAt(); ok {
+		_spec.SetField(agentrun.FieldStartedAt, field.TypeTime, value)
+	}
+	if _u.mutation.StartedAtCleared() {
+		_spec.ClearField(agentrun.FieldStartedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.Input(); ok {
 		_spec.SetField(agentrun.FieldInput, field.TypeBytes, value)
@@ -535,6 +561,26 @@ func (_u *AgentRunUpdateOne) SetNillableWorkflow(v *string) *AgentRunUpdateOne {
 	if v != nil {
 		_u.SetWorkflow(*v)
 	}
+	return _u
+}
+
+// SetStartedAt sets the "started_at" field.
+func (_u *AgentRunUpdateOne) SetStartedAt(v time.Time) *AgentRunUpdateOne {
+	_u.mutation.SetStartedAt(v)
+	return _u
+}
+
+// SetNillableStartedAt sets the "started_at" field if the given value is not nil.
+func (_u *AgentRunUpdateOne) SetNillableStartedAt(v *time.Time) *AgentRunUpdateOne {
+	if v != nil {
+		_u.SetStartedAt(*v)
+	}
+	return _u
+}
+
+// ClearStartedAt clears the value of the "started_at" field.
+func (_u *AgentRunUpdateOne) ClearStartedAt() *AgentRunUpdateOne {
+	_u.mutation.ClearStartedAt()
 	return _u
 }
 
@@ -783,6 +829,12 @@ func (_u *AgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun, err 
 	}
 	if value, ok := _u.mutation.Workflow(); ok {
 		_spec.SetField(agentrun.FieldWorkflow, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.StartedAt(); ok {
+		_spec.SetField(agentrun.FieldStartedAt, field.TypeTime, value)
+	}
+	if _u.mutation.StartedAtCleared() {
+		_spec.ClearField(agentrun.FieldStartedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.Input(); ok {
 		_spec.SetField(agentrun.FieldInput, field.TypeBytes, value)

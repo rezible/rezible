@@ -107,15 +107,13 @@ func (s *AgentRegistrySuite) TestAlertInvestigationAgent() {
 	alerts := mocks.NewMockAlertService(s.T())
 	alerts.EXPECT().GetAlert(mock.Anything, mock.Anything).Return(alert, nil)
 
-	//store := localstore.NewInMemorySessionStore[agents.AlertInvestigationState]()
-
 	aia := &AlertInvestigationAgent{alerts: alerts}
 	RegisterAgent(reg, aia)
 
 	a, ok := reg.Get(workflowName)
 	s.Require().True(ok)
 
-	snapshotId, invokeErr := a.Invoke(ctx, run, ai.NewSystemTextMessage("look into this"))
+	snapshotId, invokeErr := a.Start(ctx, run, ai.NewSystemTextMessage("look into this"))
 	s.Require().NoError(invokeErr)
 
 	snapshot, snapshotErr := s.Client(ctx).AgentRunSnapshot.Get(ctx, snapshotId)
@@ -153,7 +151,7 @@ func (s *AgentRegistrySuite) TestSimpleWorkflowAgent() {
 	s.Require().True(ok)
 
 	run := s.makeAgentRun(ta.workflowName(), state)
-	snapshot, runErr := a.Invoke(ctx, run, ai.NewSystemTextMessage("look into this"))
+	snapshot, runErr := a.Start(ctx, run, ai.NewSystemTextMessage("look into this"))
 	s.Require().NoError(runErr)
 	s.Require().NotNil(snapshot)
 	//snapshot, snapshotErr := store.GetSnapshot(s.T().Context(), snapshotId.String())

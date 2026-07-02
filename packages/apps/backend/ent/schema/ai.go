@@ -25,6 +25,7 @@ func (AgentRun) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("owner_user_id", uuid.UUID{}),
 		field.String("workflow").NotEmpty(),
+		field.Time("started_at").Optional().Nillable(),
 		field.Bytes("input"),
 		field.JSON("metadata", map[string]any{}).
 			SchemaType(schemaTypeJsonB).

@@ -167,9 +167,7 @@ components:
           type: array
         ownerUserId:
           type: string
-        triggerKind:
-          type: string
-        updatedAt:
+        startedAt:
           format: date-time
           type: string
         workflow:
@@ -177,9 +175,7 @@ components:
       required:
         - ownerUserId
         - workflow
-        - triggerKind
         - createdAt
-        - updatedAt
         - latestSnapshot
       type: object
     AgentRunSnapshot:
@@ -214,16 +210,12 @@ components:
           $ref: "#/components/schemas/AgentRunSnapshotState"
         status:
           type: string
-        updated_at:
-          format: date-time
-          type: string
       required:
         - status
         - finish_reason
         - parent_id
         - heartbeat_at
         - created_at
-        - updated_at
       type: object
     AgentRunSnapshotState:
       additionalProperties: false

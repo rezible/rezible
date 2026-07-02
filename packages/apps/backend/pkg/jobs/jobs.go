@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 )
 
@@ -72,10 +73,21 @@ func (GenerateShiftMetrics) Kind() string {
 	return "generate-shift-metrics"
 }
 
-type InvokeAgent struct {
+type StartAgentRun struct {
 	AgentRunID uuid.UUID `json:"agent_run_id"`
 }
 
-func (InvokeAgent) Kind() string {
-	return "run-agent"
+func (StartAgentRun) Kind() string {
+	return "start-agent-run"
+}
+
+type ContinueAgentRun struct {
+	AgentRunID       uuid.UUID                `json:"agent_run_id"`
+	ParentSnapshotID *uuid.UUID               `json:"parent_snapshot_id,omitempty"`
+	Message          *ai.Message              `json:"message,omitempty"`
+	Resume           *ai.GenerateActionResume `json:"resume,omitempty"`
+}
+
+func (ContinueAgentRun) Kind() string {
+	return "invoke-agent-run"
 }

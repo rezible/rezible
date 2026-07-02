@@ -32,6 +32,8 @@ type AgentRun struct {
 	OwnerUserID uuid.UUID `json:"owner_user_id,omitempty"`
 	// Workflow holds the value of the "workflow" field.
 	Workflow string `json:"workflow,omitempty"`
+	// StartedAt holds the value of the "started_at" field.
+	StartedAt *time.Time `json:"started_at,omitempty"`
 	// Input holds the value of the "input" field.
 	Input []byte `json:"input,omitempty"`
 	// Metadata holds the value of the "metadata" field.
@@ -122,7 +124,7 @@ func (*AgentRun) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case agentrun.FieldWorkflow:
 			values[i] = new(sql.NullString)
-		case agentrun.FieldCreatedAt, agentrun.FieldUpdatedAt:
+		case agentrun.FieldCreatedAt, agentrun.FieldUpdatedAt, agentrun.FieldStartedAt:
 			values[i] = new(sql.NullTime)
 		case agentrun.FieldID, agentrun.FieldOwnerUserID:
 			values[i] = new(uuid.UUID)
@@ -178,6 +180,13 @@ func (_m *AgentRun) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field workflow", values[i])
 			} else if value.Valid {
 				_m.Workflow = value.String
+			}
+		case agentrun.FieldStartedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field started_at", values[i])
+			} else if value.Valid {
+				_m.StartedAt = new(time.Time)
+				*_m.StartedAt = value.Time
 			}
 		case agentrun.FieldInput:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -275,6 +284,11 @@ func (_m *AgentRun) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("workflow=")
 	builder.WriteString(_m.Workflow)
+	builder.WriteString(", ")
+	if v := _m.StartedAt; v != nil {
+		builder.WriteString("started_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("input=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Input))

@@ -431,15 +431,22 @@ type (
 		UpdateSnapshot(context.Context, uuid.UUID, func(*ent.AgentRunSnapshot, *ent.AgentRunSnapshotMutation) error) (*ent.AgentRunSnapshot, error)
 	}
 
-	InvokeAgentParams struct {
-		AgentRunID  uuid.UUID
-		AgentStepID uuid.UUID
+	SendAgentRunMessageParams struct {
+		ParentSnapshotID *uuid.UUID
+		Message          *ai.Message
+	}
+
+	ResumeAgentRunParams struct {
+		ParentSnapshotID *uuid.UUID
+		Respond          []*ai.Part
+		Restart          []*ai.Part
 	}
 
 	Agent interface {
 		Workflow() string
-		Invoke(context.Context, *ent.AgentRun, *ai.Message) (uuid.UUID, error)
-		GetStatus(context.Context, uuid.UUID) error
+		Start(context.Context, *ent.AgentRun, *ai.Message) (uuid.UUID, error)
+		SendMessage(context.Context, *ent.AgentRun, SendAgentRunMessageParams) (uuid.UUID, error)
+		Resume(context.Context, *ent.AgentRun, ResumeAgentRunParams) (uuid.UUID, error)
 	}
 
 	AgentRegistry interface {

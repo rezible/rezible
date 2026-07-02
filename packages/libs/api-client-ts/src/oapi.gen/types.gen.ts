@@ -86,8 +86,7 @@ export type AgentRunAttributes = {
     createdAt: string;
     latestSnapshot: Array<AgentRunSnapshot>;
     ownerUserId: string;
-    triggerKind: string;
-    updatedAt: string;
+    startedAt?: string;
     workflow: string;
 };
 
@@ -104,7 +103,6 @@ export type AgentRunSnapshotAttributes = {
     parent_id: string;
     state?: AgentRunSnapshotState;
     status: string;
-    updated_at: string;
 };
 
 export type AgentRunSnapshotState = {

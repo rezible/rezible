@@ -106,6 +106,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			agentrun.FieldUpdatedAt:   {Type: field.TypeTime, Column: agentrun.FieldUpdatedAt},
 			agentrun.FieldOwnerUserID: {Type: field.TypeUUID, Column: agentrun.FieldOwnerUserID},
 			agentrun.FieldWorkflow:    {Type: field.TypeString, Column: agentrun.FieldWorkflow},
+			agentrun.FieldStartedAt:   {Type: field.TypeTime, Column: agentrun.FieldStartedAt},
 			agentrun.FieldInput:       {Type: field.TypeBytes, Column: agentrun.FieldInput},
 			agentrun.FieldMetadata:    {Type: field.TypeJSON, Column: agentrun.FieldMetadata},
 		},
@@ -5113,6 +5114,11 @@ func (f *AgentRunFilter) WhereOwnerUserID(p entql.ValueP) {
 // WhereWorkflow applies the entql string predicate on the workflow field.
 func (f *AgentRunFilter) WhereWorkflow(p entql.StringP) {
 	f.Where(p.Field(agentrun.FieldWorkflow))
+}
+
+// WhereStartedAt applies the entql time.Time predicate on the started_at field.
+func (f *AgentRunFilter) WhereStartedAt(p entql.TimeP) {
+	f.Where(p.Field(agentrun.FieldStartedAt))
 }
 
 // WhereInput applies the entql []byte predicate on the input field.

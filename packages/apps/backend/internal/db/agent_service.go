@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/pkg/agents"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
@@ -37,7 +37,7 @@ func NewAgentService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobSe
 		msgs:   msgSvc,
 		agents: agents,
 	}
-	jobs.RegisterWorkerFunc(s.handleInvokeAgent)
+	jobs.RegisterWorkerFunc(s.handleStartAgentRun)
 	return s, nil
 }
 
@@ -54,6 +54,25 @@ func (s *AgentService) ListRuns(ctx context.Context, params rez.ListAgentRunsPar
 		query.Where(params.Predicates...)
 	}
 	return ent.DoListQuery[ent.AgentRun, *ent.AgentRunQuery](ctx, query, params.ListParams)
+}
+
+func (s *AgentService) SetRun(ctx context.Context, id uuid.UUID, setFn func(*ent.AgentRunMutation)) (*ent.AgentRun, error) {
+	var run *ent.AgentRun
+	return run, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		var mutator ent.EntityMutator[*ent.AgentRun, *ent.AgentRunMutation]
+		if id == uuid.Nil {
+			mutator = tx.AgentRun.Create()
+		} else {
+			mutator = tx.AgentRun.UpdateOneID(id)
+		}
+		setFn(mutator.Mutation())
+		txRun, saveErr := mutator.Save(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("save: %w", saveErr)
+		}
+		run = txRun.Unwrap()
+		return nil
+	})
 }
 
 func (s *AgentService) GetRunResult(ctx context.Context, runID uuid.UUID) (*ent.AgentRunResult, error) {
@@ -99,7 +118,7 @@ func (s *AgentService) CreateRun(ctx context.Context, params rez.CreateAgentRunP
 			return fmt.Errorf("create agent task: %w", createErr)
 		}
 
-		_, jobErr := s.jobs.Insert(ctx, jobs.InvokeAgent{AgentRunID: created.ID}, runAgentWorkflowJobOpts)
+		_, jobErr := s.jobs.Insert(ctx, jobs.StartAgentRun{AgentRunID: created.ID}, runAgentWorkflowJobOpts)
 		if jobErr != nil {
 			return fmt.Errorf("enqueue agent workflow: %w", jobErr)
 		}
@@ -110,13 +129,56 @@ func (s *AgentService) CreateRun(ctx context.Context, params rez.CreateAgentRunP
 	})
 }
 
-func (s *AgentService) handleInvokeAgent(ctx context.Context, args jobs.InvokeAgent) error {
-	queryRun := s.db.Client(ctx).AgentRun.Query().
-		Where(agentrun.ID(args.AgentRunID)).
-		WithResult()
-	run, queryErr := queryRun.Only(ctx)
-	if queryErr != nil {
-		return fmt.Errorf("get agent run: %w", queryErr)
+func (s *AgentService) getAndStartAgentRun(ctx context.Context, id uuid.UUID) (*ent.AgentRun, rez.Agent, error) {
+	var run *ent.AgentRun
+	var agent rez.Agent
+	return run, agent, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		getStartedRun := tx.AgentRun.UpdateOneID(id).
+			Where(agentrun.ID(id), agentrun.StartedAtIsNil()).
+			SetStartedAt(time.Now().UTC())
+		txRun, queryErr := getStartedRun.Save(ctx)
+		if queryErr != nil {
+			if ent.IsNotFound(queryErr) {
+				return nil
+			}
+			return fmt.Errorf("get agent run: %w", queryErr)
+		}
+
+		txAgent, agentOk := s.agents.Get(txRun.Workflow)
+		if !agentOk {
+			return fmt.Errorf("agent not found for workflow '%s'", txRun.Workflow)
+		}
+
+		run = txRun.Unwrap()
+		agent = txAgent
+
+		return nil
+	})
+}
+
+func (s *AgentService) handleStartAgentRun(ctx context.Context, args jobs.StartAgentRun) error {
+	run, agent, runErr := s.getAndStartAgentRun(ctx, args.AgentRunID)
+	if run == nil || runErr != nil {
+		return runErr
+	}
+
+	ctx = execution.NewAgentContext(ctx, run)
+	snapshotId, startErr := agent.Start(ctx, run, nil)
+	if startErr != nil {
+		return fmt.Errorf("start agent run: %w", startErr)
+	}
+
+	slog.InfoContext(ctx, "started agent run",
+		"workflow", run.Workflow,
+		"snapshot", snapshotId.String())
+
+	return nil
+}
+
+func (s *AgentService) handleContinueAgentRun(ctx context.Context, args jobs.ContinueAgentRun) error {
+	run, runErr := s.GetRun(ctx, args.AgentRunID)
+	if run == nil || runErr != nil {
+		return fmt.Errorf("get agent run: %w", runErr)
 	}
 	ctx = execution.NewAgentContext(ctx, run)
 
@@ -125,12 +187,29 @@ func (s *AgentService) handleInvokeAgent(ctx context.Context, args jobs.InvokeAg
 		return fmt.Errorf("agent not found for workflow '%s'", run.Workflow)
 	}
 
-	snapshotId, runErr := agent.Invoke(ctx, run, ai.NewSystemTextMessage("look into this"))
-	if runErr != nil {
-		return fmt.Errorf("run agent: %w", runErr)
+	var snapshotId uuid.UUID
+	var sendErr error
+	if args.Message != nil {
+		params := rez.SendAgentRunMessageParams{
+			ParentSnapshotID: args.ParentSnapshotID,
+			Message:          args.Message,
+		}
+		snapshotId, sendErr = agent.SendMessage(ctx, run, params)
+	} else if args.Resume != nil {
+		params := rez.ResumeAgentRunParams{
+			ParentSnapshotID: args.ParentSnapshotID,
+			Respond:          args.Resume.Respond,
+			Restart:          args.Resume.Restart,
+		}
+		snapshotId, sendErr = agent.Resume(ctx, run, params)
+	} else {
+		return fmt.Errorf("invalid args")
+	}
+	if sendErr != nil {
+		return fmt.Errorf("continue agent run: %w", sendErr)
 	}
 
-	slog.InfoContext(ctx, "invoked agent",
+	slog.InfoContext(ctx, "continued agent run",
 		"workflow", run.Workflow,
 		"snapshot", snapshotId.String())
 

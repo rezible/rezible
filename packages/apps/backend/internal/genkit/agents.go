@@ -60,12 +60,15 @@ func (w *wrappedAgent[S]) Workflow() string {
 	return w.workflow
 }
 
-func (w *wrappedAgent[S]) createInitialSnapshot(ctx context.Context, run *ent.AgentRun) (*aix.SessionSnapshot[S], error) {
-	state, stateErr := w.makeInitialStateFn(run)
-	if stateErr != nil {
-		return nil, fmt.Errorf("initial state: %w", stateErr)
+func (w *wrappedAgent[S]) createInitialSnapshot(ctx context.Context, run *ent.AgentRun) (uuid.UUID, error) {
+	if run == nil {
+		return uuid.Nil, fmt.Errorf("nil run")
 	}
-	return w.agent.Store().SaveSnapshot(ctx, "", func(_ *aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error) {
+	createSnapshotFn := func(_ *aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error) {
+		state, stateErr := w.makeInitialStateFn(run)
+		if stateErr != nil {
+			return nil, fmt.Errorf("initial state: %w", stateErr)
+		}
 		return &aix.SessionSnapshot[S]{
 			SessionID:    run.ID.String(),
 			FinishReason: aix.AgentFinishReasonStop,
@@ -74,64 +77,94 @@ func (w *wrappedAgent[S]) createInitialSnapshot(ctx context.Context, run *ent.Ag
 			CreatedAt:    time.Now(),
 			UpdatedAt:    time.Now(),
 		}, nil
-	})
+	}
+	snapshot, snapshotErr := w.agent.Store().SaveSnapshot(ctx, "", createSnapshotFn)
+	if snapshotErr != nil {
+		return uuid.Nil, fmt.Errorf("initial snapshot: %w", snapshotErr)
+	}
+	return uuid.Parse(snapshot.SnapshotID)
 }
 
-func (w *wrappedAgent[S]) getInvokeOpts(ctx context.Context, run *ent.AgentRun) ([]aix.InvocationOption[S], error) {
-	if run == nil {
-		return nil, fmt.Errorf("invalid task input")
+func (w *wrappedAgent[S]) getInvokeOpts(ctx context.Context, runId uuid.UUID, parentId *uuid.UUID) ([]aix.InvocationOption[S], error) {
+	var parent *aix.SessionSnapshot[S]
+	var parentErr error
+	if parentId != nil {
+		parent, parentErr = w.agent.Store().GetSnapshot(ctx, parentId.String())
+	} else {
+		parent, parentErr = w.agent.Store().GetLatestSnapshot(ctx, runId.String())
 	}
-
-	parent, parentErr := w.agent.Store().GetLatestSnapshot(ctx, run.ID.String())
 	if parentErr != nil {
-		return nil, fmt.Errorf("get latest snapshot: %w", parentErr)
-	} else if parent == nil {
-		parent, parentErr = w.createInitialSnapshot(ctx, run)
-		if parentErr != nil {
-			return nil, fmt.Errorf("make initial state: %w", parentErr)
-		}
+		return nil, fmt.Errorf("get parent snapshot: %w", parentErr)
 	}
-	parentId, parentIdErr := uuid.Parse(parent.SnapshotID)
-	if parentIdErr != nil {
-		return nil, fmt.Errorf("parse parent snapshot id: %w", parentIdErr)
+	snapshotId, parseErr := uuid.Parse(parent.SnapshotID)
+	if parseErr != nil {
+		return nil, fmt.Errorf("invalid parent snapshot id: %w", parseErr)
 	}
-
 	invokeOpts := []aix.InvocationOption[S]{
-		aix.WithSessionID[S](run.ID.String()),
-		aix.WithSnapshotID[S](parentId.String()),
+		aix.WithSessionID[S](runId.String()),
+		aix.WithSnapshotID[S](snapshotId.String()),
 	}
 	return invokeOpts, nil
 }
 
-func (w *wrappedAgent[S]) Invoke(ctx context.Context, run *ent.AgentRun, msg *ai.Message) (uuid.UUID, error) {
-	invokeOpts, invokeOptsErr := w.getInvokeOpts(ctx, run)
-	if invokeOptsErr != nil {
-		return uuid.Nil, fmt.Errorf("invoke opts: %w", invokeOptsErr)
+func (w *wrappedAgent[S]) Start(ctx context.Context, run *ent.AgentRun, msg *ai.Message) (uuid.UUID, error) {
+	if run == nil {
+		return uuid.Nil, fmt.Errorf("invalid run")
+	}
+	parentId, parentErr := w.createInitialSnapshot(ctx, run)
+	if parentErr != nil {
+		return uuid.Nil, fmt.Errorf("make initial state: %w", parentErr)
+	}
+	invokeOpts := []aix.InvocationOption[S]{
+		aix.WithSessionID[S](run.ID.String()),
+		aix.WithSnapshotID[S](parentId.String()),
 	}
 	input := &aix.AgentInput{Message: msg}
 	out, outErr := w.agent.Run(ctx, input, invokeOpts...)
-	/*
-		conn, connErr := w.agent.Connect(ctx, invokeOpts...)
-		if connErr != nil {
-			return nil, fmt.Errorf("connect: %w", connErr)
-		}
-		if invokeErr := conn.Send(input); invokeErr != nil && !errors.Is(invokeErr, core.ErrActionCompleted) {
-			return nil, fmt.Errorf("invoke: %w", invokeErr)
-		}
-		out, outErr := conn.Output()
-	*/
 	if outErr != nil {
 		return uuid.Nil, fmt.Errorf("output: %w", outErr)
 	}
 	return uuid.Parse(out.SnapshotID)
 }
 
-func (w *wrappedAgent[S]) GetStatus(ctx context.Context, taskId uuid.UUID) error {
-	snapshot, snapshotErr := w.agent.GetLatestSnapshot(ctx, taskId.String())
-	if snapshotErr != nil {
-		return snapshotErr
+func (w *wrappedAgent[S]) SendMessage(ctx context.Context, run *ent.AgentRun, params rez.SendAgentRunMessageParams) (uuid.UUID, error) {
+	if run == nil {
+		return uuid.Nil, fmt.Errorf("invalid run")
+	} else if params.Message == nil {
+		return uuid.Nil, fmt.Errorf("invalid message")
 	}
-	status := string(snapshot.Status)
-	fmt.Printf("get latest snapshot status: %s\n", status)
-	return nil
+	invokeOpts, invokeOptsErr := w.getInvokeOpts(ctx, run.ID, params.ParentSnapshotID)
+	if invokeOptsErr != nil {
+		return uuid.Nil, fmt.Errorf("invoke opts: %w", invokeOptsErr)
+	}
+	out, outErr := w.agent.Run(ctx, &aix.AgentInput{Message: params.Message}, invokeOpts...)
+	if outErr != nil {
+		return uuid.Nil, fmt.Errorf("output: %w", outErr)
+	}
+	return uuid.Parse(out.SnapshotID)
+}
+
+func (w *wrappedAgent[S]) Resume(ctx context.Context, run *ent.AgentRun, params rez.ResumeAgentRunParams) (uuid.UUID, error) {
+	if run == nil {
+		return uuid.Nil, fmt.Errorf("invalid run")
+	} else if (len(params.Respond) + len(params.Restart)) == 0 {
+		return uuid.Nil, fmt.Errorf("invalid resume params")
+	}
+	invokeOpts, invokeOptsErr := w.getInvokeOpts(ctx, run.ID, params.ParentSnapshotID)
+	if invokeOptsErr != nil {
+		return uuid.Nil, fmt.Errorf("invoke opts: %w", invokeOptsErr)
+	}
+	conn, connErr := w.agent.Connect(ctx, invokeOpts...)
+	if connErr != nil {
+		return uuid.Nil, fmt.Errorf("connect: %w", connErr)
+	}
+	resume := &aix.ToolResume{Respond: params.Respond, Restart: params.Restart}
+	if sendErr := conn.SendResume(resume); sendErr != nil {
+		return uuid.Nil, fmt.Errorf("send resume: %w", sendErr)
+	}
+	out, outErr := conn.Output()
+	if outErr != nil {
+		return uuid.Nil, fmt.Errorf("output: %w", outErr)
+	}
+	return uuid.Parse(out.SnapshotID)
 }

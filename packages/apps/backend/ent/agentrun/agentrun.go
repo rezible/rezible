@@ -26,6 +26,8 @@ const (
 	FieldOwnerUserID = "owner_user_id"
 	// FieldWorkflow holds the string denoting the workflow field in the database.
 	FieldWorkflow = "workflow"
+	// FieldStartedAt holds the string denoting the started_at field in the database.
+	FieldStartedAt = "started_at"
 	// FieldInput holds the string denoting the input field in the database.
 	FieldInput = "input"
 	// FieldMetadata holds the string denoting the metadata field in the database.
@@ -87,6 +89,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldOwnerUserID,
 	FieldWorkflow,
+	FieldStartedAt,
 	FieldInput,
 	FieldMetadata,
 }
@@ -163,6 +166,11 @@ func ByOwnerUserID(opts ...sql.OrderTermOption) OrderOption {
 // ByWorkflow orders the results by the workflow field.
 func ByWorkflow(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWorkflow, opts...).ToFunc()
+}
+
+// ByStartedAt orders the results by the started_at field.
+func ByStartedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStartedAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

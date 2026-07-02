@@ -14,6 +14,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "workflow", Type: field.TypeString},
+		{Name: "started_at", Type: field.TypeTime, Nullable: true},
 		{Name: "input", Type: field.TypeBytes},
 		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -28,19 +29,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "agent_runs_tenants_tenant",
-				Columns:    []*schema.Column{AgentRunsColumns[6]},
+				Columns:    []*schema.Column{AgentRunsColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "agent_runs_users_owner_user",
-				Columns:    []*schema.Column{AgentRunsColumns[7]},
+				Columns:    []*schema.Column{AgentRunsColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "agent_runs_agent_run_results_result",
-				Columns:    []*schema.Column{AgentRunsColumns[8]},
+				Columns:    []*schema.Column{AgentRunsColumns[9]},
 				RefColumns: []*schema.Column{AgentRunResultsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -49,17 +50,17 @@ var (
 			{
 				Name:    "agentrun_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunsColumns[6]},
+				Columns: []*schema.Column{AgentRunsColumns[7]},
 			},
 			{
 				Name:    "agentrun_tenant_id_owner_user_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunsColumns[6], AgentRunsColumns[7], AgentRunsColumns[1]},
+				Columns: []*schema.Column{AgentRunsColumns[7], AgentRunsColumns[8], AgentRunsColumns[1]},
 			},
 			{
 				Name:    "agentrun_tenant_id_workflow_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunsColumns[6], AgentRunsColumns[3], AgentRunsColumns[1]},
+				Columns: []*schema.Column{AgentRunsColumns[7], AgentRunsColumns[3], AgentRunsColumns[1]},
 			},
 		},
 	}
