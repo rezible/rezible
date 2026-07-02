@@ -312,34 +312,14 @@ func InputLTE(v []byte) predicate.AgentRun {
 	return predicate.AgentRun(sql.FieldLTE(FieldInput, v))
 }
 
-// TriggerKindEQ applies the EQ predicate on the "trigger_kind" field.
-func TriggerKindEQ(v TriggerKind) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldEQ(FieldTriggerKind, v))
+// MetadataIsNil applies the IsNil predicate on the "metadata" field.
+func MetadataIsNil() predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldIsNull(FieldMetadata))
 }
 
-// TriggerKindNEQ applies the NEQ predicate on the "trigger_kind" field.
-func TriggerKindNEQ(v TriggerKind) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldNEQ(FieldTriggerKind, v))
-}
-
-// TriggerKindIn applies the In predicate on the "trigger_kind" field.
-func TriggerKindIn(vs ...TriggerKind) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldIn(FieldTriggerKind, vs...))
-}
-
-// TriggerKindNotIn applies the NotIn predicate on the "trigger_kind" field.
-func TriggerKindNotIn(vs ...TriggerKind) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldNotIn(FieldTriggerKind, vs...))
-}
-
-// TriggerMetadataIsNil applies the IsNil predicate on the "trigger_metadata" field.
-func TriggerMetadataIsNil() predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldIsNull(FieldTriggerMetadata))
-}
-
-// TriggerMetadataNotNil applies the NotNil predicate on the "trigger_metadata" field.
-func TriggerMetadataNotNil() predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldNotNull(FieldTriggerMetadata))
+// MetadataNotNil applies the NotNil predicate on the "metadata" field.
+func MetadataNotNil() predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldNotNull(FieldMetadata))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -405,7 +385,7 @@ func HasSubjects() predicate.AgentRun {
 	return predicate.AgentRun(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, SubjectsTable, SubjectsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, SubjectsTable, SubjectsColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentRunSubject
@@ -421,35 +401,6 @@ func HasSubjectsWith(preds ...predicate.AgentRunSubject) predicate.AgentRun {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentRunSubject
 		step.Edge.Schema = schemaConfig.AgentRunSubject
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasSnapshots applies the HasEdge predicate on the "snapshots" edge.
-func HasSnapshots() predicate.AgentRun {
-	return predicate.AgentRun(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, SnapshotsTable, SnapshotsColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRunSnapshot
-		step.Edge.Schema = schemaConfig.AgentRunSnapshot
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSnapshotsWith applies the HasEdge predicate on the "snapshots" edge with a given conditions (other predicates).
-func HasSnapshotsWith(preds ...predicate.AgentRunSnapshot) predicate.AgentRun {
-	return predicate.AgentRun(func(s *sql.Selector) {
-		step := newSnapshotsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRunSnapshot
-		step.Edge.Schema = schemaConfig.AgentRunSnapshot
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -479,6 +430,35 @@ func HasResultWith(preds ...predicate.AgentRunResult) predicate.AgentRun {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentRunResult
 		step.Edge.Schema = schemaConfig.AgentRun
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSnapshots applies the HasEdge predicate on the "snapshots" edge.
+func HasSnapshots() predicate.AgentRun {
+	return predicate.AgentRun(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, SnapshotsTable, SnapshotsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunSnapshot
+		step.Edge.Schema = schemaConfig.AgentRunSnapshot
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSnapshotsWith applies the HasEdge predicate on the "snapshots" edge with a given conditions (other predicates).
+func HasSnapshotsWith(preds ...predicate.AgentRunSnapshot) predicate.AgentRun {
+	return predicate.AgentRun(func(s *sql.Selector) {
+		step := newSnapshotsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunSnapshot
+		step.Edge.Schema = schemaConfig.AgentRunSnapshot
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentrunsubject"
 	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/predicate"
 	vc "github.com/rezible/rezible/ent/videoconference"
@@ -84,18 +84,15 @@ func (ref KnowledgeEntityAliasRef) SortKey() string {
 	return ref.Provider + "\x1f" + ref.ProviderSubjectRef
 }
 
-func (are AgentRunEdges) GetSubjectEntityId(subjectKind string) (uuid.UUID, error) {
-	subjects, subjectsErr := are.SubjectsOrErr()
-	if subjectsErr != nil {
-		return uuid.Nil, subjectsErr
-	}
-	for _, sub := range subjects {
-		if sub.SubjectKind == subjectKind {
+func (ars AgentRunSubjects) GetEntitySubjects(sk agentrunsubject.SubjectKind, ek string) ([]*AgentRunSubject, error) {
+	subs := make([]*AgentRunSubject, 0, len(ars))
+	for _, sub := range ars {
+		if sub.SubjectKind == sk && sub.EntityKind == ek {
 			if sub.DomainEntityID == nil {
-				return uuid.Nil, fmt.Errorf("subject kind with nil domain entity id")
+				return nil, fmt.Errorf("subject kind with nil domain entity id")
 			}
-			return *sub.DomainEntityID, nil
+			subs = append(subs, sub)
 		}
 	}
-	return uuid.Nil, fmt.Errorf("subject kind %s not found", subjectKind)
+	return subs, nil
 }

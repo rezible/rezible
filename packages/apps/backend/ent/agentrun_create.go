@@ -81,15 +81,9 @@ func (_c *AgentRunCreate) SetInput(v []byte) *AgentRunCreate {
 	return _c
 }
 
-// SetTriggerKind sets the "trigger_kind" field.
-func (_c *AgentRunCreate) SetTriggerKind(v agentrun.TriggerKind) *AgentRunCreate {
-	_c.mutation.SetTriggerKind(v)
-	return _c
-}
-
-// SetTriggerMetadata sets the "trigger_metadata" field.
-func (_c *AgentRunCreate) SetTriggerMetadata(v map[string]interface{}) *AgentRunCreate {
-	_c.mutation.SetTriggerMetadata(v)
+// SetMetadata sets the "metadata" field.
+func (_c *AgentRunCreate) SetMetadata(v map[string]interface{}) *AgentRunCreate {
+	_c.mutation.SetMetadata(v)
 	return _c
 }
 
@@ -132,21 +126,6 @@ func (_c *AgentRunCreate) AddSubjects(v ...*AgentRunSubject) *AgentRunCreate {
 	return _c.AddSubjectIDs(ids...)
 }
 
-// AddSnapshotIDs adds the "snapshots" edge to the AgentRunSnapshot entity by IDs.
-func (_c *AgentRunCreate) AddSnapshotIDs(ids ...uuid.UUID) *AgentRunCreate {
-	_c.mutation.AddSnapshotIDs(ids...)
-	return _c
-}
-
-// AddSnapshots adds the "snapshots" edges to the AgentRunSnapshot entity.
-func (_c *AgentRunCreate) AddSnapshots(v ...*AgentRunSnapshot) *AgentRunCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddSnapshotIDs(ids...)
-}
-
 // SetResultID sets the "result" edge to the AgentRunResult entity by ID.
 func (_c *AgentRunCreate) SetResultID(id uuid.UUID) *AgentRunCreate {
 	_c.mutation.SetResultID(id)
@@ -164,6 +143,21 @@ func (_c *AgentRunCreate) SetNillableResultID(id *uuid.UUID) *AgentRunCreate {
 // SetResult sets the "result" edge to the AgentRunResult entity.
 func (_c *AgentRunCreate) SetResult(v *AgentRunResult) *AgentRunCreate {
 	return _c.SetResultID(v.ID)
+}
+
+// AddSnapshotIDs adds the "snapshots" edge to the AgentRunSnapshot entity by IDs.
+func (_c *AgentRunCreate) AddSnapshotIDs(ids ...uuid.UUID) *AgentRunCreate {
+	_c.mutation.AddSnapshotIDs(ids...)
+	return _c
+}
+
+// AddSnapshots adds the "snapshots" edges to the AgentRunSnapshot entity.
+func (_c *AgentRunCreate) AddSnapshots(v ...*AgentRunSnapshot) *AgentRunCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSnapshotIDs(ids...)
 }
 
 // Mutation returns the AgentRunMutation object of the builder.
@@ -252,19 +246,6 @@ func (_c *AgentRunCreate) check() error {
 	if _, ok := _c.mutation.Input(); !ok {
 		return &ValidationError{Name: "input", err: errors.New(`ent: missing required field "AgentRun.input"`)}
 	}
-	if v, ok := _c.mutation.Input(); ok {
-		if err := agentrun.InputValidator(v); err != nil {
-			return &ValidationError{Name: "input", err: fmt.Errorf(`ent: validator failed for field "AgentRun.input": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.TriggerKind(); !ok {
-		return &ValidationError{Name: "trigger_kind", err: errors.New(`ent: missing required field "AgentRun.trigger_kind"`)}
-	}
-	if v, ok := _c.mutation.TriggerKind(); ok {
-		if err := agentrun.TriggerKindValidator(v); err != nil {
-			return &ValidationError{Name: "trigger_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRun.trigger_kind": %w`, err)}
-		}
-	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentRun.tenant"`)}
 	}
@@ -324,13 +305,9 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 		_spec.SetField(agentrun.FieldInput, field.TypeBytes, value)
 		_node.Input = value
 	}
-	if value, ok := _c.mutation.TriggerKind(); ok {
-		_spec.SetField(agentrun.FieldTriggerKind, field.TypeEnum, value)
-		_node.TriggerKind = value
-	}
-	if value, ok := _c.mutation.TriggerMetadata(); ok {
-		_spec.SetField(agentrun.FieldTriggerMetadata, field.TypeJSON, value)
-		_node.TriggerMetadata = value
+	if value, ok := _c.mutation.Metadata(); ok {
+		_spec.SetField(agentrun.FieldMetadata, field.TypeJSON, value)
+		_node.Metadata = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -371,7 +348,7 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 	if nodes := _c.mutation.SubjectsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   agentrun.SubjectsTable,
 			Columns: []string{agentrun.SubjectsColumn},
 			Bidi:    false,
@@ -380,23 +357,6 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentRunSubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.SnapshotsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.SnapshotsTable,
-			Columns: []string{agentrun.SnapshotsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AgentRunSnapshot
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -418,6 +378,23 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.agent_run_result = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SnapshotsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SnapshotsTable,
+			Columns: []string{agentrun.SnapshotsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -532,33 +509,21 @@ func (u *AgentRunUpsert) UpdateInput() *AgentRunUpsert {
 	return u
 }
 
-// SetTriggerKind sets the "trigger_kind" field.
-func (u *AgentRunUpsert) SetTriggerKind(v agentrun.TriggerKind) *AgentRunUpsert {
-	u.Set(agentrun.FieldTriggerKind, v)
+// SetMetadata sets the "metadata" field.
+func (u *AgentRunUpsert) SetMetadata(v map[string]interface{}) *AgentRunUpsert {
+	u.Set(agentrun.FieldMetadata, v)
 	return u
 }
 
-// UpdateTriggerKind sets the "trigger_kind" field to the value that was provided on create.
-func (u *AgentRunUpsert) UpdateTriggerKind() *AgentRunUpsert {
-	u.SetExcluded(agentrun.FieldTriggerKind)
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AgentRunUpsert) UpdateMetadata() *AgentRunUpsert {
+	u.SetExcluded(agentrun.FieldMetadata)
 	return u
 }
 
-// SetTriggerMetadata sets the "trigger_metadata" field.
-func (u *AgentRunUpsert) SetTriggerMetadata(v map[string]interface{}) *AgentRunUpsert {
-	u.Set(agentrun.FieldTriggerMetadata, v)
-	return u
-}
-
-// UpdateTriggerMetadata sets the "trigger_metadata" field to the value that was provided on create.
-func (u *AgentRunUpsert) UpdateTriggerMetadata() *AgentRunUpsert {
-	u.SetExcluded(agentrun.FieldTriggerMetadata)
-	return u
-}
-
-// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
-func (u *AgentRunUpsert) ClearTriggerMetadata() *AgentRunUpsert {
-	u.SetNull(agentrun.FieldTriggerMetadata)
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AgentRunUpsert) ClearMetadata() *AgentRunUpsert {
+	u.SetNull(agentrun.FieldMetadata)
 	return u
 }
 
@@ -683,38 +648,24 @@ func (u *AgentRunUpsertOne) UpdateInput() *AgentRunUpsertOne {
 	})
 }
 
-// SetTriggerKind sets the "trigger_kind" field.
-func (u *AgentRunUpsertOne) SetTriggerKind(v agentrun.TriggerKind) *AgentRunUpsertOne {
+// SetMetadata sets the "metadata" field.
+func (u *AgentRunUpsertOne) SetMetadata(v map[string]interface{}) *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetTriggerKind(v)
+		s.SetMetadata(v)
 	})
 }
 
-// UpdateTriggerKind sets the "trigger_kind" field to the value that was provided on create.
-func (u *AgentRunUpsertOne) UpdateTriggerKind() *AgentRunUpsertOne {
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AgentRunUpsertOne) UpdateMetadata() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateTriggerKind()
+		s.UpdateMetadata()
 	})
 }
 
-// SetTriggerMetadata sets the "trigger_metadata" field.
-func (u *AgentRunUpsertOne) SetTriggerMetadata(v map[string]interface{}) *AgentRunUpsertOne {
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AgentRunUpsertOne) ClearMetadata() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetTriggerMetadata(v)
-	})
-}
-
-// UpdateTriggerMetadata sets the "trigger_metadata" field to the value that was provided on create.
-func (u *AgentRunUpsertOne) UpdateTriggerMetadata() *AgentRunUpsertOne {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateTriggerMetadata()
-	})
-}
-
-// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
-func (u *AgentRunUpsertOne) ClearTriggerMetadata() *AgentRunUpsertOne {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.ClearTriggerMetadata()
+		s.ClearMetadata()
 	})
 }
 
@@ -1006,38 +957,24 @@ func (u *AgentRunUpsertBulk) UpdateInput() *AgentRunUpsertBulk {
 	})
 }
 
-// SetTriggerKind sets the "trigger_kind" field.
-func (u *AgentRunUpsertBulk) SetTriggerKind(v agentrun.TriggerKind) *AgentRunUpsertBulk {
+// SetMetadata sets the "metadata" field.
+func (u *AgentRunUpsertBulk) SetMetadata(v map[string]interface{}) *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetTriggerKind(v)
+		s.SetMetadata(v)
 	})
 }
 
-// UpdateTriggerKind sets the "trigger_kind" field to the value that was provided on create.
-func (u *AgentRunUpsertBulk) UpdateTriggerKind() *AgentRunUpsertBulk {
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AgentRunUpsertBulk) UpdateMetadata() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateTriggerKind()
+		s.UpdateMetadata()
 	})
 }
 
-// SetTriggerMetadata sets the "trigger_metadata" field.
-func (u *AgentRunUpsertBulk) SetTriggerMetadata(v map[string]interface{}) *AgentRunUpsertBulk {
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AgentRunUpsertBulk) ClearMetadata() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetTriggerMetadata(v)
-	})
-}
-
-// UpdateTriggerMetadata sets the "trigger_metadata" field to the value that was provided on create.
-func (u *AgentRunUpsertBulk) UpdateTriggerMetadata() *AgentRunUpsertBulk {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateTriggerMetadata()
-	})
-}
-
-// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
-func (u *AgentRunUpsertBulk) ClearTriggerMetadata() *AgentRunUpsertBulk {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.ClearTriggerMetadata()
+		s.ClearMetadata()
 	})
 }
 

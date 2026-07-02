@@ -15,8 +15,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "workflow", Type: field.TypeString},
 		{Name: "input", Type: field.TypeBytes},
-		{Name: "trigger_kind", Type: field.TypeEnum, Enums: []string{"manual", "system"}},
-		{Name: "trigger_metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "owner_user_id", Type: field.TypeUUID},
 		{Name: "agent_run_result", Type: field.TypeUUID, Nullable: true},
@@ -29,19 +28,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "agent_runs_tenants_tenant",
-				Columns:    []*schema.Column{AgentRunsColumns[7]},
+				Columns:    []*schema.Column{AgentRunsColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "agent_runs_users_owner_user",
-				Columns:    []*schema.Column{AgentRunsColumns[8]},
+				Columns:    []*schema.Column{AgentRunsColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "agent_runs_agent_run_results_result",
-				Columns:    []*schema.Column{AgentRunsColumns[9]},
+				Columns:    []*schema.Column{AgentRunsColumns[8]},
 				RefColumns: []*schema.Column{AgentRunResultsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -50,17 +49,17 @@ var (
 			{
 				Name:    "agentrun_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunsColumns[7]},
+				Columns: []*schema.Column{AgentRunsColumns[6]},
 			},
 			{
 				Name:    "agentrun_tenant_id_owner_user_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunsColumns[7], AgentRunsColumns[8], AgentRunsColumns[1]},
+				Columns: []*schema.Column{AgentRunsColumns[6], AgentRunsColumns[7], AgentRunsColumns[1]},
 			},
 			{
 				Name:    "agentrun_tenant_id_workflow_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunsColumns[7], AgentRunsColumns[3], AgentRunsColumns[1]},
+				Columns: []*schema.Column{AgentRunsColumns[6], AgentRunsColumns[3], AgentRunsColumns[1]},
 			},
 		},
 	}
@@ -344,11 +343,13 @@ var (
 	// AgentRunSubjectsColumns holds the columns for the "agent_run_subjects" table.
 	AgentRunSubjectsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "subject_kind", Type: field.TypeString},
+		{Name: "subject_kind", Type: field.TypeEnum, Enums: []string{"domain", "external"}},
+		{Name: "entity_kind", Type: field.TypeString},
 		{Name: "domain_entity_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "subject_properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "external_entity_id", Type: field.TypeString, Nullable: true},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "agent_run_subjects", Type: field.TypeUUID, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "agent_run_id", Type: field.TypeUUID},
 	}
 	// AgentRunSubjectsTable holds the schema information for the "agent_run_subjects" table.
 	AgentRunSubjectsTable = &schema.Table{
@@ -357,15 +358,15 @@ var (
 		PrimaryKey: []*schema.Column{AgentRunSubjectsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "agent_run_subjects_tenants_tenant",
-				Columns:    []*schema.Column{AgentRunSubjectsColumns[4]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
+				Symbol:     "agent_run_subjects_agent_runs_subjects",
+				Columns:    []*schema.Column{AgentRunSubjectsColumns[6]},
+				RefColumns: []*schema.Column{AgentRunsColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "agent_run_subjects_agent_runs_agent_run",
-				Columns:    []*schema.Column{AgentRunSubjectsColumns[5]},
-				RefColumns: []*schema.Column{AgentRunsColumns[0]},
+				Symbol:     "agent_run_subjects_tenants_tenant",
+				Columns:    []*schema.Column{AgentRunSubjectsColumns[7]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -373,12 +374,22 @@ var (
 			{
 				Name:    "agentrunsubject_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunSubjectsColumns[4]},
+				Columns: []*schema.Column{AgentRunSubjectsColumns[7]},
 			},
 			{
-				Name:    "agentrunsubject_tenant_id_agent_run_id",
+				Name:    "agentrunsubject_tenant_id_subject_kind_entity_kind",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunSubjectsColumns[4], AgentRunSubjectsColumns[5]},
+				Columns: []*schema.Column{AgentRunSubjectsColumns[7], AgentRunSubjectsColumns[1], AgentRunSubjectsColumns[2]},
+			},
+			{
+				Name:    "agentrunsubject_tenant_id_domain_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentRunSubjectsColumns[7], AgentRunSubjectsColumns[3]},
+			},
+			{
+				Name:    "agentrunsubject_tenant_id_external_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentRunSubjectsColumns[7], AgentRunSubjectsColumns[4]},
 			},
 		},
 	}
@@ -3813,8 +3824,8 @@ func init() {
 	AgentRunSnapshotsTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentRunSnapshotsTable.ForeignKeys[1].RefTable = AgentRunsTable
 	AgentRunSnapshotsTable.ForeignKeys[2].RefTable = AgentRunSnapshotsTable
-	AgentRunSubjectsTable.ForeignKeys[0].RefTable = TenantsTable
-	AgentRunSubjectsTable.ForeignKeys[1].RefTable = AgentRunsTable
+	AgentRunSubjectsTable.ForeignKeys[0].RefTable = AgentRunsTable
+	AgentRunSubjectsTable.ForeignKeys[1].RefTable = TenantsTable
 	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable

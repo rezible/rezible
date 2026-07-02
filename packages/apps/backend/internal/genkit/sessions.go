@@ -73,15 +73,10 @@ func (s *agentSessionStore[S]) GetSnapshot(ctx context.Context, snapshotID strin
 	return asSnapshot[S](rs)
 }
 
-func (s *agentSessionStore[S]) SaveSnapshot(ctx context.Context, id string, setFn func(*aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error)) (*aix.SessionSnapshot[S], error) {
-	var snapshotId uuid.UUID
-	if id != "" {
-		var idErr error
-		if snapshotId, idErr = uuid.Parse(id); idErr != nil {
-			return nil, fmt.Errorf("invalid ID: %s", id)
-		}
-	}
-	setSnapshotDataFn := func(rs *ent.AgentRunSnapshot, m *ent.AgentRunSnapshotMutation) error {
+type setSnapshotDataFunc[S any] = func(*aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error)
+
+func (s *agentSessionStore[S]) makeSnapshotDataWriter(setFn setSnapshotDataFunc[S]) func(*ent.AgentRunSnapshot, *ent.AgentRunSnapshotMutation) error {
+	return func(rs *ent.AgentRunSnapshot, m *ent.AgentRunSnapshotMutation) error {
 		existing, convErr := asSnapshot[S](rs)
 		if convErr != nil {
 			return fmt.Errorf("convert existing snapshot: %w", convErr)
@@ -94,16 +89,16 @@ func (s *agentSessionStore[S]) SaveSnapshot(ctx context.Context, id string, setF
 			return nil
 		}
 
-		m.SetStatus(ars.Status(snapshot.Status))
-		m.SetFinishReason(string(snapshot.FinishReason))
-		m.SetCreatedAt(snapshot.CreatedAt)
-		m.SetUpdatedAt(snapshot.UpdatedAt)
-
 		runId, runIdErr := uuid.Parse(snapshot.SessionID)
 		if runIdErr != nil {
 			return fmt.Errorf("invalid session ID: %s", snapshot.SessionID)
 		}
 		m.SetAgentRunID(runId)
+
+		m.SetStatus(ars.Status(snapshot.Status))
+		m.SetFinishReason(string(snapshot.FinishReason))
+		m.SetCreatedAt(snapshot.CreatedAt)
+		m.SetUpdatedAt(snapshot.UpdatedAt)
 
 		if len(snapshot.ParentID) > 0 {
 			parentId, parentIdErr := uuid.Parse(snapshot.ParentID)
@@ -124,6 +119,7 @@ func (s *agentSessionStore[S]) SaveSnapshot(ctx context.Context, id string, setF
 			}
 			m.SetState(state)
 		}
+
 		if snapshot.Error != nil {
 			sessErr, jsonErr := json.Marshal(snapshot.State)
 			if jsonErr != nil {
@@ -133,7 +129,17 @@ func (s *agentSessionStore[S]) SaveSnapshot(ctx context.Context, id string, setF
 		}
 		return nil
 	}
-	updated, updateErr := s.snapshots.UpdateSnapshot(ctx, snapshotId, setSnapshotDataFn)
+}
+
+func (s *agentSessionStore[S]) SaveSnapshot(ctx context.Context, id string, setFn setSnapshotDataFunc[S]) (*aix.SessionSnapshot[S], error) {
+	var snapshotId uuid.UUID
+	if id != "" {
+		var idErr error
+		if snapshotId, idErr = uuid.Parse(id); idErr != nil {
+			return nil, fmt.Errorf("invalid ID: %s", id)
+		}
+	}
+	updated, updateErr := s.snapshots.UpdateSnapshot(ctx, snapshotId, s.makeSnapshotDataWriter(setFn))
 	if updateErr != nil {
 		return nil, fmt.Errorf("save snapshot: %w", updateErr)
 	}

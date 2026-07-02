@@ -1006,30 +1006,11 @@ func (c *AgentRunClient) QuerySubjects(_m *AgentRun) *AgentRunSubjectQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentrun.Table, agentrun.FieldID, id),
 			sqlgraph.To(agentrunsubject.Table, agentrunsubject.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, agentrun.SubjectsTable, agentrun.SubjectsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, agentrun.SubjectsTable, agentrun.SubjectsColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AgentRunSubject
 		step.Edge.Schema = schemaConfig.AgentRunSubject
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySnapshots queries the snapshots edge of a AgentRun.
-func (c *AgentRunClient) QuerySnapshots(_m *AgentRun) *AgentRunSnapshotQuery {
-	query := (&AgentRunSnapshotClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentrun.Table, agentrun.FieldID, id),
-			sqlgraph.To(agentrunsnapshot.Table, agentrunsnapshot.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, agentrun.SnapshotsTable, agentrun.SnapshotsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AgentRunSnapshot
-		step.Edge.Schema = schemaConfig.AgentRunSnapshot
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -1049,6 +1030,25 @@ func (c *AgentRunClient) QueryResult(_m *AgentRun) *AgentRunResultQuery {
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AgentRunResult
 		step.Edge.Schema = schemaConfig.AgentRun
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySnapshots queries the snapshots edge of a AgentRun.
+func (c *AgentRunClient) QuerySnapshots(_m *AgentRun) *AgentRunSnapshotQuery {
+	query := (&AgentRunSnapshotClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrun.Table, agentrun.FieldID, id),
+			sqlgraph.To(agentrunsnapshot.Table, agentrunsnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, agentrun.SnapshotsTable, agentrun.SnapshotsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentRunSnapshot
+		step.Edge.Schema = schemaConfig.AgentRunSnapshot
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -2232,25 +2232,6 @@ func (c *AgentRunSubjectClient) QueryTenant(_m *AgentRunSubject) *TenantQuery {
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AgentRunSubject
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAgentRun queries the agent_run edge of a AgentRunSubject.
-func (c *AgentRunSubjectClient) QueryAgentRun(_m *AgentRunSubject) *AgentRunQuery {
-	query := (&AgentRunClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentrunsubject.Table, agentrunsubject.FieldID, id),
-			sqlgraph.To(agentrun.Table, agentrun.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentrunsubject.AgentRunTable, agentrunsubject.AgentRunColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AgentRun
 		step.Edge.Schema = schemaConfig.AgentRunSubject
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

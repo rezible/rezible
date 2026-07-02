@@ -2,12 +2,15 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/pkg/agents"
+	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
@@ -67,9 +70,11 @@ var runAgentWorkflowJobOpts = &river.InsertOpts{
 }
 
 func (s *AgentService) CreateRun(ctx context.Context, params rez.CreateAgentRunParams) (*ent.AgentRun, error) {
-	if agent, agentOk := s.agents.Get(params.Workflow); !agentOk {
-		return nil, fmt.Errorf("agent not found for workflow %q", params.Workflow)
-	} else if validationErr := agent.ValidateInput(params.Input); validationErr != nil {
+	input, inputErr := json.Marshal(params.Input)
+	if inputErr != nil {
+		return nil, oapi.Error(ctx, "invalid input", inputErr)
+	}
+	if validationErr := agents.ValidateInput(params.Workflow, input); validationErr != nil {
 		return nil, fmt.Errorf("input validation: %w", validationErr)
 	}
 
@@ -82,19 +87,13 @@ func (s *AgentService) CreateRun(ctx context.Context, params rez.CreateAgentRunP
 		ownerID = userID
 	}
 
-	triggerKind := agentrun.TriggerKindManual
-	if tk := agentrun.TriggerKind(params.TriggerKind); agentrun.TriggerKindValidator(tk) == nil {
-		triggerKind = tk
-	}
-
 	var run *ent.AgentRun
 	return run, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		create := tx.AgentRun.Create().
 			SetOwnerUserID(ownerID).
 			SetWorkflow(params.Workflow).
-			SetInput(params.Input).
-			SetTriggerKind(triggerKind).
-			SetTriggerMetadata(params.TriggerPayload)
+			SetInput(input).
+			SetMetadata(params.Metadata)
 		created, createErr := create.Save(ctx)
 		if createErr != nil {
 			return fmt.Errorf("create agent task: %w", createErr)

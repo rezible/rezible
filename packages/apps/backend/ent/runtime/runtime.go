@@ -121,10 +121,6 @@ func init() {
 	agentrunDescWorkflow := agentrunFields[2].Descriptor()
 	// agentrun.WorkflowValidator is a validator for the "workflow" field. It is called by the builders before save.
 	agentrun.WorkflowValidator = agentrunDescWorkflow.Validators[0].(func(string) error)
-	// agentrunDescInput is the schema descriptor for input field.
-	agentrunDescInput := agentrunFields[3].Descriptor()
-	// agentrun.InputValidator is a validator for the "input" field. It is called by the builders before save.
-	agentrun.InputValidator = agentrunDescInput.Validators[0].(func([]byte) error)
 	// agentrunDescID is the schema descriptor for id field.
 	agentrunDescID := agentrunFields[0].Descriptor()
 	// agentrun.DefaultID holds the default value on creation for the id field.
@@ -301,10 +297,6 @@ func init() {
 	}
 	agentrunsubjectFields := schema.AgentRunSubject{}.Fields()
 	_ = agentrunsubjectFields
-	// agentrunsubjectDescSubjectKind is the schema descriptor for subject_kind field.
-	agentrunsubjectDescSubjectKind := agentrunsubjectFields[2].Descriptor()
-	// agentrunsubject.SubjectKindValidator is a validator for the "subject_kind" field. It is called by the builders before save.
-	agentrunsubject.SubjectKindValidator = agentrunsubjectDescSubjectKind.Validators[0].(func(string) error)
 	// agentrunsubjectDescID is the schema descriptor for id field.
 	agentrunsubjectDescID := agentrunsubjectFields[0].Descriptor()
 	// agentrunsubject.DefaultID holds the default value on creation for the id field.

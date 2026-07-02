@@ -3,7 +3,6 @@
 package agentrun
 
 import (
-	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -29,20 +28,18 @@ const (
 	FieldWorkflow = "workflow"
 	// FieldInput holds the string denoting the input field in the database.
 	FieldInput = "input"
-	// FieldTriggerKind holds the string denoting the trigger_kind field in the database.
-	FieldTriggerKind = "trigger_kind"
-	// FieldTriggerMetadata holds the string denoting the trigger_metadata field in the database.
-	FieldTriggerMetadata = "trigger_metadata"
+	// FieldMetadata holds the string denoting the metadata field in the database.
+	FieldMetadata = "metadata"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeOwnerUser holds the string denoting the owner_user edge name in mutations.
 	EdgeOwnerUser = "owner_user"
 	// EdgeSubjects holds the string denoting the subjects edge name in mutations.
 	EdgeSubjects = "subjects"
-	// EdgeSnapshots holds the string denoting the snapshots edge name in mutations.
-	EdgeSnapshots = "snapshots"
 	// EdgeResult holds the string denoting the result edge name in mutations.
 	EdgeResult = "result"
+	// EdgeSnapshots holds the string denoting the snapshots edge name in mutations.
+	EdgeSnapshots = "snapshots"
 	// Table holds the table name of the agentrun in the database.
 	Table = "agent_runs"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -65,14 +62,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "agentrunsubject" package.
 	SubjectsInverseTable = "agent_run_subjects"
 	// SubjectsColumn is the table column denoting the subjects relation/edge.
-	SubjectsColumn = "agent_run_id"
-	// SnapshotsTable is the table that holds the snapshots relation/edge.
-	SnapshotsTable = "agent_run_snapshots"
-	// SnapshotsInverseTable is the table name for the AgentRunSnapshot entity.
-	// It exists in this package in order to avoid circular dependency with the "agentrunsnapshot" package.
-	SnapshotsInverseTable = "agent_run_snapshots"
-	// SnapshotsColumn is the table column denoting the snapshots relation/edge.
-	SnapshotsColumn = "agent_run_id"
+	SubjectsColumn = "agent_run_subjects"
 	// ResultTable is the table that holds the result relation/edge.
 	ResultTable = "agent_runs"
 	// ResultInverseTable is the table name for the AgentRunResult entity.
@@ -80,6 +70,13 @@ const (
 	ResultInverseTable = "agent_run_results"
 	// ResultColumn is the table column denoting the result relation/edge.
 	ResultColumn = "agent_run_result"
+	// SnapshotsTable is the table that holds the snapshots relation/edge.
+	SnapshotsTable = "agent_run_snapshots"
+	// SnapshotsInverseTable is the table name for the AgentRunSnapshot entity.
+	// It exists in this package in order to avoid circular dependency with the "agentrunsnapshot" package.
+	SnapshotsInverseTable = "agent_run_snapshots"
+	// SnapshotsColumn is the table column denoting the snapshots relation/edge.
+	SnapshotsColumn = "agent_run_id"
 )
 
 // Columns holds all SQL columns for agentrun fields.
@@ -91,8 +88,7 @@ var Columns = []string{
 	FieldOwnerUserID,
 	FieldWorkflow,
 	FieldInput,
-	FieldTriggerKind,
-	FieldTriggerMetadata,
+	FieldMetadata,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "agent_runs"
@@ -132,34 +128,9 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// WorkflowValidator is a validator for the "workflow" field. It is called by the builders before save.
 	WorkflowValidator func(string) error
-	// InputValidator is a validator for the "input" field. It is called by the builders before save.
-	InputValidator func([]byte) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// TriggerKind defines the type for the "trigger_kind" enum field.
-type TriggerKind string
-
-// TriggerKind values.
-const (
-	TriggerKindManual TriggerKind = "manual"
-	TriggerKindSystem TriggerKind = "system"
-)
-
-func (tk TriggerKind) String() string {
-	return string(tk)
-}
-
-// TriggerKindValidator is a validator for the "trigger_kind" field enum values. It is called by the builders before save.
-func TriggerKindValidator(tk TriggerKind) error {
-	switch tk {
-	case TriggerKindManual, TriggerKindSystem:
-		return nil
-	default:
-		return fmt.Errorf("agentrun: invalid enum value for trigger_kind field: %q", tk)
-	}
-}
 
 // OrderOption defines the ordering options for the AgentRun queries.
 type OrderOption func(*sql.Selector)
@@ -194,11 +165,6 @@ func ByWorkflow(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWorkflow, opts...).ToFunc()
 }
 
-// ByTriggerKind orders the results by the trigger_kind field.
-func ByTriggerKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTriggerKind, opts...).ToFunc()
-}
-
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -227,6 +193,13 @@ func BySubjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByResultField orders the results by result field.
+func ByResultField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newResultStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // BySnapshotsCount orders the results by snapshots count.
 func BySnapshotsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -238,13 +211,6 @@ func BySnapshotsCount(opts ...sql.OrderTermOption) OrderOption {
 func BySnapshots(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newSnapshotsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByResultField orders the results by result field.
-func ByResultField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newResultStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -265,14 +231,7 @@ func newSubjectsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SubjectsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SubjectsTable, SubjectsColumn),
-	)
-}
-func newSnapshotsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SnapshotsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SnapshotsTable, SnapshotsColumn),
+		sqlgraph.Edge(sqlgraph.O2M, false, SubjectsTable, SubjectsColumn),
 	)
 }
 func newResultStep() *sqlgraph.Step {
@@ -280,5 +239,12 @@ func newResultStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ResultInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, ResultTable, ResultColumn),
+	)
+}
+func newSnapshotsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SnapshotsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SnapshotsTable, SnapshotsColumn),
 	)
 }

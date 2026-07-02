@@ -124,7 +124,6 @@ func AgentRunFromEnt(run *ent.AgentRun) AgentRun {
 	attrs := AgentRunAttributes{
 		OwnerUserId: run.OwnerUserID,
 		Workflow:    run.Workflow,
-		TriggerKind: run.TriggerKind.String(),
 		CreatedAt:   run.CreatedAt,
 		UpdatedAt:   run.UpdatedAt,
 	}
@@ -231,8 +230,8 @@ var RequestAgentRun = openapi.Operation{
 }
 
 type RequestAgentRunRequestAttributes struct {
-	Workflow string `json:"workflow"`
-	Input    []byte `json:"input"`
+	Workflow string         `json:"workflow"`
+	Input    map[string]any `json:"input"`
 }
 
 type RequestAgentRunRequest RequestWithBodyAttributes[RequestAgentRunRequestAttributes]

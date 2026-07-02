@@ -1,29 +1,70 @@
 package agents
 
-import "github.com/google/uuid"
+import (
+	"encoding/json"
+	"fmt"
 
-type Workflow[State any, Output any] struct {
-	name        string
-	description string
-}
+	"github.com/google/uuid"
+)
 
-func (w Workflow[S, O]) Name() string {
+type (
+	WorkflowState interface {
+		Validate() error
+	}
+
+	WorkflowOutput interface {
+		Encode() ([]byte, error)
+	}
+
+	WorkflowDefinition[State WorkflowState, Output WorkflowOutput] struct {
+		name string
+	}
+
+	AnyWorkflow = WorkflowDefinition[WorkflowState, WorkflowOutput]
+)
+
+func (w WorkflowDefinition[S, O]) Name() string {
 	return w.name
 }
 
-func (w Workflow[S, O]) Description() string {
-	return w.description
+func (w WorkflowDefinition[S, O]) ValidateInput(input []byte) (*S, error) {
+	var s S
+	if jsonErr := json.Unmarshal(input, &s); jsonErr != nil {
+		return nil, jsonErr
+	}
+	return &s, s.Validate()
 }
 
-func NewWorkflow[S any, O any](name string, description string) Workflow[S, O] {
-	return Workflow[S, O]{name: name, description: description}
+type workflowValidator struct {
+	validateInputFn func(input []byte) error
 }
 
-var WorkflowAlertInvestigation = NewWorkflow[AlertInvestigationState, AlertInvestigationOutput]("alert_investigation", "TODO")
+var workflows = map[string]workflowValidator{}
+
+func defineWorkflow[S WorkflowState, O WorkflowOutput](name string) WorkflowDefinition[S, O] {
+	w := WorkflowDefinition[S, O]{name: name}
+	workflows[name] = workflowValidator{
+		validateInputFn: func(input []byte) error {
+			_, err := w.ValidateInput(input)
+			return err
+		},
+	}
+	return w
+}
+
+var WorkflowAlertInvestigation = defineWorkflow[AlertInvestigationState, AlertInvestigationOutput]("alert_investigation")
+
+func ValidateInput(workflowName string, input []byte) error {
+	v, ok := workflows[workflowName]
+	if !ok {
+		return fmt.Errorf("invalid workflow name: %s", workflowName)
+	}
+	return v.validateInputFn(input)
+}
 
 type (
 	AlertInvestigationState struct {
-		AlertID uuid.UUID
+		AlertID uuid.UUID `json:"alert_id"`
 	}
 
 	AlertInvestigationOutput struct {
@@ -39,3 +80,11 @@ type (
 		RecommendedNext string   `json:"recommendedNext"`
 	}
 )
+
+func (i AlertInvestigationState) Validate() error {
+	return nil
+}
+
+func (i AlertInvestigationOutput) Encode() ([]byte, error) {
+	return json.Marshal(i)
+}

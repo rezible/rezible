@@ -101,14 +101,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "AgentRun",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			agentrun.FieldTenantID:        {Type: field.TypeInt, Column: agentrun.FieldTenantID},
-			agentrun.FieldCreatedAt:       {Type: field.TypeTime, Column: agentrun.FieldCreatedAt},
-			agentrun.FieldUpdatedAt:       {Type: field.TypeTime, Column: agentrun.FieldUpdatedAt},
-			agentrun.FieldOwnerUserID:     {Type: field.TypeUUID, Column: agentrun.FieldOwnerUserID},
-			agentrun.FieldWorkflow:        {Type: field.TypeString, Column: agentrun.FieldWorkflow},
-			agentrun.FieldInput:           {Type: field.TypeBytes, Column: agentrun.FieldInput},
-			agentrun.FieldTriggerKind:     {Type: field.TypeEnum, Column: agentrun.FieldTriggerKind},
-			agentrun.FieldTriggerMetadata: {Type: field.TypeJSON, Column: agentrun.FieldTriggerMetadata},
+			agentrun.FieldTenantID:    {Type: field.TypeInt, Column: agentrun.FieldTenantID},
+			agentrun.FieldCreatedAt:   {Type: field.TypeTime, Column: agentrun.FieldCreatedAt},
+			agentrun.FieldUpdatedAt:   {Type: field.TypeTime, Column: agentrun.FieldUpdatedAt},
+			agentrun.FieldOwnerUserID: {Type: field.TypeUUID, Column: agentrun.FieldOwnerUserID},
+			agentrun.FieldWorkflow:    {Type: field.TypeString, Column: agentrun.FieldWorkflow},
+			agentrun.FieldInput:       {Type: field.TypeBytes, Column: agentrun.FieldInput},
+			agentrun.FieldMetadata:    {Type: field.TypeJSON, Column: agentrun.FieldMetadata},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
@@ -225,11 +224,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "AgentRunSubject",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			agentrunsubject.FieldTenantID:          {Type: field.TypeInt, Column: agentrunsubject.FieldTenantID},
-			agentrunsubject.FieldAgentRunID:        {Type: field.TypeUUID, Column: agentrunsubject.FieldAgentRunID},
-			agentrunsubject.FieldSubjectKind:       {Type: field.TypeString, Column: agentrunsubject.FieldSubjectKind},
-			agentrunsubject.FieldDomainEntityID:    {Type: field.TypeUUID, Column: agentrunsubject.FieldDomainEntityID},
-			agentrunsubject.FieldSubjectProperties: {Type: field.TypeJSON, Column: agentrunsubject.FieldSubjectProperties},
+			agentrunsubject.FieldTenantID:         {Type: field.TypeInt, Column: agentrunsubject.FieldTenantID},
+			agentrunsubject.FieldSubjectKind:      {Type: field.TypeEnum, Column: agentrunsubject.FieldSubjectKind},
+			agentrunsubject.FieldEntityKind:       {Type: field.TypeString, Column: agentrunsubject.FieldEntityKind},
+			agentrunsubject.FieldDomainEntityID:   {Type: field.TypeUUID, Column: agentrunsubject.FieldDomainEntityID},
+			agentrunsubject.FieldExternalEntityID: {Type: field.TypeString, Column: agentrunsubject.FieldExternalEntityID},
+			agentrunsubject.FieldMetadata:         {Type: field.TypeJSON, Column: agentrunsubject.FieldMetadata},
 		},
 	}
 	graph.Nodes[7] = &sqlgraph.Node{
@@ -1589,25 +1589,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"subjects",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   agentrun.SubjectsTable,
 			Columns: []string{agentrun.SubjectsColumn},
 			Bidi:    false,
 		},
 		"AgentRun",
 		"AgentRunSubject",
-	)
-	graph.MustAddE(
-		"snapshots",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.SnapshotsTable,
-			Columns: []string{agentrun.SnapshotsColumn},
-			Bidi:    false,
-		},
-		"AgentRun",
-		"AgentRunSnapshot",
 	)
 	graph.MustAddE(
 		"result",
@@ -1620,6 +1608,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"AgentRun",
 		"AgentRunResult",
+	)
+	graph.MustAddE(
+		"snapshots",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.SnapshotsTable,
+			Columns: []string{agentrun.SnapshotsColumn},
+			Bidi:    false,
+		},
+		"AgentRun",
+		"AgentRunSnapshot",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -1860,18 +1860,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"AgentRunSubject",
 		"Tenant",
-	)
-	graph.MustAddE(
-		"agent_run",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentrunsubject.AgentRunTable,
-			Columns: []string{agentrunsubject.AgentRunColumn},
-			Bidi:    false,
-		},
-		"AgentRunSubject",
-		"AgentRun",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -5132,14 +5120,9 @@ func (f *AgentRunFilter) WhereInput(p entql.BytesP) {
 	f.Where(p.Field(agentrun.FieldInput))
 }
 
-// WhereTriggerKind applies the entql string predicate on the trigger_kind field.
-func (f *AgentRunFilter) WhereTriggerKind(p entql.StringP) {
-	f.Where(p.Field(agentrun.FieldTriggerKind))
-}
-
-// WhereTriggerMetadata applies the entql json.RawMessage predicate on the trigger_metadata field.
-func (f *AgentRunFilter) WhereTriggerMetadata(p entql.BytesP) {
-	f.Where(p.Field(agentrun.FieldTriggerMetadata))
+// WhereMetadata applies the entql json.RawMessage predicate on the metadata field.
+func (f *AgentRunFilter) WhereMetadata(p entql.BytesP) {
+	f.Where(p.Field(agentrun.FieldMetadata))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -5184,20 +5167,6 @@ func (f *AgentRunFilter) WhereHasSubjectsWith(preds ...predicate.AgentRunSubject
 	})))
 }
 
-// WhereHasSnapshots applies a predicate to check if query has an edge snapshots.
-func (f *AgentRunFilter) WhereHasSnapshots() {
-	f.Where(entql.HasEdge("snapshots"))
-}
-
-// WhereHasSnapshotsWith applies a predicate to check if query has an edge snapshots with a given conditions (other predicates).
-func (f *AgentRunFilter) WhereHasSnapshotsWith(preds ...predicate.AgentRunSnapshot) {
-	f.Where(entql.HasEdgeWith("snapshots", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // WhereHasResult applies a predicate to check if query has an edge result.
 func (f *AgentRunFilter) WhereHasResult() {
 	f.Where(entql.HasEdge("result"))
@@ -5206,6 +5175,20 @@ func (f *AgentRunFilter) WhereHasResult() {
 // WhereHasResultWith applies a predicate to check if query has an edge result with a given conditions (other predicates).
 func (f *AgentRunFilter) WhereHasResultWith(preds ...predicate.AgentRunResult) {
 	f.Where(entql.HasEdgeWith("result", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSnapshots applies a predicate to check if query has an edge snapshots.
+func (f *AgentRunFilter) WhereHasSnapshots() {
+	f.Where(entql.HasEdge("snapshots"))
+}
+
+// WhereHasSnapshotsWith applies a predicate to check if query has an edge snapshots with a given conditions (other predicates).
+func (f *AgentRunFilter) WhereHasSnapshotsWith(preds ...predicate.AgentRunSnapshot) {
+	f.Where(entql.HasEdgeWith("snapshots", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -5913,14 +5896,14 @@ func (f *AgentRunSubjectFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(agentrunsubject.FieldTenantID))
 }
 
-// WhereAgentRunID applies the entql [16]byte predicate on the agent_run_id field.
-func (f *AgentRunSubjectFilter) WhereAgentRunID(p entql.ValueP) {
-	f.Where(p.Field(agentrunsubject.FieldAgentRunID))
-}
-
 // WhereSubjectKind applies the entql string predicate on the subject_kind field.
 func (f *AgentRunSubjectFilter) WhereSubjectKind(p entql.StringP) {
 	f.Where(p.Field(agentrunsubject.FieldSubjectKind))
+}
+
+// WhereEntityKind applies the entql string predicate on the entity_kind field.
+func (f *AgentRunSubjectFilter) WhereEntityKind(p entql.StringP) {
+	f.Where(p.Field(agentrunsubject.FieldEntityKind))
 }
 
 // WhereDomainEntityID applies the entql [16]byte predicate on the domain_entity_id field.
@@ -5928,9 +5911,14 @@ func (f *AgentRunSubjectFilter) WhereDomainEntityID(p entql.ValueP) {
 	f.Where(p.Field(agentrunsubject.FieldDomainEntityID))
 }
 
-// WhereSubjectProperties applies the entql json.RawMessage predicate on the subject_properties field.
-func (f *AgentRunSubjectFilter) WhereSubjectProperties(p entql.BytesP) {
-	f.Where(p.Field(agentrunsubject.FieldSubjectProperties))
+// WhereExternalEntityID applies the entql string predicate on the external_entity_id field.
+func (f *AgentRunSubjectFilter) WhereExternalEntityID(p entql.StringP) {
+	f.Where(p.Field(agentrunsubject.FieldExternalEntityID))
+}
+
+// WhereMetadata applies the entql json.RawMessage predicate on the metadata field.
+func (f *AgentRunSubjectFilter) WhereMetadata(p entql.BytesP) {
+	f.Where(p.Field(agentrunsubject.FieldMetadata))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -5941,20 +5929,6 @@ func (f *AgentRunSubjectFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *AgentRunSubjectFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasAgentRun applies a predicate to check if query has an edge agent_run.
-func (f *AgentRunSubjectFilter) WhereHasAgentRun() {
-	f.Where(entql.HasEdge("agent_run"))
-}
-
-// WhereHasAgentRunWith applies a predicate to check if query has an edge agent_run with a given conditions (other predicates).
-func (f *AgentRunSubjectFilter) WhereHasAgentRunWith(preds ...predicate.AgentRun) {
-	f.Where(entql.HasEdgeWith("agent_run", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

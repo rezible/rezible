@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
@@ -23,13 +22,13 @@ import (
 // AgentRunSubjectQuery is the builder for querying AgentRunSubject entities.
 type AgentRunSubjectQuery struct {
 	config
-	ctx          *QueryContext
-	order        []agentrunsubject.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.AgentRunSubject
-	withTenant   *TenantQuery
-	withAgentRun *AgentRunQuery
-	modifiers    []func(*sql.Selector)
+	ctx        *QueryContext
+	order      []agentrunsubject.OrderOption
+	inters     []Interceptor
+	predicates []predicate.AgentRunSubject
+	withTenant *TenantQuery
+	withFKs    bool
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -84,31 +83,6 @@ func (_q *AgentRunSubjectQuery) QueryTenant() *TenantQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AgentRunSubject
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryAgentRun chains the current query on the "agent_run" edge.
-func (_q *AgentRunSubjectQuery) QueryAgentRun() *AgentRunQuery {
-	query := (&AgentRunClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentrunsubject.Table, agentrunsubject.FieldID, selector),
-			sqlgraph.To(agentrun.Table, agentrun.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentrunsubject.AgentRunTable, agentrunsubject.AgentRunColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AgentRun
 		step.Edge.Schema = schemaConfig.AgentRunSubject
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -303,13 +277,12 @@ func (_q *AgentRunSubjectQuery) Clone() *AgentRunSubjectQuery {
 		return nil
 	}
 	return &AgentRunSubjectQuery{
-		config:       _q.config,
-		ctx:          _q.ctx.Clone(),
-		order:        append([]agentrunsubject.OrderOption{}, _q.order...),
-		inters:       append([]Interceptor{}, _q.inters...),
-		predicates:   append([]predicate.AgentRunSubject{}, _q.predicates...),
-		withTenant:   _q.withTenant.Clone(),
-		withAgentRun: _q.withAgentRun.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]agentrunsubject.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.AgentRunSubject{}, _q.predicates...),
+		withTenant: _q.withTenant.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -325,17 +298,6 @@ func (_q *AgentRunSubjectQuery) WithTenant(opts ...func(*TenantQuery)) *AgentRun
 		opt(query)
 	}
 	_q.withTenant = query
-	return _q
-}
-
-// WithAgentRun tells the query-builder to eager-load the nodes that are connected to
-// the "agent_run" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentRunSubjectQuery) WithAgentRun(opts ...func(*AgentRunQuery)) *AgentRunSubjectQuery {
-	query := (&AgentRunClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withAgentRun = query
 	return _q
 }
 
@@ -422,12 +384,15 @@ func (_q *AgentRunSubjectQuery) prepareQuery(ctx context.Context) error {
 func (_q *AgentRunSubjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AgentRunSubject, error) {
 	var (
 		nodes       = []*AgentRunSubject{}
+		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [1]bool{
 			_q.withTenant != nil,
-			_q.withAgentRun != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, agentrunsubject.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*AgentRunSubject).scanValues(nil, columns)
 	}
@@ -457,12 +422,6 @@ func (_q *AgentRunSubjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			return nil, err
 		}
 	}
-	if query := _q.withAgentRun; query != nil {
-		if err := _q.loadAgentRun(ctx, query, nodes, nil,
-			func(n *AgentRunSubject, e *AgentRun) { n.Edges.AgentRun = e }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
 }
 
@@ -488,35 +447,6 @@ func (_q *AgentRunSubjectQuery) loadTenant(ctx context.Context, query *TenantQue
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *AgentRunSubjectQuery) loadAgentRun(ctx context.Context, query *AgentRunQuery, nodes []*AgentRunSubject, init func(*AgentRunSubject), assign func(*AgentRunSubject, *AgentRun)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*AgentRunSubject)
-	for i := range nodes {
-		fk := nodes[i].AgentRunID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(agentrun.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "agent_run_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -557,9 +487,6 @@ func (_q *AgentRunSubjectQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(agentrunsubject.FieldTenantID)
-		}
-		if _q.withAgentRun != nil {
-			_spec.Node.AddColumnOnce(agentrunsubject.FieldAgentRunID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

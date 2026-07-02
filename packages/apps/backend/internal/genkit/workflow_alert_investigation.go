@@ -23,26 +23,19 @@ func NewAlertInvestigationAgent(alerts rez.AlertService) *AlertInvestigationAgen
 	return &AlertInvestigationAgent{alerts: alerts}
 }
 
-func (a *AlertInvestigationAgent) workflow() agents.Workflow[agents.AlertInvestigationState, agents.AlertInvestigationOutput] {
-	return agents.WorkflowAlertInvestigation
-}
-
-func (a *AlertInvestigationAgent) validateInput(input []byte) error {
-	return nil
+func (a *AlertInvestigationAgent) workflowName() string {
+	return agents.WorkflowAlertInvestigation.Name()
 }
 
 func (a *AlertInvestigationAgent) makeInitialState(run *ent.AgentRun) (*aix.SessionState[agents.AlertInvestigationState], error) {
-	if validErr := a.validateInput(run.Input); validErr != nil {
+	input, validErr := agents.WorkflowAlertInvestigation.ValidateInput(run.Input)
+	if validErr != nil {
 		return nil, validErr
-	}
-	alertId, idErr := run.Edges.GetSubjectEntityId("alert")
-	if idErr != nil {
-		return nil, fmt.Errorf("id error: %w", idErr)
 	}
 	initial := &aix.SessionState[agents.AlertInvestigationState]{
 		SessionID: run.ID.String(),
 		Messages:  []*ai.Message{ai.NewUserTextMessage("foo bar")},
-		Custom:    agents.AlertInvestigationState{AlertID: alertId},
+		Custom:    agents.AlertInvestigationState{AlertID: input.AlertID},
 	}
 	return initial, nil
 }

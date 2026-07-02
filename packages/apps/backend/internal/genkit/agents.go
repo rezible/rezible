@@ -9,121 +9,75 @@ import (
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/genkit"
 	genkitx "github.com/firebase/genkit/go/genkit/exp"
-	"github.com/firebase/genkit/go/plugins/googlegenai"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/pkg/agents"
 )
 
-type AgentRegistry struct {
-	cfg       rez.AiConfig
-	gk        *genkit.Genkit
-	snapshots rez.AgentRunSnapshotService
-	agents    map[string]rez.WorkflowAgent
-}
-
-func NewAgentRegistry(ctx context.Context, cfg rez.Config, snapshots rez.AgentRunSnapshotService) *AgentRegistry {
-	gkOpts := []genkit.GenkitOption{
-		genkit.WithExperimental(),
+type (
+	agent[S any] interface {
+		makeInitialState(*ent.AgentRun) (*aix.SessionState[S], error)
+		workflowName() string
+		agentFunc(*genkit.Genkit) aix.AgentFunc[S]
 	}
-	if cfg.AI.Gemini.Enabled {
-		gkOpts = append(gkOpts, genkit.WithPlugins(&googlegenai.GoogleAI{
-			APIKey: cfg.AI.Gemini.APIKey,
-		}))
+
+	agentWithStateTransformer[S any] interface {
+		transformState(context.Context, *aix.SessionState[S]) (*aix.SessionState[S], error)
 	}
-	return &AgentRegistry{
-		cfg:       cfg.AI,
-		gk:        genkit.Init(ctx, gkOpts...),
-		snapshots: snapshots,
-		agents:    make(map[string]rez.WorkflowAgent),
+
+	agentWithStreamChunkTransformer[S any] interface {
+		transformStreamChunk(context.Context, *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error)
 	}
-}
+)
 
-func (r *AgentRegistry) Register(a rez.WorkflowAgent) {
-	r.agents[a.WorkflowName()] = a
-}
-
-func RegisterWorkflowAgent[S any, O any](r *AgentRegistry, wa workflowAgent[S, O]) {
-	r.Register(wrapWorkflowAgent(r.gk, makeAgentSessionStore[S](r.snapshots), wa))
-}
-
-func (r *AgentRegistry) RegisterMultiple(was ...workflowAgent[any, any]) {
-	for _, wa := range was {
-		RegisterWorkflowAgent(r, wa)
-	}
-}
-
-func (r *AgentRegistry) Get(workflow string) (rez.WorkflowAgent, bool) {
-	a, ok := r.agents[workflow]
-	return a, ok
-}
-
-type workflowAgent[S any, O any] interface {
-	validateInput([]byte) error
-	makeInitialState(*ent.AgentRun) (*aix.SessionState[S], error)
-	workflow() agents.Workflow[S, O]
-	agentFunc(*genkit.Genkit) aix.AgentFunc[S]
-}
-
-type stateTransformingWorkflowAgent[S any] interface {
-	transformState(context.Context, *aix.SessionState[S]) (*aix.SessionState[S], error)
-}
-
-type streamChunkTransformingWorkflowAgent[S any] interface {
-	transformStreamChunk(context.Context, *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error)
-}
-
-func wrapWorkflowAgent[S any, O any](g *genkit.Genkit, s aix.SessionStore[S], wa workflowAgent[S, O]) rez.WorkflowAgent {
-	w := wa.workflow()
+func wrapAgent[S any](g *genkit.Genkit, s aix.SessionStore[S], a agent[S]) rez.Agent {
+	workflow := a.workflowName()
+	agentFunc := a.agentFunc(g)
 	agentOpts := []aix.AgentOption[S]{
 		aix.WithSessionStore[S](s),
-		aix.WithDescription[S](w.Description()),
+		aix.WithDescription[S]("Runner for workflow " + workflow),
 	}
-	if stwa, ok := wa.(stateTransformingWorkflowAgent[S]); ok {
+	if stwa, ok := a.(agentWithStateTransformer[S]); ok {
 		agentOpts = append(agentOpts, aix.WithStateTransform(stwa.transformState))
 	}
-	if sctwa, ok := wa.(streamChunkTransformingWorkflowAgent[S]); ok {
+	if sctwa, ok := a.(agentWithStreamChunkTransformer[S]); ok {
 		agentOpts = append(agentOpts, aix.WithStreamTransform[S](sctwa.transformStreamChunk))
 	}
-	agent := genkitx.DefineCustomAgent[S](g, w.Name(), wa.agentFunc(g), agentOpts...)
-	return &agentWrapper[S, O]{wfAgent: wa, agent: agent}
-}
-
-type agentWrapper[S any, O any] struct {
-	wfAgent workflowAgent[S, O]
-	agent   *aix.Agent[S]
-}
-
-func (w *agentWrapper[S, O]) WorkflowName() string {
-	return w.wfAgent.workflow().Name()
-}
-
-func (w *agentWrapper[S, O]) ValidateInput(input []byte) error {
-	return w.wfAgent.validateInput(input)
-}
-
-func (w *agentWrapper[S, O]) createInitialSnapshot(ctx context.Context, run *ent.AgentRun) (*aix.SessionSnapshot[S], error) {
-	init, initErr := w.wfAgent.makeInitialState(run)
-	if initErr != nil {
-		return nil, fmt.Errorf("initial state: %w", initErr)
+	return &wrappedAgent[S]{
+		workflow:           workflow,
+		makeInitialStateFn: a.makeInitialState,
+		agent:              genkitx.DefineCustomAgent[S](g, workflow, agentFunc, agentOpts...),
 	}
-	saveSnapshotFn := func(_ *aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error) {
-		snap := &aix.SessionSnapshot[S]{
-			SessionID: run.ID.String(),
-			//SnapshotID:   snapshotId.String(),
+}
+
+type wrappedAgent[S any] struct {
+	workflow           string
+	makeInitialStateFn func(*ent.AgentRun) (*aix.SessionState[S], error)
+	agent              *aix.Agent[S]
+}
+
+func (w *wrappedAgent[S]) Workflow() string {
+	return w.workflow
+}
+
+func (w *wrappedAgent[S]) createInitialSnapshot(ctx context.Context, run *ent.AgentRun) (*aix.SessionSnapshot[S], error) {
+	state, stateErr := w.makeInitialStateFn(run)
+	if stateErr != nil {
+		return nil, fmt.Errorf("initial state: %w", stateErr)
+	}
+	return w.agent.Store().SaveSnapshot(ctx, "", func(_ *aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error) {
+		return &aix.SessionSnapshot[S]{
+			SessionID:    run.ID.String(),
 			FinishReason: aix.AgentFinishReasonStop,
 			Status:       aix.SnapshotStatusCompleted,
-			State:        init,
+			State:        state,
 			CreatedAt:    time.Now(),
 			UpdatedAt:    time.Now(),
-		}
-		return snap, nil
-	}
-	return w.agent.Store().SaveSnapshot(ctx, "", saveSnapshotFn)
+		}, nil
+	})
 }
 
-func (w *agentWrapper[S, O]) getInvokeOpts(ctx context.Context, run *ent.AgentRun) ([]aix.InvocationOption[S], error) {
+func (w *wrappedAgent[S]) getInvokeOpts(ctx context.Context, run *ent.AgentRun) ([]aix.InvocationOption[S], error) {
 	if run == nil {
 		return nil, fmt.Errorf("invalid task input")
 	}
@@ -149,7 +103,7 @@ func (w *agentWrapper[S, O]) getInvokeOpts(ctx context.Context, run *ent.AgentRu
 	return invokeOpts, nil
 }
 
-func (w *agentWrapper[S, O]) Invoke(ctx context.Context, run *ent.AgentRun, msg *ai.Message) (uuid.UUID, error) {
+func (w *wrappedAgent[S]) Invoke(ctx context.Context, run *ent.AgentRun, msg *ai.Message) (uuid.UUID, error) {
 	invokeOpts, invokeOptsErr := w.getInvokeOpts(ctx, run)
 	if invokeOptsErr != nil {
 		return uuid.Nil, fmt.Errorf("invoke opts: %w", invokeOptsErr)
@@ -172,7 +126,7 @@ func (w *agentWrapper[S, O]) Invoke(ctx context.Context, run *ent.AgentRun, msg 
 	return uuid.Parse(out.SnapshotID)
 }
 
-func (w *agentWrapper[S, O]) GetStatus(ctx context.Context, taskId uuid.UUID) error {
+func (w *wrappedAgent[S]) GetStatus(ctx context.Context, taskId uuid.UUID) error {
 	snapshot, snapshotErr := w.agent.GetLatestSnapshot(ctx, taskId.String())
 	if snapshotErr != nil {
 		return snapshotErr

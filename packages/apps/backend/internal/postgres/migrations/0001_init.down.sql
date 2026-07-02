@@ -161,7 +161,7 @@ ALTER TABLE "alert_feedbacks" DROP CONSTRAINT "alert_feedbacks_alert_instances_a
 -- reverse: modify "alerts" table
 ALTER TABLE "alerts" DROP CONSTRAINT "alerts_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alerts_tenants_tenant";
 -- reverse: modify "agent_run_subjects" table
-ALTER TABLE "agent_run_subjects" DROP CONSTRAINT "agent_run_subjects_agent_runs_agent_run", DROP CONSTRAINT "agent_run_subjects_tenants_tenant";
+ALTER TABLE "agent_run_subjects" DROP CONSTRAINT "agent_run_subjects_tenants_tenant", DROP CONSTRAINT "agent_run_subjects_agent_runs_subjects";
 -- reverse: modify "agent_run_snapshots" table
 ALTER TABLE "agent_run_snapshots" DROP CONSTRAINT "agent_run_snapshots_agent_runs_agent_run", DROP CONSTRAINT "agent_run_snapshots_tenants_tenant";
 -- reverse: modify "agent_run_results" table
@@ -616,8 +616,12 @@ DROP INDEX "alert_tenant_id_knowledge_entity_id";
 DROP INDEX "alert_tenant_id";
 -- reverse: create "alerts" table
 DROP TABLE "alerts";
--- reverse: create index "agentrunsubject_tenant_id_agent_run_id" to table: "agent_run_subjects"
-DROP INDEX "agentrunsubject_tenant_id_agent_run_id";
+-- reverse: create index "agentrunsubject_tenant_id_external_entity_id" to table: "agent_run_subjects"
+DROP INDEX "agentrunsubject_tenant_id_external_entity_id";
+-- reverse: create index "agentrunsubject_tenant_id_domain_entity_id" to table: "agent_run_subjects"
+DROP INDEX "agentrunsubject_tenant_id_domain_entity_id";
+-- reverse: create index "agentrunsubject_tenant_id_subject_kind_entity_kind" to table: "agent_run_subjects"
+DROP INDEX "agentrunsubject_tenant_id_subject_kind_entity_kind";
 -- reverse: create index "agentrunsubject_tenant_id" to table: "agent_run_subjects"
 DROP INDEX "agentrunsubject_tenant_id";
 -- reverse: create "agent_run_subjects" table

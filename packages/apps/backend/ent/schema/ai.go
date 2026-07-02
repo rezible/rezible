@@ -25,9 +25,8 @@ func (AgentRun) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("owner_user_id", uuid.UUID{}),
 		field.String("workflow").NotEmpty(),
-		field.Bytes("input").NotEmpty(),
-		field.Enum("trigger_kind").Values("manual", "system"),
-		field.JSON("trigger_metadata", map[string]any{}).
+		field.Bytes("input"),
+		field.JSON("metadata", map[string]any{}).
 			SchemaType(schemaTypeJsonB).
 			Optional(),
 	}
@@ -39,12 +38,11 @@ func (AgentRun) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("owner_user_id"),
-		edge.From("subjects", AgentRunSubject.Type).
-			Ref("agent_run"),
-		edge.From("snapshots", AgentRunSnapshot.Type).
-			Ref("agent_run"),
+		edge.To("subjects", AgentRunSubject.Type),
 		edge.To("result", AgentRunResult.Type).
 			Unique(),
+		edge.From("snapshots", AgentRunSnapshot.Type).
+			Ref("agent_run"),
 	}
 }
 
@@ -69,27 +67,21 @@ func (AgentRunSubject) Mixin() []ent.Mixin {
 func (AgentRunSubject) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("agent_run_id", uuid.UUID{}),
-		field.String("subject_kind").NotEmpty(),
+		field.Enum("subject_kind").Values("domain", "external"),
+		field.String("entity_kind"),
 		field.UUID("domain_entity_id", uuid.UUID{}).Optional().Nillable(),
-		field.JSON("subject_properties", map[string]any{}).
+		field.String("external_entity_id").Optional().Nillable(),
+		field.JSON("metadata", map[string]any{}).
 			SchemaType(schemaTypeJsonB).
 			Optional(),
 	}
 }
 
-func (AgentRunSubject) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("agent_run", AgentRun.Type).
-			Required().
-			Unique().
-			Field("agent_run_id"),
-	}
-}
-
 func (AgentRunSubject) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "agent_run_id"),
+		index.Fields("tenant_id", "subject_kind", "entity_kind"),
+		index.Fields("tenant_id", "domain_entity_id"),
+		index.Fields("tenant_id", "external_entity_id"),
 	}
 }
 

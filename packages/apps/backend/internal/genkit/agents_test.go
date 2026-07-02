@@ -2,6 +2,7 @@ package genkit
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -34,13 +35,15 @@ func (s *AgentRegistrySuite) makeRegistry() *AgentRegistry {
 	return NewAgentRegistry(s.T().Context(), s.Config(), snapshots)
 }
 
-func (s *AgentRegistrySuite) makeAgentRun(workflow string, input []byte) *ent.AgentRun {
+func (s *AgentRegistrySuite) makeAgentRun(workflow string, inputState agents.WorkflowState) *ent.AgentRun {
+	s.Require().NoError(inputState.Validate())
+	input, inputErr := json.Marshal(inputState)
+	s.Require().NoError(inputErr)
 	ctx := s.SeedTenantContext()
 	create := s.Database().Client(ctx).AgentRun.Create().
 		SetWorkflow(workflow).
 		SetInput(input).
-		SetOwnerUserID(s.SeedUser.ID).
-		SetTriggerKind(agentrun.TriggerKindManual)
+		SetOwnerUserID(s.SeedUser.ID)
 	run, saveErr := create.Save(ctx)
 	s.Require().NoError(saveErr)
 	return run
@@ -65,22 +68,27 @@ func (s *AgentRegistrySuite) TestAlertInvestigationAgent() {
 		}
 		alert = txAlert.Unwrap()
 
+		//createSubject := tx.AgentRunSubject.Create().
+		//	SetSubjectKind(agentrunsubject.SubjectKindDomain).
+		//	SetDomainEntityID(alert.ID).
+		//	SetSubjectKind("alert")
+		//subj, subjErr := createSubject.Save(ctx)
+		//if subjErr != nil {
+		//	return subjErr
+		//}
+		inputState := agents.AlertInvestigationState{AlertID: alert.ID}
+		input, inputErr := json.Marshal(inputState)
+		if inputErr != nil {
+			return inputErr
+		}
+
 		createRun := tx.AgentRun.Create().
 			SetWorkflow(workflowName).
-			SetInput([]byte("{}")).
-			SetOwnerUserID(s.SeedUser.ID).
-			SetTriggerKind(agentrun.TriggerKindManual)
+			SetInput(input).
+			SetOwnerUserID(s.SeedUser.ID)
 		txRun, saveRunErr := createRun.Save(ctx)
 		if saveRunErr != nil {
 			return saveRunErr
-		}
-
-		createSubject := tx.AgentRunSubject.Create().
-			SetAgentRunID(txRun.ID).
-			SetDomainEntityID(alert.ID).
-			SetSubjectKind("alert")
-		if subjErr := createSubject.Exec(ctx); subjErr != nil {
-			return subjErr
 		}
 
 		queryRun := tx.AgentRun.Query().
@@ -102,7 +110,7 @@ func (s *AgentRegistrySuite) TestAlertInvestigationAgent() {
 	//store := localstore.NewInMemorySessionStore[agents.AlertInvestigationState]()
 
 	aia := &AlertInvestigationAgent{alerts: alerts}
-	RegisterWorkflowAgent(reg, aia)
+	RegisterAgent(reg, aia)
 
 	a, ok := reg.Get(workflowName)
 	s.Require().True(ok)
@@ -116,30 +124,35 @@ func (s *AgentRegistrySuite) TestAlertInvestigationAgent() {
 	//s.Require().Len(snapshot.State.Messages, 2)
 }
 
+type testAgentState struct {
+	foo string
+}
+
+func (s testAgentState) Validate() error {
+	return nil
+}
+
+type testAgentOutput struct {
+	bar string
+}
+
 func (s *AgentRegistrySuite) TestSimpleWorkflowAgent() {
 	s.SeedTestEntities()
 
 	ctx := s.SeedTenantContext()
 	reg := s.makeRegistry()
-	type testAgentState struct {
-		foo string
-	}
-	type testAgentOutput struct {
-		bar string
-	}
-	customFoo := "bar!"
+	state := testAgentState{foo: "bar!"}
 	//store := localstore.NewInMemorySessionStore[testAgentState]()
 	ta := &testWorkflowAgent[testAgentState, testAgentOutput]{
 		name:     "testWorkflow",
-		custom:   &testAgentState{foo: customFoo},
 		fakeCall: true,
 	}
-	RegisterWorkflowAgent(reg, ta)
+	RegisterAgent(reg, ta)
 
-	a, ok := reg.Get(ta.workflow().Name())
+	a, ok := reg.Get(ta.workflowName())
 	s.Require().True(ok)
 
-	run := s.makeAgentRun(ta.workflow().Name(), []byte("{}"))
+	run := s.makeAgentRun(ta.workflowName(), state)
 	snapshot, runErr := a.Invoke(ctx, run, ai.NewSystemTextMessage("look into this"))
 	s.Require().NoError(runErr)
 	s.Require().NotNil(snapshot)
@@ -156,10 +169,6 @@ type testWorkflowAgent[S any, O any] struct {
 	fakeCall bool
 }
 
-func (t *testWorkflowAgent[S, O]) validateInput(bytes []byte) error {
-	return nil
-}
-
 func (t *testWorkflowAgent[S, O]) makeInitialState(run *ent.AgentRun) (*aix.SessionState[S], error) {
 	s := &aix.SessionState[S]{
 		Messages: []*ai.Message{ai.NewUserTextMessage("hello world")},
@@ -170,8 +179,8 @@ func (t *testWorkflowAgent[S, O]) makeInitialState(run *ent.AgentRun) (*aix.Sess
 	return s, nil
 }
 
-func (t *testWorkflowAgent[S, O]) workflow() agents.Workflow[S, O] {
-	return agents.NewWorkflow[S, O](t.name, "a workflow just for testing")
+func (t *testWorkflowAgent[S, O]) workflowName() string {
+	return t.name
 }
 
 func (t *testWorkflowAgent[S, O]) agentFunc(g *genkit.Genkit) aix.AgentFunc[S] {

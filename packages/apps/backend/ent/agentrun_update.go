@@ -89,29 +89,15 @@ func (_u *AgentRunUpdate) SetInput(v []byte) *AgentRunUpdate {
 	return _u
 }
 
-// SetTriggerKind sets the "trigger_kind" field.
-func (_u *AgentRunUpdate) SetTriggerKind(v agentrun.TriggerKind) *AgentRunUpdate {
-	_u.mutation.SetTriggerKind(v)
+// SetMetadata sets the "metadata" field.
+func (_u *AgentRunUpdate) SetMetadata(v map[string]interface{}) *AgentRunUpdate {
+	_u.mutation.SetMetadata(v)
 	return _u
 }
 
-// SetNillableTriggerKind sets the "trigger_kind" field if the given value is not nil.
-func (_u *AgentRunUpdate) SetNillableTriggerKind(v *agentrun.TriggerKind) *AgentRunUpdate {
-	if v != nil {
-		_u.SetTriggerKind(*v)
-	}
-	return _u
-}
-
-// SetTriggerMetadata sets the "trigger_metadata" field.
-func (_u *AgentRunUpdate) SetTriggerMetadata(v map[string]interface{}) *AgentRunUpdate {
-	_u.mutation.SetTriggerMetadata(v)
-	return _u
-}
-
-// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
-func (_u *AgentRunUpdate) ClearTriggerMetadata() *AgentRunUpdate {
-	_u.mutation.ClearTriggerMetadata()
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *AgentRunUpdate) ClearMetadata() *AgentRunUpdate {
+	_u.mutation.ClearMetadata()
 	return _u
 }
 
@@ -135,21 +121,6 @@ func (_u *AgentRunUpdate) AddSubjects(v ...*AgentRunSubject) *AgentRunUpdate {
 	return _u.AddSubjectIDs(ids...)
 }
 
-// AddSnapshotIDs adds the "snapshots" edge to the AgentRunSnapshot entity by IDs.
-func (_u *AgentRunUpdate) AddSnapshotIDs(ids ...uuid.UUID) *AgentRunUpdate {
-	_u.mutation.AddSnapshotIDs(ids...)
-	return _u
-}
-
-// AddSnapshots adds the "snapshots" edges to the AgentRunSnapshot entity.
-func (_u *AgentRunUpdate) AddSnapshots(v ...*AgentRunSnapshot) *AgentRunUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddSnapshotIDs(ids...)
-}
-
 // SetResultID sets the "result" edge to the AgentRunResult entity by ID.
 func (_u *AgentRunUpdate) SetResultID(id uuid.UUID) *AgentRunUpdate {
 	_u.mutation.SetResultID(id)
@@ -167,6 +138,21 @@ func (_u *AgentRunUpdate) SetNillableResultID(id *uuid.UUID) *AgentRunUpdate {
 // SetResult sets the "result" edge to the AgentRunResult entity.
 func (_u *AgentRunUpdate) SetResult(v *AgentRunResult) *AgentRunUpdate {
 	return _u.SetResultID(v.ID)
+}
+
+// AddSnapshotIDs adds the "snapshots" edge to the AgentRunSnapshot entity by IDs.
+func (_u *AgentRunUpdate) AddSnapshotIDs(ids ...uuid.UUID) *AgentRunUpdate {
+	_u.mutation.AddSnapshotIDs(ids...)
+	return _u
+}
+
+// AddSnapshots adds the "snapshots" edges to the AgentRunSnapshot entity.
+func (_u *AgentRunUpdate) AddSnapshots(v ...*AgentRunSnapshot) *AgentRunUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSnapshotIDs(ids...)
 }
 
 // Mutation returns the AgentRunMutation object of the builder.
@@ -201,6 +187,12 @@ func (_u *AgentRunUpdate) RemoveSubjects(v ...*AgentRunSubject) *AgentRunUpdate 
 	return _u.RemoveSubjectIDs(ids...)
 }
 
+// ClearResult clears the "result" edge to the AgentRunResult entity.
+func (_u *AgentRunUpdate) ClearResult() *AgentRunUpdate {
+	_u.mutation.ClearResult()
+	return _u
+}
+
 // ClearSnapshots clears all "snapshots" edges to the AgentRunSnapshot entity.
 func (_u *AgentRunUpdate) ClearSnapshots() *AgentRunUpdate {
 	_u.mutation.ClearSnapshots()
@@ -220,12 +212,6 @@ func (_u *AgentRunUpdate) RemoveSnapshots(v ...*AgentRunSnapshot) *AgentRunUpdat
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSnapshotIDs(ids...)
-}
-
-// ClearResult clears the "result" edge to the AgentRunResult entity.
-func (_u *AgentRunUpdate) ClearResult() *AgentRunUpdate {
-	_u.mutation.ClearResult()
-	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -277,16 +263,6 @@ func (_u *AgentRunUpdate) check() error {
 			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "AgentRun.workflow": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Input(); ok {
-		if err := agentrun.InputValidator(v); err != nil {
-			return &ValidationError{Name: "input", err: fmt.Errorf(`ent: validator failed for field "AgentRun.input": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.TriggerKind(); ok {
-		if err := agentrun.TriggerKindValidator(v); err != nil {
-			return &ValidationError{Name: "trigger_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRun.trigger_kind": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRun.tenant"`)
 	}
@@ -326,14 +302,11 @@ func (_u *AgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Input(); ok {
 		_spec.SetField(agentrun.FieldInput, field.TypeBytes, value)
 	}
-	if value, ok := _u.mutation.TriggerKind(); ok {
-		_spec.SetField(agentrun.FieldTriggerKind, field.TypeEnum, value)
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(agentrun.FieldMetadata, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.TriggerMetadata(); ok {
-		_spec.SetField(agentrun.FieldTriggerMetadata, field.TypeJSON, value)
-	}
-	if _u.mutation.TriggerMetadataCleared() {
-		_spec.ClearField(agentrun.FieldTriggerMetadata, field.TypeJSON)
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(agentrun.FieldMetadata, field.TypeJSON)
 	}
 	if _u.mutation.OwnerUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -369,7 +342,7 @@ func (_u *AgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.SubjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   agentrun.SubjectsTable,
 			Columns: []string{agentrun.SubjectsColumn},
 			Bidi:    false,
@@ -383,7 +356,7 @@ func (_u *AgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.RemovedSubjectsIDs(); len(nodes) > 0 && !_u.mutation.SubjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   agentrun.SubjectsTable,
 			Columns: []string{agentrun.SubjectsColumn},
 			Bidi:    false,
@@ -400,7 +373,7 @@ func (_u *AgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.SubjectsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   agentrun.SubjectsTable,
 			Columns: []string{agentrun.SubjectsColumn},
 			Bidi:    false,
@@ -409,6 +382,37 @@ func (_u *AgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunSubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ResultCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentrun.ResultTable,
+			Columns: []string{agentrun.ResultColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRun
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ResultIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentrun.ResultTable,
+			Columns: []string{agentrun.ResultColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRun
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -457,37 +461,6 @@ func (_u *AgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunSnapshot
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ResultCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentrun.ResultTable,
-			Columns: []string{agentrun.ResultColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRun
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ResultIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentrun.ResultTable,
-			Columns: []string{agentrun.ResultColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRun
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -571,29 +544,15 @@ func (_u *AgentRunUpdateOne) SetInput(v []byte) *AgentRunUpdateOne {
 	return _u
 }
 
-// SetTriggerKind sets the "trigger_kind" field.
-func (_u *AgentRunUpdateOne) SetTriggerKind(v agentrun.TriggerKind) *AgentRunUpdateOne {
-	_u.mutation.SetTriggerKind(v)
+// SetMetadata sets the "metadata" field.
+func (_u *AgentRunUpdateOne) SetMetadata(v map[string]interface{}) *AgentRunUpdateOne {
+	_u.mutation.SetMetadata(v)
 	return _u
 }
 
-// SetNillableTriggerKind sets the "trigger_kind" field if the given value is not nil.
-func (_u *AgentRunUpdateOne) SetNillableTriggerKind(v *agentrun.TriggerKind) *AgentRunUpdateOne {
-	if v != nil {
-		_u.SetTriggerKind(*v)
-	}
-	return _u
-}
-
-// SetTriggerMetadata sets the "trigger_metadata" field.
-func (_u *AgentRunUpdateOne) SetTriggerMetadata(v map[string]interface{}) *AgentRunUpdateOne {
-	_u.mutation.SetTriggerMetadata(v)
-	return _u
-}
-
-// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
-func (_u *AgentRunUpdateOne) ClearTriggerMetadata() *AgentRunUpdateOne {
-	_u.mutation.ClearTriggerMetadata()
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *AgentRunUpdateOne) ClearMetadata() *AgentRunUpdateOne {
+	_u.mutation.ClearMetadata()
 	return _u
 }
 
@@ -617,21 +576,6 @@ func (_u *AgentRunUpdateOne) AddSubjects(v ...*AgentRunSubject) *AgentRunUpdateO
 	return _u.AddSubjectIDs(ids...)
 }
 
-// AddSnapshotIDs adds the "snapshots" edge to the AgentRunSnapshot entity by IDs.
-func (_u *AgentRunUpdateOne) AddSnapshotIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
-	_u.mutation.AddSnapshotIDs(ids...)
-	return _u
-}
-
-// AddSnapshots adds the "snapshots" edges to the AgentRunSnapshot entity.
-func (_u *AgentRunUpdateOne) AddSnapshots(v ...*AgentRunSnapshot) *AgentRunUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddSnapshotIDs(ids...)
-}
-
 // SetResultID sets the "result" edge to the AgentRunResult entity by ID.
 func (_u *AgentRunUpdateOne) SetResultID(id uuid.UUID) *AgentRunUpdateOne {
 	_u.mutation.SetResultID(id)
@@ -649,6 +593,21 @@ func (_u *AgentRunUpdateOne) SetNillableResultID(id *uuid.UUID) *AgentRunUpdateO
 // SetResult sets the "result" edge to the AgentRunResult entity.
 func (_u *AgentRunUpdateOne) SetResult(v *AgentRunResult) *AgentRunUpdateOne {
 	return _u.SetResultID(v.ID)
+}
+
+// AddSnapshotIDs adds the "snapshots" edge to the AgentRunSnapshot entity by IDs.
+func (_u *AgentRunUpdateOne) AddSnapshotIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.AddSnapshotIDs(ids...)
+	return _u
+}
+
+// AddSnapshots adds the "snapshots" edges to the AgentRunSnapshot entity.
+func (_u *AgentRunUpdateOne) AddSnapshots(v ...*AgentRunSnapshot) *AgentRunUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSnapshotIDs(ids...)
 }
 
 // Mutation returns the AgentRunMutation object of the builder.
@@ -683,6 +642,12 @@ func (_u *AgentRunUpdateOne) RemoveSubjects(v ...*AgentRunSubject) *AgentRunUpda
 	return _u.RemoveSubjectIDs(ids...)
 }
 
+// ClearResult clears the "result" edge to the AgentRunResult entity.
+func (_u *AgentRunUpdateOne) ClearResult() *AgentRunUpdateOne {
+	_u.mutation.ClearResult()
+	return _u
+}
+
 // ClearSnapshots clears all "snapshots" edges to the AgentRunSnapshot entity.
 func (_u *AgentRunUpdateOne) ClearSnapshots() *AgentRunUpdateOne {
 	_u.mutation.ClearSnapshots()
@@ -702,12 +667,6 @@ func (_u *AgentRunUpdateOne) RemoveSnapshots(v ...*AgentRunSnapshot) *AgentRunUp
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSnapshotIDs(ids...)
-}
-
-// ClearResult clears the "result" edge to the AgentRunResult entity.
-func (_u *AgentRunUpdateOne) ClearResult() *AgentRunUpdateOne {
-	_u.mutation.ClearResult()
-	return _u
 }
 
 // Where appends a list predicates to the AgentRunUpdate builder.
@@ -772,16 +731,6 @@ func (_u *AgentRunUpdateOne) check() error {
 			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "AgentRun.workflow": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Input(); ok {
-		if err := agentrun.InputValidator(v); err != nil {
-			return &ValidationError{Name: "input", err: fmt.Errorf(`ent: validator failed for field "AgentRun.input": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.TriggerKind(); ok {
-		if err := agentrun.TriggerKindValidator(v); err != nil {
-			return &ValidationError{Name: "trigger_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRun.trigger_kind": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRun.tenant"`)
 	}
@@ -838,14 +787,11 @@ func (_u *AgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun, err 
 	if value, ok := _u.mutation.Input(); ok {
 		_spec.SetField(agentrun.FieldInput, field.TypeBytes, value)
 	}
-	if value, ok := _u.mutation.TriggerKind(); ok {
-		_spec.SetField(agentrun.FieldTriggerKind, field.TypeEnum, value)
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(agentrun.FieldMetadata, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.TriggerMetadata(); ok {
-		_spec.SetField(agentrun.FieldTriggerMetadata, field.TypeJSON, value)
-	}
-	if _u.mutation.TriggerMetadataCleared() {
-		_spec.ClearField(agentrun.FieldTriggerMetadata, field.TypeJSON)
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(agentrun.FieldMetadata, field.TypeJSON)
 	}
 	if _u.mutation.OwnerUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -881,7 +827,7 @@ func (_u *AgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun, err 
 	if _u.mutation.SubjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   agentrun.SubjectsTable,
 			Columns: []string{agentrun.SubjectsColumn},
 			Bidi:    false,
@@ -895,7 +841,7 @@ func (_u *AgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun, err 
 	if nodes := _u.mutation.RemovedSubjectsIDs(); len(nodes) > 0 && !_u.mutation.SubjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   agentrun.SubjectsTable,
 			Columns: []string{agentrun.SubjectsColumn},
 			Bidi:    false,
@@ -912,7 +858,7 @@ func (_u *AgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun, err 
 	if nodes := _u.mutation.SubjectsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   agentrun.SubjectsTable,
 			Columns: []string{agentrun.SubjectsColumn},
 			Bidi:    false,
@@ -921,6 +867,37 @@ func (_u *AgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun, err 
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunSubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ResultCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentrun.ResultTable,
+			Columns: []string{agentrun.ResultColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRun
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ResultIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentrun.ResultTable,
+			Columns: []string{agentrun.ResultColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRun
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -969,37 +946,6 @@ func (_u *AgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun, err 
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentRunSnapshot
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ResultCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentrun.ResultTable,
-			Columns: []string{agentrun.ResultColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRun
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ResultIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentrun.ResultTable,
-			Columns: []string{agentrun.ResultColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRun
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

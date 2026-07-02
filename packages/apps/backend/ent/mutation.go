@@ -187,8 +187,7 @@ type AgentRunMutation struct {
 	updated_at        *time.Time
 	workflow          *string
 	input             *[]byte
-	trigger_kind      *agentrun.TriggerKind
-	trigger_metadata  *map[string]interface{}
+	metadata          *map[string]interface{}
 	clearedFields     map[string]struct{}
 	tenant            *int
 	clearedtenant     bool
@@ -197,11 +196,11 @@ type AgentRunMutation struct {
 	subjects          map[uuid.UUID]struct{}
 	removedsubjects   map[uuid.UUID]struct{}
 	clearedsubjects   bool
+	result            *uuid.UUID
+	clearedresult     bool
 	snapshots         map[uuid.UUID]struct{}
 	removedsnapshots  map[uuid.UUID]struct{}
 	clearedsnapshots  bool
-	result            *uuid.UUID
-	clearedresult     bool
 	done              bool
 	oldValue          func(context.Context) (*AgentRun, error)
 	predicates        []predicate.AgentRun
@@ -527,89 +526,53 @@ func (m *AgentRunMutation) ResetInput() {
 	m.input = nil
 }
 
-// SetTriggerKind sets the "trigger_kind" field.
-func (m *AgentRunMutation) SetTriggerKind(ak agentrun.TriggerKind) {
-	m.trigger_kind = &ak
+// SetMetadata sets the "metadata" field.
+func (m *AgentRunMutation) SetMetadata(value map[string]interface{}) {
+	m.metadata = &value
 }
 
-// TriggerKind returns the value of the "trigger_kind" field in the mutation.
-func (m *AgentRunMutation) TriggerKind() (r agentrun.TriggerKind, exists bool) {
-	v := m.trigger_kind
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *AgentRunMutation) Metadata() (r map[string]interface{}, exists bool) {
+	v := m.metadata
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTriggerKind returns the old "trigger_kind" field's value of the AgentRun entity.
+// OldMetadata returns the old "metadata" field's value of the AgentRun entity.
 // If the AgentRun object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunMutation) OldTriggerKind(ctx context.Context) (v agentrun.TriggerKind, err error) {
+func (m *AgentRunMutation) OldMetadata(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTriggerKind is only allowed on UpdateOne operations")
+		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTriggerKind requires an ID field in the mutation")
+		return v, errors.New("OldMetadata requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTriggerKind: %w", err)
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
 	}
-	return oldValue.TriggerKind, nil
+	return oldValue.Metadata, nil
 }
 
-// ResetTriggerKind resets all changes to the "trigger_kind" field.
-func (m *AgentRunMutation) ResetTriggerKind() {
-	m.trigger_kind = nil
+// ClearMetadata clears the value of the "metadata" field.
+func (m *AgentRunMutation) ClearMetadata() {
+	m.metadata = nil
+	m.clearedFields[agentrun.FieldMetadata] = struct{}{}
 }
 
-// SetTriggerMetadata sets the "trigger_metadata" field.
-func (m *AgentRunMutation) SetTriggerMetadata(value map[string]interface{}) {
-	m.trigger_metadata = &value
-}
-
-// TriggerMetadata returns the value of the "trigger_metadata" field in the mutation.
-func (m *AgentRunMutation) TriggerMetadata() (r map[string]interface{}, exists bool) {
-	v := m.trigger_metadata
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTriggerMetadata returns the old "trigger_metadata" field's value of the AgentRun entity.
-// If the AgentRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunMutation) OldTriggerMetadata(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTriggerMetadata is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTriggerMetadata requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTriggerMetadata: %w", err)
-	}
-	return oldValue.TriggerMetadata, nil
-}
-
-// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
-func (m *AgentRunMutation) ClearTriggerMetadata() {
-	m.trigger_metadata = nil
-	m.clearedFields[agentrun.FieldTriggerMetadata] = struct{}{}
-}
-
-// TriggerMetadataCleared returns if the "trigger_metadata" field was cleared in this mutation.
-func (m *AgentRunMutation) TriggerMetadataCleared() bool {
-	_, ok := m.clearedFields[agentrun.FieldTriggerMetadata]
+// MetadataCleared returns if the "metadata" field was cleared in this mutation.
+func (m *AgentRunMutation) MetadataCleared() bool {
+	_, ok := m.clearedFields[agentrun.FieldMetadata]
 	return ok
 }
 
-// ResetTriggerMetadata resets all changes to the "trigger_metadata" field.
-func (m *AgentRunMutation) ResetTriggerMetadata() {
-	m.trigger_metadata = nil
-	delete(m.clearedFields, agentrun.FieldTriggerMetadata)
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *AgentRunMutation) ResetMetadata() {
+	m.metadata = nil
+	delete(m.clearedFields, agentrun.FieldMetadata)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -720,6 +683,45 @@ func (m *AgentRunMutation) ResetSubjects() {
 	m.removedsubjects = nil
 }
 
+// SetResultID sets the "result" edge to the AgentRunResult entity by id.
+func (m *AgentRunMutation) SetResultID(id uuid.UUID) {
+	m.result = &id
+}
+
+// ClearResult clears the "result" edge to the AgentRunResult entity.
+func (m *AgentRunMutation) ClearResult() {
+	m.clearedresult = true
+}
+
+// ResultCleared reports if the "result" edge to the AgentRunResult entity was cleared.
+func (m *AgentRunMutation) ResultCleared() bool {
+	return m.clearedresult
+}
+
+// ResultID returns the "result" edge ID in the mutation.
+func (m *AgentRunMutation) ResultID() (id uuid.UUID, exists bool) {
+	if m.result != nil {
+		return *m.result, true
+	}
+	return
+}
+
+// ResultIDs returns the "result" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ResultID instead. It exists only for internal usage by the builders.
+func (m *AgentRunMutation) ResultIDs() (ids []uuid.UUID) {
+	if id := m.result; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetResult resets all changes to the "result" edge.
+func (m *AgentRunMutation) ResetResult() {
+	m.result = nil
+	m.clearedresult = false
+}
+
 // AddSnapshotIDs adds the "snapshots" edge to the AgentRunSnapshot entity by ids.
 func (m *AgentRunMutation) AddSnapshotIDs(ids ...uuid.UUID) {
 	if m.snapshots == nil {
@@ -774,45 +776,6 @@ func (m *AgentRunMutation) ResetSnapshots() {
 	m.removedsnapshots = nil
 }
 
-// SetResultID sets the "result" edge to the AgentRunResult entity by id.
-func (m *AgentRunMutation) SetResultID(id uuid.UUID) {
-	m.result = &id
-}
-
-// ClearResult clears the "result" edge to the AgentRunResult entity.
-func (m *AgentRunMutation) ClearResult() {
-	m.clearedresult = true
-}
-
-// ResultCleared reports if the "result" edge to the AgentRunResult entity was cleared.
-func (m *AgentRunMutation) ResultCleared() bool {
-	return m.clearedresult
-}
-
-// ResultID returns the "result" edge ID in the mutation.
-func (m *AgentRunMutation) ResultID() (id uuid.UUID, exists bool) {
-	if m.result != nil {
-		return *m.result, true
-	}
-	return
-}
-
-// ResultIDs returns the "result" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ResultID instead. It exists only for internal usage by the builders.
-func (m *AgentRunMutation) ResultIDs() (ids []uuid.UUID) {
-	if id := m.result; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetResult resets all changes to the "result" edge.
-func (m *AgentRunMutation) ResetResult() {
-	m.result = nil
-	m.clearedresult = false
-}
-
 // Where appends a list predicates to the AgentRunMutation builder.
 func (m *AgentRunMutation) Where(ps ...predicate.AgentRun) {
 	m.predicates = append(m.predicates, ps...)
@@ -847,7 +810,7 @@ func (m *AgentRunMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentRunMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, agentrun.FieldTenantID)
 	}
@@ -866,11 +829,8 @@ func (m *AgentRunMutation) Fields() []string {
 	if m.input != nil {
 		fields = append(fields, agentrun.FieldInput)
 	}
-	if m.trigger_kind != nil {
-		fields = append(fields, agentrun.FieldTriggerKind)
-	}
-	if m.trigger_metadata != nil {
-		fields = append(fields, agentrun.FieldTriggerMetadata)
+	if m.metadata != nil {
+		fields = append(fields, agentrun.FieldMetadata)
 	}
 	return fields
 }
@@ -892,10 +852,8 @@ func (m *AgentRunMutation) Field(name string) (ent.Value, bool) {
 		return m.Workflow()
 	case agentrun.FieldInput:
 		return m.Input()
-	case agentrun.FieldTriggerKind:
-		return m.TriggerKind()
-	case agentrun.FieldTriggerMetadata:
-		return m.TriggerMetadata()
+	case agentrun.FieldMetadata:
+		return m.Metadata()
 	}
 	return nil, false
 }
@@ -917,10 +875,8 @@ func (m *AgentRunMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldWorkflow(ctx)
 	case agentrun.FieldInput:
 		return m.OldInput(ctx)
-	case agentrun.FieldTriggerKind:
-		return m.OldTriggerKind(ctx)
-	case agentrun.FieldTriggerMetadata:
-		return m.OldTriggerMetadata(ctx)
+	case agentrun.FieldMetadata:
+		return m.OldMetadata(ctx)
 	}
 	return nil, fmt.Errorf("unknown AgentRun field %s", name)
 }
@@ -972,19 +928,12 @@ func (m *AgentRunMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetInput(v)
 		return nil
-	case agentrun.FieldTriggerKind:
-		v, ok := value.(agentrun.TriggerKind)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTriggerKind(v)
-		return nil
-	case agentrun.FieldTriggerMetadata:
+	case agentrun.FieldMetadata:
 		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTriggerMetadata(v)
+		m.SetMetadata(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRun field %s", name)
@@ -1019,8 +968,8 @@ func (m *AgentRunMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AgentRunMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(agentrun.FieldTriggerMetadata) {
-		fields = append(fields, agentrun.FieldTriggerMetadata)
+	if m.FieldCleared(agentrun.FieldMetadata) {
+		fields = append(fields, agentrun.FieldMetadata)
 	}
 	return fields
 }
@@ -1036,8 +985,8 @@ func (m *AgentRunMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AgentRunMutation) ClearField(name string) error {
 	switch name {
-	case agentrun.FieldTriggerMetadata:
-		m.ClearTriggerMetadata()
+	case agentrun.FieldMetadata:
+		m.ClearMetadata()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRun nullable field %s", name)
@@ -1065,11 +1014,8 @@ func (m *AgentRunMutation) ResetField(name string) error {
 	case agentrun.FieldInput:
 		m.ResetInput()
 		return nil
-	case agentrun.FieldTriggerKind:
-		m.ResetTriggerKind()
-		return nil
-	case agentrun.FieldTriggerMetadata:
-		m.ResetTriggerMetadata()
+	case agentrun.FieldMetadata:
+		m.ResetMetadata()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRun field %s", name)
@@ -1087,11 +1033,11 @@ func (m *AgentRunMutation) AddedEdges() []string {
 	if m.subjects != nil {
 		edges = append(edges, agentrun.EdgeSubjects)
 	}
-	if m.snapshots != nil {
-		edges = append(edges, agentrun.EdgeSnapshots)
-	}
 	if m.result != nil {
 		edges = append(edges, agentrun.EdgeResult)
+	}
+	if m.snapshots != nil {
+		edges = append(edges, agentrun.EdgeSnapshots)
 	}
 	return edges
 }
@@ -1114,16 +1060,16 @@ func (m *AgentRunMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case agentrun.EdgeResult:
+		if id := m.result; id != nil {
+			return []ent.Value{*id}
+		}
 	case agentrun.EdgeSnapshots:
 		ids := make([]ent.Value, 0, len(m.snapshots))
 		for id := range m.snapshots {
 			ids = append(ids, id)
 		}
 		return ids
-	case agentrun.EdgeResult:
-		if id := m.result; id != nil {
-			return []ent.Value{*id}
-		}
 	}
 	return nil
 }
@@ -1172,11 +1118,11 @@ func (m *AgentRunMutation) ClearedEdges() []string {
 	if m.clearedsubjects {
 		edges = append(edges, agentrun.EdgeSubjects)
 	}
-	if m.clearedsnapshots {
-		edges = append(edges, agentrun.EdgeSnapshots)
-	}
 	if m.clearedresult {
 		edges = append(edges, agentrun.EdgeResult)
+	}
+	if m.clearedsnapshots {
+		edges = append(edges, agentrun.EdgeSnapshots)
 	}
 	return edges
 }
@@ -1191,10 +1137,10 @@ func (m *AgentRunMutation) EdgeCleared(name string) bool {
 		return m.clearedowner_user
 	case agentrun.EdgeSubjects:
 		return m.clearedsubjects
-	case agentrun.EdgeSnapshots:
-		return m.clearedsnapshots
 	case agentrun.EdgeResult:
 		return m.clearedresult
+	case agentrun.EdgeSnapshots:
+		return m.clearedsnapshots
 	}
 	return false
 }
@@ -1229,11 +1175,11 @@ func (m *AgentRunMutation) ResetEdge(name string) error {
 	case agentrun.EdgeSubjects:
 		m.ResetSubjects()
 		return nil
-	case agentrun.EdgeSnapshots:
-		m.ResetSnapshots()
-		return nil
 	case agentrun.EdgeResult:
 		m.ResetResult()
+		return nil
+	case agentrun.EdgeSnapshots:
+		m.ResetSnapshots()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRun edge %s", name)
@@ -5984,14 +5930,14 @@ type AgentRunSubjectMutation struct {
 	op                 Op
 	typ                string
 	id                 *uuid.UUID
-	subject_kind       *string
+	subject_kind       *agentrunsubject.SubjectKind
+	entity_kind        *string
 	domain_entity_id   *uuid.UUID
-	subject_properties *map[string]interface{}
+	external_entity_id *string
+	metadata           *map[string]interface{}
 	clearedFields      map[string]struct{}
 	tenant             *int
 	clearedtenant      bool
-	agent_run          *uuid.UUID
-	clearedagent_run   bool
 	done               bool
 	oldValue           func(context.Context) (*AgentRunSubject, error)
 	predicates         []predicate.AgentRunSubject
@@ -6137,49 +6083,13 @@ func (m *AgentRunSubjectMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (m *AgentRunSubjectMutation) SetAgentRunID(u uuid.UUID) {
-	m.agent_run = &u
-}
-
-// AgentRunID returns the value of the "agent_run_id" field in the mutation.
-func (m *AgentRunSubjectMutation) AgentRunID() (r uuid.UUID, exists bool) {
-	v := m.agent_run
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAgentRunID returns the old "agent_run_id" field's value of the AgentRunSubject entity.
-// If the AgentRunSubject object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunSubjectMutation) OldAgentRunID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAgentRunID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAgentRunID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAgentRunID: %w", err)
-	}
-	return oldValue.AgentRunID, nil
-}
-
-// ResetAgentRunID resets all changes to the "agent_run_id" field.
-func (m *AgentRunSubjectMutation) ResetAgentRunID() {
-	m.agent_run = nil
-}
-
 // SetSubjectKind sets the "subject_kind" field.
-func (m *AgentRunSubjectMutation) SetSubjectKind(s string) {
-	m.subject_kind = &s
+func (m *AgentRunSubjectMutation) SetSubjectKind(ak agentrunsubject.SubjectKind) {
+	m.subject_kind = &ak
 }
 
 // SubjectKind returns the value of the "subject_kind" field in the mutation.
-func (m *AgentRunSubjectMutation) SubjectKind() (r string, exists bool) {
+func (m *AgentRunSubjectMutation) SubjectKind() (r agentrunsubject.SubjectKind, exists bool) {
 	v := m.subject_kind
 	if v == nil {
 		return
@@ -6190,7 +6100,7 @@ func (m *AgentRunSubjectMutation) SubjectKind() (r string, exists bool) {
 // OldSubjectKind returns the old "subject_kind" field's value of the AgentRunSubject entity.
 // If the AgentRunSubject object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunSubjectMutation) OldSubjectKind(ctx context.Context) (v string, err error) {
+func (m *AgentRunSubjectMutation) OldSubjectKind(ctx context.Context) (v agentrunsubject.SubjectKind, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSubjectKind is only allowed on UpdateOne operations")
 	}
@@ -6207,6 +6117,42 @@ func (m *AgentRunSubjectMutation) OldSubjectKind(ctx context.Context) (v string,
 // ResetSubjectKind resets all changes to the "subject_kind" field.
 func (m *AgentRunSubjectMutation) ResetSubjectKind() {
 	m.subject_kind = nil
+}
+
+// SetEntityKind sets the "entity_kind" field.
+func (m *AgentRunSubjectMutation) SetEntityKind(s string) {
+	m.entity_kind = &s
+}
+
+// EntityKind returns the value of the "entity_kind" field in the mutation.
+func (m *AgentRunSubjectMutation) EntityKind() (r string, exists bool) {
+	v := m.entity_kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEntityKind returns the old "entity_kind" field's value of the AgentRunSubject entity.
+// If the AgentRunSubject object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRunSubjectMutation) OldEntityKind(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEntityKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEntityKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEntityKind: %w", err)
+	}
+	return oldValue.EntityKind, nil
+}
+
+// ResetEntityKind resets all changes to the "entity_kind" field.
+func (m *AgentRunSubjectMutation) ResetEntityKind() {
+	m.entity_kind = nil
 }
 
 // SetDomainEntityID sets the "domain_entity_id" field.
@@ -6258,53 +6204,102 @@ func (m *AgentRunSubjectMutation) ResetDomainEntityID() {
 	delete(m.clearedFields, agentrunsubject.FieldDomainEntityID)
 }
 
-// SetSubjectProperties sets the "subject_properties" field.
-func (m *AgentRunSubjectMutation) SetSubjectProperties(value map[string]interface{}) {
-	m.subject_properties = &value
+// SetExternalEntityID sets the "external_entity_id" field.
+func (m *AgentRunSubjectMutation) SetExternalEntityID(s string) {
+	m.external_entity_id = &s
 }
 
-// SubjectProperties returns the value of the "subject_properties" field in the mutation.
-func (m *AgentRunSubjectMutation) SubjectProperties() (r map[string]interface{}, exists bool) {
-	v := m.subject_properties
+// ExternalEntityID returns the value of the "external_entity_id" field in the mutation.
+func (m *AgentRunSubjectMutation) ExternalEntityID() (r string, exists bool) {
+	v := m.external_entity_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSubjectProperties returns the old "subject_properties" field's value of the AgentRunSubject entity.
+// OldExternalEntityID returns the old "external_entity_id" field's value of the AgentRunSubject entity.
 // If the AgentRunSubject object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentRunSubjectMutation) OldSubjectProperties(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *AgentRunSubjectMutation) OldExternalEntityID(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSubjectProperties is only allowed on UpdateOne operations")
+		return v, errors.New("OldExternalEntityID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSubjectProperties requires an ID field in the mutation")
+		return v, errors.New("OldExternalEntityID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubjectProperties: %w", err)
+		return v, fmt.Errorf("querying old value for OldExternalEntityID: %w", err)
 	}
-	return oldValue.SubjectProperties, nil
+	return oldValue.ExternalEntityID, nil
 }
 
-// ClearSubjectProperties clears the value of the "subject_properties" field.
-func (m *AgentRunSubjectMutation) ClearSubjectProperties() {
-	m.subject_properties = nil
-	m.clearedFields[agentrunsubject.FieldSubjectProperties] = struct{}{}
+// ClearExternalEntityID clears the value of the "external_entity_id" field.
+func (m *AgentRunSubjectMutation) ClearExternalEntityID() {
+	m.external_entity_id = nil
+	m.clearedFields[agentrunsubject.FieldExternalEntityID] = struct{}{}
 }
 
-// SubjectPropertiesCleared returns if the "subject_properties" field was cleared in this mutation.
-func (m *AgentRunSubjectMutation) SubjectPropertiesCleared() bool {
-	_, ok := m.clearedFields[agentrunsubject.FieldSubjectProperties]
+// ExternalEntityIDCleared returns if the "external_entity_id" field was cleared in this mutation.
+func (m *AgentRunSubjectMutation) ExternalEntityIDCleared() bool {
+	_, ok := m.clearedFields[agentrunsubject.FieldExternalEntityID]
 	return ok
 }
 
-// ResetSubjectProperties resets all changes to the "subject_properties" field.
-func (m *AgentRunSubjectMutation) ResetSubjectProperties() {
-	m.subject_properties = nil
-	delete(m.clearedFields, agentrunsubject.FieldSubjectProperties)
+// ResetExternalEntityID resets all changes to the "external_entity_id" field.
+func (m *AgentRunSubjectMutation) ResetExternalEntityID() {
+	m.external_entity_id = nil
+	delete(m.clearedFields, agentrunsubject.FieldExternalEntityID)
+}
+
+// SetMetadata sets the "metadata" field.
+func (m *AgentRunSubjectMutation) SetMetadata(value map[string]interface{}) {
+	m.metadata = &value
+}
+
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *AgentRunSubjectMutation) Metadata() (r map[string]interface{}, exists bool) {
+	v := m.metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetadata returns the old "metadata" field's value of the AgentRunSubject entity.
+// If the AgentRunSubject object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRunSubjectMutation) OldMetadata(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
+	}
+	return oldValue.Metadata, nil
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (m *AgentRunSubjectMutation) ClearMetadata() {
+	m.metadata = nil
+	m.clearedFields[agentrunsubject.FieldMetadata] = struct{}{}
+}
+
+// MetadataCleared returns if the "metadata" field was cleared in this mutation.
+func (m *AgentRunSubjectMutation) MetadataCleared() bool {
+	_, ok := m.clearedFields[agentrunsubject.FieldMetadata]
+	return ok
+}
+
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *AgentRunSubjectMutation) ResetMetadata() {
+	m.metadata = nil
+	delete(m.clearedFields, agentrunsubject.FieldMetadata)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -6332,33 +6327,6 @@ func (m *AgentRunSubjectMutation) TenantIDs() (ids []int) {
 func (m *AgentRunSubjectMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
-}
-
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
-func (m *AgentRunSubjectMutation) ClearAgentRun() {
-	m.clearedagent_run = true
-	m.clearedFields[agentrunsubject.FieldAgentRunID] = struct{}{}
-}
-
-// AgentRunCleared reports if the "agent_run" edge to the AgentRun entity was cleared.
-func (m *AgentRunSubjectMutation) AgentRunCleared() bool {
-	return m.clearedagent_run
-}
-
-// AgentRunIDs returns the "agent_run" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// AgentRunID instead. It exists only for internal usage by the builders.
-func (m *AgentRunSubjectMutation) AgentRunIDs() (ids []uuid.UUID) {
-	if id := m.agent_run; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetAgentRun resets all changes to the "agent_run" edge.
-func (m *AgentRunSubjectMutation) ResetAgentRun() {
-	m.agent_run = nil
-	m.clearedagent_run = false
 }
 
 // Where appends a list predicates to the AgentRunSubjectMutation builder.
@@ -6395,21 +6363,24 @@ func (m *AgentRunSubjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentRunSubjectMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, agentrunsubject.FieldTenantID)
-	}
-	if m.agent_run != nil {
-		fields = append(fields, agentrunsubject.FieldAgentRunID)
 	}
 	if m.subject_kind != nil {
 		fields = append(fields, agentrunsubject.FieldSubjectKind)
 	}
+	if m.entity_kind != nil {
+		fields = append(fields, agentrunsubject.FieldEntityKind)
+	}
 	if m.domain_entity_id != nil {
 		fields = append(fields, agentrunsubject.FieldDomainEntityID)
 	}
-	if m.subject_properties != nil {
-		fields = append(fields, agentrunsubject.FieldSubjectProperties)
+	if m.external_entity_id != nil {
+		fields = append(fields, agentrunsubject.FieldExternalEntityID)
+	}
+	if m.metadata != nil {
+		fields = append(fields, agentrunsubject.FieldMetadata)
 	}
 	return fields
 }
@@ -6421,14 +6392,16 @@ func (m *AgentRunSubjectMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case agentrunsubject.FieldTenantID:
 		return m.TenantID()
-	case agentrunsubject.FieldAgentRunID:
-		return m.AgentRunID()
 	case agentrunsubject.FieldSubjectKind:
 		return m.SubjectKind()
+	case agentrunsubject.FieldEntityKind:
+		return m.EntityKind()
 	case agentrunsubject.FieldDomainEntityID:
 		return m.DomainEntityID()
-	case agentrunsubject.FieldSubjectProperties:
-		return m.SubjectProperties()
+	case agentrunsubject.FieldExternalEntityID:
+		return m.ExternalEntityID()
+	case agentrunsubject.FieldMetadata:
+		return m.Metadata()
 	}
 	return nil, false
 }
@@ -6440,14 +6413,16 @@ func (m *AgentRunSubjectMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case agentrunsubject.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case agentrunsubject.FieldAgentRunID:
-		return m.OldAgentRunID(ctx)
 	case agentrunsubject.FieldSubjectKind:
 		return m.OldSubjectKind(ctx)
+	case agentrunsubject.FieldEntityKind:
+		return m.OldEntityKind(ctx)
 	case agentrunsubject.FieldDomainEntityID:
 		return m.OldDomainEntityID(ctx)
-	case agentrunsubject.FieldSubjectProperties:
-		return m.OldSubjectProperties(ctx)
+	case agentrunsubject.FieldExternalEntityID:
+		return m.OldExternalEntityID(ctx)
+	case agentrunsubject.FieldMetadata:
+		return m.OldMetadata(ctx)
 	}
 	return nil, fmt.Errorf("unknown AgentRunSubject field %s", name)
 }
@@ -6464,19 +6439,19 @@ func (m *AgentRunSubjectMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
-	case agentrunsubject.FieldAgentRunID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAgentRunID(v)
-		return nil
 	case agentrunsubject.FieldSubjectKind:
-		v, ok := value.(string)
+		v, ok := value.(agentrunsubject.SubjectKind)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSubjectKind(v)
+		return nil
+	case agentrunsubject.FieldEntityKind:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEntityKind(v)
 		return nil
 	case agentrunsubject.FieldDomainEntityID:
 		v, ok := value.(uuid.UUID)
@@ -6485,12 +6460,19 @@ func (m *AgentRunSubjectMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDomainEntityID(v)
 		return nil
-	case agentrunsubject.FieldSubjectProperties:
+	case agentrunsubject.FieldExternalEntityID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalEntityID(v)
+		return nil
+	case agentrunsubject.FieldMetadata:
 		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSubjectProperties(v)
+		m.SetMetadata(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRunSubject field %s", name)
@@ -6528,8 +6510,11 @@ func (m *AgentRunSubjectMutation) ClearedFields() []string {
 	if m.FieldCleared(agentrunsubject.FieldDomainEntityID) {
 		fields = append(fields, agentrunsubject.FieldDomainEntityID)
 	}
-	if m.FieldCleared(agentrunsubject.FieldSubjectProperties) {
-		fields = append(fields, agentrunsubject.FieldSubjectProperties)
+	if m.FieldCleared(agentrunsubject.FieldExternalEntityID) {
+		fields = append(fields, agentrunsubject.FieldExternalEntityID)
+	}
+	if m.FieldCleared(agentrunsubject.FieldMetadata) {
+		fields = append(fields, agentrunsubject.FieldMetadata)
 	}
 	return fields
 }
@@ -6548,8 +6533,11 @@ func (m *AgentRunSubjectMutation) ClearField(name string) error {
 	case agentrunsubject.FieldDomainEntityID:
 		m.ClearDomainEntityID()
 		return nil
-	case agentrunsubject.FieldSubjectProperties:
-		m.ClearSubjectProperties()
+	case agentrunsubject.FieldExternalEntityID:
+		m.ClearExternalEntityID()
+		return nil
+	case agentrunsubject.FieldMetadata:
+		m.ClearMetadata()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRunSubject nullable field %s", name)
@@ -6562,17 +6550,20 @@ func (m *AgentRunSubjectMutation) ResetField(name string) error {
 	case agentrunsubject.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case agentrunsubject.FieldAgentRunID:
-		m.ResetAgentRunID()
-		return nil
 	case agentrunsubject.FieldSubjectKind:
 		m.ResetSubjectKind()
+		return nil
+	case agentrunsubject.FieldEntityKind:
+		m.ResetEntityKind()
 		return nil
 	case agentrunsubject.FieldDomainEntityID:
 		m.ResetDomainEntityID()
 		return nil
-	case agentrunsubject.FieldSubjectProperties:
-		m.ResetSubjectProperties()
+	case agentrunsubject.FieldExternalEntityID:
+		m.ResetExternalEntityID()
+		return nil
+	case agentrunsubject.FieldMetadata:
+		m.ResetMetadata()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRunSubject field %s", name)
@@ -6580,12 +6571,9 @@ func (m *AgentRunSubjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentRunSubjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.tenant != nil {
 		edges = append(edges, agentrunsubject.EdgeTenant)
-	}
-	if m.agent_run != nil {
-		edges = append(edges, agentrunsubject.EdgeAgentRun)
 	}
 	return edges
 }
@@ -6598,17 +6586,13 @@ func (m *AgentRunSubjectMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case agentrunsubject.EdgeAgentRun:
-		if id := m.agent_run; id != nil {
-			return []ent.Value{*id}
-		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentRunSubjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -6620,12 +6604,9 @@ func (m *AgentRunSubjectMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentRunSubjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.clearedtenant {
 		edges = append(edges, agentrunsubject.EdgeTenant)
-	}
-	if m.clearedagent_run {
-		edges = append(edges, agentrunsubject.EdgeAgentRun)
 	}
 	return edges
 }
@@ -6636,8 +6617,6 @@ func (m *AgentRunSubjectMutation) EdgeCleared(name string) bool {
 	switch name {
 	case agentrunsubject.EdgeTenant:
 		return m.clearedtenant
-	case agentrunsubject.EdgeAgentRun:
-		return m.clearedagent_run
 	}
 	return false
 }
@@ -6649,9 +6628,6 @@ func (m *AgentRunSubjectMutation) ClearEdge(name string) error {
 	case agentrunsubject.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case agentrunsubject.EdgeAgentRun:
-		m.ClearAgentRun()
-		return nil
 	}
 	return fmt.Errorf("unknown AgentRunSubject unique edge %s", name)
 }
@@ -6662,9 +6638,6 @@ func (m *AgentRunSubjectMutation) ResetEdge(name string) error {
 	switch name {
 	case agentrunsubject.EdgeTenant:
 		m.ResetTenant()
-		return nil
-	case agentrunsubject.EdgeAgentRun:
-		m.ResetAgentRun()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRunSubject edge %s", name)

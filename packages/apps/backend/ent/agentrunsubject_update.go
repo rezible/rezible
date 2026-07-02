@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
@@ -31,30 +30,30 @@ func (_u *AgentRunSubjectUpdate) Where(ps ...predicate.AgentRunSubject) *AgentRu
 	return _u
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (_u *AgentRunSubjectUpdate) SetAgentRunID(v uuid.UUID) *AgentRunSubjectUpdate {
-	_u.mutation.SetAgentRunID(v)
-	return _u
-}
-
-// SetNillableAgentRunID sets the "agent_run_id" field if the given value is not nil.
-func (_u *AgentRunSubjectUpdate) SetNillableAgentRunID(v *uuid.UUID) *AgentRunSubjectUpdate {
-	if v != nil {
-		_u.SetAgentRunID(*v)
-	}
-	return _u
-}
-
 // SetSubjectKind sets the "subject_kind" field.
-func (_u *AgentRunSubjectUpdate) SetSubjectKind(v string) *AgentRunSubjectUpdate {
+func (_u *AgentRunSubjectUpdate) SetSubjectKind(v agentrunsubject.SubjectKind) *AgentRunSubjectUpdate {
 	_u.mutation.SetSubjectKind(v)
 	return _u
 }
 
 // SetNillableSubjectKind sets the "subject_kind" field if the given value is not nil.
-func (_u *AgentRunSubjectUpdate) SetNillableSubjectKind(v *string) *AgentRunSubjectUpdate {
+func (_u *AgentRunSubjectUpdate) SetNillableSubjectKind(v *agentrunsubject.SubjectKind) *AgentRunSubjectUpdate {
 	if v != nil {
 		_u.SetSubjectKind(*v)
+	}
+	return _u
+}
+
+// SetEntityKind sets the "entity_kind" field.
+func (_u *AgentRunSubjectUpdate) SetEntityKind(v string) *AgentRunSubjectUpdate {
+	_u.mutation.SetEntityKind(v)
+	return _u
+}
+
+// SetNillableEntityKind sets the "entity_kind" field if the given value is not nil.
+func (_u *AgentRunSubjectUpdate) SetNillableEntityKind(v *string) *AgentRunSubjectUpdate {
+	if v != nil {
+		_u.SetEntityKind(*v)
 	}
 	return _u
 }
@@ -79,32 +78,41 @@ func (_u *AgentRunSubjectUpdate) ClearDomainEntityID() *AgentRunSubjectUpdate {
 	return _u
 }
 
-// SetSubjectProperties sets the "subject_properties" field.
-func (_u *AgentRunSubjectUpdate) SetSubjectProperties(v map[string]interface{}) *AgentRunSubjectUpdate {
-	_u.mutation.SetSubjectProperties(v)
+// SetExternalEntityID sets the "external_entity_id" field.
+func (_u *AgentRunSubjectUpdate) SetExternalEntityID(v string) *AgentRunSubjectUpdate {
+	_u.mutation.SetExternalEntityID(v)
 	return _u
 }
 
-// ClearSubjectProperties clears the value of the "subject_properties" field.
-func (_u *AgentRunSubjectUpdate) ClearSubjectProperties() *AgentRunSubjectUpdate {
-	_u.mutation.ClearSubjectProperties()
+// SetNillableExternalEntityID sets the "external_entity_id" field if the given value is not nil.
+func (_u *AgentRunSubjectUpdate) SetNillableExternalEntityID(v *string) *AgentRunSubjectUpdate {
+	if v != nil {
+		_u.SetExternalEntityID(*v)
+	}
 	return _u
 }
 
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunSubjectUpdate) SetAgentRun(v *AgentRun) *AgentRunSubjectUpdate {
-	return _u.SetAgentRunID(v.ID)
+// ClearExternalEntityID clears the value of the "external_entity_id" field.
+func (_u *AgentRunSubjectUpdate) ClearExternalEntityID() *AgentRunSubjectUpdate {
+	_u.mutation.ClearExternalEntityID()
+	return _u
+}
+
+// SetMetadata sets the "metadata" field.
+func (_u *AgentRunSubjectUpdate) SetMetadata(v map[string]interface{}) *AgentRunSubjectUpdate {
+	_u.mutation.SetMetadata(v)
+	return _u
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *AgentRunSubjectUpdate) ClearMetadata() *AgentRunSubjectUpdate {
+	_u.mutation.ClearMetadata()
+	return _u
 }
 
 // Mutation returns the AgentRunSubjectMutation object of the builder.
 func (_u *AgentRunSubjectUpdate) Mutation() *AgentRunSubjectMutation {
 	return _u.mutation
-}
-
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunSubjectUpdate) ClearAgentRun() *AgentRunSubjectUpdate {
-	_u.mutation.ClearAgentRun()
-	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -144,9 +152,6 @@ func (_u *AgentRunSubjectUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunSubject.tenant"`)
 	}
-	if _u.mutation.AgentRunCleared() && len(_u.mutation.AgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRunSubject.agent_run"`)
-	}
 	return nil
 }
 
@@ -169,7 +174,10 @@ func (_u *AgentRunSubjectUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 	}
 	if value, ok := _u.mutation.SubjectKind(); ok {
-		_spec.SetField(agentrunsubject.FieldSubjectKind, field.TypeString, value)
+		_spec.SetField(agentrunsubject.FieldSubjectKind, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.EntityKind(); ok {
+		_spec.SetField(agentrunsubject.FieldEntityKind, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.DomainEntityID(); ok {
 		_spec.SetField(agentrunsubject.FieldDomainEntityID, field.TypeUUID, value)
@@ -177,42 +185,17 @@ func (_u *AgentRunSubjectUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if _u.mutation.DomainEntityIDCleared() {
 		_spec.ClearField(agentrunsubject.FieldDomainEntityID, field.TypeUUID)
 	}
-	if value, ok := _u.mutation.SubjectProperties(); ok {
-		_spec.SetField(agentrunsubject.FieldSubjectProperties, field.TypeJSON, value)
+	if value, ok := _u.mutation.ExternalEntityID(); ok {
+		_spec.SetField(agentrunsubject.FieldExternalEntityID, field.TypeString, value)
 	}
-	if _u.mutation.SubjectPropertiesCleared() {
-		_spec.ClearField(agentrunsubject.FieldSubjectProperties, field.TypeJSON)
+	if _u.mutation.ExternalEntityIDCleared() {
+		_spec.ClearField(agentrunsubject.FieldExternalEntityID, field.TypeString)
 	}
-	if _u.mutation.AgentRunCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentrunsubject.AgentRunTable,
-			Columns: []string{agentrunsubject.AgentRunColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunSubject
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(agentrunsubject.FieldMetadata, field.TypeJSON, value)
 	}
-	if nodes := _u.mutation.AgentRunIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentrunsubject.AgentRunTable,
-			Columns: []string{agentrunsubject.AgentRunColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunSubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(agentrunsubject.FieldMetadata, field.TypeJSON)
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentRunSubject
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
@@ -238,30 +221,30 @@ type AgentRunSubjectUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (_u *AgentRunSubjectUpdateOne) SetAgentRunID(v uuid.UUID) *AgentRunSubjectUpdateOne {
-	_u.mutation.SetAgentRunID(v)
-	return _u
-}
-
-// SetNillableAgentRunID sets the "agent_run_id" field if the given value is not nil.
-func (_u *AgentRunSubjectUpdateOne) SetNillableAgentRunID(v *uuid.UUID) *AgentRunSubjectUpdateOne {
-	if v != nil {
-		_u.SetAgentRunID(*v)
-	}
-	return _u
-}
-
 // SetSubjectKind sets the "subject_kind" field.
-func (_u *AgentRunSubjectUpdateOne) SetSubjectKind(v string) *AgentRunSubjectUpdateOne {
+func (_u *AgentRunSubjectUpdateOne) SetSubjectKind(v agentrunsubject.SubjectKind) *AgentRunSubjectUpdateOne {
 	_u.mutation.SetSubjectKind(v)
 	return _u
 }
 
 // SetNillableSubjectKind sets the "subject_kind" field if the given value is not nil.
-func (_u *AgentRunSubjectUpdateOne) SetNillableSubjectKind(v *string) *AgentRunSubjectUpdateOne {
+func (_u *AgentRunSubjectUpdateOne) SetNillableSubjectKind(v *agentrunsubject.SubjectKind) *AgentRunSubjectUpdateOne {
 	if v != nil {
 		_u.SetSubjectKind(*v)
+	}
+	return _u
+}
+
+// SetEntityKind sets the "entity_kind" field.
+func (_u *AgentRunSubjectUpdateOne) SetEntityKind(v string) *AgentRunSubjectUpdateOne {
+	_u.mutation.SetEntityKind(v)
+	return _u
+}
+
+// SetNillableEntityKind sets the "entity_kind" field if the given value is not nil.
+func (_u *AgentRunSubjectUpdateOne) SetNillableEntityKind(v *string) *AgentRunSubjectUpdateOne {
+	if v != nil {
+		_u.SetEntityKind(*v)
 	}
 	return _u
 }
@@ -286,32 +269,41 @@ func (_u *AgentRunSubjectUpdateOne) ClearDomainEntityID() *AgentRunSubjectUpdate
 	return _u
 }
 
-// SetSubjectProperties sets the "subject_properties" field.
-func (_u *AgentRunSubjectUpdateOne) SetSubjectProperties(v map[string]interface{}) *AgentRunSubjectUpdateOne {
-	_u.mutation.SetSubjectProperties(v)
+// SetExternalEntityID sets the "external_entity_id" field.
+func (_u *AgentRunSubjectUpdateOne) SetExternalEntityID(v string) *AgentRunSubjectUpdateOne {
+	_u.mutation.SetExternalEntityID(v)
 	return _u
 }
 
-// ClearSubjectProperties clears the value of the "subject_properties" field.
-func (_u *AgentRunSubjectUpdateOne) ClearSubjectProperties() *AgentRunSubjectUpdateOne {
-	_u.mutation.ClearSubjectProperties()
+// SetNillableExternalEntityID sets the "external_entity_id" field if the given value is not nil.
+func (_u *AgentRunSubjectUpdateOne) SetNillableExternalEntityID(v *string) *AgentRunSubjectUpdateOne {
+	if v != nil {
+		_u.SetExternalEntityID(*v)
+	}
 	return _u
 }
 
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunSubjectUpdateOne) SetAgentRun(v *AgentRun) *AgentRunSubjectUpdateOne {
-	return _u.SetAgentRunID(v.ID)
+// ClearExternalEntityID clears the value of the "external_entity_id" field.
+func (_u *AgentRunSubjectUpdateOne) ClearExternalEntityID() *AgentRunSubjectUpdateOne {
+	_u.mutation.ClearExternalEntityID()
+	return _u
+}
+
+// SetMetadata sets the "metadata" field.
+func (_u *AgentRunSubjectUpdateOne) SetMetadata(v map[string]interface{}) *AgentRunSubjectUpdateOne {
+	_u.mutation.SetMetadata(v)
+	return _u
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *AgentRunSubjectUpdateOne) ClearMetadata() *AgentRunSubjectUpdateOne {
+	_u.mutation.ClearMetadata()
+	return _u
 }
 
 // Mutation returns the AgentRunSubjectMutation object of the builder.
 func (_u *AgentRunSubjectUpdateOne) Mutation() *AgentRunSubjectMutation {
 	return _u.mutation
-}
-
-// ClearAgentRun clears the "agent_run" edge to the AgentRun entity.
-func (_u *AgentRunSubjectUpdateOne) ClearAgentRun() *AgentRunSubjectUpdateOne {
-	_u.mutation.ClearAgentRun()
-	return _u
 }
 
 // Where appends a list predicates to the AgentRunSubjectUpdate builder.
@@ -364,9 +356,6 @@ func (_u *AgentRunSubjectUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunSubject.tenant"`)
 	}
-	if _u.mutation.AgentRunCleared() && len(_u.mutation.AgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRunSubject.agent_run"`)
-	}
 	return nil
 }
 
@@ -406,7 +395,10 @@ func (_u *AgentRunSubjectUpdateOne) sqlSave(ctx context.Context) (_node *AgentRu
 		}
 	}
 	if value, ok := _u.mutation.SubjectKind(); ok {
-		_spec.SetField(agentrunsubject.FieldSubjectKind, field.TypeString, value)
+		_spec.SetField(agentrunsubject.FieldSubjectKind, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.EntityKind(); ok {
+		_spec.SetField(agentrunsubject.FieldEntityKind, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.DomainEntityID(); ok {
 		_spec.SetField(agentrunsubject.FieldDomainEntityID, field.TypeUUID, value)
@@ -414,42 +406,17 @@ func (_u *AgentRunSubjectUpdateOne) sqlSave(ctx context.Context) (_node *AgentRu
 	if _u.mutation.DomainEntityIDCleared() {
 		_spec.ClearField(agentrunsubject.FieldDomainEntityID, field.TypeUUID)
 	}
-	if value, ok := _u.mutation.SubjectProperties(); ok {
-		_spec.SetField(agentrunsubject.FieldSubjectProperties, field.TypeJSON, value)
+	if value, ok := _u.mutation.ExternalEntityID(); ok {
+		_spec.SetField(agentrunsubject.FieldExternalEntityID, field.TypeString, value)
 	}
-	if _u.mutation.SubjectPropertiesCleared() {
-		_spec.ClearField(agentrunsubject.FieldSubjectProperties, field.TypeJSON)
+	if _u.mutation.ExternalEntityIDCleared() {
+		_spec.ClearField(agentrunsubject.FieldExternalEntityID, field.TypeString)
 	}
-	if _u.mutation.AgentRunCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentrunsubject.AgentRunTable,
-			Columns: []string{agentrunsubject.AgentRunColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunSubject
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(agentrunsubject.FieldMetadata, field.TypeJSON, value)
 	}
-	if nodes := _u.mutation.AgentRunIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentrunsubject.AgentRunTable,
-			Columns: []string{agentrunsubject.AgentRunColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentRunSubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(agentrunsubject.FieldMetadata, field.TypeJSON)
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentRunSubject
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

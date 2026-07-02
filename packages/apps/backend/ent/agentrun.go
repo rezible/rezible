@@ -34,10 +34,8 @@ type AgentRun struct {
 	Workflow string `json:"workflow,omitempty"`
 	// Input holds the value of the "input" field.
 	Input []byte `json:"input,omitempty"`
-	// TriggerKind holds the value of the "trigger_kind" field.
-	TriggerKind agentrun.TriggerKind `json:"trigger_kind,omitempty"`
-	// TriggerMetadata holds the value of the "trigger_metadata" field.
-	TriggerMetadata map[string]interface{} `json:"trigger_metadata,omitempty"`
+	// Metadata holds the value of the "metadata" field.
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentRunQuery when eager-loading is set.
 	Edges            AgentRunEdges `json:"edges"`
@@ -53,10 +51,10 @@ type AgentRunEdges struct {
 	OwnerUser *User `json:"owner_user,omitempty"`
 	// Subjects holds the value of the subjects edge.
 	Subjects []*AgentRunSubject `json:"subjects,omitempty"`
-	// Snapshots holds the value of the snapshots edge.
-	Snapshots []*AgentRunSnapshot `json:"snapshots,omitempty"`
 	// Result holds the value of the result edge.
 	Result *AgentRunResult `json:"result,omitempty"`
+	// Snapshots holds the value of the snapshots edge.
+	Snapshots []*AgentRunSnapshot `json:"snapshots,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [5]bool
@@ -93,24 +91,24 @@ func (e AgentRunEdges) SubjectsOrErr() ([]*AgentRunSubject, error) {
 	return nil, &NotLoadedError{edge: "subjects"}
 }
 
-// SnapshotsOrErr returns the Snapshots value or an error if the edge
-// was not loaded in eager-loading.
-func (e AgentRunEdges) SnapshotsOrErr() ([]*AgentRunSnapshot, error) {
-	if e.loadedTypes[3] {
-		return e.Snapshots, nil
-	}
-	return nil, &NotLoadedError{edge: "snapshots"}
-}
-
 // ResultOrErr returns the Result value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e AgentRunEdges) ResultOrErr() (*AgentRunResult, error) {
 	if e.Result != nil {
 		return e.Result, nil
-	} else if e.loadedTypes[4] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: agentrunresult.Label}
 	}
 	return nil, &NotLoadedError{edge: "result"}
+}
+
+// SnapshotsOrErr returns the Snapshots value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentRunEdges) SnapshotsOrErr() ([]*AgentRunSnapshot, error) {
+	if e.loadedTypes[4] {
+		return e.Snapshots, nil
+	}
+	return nil, &NotLoadedError{edge: "snapshots"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -118,11 +116,11 @@ func (*AgentRun) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentrun.FieldInput, agentrun.FieldTriggerMetadata:
+		case agentrun.FieldInput, agentrun.FieldMetadata:
 			values[i] = new([]byte)
 		case agentrun.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case agentrun.FieldWorkflow, agentrun.FieldTriggerKind:
+		case agentrun.FieldWorkflow:
 			values[i] = new(sql.NullString)
 		case agentrun.FieldCreatedAt, agentrun.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -187,18 +185,12 @@ func (_m *AgentRun) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.Input = *value
 			}
-		case agentrun.FieldTriggerKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field trigger_kind", values[i])
-			} else if value.Valid {
-				_m.TriggerKind = agentrun.TriggerKind(value.String)
-			}
-		case agentrun.FieldTriggerMetadata:
+		case agentrun.FieldMetadata:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field trigger_metadata", values[i])
+				return fmt.Errorf("unexpected type %T for field metadata", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.TriggerMetadata); err != nil {
-					return fmt.Errorf("unmarshal field trigger_metadata: %w", err)
+				if err := json.Unmarshal(*value, &_m.Metadata); err != nil {
+					return fmt.Errorf("unmarshal field metadata: %w", err)
 				}
 			}
 		case agentrun.ForeignKeys[0]:
@@ -236,14 +228,14 @@ func (_m *AgentRun) QuerySubjects() *AgentRunSubjectQuery {
 	return NewAgentRunClient(_m.config).QuerySubjects(_m)
 }
 
-// QuerySnapshots queries the "snapshots" edge of the AgentRun entity.
-func (_m *AgentRun) QuerySnapshots() *AgentRunSnapshotQuery {
-	return NewAgentRunClient(_m.config).QuerySnapshots(_m)
-}
-
 // QueryResult queries the "result" edge of the AgentRun entity.
 func (_m *AgentRun) QueryResult() *AgentRunResultQuery {
 	return NewAgentRunClient(_m.config).QueryResult(_m)
+}
+
+// QuerySnapshots queries the "snapshots" edge of the AgentRun entity.
+func (_m *AgentRun) QuerySnapshots() *AgentRunSnapshotQuery {
+	return NewAgentRunClient(_m.config).QuerySnapshots(_m)
 }
 
 // Update returns a builder for updating this AgentRun.
@@ -287,11 +279,8 @@ func (_m *AgentRun) String() string {
 	builder.WriteString("input=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Input))
 	builder.WriteString(", ")
-	builder.WriteString("trigger_kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.TriggerKind))
-	builder.WriteString(", ")
-	builder.WriteString("trigger_metadata=")
-	builder.WriteString(fmt.Sprintf("%v", _m.TriggerMetadata))
+	builder.WriteString("metadata=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Metadata))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -21,9 +21,8 @@ func (h *agentsHandler) RequestAgentRun(ctx context.Context, req *oapi.RequestAg
 	var resp oapi.RequestAgentRunResponse
 	attr := req.Body.Attributes
 	params := rez.CreateAgentRunParams{
-		Workflow:    attr.Workflow,
-		Input:       attr.Input,
-		TriggerKind: "manual",
+		Workflow: attr.Workflow,
+		Input:    attr.Input,
 	}
 	run, createErr := h.agents.CreateRun(ctx, params)
 	if createErr != nil {

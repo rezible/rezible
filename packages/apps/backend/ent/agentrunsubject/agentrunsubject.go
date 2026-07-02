@@ -3,6 +3,8 @@
 package agentrunsubject
 
 import (
+	"fmt"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -16,18 +18,18 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldAgentRunID holds the string denoting the agent_run_id field in the database.
-	FieldAgentRunID = "agent_run_id"
 	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
 	FieldSubjectKind = "subject_kind"
+	// FieldEntityKind holds the string denoting the entity_kind field in the database.
+	FieldEntityKind = "entity_kind"
 	// FieldDomainEntityID holds the string denoting the domain_entity_id field in the database.
 	FieldDomainEntityID = "domain_entity_id"
-	// FieldSubjectProperties holds the string denoting the subject_properties field in the database.
-	FieldSubjectProperties = "subject_properties"
+	// FieldExternalEntityID holds the string denoting the external_entity_id field in the database.
+	FieldExternalEntityID = "external_entity_id"
+	// FieldMetadata holds the string denoting the metadata field in the database.
+	FieldMetadata = "metadata"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeAgentRun holds the string denoting the agent_run edge name in mutations.
-	EdgeAgentRun = "agent_run"
 	// Table holds the table name of the agentrunsubject in the database.
 	Table = "agent_run_subjects"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -37,29 +39,34 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// AgentRunTable is the table that holds the agent_run relation/edge.
-	AgentRunTable = "agent_run_subjects"
-	// AgentRunInverseTable is the table name for the AgentRun entity.
-	// It exists in this package in order to avoid circular dependency with the "agentrun" package.
-	AgentRunInverseTable = "agent_runs"
-	// AgentRunColumn is the table column denoting the agent_run relation/edge.
-	AgentRunColumn = "agent_run_id"
 )
 
 // Columns holds all SQL columns for agentrunsubject fields.
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldAgentRunID,
 	FieldSubjectKind,
+	FieldEntityKind,
 	FieldDomainEntityID,
-	FieldSubjectProperties,
+	FieldExternalEntityID,
+	FieldMetadata,
+}
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the "agent_run_subjects"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"agent_run_subjects",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -74,11 +81,32 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// SubjectKindValidator is a validator for the "subject_kind" field. It is called by the builders before save.
-	SubjectKindValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// SubjectKind defines the type for the "subject_kind" enum field.
+type SubjectKind string
+
+// SubjectKind values.
+const (
+	SubjectKindDomain   SubjectKind = "domain"
+	SubjectKindExternal SubjectKind = "external"
+)
+
+func (sk SubjectKind) String() string {
+	return string(sk)
+}
+
+// SubjectKindValidator is a validator for the "subject_kind" field enum values. It is called by the builders before save.
+func SubjectKindValidator(sk SubjectKind) error {
+	switch sk {
+	case SubjectKindDomain, SubjectKindExternal:
+		return nil
+	default:
+		return fmt.Errorf("agentrunsubject: invalid enum value for subject_kind field: %q", sk)
+	}
+}
 
 // OrderOption defines the ordering options for the AgentRunSubject queries.
 type OrderOption func(*sql.Selector)
@@ -93,19 +121,24 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByAgentRunID orders the results by the agent_run_id field.
-func ByAgentRunID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAgentRunID, opts...).ToFunc()
-}
-
 // BySubjectKind orders the results by the subject_kind field.
 func BySubjectKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSubjectKind, opts...).ToFunc()
 }
 
+// ByEntityKind orders the results by the entity_kind field.
+func ByEntityKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEntityKind, opts...).ToFunc()
+}
+
 // ByDomainEntityID orders the results by the domain_entity_id field.
 func ByDomainEntityID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDomainEntityID, opts...).ToFunc()
+}
+
+// ByExternalEntityID orders the results by the external_entity_id field.
+func ByExternalEntityID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExternalEntityID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -114,24 +147,10 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByAgentRunField orders the results by agent_run field.
-func ByAgentRunField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAgentRunStep(), sql.OrderByField(field, opts...))
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newAgentRunStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AgentRunInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AgentRunTable, AgentRunColumn),
 	)
 }

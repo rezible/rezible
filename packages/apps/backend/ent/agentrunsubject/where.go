@@ -60,19 +60,19 @@ func TenantID(v int) predicate.AgentRunSubject {
 	return predicate.AgentRunSubject(sql.FieldEQ(FieldTenantID, v))
 }
 
-// AgentRunID applies equality check predicate on the "agent_run_id" field. It's identical to AgentRunIDEQ.
-func AgentRunID(v uuid.UUID) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldEQ(FieldAgentRunID, v))
-}
-
-// SubjectKind applies equality check predicate on the "subject_kind" field. It's identical to SubjectKindEQ.
-func SubjectKind(v string) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldEQ(FieldSubjectKind, v))
+// EntityKind applies equality check predicate on the "entity_kind" field. It's identical to EntityKindEQ.
+func EntityKind(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldEQ(FieldEntityKind, v))
 }
 
 // DomainEntityID applies equality check predicate on the "domain_entity_id" field. It's identical to DomainEntityIDEQ.
 func DomainEntityID(v uuid.UUID) predicate.AgentRunSubject {
 	return predicate.AgentRunSubject(sql.FieldEQ(FieldDomainEntityID, v))
+}
+
+// ExternalEntityID applies equality check predicate on the "external_entity_id" field. It's identical to ExternalEntityIDEQ.
+func ExternalEntityID(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldEQ(FieldExternalEntityID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -95,89 +95,89 @@ func TenantIDNotIn(vs ...int) predicate.AgentRunSubject {
 	return predicate.AgentRunSubject(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
-// AgentRunIDEQ applies the EQ predicate on the "agent_run_id" field.
-func AgentRunIDEQ(v uuid.UUID) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldEQ(FieldAgentRunID, v))
-}
-
-// AgentRunIDNEQ applies the NEQ predicate on the "agent_run_id" field.
-func AgentRunIDNEQ(v uuid.UUID) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldNEQ(FieldAgentRunID, v))
-}
-
-// AgentRunIDIn applies the In predicate on the "agent_run_id" field.
-func AgentRunIDIn(vs ...uuid.UUID) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldIn(FieldAgentRunID, vs...))
-}
-
-// AgentRunIDNotIn applies the NotIn predicate on the "agent_run_id" field.
-func AgentRunIDNotIn(vs ...uuid.UUID) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldNotIn(FieldAgentRunID, vs...))
-}
-
 // SubjectKindEQ applies the EQ predicate on the "subject_kind" field.
-func SubjectKindEQ(v string) predicate.AgentRunSubject {
+func SubjectKindEQ(v SubjectKind) predicate.AgentRunSubject {
 	return predicate.AgentRunSubject(sql.FieldEQ(FieldSubjectKind, v))
 }
 
 // SubjectKindNEQ applies the NEQ predicate on the "subject_kind" field.
-func SubjectKindNEQ(v string) predicate.AgentRunSubject {
+func SubjectKindNEQ(v SubjectKind) predicate.AgentRunSubject {
 	return predicate.AgentRunSubject(sql.FieldNEQ(FieldSubjectKind, v))
 }
 
 // SubjectKindIn applies the In predicate on the "subject_kind" field.
-func SubjectKindIn(vs ...string) predicate.AgentRunSubject {
+func SubjectKindIn(vs ...SubjectKind) predicate.AgentRunSubject {
 	return predicate.AgentRunSubject(sql.FieldIn(FieldSubjectKind, vs...))
 }
 
 // SubjectKindNotIn applies the NotIn predicate on the "subject_kind" field.
-func SubjectKindNotIn(vs ...string) predicate.AgentRunSubject {
+func SubjectKindNotIn(vs ...SubjectKind) predicate.AgentRunSubject {
 	return predicate.AgentRunSubject(sql.FieldNotIn(FieldSubjectKind, vs...))
 }
 
-// SubjectKindGT applies the GT predicate on the "subject_kind" field.
-func SubjectKindGT(v string) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldGT(FieldSubjectKind, v))
+// EntityKindEQ applies the EQ predicate on the "entity_kind" field.
+func EntityKindEQ(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldEQ(FieldEntityKind, v))
 }
 
-// SubjectKindGTE applies the GTE predicate on the "subject_kind" field.
-func SubjectKindGTE(v string) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldGTE(FieldSubjectKind, v))
+// EntityKindNEQ applies the NEQ predicate on the "entity_kind" field.
+func EntityKindNEQ(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldNEQ(FieldEntityKind, v))
 }
 
-// SubjectKindLT applies the LT predicate on the "subject_kind" field.
-func SubjectKindLT(v string) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldLT(FieldSubjectKind, v))
+// EntityKindIn applies the In predicate on the "entity_kind" field.
+func EntityKindIn(vs ...string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldIn(FieldEntityKind, vs...))
 }
 
-// SubjectKindLTE applies the LTE predicate on the "subject_kind" field.
-func SubjectKindLTE(v string) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldLTE(FieldSubjectKind, v))
+// EntityKindNotIn applies the NotIn predicate on the "entity_kind" field.
+func EntityKindNotIn(vs ...string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldNotIn(FieldEntityKind, vs...))
 }
 
-// SubjectKindContains applies the Contains predicate on the "subject_kind" field.
-func SubjectKindContains(v string) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldContains(FieldSubjectKind, v))
+// EntityKindGT applies the GT predicate on the "entity_kind" field.
+func EntityKindGT(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldGT(FieldEntityKind, v))
 }
 
-// SubjectKindHasPrefix applies the HasPrefix predicate on the "subject_kind" field.
-func SubjectKindHasPrefix(v string) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldHasPrefix(FieldSubjectKind, v))
+// EntityKindGTE applies the GTE predicate on the "entity_kind" field.
+func EntityKindGTE(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldGTE(FieldEntityKind, v))
 }
 
-// SubjectKindHasSuffix applies the HasSuffix predicate on the "subject_kind" field.
-func SubjectKindHasSuffix(v string) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldHasSuffix(FieldSubjectKind, v))
+// EntityKindLT applies the LT predicate on the "entity_kind" field.
+func EntityKindLT(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldLT(FieldEntityKind, v))
 }
 
-// SubjectKindEqualFold applies the EqualFold predicate on the "subject_kind" field.
-func SubjectKindEqualFold(v string) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldEqualFold(FieldSubjectKind, v))
+// EntityKindLTE applies the LTE predicate on the "entity_kind" field.
+func EntityKindLTE(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldLTE(FieldEntityKind, v))
 }
 
-// SubjectKindContainsFold applies the ContainsFold predicate on the "subject_kind" field.
-func SubjectKindContainsFold(v string) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldContainsFold(FieldSubjectKind, v))
+// EntityKindContains applies the Contains predicate on the "entity_kind" field.
+func EntityKindContains(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldContains(FieldEntityKind, v))
+}
+
+// EntityKindHasPrefix applies the HasPrefix predicate on the "entity_kind" field.
+func EntityKindHasPrefix(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldHasPrefix(FieldEntityKind, v))
+}
+
+// EntityKindHasSuffix applies the HasSuffix predicate on the "entity_kind" field.
+func EntityKindHasSuffix(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldHasSuffix(FieldEntityKind, v))
+}
+
+// EntityKindEqualFold applies the EqualFold predicate on the "entity_kind" field.
+func EntityKindEqualFold(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldEqualFold(FieldEntityKind, v))
+}
+
+// EntityKindContainsFold applies the ContainsFold predicate on the "entity_kind" field.
+func EntityKindContainsFold(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldContainsFold(FieldEntityKind, v))
 }
 
 // DomainEntityIDEQ applies the EQ predicate on the "domain_entity_id" field.
@@ -230,14 +230,89 @@ func DomainEntityIDNotNil() predicate.AgentRunSubject {
 	return predicate.AgentRunSubject(sql.FieldNotNull(FieldDomainEntityID))
 }
 
-// SubjectPropertiesIsNil applies the IsNil predicate on the "subject_properties" field.
-func SubjectPropertiesIsNil() predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldIsNull(FieldSubjectProperties))
+// ExternalEntityIDEQ applies the EQ predicate on the "external_entity_id" field.
+func ExternalEntityIDEQ(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldEQ(FieldExternalEntityID, v))
 }
 
-// SubjectPropertiesNotNil applies the NotNil predicate on the "subject_properties" field.
-func SubjectPropertiesNotNil() predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(sql.FieldNotNull(FieldSubjectProperties))
+// ExternalEntityIDNEQ applies the NEQ predicate on the "external_entity_id" field.
+func ExternalEntityIDNEQ(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldNEQ(FieldExternalEntityID, v))
+}
+
+// ExternalEntityIDIn applies the In predicate on the "external_entity_id" field.
+func ExternalEntityIDIn(vs ...string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldIn(FieldExternalEntityID, vs...))
+}
+
+// ExternalEntityIDNotIn applies the NotIn predicate on the "external_entity_id" field.
+func ExternalEntityIDNotIn(vs ...string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldNotIn(FieldExternalEntityID, vs...))
+}
+
+// ExternalEntityIDGT applies the GT predicate on the "external_entity_id" field.
+func ExternalEntityIDGT(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldGT(FieldExternalEntityID, v))
+}
+
+// ExternalEntityIDGTE applies the GTE predicate on the "external_entity_id" field.
+func ExternalEntityIDGTE(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldGTE(FieldExternalEntityID, v))
+}
+
+// ExternalEntityIDLT applies the LT predicate on the "external_entity_id" field.
+func ExternalEntityIDLT(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldLT(FieldExternalEntityID, v))
+}
+
+// ExternalEntityIDLTE applies the LTE predicate on the "external_entity_id" field.
+func ExternalEntityIDLTE(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldLTE(FieldExternalEntityID, v))
+}
+
+// ExternalEntityIDContains applies the Contains predicate on the "external_entity_id" field.
+func ExternalEntityIDContains(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldContains(FieldExternalEntityID, v))
+}
+
+// ExternalEntityIDHasPrefix applies the HasPrefix predicate on the "external_entity_id" field.
+func ExternalEntityIDHasPrefix(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldHasPrefix(FieldExternalEntityID, v))
+}
+
+// ExternalEntityIDHasSuffix applies the HasSuffix predicate on the "external_entity_id" field.
+func ExternalEntityIDHasSuffix(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldHasSuffix(FieldExternalEntityID, v))
+}
+
+// ExternalEntityIDIsNil applies the IsNil predicate on the "external_entity_id" field.
+func ExternalEntityIDIsNil() predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldIsNull(FieldExternalEntityID))
+}
+
+// ExternalEntityIDNotNil applies the NotNil predicate on the "external_entity_id" field.
+func ExternalEntityIDNotNil() predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldNotNull(FieldExternalEntityID))
+}
+
+// ExternalEntityIDEqualFold applies the EqualFold predicate on the "external_entity_id" field.
+func ExternalEntityIDEqualFold(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldEqualFold(FieldExternalEntityID, v))
+}
+
+// ExternalEntityIDContainsFold applies the ContainsFold predicate on the "external_entity_id" field.
+func ExternalEntityIDContainsFold(v string) predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldContainsFold(FieldExternalEntityID, v))
+}
+
+// MetadataIsNil applies the IsNil predicate on the "metadata" field.
+func MetadataIsNil() predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldIsNull(FieldMetadata))
+}
+
+// MetadataNotNil applies the NotNil predicate on the "metadata" field.
+func MetadataNotNil() predicate.AgentRunSubject {
+	return predicate.AgentRunSubject(sql.FieldNotNull(FieldMetadata))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -260,35 +335,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.AgentRunSubject {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AgentRunSubject
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasAgentRun applies the HasEdge predicate on the "agent_run" edge.
-func HasAgentRun() predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AgentRunTable, AgentRunColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRun
-		step.Edge.Schema = schemaConfig.AgentRunSubject
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAgentRunWith applies the HasEdge predicate on the "agent_run" edge with a given conditions (other predicates).
-func HasAgentRunWith(preds ...predicate.AgentRun) predicate.AgentRunSubject {
-	return predicate.AgentRunSubject(func(s *sql.Selector) {
-		step := newAgentRunStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRun
 		step.Edge.Schema = schemaConfig.AgentRunSubject
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

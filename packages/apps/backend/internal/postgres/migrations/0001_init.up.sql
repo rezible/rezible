@@ -1,5 +1,5 @@
 -- create "agent_runs" table
-CREATE TABLE "agent_runs" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "workflow" character varying NOT NULL, "input" bytea NOT NULL, "trigger_kind" character varying NOT NULL, "trigger_metadata" jsonb NULL, "tenant_id" bigint NOT NULL, "owner_user_id" uuid NOT NULL, "agent_run_result" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "agent_runs" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "workflow" character varying NOT NULL, "input" bytea NOT NULL, "metadata" jsonb NULL, "tenant_id" bigint NOT NULL, "owner_user_id" uuid NOT NULL, "agent_run_result" uuid NULL, PRIMARY KEY ("id"));
 -- create index "agentrun_tenant_id" to table: "agent_runs"
 CREATE INDEX "agentrun_tenant_id" ON "agent_runs" ("tenant_id");
 -- create index "agentrun_tenant_id_owner_user_id_created_at" to table: "agent_runs"
@@ -53,11 +53,15 @@ CREATE INDEX "agentrunsnapshot_tenant_id_agent_run_id" ON "agent_run_snapshots" 
 -- create index "agentrunsnapshot_tenant_id_agent_run_id_created_at" to table: "agent_run_snapshots"
 CREATE INDEX "agentrunsnapshot_tenant_id_agent_run_id_created_at" ON "agent_run_snapshots" ("tenant_id", "agent_run_id", "created_at");
 -- create "agent_run_subjects" table
-CREATE TABLE "agent_run_subjects" ("id" uuid NOT NULL, "subject_kind" character varying NOT NULL, "domain_entity_id" uuid NULL, "subject_properties" jsonb NULL, "tenant_id" bigint NOT NULL, "agent_run_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "agent_run_subjects" ("id" uuid NOT NULL, "subject_kind" character varying NOT NULL, "entity_kind" character varying NOT NULL, "domain_entity_id" uuid NULL, "external_entity_id" character varying NULL, "metadata" jsonb NULL, "agent_run_subjects" uuid NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "agentrunsubject_tenant_id" to table: "agent_run_subjects"
 CREATE INDEX "agentrunsubject_tenant_id" ON "agent_run_subjects" ("tenant_id");
--- create index "agentrunsubject_tenant_id_agent_run_id" to table: "agent_run_subjects"
-CREATE INDEX "agentrunsubject_tenant_id_agent_run_id" ON "agent_run_subjects" ("tenant_id", "agent_run_id");
+-- create index "agentrunsubject_tenant_id_subject_kind_entity_kind" to table: "agent_run_subjects"
+CREATE INDEX "agentrunsubject_tenant_id_subject_kind_entity_kind" ON "agent_run_subjects" ("tenant_id", "subject_kind", "entity_kind");
+-- create index "agentrunsubject_tenant_id_domain_entity_id" to table: "agent_run_subjects"
+CREATE INDEX "agentrunsubject_tenant_id_domain_entity_id" ON "agent_run_subjects" ("tenant_id", "domain_entity_id");
+-- create index "agentrunsubject_tenant_id_external_entity_id" to table: "agent_run_subjects"
+CREATE INDEX "agentrunsubject_tenant_id_external_entity_id" ON "agent_run_subjects" ("tenant_id", "external_entity_id");
 -- create "alerts" table
 CREATE TABLE "alerts" ("id" uuid NOT NULL, "title" character varying NOT NULL, "description" character varying NULL, "definition" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "alert_tenant_id" to table: "alerts"
@@ -513,7 +517,7 @@ ALTER TABLE "agent_run_results" ADD CONSTRAINT "agent_run_results_tenants_tenant
 -- modify "agent_run_snapshots" table
 ALTER TABLE "agent_run_snapshots" ADD CONSTRAINT "agent_run_snapshots_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_snapshots_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE NO ACTION;
 -- modify "agent_run_subjects" table
-ALTER TABLE "agent_run_subjects" ADD CONSTRAINT "agent_run_subjects_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_subjects_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE NO ACTION;
+ALTER TABLE "agent_run_subjects" ADD CONSTRAINT "agent_run_subjects_agent_runs_subjects" FOREIGN KEY ("agent_run_subjects") REFERENCES "agent_runs" ("id") ON DELETE SET NULL, ADD CONSTRAINT "agent_run_subjects_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "alerts" table
 ALTER TABLE "alerts" ADD CONSTRAINT "alerts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alerts_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
 -- modify "alert_feedbacks" table

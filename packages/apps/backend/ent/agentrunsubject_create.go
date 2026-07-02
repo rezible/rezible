@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -31,15 +30,15 @@ func (_c *AgentRunSubjectCreate) SetTenantID(v int) *AgentRunSubjectCreate {
 	return _c
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (_c *AgentRunSubjectCreate) SetAgentRunID(v uuid.UUID) *AgentRunSubjectCreate {
-	_c.mutation.SetAgentRunID(v)
+// SetSubjectKind sets the "subject_kind" field.
+func (_c *AgentRunSubjectCreate) SetSubjectKind(v agentrunsubject.SubjectKind) *AgentRunSubjectCreate {
+	_c.mutation.SetSubjectKind(v)
 	return _c
 }
 
-// SetSubjectKind sets the "subject_kind" field.
-func (_c *AgentRunSubjectCreate) SetSubjectKind(v string) *AgentRunSubjectCreate {
-	_c.mutation.SetSubjectKind(v)
+// SetEntityKind sets the "entity_kind" field.
+func (_c *AgentRunSubjectCreate) SetEntityKind(v string) *AgentRunSubjectCreate {
+	_c.mutation.SetEntityKind(v)
 	return _c
 }
 
@@ -57,9 +56,23 @@ func (_c *AgentRunSubjectCreate) SetNillableDomainEntityID(v *uuid.UUID) *AgentR
 	return _c
 }
 
-// SetSubjectProperties sets the "subject_properties" field.
-func (_c *AgentRunSubjectCreate) SetSubjectProperties(v map[string]interface{}) *AgentRunSubjectCreate {
-	_c.mutation.SetSubjectProperties(v)
+// SetExternalEntityID sets the "external_entity_id" field.
+func (_c *AgentRunSubjectCreate) SetExternalEntityID(v string) *AgentRunSubjectCreate {
+	_c.mutation.SetExternalEntityID(v)
+	return _c
+}
+
+// SetNillableExternalEntityID sets the "external_entity_id" field if the given value is not nil.
+func (_c *AgentRunSubjectCreate) SetNillableExternalEntityID(v *string) *AgentRunSubjectCreate {
+	if v != nil {
+		_c.SetExternalEntityID(*v)
+	}
+	return _c
+}
+
+// SetMetadata sets the "metadata" field.
+func (_c *AgentRunSubjectCreate) SetMetadata(v map[string]interface{}) *AgentRunSubjectCreate {
+	_c.mutation.SetMetadata(v)
 	return _c
 }
 
@@ -80,11 +93,6 @@ func (_c *AgentRunSubjectCreate) SetNillableID(v *uuid.UUID) *AgentRunSubjectCre
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *AgentRunSubjectCreate) SetTenant(v *Tenant) *AgentRunSubjectCreate {
 	return _c.SetTenantID(v.ID)
-}
-
-// SetAgentRun sets the "agent_run" edge to the AgentRun entity.
-func (_c *AgentRunSubjectCreate) SetAgentRun(v *AgentRun) *AgentRunSubjectCreate {
-	return _c.SetAgentRunID(v.ID)
 }
 
 // Mutation returns the AgentRunSubjectMutation object of the builder.
@@ -139,9 +147,6 @@ func (_c *AgentRunSubjectCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "AgentRunSubject.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.AgentRunID(); !ok {
-		return &ValidationError{Name: "agent_run_id", err: errors.New(`ent: missing required field "AgentRunSubject.agent_run_id"`)}
-	}
 	if _, ok := _c.mutation.SubjectKind(); !ok {
 		return &ValidationError{Name: "subject_kind", err: errors.New(`ent: missing required field "AgentRunSubject.subject_kind"`)}
 	}
@@ -150,11 +155,11 @@ func (_c *AgentRunSubjectCreate) check() error {
 			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRunSubject.subject_kind": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.EntityKind(); !ok {
+		return &ValidationError{Name: "entity_kind", err: errors.New(`ent: missing required field "AgentRunSubject.entity_kind"`)}
+	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentRunSubject.tenant"`)}
-	}
-	if len(_c.mutation.AgentRunIDs()) == 0 {
-		return &ValidationError{Name: "agent_run", err: errors.New(`ent: missing required edge "AgentRunSubject.agent_run"`)}
 	}
 	return nil
 }
@@ -194,16 +199,24 @@ func (_c *AgentRunSubjectCreate) createSpec() (*AgentRunSubject, *sqlgraph.Creat
 		_spec.ID.Value = &id
 	}
 	if value, ok := _c.mutation.SubjectKind(); ok {
-		_spec.SetField(agentrunsubject.FieldSubjectKind, field.TypeString, value)
+		_spec.SetField(agentrunsubject.FieldSubjectKind, field.TypeEnum, value)
 		_node.SubjectKind = value
+	}
+	if value, ok := _c.mutation.EntityKind(); ok {
+		_spec.SetField(agentrunsubject.FieldEntityKind, field.TypeString, value)
+		_node.EntityKind = value
 	}
 	if value, ok := _c.mutation.DomainEntityID(); ok {
 		_spec.SetField(agentrunsubject.FieldDomainEntityID, field.TypeUUID, value)
 		_node.DomainEntityID = &value
 	}
-	if value, ok := _c.mutation.SubjectProperties(); ok {
-		_spec.SetField(agentrunsubject.FieldSubjectProperties, field.TypeJSON, value)
-		_node.SubjectProperties = value
+	if value, ok := _c.mutation.ExternalEntityID(); ok {
+		_spec.SetField(agentrunsubject.FieldExternalEntityID, field.TypeString, value)
+		_node.ExternalEntityID = &value
+	}
+	if value, ok := _c.mutation.Metadata(); ok {
+		_spec.SetField(agentrunsubject.FieldMetadata, field.TypeJSON, value)
+		_node.Metadata = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -221,24 +234,6 @@ func (_c *AgentRunSubjectCreate) createSpec() (*AgentRunSubject, *sqlgraph.Creat
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AgentRunIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentrunsubject.AgentRunTable,
-			Columns: []string{agentrunsubject.AgentRunColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrun.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AgentRunSubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.AgentRunID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -293,20 +288,8 @@ type (
 	}
 )
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (u *AgentRunSubjectUpsert) SetAgentRunID(v uuid.UUID) *AgentRunSubjectUpsert {
-	u.Set(agentrunsubject.FieldAgentRunID, v)
-	return u
-}
-
-// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
-func (u *AgentRunSubjectUpsert) UpdateAgentRunID() *AgentRunSubjectUpsert {
-	u.SetExcluded(agentrunsubject.FieldAgentRunID)
-	return u
-}
-
 // SetSubjectKind sets the "subject_kind" field.
-func (u *AgentRunSubjectUpsert) SetSubjectKind(v string) *AgentRunSubjectUpsert {
+func (u *AgentRunSubjectUpsert) SetSubjectKind(v agentrunsubject.SubjectKind) *AgentRunSubjectUpsert {
 	u.Set(agentrunsubject.FieldSubjectKind, v)
 	return u
 }
@@ -314,6 +297,18 @@ func (u *AgentRunSubjectUpsert) SetSubjectKind(v string) *AgentRunSubjectUpsert 
 // UpdateSubjectKind sets the "subject_kind" field to the value that was provided on create.
 func (u *AgentRunSubjectUpsert) UpdateSubjectKind() *AgentRunSubjectUpsert {
 	u.SetExcluded(agentrunsubject.FieldSubjectKind)
+	return u
+}
+
+// SetEntityKind sets the "entity_kind" field.
+func (u *AgentRunSubjectUpsert) SetEntityKind(v string) *AgentRunSubjectUpsert {
+	u.Set(agentrunsubject.FieldEntityKind, v)
+	return u
+}
+
+// UpdateEntityKind sets the "entity_kind" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsert) UpdateEntityKind() *AgentRunSubjectUpsert {
+	u.SetExcluded(agentrunsubject.FieldEntityKind)
 	return u
 }
 
@@ -335,21 +330,39 @@ func (u *AgentRunSubjectUpsert) ClearDomainEntityID() *AgentRunSubjectUpsert {
 	return u
 }
 
-// SetSubjectProperties sets the "subject_properties" field.
-func (u *AgentRunSubjectUpsert) SetSubjectProperties(v map[string]interface{}) *AgentRunSubjectUpsert {
-	u.Set(agentrunsubject.FieldSubjectProperties, v)
+// SetExternalEntityID sets the "external_entity_id" field.
+func (u *AgentRunSubjectUpsert) SetExternalEntityID(v string) *AgentRunSubjectUpsert {
+	u.Set(agentrunsubject.FieldExternalEntityID, v)
 	return u
 }
 
-// UpdateSubjectProperties sets the "subject_properties" field to the value that was provided on create.
-func (u *AgentRunSubjectUpsert) UpdateSubjectProperties() *AgentRunSubjectUpsert {
-	u.SetExcluded(agentrunsubject.FieldSubjectProperties)
+// UpdateExternalEntityID sets the "external_entity_id" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsert) UpdateExternalEntityID() *AgentRunSubjectUpsert {
+	u.SetExcluded(agentrunsubject.FieldExternalEntityID)
 	return u
 }
 
-// ClearSubjectProperties clears the value of the "subject_properties" field.
-func (u *AgentRunSubjectUpsert) ClearSubjectProperties() *AgentRunSubjectUpsert {
-	u.SetNull(agentrunsubject.FieldSubjectProperties)
+// ClearExternalEntityID clears the value of the "external_entity_id" field.
+func (u *AgentRunSubjectUpsert) ClearExternalEntityID() *AgentRunSubjectUpsert {
+	u.SetNull(agentrunsubject.FieldExternalEntityID)
+	return u
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *AgentRunSubjectUpsert) SetMetadata(v map[string]interface{}) *AgentRunSubjectUpsert {
+	u.Set(agentrunsubject.FieldMetadata, v)
+	return u
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsert) UpdateMetadata() *AgentRunSubjectUpsert {
+	u.SetExcluded(agentrunsubject.FieldMetadata)
+	return u
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AgentRunSubjectUpsert) ClearMetadata() *AgentRunSubjectUpsert {
+	u.SetNull(agentrunsubject.FieldMetadata)
 	return u
 }
 
@@ -404,22 +417,8 @@ func (u *AgentRunSubjectUpsertOne) Update(set func(*AgentRunSubjectUpsert)) *Age
 	return u
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (u *AgentRunSubjectUpsertOne) SetAgentRunID(v uuid.UUID) *AgentRunSubjectUpsertOne {
-	return u.Update(func(s *AgentRunSubjectUpsert) {
-		s.SetAgentRunID(v)
-	})
-}
-
-// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
-func (u *AgentRunSubjectUpsertOne) UpdateAgentRunID() *AgentRunSubjectUpsertOne {
-	return u.Update(func(s *AgentRunSubjectUpsert) {
-		s.UpdateAgentRunID()
-	})
-}
-
 // SetSubjectKind sets the "subject_kind" field.
-func (u *AgentRunSubjectUpsertOne) SetSubjectKind(v string) *AgentRunSubjectUpsertOne {
+func (u *AgentRunSubjectUpsertOne) SetSubjectKind(v agentrunsubject.SubjectKind) *AgentRunSubjectUpsertOne {
 	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.SetSubjectKind(v)
 	})
@@ -429,6 +428,20 @@ func (u *AgentRunSubjectUpsertOne) SetSubjectKind(v string) *AgentRunSubjectUpse
 func (u *AgentRunSubjectUpsertOne) UpdateSubjectKind() *AgentRunSubjectUpsertOne {
 	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.UpdateSubjectKind()
+	})
+}
+
+// SetEntityKind sets the "entity_kind" field.
+func (u *AgentRunSubjectUpsertOne) SetEntityKind(v string) *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.SetEntityKind(v)
+	})
+}
+
+// UpdateEntityKind sets the "entity_kind" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsertOne) UpdateEntityKind() *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.UpdateEntityKind()
 	})
 }
 
@@ -453,24 +466,45 @@ func (u *AgentRunSubjectUpsertOne) ClearDomainEntityID() *AgentRunSubjectUpsertO
 	})
 }
 
-// SetSubjectProperties sets the "subject_properties" field.
-func (u *AgentRunSubjectUpsertOne) SetSubjectProperties(v map[string]interface{}) *AgentRunSubjectUpsertOne {
+// SetExternalEntityID sets the "external_entity_id" field.
+func (u *AgentRunSubjectUpsertOne) SetExternalEntityID(v string) *AgentRunSubjectUpsertOne {
 	return u.Update(func(s *AgentRunSubjectUpsert) {
-		s.SetSubjectProperties(v)
+		s.SetExternalEntityID(v)
 	})
 }
 
-// UpdateSubjectProperties sets the "subject_properties" field to the value that was provided on create.
-func (u *AgentRunSubjectUpsertOne) UpdateSubjectProperties() *AgentRunSubjectUpsertOne {
+// UpdateExternalEntityID sets the "external_entity_id" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsertOne) UpdateExternalEntityID() *AgentRunSubjectUpsertOne {
 	return u.Update(func(s *AgentRunSubjectUpsert) {
-		s.UpdateSubjectProperties()
+		s.UpdateExternalEntityID()
 	})
 }
 
-// ClearSubjectProperties clears the value of the "subject_properties" field.
-func (u *AgentRunSubjectUpsertOne) ClearSubjectProperties() *AgentRunSubjectUpsertOne {
+// ClearExternalEntityID clears the value of the "external_entity_id" field.
+func (u *AgentRunSubjectUpsertOne) ClearExternalEntityID() *AgentRunSubjectUpsertOne {
 	return u.Update(func(s *AgentRunSubjectUpsert) {
-		s.ClearSubjectProperties()
+		s.ClearExternalEntityID()
+	})
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *AgentRunSubjectUpsertOne) SetMetadata(v map[string]interface{}) *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.SetMetadata(v)
+	})
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsertOne) UpdateMetadata() *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.UpdateMetadata()
+	})
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AgentRunSubjectUpsertOne) ClearMetadata() *AgentRunSubjectUpsertOne {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.ClearMetadata()
 	})
 }
 
@@ -692,22 +726,8 @@ func (u *AgentRunSubjectUpsertBulk) Update(set func(*AgentRunSubjectUpsert)) *Ag
 	return u
 }
 
-// SetAgentRunID sets the "agent_run_id" field.
-func (u *AgentRunSubjectUpsertBulk) SetAgentRunID(v uuid.UUID) *AgentRunSubjectUpsertBulk {
-	return u.Update(func(s *AgentRunSubjectUpsert) {
-		s.SetAgentRunID(v)
-	})
-}
-
-// UpdateAgentRunID sets the "agent_run_id" field to the value that was provided on create.
-func (u *AgentRunSubjectUpsertBulk) UpdateAgentRunID() *AgentRunSubjectUpsertBulk {
-	return u.Update(func(s *AgentRunSubjectUpsert) {
-		s.UpdateAgentRunID()
-	})
-}
-
 // SetSubjectKind sets the "subject_kind" field.
-func (u *AgentRunSubjectUpsertBulk) SetSubjectKind(v string) *AgentRunSubjectUpsertBulk {
+func (u *AgentRunSubjectUpsertBulk) SetSubjectKind(v agentrunsubject.SubjectKind) *AgentRunSubjectUpsertBulk {
 	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.SetSubjectKind(v)
 	})
@@ -717,6 +737,20 @@ func (u *AgentRunSubjectUpsertBulk) SetSubjectKind(v string) *AgentRunSubjectUps
 func (u *AgentRunSubjectUpsertBulk) UpdateSubjectKind() *AgentRunSubjectUpsertBulk {
 	return u.Update(func(s *AgentRunSubjectUpsert) {
 		s.UpdateSubjectKind()
+	})
+}
+
+// SetEntityKind sets the "entity_kind" field.
+func (u *AgentRunSubjectUpsertBulk) SetEntityKind(v string) *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.SetEntityKind(v)
+	})
+}
+
+// UpdateEntityKind sets the "entity_kind" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsertBulk) UpdateEntityKind() *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.UpdateEntityKind()
 	})
 }
 
@@ -741,24 +775,45 @@ func (u *AgentRunSubjectUpsertBulk) ClearDomainEntityID() *AgentRunSubjectUpsert
 	})
 }
 
-// SetSubjectProperties sets the "subject_properties" field.
-func (u *AgentRunSubjectUpsertBulk) SetSubjectProperties(v map[string]interface{}) *AgentRunSubjectUpsertBulk {
+// SetExternalEntityID sets the "external_entity_id" field.
+func (u *AgentRunSubjectUpsertBulk) SetExternalEntityID(v string) *AgentRunSubjectUpsertBulk {
 	return u.Update(func(s *AgentRunSubjectUpsert) {
-		s.SetSubjectProperties(v)
+		s.SetExternalEntityID(v)
 	})
 }
 
-// UpdateSubjectProperties sets the "subject_properties" field to the value that was provided on create.
-func (u *AgentRunSubjectUpsertBulk) UpdateSubjectProperties() *AgentRunSubjectUpsertBulk {
+// UpdateExternalEntityID sets the "external_entity_id" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsertBulk) UpdateExternalEntityID() *AgentRunSubjectUpsertBulk {
 	return u.Update(func(s *AgentRunSubjectUpsert) {
-		s.UpdateSubjectProperties()
+		s.UpdateExternalEntityID()
 	})
 }
 
-// ClearSubjectProperties clears the value of the "subject_properties" field.
-func (u *AgentRunSubjectUpsertBulk) ClearSubjectProperties() *AgentRunSubjectUpsertBulk {
+// ClearExternalEntityID clears the value of the "external_entity_id" field.
+func (u *AgentRunSubjectUpsertBulk) ClearExternalEntityID() *AgentRunSubjectUpsertBulk {
 	return u.Update(func(s *AgentRunSubjectUpsert) {
-		s.ClearSubjectProperties()
+		s.ClearExternalEntityID()
+	})
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *AgentRunSubjectUpsertBulk) SetMetadata(v map[string]interface{}) *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.SetMetadata(v)
+	})
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AgentRunSubjectUpsertBulk) UpdateMetadata() *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.UpdateMetadata()
+	})
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AgentRunSubjectUpsertBulk) ClearMetadata() *AgentRunSubjectUpsertBulk {
+	return u.Update(func(s *AgentRunSubjectUpsert) {
+		s.ClearMetadata()
 	})
 }
 

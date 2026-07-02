@@ -10,7 +10,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentrunsubject"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -22,29 +21,30 @@ type AgentRunSubject struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// AgentRunID holds the value of the "agent_run_id" field.
-	AgentRunID uuid.UUID `json:"agent_run_id,omitempty"`
 	// SubjectKind holds the value of the "subject_kind" field.
-	SubjectKind string `json:"subject_kind,omitempty"`
+	SubjectKind agentrunsubject.SubjectKind `json:"subject_kind,omitempty"`
+	// EntityKind holds the value of the "entity_kind" field.
+	EntityKind string `json:"entity_kind,omitempty"`
 	// DomainEntityID holds the value of the "domain_entity_id" field.
 	DomainEntityID *uuid.UUID `json:"domain_entity_id,omitempty"`
-	// SubjectProperties holds the value of the "subject_properties" field.
-	SubjectProperties map[string]interface{} `json:"subject_properties,omitempty"`
+	// ExternalEntityID holds the value of the "external_entity_id" field.
+	ExternalEntityID *string `json:"external_entity_id,omitempty"`
+	// Metadata holds the value of the "metadata" field.
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentRunSubjectQuery when eager-loading is set.
-	Edges        AgentRunSubjectEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges              AgentRunSubjectEdges `json:"edges"`
+	agent_run_subjects *uuid.UUID
+	selectValues       sql.SelectValues
 }
 
 // AgentRunSubjectEdges holds the relations/edges for other nodes in the graph.
 type AgentRunSubjectEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// AgentRun holds the value of the agent_run edge.
-	AgentRun *AgentRun `json:"agent_run,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -58,17 +58,6 @@ func (e AgentRunSubjectEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AgentRunOrErr returns the AgentRun value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AgentRunSubjectEdges) AgentRunOrErr() (*AgentRun, error) {
-	if e.AgentRun != nil {
-		return e.AgentRun, nil
-	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: agentrun.Label}
-	}
-	return nil, &NotLoadedError{edge: "agent_run"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*AgentRunSubject) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -76,14 +65,16 @@ func (*AgentRunSubject) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case agentrunsubject.FieldDomainEntityID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case agentrunsubject.FieldSubjectProperties:
+		case agentrunsubject.FieldMetadata:
 			values[i] = new([]byte)
 		case agentrunsubject.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case agentrunsubject.FieldSubjectKind:
+		case agentrunsubject.FieldSubjectKind, agentrunsubject.FieldEntityKind, agentrunsubject.FieldExternalEntityID:
 			values[i] = new(sql.NullString)
-		case agentrunsubject.FieldID, agentrunsubject.FieldAgentRunID:
+		case agentrunsubject.FieldID:
 			values[i] = new(uuid.UUID)
+		case agentrunsubject.ForeignKeys[0]: // agent_run_subjects
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -111,17 +102,17 @@ func (_m *AgentRunSubject) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case agentrunsubject.FieldAgentRunID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field agent_run_id", values[i])
-			} else if value != nil {
-				_m.AgentRunID = *value
-			}
 		case agentrunsubject.FieldSubjectKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field subject_kind", values[i])
 			} else if value.Valid {
-				_m.SubjectKind = value.String
+				_m.SubjectKind = agentrunsubject.SubjectKind(value.String)
+			}
+		case agentrunsubject.FieldEntityKind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field entity_kind", values[i])
+			} else if value.Valid {
+				_m.EntityKind = value.String
 			}
 		case agentrunsubject.FieldDomainEntityID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -130,13 +121,27 @@ func (_m *AgentRunSubject) assignValues(columns []string, values []any) error {
 				_m.DomainEntityID = new(uuid.UUID)
 				*_m.DomainEntityID = *value.S.(*uuid.UUID)
 			}
-		case agentrunsubject.FieldSubjectProperties:
+		case agentrunsubject.FieldExternalEntityID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field external_entity_id", values[i])
+			} else if value.Valid {
+				_m.ExternalEntityID = new(string)
+				*_m.ExternalEntityID = value.String
+			}
+		case agentrunsubject.FieldMetadata:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field subject_properties", values[i])
+				return fmt.Errorf("unexpected type %T for field metadata", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.SubjectProperties); err != nil {
-					return fmt.Errorf("unmarshal field subject_properties: %w", err)
+				if err := json.Unmarshal(*value, &_m.Metadata); err != nil {
+					return fmt.Errorf("unmarshal field metadata: %w", err)
 				}
+			}
+		case agentrunsubject.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field agent_run_subjects", values[i])
+			} else if value.Valid {
+				_m.agent_run_subjects = new(uuid.UUID)
+				*_m.agent_run_subjects = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -154,11 +159,6 @@ func (_m *AgentRunSubject) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the AgentRunSubject entity.
 func (_m *AgentRunSubject) QueryTenant() *TenantQuery {
 	return NewAgentRunSubjectClient(_m.config).QueryTenant(_m)
-}
-
-// QueryAgentRun queries the "agent_run" edge of the AgentRunSubject entity.
-func (_m *AgentRunSubject) QueryAgentRun() *AgentRunQuery {
-	return NewAgentRunSubjectClient(_m.config).QueryAgentRun(_m)
 }
 
 // Update returns a builder for updating this AgentRunSubject.
@@ -187,19 +187,24 @@ func (_m *AgentRunSubject) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("agent_run_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunID))
-	builder.WriteString(", ")
 	builder.WriteString("subject_kind=")
-	builder.WriteString(_m.SubjectKind)
+	builder.WriteString(fmt.Sprintf("%v", _m.SubjectKind))
+	builder.WriteString(", ")
+	builder.WriteString("entity_kind=")
+	builder.WriteString(_m.EntityKind)
 	builder.WriteString(", ")
 	if v := _m.DomainEntityID; v != nil {
 		builder.WriteString("domain_entity_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("subject_properties=")
-	builder.WriteString(fmt.Sprintf("%v", _m.SubjectProperties))
+	if v := _m.ExternalEntityID; v != nil {
+		builder.WriteString("external_entity_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("metadata=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Metadata))
 	builder.WriteByte(')')
 	return builder.String()
 }
