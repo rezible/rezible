@@ -2053,7 +2053,9 @@ export type RemoveWatchedOncallRosterResponseBody = {
 };
 
 export type RequestAgentRunRequestAttributes = {
-    input: string;
+    input: {
+        [key: string]: unknown;
+    };
     workflow: string;
 };
 

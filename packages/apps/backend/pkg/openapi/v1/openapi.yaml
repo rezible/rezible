@@ -4523,8 +4523,8 @@ components:
       additionalProperties: false
       properties:
         input:
-          contentEncoding: base64
-          type: string
+          additionalProperties: {}
+          type: object
         workflow:
           type: string
       required:
