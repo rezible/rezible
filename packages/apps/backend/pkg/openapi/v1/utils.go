@@ -35,10 +35,10 @@ type (
 		}
 	}
 
-	EmptyIdRequest struct {
+	IdRequest struct {
 		Id uuid.UUID `path:"id"`
 	}
-	IdRequest[T any] struct {
+	IdRequestWithBody[T any] struct {
 		Id uuid.UUID `path:"id"`
 		RequestWithBodyAttributes[T]
 	}

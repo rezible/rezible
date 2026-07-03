@@ -38,7 +38,7 @@ type (
 		PermissionScopes []string             `json:"permissionScopes"`
 		CreatedAt        time.Time            `json:"createdAt"`
 		StartedAt        *time.Time           `json:"startedAt,omitempty"`
-		Snapshots        []AiAgentRunSnapshot `json:"latestSnapshot"`
+		Snapshots        []AiAgentRunSnapshot `json:"snapshots"`
 	}
 
 	AiAgentRunSnapshot struct {
@@ -227,5 +227,5 @@ var GetAiAgentRun = openapi.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetAiAgentRunRequest EmptyIdRequest
+type GetAiAgentRunRequest IdRequest
 type GetAiAgentRunResponse ItemResponse[AiAgentRun]

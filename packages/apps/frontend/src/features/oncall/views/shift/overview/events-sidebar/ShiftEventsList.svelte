@@ -1,6 +1,5 @@
 <script lang="ts">
 	import EventRow from "$src/components/common/events/EventRow.svelte";
-	import EventAnnotationDialog from "$src/components/common/events/annotation-dialog/EventAnnotationDialog.svelte";
 	import { useOncallShiftViewController } from "$features/oncall/views/shift";
 
 	const view = useOncallShiftViewController();
@@ -17,5 +16,3 @@
 		<span class="w-full text-center py-8">No Events</span>
 	{/each}
 {/if}
-
-<EventAnnotationDialog />

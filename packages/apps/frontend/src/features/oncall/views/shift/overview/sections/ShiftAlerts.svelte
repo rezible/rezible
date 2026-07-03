@@ -31,7 +31,7 @@
 			incidents: 0,
 		}));
 		view.filteredEvents.forEach(({attributes: a}) => {
-			const hour = new Date(a.timestamp).getHours();
+			const hour = new Date(a.occurredAt).getHours();
 			if (a.kind === "alert") hours[hour].alerts++;
 			if (a.kind === "incident") hours[hour].incidents++;
 		});

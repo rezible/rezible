@@ -11,8 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -162,9 +164,45 @@ func (_u *NormalizedEventUpdate) SetNillableReceivedAt(v *time.Time) *Normalized
 	return _u
 }
 
+// AddProjectionIDs adds the "projections" edge to the NormalizedEventProjection entity by IDs.
+func (_u *NormalizedEventUpdate) AddProjectionIDs(ids ...uuid.UUID) *NormalizedEventUpdate {
+	_u.mutation.AddProjectionIDs(ids...)
+	return _u
+}
+
+// AddProjections adds the "projections" edges to the NormalizedEventProjection entity.
+func (_u *NormalizedEventUpdate) AddProjections(v ...*NormalizedEventProjection) *NormalizedEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddProjectionIDs(ids...)
+}
+
 // Mutation returns the NormalizedEventMutation object of the builder.
 func (_u *NormalizedEventUpdate) Mutation() *NormalizedEventMutation {
 	return _u.mutation
+}
+
+// ClearProjections clears all "projections" edges to the NormalizedEventProjection entity.
+func (_u *NormalizedEventUpdate) ClearProjections() *NormalizedEventUpdate {
+	_u.mutation.ClearProjections()
+	return _u
+}
+
+// RemoveProjectionIDs removes the "projections" edge to NormalizedEventProjection entities by IDs.
+func (_u *NormalizedEventUpdate) RemoveProjectionIDs(ids ...uuid.UUID) *NormalizedEventUpdate {
+	_u.mutation.RemoveProjectionIDs(ids...)
+	return _u
+}
+
+// RemoveProjections removes "projections" edges to NormalizedEventProjection entities.
+func (_u *NormalizedEventUpdate) RemoveProjections(v ...*NormalizedEventProjection) *NormalizedEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveProjectionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -274,6 +312,54 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if value, ok := _u.mutation.ReceivedAt(); ok {
 		_spec.SetField(normalizedevent.FieldReceivedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ProjectionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.ProjectionsTable,
+			Columns: []string{normalizedevent.ProjectionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.NormalizedEventProjection
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedProjectionsIDs(); len(nodes) > 0 && !_u.mutation.ProjectionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.ProjectionsTable,
+			Columns: []string{normalizedevent.ProjectionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.NormalizedEventProjection
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.ProjectionsTable,
+			Columns: []string{normalizedevent.ProjectionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.NormalizedEventProjection
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.NormalizedEvent
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
@@ -431,9 +517,45 @@ func (_u *NormalizedEventUpdateOne) SetNillableReceivedAt(v *time.Time) *Normali
 	return _u
 }
 
+// AddProjectionIDs adds the "projections" edge to the NormalizedEventProjection entity by IDs.
+func (_u *NormalizedEventUpdateOne) AddProjectionIDs(ids ...uuid.UUID) *NormalizedEventUpdateOne {
+	_u.mutation.AddProjectionIDs(ids...)
+	return _u
+}
+
+// AddProjections adds the "projections" edges to the NormalizedEventProjection entity.
+func (_u *NormalizedEventUpdateOne) AddProjections(v ...*NormalizedEventProjection) *NormalizedEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddProjectionIDs(ids...)
+}
+
 // Mutation returns the NormalizedEventMutation object of the builder.
 func (_u *NormalizedEventUpdateOne) Mutation() *NormalizedEventMutation {
 	return _u.mutation
+}
+
+// ClearProjections clears all "projections" edges to the NormalizedEventProjection entity.
+func (_u *NormalizedEventUpdateOne) ClearProjections() *NormalizedEventUpdateOne {
+	_u.mutation.ClearProjections()
+	return _u
+}
+
+// RemoveProjectionIDs removes the "projections" edge to NormalizedEventProjection entities by IDs.
+func (_u *NormalizedEventUpdateOne) RemoveProjectionIDs(ids ...uuid.UUID) *NormalizedEventUpdateOne {
+	_u.mutation.RemoveProjectionIDs(ids...)
+	return _u
+}
+
+// RemoveProjections removes "projections" edges to NormalizedEventProjection entities.
+func (_u *NormalizedEventUpdateOne) RemoveProjections(v ...*NormalizedEventProjection) *NormalizedEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveProjectionIDs(ids...)
 }
 
 // Where appends a list predicates to the NormalizedEventUpdate builder.
@@ -573,6 +695,54 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 	}
 	if value, ok := _u.mutation.ReceivedAt(); ok {
 		_spec.SetField(normalizedevent.FieldReceivedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ProjectionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.ProjectionsTable,
+			Columns: []string{normalizedevent.ProjectionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.NormalizedEventProjection
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedProjectionsIDs(); len(nodes) > 0 && !_u.mutation.ProjectionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.ProjectionsTable,
+			Columns: []string{normalizedevent.ProjectionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.NormalizedEventProjection
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.ProjectionsTable,
+			Columns: []string{normalizedevent.ProjectionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.NormalizedEventProjection
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.NormalizedEvent
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

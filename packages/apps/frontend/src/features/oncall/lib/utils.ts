@@ -14,7 +14,7 @@ export const shiftEventMatchesFilter = (event: Event, kind: ShiftEventFilterKind
 	const attrs = event.attributes;
 	if ((kind === "alerts" || kind === "nightAlerts") && attrs.kind !== "alert") return false;
 	if (kind === "incidents" && attrs.kind !== "incident") return false;
-	const hour = new Date(attrs.timestamp).getHours(); // TODO: check this
+	const hour = new Date(attrs.occurredAt).getHours(); // TODO: check this
 	if (kind === "nightAlerts" && (hour < 18 && hour > 6)) return false;
 	return true;
 }

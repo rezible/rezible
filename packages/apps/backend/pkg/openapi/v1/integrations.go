@@ -271,7 +271,7 @@ var GetIntegrationInstallation = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIntegrationInstallationRequest EmptyIdRequest
+type GetIntegrationInstallationRequest IdRequest
 type GetIntegrationInstallationResponse ItemResponse[IntegrationInstallation]
 
 var UpdateIntegrationInstallation = huma.Operation{
@@ -286,7 +286,7 @@ var UpdateIntegrationInstallation = huma.Operation{
 type UpdateIntegrationInstallationRequestAttributes struct {
 	UserSettings map[string]any `json:"userSettings"`
 }
-type UpdateIntegrationInstallationRequest IdRequest[UpdateIntegrationInstallationRequestAttributes]
+type UpdateIntegrationInstallationRequest IdRequestWithBody[UpdateIntegrationInstallationRequestAttributes]
 type UpdateIntegrationInstallationResponse ItemResponse[IntegrationInstallation]
 
 var DeleteIntegrationInstallation = huma.Operation{
@@ -298,7 +298,7 @@ var DeleteIntegrationInstallation = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteIntegrationInstallationRequest EmptyIdRequest
+type DeleteIntegrationInstallationRequest IdRequest
 type DeleteIntegrationInstallationResponse EmptyResponse
 
 var RequestIntegrationEventSync = huma.Operation{
@@ -313,7 +313,7 @@ var RequestIntegrationEventSync = huma.Operation{
 type RequestIntegrationEventSyncRequestAttributes struct {
 	Sources []string `json:"sources,omitempty"`
 }
-type RequestIntegrationEventSyncRequest IdRequest[RequestIntegrationEventSyncRequestAttributes]
+type RequestIntegrationEventSyncRequest IdRequestWithBody[RequestIntegrationEventSyncRequestAttributes]
 type RequestIntegrationEventSyncResponse EmptyResponse
 
 var ListIntegrationEventSyncRuns = huma.Operation{
@@ -325,5 +325,5 @@ var ListIntegrationEventSyncRuns = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIntegrationEventSyncRunRequest EmptyIdRequest
+type ListIntegrationEventSyncRunRequest IdRequest
 type ListIntegrationEventSyncRunResponse ListResponse[IntegrationEventSyncRun]

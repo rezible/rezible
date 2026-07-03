@@ -47,7 +47,9 @@ func (NormalizedEvent) Fields() []ent.Field {
 }
 
 func (NormalizedEvent) Edges() []ent.Edge {
-	return []ent.Edge{}
+	return []ent.Edge{
+		edge.From("projections", NormalizedEventProjection.Type).Ref("event"),
+	}
 }
 
 func (NormalizedEvent) Indexes() []ent.Index {

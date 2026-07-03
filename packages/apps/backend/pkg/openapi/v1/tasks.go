@@ -82,7 +82,7 @@ var GetTask = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetTaskRequest EmptyIdRequest
+type GetTaskRequest IdRequest
 type GetTaskResponse ItemResponse[Task]
 
 var CreateTask = huma.Operation{
@@ -112,7 +112,7 @@ var UpdateTask = huma.Operation{
 type UpdateTaskAttributes struct {
 	Name OmittableNullable[string] `json:"name,omitempty"`
 }
-type UpdateTaskRequest IdRequest[UpdateTaskAttributes]
+type UpdateTaskRequest IdRequestWithBody[UpdateTaskAttributes]
 type UpdateTaskResponse ItemResponse[Task]
 
 var ArchiveTask = huma.Operation{
@@ -124,5 +124,5 @@ var ArchiveTask = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveTaskRequest EmptyIdRequest
+type ArchiveTaskRequest IdRequest
 type ArchiveTaskResponse EmptyResponse

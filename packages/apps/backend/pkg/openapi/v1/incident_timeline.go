@@ -219,7 +219,7 @@ type CreateIncidentTimelineEventAttributes struct {
 	IsKey     bool      `json:"isKey" required:"false"`
 	Timestamp time.Time `json:"timestamp"`
 }
-type CreateIncidentTimelineEventRequest IdRequest[CreateIncidentTimelineEventAttributes]
+type CreateIncidentTimelineEventRequest IdRequestWithBody[CreateIncidentTimelineEventAttributes]
 type CreateIncidentTimelineEventResponse ItemResponse[IncidentTimelineEvent]
 
 var UpdateIncidentTimelineEvent = huma.Operation{
@@ -236,7 +236,7 @@ type UpdateIncidentTimelineEventAttributes struct {
 	Kind      *string    `json:"kind,omitempty" enum:"observation,action,decision,context"`
 	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
-type UpdateIncidentTimelineEventRequest IdRequest[UpdateIncidentTimelineEventAttributes]
+type UpdateIncidentTimelineEventRequest IdRequestWithBody[UpdateIncidentTimelineEventAttributes]
 type UpdateIncidentTimelineEventResponse ItemResponse[IncidentTimelineEvent]
 
 var DeleteIncidentTimelineEvent = huma.Operation{
@@ -248,7 +248,7 @@ var DeleteIncidentTimelineEvent = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteIncidentTimelineEventRequest EmptyIdRequest
+type DeleteIncidentTimelineEventRequest IdRequest
 type DeleteIncidentTimelineEventResponse EmptyResponse
 
 var GetIncidentTimelineEventMetadata = huma.Operation{

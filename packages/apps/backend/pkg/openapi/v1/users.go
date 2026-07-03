@@ -71,5 +71,5 @@ var GetUser = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetUserRequest EmptyIdRequest
+type GetUserRequest IdRequest
 type GetUserResponse ItemResponse[User]

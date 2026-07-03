@@ -9858,6 +9858,25 @@ func (c *NormalizedEventClient) QueryTenant(_m *NormalizedEvent) *TenantQuery {
 	return query
 }
 
+// QueryProjections queries the projections edge of a NormalizedEvent.
+func (c *NormalizedEventClient) QueryProjections(_m *NormalizedEvent) *NormalizedEventProjectionQuery {
+	query := (&NormalizedEventProjectionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, id),
+			sqlgraph.To(normalizedeventprojection.Table, normalizedeventprojection.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, normalizedevent.ProjectionsTable, normalizedevent.ProjectionsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEventProjection
+		step.Edge.Schema = schemaConfig.NormalizedEventProjection
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *NormalizedEventClient) Hooks() []Hook {
 	hooks := c.hooks.NormalizedEvent

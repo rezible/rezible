@@ -27,9 +27,9 @@
 		<span class="text-surface-content/50">{title}</span>
 		<h1 class="text-lg flex items-center gap-2">
 			<Icon data={kindIcon.icon} classes={{ root: `rounded-full size-5 w-auto ${kindIcon.color}` }} />
-			{event.attributes.title}
+			event title
 		</h1>
-		<EventTimeDate timestamp={event.attributes.timestamp} />
+		<EventTimeDate timestamp={event.attributes.occurredAt} />
 	</div>
 	<div class="">
 		<Button onclick={close}>close</Button>

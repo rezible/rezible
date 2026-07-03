@@ -4,14 +4,14 @@ const now = new Date("2026-07-03T04:00:00.000Z");
 const isoMinutesAgo = (minutes: number) => new Date(now.getTime() - minutes * 60_000).toISOString();
 
 export const mockAiAgentRun: AiAgentRun = {
-	id: "9b8d2749-59cc-4e0d-9b78-98ae4e1cf501",
+	id: "mock",
 	attributes: {
 		agentname: "Incident Investigation Agent",
 		ownerUserId: "8c8c1b3d-6d54-4f31-8875-c8913f7e4ad7",
 		permissionScopes: ["incidents:read", "events:read", "topology:read"],
 		createdAt: isoMinutesAgo(12),
 		startedAt: isoMinutesAgo(11),
-		latestSnapshot: [
+		snapshots: [
 			{
 				id: "5ecdf9c2-7e81-49df-8350-80594169de89",
 				attributes: {
@@ -147,4 +147,3 @@ export const mockAiAgentRun: AiAgentRun = {
 	},
 };
 
-export const mockAiAgentRunId = mockAiAgentRun.id;

@@ -78,5 +78,5 @@ var DeleteNotification = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteNotificationRequest EmptyIdRequest
+type DeleteNotificationRequest IdRequest
 type DeleteNotificationResponse EmptyResponse

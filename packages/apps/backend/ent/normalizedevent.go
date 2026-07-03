@@ -52,9 +52,11 @@ type NormalizedEvent struct {
 type NormalizedEventEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// Projections holds the value of the projections edge.
+	Projections []*NormalizedEventProjection `json:"projections,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -66,6 +68,15 @@ func (e NormalizedEventEdges) TenantOrErr() (*Tenant, error) {
 		return nil, &NotFoundError{label: tenant.Label}
 	}
 	return nil, &NotLoadedError{edge: "tenant"}
+}
+
+// ProjectionsOrErr returns the Projections value or an error if the edge
+// was not loaded in eager-loading.
+func (e NormalizedEventEdges) ProjectionsOrErr() ([]*NormalizedEventProjection, error) {
+	if e.loadedTypes[1] {
+		return e.Projections, nil
+	}
+	return nil, &NotLoadedError{edge: "projections"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -188,6 +199,11 @@ func (_m *NormalizedEvent) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the NormalizedEvent entity.
 func (_m *NormalizedEvent) QueryTenant() *TenantQuery {
 	return NewNormalizedEventClient(_m.config).QueryTenant(_m)
+}
+
+// QueryProjections queries the "projections" edge of the NormalizedEvent entity.
+func (_m *NormalizedEvent) QueryProjections() *NormalizedEventProjectionQuery {
+	return NewNormalizedEventClient(_m.config).QueryProjections(_m)
 }
 
 // Update returns a builder for updating this NormalizedEvent.

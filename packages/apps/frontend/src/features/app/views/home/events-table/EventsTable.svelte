@@ -1,32 +1,20 @@
 <script lang="ts">
 	import { watch } from "runed";
-	import { mdiFilter } from "@mdi/js";
 	import { Button } from "$components/ui/button";
 	import Header from "$src/components/layout/header/Header.svelte";
-	import EventAnnotationDialog from "$src/components/common/events/annotation-dialog/EventAnnotationDialog.svelte";
 	import EventRow from "$src/components/common/events/EventRow.svelte";
 	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
-	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/common/events/annotation-dialog/dialogState.svelte";
 	import { EventsTableState } from "./eventsTableState.svelte";
-	import type { EventAnnotation } from "$lib/api";
 	import EventsFilters from "./EventsFilters.svelte";
 
 	const tableState = new EventsTableState();
 
 	let filtersVisible = $state(false);
 
-	setAnnotationDialogState(new AnnotationDialogState({
-		onClosed: (updated?: EventAnnotation) => {
-			if (updated) tableState.invalidateQuery();
-		},
-	}));
-
 	watch(() => tableState.dateRangeOption, opt => {
 		if (opt === "custom" && !filtersVisible) filtersVisible = true;
 	});
 </script>
-
-<EventAnnotationDialog />
 
 <div class="w-full h-full overflow-y-auto border flex flex-col">
 	<Header title="Events" subheading="Recent oncall events" classes={{root: "p-2 w-full", title: "text-xl"}}>

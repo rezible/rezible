@@ -137,7 +137,7 @@ var GetSystemAnalysis = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemAnalysisRequest EmptyIdRequest
+type GetSystemAnalysisRequest IdRequest
 type GetSystemAnalysisResponse ItemResponse[SystemAnalysis]
 
 var AddSystemAnalysisNode = huma.Operation{
@@ -155,7 +155,7 @@ type AddSystemAnalysisNodeAttributes struct {
 	Position          SystemAnalysisDiagramPosition `json:"position"`
 	Description       string                        `json:"description"`
 }
-type AddSystemAnalysisNodeRequest IdRequest[AddSystemAnalysisNodeAttributes]
+type AddSystemAnalysisNodeRequest IdRequestWithBody[AddSystemAnalysisNodeAttributes]
 type AddSystemAnalysisNodeResponse ItemResponse[SystemAnalysisNode]
 
 var ListSystemAnalysisNodes = huma.Operation{
@@ -179,7 +179,7 @@ var GetSystemAnalysisNode = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemAnalysisNodeRequest EmptyIdRequest
+type GetSystemAnalysisNodeRequest IdRequest
 type GetSystemAnalysisNodeResponse ItemResponse[SystemAnalysisNode]
 
 var UpdateSystemAnalysisNode = huma.Operation{
@@ -195,7 +195,7 @@ type UpdateSystemAnalysisNodeAttributes struct {
 	Position    *SystemAnalysisDiagramPosition `json:"position,omitempty"`
 	Description *string                        `json:"description,omitempty"`
 }
-type UpdateSystemAnalysisNodeRequest IdRequest[UpdateSystemAnalysisNodeAttributes]
+type UpdateSystemAnalysisNodeRequest IdRequestWithBody[UpdateSystemAnalysisNodeAttributes]
 type UpdateSystemAnalysisNodeResponse ItemResponse[SystemAnalysisNode]
 
 var DeleteSystemAnalysisNode = huma.Operation{
@@ -207,7 +207,7 @@ var DeleteSystemAnalysisNode = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteSystemAnalysisNodeRequest EmptyIdRequest
+type DeleteSystemAnalysisNodeRequest IdRequest
 type DeleteSystemAnalysisNodeResponse EmptyResponse
 
 var ListSystemAnalysisEdges = huma.Operation{
@@ -235,7 +235,7 @@ type AddSystemAnalysisEdgeAttributes struct {
 	SnapshotRelationshipId uuid.UUID `json:"snapshotRelationshipId"`
 	Description            string    `json:"description"`
 }
-type AddSystemAnalysisEdgeRequest IdRequest[AddSystemAnalysisEdgeAttributes]
+type AddSystemAnalysisEdgeRequest IdRequestWithBody[AddSystemAnalysisEdgeAttributes]
 type AddSystemAnalysisEdgeResponse ItemResponse[SystemAnalysisEdge]
 
 var GetSystemAnalysisEdge = huma.Operation{
@@ -247,7 +247,7 @@ var GetSystemAnalysisEdge = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemAnalysisEdgeRequest EmptyIdRequest
+type GetSystemAnalysisEdgeRequest IdRequest
 type GetSystemAnalysisEdgeResponse ItemResponse[SystemAnalysisEdge]
 
 var UpdateSystemAnalysisEdge = huma.Operation{
@@ -262,7 +262,7 @@ var UpdateSystemAnalysisEdge = huma.Operation{
 type UpdateSystemAnalysisEdgeAttributes struct {
 	Description *string `json:"description,omitempty"`
 }
-type UpdateSystemAnalysisEdgeRequest IdRequest[UpdateSystemAnalysisEdgeAttributes]
+type UpdateSystemAnalysisEdgeRequest IdRequestWithBody[UpdateSystemAnalysisEdgeAttributes]
 type UpdateSystemAnalysisEdgeResponse ItemResponse[SystemAnalysisEdge]
 
 var DeleteSystemAnalysisEdge = huma.Operation{
@@ -274,5 +274,5 @@ var DeleteSystemAnalysisEdge = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteSystemAnalysisEdgeRequest EmptyIdRequest
+type DeleteSystemAnalysisEdgeRequest IdRequest
 type DeleteSystemAnalysisEdgeResponse EmptyResponse

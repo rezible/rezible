@@ -170,7 +170,7 @@ var AddWatchedOncallRoster = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type AddWatchedOncallRosterRequest EmptyIdRequest
+type AddWatchedOncallRosterRequest IdRequest
 type AddWatchedOncallRosterResponse ListResponse[OncallRoster]
 
 var ListWatchedOncallRosters = huma.Operation{
@@ -194,5 +194,5 @@ var RemoveWatchedOncallRoster = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type RemoveWatchedOncallRosterRequest EmptyIdRequest
+type RemoveWatchedOncallRosterRequest IdRequest
 type RemoveWatchedOncallRosterResponse ListResponse[OncallRoster]

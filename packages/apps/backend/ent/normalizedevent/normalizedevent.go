@@ -41,6 +41,8 @@ const (
 	FieldReceivedAt = "received_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeProjections holds the string denoting the projections edge name in mutations.
+	EdgeProjections = "projections"
 	// Table holds the table name of the normalizedevent in the database.
 	Table = "normalized_events"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -50,6 +52,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// ProjectionsTable is the table that holds the projections relation/edge.
+	ProjectionsTable = "normalized_event_projections"
+	// ProjectionsInverseTable is the table name for the NormalizedEventProjection entity.
+	// It exists in this package in order to avoid circular dependency with the "normalizedeventprojection" package.
+	ProjectionsInverseTable = "normalized_event_projections"
+	// ProjectionsColumn is the table column denoting the projections relation/edge.
+	ProjectionsColumn = "event_id"
 )
 
 // Columns holds all SQL columns for normalizedevent fields.
@@ -188,10 +197,31 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByProjectionsCount orders the results by projections count.
+func ByProjectionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProjectionsStep(), opts...)
+	}
+}
+
+// ByProjections orders the results by projections terms.
+func ByProjections(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newProjectionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProjectionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ProjectionsTable, ProjectionsColumn),
 	)
 }

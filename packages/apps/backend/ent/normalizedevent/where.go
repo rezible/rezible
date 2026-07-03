@@ -616,6 +616,35 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.NormalizedEvent {
 	})
 }
 
+// HasProjections applies the HasEdge predicate on the "projections" edge.
+func HasProjections() predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProjectionsTable, ProjectionsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEventProjection
+		step.Edge.Schema = schemaConfig.NormalizedEventProjection
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectionsWith applies the HasEdge predicate on the "projections" edge with a given conditions (other predicates).
+func HasProjectionsWith(preds ...predicate.NormalizedEventProjection) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(func(s *sql.Selector) {
+		step := newProjectionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEventProjection
+		step.Edge.Schema = schemaConfig.NormalizedEventProjection
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.NormalizedEvent) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.AndPredicates(predicates...))

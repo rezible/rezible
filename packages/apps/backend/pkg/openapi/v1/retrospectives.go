@@ -155,7 +155,7 @@ var GetRetrospective = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetRetrospectiveRequest EmptyIdRequest
+type GetRetrospectiveRequest IdRequest
 type GetRetrospectiveResponse ItemResponse[Retrospective]
 
 var UpdateRetrospective = huma.Operation{
@@ -169,7 +169,7 @@ var UpdateRetrospective = huma.Operation{
 
 type UpdateRetrospectiveAttributes struct {
 }
-type UpdateRetrospectiveRequest IdRequest[UpdateRetrospectiveAttributes]
+type UpdateRetrospectiveRequest IdRequestWithBody[UpdateRetrospectiveAttributes]
 type UpdateRetrospectiveResponse ItemResponse[Retrospective]
 
 // Reviews
@@ -195,7 +195,7 @@ var CreateRetrospectiveReview = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type CreateRetrospectiveReviewRequest IdRequest[RetrospectiveReviewAttributes]
+type CreateRetrospectiveReviewRequest IdRequestWithBody[RetrospectiveReviewAttributes]
 type CreateRetrospectiveReviewResponse ItemResponse[RetrospectiveReview]
 
 var UpdateRetrospectiveReview = huma.Operation{
@@ -209,7 +209,7 @@ var UpdateRetrospectiveReview = huma.Operation{
 
 type UpdateRetrospectiveReviewRequestAttributes struct {
 }
-type UpdateRetrospectiveReviewRequest IdRequest[UpdateRetrospectiveReviewRequestAttributes]
+type UpdateRetrospectiveReviewRequest IdRequestWithBody[UpdateRetrospectiveReviewRequestAttributes]
 type UpdateRetrospectiveReviewResponse ItemResponse[RetrospectiveReview]
 
 var ArchiveRetrospectiveReview = huma.Operation{
@@ -221,7 +221,7 @@ var ArchiveRetrospectiveReview = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveRetrospectiveReviewRequest EmptyIdRequest
+type ArchiveRetrospectiveReviewRequest IdRequest
 type ArchiveRetrospectiveReviewResponse EmptyResponse
 
 var ListRetrospectiveComments = huma.Operation{
@@ -248,7 +248,7 @@ var CreateRetrospectiveComment = huma.Operation{
 type CreateRetrospectiveCommentAttributes struct {
 	Content json.RawMessage `json:"content"`
 }
-type CreateRetrospectiveCommentRequest IdRequest[CreateRetrospectiveCommentAttributes]
+type CreateRetrospectiveCommentRequest IdRequestWithBody[CreateRetrospectiveCommentAttributes]
 type CreateRetrospectiveCommentResponse ItemResponse[RetrospectiveComment]
 
 var GetRetrospectiveComment = huma.Operation{
@@ -276,5 +276,5 @@ type UpdateRetrospectiveCommentAttributes struct {
 	Resolved *bool   `json:"resolved,omitempty"`
 	Content  *string `json:"content,omitempty"`
 }
-type UpdateRetrospectiveCommentRequest IdRequest[UpdateRetrospectiveCommentAttributes]
+type UpdateRetrospectiveCommentRequest IdRequestWithBody[UpdateRetrospectiveCommentAttributes]
 type UpdateRetrospectiveCommentResponse ItemResponse[RetrospectiveComment]

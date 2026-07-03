@@ -78,7 +78,7 @@ var GetPlaybook = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetPlaybookRequest EmptyIdRequest
+type GetPlaybookRequest IdRequest
 type GetPlaybookResponse ItemResponse[Playbook]
 
 var CreatePlaybook = huma.Operation{
@@ -110,7 +110,7 @@ type UpdatePlaybookAttributes struct {
 	Title   *string `json:"title,omitempty"`
 	Content *string `json:"content,omitempty"`
 }
-type UpdatePlaybookRequest IdRequest[UpdatePlaybookAttributes]
+type UpdatePlaybookRequest IdRequestWithBody[UpdatePlaybookAttributes]
 type UpdatePlaybookResponse ItemResponse[Playbook]
 
 var ArchivePlaybook = huma.Operation{
@@ -122,5 +122,5 @@ var ArchivePlaybook = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchivePlaybookRequest EmptyIdRequest
+type ArchivePlaybookRequest IdRequest
 type ArchivePlaybookResponse EmptyResponse

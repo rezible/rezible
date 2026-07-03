@@ -43,14 +43,14 @@
 {/snippet}
 
 <div class="h-[70px] group grid grid-cols-[80px_minmax(100px,1fr)_minmax(0,.4fr)] gap-2 place-items-center border py-1 px-2 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
-	<EventTimeDate timestamp={attrs.timestamp} />
+	<EventTimeDate timestamp={attrs.occurredAt} />
 
 	<div class="flex flex-col gap-1 w-full h-full justify-center items-start">
 		<div class="flex gap-1 items-center">
 			<Icon data={kindIcon.icon} classes={{ root: `rounded-full size-4 w-auto ${kindIcon.color}` }} />
 			<span class="text-xs uppercase font-normal text-surface-content/50">{attrs.kind}</span>
 		</div>
-		<a href="/events/{event.id}" class="anchor link w-full truncate text-left align-baseline">{attrs.title}</a>
+		<a href="/events/{event.id}" class="anchor link w-full truncate text-left align-baseline">title</a>
 	</div>
 
 	<div class="flex w-full h-full items-center justify-end gap-2">
@@ -68,11 +68,5 @@
 				</div>
 			{/if}
 		</div>
-
-		{#if !!togglePinned}
-			<!--Tooltip title="Toggle Pinned">
-				<Button iconOnly icon={pinned ? mdiPin : mdiPinOutline} {disabled} {loading} onclick={togglePinned} />
-			</Tooltip-->
-		{/if}
 	</div>
 </div>

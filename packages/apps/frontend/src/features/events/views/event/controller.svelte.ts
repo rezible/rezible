@@ -12,7 +12,7 @@ export class EventViewController {
 
 	private eventQuery = createQuery(() => getEventOptions({ path: { id: this.eventId } }));
 	event = $derived(this.eventQuery.data?.data);
-	eventTitle = $derived(this.event?.attributes.title ?? "");
+	eventTitle = $derived("");
 }
 
 const ctx = new Context<EventViewController>("EventViewController");

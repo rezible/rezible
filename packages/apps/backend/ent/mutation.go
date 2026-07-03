@@ -39574,6 +39574,9 @@ type NormalizedEventMutation struct {
 	clearedFields        map[string]struct{}
 	tenant               *int
 	clearedtenant        bool
+	projections          map[uuid.UUID]struct{}
+	removedprojections   map[uuid.UUID]struct{}
+	clearedprojections   bool
 	done                 bool
 	oldValue             func(context.Context) (*NormalizedEvent, error)
 	predicates           []predicate.NormalizedEvent
@@ -40106,6 +40109,60 @@ func (m *NormalizedEventMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
+// AddProjectionIDs adds the "projections" edge to the NormalizedEventProjection entity by ids.
+func (m *NormalizedEventMutation) AddProjectionIDs(ids ...uuid.UUID) {
+	if m.projections == nil {
+		m.projections = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.projections[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProjections clears the "projections" edge to the NormalizedEventProjection entity.
+func (m *NormalizedEventMutation) ClearProjections() {
+	m.clearedprojections = true
+}
+
+// ProjectionsCleared reports if the "projections" edge to the NormalizedEventProjection entity was cleared.
+func (m *NormalizedEventMutation) ProjectionsCleared() bool {
+	return m.clearedprojections
+}
+
+// RemoveProjectionIDs removes the "projections" edge to the NormalizedEventProjection entity by IDs.
+func (m *NormalizedEventMutation) RemoveProjectionIDs(ids ...uuid.UUID) {
+	if m.removedprojections == nil {
+		m.removedprojections = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.projections, ids[i])
+		m.removedprojections[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProjections returns the removed IDs of the "projections" edge to the NormalizedEventProjection entity.
+func (m *NormalizedEventMutation) RemovedProjectionsIDs() (ids []uuid.UUID) {
+	for id := range m.removedprojections {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProjectionsIDs returns the "projections" edge IDs in the mutation.
+func (m *NormalizedEventMutation) ProjectionsIDs() (ids []uuid.UUID) {
+	for id := range m.projections {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProjections resets all changes to the "projections" edge.
+func (m *NormalizedEventMutation) ResetProjections() {
+	m.projections = nil
+	m.clearedprojections = false
+	m.removedprojections = nil
+}
+
 // Where appends a list predicates to the NormalizedEventMutation builder.
 func (m *NormalizedEventMutation) Where(ps ...predicate.NormalizedEvent) {
 	m.predicates = append(m.predicates, ps...)
@@ -40412,9 +40469,12 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NormalizedEventMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.tenant != nil {
 		edges = append(edges, normalizedevent.EdgeTenant)
+	}
+	if m.projections != nil {
+		edges = append(edges, normalizedevent.EdgeProjections)
 	}
 	return edges
 }
@@ -40427,27 +40487,47 @@ func (m *NormalizedEventMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
+	case normalizedevent.EdgeProjections:
+		ids := make([]ent.Value, 0, len(m.projections))
+		for id := range m.projections {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NormalizedEventMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedprojections != nil {
+		edges = append(edges, normalizedevent.EdgeProjections)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *NormalizedEventMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case normalizedevent.EdgeProjections:
+		ids := make([]ent.Value, 0, len(m.removedprojections))
+		for id := range m.removedprojections {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NormalizedEventMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedtenant {
 		edges = append(edges, normalizedevent.EdgeTenant)
+	}
+	if m.clearedprojections {
+		edges = append(edges, normalizedevent.EdgeProjections)
 	}
 	return edges
 }
@@ -40458,6 +40538,8 @@ func (m *NormalizedEventMutation) EdgeCleared(name string) bool {
 	switch name {
 	case normalizedevent.EdgeTenant:
 		return m.clearedtenant
+	case normalizedevent.EdgeProjections:
+		return m.clearedprojections
 	}
 	return false
 }
@@ -40479,6 +40561,9 @@ func (m *NormalizedEventMutation) ResetEdge(name string) error {
 	switch name {
 	case normalizedevent.EdgeTenant:
 		m.ResetTenant()
+		return nil
+	case normalizedevent.EdgeProjections:
+		m.ResetProjections()
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEvent edge %s", name)

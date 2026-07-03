@@ -85,9 +85,9 @@ export type AiAgentRun = {
 export type AiAgentRunAttributes = {
     agentname: string;
     createdAt: string;
-    latestSnapshot: Array<AiAgentRunSnapshot>;
     ownerUserId: string;
     permissionScopes: Array<string>;
+    snapshots: Array<AiAgentRunSnapshot>;
     startedAt?: string;
 };
 
@@ -712,12 +712,35 @@ export type EventAnnotationAttributes = {
 };
 
 export type EventAttributes = {
-    alert_id?: string;
-    description: string;
+    attributes: {
+        [key: string]: unknown;
+    };
     kind: string;
-    roster_id?: string;
-    timestamp: string;
-    title: string;
+    occurredAt: string;
+    projections: Array<EventProjection>;
+    provider: string;
+    providerSource: string;
+    providerSubjectRef: string;
+    receivedAt: string;
+    subjectKind: string;
+};
+
+export type EventProjection = {
+    attributes: EventProjectionAttributes;
+    id: string;
+};
+
+export type EventProjectionAttributes = {
+    entities: Array<EventProjectionEntity>;
+    error?: string;
+    projector: string;
+    startedAt: string;
+    status: 'pending' | 'succeeded' | 'failed';
+};
+
+export type EventProjectionEntity = {
+    entityId: string;
+    entityKind: string;
 };
 
 export type ExpandableEventAttributes = {
@@ -3933,6 +3956,7 @@ export type ListEventsData = {
         archived?: boolean;
         from?: string;
         to?: string;
+        withProjections?: boolean;
     };
     url: '/events';
 };
@@ -3980,7 +4004,9 @@ export type GetEventData = {
     path: {
         id: string;
     };
-    query?: never;
+    query?: {
+        withProjections?: boolean;
+    };
     url: '/events/{id}';
 };
 

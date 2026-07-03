@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -116,6 +117,21 @@ func (_c *NormalizedEventCreate) SetNillableID(v *uuid.UUID) *NormalizedEventCre
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *NormalizedEventCreate) SetTenant(v *Tenant) *NormalizedEventCreate {
 	return _c.SetTenantID(v.ID)
+}
+
+// AddProjectionIDs adds the "projections" edge to the NormalizedEventProjection entity by IDs.
+func (_c *NormalizedEventCreate) AddProjectionIDs(ids ...uuid.UUID) *NormalizedEventCreate {
+	_c.mutation.AddProjectionIDs(ids...)
+	return _c
+}
+
+// AddProjections adds the "projections" edges to the NormalizedEventProjection entity.
+func (_c *NormalizedEventCreate) AddProjections(v ...*NormalizedEventProjection) *NormalizedEventCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddProjectionIDs(ids...)
 }
 
 // Mutation returns the NormalizedEventMutation object of the builder.
@@ -328,6 +344,23 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ProjectionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.ProjectionsTable,
+			Columns: []string{normalizedevent.ProjectionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.NormalizedEventProjection
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

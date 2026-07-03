@@ -68,7 +68,7 @@ var GetOrganization = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetOrganizationRequest EmptyIdRequest
+type GetOrganizationRequest IdRequest
 type GetOrganizationResponse ItemResponse[Organization]
 
 var UpdateOrganizationPreferences = huma.Operation{
@@ -84,5 +84,5 @@ type UpdateOrganizationPreferencesRequestAttributes struct {
 	InitialSetupComplete     *bool `json:"initialSetupComplete,omitempty"`
 	EnableIncidentManagement *bool `json:"enableIncidentManagement,omitempty"`
 }
-type UpdateOrganizationPreferencesRequest IdRequest[UpdateOrganizationPreferencesRequestAttributes]
+type UpdateOrganizationPreferencesRequest IdRequestWithBody[UpdateOrganizationPreferencesRequestAttributes]
 type UpdateOrganizationPreferencesResponse ItemResponse[OrganizationPreferences]

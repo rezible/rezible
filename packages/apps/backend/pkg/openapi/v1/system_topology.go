@@ -255,7 +255,7 @@ var GetSystemTopologyEntity = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemTopologyEntityRequest EmptyIdRequest
+type GetSystemTopologyEntityRequest IdRequest
 type GetSystemTopologyEntityResponse ItemResponse[SystemTopologyEntity]
 
 var GetSystemTopologyEntityNeighborhood = huma.Operation{
@@ -327,7 +327,7 @@ var GetSystemTopologySnapshot = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemTopologySnapshotRequest EmptyIdRequest
+type GetSystemTopologySnapshotRequest IdRequest
 type GetSystemTopologySnapshotResponse ItemResponse[SystemTopologySnapshot]
 
 func CreateSystemTopologySnapshotParamsFromAttributes(attr CreateSystemTopologySnapshotAttributes) rez.CreateSystemTopologySnapshotParams {

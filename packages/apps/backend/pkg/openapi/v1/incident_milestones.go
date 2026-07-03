@@ -59,7 +59,7 @@ var ListIncidentMilestones = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIncidentMilestonesRequest EmptyIdRequest
+type ListIncidentMilestonesRequest IdRequest
 type ListIncidentMilestonesResponse ListResponse[IncidentMilestone]
 
 var CreateIncidentMilestone = huma.Operation{
@@ -76,7 +76,7 @@ type CreateIncidentMilestoneAttributes struct {
 	Timestamp   time.Time `json:"timestamp"`
 	Description string    `json:"description"`
 }
-type CreateIncidentMilestoneRequest IdRequest[CreateIncidentMilestoneAttributes]
+type CreateIncidentMilestoneRequest IdRequestWithBody[CreateIncidentMilestoneAttributes]
 type CreateIncidentMilestoneResponse ItemResponse[IncidentMilestone]
 
 var UpdateIncidentMilestone = huma.Operation{
@@ -93,7 +93,7 @@ type UpdateIncidentMilestoneAttributes struct {
 	Timestamp   *time.Time `json:"timestamp,omitempty"`
 	Description *string    `json:"description,omitempty"`
 }
-type UpdateIncidentMilestoneRequest IdRequest[UpdateIncidentMilestoneAttributes]
+type UpdateIncidentMilestoneRequest IdRequestWithBody[UpdateIncidentMilestoneAttributes]
 type UpdateIncidentMilestoneResponse ItemResponse[IncidentMilestone]
 
 var DeleteIncidentMilestone = huma.Operation{
@@ -105,5 +105,5 @@ var DeleteIncidentMilestone = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteIncidentMilestoneRequest EmptyIdRequest
+type DeleteIncidentMilestoneRequest IdRequest
 type DeleteIncidentMilestoneResponse EmptyResponse

@@ -86,7 +86,7 @@ var RequestDocumentSessionAuth = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type RequestDocumentSessionAuthRequest EmptyIdRequest
+type RequestDocumentSessionAuthRequest IdRequest
 type RequestDocumentSessionAuthResponse ItemResponse[DocumentSessionAuth]
 
 var GetDocumentSession = huma.Operation{
@@ -101,7 +101,7 @@ var GetDocumentSession = huma.Operation{
 	},
 }
 
-type GetDocumentSessionRequest EmptyIdRequest
+type GetDocumentSessionRequest IdRequest
 type GetDocumentSessionResponse ItemResponse[DocumentSession]
 
 var LoadDocument = huma.Operation{
@@ -113,7 +113,7 @@ var LoadDocument = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type LoadDocumentRequest EmptyIdRequest
+type LoadDocumentRequest IdRequest
 type LoadDocumentResponse ItemResponse[Document]
 
 var UpdateDocument = huma.Operation{
@@ -128,5 +128,5 @@ var UpdateDocument = huma.Operation{
 type UpdateDocumentRequestAttributes struct {
 	Content json.RawMessage `json:"content"`
 }
-type UpdateDocumentRequest IdRequest[UpdateDocumentRequestAttributes]
+type UpdateDocumentRequest IdRequestWithBody[UpdateDocumentRequestAttributes]
 type UpdateDocumentResponse ItemResponse[Document]

@@ -239,12 +239,20 @@ type (
 
 	ListEventsParams struct {
 		ent.ListParams
-		Predicates      []predicate.NormalizedEvent
-		WithAnnotations bool
+		Predicates           []predicate.NormalizedEvent
+		WithProjections      bool
+		ProjectionPredicates []predicate.NormalizedEventProjection
+		WithAnnotations      bool
+		AnnotationPredicates []predicate.EventAnnotation
+	}
+
+	GetEventParams struct {
+		WithProjections      bool
+		ProjectionPredicates []predicate.NormalizedEventProjection
 	}
 
 	EventsService interface {
-		GetEvent(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error)
+		GetEvent(ctx context.Context, id uuid.UUID, params GetEventParams) (*ent.NormalizedEvent, error)
 		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error)
 
 		ListAnnotations(ctx context.Context, params ListAnnotationsParams) (*ent.ListResult[ent.EventAnnotation], error)

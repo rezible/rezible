@@ -37,7 +37,7 @@
 
 		const numEvents = new Map<string, number>();
 		view.filteredEvents.forEach((event) => {
-			const eventDate = new Date(event.attributes.timestamp);
+			const eventDate = new Date(event.attributes.occurredAt);
 			const day = differenceInCalendarDays(eventDate, startDate);
 			const key = eventDayKey(day, eventDate.getHours());
 			numEvents.set(key, (numEvents.get(key) || 0) + 1);

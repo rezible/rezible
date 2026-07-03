@@ -10,7 +10,6 @@
 		type UpdateOncallShiftHandoverRequestBody,
 	} from "$lib/api";
 	import Header from "$src/components/layout/header/Header.svelte";
-	import EventAnnotationDialog from "$src/components/common/events/annotation-dialog/EventAnnotationDialog.svelte";
 	import EventRow from "$src/components/common/events/EventRow.svelte";
 
 	type Props = {
@@ -53,8 +52,6 @@
 		updateHandoverMut.mutate({ path: { id: handover.id }, body });
 	};
 </script>
-
-<EventAnnotationDialog />
 
 <div class="flex flex-col h-full border border-surface-content/10">
 	<div class="h-fit p-2 flex flex-col gap-2">

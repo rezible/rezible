@@ -139,7 +139,7 @@ var GetAlert = openapi.Operation{
 }
 
 type GetAlertRequest struct {
-	EmptyIdRequest
+	IdRequest
 }
 type GetAlertResponse ItemResponse[Alert]
 
@@ -153,7 +153,7 @@ var GetAlertMetrics = openapi.Operation{
 }
 
 type GetAlertMetricsRequest struct {
-	EmptyIdRequest
+	IdRequest
 	RosterId uuid.UUID    `query:"rosterId"`
 	From     CalendarDate `query:"from" format:"date" required:"true"`
 	To       CalendarDate `query:"to" format:"date" required:"true"`

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -15,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -22,12 +24,13 @@ import (
 // NormalizedEventQuery is the builder for querying NormalizedEvent entities.
 type NormalizedEventQuery struct {
 	config
-	ctx        *QueryContext
-	order      []normalizedevent.OrderOption
-	inters     []Interceptor
-	predicates []predicate.NormalizedEvent
-	withTenant *TenantQuery
-	modifiers  []func(*sql.Selector)
+	ctx             *QueryContext
+	order           []normalizedevent.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.NormalizedEvent
+	withTenant      *TenantQuery
+	withProjections *NormalizedEventProjectionQuery
+	modifiers       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -83,6 +86,31 @@ func (_q *NormalizedEventQuery) QueryTenant() *TenantQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
 		step.Edge.Schema = schemaConfig.NormalizedEvent
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProjections chains the current query on the "projections" edge.
+func (_q *NormalizedEventQuery) QueryProjections() *NormalizedEventProjectionQuery {
+	query := (&NormalizedEventProjectionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, selector),
+			sqlgraph.To(normalizedeventprojection.Table, normalizedeventprojection.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, normalizedevent.ProjectionsTable, normalizedevent.ProjectionsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEventProjection
+		step.Edge.Schema = schemaConfig.NormalizedEventProjection
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -276,12 +304,13 @@ func (_q *NormalizedEventQuery) Clone() *NormalizedEventQuery {
 		return nil
 	}
 	return &NormalizedEventQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]normalizedevent.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.NormalizedEvent{}, _q.predicates...),
-		withTenant: _q.withTenant.Clone(),
+		config:          _q.config,
+		ctx:             _q.ctx.Clone(),
+		order:           append([]normalizedevent.OrderOption{}, _q.order...),
+		inters:          append([]Interceptor{}, _q.inters...),
+		predicates:      append([]predicate.NormalizedEvent{}, _q.predicates...),
+		withTenant:      _q.withTenant.Clone(),
+		withProjections: _q.withProjections.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -297,6 +326,17 @@ func (_q *NormalizedEventQuery) WithTenant(opts ...func(*TenantQuery)) *Normaliz
 		opt(query)
 	}
 	_q.withTenant = query
+	return _q
+}
+
+// WithProjections tells the query-builder to eager-load the nodes that are connected to
+// the "projections" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *NormalizedEventQuery) WithProjections(opts ...func(*NormalizedEventProjectionQuery)) *NormalizedEventQuery {
+	query := (&NormalizedEventProjectionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withProjections = query
 	return _q
 }
 
@@ -384,8 +424,9 @@ func (_q *NormalizedEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*NormalizedEvent{}
 		_spec       = _q.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			_q.withTenant != nil,
+			_q.withProjections != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -414,6 +455,15 @@ func (_q *NormalizedEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *NormalizedEvent, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withProjections; query != nil {
+		if err := _q.loadProjections(ctx, query, nodes,
+			func(n *NormalizedEvent) { n.Edges.Projections = []*NormalizedEventProjection{} },
+			func(n *NormalizedEvent, e *NormalizedEventProjection) {
+				n.Edges.Projections = append(n.Edges.Projections, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -446,6 +496,36 @@ func (_q *NormalizedEventQuery) loadTenant(ctx context.Context, query *TenantQue
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *NormalizedEventQuery) loadProjections(ctx context.Context, query *NormalizedEventProjectionQuery, nodes []*NormalizedEvent, init func(*NormalizedEvent), assign func(*NormalizedEvent, *NormalizedEventProjection)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*NormalizedEvent)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(normalizedeventprojection.FieldEventID)
+	}
+	query.Where(predicate.NormalizedEventProjection(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(normalizedevent.ProjectionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.EventID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "event_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

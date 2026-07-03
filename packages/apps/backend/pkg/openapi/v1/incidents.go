@@ -309,7 +309,7 @@ type UpdateIncidentAttributes struct {
 	SeverityId uuid.UUID `json:"severityId,omitempty" required:"false"`
 	TypeId     uuid.UUID `json:"typeId,omitempty" required:"false"`
 }
-type UpdateIncidentRequest IdRequest[UpdateIncidentAttributes]
+type UpdateIncidentRequest IdRequestWithBody[UpdateIncidentAttributes]
 type UpdateIncidentResponse ItemResponse[Incident]
 
 var ArchiveIncident = huma.Operation{
@@ -321,7 +321,7 @@ var ArchiveIncident = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveIncidentRequest EmptyIdRequest
+type ArchiveIncidentRequest IdRequest
 type ArchiveIncidentResponse EmptyResponse
 
 var ListIncidentImpacts = openapi.Operation{

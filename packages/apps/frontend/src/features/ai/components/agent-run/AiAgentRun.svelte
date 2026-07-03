@@ -14,6 +14,17 @@
 
 	const { runId }: Props = $props();
 	const ctrl = initAiAgentRunComponentController(() => runId);
+
+	const runAttrs = $derived(ctrl.agentRun?.attributes);
+	const latestSnapshotAttrs = $derived(ctrl.latestSnapshot?.attributes);
+    const status = $derived(latestSnapshotAttrs.status);
+	const latestState = $derived(latestSnapshotAttrs?.state);
+
+    const getStatusVariant = (status: string) => {
+        return status === "failed" ? "destructive" 
+            : status === "completed" ? "secondary" 
+                : "outline";
+    }
 </script>
 
 <section class="w-full min-w-0 space-y-3">
@@ -32,13 +43,18 @@
 
 				<div class="min-w-0 flex-1 space-y-2">
 					<div class="flex min-w-0 flex-wrap items-center gap-2">
-						<h2 class="truncate text-sm font-semibold text-foreground">{ctrl.agentName}</h2>
-						{#if ctrl.latestSnapshot}
-							<Badge
-								variant={ctrl.latestSnapshot.statusVariant}
-								class={ctrl.latestSnapshot.statusClass}
+						<h2 class="truncate text-sm font-semibold text-foreground">
+							{runAttrs?.agentname ?? "AI agent"}
+						</h2>
+						{#if latestSnapshotAttrs}
+							<Badge variant={getStatusVariant(status)}
+								class={[
+									"capitalize",
+									status === "pending" && "text-blue-100",
+									status === "completed" && "text-success",
+								]}
 							>
-								{ctrl.latestSnapshot.statusLabel}
+								{status}
 							</Badge>
 						{:else}
 							<Badge variant="outline">No snapshots</Badge>
@@ -51,12 +67,19 @@
 					<div class="grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
 						<div class="min-w-0">
 							<span class="font-medium text-foreground">State:</span>
-							<span>{ctrl.latestStateSummary}</span>
+							{#if latestState}
+								<span>
+									{latestState.messages.length} messages,
+									{latestState.artifacts.length} artifacts
+								</span>
+							{:else}
+								<span>No snapshots</span>
+							{/if}
 						</div>
-						{#if ctrl.latestSnapshot}
+						{#if latestSnapshotAttrs}
 							<div class="min-w-0 sm:text-right">
 								<span class="font-medium text-foreground">Updated:</span>
-								<span>{ctrl.latestSnapshot.createdAt}</span>
+								<span>{latestSnapshotAttrs.created_at}</span>
 							</div>
 						{/if}
 					</div>

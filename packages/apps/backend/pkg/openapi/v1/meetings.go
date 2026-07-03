@@ -160,7 +160,7 @@ var GetMeetingSchedule = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetMeetingScheduleRequest EmptyIdRequest
+type GetMeetingScheduleRequest IdRequest
 type GetMeetingScheduleResponse ItemResponse[MeetingSchedule]
 
 var CreateMeetingSchedule = huma.Operation{
@@ -200,7 +200,7 @@ var UpdateMeetingSchedule = huma.Operation{
 
 type UpdateMeetingScheduleAttributes struct {
 }
-type UpdateMeetingScheduleRequest IdRequest[UpdateMeetingScheduleAttributes]
+type UpdateMeetingScheduleRequest IdRequestWithBody[UpdateMeetingScheduleAttributes]
 type UpdateMeetingScheduleResponse ItemResponse[MeetingSchedule]
 
 var ArchiveMeetingSchedule = huma.Operation{
@@ -212,7 +212,7 @@ var ArchiveMeetingSchedule = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveMeetingScheduleRequest EmptyIdRequest
+type ArchiveMeetingScheduleRequest IdRequest
 type ArchiveMeetingScheduleResponse EmptyResponse
 
 var ListMeetingSessions = huma.Operation{
@@ -243,7 +243,7 @@ var GetMeetingSession = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetMeetingSessionRequest EmptyIdRequest
+type GetMeetingSessionRequest IdRequest
 type GetMeetingSessionResponse ItemResponse[MeetingSession]
 
 var CreateMeetingSession = huma.Operation{
@@ -277,7 +277,7 @@ var UpdateMeetingSession = huma.Operation{
 
 type UpdateMeetingSessionAttributes struct {
 }
-type UpdateMeetingSessionRequest IdRequest[UpdateMeetingSessionAttributes]
+type UpdateMeetingSessionRequest IdRequestWithBody[UpdateMeetingSessionAttributes]
 type UpdateMeetingSessionResponse ItemResponse[MeetingSession]
 
 var ArchiveMeetingSession = huma.Operation{
@@ -289,5 +289,5 @@ var ArchiveMeetingSession = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveMeetingSessionRequest EmptyIdRequest
+type ArchiveMeetingSessionRequest IdRequest
 type ArchiveMeetingSessionResponse EmptyResponse

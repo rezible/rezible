@@ -5,50 +5,22 @@
 	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
 	import EventRow from "$src/components/common/events/EventRow.svelte";
 	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
-	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/common/events/annotation-dialog/dialogState.svelte";
-	import EventAnnotationDialog from "$src/components/common/events/annotation-dialog/EventAnnotationDialog.svelte";
-	import { createQuery } from "@tanstack/svelte-query";
-	import { QueryPaginatorState } from "$lib/paginator.svelte";
-	import { listEventsOptions } from "$lib/api";
-	import { EventsListFiltersState } from "./filters.svelte";
+	import { initEventsListController } from "./controller.svelte";
 
-	const filtersState = new EventsListFiltersState();
-
-	const paginator = new QueryPaginatorState();
-	const queryOptions = $derived(listEventsOptions({ 
-		query: {
-			...filtersState.queryData,
-			limit: paginator.limit,
-			offset: paginator.offset,
-			// TODO
-			// withAnnotations: true,
-		}
-	}));
-	const query = createQuery(() => ({
-		...queryOptions,
-		enabled: filtersState.queryEnabled,
-	}));
-	paginator.watchQuery(query);
-
-	const events = $derived(query.data?.data ?? []);
+	const controller = initEventsListController();
 
 	setPageBreadcrumbs(() => [{ label: "Events" }]);
-
-	setAnnotationDialogState(new AnnotationDialogState({}));
 </script>
 
-{#snippet filters()}
-	<ListFilters {filtersState} />
-{/snippet}
-
-<EventAnnotationDialog />
-
-<FilterPage {filters}>
+<FilterPage>
+	{#snippet filters()}
+		<ListFilters />
+	{/snippet}
 	<PaginatedListBox>
-		{#if query.isLoading}
+		{#if controller.query.isLoading}
 			<LoadingIndicator />
 		{:else}
-			{#each events as event (event.id)}
+			{#each controller.events as event (event.id)}
 				<EventRow {event} />
 			{:else}
 				<div class="grid place-items-center flex-1">

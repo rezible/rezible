@@ -27,24 +27,78 @@ type (
 	}
 
 	EventAttributes struct {
-		ActivityKind string    `json:"kind"`
-		Title        string    `json:"title"`
-		Description  string    `json:"description"`
-		Timestamp    time.Time `json:"timestamp"`
-		RosterId     uuid.UUID `json:"roster_id,omitempty"`
-		AlertId      uuid.UUID `json:"alert_id,omitempty"`
+		Kind               string            `json:"kind"`
+		OccurredAt         time.Time         `json:"occurredAt"`
+		ReceivedAt         time.Time         `json:"receivedAt"`
+		Provider           string            `json:"provider"`
+		ProviderSource     string            `json:"providerSource"`
+		ProviderSubjectRef string            `json:"providerSubjectRef"`
+		SubjectKind        string            `json:"subjectKind"`
+		Attributes         map[string]any    `json:"attributes"`
+		Projections        []EventProjection `json:"projections"`
+	}
+
+	EventProjection struct {
+		Id         uuid.UUID                 `json:"id"`
+		Attributes EventProjectionAttributes `json:"attributes"`
+	}
+
+	EventProjectionAttributes struct {
+		Projector string                  `json:"projector"`
+		Status    string                  `json:"status" enum:"pending,succeeded,failed"`
+		StartedAt time.Time               `json:"startedAt"`
+		Error     *string                 `json:"error,omitempty"`
+		Entities  []EventProjectionEntity `json:"entities"`
+	}
+
+	EventProjectionEntity struct {
+		EntityId   uuid.UUID `json:"entityId"`
+		EntityKind string    `json:"entityKind"`
 	}
 )
 
 func EventFromEnt(e *ent.NormalizedEvent) Event {
 	attr := EventAttributes{
-		ActivityKind: e.Kind.String(),
-		Timestamp:    e.OccurredAt,
+		Kind:               e.Kind.String(),
+		OccurredAt:         e.OccurredAt,
+		ReceivedAt:         e.ReceivedAt,
+		Provider:           e.Provider,
+		ProviderSource:     e.ProviderSource,
+		ProviderSubjectRef: e.ProviderSubjectRef,
+		SubjectKind:        e.SubjectKind,
+		Attributes:         e.Attributes,
+		Projections:        make([]EventProjection, len(e.Edges.Projections)),
 	}
 
-	return Event{
-		Id:         e.ID,
-		Attributes: attr,
+	for i, proj := range e.Edges.Projections {
+		attr.Projections[i] = EventProjectionFromEnt(proj)
+	}
+
+	return Event{Id: e.ID, Attributes: attr}
+}
+
+func EventProjectionFromEnt(p *ent.NormalizedEventProjection) EventProjection {
+	attr := EventProjectionAttributes{
+		Projector: p.Projector,
+		Status:    p.Status.String(),
+		StartedAt: p.StartedAt,
+		Entities:  make([]EventProjectionEntity, len(p.Edges.ProjectionEntities)),
+	}
+	if p.Error != "" {
+		attr.Error = &p.Error
+	}
+
+	for i, e := range p.Edges.ProjectionEntities {
+		attr.Entities[i] = EventProjectionEntityFromEnt(e)
+	}
+
+	return EventProjection{Id: p.ID, Attributes: attr}
+}
+
+func EventProjectionEntityFromEnt(e *ent.NormalizedEventProjectionEntity) EventProjectionEntity {
+	return EventProjectionEntity{
+		EntityId:   e.DomainEntityID,
+		EntityKind: e.DomainEntityKind,
 	}
 }
 
@@ -63,8 +117,9 @@ var ListEvents = huma.Operation{
 
 type ListEventsRequest struct {
 	ListRequest
-	From time.Time `query:"from"`
-	To   time.Time `query:"to"`
+	From            time.Time `query:"from"`
+	To              time.Time `query:"to"`
+	WithProjections bool      `query:"withProjections"`
 }
 type ListEventsResponse ListResponse[Event]
 
@@ -78,6 +133,7 @@ var GetEvent = huma.Operation{
 }
 
 type GetEventRequest struct {
-	EmptyIdRequest
+	IdRequest
+	WithProjections bool `query:"withProjections"`
 }
 type GetEventResponse ItemResponse[Event]

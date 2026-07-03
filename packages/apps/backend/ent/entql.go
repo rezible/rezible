@@ -3518,6 +3518,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Tenant",
 	)
 	graph.MustAddE(
+		"projections",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.ProjectionsTable,
+			Columns: []string{normalizedevent.ProjectionsColumn},
+			Bidi:    false,
+		},
+		"NormalizedEvent",
+		"NormalizedEventProjection",
+	)
+	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -10643,6 +10655,20 @@ func (f *NormalizedEventFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *NormalizedEventFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasProjections applies a predicate to check if query has an edge projections.
+func (f *NormalizedEventFilter) WhereHasProjections() {
+	f.Where(entql.HasEdge("projections"))
+}
+
+// WhereHasProjectionsWith applies a predicate to check if query has an edge projections with a given conditions (other predicates).
+func (f *NormalizedEventFilter) WhereHasProjectionsWith(preds ...predicate.NormalizedEventProjection) {
+	f.Where(entql.HasEdgeWith("projections", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

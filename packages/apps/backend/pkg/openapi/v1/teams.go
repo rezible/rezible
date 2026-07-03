@@ -144,7 +144,7 @@ var UpdateTeam = huma.Operation{
 type UpdateTeamAttributes struct {
 	Name OmittableNullable[string] `json:"name"`
 }
-type UpdateTeamRequest IdRequest[UpdateTeamAttributes]
+type UpdateTeamRequest IdRequestWithBody[UpdateTeamAttributes]
 type UpdateTeamResponse ItemResponse[Team]
 
 var ArchiveTeam = huma.Operation{
@@ -156,7 +156,7 @@ var ArchiveTeam = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveTeamRequest EmptyIdRequest
+type ArchiveTeamRequest IdRequest
 type ArchiveTeamResponse EmptyResponse
 
 var ListTeamMemberships = huma.Operation{
@@ -204,7 +204,7 @@ var UpdateTeamMembership = huma.Operation{
 type UpdateTeamMembershipAttributes struct {
 	Role *string `json:"role,omitempty" enum:"admin,member"`
 }
-type UpdateTeamMembershipRequest IdRequest[UpdateTeamMembershipAttributes]
+type UpdateTeamMembershipRequest IdRequestWithBody[UpdateTeamMembershipAttributes]
 type UpdateTeamMembershipResponse ItemResponse[TeamMembership]
 
 var DeleteTeamMembership = huma.Operation{
@@ -216,5 +216,5 @@ var DeleteTeamMembership = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteTeamMembershipRequest EmptyIdRequest
+type DeleteTeamMembershipRequest IdRequest
 type DeleteTeamMembershipResponse EmptyResponse

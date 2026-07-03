@@ -8,7 +8,6 @@
 	import ShiftAlerts from "./sections/ShiftAlerts.svelte";
 
 	import ShiftEventsSidebar from "./events-sidebar/ShiftEventsSidebar.svelte";
-	import EventAnnotationDialog from "$src/components/common/events/annotation-dialog/EventAnnotationDialog.svelte";
 	import { useOncallShiftViewController } from "$features/oncall/views/shift";
 
 	const view = useOncallShiftViewController();
@@ -33,5 +32,3 @@
 		<ShiftEventsSidebar />
 	</div>
 </div>
-
-<EventAnnotationDialog />

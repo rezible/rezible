@@ -121,7 +121,7 @@ type UpdateEventAnnotationRequestAttributes struct {
 	MinutesOccupied *int      `json:"minutesOccupied,omitempty"`
 	Tags            *[]string `json:"tags,omitempty"`
 }
-type UpdateEventAnnotationRequest IdRequest[UpdateEventAnnotationRequestAttributes]
+type UpdateEventAnnotationRequest IdRequestWithBody[UpdateEventAnnotationRequestAttributes]
 type UpdateEventAnnotationResponse ItemResponse[EventAnnotation]
 
 var DeleteEventAnnotation = huma.Operation{
@@ -133,5 +133,5 @@ var DeleteEventAnnotation = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteEventAnnotationRequest EmptyIdRequest
+type DeleteEventAnnotationRequest IdRequest
 type DeleteEventAnnotationResponse EmptyResponse

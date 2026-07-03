@@ -22,7 +22,10 @@ func newEventsHandler(events rez.EventsService) *eventsHandler {
 func (h *eventsHandler) GetEvent(ctx context.Context, req *oapi.GetEventRequest) (*oapi.GetEventResponse, error) {
 	var resp oapi.GetEventResponse
 
-	event, eventErr := h.events.GetEvent(ctx, req.Id)
+	params := rez.GetEventParams{
+		WithProjections: req.WithProjections,
+	}
+	event, eventErr := h.events.GetEvent(ctx, req.Id, params)
 	if eventErr != nil {
 		return nil, oapi.Error(ctx, "failed to get event", eventErr)
 	}
@@ -35,7 +38,8 @@ func (h *eventsHandler) ListEvents(ctx context.Context, req *oapi.ListEventsRequ
 	var resp oapi.ListEventsResponse
 
 	params := rez.ListEventsParams{
-		ListParams: req.ListParams(),
+		ListParams:      req.ListParams(),
+		WithProjections: req.WithProjections,
 	}
 	if !req.From.IsZero() {
 		params.Predicates = append(params.Predicates, ne.OccurredAtGTE(req.From))

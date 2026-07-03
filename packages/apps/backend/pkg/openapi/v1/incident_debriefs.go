@@ -143,7 +143,7 @@ var GetIncidentUserDebrief = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentUserDebriefRequest = EmptyIdRequest
+type GetIncidentUserDebriefRequest = IdRequest
 type GetIncidentUserDebriefResponse ItemResponse[IncidentDebrief]
 
 var GetIncidentDebrief = huma.Operation{
@@ -155,7 +155,7 @@ var GetIncidentDebrief = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentDebriefRequest = EmptyIdRequest
+type GetIncidentDebriefRequest = IdRequest
 type GetIncidentDebriefResponse ItemResponse[IncidentDebrief]
 
 var UpdateIncidentDebrief = huma.Operation{
@@ -170,7 +170,7 @@ var UpdateIncidentDebrief = huma.Operation{
 type UpdateIncidentDebriefAttributes struct {
 	Status string `json:"status" enum:"started,completed"`
 }
-type UpdateIncidentDebriefRequest IdRequest[UpdateIncidentDebriefAttributes]
+type UpdateIncidentDebriefRequest IdRequestWithBody[UpdateIncidentDebriefAttributes]
 type UpdateIncidentDebriefResponse ItemResponse[IncidentDebrief]
 
 var ListIncidentDebriefMessages = huma.Operation{
@@ -197,7 +197,7 @@ var AddIncidentDebriefUserMessage = huma.Operation{
 type AddIncidentDebriefUserMessageAttributes struct {
 	MessageContent string `json:"messageContent"`
 }
-type AddIncidentDebriefUserMessageRequest IdRequest[AddIncidentDebriefUserMessageAttributes]
+type AddIncidentDebriefUserMessageRequest IdRequestWithBody[AddIncidentDebriefUserMessageAttributes]
 type AddIncidentDebriefUserMessageResponse ItemResponse[IncidentDebriefMessage]
 
 var ListIncidentDebriefSuggestions = huma.Operation{
@@ -233,7 +233,7 @@ var GetIncidentDebriefQuestion = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentDebriefQuestionRequest EmptyIdRequest
+type GetIncidentDebriefQuestionRequest IdRequest
 type GetIncidentDebriefQuestionResponse ItemResponse[IncidentDebriefQuestion]
 
 var CreateIncidentDebriefQuestion = huma.Operation{
@@ -263,7 +263,7 @@ var UpdateIncidentDebriefQuestion = huma.Operation{
 type UpdateIncidentDebriefQuestionAttributes struct {
 	Content *string `json:"content,omitempty"`
 }
-type UpdateIncidentDebriefQuestionRequest IdRequest[UpdateIncidentDebriefQuestionAttributes]
+type UpdateIncidentDebriefQuestionRequest IdRequestWithBody[UpdateIncidentDebriefQuestionAttributes]
 type UpdateIncidentDebriefQuestionResponse ItemResponse[IncidentDebriefQuestion]
 
 var ArchiveIncidentDebriefQuestion = huma.Operation{
@@ -275,5 +275,5 @@ var ArchiveIncidentDebriefQuestion = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveIncidentDebriefQuestionRequest EmptyIdRequest
+type ArchiveIncidentDebriefQuestionRequest IdRequest
 type ArchiveIncidentDebriefQuestionResponse EmptyResponse

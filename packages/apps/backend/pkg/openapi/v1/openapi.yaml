@@ -163,15 +163,15 @@ components:
         createdAt:
           format: date-time
           type: string
-        latestSnapshot:
-          items:
-            $ref: "#/components/schemas/AiAgentRunSnapshot"
-          type: array
         ownerUserId:
           type: string
         permissionScopes:
           items:
             type: string
+          type: array
+        snapshots:
+          items:
+            $ref: "#/components/schemas/AiAgentRunSnapshot"
           type: array
         startedAt:
           format: date-time
@@ -181,7 +181,7 @@ components:
         - ownerUserId
         - permissionScopes
         - createdAt
-        - latestSnapshot
+        - snapshots
       type: object
     AiAgentRunSnapshot:
       additionalProperties: false
@@ -1493,24 +1493,87 @@ components:
     EventAttributes:
       additionalProperties: false
       properties:
-        alert_id:
-          type: string
-        description:
-          type: string
+        attributes:
+          additionalProperties: {}
+          type: object
         kind:
           type: string
-        roster_id:
-          type: string
-        timestamp:
+        occurredAt:
           format: date-time
           type: string
-        title:
+        projections:
+          items:
+            $ref: "#/components/schemas/EventProjection"
+          type: array
+        provider:
+          type: string
+        providerSource:
+          type: string
+        providerSubjectRef:
+          type: string
+        receivedAt:
+          format: date-time
+          type: string
+        subjectKind:
           type: string
       required:
         - kind
-        - title
-        - description
-        - timestamp
+        - occurredAt
+        - receivedAt
+        - provider
+        - providerSource
+        - providerSubjectRef
+        - subjectKind
+        - attributes
+        - projections
+      type: object
+    EventProjection:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/EventProjectionAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    EventProjectionAttributes:
+      additionalProperties: false
+      properties:
+        entities:
+          items:
+            $ref: "#/components/schemas/EventProjectionEntity"
+          type: array
+        error:
+          type: string
+        projector:
+          type: string
+        startedAt:
+          format: date-time
+          type: string
+        status:
+          enum:
+            - pending
+            - succeeded
+            - failed
+          type: string
+      required:
+        - projector
+        - status
+        - startedAt
+        - entities
+      type: object
+    EventProjectionEntity:
+      additionalProperties: false
+      properties:
+        entityId:
+          type: string
+        entityKind:
+          type: string
+      required:
+        - entityId
+        - entityKind
       type: object
     ExpandableEventAttributes:
       additionalProperties: false
@@ -7771,6 +7834,11 @@ paths:
           schema:
             format: date-time
             type: string
+        - explode: false
+          in: query
+          name: withProjections
+          schema:
+            type: boolean
       responses:
         "200":
           content:
@@ -7826,6 +7894,11 @@ paths:
           required: true
           schema:
             type: string
+        - explode: false
+          in: query
+          name: withProjections
+          schema:
+            type: boolean
       responses:
         "200":
           content:
