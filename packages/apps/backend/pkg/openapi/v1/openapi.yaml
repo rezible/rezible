@@ -144,52 +144,57 @@ components:
         - data
         - pagination
       type: object
-    AgentRun:
+    AiAgentRun:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/AgentRunAttributes"
+          $ref: "#/components/schemas/AiAgentRunAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    AgentRunAttributes:
+    AiAgentRunAttributes:
       additionalProperties: false
       properties:
+        agentname:
+          type: string
         createdAt:
           format: date-time
           type: string
         latestSnapshot:
           items:
-            $ref: "#/components/schemas/AgentRunSnapshot"
+            $ref: "#/components/schemas/AiAgentRunSnapshot"
           type: array
         ownerUserId:
           type: string
+        permissionScopes:
+          items:
+            type: string
+          type: array
         startedAt:
           format: date-time
           type: string
-        workflow:
-          type: string
       required:
+        - agentname
         - ownerUserId
-        - workflow
+        - permissionScopes
         - createdAt
         - latestSnapshot
       type: object
-    AgentRunSnapshot:
+    AiAgentRunSnapshot:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/AgentRunSnapshotAttributes"
+          $ref: "#/components/schemas/AiAgentRunSnapshotAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    AgentRunSnapshotAttributes:
+    AiAgentRunSnapshotAttributes:
       additionalProperties: false
       properties:
         created_at:
@@ -207,7 +212,7 @@ components:
         parent_id:
           type: string
         state:
-          $ref: "#/components/schemas/AgentRunSnapshotState"
+          $ref: "#/components/schemas/AiAgentRunSnapshotState"
         status:
           type: string
       required:
@@ -217,12 +222,12 @@ components:
         - heartbeat_at
         - created_at
       type: object
-    AgentRunSnapshotState:
+    AiAgentRunSnapshotState:
       additionalProperties: false
       properties:
         artifacts:
           items:
-            $ref: "#/components/schemas/AgentRunSnapshotStateArtifact"
+            $ref: "#/components/schemas/AiAgentRunSnapshotStateArtifact"
           type: array
         custom:
           additionalProperties: {}
@@ -236,7 +241,7 @@ components:
         - messages
         - custom
       type: object
-    AgentRunSnapshotStateArtifact:
+    AiAgentRunSnapshotStateArtifact:
       additionalProperties: false
       properties:
         metadata:
@@ -1580,18 +1585,18 @@ components:
       required:
         - data
       type: object
-    GetAgentRunResponseBody:
+    GetAiAgentRunResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/GetAgentRunResponseBody.json
+            - /v1/schemas/GetAiAgentRunResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/AgentRun"
+          $ref: "#/components/schemas/AiAgentRun"
       required:
         - data
       type: object
@@ -3209,19 +3214,19 @@ components:
       required:
         - targetSelectionRequired
       type: object
-    ListAgentRunsResponseBody:
+    ListAiAgentRunsResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListAgentRunsResponseBody.json
+            - /v1/schemas/ListAiAgentRunsResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/AgentRun"
+            $ref: "#/components/schemas/AiAgentRun"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -4523,13 +4528,13 @@ components:
         - workflow
         - input
       type: object
-    RequestAgentRunRequestBody:
+    RequestAiAgentRunRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/RequestAgentRunRequestBody.json
+            - /v1/schemas/RequestAiAgentRunRequestBody.json
           format: uri
           readOnly: true
           type: string
@@ -4538,18 +4543,18 @@ components:
       required:
         - attributes
       type: object
-    RequestAgentRunResponseBody:
+    RequestAiAgentRunResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/RequestAgentRunResponseBody.json
+            - /v1/schemas/RequestAiAgentRunResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/AgentRun"
+          $ref: "#/components/schemas/AiAgentRun"
       required:
         - data
       type: object
@@ -6467,9 +6472,9 @@ info:
   version: 0.0.1
 openapi: 3.1.0
 paths:
-  /agents/runs:
+  /ai/agents/runs:
     get:
-      operationId: list-agent-runs
+      operationId: list-ai-agent-runs
       parameters:
         - explode: false
           in: query
@@ -6506,7 +6511,7 @@ paths:
             type: string
         - explode: false
           in: query
-          name: workflow
+          name: name
           schema:
             type: string
         - explode: false
@@ -6519,7 +6524,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListAgentRunsResponseBody"
+                $ref: "#/components/schemas/ListAiAgentRunsResponseBody"
           description: OK
         "400":
           content:
@@ -6559,21 +6564,21 @@ paths:
           description: Internal Server Error
       summary: List Agent Runs
       tags:
-        - Agents
+        - AI
     post:
-      operationId: request-agent-run
+      operationId: request-ai-agent-run
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RequestAgentRunRequestBody"
+              $ref: "#/components/schemas/RequestAiAgentRunRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RequestAgentRunResponseBody"
+                $ref: "#/components/schemas/RequestAiAgentRunResponseBody"
           description: OK
         "400":
           content:
@@ -6613,10 +6618,10 @@ paths:
           description: Internal Server Error
       summary: Request Agent Run
       tags:
-        - Agents
-  /agents/runs/{id}:
+        - AI
+  /ai/agents/runs/{id}:
     get:
-      operationId: get-agent-run
+      operationId: get-ai-agent-run
       parameters:
         - in: path
           name: id
@@ -6628,7 +6633,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetAgentRunResponseBody"
+                $ref: "#/components/schemas/GetAiAgentRunResponseBody"
           description: OK
         "400":
           content:
@@ -6666,9 +6671,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get Agent Run
+      summary: Get an Agent Run
       tags:
-        - Agents
+        - AI
   /alerts:
     get:
       operationId: list-alerts

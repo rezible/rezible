@@ -77,43 +77,44 @@ export type AddWatchedOncallRosterResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type AgentRun = {
-    attributes: AgentRunAttributes;
+export type AiAgentRun = {
+    attributes: AiAgentRunAttributes;
     id: string;
 };
 
-export type AgentRunAttributes = {
+export type AiAgentRunAttributes = {
+    agentname: string;
     createdAt: string;
-    latestSnapshot: Array<AgentRunSnapshot>;
+    latestSnapshot: Array<AiAgentRunSnapshot>;
     ownerUserId: string;
+    permissionScopes: Array<string>;
     startedAt?: string;
-    workflow: string;
 };
 
-export type AgentRunSnapshot = {
-    attributes: AgentRunSnapshotAttributes;
+export type AiAgentRunSnapshot = {
+    attributes: AiAgentRunSnapshotAttributes;
     id: string;
 };
 
-export type AgentRunSnapshotAttributes = {
+export type AiAgentRunSnapshotAttributes = {
     created_at: string;
     error?: string;
     finish_reason: string;
     heartbeat_at: string | null;
     parent_id: string;
-    state?: AgentRunSnapshotState;
+    state?: AiAgentRunSnapshotState;
     status: string;
 };
 
-export type AgentRunSnapshotState = {
-    artifacts: Array<AgentRunSnapshotStateArtifact>;
+export type AiAgentRunSnapshotState = {
+    artifacts: Array<AiAgentRunSnapshotStateArtifact>;
     custom: {
         [key: string]: unknown;
     };
     messages: Array<Message>;
 };
 
-export type AgentRunSnapshotStateArtifact = {
+export type AiAgentRunSnapshotStateArtifact = {
     metadata?: {
         [key: string]: unknown;
     };
@@ -756,12 +757,12 @@ export type GetAdjacentOncallShiftsResponseBody = {
     data: OncallShiftsAdjacent;
 };
 
-export type GetAgentRunResponseBody = {
+export type GetAiAgentRunResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: AgentRun;
+    data: AiAgentRun;
 };
 
 export type GetAlertMetricsResponseBody = {
@@ -1491,12 +1492,12 @@ export type IntegrationOAuthInstallResult = {
     targetSelectionRequired: boolean;
 };
 
-export type ListAgentRunsResponseBody = {
+export type ListAiAgentRunsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<AgentRun>;
+    data: Array<AiAgentRun>;
     pagination: ResponsePagination;
 };
 
@@ -2057,7 +2058,7 @@ export type RequestAgentRunRequestAttributes = {
     workflow: string;
 };
 
-export type RequestAgentRunRequestBody = {
+export type RequestAiAgentRunRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -2065,12 +2066,12 @@ export type RequestAgentRunRequestBody = {
     attributes: RequestAgentRunRequestAttributes;
 };
 
-export type RequestAgentRunResponseBody = {
+export type RequestAiAgentRunResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: AgentRun;
+    data: AiAgentRun;
 };
 
 export type RequestDocumentSessionAuthResponseBody = {
@@ -3002,7 +3003,7 @@ export type VideoConferenceAttributes = {
     status: string;
 };
 
-export type ListAgentRunsData = {
+export type ListAiAgentRunsData = {
     body?: never;
     path?: never;
     query?: {
@@ -3011,13 +3012,13 @@ export type ListAgentRunsData = {
         search?: string;
         archived?: boolean;
         agentTaskId?: string;
-        workflow?: string;
+        name?: string;
         resulted?: boolean;
     };
-    url: '/agents/runs';
+    url: '/ai/agents/runs';
 };
 
-export type ListAgentRunsErrors = {
+export type ListAiAgentRunsErrors = {
     /**
      * Bad Request
      */
@@ -3044,25 +3045,25 @@ export type ListAgentRunsErrors = {
     500: ErrorModel;
 };
 
-export type ListAgentRunsError = ListAgentRunsErrors[keyof ListAgentRunsErrors];
+export type ListAiAgentRunsError = ListAiAgentRunsErrors[keyof ListAiAgentRunsErrors];
 
-export type ListAgentRunsResponses = {
+export type ListAiAgentRunsResponses = {
     /**
      * OK
      */
-    200: ListAgentRunsResponseBody;
+    200: ListAiAgentRunsResponseBody;
 };
 
-export type ListAgentRunsResponse = ListAgentRunsResponses[keyof ListAgentRunsResponses];
+export type ListAiAgentRunsResponse = ListAiAgentRunsResponses[keyof ListAiAgentRunsResponses];
 
-export type RequestAgentRunData = {
-    body: RequestAgentRunRequestBody;
+export type RequestAiAgentRunData = {
+    body: RequestAiAgentRunRequestBody;
     path?: never;
     query?: never;
-    url: '/agents/runs';
+    url: '/ai/agents/runs';
 };
 
-export type RequestAgentRunErrors = {
+export type RequestAiAgentRunErrors = {
     /**
      * Bad Request
      */
@@ -3089,27 +3090,27 @@ export type RequestAgentRunErrors = {
     500: ErrorModel;
 };
 
-export type RequestAgentRunError = RequestAgentRunErrors[keyof RequestAgentRunErrors];
+export type RequestAiAgentRunError = RequestAiAgentRunErrors[keyof RequestAiAgentRunErrors];
 
-export type RequestAgentRunResponses = {
+export type RequestAiAgentRunResponses = {
     /**
      * OK
      */
-    200: RequestAgentRunResponseBody;
+    200: RequestAiAgentRunResponseBody;
 };
 
-export type RequestAgentRunResponse = RequestAgentRunResponses[keyof RequestAgentRunResponses];
+export type RequestAiAgentRunResponse = RequestAiAgentRunResponses[keyof RequestAiAgentRunResponses];
 
-export type GetAgentRunData = {
+export type GetAiAgentRunData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/agents/runs/{id}';
+    url: '/ai/agents/runs/{id}';
 };
 
-export type GetAgentRunErrors = {
+export type GetAiAgentRunErrors = {
     /**
      * Bad Request
      */
@@ -3136,16 +3137,16 @@ export type GetAgentRunErrors = {
     500: ErrorModel;
 };
 
-export type GetAgentRunError = GetAgentRunErrors[keyof GetAgentRunErrors];
+export type GetAiAgentRunError = GetAiAgentRunErrors[keyof GetAiAgentRunErrors];
 
-export type GetAgentRunResponses = {
+export type GetAiAgentRunResponses = {
     /**
      * OK
      */
-    200: GetAgentRunResponseBody;
+    200: GetAiAgentRunResponseBody;
 };
 
-export type GetAgentRunResponse = GetAgentRunResponses[keyof GetAgentRunResponses];
+export type GetAiAgentRunResponse = GetAiAgentRunResponses[keyof GetAiAgentRunResponses];
 
 export type ListAlertsData = {
     body?: never;
