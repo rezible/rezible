@@ -14,12 +14,12 @@ import (
 type AiService struct {
 	cfg              rez.AiConfig
 	gk               *genkit.Genkit
-	snapshots        rez.AiStateService
+	state            rez.AiStateService
 	agentInvokers    map[string]AgentRunInvokerFunc
 	workflowInvokers map[string]WorkflowInvokerFunc
 }
 
-func NewAiService(ctx context.Context, cfg rez.Config, snapshots rez.AiStateService) *AiService {
+func NewAiService(ctx context.Context, cfg rez.Config, state rez.AiStateService) *AiService {
 	gkOpts := []genkit.GenkitOption{
 		genkit.WithExperimental(),
 	}
@@ -31,14 +31,14 @@ func NewAiService(ctx context.Context, cfg rez.Config, snapshots rez.AiStateServ
 	return &AiService{
 		cfg:              cfg.AI,
 		gk:               genkit.Init(ctx, gkOpts...),
-		snapshots:        snapshots,
+		state:            state,
 		agentInvokers:    make(map[string]AgentRunInvokerFunc),
 		workflowInvokers: make(map[string]WorkflowInvokerFunc),
 	}
 }
 
 func RegisterAgent[S rezai.AgentState](s *AiService, a agentRunner[S]) {
-	s.agentInvokers[a.definition().Name] = makeAgentSessionInvokerFunc(s.gk, makeAgentSessionStore[S](s.snapshots), a)
+	s.agentInvokers[a.definition().Name] = makeAgentSessionInvokerFunc(s.gk, makeAgentSessionStore[S](s.state), a)
 }
 
 func (s *AiService) GetAgentRunInvoker(run *ent.AiAgentRun) (rez.AiAgentRunInvoker, error) {
@@ -53,7 +53,7 @@ func (s *AiService) GetAgentRunInvoker(run *ent.AiAgentRun) (rez.AiAgentRunInvok
 }
 
 func RegisterWorkflow[I rezai.WorkflowInput, S any, O rezai.WorkflowOutput](s *AiService, w workflowRunner[I, S, O]) {
-
+	s.workflowInvokers[w.definition().Name] = makeWorkflowInvokerFunc(s.gk, makeAgentSessionStore[S](s.state), w)
 }
 
 func (s *AiService) GetWorkflowInvoker(name string) (rez.AiWorkflowInvoker, error) {

@@ -148,8 +148,8 @@ func declareServices(ctx context.Context, i do.Injector) {
 		return integrations.NewPackageRegistry(), nil
 	})
 
-	do.Provide(i, func(i do.Injector) (rez.AgentRegistry, error) {
-		r := genkit.NewAgentRegistry(ctx, do.MustInvoke[rez.Config](i), do.MustInvoke[rez.AgentRunSnapshotService](i))
+	do.Provide(i, func(i do.Injector) (rez.AiService, error) {
+		r := genkit.NewAiService(ctx, do.MustInvoke[rez.Config](i), do.MustInvoke[rez.AiStateService](i))
 		genkit.RegisterAgent(r, genkit.NewAlertInvestigationAgent(do.MustInvoke[rez.AlertService](i)))
 		return r, nil
 	})
@@ -191,7 +191,7 @@ func declareServices(ctx context.Context, i do.Injector) {
 	do.Provide(i, func(i do.Injector) (oapiv1.Handler, error) {
 		return apiv1.NewHandler(
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.AgentService](i),
+			do.MustInvoke[rez.AiSessionService](i),
 			do.MustInvoke[rez.AlertService](i),
 			do.MustInvoke[rez.OrganizationService](i),
 			do.MustInvoke[rez.UserService](i),
@@ -252,7 +252,7 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.AgentService](i),
+			do.MustInvoke[rez.AiSessionService](i),
 			do.MustInvoke[rez.EventsService](i),
 		)
 		if appErr != nil {
@@ -428,19 +428,19 @@ var provideServices = do.Package(
 	}),
 	do.Bind[*db.DocumentsService, rez.DocumentsService](),
 
-	do.Lazy(func(i do.Injector) (*db.AgentRunSnapshotService, error) {
+	do.Lazy(func(i do.Injector) (*db.AiAgentRunSnapshotService, error) {
 		return db.NewAgentRunSnapshotService(do.MustInvoke[rez.Database](i))
 	}),
-	do.Bind[*db.AgentRunSnapshotService, rez.AgentRunSnapshotService](),
+	do.Bind[*db.AiAgentRunSnapshotService, rez.AiStateService](),
 
-	do.Lazy(func(i do.Injector) (*db.AgentService, error) {
-		return db.NewAgentService(
+	do.Lazy(func(i do.Injector) (*db.AiSessionService, error) {
+		return db.NewAiSessionService(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.AgentRegistry](i),
+			do.MustInvoke[rez.AiService](i),
 		)
 	}),
-	do.Bind[*db.AgentService, rez.AgentService](),
+	do.Bind[*db.AiSessionService, rez.AiSessionService](),
 )

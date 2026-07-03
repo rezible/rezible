@@ -10,9 +10,9 @@ import (
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/genkit"
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/pkg/agents"
+	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
 type AlertInvestigationAgent struct {
@@ -23,25 +23,25 @@ func NewAlertInvestigationAgent(alerts rez.AlertService) *AlertInvestigationAgen
 	return &AlertInvestigationAgent{alerts: alerts}
 }
 
-func (a *AlertInvestigationAgent) workflowName() string {
-	return agents.WorkflowAlertInvestigation.Name()
+func (a *AlertInvestigationAgent) definition() rezai.AgentDefinition[rezai.AlertInvestigationState] {
+	return rezai.AlertInvestigationAgent
 }
 
-func (a *AlertInvestigationAgent) makeInitialState(run *ent.AgentRun) (*aix.SessionState[agents.AlertInvestigationState], error) {
-	input, validErr := agents.WorkflowAlertInvestigation.ValidateInput(run.Input)
+func (a *AlertInvestigationAgent) makeInitialState(jsonInput []byte) (*ai.Message, *aix.SessionState[rezai.AlertInvestigationState], error) {
+	input, validErr := rezai.AlertInvestigationAgent.CreateInitialState(jsonInput)
 	if validErr != nil {
-		return nil, validErr
+		return nil, nil, validErr
 	}
-	initial := &aix.SessionState[agents.AlertInvestigationState]{
-		SessionID: run.ID.String(),
-		Messages:  []*ai.Message{ai.NewUserTextMessage("foo bar")},
-		Custom:    agents.AlertInvestigationState{AlertID: input.AlertID},
+	state := &aix.SessionState[rezai.AlertInvestigationState]{
+		Messages: []*ai.Message{ai.NewSystemTextMessage("foo bar")},
+		Custom:   rezai.AlertInvestigationState{AlertID: input.AlertID},
 	}
-	return initial, nil
+	msg := ai.NewUserTextMessage("baz")
+	return msg, state, nil
 }
 
-func (a *AlertInvestigationAgent) agentFunc(g *genkit.Genkit) aix.AgentFunc[agents.AlertInvestigationState] {
-	return func(ctx context.Context, resp aix.Responder, sr *aix.SessionRunner[agents.AlertInvestigationState]) (*aix.AgentResult, error) {
+func (a *AlertInvestigationAgent) run(g *genkit.Genkit) aix.AgentFunc[rezai.AlertInvestigationState] {
+	return func(ctx context.Context, resp aix.Responder, sr *aix.SessionRunner[rezai.AlertInvestigationState]) (*aix.AgentResult, error) {
 		alertId := sr.Custom().AlertID
 		fmt.Printf("alert id: %+v\n", alertId)
 		alrt, alrtErr := a.alerts.GetAlert(ctx, uuid.Nil)
@@ -50,7 +50,7 @@ func (a *AlertInvestigationAgent) agentFunc(g *genkit.Genkit) aix.AgentFunc[agen
 		}
 
 		slog.DebugContext(ctx, "agent alert investigation", "title", alrt.Title)
-		_ = &agents.AlertInvestigationOutput{}
+		//_ = &rezai.AlertInvestigationOutput{}
 
 		return nil, fmt.Errorf("not implemented")
 	}

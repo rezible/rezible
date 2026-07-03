@@ -2,6 +2,7 @@ package rez
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"iter"
 	"log/slog"
@@ -424,11 +425,11 @@ type (
 )
 
 type (
-	AgentRunSnapshotService interface {
-		GetLatestSnapshot(ctx context.Context, runId uuid.UUID) (*ent.AgentRunSnapshot, error)
-		GetSnapshot(context.Context, uuid.UUID) (*ent.AgentRunSnapshot, error)
-		SetSnapshot(context.Context, uuid.UUID, func(*ent.AgentRunSnapshotMutation)) (*ent.AgentRunSnapshot, error)
-		UpdateSnapshot(context.Context, uuid.UUID, func(*ent.AgentRunSnapshot, *ent.AgentRunSnapshotMutation) error) (*ent.AgentRunSnapshot, error)
+	AiStateService interface {
+		GetLatestAgentRunSnapshot(ctx context.Context, runId uuid.UUID) (*ent.AiAgentRunSnapshot, error)
+		GetAgentRunSnapshot(context.Context, uuid.UUID) (*ent.AiAgentRunSnapshot, error)
+		SetAgentRunSnapshot(context.Context, uuid.UUID, func(*ent.AiAgentRunSnapshotMutation)) (*ent.AiAgentRunSnapshot, error)
+		UpdateAgentRunSnapshot(context.Context, uuid.UUID, func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) error) (*ent.AiAgentRunSnapshot, error)
 	}
 
 	SendAgentRunMessageParams struct {
@@ -442,34 +443,38 @@ type (
 		Restart          []*ai.Part
 	}
 
-	Agent interface {
-		Workflow() string
-		Start(context.Context, *ent.AgentRun, *ai.Message) (uuid.UUID, error)
-		SendMessage(context.Context, *ent.AgentRun, SendAgentRunMessageParams) (uuid.UUID, error)
-		Resume(context.Context, *ent.AgentRun, ResumeAgentRunParams) (uuid.UUID, error)
+	AiAgentRunInvoker interface {
+		Start(context.Context) (uuid.UUID, error)
+		SendMessage(context.Context, SendAgentRunMessageParams) (uuid.UUID, error)
+		Resume(context.Context, ResumeAgentRunParams) (uuid.UUID, error)
 	}
 
-	AgentRegistry interface {
-		Register(Agent)
-		Get(string) (Agent, bool)
+	AiWorkflowInvoker interface {
+		Run(context.Context) (json.RawMessage, error)
+	}
+
+	AiService interface {
+		GetAgentRunInvoker(run *ent.AiAgentRun) (AiAgentRunInvoker, error)
+		GetWorkflowInvoker(name string) (AiWorkflowInvoker, error)
 	}
 
 	CreateAgentRunParams struct {
-		OwnerUserID uuid.UUID
-		Workflow    string
-		Input       any
-		Metadata    map[string]any
+		AgentName        string
+		OwnerUserID      uuid.UUID
+		PermissionScopes []string
+		Input            any
+		Metadata         map[string]any
 	}
 
 	ListAgentRunsParams struct {
 		ent.ListParams
-		Predicates []predicate.AgentRun
+		Predicates []predicate.AiAgentRun
 	}
 
-	AgentService interface {
-		CreateRun(context.Context, CreateAgentRunParams) (*ent.AgentRun, error)
-		GetRun(context.Context, uuid.UUID) (*ent.AgentRun, error)
-		ListRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AgentRun], error)
+	AiSessionService interface {
+		CreateAgentRun(context.Context, CreateAgentRunParams) (*ent.AiAgentRun, error)
+		GetAgentRun(context.Context, uuid.UUID) (*ent.AiAgentRun, error)
+		ListAgentRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AiAgentRun], error)
 	}
 )
 

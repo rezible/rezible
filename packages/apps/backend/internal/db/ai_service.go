@@ -2,68 +2,68 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/pkg/agents"
-	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentrunresult"
+	aar "github.com/rezible/rezible/ent/aiagentrun"
+	aarr "github.com/rezible/rezible/ent/aiagentrunresult"
+	ars "github.com/rezible/rezible/ent/aiagentrunsnapshot"
+	"github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 )
 
-type AgentService struct {
+type AiSessionService struct {
 	logger *slog.Logger
 	db     rez.Database
 	jobs   rez.JobService
 	msgs   rez.MessageService
-	agents rez.AgentRegistry
+	ai     rez.AiService
 }
 
-func NewAgentService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, agents rez.AgentRegistry) (*AgentService, error) {
-	s := &AgentService{
+func NewAiSessionService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, aiSvc rez.AiService) (*AiSessionService, error) {
+	s := &AiSessionService{
 		logger: tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_service"}),
 		db:     db,
 		jobs:   jobSvc,
 		msgs:   msgSvc,
-		agents: agents,
+		ai:     aiSvc,
 	}
 	jobs.RegisterWorkerFunc(s.handleStartAgentRun)
+	jobs.RegisterWorkerFunc(s.handleContinueAgentRun)
 	return s, nil
 }
 
-func (s *AgentService) GetRun(ctx context.Context, id uuid.UUID) (*ent.AgentRun, error) {
-	return s.db.Client(ctx).AgentRun.Query().
-		Where(agentrun.ID(id)).
+func (s *AiSessionService) GetAgentRun(ctx context.Context, id uuid.UUID) (*ent.AiAgentRun, error) {
+	return s.db.Client(ctx).AiAgentRun.Query().
+		Where(aar.ID(id)).
 		Only(ctx)
 }
 
-func (s *AgentService) ListRuns(ctx context.Context, params rez.ListAgentRunsParams) (*ent.ListResult[ent.AgentRun], error) {
-	query := s.db.Client(ctx).AgentRun.Query().
-		Order(agentrun.ByCreatedAt(sql.OrderDesc()))
+func (s *AiSessionService) ListAgentRuns(ctx context.Context, params rez.ListAgentRunsParams) (*ent.ListResult[ent.AiAgentRun], error) {
+	query := s.db.Client(ctx).AiAgentRun.Query().
+		Order(aar.ByCreatedAt(sql.OrderDesc()))
 	if len(params.Predicates) > 0 {
 		query.Where(params.Predicates...)
 	}
-	return ent.DoListQuery[ent.AgentRun, *ent.AgentRunQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[ent.AiAgentRun, *ent.AiAgentRunQuery](ctx, query, params.ListParams)
 }
 
-func (s *AgentService) SetRun(ctx context.Context, id uuid.UUID, setFn func(*ent.AgentRunMutation)) (*ent.AgentRun, error) {
-	var run *ent.AgentRun
+func (s *AiSessionService) SetRun(ctx context.Context, id uuid.UUID, setFn func(*ent.AiAgentRunMutation)) (*ent.AiAgentRun, error) {
+	var run *ent.AiAgentRun
 	return run, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		var mutator ent.EntityMutator[*ent.AgentRun, *ent.AgentRunMutation]
+		var mutator ent.EntityMutator[*ent.AiAgentRun, *ent.AiAgentRunMutation]
 		if id == uuid.Nil {
-			mutator = tx.AgentRun.Create()
+			mutator = tx.AiAgentRun.Create()
 		} else {
-			mutator = tx.AgentRun.UpdateOneID(id)
+			mutator = tx.AiAgentRun.UpdateOneID(id)
 		}
 		setFn(mutator.Mutation())
 		txRun, saveErr := mutator.Save(ctx)
@@ -75,26 +75,16 @@ func (s *AgentService) SetRun(ctx context.Context, id uuid.UUID, setFn func(*ent
 	})
 }
 
-func (s *AgentService) GetRunResult(ctx context.Context, runID uuid.UUID) (*ent.AgentRunResult, error) {
-	return s.db.Client(ctx).AgentRunResult.Query().
-		Where(agentrunresult.AgentRunID(runID)).
+func (s *AiSessionService) GetRunResult(ctx context.Context, runID uuid.UUID) (*ent.AiAgentRunResult, error) {
+	return s.db.Client(ctx).AiAgentRunResult.Query().
+		Where(aarr.AiAgentRunID(runID)).
 		Only(ctx)
 }
 
-var runAgentWorkflowJobOpts = &river.InsertOpts{
-	UniqueOpts: river.UniqueOpts{
-		ByArgs:  true,
-		ByState: jobs.UniqueStateNonCompleted,
-	},
-}
-
-func (s *AgentService) CreateRun(ctx context.Context, params rez.CreateAgentRunParams) (*ent.AgentRun, error) {
-	input, inputErr := json.Marshal(params.Input)
+func (s *AiSessionService) CreateAgentRun(ctx context.Context, params rez.CreateAgentRunParams) (*ent.AiAgentRun, error) {
+	jsonInput, inputErr := ai.ValidateAndEncodeAgentInput(params.AgentName, params.Input)
 	if inputErr != nil {
-		return nil, oapi.Error(ctx, "invalid input", inputErr)
-	}
-	if validationErr := agents.ValidateInput(params.Workflow, input); validationErr != nil {
-		return nil, fmt.Errorf("input validation: %w", validationErr)
+		return nil, fmt.Errorf("invalid input: %w", inputErr)
 	}
 
 	ownerID := params.OwnerUserID
@@ -106,35 +96,41 @@ func (s *AgentService) CreateRun(ctx context.Context, params rez.CreateAgentRunP
 		ownerID = userID
 	}
 
-	var run *ent.AgentRun
+	var run *ent.AiAgentRun
 	return run, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		create := tx.AgentRun.Create().
+		create := tx.AiAgentRun.Create().
 			SetOwnerUserID(ownerID).
-			SetWorkflow(params.Workflow).
-			SetInput(input).
+			SetAgentName(params.AgentName).
+			SetScopes(params.PermissionScopes).
+			SetInput(jsonInput).
 			SetMetadata(params.Metadata)
 		created, createErr := create.Save(ctx)
 		if createErr != nil {
 			return fmt.Errorf("create agent task: %w", createErr)
 		}
-
-		_, jobErr := s.jobs.Insert(ctx, jobs.StartAgentRun{AgentRunID: created.ID}, runAgentWorkflowJobOpts)
-		if jobErr != nil {
-			return fmt.Errorf("enqueue agent workflow: %w", jobErr)
-		}
-
 		run = created.Unwrap()
+
+		startJobOpts := &river.InsertOpts{
+			UniqueOpts: river.UniqueOpts{
+				ByArgs:  true,
+				ByState: jobs.UniqueStateNonCompleted,
+			},
+		}
+		_, jobErr := s.jobs.Insert(ctx, jobs.StartAgentRun{AgentRunID: created.ID}, startJobOpts)
+		if jobErr != nil {
+			return fmt.Errorf("insert start agent run job: %w", jobErr)
+		}
 
 		return nil
 	})
 }
 
-func (s *AgentService) getAndStartAgentRun(ctx context.Context, id uuid.UUID) (*ent.AgentRun, rez.Agent, error) {
-	var run *ent.AgentRun
-	var agent rez.Agent
+func (s *AiSessionService) getAndStartAgentRun(ctx context.Context, id uuid.UUID) (*ent.AiAgentRun, rez.AiAgentRunInvoker, error) {
+	var run *ent.AiAgentRun
+	var agent rez.AiAgentRunInvoker
 	return run, agent, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		getStartedRun := tx.AgentRun.UpdateOneID(id).
-			Where(agentrun.ID(id), agentrun.StartedAtIsNil()).
+		getStartedRun := tx.AiAgentRun.UpdateOneID(id).
+			Where(aar.ID(id), aar.StartedAtIsNil()).
 			SetStartedAt(time.Now().UTC())
 		txRun, queryErr := getStartedRun.Save(ctx)
 		if queryErr != nil {
@@ -143,163 +139,97 @@ func (s *AgentService) getAndStartAgentRun(ctx context.Context, id uuid.UUID) (*
 			}
 			return fmt.Errorf("get agent run: %w", queryErr)
 		}
-
-		txAgent, agentOk := s.agents.GetNamed(txRun.Name)
-		if !agentOk {
-			return fmt.Errorf("agent not found for workflow '%s'", txRun.Workflow)
-		}
-
 		run = txRun.Unwrap()
-		agent = txAgent
+
+		var agentErr error
+		agent, agentErr = s.ai.GetAgentRunInvoker(txRun)
+		if agentErr != nil {
+			return fmt.Errorf("get agent run invoker: %w", agentErr)
+		}
 
 		return nil
 	})
 }
 
-func (s *AgentService) handleStartAgentRun(ctx context.Context, args jobs.StartAgentRun) error {
+func (s *AiSessionService) handleStartAgentRun(ctx context.Context, args jobs.StartAgentRun) error {
 	run, agent, runErr := s.getAndStartAgentRun(ctx, args.AgentRunID)
 	if run == nil || runErr != nil {
 		return runErr
 	}
 
-	ctx = execution.NewAgentContext(ctx, run)
-	snapshotId, startErr := agent.Start(ctx, run, nil)
+	ctx = execution.NewAiAgentRunContext(ctx, run)
+
+	snapshotId, startErr := agent.Start(ctx)
 	if startErr != nil {
 		return fmt.Errorf("start agent run: %w", startErr)
 	}
 
 	slog.InfoContext(ctx, "started agent run",
-		"workflow", run.Workflow,
+		"name", run.AgentName,
 		"snapshot", snapshotId.String())
 
 	return nil
 }
 
-func (s *AgentService) handleContinueAgentRun(ctx context.Context, args jobs.ContinueAgentRun) error {
-	run, runErr := s.GetRun(ctx, args.AgentRunID)
-	if run == nil || runErr != nil {
-		return fmt.Errorf("get agent run: %w", runErr)
-	}
-	ctx = execution.NewAgentContext(ctx, run)
+func (s *AiSessionService) getAndResumeAgentRun(ctx context.Context, id uuid.UUID) (*ent.AiAgentRun, rez.AiAgentRunInvoker, error) {
+	var run *ent.AiAgentRun
+	var agent rez.AiAgentRunInvoker
+	return run, agent, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		queryRun := tx.AiAgentRun.Query().
+			Where(aar.ID(id)).
+			WithSnapshots(func(q *ent.AiAgentRunSnapshotQuery) {
+				q.Order(ars.ByCreatedAt()).Limit(1)
+			})
+		txRun, queryErr := queryRun.Only(ctx)
+		if queryErr != nil {
+			if ent.IsNotFound(queryErr) {
+				return nil
+			}
+			return fmt.Errorf("get agent run: %w", queryErr)
+		}
+		run = txRun.Unwrap()
 
-	agent, agentOk := s.agents.Get(run.Workflow)
-	if !agentOk {
-		return fmt.Errorf("agent not found for workflow '%s'", run.Workflow)
+		var agentErr error
+		agent, agentErr = s.ai.GetAgentRunInvoker(txRun)
+		if agentErr != nil {
+			return fmt.Errorf("get agent run invoker: %w", agentErr)
+		}
+
+		return nil
+	})
+}
+
+func (s *AiSessionService) handleContinueAgentRun(ctx context.Context, args jobs.ContinueAgentRun) error {
+	if args.Message == nil && args.Resume == nil {
+		return fmt.Errorf("invalid args")
 	}
+	run, agent, runErr := s.getAndResumeAgentRun(ctx, args.AgentRunID)
+	if run == nil || runErr != nil {
+		return runErr
+	}
+	ctx = execution.NewAiAgentRunContext(ctx, run)
 
 	var snapshotId uuid.UUID
 	var sendErr error
 	if args.Message != nil {
-		params := rez.SendAgentRunMessageParams{
+		snapshotId, sendErr = agent.SendMessage(ctx, rez.SendAgentRunMessageParams{
 			ParentSnapshotID: args.ParentSnapshotID,
 			Message:          args.Message,
-		}
-		snapshotId, sendErr = agent.SendMessage(ctx, run, params)
+		})
 	} else if args.Resume != nil {
-		params := rez.ResumeAgentRunParams{
+		snapshotId, sendErr = agent.Resume(ctx, rez.ResumeAgentRunParams{
 			ParentSnapshotID: args.ParentSnapshotID,
 			Respond:          args.Resume.Respond,
 			Restart:          args.Resume.Restart,
-		}
-		snapshotId, sendErr = agent.Resume(ctx, run, params)
-	} else {
-		return fmt.Errorf("invalid args")
+		})
 	}
 	if sendErr != nil {
 		return fmt.Errorf("continue agent run: %w", sendErr)
 	}
 
 	slog.InfoContext(ctx, "continued agent run",
-		"workflow", run.Workflow,
+		"name", run.AgentName,
 		"snapshot", snapshotId.String())
 
 	return nil
 }
-
-/*
-func (s *AgentService) createRunCitations(ctx context.Context, tx *ent.Client, runID uuid.UUID, inputs []agents.TaskRunCitationInput) ([]*ent.AgentRunCitation, error) {
-	res := make([]*ent.AgentRunCitation, 0, len(inputs))
-	for _, input := range inputs {
-		if err := agents.ValidateRunCitationInput(input); err != nil {
-			return nil, err
-		}
-		create := tx.AgentRunCitation.Create().
-			SetAgentRunID(runID).
-			SetCitationKind(input.CitationKind).
-			SetSummary(input.Summary).
-			SetSnapshot(agents.RedactPayload(input.Snapshot))
-		if input.DomainEntityType != "" {
-			create.SetDomainEntityType(input.DomainEntityType)
-		}
-		if input.DomainEntityID != uuid.Nil {
-			create.SetDomainEntityID(input.DomainEntityID)
-		}
-		if input.KnowledgeEntityID != uuid.Nil {
-			create.SetKnowledgeEntityID(input.KnowledgeEntityID)
-		}
-		if input.KnowledgeRelationshipID != uuid.Nil {
-			create.SetKnowledgeRelationshipID(input.KnowledgeRelationshipID)
-		}
-		if input.KnowledgeEvidenceID != uuid.Nil {
-			create.SetKnowledgeEvidenceID(input.KnowledgeEvidenceID)
-		}
-		if input.AgentTaskID != uuid.Nil {
-			create.SetAgentTaskID(input.AgentTaskID)
-		}
-		if input.AgentRunToolCallID != uuid.Nil {
-			create.SetAgentRunToolCallID(input.AgentRunToolCallID)
-		}
-		citation, createErr := create.Save(ctx)
-		if createErr != nil {
-			return nil, fmt.Errorf("create agent run citation: %w", createErr)
-		}
-		res = append(res, citation)
-	}
-	return res, nil
-}
-
-func (s *AgentService) createRunFindings(ctx context.Context, tx *ent.Client, runID uuid.UUID, inputs []agents.TaskRunFindingInput, citations []*ent.AgentRunCitation) error {
-	for i, input := range inputs {
-		if strings.TrimSpace(input.Content) == "" {
-			return fmt.Errorf("agent run finding content is required")
-		}
-		if strings.TrimSpace(input.FindingKind) == "" {
-			return fmt.Errorf("agent run finding kind is required")
-		}
-		finding, createErr := tx.AgentRunFinding.Create().
-			SetAgentRunID(runID).
-			SetSequence(i + 1).
-			SetFindingKind(input.FindingKind).
-			SetContent(input.Content).
-			Save(ctx)
-		if createErr != nil {
-			return fmt.Errorf("create agent run finding: %w", createErr)
-		}
-		for _, citation := range input.Citations {
-			if citation.CitationIndex <= 0 {
-				return fmt.Errorf("agent run finding citation index must be greater than zero")
-			}
-			if citation.CitationIndex > len(citations) {
-				return fmt.Errorf("agent run finding citation index %d out of range", citation.CitationIndex)
-			}
-			if citation.SupportKind == "" {
-				citation.SupportKind = "supports"
-			}
-			if _, linkErr := tx.AgentRunFindingCitation.Create().
-				SetAgentRunFindingID(finding.ID).
-				SetAgentRunCitationID(citations[citation.CitationIndex-1].ID).
-				SetSupportKind(citation.SupportKind).
-				Save(ctx); linkErr != nil {
-				return fmt.Errorf("create agent run finding citation: %w", linkErr)
-			}
-		}
-	}
-	return nil
-}
-
-func (s *AgentService) publishEvent(ctx context.Context, event any) {
-	if err := s.msgs.PublishEvent(ctx, event); err != nil {
-		s.logger.WarnContext(ctx, "failed to publish agent event", "error", err)
-	}
-}
-*/

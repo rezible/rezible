@@ -14,15 +14,25 @@ import (
 	aars "github.com/rezible/rezible/ent/aiagentrunsnapshot"
 )
 
+type workflowStateStore[S any] struct {
+	state rez.AiStateService
+}
+
+func makeWorkflowStateStore[S any](state rez.AiStateService) *workflowStateStore[S] {
+	return &workflowStateStore[S]{
+		state: state,
+	}
+}
+
 type agentSessionStore[S any] struct {
-	snapshots    rez.AiStateService
+	state        rez.AiStateService
 	statusSubs   map[string][]chan aix.SnapshotStatus
 	statusSubsMu sync.RWMutex
 }
 
-func makeAgentSessionStore[S any](snapshots rez.AiStateService) *agentSessionStore[S] {
+func makeAgentSessionStore[S any](state rez.AiStateService) *agentSessionStore[S] {
 	return &agentSessionStore[S]{
-		snapshots:  snapshots,
+		state:      state,
 		statusSubs: make(map[string][]chan aix.SnapshotStatus),
 	}
 }
@@ -108,7 +118,7 @@ func (s *agentSessionStore[S]) GetLatestSnapshot(ctx context.Context, sessionID 
 	if idErr != nil {
 		return nil, fmt.Errorf("invalid session ID: %s", sessionID)
 	}
-	rs, queryErr := s.snapshots.GetLatestAgentRunSnapshot(ctx, runId)
+	rs, queryErr := s.state.GetLatestAgentRunSnapshot(ctx, runId)
 	if queryErr != nil {
 		return nil, fmt.Errorf("lookup snapshot: %w", queryErr)
 	}
@@ -120,7 +130,7 @@ func (s *agentSessionStore[S]) GetSnapshot(ctx context.Context, snapshotID strin
 	if idErr != nil {
 		return nil, fmt.Errorf("invalid snapshot ID: %s", snapshotID)
 	}
-	rs, queryErr := s.snapshots.GetAgentRunSnapshot(ctx, id)
+	rs, queryErr := s.state.GetAgentRunSnapshot(ctx, id)
 	if queryErr != nil {
 		return nil, fmt.Errorf("lookup snapshot: %w", queryErr)
 	}
@@ -195,7 +205,7 @@ func (s *agentSessionStore[S]) SaveSnapshot(ctx context.Context, id string, setF
 		}
 		return nil
 	}
-	updated, updateErr := s.snapshots.UpdateAgentRunSnapshot(ctx, snapshotId, updateFn)
+	updated, updateErr := s.state.UpdateAgentRunSnapshot(ctx, snapshotId, updateFn)
 	if updateErr != nil {
 		return nil, fmt.Errorf("save snapshot: %w", updateErr)
 	}

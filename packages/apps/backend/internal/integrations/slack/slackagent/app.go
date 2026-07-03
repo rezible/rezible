@@ -18,11 +18,11 @@ type App struct {
 	db       rez.Database
 	jobs     rez.JobService
 	messages rez.MessageService
-	agents   rez.AgentService
+	agents   rez.AiSessionService
 	events   rez.EventsService
 }
 
-func MakeApp(cfg rez.Config, db rez.Database, jobSvc rez.JobService, msgs rez.MessageService, agents rez.AgentService, events rez.EventsService) (*App, error) {
+func MakeApp(cfg rez.Config, db rez.Database, jobSvc rez.JobService, msgs rez.MessageService, agents rez.AiSessionService, events rez.EventsService) (*App, error) {
 	h := &App{
 		cfg:      cfg,
 		db:       db,

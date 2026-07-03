@@ -5,25 +5,26 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	ars "github.com/rezible/rezible/ent/agentrunsnapshot"
+	ars "github.com/rezible/rezible/ent/aiagentrunsnapshot"
 )
 
-type AgentRunSnapshotService struct {
+type AiAgentRunSnapshotService struct {
 	db rez.Database
 }
 
-func NewAgentRunSnapshotService(db rez.Database) (*AgentRunSnapshotService, error) {
-	s := &AgentRunSnapshotService{
+func NewAgentRunSnapshotService(db rez.Database) (*AiAgentRunSnapshotService, error) {
+	s := &AiAgentRunSnapshotService{
 		db: db,
 	}
 	return s, nil
 }
 
-func (s *AgentRunSnapshotService) GetLatestSnapshot(ctx context.Context, runId uuid.UUID) (*ent.AgentRunSnapshot, error) {
-	query := s.db.Client(ctx).AgentRunSnapshot.Query().
-		Where(ars.AgentRunID(runId)).
+func (s *AiAgentRunSnapshotService) GetLatestAgentRunSnapshot(ctx context.Context, runId uuid.UUID) (*ent.AiAgentRunSnapshot, error) {
+	query := s.db.Client(ctx).AiAgentRunSnapshot.Query().
+		Where(ars.AiAgentRunID(runId)).
 		Order(ars.ByCreatedAt()).
 		Limit(1)
 	res, resErr := query.Only(ctx)
@@ -33,22 +34,22 @@ func (s *AgentRunSnapshotService) GetLatestSnapshot(ctx context.Context, runId u
 	return res, nil
 }
 
-func (s *AgentRunSnapshotService) GetSnapshot(ctx context.Context, id uuid.UUID) (*ent.AgentRunSnapshot, error) {
-	res, resErr := s.db.Client(ctx).AgentRunSnapshot.Get(ctx, id)
+func (s *AiAgentRunSnapshotService) GetAgentRunSnapshot(ctx context.Context, id uuid.UUID) (*ent.AiAgentRunSnapshot, error) {
+	res, resErr := s.db.Client(ctx).AiAgentRunSnapshot.Get(ctx, id)
 	if resErr != nil && !ent.IsNotFound(resErr) {
 		return nil, resErr
 	}
 	return res, nil
 }
 
-func (s *AgentRunSnapshotService) SetSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AgentRunSnapshotMutation)) (*ent.AgentRunSnapshot, error) {
-	var snapshot *ent.AgentRunSnapshot
+func (s *AiAgentRunSnapshotService) SetAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AiAgentRunSnapshotMutation)) (*ent.AiAgentRunSnapshot, error) {
+	var snapshot *ent.AiAgentRunSnapshot
 	return snapshot, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		var mutator ent.EntityMutator[*ent.AgentRunSnapshot, *ent.AgentRunSnapshotMutation]
+		var mutator ent.EntityMutator[*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation]
 		if id != uuid.Nil {
-			mutator = tx.AgentRunSnapshot.UpdateOneID(id)
+			mutator = tx.AiAgentRunSnapshot.UpdateOneID(id)
 		} else {
-			mutator = tx.AgentRunSnapshot.Create()
+			mutator = tx.AiAgentRunSnapshot.Create()
 		}
 		setFn(mutator.Mutation())
 		saved, saveErr := mutator.Save(ctx)
@@ -60,21 +61,21 @@ func (s *AgentRunSnapshotService) SetSnapshot(ctx context.Context, id uuid.UUID,
 	})
 }
 
-func (s *AgentRunSnapshotService) UpdateSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AgentRunSnapshot, *ent.AgentRunSnapshotMutation) error) (*ent.AgentRunSnapshot, error) {
-	var snapshot *ent.AgentRunSnapshot
+func (s *AiAgentRunSnapshotService) UpdateAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) error) (*ent.AiAgentRunSnapshot, error) {
+	var snapshot *ent.AiAgentRunSnapshot
 	return snapshot, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		var curr *ent.AgentRunSnapshot
-		var mutator ent.EntityMutator[*ent.AgentRunSnapshot, *ent.AgentRunSnapshotMutation]
+		var curr *ent.AiAgentRunSnapshot
+		var mutator ent.EntityMutator[*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation]
 		if id != uuid.Nil {
 			var getErr error
-			if curr, getErr = tx.AgentRunSnapshot.Get(ctx, id); getErr != nil && !ent.IsNotFound(getErr) {
+			if curr, getErr = tx.AiAgentRunSnapshot.Get(ctx, id); getErr != nil && !ent.IsNotFound(getErr) {
 				return fmt.Errorf("failed to lookup existing (%s): %w", id, getErr)
 			}
 		}
 		if curr != nil {
 			mutator = curr.Update()
 		} else {
-			mutator = tx.AgentRunSnapshot.Create()
+			mutator = tx.AiAgentRunSnapshot.Create()
 		}
 		m := mutator.Mutation()
 		if setErr := setFn(curr, m); setErr != nil {

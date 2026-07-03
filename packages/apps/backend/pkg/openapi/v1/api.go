@@ -18,7 +18,7 @@ type Handler interface {
 	UsersHandler
 	TeamsHandler
 	IntegrationsHandler
-	AgentsHandler
+	AiHandler
 
 	OncallMetricsHandler
 

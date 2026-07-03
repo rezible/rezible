@@ -9,15 +9,15 @@ import (
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
-type agentsHandler struct {
+type aiHandler struct {
 	agents rez.AiSessionService
 }
 
-func newAgentsHandler(agents rez.AiSessionService) *agentsHandler {
-	return &agentsHandler{agents: agents}
+func newAiHandler(agents rez.AiSessionService) *aiHandler {
+	return &aiHandler{agents: agents}
 }
 
-func (h *agentsHandler) RequestAiAgentRun(ctx context.Context, req *oapi.RequestAiAgentRunRequest) (*oapi.RequestAiAgentRunResponse, error) {
+func (h *aiHandler) RequestAiAgentRun(ctx context.Context, req *oapi.RequestAiAgentRunRequest) (*oapi.RequestAiAgentRunResponse, error) {
 	var resp oapi.RequestAiAgentRunResponse
 	attr := req.Body.Attributes
 	params := rez.CreateAgentRunParams{
@@ -32,7 +32,7 @@ func (h *agentsHandler) RequestAiAgentRun(ctx context.Context, req *oapi.Request
 	return &resp, nil
 }
 
-func (h *agentsHandler) ListAiAgentRuns(ctx context.Context, req *oapi.ListAiAgentRunsRequest) (*oapi.ListAiAgentRunsResponse, error) {
+func (h *aiHandler) ListAiAgentRuns(ctx context.Context, req *oapi.ListAiAgentRunsRequest) (*oapi.ListAiAgentRunsResponse, error) {
 	var resp oapi.ListAiAgentRunsResponse
 	var predicates []predicate.AiAgentRun
 	if req.Name != "" {
@@ -61,7 +61,7 @@ func (h *agentsHandler) ListAiAgentRuns(ctx context.Context, req *oapi.ListAiAge
 	return &resp, nil
 }
 
-func (h *agentsHandler) GetAiAgentRun(ctx context.Context, req *oapi.GetAiAgentRunRequest) (*oapi.GetAiAgentRunResponse, error) {
+func (h *aiHandler) GetAiAgentRun(ctx context.Context, req *oapi.GetAiAgentRunRequest) (*oapi.GetAiAgentRunResponse, error) {
 	var resp oapi.GetAiAgentRunResponse
 	run, getErr := h.agents.GetAgentRun(ctx, req.Id)
 	if getErr != nil {

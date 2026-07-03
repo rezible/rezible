@@ -15,7 +15,7 @@ type Handler struct {
 	*incidentDebriefsHandler
 	*incidentTimelineHandler
 	*incidentMilestonesHandler
-	*agentsHandler
+	*aiHandler
 	*integrationsHandler
 	*meetingsHandler
 	*eventsHandler
@@ -35,7 +35,7 @@ var _ oapi.Handler = (*Handler)(nil)
 
 func NewHandler(
 	db rez.Database,
-	agents rez.AgentService,
+	agents rez.AiSessionService,
 	alerts rez.AlertService,
 	orgs rez.OrganizationService,
 	users rez.UserService,
@@ -53,7 +53,7 @@ func NewHandler(
 ) *Handler {
 	return &Handler{
 		alertsHandler:             newAlertsHandler(alerts),
-		agentsHandler:             newAgentsHandler(agents),
+		aiHandler:                 newAiHandler(agents),
 		userSessionsHandler:       newUserSessionsHandler(orgs, users),
 		documentsHandler:          newDocumentsHandler(documents, users),
 		incidentDebriefsHandler:   newIncidentDebriefsHandler(db, users, debriefs),
