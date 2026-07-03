@@ -1,20 +1,15 @@
 <script lang="ts">
 	import type { Event, EventAnnotation } from "$lib/api";
-	import { mdiChatPlus, mdiMenuDown } from "@mdi/js";
-	import { Button } from "$components/ui/button";
+	import { mdiMenuDown } from "@mdi/js";
 	import Icon from "$components/common/icon/Icon.svelte";
 	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
-	import { getEventKindIcon } from "./events";
-	import EventTimeDate from "./EventTimeDate.svelte";
+	import { formatDate } from "date-fns";
 
 	type Props = {
 		event: Event;
 		annotations?: EventAnnotation[];
-		pinned?: boolean;
-		togglePinned?: () => void;
-		loadingId?: string;
 	}
-	const { event, annotations = [], pinned, togglePinned, loadingId }: Props = $props();
+	const { event, annotations = [] }: Props = $props();
 
 	const openAnnotationDialog = (event?: Event, anno?: EventAnnotation) => {
 		 alert("open annotation dialog");
@@ -22,10 +17,8 @@
 
 	const attrs = $derived(event.attributes);
 
-	const loading = $derived(!!loadingId && loadingId === event.id);
-	const disabled = $derived(!!loadingId);
-
-	const kindIcon = $derived(getEventKindIcon(attrs.kind));
+	const date = $derived(new Date(attrs.occurredAt));
+	const humanDate = $derived(formatDate(date, 'MMM d'));
 </script>
 
 {#snippet annotationBox(anno: EventAnnotation)}
@@ -42,14 +35,17 @@
 {/snippet}
 
 <div class="h-[70px] group grid grid-cols-[80px_minmax(100px,1fr)_minmax(0,.4fr)] gap-2 place-items-center border py-1 px-2 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
-	<EventTimeDate timestamp={attrs.occurredAt} />
+	<div class="flex flex-col gap-1 justify-between w-full items-start">
+		<span class="text-sm flex items-center gap-1">
+			{humanDate}
+		</span>
+	</div>
 
 	<div class="flex flex-col gap-1 w-full h-full justify-center items-start">
 		<div class="flex gap-1 items-center">
-			<Icon data={kindIcon.icon} classes={{ root: `rounded-full size-4 w-auto ${kindIcon.color}` }} />
 			<span class="text-xs uppercase font-normal text-surface-content/50">{attrs.kind}</span>
 		</div>
-		<a href="/events/{event.id}" class="anchor link w-full truncate text-left align-baseline">title</a>
+		<a href="/events/{event.id}" class="anchor link w-full truncate text-left align-baseline">{attrs.provider} {attrs.providerSubjectRef}</a>
 	</div>
 
 	<div class="flex w-full h-full items-center justify-end gap-2">
@@ -57,13 +53,6 @@
 			{#each annotations as anno}
 				{@render annotationBox(anno)}
 			{/each}
-
-			<div class="hidden group-hover:inline w-fit h-full">
-				<Button {disabled} onclick={() => openAnnotationDialog()}>
-					Annotate
-					<Icon data={mdiChatPlus} />
-				</Button>
-			</div>
 		</div>
 	</div>
 </div>

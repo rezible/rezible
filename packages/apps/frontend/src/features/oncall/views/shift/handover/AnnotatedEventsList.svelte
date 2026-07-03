@@ -60,11 +60,7 @@
 
 	<div class="flex-1 flex flex-col px-0 overflow-y-auto">
 		{#each annotations as anno}
-			<EventRow 
-				event={anno.attributes.event as Event} 
-				annotations={[anno]} 
-				pinned={pinnedEventIds.has(anno.attributes.event.id)}
-				{loadingId} togglePinned={() => togglePinned(anno)} />
+			<EventRow event={anno.attributes.event as Event} annotations={[anno]} />
 		{:else}
 			<div class="grid place-items-center p-4">
 				<span>No Events Annotated</span>
