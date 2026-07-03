@@ -1,7 +1,6 @@
 import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/common/events/annotation-dialog/dialogState.svelte";
-import { getAdjacentOncallShiftsOptions, getOncallShiftOptions, listEventAnnotationsOptions, listEventsOptions, type EventAnnotation } from "$lib/api";
+import { getAdjacentOncallShiftsOptions, getOncallShiftOptions, listEventsOptions } from "$lib/api";
 import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 import { Context, watch, type Getter } from "runed";
 
@@ -12,10 +11,6 @@ export class OncallShiftViewController {
 	constructor(idFn: () => string) {
 		this.shiftId = idFn();
 		watch(idFn, id => { this.shiftId = id });
-
-		setAnnotationDialogState(new AnnotationDialogState({
-			onClosed: (updated?: EventAnnotation) => {this.onAnnotationDialogUpdated(updated)},
-		}));
 	}
 
 	useShiftTimezone = $state(false);
@@ -53,16 +48,6 @@ export class OncallShiftViewController {
 		if (!this.eventsFilter) return this.events;
 		return this.events.filter(e => (!this.eventsFilter || shiftEventMatchesFilter(e, this.eventsFilter)));
 	});
-
-	onAnnotationDialogUpdated(updated?: EventAnnotation) {
-		if (!updated) return;
-		this.queryClient.invalidateQueries(this.eventsQueryOptions);
-		this.queryClient.invalidateQueries(listEventAnnotationsOptions({ query: { 
-			// TODO
-			// shiftId: this.shiftId, 
-			withEvents: true 
-		} }));
-	}
 }
 
 const ctx = new Context<OncallShiftViewController>("OncallShiftViewController");

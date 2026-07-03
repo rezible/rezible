@@ -1,10 +1,9 @@
 <script lang="ts">
 	import type { Event, EventAnnotation } from "$lib/api";
-	import { mdiPin, mdiPinOutline, mdiChatPlus, mdiMenuDown } from "@mdi/js";
+	import { mdiChatPlus, mdiMenuDown } from "@mdi/js";
 	import { Button } from "$components/ui/button";
 	import Icon from "$components/common/icon/Icon.svelte";
 	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
-	import { useAnnotationDialogState } from "./annotation-dialog/dialogState.svelte";
 	import { getEventKindIcon } from "./events";
 	import EventTimeDate from "./EventTimeDate.svelte";
 
@@ -17,9 +16,9 @@
 	}
 	const { event, annotations = [], pinned, togglePinned, loadingId }: Props = $props();
 
-	const annoDialog = useAnnotationDialogState();
-
-	const canCreate = $derived(annoDialog.allowCreating);
+	const openAnnotationDialog = (event?: Event, anno?: EventAnnotation) => {
+		 alert("open annotation dialog");
+	}
 
 	const attrs = $derived(event.attributes);
 
@@ -31,7 +30,7 @@
 
 {#snippet annotationBox(anno: EventAnnotation)}
 	<div class="inline-block">
-		<button onclick={() => annoDialog.setOpen(event, anno)} 
+		<button onclick={() => openAnnotationDialog()} 
 			class="max-w-32 min-w-12 h-fit border hover:border-neutral rounded p-1 bg-neutral-700/70 hover:bg-neutral-700/60 text-sm flex gap-2 flex-col cursor-pointer">
 			<div class="flex gap-1 justify-between">
 				<Avatar kind="user" id={anno.attributes.creator.id} size={14} />
@@ -59,14 +58,12 @@
 				{@render annotationBox(anno)}
 			{/each}
 
-			{#if canCreate}
-				<div class="hidden group-hover:inline w-fit h-full">
-					<Button {disabled} onclick={() => annoDialog.setOpen(event)}>
-						Annotate
-						<Icon data={mdiChatPlus} />
-					</Button>
-				</div>
-			{/if}
+			<div class="hidden group-hover:inline w-fit h-full">
+				<Button {disabled} onclick={() => openAnnotationDialog()}>
+					Annotate
+					<Icon data={mdiChatPlus} />
+				</Button>
+			</div>
 		</div>
 	</div>
 </div>
