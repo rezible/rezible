@@ -7,17 +7,17 @@ import "context"
 // SchemaConfig represents alternative schema names for all tables
 // that can be passed at runtime.
 type SchemaConfig struct {
-	AgentRun                                  string // AgentRun table.
-	AgentRunCitation                          string // AgentRunCitation table.
-	AgentRunFinding                           string // AgentRunFinding table.
-	AgentRunFindingCitations                  string // AgentRunFinding-citations->AgentRunCitation table.
-	AgentRunFindingCitation                   string // AgentRunFindingCitation table.
-	AgentRunResult                            string // AgentRunResult table.
-	AgentRunSnapshot                          string // AgentRunSnapshot table.
-	AgentRunSubject                           string // AgentRunSubject table.
+	AiAgentRun                                string // AiAgentRun table.
+	AiAgentRunCitation                        string // AiAgentRunCitation table.
+	AiAgentRunFinding                         string // AiAgentRunFinding table.
+	AiAgentRunFindingCitations                string // AiAgentRunFinding-citations->AiAgentRunCitation table.
+	AiAgentRunFindingCitation                 string // AiAgentRunFindingCitation table.
+	AiAgentRunResult                          string // AiAgentRunResult table.
+	AiAgentRunSnapshot                        string // AiAgentRunSnapshot table.
 	Alert                                     string // Alert table.
 	AlertFeedback                             string // AlertFeedback table.
 	AlertInstance                             string // AlertInstance table.
+	AlertInvestigation                        string // AlertInvestigation table.
 	AlertMetrics                              string // AlertMetrics table.
 	Document                                  string // Document table.
 	DocumentAccess                            string // DocumentAccess table.

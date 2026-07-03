@@ -9,88 +9,76 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-// The AgentRunFunc type is an adapter to allow the use of ordinary
-// function as AgentRun mutator.
-type AgentRunFunc func(context.Context, *ent.AgentRunMutation) (ent.Value, error)
+// The AiAgentRunFunc type is an adapter to allow the use of ordinary
+// function as AiAgentRun mutator.
+type AiAgentRunFunc func(context.Context, *ent.AiAgentRunMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AgentRunFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentRunMutation); ok {
+func (f AiAgentRunFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AiAgentRunMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunMutation", m)
 }
 
-// The AgentRunCitationFunc type is an adapter to allow the use of ordinary
-// function as AgentRunCitation mutator.
-type AgentRunCitationFunc func(context.Context, *ent.AgentRunCitationMutation) (ent.Value, error)
+// The AiAgentRunCitationFunc type is an adapter to allow the use of ordinary
+// function as AiAgentRunCitation mutator.
+type AiAgentRunCitationFunc func(context.Context, *ent.AiAgentRunCitationMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AgentRunCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentRunCitationMutation); ok {
+func (f AiAgentRunCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AiAgentRunCitationMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunCitationMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunCitationMutation", m)
 }
 
-// The AgentRunFindingFunc type is an adapter to allow the use of ordinary
-// function as AgentRunFinding mutator.
-type AgentRunFindingFunc func(context.Context, *ent.AgentRunFindingMutation) (ent.Value, error)
+// The AiAgentRunFindingFunc type is an adapter to allow the use of ordinary
+// function as AiAgentRunFinding mutator.
+type AiAgentRunFindingFunc func(context.Context, *ent.AiAgentRunFindingMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AgentRunFindingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentRunFindingMutation); ok {
+func (f AiAgentRunFindingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AiAgentRunFindingMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunFindingMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunFindingMutation", m)
 }
 
-// The AgentRunFindingCitationFunc type is an adapter to allow the use of ordinary
-// function as AgentRunFindingCitation mutator.
-type AgentRunFindingCitationFunc func(context.Context, *ent.AgentRunFindingCitationMutation) (ent.Value, error)
+// The AiAgentRunFindingCitationFunc type is an adapter to allow the use of ordinary
+// function as AiAgentRunFindingCitation mutator.
+type AiAgentRunFindingCitationFunc func(context.Context, *ent.AiAgentRunFindingCitationMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AgentRunFindingCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentRunFindingCitationMutation); ok {
+func (f AiAgentRunFindingCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AiAgentRunFindingCitationMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunFindingCitationMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunFindingCitationMutation", m)
 }
 
-// The AgentRunResultFunc type is an adapter to allow the use of ordinary
-// function as AgentRunResult mutator.
-type AgentRunResultFunc func(context.Context, *ent.AgentRunResultMutation) (ent.Value, error)
+// The AiAgentRunResultFunc type is an adapter to allow the use of ordinary
+// function as AiAgentRunResult mutator.
+type AiAgentRunResultFunc func(context.Context, *ent.AiAgentRunResultMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AgentRunResultFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentRunResultMutation); ok {
+func (f AiAgentRunResultFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AiAgentRunResultMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunResultMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunResultMutation", m)
 }
 
-// The AgentRunSnapshotFunc type is an adapter to allow the use of ordinary
-// function as AgentRunSnapshot mutator.
-type AgentRunSnapshotFunc func(context.Context, *ent.AgentRunSnapshotMutation) (ent.Value, error)
+// The AiAgentRunSnapshotFunc type is an adapter to allow the use of ordinary
+// function as AiAgentRunSnapshot mutator.
+type AiAgentRunSnapshotFunc func(context.Context, *ent.AiAgentRunSnapshotMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AgentRunSnapshotFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentRunSnapshotMutation); ok {
+func (f AiAgentRunSnapshotFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AiAgentRunSnapshotMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunSnapshotMutation", m)
-}
-
-// The AgentRunSubjectFunc type is an adapter to allow the use of ordinary
-// function as AgentRunSubject mutator.
-type AgentRunSubjectFunc func(context.Context, *ent.AgentRunSubjectMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AgentRunSubjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentRunSubjectMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunSubjectMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunSnapshotMutation", m)
 }
 
 // The AlertFunc type is an adapter to allow the use of ordinary
@@ -127,6 +115,18 @@ func (f AlertInstanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertInstanceMutation", m)
+}
+
+// The AlertInvestigationFunc type is an adapter to allow the use of ordinary
+// function as AlertInvestigation mutator.
+type AlertInvestigationFunc func(context.Context, *ent.AlertInvestigationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AlertInvestigationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AlertInvestigationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertInvestigationMutation", m)
 }
 
 // The DocumentFunc type is an adapter to allow the use of ordinary

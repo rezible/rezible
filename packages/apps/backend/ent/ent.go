@@ -12,16 +12,16 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentruncitation"
-	"github.com/rezible/rezible/ent/agentrunfinding"
-	"github.com/rezible/rezible/ent/agentrunfindingcitation"
-	"github.com/rezible/rezible/ent/agentrunresult"
-	"github.com/rezible/rezible/ent/agentrunsnapshot"
-	"github.com/rezible/rezible/ent/agentrunsubject"
+	"github.com/rezible/rezible/ent/aiagentrun"
+	"github.com/rezible/rezible/ent/aiagentruncitation"
+	"github.com/rezible/rezible/ent/aiagentrunfinding"
+	"github.com/rezible/rezible/ent/aiagentrunfindingcitation"
+	"github.com/rezible/rezible/ent/aiagentrunresult"
+	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/alertinvestigation"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
@@ -148,16 +148,16 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			agentrun.Table:                                agentrun.ValidColumn,
-			agentruncitation.Table:                        agentruncitation.ValidColumn,
-			agentrunfinding.Table:                         agentrunfinding.ValidColumn,
-			agentrunfindingcitation.Table:                 agentrunfindingcitation.ValidColumn,
-			agentrunresult.Table:                          agentrunresult.ValidColumn,
-			agentrunsnapshot.Table:                        agentrunsnapshot.ValidColumn,
-			agentrunsubject.Table:                         agentrunsubject.ValidColumn,
+			aiagentrun.Table:                              aiagentrun.ValidColumn,
+			aiagentruncitation.Table:                      aiagentruncitation.ValidColumn,
+			aiagentrunfinding.Table:                       aiagentrunfinding.ValidColumn,
+			aiagentrunfindingcitation.Table:               aiagentrunfindingcitation.ValidColumn,
+			aiagentrunresult.Table:                        aiagentrunresult.ValidColumn,
+			aiagentrunsnapshot.Table:                      aiagentrunsnapshot.ValidColumn,
 			alert.Table:                                   alert.ValidColumn,
 			alertfeedback.Table:                           alertfeedback.ValidColumn,
 			alertinstance.Table:                           alertinstance.ValidColumn,
+			alertinvestigation.Table:                      alertinvestigation.ValidColumn,
 			alertmetrics.Table:                            alertmetrics.ValidColumn,
 			document.Table:                                document.ValidColumn,
 			documentaccess.Table:                          documentaccess.ValidColumn,

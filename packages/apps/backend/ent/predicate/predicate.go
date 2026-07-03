@@ -6,26 +6,23 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// AgentRun is the predicate function for agentrun builders.
-type AgentRun func(*sql.Selector)
+// AiAgentRun is the predicate function for aiagentrun builders.
+type AiAgentRun func(*sql.Selector)
 
-// AgentRunCitation is the predicate function for agentruncitation builders.
-type AgentRunCitation func(*sql.Selector)
+// AiAgentRunCitation is the predicate function for aiagentruncitation builders.
+type AiAgentRunCitation func(*sql.Selector)
 
-// AgentRunFinding is the predicate function for agentrunfinding builders.
-type AgentRunFinding func(*sql.Selector)
+// AiAgentRunFinding is the predicate function for aiagentrunfinding builders.
+type AiAgentRunFinding func(*sql.Selector)
 
-// AgentRunFindingCitation is the predicate function for agentrunfindingcitation builders.
-type AgentRunFindingCitation func(*sql.Selector)
+// AiAgentRunFindingCitation is the predicate function for aiagentrunfindingcitation builders.
+type AiAgentRunFindingCitation func(*sql.Selector)
 
-// AgentRunResult is the predicate function for agentrunresult builders.
-type AgentRunResult func(*sql.Selector)
+// AiAgentRunResult is the predicate function for aiagentrunresult builders.
+type AiAgentRunResult func(*sql.Selector)
 
-// AgentRunSnapshot is the predicate function for agentrunsnapshot builders.
-type AgentRunSnapshot func(*sql.Selector)
-
-// AgentRunSubject is the predicate function for agentrunsubject builders.
-type AgentRunSubject func(*sql.Selector)
+// AiAgentRunSnapshot is the predicate function for aiagentrunsnapshot builders.
+type AiAgentRunSnapshot func(*sql.Selector)
 
 // Alert is the predicate function for alert builders.
 type Alert func(*sql.Selector)
@@ -35,6 +32,9 @@ type AlertFeedback func(*sql.Selector)
 
 // AlertInstance is the predicate function for alertinstance builders.
 type AlertInstance func(*sql.Selector)
+
+// AlertInvestigation is the predicate function for alertinvestigation builders.
+type AlertInvestigation func(*sql.Selector)
 
 // AlertMetrics is the predicate function for alertmetrics builders.
 type AlertMetrics func(*sql.Selector)

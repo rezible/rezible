@@ -1,10 +1,8 @@
 package ent
 
 import (
-	"fmt"
 	"time"
 
-	"github.com/rezible/rezible/ent/agentrunsubject"
 	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/predicate"
 	vc "github.com/rezible/rezible/ent/videoconference"
@@ -82,17 +80,4 @@ func (ref KnowledgeEntityAliasRef) Predicate() predicate.KnowledgeEntityAlias {
 
 func (ref KnowledgeEntityAliasRef) SortKey() string {
 	return ref.Provider + "\x1f" + ref.ProviderSubjectRef
-}
-
-func (ars AgentRunSubjects) GetEntitySubjects(sk agentrunsubject.SubjectKind, ek string) ([]*AgentRunSubject, error) {
-	subs := make([]*AgentRunSubject, 0, len(ars))
-	for _, sub := range ars {
-		if sub.SubjectKind == sk && sub.EntityKind == ek {
-			if sub.DomainEntityID == nil {
-				return nil, fmt.Errorf("subject kind with nil domain entity id")
-			}
-			subs = append(subs, sub)
-		}
-	}
-	return subs, nil
 }

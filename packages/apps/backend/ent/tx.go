@@ -12,26 +12,26 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// AgentRun is the client for interacting with the AgentRun builders.
-	AgentRun *AgentRunClient
-	// AgentRunCitation is the client for interacting with the AgentRunCitation builders.
-	AgentRunCitation *AgentRunCitationClient
-	// AgentRunFinding is the client for interacting with the AgentRunFinding builders.
-	AgentRunFinding *AgentRunFindingClient
-	// AgentRunFindingCitation is the client for interacting with the AgentRunFindingCitation builders.
-	AgentRunFindingCitation *AgentRunFindingCitationClient
-	// AgentRunResult is the client for interacting with the AgentRunResult builders.
-	AgentRunResult *AgentRunResultClient
-	// AgentRunSnapshot is the client for interacting with the AgentRunSnapshot builders.
-	AgentRunSnapshot *AgentRunSnapshotClient
-	// AgentRunSubject is the client for interacting with the AgentRunSubject builders.
-	AgentRunSubject *AgentRunSubjectClient
+	// AiAgentRun is the client for interacting with the AiAgentRun builders.
+	AiAgentRun *AiAgentRunClient
+	// AiAgentRunCitation is the client for interacting with the AiAgentRunCitation builders.
+	AiAgentRunCitation *AiAgentRunCitationClient
+	// AiAgentRunFinding is the client for interacting with the AiAgentRunFinding builders.
+	AiAgentRunFinding *AiAgentRunFindingClient
+	// AiAgentRunFindingCitation is the client for interacting with the AiAgentRunFindingCitation builders.
+	AiAgentRunFindingCitation *AiAgentRunFindingCitationClient
+	// AiAgentRunResult is the client for interacting with the AiAgentRunResult builders.
+	AiAgentRunResult *AiAgentRunResultClient
+	// AiAgentRunSnapshot is the client for interacting with the AiAgentRunSnapshot builders.
+	AiAgentRunSnapshot *AiAgentRunSnapshotClient
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
 	// AlertInstance is the client for interacting with the AlertInstance builders.
 	AlertInstance *AlertInstanceClient
+	// AlertInvestigation is the client for interacting with the AlertInvestigation builders.
+	AlertInvestigation *AlertInvestigationClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
@@ -295,16 +295,16 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.AgentRun = NewAgentRunClient(tx.config)
-	tx.AgentRunCitation = NewAgentRunCitationClient(tx.config)
-	tx.AgentRunFinding = NewAgentRunFindingClient(tx.config)
-	tx.AgentRunFindingCitation = NewAgentRunFindingCitationClient(tx.config)
-	tx.AgentRunResult = NewAgentRunResultClient(tx.config)
-	tx.AgentRunSnapshot = NewAgentRunSnapshotClient(tx.config)
-	tx.AgentRunSubject = NewAgentRunSubjectClient(tx.config)
+	tx.AiAgentRun = NewAiAgentRunClient(tx.config)
+	tx.AiAgentRunCitation = NewAiAgentRunCitationClient(tx.config)
+	tx.AiAgentRunFinding = NewAiAgentRunFindingClient(tx.config)
+	tx.AiAgentRunFindingCitation = NewAiAgentRunFindingCitationClient(tx.config)
+	tx.AiAgentRunResult = NewAiAgentRunResultClient(tx.config)
+	tx.AiAgentRunSnapshot = NewAiAgentRunSnapshotClient(tx.config)
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertInstance = NewAlertInstanceClient(tx.config)
+	tx.AlertInvestigation = NewAlertInvestigationClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
 	tx.DocumentAccess = NewDocumentAccessClient(tx.config)
@@ -380,7 +380,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: AgentRun.QueryXXX(), the query will be executed
+// applies a query, for example: AiAgentRun.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

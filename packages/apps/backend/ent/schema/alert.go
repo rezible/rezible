@@ -66,6 +66,39 @@ func (AlertInstance) Edges() []ent.Edge {
 	}
 }
 
+type AlertInvestigation struct {
+	ent.Schema
+}
+
+func (AlertInvestigation) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (AlertInvestigation) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("alert_instance_id", uuid.UUID{}),
+		field.UUID("ai_agent_run_id", uuid.UUID{}),
+		field.Bytes("output"),
+	}
+}
+
+func (AlertInvestigation) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("alert_instance", AlertInstance.Type).
+			Unique().
+			Required().
+			Field("alert_instance_id"),
+		edge.To("ai_agent_run", AiAgentRun.Type).
+			Unique().
+			Required().
+			Field("ai_agent_run_id"),
+	}
+}
+
 type AlertFeedback struct {
 	ent.Schema
 }
