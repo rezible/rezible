@@ -1,7 +1,6 @@
 import { createQuery } from "@tanstack/svelte-query";
-import { Context, watch, type Getter } from "runed";
+import { Context } from "runed";
 import { type ListEventsData, type EventAttributes, listEventsOptions } from "$lib/api";
-import { useUserOncallInformation } from "$lib/userOncall.svelte";
 import { subMonths, subWeeks } from "date-fns";
 import { QueryPaginatorState } from "$src/lib/paginator.svelte";
 
@@ -35,6 +34,7 @@ export class EventsListFiltersState {
 	queryData = $derived<ListEventsData["query"]>({
 		// from: this.dateRange.from?.toISOString(),
 		// to: this.dateRange.to?.toISOString(),
+		withProjections: true,
 	});
 	queryEnabled = $derived(true);
 };
