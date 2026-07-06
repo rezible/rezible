@@ -1,12 +1,20 @@
 import { Context } from "runed";
+import { page } from "$app/state";
 import { useSidebar } from "$components/ui/sidebar";
 import { useUserSessionState } from "$lib/user-session.svelte";
-import { useAppShell, type AppSidebarGroup, type AppSidebarItem, type AppSidebarModel } from "$lib/app-shell.svelte";
+import { useAppShell, 
+    type AppSidebarGroup, type AppSidebarItem, type AppSidebarModel,
+} from "$lib/app-shell.svelte";
 
-import RiFireLine from "remixicon-svelte/icons/fire-line";
 import RiHome2Line from "remixicon-svelte/icons/home-2-line";
+import RiShieldUserLine from "remixicon-svelte/icons/shield-user-line";
+import RiRadarLine from "remixicon-svelte/icons/radar-line";
+import RiConnectorLine from "remixicon-svelte/icons/connector-line";
+import RiFireLine from "remixicon-svelte/icons/fire-line";
+import RiAlarmWarningLine from "remixicon-svelte/icons/alarm-warning-line";
+import RiUserLine from "remixicon-svelte/icons/user-line";
+import RiTeamLine from "remixicon-svelte/icons/team-line";
 import RiSettings3Line from "remixicon-svelte/icons/settings-3-line";
-import { page } from "$app/state";
 
 const isActive = (href: string, pathname: string) => {
     if (href === "/" || pathname === "/") return pathname === href;
@@ -57,13 +65,29 @@ const defaultSidebarModel: AppSidebarModel = {
     groups: [
         {
             items: [
-                { label: "Home", href: "/", icon: RiHome2Line }
+                { label: "Home", href: "/", icon: RiHome2Line },
             ]
+        },
+        {
+            label: "Operations",
+            items: [
+                { label: "Incidents", href: "/incidents", icon: RiFireLine },
+                { label: "Oncall", href: "/oncall", icon: RiShieldUserLine },
+            ],
         },
         {
             label: "System",
             items: [
-                { label: "Incidents", href: "/incidents", icon: RiFireLine },
+                //{ label: "Graph", href: "/system", icon: RiFlowChartLine },
+                { label: "Graph", href: "/system", icon: RiConnectorLine },
+                { label: "Events", href: "/events", icon: RiRadarLine },
+            ],
+        },
+        {
+            label: "People",
+            items: [
+                { label: "Users", href: "/users", icon: RiUserLine },
+                { label: "Teams", href: "/teams", icon: RiTeamLine },
             ],
         },
     ],

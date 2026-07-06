@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SystemTopologyEntitiesListView from "$features/system-topology/views/system-topology-entities-list";
+	import SystemGraphView from "$features/system/views/system-graph";
 </script>
 
-<SystemTopologyEntitiesListView />
+<SystemGraphView />

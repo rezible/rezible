@@ -3,19 +3,19 @@
 	import TabbedViewContainer from "$src/components/layout/tabbed-view-container/TabbedViewContainer.svelte";
 	import SystemTopologyEntityOverview from "./overview/SystemTopologyEntityOverview.svelte";
 	import SystemTopologyEntityIncidents from "./incidents/SystemTopologyEntityIncidents.svelte";
-	import { initSystemTopologyEntityViewController } from "./controller.svelte";
+	import { initSystemEntityViewController } from "./controller.svelte";
 
 	const { id }: IdProp = $props();
-	const view = initSystemTopologyEntityViewController(() => id);
+	const controller = initSystemEntityViewController(() => id);
 
 	setPageBreadcrumbs(() => [
 		{ label: "System", path: "/system" },
-		{ label: view.entityName, path: `/system/${view.entityId}` },
+		{ label: controller.entityName, path: `/system/${controller.entityId}` },
 	]);
 </script>
 
 <TabbedViewContainer 
-	route="/system/[id]/[[view=systemTopologyEntityView]]"
+	route="/system/[id]/[[view=systemEntityView]]"
 	tabs={[
 		{ label: "Overview", component: SystemTopologyEntityOverview, params: {id} },
 		{ label: "Incidents", component: SystemTopologyEntityIncidents, params: {id, view: "incidents"} },

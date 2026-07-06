@@ -2,6 +2,7 @@ package projections
 
 import (
 	"reflect"
+	"strings"
 	"sync"
 
 	rez "github.com/rezible/rezible"
@@ -40,7 +41,7 @@ func (r *PipelineRegistry) RegisterEventProjector(handler rez.NormalizedEventPro
 	r.eventProjectorsMu.Lock()
 	defer r.eventProjectorsMu.Unlock()
 
-	name := reflect.TypeOf(handler).String()
+	name := strings.TrimLeft(reflect.TypeOf(handler).String(), "*")
 	for _, kind := range kinds {
 		if _, exists := r.eventProjectors[kind]; !exists {
 			r.eventProjectors[kind] = make(map[string]rez.NormalizedEventProjector)

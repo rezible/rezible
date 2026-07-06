@@ -8,7 +8,7 @@
 	import RiUserSettingsLine from "remixicon-svelte/icons/user-settings-line";
 	import RiNotification2 from "remixicon-svelte/icons/notification-2-line";
 	import RiLogoutBoxRLine from "remixicon-svelte/icons/logout-box-r-line";
-	import RiExpandUpDownLine from "remixicon-svelte/icons/expand-up-down-line";
+	import RiArrowUpSLine from "remixicon-svelte/icons/arrow-drop-up-fill";
 
 	const auth = useUserSessionState();
 	const user = $derived(auth.user);
@@ -63,7 +63,7 @@
 							<UserAvatar kind="user" id={auth.user?.id || ""} size={24} />
 						</Avatar.Root>
 						<span class="truncate font-medium">{user?.attributes.name}</span>
-						<RiExpandUpDownLine class="ms-auto size-4" />
+						<RiArrowUpSLine class="ms-auto size-2" />
 					</Sidebar.MenuButton>
 				{/snippet}
 			</DropdownMenu.Trigger>

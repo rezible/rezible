@@ -2,7 +2,7 @@ import { getSystemTopologyEntityOptions } from "$lib/api";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 
-class SystemTopologyEntityViewController {
+class SystemEntityViewController {
 	entityId = $state<string>(null!);
 
 	constructor(idFn: Getter<string>) {
@@ -18,6 +18,6 @@ class SystemTopologyEntityViewController {
 	entityName = $derived(this.entity?.attributes.displayName ?? "");
 }
 
-const ctx = new Context<SystemTopologyEntityViewController>("SystemTopologyEntityViewController");
-export const initSystemTopologyEntityViewController = (idFn: Getter<string>) => ctx.set(new SystemTopologyEntityViewController(idFn));
-export const useSystemTopologyEntityViewController = () => ctx.get();
+const ctx = new Context<SystemEntityViewController>("SystemEntityViewController");
+export const initSystemEntityViewController = (idFn: Getter<string>) => ctx.set(new SystemEntityViewController(idFn));
+export const useSystemEntityViewController = () => ctx.get();
