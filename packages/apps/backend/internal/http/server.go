@@ -11,13 +11,14 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/httplog/v3"
+
 	"github.com/koding/websocketproxy"
-	"github.com/rezible/rezible/internal/http/oidc"
-	"github.com/rezible/rezible/pkg/openapi"
-	slogchi "github.com/samber/slog-chi"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/internal/http/oidc"
 	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/openapi"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -36,7 +37,7 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionServ
 
 	s.router = chi.NewRouter()
 	s.router.Use(s.makeSetRootExecutionContextMiddleware())
-	s.router.Use(s.makeRequestLoggerMiddleware())
+	s.router.Use(s.makeRequestLoggerMiddleware(cfg.App.DebugMode))
 
 	var documentsProxyUrl *url.URL
 	if cfg.Documents.Proxy.Enabled {
@@ -152,14 +153,30 @@ func (s *Server) makeSetRootExecutionContextMiddleware() func(http.Handler) http
 	}
 }
 
-func (s *Server) makeRequestLoggerMiddleware() func(http.Handler) http.Handler {
-	return slogchi.NewWithConfig(s.logger, slogchi.Config{
-		DefaultLevel:     slog.LevelInfo,
-		ClientErrorLevel: slog.LevelInfo,
-		ServerErrorLevel: slog.LevelError,
-		WithRequestID:    true,
-		WithSpanID:       true,
-		WithTraceID:      true,
+func (s *Server) makeRequestLoggerMiddleware(concise bool) func(http.Handler) http.Handler {
+	logFormat := httplog.SchemaECS.Concise(concise)
+	isDebugHeaderSet := func(r *http.Request) bool {
+		return r.Header.Get("Debug") == "reveal-body-logs"
+	}
+
+	return httplog.RequestLogger(s.logger, &httplog.Options{
+		Level:         slog.LevelInfo,
+		Schema:        logFormat,
+		RecoverPanics: true,
+
+		// Optionally, filter out some request logs.
+		Skip: func(req *http.Request, respStatus int) bool {
+			return respStatus == 404 || respStatus == 405
+		},
+
+		// Optionally, log selected request/response headers explicitly.
+		LogRequestHeaders:  []string{"Origin"},
+		LogResponseHeaders: []string{},
+
+		// Optionally, enable logging of request/response body based on custom conditions.
+		// Useful for debugging payload issues in development.
+		LogRequestBody:  isDebugHeaderSet,
+		LogResponseBody: isDebugHeaderSet,
 	})
 }
 

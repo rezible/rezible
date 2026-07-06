@@ -13,7 +13,8 @@ require (
 	github.com/deckarep/golang-set/v2 v2.9.0
 	github.com/dentech-floss/watermill-opentelemetry-go-extra v0.1.2
 	github.com/firebase/genkit/go v1.10.0
-	github.com/go-chi/chi/v5 v5.2.5
+	github.com/go-chi/chi/v5 v5.3.0
+	github.com/go-chi/httplog/v3 v3.4.0
 	github.com/go-playground/validator/v10 v10.30.2
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
@@ -33,7 +34,6 @@ require (
 	github.com/riverqueue/river/rivertype v0.36.0
 	github.com/riverqueue/rivercontrib/otelriver v0.7.0
 	github.com/samber/do/v2 v2.0.0
-	github.com/samber/slog-chi v1.19.1
 	github.com/slack-go/slack v0.23.1
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8
 	github.com/stretchr/objx v0.5.3
