@@ -25,7 +25,7 @@ func NewAuthSessionService(db rez.Database, orgs rez.OrganizationService, users 
 	return &AuthSessionService{db: db, orgs: orgs, users: users}
 }
 
-func (s *AuthSessionService) CreateFromUserAuth(ctx context.Context, ps *rez.UserAuthProviderSession) (*ent.UserAuthSession, error) {
+func (s *AuthSessionService) CreateFromUserAuthResponse(ctx context.Context, ps *rez.UserAuthProviderSession) (*ent.UserAuthSession, error) {
 	var sess *ent.UserAuthSession
 	return sess, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		ctx = execution.NewSystemContext(ctx)
@@ -117,11 +117,11 @@ func (s *AuthSessionService) syncAuthProviderUser(ctx context.Context, pu *ent.U
 	})
 }
 
-func (s *AuthSessionService) CreateFromToken(ctx context.Context, token string) (*ent.UserAuthSession, error) {
+func (s *AuthSessionService) CreateForToken(ctx context.Context, token string) (*ent.UserAuthSession, error) {
 	return nil, fmt.Errorf("not supported")
 }
 
-func (s *AuthSessionService) Get(ctx context.Context, id uuid.UUID) (*ent.UserAuthSession, error) {
+func (s *AuthSessionService) LookupSession(ctx context.Context, id uuid.UUID) (*ent.UserAuthSession, error) {
 	ctx = execution.NewSystemContext(ctx)
 	return s.db.Client(ctx).UserAuthSession.Get(ctx, id)
 }

@@ -113,8 +113,9 @@ type (
 	}
 
 	HttpAuthConfig struct {
-		SessionSecret []byte             `cfg:"session_secret" validate:"required"`
-		Oidc          HttpAuthOidcConfig `cfg:"oidc"`
+		SessionSecret     []byte             `cfg:"session_secret" validate:"required"`
+		EnableDevSkipMode bool               `cfg:"enable_dev_skip_mode"`
+		Oidc              HttpAuthOidcConfig `cfg:"oidc"`
 	}
 
 	HttpAuthOidcConfig struct {

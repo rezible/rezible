@@ -28,8 +28,8 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func NewServer(cfg rez.Config, ts rez.TelemetryService, authSess rez.AuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) (*Server, error) {
-	s := Server{
+func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) (*Server, error) {
+	s := &Server{
 		cfg:    cfg.HttpServer,
 		logger: slog.Default().WithGroup("http"),
 	}
@@ -47,8 +47,6 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, authSess rez.AuthSession
 		documentsProxyUrl = proxyUrl
 	}
 
-	asc := newAppAuthSessionCookie(oapiv1.AppCookieName, cfg.App.FrontendApiPath)
-
 	handler := chi.NewRouter()
 
 	handler.Get("/health", s.makeHealthCheckHandler())
@@ -61,18 +59,24 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, authSess rez.AuthSession
 	}
 	handler.Mount("/webhooks", webhooksHandler)
 
-	oidcAuthHandler, authErr := oidc.NewUserAuthHandler(cfg, authSess, asc)
+	asc := newAppAuthSessionCookie(cfg.App.FrontendApiPath)
+	oidcAuthHandler, authErr := oidc.NewUserAuthHandler(cfg, sess, asc)
 	if authErr != nil {
 		return nil, fmt.Errorf("user auth: %w", authErr)
 	}
 	handler.Mount("/auth", oidcAuthHandler)
 
-	api := s.makeOpenApi(ts, oapiV1Handler)
-
+	rv := newRequestAuthValidator(sess, asc)
+	if cfg.HttpServer.Auth.EnableDevSkipMode {
+		slog.Warn("enabling development session auth override")
+		rv.devSessionOverride = true
+	}
 	// api routes with auth check
 	handler.Group(func(ar chi.Router) {
-		ar.Use(s.makeApiRequestAuthMiddleware(authSess, asc))
-		ar.Mount(oapiv1.VersionPrefix, api.Adapter())
+		ar.Use(rv.AuthSessionMiddleware)
+
+		ar.Mount(oapiv1.VersionPrefix, s.makeOpenApiHandler(ts, oapiV1Handler))
+
 		if documentsProxyUrl != nil {
 			ar.Handle("/documents", s.makeDocumentsProxyHandler(documentsProxyUrl))
 		}
@@ -80,7 +84,7 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, authSess rez.AuthSession
 
 	s.router.Mount(ensureSlashPrefix(s.cfg.BasePath), http.StripPrefix(s.cfg.BasePath, handler))
 
-	return &s, nil
+	return s, nil
 }
 
 func authScopesSatisfied(authScopes []string, secOpts oapiv1.SecurityMethodOptions) bool {
@@ -116,7 +120,7 @@ func authScopesSatisfied(authScopes []string, secOpts oapiv1.SecurityMethodOptio
 	return false
 }
 
-func (s *Server) makeOpenApi(ts rez.TelemetryService, v1h oapiv1.Handler) openapi.API {
+func (s *Server) makeOpenApiHandler(ts rez.TelemetryService, v1h oapiv1.Handler) openapi.Adapter {
 	checkMethodOptionsFn := func(ctx context.Context, secOpts oapiv1.SecurityMethodOptions) error {
 		ec := execution.GetContext(ctx)
 
@@ -133,9 +137,10 @@ func (s *Server) makeOpenApi(ts rez.TelemetryService, v1h oapiv1.Handler) openap
 		return nil
 	}
 
-	return oapiv1.MakeApi(v1h,
+	api := oapiv1.MakeApi(v1h,
 		oapiv1.MakeRequestMethodSecurityMiddleware(checkMethodOptionsFn),
 		oapiv1.MakeAPITelemetryMiddleware(ts))
+	return api.Adapter()
 }
 
 func (s *Server) makeSetRootExecutionContextMiddleware() func(http.Handler) http.Handler {

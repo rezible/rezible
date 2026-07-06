@@ -17,22 +17,31 @@ type authSessionCookieWriter interface {
 }
 
 type UserAuthService struct {
-	authSess   rez.AuthSessionService
-	authCookie authSessionCookieWriter
-
-	oauth *oauthHandler
+	auth            rez.AuthSessionService
+	scw             authSessionCookieWriter
+	oidc            *oidcHandler
+	singleTenantOrg *ent.Organization
 }
 
 func NewUserAuthHandler(cfg rez.Config, authSess rez.AuthSessionService, appCookie authSessionCookieWriter) (http.Handler, error) {
-	oauth, oauthErr := newOAuthHandler(cfg)
-	if oauthErr != nil {
-		return nil, oauthErr
+	oh, ohErr := newOidcHandler(cfg)
+	if ohErr != nil {
+		return nil, fmt.Errorf("oidc: %w", ohErr)
+	}
+
+	var singleTenantOrg *ent.Organization
+	if cfg.App.SingleTenant.Enabled {
+		singleTenantOrg = &ent.Organization{
+			AuthProviderID: "default",
+			Name:           cfg.App.SingleTenant.OrgName,
+		}
 	}
 
 	s := &UserAuthService{
-		authSess:   authSess,
-		authCookie: appCookie,
-		oauth:      oauth,
+		auth:            authSess,
+		scw:             appCookie,
+		oidc:            oh,
+		singleTenantOrg: singleTenantOrg,
 	}
 
 	return s.Handler(), nil
@@ -47,9 +56,11 @@ func (s *UserAuthService) Handler() http.Handler {
 	return r
 }
 
-func (s *UserAuthService) handleAndRedirect(handler func(http.ResponseWriter, *http.Request) (string, error)) http.HandlerFunc {
+type redirectingHandlerFn = func(w http.ResponseWriter, r *http.Request) (redirectTo string, err error)
+
+func (s *UserAuthService) handleAndRedirect(handlerFn redirectingHandlerFn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		redirectUrl, err := handler(w, r)
+		redirectUrl, err := handlerFn(w, r)
 		if err != nil {
 			redirectUrl = fmt.Sprintf("/login?error=%s", url.QueryEscape(err.Error()))
 		}
@@ -66,7 +77,7 @@ var (
 )
 
 func (s *UserAuthService) handleLogin(w http.ResponseWriter, r *http.Request) (string, error) {
-	authUrl, authErr := s.oauth.createAuthRedirect(w, r)
+	authUrl, authErr := s.oidc.createAuthRedirect(w, r)
 	if authErr != nil {
 		slog.Debug("Failed to create auth redirect", "error", authErr)
 		return "", errCreateRedirect
@@ -75,27 +86,32 @@ func (s *UserAuthService) handleLogin(w http.ResponseWriter, r *http.Request) (s
 }
 
 func (s *UserAuthService) handleCallback(w http.ResponseWriter, r *http.Request) (string, error) {
-	ps, returnTo, callbackErr := s.oauth.doCallbackExchange(w, r)
+	res, callbackErr := s.oidc.doCallbackExchange(w, r)
 	if callbackErr != nil {
 		slog.Debug("callback exchange", "error", callbackErr)
 		return "", errCallbackExchange
 	}
-	if ps == nil {
-		slog.Warn("no auth provider session returned, no error?")
-		return "", errCallbackExchange
+
+	if s.singleTenantOrg != nil {
+		slog.Debug("using single tenant organization")
+		res.Session.Org = *s.singleTenantOrg
 	}
 
-	sess, sessErr := s.authSess.CreateFromUserAuth(r.Context(), ps)
+	sess, sessErr := s.auth.CreateFromUserAuthResponse(r.Context(), res.Session)
 	if sessErr != nil {
 		slog.Debug("user session create", "error", sessErr)
 		return "", errCreateAuthSession
 	}
-	s.authCookie.Set(w, sess)
+	s.scw.Set(w, sess)
 
-	return returnTo, nil
+	return res.ReturnTo, nil
 }
 
 func (s *UserAuthService) handleLogout(w http.ResponseWriter, r *http.Request) (string, error) {
-	s.authCookie.Clear(w)
+	ctx := r.Context()
+	if clearErr := s.oidc.doLogout(ctx); clearErr != nil {
+		slog.ErrorContext(ctx, "oidc logout", "error", clearErr)
+	}
+	s.scw.Clear(w)
 	return "/login", nil
 }

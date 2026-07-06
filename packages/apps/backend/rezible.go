@@ -292,10 +292,11 @@ type (
 		Org       ent.Organization
 		ExpiresAt time.Time
 	}
+
 	AuthSessionService interface {
-		CreateFromUserAuth(context.Context, *UserAuthProviderSession) (*ent.UserAuthSession, error)
-		CreateFromToken(context.Context, string) (*ent.UserAuthSession, error)
-		Get(context.Context, uuid.UUID) (*ent.UserAuthSession, error)
+		CreateFromUserAuthResponse(context.Context, *UserAuthProviderSession) (*ent.UserAuthSession, error)
+		CreateForToken(context.Context, string) (*ent.UserAuthSession, error)
+		LookupSession(context.Context, uuid.UUID) (*ent.UserAuthSession, error)
 		DeleteSession(context.Context, uuid.UUID) error
 	}
 )

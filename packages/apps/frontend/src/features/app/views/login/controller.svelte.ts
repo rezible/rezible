@@ -4,18 +4,21 @@ import { useUserSessionState, ApiAuthErrorCategory } from "$src/lib/user-session
 import type { ErrorModel } from "$lib/api";
 import { page } from "$app/state";
 
-const authSessionErrorDisplayText: Record<ApiAuthErrorCategory, string> = {
-    [ApiAuthErrorCategory.NoSession]: "",
-    [ApiAuthErrorCategory.SessionExpired]: "Your session has expired",
-    [ApiAuthErrorCategory.SessionInvalid]: "Your session is invalid",
-    [ApiAuthErrorCategory.ServerError]: "Something went wrong while authenticating you",
-    [ApiAuthErrorCategory.Unknown]: "Something went wrong while authenticating you",
-};
+const authSessionErrorDisplay = new Map<ApiAuthErrorCategory, ErrorModel>([
+    [ApiAuthErrorCategory.SessionExpired, {title: "Session Expired", detail: "Your session has expired"}],
+    [ApiAuthErrorCategory.SessionInvalid, {title: "Invalid Session", detail: "Your session is invalid"}],
+    [ApiAuthErrorCategory.ServerError, {title: "Server Error", detail: "Something went wrong while authenticating you"}],
+    [ApiAuthErrorCategory.Unknown, {title: "Server Error", detail: "Something went wrong while authenticating you"}],
+]);
+
 const transformAuthSessionError = (cat?: ApiAuthErrorCategory) => {
     if (!cat || cat === ApiAuthErrorCategory.NoSession) return;
-    const title = "Auth Session Invalid";
-    const detail = authSessionErrorDisplayText[cat] || "Unknown";
-    return { title, detail } as ErrorModel;
+    const display = authSessionErrorDisplay.get(cat);
+    if (!display) {
+        // log?
+        return authSessionErrorDisplay.get(ApiAuthErrorCategory.Unknown);
+    }
+    return display;
 };
 
 const loginErrorDisplayText: Record<string, string> = {
