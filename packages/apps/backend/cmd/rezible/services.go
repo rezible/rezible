@@ -261,6 +261,8 @@ var provideIntegrations = do.Package(
 		return slackagent.MakeIntegration(
 			app,
 			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
 		)
 	}),
@@ -278,6 +280,8 @@ var provideIntegrations = do.Package(
 		return slackincidents.MakeIntegration(
 			app,
 			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
 		)
 	}),

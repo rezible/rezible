@@ -13,8 +13,8 @@ import (
 
 const integrationName = "slack_agent"
 
-func MakeIntegration(app *App, msgs rez.MessageService, events rez.ProviderEventPipelineService) (*Integration, error) {
-	svc, svcErr := slackintegration.NewAppService(app, msgs, events)
+func MakeIntegration(app *App, msgs rez.MessageService, intgs rez.IntegrationService, users rez.UserService, events rez.ProviderEventPipelineService) (*Integration, error) {
+	svc, svcErr := slackintegration.NewAppService(app, msgs, intgs, users, events)
 	if svcErr != nil {
 		return nil, fmt.Errorf("making slackintegration: %w", svcErr)
 	}

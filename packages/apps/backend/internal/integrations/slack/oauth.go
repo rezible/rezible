@@ -49,7 +49,6 @@ func (h *oauthHandler) validateOAuthTokenScopes(t *oauth2.Token) error {
 }
 
 func (h *oauthHandler) getTeamInfoFromTokenData(tokenData any) (*TeamInfo, error) {
-	fmt.Printf("token data team info: %+v\n", tokenData)
 	data, ok := tokenData.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid token data")

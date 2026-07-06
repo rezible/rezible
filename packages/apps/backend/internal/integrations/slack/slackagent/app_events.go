@@ -55,7 +55,7 @@ func (a *App) onMentionEvent(ctx context.Context, data *slackevents.AppMentionEv
 }
 
 func (a *App) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent) error {
-	//slog.Debug("message event", "message", data)
+	slog.Debug("message event", "message", data)
 	/*
 		threadTs := data.ThreadTimeStamp
 		// TODO check if thread is 'monitored'

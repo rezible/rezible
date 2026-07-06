@@ -44,29 +44,34 @@ type AppService[A App] struct {
 	intgs rez.IntegrationService
 	users rez.UserService
 
-	oauthHandler *oauthHandler
-
-	webhookHandler     http.Handler
-	socketModeListener *socketModeListener
-
+	oauthHandler                *oauthHandler
+	webhookHandler              http.Handler
+	socketModeListener          *socketModeListener
 	slashCommandHandlers        map[string]SlashCommandHandler
 	eventsApiHandler            EventsApiHandler
 	interactionCallbackHandlers map[slack.InteractionType]InteractionCallbackHandler
 }
 
-func NewAppService[A App](app A, msgs rez.MessageService, eventPipeline rez.ProviderEventPipelineService) (*AppService[A], error) {
+func NewAppService[A App](app A, msgs rez.MessageService, intgs rez.IntegrationService, users rez.UserService, eventPipeline rez.ProviderEventPipelineService) (*AppService[A], error) {
 	cfg := app.Config()
 	s := &AppService[A]{
 		app:                         app,
 		integrationName:             app.IntegrationName(),
-		eventsApiHandler:            app.EventsApiHandler(),
-		slashCommandHandlers:        app.SlashCommandHandlers(),
-		interactionCallbackHandlers: app.InteractionCallbackHandlers(),
-		webhookHandler:              http.NotFoundHandler(),
+		msgs:                        msgs,
+		intgs:                       intgs,
+		users:                       users,
 		oauthHandler:                NewOAuthHandler(cfg.OAuthClientId, cfg.OAuthClientSecret, app.OAuthScopes()),
+		webhookHandler:              http.NotFoundHandler(),
+		slashCommandHandlers:        app.SlashCommandHandlers(),
+		eventsApiHandler:            app.EventsApiHandler(),
+		interactionCallbackHandlers: app.InteractionCallbackHandlers(),
 	}
 
 	if cfg.Enabled {
+		if msgErr := s.registerMessageHandlers(); msgErr != nil {
+			return nil, fmt.Errorf("register message handlers: %w", msgErr)
+		}
+
 		eventHandler := makeAppEventHandler(app, msgs, eventPipeline)
 
 		if cfg.EnableSocketMode {
@@ -120,7 +125,7 @@ func (s *AppService[A]) RetrieveInstallationTargetOptions(ctx context.Context, t
 	return s.oauthHandler.ExtractInstallationTargetFromToken(t)
 }
 
-func (s *AppService[A]) createInstallationContext(ctx context.Context, ids IntegrationInstallIds) (*ent.Integration, context.Context, error) {
+func (s *AppService[A]) createInstallationContext(ctx context.Context, ids InstallationIds) (*ent.Integration, context.Context, error) {
 	lookupIntegrationsPred := in.And(in.IntegrationName(s.integrationName), in.ExternalProviderRef(ids.asRef()))
 	intg, lookupErr := s.intgs.LookupInstallation(execution.NewSystemContext(ctx), lookupIntegrationsPred)
 	if lookupErr != nil {
@@ -130,22 +135,18 @@ func (s *AppService[A]) createInstallationContext(ctx context.Context, ids Integ
 }
 
 func (s *AppService[A]) handleEventsApiCallbackEvent(baseCtx context.Context, ev *handleEventsApiCallbackEvent) error {
-	if s.integrationName != ev.integrationName {
+	if s.integrationName != ev.IntegrationName {
 		return nil
 	}
 	cb, parseErr := slackevents.ParseEvent(ev.Data, slackevents.OptionNoVerifyToken())
 	if parseErr != nil {
 		return fmt.Errorf("parse event: %w", parseErr)
 	}
-	installIds := IntegrationInstallIds{TeamId: cb.TeamID, EnterpriseId: cb.EnterpriseID}
-	intg, ctx, intgsErr := s.createInstallationContext(baseCtx, installIds)
+	intg, ctx, intgsErr := s.createInstallationContext(baseCtx, InstallationIds{TeamId: cb.TeamID, EnterpriseId: cb.EnterpriseID})
 	if intgsErr != nil {
 		return fmt.Errorf("lookup integration: %w", intgsErr)
 	}
-	if err := s.eventsApiHandler(ctx, intg, &cb); err != nil {
-		return fmt.Errorf("handle events api event: %w", err)
-	}
-	return nil
+	return s.eventsApiHandler(ctx, intg, &cb)
 }
 
 func (s *AppService[A]) createUserContext(ctx context.Context, userId string) (context.Context, error) {
@@ -165,7 +166,7 @@ func (s *AppService[A]) createUserContext(ctx context.Context, userId string) (c
 }
 
 func (s *AppService[A]) handleInteractionCallback(baseCtx context.Context, ev *interactionCallbackEvent) error {
-	if s.integrationName != ev.integrationName {
+	if s.integrationName != ev.IntegrationName {
 		return nil
 	}
 
@@ -181,7 +182,7 @@ func (s *AppService[A]) handleInteractionCallback(baseCtx context.Context, ev *i
 		return nil
 	}
 
-	installIds := IntegrationInstallIds{TeamId: ic.Team.ID, EnterpriseId: ic.Enterprise.ID}
+	installIds := InstallationIds{TeamId: ic.Team.ID, EnterpriseId: ic.Enterprise.ID}
 	intg, ctx, intgsErr := s.createInstallationContext(baseCtx, installIds)
 	if intgsErr != nil {
 		return fmt.Errorf("lookup integration: %w", intgsErr)
@@ -197,7 +198,7 @@ func (s *AppService[A]) handleInteractionCallback(baseCtx context.Context, ev *i
 }
 
 func (s *AppService[A]) handleSlashCommand(baseCtx context.Context, ev *slashCommandEvent) error {
-	if s.integrationName != ev.integrationName {
+	if s.integrationName != ev.IntegrationName {
 		return nil
 	}
 
@@ -208,7 +209,7 @@ func (s *AppService[A]) handleSlashCommand(baseCtx context.Context, ev *slashCom
 		return nil
 	}
 
-	installIds := IntegrationInstallIds{TeamId: cmd.TeamID, EnterpriseId: cmd.EnterpriseID}
+	installIds := InstallationIds{TeamId: cmd.TeamID, EnterpriseId: cmd.EnterpriseID}
 	intg, ctx, intgsErr := s.createInstallationContext(baseCtx, installIds)
 	if intgsErr != nil {
 		return fmt.Errorf("lookup integration: %w", intgsErr)

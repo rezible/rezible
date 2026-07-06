@@ -78,7 +78,6 @@ const defaultSidebarModel: AppSidebarModel = {
         {
             label: "System",
             items: [
-                //{ label: "Graph", href: "/system", icon: RiFlowChartLine },
                 { label: "Graph", href: "/system", icon: RiConnectorLine },
                 { label: "Events", href: "/events", icon: RiRadarLine },
             ],

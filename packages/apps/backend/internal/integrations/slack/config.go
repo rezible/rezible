@@ -26,7 +26,7 @@ func (c *InstallationConfig) ExternalRef() (string, error) {
 	if c.Team == nil && c.Enterprise == nil {
 		return "", fmt.Errorf("no team or enterprise configured")
 	}
-	ids := IntegrationInstallIds{
+	ids := InstallationIds{
 		TeamId:       c.Team.Id,
 		EnterpriseId: c.Enterprise.Id,
 	}
@@ -60,16 +60,21 @@ func DecodeInstallationConfig(intg *ent.Integration) (*InstallationConfig, error
 }
 
 func MakeConfigInstallationTarget(c *InstallationConfig) (*rez.IntegrationInstallationTarget, error) {
-	var target rez.IntegrationInstallationTarget
-	var err error
-	if target.ExternalRef, err = c.ExternalRef(); err != nil {
-		return nil, fmt.Errorf("external ref: %w", err)
+	ref, refErr := c.ExternalRef()
+	if refErr != nil {
+		return nil, fmt.Errorf("external ref: %w", refErr)
 	}
-	if target.DisplayName, err = c.DisplayName(); err != nil {
-		return nil, fmt.Errorf("display name: %w", err)
+	displayName, nameErr := c.DisplayName()
+	if nameErr != nil {
+		return nil, fmt.Errorf("display name: %w", nameErr)
 	}
-	if target.InstallationConfig, err = c.EncodeConfig(); err != nil {
-		return nil, fmt.Errorf("config: %w", err)
+	cfg, cfgErr := c.EncodeConfig()
+	if cfgErr != nil {
+		return nil, fmt.Errorf("config: %w", cfgErr)
 	}
-	return &target, nil
+	return &rez.IntegrationInstallationTarget{
+		ExternalRef:        ref,
+		DisplayName:        displayName,
+		InstallationConfig: cfg,
+	}, nil
 }

@@ -117,6 +117,25 @@ func (s *IntegrationsService) InstallNew(ctx context.Context, intgName string, c
 	return p.GetInstalledIntegration(intg), nil
 }
 
+func (s *IntegrationsService) installTarget(ctx context.Context, intgName string, target rez.IntegrationInstallationTarget) (rez.InstalledIntegration, error) {
+	p, pErr := s.reg.GetPackage(intgName)
+	if pErr != nil {
+		return nil, fmt.Errorf("failed to get package for integration %s: %w", intgName, pErr)
+	}
+
+	setFn := func(m *ent.IntegrationMutation) {
+		m.SetIntegrationName(intgName)
+		m.SetExternalProviderRef(target.ExternalRef)
+		m.SetInstallationConfig(target.InstallationConfig)
+		m.SetUserSettings(map[string]any{})
+	}
+	intg, setErr := s.set(ctx, uuid.Nil, setFn)
+	if setErr != nil {
+		return nil, fmt.Errorf("failed to set integration: %w", setErr)
+	}
+	return p.GetInstalledIntegration(intg), nil
+}
+
 func (s *IntegrationsService) UpdateInstallation(ctx context.Context, id uuid.UUID, setFn func(*ent.IntegrationMutation)) (rez.InstalledIntegration, error) {
 	curr, currErr := s.LookupInstallation(ctx, in.ID(id))
 	if currErr != nil {
@@ -370,9 +389,9 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, integratio
 	}
 
 	if len(options) == 1 {
-		installed, cfgErr := s.installTargets(ctx, integrationName, options)
-		if cfgErr != nil {
-			return nil, fmt.Errorf("install single target options: %w", cfgErr)
+		installed, installErr := s.installTargets(ctx, integrationName, options)
+		if installErr != nil {
+			return nil, fmt.Errorf("install single target options: %w", installErr)
 		}
 		return &rez.CompleteIntegrationOAuth2FlowResult{Installed: installed}, nil
 	}
@@ -454,11 +473,11 @@ func (s *IntegrationsService) InstallFromUserInstallationTargets(ctx context.Con
 func (s *IntegrationsService) installTargets(ctx context.Context, intgName string, options []rez.IntegrationInstallationTarget) ([]rez.InstalledIntegration, error) {
 	installed := make([]rez.InstalledIntegration, 0, len(options))
 	for _, option := range options {
-		ci, cfgErr := s.InstallNew(ctx, intgName, option.InstallationConfig, nil)
+		ii, cfgErr := s.installTarget(ctx, intgName, option)
 		if cfgErr != nil {
 			return nil, fmt.Errorf("install integration %s option %s: %w", intgName, option.DisplayName, cfgErr)
 		}
-		installed = append(installed, ci)
+		installed = append(installed, ii)
 	}
 	return installed, nil
 }

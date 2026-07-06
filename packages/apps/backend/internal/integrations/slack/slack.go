@@ -13,12 +13,12 @@ import (
 
 const ProviderName = "slack"
 
-type IntegrationInstallIds struct {
+type InstallationIds struct {
 	TeamId       string
 	EnterpriseId string
 }
 
-func (i IntegrationInstallIds) asRef() string {
+func (i InstallationIds) asRef() string {
 	if i.EnterpriseId == "" {
 		return i.TeamId
 	}
