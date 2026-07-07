@@ -4,12 +4,14 @@ package ent
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/internal"
@@ -50,6 +52,20 @@ func (_u *IntegrationUpdate) SetUpdatedAt(v time.Time) *IntegrationUpdate {
 	return _u
 }
 
+// SetProviderName sets the "provider_name" field.
+func (_u *IntegrationUpdate) SetProviderName(v string) *IntegrationUpdate {
+	_u.mutation.SetProviderName(v)
+	return _u
+}
+
+// SetNillableProviderName sets the "provider_name" field if the given value is not nil.
+func (_u *IntegrationUpdate) SetNillableProviderName(v *string) *IntegrationUpdate {
+	if v != nil {
+		_u.SetProviderName(*v)
+	}
+	return _u
+}
+
 // SetIntegrationName sets the "integration_name" field.
 func (_u *IntegrationUpdate) SetIntegrationName(v string) *IntegrationUpdate {
 	_u.mutation.SetIntegrationName(v)
@@ -64,29 +80,55 @@ func (_u *IntegrationUpdate) SetNillableIntegrationName(v *string) *IntegrationU
 	return _u
 }
 
-// SetExternalProviderRef sets the "external_provider_ref" field.
-func (_u *IntegrationUpdate) SetExternalProviderRef(v string) *IntegrationUpdate {
-	_u.mutation.SetExternalProviderRef(v)
+// SetDisplayName sets the "display_name" field.
+func (_u *IntegrationUpdate) SetDisplayName(v string) *IntegrationUpdate {
+	_u.mutation.SetDisplayName(v)
 	return _u
 }
 
-// SetNillableExternalProviderRef sets the "external_provider_ref" field if the given value is not nil.
-func (_u *IntegrationUpdate) SetNillableExternalProviderRef(v *string) *IntegrationUpdate {
+// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
+func (_u *IntegrationUpdate) SetNillableDisplayName(v *string) *IntegrationUpdate {
 	if v != nil {
-		_u.SetExternalProviderRef(*v)
+		_u.SetDisplayName(*v)
+	}
+	return _u
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (_u *IntegrationUpdate) SetExternalRef(v string) *IntegrationUpdate {
+	_u.mutation.SetExternalRef(v)
+	return _u
+}
+
+// SetNillableExternalRef sets the "external_ref" field if the given value is not nil.
+func (_u *IntegrationUpdate) SetNillableExternalRef(v *string) *IntegrationUpdate {
+	if v != nil {
+		_u.SetExternalRef(*v)
 	}
 	return _u
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (_u *IntegrationUpdate) SetInstallationConfig(v map[string]interface{}) *IntegrationUpdate {
+func (_u *IntegrationUpdate) SetInstallationConfig(v json.RawMessage) *IntegrationUpdate {
 	_u.mutation.SetInstallationConfig(v)
+	return _u
+}
+
+// AppendInstallationConfig appends value to the "installation_config" field.
+func (_u *IntegrationUpdate) AppendInstallationConfig(v json.RawMessage) *IntegrationUpdate {
+	_u.mutation.AppendInstallationConfig(v)
 	return _u
 }
 
 // SetUserSettings sets the "user_settings" field.
 func (_u *IntegrationUpdate) SetUserSettings(v map[string]interface{}) *IntegrationUpdate {
 	_u.mutation.SetUserSettings(v)
+	return _u
+}
+
+// ClearUserSettings clears the value of the "user_settings" field.
+func (_u *IntegrationUpdate) ClearUserSettings() *IntegrationUpdate {
+	_u.mutation.ClearUserSettings()
 	return _u
 }
 
@@ -169,17 +211,31 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := _u.mutation.ProviderName(); ok {
+		_spec.SetField(integration.FieldProviderName, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.IntegrationName(); ok {
 		_spec.SetField(integration.FieldIntegrationName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ExternalProviderRef(); ok {
-		_spec.SetField(integration.FieldExternalProviderRef, field.TypeString, value)
+	if value, ok := _u.mutation.DisplayName(); ok {
+		_spec.SetField(integration.FieldDisplayName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ExternalRef(); ok {
+		_spec.SetField(integration.FieldExternalRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InstallationConfig(); ok {
 		_spec.SetField(integration.FieldInstallationConfig, field.TypeJSON, value)
 	}
+	if value, ok := _u.mutation.AppendedInstallationConfig(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, integration.FieldInstallationConfig, value)
+		})
+	}
 	if value, ok := _u.mutation.UserSettings(); ok {
 		_spec.SetField(integration.FieldUserSettings, field.TypeJSON, value)
+	}
+	if _u.mutation.UserSettingsCleared() {
+		_spec.ClearField(integration.FieldUserSettings, field.TypeJSON)
 	}
 	_spec.Node.Schema = _u.schemaConfig.Integration
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
@@ -225,6 +281,20 @@ func (_u *IntegrationUpdateOne) SetUpdatedAt(v time.Time) *IntegrationUpdateOne 
 	return _u
 }
 
+// SetProviderName sets the "provider_name" field.
+func (_u *IntegrationUpdateOne) SetProviderName(v string) *IntegrationUpdateOne {
+	_u.mutation.SetProviderName(v)
+	return _u
+}
+
+// SetNillableProviderName sets the "provider_name" field if the given value is not nil.
+func (_u *IntegrationUpdateOne) SetNillableProviderName(v *string) *IntegrationUpdateOne {
+	if v != nil {
+		_u.SetProviderName(*v)
+	}
+	return _u
+}
+
 // SetIntegrationName sets the "integration_name" field.
 func (_u *IntegrationUpdateOne) SetIntegrationName(v string) *IntegrationUpdateOne {
 	_u.mutation.SetIntegrationName(v)
@@ -239,29 +309,55 @@ func (_u *IntegrationUpdateOne) SetNillableIntegrationName(v *string) *Integrati
 	return _u
 }
 
-// SetExternalProviderRef sets the "external_provider_ref" field.
-func (_u *IntegrationUpdateOne) SetExternalProviderRef(v string) *IntegrationUpdateOne {
-	_u.mutation.SetExternalProviderRef(v)
+// SetDisplayName sets the "display_name" field.
+func (_u *IntegrationUpdateOne) SetDisplayName(v string) *IntegrationUpdateOne {
+	_u.mutation.SetDisplayName(v)
 	return _u
 }
 
-// SetNillableExternalProviderRef sets the "external_provider_ref" field if the given value is not nil.
-func (_u *IntegrationUpdateOne) SetNillableExternalProviderRef(v *string) *IntegrationUpdateOne {
+// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
+func (_u *IntegrationUpdateOne) SetNillableDisplayName(v *string) *IntegrationUpdateOne {
 	if v != nil {
-		_u.SetExternalProviderRef(*v)
+		_u.SetDisplayName(*v)
+	}
+	return _u
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (_u *IntegrationUpdateOne) SetExternalRef(v string) *IntegrationUpdateOne {
+	_u.mutation.SetExternalRef(v)
+	return _u
+}
+
+// SetNillableExternalRef sets the "external_ref" field if the given value is not nil.
+func (_u *IntegrationUpdateOne) SetNillableExternalRef(v *string) *IntegrationUpdateOne {
+	if v != nil {
+		_u.SetExternalRef(*v)
 	}
 	return _u
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (_u *IntegrationUpdateOne) SetInstallationConfig(v map[string]interface{}) *IntegrationUpdateOne {
+func (_u *IntegrationUpdateOne) SetInstallationConfig(v json.RawMessage) *IntegrationUpdateOne {
 	_u.mutation.SetInstallationConfig(v)
+	return _u
+}
+
+// AppendInstallationConfig appends value to the "installation_config" field.
+func (_u *IntegrationUpdateOne) AppendInstallationConfig(v json.RawMessage) *IntegrationUpdateOne {
+	_u.mutation.AppendInstallationConfig(v)
 	return _u
 }
 
 // SetUserSettings sets the "user_settings" field.
 func (_u *IntegrationUpdateOne) SetUserSettings(v map[string]interface{}) *IntegrationUpdateOne {
 	_u.mutation.SetUserSettings(v)
+	return _u
+}
+
+// ClearUserSettings clears the value of the "user_settings" field.
+func (_u *IntegrationUpdateOne) ClearUserSettings() *IntegrationUpdateOne {
+	_u.mutation.ClearUserSettings()
 	return _u
 }
 
@@ -374,17 +470,31 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := _u.mutation.ProviderName(); ok {
+		_spec.SetField(integration.FieldProviderName, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.IntegrationName(); ok {
 		_spec.SetField(integration.FieldIntegrationName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ExternalProviderRef(); ok {
-		_spec.SetField(integration.FieldExternalProviderRef, field.TypeString, value)
+	if value, ok := _u.mutation.DisplayName(); ok {
+		_spec.SetField(integration.FieldDisplayName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ExternalRef(); ok {
+		_spec.SetField(integration.FieldExternalRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InstallationConfig(); ok {
 		_spec.SetField(integration.FieldInstallationConfig, field.TypeJSON, value)
 	}
+	if value, ok := _u.mutation.AppendedInstallationConfig(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, integration.FieldInstallationConfig, value)
+		})
+	}
 	if value, ok := _u.mutation.UserSettings(); ok {
 		_spec.SetField(integration.FieldUserSettings, field.TypeJSON, value)
+	}
+	if _u.mutation.UserSettingsCleared() {
+		_spec.ClearField(integration.FieldUserSettings, field.TypeJSON)
 	}
 	_spec.Node.Schema = _u.schemaConfig.Integration
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

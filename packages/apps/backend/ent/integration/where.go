@@ -72,14 +72,24 @@ func UpdatedAt(v time.Time) predicate.Integration {
 	return predicate.Integration(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// ProviderName applies equality check predicate on the "provider_name" field. It's identical to ProviderNameEQ.
+func ProviderName(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldEQ(FieldProviderName, v))
+}
+
 // IntegrationName applies equality check predicate on the "integration_name" field. It's identical to IntegrationNameEQ.
 func IntegrationName(v string) predicate.Integration {
 	return predicate.Integration(sql.FieldEQ(FieldIntegrationName, v))
 }
 
-// ExternalProviderRef applies equality check predicate on the "external_provider_ref" field. It's identical to ExternalProviderRefEQ.
-func ExternalProviderRef(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldEQ(FieldExternalProviderRef, v))
+// DisplayName applies equality check predicate on the "display_name" field. It's identical to DisplayNameEQ.
+func DisplayName(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldEQ(FieldDisplayName, v))
+}
+
+// ExternalRef applies equality check predicate on the "external_ref" field. It's identical to ExternalRefEQ.
+func ExternalRef(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldEQ(FieldExternalRef, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -182,6 +192,71 @@ func UpdatedAtLTE(v time.Time) predicate.Integration {
 	return predicate.Integration(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
+// ProviderNameEQ applies the EQ predicate on the "provider_name" field.
+func ProviderNameEQ(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldEQ(FieldProviderName, v))
+}
+
+// ProviderNameNEQ applies the NEQ predicate on the "provider_name" field.
+func ProviderNameNEQ(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldNEQ(FieldProviderName, v))
+}
+
+// ProviderNameIn applies the In predicate on the "provider_name" field.
+func ProviderNameIn(vs ...string) predicate.Integration {
+	return predicate.Integration(sql.FieldIn(FieldProviderName, vs...))
+}
+
+// ProviderNameNotIn applies the NotIn predicate on the "provider_name" field.
+func ProviderNameNotIn(vs ...string) predicate.Integration {
+	return predicate.Integration(sql.FieldNotIn(FieldProviderName, vs...))
+}
+
+// ProviderNameGT applies the GT predicate on the "provider_name" field.
+func ProviderNameGT(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldGT(FieldProviderName, v))
+}
+
+// ProviderNameGTE applies the GTE predicate on the "provider_name" field.
+func ProviderNameGTE(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldGTE(FieldProviderName, v))
+}
+
+// ProviderNameLT applies the LT predicate on the "provider_name" field.
+func ProviderNameLT(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldLT(FieldProviderName, v))
+}
+
+// ProviderNameLTE applies the LTE predicate on the "provider_name" field.
+func ProviderNameLTE(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldLTE(FieldProviderName, v))
+}
+
+// ProviderNameContains applies the Contains predicate on the "provider_name" field.
+func ProviderNameContains(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldContains(FieldProviderName, v))
+}
+
+// ProviderNameHasPrefix applies the HasPrefix predicate on the "provider_name" field.
+func ProviderNameHasPrefix(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldHasPrefix(FieldProviderName, v))
+}
+
+// ProviderNameHasSuffix applies the HasSuffix predicate on the "provider_name" field.
+func ProviderNameHasSuffix(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldHasSuffix(FieldProviderName, v))
+}
+
+// ProviderNameEqualFold applies the EqualFold predicate on the "provider_name" field.
+func ProviderNameEqualFold(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldEqualFold(FieldProviderName, v))
+}
+
+// ProviderNameContainsFold applies the ContainsFold predicate on the "provider_name" field.
+func ProviderNameContainsFold(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldContainsFold(FieldProviderName, v))
+}
+
 // IntegrationNameEQ applies the EQ predicate on the "integration_name" field.
 func IntegrationNameEQ(v string) predicate.Integration {
 	return predicate.Integration(sql.FieldEQ(FieldIntegrationName, v))
@@ -247,69 +322,144 @@ func IntegrationNameContainsFold(v string) predicate.Integration {
 	return predicate.Integration(sql.FieldContainsFold(FieldIntegrationName, v))
 }
 
-// ExternalProviderRefEQ applies the EQ predicate on the "external_provider_ref" field.
-func ExternalProviderRefEQ(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldEQ(FieldExternalProviderRef, v))
+// DisplayNameEQ applies the EQ predicate on the "display_name" field.
+func DisplayNameEQ(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldEQ(FieldDisplayName, v))
 }
 
-// ExternalProviderRefNEQ applies the NEQ predicate on the "external_provider_ref" field.
-func ExternalProviderRefNEQ(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldNEQ(FieldExternalProviderRef, v))
+// DisplayNameNEQ applies the NEQ predicate on the "display_name" field.
+func DisplayNameNEQ(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldNEQ(FieldDisplayName, v))
 }
 
-// ExternalProviderRefIn applies the In predicate on the "external_provider_ref" field.
-func ExternalProviderRefIn(vs ...string) predicate.Integration {
-	return predicate.Integration(sql.FieldIn(FieldExternalProviderRef, vs...))
+// DisplayNameIn applies the In predicate on the "display_name" field.
+func DisplayNameIn(vs ...string) predicate.Integration {
+	return predicate.Integration(sql.FieldIn(FieldDisplayName, vs...))
 }
 
-// ExternalProviderRefNotIn applies the NotIn predicate on the "external_provider_ref" field.
-func ExternalProviderRefNotIn(vs ...string) predicate.Integration {
-	return predicate.Integration(sql.FieldNotIn(FieldExternalProviderRef, vs...))
+// DisplayNameNotIn applies the NotIn predicate on the "display_name" field.
+func DisplayNameNotIn(vs ...string) predicate.Integration {
+	return predicate.Integration(sql.FieldNotIn(FieldDisplayName, vs...))
 }
 
-// ExternalProviderRefGT applies the GT predicate on the "external_provider_ref" field.
-func ExternalProviderRefGT(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldGT(FieldExternalProviderRef, v))
+// DisplayNameGT applies the GT predicate on the "display_name" field.
+func DisplayNameGT(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldGT(FieldDisplayName, v))
 }
 
-// ExternalProviderRefGTE applies the GTE predicate on the "external_provider_ref" field.
-func ExternalProviderRefGTE(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldGTE(FieldExternalProviderRef, v))
+// DisplayNameGTE applies the GTE predicate on the "display_name" field.
+func DisplayNameGTE(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldGTE(FieldDisplayName, v))
 }
 
-// ExternalProviderRefLT applies the LT predicate on the "external_provider_ref" field.
-func ExternalProviderRefLT(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldLT(FieldExternalProviderRef, v))
+// DisplayNameLT applies the LT predicate on the "display_name" field.
+func DisplayNameLT(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldLT(FieldDisplayName, v))
 }
 
-// ExternalProviderRefLTE applies the LTE predicate on the "external_provider_ref" field.
-func ExternalProviderRefLTE(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldLTE(FieldExternalProviderRef, v))
+// DisplayNameLTE applies the LTE predicate on the "display_name" field.
+func DisplayNameLTE(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldLTE(FieldDisplayName, v))
 }
 
-// ExternalProviderRefContains applies the Contains predicate on the "external_provider_ref" field.
-func ExternalProviderRefContains(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldContains(FieldExternalProviderRef, v))
+// DisplayNameContains applies the Contains predicate on the "display_name" field.
+func DisplayNameContains(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldContains(FieldDisplayName, v))
 }
 
-// ExternalProviderRefHasPrefix applies the HasPrefix predicate on the "external_provider_ref" field.
-func ExternalProviderRefHasPrefix(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldHasPrefix(FieldExternalProviderRef, v))
+// DisplayNameHasPrefix applies the HasPrefix predicate on the "display_name" field.
+func DisplayNameHasPrefix(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldHasPrefix(FieldDisplayName, v))
 }
 
-// ExternalProviderRefHasSuffix applies the HasSuffix predicate on the "external_provider_ref" field.
-func ExternalProviderRefHasSuffix(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldHasSuffix(FieldExternalProviderRef, v))
+// DisplayNameHasSuffix applies the HasSuffix predicate on the "display_name" field.
+func DisplayNameHasSuffix(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldHasSuffix(FieldDisplayName, v))
 }
 
-// ExternalProviderRefEqualFold applies the EqualFold predicate on the "external_provider_ref" field.
-func ExternalProviderRefEqualFold(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldEqualFold(FieldExternalProviderRef, v))
+// DisplayNameEqualFold applies the EqualFold predicate on the "display_name" field.
+func DisplayNameEqualFold(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldEqualFold(FieldDisplayName, v))
 }
 
-// ExternalProviderRefContainsFold applies the ContainsFold predicate on the "external_provider_ref" field.
-func ExternalProviderRefContainsFold(v string) predicate.Integration {
-	return predicate.Integration(sql.FieldContainsFold(FieldExternalProviderRef, v))
+// DisplayNameContainsFold applies the ContainsFold predicate on the "display_name" field.
+func DisplayNameContainsFold(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldContainsFold(FieldDisplayName, v))
+}
+
+// ExternalRefEQ applies the EQ predicate on the "external_ref" field.
+func ExternalRefEQ(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldEQ(FieldExternalRef, v))
+}
+
+// ExternalRefNEQ applies the NEQ predicate on the "external_ref" field.
+func ExternalRefNEQ(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldNEQ(FieldExternalRef, v))
+}
+
+// ExternalRefIn applies the In predicate on the "external_ref" field.
+func ExternalRefIn(vs ...string) predicate.Integration {
+	return predicate.Integration(sql.FieldIn(FieldExternalRef, vs...))
+}
+
+// ExternalRefNotIn applies the NotIn predicate on the "external_ref" field.
+func ExternalRefNotIn(vs ...string) predicate.Integration {
+	return predicate.Integration(sql.FieldNotIn(FieldExternalRef, vs...))
+}
+
+// ExternalRefGT applies the GT predicate on the "external_ref" field.
+func ExternalRefGT(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldGT(FieldExternalRef, v))
+}
+
+// ExternalRefGTE applies the GTE predicate on the "external_ref" field.
+func ExternalRefGTE(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldGTE(FieldExternalRef, v))
+}
+
+// ExternalRefLT applies the LT predicate on the "external_ref" field.
+func ExternalRefLT(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldLT(FieldExternalRef, v))
+}
+
+// ExternalRefLTE applies the LTE predicate on the "external_ref" field.
+func ExternalRefLTE(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldLTE(FieldExternalRef, v))
+}
+
+// ExternalRefContains applies the Contains predicate on the "external_ref" field.
+func ExternalRefContains(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldContains(FieldExternalRef, v))
+}
+
+// ExternalRefHasPrefix applies the HasPrefix predicate on the "external_ref" field.
+func ExternalRefHasPrefix(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldHasPrefix(FieldExternalRef, v))
+}
+
+// ExternalRefHasSuffix applies the HasSuffix predicate on the "external_ref" field.
+func ExternalRefHasSuffix(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldHasSuffix(FieldExternalRef, v))
+}
+
+// ExternalRefEqualFold applies the EqualFold predicate on the "external_ref" field.
+func ExternalRefEqualFold(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldEqualFold(FieldExternalRef, v))
+}
+
+// ExternalRefContainsFold applies the ContainsFold predicate on the "external_ref" field.
+func ExternalRefContainsFold(v string) predicate.Integration {
+	return predicate.Integration(sql.FieldContainsFold(FieldExternalRef, v))
+}
+
+// UserSettingsIsNil applies the IsNil predicate on the "user_settings" field.
+func UserSettingsIsNil() predicate.Integration {
+	return predicate.Integration(sql.FieldIsNull(FieldUserSettings))
+}
+
+// UserSettingsNotNil applies the NotNil predicate on the "user_settings" field.
+func UserSettingsNotNil() predicate.Integration {
+	return predicate.Integration(sql.FieldNotNull(FieldUserSettings))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

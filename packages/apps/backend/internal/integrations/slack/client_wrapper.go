@@ -16,7 +16,7 @@ type ClientWrapper struct {
 }
 
 func NewClientWrapper(intg *ent.Integration) (*ClientWrapper, error) {
-	cfg, cfgErr := DecodeInstallationConfig(intg)
+	cfg, cfgErr := GetValidatedConfig(intg.InstallationConfig)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("unable to decode integration config: %w", cfgErr)
 	}

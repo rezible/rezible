@@ -1,80 +1,56 @@
 package slackintegration
 
 import (
+	"encoding/json"
 	"fmt"
-
-	"github.com/go-viper/mapstructure/v2"
-	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 )
 
 type InstallationConfig struct {
-	AccessToken         string    `mapstructure:"access_token"`
-	BotUserID           string    `mapstructure:"bot_user_id"`
-	WebhookChannelId    string    `mapstructure:"webhook_channel_id"`
-	IsEnterpriseInstall bool      `mapstructure:"is_enterprise_install"`
-	Team                *TeamInfo `mapstructure:"team"`
-	Enterprise          *TeamInfo `mapstructure:"enterprise"`
+	AccessToken         string
+	BotUserID           string
+	WebhookChannelId    string
+	IsEnterpriseInstall bool
+	Team                *TeamInfo
+	Enterprise          *TeamInfo
 }
 
 type TeamInfo struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id   string
+	Name string
 }
 
-func (c *InstallationConfig) ExternalRef() (string, error) {
-	if c.Team == nil && c.Enterprise == nil {
-		return "", fmt.Errorf("no team or enterprise configured")
-	}
-	ids := InstallationIds{
-		TeamId:       c.Team.Id,
-		EnterpriseId: c.Enterprise.Id,
-	}
-	return ids.asRef(), nil
-}
-
-func (c *InstallationConfig) DisplayName() (string, error) {
-	if c.Team == nil && c.Enterprise == nil {
-		return "", fmt.Errorf("no team or enterprise configured")
-	}
-	if c.Team == nil {
-		return c.Enterprise.Name + " (Enterprise)", nil
-	}
-	return c.Team.Name, nil
-}
-
-func (c *InstallationConfig) EncodeConfig() (map[string]any, error) {
-	var data map[string]any
-	if err := mapstructure.Decode(c, &data); err != nil {
-		return nil, err
-	}
-	return data, nil
-}
-
-func DecodeInstallationConfig(intg *ent.Integration) (*InstallationConfig, error) {
+func GetValidatedConfig(c []byte) (*InstallationConfig, error) {
 	var cfg InstallationConfig
-	if decErr := mapstructure.Decode(intg.InstallationConfig, &cfg); decErr != nil {
+	if decErr := json.Unmarshal(c, &cfg); decErr != nil {
 		return nil, decErr
 	}
+	// TODO: validate
 	return &cfg, nil
 }
 
-func MakeConfigInstallationTarget(c *InstallationConfig) (*rez.IntegrationInstallationTarget, error) {
-	ref, refErr := c.ExternalRef()
-	if refErr != nil {
-		return nil, fmt.Errorf("external ref: %w", refErr)
+func (c *InstallationConfig) Encode() ([]byte, error) {
+	return json.Marshal(c)
+}
+
+func (c *InstallationConfig) ExternalRef() string {
+	var teamId string
+	if c.Team != nil {
+		teamId = c.Team.Id
 	}
-	displayName, nameErr := c.DisplayName()
-	if nameErr != nil {
-		return nil, fmt.Errorf("display name: %w", nameErr)
+	var enterpriseId string
+	if c.Enterprise != nil {
+		enterpriseId = c.Enterprise.Id
 	}
-	cfg, cfgErr := c.EncodeConfig()
-	if cfgErr != nil {
-		return nil, fmt.Errorf("config: %w", cfgErr)
+	ids := InstallationIds{TeamId: teamId, EnterpriseId: enterpriseId}
+	return ids.asRef()
+}
+
+func (c *InstallationConfig) DisplayName() string {
+	if c.Enterprise == nil {
+		return c.Team.Name
 	}
-	return &rez.IntegrationInstallationTarget{
-		ExternalRef:        ref,
-		DisplayName:        displayName,
-		InstallationConfig: cfg,
-	}, nil
+	if c.Team == nil {
+		return c.Enterprise.Name + " (Enterprise)"
+	}
+	return fmt.Sprintf("%s (%s)", c.Team.Name, c.Enterprise.Name)
 }

@@ -124,8 +124,7 @@ func (a *App) withIncidentUpdateProcessor(ctx context.Context, id uuid.UUID, fn 
 	client, clientErr := a.getEnabledIntegrationClient(ctx)
 	if clientErr != nil {
 		return fmt.Errorf("get incident management client: %w", clientErr)
-	}
-	if client == nil {
+	} else if client == nil {
 		return nil
 	}
 	p, procErr := a.newUpdateProcessor(ctx, client, id)

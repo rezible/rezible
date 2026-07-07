@@ -160,24 +160,25 @@ type (
 		Provider() string
 		IsAvailable() (bool, error)
 		MaxInstalls() *int
-		ValidateConfig(map[string]any) (externalRef string, validationErr error)
-		ValidateUserSettings(map[string]any) error
 		OAuthInstallRequired() bool
-		GetInstalledIntegration(*ent.Integration) InstalledIntegration
+		ValidateInstallationConfig([]byte) (IntegrationInstallationConfig, error)
+		ValidateUserSettings(map[string]any) error
+		GetInstalledIntegration(*ent.Integration) (InstalledIntegration, error)
 	}
 
 	InstalledIntegration interface {
 		Integration() *ent.Integration
-		ProviderName() string
-		DisplayName() string
-		GetSanitizedConfig() map[string]any
+		Config() IntegrationInstallationConfig
+	}
+
+	IntegrationInstallationConfig interface {
+		Encode() ([]byte, error)
+		ExternalRef() string
 	}
 
 	ListIntegrationsParams struct {
-		IDs          []uuid.UUID
-		Providers    []string
-		ExternalRefs []string
-		ConfigValues map[string]any
+		ent.ListParams
+		Predicates []predicate.Integration
 	}
 
 	CompleteIntegrationOAuth2FlowResult struct {
@@ -187,9 +188,9 @@ type (
 	}
 
 	IntegrationInstallationTarget struct {
-		ExternalRef        string
-		DisplayName        string
-		InstallationConfig map[string]any
+		IntegrationName string
+		DisplayName     string
+		Config          IntegrationInstallationConfig
 	}
 
 	CompleteIntegrationOAuth2Params struct {
@@ -201,19 +202,19 @@ type (
 	IntegrationService interface {
 		GetAvailable() []IntegrationPackage
 
-		InstallNew(ctx context.Context, name string, cfg, userSettings map[string]any) (InstalledIntegration, error)
-		AsInstalledIntegration(i *ent.Integration) (InstalledIntegration, error)
+		InstallNew(context.Context, string, []byte) (InstalledIntegration, error)
+		ListUserInstallationTargets(ctx context.Context) ([]IntegrationInstallationTarget, error)
+		InstallFromTarget(context.Context, IntegrationInstallationTarget) (InstalledIntegration, error)
 
 		LookupInstallation(context.Context, predicate.Integration) (*ent.Integration, error)
 		ListInstalled(ctx context.Context, params ListIntegrationsParams) ([]InstalledIntegration, error)
 		UpdateInstallation(ctx context.Context, id uuid.UUID, setFn func(*ent.IntegrationMutation)) (InstalledIntegration, error)
 		DeleteInstalled(ctx context.Context, id uuid.UUID) error
 
+		AsInstalledIntegration(i *ent.Integration) (InstalledIntegration, error)
+
 		StartOAuth2Flow(ctx context.Context, integrationName string) (string, error)
 		CompleteOAuth2Flow(ctx context.Context, integrationName string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2FlowResult, error)
-
-		ListUserInstallationTargets(ctx context.Context) (map[string][]IntegrationInstallationTarget, error)
-		InstallFromUserInstallationTargets(ctx context.Context, integrationName string, externalRefs []string) ([]InstalledIntegration, error)
 
 		RequestIntegrationEventSync(ctx context.Context, id uuid.UUID, sources []string) error
 		ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error)

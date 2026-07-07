@@ -37,16 +37,20 @@ func (r *PipelineRegistry) GetProviderEventProcessor(provider string) (rez.Provi
 	return proc, ok
 }
 
-func (r *PipelineRegistry) RegisterEventProjector(handler rez.NormalizedEventProjector, kinds ...SubjectKind) {
+func GetEventProjectorName(proj rez.NormalizedEventProjector) string {
+	return strings.TrimLeft(reflect.TypeOf(proj).String(), "*")
+}
+
+func (r *PipelineRegistry) RegisterEventProjector(proj rez.NormalizedEventProjector, kinds ...SubjectKind) {
 	r.eventProjectorsMu.Lock()
 	defer r.eventProjectorsMu.Unlock()
 
-	name := strings.TrimLeft(reflect.TypeOf(handler).String(), "*")
+	name := GetEventProjectorName(proj)
 	for _, kind := range kinds {
 		if _, exists := r.eventProjectors[kind]; !exists {
 			r.eventProjectors[kind] = make(map[string]rez.NormalizedEventProjector)
 		}
-		r.eventProjectors[kind][name] = handler
+		r.eventProjectors[kind][name] = proj
 	}
 	//slog.Debug("registered event projection handler", "name", name, "kinds", kinds)
 }

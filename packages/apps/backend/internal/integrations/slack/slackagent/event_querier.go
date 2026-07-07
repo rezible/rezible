@@ -9,27 +9,21 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/slack-go/slack"
 )
 
 func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
-	return newEventQuerier(i.makeInstalledIntegration(intg))
+	ii, iiErr := i.makeInstalledIntegration(intg)
+	if iiErr != nil {
+		return nil, fmt.Errorf("make installed integration: %w", iiErr)
+	}
+	return &eventQuerier{ii: ii, client: slack.New(ii.config.AccessToken)}, nil
 }
 
 type eventQuerier struct {
 	ii     *InstalledIntegration
-	cfg    *slackintegration.InstallationConfig
 	client *slack.Client
-}
-
-func newEventQuerier(ii *InstalledIntegration) (*eventQuerier, error) {
-	cfg, cfgErr := slackintegration.DecodeInstallationConfig(ii.intg)
-	if cfgErr != nil {
-		return nil, cfgErr
-	}
-	return &eventQuerier{ii: ii, cfg: cfg, client: slack.New(cfg.AccessToken)}, nil
 }
 
 func (q *eventQuerier) Integration() *ent.Integration {
@@ -69,8 +63,8 @@ func (q *eventQuerier) makeUserObservedPayload(u slack.User) ([]byte, error) {
 
 func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	var teamId string
-	if q.cfg.Team != nil {
-		teamId = q.cfg.Team.Id
+	if q.ii.config.Team != nil {
+		teamId = q.ii.config.Team.Id
 	}
 	pullEvents := func() ([]rez.ProviderEvent, error) {
 		slackUsers, getErr := q.client.GetUsersContext(ctx,

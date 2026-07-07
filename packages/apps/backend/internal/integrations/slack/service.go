@@ -60,7 +60,7 @@ func NewAppService[A App](app A, msgs rez.MessageService, intgs rez.IntegrationS
 		msgs:                        msgs,
 		intgs:                       intgs,
 		users:                       users,
-		oauthHandler:                NewOAuthHandler(cfg.OAuthClientId, cfg.OAuthClientSecret, app.OAuthScopes()),
+		oauthHandler:                newOAuthHandler(cfg.OAuthClientId, cfg.OAuthClientSecret, app.OAuthScopes()),
 		webhookHandler:              http.NotFoundHandler(),
 		slashCommandHandlers:        app.SlashCommandHandlers(),
 		eventsApiHandler:            app.EventsApiHandler(),
@@ -122,11 +122,20 @@ func (s *AppService[A]) OAuth2Config() *oauth2.Config {
 }
 
 func (s *AppService[A]) RetrieveInstallationTargetOptions(ctx context.Context, t *oauth2.Token) ([]rez.IntegrationInstallationTarget, error) {
-	return s.oauthHandler.ExtractInstallationTargetFromToken(t)
+	cfg, cfgErr := s.oauthHandler.ExtractInstallationConfigFromToken(t)
+	if cfgErr != nil {
+		return nil, fmt.Errorf("extract config: %w", cfgErr)
+	}
+	targets := []rez.IntegrationInstallationTarget{{
+		IntegrationName: s.integrationName,
+		DisplayName:     cfg.DisplayName(),
+		Config:          cfg,
+	}}
+	return targets, nil
 }
 
 func (s *AppService[A]) createInstallationContext(ctx context.Context, ids InstallationIds) (*ent.Integration, context.Context, error) {
-	lookupIntegrationsPred := in.And(in.IntegrationName(s.integrationName), in.ExternalProviderRef(ids.asRef()))
+	lookupIntegrationsPred := in.And(in.IntegrationName(s.integrationName), in.ExternalRef(ids.asRef()))
 	intg, lookupErr := s.intgs.LookupInstallation(execution.NewSystemContext(ctx), lookupIntegrationsPred)
 	if lookupErr != nil {
 		return nil, ctx, fmt.Errorf("listing configured integrations: %w", lookupErr)

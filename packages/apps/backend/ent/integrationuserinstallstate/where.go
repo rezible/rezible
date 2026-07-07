@@ -72,14 +72,14 @@ func IntegrationName(v string) predicate.IntegrationUserInstallState {
 	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldIntegrationName, v))
 }
 
-// OauthState applies equality check predicate on the "oauth_state" field. It's identical to OauthStateEQ.
-func OauthState(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldOauthState, v))
-}
-
 // ExpiresAt applies equality check predicate on the "expires_at" field. It's identical to ExpiresAtEQ.
 func ExpiresAt(v time.Time) predicate.IntegrationUserInstallState {
 	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldExpiresAt, v))
+}
+
+// OauthState applies equality check predicate on the "oauth_state" field. It's identical to OauthStateEQ.
+func OauthState(v string) predicate.IntegrationUserInstallState {
+	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldOauthState, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -187,6 +187,46 @@ func IntegrationNameContainsFold(v string) predicate.IntegrationUserInstallState
 	return predicate.IntegrationUserInstallState(sql.FieldContainsFold(FieldIntegrationName, v))
 }
 
+// ExpiresAtEQ applies the EQ predicate on the "expires_at" field.
+func ExpiresAtEQ(v time.Time) predicate.IntegrationUserInstallState {
+	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldExpiresAt, v))
+}
+
+// ExpiresAtNEQ applies the NEQ predicate on the "expires_at" field.
+func ExpiresAtNEQ(v time.Time) predicate.IntegrationUserInstallState {
+	return predicate.IntegrationUserInstallState(sql.FieldNEQ(FieldExpiresAt, v))
+}
+
+// ExpiresAtIn applies the In predicate on the "expires_at" field.
+func ExpiresAtIn(vs ...time.Time) predicate.IntegrationUserInstallState {
+	return predicate.IntegrationUserInstallState(sql.FieldIn(FieldExpiresAt, vs...))
+}
+
+// ExpiresAtNotIn applies the NotIn predicate on the "expires_at" field.
+func ExpiresAtNotIn(vs ...time.Time) predicate.IntegrationUserInstallState {
+	return predicate.IntegrationUserInstallState(sql.FieldNotIn(FieldExpiresAt, vs...))
+}
+
+// ExpiresAtGT applies the GT predicate on the "expires_at" field.
+func ExpiresAtGT(v time.Time) predicate.IntegrationUserInstallState {
+	return predicate.IntegrationUserInstallState(sql.FieldGT(FieldExpiresAt, v))
+}
+
+// ExpiresAtGTE applies the GTE predicate on the "expires_at" field.
+func ExpiresAtGTE(v time.Time) predicate.IntegrationUserInstallState {
+	return predicate.IntegrationUserInstallState(sql.FieldGTE(FieldExpiresAt, v))
+}
+
+// ExpiresAtLT applies the LT predicate on the "expires_at" field.
+func ExpiresAtLT(v time.Time) predicate.IntegrationUserInstallState {
+	return predicate.IntegrationUserInstallState(sql.FieldLT(FieldExpiresAt, v))
+}
+
+// ExpiresAtLTE applies the LTE predicate on the "expires_at" field.
+func ExpiresAtLTE(v time.Time) predicate.IntegrationUserInstallState {
+	return predicate.IntegrationUserInstallState(sql.FieldLTE(FieldExpiresAt, v))
+}
+
 // OauthStateEQ applies the EQ predicate on the "oauth_state" field.
 func OauthStateEQ(v string) predicate.IntegrationUserInstallState {
 	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldOauthState, v))
@@ -262,54 +302,14 @@ func OauthStateContainsFold(v string) predicate.IntegrationUserInstallState {
 	return predicate.IntegrationUserInstallState(sql.FieldContainsFold(FieldOauthState, v))
 }
 
-// InstallationTargetsIsNil applies the IsNil predicate on the "installation_targets" field.
-func InstallationTargetsIsNil() predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldIsNull(FieldInstallationTargets))
+// InstallationTargetConfigsIsNil applies the IsNil predicate on the "installation_target_configs" field.
+func InstallationTargetConfigsIsNil() predicate.IntegrationUserInstallState {
+	return predicate.IntegrationUserInstallState(sql.FieldIsNull(FieldInstallationTargetConfigs))
 }
 
-// InstallationTargetsNotNil applies the NotNil predicate on the "installation_targets" field.
-func InstallationTargetsNotNil() predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldNotNull(FieldInstallationTargets))
-}
-
-// ExpiresAtEQ applies the EQ predicate on the "expires_at" field.
-func ExpiresAtEQ(v time.Time) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldExpiresAt, v))
-}
-
-// ExpiresAtNEQ applies the NEQ predicate on the "expires_at" field.
-func ExpiresAtNEQ(v time.Time) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldNEQ(FieldExpiresAt, v))
-}
-
-// ExpiresAtIn applies the In predicate on the "expires_at" field.
-func ExpiresAtIn(vs ...time.Time) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldIn(FieldExpiresAt, vs...))
-}
-
-// ExpiresAtNotIn applies the NotIn predicate on the "expires_at" field.
-func ExpiresAtNotIn(vs ...time.Time) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldNotIn(FieldExpiresAt, vs...))
-}
-
-// ExpiresAtGT applies the GT predicate on the "expires_at" field.
-func ExpiresAtGT(v time.Time) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldGT(FieldExpiresAt, v))
-}
-
-// ExpiresAtGTE applies the GTE predicate on the "expires_at" field.
-func ExpiresAtGTE(v time.Time) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldGTE(FieldExpiresAt, v))
-}
-
-// ExpiresAtLT applies the LT predicate on the "expires_at" field.
-func ExpiresAtLT(v time.Time) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldLT(FieldExpiresAt, v))
-}
-
-// ExpiresAtLTE applies the LTE predicate on the "expires_at" field.
-func ExpiresAtLTE(v time.Time) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldLTE(FieldExpiresAt, v))
+// InstallationTargetConfigsNotNil applies the NotNil predicate on the "installation_target_configs" field.
+func InstallationTargetConfigsNotNil() predicate.IntegrationUserInstallState {
+	return predicate.IntegrationUserInstallState(sql.FieldNotNull(FieldInstallationTargetConfigs))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

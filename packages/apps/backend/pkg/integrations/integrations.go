@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/go-viper/mapstructure/v2"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"golang.org/x/oauth2"
@@ -107,28 +106,4 @@ func (r *PackageRegistry) GetOAuthIntegration(name string) (IntegrationWithOAuth
 		return nil, fmt.Errorf("empty integration oauth2 configuration")
 	}
 	return oauth2Intg, nil
-}
-
-func EncodeInstallationTargetOptions(options []rez.IntegrationInstallationTarget) ([]map[string]any, error) {
-	result := make([]map[string]any, 0, len(options))
-	for _, opt := range options {
-		var optMap map[string]any
-		if encErr := mapstructure.Decode(opt, &optMap); encErr != nil {
-			return nil, fmt.Errorf("failed to encode to map: %w", encErr)
-		}
-		result = append(result, optMap)
-	}
-	return result, nil
-}
-
-func DecodeInstallationTargetOptions(opts []map[string]any) ([]rez.IntegrationInstallationTarget, error) {
-	result := make([]rez.IntegrationInstallationTarget, 0, len(opts))
-	for _, opt := range opts {
-		var decoded rez.IntegrationInstallationTarget
-		if decErr := mapstructure.Decode(opt, &decoded); decErr != nil {
-			return nil, fmt.Errorf("failed to decode option from map: %w", decErr)
-		}
-		result = append(result, decoded)
-	}
-	return result, nil
 }

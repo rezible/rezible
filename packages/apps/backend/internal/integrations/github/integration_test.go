@@ -1,6 +1,7 @@
 package github
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/google/go-github/v84/github"
@@ -9,17 +10,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func makeIntegrationConfig() rez.IntegrationsConfigGithub {
+func makeTestIntegration() *Integration {
 	cfg := rez.IntegrationsConfigGithub{}
 	cfg.App.AppID = 123
 	cfg.App.ClientID = "client-id"
 	cfg.App.ClientSecret = "client-secret"
-	return cfg
+	intg := &Integration{cfg: cfg}
+	return intg
 }
 
 func TestOAuth2Config(t *testing.T) {
-	intg := &Integration{cfg: makeIntegrationConfig()}
-	intg.oauth2Config = intg.loadOAuthConfig()
+	intg := makeTestIntegration()
 
 	oauthCfg := intg.OAuth2Config()
 	require.NotNil(t, oauthCfg)
@@ -36,20 +37,16 @@ func TestOAuth2Config(t *testing.T) {
 func TestEncodeDecodeInstallationConfig(t *testing.T) {
 	org := "foobar"
 	instId := int64(1)
-	expectedEnc := map[string]any{
-		"org":             org,
-		"installation_id": instId,
-	}
-	cfg := &installationConfig{Org: org, InstallationID: instId}
-	enc, encErr := cfg.encode()
+	cfg := &InstallationConfig{Org: org, InstallationID: instId}
+	expectedJson, jsonErr := json.Marshal(cfg)
+	require.NoError(t, jsonErr)
+	enc, encErr := cfg.Encode()
 	require.NoError(t, encErr)
-	assert.Equal(t, expectedEnc, enc)
+	assert.Equal(t, expectedJson, enc)
 }
 
 func TestExtractIntegrationOptionsFromToken(t *testing.T) {
-	intg := &Integration{
-		cfg: makeIntegrationConfig(),
-	}
+	intg := makeTestIntegration()
 
 	installations := []*github.Installation{
 		{
@@ -62,9 +59,8 @@ func TestExtractIntegrationOptionsFromToken(t *testing.T) {
 	options, err := intg.makeInstallationTargetOptions(installations)
 	require.NoError(t, err)
 	require.Len(t, options, 1)
-	assert.Equal(t, "456", options[0].ExternalRef)
+	assert.Equal(t, "456", options[0].Config.ExternalRef())
 	assert.Equal(t, "myorg", options[0].DisplayName)
-	assert.Equal(t, int64(456), options[0].InstallationConfig["installation_id"])
 }
 
 func TestExtractIntegrationOptionsFromToken_NoInstallations(t *testing.T) {
@@ -84,6 +80,6 @@ func TestExtractIntegrationOptionsFromToken_MultipleInstallations(t *testing.T) 
 	options, err := intg.makeInstallationTargetOptions(installations)
 	require.NoError(t, err)
 	require.Len(t, options, 2)
-	assert.Equal(t, "1", options[0].ExternalRef)
-	assert.Equal(t, "2", options[1].ExternalRef)
+	assert.Equal(t, "1", options[0].Config.ExternalRef())
+	assert.Equal(t, "2", options[1].Config.ExternalRef())
 }

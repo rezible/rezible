@@ -4,13 +4,13 @@ package ent
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
@@ -61,6 +61,20 @@ func (_u *IntegrationUserInstallStateUpdate) SetNillableIntegrationName(v *strin
 	return _u
 }
 
+// SetExpiresAt sets the "expires_at" field.
+func (_u *IntegrationUserInstallStateUpdate) SetExpiresAt(v time.Time) *IntegrationUserInstallStateUpdate {
+	_u.mutation.SetExpiresAt(v)
+	return _u
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_u *IntegrationUserInstallStateUpdate) SetNillableExpiresAt(v *time.Time) *IntegrationUserInstallStateUpdate {
+	if v != nil {
+		_u.SetExpiresAt(*v)
+	}
+	return _u
+}
+
 // SetOauthState sets the "oauth_state" field.
 func (_u *IntegrationUserInstallStateUpdate) SetOauthState(v string) *IntegrationUserInstallStateUpdate {
 	_u.mutation.SetOauthState(v)
@@ -81,35 +95,15 @@ func (_u *IntegrationUserInstallStateUpdate) ClearOauthState() *IntegrationUserI
 	return _u
 }
 
-// SetInstallationTargets sets the "installation_targets" field.
-func (_u *IntegrationUserInstallStateUpdate) SetInstallationTargets(v []map[string]interface{}) *IntegrationUserInstallStateUpdate {
-	_u.mutation.SetInstallationTargets(v)
+// SetInstallationTargetConfigs sets the "installation_target_configs" field.
+func (_u *IntegrationUserInstallStateUpdate) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateUpdate {
+	_u.mutation.SetInstallationTargetConfigs(v)
 	return _u
 }
 
-// AppendInstallationTargets appends value to the "installation_targets" field.
-func (_u *IntegrationUserInstallStateUpdate) AppendInstallationTargets(v []map[string]interface{}) *IntegrationUserInstallStateUpdate {
-	_u.mutation.AppendInstallationTargets(v)
-	return _u
-}
-
-// ClearInstallationTargets clears the value of the "installation_targets" field.
-func (_u *IntegrationUserInstallStateUpdate) ClearInstallationTargets() *IntegrationUserInstallStateUpdate {
-	_u.mutation.ClearInstallationTargets()
-	return _u
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (_u *IntegrationUserInstallStateUpdate) SetExpiresAt(v time.Time) *IntegrationUserInstallStateUpdate {
-	_u.mutation.SetExpiresAt(v)
-	return _u
-}
-
-// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
-func (_u *IntegrationUserInstallStateUpdate) SetNillableExpiresAt(v *time.Time) *IntegrationUserInstallStateUpdate {
-	if v != nil {
-		_u.SetExpiresAt(*v)
-	}
+// ClearInstallationTargetConfigs clears the value of the "installation_target_configs" field.
+func (_u *IntegrationUserInstallStateUpdate) ClearInstallationTargetConfigs() *IntegrationUserInstallStateUpdate {
+	_u.mutation.ClearInstallationTargetConfigs()
 	return _u
 }
 
@@ -188,25 +182,20 @@ func (_u *IntegrationUserInstallStateUpdate) sqlSave(ctx context.Context) (_node
 	if value, ok := _u.mutation.IntegrationName(); ok {
 		_spec.SetField(integrationuserinstallstate.FieldIntegrationName, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.ExpiresAt(); ok {
+		_spec.SetField(integrationuserinstallstate.FieldExpiresAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.OauthState(); ok {
 		_spec.SetField(integrationuserinstallstate.FieldOauthState, field.TypeString, value)
 	}
 	if _u.mutation.OauthStateCleared() {
 		_spec.ClearField(integrationuserinstallstate.FieldOauthState, field.TypeString)
 	}
-	if value, ok := _u.mutation.InstallationTargets(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldInstallationTargets, field.TypeJSON, value)
+	if value, ok := _u.mutation.InstallationTargetConfigs(); ok {
+		_spec.SetField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedInstallationTargets(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, integrationuserinstallstate.FieldInstallationTargets, value)
-		})
-	}
-	if _u.mutation.InstallationTargetsCleared() {
-		_spec.ClearField(integrationuserinstallstate.FieldInstallationTargets, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.ExpiresAt(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldExpiresAt, field.TypeTime, value)
+	if _u.mutation.InstallationTargetConfigsCleared() {
+		_spec.ClearField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeJSON)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -291,6 +280,20 @@ func (_u *IntegrationUserInstallStateUpdateOne) SetNillableIntegrationName(v *st
 	return _u
 }
 
+// SetExpiresAt sets the "expires_at" field.
+func (_u *IntegrationUserInstallStateUpdateOne) SetExpiresAt(v time.Time) *IntegrationUserInstallStateUpdateOne {
+	_u.mutation.SetExpiresAt(v)
+	return _u
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_u *IntegrationUserInstallStateUpdateOne) SetNillableExpiresAt(v *time.Time) *IntegrationUserInstallStateUpdateOne {
+	if v != nil {
+		_u.SetExpiresAt(*v)
+	}
+	return _u
+}
+
 // SetOauthState sets the "oauth_state" field.
 func (_u *IntegrationUserInstallStateUpdateOne) SetOauthState(v string) *IntegrationUserInstallStateUpdateOne {
 	_u.mutation.SetOauthState(v)
@@ -311,35 +314,15 @@ func (_u *IntegrationUserInstallStateUpdateOne) ClearOauthState() *IntegrationUs
 	return _u
 }
 
-// SetInstallationTargets sets the "installation_targets" field.
-func (_u *IntegrationUserInstallStateUpdateOne) SetInstallationTargets(v []map[string]interface{}) *IntegrationUserInstallStateUpdateOne {
-	_u.mutation.SetInstallationTargets(v)
+// SetInstallationTargetConfigs sets the "installation_target_configs" field.
+func (_u *IntegrationUserInstallStateUpdateOne) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateUpdateOne {
+	_u.mutation.SetInstallationTargetConfigs(v)
 	return _u
 }
 
-// AppendInstallationTargets appends value to the "installation_targets" field.
-func (_u *IntegrationUserInstallStateUpdateOne) AppendInstallationTargets(v []map[string]interface{}) *IntegrationUserInstallStateUpdateOne {
-	_u.mutation.AppendInstallationTargets(v)
-	return _u
-}
-
-// ClearInstallationTargets clears the value of the "installation_targets" field.
-func (_u *IntegrationUserInstallStateUpdateOne) ClearInstallationTargets() *IntegrationUserInstallStateUpdateOne {
-	_u.mutation.ClearInstallationTargets()
-	return _u
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (_u *IntegrationUserInstallStateUpdateOne) SetExpiresAt(v time.Time) *IntegrationUserInstallStateUpdateOne {
-	_u.mutation.SetExpiresAt(v)
-	return _u
-}
-
-// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
-func (_u *IntegrationUserInstallStateUpdateOne) SetNillableExpiresAt(v *time.Time) *IntegrationUserInstallStateUpdateOne {
-	if v != nil {
-		_u.SetExpiresAt(*v)
-	}
+// ClearInstallationTargetConfigs clears the value of the "installation_target_configs" field.
+func (_u *IntegrationUserInstallStateUpdateOne) ClearInstallationTargetConfigs() *IntegrationUserInstallStateUpdateOne {
+	_u.mutation.ClearInstallationTargetConfigs()
 	return _u
 }
 
@@ -448,25 +431,20 @@ func (_u *IntegrationUserInstallStateUpdateOne) sqlSave(ctx context.Context) (_n
 	if value, ok := _u.mutation.IntegrationName(); ok {
 		_spec.SetField(integrationuserinstallstate.FieldIntegrationName, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.ExpiresAt(); ok {
+		_spec.SetField(integrationuserinstallstate.FieldExpiresAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.OauthState(); ok {
 		_spec.SetField(integrationuserinstallstate.FieldOauthState, field.TypeString, value)
 	}
 	if _u.mutation.OauthStateCleared() {
 		_spec.ClearField(integrationuserinstallstate.FieldOauthState, field.TypeString)
 	}
-	if value, ok := _u.mutation.InstallationTargets(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldInstallationTargets, field.TypeJSON, value)
+	if value, ok := _u.mutation.InstallationTargetConfigs(); ok {
+		_spec.SetField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedInstallationTargets(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, integrationuserinstallstate.FieldInstallationTargets, value)
-		})
-	}
-	if _u.mutation.InstallationTargetsCleared() {
-		_spec.ClearField(integrationuserinstallstate.FieldInstallationTargets, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.ExpiresAt(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldExpiresAt, field.TypeTime, value)
+	if _u.mutation.InstallationTargetConfigsCleared() {
+		_spec.ClearField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeJSON)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

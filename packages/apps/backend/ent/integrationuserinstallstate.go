@@ -27,12 +27,12 @@ type IntegrationUserInstallState struct {
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// IntegrationName holds the value of the "integration_name" field.
 	IntegrationName string `json:"integration_name,omitempty"`
-	// OauthState holds the value of the "oauth_state" field.
-	OauthState string `json:"oauth_state,omitempty"`
-	// InstallationTargets holds the value of the "installation_targets" field.
-	InstallationTargets []map[string]interface{} `json:"installation_targets,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
 	ExpiresAt time.Time `json:"expires_at,omitempty"`
+	// OauthState holds the value of the "oauth_state" field.
+	OauthState string `json:"oauth_state,omitempty"`
+	// InstallationTargetConfigs holds the value of the "installation_target_configs" field.
+	InstallationTargetConfigs map[string]json.RawMessage `json:"installation_target_configs,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IntegrationUserInstallStateQuery when eager-loading is set.
 	Edges        IntegrationUserInstallStateEdges `json:"edges"`
@@ -77,7 +77,7 @@ func (*IntegrationUserInstallState) scanValues(columns []string) ([]any, error) 
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case integrationuserinstallstate.FieldInstallationTargets:
+		case integrationuserinstallstate.FieldInstallationTargetConfigs:
 			values[i] = new([]byte)
 		case integrationuserinstallstate.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -126,25 +126,25 @@ func (_m *IntegrationUserInstallState) assignValues(columns []string, values []a
 			} else if value.Valid {
 				_m.IntegrationName = value.String
 			}
+		case integrationuserinstallstate.FieldExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field expires_at", values[i])
+			} else if value.Valid {
+				_m.ExpiresAt = value.Time
+			}
 		case integrationuserinstallstate.FieldOauthState:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field oauth_state", values[i])
 			} else if value.Valid {
 				_m.OauthState = value.String
 			}
-		case integrationuserinstallstate.FieldInstallationTargets:
+		case integrationuserinstallstate.FieldInstallationTargetConfigs:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field installation_targets", values[i])
+				return fmt.Errorf("unexpected type %T for field installation_target_configs", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.InstallationTargets); err != nil {
-					return fmt.Errorf("unmarshal field installation_targets: %w", err)
+				if err := json.Unmarshal(*value, &_m.InstallationTargetConfigs); err != nil {
+					return fmt.Errorf("unmarshal field installation_target_configs: %w", err)
 				}
-			}
-		case integrationuserinstallstate.FieldExpiresAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field expires_at", values[i])
-			} else if value.Valid {
-				_m.ExpiresAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -201,14 +201,14 @@ func (_m *IntegrationUserInstallState) String() string {
 	builder.WriteString("integration_name=")
 	builder.WriteString(_m.IntegrationName)
 	builder.WriteString(", ")
+	builder.WriteString("expires_at=")
+	builder.WriteString(_m.ExpiresAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("oauth_state=")
 	builder.WriteString(_m.OauthState)
 	builder.WriteString(", ")
-	builder.WriteString("installation_targets=")
-	builder.WriteString(fmt.Sprintf("%v", _m.InstallationTargets))
-	builder.WriteString(", ")
-	builder.WriteString("expires_at=")
-	builder.WriteString(_m.ExpiresAt.Format(time.ANSIC))
+	builder.WriteString("installation_target_configs=")
+	builder.WriteString(fmt.Sprintf("%v", _m.InstallationTargetConfigs))
 	builder.WriteByte(')')
 	return builder.String()
 }

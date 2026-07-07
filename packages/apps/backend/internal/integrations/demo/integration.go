@@ -1,6 +1,7 @@
 package demoprovider
 
 import (
+	"encoding/json"
 	"net/http"
 
 	rez "github.com/rezible/rezible"
@@ -58,36 +59,38 @@ func (i *Integration) WebhookHandler() http.Handler {
 	return i.webhookHandler
 }
 
-func (i *Integration) ValidateConfig(m map[string]any) (externalRef string, validationErr error) {
-	return "", nil
+func (i *Integration) ValidateInstallationConfig(c []byte) (rez.IntegrationInstallationConfig, error) {
+	var cfg InstallationConfig
+	return &cfg, json.Unmarshal(c, &cfg)
 }
 
 func (i *Integration) ValidateUserSettings(settings map[string]any) error {
 	return nil
 }
 
-func (i *Integration) GetInstalledIntegration(intg *ent.Integration) rez.InstalledIntegration {
-	return &InstalledIntegration{intg: intg}
+func (i *Integration) GetInstalledIntegration(intg *ent.Integration) (rez.InstalledIntegration, error) {
+	return &InstalledIntegration{intg: intg}, nil
 }
 
 type InstalledIntegration struct {
-	intg *ent.Integration
+	intg   *ent.Integration
+	config *InstallationConfig
 }
 
 func (ii *InstalledIntegration) Integration() *ent.Integration {
 	return ii.intg
 }
 
-func (ii *InstalledIntegration) DisplayName() string {
-	return "Demo Data"
+func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
+	return ii.config
 }
 
-func (ii *InstalledIntegration) ProviderName() string {
-	return providerName
+type InstallationConfig struct{}
+
+func (i *InstallationConfig) Encode() ([]byte, error) {
+	return json.Marshal(i)
 }
 
-func (ii *InstalledIntegration) GetSanitizedConfig() map[string]any {
-	return ii.intg.InstallationConfig
+func (i *InstallationConfig) ExternalRef() string {
+	return "demo"
 }
-
-type IntegrationConfig struct{}

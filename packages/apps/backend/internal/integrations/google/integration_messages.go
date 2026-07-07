@@ -7,7 +7,8 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 type eventHandler struct {
@@ -36,7 +37,9 @@ func (i *Integration) registerMessageHandlers() error {
 }
 
 func (h *eventHandler) withInstallation(ctx context.Context, fn func(*InstalledIntegration) error) error {
-	listParams := rez.ListIntegrationsParams{Providers: []string{integrationName}}
+	listParams := rez.ListIntegrationsParams{
+		Predicates: []predicate.Integration{integration.IntegrationName(integrationName)},
+	}
 	intgs, lookupErr := h.integrations.ListInstalled(ctx, listParams)
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
@@ -46,28 +49,26 @@ func (h *eventHandler) withInstallation(ctx context.Context, fn func(*InstalledI
 	}
 	if len(intgs) == 0 {
 		return nil
+	} else if len(intgs) > 1 {
+		return fmt.Errorf("found multiple Integrations with name %q", integrationName)
 	}
-	// TODO: handle multiple installations
-	if ci, ok := intgs[0].(*InstalledIntegration); ok {
-		return fn(ci)
+	ii, ok := intgs[0].(*InstalledIntegration)
+	if !ok {
+		return fmt.Errorf("invalid configured Integration: %w", lookupErr)
 	}
-	return fmt.Errorf("invalid configured Integration: %w", lookupErr)
+	return fn(ii)
 }
 
 func (h *eventHandler) onIncidentUpdate(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
 	if ev.Created {
-		return h.onIncidentCreated(ctx, ev.IncidentId)
+		return h.withInstallation(ctx, func(ii *InstalledIntegration) error {
+			if !ii.isVideoConferenceEnabled() {
+				return nil
+			}
+			return h.messages.SendCommand(ctx, &cmdCreateIncidentVideoConference{IncidentId: ev.IncidentId})
+		})
 	}
 	return nil
-}
-
-func (h *eventHandler) onIncidentCreated(ctx context.Context, id uuid.UUID) error {
-	return h.withInstallation(ctx, func(ci *InstalledIntegration) error {
-		if !ci.isVideoConferenceEnabled() {
-			return nil
-		}
-		return h.messages.SendCommand(ctx, &cmdCreateIncidentVideoConference{IncidentId: id})
-	})
 }
 
 type cmdCreateIncidentVideoConference struct {
@@ -75,11 +76,12 @@ type cmdCreateIncidentVideoConference struct {
 }
 
 func (h *eventHandler) createIncidentVideoConference(ctx context.Context, cmd *cmdCreateIncidentVideoConference) error {
-	return h.withInstallation(ctx, func(ci *InstalledIntegration) error {
-		inc, incErr := h.incidents.Get(ctx, incident.ID(cmd.IncidentId))
-		if incErr != nil {
-			return fmt.Errorf("get incident: %w", incErr)
-		}
-		return newMeetService(ci).CreateIncidentVideoConference(ctx, inc)
-	})
+	//return h.withInstallation(ctx, func(ii *InstalledIntegration) error {
+	//	inc, incErr := h.incidents.Get(ctx, incident.ID(cmd.IncidentId))
+	//	if incErr != nil {
+	//		return fmt.Errorf("get incident: %w", incErr)
+	//	}
+	//	return newMeetService(ii).CreateIncidentVideoConference(ctx, inc)
+	//})
+	return nil
 }

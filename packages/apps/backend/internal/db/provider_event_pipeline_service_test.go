@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"reflect"
 	"testing"
 	"time"
 
@@ -164,7 +163,6 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 	proj, projErr := queryProj.Only(ctx)
 	s.Require().NoError(projErr)
 	s.Equal(nep.StatusSucceeded, proj.Status)
-	s.Equal(reflect.TypeOf(projector).String(), proj.Projector)
 	s.NotNil(proj.FinishedAt)
 	s.Empty(proj.Error)
 }
@@ -192,19 +190,28 @@ func (s *ProviderEventPipelineServiceSuite) TestProcessProviderEventUpsertsNorma
 	s.Equal(1, count)
 }
 
+func (s *ProviderEventPipelineServiceSuite) setProjectionStatus(ctx context.Context, eventId uuid.UUID, proj rez.NormalizedEventProjector, status nep.Status) {
+	s.Require().NoError(s.Client(ctx).NormalizedEventProjection.Create().
+		SetEventID(eventId).
+		SetProjector(projections.GetEventProjectorName(proj)).
+		SetStartedAt(time.Now()).
+		SetStatus(status).
+		Exec(ctx))
+}
+
+func (s *ProviderEventPipelineServiceSuite) getProjection(ctx context.Context, eventId uuid.UUID, proj rez.NormalizedEventProjector) (*ent.NormalizedEventProjection, error) {
+	return s.Client(ctx).NormalizedEventProjection.Query().
+		Where(nep.EventID(eventId), nep.Projector(projections.GetEventProjectorName(proj))).
+		Only(ctx)
+}
+
 func (s *ProviderEventPipelineServiceSuite) TestProjectionSkipsSucceededStatus() {
 	ctx := s.SeedTenantContext()
 	projector := &countingPipelineProjector{}
 	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
 	ev := s.createPipelineNormalizedEvent(ctx)
 
-	_, err := s.Client(ctx).NormalizedEventProjection.Create().
-		SetEventID(ev.ID).
-		SetProjector(reflect.TypeOf(projector).String()).
-		SetStartedAt(time.Now()).
-		SetStatus(nep.StatusSucceeded).
-		Save(ctx)
-	s.Require().NoError(err)
+	s.setProjectionStatus(ctx, ev.ID, projector, nep.StatusSucceeded)
 
 	s.Require().NoError(svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID}))
 	s.Equal(0, projector.calls)
@@ -216,23 +223,15 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionRetriesPendingStatus()
 	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
 	ev := s.createPipelineNormalizedEvent(ctx)
 
-	_, err := s.Client(ctx).NormalizedEventProjection.Create().
-		SetEventID(ev.ID).
-		SetProjector(reflect.TypeOf(projector).String()).
-		SetStartedAt(time.Now()).
-		SetStatus(nep.StatusPending).
-		Save(ctx)
-	s.Require().NoError(err)
+	s.setProjectionStatus(ctx, ev.ID, projector, nep.StatusPending)
 
 	s.Require().NoError(svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID}))
 	s.Equal(1, projector.calls)
 
-	status, err := s.Client(ctx).NormalizedEventProjection.Query().
-		Where(nep.EventID(ev.ID), nep.Projector(reflect.TypeOf(projector).String())).
-		Only(ctx)
-	s.Require().NoError(err)
-	s.Equal(nep.StatusSucceeded, status.Status)
-	s.NotNil(status.StartedAt)
+	proj, projErr := s.getProjection(ctx, ev.ID, projector)
+	s.Require().NoError(projErr)
+	s.Equal(nep.StatusSucceeded, proj.Status)
+	s.NotNil(proj.StartedAt)
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestProjectionFailureRollsBackProjectorWrites() {
@@ -244,9 +243,7 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionFailureRollsBackProjec
 
 	s.Require().NoError(svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID}))
 
-	proj, projErr := s.Client(ctx).NormalizedEventProjection.Query().
-		Where(nep.EventID(ev.ID), nep.Projector(reflect.TypeOf(projector).String())).
-		Only(ctx)
+	proj, projErr := s.getProjection(ctx, ev.ID, projector)
 	s.Require().NoError(projErr)
 	s.Require().Equal(nep.StatusFailed, proj.Status)
 	s.NotEmpty(proj.Error)
@@ -268,12 +265,10 @@ func (s *ProviderEventPipelineServiceSuite) TestRetryableProjectionFailureReturn
 	s.Require().Error(err)
 	s.True(projections.IsRetryable(err))
 
-	status, err := s.Client(ctx).NormalizedEventProjection.Query().
-		Where(nep.EventID(ev.ID), nep.Projector(reflect.TypeOf(projector).String())).
-		Only(ctx)
-	s.Require().NoError(err)
-	s.Equal(nep.StatusFailed, status.Status)
-	s.Contains(status.Error, "dependency not ready")
+	proj, projErr := s.getProjection(ctx, ev.ID, projector)
+	s.Require().NoError(projErr)
+	s.Equal(nep.StatusFailed, proj.Status)
+	s.Contains(proj.Error, "dependency not ready")
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestTransientDatabaseProjectionFailureReturnsRetryableError() {
@@ -288,12 +283,10 @@ func (s *ProviderEventPipelineServiceSuite) TestTransientDatabaseProjectionFailu
 	s.Require().Error(err)
 	s.True(projections.IsRetryable(err))
 
-	status, err := s.Client(ctx).NormalizedEventProjection.Query().
-		Where(nep.EventID(ev.ID), nep.Projector(reflect.TypeOf(projector).String())).
-		Only(ctx)
-	s.Require().NoError(err)
-	s.Equal(nep.StatusFailed, status.Status)
-	s.Contains(status.Error, "database deadlock")
+	proj, projErr := s.getProjection(ctx, ev.ID, projector)
+	s.Require().NoError(projErr)
+	s.Equal(nep.StatusFailed, proj.Status)
+	s.Contains(proj.Error, "database deadlock")
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestProjectionPanicMarksStatusFailed() {
@@ -304,12 +297,10 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionPanicMarksStatusFailed
 
 	s.Require().NoError(svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID}))
 
-	status, err := s.Client(ctx).NormalizedEventProjection.Query().
-		Where(nep.EventID(ev.ID), nep.Projector(reflect.TypeOf(projector).String())).
-		Only(ctx)
-	s.Require().NoError(err)
-	s.Equal(nep.StatusFailed, status.Status)
-	s.Contains(status.Error, "projector panic: boom")
+	proj, projErr := s.getProjection(ctx, ev.ID, projector)
+	s.Require().NoError(projErr)
+	s.Equal(nep.StatusFailed, proj.Status)
+	s.Contains(proj.Error, "projector panic: boom")
 }
 
 type pipelineTestProcessor struct{}

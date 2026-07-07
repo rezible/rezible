@@ -74,59 +74,53 @@ func (i *Integration) WebhookHandler() http.Handler {
 	return i.appSvc.WebhookHandler()
 }
 
-func (i *Integration) ValidateConfig(m map[string]any) (externalRef string, validationErr error) {
-	return "", nil
+func (i *Integration) ValidateInstallationConfig(m []byte) (rez.IntegrationInstallationConfig, error) {
+	return slackintegration.GetValidatedConfig(m)
 }
 
 func (i *Integration) ValidateUserSettings(m map[string]any) error {
 	return nil
 }
 
-func (i *Integration) GetInstalledIntegration(intg *ent.Integration) rez.InstalledIntegration {
-	return &InstalledIntegration{intg: intg}
+func (i *Integration) GetInstalledIntegration(intg *ent.Integration) (rez.InstalledIntegration, error) {
+	return i.makeInstalledIntegration(intg)
+}
+
+func (i *Integration) makeInstalledIntegration(intg *ent.Integration) (*InstalledIntegration, error) {
+	cfg, cfgErr := slackintegration.GetValidatedConfig(intg.InstallationConfig)
+	if cfgErr != nil {
+		return nil, cfgErr
+	}
+	ii := &InstalledIntegration{intg: intg, config: cfg}
+	if decErr := mapstructure.Decode(intg.UserSettings, &ii.settings); decErr != nil {
+		return nil, decErr
+	}
+	return ii, nil
 }
 
 type InstalledIntegration struct {
-	intg *ent.Integration
+	intg     *ent.Integration
+	config   *slackintegration.InstallationConfig
+	settings *UserSettings
 }
 
 func (ii *InstalledIntegration) Integration() *ent.Integration {
 	return ii.intg
 }
 
-func (ii *InstalledIntegration) DisplayName() string {
-	return "Slack Incident Management"
-}
-
-func (ii *InstalledIntegration) ProviderName() string {
-	return slackintegration.ProviderName
-}
-
-func (ii *InstalledIntegration) config() (*slackintegration.InstallationConfig, error) {
-	return slackintegration.DecodeInstallationConfig(ii.intg)
+func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
+	return ii.config
 }
 
 type UserSettings struct {
-	Incidents UserSettingsIncidents `mapstructure:"incidents"`
+	Incidents UserSettingsIncidents
 }
 
 type UserSettingsIncidents struct {
-	AnnouncementChannelID     string `mapstructure:"announcement_channel_id"`
-	ChannelNamePattern        string `mapstructure:"channel_name_pattern"`
-	AutoCreateVideoConference bool   `mapstructure:"create_video_conference"`
-	InviteMode                string `mapstructure:"invite_mode"`
-}
-
-func (ii *InstalledIntegration) userPreferences() (*UserSettings, error) {
-	var settings UserSettings
-	if decErr := mapstructure.Decode(ii.intg.UserSettings, &settings); decErr != nil {
-		return nil, decErr
-	}
-	return &settings, nil
-}
-
-func (ii *InstalledIntegration) GetSanitizedConfig() map[string]any {
-	return ii.intg.InstallationConfig
+	AnnouncementChannelID     string
+	ChannelNamePattern        string
+	AutoCreateVideoConference bool
+	InviteMode                string
 }
 
 var defaultIncidentPreferences = UserSettingsIncidents{
@@ -134,11 +128,4 @@ var defaultIncidentPreferences = UserSettingsIncidents{
 	ChannelNamePattern:        "incident-{slug}",
 	AutoCreateVideoConference: false,
 	InviteMode:                "assigned_users",
-}
-
-func (ii *InstalledIntegration) GetCapabilities() map[string]bool {
-	return map[string]bool{
-		"chat":  true,
-		"users": true,
-	}
 }

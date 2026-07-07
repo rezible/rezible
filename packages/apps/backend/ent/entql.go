@@ -743,13 +743,15 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Integration",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			integration.FieldTenantID:            {Type: field.TypeInt, Column: integration.FieldTenantID},
-			integration.FieldCreatedAt:           {Type: field.TypeTime, Column: integration.FieldCreatedAt},
-			integration.FieldUpdatedAt:           {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
-			integration.FieldIntegrationName:     {Type: field.TypeString, Column: integration.FieldIntegrationName},
-			integration.FieldExternalProviderRef: {Type: field.TypeString, Column: integration.FieldExternalProviderRef},
-			integration.FieldInstallationConfig:  {Type: field.TypeJSON, Column: integration.FieldInstallationConfig},
-			integration.FieldUserSettings:        {Type: field.TypeJSON, Column: integration.FieldUserSettings},
+			integration.FieldTenantID:           {Type: field.TypeInt, Column: integration.FieldTenantID},
+			integration.FieldCreatedAt:          {Type: field.TypeTime, Column: integration.FieldCreatedAt},
+			integration.FieldUpdatedAt:          {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
+			integration.FieldProviderName:       {Type: field.TypeString, Column: integration.FieldProviderName},
+			integration.FieldIntegrationName:    {Type: field.TypeString, Column: integration.FieldIntegrationName},
+			integration.FieldDisplayName:        {Type: field.TypeString, Column: integration.FieldDisplayName},
+			integration.FieldExternalRef:        {Type: field.TypeString, Column: integration.FieldExternalRef},
+			integration.FieldInstallationConfig: {Type: field.TypeJSON, Column: integration.FieldInstallationConfig},
+			integration.FieldUserSettings:       {Type: field.TypeJSON, Column: integration.FieldUserSettings},
 		},
 	}
 	graph.Nodes[35] = &sqlgraph.Node{
@@ -807,12 +809,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "IntegrationUserInstallState",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			integrationuserinstallstate.FieldTenantID:            {Type: field.TypeInt, Column: integrationuserinstallstate.FieldTenantID},
-			integrationuserinstallstate.FieldUserID:              {Type: field.TypeUUID, Column: integrationuserinstallstate.FieldUserID},
-			integrationuserinstallstate.FieldIntegrationName:     {Type: field.TypeString, Column: integrationuserinstallstate.FieldIntegrationName},
-			integrationuserinstallstate.FieldOauthState:          {Type: field.TypeString, Column: integrationuserinstallstate.FieldOauthState},
-			integrationuserinstallstate.FieldInstallationTargets: {Type: field.TypeJSON, Column: integrationuserinstallstate.FieldInstallationTargets},
-			integrationuserinstallstate.FieldExpiresAt:           {Type: field.TypeTime, Column: integrationuserinstallstate.FieldExpiresAt},
+			integrationuserinstallstate.FieldTenantID:                  {Type: field.TypeInt, Column: integrationuserinstallstate.FieldTenantID},
+			integrationuserinstallstate.FieldUserID:                    {Type: field.TypeUUID, Column: integrationuserinstallstate.FieldUserID},
+			integrationuserinstallstate.FieldIntegrationName:           {Type: field.TypeString, Column: integrationuserinstallstate.FieldIntegrationName},
+			integrationuserinstallstate.FieldExpiresAt:                 {Type: field.TypeTime, Column: integrationuserinstallstate.FieldExpiresAt},
+			integrationuserinstallstate.FieldOauthState:                {Type: field.TypeString, Column: integrationuserinstallstate.FieldOauthState},
+			integrationuserinstallstate.FieldInstallationTargetConfigs: {Type: field.TypeJSON, Column: integrationuserinstallstate.FieldInstallationTargetConfigs},
 		},
 	}
 	graph.Nodes[38] = &sqlgraph.Node{
@@ -9323,14 +9325,24 @@ func (f *IntegrationFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(integration.FieldUpdatedAt))
 }
 
+// WhereProviderName applies the entql string predicate on the provider_name field.
+func (f *IntegrationFilter) WhereProviderName(p entql.StringP) {
+	f.Where(p.Field(integration.FieldProviderName))
+}
+
 // WhereIntegrationName applies the entql string predicate on the integration_name field.
 func (f *IntegrationFilter) WhereIntegrationName(p entql.StringP) {
 	f.Where(p.Field(integration.FieldIntegrationName))
 }
 
-// WhereExternalProviderRef applies the entql string predicate on the external_provider_ref field.
-func (f *IntegrationFilter) WhereExternalProviderRef(p entql.StringP) {
-	f.Where(p.Field(integration.FieldExternalProviderRef))
+// WhereDisplayName applies the entql string predicate on the display_name field.
+func (f *IntegrationFilter) WhereDisplayName(p entql.StringP) {
+	f.Where(p.Field(integration.FieldDisplayName))
+}
+
+// WhereExternalRef applies the entql string predicate on the external_ref field.
+func (f *IntegrationFilter) WhereExternalRef(p entql.StringP) {
+	f.Where(p.Field(integration.FieldExternalRef))
 }
 
 // WhereInstallationConfig applies the entql json.RawMessage predicate on the installation_config field.
@@ -9638,19 +9650,19 @@ func (f *IntegrationUserInstallStateFilter) WhereIntegrationName(p entql.StringP
 	f.Where(p.Field(integrationuserinstallstate.FieldIntegrationName))
 }
 
+// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
+func (f *IntegrationUserInstallStateFilter) WhereExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(integrationuserinstallstate.FieldExpiresAt))
+}
+
 // WhereOauthState applies the entql string predicate on the oauth_state field.
 func (f *IntegrationUserInstallStateFilter) WhereOauthState(p entql.StringP) {
 	f.Where(p.Field(integrationuserinstallstate.FieldOauthState))
 }
 
-// WhereInstallationTargets applies the entql json.RawMessage predicate on the installation_targets field.
-func (f *IntegrationUserInstallStateFilter) WhereInstallationTargets(p entql.BytesP) {
-	f.Where(p.Field(integrationuserinstallstate.FieldInstallationTargets))
-}
-
-// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
-func (f *IntegrationUserInstallStateFilter) WhereExpiresAt(p entql.TimeP) {
-	f.Where(p.Field(integrationuserinstallstate.FieldExpiresAt))
+// WhereInstallationTargetConfigs applies the entql json.RawMessage predicate on the installation_target_configs field.
+func (f *IntegrationUserInstallStateFilter) WhereInstallationTargetConfigs(p entql.BytesP) {
+	f.Where(p.Field(integrationuserinstallstate.FieldInstallationTargetConfigs))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

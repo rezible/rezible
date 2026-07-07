@@ -1449,10 +1449,12 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "provider_name", Type: field.TypeString},
 		{Name: "integration_name", Type: field.TypeString},
-		{Name: "external_provider_ref", Type: field.TypeString},
+		{Name: "display_name", Type: field.TypeString},
+		{Name: "external_ref", Type: field.TypeString},
 		{Name: "installation_config", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
-		{Name: "user_settings", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "user_settings", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IntegrationsTable holds the schema information for the "integrations" table.
@@ -1463,7 +1465,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "integrations_tenants_tenant",
-				Columns:    []*schema.Column{IntegrationsColumns[7]},
+				Columns:    []*schema.Column{IntegrationsColumns[9]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1472,17 +1474,22 @@ var (
 			{
 				Name:    "integration_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[7]},
+				Columns: []*schema.Column{IntegrationsColumns[9]},
 			},
 			{
 				Name:    "integration_tenant_id_integration_name",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[7], IntegrationsColumns[3]},
+				Columns: []*schema.Column{IntegrationsColumns[9], IntegrationsColumns[4]},
 			},
 			{
-				Name:    "integration_tenant_id_integration_name_external_provider_ref",
+				Name:    "integration_tenant_id_provider_name",
+				Unique:  false,
+				Columns: []*schema.Column{IntegrationsColumns[9], IntegrationsColumns[3]},
+			},
+			{
+				Name:    "integration_tenant_id_integration_name_external_ref",
 				Unique:  true,
-				Columns: []*schema.Column{IntegrationsColumns[7], IntegrationsColumns[3], IntegrationsColumns[4]},
+				Columns: []*schema.Column{IntegrationsColumns[9], IntegrationsColumns[4], IntegrationsColumns[6]},
 			},
 		},
 	}
@@ -1585,9 +1592,9 @@ var (
 	IntegrationUserInstallStatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "integration_name", Type: field.TypeString},
-		{Name: "oauth_state", Type: field.TypeString, Nullable: true},
-		{Name: "installation_targets", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "oauth_state", Type: field.TypeString, Nullable: true},
+		{Name: "installation_target_configs", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "user_id", Type: field.TypeUUID},
 	}

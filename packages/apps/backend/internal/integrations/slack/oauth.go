@@ -7,7 +7,6 @@ import (
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/go-viper/mapstructure/v2"
-	rez "github.com/rezible/rezible"
 	"github.com/stretchr/objx"
 	"golang.org/x/oauth2"
 )
@@ -16,7 +15,7 @@ type oauthHandler struct {
 	cfg *oauth2.Config
 }
 
-func NewOAuthHandler(clientId string, clientSecret string, scopes []string) *oauthHandler {
+func newOAuthHandler(clientId string, clientSecret string, scopes []string) *oauthHandler {
 	return &oauthHandler{
 		cfg: &oauth2.Config{
 			ClientID:     clientId,
@@ -63,7 +62,7 @@ func (h *oauthHandler) getTeamInfoFromTokenData(tokenData any) (*TeamInfo, error
 	return &teamInfo, nil
 }
 
-func (h *oauthHandler) ExtractInstallationTargetFromToken(t *oauth2.Token) ([]rez.IntegrationInstallationTarget, error) {
+func (h *oauthHandler) ExtractInstallationConfigFromToken(t *oauth2.Token) (*InstallationConfig, error) {
 	if scopesErr := h.validateOAuthTokenScopes(t); scopesErr != nil {
 		return nil, scopesErr
 	}
@@ -105,10 +104,5 @@ func (h *oauthHandler) ExtractInstallationTargetFromToken(t *oauth2.Token) ([]re
 		cfg.WebhookChannelId = channelId.String()
 	}
 
-	target, targetErr := MakeConfigInstallationTarget(cfg)
-	if targetErr != nil {
-		return nil, fmt.Errorf("failed to create target: %v", targetErr)
-	}
-
-	return []rez.IntegrationInstallationTarget{*target}, nil
+	return cfg, nil
 }

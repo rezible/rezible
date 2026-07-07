@@ -478,8 +478,10 @@ DROP INDEX "integrationeventsynccursor_ten_914d3d8b389cb5d930bdf0bb43683869";
 DROP INDEX "integrationeventsynccursor_tenant_id";
 -- reverse: create "integration_event_sync_cursors" table
 DROP TABLE "integration_event_sync_cursors";
--- reverse: create index "integration_tenant_id_integration_name_external_provider_ref" to table: "integrations"
-DROP INDEX "integration_tenant_id_integration_name_external_provider_ref";
+-- reverse: create index "integration_tenant_id_integration_name_external_ref" to table: "integrations"
+DROP INDEX "integration_tenant_id_integration_name_external_ref";
+-- reverse: create index "integration_tenant_id_provider_name" to table: "integrations"
+DROP INDEX "integration_tenant_id_provider_name";
 -- reverse: create index "integration_tenant_id_integration_name" to table: "integrations"
 DROP INDEX "integration_tenant_id_integration_name";
 -- reverse: create index "integration_tenant_id" to table: "integrations"

@@ -2,6 +2,7 @@ package slackagent
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -73,44 +74,41 @@ func (i *Integration) RetrieveInstallationTargetOptions(ctx context.Context, t *
 	return i.appSvc.RetrieveInstallationTargetOptions(ctx, t)
 }
 
-func (i *Integration) ValidateConfig(m map[string]any) (externalRef string, validationErr error) {
-	return "", nil
+func (i *Integration) ValidateInstallationConfig(cfg json.RawMessage) (rez.IntegrationInstallationConfig, error) {
+	return slackintegration.GetValidatedConfig(cfg)
 }
 
 func (i *Integration) ValidateUserSettings(m map[string]any) error {
 	return nil
 }
 
-func (i *Integration) GetInstalledIntegration(intg *ent.Integration) rez.InstalledIntegration {
+func (i *Integration) GetInstalledIntegration(intg *ent.Integration) (rez.InstalledIntegration, error) {
 	return i.makeInstalledIntegration(intg)
 }
 
-func (i *Integration) makeInstalledIntegration(intg *ent.Integration) *InstalledIntegration {
-	return &InstalledIntegration{intg: intg}
+func (i *Integration) makeInstalledIntegration(intg *ent.Integration) (*InstalledIntegration, error) {
+	cfg, cfgErr := slackintegration.GetValidatedConfig(intg.InstallationConfig)
+	if cfgErr != nil {
+		return nil, cfgErr
+	}
+	return &InstalledIntegration{intg: intg, config: cfg}, nil
 }
 
 type InstalledIntegration struct {
-	intg *ent.Integration
+	intg   *ent.Integration
+	config *slackintegration.InstallationConfig
 }
 
 func (ii *InstalledIntegration) Integration() *ent.Integration {
 	return ii.intg
 }
 
-func (ii *InstalledIntegration) DisplayName() string {
-	return "Slack Agent"
-}
-
 func (ii *InstalledIntegration) ProviderName() string {
 	return slackintegration.ProviderName
 }
 
-func (ii *InstalledIntegration) config() (*slackintegration.InstallationConfig, error) {
-	return slackintegration.DecodeInstallationConfig(ii.intg)
-}
-
-func (ii *InstalledIntegration) GetSanitizedConfig() map[string]any {
-	return ii.intg.InstallationConfig
+func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
+	return ii.config
 }
 
 func (ii *InstalledIntegration) GetCapabilities() map[string]bool {

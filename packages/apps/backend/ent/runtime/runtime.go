@@ -897,6 +897,10 @@ func init() {
 	integration.DefaultUpdatedAt = integrationDescUpdatedAt.Default.(func() time.Time)
 	// integration.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	integration.UpdateDefaultUpdatedAt = integrationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// integrationDescUserSettings is the schema descriptor for user_settings field.
+	integrationDescUserSettings := integrationFields[6].Descriptor()
+	// integration.DefaultUserSettings holds the default value on creation for the user_settings field.
+	integration.DefaultUserSettings = integrationDescUserSettings.Default.(map[string]interface{})
 	// integrationDescID is the schema descriptor for id field.
 	integrationDescID := integrationFields[0].Descriptor()
 	// integration.DefaultID holds the default value on creation for the id field.
@@ -989,10 +993,6 @@ func init() {
 	integrationuserinstallstateDescUserID := integrationuserinstallstateFields[1].Descriptor()
 	// integrationuserinstallstate.DefaultUserID holds the default value on creation for the user_id field.
 	integrationuserinstallstate.DefaultUserID = integrationuserinstallstateDescUserID.Default.(func() uuid.UUID)
-	// integrationuserinstallstateDescInstallationTargets is the schema descriptor for installation_targets field.
-	integrationuserinstallstateDescInstallationTargets := integrationuserinstallstateFields[4].Descriptor()
-	// integrationuserinstallstate.DefaultInstallationTargets holds the default value on creation for the installation_targets field.
-	integrationuserinstallstate.DefaultInstallationTargets = integrationuserinstallstateDescInstallationTargets.Default.([]map[string]interface{})
 	// integrationuserinstallstateDescID is the schema descriptor for id field.
 	integrationuserinstallstateDescID := integrationuserinstallstateFields[0].Descriptor()
 	// integrationuserinstallstate.DefaultID holds the default value on creation for the id field.

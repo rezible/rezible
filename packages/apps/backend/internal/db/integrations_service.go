@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -9,7 +10,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqljson"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	iesr "github.com/rezible/rezible/ent/integrationeventsyncrun"
@@ -89,51 +89,55 @@ func (s *IntegrationsService) LookupInstallation(ctx context.Context, pred predi
 	return query.Only(ctx)
 }
 
-func (s *IntegrationsService) InstallNew(ctx context.Context, intgName string, cfg, userSettings map[string]any) (rez.InstalledIntegration, error) {
-	p, pErr := s.reg.GetPackage(intgName)
+func (s *IntegrationsService) InstallNew(ctx context.Context, name string, rawCfg []byte) (rez.InstalledIntegration, error) {
+	p, pErr := s.reg.GetPackage(name)
 	if pErr != nil {
-		return nil, fmt.Errorf("failed to get package for integration %s: %w", intgName, pErr)
+		return nil, fmt.Errorf("get integration package %s: %w", name, pErr)
 	}
-
-	if settingsErr := p.ValidateUserSettings(userSettings); settingsErr != nil {
-		return nil, fmt.Errorf("failed to validate user settings: %w", settingsErr)
-	}
-
-	externalRef, cfgErr := p.ValidateConfig(cfg)
+	cfg, cfgErr := p.ValidateInstallationConfig(rawCfg)
 	if cfgErr != nil {
-		return nil, fmt.Errorf("invalid config: %w", cfgErr)
+		return nil, fmt.Errorf("invalid installation config: %w", cfgErr)
 	}
-
-	setFn := func(m *ent.IntegrationMutation) {
-		m.SetIntegrationName(intgName)
-		m.SetExternalProviderRef(externalRef)
-		m.SetInstallationConfig(cfg)
-		m.SetUserSettings(userSettings)
-	}
-	intg, setErr := s.set(ctx, uuid.Nil, setFn)
-	if setErr != nil {
-		return nil, fmt.Errorf("failed to set integration: %w", setErr)
-	}
-	return p.GetInstalledIntegration(intg), nil
+	return s.InstallFromTarget(ctx, rez.IntegrationInstallationTarget{
+		IntegrationName: name,
+		DisplayName:     p.DisplayName(),
+		Config:          cfg,
+	})
 }
 
-func (s *IntegrationsService) installTarget(ctx context.Context, intgName string, target rez.IntegrationInstallationTarget) (rez.InstalledIntegration, error) {
-	p, pErr := s.reg.GetPackage(intgName)
+func (s *IntegrationsService) InstallFromTarget(ctx context.Context, target rez.IntegrationInstallationTarget) (rez.InstalledIntegration, error) {
+	p, pErr := s.reg.GetPackage(target.IntegrationName)
 	if pErr != nil {
-		return nil, fmt.Errorf("failed to get package for integration %s: %w", intgName, pErr)
+		return nil, fmt.Errorf("get integration package %s: %w", target.IntegrationName, pErr)
 	}
-
+	cfg, encErr := target.Config.Encode()
+	if encErr != nil {
+		return nil, fmt.Errorf("failed to encode config: %w", encErr)
+	}
+	_, validateErr := p.ValidateInstallationConfig(cfg)
+	if validateErr != nil {
+		return nil, fmt.Errorf("invalid config: %w", validateErr)
+	}
+	displayName := target.DisplayName
+	if displayName == "" {
+		displayName = p.DisplayName()
+	}
 	setFn := func(m *ent.IntegrationMutation) {
-		m.SetIntegrationName(intgName)
-		m.SetExternalProviderRef(target.ExternalRef)
-		m.SetInstallationConfig(target.InstallationConfig)
-		m.SetUserSettings(map[string]any{})
+		m.SetProviderName(p.Provider())
+		m.SetIntegrationName(target.IntegrationName)
+		m.SetDisplayName(displayName)
+		m.SetExternalRef(target.Config.ExternalRef())
+		m.SetInstallationConfig(cfg)
 	}
 	intg, setErr := s.set(ctx, uuid.Nil, setFn)
 	if setErr != nil {
-		return nil, fmt.Errorf("failed to set integration: %w", setErr)
+		return nil, fmt.Errorf("set integration: %w", setErr)
 	}
-	return p.GetInstalledIntegration(intg), nil
+	ii, iiErr := p.GetInstalledIntegration(intg)
+	if iiErr != nil {
+		return nil, fmt.Errorf("get installed integration: %w", iiErr)
+	}
+	return ii, nil
 }
 
 func (s *IntegrationsService) UpdateInstallation(ctx context.Context, id uuid.UUID, setFn func(*ent.IntegrationMutation)) (rez.InstalledIntegration, error) {
@@ -146,7 +150,7 @@ func (s *IntegrationsService) UpdateInstallation(ctx context.Context, id uuid.UU
 		return nil, fmt.Errorf("failed to get package for integration %s: %w", curr.IntegrationName, pErr)
 	}
 
-	m := new(ent.IntegrationMutation)
+	m := &ent.IntegrationMutation{}
 	setFn(m)
 
 	if userSettings, updatedSettings := m.UserSettings(); updatedSettings {
@@ -159,7 +163,7 @@ func (s *IntegrationsService) UpdateInstallation(ctx context.Context, id uuid.UU
 	if setErr != nil {
 		return nil, fmt.Errorf("failed to set integration: %w", setErr)
 	}
-	return p.GetInstalledIntegration(intg), nil
+	return p.GetInstalledIntegration(intg)
 }
 
 func (s *IntegrationsService) DeleteInstalled(ctx context.Context, id uuid.UUID) error {
@@ -169,30 +173,31 @@ func (s *IntegrationsService) DeleteInstalled(ctx context.Context, id uuid.UUID)
 
 func (s *IntegrationsService) listQuery(ctx context.Context, p rez.ListIntegrationsParams) *ent.IntegrationQuery {
 	query := s.db.Client(ctx).Integration.Query()
-	if len(p.IDs) > 0 {
-		query.Where(in.IDIn(p.IDs...))
+	if len(p.Predicates) > 0 {
+		return query.Where(p.Predicates...)
 	}
-	if len(p.Providers) > 0 {
-		if len(p.Providers) == 1 {
-			query.Where(in.IntegrationName(p.Providers[0]))
-		} else {
-			query.Where(in.IntegrationNameIn(p.Providers...))
+	/*
+		if len(p.IDs) > 0 {
+			query.Where(in.IDIn(p.IDs...))
 		}
-	}
-	if len(p.ExternalRefs) > 0 {
-		if len(p.ExternalRefs) == 1 {
-			query.Where(in.ExternalProviderRef(p.ExternalRefs[0]))
-		} else {
-			query.Where(in.ExternalProviderRefIn(p.ExternalRefs...))
+		if len(p.Providers) > 0 {
+			if len(p.Providers) == 1 {
+				query.Where(in.IntegrationName(p.Providers[0]))
+			} else {
+				query.Where(in.IntegrationNameIn(p.Providers...))
+			}
 		}
-	}
-	if p.ConfigValues != nil && len(p.ConfigValues) > 0 {
-		for path, value := range p.ConfigValues {
-			query.Where(func(s *sql.Selector) {
-				s.Where(sqljson.ValueEQ(in.FieldInstallationConfig, value, sqljson.DotPath(path)))
-			})
+		if len(p.ExternalRefs) > 0 {
+			query.Where(in.ExternalRefIn(p.ExternalRefs...))
 		}
-	}
+		if p.ConfigValues != nil && len(p.ConfigValues) > 0 {
+			for path, value := range p.ConfigValues {
+				query.Where(func(s *sql.Selector) {
+					s.Where(sqljson.ValueEQ(in.FieldInstallationConfig, value, sqljson.DotPath(path)))
+				})
+			}
+		}
+	*/
 	return query
 }
 
@@ -201,7 +206,7 @@ func (s *IntegrationsService) AsInstalledIntegration(i *ent.Integration) (rez.In
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get integration package: %w", pErr)
 	}
-	return p.GetInstalledIntegration(i), nil
+	return p.GetInstalledIntegration(i)
 }
 
 func (s *IntegrationsService) listIntegrations(ctx context.Context, params rez.ListIntegrationsParams) ([]*ent.Integration, error) {
@@ -213,10 +218,10 @@ func (s *IntegrationsService) listIntegrations(ctx context.Context, params rez.L
 	return intgs, nil
 }
 
-func (s *IntegrationsService) getByProviderExternalRef(ctx context.Context, integrationName, externalRef string) (*ent.Integration, error) {
+func (s *IntegrationsService) LookupByExternalRef(ctx context.Context, name, externalRef string) (*ent.Integration, error) {
 	q := s.db.Client(ctx).Integration.Query().
-		Where(in.IntegrationName(integrationName)).
-		Where(in.ExternalProviderRef(externalRef))
+		Where(in.IntegrationName(name)).
+		Where(in.ExternalRef(externalRef))
 	intg, getErr := q.Only(ctx)
 	if getErr != nil {
 		if ent.IsNotFound(getErr) {
@@ -297,13 +302,20 @@ func (s *IntegrationsService) makeUserOAuthInstallationState(ctx context.Context
 }
 
 func (s *IntegrationsService) updateUserInstallationStateWithOptions(ctx context.Context, id uuid.UUID, options []rez.IntegrationInstallationTarget) error {
-	targets, encErr := integrations.EncodeInstallationTargetOptions(options)
-	if encErr != nil {
-		return fmt.Errorf("encode installation targets: %w", encErr)
+	targets := map[string]json.RawMessage{}
+	for _, opt := range options {
+		if _, exists := targets[opt.DisplayName]; exists {
+			return fmt.Errorf("multiple installation targets for display name %q", opt.DisplayName)
+		}
+		cfg, cfgErr := opt.Config.Encode()
+		if cfgErr != nil {
+			return fmt.Errorf("failed to encode integration option: %w", cfgErr)
+		}
+		targets[opt.DisplayName] = cfg
 	}
 
 	update := s.db.Client(ctx).IntegrationUserInstallState.UpdateOneID(id).
-		SetInstallationTargets(targets).
+		SetInstallationTargetConfigs(targets).
 		SetExpiresAt(time.Now().Add(time.Minute * 10))
 	if updateErr := update.Exec(ctx); updateErr != nil {
 		return fmt.Errorf("update installation state: %w", updateErr)
@@ -389,7 +401,7 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, integratio
 	}
 
 	if len(options) == 1 {
-		installed, installErr := s.installTargets(ctx, integrationName, options)
+		installed, installErr := s.InstallTargets(ctx, options)
 		if installErr != nil {
 			return nil, fmt.Errorf("install single target options: %w", installErr)
 		}
@@ -410,25 +422,45 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, integratio
 	}, nil
 }
 
-func (s *IntegrationsService) ListUserInstallationTargets(ctx context.Context) (map[string][]rez.IntegrationInstallationTarget, error) {
+func (s *IntegrationsService) decodeStateInstallationTargets(state *ent.IntegrationUserInstallState) ([]rez.IntegrationInstallationTarget, error) {
+	targets := make([]rez.IntegrationInstallationTarget, len(state.InstallationTargetConfigs))
+	for displayName, rawCfg := range state.InstallationTargetConfigs {
+		p, pErr := s.reg.GetPackage(state.IntegrationName)
+		if pErr != nil {
+			return nil, fmt.Errorf("get integration: %w", pErr)
+		}
+		cfg, cfgErr := p.ValidateInstallationConfig(rawCfg)
+		if cfgErr != nil {
+			return nil, fmt.Errorf("invalid installation config: %w", cfgErr)
+		}
+		targets = append(targets, rez.IntegrationInstallationTarget{
+			IntegrationName: state.IntegrationName,
+			DisplayName:     displayName,
+			Config:          cfg,
+		})
+	}
+	return targets, nil
+}
+
+func (s *IntegrationsService) ListUserInstallationTargets(ctx context.Context) ([]rez.IntegrationInstallationTarget, error) {
 	userId, ok := execution.GetContext(ctx).UserID()
 	if !ok {
 		return nil, rez.ErrAuthSessionMissing
 	}
 	query := s.db.Client(ctx).IntegrationUserInstallState.Query().
 		Where(iuis.UserID(userId)).
-		Where(iuis.InstallationTargetsNotNil())
+		Where(iuis.InstallationTargetConfigsNotNil())
 	states, queryErr := query.All(ctx)
 	if queryErr != nil && !ent.IsNotFound(queryErr) {
 		return nil, fmt.Errorf("query failed: %w", queryErr)
 	}
-	targets := make(map[string][]rez.IntegrationInstallationTarget)
+	targets := make([]rez.IntegrationInstallationTarget, len(states))
 	for _, state := range states {
-		opts, optsErr := integrations.DecodeInstallationTargetOptions(state.InstallationTargets)
-		if optsErr != nil {
-			return nil, fmt.Errorf("decode installation targets: %w", optsErr)
+		stateTargets, targetErr := s.decodeStateInstallationTargets(state)
+		if targetErr != nil {
+			return nil, fmt.Errorf("failed to decode installation targets: %w", targetErr)
 		}
-		targets[state.IntegrationName] = opts
+		targets = append(targets, stateTargets...)
 	}
 	return targets, nil
 }
@@ -442,7 +474,7 @@ func (s *IntegrationsService) InstallFromUserInstallationTargets(ctx context.Con
 	if stateErr != nil {
 		return nil, fmt.Errorf("invalid state: %w", stateErr)
 	}
-	options, decodeErr := integrations.DecodeInstallationTargetOptions(state.InstallationTargets)
+	options, decodeErr := s.decodeStateInstallationTargets(state)
 	if decodeErr != nil {
 		return nil, fmt.Errorf("decode installation targets: %w", decodeErr)
 	}
@@ -451,15 +483,14 @@ func (s *IntegrationsService) InstallFromUserInstallationTargets(ctx context.Con
 
 	selected := make([]rez.IntegrationInstallationTarget, 0, selectedRefs.Cardinality())
 	for _, option := range options {
-		if selectedRefs.Contains(option.ExternalRef) {
+		if selectedRefs.Contains(option.Config.ExternalRef()) {
 			selected = append(selected, option)
 		}
 	}
 	if len(selected) == 0 {
 		return nil, fmt.Errorf("at least one integration option must be selected")
 	}
-
-	installed, installErr := s.installTargets(ctx, intgName, selected)
+	installed, installErr := s.InstallTargets(ctx, selected)
 	if installErr != nil {
 		return nil, fmt.Errorf("failed to install targets: %w", installErr)
 	}
@@ -470,12 +501,12 @@ func (s *IntegrationsService) InstallFromUserInstallationTargets(ctx context.Con
 	return installed, nil
 }
 
-func (s *IntegrationsService) installTargets(ctx context.Context, intgName string, options []rez.IntegrationInstallationTarget) ([]rez.InstalledIntegration, error) {
-	installed := make([]rez.InstalledIntegration, 0, len(options))
-	for _, option := range options {
-		ii, cfgErr := s.installTarget(ctx, intgName, option)
-		if cfgErr != nil {
-			return nil, fmt.Errorf("install integration %s option %s: %w", intgName, option.DisplayName, cfgErr)
+func (s *IntegrationsService) InstallTargets(ctx context.Context, targets []rez.IntegrationInstallationTarget) ([]rez.InstalledIntegration, error) {
+	installed := make([]rez.InstalledIntegration, 0, len(targets))
+	for _, target := range targets {
+		ii, installErr := s.InstallFromTarget(ctx, target)
+		if installErr != nil {
+			return nil, fmt.Errorf("install integration %s target %s: %w", target.IntegrationName, target.DisplayName, installErr)
 		}
 		installed = append(installed, ii)
 	}

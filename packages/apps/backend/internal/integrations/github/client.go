@@ -11,20 +11,15 @@ import (
 )
 
 type githubClient struct {
-	ci     *InstalledIntegration
-	cfg    *installationConfig
+	ii     *InstalledIntegration
 	client *github.Client
 }
 
 func newAppClient(cfg rez.IntegrationsConfigGithub, ii *InstalledIntegration) (*githubClient, error) {
-	icfg, icfgErr := ii.config()
-	if icfgErr != nil {
-		return nil, icfgErr
-	}
 	transport, transportErr := ghinstallation.New(
 		http.DefaultTransport,
 		cfg.App.AppID,
-		icfg.InstallationID,
+		ii.config.InstallationID,
 		[]byte(cfg.App.PrivateKeyPEM),
 	)
 	if transportErr != nil {
@@ -32,7 +27,7 @@ func newAppClient(cfg rez.IntegrationsConfigGithub, ii *InstalledIntegration) (*
 	}
 	client := github.NewClient(&http.Client{Transport: transport})
 
-	return &githubClient{ci: ii, cfg: icfg, client: client}, nil
+	return &githubClient{ii: ii, client: client}, nil
 }
 
 func (c *githubClient) ListRepositories(ctx context.Context) ([]*github.Repository, error) {
@@ -42,7 +37,7 @@ func (c *githubClient) ListRepositories(ctx context.Context) ([]*github.Reposito
 	}
 	for page := 1; ; page++ {
 		opts.Page = page
-		repos, resp, err := c.client.Repositories.ListByOrg(ctx, c.cfg.Org, opts)
+		repos, resp, err := c.client.Repositories.ListByOrg(ctx, c.ii.config.Org, opts)
 		if err != nil {
 			return nil, fmt.Errorf("list org repos page %d: %w", page, err)
 		}

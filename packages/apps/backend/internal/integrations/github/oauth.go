@@ -3,7 +3,6 @@ package github
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	gh "github.com/google/go-github/v84/github"
 	rez "github.com/rezible/rezible"
@@ -15,10 +14,6 @@ func (i *Integration) OAuthInstallRequired() bool {
 }
 
 func (i *Integration) OAuth2Config() *oauth2.Config {
-	return i.oauth2Config
-}
-
-func (i *Integration) loadOAuthConfig() *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     i.cfg.App.ClientID,
 		ClientSecret: i.cfg.App.ClientSecret,
@@ -28,6 +23,17 @@ func (i *Integration) loadOAuthConfig() *oauth2.Config {
 			AuthStyle: oauth2.AuthStyleInParams,
 		},
 	}
+}
+
+func (i *Integration) RetrieveInstallationTargetOptions(ctx context.Context, t *oauth2.Token) ([]rez.IntegrationInstallationTarget, error) {
+	if t == nil || t.AccessToken == "" {
+		return nil, fmt.Errorf("missing access token")
+	}
+	installations, err := i.listUserInstallations(ctx, t.AccessToken)
+	if err != nil {
+		return nil, fmt.Errorf("list github installations: %w", err)
+	}
+	return i.makeInstallationTargetOptions(installations)
 }
 
 func (i *Integration) listUserInstallations(ctx context.Context, accessToken string) ([]*gh.Installation, error) {
@@ -48,49 +54,24 @@ func (i *Integration) listUserInstallations(ctx context.Context, accessToken str
 	return all, nil
 }
 
-func (i *Integration) RetrieveInstallationTargetOptions(ctx context.Context, t *oauth2.Token) ([]rez.IntegrationInstallationTarget, error) {
-	if t == nil || t.AccessToken == "" {
-		return nil, fmt.Errorf("missing access token")
-	}
-	installations, err := i.listUserInstallations(ctx, t.AccessToken)
-	if err != nil {
-		return nil, fmt.Errorf("list github installations: %w", err)
-	}
-	return i.makeInstallationTargetOptions(installations)
-}
-
 func (i *Integration) makeInstallationTargetOptions(installations []*gh.Installation) ([]rez.IntegrationInstallationTarget, error) {
-	matches := make([]*gh.Installation, 0, len(installations))
-	for _, installation := range installations {
-		if installation == nil || installation.GetID() == 0 || installation.GetAccount().GetLogin() == "" {
+	if len(installations) == 0 {
+		return nil, fmt.Errorf("no valid github app installations")
+	}
+	options := make([]rez.IntegrationInstallationTarget, 0, len(installations))
+	for _, inst := range installations {
+		if inst.GetAppID() != i.cfg.App.AppID {
 			continue
 		}
-		if installation.GetAppID() != i.cfg.App.AppID {
-			continue
-		}
-		matches = append(matches, installation)
-	}
-
-	if len(matches) == 0 {
-		return nil, fmt.Errorf("no valid github app installations found for authenticated user")
-	}
-
-	options := make([]rez.IntegrationInstallationTarget, 0, len(matches))
-	for _, installation := range matches {
-		cfg := &installationConfig{
-			Org:            installation.GetAccount().GetLogin(),
-			InstallationID: installation.GetID(),
-		}
-		instCfg, cfgErr := cfg.encode()
+		cfg, cfgErr := i.MakeInstallationConfigFromGithub(inst)
 		if cfgErr != nil {
-			return nil, fmt.Errorf("encode installation config: %w", cfgErr)
+			return nil, fmt.Errorf("make installation config: %w", cfgErr)
 		}
-		option := rez.IntegrationInstallationTarget{
-			ExternalRef:        strconv.FormatInt(installation.GetID(), 10),
-			DisplayName:        installation.GetAccount().GetLogin(),
-			InstallationConfig: instCfg,
-		}
-		options = append(options, option)
+		options = append(options, rez.IntegrationInstallationTarget{
+			IntegrationName: integrationName,
+			DisplayName:     cfg.Org,
+			Config:          cfg,
+		})
 	}
 	return options, nil
 }

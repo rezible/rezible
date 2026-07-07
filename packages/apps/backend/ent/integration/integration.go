@@ -22,10 +22,14 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldProviderName holds the string denoting the provider_name field in the database.
+	FieldProviderName = "provider_name"
 	// FieldIntegrationName holds the string denoting the integration_name field in the database.
 	FieldIntegrationName = "integration_name"
-	// FieldExternalProviderRef holds the string denoting the external_provider_ref field in the database.
-	FieldExternalProviderRef = "external_provider_ref"
+	// FieldDisplayName holds the string denoting the display_name field in the database.
+	FieldDisplayName = "display_name"
+	// FieldExternalRef holds the string denoting the external_ref field in the database.
+	FieldExternalRef = "external_ref"
 	// FieldInstallationConfig holds the string denoting the installation_config field in the database.
 	FieldInstallationConfig = "installation_config"
 	// FieldUserSettings holds the string denoting the user_settings field in the database.
@@ -49,8 +53,10 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldProviderName,
 	FieldIntegrationName,
-	FieldExternalProviderRef,
+	FieldDisplayName,
+	FieldExternalRef,
 	FieldInstallationConfig,
 	FieldUserSettings,
 }
@@ -79,6 +85,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultUserSettings holds the default value on creation for the "user_settings" field.
+	DefaultUserSettings map[string]interface{}
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -106,14 +114,24 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByProviderName orders the results by the provider_name field.
+func ByProviderName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderName, opts...).ToFunc()
+}
+
 // ByIntegrationName orders the results by the integration_name field.
 func ByIntegrationName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIntegrationName, opts...).ToFunc()
 }
 
-// ByExternalProviderRef orders the results by the external_provider_ref field.
-func ByExternalProviderRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExternalProviderRef, opts...).ToFunc()
+// ByDisplayName orders the results by the display_name field.
+func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDisplayName, opts...).ToFunc()
+}
+
+// ByExternalRef orders the results by the external_ref field.
+func ByExternalRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExternalRef, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

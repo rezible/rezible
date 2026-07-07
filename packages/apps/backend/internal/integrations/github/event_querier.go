@@ -14,21 +14,19 @@ import (
 )
 
 func (i *Integration) MakeProviderEventQuerier(cfg rez.IntegrationsConfigGithub, intg *ent.Integration) (rez.ProviderEventQuerier, error) {
-	ii := i.newInstalledIntegration(intg)
+	ii, iiErr := i.newInstalledIntegration(intg)
+	if iiErr != nil {
+		return nil, fmt.Errorf("integration installation: %w", iiErr)
+	}
 	client, clientErr := newAppClient(cfg, ii)
 	if clientErr != nil {
 		return nil, fmt.Errorf("app client: %w", clientErr)
 	}
-	icfg, icfgErr := ii.config()
-	if icfgErr != nil {
-		return nil, fmt.Errorf("config: %w", icfgErr)
-	}
-	return &eventQuerier{ii: ii, cfg: icfg, client: client}, nil
+	return &eventQuerier{ii: ii, client: client}, nil
 }
 
 type eventQuerier struct {
 	ii     *InstalledIntegration
-	cfg    *installationConfig
 	client *githubClient
 }
 
@@ -67,7 +65,7 @@ func (q *eventQuerier) pullRepositoryEvents(ctx context.Context, cursorAfter str
 			}
 
 			payload := githubRepositoryObservedPayload{
-				InstallationID: q.cfg.InstallationID,
+				InstallationID: q.ii.config.InstallationID,
 				ID:             repo.GetID(),
 				FullName:       repo.GetFullName(),
 				HTMLURL:        repo.GetHTMLURL(),

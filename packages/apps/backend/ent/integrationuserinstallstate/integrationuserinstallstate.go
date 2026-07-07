@@ -20,12 +20,12 @@ const (
 	FieldUserID = "user_id"
 	// FieldIntegrationName holds the string denoting the integration_name field in the database.
 	FieldIntegrationName = "integration_name"
-	// FieldOauthState holds the string denoting the oauth_state field in the database.
-	FieldOauthState = "oauth_state"
-	// FieldInstallationTargets holds the string denoting the installation_targets field in the database.
-	FieldInstallationTargets = "installation_targets"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
 	FieldExpiresAt = "expires_at"
+	// FieldOauthState holds the string denoting the oauth_state field in the database.
+	FieldOauthState = "oauth_state"
+	// FieldInstallationTargetConfigs holds the string denoting the installation_target_configs field in the database.
+	FieldInstallationTargetConfigs = "installation_target_configs"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -54,9 +54,9 @@ var Columns = []string{
 	FieldTenantID,
 	FieldUserID,
 	FieldIntegrationName,
-	FieldOauthState,
-	FieldInstallationTargets,
 	FieldExpiresAt,
+	FieldOauthState,
+	FieldInstallationTargetConfigs,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -79,8 +79,6 @@ var (
 	Policy ent.Policy
 	// DefaultUserID holds the default value on creation for the "user_id" field.
 	DefaultUserID func() uuid.UUID
-	// DefaultInstallationTargets holds the default value on creation for the "installation_targets" field.
-	DefaultInstallationTargets []map[string]interface{}
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -108,14 +106,14 @@ func ByIntegrationName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIntegrationName, opts...).ToFunc()
 }
 
-// ByOauthState orders the results by the oauth_state field.
-func ByOauthState(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldOauthState, opts...).ToFunc()
-}
-
 // ByExpiresAt orders the results by the expires_at field.
 func ByExpiresAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldExpiresAt, opts...).ToFunc()
+}
+
+// ByOauthState orders the results by the oauth_state field.
+func ByOauthState(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOauthState, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

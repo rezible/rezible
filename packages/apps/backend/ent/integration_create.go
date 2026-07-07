@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -59,20 +60,32 @@ func (_c *IntegrationCreate) SetNillableUpdatedAt(v *time.Time) *IntegrationCrea
 	return _c
 }
 
+// SetProviderName sets the "provider_name" field.
+func (_c *IntegrationCreate) SetProviderName(v string) *IntegrationCreate {
+	_c.mutation.SetProviderName(v)
+	return _c
+}
+
 // SetIntegrationName sets the "integration_name" field.
 func (_c *IntegrationCreate) SetIntegrationName(v string) *IntegrationCreate {
 	_c.mutation.SetIntegrationName(v)
 	return _c
 }
 
-// SetExternalProviderRef sets the "external_provider_ref" field.
-func (_c *IntegrationCreate) SetExternalProviderRef(v string) *IntegrationCreate {
-	_c.mutation.SetExternalProviderRef(v)
+// SetDisplayName sets the "display_name" field.
+func (_c *IntegrationCreate) SetDisplayName(v string) *IntegrationCreate {
+	_c.mutation.SetDisplayName(v)
+	return _c
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (_c *IntegrationCreate) SetExternalRef(v string) *IntegrationCreate {
+	_c.mutation.SetExternalRef(v)
 	return _c
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (_c *IntegrationCreate) SetInstallationConfig(v map[string]interface{}) *IntegrationCreate {
+func (_c *IntegrationCreate) SetInstallationConfig(v json.RawMessage) *IntegrationCreate {
 	_c.mutation.SetInstallationConfig(v)
 	return _c
 }
@@ -153,6 +166,10 @@ func (_c *IntegrationCreate) defaults() error {
 		v := integration.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.UserSettings(); !ok {
+		v := integration.DefaultUserSettings
+		_c.mutation.SetUserSettings(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if integration.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized integration.DefaultID (forgotten import ent/runtime?)")
@@ -174,17 +191,20 @@ func (_c *IntegrationCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Integration.updated_at"`)}
 	}
+	if _, ok := _c.mutation.ProviderName(); !ok {
+		return &ValidationError{Name: "provider_name", err: errors.New(`ent: missing required field "Integration.provider_name"`)}
+	}
 	if _, ok := _c.mutation.IntegrationName(); !ok {
 		return &ValidationError{Name: "integration_name", err: errors.New(`ent: missing required field "Integration.integration_name"`)}
 	}
-	if _, ok := _c.mutation.ExternalProviderRef(); !ok {
-		return &ValidationError{Name: "external_provider_ref", err: errors.New(`ent: missing required field "Integration.external_provider_ref"`)}
+	if _, ok := _c.mutation.DisplayName(); !ok {
+		return &ValidationError{Name: "display_name", err: errors.New(`ent: missing required field "Integration.display_name"`)}
+	}
+	if _, ok := _c.mutation.ExternalRef(); !ok {
+		return &ValidationError{Name: "external_ref", err: errors.New(`ent: missing required field "Integration.external_ref"`)}
 	}
 	if _, ok := _c.mutation.InstallationConfig(); !ok {
 		return &ValidationError{Name: "installation_config", err: errors.New(`ent: missing required field "Integration.installation_config"`)}
-	}
-	if _, ok := _c.mutation.UserSettings(); !ok {
-		return &ValidationError{Name: "user_settings", err: errors.New(`ent: missing required field "Integration.user_settings"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Integration.tenant"`)}
@@ -234,13 +254,21 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if value, ok := _c.mutation.ProviderName(); ok {
+		_spec.SetField(integration.FieldProviderName, field.TypeString, value)
+		_node.ProviderName = value
+	}
 	if value, ok := _c.mutation.IntegrationName(); ok {
 		_spec.SetField(integration.FieldIntegrationName, field.TypeString, value)
 		_node.IntegrationName = value
 	}
-	if value, ok := _c.mutation.ExternalProviderRef(); ok {
-		_spec.SetField(integration.FieldExternalProviderRef, field.TypeString, value)
-		_node.ExternalProviderRef = value
+	if value, ok := _c.mutation.DisplayName(); ok {
+		_spec.SetField(integration.FieldDisplayName, field.TypeString, value)
+		_node.DisplayName = value
+	}
+	if value, ok := _c.mutation.ExternalRef(); ok {
+		_spec.SetField(integration.FieldExternalRef, field.TypeString, value)
+		_node.ExternalRef = value
 	}
 	if value, ok := _c.mutation.InstallationConfig(); ok {
 		_spec.SetField(integration.FieldInstallationConfig, field.TypeJSON, value)
@@ -344,6 +372,18 @@ func (u *IntegrationUpsert) UpdateUpdatedAt() *IntegrationUpsert {
 	return u
 }
 
+// SetProviderName sets the "provider_name" field.
+func (u *IntegrationUpsert) SetProviderName(v string) *IntegrationUpsert {
+	u.Set(integration.FieldProviderName, v)
+	return u
+}
+
+// UpdateProviderName sets the "provider_name" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateProviderName() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldProviderName)
+	return u
+}
+
 // SetIntegrationName sets the "integration_name" field.
 func (u *IntegrationUpsert) SetIntegrationName(v string) *IntegrationUpsert {
 	u.Set(integration.FieldIntegrationName, v)
@@ -356,20 +396,32 @@ func (u *IntegrationUpsert) UpdateIntegrationName() *IntegrationUpsert {
 	return u
 }
 
-// SetExternalProviderRef sets the "external_provider_ref" field.
-func (u *IntegrationUpsert) SetExternalProviderRef(v string) *IntegrationUpsert {
-	u.Set(integration.FieldExternalProviderRef, v)
+// SetDisplayName sets the "display_name" field.
+func (u *IntegrationUpsert) SetDisplayName(v string) *IntegrationUpsert {
+	u.Set(integration.FieldDisplayName, v)
 	return u
 }
 
-// UpdateExternalProviderRef sets the "external_provider_ref" field to the value that was provided on create.
-func (u *IntegrationUpsert) UpdateExternalProviderRef() *IntegrationUpsert {
-	u.SetExcluded(integration.FieldExternalProviderRef)
+// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateDisplayName() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldDisplayName)
+	return u
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (u *IntegrationUpsert) SetExternalRef(v string) *IntegrationUpsert {
+	u.Set(integration.FieldExternalRef, v)
+	return u
+}
+
+// UpdateExternalRef sets the "external_ref" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateExternalRef() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldExternalRef)
 	return u
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (u *IntegrationUpsert) SetInstallationConfig(v map[string]interface{}) *IntegrationUpsert {
+func (u *IntegrationUpsert) SetInstallationConfig(v json.RawMessage) *IntegrationUpsert {
 	u.Set(integration.FieldInstallationConfig, v)
 	return u
 }
@@ -389,6 +441,12 @@ func (u *IntegrationUpsert) SetUserSettings(v map[string]interface{}) *Integrati
 // UpdateUserSettings sets the "user_settings" field to the value that was provided on create.
 func (u *IntegrationUpsert) UpdateUserSettings() *IntegrationUpsert {
 	u.SetExcluded(integration.FieldUserSettings)
+	return u
+}
+
+// ClearUserSettings clears the value of the "user_settings" field.
+func (u *IntegrationUpsert) ClearUserSettings() *IntegrationUpsert {
+	u.SetNull(integration.FieldUserSettings)
 	return u
 }
 
@@ -471,6 +529,20 @@ func (u *IntegrationUpsertOne) UpdateUpdatedAt() *IntegrationUpsertOne {
 	})
 }
 
+// SetProviderName sets the "provider_name" field.
+func (u *IntegrationUpsertOne) SetProviderName(v string) *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetProviderName(v)
+	})
+}
+
+// UpdateProviderName sets the "provider_name" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateProviderName() *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateProviderName()
+	})
+}
+
 // SetIntegrationName sets the "integration_name" field.
 func (u *IntegrationUpsertOne) SetIntegrationName(v string) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
@@ -485,22 +557,36 @@ func (u *IntegrationUpsertOne) UpdateIntegrationName() *IntegrationUpsertOne {
 	})
 }
 
-// SetExternalProviderRef sets the "external_provider_ref" field.
-func (u *IntegrationUpsertOne) SetExternalProviderRef(v string) *IntegrationUpsertOne {
+// SetDisplayName sets the "display_name" field.
+func (u *IntegrationUpsertOne) SetDisplayName(v string) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.SetExternalProviderRef(v)
+		s.SetDisplayName(v)
 	})
 }
 
-// UpdateExternalProviderRef sets the "external_provider_ref" field to the value that was provided on create.
-func (u *IntegrationUpsertOne) UpdateExternalProviderRef() *IntegrationUpsertOne {
+// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateDisplayName() *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateExternalProviderRef()
+		s.UpdateDisplayName()
+	})
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (u *IntegrationUpsertOne) SetExternalRef(v string) *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetExternalRef(v)
+	})
+}
+
+// UpdateExternalRef sets the "external_ref" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateExternalRef() *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateExternalRef()
 	})
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (u *IntegrationUpsertOne) SetInstallationConfig(v map[string]interface{}) *IntegrationUpsertOne {
+func (u *IntegrationUpsertOne) SetInstallationConfig(v json.RawMessage) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetInstallationConfig(v)
 	})
@@ -524,6 +610,13 @@ func (u *IntegrationUpsertOne) SetUserSettings(v map[string]interface{}) *Integr
 func (u *IntegrationUpsertOne) UpdateUserSettings() *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.UpdateUserSettings()
+	})
+}
+
+// ClearUserSettings clears the value of the "user_settings" field.
+func (u *IntegrationUpsertOne) ClearUserSettings() *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.ClearUserSettings()
 	})
 }
 
@@ -773,6 +866,20 @@ func (u *IntegrationUpsertBulk) UpdateUpdatedAt() *IntegrationUpsertBulk {
 	})
 }
 
+// SetProviderName sets the "provider_name" field.
+func (u *IntegrationUpsertBulk) SetProviderName(v string) *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetProviderName(v)
+	})
+}
+
+// UpdateProviderName sets the "provider_name" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateProviderName() *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateProviderName()
+	})
+}
+
 // SetIntegrationName sets the "integration_name" field.
 func (u *IntegrationUpsertBulk) SetIntegrationName(v string) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
@@ -787,22 +894,36 @@ func (u *IntegrationUpsertBulk) UpdateIntegrationName() *IntegrationUpsertBulk {
 	})
 }
 
-// SetExternalProviderRef sets the "external_provider_ref" field.
-func (u *IntegrationUpsertBulk) SetExternalProviderRef(v string) *IntegrationUpsertBulk {
+// SetDisplayName sets the "display_name" field.
+func (u *IntegrationUpsertBulk) SetDisplayName(v string) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.SetExternalProviderRef(v)
+		s.SetDisplayName(v)
 	})
 }
 
-// UpdateExternalProviderRef sets the "external_provider_ref" field to the value that was provided on create.
-func (u *IntegrationUpsertBulk) UpdateExternalProviderRef() *IntegrationUpsertBulk {
+// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateDisplayName() *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateExternalProviderRef()
+		s.UpdateDisplayName()
+	})
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (u *IntegrationUpsertBulk) SetExternalRef(v string) *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetExternalRef(v)
+	})
+}
+
+// UpdateExternalRef sets the "external_ref" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateExternalRef() *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateExternalRef()
 	})
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (u *IntegrationUpsertBulk) SetInstallationConfig(v map[string]interface{}) *IntegrationUpsertBulk {
+func (u *IntegrationUpsertBulk) SetInstallationConfig(v json.RawMessage) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetInstallationConfig(v)
 	})
@@ -826,6 +947,13 @@ func (u *IntegrationUpsertBulk) SetUserSettings(v map[string]interface{}) *Integ
 func (u *IntegrationUpsertBulk) UpdateUserSettings() *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.UpdateUserSettings()
+	})
+}
+
+// ClearUserSettings clears the value of the "user_settings" field.
+func (u *IntegrationUpsertBulk) ClearUserSettings() *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.ClearUserSettings()
 	})
 }
 

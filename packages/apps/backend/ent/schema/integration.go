@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"encoding/json"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -25,11 +27,14 @@ func (Integration) Mixin() []ent.Mixin {
 func (Integration) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
+		field.String("provider_name"),
 		field.String("integration_name"),
-		field.String("external_provider_ref"),
-		field.JSON("installation_config", map[string]any{}).
+		field.String("display_name"),
+		field.String("external_ref"),
+		field.JSON("installation_config", json.RawMessage{}).
 			SchemaType(schemaTypeJsonB),
 		field.JSON("user_settings", map[string]any{}).
+			Optional().Default(map[string]any{}).
 			SchemaType(schemaTypeJsonB),
 	}
 }
@@ -37,7 +42,8 @@ func (Integration) Fields() []ent.Field {
 func (Integration) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "integration_name"),
-		index.Fields("tenant_id", "integration_name", "external_provider_ref").Unique(),
+		index.Fields("tenant_id", "provider_name"),
+		index.Fields("tenant_id", "integration_name", "external_ref").Unique(),
 	}
 }
 
@@ -57,11 +63,12 @@ func (IntegrationUserInstallState) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("user_id", uuid.New()).Default(uuid.New),
 		field.String("integration_name"),
-		field.String("oauth_state").Optional(),
-		field.JSON("installation_targets", []map[string]any{}).
-			Optional().Default([]map[string]any{}).
-			SchemaType(schemaTypeJsonB),
 		field.Time("expires_at"),
+		field.String("oauth_state").
+			Optional(),
+		field.JSON("installation_target_configs", map[string]json.RawMessage{}).
+			Optional().
+			SchemaType(schemaTypeJsonB),
 	}
 }
 

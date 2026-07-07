@@ -2,8 +2,10 @@ package apiv1
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
@@ -32,9 +34,12 @@ func (h *integrationsHandler) GetInstallableIntegrations(ctx context.Context, re
 
 func (h *integrationsHandler) InstallIntegration(ctx context.Context, req *oapi.InstallIntegrationRequest) (*oapi.InstallIntegrationResponse, error) {
 	var resp oapi.InstallIntegrationResponse
-
 	attr := req.Body.Attributes
-	intg, installErr := h.integrations.InstallNew(ctx, req.Name, attr.Config, attr.UserSettings)
+	rawCfg, cfgErr := json.Marshal(attr.Config)
+	if cfgErr != nil {
+		return nil, oapi.Error(ctx, "failed to marshal integration config", cfgErr)
+	}
+	intg, installErr := h.integrations.InstallNew(ctx, req.Name, rawCfg)
 	if installErr != nil {
 		return nil, oapi.Error(ctx, "failed to install integration", installErr)
 	}
@@ -133,7 +138,7 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 	if completeErr != nil {
 		return nil, oapi.Error(ctx, "failed to complete integration", completeErr)
 	}
-	resp.Body.Data = oapi.IntegrationOAuthFlowResultFromRez(req.Name, result)
+	resp.Body.Data = oapi.IntegrationOAuthFlowResultFromRez(result)
 
 	return &resp, nil
 }
@@ -145,11 +150,7 @@ func (h *integrationsHandler) ListIntegrationInstallTargets(ctx context.Context,
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "failed to list integration install targets", listErr)
 	}
-	resp.Body.Data = make([]oapi.IntegrationInstallTarget, 0)
-	for name, intgTargets := range targets {
-		resp.Body.Data = append(resp.Body.Data,
-			oapi.IntegrationInstallTargetOptionsFromRez(name, intgTargets)...)
-	}
+	resp.Body.Data = oapi.IntegrationInstallTargetOptionsFromRez(targets)
 
 	return &resp, nil
 }
@@ -157,15 +158,33 @@ func (h *integrationsHandler) ListIntegrationInstallTargets(ctx context.Context,
 func (h *integrationsHandler) InstallIntegrationFromTargets(ctx context.Context, req *oapi.InstallIntegrationFromTargetsRequest) (*oapi.InstallIntegrationFromTargetsResponse, error) {
 	var resp oapi.InstallIntegrationFromTargetsResponse
 
-	attr := req.Body.Attributes
-	results, installErr := h.integrations.InstallFromUserInstallationTargets(ctx, req.Name, attr.ExternalRefs)
-	if installErr != nil {
-		return nil, oapi.Error(ctx, "failed to install selected integrations", installErr)
+	selectedRefs := mapset.NewSet(req.Body.Attributes.ExternalRefs...)
+	if selectedRefs.Cardinality() == 0 {
+		return nil, oapi.Error(ctx, "invalid params", fmt.Errorf("missing references"))
 	}
 
-	resp.Body.Data = make([]oapi.IntegrationInstallation, len(results))
-	for i, intg := range results {
-		resp.Body.Data[i] = oapi.IntegrationInstallationFromRez(intg)
+	targets, targetsErr := h.integrations.ListUserInstallationTargets(ctx)
+	if targetsErr != nil {
+		return nil, oapi.Error(ctx, "failed to list integration install targets", targetsErr)
+	}
+	selected := make([]rez.IntegrationInstallationTarget, 0, len(targets))
+	for _, target := range targets {
+		if selectedRefs.Contains(target.Config.ExternalRef()) {
+			selected = append(selected, target)
+		}
+	}
+	if len(selected) == 0 {
+		return nil, oapi.Error(ctx, "invalid params", fmt.Errorf("no valid targets"))
+	}
+
+	resp.Body.Data = make([]oapi.IntegrationInstallation, len(selected))
+
+	for i, target := range selected {
+		res, installErr := h.integrations.InstallFromTarget(ctx, target)
+		if installErr != nil {
+			return nil, oapi.Error(ctx, "failed to install selected target", installErr)
+		}
+		resp.Body.Data[i] = oapi.IntegrationInstallationFromRez(res)
 	}
 
 	return &resp, nil

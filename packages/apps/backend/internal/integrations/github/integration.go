@@ -1,10 +1,9 @@
 package github
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
-
-	"github.com/go-viper/mapstructure/v2"
-	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -17,20 +16,17 @@ const (
 
 type Integration struct {
 	cfg            rez.IntegrationsConfigGithub
-	oauth2Config   *oauth2.Config
 	webhookHandler http.Handler
 }
 
-func MakeIntegration(cfg rez.Config, provEvents rez.ProviderEventPipelineService) (*Integration, error) {
+func MakeIntegration(cfg rez.Config, events rez.ProviderEventPipelineService) (*Integration, error) {
 	i := &Integration{
 		cfg:            cfg.Integrations.Github,
 		webhookHandler: http.NotFoundHandler(),
 	}
 
-	i.oauth2Config = i.loadOAuthConfig()
-
 	if i.cfg.Enabled {
-		i.webhookHandler = newWebhookHandler(i.cfg.WebhookSecret, provEvents)
+		i.webhookHandler = newWebhookHandler(i.cfg.WebhookSecret, events)
 	}
 
 	return i, nil
@@ -64,62 +60,47 @@ func (i *Integration) WebhookHandler() http.Handler {
 	return i.webhookHandler
 }
 
-type installationConfig struct {
-	Org            string `mapstructure:"org"`
-	InstallationID int64  `mapstructure:"installation_id"`
+func (i *Integration) ValidateInstallationConfig(raw []byte) (rez.IntegrationInstallationConfig, error) {
+	return i.decodeValidateInstallationConfig(raw)
 }
 
-func (ic *installationConfig) encode() (map[string]any, error) {
-	var cfg map[string]any
-	encErr := mapstructure.Decode(ic, &cfg)
-	return cfg, encErr
-}
-
-func (i *Integration) ValidateConfig(m map[string]any) (externalRef string, validationErr error) {
-	return "", nil
+func (i *Integration) decodeValidateInstallationConfig(raw []byte) (*InstallationConfig, error) {
+	var cfg InstallationConfig
+	if encErr := json.Unmarshal(raw, &cfg); encErr != nil {
+		return nil, encErr
+	}
+	// TODO: validate fields
+	return &cfg, nil
 }
 
 func (i *Integration) ValidateUserSettings(settings map[string]any) error {
 	return nil
 }
 
-func (i *Integration) GetInstalledIntegration(intg *ent.Integration) rez.InstalledIntegration {
+func (i *Integration) GetInstalledIntegration(intg *ent.Integration) (rez.InstalledIntegration, error) {
 	return i.newInstalledIntegration(intg)
 }
 
 // InstalledIntegration wraps an *ent.Integration for a specific tenant installation.
 type InstalledIntegration struct {
-	intg *ent.Integration
+	intg   *ent.Integration
+	config *InstallationConfig
 }
 
-func (i *Integration) newInstalledIntegration(intg *ent.Integration) *InstalledIntegration {
-	return &InstalledIntegration{
-		intg: intg,
+func (i *Integration) newInstalledIntegration(intg *ent.Integration) (*InstalledIntegration, error) {
+	cfg, cfgErr := i.decodeValidateInstallationConfig(intg.InstallationConfig)
+	if cfgErr != nil {
+		return nil, fmt.Errorf("validate config: %w", cfgErr)
 	}
+	return &InstalledIntegration{intg: intg, config: cfg}, nil
 }
 
 func (ii *InstalledIntegration) Integration() *ent.Integration {
 	return ii.intg
 }
 
-func (ii *InstalledIntegration) ProviderName() string {
-	return providerName
-}
-
-func (ii *InstalledIntegration) DisplayName() string {
-	return "Github"
-}
-
-func (ii *InstalledIntegration) config() (*installationConfig, error) {
-	var cfg installationConfig
-	if decErr := mapstructure.Decode(ii.intg.InstallationConfig, &cfg); decErr != nil {
-		return nil, decErr
-	}
-	return &cfg, nil
-}
-
-func (ii *InstalledIntegration) GetSanitizedConfig() map[string]any {
-	return ii.intg.InstallationConfig
+func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
+	return ii.config
 }
 
 func (ii *InstalledIntegration) GetCapabilities() map[string]bool {

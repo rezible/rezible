@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -52,6 +53,12 @@ func (_c *IntegrationUserInstallStateCreate) SetIntegrationName(v string) *Integ
 	return _c
 }
 
+// SetExpiresAt sets the "expires_at" field.
+func (_c *IntegrationUserInstallStateCreate) SetExpiresAt(v time.Time) *IntegrationUserInstallStateCreate {
+	_c.mutation.SetExpiresAt(v)
+	return _c
+}
+
 // SetOauthState sets the "oauth_state" field.
 func (_c *IntegrationUserInstallStateCreate) SetOauthState(v string) *IntegrationUserInstallStateCreate {
 	_c.mutation.SetOauthState(v)
@@ -66,15 +73,9 @@ func (_c *IntegrationUserInstallStateCreate) SetNillableOauthState(v *string) *I
 	return _c
 }
 
-// SetInstallationTargets sets the "installation_targets" field.
-func (_c *IntegrationUserInstallStateCreate) SetInstallationTargets(v []map[string]interface{}) *IntegrationUserInstallStateCreate {
-	_c.mutation.SetInstallationTargets(v)
-	return _c
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (_c *IntegrationUserInstallStateCreate) SetExpiresAt(v time.Time) *IntegrationUserInstallStateCreate {
-	_c.mutation.SetExpiresAt(v)
+// SetInstallationTargetConfigs sets the "installation_target_configs" field.
+func (_c *IntegrationUserInstallStateCreate) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateCreate {
+	_c.mutation.SetInstallationTargetConfigs(v)
 	return _c
 }
 
@@ -145,10 +146,6 @@ func (_c *IntegrationUserInstallStateCreate) defaults() error {
 		}
 		v := integrationuserinstallstate.DefaultUserID()
 		_c.mutation.SetUserID(v)
-	}
-	if _, ok := _c.mutation.InstallationTargets(); !ok {
-		v := integrationuserinstallstate.DefaultInstallationTargets
-		_c.mutation.SetInstallationTargets(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if integrationuserinstallstate.DefaultID == nil {
@@ -221,17 +218,17 @@ func (_c *IntegrationUserInstallStateCreate) createSpec() (*IntegrationUserInsta
 		_spec.SetField(integrationuserinstallstate.FieldIntegrationName, field.TypeString, value)
 		_node.IntegrationName = value
 	}
+	if value, ok := _c.mutation.ExpiresAt(); ok {
+		_spec.SetField(integrationuserinstallstate.FieldExpiresAt, field.TypeTime, value)
+		_node.ExpiresAt = value
+	}
 	if value, ok := _c.mutation.OauthState(); ok {
 		_spec.SetField(integrationuserinstallstate.FieldOauthState, field.TypeString, value)
 		_node.OauthState = value
 	}
-	if value, ok := _c.mutation.InstallationTargets(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldInstallationTargets, field.TypeJSON, value)
-		_node.InstallationTargets = value
-	}
-	if value, ok := _c.mutation.ExpiresAt(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldExpiresAt, field.TypeTime, value)
-		_node.ExpiresAt = value
+	if value, ok := _c.mutation.InstallationTargetConfigs(); ok {
+		_spec.SetField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeJSON, value)
+		_node.InstallationTargetConfigs = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -345,6 +342,18 @@ func (u *IntegrationUserInstallStateUpsert) UpdateIntegrationName() *Integration
 	return u
 }
 
+// SetExpiresAt sets the "expires_at" field.
+func (u *IntegrationUserInstallStateUpsert) SetExpiresAt(v time.Time) *IntegrationUserInstallStateUpsert {
+	u.Set(integrationuserinstallstate.FieldExpiresAt, v)
+	return u
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *IntegrationUserInstallStateUpsert) UpdateExpiresAt() *IntegrationUserInstallStateUpsert {
+	u.SetExcluded(integrationuserinstallstate.FieldExpiresAt)
+	return u
+}
+
 // SetOauthState sets the "oauth_state" field.
 func (u *IntegrationUserInstallStateUpsert) SetOauthState(v string) *IntegrationUserInstallStateUpsert {
 	u.Set(integrationuserinstallstate.FieldOauthState, v)
@@ -363,33 +372,21 @@ func (u *IntegrationUserInstallStateUpsert) ClearOauthState() *IntegrationUserIn
 	return u
 }
 
-// SetInstallationTargets sets the "installation_targets" field.
-func (u *IntegrationUserInstallStateUpsert) SetInstallationTargets(v []map[string]interface{}) *IntegrationUserInstallStateUpsert {
-	u.Set(integrationuserinstallstate.FieldInstallationTargets, v)
+// SetInstallationTargetConfigs sets the "installation_target_configs" field.
+func (u *IntegrationUserInstallStateUpsert) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateUpsert {
+	u.Set(integrationuserinstallstate.FieldInstallationTargetConfigs, v)
 	return u
 }
 
-// UpdateInstallationTargets sets the "installation_targets" field to the value that was provided on create.
-func (u *IntegrationUserInstallStateUpsert) UpdateInstallationTargets() *IntegrationUserInstallStateUpsert {
-	u.SetExcluded(integrationuserinstallstate.FieldInstallationTargets)
+// UpdateInstallationTargetConfigs sets the "installation_target_configs" field to the value that was provided on create.
+func (u *IntegrationUserInstallStateUpsert) UpdateInstallationTargetConfigs() *IntegrationUserInstallStateUpsert {
+	u.SetExcluded(integrationuserinstallstate.FieldInstallationTargetConfigs)
 	return u
 }
 
-// ClearInstallationTargets clears the value of the "installation_targets" field.
-func (u *IntegrationUserInstallStateUpsert) ClearInstallationTargets() *IntegrationUserInstallStateUpsert {
-	u.SetNull(integrationuserinstallstate.FieldInstallationTargets)
-	return u
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (u *IntegrationUserInstallStateUpsert) SetExpiresAt(v time.Time) *IntegrationUserInstallStateUpsert {
-	u.Set(integrationuserinstallstate.FieldExpiresAt, v)
-	return u
-}
-
-// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
-func (u *IntegrationUserInstallStateUpsert) UpdateExpiresAt() *IntegrationUserInstallStateUpsert {
-	u.SetExcluded(integrationuserinstallstate.FieldExpiresAt)
+// ClearInstallationTargetConfigs clears the value of the "installation_target_configs" field.
+func (u *IntegrationUserInstallStateUpsert) ClearInstallationTargetConfigs() *IntegrationUserInstallStateUpsert {
+	u.SetNull(integrationuserinstallstate.FieldInstallationTargetConfigs)
 	return u
 }
 
@@ -472,6 +469,20 @@ func (u *IntegrationUserInstallStateUpsertOne) UpdateIntegrationName() *Integrat
 	})
 }
 
+// SetExpiresAt sets the "expires_at" field.
+func (u *IntegrationUserInstallStateUpsertOne) SetExpiresAt(v time.Time) *IntegrationUserInstallStateUpsertOne {
+	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *IntegrationUserInstallStateUpsertOne) UpdateExpiresAt() *IntegrationUserInstallStateUpsertOne {
+	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
 // SetOauthState sets the "oauth_state" field.
 func (u *IntegrationUserInstallStateUpsertOne) SetOauthState(v string) *IntegrationUserInstallStateUpsertOne {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
@@ -493,38 +504,24 @@ func (u *IntegrationUserInstallStateUpsertOne) ClearOauthState() *IntegrationUse
 	})
 }
 
-// SetInstallationTargets sets the "installation_targets" field.
-func (u *IntegrationUserInstallStateUpsertOne) SetInstallationTargets(v []map[string]interface{}) *IntegrationUserInstallStateUpsertOne {
+// SetInstallationTargetConfigs sets the "installation_target_configs" field.
+func (u *IntegrationUserInstallStateUpsertOne) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateUpsertOne {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.SetInstallationTargets(v)
+		s.SetInstallationTargetConfigs(v)
 	})
 }
 
-// UpdateInstallationTargets sets the "installation_targets" field to the value that was provided on create.
-func (u *IntegrationUserInstallStateUpsertOne) UpdateInstallationTargets() *IntegrationUserInstallStateUpsertOne {
+// UpdateInstallationTargetConfigs sets the "installation_target_configs" field to the value that was provided on create.
+func (u *IntegrationUserInstallStateUpsertOne) UpdateInstallationTargetConfigs() *IntegrationUserInstallStateUpsertOne {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.UpdateInstallationTargets()
+		s.UpdateInstallationTargetConfigs()
 	})
 }
 
-// ClearInstallationTargets clears the value of the "installation_targets" field.
-func (u *IntegrationUserInstallStateUpsertOne) ClearInstallationTargets() *IntegrationUserInstallStateUpsertOne {
+// ClearInstallationTargetConfigs clears the value of the "installation_target_configs" field.
+func (u *IntegrationUserInstallStateUpsertOne) ClearInstallationTargetConfigs() *IntegrationUserInstallStateUpsertOne {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.ClearInstallationTargets()
-	})
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (u *IntegrationUserInstallStateUpsertOne) SetExpiresAt(v time.Time) *IntegrationUserInstallStateUpsertOne {
-	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.SetExpiresAt(v)
-	})
-}
-
-// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
-func (u *IntegrationUserInstallStateUpsertOne) UpdateExpiresAt() *IntegrationUserInstallStateUpsertOne {
-	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.UpdateExpiresAt()
+		s.ClearInstallationTargetConfigs()
 	})
 }
 
@@ -774,6 +771,20 @@ func (u *IntegrationUserInstallStateUpsertBulk) UpdateIntegrationName() *Integra
 	})
 }
 
+// SetExpiresAt sets the "expires_at" field.
+func (u *IntegrationUserInstallStateUpsertBulk) SetExpiresAt(v time.Time) *IntegrationUserInstallStateUpsertBulk {
+	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *IntegrationUserInstallStateUpsertBulk) UpdateExpiresAt() *IntegrationUserInstallStateUpsertBulk {
+	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
 // SetOauthState sets the "oauth_state" field.
 func (u *IntegrationUserInstallStateUpsertBulk) SetOauthState(v string) *IntegrationUserInstallStateUpsertBulk {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
@@ -795,38 +806,24 @@ func (u *IntegrationUserInstallStateUpsertBulk) ClearOauthState() *IntegrationUs
 	})
 }
 
-// SetInstallationTargets sets the "installation_targets" field.
-func (u *IntegrationUserInstallStateUpsertBulk) SetInstallationTargets(v []map[string]interface{}) *IntegrationUserInstallStateUpsertBulk {
+// SetInstallationTargetConfigs sets the "installation_target_configs" field.
+func (u *IntegrationUserInstallStateUpsertBulk) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateUpsertBulk {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.SetInstallationTargets(v)
+		s.SetInstallationTargetConfigs(v)
 	})
 }
 
-// UpdateInstallationTargets sets the "installation_targets" field to the value that was provided on create.
-func (u *IntegrationUserInstallStateUpsertBulk) UpdateInstallationTargets() *IntegrationUserInstallStateUpsertBulk {
+// UpdateInstallationTargetConfigs sets the "installation_target_configs" field to the value that was provided on create.
+func (u *IntegrationUserInstallStateUpsertBulk) UpdateInstallationTargetConfigs() *IntegrationUserInstallStateUpsertBulk {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.UpdateInstallationTargets()
+		s.UpdateInstallationTargetConfigs()
 	})
 }
 
-// ClearInstallationTargets clears the value of the "installation_targets" field.
-func (u *IntegrationUserInstallStateUpsertBulk) ClearInstallationTargets() *IntegrationUserInstallStateUpsertBulk {
+// ClearInstallationTargetConfigs clears the value of the "installation_target_configs" field.
+func (u *IntegrationUserInstallStateUpsertBulk) ClearInstallationTargetConfigs() *IntegrationUserInstallStateUpsertBulk {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.ClearInstallationTargets()
-	})
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (u *IntegrationUserInstallStateUpsertBulk) SetExpiresAt(v time.Time) *IntegrationUserInstallStateUpsertBulk {
-	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.SetExpiresAt(v)
-	})
-}
-
-// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
-func (u *IntegrationUserInstallStateUpsertBulk) UpdateExpiresAt() *IntegrationUserInstallStateUpsertBulk {
-	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.UpdateExpiresAt()
+		s.ClearInstallationTargetConfigs()
 	})
 }
 
