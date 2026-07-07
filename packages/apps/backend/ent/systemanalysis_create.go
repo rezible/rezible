@@ -13,11 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
-	"github.com/rezible/rezible/ent/systemtopologysnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -35,17 +34,9 @@ func (_c *SystemAnalysisCreate) SetTenantID(v int) *SystemAnalysisCreate {
 	return _c
 }
 
-// SetTopologySnapshotID sets the "topology_snapshot_id" field.
-func (_c *SystemAnalysisCreate) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisCreate {
-	_c.mutation.SetTopologySnapshotID(v)
-	return _c
-}
-
-// SetNillableTopologySnapshotID sets the "topology_snapshot_id" field if the given value is not nil.
-func (_c *SystemAnalysisCreate) SetNillableTopologySnapshotID(v *uuid.UUID) *SystemAnalysisCreate {
-	if v != nil {
-		_c.SetTopologySnapshotID(*v)
-	}
+// SetKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field.
+func (_c *SystemAnalysisCreate) SetKnowledgeGraphSnapshotID(v uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.SetKnowledgeGraphSnapshotID(v)
 	return _c
 }
 
@@ -96,20 +87,9 @@ func (_c *SystemAnalysisCreate) SetTenant(v *Tenant) *SystemAnalysisCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
-func (_c *SystemAnalysisCreate) SetRetrospectiveID(id uuid.UUID) *SystemAnalysisCreate {
-	_c.mutation.SetRetrospectiveID(id)
-	return _c
-}
-
-// SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (_c *SystemAnalysisCreate) SetRetrospective(v *Retrospective) *SystemAnalysisCreate {
-	return _c.SetRetrospectiveID(v.ID)
-}
-
-// SetTopologySnapshot sets the "topology_snapshot" edge to the SystemTopologySnapshot entity.
-func (_c *SystemAnalysisCreate) SetTopologySnapshot(v *SystemTopologySnapshot) *SystemAnalysisCreate {
-	return _c.SetTopologySnapshotID(v.ID)
+// SetKnowledgeGraphSnapshot sets the "knowledge_graph_snapshot" edge to the KnowledgeGraphSnapshot entity.
+func (_c *SystemAnalysisCreate) SetKnowledgeGraphSnapshot(v *KnowledgeGraphSnapshot) *SystemAnalysisCreate {
+	return _c.SetKnowledgeGraphSnapshotID(v.ID)
 }
 
 // AddAnalysisNodeIDs adds the "analysis_nodes" edge to the SystemAnalysisTopologyNode entity by IDs.
@@ -208,6 +188,9 @@ func (_c *SystemAnalysisCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemAnalysis.tenant_id"`)}
 	}
+	if _, ok := _c.mutation.KnowledgeGraphSnapshotID(); !ok {
+		return &ValidationError{Name: "knowledge_graph_snapshot_id", err: errors.New(`ent: missing required field "SystemAnalysis.knowledge_graph_snapshot_id"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemAnalysis.created_at"`)}
 	}
@@ -217,8 +200,8 @@ func (_c *SystemAnalysisCreate) check() error {
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemAnalysis.tenant"`)}
 	}
-	if len(_c.mutation.RetrospectiveIDs()) == 0 {
-		return &ValidationError{Name: "retrospective", err: errors.New(`ent: missing required edge "SystemAnalysis.retrospective"`)}
+	if len(_c.mutation.KnowledgeGraphSnapshotIDs()) == 0 {
+		return &ValidationError{Name: "knowledge_graph_snapshot", err: errors.New(`ent: missing required edge "SystemAnalysis.knowledge_graph_snapshot"`)}
 	}
 	return nil
 }
@@ -283,39 +266,22 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.RetrospectiveIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   systemanalysis.RetrospectiveTable,
-			Columns: []string{systemanalysis.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Retrospective
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.TopologySnapshotIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.KnowledgeGraphSnapshotIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysis.TopologySnapshotTable,
-			Columns: []string{systemanalysis.TopologySnapshotColumn},
+			Table:   systemanalysis.KnowledgeGraphSnapshotTable,
+			Columns: []string{systemanalysis.KnowledgeGraphSnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.SystemAnalysis
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.TopologySnapshotID = &nodes[0]
+		_node.KnowledgeGraphSnapshotID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.AnalysisNodesIDs(); len(nodes) > 0 {
@@ -404,21 +370,15 @@ type (
 	}
 )
 
-// SetTopologySnapshotID sets the "topology_snapshot_id" field.
-func (u *SystemAnalysisUpsert) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisUpsert {
-	u.Set(systemanalysis.FieldTopologySnapshotID, v)
+// SetKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field.
+func (u *SystemAnalysisUpsert) SetKnowledgeGraphSnapshotID(v uuid.UUID) *SystemAnalysisUpsert {
+	u.Set(systemanalysis.FieldKnowledgeGraphSnapshotID, v)
 	return u
 }
 
-// UpdateTopologySnapshotID sets the "topology_snapshot_id" field to the value that was provided on create.
-func (u *SystemAnalysisUpsert) UpdateTopologySnapshotID() *SystemAnalysisUpsert {
-	u.SetExcluded(systemanalysis.FieldTopologySnapshotID)
-	return u
-}
-
-// ClearTopologySnapshotID clears the value of the "topology_snapshot_id" field.
-func (u *SystemAnalysisUpsert) ClearTopologySnapshotID() *SystemAnalysisUpsert {
-	u.SetNull(systemanalysis.FieldTopologySnapshotID)
+// UpdateKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsert) UpdateKnowledgeGraphSnapshotID() *SystemAnalysisUpsert {
+	u.SetExcluded(systemanalysis.FieldKnowledgeGraphSnapshotID)
 	return u
 }
 
@@ -497,24 +457,17 @@ func (u *SystemAnalysisUpsertOne) Update(set func(*SystemAnalysisUpsert)) *Syste
 	return u
 }
 
-// SetTopologySnapshotID sets the "topology_snapshot_id" field.
-func (u *SystemAnalysisUpsertOne) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisUpsertOne {
+// SetKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field.
+func (u *SystemAnalysisUpsertOne) SetKnowledgeGraphSnapshotID(v uuid.UUID) *SystemAnalysisUpsertOne {
 	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.SetTopologySnapshotID(v)
+		s.SetKnowledgeGraphSnapshotID(v)
 	})
 }
 
-// UpdateTopologySnapshotID sets the "topology_snapshot_id" field to the value that was provided on create.
-func (u *SystemAnalysisUpsertOne) UpdateTopologySnapshotID() *SystemAnalysisUpsertOne {
+// UpdateKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsertOne) UpdateKnowledgeGraphSnapshotID() *SystemAnalysisUpsertOne {
 	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.UpdateTopologySnapshotID()
-	})
-}
-
-// ClearTopologySnapshotID clears the value of the "topology_snapshot_id" field.
-func (u *SystemAnalysisUpsertOne) ClearTopologySnapshotID() *SystemAnalysisUpsertOne {
-	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.ClearTopologySnapshotID()
+		s.UpdateKnowledgeGraphSnapshotID()
 	})
 }
 
@@ -764,24 +717,17 @@ func (u *SystemAnalysisUpsertBulk) Update(set func(*SystemAnalysisUpsert)) *Syst
 	return u
 }
 
-// SetTopologySnapshotID sets the "topology_snapshot_id" field.
-func (u *SystemAnalysisUpsertBulk) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisUpsertBulk {
+// SetKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field.
+func (u *SystemAnalysisUpsertBulk) SetKnowledgeGraphSnapshotID(v uuid.UUID) *SystemAnalysisUpsertBulk {
 	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.SetTopologySnapshotID(v)
+		s.SetKnowledgeGraphSnapshotID(v)
 	})
 }
 
-// UpdateTopologySnapshotID sets the "topology_snapshot_id" field to the value that was provided on create.
-func (u *SystemAnalysisUpsertBulk) UpdateTopologySnapshotID() *SystemAnalysisUpsertBulk {
+// UpdateKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsertBulk) UpdateKnowledgeGraphSnapshotID() *SystemAnalysisUpsertBulk {
 	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.UpdateTopologySnapshotID()
-	})
-}
-
-// ClearTopologySnapshotID clears the value of the "topology_snapshot_id" field.
-func (u *SystemAnalysisUpsertBulk) ClearTopologySnapshotID() *SystemAnalysisUpsertBulk {
-	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.ClearTopologySnapshotID()
+		s.UpdateKnowledgeGraphSnapshotID()
 	})
 }
 

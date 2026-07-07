@@ -56,6 +56,9 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
@@ -80,9 +83,6 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
-	"github.com/rezible/rezible/ent/systemtopologysnapshot"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotrelationship"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -182,6 +182,12 @@ type Client struct {
 	KnowledgeEntityAlias *KnowledgeEntityAliasClient
 	// KnowledgeEvidence is the client for interacting with the KnowledgeEvidence builders.
 	KnowledgeEvidence *KnowledgeEvidenceClient
+	// KnowledgeGraphSnapshot is the client for interacting with the KnowledgeGraphSnapshot builders.
+	KnowledgeGraphSnapshot *KnowledgeGraphSnapshotClient
+	// KnowledgeGraphSnapshotEntity is the client for interacting with the KnowledgeGraphSnapshotEntity builders.
+	KnowledgeGraphSnapshotEntity *KnowledgeGraphSnapshotEntityClient
+	// KnowledgeGraphSnapshotRelationship is the client for interacting with the KnowledgeGraphSnapshotRelationship builders.
+	KnowledgeGraphSnapshotRelationship *KnowledgeGraphSnapshotRelationshipClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
 	KnowledgeRelationship *KnowledgeRelationshipClient
 	// MeetingSchedule is the client for interacting with the MeetingSchedule builders.
@@ -230,12 +236,6 @@ type Client struct {
 	SystemAnalysisTopologyEdge *SystemAnalysisTopologyEdgeClient
 	// SystemAnalysisTopologyNode is the client for interacting with the SystemAnalysisTopologyNode builders.
 	SystemAnalysisTopologyNode *SystemAnalysisTopologyNodeClient
-	// SystemTopologySnapshot is the client for interacting with the SystemTopologySnapshot builders.
-	SystemTopologySnapshot *SystemTopologySnapshotClient
-	// SystemTopologySnapshotEntity is the client for interacting with the SystemTopologySnapshotEntity builders.
-	SystemTopologySnapshotEntity *SystemTopologySnapshotEntityClient
-	// SystemTopologySnapshotRelationship is the client for interacting with the SystemTopologySnapshotRelationship builders.
-	SystemTopologySnapshotRelationship *SystemTopologySnapshotRelationshipClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -304,6 +304,9 @@ func (c *Client) init() {
 	c.KnowledgeEntity = NewKnowledgeEntityClient(c.config)
 	c.KnowledgeEntityAlias = NewKnowledgeEntityAliasClient(c.config)
 	c.KnowledgeEvidence = NewKnowledgeEvidenceClient(c.config)
+	c.KnowledgeGraphSnapshot = NewKnowledgeGraphSnapshotClient(c.config)
+	c.KnowledgeGraphSnapshotEntity = NewKnowledgeGraphSnapshotEntityClient(c.config)
+	c.KnowledgeGraphSnapshotRelationship = NewKnowledgeGraphSnapshotRelationshipClient(c.config)
 	c.KnowledgeRelationship = NewKnowledgeRelationshipClient(c.config)
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
 	c.MeetingSession = NewMeetingSessionClient(c.config)
@@ -328,9 +331,6 @@ func (c *Client) init() {
 	c.SystemAnalysis = NewSystemAnalysisClient(c.config)
 	c.SystemAnalysisTopologyEdge = NewSystemAnalysisTopologyEdgeClient(c.config)
 	c.SystemAnalysisTopologyNode = NewSystemAnalysisTopologyNodeClient(c.config)
-	c.SystemTopologySnapshot = NewSystemTopologySnapshotClient(c.config)
-	c.SystemTopologySnapshotEntity = NewSystemTopologySnapshotEntityClient(c.config)
-	c.SystemTopologySnapshotRelationship = NewSystemTopologySnapshotRelationshipClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.Team = NewTeamClient(c.config)
 	c.TeamMembership = NewTeamMembershipClient(c.config)
@@ -475,6 +475,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		KnowledgeEntity:                         NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityAlias:                    NewKnowledgeEntityAliasClient(cfg),
 		KnowledgeEvidence:                       NewKnowledgeEvidenceClient(cfg),
+		KnowledgeGraphSnapshot:                  NewKnowledgeGraphSnapshotClient(cfg),
+		KnowledgeGraphSnapshotEntity:            NewKnowledgeGraphSnapshotEntityClient(cfg),
+		KnowledgeGraphSnapshotRelationship:      NewKnowledgeGraphSnapshotRelationshipClient(cfg),
 		KnowledgeRelationship:                   NewKnowledgeRelationshipClient(cfg),
 		MeetingSchedule:                         NewMeetingScheduleClient(cfg),
 		MeetingSession:                          NewMeetingSessionClient(cfg),
@@ -499,9 +502,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		SystemAnalysis:                          NewSystemAnalysisClient(cfg),
 		SystemAnalysisTopologyEdge:              NewSystemAnalysisTopologyEdgeClient(cfg),
 		SystemAnalysisTopologyNode:              NewSystemAnalysisTopologyNodeClient(cfg),
-		SystemTopologySnapshot:                  NewSystemTopologySnapshotClient(cfg),
-		SystemTopologySnapshotEntity:            NewSystemTopologySnapshotEntityClient(cfg),
-		SystemTopologySnapshotRelationship:      NewSystemTopologySnapshotRelationshipClient(cfg),
 		Task:                                    NewTaskClient(cfg),
 		Team:                                    NewTeamClient(cfg),
 		TeamMembership:                          NewTeamMembershipClient(cfg),
@@ -570,6 +570,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		KnowledgeEntity:                         NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityAlias:                    NewKnowledgeEntityAliasClient(cfg),
 		KnowledgeEvidence:                       NewKnowledgeEvidenceClient(cfg),
+		KnowledgeGraphSnapshot:                  NewKnowledgeGraphSnapshotClient(cfg),
+		KnowledgeGraphSnapshotEntity:            NewKnowledgeGraphSnapshotEntityClient(cfg),
+		KnowledgeGraphSnapshotRelationship:      NewKnowledgeGraphSnapshotRelationshipClient(cfg),
 		KnowledgeRelationship:                   NewKnowledgeRelationshipClient(cfg),
 		MeetingSchedule:                         NewMeetingScheduleClient(cfg),
 		MeetingSession:                          NewMeetingSessionClient(cfg),
@@ -594,9 +597,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		SystemAnalysis:                          NewSystemAnalysisClient(cfg),
 		SystemAnalysisTopologyEdge:              NewSystemAnalysisTopologyEdgeClient(cfg),
 		SystemAnalysisTopologyNode:              NewSystemAnalysisTopologyNodeClient(cfg),
-		SystemTopologySnapshot:                  NewSystemTopologySnapshotClient(cfg),
-		SystemTopologySnapshotEntity:            NewSystemTopologySnapshotEntityClient(cfg),
-		SystemTopologySnapshotRelationship:      NewSystemTopologySnapshotRelationshipClient(cfg),
 		Task:                                    NewTaskClient(cfg),
 		Team:                                    NewTeamClient(cfg),
 		TeamMembership:                          NewTeamMembershipClient(cfg),
@@ -647,17 +647,18 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
 		c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
 		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
-		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
-		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.KnowledgeEvidence, c.KnowledgeGraphSnapshot, c.KnowledgeGraphSnapshotEntity,
+		c.KnowledgeGraphSnapshotRelationship, c.KnowledgeRelationship,
+		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
+		c.NormalizedEventProjection, c.NormalizedEventProjectionEntity,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
+		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
-		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
-		c.SystemTopologySnapshotRelationship, c.Task, c.Team, c.TeamMembership,
-		c.Tenant, c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
+		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode, c.Task, c.Team,
+		c.TeamMembership, c.Tenant, c.Ticket, c.User, c.UserAuthSession,
+		c.VideoConference,
 	} {
 		n.Use(hooks...)
 	}
@@ -680,17 +681,18 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
 		c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
 		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
-		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
-		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.KnowledgeEvidence, c.KnowledgeGraphSnapshot, c.KnowledgeGraphSnapshotEntity,
+		c.KnowledgeGraphSnapshotRelationship, c.KnowledgeRelationship,
+		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
+		c.NormalizedEventProjection, c.NormalizedEventProjectionEntity,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
+		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
-		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
-		c.SystemTopologySnapshotRelationship, c.Task, c.Team, c.TeamMembership,
-		c.Tenant, c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
+		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode, c.Task, c.Team,
+		c.TeamMembership, c.Tenant, c.Ticket, c.User, c.UserAuthSession,
+		c.VideoConference,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -779,6 +781,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.KnowledgeEntityAlias.mutate(ctx, m)
 	case *KnowledgeEvidenceMutation:
 		return c.KnowledgeEvidence.mutate(ctx, m)
+	case *KnowledgeGraphSnapshotMutation:
+		return c.KnowledgeGraphSnapshot.mutate(ctx, m)
+	case *KnowledgeGraphSnapshotEntityMutation:
+		return c.KnowledgeGraphSnapshotEntity.mutate(ctx, m)
+	case *KnowledgeGraphSnapshotRelationshipMutation:
+		return c.KnowledgeGraphSnapshotRelationship.mutate(ctx, m)
 	case *KnowledgeRelationshipMutation:
 		return c.KnowledgeRelationship.mutate(ctx, m)
 	case *MeetingScheduleMutation:
@@ -827,12 +835,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.SystemAnalysisTopologyEdge.mutate(ctx, m)
 	case *SystemAnalysisTopologyNodeMutation:
 		return c.SystemAnalysisTopologyNode.mutate(ctx, m)
-	case *SystemTopologySnapshotMutation:
-		return c.SystemTopologySnapshot.mutate(ctx, m)
-	case *SystemTopologySnapshotEntityMutation:
-		return c.SystemTopologySnapshotEntity.mutate(ctx, m)
-	case *SystemTopologySnapshotRelationshipMutation:
-		return c.SystemTopologySnapshotRelationship.mutate(ctx, m)
 	case *TaskMutation:
 		return c.Task.mutate(ctx, m)
 	case *TeamMutation:
@@ -7545,37 +7547,18 @@ func (c *IncidentTimelineEventTopologyContextClient) QueryEvent(_m *IncidentTime
 	return query
 }
 
-// QueryKnowledgeEntity queries the knowledge_entity edge of a IncidentTimelineEventTopologyContext.
-func (c *IncidentTimelineEventTopologyContextClient) QueryKnowledgeEntity(_m *IncidentTimelineEventTopologyContext) *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenttimelineeventtopologycontext.Table, incidenttimelineeventtopologycontext.FieldID, id),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineeventtopologycontext.KnowledgeEntityTable, incidenttimelineeventtopologycontext.KnowledgeEntityColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QuerySnapshotEntity queries the snapshot_entity edge of a IncidentTimelineEventTopologyContext.
-func (c *IncidentTimelineEventTopologyContextClient) QuerySnapshotEntity(_m *IncidentTimelineEventTopologyContext) *SystemTopologySnapshotEntityQuery {
-	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
+func (c *IncidentTimelineEventTopologyContextClient) QuerySnapshotEntity(_m *IncidentTimelineEventTopologyContext) *KnowledgeGraphSnapshotEntityQuery {
+	query := (&KnowledgeGraphSnapshotEntityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incidenttimelineeventtopologycontext.Table, incidenttimelineeventtopologycontext.FieldID, id),
-			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
+			sqlgraph.To(knowledgegraphsnapshotentity.Table, knowledgegraphsnapshotentity.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineeventtopologycontext.SnapshotEntityTable, incidenttimelineeventtopologycontext.SnapshotEntityColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
 		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -9116,6 +9099,693 @@ func (c *KnowledgeEvidenceClient) mutate(ctx context.Context, m *KnowledgeEviden
 		return (&KnowledgeEvidenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown KnowledgeEvidence mutation op: %q", m.Op())
+	}
+}
+
+// KnowledgeGraphSnapshotClient is a client for the KnowledgeGraphSnapshot schema.
+type KnowledgeGraphSnapshotClient struct {
+	config
+}
+
+// NewKnowledgeGraphSnapshotClient returns a client for the KnowledgeGraphSnapshot from the given config.
+func NewKnowledgeGraphSnapshotClient(c config) *KnowledgeGraphSnapshotClient {
+	return &KnowledgeGraphSnapshotClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `knowledgegraphsnapshot.Hooks(f(g(h())))`.
+func (c *KnowledgeGraphSnapshotClient) Use(hooks ...Hook) {
+	c.hooks.KnowledgeGraphSnapshot = append(c.hooks.KnowledgeGraphSnapshot, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `knowledgegraphsnapshot.Intercept(f(g(h())))`.
+func (c *KnowledgeGraphSnapshotClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KnowledgeGraphSnapshot = append(c.inters.KnowledgeGraphSnapshot, interceptors...)
+}
+
+// Create returns a builder for creating a KnowledgeGraphSnapshot entity.
+func (c *KnowledgeGraphSnapshotClient) Create() *KnowledgeGraphSnapshotCreate {
+	mutation := newKnowledgeGraphSnapshotMutation(c.config, OpCreate)
+	return &KnowledgeGraphSnapshotCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KnowledgeGraphSnapshot entities.
+func (c *KnowledgeGraphSnapshotClient) CreateBulk(builders ...*KnowledgeGraphSnapshotCreate) *KnowledgeGraphSnapshotCreateBulk {
+	return &KnowledgeGraphSnapshotCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KnowledgeGraphSnapshotClient) MapCreateBulk(slice any, setFunc func(*KnowledgeGraphSnapshotCreate, int)) *KnowledgeGraphSnapshotCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KnowledgeGraphSnapshotCreateBulk{err: fmt.Errorf("calling to KnowledgeGraphSnapshotClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KnowledgeGraphSnapshotCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KnowledgeGraphSnapshotCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KnowledgeGraphSnapshot.
+func (c *KnowledgeGraphSnapshotClient) Update() *KnowledgeGraphSnapshotUpdate {
+	mutation := newKnowledgeGraphSnapshotMutation(c.config, OpUpdate)
+	return &KnowledgeGraphSnapshotUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KnowledgeGraphSnapshotClient) UpdateOne(_m *KnowledgeGraphSnapshot) *KnowledgeGraphSnapshotUpdateOne {
+	mutation := newKnowledgeGraphSnapshotMutation(c.config, OpUpdateOne, withKnowledgeGraphSnapshot(_m))
+	return &KnowledgeGraphSnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KnowledgeGraphSnapshotClient) UpdateOneID(id uuid.UUID) *KnowledgeGraphSnapshotUpdateOne {
+	mutation := newKnowledgeGraphSnapshotMutation(c.config, OpUpdateOne, withKnowledgeGraphSnapshotID(id))
+	return &KnowledgeGraphSnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KnowledgeGraphSnapshot.
+func (c *KnowledgeGraphSnapshotClient) Delete() *KnowledgeGraphSnapshotDelete {
+	mutation := newKnowledgeGraphSnapshotMutation(c.config, OpDelete)
+	return &KnowledgeGraphSnapshotDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KnowledgeGraphSnapshotClient) DeleteOne(_m *KnowledgeGraphSnapshot) *KnowledgeGraphSnapshotDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KnowledgeGraphSnapshotClient) DeleteOneID(id uuid.UUID) *KnowledgeGraphSnapshotDeleteOne {
+	builder := c.Delete().Where(knowledgegraphsnapshot.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KnowledgeGraphSnapshotDeleteOne{builder}
+}
+
+// Query returns a query builder for KnowledgeGraphSnapshot.
+func (c *KnowledgeGraphSnapshotClient) Query() *KnowledgeGraphSnapshotQuery {
+	return &KnowledgeGraphSnapshotQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKnowledgeGraphSnapshot},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KnowledgeGraphSnapshot entity by its id.
+func (c *KnowledgeGraphSnapshotClient) Get(ctx context.Context, id uuid.UUID) (*KnowledgeGraphSnapshot, error) {
+	return c.Query().Where(knowledgegraphsnapshot.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KnowledgeGraphSnapshotClient) GetX(ctx context.Context, id uuid.UUID) *KnowledgeGraphSnapshot {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a KnowledgeGraphSnapshot.
+func (c *KnowledgeGraphSnapshotClient) QueryTenant(_m *KnowledgeGraphSnapshot) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshot.Table, knowledgegraphsnapshot.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgegraphsnapshot.TenantTable, knowledgegraphsnapshot.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshot
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySystemAnalyses queries the system_analyses edge of a KnowledgeGraphSnapshot.
+func (c *KnowledgeGraphSnapshotClient) QuerySystemAnalyses(_m *KnowledgeGraphSnapshot) *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshot.Table, knowledgegraphsnapshot.FieldID, id),
+			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgegraphsnapshot.SystemAnalysesTable, knowledgegraphsnapshot.SystemAnalysesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.SystemAnalysis
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEntities queries the entities edge of a KnowledgeGraphSnapshot.
+func (c *KnowledgeGraphSnapshotClient) QueryEntities(_m *KnowledgeGraphSnapshot) *KnowledgeGraphSnapshotEntityQuery {
+	query := (&KnowledgeGraphSnapshotEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshot.Table, knowledgegraphsnapshot.FieldID, id),
+			sqlgraph.To(knowledgegraphsnapshotentity.Table, knowledgegraphsnapshotentity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgegraphsnapshot.EntitiesTable, knowledgegraphsnapshot.EntitiesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRelationships queries the relationships edge of a KnowledgeGraphSnapshot.
+func (c *KnowledgeGraphSnapshotClient) QueryRelationships(_m *KnowledgeGraphSnapshot) *KnowledgeGraphSnapshotRelationshipQuery {
+	query := (&KnowledgeGraphSnapshotRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshot.Table, knowledgegraphsnapshot.FieldID, id),
+			sqlgraph.To(knowledgegraphsnapshotrelationship.Table, knowledgegraphsnapshotrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgegraphsnapshot.RelationshipsTable, knowledgegraphsnapshot.RelationshipsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KnowledgeGraphSnapshotClient) Hooks() []Hook {
+	hooks := c.hooks.KnowledgeGraphSnapshot
+	return append(hooks[:len(hooks):len(hooks)], knowledgegraphsnapshot.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *KnowledgeGraphSnapshotClient) Interceptors() []Interceptor {
+	return c.inters.KnowledgeGraphSnapshot
+}
+
+func (c *KnowledgeGraphSnapshotClient) mutate(ctx context.Context, m *KnowledgeGraphSnapshotMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KnowledgeGraphSnapshotCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KnowledgeGraphSnapshotUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KnowledgeGraphSnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KnowledgeGraphSnapshotDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KnowledgeGraphSnapshot mutation op: %q", m.Op())
+	}
+}
+
+// KnowledgeGraphSnapshotEntityClient is a client for the KnowledgeGraphSnapshotEntity schema.
+type KnowledgeGraphSnapshotEntityClient struct {
+	config
+}
+
+// NewKnowledgeGraphSnapshotEntityClient returns a client for the KnowledgeGraphSnapshotEntity from the given config.
+func NewKnowledgeGraphSnapshotEntityClient(c config) *KnowledgeGraphSnapshotEntityClient {
+	return &KnowledgeGraphSnapshotEntityClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `knowledgegraphsnapshotentity.Hooks(f(g(h())))`.
+func (c *KnowledgeGraphSnapshotEntityClient) Use(hooks ...Hook) {
+	c.hooks.KnowledgeGraphSnapshotEntity = append(c.hooks.KnowledgeGraphSnapshotEntity, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `knowledgegraphsnapshotentity.Intercept(f(g(h())))`.
+func (c *KnowledgeGraphSnapshotEntityClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KnowledgeGraphSnapshotEntity = append(c.inters.KnowledgeGraphSnapshotEntity, interceptors...)
+}
+
+// Create returns a builder for creating a KnowledgeGraphSnapshotEntity entity.
+func (c *KnowledgeGraphSnapshotEntityClient) Create() *KnowledgeGraphSnapshotEntityCreate {
+	mutation := newKnowledgeGraphSnapshotEntityMutation(c.config, OpCreate)
+	return &KnowledgeGraphSnapshotEntityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KnowledgeGraphSnapshotEntity entities.
+func (c *KnowledgeGraphSnapshotEntityClient) CreateBulk(builders ...*KnowledgeGraphSnapshotEntityCreate) *KnowledgeGraphSnapshotEntityCreateBulk {
+	return &KnowledgeGraphSnapshotEntityCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KnowledgeGraphSnapshotEntityClient) MapCreateBulk(slice any, setFunc func(*KnowledgeGraphSnapshotEntityCreate, int)) *KnowledgeGraphSnapshotEntityCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KnowledgeGraphSnapshotEntityCreateBulk{err: fmt.Errorf("calling to KnowledgeGraphSnapshotEntityClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KnowledgeGraphSnapshotEntityCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KnowledgeGraphSnapshotEntityCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KnowledgeGraphSnapshotEntity.
+func (c *KnowledgeGraphSnapshotEntityClient) Update() *KnowledgeGraphSnapshotEntityUpdate {
+	mutation := newKnowledgeGraphSnapshotEntityMutation(c.config, OpUpdate)
+	return &KnowledgeGraphSnapshotEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KnowledgeGraphSnapshotEntityClient) UpdateOne(_m *KnowledgeGraphSnapshotEntity) *KnowledgeGraphSnapshotEntityUpdateOne {
+	mutation := newKnowledgeGraphSnapshotEntityMutation(c.config, OpUpdateOne, withKnowledgeGraphSnapshotEntity(_m))
+	return &KnowledgeGraphSnapshotEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KnowledgeGraphSnapshotEntityClient) UpdateOneID(id uuid.UUID) *KnowledgeGraphSnapshotEntityUpdateOne {
+	mutation := newKnowledgeGraphSnapshotEntityMutation(c.config, OpUpdateOne, withKnowledgeGraphSnapshotEntityID(id))
+	return &KnowledgeGraphSnapshotEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KnowledgeGraphSnapshotEntity.
+func (c *KnowledgeGraphSnapshotEntityClient) Delete() *KnowledgeGraphSnapshotEntityDelete {
+	mutation := newKnowledgeGraphSnapshotEntityMutation(c.config, OpDelete)
+	return &KnowledgeGraphSnapshotEntityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KnowledgeGraphSnapshotEntityClient) DeleteOne(_m *KnowledgeGraphSnapshotEntity) *KnowledgeGraphSnapshotEntityDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KnowledgeGraphSnapshotEntityClient) DeleteOneID(id uuid.UUID) *KnowledgeGraphSnapshotEntityDeleteOne {
+	builder := c.Delete().Where(knowledgegraphsnapshotentity.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KnowledgeGraphSnapshotEntityDeleteOne{builder}
+}
+
+// Query returns a query builder for KnowledgeGraphSnapshotEntity.
+func (c *KnowledgeGraphSnapshotEntityClient) Query() *KnowledgeGraphSnapshotEntityQuery {
+	return &KnowledgeGraphSnapshotEntityQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKnowledgeGraphSnapshotEntity},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KnowledgeGraphSnapshotEntity entity by its id.
+func (c *KnowledgeGraphSnapshotEntityClient) Get(ctx context.Context, id uuid.UUID) (*KnowledgeGraphSnapshotEntity, error) {
+	return c.Query().Where(knowledgegraphsnapshotentity.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KnowledgeGraphSnapshotEntityClient) GetX(ctx context.Context, id uuid.UUID) *KnowledgeGraphSnapshotEntity {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a KnowledgeGraphSnapshotEntity.
+func (c *KnowledgeGraphSnapshotEntityClient) QueryTenant(_m *KnowledgeGraphSnapshotEntity) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshotentity.Table, knowledgegraphsnapshotentity.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgegraphsnapshotentity.TenantTable, knowledgegraphsnapshotentity.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySnapshot queries the snapshot edge of a KnowledgeGraphSnapshotEntity.
+func (c *KnowledgeGraphSnapshotEntityClient) QuerySnapshot(_m *KnowledgeGraphSnapshotEntity) *KnowledgeGraphSnapshotQuery {
+	query := (&KnowledgeGraphSnapshotClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshotentity.Table, knowledgegraphsnapshotentity.FieldID, id),
+			sqlgraph.To(knowledgegraphsnapshot.Table, knowledgegraphsnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgegraphsnapshotentity.SnapshotTable, knowledgegraphsnapshotentity.SnapshotColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshot
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeEntity queries the knowledge_entity edge of a KnowledgeGraphSnapshotEntity.
+func (c *KnowledgeGraphSnapshotEntityClient) QueryKnowledgeEntity(_m *KnowledgeGraphSnapshotEntity) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshotentity.Table, knowledgegraphsnapshotentity.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgegraphsnapshotentity.KnowledgeEntityTable, knowledgegraphsnapshotentity.KnowledgeEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySourceRelationships queries the source_relationships edge of a KnowledgeGraphSnapshotEntity.
+func (c *KnowledgeGraphSnapshotEntityClient) QuerySourceRelationships(_m *KnowledgeGraphSnapshotEntity) *KnowledgeGraphSnapshotRelationshipQuery {
+	query := (&KnowledgeGraphSnapshotRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshotentity.Table, knowledgegraphsnapshotentity.FieldID, id),
+			sqlgraph.To(knowledgegraphsnapshotrelationship.Table, knowledgegraphsnapshotrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgegraphsnapshotentity.SourceRelationshipsTable, knowledgegraphsnapshotentity.SourceRelationshipsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetRelationships queries the target_relationships edge of a KnowledgeGraphSnapshotEntity.
+func (c *KnowledgeGraphSnapshotEntityClient) QueryTargetRelationships(_m *KnowledgeGraphSnapshotEntity) *KnowledgeGraphSnapshotRelationshipQuery {
+	query := (&KnowledgeGraphSnapshotRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshotentity.Table, knowledgegraphsnapshotentity.FieldID, id),
+			sqlgraph.To(knowledgegraphsnapshotrelationship.Table, knowledgegraphsnapshotrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgegraphsnapshotentity.TargetRelationshipsTable, knowledgegraphsnapshotentity.TargetRelationshipsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KnowledgeGraphSnapshotEntityClient) Hooks() []Hook {
+	hooks := c.hooks.KnowledgeGraphSnapshotEntity
+	return append(hooks[:len(hooks):len(hooks)], knowledgegraphsnapshotentity.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *KnowledgeGraphSnapshotEntityClient) Interceptors() []Interceptor {
+	return c.inters.KnowledgeGraphSnapshotEntity
+}
+
+func (c *KnowledgeGraphSnapshotEntityClient) mutate(ctx context.Context, m *KnowledgeGraphSnapshotEntityMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KnowledgeGraphSnapshotEntityCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KnowledgeGraphSnapshotEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KnowledgeGraphSnapshotEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KnowledgeGraphSnapshotEntityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KnowledgeGraphSnapshotEntity mutation op: %q", m.Op())
+	}
+}
+
+// KnowledgeGraphSnapshotRelationshipClient is a client for the KnowledgeGraphSnapshotRelationship schema.
+type KnowledgeGraphSnapshotRelationshipClient struct {
+	config
+}
+
+// NewKnowledgeGraphSnapshotRelationshipClient returns a client for the KnowledgeGraphSnapshotRelationship from the given config.
+func NewKnowledgeGraphSnapshotRelationshipClient(c config) *KnowledgeGraphSnapshotRelationshipClient {
+	return &KnowledgeGraphSnapshotRelationshipClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `knowledgegraphsnapshotrelationship.Hooks(f(g(h())))`.
+func (c *KnowledgeGraphSnapshotRelationshipClient) Use(hooks ...Hook) {
+	c.hooks.KnowledgeGraphSnapshotRelationship = append(c.hooks.KnowledgeGraphSnapshotRelationship, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `knowledgegraphsnapshotrelationship.Intercept(f(g(h())))`.
+func (c *KnowledgeGraphSnapshotRelationshipClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KnowledgeGraphSnapshotRelationship = append(c.inters.KnowledgeGraphSnapshotRelationship, interceptors...)
+}
+
+// Create returns a builder for creating a KnowledgeGraphSnapshotRelationship entity.
+func (c *KnowledgeGraphSnapshotRelationshipClient) Create() *KnowledgeGraphSnapshotRelationshipCreate {
+	mutation := newKnowledgeGraphSnapshotRelationshipMutation(c.config, OpCreate)
+	return &KnowledgeGraphSnapshotRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KnowledgeGraphSnapshotRelationship entities.
+func (c *KnowledgeGraphSnapshotRelationshipClient) CreateBulk(builders ...*KnowledgeGraphSnapshotRelationshipCreate) *KnowledgeGraphSnapshotRelationshipCreateBulk {
+	return &KnowledgeGraphSnapshotRelationshipCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KnowledgeGraphSnapshotRelationshipClient) MapCreateBulk(slice any, setFunc func(*KnowledgeGraphSnapshotRelationshipCreate, int)) *KnowledgeGraphSnapshotRelationshipCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KnowledgeGraphSnapshotRelationshipCreateBulk{err: fmt.Errorf("calling to KnowledgeGraphSnapshotRelationshipClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KnowledgeGraphSnapshotRelationshipCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KnowledgeGraphSnapshotRelationshipCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KnowledgeGraphSnapshotRelationship.
+func (c *KnowledgeGraphSnapshotRelationshipClient) Update() *KnowledgeGraphSnapshotRelationshipUpdate {
+	mutation := newKnowledgeGraphSnapshotRelationshipMutation(c.config, OpUpdate)
+	return &KnowledgeGraphSnapshotRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KnowledgeGraphSnapshotRelationshipClient) UpdateOne(_m *KnowledgeGraphSnapshotRelationship) *KnowledgeGraphSnapshotRelationshipUpdateOne {
+	mutation := newKnowledgeGraphSnapshotRelationshipMutation(c.config, OpUpdateOne, withKnowledgeGraphSnapshotRelationship(_m))
+	return &KnowledgeGraphSnapshotRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KnowledgeGraphSnapshotRelationshipClient) UpdateOneID(id uuid.UUID) *KnowledgeGraphSnapshotRelationshipUpdateOne {
+	mutation := newKnowledgeGraphSnapshotRelationshipMutation(c.config, OpUpdateOne, withKnowledgeGraphSnapshotRelationshipID(id))
+	return &KnowledgeGraphSnapshotRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KnowledgeGraphSnapshotRelationship.
+func (c *KnowledgeGraphSnapshotRelationshipClient) Delete() *KnowledgeGraphSnapshotRelationshipDelete {
+	mutation := newKnowledgeGraphSnapshotRelationshipMutation(c.config, OpDelete)
+	return &KnowledgeGraphSnapshotRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KnowledgeGraphSnapshotRelationshipClient) DeleteOne(_m *KnowledgeGraphSnapshotRelationship) *KnowledgeGraphSnapshotRelationshipDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KnowledgeGraphSnapshotRelationshipClient) DeleteOneID(id uuid.UUID) *KnowledgeGraphSnapshotRelationshipDeleteOne {
+	builder := c.Delete().Where(knowledgegraphsnapshotrelationship.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KnowledgeGraphSnapshotRelationshipDeleteOne{builder}
+}
+
+// Query returns a query builder for KnowledgeGraphSnapshotRelationship.
+func (c *KnowledgeGraphSnapshotRelationshipClient) Query() *KnowledgeGraphSnapshotRelationshipQuery {
+	return &KnowledgeGraphSnapshotRelationshipQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKnowledgeGraphSnapshotRelationship},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KnowledgeGraphSnapshotRelationship entity by its id.
+func (c *KnowledgeGraphSnapshotRelationshipClient) Get(ctx context.Context, id uuid.UUID) (*KnowledgeGraphSnapshotRelationship, error) {
+	return c.Query().Where(knowledgegraphsnapshotrelationship.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KnowledgeGraphSnapshotRelationshipClient) GetX(ctx context.Context, id uuid.UUID) *KnowledgeGraphSnapshotRelationship {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a KnowledgeGraphSnapshotRelationship.
+func (c *KnowledgeGraphSnapshotRelationshipClient) QueryTenant(_m *KnowledgeGraphSnapshotRelationship) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshotrelationship.Table, knowledgegraphsnapshotrelationship.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgegraphsnapshotrelationship.TenantTable, knowledgegraphsnapshotrelationship.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeRelationship queries the knowledge_relationship edge of a KnowledgeGraphSnapshotRelationship.
+func (c *KnowledgeGraphSnapshotRelationshipClient) QueryKnowledgeRelationship(_m *KnowledgeGraphSnapshotRelationship) *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshotrelationship.Table, knowledgegraphsnapshotrelationship.FieldID, id),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgegraphsnapshotrelationship.KnowledgeRelationshipTable, knowledgegraphsnapshotrelationship.KnowledgeRelationshipColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySnapshot queries the snapshot edge of a KnowledgeGraphSnapshotRelationship.
+func (c *KnowledgeGraphSnapshotRelationshipClient) QuerySnapshot(_m *KnowledgeGraphSnapshotRelationship) *KnowledgeGraphSnapshotQuery {
+	query := (&KnowledgeGraphSnapshotClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshotrelationship.Table, knowledgegraphsnapshotrelationship.FieldID, id),
+			sqlgraph.To(knowledgegraphsnapshot.Table, knowledgegraphsnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgegraphsnapshotrelationship.SnapshotTable, knowledgegraphsnapshotrelationship.SnapshotColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshot
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySourceSnapshotEntity queries the source_snapshot_entity edge of a KnowledgeGraphSnapshotRelationship.
+func (c *KnowledgeGraphSnapshotRelationshipClient) QuerySourceSnapshotEntity(_m *KnowledgeGraphSnapshotRelationship) *KnowledgeGraphSnapshotEntityQuery {
+	query := (&KnowledgeGraphSnapshotEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshotrelationship.Table, knowledgegraphsnapshotrelationship.FieldID, id),
+			sqlgraph.To(knowledgegraphsnapshotentity.Table, knowledgegraphsnapshotentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgegraphsnapshotrelationship.SourceSnapshotEntityTable, knowledgegraphsnapshotrelationship.SourceSnapshotEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetSnapshotEntity queries the target_snapshot_entity edge of a KnowledgeGraphSnapshotRelationship.
+func (c *KnowledgeGraphSnapshotRelationshipClient) QueryTargetSnapshotEntity(_m *KnowledgeGraphSnapshotRelationship) *KnowledgeGraphSnapshotEntityQuery {
+	query := (&KnowledgeGraphSnapshotEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshotrelationship.Table, knowledgegraphsnapshotrelationship.FieldID, id),
+			sqlgraph.To(knowledgegraphsnapshotentity.Table, knowledgegraphsnapshotentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgegraphsnapshotrelationship.TargetSnapshotEntityTable, knowledgegraphsnapshotrelationship.TargetSnapshotEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
+		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnalysisEdges queries the analysis_edges edge of a KnowledgeGraphSnapshotRelationship.
+func (c *KnowledgeGraphSnapshotRelationshipClient) QueryAnalysisEdges(_m *KnowledgeGraphSnapshotRelationship) *SystemAnalysisTopologyEdgeQuery {
+	query := (&SystemAnalysisTopologyEdgeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgegraphsnapshotrelationship.Table, knowledgegraphsnapshotrelationship.FieldID, id),
+			sqlgraph.To(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgegraphsnapshotrelationship.AnalysisEdgesTable, knowledgegraphsnapshotrelationship.AnalysisEdgesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KnowledgeGraphSnapshotRelationshipClient) Hooks() []Hook {
+	hooks := c.hooks.KnowledgeGraphSnapshotRelationship
+	return append(hooks[:len(hooks):len(hooks)], knowledgegraphsnapshotrelationship.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *KnowledgeGraphSnapshotRelationshipClient) Interceptors() []Interceptor {
+	return c.inters.KnowledgeGraphSnapshotRelationship
+}
+
+func (c *KnowledgeGraphSnapshotRelationshipClient) mutate(ctx context.Context, m *KnowledgeGraphSnapshotRelationshipMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KnowledgeGraphSnapshotRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KnowledgeGraphSnapshotRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KnowledgeGraphSnapshotRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KnowledgeGraphSnapshotRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KnowledgeGraphSnapshotRelationship mutation op: %q", m.Op())
 	}
 }
 
@@ -12790,7 +13460,7 @@ func (c *RetrospectiveClient) QuerySystemAnalysis(_m *Retrospective) *SystemAnal
 		step := sqlgraph.NewStep(
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, id),
 			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, retrospective.SystemAnalysisTable, retrospective.SystemAnalysisColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospective.SystemAnalysisTable, retrospective.SystemAnalysisColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysis
@@ -13431,37 +14101,18 @@ func (c *SystemAnalysisClient) QueryTenant(_m *SystemAnalysis) *TenantQuery {
 	return query
 }
 
-// QueryRetrospective queries the retrospective edge of a SystemAnalysis.
-func (c *SystemAnalysisClient) QueryRetrospective(_m *SystemAnalysis) *RetrospectiveQuery {
-	query := (&RetrospectiveClient{config: c.config}).Query()
+// QueryKnowledgeGraphSnapshot queries the knowledge_graph_snapshot edge of a SystemAnalysis.
+func (c *SystemAnalysisClient) QueryKnowledgeGraphSnapshot(_m *SystemAnalysis) *KnowledgeGraphSnapshotQuery {
+	query := (&KnowledgeGraphSnapshotClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
-			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, systemanalysis.RetrospectiveTable, systemanalysis.RetrospectiveColumn),
+			sqlgraph.To(knowledgegraphsnapshot.Table, knowledgegraphsnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.KnowledgeGraphSnapshotTable, systemanalysis.KnowledgeGraphSnapshotColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Retrospective
-		step.Edge.Schema = schemaConfig.Retrospective
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTopologySnapshot queries the topology_snapshot edge of a SystemAnalysis.
-func (c *SystemAnalysisClient) QueryTopologySnapshot(_m *SystemAnalysis) *SystemTopologySnapshotQuery {
-	query := (&SystemTopologySnapshotClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
-			sqlgraph.To(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.TopologySnapshotTable, systemanalysis.TopologySnapshotColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshot
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshot
 		step.Edge.Schema = schemaConfig.SystemAnalysis
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -13680,17 +14331,17 @@ func (c *SystemAnalysisTopologyEdgeClient) QueryAnalysis(_m *SystemAnalysisTopol
 }
 
 // QuerySnapshotRelationship queries the snapshot_relationship edge of a SystemAnalysisTopologyEdge.
-func (c *SystemAnalysisTopologyEdgeClient) QuerySnapshotRelationship(_m *SystemAnalysisTopologyEdge) *SystemTopologySnapshotRelationshipQuery {
-	query := (&SystemTopologySnapshotRelationshipClient{config: c.config}).Query()
+func (c *SystemAnalysisTopologyEdgeClient) QuerySnapshotRelationship(_m *SystemAnalysisTopologyEdge) *KnowledgeGraphSnapshotRelationshipQuery {
+	query := (&KnowledgeGraphSnapshotRelationshipClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID, id),
-			sqlgraph.To(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID),
+			sqlgraph.To(knowledgegraphsnapshotrelationship.Table, knowledgegraphsnapshotrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysistopologyedge.SnapshotRelationshipTable, systemanalysistopologyedge.SnapshotRelationshipColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
 		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -13871,17 +14522,17 @@ func (c *SystemAnalysisTopologyNodeClient) QueryAnalysis(_m *SystemAnalysisTopol
 }
 
 // QuerySnapshotEntity queries the snapshot_entity edge of a SystemAnalysisTopologyNode.
-func (c *SystemAnalysisTopologyNodeClient) QuerySnapshotEntity(_m *SystemAnalysisTopologyNode) *SystemTopologySnapshotEntityQuery {
-	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
+func (c *SystemAnalysisTopologyNodeClient) QuerySnapshotEntity(_m *SystemAnalysisTopologyNode) *KnowledgeGraphSnapshotEntityQuery {
+	query := (&KnowledgeGraphSnapshotEntityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysistopologynode.Table, systemanalysistopologynode.FieldID, id),
-			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
+			sqlgraph.To(knowledgegraphsnapshotentity.Table, knowledgegraphsnapshotentity.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysistopologynode.SnapshotEntityTable, systemanalysistopologynode.SnapshotEntityColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
 		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -13912,712 +14563,6 @@ func (c *SystemAnalysisTopologyNodeClient) mutate(ctx context.Context, m *System
 		return (&SystemAnalysisTopologyNodeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown SystemAnalysisTopologyNode mutation op: %q", m.Op())
-	}
-}
-
-// SystemTopologySnapshotClient is a client for the SystemTopologySnapshot schema.
-type SystemTopologySnapshotClient struct {
-	config
-}
-
-// NewSystemTopologySnapshotClient returns a client for the SystemTopologySnapshot from the given config.
-func NewSystemTopologySnapshotClient(c config) *SystemTopologySnapshotClient {
-	return &SystemTopologySnapshotClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemtopologysnapshot.Hooks(f(g(h())))`.
-func (c *SystemTopologySnapshotClient) Use(hooks ...Hook) {
-	c.hooks.SystemTopologySnapshot = append(c.hooks.SystemTopologySnapshot, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemtopologysnapshot.Intercept(f(g(h())))`.
-func (c *SystemTopologySnapshotClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemTopologySnapshot = append(c.inters.SystemTopologySnapshot, interceptors...)
-}
-
-// Create returns a builder for creating a SystemTopologySnapshot entity.
-func (c *SystemTopologySnapshotClient) Create() *SystemTopologySnapshotCreate {
-	mutation := newSystemTopologySnapshotMutation(c.config, OpCreate)
-	return &SystemTopologySnapshotCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SystemTopologySnapshot entities.
-func (c *SystemTopologySnapshotClient) CreateBulk(builders ...*SystemTopologySnapshotCreate) *SystemTopologySnapshotCreateBulk {
-	return &SystemTopologySnapshotCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SystemTopologySnapshotClient) MapCreateBulk(slice any, setFunc func(*SystemTopologySnapshotCreate, int)) *SystemTopologySnapshotCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SystemTopologySnapshotCreateBulk{err: fmt.Errorf("calling to SystemTopologySnapshotClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SystemTopologySnapshotCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SystemTopologySnapshotCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SystemTopologySnapshot.
-func (c *SystemTopologySnapshotClient) Update() *SystemTopologySnapshotUpdate {
-	mutation := newSystemTopologySnapshotMutation(c.config, OpUpdate)
-	return &SystemTopologySnapshotUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SystemTopologySnapshotClient) UpdateOne(_m *SystemTopologySnapshot) *SystemTopologySnapshotUpdateOne {
-	mutation := newSystemTopologySnapshotMutation(c.config, OpUpdateOne, withSystemTopologySnapshot(_m))
-	return &SystemTopologySnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SystemTopologySnapshotClient) UpdateOneID(id uuid.UUID) *SystemTopologySnapshotUpdateOne {
-	mutation := newSystemTopologySnapshotMutation(c.config, OpUpdateOne, withSystemTopologySnapshotID(id))
-	return &SystemTopologySnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SystemTopologySnapshot.
-func (c *SystemTopologySnapshotClient) Delete() *SystemTopologySnapshotDelete {
-	mutation := newSystemTopologySnapshotMutation(c.config, OpDelete)
-	return &SystemTopologySnapshotDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SystemTopologySnapshotClient) DeleteOne(_m *SystemTopologySnapshot) *SystemTopologySnapshotDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemTopologySnapshotClient) DeleteOneID(id uuid.UUID) *SystemTopologySnapshotDeleteOne {
-	builder := c.Delete().Where(systemtopologysnapshot.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SystemTopologySnapshotDeleteOne{builder}
-}
-
-// Query returns a query builder for SystemTopologySnapshot.
-func (c *SystemTopologySnapshotClient) Query() *SystemTopologySnapshotQuery {
-	return &SystemTopologySnapshotQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemTopologySnapshot},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a SystemTopologySnapshot entity by its id.
-func (c *SystemTopologySnapshotClient) Get(ctx context.Context, id uuid.UUID) (*SystemTopologySnapshot, error) {
-	return c.Query().Where(systemtopologysnapshot.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SystemTopologySnapshotClient) GetX(ctx context.Context, id uuid.UUID) *SystemTopologySnapshot {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a SystemTopologySnapshot.
-func (c *SystemTopologySnapshotClient) QueryTenant(_m *SystemTopologySnapshot) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshot.TenantTable, systemtopologysnapshot.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshot
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEntities queries the entities edge of a SystemTopologySnapshot.
-func (c *SystemTopologySnapshotClient) QueryEntities(_m *SystemTopologySnapshot) *SystemTopologySnapshotEntityQuery {
-	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID, id),
-			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshot.EntitiesTable, systemtopologysnapshot.EntitiesColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotEntity
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRelationships queries the relationships edge of a SystemTopologySnapshot.
-func (c *SystemTopologySnapshotClient) QueryRelationships(_m *SystemTopologySnapshot) *SystemTopologySnapshotRelationshipQuery {
-	query := (&SystemTopologySnapshotRelationshipClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID, id),
-			sqlgraph.To(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshot.RelationshipsTable, systemtopologysnapshot.RelationshipsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySystemAnalyses queries the system_analyses edge of a SystemTopologySnapshot.
-func (c *SystemTopologySnapshotClient) QuerySystemAnalyses(_m *SystemTopologySnapshot) *SystemAnalysisQuery {
-	query := (&SystemAnalysisClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID, id),
-			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshot.SystemAnalysesTable, systemtopologysnapshot.SystemAnalysesColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysis
-		step.Edge.Schema = schemaConfig.SystemAnalysis
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SystemTopologySnapshotClient) Hooks() []Hook {
-	hooks := c.hooks.SystemTopologySnapshot
-	return append(hooks[:len(hooks):len(hooks)], systemtopologysnapshot.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *SystemTopologySnapshotClient) Interceptors() []Interceptor {
-	return c.inters.SystemTopologySnapshot
-}
-
-func (c *SystemTopologySnapshotClient) mutate(ctx context.Context, m *SystemTopologySnapshotMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SystemTopologySnapshotCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SystemTopologySnapshotUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SystemTopologySnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SystemTopologySnapshotDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown SystemTopologySnapshot mutation op: %q", m.Op())
-	}
-}
-
-// SystemTopologySnapshotEntityClient is a client for the SystemTopologySnapshotEntity schema.
-type SystemTopologySnapshotEntityClient struct {
-	config
-}
-
-// NewSystemTopologySnapshotEntityClient returns a client for the SystemTopologySnapshotEntity from the given config.
-func NewSystemTopologySnapshotEntityClient(c config) *SystemTopologySnapshotEntityClient {
-	return &SystemTopologySnapshotEntityClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemtopologysnapshotentity.Hooks(f(g(h())))`.
-func (c *SystemTopologySnapshotEntityClient) Use(hooks ...Hook) {
-	c.hooks.SystemTopologySnapshotEntity = append(c.hooks.SystemTopologySnapshotEntity, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemtopologysnapshotentity.Intercept(f(g(h())))`.
-func (c *SystemTopologySnapshotEntityClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemTopologySnapshotEntity = append(c.inters.SystemTopologySnapshotEntity, interceptors...)
-}
-
-// Create returns a builder for creating a SystemTopologySnapshotEntity entity.
-func (c *SystemTopologySnapshotEntityClient) Create() *SystemTopologySnapshotEntityCreate {
-	mutation := newSystemTopologySnapshotEntityMutation(c.config, OpCreate)
-	return &SystemTopologySnapshotEntityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SystemTopologySnapshotEntity entities.
-func (c *SystemTopologySnapshotEntityClient) CreateBulk(builders ...*SystemTopologySnapshotEntityCreate) *SystemTopologySnapshotEntityCreateBulk {
-	return &SystemTopologySnapshotEntityCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SystemTopologySnapshotEntityClient) MapCreateBulk(slice any, setFunc func(*SystemTopologySnapshotEntityCreate, int)) *SystemTopologySnapshotEntityCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SystemTopologySnapshotEntityCreateBulk{err: fmt.Errorf("calling to SystemTopologySnapshotEntityClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SystemTopologySnapshotEntityCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SystemTopologySnapshotEntityCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SystemTopologySnapshotEntity.
-func (c *SystemTopologySnapshotEntityClient) Update() *SystemTopologySnapshotEntityUpdate {
-	mutation := newSystemTopologySnapshotEntityMutation(c.config, OpUpdate)
-	return &SystemTopologySnapshotEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SystemTopologySnapshotEntityClient) UpdateOne(_m *SystemTopologySnapshotEntity) *SystemTopologySnapshotEntityUpdateOne {
-	mutation := newSystemTopologySnapshotEntityMutation(c.config, OpUpdateOne, withSystemTopologySnapshotEntity(_m))
-	return &SystemTopologySnapshotEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SystemTopologySnapshotEntityClient) UpdateOneID(id uuid.UUID) *SystemTopologySnapshotEntityUpdateOne {
-	mutation := newSystemTopologySnapshotEntityMutation(c.config, OpUpdateOne, withSystemTopologySnapshotEntityID(id))
-	return &SystemTopologySnapshotEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SystemTopologySnapshotEntity.
-func (c *SystemTopologySnapshotEntityClient) Delete() *SystemTopologySnapshotEntityDelete {
-	mutation := newSystemTopologySnapshotEntityMutation(c.config, OpDelete)
-	return &SystemTopologySnapshotEntityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SystemTopologySnapshotEntityClient) DeleteOne(_m *SystemTopologySnapshotEntity) *SystemTopologySnapshotEntityDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemTopologySnapshotEntityClient) DeleteOneID(id uuid.UUID) *SystemTopologySnapshotEntityDeleteOne {
-	builder := c.Delete().Where(systemtopologysnapshotentity.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SystemTopologySnapshotEntityDeleteOne{builder}
-}
-
-// Query returns a query builder for SystemTopologySnapshotEntity.
-func (c *SystemTopologySnapshotEntityClient) Query() *SystemTopologySnapshotEntityQuery {
-	return &SystemTopologySnapshotEntityQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemTopologySnapshotEntity},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a SystemTopologySnapshotEntity entity by its id.
-func (c *SystemTopologySnapshotEntityClient) Get(ctx context.Context, id uuid.UUID) (*SystemTopologySnapshotEntity, error) {
-	return c.Query().Where(systemtopologysnapshotentity.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SystemTopologySnapshotEntityClient) GetX(ctx context.Context, id uuid.UUID) *SystemTopologySnapshotEntity {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a SystemTopologySnapshotEntity.
-func (c *SystemTopologySnapshotEntityClient) QueryTenant(_m *SystemTopologySnapshotEntity) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotentity.TenantTable, systemtopologysnapshotentity.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotEntity
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySnapshot queries the snapshot edge of a SystemTopologySnapshotEntity.
-func (c *SystemTopologySnapshotEntityClient) QuerySnapshot(_m *SystemTopologySnapshotEntity) *SystemTopologySnapshotQuery {
-	query := (&SystemTopologySnapshotClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
-			sqlgraph.To(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotentity.SnapshotTable, systemtopologysnapshotentity.SnapshotColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshot
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotEntity
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryKnowledgeEntity queries the knowledge_entity edge of a SystemTopologySnapshotEntity.
-func (c *SystemTopologySnapshotEntityClient) QueryKnowledgeEntity(_m *SystemTopologySnapshotEntity) *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotentity.KnowledgeEntityTable, systemtopologysnapshotentity.KnowledgeEntityColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotEntity
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySourceRelationships queries the source_relationships edge of a SystemTopologySnapshotEntity.
-func (c *SystemTopologySnapshotEntityClient) QuerySourceRelationships(_m *SystemTopologySnapshotEntity) *SystemTopologySnapshotRelationshipQuery {
-	query := (&SystemTopologySnapshotRelationshipClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
-			sqlgraph.To(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshotentity.SourceRelationshipsTable, systemtopologysnapshotentity.SourceRelationshipsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTargetRelationships queries the target_relationships edge of a SystemTopologySnapshotEntity.
-func (c *SystemTopologySnapshotEntityClient) QueryTargetRelationships(_m *SystemTopologySnapshotEntity) *SystemTopologySnapshotRelationshipQuery {
-	query := (&SystemTopologySnapshotRelationshipClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
-			sqlgraph.To(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshotentity.TargetRelationshipsTable, systemtopologysnapshotentity.TargetRelationshipsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAnalysisNodes queries the analysis_nodes edge of a SystemTopologySnapshotEntity.
-func (c *SystemTopologySnapshotEntityClient) QueryAnalysisNodes(_m *SystemTopologySnapshotEntity) *SystemAnalysisTopologyNodeQuery {
-	query := (&SystemAnalysisTopologyNodeClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
-			sqlgraph.To(systemanalysistopologynode.Table, systemanalysistopologynode.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshotentity.AnalysisNodesTable, systemtopologysnapshotentity.AnalysisNodesColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisTopologyNode
-		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SystemTopologySnapshotEntityClient) Hooks() []Hook {
-	hooks := c.hooks.SystemTopologySnapshotEntity
-	return append(hooks[:len(hooks):len(hooks)], systemtopologysnapshotentity.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *SystemTopologySnapshotEntityClient) Interceptors() []Interceptor {
-	return c.inters.SystemTopologySnapshotEntity
-}
-
-func (c *SystemTopologySnapshotEntityClient) mutate(ctx context.Context, m *SystemTopologySnapshotEntityMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SystemTopologySnapshotEntityCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SystemTopologySnapshotEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SystemTopologySnapshotEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SystemTopologySnapshotEntityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown SystemTopologySnapshotEntity mutation op: %q", m.Op())
-	}
-}
-
-// SystemTopologySnapshotRelationshipClient is a client for the SystemTopologySnapshotRelationship schema.
-type SystemTopologySnapshotRelationshipClient struct {
-	config
-}
-
-// NewSystemTopologySnapshotRelationshipClient returns a client for the SystemTopologySnapshotRelationship from the given config.
-func NewSystemTopologySnapshotRelationshipClient(c config) *SystemTopologySnapshotRelationshipClient {
-	return &SystemTopologySnapshotRelationshipClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemtopologysnapshotrelationship.Hooks(f(g(h())))`.
-func (c *SystemTopologySnapshotRelationshipClient) Use(hooks ...Hook) {
-	c.hooks.SystemTopologySnapshotRelationship = append(c.hooks.SystemTopologySnapshotRelationship, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemtopologysnapshotrelationship.Intercept(f(g(h())))`.
-func (c *SystemTopologySnapshotRelationshipClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemTopologySnapshotRelationship = append(c.inters.SystemTopologySnapshotRelationship, interceptors...)
-}
-
-// Create returns a builder for creating a SystemTopologySnapshotRelationship entity.
-func (c *SystemTopologySnapshotRelationshipClient) Create() *SystemTopologySnapshotRelationshipCreate {
-	mutation := newSystemTopologySnapshotRelationshipMutation(c.config, OpCreate)
-	return &SystemTopologySnapshotRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SystemTopologySnapshotRelationship entities.
-func (c *SystemTopologySnapshotRelationshipClient) CreateBulk(builders ...*SystemTopologySnapshotRelationshipCreate) *SystemTopologySnapshotRelationshipCreateBulk {
-	return &SystemTopologySnapshotRelationshipCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SystemTopologySnapshotRelationshipClient) MapCreateBulk(slice any, setFunc func(*SystemTopologySnapshotRelationshipCreate, int)) *SystemTopologySnapshotRelationshipCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SystemTopologySnapshotRelationshipCreateBulk{err: fmt.Errorf("calling to SystemTopologySnapshotRelationshipClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SystemTopologySnapshotRelationshipCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SystemTopologySnapshotRelationshipCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SystemTopologySnapshotRelationship.
-func (c *SystemTopologySnapshotRelationshipClient) Update() *SystemTopologySnapshotRelationshipUpdate {
-	mutation := newSystemTopologySnapshotRelationshipMutation(c.config, OpUpdate)
-	return &SystemTopologySnapshotRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SystemTopologySnapshotRelationshipClient) UpdateOne(_m *SystemTopologySnapshotRelationship) *SystemTopologySnapshotRelationshipUpdateOne {
-	mutation := newSystemTopologySnapshotRelationshipMutation(c.config, OpUpdateOne, withSystemTopologySnapshotRelationship(_m))
-	return &SystemTopologySnapshotRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SystemTopologySnapshotRelationshipClient) UpdateOneID(id uuid.UUID) *SystemTopologySnapshotRelationshipUpdateOne {
-	mutation := newSystemTopologySnapshotRelationshipMutation(c.config, OpUpdateOne, withSystemTopologySnapshotRelationshipID(id))
-	return &SystemTopologySnapshotRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SystemTopologySnapshotRelationship.
-func (c *SystemTopologySnapshotRelationshipClient) Delete() *SystemTopologySnapshotRelationshipDelete {
-	mutation := newSystemTopologySnapshotRelationshipMutation(c.config, OpDelete)
-	return &SystemTopologySnapshotRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SystemTopologySnapshotRelationshipClient) DeleteOne(_m *SystemTopologySnapshotRelationship) *SystemTopologySnapshotRelationshipDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemTopologySnapshotRelationshipClient) DeleteOneID(id uuid.UUID) *SystemTopologySnapshotRelationshipDeleteOne {
-	builder := c.Delete().Where(systemtopologysnapshotrelationship.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SystemTopologySnapshotRelationshipDeleteOne{builder}
-}
-
-// Query returns a query builder for SystemTopologySnapshotRelationship.
-func (c *SystemTopologySnapshotRelationshipClient) Query() *SystemTopologySnapshotRelationshipQuery {
-	return &SystemTopologySnapshotRelationshipQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemTopologySnapshotRelationship},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a SystemTopologySnapshotRelationship entity by its id.
-func (c *SystemTopologySnapshotRelationshipClient) Get(ctx context.Context, id uuid.UUID) (*SystemTopologySnapshotRelationship, error) {
-	return c.Query().Where(systemtopologysnapshotrelationship.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SystemTopologySnapshotRelationshipClient) GetX(ctx context.Context, id uuid.UUID) *SystemTopologySnapshotRelationship {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a SystemTopologySnapshotRelationship.
-func (c *SystemTopologySnapshotRelationshipClient) QueryTenant(_m *SystemTopologySnapshotRelationship) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotrelationship.TenantTable, systemtopologysnapshotrelationship.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryKnowledgeRelationship queries the knowledge_relationship edge of a SystemTopologySnapshotRelationship.
-func (c *SystemTopologySnapshotRelationshipClient) QueryKnowledgeRelationship(_m *SystemTopologySnapshotRelationship) *KnowledgeRelationshipQuery {
-	query := (&KnowledgeRelationshipClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
-			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotrelationship.KnowledgeRelationshipTable, systemtopologysnapshotrelationship.KnowledgeRelationshipColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeRelationship
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySnapshot queries the snapshot edge of a SystemTopologySnapshotRelationship.
-func (c *SystemTopologySnapshotRelationshipClient) QuerySnapshot(_m *SystemTopologySnapshotRelationship) *SystemTopologySnapshotQuery {
-	query := (&SystemTopologySnapshotClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
-			sqlgraph.To(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotrelationship.SnapshotTable, systemtopologysnapshotrelationship.SnapshotColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshot
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySourceSnapshotEntity queries the source_snapshot_entity edge of a SystemTopologySnapshotRelationship.
-func (c *SystemTopologySnapshotRelationshipClient) QuerySourceSnapshotEntity(_m *SystemTopologySnapshotRelationship) *SystemTopologySnapshotEntityQuery {
-	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
-			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotrelationship.SourceSnapshotEntityTable, systemtopologysnapshotrelationship.SourceSnapshotEntityColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTargetSnapshotEntity queries the target_snapshot_entity edge of a SystemTopologySnapshotRelationship.
-func (c *SystemTopologySnapshotRelationshipClient) QueryTargetSnapshotEntity(_m *SystemTopologySnapshotRelationship) *SystemTopologySnapshotEntityQuery {
-	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
-			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotrelationship.TargetSnapshotEntityTable, systemtopologysnapshotrelationship.TargetSnapshotEntityColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAnalysisEdges queries the analysis_edges edge of a SystemTopologySnapshotRelationship.
-func (c *SystemTopologySnapshotRelationshipClient) QueryAnalysisEdges(_m *SystemTopologySnapshotRelationship) *SystemAnalysisTopologyEdgeQuery {
-	query := (&SystemAnalysisTopologyEdgeClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
-			sqlgraph.To(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshotrelationship.AnalysisEdgesTable, systemtopologysnapshotrelationship.AnalysisEdgesColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisTopologyEdge
-		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SystemTopologySnapshotRelationshipClient) Hooks() []Hook {
-	hooks := c.hooks.SystemTopologySnapshotRelationship
-	return append(hooks[:len(hooks):len(hooks)], systemtopologysnapshotrelationship.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *SystemTopologySnapshotRelationshipClient) Interceptors() []Interceptor {
-	return c.inters.SystemTopologySnapshotRelationship
-}
-
-func (c *SystemTopologySnapshotRelationshipClient) mutate(ctx context.Context, m *SystemTopologySnapshotRelationshipMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SystemTopologySnapshotRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SystemTopologySnapshotRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SystemTopologySnapshotRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SystemTopologySnapshotRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown SystemTopologySnapshotRelationship mutation op: %q", m.Op())
 	}
 }
 
@@ -16505,16 +16450,16 @@ type (
 		IncidentTimelineEventEvidence, IncidentTimelineEventTopologyContext,
 		IncidentType, Integration, IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityAlias,
-		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
-		NormalizedEvent, NormalizedEventProjection, NormalizedEventProjectionEntity,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
-		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode,
-		SystemTopologySnapshot, SystemTopologySnapshotEntity,
-		SystemTopologySnapshotRelationship, Task, Team, TeamMembership, Tenant, Ticket,
-		User, UserAuthSession, VideoConference []ent.Hook
+		KnowledgeEvidence, KnowledgeGraphSnapshot, KnowledgeGraphSnapshotEntity,
+		KnowledgeGraphSnapshotRelationship, KnowledgeRelationship, MeetingSchedule,
+		MeetingSession, NormalizedEvent, NormalizedEventProjection,
+		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
+		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisTopologyEdge,
+		SystemAnalysisTopologyNode, Task, Team, TeamMembership, Tenant, Ticket, User,
+		UserAuthSession, VideoConference []ent.Hook
 	}
 	inters struct {
 		AiAgentRun, AiAgentRunCitation, AiAgentRunFinding, AiAgentRunFindingCitation,
@@ -16528,16 +16473,16 @@ type (
 		IncidentTimelineEventEvidence, IncidentTimelineEventTopologyContext,
 		IncidentType, Integration, IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityAlias,
-		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
-		NormalizedEvent, NormalizedEventProjection, NormalizedEventProjectionEntity,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
-		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode,
-		SystemTopologySnapshot, SystemTopologySnapshotEntity,
-		SystemTopologySnapshotRelationship, Task, Team, TeamMembership, Tenant, Ticket,
-		User, UserAuthSession, VideoConference []ent.Interceptor
+		KnowledgeEvidence, KnowledgeGraphSnapshot, KnowledgeGraphSnapshotEntity,
+		KnowledgeGraphSnapshotRelationship, KnowledgeRelationship, MeetingSchedule,
+		MeetingSession, NormalizedEvent, NormalizedEventProjection,
+		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
+		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisTopologyEdge,
+		SystemAnalysisTopologyNode, Task, Team, TeamMembership, Tenant, Ticket, User,
+		UserAuthSession, VideoConference []ent.Interceptor
 	}
 )
 
@@ -16593,6 +16538,9 @@ var (
 		KnowledgeEntity:                           tableSchemas[0],
 		KnowledgeEntityAlias:                      tableSchemas[0],
 		KnowledgeEvidence:                         tableSchemas[0],
+		KnowledgeGraphSnapshot:                    tableSchemas[0],
+		KnowledgeGraphSnapshotEntity:              tableSchemas[0],
+		KnowledgeGraphSnapshotRelationship:        tableSchemas[0],
 		KnowledgeRelationship:                     tableSchemas[0],
 		MeetingSchedule:                           tableSchemas[0],
 		MeetingScheduleOwningTeam:                 tableSchemas[0],
@@ -16620,9 +16568,6 @@ var (
 		SystemAnalysis:                            tableSchemas[0],
 		SystemAnalysisTopologyEdge:                tableSchemas[0],
 		SystemAnalysisTopologyNode:                tableSchemas[0],
-		SystemTopologySnapshot:                    tableSchemas[0],
-		SystemTopologySnapshotEntity:              tableSchemas[0],
-		SystemTopologySnapshotRelationship:        tableSchemas[0],
 		Task:                                      tableSchemas[0],
 		TaskTickets:                               tableSchemas[0],
 		Team:                                      tableSchemas[0],

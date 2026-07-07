@@ -155,16 +155,6 @@ func SystemAnalysisIDNotIn(vs ...uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldNotIn(FieldSystemAnalysisID, vs...))
 }
 
-// SystemAnalysisIDIsNil applies the IsNil predicate on the "system_analysis_id" field.
-func SystemAnalysisIDIsNil() predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldIsNull(FieldSystemAnalysisID))
-}
-
-// SystemAnalysisIDNotNil applies the NotNil predicate on the "system_analysis_id" field.
-func SystemAnalysisIDNotNil() predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldNotNull(FieldSystemAnalysisID))
-}
-
 // KindEQ applies the EQ predicate on the "kind" field.
 func KindEQ(v Kind) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldKind, v))
@@ -326,7 +316,7 @@ func HasSystemAnalysis() predicate.Retrospective {
 	return predicate.Retrospective(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, SystemAnalysisTable, SystemAnalysisColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, SystemAnalysisTable, SystemAnalysisColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.SystemAnalysis

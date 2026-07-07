@@ -15,9 +15,8 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineevent"
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
 )
 
 // IncidentTimelineEventTopologyContextUpdate is the builder for updating IncidentTimelineEventTopologyContext entities.
@@ -45,26 +44,6 @@ func (_u *IncidentTimelineEventTopologyContextUpdate) SetNillableIncidentEventID
 	if v != nil {
 		_u.SetIncidentEventID(*v)
 	}
-	return _u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *IncidentTimelineEventTopologyContextUpdate) SetKnowledgeEntityID(v uuid.UUID) *IncidentTimelineEventTopologyContextUpdate {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *IncidentTimelineEventTopologyContextUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *IncidentTimelineEventTopologyContextUpdate {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *IncidentTimelineEventTopologyContextUpdate) ClearKnowledgeEntityID() *IncidentTimelineEventTopologyContextUpdate {
-	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
@@ -127,13 +106,8 @@ func (_u *IncidentTimelineEventTopologyContextUpdate) SetEvent(v *IncidentTimeli
 	return _u.SetEventID(v.ID)
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *IncidentTimelineEventTopologyContextUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *IncidentTimelineEventTopologyContextUpdate {
-	return _u.SetKnowledgeEntityID(v.ID)
-}
-
-// SetSnapshotEntity sets the "snapshot_entity" edge to the SystemTopologySnapshotEntity entity.
-func (_u *IncidentTimelineEventTopologyContextUpdate) SetSnapshotEntity(v *SystemTopologySnapshotEntity) *IncidentTimelineEventTopologyContextUpdate {
+// SetSnapshotEntity sets the "snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity.
+func (_u *IncidentTimelineEventTopologyContextUpdate) SetSnapshotEntity(v *KnowledgeGraphSnapshotEntity) *IncidentTimelineEventTopologyContextUpdate {
 	return _u.SetSnapshotEntityID(v.ID)
 }
 
@@ -148,13 +122,7 @@ func (_u *IncidentTimelineEventTopologyContextUpdate) ClearEvent() *IncidentTime
 	return _u
 }
 
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *IncidentTimelineEventTopologyContextUpdate) ClearKnowledgeEntity() *IncidentTimelineEventTopologyContextUpdate {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
-}
-
-// ClearSnapshotEntity clears the "snapshot_entity" edge to the SystemTopologySnapshotEntity entity.
+// ClearSnapshotEntity clears the "snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity.
 func (_u *IncidentTimelineEventTopologyContextUpdate) ClearSnapshotEntity() *IncidentTimelineEventTopologyContextUpdate {
 	_u.mutation.ClearSnapshotEntity()
 	return _u
@@ -258,37 +226,6 @@ func (_u *IncidentTimelineEventTopologyContextUpdate) sqlSave(ctx context.Contex
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidenttimelineeventtopologycontext.KnowledgeEntityTable,
-			Columns: []string{incidenttimelineeventtopologycontext.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentTimelineEventTopologyContext
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidenttimelineeventtopologycontext.KnowledgeEntityTable,
-			Columns: []string{incidenttimelineeventtopologycontext.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentTimelineEventTopologyContext
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.SnapshotEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -297,7 +234,7 @@ func (_u *IncidentTimelineEventTopologyContextUpdate) sqlSave(ctx context.Contex
 			Columns: []string{incidenttimelineeventtopologycontext.SnapshotEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshotentity.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentTimelineEventTopologyContext
@@ -311,7 +248,7 @@ func (_u *IncidentTimelineEventTopologyContextUpdate) sqlSave(ctx context.Contex
 			Columns: []string{incidenttimelineeventtopologycontext.SnapshotEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshotentity.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentTimelineEventTopologyContext
@@ -355,26 +292,6 @@ func (_u *IncidentTimelineEventTopologyContextUpdateOne) SetNillableIncidentEven
 	if v != nil {
 		_u.SetIncidentEventID(*v)
 	}
-	return _u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *IncidentTimelineEventTopologyContextUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *IncidentTimelineEventTopologyContextUpdateOne {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *IncidentTimelineEventTopologyContextUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *IncidentTimelineEventTopologyContextUpdateOne {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *IncidentTimelineEventTopologyContextUpdateOne) ClearKnowledgeEntityID() *IncidentTimelineEventTopologyContextUpdateOne {
-	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
@@ -437,13 +354,8 @@ func (_u *IncidentTimelineEventTopologyContextUpdateOne) SetEvent(v *IncidentTim
 	return _u.SetEventID(v.ID)
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *IncidentTimelineEventTopologyContextUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *IncidentTimelineEventTopologyContextUpdateOne {
-	return _u.SetKnowledgeEntityID(v.ID)
-}
-
-// SetSnapshotEntity sets the "snapshot_entity" edge to the SystemTopologySnapshotEntity entity.
-func (_u *IncidentTimelineEventTopologyContextUpdateOne) SetSnapshotEntity(v *SystemTopologySnapshotEntity) *IncidentTimelineEventTopologyContextUpdateOne {
+// SetSnapshotEntity sets the "snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity.
+func (_u *IncidentTimelineEventTopologyContextUpdateOne) SetSnapshotEntity(v *KnowledgeGraphSnapshotEntity) *IncidentTimelineEventTopologyContextUpdateOne {
 	return _u.SetSnapshotEntityID(v.ID)
 }
 
@@ -458,13 +370,7 @@ func (_u *IncidentTimelineEventTopologyContextUpdateOne) ClearEvent() *IncidentT
 	return _u
 }
 
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *IncidentTimelineEventTopologyContextUpdateOne) ClearKnowledgeEntity() *IncidentTimelineEventTopologyContextUpdateOne {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
-}
-
-// ClearSnapshotEntity clears the "snapshot_entity" edge to the SystemTopologySnapshotEntity entity.
+// ClearSnapshotEntity clears the "snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity.
 func (_u *IncidentTimelineEventTopologyContextUpdateOne) ClearSnapshotEntity() *IncidentTimelineEventTopologyContextUpdateOne {
 	_u.mutation.ClearSnapshotEntity()
 	return _u
@@ -598,37 +504,6 @@ func (_u *IncidentTimelineEventTopologyContextUpdateOne) sqlSave(ctx context.Con
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidenttimelineeventtopologycontext.KnowledgeEntityTable,
-			Columns: []string{incidenttimelineeventtopologycontext.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentTimelineEventTopologyContext
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidenttimelineeventtopologycontext.KnowledgeEntityTable,
-			Columns: []string{incidenttimelineeventtopologycontext.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentTimelineEventTopologyContext
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.SnapshotEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -637,7 +512,7 @@ func (_u *IncidentTimelineEventTopologyContextUpdateOne) sqlSave(ctx context.Con
 			Columns: []string{incidenttimelineeventtopologycontext.SnapshotEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshotentity.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentTimelineEventTopologyContext
@@ -651,7 +526,7 @@ func (_u *IncidentTimelineEventTopologyContextUpdateOne) sqlSave(ctx context.Con
 			Columns: []string{incidenttimelineeventtopologycontext.SnapshotEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshotentity.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentTimelineEventTopologyContext

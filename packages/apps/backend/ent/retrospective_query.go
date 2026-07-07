@@ -187,7 +187,7 @@ func (_q *RetrospectiveQuery) QuerySystemAnalysis() *SystemAnalysisQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
 			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, retrospective.SystemAnalysisTable, retrospective.SystemAnalysisColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospective.SystemAnalysisTable, retrospective.SystemAnalysisColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysis

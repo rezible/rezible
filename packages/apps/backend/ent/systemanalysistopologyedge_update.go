@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotrelationship"
 )
 
 // SystemAnalysisTopologyEdgeUpdate is the builder for updating SystemAnalysisTopologyEdge entities.
@@ -106,8 +106,8 @@ func (_u *SystemAnalysisTopologyEdgeUpdate) SetAnalysis(v *SystemAnalysis) *Syst
 	return _u.SetAnalysisID(v.ID)
 }
 
-// SetSnapshotRelationship sets the "snapshot_relationship" edge to the SystemTopologySnapshotRelationship entity.
-func (_u *SystemAnalysisTopologyEdgeUpdate) SetSnapshotRelationship(v *SystemTopologySnapshotRelationship) *SystemAnalysisTopologyEdgeUpdate {
+// SetSnapshotRelationship sets the "snapshot_relationship" edge to the KnowledgeGraphSnapshotRelationship entity.
+func (_u *SystemAnalysisTopologyEdgeUpdate) SetSnapshotRelationship(v *KnowledgeGraphSnapshotRelationship) *SystemAnalysisTopologyEdgeUpdate {
 	return _u.SetSnapshotRelationshipID(v.ID)
 }
 
@@ -122,7 +122,7 @@ func (_u *SystemAnalysisTopologyEdgeUpdate) ClearAnalysis() *SystemAnalysisTopol
 	return _u
 }
 
-// ClearSnapshotRelationship clears the "snapshot_relationship" edge to the SystemTopologySnapshotRelationship entity.
+// ClearSnapshotRelationship clears the "snapshot_relationship" edge to the KnowledgeGraphSnapshotRelationship entity.
 func (_u *SystemAnalysisTopologyEdgeUpdate) ClearSnapshotRelationship() *SystemAnalysisTopologyEdgeUpdate {
 	_u.mutation.ClearSnapshotRelationship()
 	return _u
@@ -253,7 +253,7 @@ func (_u *SystemAnalysisTopologyEdgeUpdate) sqlSave(ctx context.Context) (_node 
 			Columns: []string{systemanalysistopologyedge.SnapshotRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshotrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
@@ -267,7 +267,7 @@ func (_u *SystemAnalysisTopologyEdgeUpdate) sqlSave(ctx context.Context) (_node 
 			Columns: []string{systemanalysistopologyedge.SnapshotRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshotrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
@@ -373,8 +373,8 @@ func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetAnalysis(v *SystemAnalysis) *S
 	return _u.SetAnalysisID(v.ID)
 }
 
-// SetSnapshotRelationship sets the "snapshot_relationship" edge to the SystemTopologySnapshotRelationship entity.
-func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetSnapshotRelationship(v *SystemTopologySnapshotRelationship) *SystemAnalysisTopologyEdgeUpdateOne {
+// SetSnapshotRelationship sets the "snapshot_relationship" edge to the KnowledgeGraphSnapshotRelationship entity.
+func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetSnapshotRelationship(v *KnowledgeGraphSnapshotRelationship) *SystemAnalysisTopologyEdgeUpdateOne {
 	return _u.SetSnapshotRelationshipID(v.ID)
 }
 
@@ -389,7 +389,7 @@ func (_u *SystemAnalysisTopologyEdgeUpdateOne) ClearAnalysis() *SystemAnalysisTo
 	return _u
 }
 
-// ClearSnapshotRelationship clears the "snapshot_relationship" edge to the SystemTopologySnapshotRelationship entity.
+// ClearSnapshotRelationship clears the "snapshot_relationship" edge to the KnowledgeGraphSnapshotRelationship entity.
 func (_u *SystemAnalysisTopologyEdgeUpdateOne) ClearSnapshotRelationship() *SystemAnalysisTopologyEdgeUpdateOne {
 	_u.mutation.ClearSnapshotRelationship()
 	return _u
@@ -550,7 +550,7 @@ func (_u *SystemAnalysisTopologyEdgeUpdateOne) sqlSave(ctx context.Context) (_no
 			Columns: []string{systemanalysistopologyedge.SnapshotRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshotrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
@@ -564,7 +564,7 @@ func (_u *SystemAnalysisTopologyEdgeUpdateOne) sqlSave(ctx context.Context) (_no
 			Columns: []string{systemanalysistopologyedge.SnapshotRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshotrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge

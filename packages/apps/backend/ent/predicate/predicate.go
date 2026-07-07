@@ -129,6 +129,15 @@ type KnowledgeEntityAlias func(*sql.Selector)
 // KnowledgeEvidence is the predicate function for knowledgeevidence builders.
 type KnowledgeEvidence func(*sql.Selector)
 
+// KnowledgeGraphSnapshot is the predicate function for knowledgegraphsnapshot builders.
+type KnowledgeGraphSnapshot func(*sql.Selector)
+
+// KnowledgeGraphSnapshotEntity is the predicate function for knowledgegraphsnapshotentity builders.
+type KnowledgeGraphSnapshotEntity func(*sql.Selector)
+
+// KnowledgeGraphSnapshotRelationship is the predicate function for knowledgegraphsnapshotrelationship builders.
+type KnowledgeGraphSnapshotRelationship func(*sql.Selector)
+
 // KnowledgeRelationship is the predicate function for knowledgerelationship builders.
 type KnowledgeRelationship func(*sql.Selector)
 
@@ -200,15 +209,6 @@ type SystemAnalysisTopologyEdge func(*sql.Selector)
 
 // SystemAnalysisTopologyNode is the predicate function for systemanalysistopologynode builders.
 type SystemAnalysisTopologyNode func(*sql.Selector)
-
-// SystemTopologySnapshot is the predicate function for systemtopologysnapshot builders.
-type SystemTopologySnapshot func(*sql.Selector)
-
-// SystemTopologySnapshotEntity is the predicate function for systemtopologysnapshotentity builders.
-type SystemTopologySnapshotEntity func(*sql.Selector)
-
-// SystemTopologySnapshotRelationship is the predicate function for systemtopologysnapshotrelationship builders.
-type SystemTopologySnapshotRelationship func(*sql.Selector)
 
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)

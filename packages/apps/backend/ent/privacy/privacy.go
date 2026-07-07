@@ -1083,6 +1083,78 @@ func (f KnowledgeEvidenceMutationRuleFunc) EvalMutation(ctx context.Context, m e
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEvidenceMutation", m)
 }
 
+// The KnowledgeGraphSnapshotQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type KnowledgeGraphSnapshotQueryRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f KnowledgeGraphSnapshotQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeGraphSnapshotQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeGraphSnapshotQuery", q)
+}
+
+// The KnowledgeGraphSnapshotMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type KnowledgeGraphSnapshotMutationRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f KnowledgeGraphSnapshotMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.KnowledgeGraphSnapshotMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeGraphSnapshotMutation", m)
+}
+
+// The KnowledgeGraphSnapshotEntityQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type KnowledgeGraphSnapshotEntityQueryRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotEntityQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f KnowledgeGraphSnapshotEntityQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeGraphSnapshotEntityQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeGraphSnapshotEntityQuery", q)
+}
+
+// The KnowledgeGraphSnapshotEntityMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type KnowledgeGraphSnapshotEntityMutationRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotEntityMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f KnowledgeGraphSnapshotEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.KnowledgeGraphSnapshotEntityMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeGraphSnapshotEntityMutation", m)
+}
+
+// The KnowledgeGraphSnapshotRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type KnowledgeGraphSnapshotRelationshipQueryRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotRelationshipQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f KnowledgeGraphSnapshotRelationshipQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeGraphSnapshotRelationshipQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeGraphSnapshotRelationshipQuery", q)
+}
+
+// The KnowledgeGraphSnapshotRelationshipMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type KnowledgeGraphSnapshotRelationshipMutationRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotRelationshipMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f KnowledgeGraphSnapshotRelationshipMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.KnowledgeGraphSnapshotRelationshipMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeGraphSnapshotRelationshipMutation", m)
+}
+
 // The KnowledgeRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type KnowledgeRelationshipQueryRuleFunc func(context.Context, *ent.KnowledgeRelationshipQuery) error
@@ -1659,78 +1731,6 @@ func (f SystemAnalysisTopologyNodeMutationRuleFunc) EvalMutation(ctx context.Con
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisTopologyNodeMutation", m)
 }
 
-// The SystemTopologySnapshotQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SystemTopologySnapshotQueryRuleFunc func(context.Context, *ent.SystemTopologySnapshotQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SystemTopologySnapshotQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemTopologySnapshotQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemTopologySnapshotQuery", q)
-}
-
-// The SystemTopologySnapshotMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SystemTopologySnapshotMutationRuleFunc func(context.Context, *ent.SystemTopologySnapshotMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SystemTopologySnapshotMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemTopologySnapshotMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemTopologySnapshotMutation", m)
-}
-
-// The SystemTopologySnapshotEntityQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SystemTopologySnapshotEntityQueryRuleFunc func(context.Context, *ent.SystemTopologySnapshotEntityQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SystemTopologySnapshotEntityQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemTopologySnapshotEntityQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemTopologySnapshotEntityQuery", q)
-}
-
-// The SystemTopologySnapshotEntityMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SystemTopologySnapshotEntityMutationRuleFunc func(context.Context, *ent.SystemTopologySnapshotEntityMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SystemTopologySnapshotEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemTopologySnapshotEntityMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemTopologySnapshotEntityMutation", m)
-}
-
-// The SystemTopologySnapshotRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SystemTopologySnapshotRelationshipQueryRuleFunc func(context.Context, *ent.SystemTopologySnapshotRelationshipQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SystemTopologySnapshotRelationshipQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemTopologySnapshotRelationshipQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemTopologySnapshotRelationshipQuery", q)
-}
-
-// The SystemTopologySnapshotRelationshipMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SystemTopologySnapshotRelationshipMutationRuleFunc func(context.Context, *ent.SystemTopologySnapshotRelationshipMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SystemTopologySnapshotRelationshipMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemTopologySnapshotRelationshipMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemTopologySnapshotRelationshipMutation", m)
-}
-
 // The TaskQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type TaskQueryRuleFunc func(context.Context, *ent.TaskQuery) error
@@ -2040,6 +2040,12 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.KnowledgeEvidenceQuery:
 		return q.Filter(), nil
+	case *ent.KnowledgeGraphSnapshotQuery:
+		return q.Filter(), nil
+	case *ent.KnowledgeGraphSnapshotEntityQuery:
+		return q.Filter(), nil
+	case *ent.KnowledgeGraphSnapshotRelationshipQuery:
+		return q.Filter(), nil
 	case *ent.KnowledgeRelationshipQuery:
 		return q.Filter(), nil
 	case *ent.MeetingScheduleQuery:
@@ -2087,12 +2093,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 	case *ent.SystemAnalysisTopologyEdgeQuery:
 		return q.Filter(), nil
 	case *ent.SystemAnalysisTopologyNodeQuery:
-		return q.Filter(), nil
-	case *ent.SystemTopologySnapshotQuery:
-		return q.Filter(), nil
-	case *ent.SystemTopologySnapshotEntityQuery:
-		return q.Filter(), nil
-	case *ent.SystemTopologySnapshotRelationshipQuery:
 		return q.Filter(), nil
 	case *ent.TaskQuery:
 		return q.Filter(), nil
@@ -2197,6 +2197,12 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.KnowledgeEvidenceMutation:
 		return m.Filter(), nil
+	case *ent.KnowledgeGraphSnapshotMutation:
+		return m.Filter(), nil
+	case *ent.KnowledgeGraphSnapshotEntityMutation:
+		return m.Filter(), nil
+	case *ent.KnowledgeGraphSnapshotRelationshipMutation:
+		return m.Filter(), nil
 	case *ent.KnowledgeRelationshipMutation:
 		return m.Filter(), nil
 	case *ent.MeetingScheduleMutation:
@@ -2244,12 +2250,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.SystemAnalysisTopologyEdgeMutation:
 		return m.Filter(), nil
 	case *ent.SystemAnalysisTopologyNodeMutation:
-		return m.Filter(), nil
-	case *ent.SystemTopologySnapshotMutation:
-		return m.Filter(), nil
-	case *ent.SystemTopologySnapshotEntityMutation:
-		return m.Filter(), nil
-	case *ent.SystemTopologySnapshotRelationshipMutation:
 		return m.Filter(), nil
 	case *ent.TaskMutation:
 		return m.Filter(), nil

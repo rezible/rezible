@@ -18,18 +18,16 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldTopologySnapshotID holds the string denoting the topology_snapshot_id field in the database.
-	FieldTopologySnapshotID = "topology_snapshot_id"
+	// FieldKnowledgeGraphSnapshotID holds the string denoting the knowledge_graph_snapshot_id field in the database.
+	FieldKnowledgeGraphSnapshotID = "knowledge_graph_snapshot_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
-	EdgeRetrospective = "retrospective"
-	// EdgeTopologySnapshot holds the string denoting the topology_snapshot edge name in mutations.
-	EdgeTopologySnapshot = "topology_snapshot"
+	// EdgeKnowledgeGraphSnapshot holds the string denoting the knowledge_graph_snapshot edge name in mutations.
+	EdgeKnowledgeGraphSnapshot = "knowledge_graph_snapshot"
 	// EdgeAnalysisNodes holds the string denoting the analysis_nodes edge name in mutations.
 	EdgeAnalysisNodes = "analysis_nodes"
 	// EdgeAnalysisEdges holds the string denoting the analysis_edges edge name in mutations.
@@ -43,20 +41,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// RetrospectiveTable is the table that holds the retrospective relation/edge.
-	RetrospectiveTable = "retrospectives"
-	// RetrospectiveInverseTable is the table name for the Retrospective entity.
-	// It exists in this package in order to avoid circular dependency with the "retrospective" package.
-	RetrospectiveInverseTable = "retrospectives"
-	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
-	RetrospectiveColumn = "system_analysis_id"
-	// TopologySnapshotTable is the table that holds the topology_snapshot relation/edge.
-	TopologySnapshotTable = "system_analyses"
-	// TopologySnapshotInverseTable is the table name for the SystemTopologySnapshot entity.
-	// It exists in this package in order to avoid circular dependency with the "systemtopologysnapshot" package.
-	TopologySnapshotInverseTable = "system_topology_snapshots"
-	// TopologySnapshotColumn is the table column denoting the topology_snapshot relation/edge.
-	TopologySnapshotColumn = "topology_snapshot_id"
+	// KnowledgeGraphSnapshotTable is the table that holds the knowledge_graph_snapshot relation/edge.
+	KnowledgeGraphSnapshotTable = "system_analyses"
+	// KnowledgeGraphSnapshotInverseTable is the table name for the KnowledgeGraphSnapshot entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgegraphsnapshot" package.
+	KnowledgeGraphSnapshotInverseTable = "knowledge_graph_snapshots"
+	// KnowledgeGraphSnapshotColumn is the table column denoting the knowledge_graph_snapshot relation/edge.
+	KnowledgeGraphSnapshotColumn = "knowledge_graph_snapshot_id"
 	// AnalysisNodesTable is the table that holds the analysis_nodes relation/edge.
 	AnalysisNodesTable = "system_analysis_topology_nodes"
 	// AnalysisNodesInverseTable is the table name for the SystemAnalysisTopologyNode entity.
@@ -77,7 +68,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldTopologySnapshotID,
+	FieldKnowledgeGraphSnapshotID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -123,9 +114,9 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByTopologySnapshotID orders the results by the topology_snapshot_id field.
-func ByTopologySnapshotID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTopologySnapshotID, opts...).ToFunc()
+// ByKnowledgeGraphSnapshotID orders the results by the knowledge_graph_snapshot_id field.
+func ByKnowledgeGraphSnapshotID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKnowledgeGraphSnapshotID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -145,17 +136,10 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByRetrospectiveField orders the results by retrospective field.
-func ByRetrospectiveField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByKnowledgeGraphSnapshotField orders the results by knowledge_graph_snapshot field.
+func ByKnowledgeGraphSnapshotField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByTopologySnapshotField orders the results by topology_snapshot field.
-func ByTopologySnapshotField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTopologySnapshotStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newKnowledgeGraphSnapshotStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -193,18 +177,11 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newRetrospectiveStep() *sqlgraph.Step {
+func newKnowledgeGraphSnapshotStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RetrospectiveInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
-	)
-}
-func newTopologySnapshotStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(TopologySnapshotInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, TopologySnapshotTable, TopologySnapshotColumn),
+		sqlgraph.To(KnowledgeGraphSnapshotInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeGraphSnapshotTable, KnowledgeGraphSnapshotColumn),
 	)
 }
 func newAnalysisNodesStep() *sqlgraph.Step {

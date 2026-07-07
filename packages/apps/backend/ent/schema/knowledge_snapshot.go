@@ -11,62 +11,56 @@ import (
 	"github.com/google/uuid"
 )
 
-type SystemTopologySnapshot struct {
+type KnowledgeGraphSnapshot struct {
 	ent.Schema
 }
 
-func (SystemTopologySnapshot) Mixin() []ent.Mixin {
+func (KnowledgeGraphSnapshot) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
 	}
 }
 
-func (SystemTopologySnapshot) Fields() []ent.Field {
+func (KnowledgeGraphSnapshot) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.Time("as_of").Default(time.Now),
 		field.String("name").Optional(),
-		field.Enum("scope").
-			Values("all", "incident").
-			Default("all"),
-		field.JSON("scope_properties", map[string]any{}).
-			Optional().
-			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
 		field.Time("created_at").Default(time.Now),
 	}
 }
 
-func (SystemTopologySnapshot) Edges() []ent.Edge {
+func (KnowledgeGraphSnapshot) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("entities", SystemTopologySnapshotEntity.Type).
-			Ref("snapshot"),
-		edge.From("relationships", SystemTopologySnapshotRelationship.Type).
-			Ref("snapshot"),
 		edge.From("system_analyses", SystemAnalysis.Type).
-			Ref("topology_snapshot"),
+			Ref("knowledge_graph_snapshot"),
+		edge.From("entities", KnowledgeGraphSnapshotEntity.Type).
+			Ref("snapshot"),
+		edge.From("relationships", KnowledgeGraphSnapshotRelationship.Type).
+			Ref("snapshot"),
 	}
 }
 
-func (SystemTopologySnapshot) Indexes() []ent.Index {
+func (KnowledgeGraphSnapshot) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "as_of"),
 		index.Fields("tenant_id", "created_at"),
 	}
 }
 
-type SystemTopologySnapshotEntity struct {
+type KnowledgeGraphSnapshotEntity struct {
 	ent.Schema
 }
 
-func (SystemTopologySnapshotEntity) Mixin() []ent.Mixin {
+func (KnowledgeGraphSnapshotEntity) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
 	}
 }
 
-func (SystemTopologySnapshotEntity) Fields() []ent.Field {
+func (KnowledgeGraphSnapshotEntity) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("snapshot_id", uuid.UUID{}),
@@ -84,25 +78,23 @@ func (SystemTopologySnapshotEntity) Fields() []ent.Field {
 	}
 }
 
-func (SystemTopologySnapshotEntity) Edges() []ent.Edge {
+func (KnowledgeGraphSnapshotEntity) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("snapshot", SystemTopologySnapshot.Type).
+		edge.To("snapshot", KnowledgeGraphSnapshot.Type).
 			Required().
 			Unique().
 			Field("snapshot_id"),
 		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Unique().
 			Field("knowledge_entity_id"),
-		edge.From("source_relationships", SystemTopologySnapshotRelationship.Type).
+		edge.From("source_relationships", KnowledgeGraphSnapshotRelationship.Type).
 			Ref("source_snapshot_entity"),
-		edge.From("target_relationships", SystemTopologySnapshotRelationship.Type).
+		edge.From("target_relationships", KnowledgeGraphSnapshotRelationship.Type).
 			Ref("target_snapshot_entity"),
-		edge.From("analysis_nodes", SystemAnalysisTopologyNode.Type).
-			Ref("snapshot_entity"),
 	}
 }
 
-func (SystemTopologySnapshotEntity) Indexes() []ent.Index {
+func (KnowledgeGraphSnapshotEntity) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "snapshot_id"),
 		index.Fields("tenant_id", "knowledge_entity_id"),
@@ -111,18 +103,18 @@ func (SystemTopologySnapshotEntity) Indexes() []ent.Index {
 	}
 }
 
-type SystemTopologySnapshotRelationship struct {
+type KnowledgeGraphSnapshotRelationship struct {
 	ent.Schema
 }
 
-func (SystemTopologySnapshotRelationship) Mixin() []ent.Mixin {
+func (KnowledgeGraphSnapshotRelationship) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
 	}
 }
 
-func (SystemTopologySnapshotRelationship) Fields() []ent.Field {
+func (KnowledgeGraphSnapshotRelationship) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("snapshot_id", uuid.UUID{}),
@@ -139,20 +131,20 @@ func (SystemTopologySnapshotRelationship) Fields() []ent.Field {
 	}
 }
 
-func (SystemTopologySnapshotRelationship) Edges() []ent.Edge {
+func (KnowledgeGraphSnapshotRelationship) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("knowledge_relationship", KnowledgeRelationship.Type).
 			Unique().
 			Field("knowledge_relationship_id"),
-		edge.To("snapshot", SystemTopologySnapshot.Type).
+		edge.To("snapshot", KnowledgeGraphSnapshot.Type).
 			Required().
 			Unique().
 			Field("snapshot_id"),
-		edge.To("source_snapshot_entity", SystemTopologySnapshotEntity.Type).
+		edge.To("source_snapshot_entity", KnowledgeGraphSnapshotEntity.Type).
 			Required().
 			Unique().
 			Field("source_snapshot_entity_id"),
-		edge.To("target_snapshot_entity", SystemTopologySnapshotEntity.Type).
+		edge.To("target_snapshot_entity", KnowledgeGraphSnapshotEntity.Type).
 			Required().
 			Unique().
 			Field("target_snapshot_entity_id"),
@@ -161,7 +153,7 @@ func (SystemTopologySnapshotRelationship) Edges() []ent.Edge {
 	}
 }
 
-func (SystemTopologySnapshotRelationship) Indexes() []ent.Index {
+func (KnowledgeGraphSnapshotRelationship) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "snapshot_id"),
 		index.Fields("tenant_id", "knowledge_relationship_id"),

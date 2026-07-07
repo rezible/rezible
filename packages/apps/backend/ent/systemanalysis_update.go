@@ -13,12 +13,11 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
-	"github.com/rezible/rezible/ent/systemtopologysnapshot"
 )
 
 // SystemAnalysisUpdate is the builder for updating SystemAnalysis entities.
@@ -35,23 +34,17 @@ func (_u *SystemAnalysisUpdate) Where(ps ...predicate.SystemAnalysis) *SystemAna
 	return _u
 }
 
-// SetTopologySnapshotID sets the "topology_snapshot_id" field.
-func (_u *SystemAnalysisUpdate) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisUpdate {
-	_u.mutation.SetTopologySnapshotID(v)
+// SetKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field.
+func (_u *SystemAnalysisUpdate) SetKnowledgeGraphSnapshotID(v uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.SetKnowledgeGraphSnapshotID(v)
 	return _u
 }
 
-// SetNillableTopologySnapshotID sets the "topology_snapshot_id" field if the given value is not nil.
-func (_u *SystemAnalysisUpdate) SetNillableTopologySnapshotID(v *uuid.UUID) *SystemAnalysisUpdate {
+// SetNillableKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field if the given value is not nil.
+func (_u *SystemAnalysisUpdate) SetNillableKnowledgeGraphSnapshotID(v *uuid.UUID) *SystemAnalysisUpdate {
 	if v != nil {
-		_u.SetTopologySnapshotID(*v)
+		_u.SetKnowledgeGraphSnapshotID(*v)
 	}
-	return _u
-}
-
-// ClearTopologySnapshotID clears the value of the "topology_snapshot_id" field.
-func (_u *SystemAnalysisUpdate) ClearTopologySnapshotID() *SystemAnalysisUpdate {
-	_u.mutation.ClearTopologySnapshotID()
 	return _u
 }
 
@@ -75,20 +68,9 @@ func (_u *SystemAnalysisUpdate) SetUpdatedAt(v time.Time) *SystemAnalysisUpdate 
 	return _u
 }
 
-// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
-func (_u *SystemAnalysisUpdate) SetRetrospectiveID(id uuid.UUID) *SystemAnalysisUpdate {
-	_u.mutation.SetRetrospectiveID(id)
-	return _u
-}
-
-// SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (_u *SystemAnalysisUpdate) SetRetrospective(v *Retrospective) *SystemAnalysisUpdate {
-	return _u.SetRetrospectiveID(v.ID)
-}
-
-// SetTopologySnapshot sets the "topology_snapshot" edge to the SystemTopologySnapshot entity.
-func (_u *SystemAnalysisUpdate) SetTopologySnapshot(v *SystemTopologySnapshot) *SystemAnalysisUpdate {
-	return _u.SetTopologySnapshotID(v.ID)
+// SetKnowledgeGraphSnapshot sets the "knowledge_graph_snapshot" edge to the KnowledgeGraphSnapshot entity.
+func (_u *SystemAnalysisUpdate) SetKnowledgeGraphSnapshot(v *KnowledgeGraphSnapshot) *SystemAnalysisUpdate {
+	return _u.SetKnowledgeGraphSnapshotID(v.ID)
 }
 
 // AddAnalysisNodeIDs adds the "analysis_nodes" edge to the SystemAnalysisTopologyNode entity by IDs.
@@ -126,15 +108,9 @@ func (_u *SystemAnalysisUpdate) Mutation() *SystemAnalysisMutation {
 	return _u.mutation
 }
 
-// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (_u *SystemAnalysisUpdate) ClearRetrospective() *SystemAnalysisUpdate {
-	_u.mutation.ClearRetrospective()
-	return _u
-}
-
-// ClearTopologySnapshot clears the "topology_snapshot" edge to the SystemTopologySnapshot entity.
-func (_u *SystemAnalysisUpdate) ClearTopologySnapshot() *SystemAnalysisUpdate {
-	_u.mutation.ClearTopologySnapshot()
+// ClearKnowledgeGraphSnapshot clears the "knowledge_graph_snapshot" edge to the KnowledgeGraphSnapshot entity.
+func (_u *SystemAnalysisUpdate) ClearKnowledgeGraphSnapshot() *SystemAnalysisUpdate {
+	_u.mutation.ClearKnowledgeGraphSnapshot()
 	return _u
 }
 
@@ -227,8 +203,8 @@ func (_u *SystemAnalysisUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.tenant"`)
 	}
-	if _u.mutation.RetrospectiveCleared() && len(_u.mutation.RetrospectiveIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.retrospective"`)
+	if _u.mutation.KnowledgeGraphSnapshotCleared() && len(_u.mutation.KnowledgeGraphSnapshotIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.knowledge_graph_snapshot"`)
 	}
 	return nil
 }
@@ -257,60 +233,29 @@ func (_u *SystemAnalysisUpdate) sqlSave(ctx context.Context) (_node int, err err
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if _u.mutation.RetrospectiveCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   systemanalysis.RetrospectiveTable,
-			Columns: []string{systemanalysis.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Retrospective
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   systemanalysis.RetrospectiveTable,
-			Columns: []string{systemanalysis.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Retrospective
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.TopologySnapshotCleared() {
+	if _u.mutation.KnowledgeGraphSnapshotCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysis.TopologySnapshotTable,
-			Columns: []string{systemanalysis.TopologySnapshotColumn},
+			Table:   systemanalysis.KnowledgeGraphSnapshotTable,
+			Columns: []string{systemanalysis.KnowledgeGraphSnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysis
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.TopologySnapshotIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.KnowledgeGraphSnapshotIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysis.TopologySnapshotTable,
-			Columns: []string{systemanalysis.TopologySnapshotColumn},
+			Table:   systemanalysis.KnowledgeGraphSnapshotTable,
+			Columns: []string{systemanalysis.KnowledgeGraphSnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysis
@@ -439,23 +384,17 @@ type SystemAnalysisUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetTopologySnapshotID sets the "topology_snapshot_id" field.
-func (_u *SystemAnalysisUpdateOne) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisUpdateOne {
-	_u.mutation.SetTopologySnapshotID(v)
+// SetKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field.
+func (_u *SystemAnalysisUpdateOne) SetKnowledgeGraphSnapshotID(v uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.SetKnowledgeGraphSnapshotID(v)
 	return _u
 }
 
-// SetNillableTopologySnapshotID sets the "topology_snapshot_id" field if the given value is not nil.
-func (_u *SystemAnalysisUpdateOne) SetNillableTopologySnapshotID(v *uuid.UUID) *SystemAnalysisUpdateOne {
+// SetNillableKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field if the given value is not nil.
+func (_u *SystemAnalysisUpdateOne) SetNillableKnowledgeGraphSnapshotID(v *uuid.UUID) *SystemAnalysisUpdateOne {
 	if v != nil {
-		_u.SetTopologySnapshotID(*v)
+		_u.SetKnowledgeGraphSnapshotID(*v)
 	}
-	return _u
-}
-
-// ClearTopologySnapshotID clears the value of the "topology_snapshot_id" field.
-func (_u *SystemAnalysisUpdateOne) ClearTopologySnapshotID() *SystemAnalysisUpdateOne {
-	_u.mutation.ClearTopologySnapshotID()
 	return _u
 }
 
@@ -479,20 +418,9 @@ func (_u *SystemAnalysisUpdateOne) SetUpdatedAt(v time.Time) *SystemAnalysisUpda
 	return _u
 }
 
-// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
-func (_u *SystemAnalysisUpdateOne) SetRetrospectiveID(id uuid.UUID) *SystemAnalysisUpdateOne {
-	_u.mutation.SetRetrospectiveID(id)
-	return _u
-}
-
-// SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (_u *SystemAnalysisUpdateOne) SetRetrospective(v *Retrospective) *SystemAnalysisUpdateOne {
-	return _u.SetRetrospectiveID(v.ID)
-}
-
-// SetTopologySnapshot sets the "topology_snapshot" edge to the SystemTopologySnapshot entity.
-func (_u *SystemAnalysisUpdateOne) SetTopologySnapshot(v *SystemTopologySnapshot) *SystemAnalysisUpdateOne {
-	return _u.SetTopologySnapshotID(v.ID)
+// SetKnowledgeGraphSnapshot sets the "knowledge_graph_snapshot" edge to the KnowledgeGraphSnapshot entity.
+func (_u *SystemAnalysisUpdateOne) SetKnowledgeGraphSnapshot(v *KnowledgeGraphSnapshot) *SystemAnalysisUpdateOne {
+	return _u.SetKnowledgeGraphSnapshotID(v.ID)
 }
 
 // AddAnalysisNodeIDs adds the "analysis_nodes" edge to the SystemAnalysisTopologyNode entity by IDs.
@@ -530,15 +458,9 @@ func (_u *SystemAnalysisUpdateOne) Mutation() *SystemAnalysisMutation {
 	return _u.mutation
 }
 
-// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (_u *SystemAnalysisUpdateOne) ClearRetrospective() *SystemAnalysisUpdateOne {
-	_u.mutation.ClearRetrospective()
-	return _u
-}
-
-// ClearTopologySnapshot clears the "topology_snapshot" edge to the SystemTopologySnapshot entity.
-func (_u *SystemAnalysisUpdateOne) ClearTopologySnapshot() *SystemAnalysisUpdateOne {
-	_u.mutation.ClearTopologySnapshot()
+// ClearKnowledgeGraphSnapshot clears the "knowledge_graph_snapshot" edge to the KnowledgeGraphSnapshot entity.
+func (_u *SystemAnalysisUpdateOne) ClearKnowledgeGraphSnapshot() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearKnowledgeGraphSnapshot()
 	return _u
 }
 
@@ -644,8 +566,8 @@ func (_u *SystemAnalysisUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.tenant"`)
 	}
-	if _u.mutation.RetrospectiveCleared() && len(_u.mutation.RetrospectiveIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.retrospective"`)
+	if _u.mutation.KnowledgeGraphSnapshotCleared() && len(_u.mutation.KnowledgeGraphSnapshotIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.knowledge_graph_snapshot"`)
 	}
 	return nil
 }
@@ -691,60 +613,29 @@ func (_u *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *SystemAn
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if _u.mutation.RetrospectiveCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   systemanalysis.RetrospectiveTable,
-			Columns: []string{systemanalysis.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Retrospective
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   systemanalysis.RetrospectiveTable,
-			Columns: []string{systemanalysis.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Retrospective
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.TopologySnapshotCleared() {
+	if _u.mutation.KnowledgeGraphSnapshotCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysis.TopologySnapshotTable,
-			Columns: []string{systemanalysis.TopologySnapshotColumn},
+			Table:   systemanalysis.KnowledgeGraphSnapshotTable,
+			Columns: []string{systemanalysis.KnowledgeGraphSnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysis
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.TopologySnapshotIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.KnowledgeGraphSnapshotIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysis.TopologySnapshotTable,
-			Columns: []string{systemanalysis.TopologySnapshotColumn},
+			Table:   systemanalysis.KnowledgeGraphSnapshotTable,
+			Columns: []string{systemanalysis.KnowledgeGraphSnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysis

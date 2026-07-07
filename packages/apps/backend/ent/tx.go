@@ -94,6 +94,12 @@ type Tx struct {
 	KnowledgeEntityAlias *KnowledgeEntityAliasClient
 	// KnowledgeEvidence is the client for interacting with the KnowledgeEvidence builders.
 	KnowledgeEvidence *KnowledgeEvidenceClient
+	// KnowledgeGraphSnapshot is the client for interacting with the KnowledgeGraphSnapshot builders.
+	KnowledgeGraphSnapshot *KnowledgeGraphSnapshotClient
+	// KnowledgeGraphSnapshotEntity is the client for interacting with the KnowledgeGraphSnapshotEntity builders.
+	KnowledgeGraphSnapshotEntity *KnowledgeGraphSnapshotEntityClient
+	// KnowledgeGraphSnapshotRelationship is the client for interacting with the KnowledgeGraphSnapshotRelationship builders.
+	KnowledgeGraphSnapshotRelationship *KnowledgeGraphSnapshotRelationshipClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
 	KnowledgeRelationship *KnowledgeRelationshipClient
 	// MeetingSchedule is the client for interacting with the MeetingSchedule builders.
@@ -142,12 +148,6 @@ type Tx struct {
 	SystemAnalysisTopologyEdge *SystemAnalysisTopologyEdgeClient
 	// SystemAnalysisTopologyNode is the client for interacting with the SystemAnalysisTopologyNode builders.
 	SystemAnalysisTopologyNode *SystemAnalysisTopologyNodeClient
-	// SystemTopologySnapshot is the client for interacting with the SystemTopologySnapshot builders.
-	SystemTopologySnapshot *SystemTopologySnapshotClient
-	// SystemTopologySnapshotEntity is the client for interacting with the SystemTopologySnapshotEntity builders.
-	SystemTopologySnapshotEntity *SystemTopologySnapshotEntityClient
-	// SystemTopologySnapshotRelationship is the client for interacting with the SystemTopologySnapshotRelationship builders.
-	SystemTopologySnapshotRelationship *SystemTopologySnapshotRelationshipClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -336,6 +336,9 @@ func (tx *Tx) init() {
 	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
 	tx.KnowledgeEntityAlias = NewKnowledgeEntityAliasClient(tx.config)
 	tx.KnowledgeEvidence = NewKnowledgeEvidenceClient(tx.config)
+	tx.KnowledgeGraphSnapshot = NewKnowledgeGraphSnapshotClient(tx.config)
+	tx.KnowledgeGraphSnapshotEntity = NewKnowledgeGraphSnapshotEntityClient(tx.config)
+	tx.KnowledgeGraphSnapshotRelationship = NewKnowledgeGraphSnapshotRelationshipClient(tx.config)
 	tx.KnowledgeRelationship = NewKnowledgeRelationshipClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
@@ -360,9 +363,6 @@ func (tx *Tx) init() {
 	tx.SystemAnalysis = NewSystemAnalysisClient(tx.config)
 	tx.SystemAnalysisTopologyEdge = NewSystemAnalysisTopologyEdgeClient(tx.config)
 	tx.SystemAnalysisTopologyNode = NewSystemAnalysisTopologyNodeClient(tx.config)
-	tx.SystemTopologySnapshot = NewSystemTopologySnapshotClient(tx.config)
-	tx.SystemTopologySnapshotEntity = NewSystemTopologySnapshotEntityClient(tx.config)
-	tx.SystemTopologySnapshotRelationship = NewSystemTopologySnapshotRelationshipClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
 	tx.TeamMembership = NewTeamMembershipClient(tx.config)

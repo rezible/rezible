@@ -15,8 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidenttimelineevent"
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
-	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -37,20 +36,6 @@ func (_c *IncidentTimelineEventTopologyContextCreate) SetTenantID(v int) *Incide
 // SetIncidentEventID sets the "incident_event_id" field.
 func (_c *IncidentTimelineEventTopologyContextCreate) SetIncidentEventID(v uuid.UUID) *IncidentTimelineEventTopologyContextCreate {
 	_c.mutation.SetIncidentEventID(v)
-	return _c
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_c *IncidentTimelineEventTopologyContextCreate) SetKnowledgeEntityID(v uuid.UUID) *IncidentTimelineEventTopologyContextCreate {
-	_c.mutation.SetKnowledgeEntityID(v)
-	return _c
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_c *IncidentTimelineEventTopologyContextCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *IncidentTimelineEventTopologyContextCreate {
-	if v != nil {
-		_c.SetKnowledgeEntityID(*v)
-	}
 	return _c
 }
 
@@ -118,13 +103,8 @@ func (_c *IncidentTimelineEventTopologyContextCreate) SetEvent(v *IncidentTimeli
 	return _c.SetEventID(v.ID)
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_c *IncidentTimelineEventTopologyContextCreate) SetKnowledgeEntity(v *KnowledgeEntity) *IncidentTimelineEventTopologyContextCreate {
-	return _c.SetKnowledgeEntityID(v.ID)
-}
-
-// SetSnapshotEntity sets the "snapshot_entity" edge to the SystemTopologySnapshotEntity entity.
-func (_c *IncidentTimelineEventTopologyContextCreate) SetSnapshotEntity(v *SystemTopologySnapshotEntity) *IncidentTimelineEventTopologyContextCreate {
+// SetSnapshotEntity sets the "snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity.
+func (_c *IncidentTimelineEventTopologyContextCreate) SetSnapshotEntity(v *KnowledgeGraphSnapshotEntity) *IncidentTimelineEventTopologyContextCreate {
 	return _c.SetSnapshotEntityID(v.ID)
 }
 
@@ -288,24 +268,6 @@ func (_c *IncidentTimelineEventTopologyContextCreate) createSpec() (*IncidentTim
 		_node.IncidentEventID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidenttimelineeventtopologycontext.KnowledgeEntityTable,
-			Columns: []string{incidenttimelineeventtopologycontext.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.IncidentTimelineEventTopologyContext
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.KnowledgeEntityID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.SnapshotEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -314,7 +276,7 @@ func (_c *IncidentTimelineEventTopologyContextCreate) createSpec() (*IncidentTim
 			Columns: []string{incidenttimelineeventtopologycontext.SnapshotEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshotentity.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.IncidentTimelineEventTopologyContext
@@ -385,24 +347,6 @@ func (u *IncidentTimelineEventTopologyContextUpsert) SetIncidentEventID(v uuid.U
 // UpdateIncidentEventID sets the "incident_event_id" field to the value that was provided on create.
 func (u *IncidentTimelineEventTopologyContextUpsert) UpdateIncidentEventID() *IncidentTimelineEventTopologyContextUpsert {
 	u.SetExcluded(incidenttimelineeventtopologycontext.FieldIncidentEventID)
-	return u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *IncidentTimelineEventTopologyContextUpsert) SetKnowledgeEntityID(v uuid.UUID) *IncidentTimelineEventTopologyContextUpsert {
-	u.Set(incidenttimelineeventtopologycontext.FieldKnowledgeEntityID, v)
-	return u
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *IncidentTimelineEventTopologyContextUpsert) UpdateKnowledgeEntityID() *IncidentTimelineEventTopologyContextUpsert {
-	u.SetExcluded(incidenttimelineeventtopologycontext.FieldKnowledgeEntityID)
-	return u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *IncidentTimelineEventTopologyContextUpsert) ClearKnowledgeEntityID() *IncidentTimelineEventTopologyContextUpsert {
-	u.SetNull(incidenttimelineeventtopologycontext.FieldKnowledgeEntityID)
 	return u
 }
 
@@ -510,27 +454,6 @@ func (u *IncidentTimelineEventTopologyContextUpsertOne) SetIncidentEventID(v uui
 func (u *IncidentTimelineEventTopologyContextUpsertOne) UpdateIncidentEventID() *IncidentTimelineEventTopologyContextUpsertOne {
 	return u.Update(func(s *IncidentTimelineEventTopologyContextUpsert) {
 		s.UpdateIncidentEventID()
-	})
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *IncidentTimelineEventTopologyContextUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *IncidentTimelineEventTopologyContextUpsertOne {
-	return u.Update(func(s *IncidentTimelineEventTopologyContextUpsert) {
-		s.SetKnowledgeEntityID(v)
-	})
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *IncidentTimelineEventTopologyContextUpsertOne) UpdateKnowledgeEntityID() *IncidentTimelineEventTopologyContextUpsertOne {
-	return u.Update(func(s *IncidentTimelineEventTopologyContextUpsert) {
-		s.UpdateKnowledgeEntityID()
-	})
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *IncidentTimelineEventTopologyContextUpsertOne) ClearKnowledgeEntityID() *IncidentTimelineEventTopologyContextUpsertOne {
-	return u.Update(func(s *IncidentTimelineEventTopologyContextUpsert) {
-		s.ClearKnowledgeEntityID()
 	})
 }
 
@@ -812,27 +735,6 @@ func (u *IncidentTimelineEventTopologyContextUpsertBulk) SetIncidentEventID(v uu
 func (u *IncidentTimelineEventTopologyContextUpsertBulk) UpdateIncidentEventID() *IncidentTimelineEventTopologyContextUpsertBulk {
 	return u.Update(func(s *IncidentTimelineEventTopologyContextUpsert) {
 		s.UpdateIncidentEventID()
-	})
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *IncidentTimelineEventTopologyContextUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *IncidentTimelineEventTopologyContextUpsertBulk {
-	return u.Update(func(s *IncidentTimelineEventTopologyContextUpsert) {
-		s.SetKnowledgeEntityID(v)
-	})
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *IncidentTimelineEventTopologyContextUpsertBulk) UpdateKnowledgeEntityID() *IncidentTimelineEventTopologyContextUpsertBulk {
-	return u.Update(func(s *IncidentTimelineEventTopologyContextUpsert) {
-		s.UpdateKnowledgeEntityID()
-	})
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *IncidentTimelineEventTopologyContextUpsertBulk) ClearKnowledgeEntityID() *IncidentTimelineEventTopologyContextUpsertBulk {
-	return u.Update(func(s *IncidentTimelineEventTopologyContextUpsert) {
-		s.ClearKnowledgeEntityID()
 	})
 }
 

@@ -368,18 +368,18 @@ func HasSnapshotRelationship() predicate.SystemAnalysisTopologyEdge {
 			sqlgraph.Edge(sqlgraph.M2O, false, SnapshotRelationshipTable, SnapshotRelationshipColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
 		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
 // HasSnapshotRelationshipWith applies the HasEdge predicate on the "snapshot_relationship" edge with a given conditions (other predicates).
-func HasSnapshotRelationshipWith(preds ...predicate.SystemTopologySnapshotRelationship) predicate.SystemAnalysisTopologyEdge {
+func HasSnapshotRelationshipWith(preds ...predicate.KnowledgeGraphSnapshotRelationship) predicate.SystemAnalysisTopologyEdge {
 	return predicate.SystemAnalysisTopologyEdge(func(s *sql.Selector) {
 		step := newSnapshotRelationshipStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
 		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

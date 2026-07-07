@@ -332,6 +332,30 @@ func (c *KnowledgeEvidenceClient) Debug() *KnowledgeEvidenceClient {
 	return &KnowledgeEvidenceClient{config: cfg}
 }
 
+func (c *KnowledgeGraphSnapshotClient) Debug() *KnowledgeGraphSnapshotClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeGraphSnapshotClient{config: cfg}
+}
+
+func (c *KnowledgeGraphSnapshotEntityClient) Debug() *KnowledgeGraphSnapshotEntityClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeGraphSnapshotEntityClient{config: cfg}
+}
+
+func (c *KnowledgeGraphSnapshotRelationshipClient) Debug() *KnowledgeGraphSnapshotRelationshipClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeGraphSnapshotRelationshipClient{config: cfg}
+}
+
 func (c *KnowledgeRelationshipClient) Debug() *KnowledgeRelationshipClient {
 	if c.debug {
 		return c
@@ -522,30 +546,6 @@ func (c *SystemAnalysisTopologyNodeClient) Debug() *SystemAnalysisTopologyNodeCl
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &SystemAnalysisTopologyNodeClient{config: cfg}
-}
-
-func (c *SystemTopologySnapshotClient) Debug() *SystemTopologySnapshotClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &SystemTopologySnapshotClient{config: cfg}
-}
-
-func (c *SystemTopologySnapshotEntityClient) Debug() *SystemTopologySnapshotEntityClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &SystemTopologySnapshotEntityClient{config: cfg}
-}
-
-func (c *SystemTopologySnapshotRelationshipClient) Debug() *SystemTopologySnapshotRelationshipClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &SystemTopologySnapshotRelationshipClient{config: cfg}
 }
 
 func (c *TaskClient) Debug() *TaskClient {

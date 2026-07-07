@@ -1369,7 +1369,6 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "incident_event_id", Type: field.TypeUUID},
-		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "snapshot_entity_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// IncidentTimelineEventTopologyContextsTable holds the schema information for the "incident_timeline_event_topology_contexts" table.
@@ -1391,15 +1390,9 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "incident_timeline_event_topology_contexts_knowledge_entities_knowledge_entity",
+				Symbol:     "incident_timeline_event_topology_contexts_knowledge_graph_snapshot_entities_snapshot_entity",
 				Columns:    []*schema.Column{IncidentTimelineEventTopologyContextsColumns[5]},
-				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "incident_timeline_event_topology_contexts_system_topology_snapshot_entities_snapshot_entity",
-				Columns:    []*schema.Column{IncidentTimelineEventTopologyContextsColumns[6]},
-				RefColumns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[0]},
+				RefColumns: []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -1816,6 +1809,190 @@ var (
 				Name:    "knowledgeevidence_tenant_id_event_id",
 				Unique:  false,
 				Columns: []*schema.Column{KnowledgeEvidencesColumns[8], KnowledgeEvidencesColumns[12]},
+			},
+		},
+	}
+	// KnowledgeGraphSnapshotsColumns holds the columns for the "knowledge_graph_snapshots" table.
+	KnowledgeGraphSnapshotsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "as_of", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// KnowledgeGraphSnapshotsTable holds the schema information for the "knowledge_graph_snapshots" table.
+	KnowledgeGraphSnapshotsTable = &schema.Table{
+		Name:       "knowledge_graph_snapshots",
+		Columns:    KnowledgeGraphSnapshotsColumns,
+		PrimaryKey: []*schema.Column{KnowledgeGraphSnapshotsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "knowledge_graph_snapshots_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeGraphSnapshotsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "knowledgegraphsnapshot_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotsColumns[4]},
+			},
+			{
+				Name:    "knowledgegraphsnapshot_tenant_id_as_of",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotsColumns[4], KnowledgeGraphSnapshotsColumns[1]},
+			},
+			{
+				Name:    "knowledgegraphsnapshot_tenant_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotsColumns[4], KnowledgeGraphSnapshotsColumns[3]},
+			},
+		},
+	}
+	// KnowledgeGraphSnapshotEntitiesColumns holds the columns for the "knowledge_graph_snapshot_entities" table.
+	KnowledgeGraphSnapshotEntitiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "entity_kind", Type: field.TypeString},
+		{Name: "display_name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "aliases", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "snapshot_id", Type: field.TypeUUID},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// KnowledgeGraphSnapshotEntitiesTable holds the schema information for the "knowledge_graph_snapshot_entities" table.
+	KnowledgeGraphSnapshotEntitiesTable = &schema.Table{
+		Name:       "knowledge_graph_snapshot_entities",
+		Columns:    KnowledgeGraphSnapshotEntitiesColumns,
+		PrimaryKey: []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "knowledge_graph_snapshot_entities_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[7]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_graph_snapshot_entities_knowledge_graph_snapshots_snapshot",
+				Columns:    []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[8]},
+				RefColumns: []*schema.Column{KnowledgeGraphSnapshotsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_graph_snapshot_entities_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[9]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "knowledgegraphsnapshotentity_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[7]},
+			},
+			{
+				Name:    "knowledgegraphsnapshotentity_tenant_id_snapshot_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[7], KnowledgeGraphSnapshotEntitiesColumns[8]},
+			},
+			{
+				Name:    "knowledgegraphsnapshotentity_tenant_id_knowledge_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[7], KnowledgeGraphSnapshotEntitiesColumns[9]},
+			},
+			{
+				Name:    "knowledgegraphsnapshotentity_tenant_id_snapshot_id_knowledge_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[7], KnowledgeGraphSnapshotEntitiesColumns[8], KnowledgeGraphSnapshotEntitiesColumns[9]},
+			},
+		},
+	}
+	// KnowledgeGraphSnapshotRelationshipsColumns holds the columns for the "knowledge_graph_snapshot_relationships" table.
+	KnowledgeGraphSnapshotRelationshipsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "relationship_kind", Type: field.TypeString},
+		{Name: "display_name", Type: field.TypeString, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "knowledge_relationship_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "snapshot_id", Type: field.TypeUUID},
+		{Name: "source_snapshot_entity_id", Type: field.TypeUUID},
+		{Name: "target_snapshot_entity_id", Type: field.TypeUUID},
+	}
+	// KnowledgeGraphSnapshotRelationshipsTable holds the schema information for the "knowledge_graph_snapshot_relationships" table.
+	KnowledgeGraphSnapshotRelationshipsTable = &schema.Table{
+		Name:       "knowledge_graph_snapshot_relationships",
+		Columns:    KnowledgeGraphSnapshotRelationshipsColumns,
+		PrimaryKey: []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "knowledge_graph_snapshot_relationships_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_graph_snapshot_relationships_knowledge_relationships_knowledge_relationship",
+				Columns:    []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[7]},
+				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "knowledge_graph_snapshot_relationships_knowledge_graph_snapshots_snapshot",
+				Columns:    []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[8]},
+				RefColumns: []*schema.Column{KnowledgeGraphSnapshotsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_graph_snapshot_relationships_knowledge_graph_snapshot_entities_source_snapshot_entity",
+				Columns:    []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[9]},
+				RefColumns: []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_graph_snapshot_relationships_knowledge_graph_snapshot_entities_target_snapshot_entity",
+				Columns:    []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[10]},
+				RefColumns: []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "knowledgegraphsnapshotrelationship_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[6]},
+			},
+			{
+				Name:    "knowledgegraphsnapshotrelationship_tenant_id_snapshot_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[6], KnowledgeGraphSnapshotRelationshipsColumns[8]},
+			},
+			{
+				Name:    "knowledgegraphsnapshotrelationship_tenant_id_knowledge_relationship_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[6], KnowledgeGraphSnapshotRelationshipsColumns[7]},
+			},
+			{
+				Name:    "knowledgegraphsnapshotrelationship_tenant_id_source_snapshot_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[6], KnowledgeGraphSnapshotRelationshipsColumns[9]},
+			},
+			{
+				Name:    "knowledgegraphsnapshotrelationship_tenant_id_target_snapshot_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[6], KnowledgeGraphSnapshotRelationshipsColumns[10]},
+			},
+			{
+				Name:    "knowledgegraphsnapshotrelationship_tenant_id_snapshot_id_knowledge_relationship_id",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[6], KnowledgeGraphSnapshotRelationshipsColumns[8], KnowledgeGraphSnapshotRelationshipsColumns[7]},
 			},
 		},
 	}
@@ -2581,7 +2758,7 @@ var (
 		{Name: "document_id", Type: field.TypeUUID, Unique: true},
 		{Name: "incident_id", Type: field.TypeUUID, Unique: true},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "system_analysis_id", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "system_analysis_id", Type: field.TypeUUID},
 	}
 	// RetrospectivesTable holds the schema information for the "retrospectives" table.
 	RetrospectivesTable = &schema.Table{
@@ -2608,10 +2785,10 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "retrospectives_system_analyses_retrospective",
+				Symbol:     "retrospectives_system_analyses_system_analysis",
 				Columns:    []*schema.Column{RetrospectivesColumns[6]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
@@ -2738,7 +2915,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "topology_snapshot_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "knowledge_graph_snapshot_id", Type: field.TypeUUID},
 	}
 	// SystemAnalysesTable holds the schema information for the "system_analyses" table.
 	SystemAnalysesTable = &schema.Table{
@@ -2753,10 +2930,10 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_analyses_system_topology_snapshots_topology_snapshot",
+				Symbol:     "system_analyses_knowledge_graph_snapshots_knowledge_graph_snapshot",
 				Columns:    []*schema.Column{SystemAnalysesColumns[4]},
-				RefColumns: []*schema.Column{SystemTopologySnapshotsColumns[0]},
-				OnDelete:   schema.SetNull,
+				RefColumns: []*schema.Column{KnowledgeGraphSnapshotsColumns[0]},
+				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
@@ -2796,9 +2973,9 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_analysis_topology_edges_system_topology_snapshot_relationships_snapshot_relationship",
+				Symbol:     "system_analysis_topology_edges_knowledge_graph_snapshot_relationships_snapshot_relationship",
 				Columns:    []*schema.Column{SystemAnalysisTopologyEdgesColumns[6]},
-				RefColumns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[0]},
+				RefColumns: []*schema.Column{KnowledgeGraphSnapshotRelationshipsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -2841,9 +3018,9 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_analysis_topology_nodes_system_topology_snapshot_entities_snapshot_entity",
+				Symbol:     "system_analysis_topology_nodes_knowledge_graph_snapshot_entities_snapshot_entity",
 				Columns:    []*schema.Column{SystemAnalysisTopologyNodesColumns[8]},
-				RefColumns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[0]},
+				RefColumns: []*schema.Column{KnowledgeGraphSnapshotEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -2852,192 +3029,6 @@ var (
 				Name:    "systemanalysistopologynode_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{SystemAnalysisTopologyNodesColumns[6]},
-			},
-		},
-	}
-	// SystemTopologySnapshotsColumns holds the columns for the "system_topology_snapshots" table.
-	SystemTopologySnapshotsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "as_of", Type: field.TypeTime},
-		{Name: "name", Type: field.TypeString, Nullable: true},
-		{Name: "scope", Type: field.TypeEnum, Enums: []string{"all", "incident"}, Default: "all"},
-		{Name: "scope_properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// SystemTopologySnapshotsTable holds the schema information for the "system_topology_snapshots" table.
-	SystemTopologySnapshotsTable = &schema.Table{
-		Name:       "system_topology_snapshots",
-		Columns:    SystemTopologySnapshotsColumns,
-		PrimaryKey: []*schema.Column{SystemTopologySnapshotsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_topology_snapshots_tenants_tenant",
-				Columns:    []*schema.Column{SystemTopologySnapshotsColumns[6]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemtopologysnapshot_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemTopologySnapshotsColumns[6]},
-			},
-			{
-				Name:    "systemtopologysnapshot_tenant_id_as_of",
-				Unique:  false,
-				Columns: []*schema.Column{SystemTopologySnapshotsColumns[6], SystemTopologySnapshotsColumns[1]},
-			},
-			{
-				Name:    "systemtopologysnapshot_tenant_id_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{SystemTopologySnapshotsColumns[6], SystemTopologySnapshotsColumns[5]},
-			},
-		},
-	}
-	// SystemTopologySnapshotEntitiesColumns holds the columns for the "system_topology_snapshot_entities" table.
-	SystemTopologySnapshotEntitiesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "entity_kind", Type: field.TypeString},
-		{Name: "display_name", Type: field.TypeString},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
-		{Name: "aliases", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "snapshot_id", Type: field.TypeUUID},
-		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
-	}
-	// SystemTopologySnapshotEntitiesTable holds the schema information for the "system_topology_snapshot_entities" table.
-	SystemTopologySnapshotEntitiesTable = &schema.Table{
-		Name:       "system_topology_snapshot_entities",
-		Columns:    SystemTopologySnapshotEntitiesColumns,
-		PrimaryKey: []*schema.Column{SystemTopologySnapshotEntitiesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_topology_snapshot_entities_tenants_tenant",
-				Columns:    []*schema.Column{SystemTopologySnapshotEntitiesColumns[7]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_topology_snapshot_entities_system_topology_snapshots_snapshot",
-				Columns:    []*schema.Column{SystemTopologySnapshotEntitiesColumns[8]},
-				RefColumns: []*schema.Column{SystemTopologySnapshotsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_topology_snapshot_entities_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{SystemTopologySnapshotEntitiesColumns[9]},
-				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemtopologysnapshotentity_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[7]},
-			},
-			{
-				Name:    "systemtopologysnapshotentity_tenant_id_snapshot_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[7], SystemTopologySnapshotEntitiesColumns[8]},
-			},
-			{
-				Name:    "systemtopologysnapshotentity_tenant_id_knowledge_entity_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[7], SystemTopologySnapshotEntitiesColumns[9]},
-			},
-			{
-				Name:    "systemtopologysnapshotentity_tenant_id_snapshot_id_knowledge_entity_id",
-				Unique:  true,
-				Columns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[7], SystemTopologySnapshotEntitiesColumns[8], SystemTopologySnapshotEntitiesColumns[9]},
-			},
-		},
-	}
-	// SystemTopologySnapshotRelationshipsColumns holds the columns for the "system_topology_snapshot_relationships" table.
-	SystemTopologySnapshotRelationshipsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "relationship_kind", Type: field.TypeString},
-		{Name: "display_name", Type: field.TypeString, Nullable: true},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "knowledge_relationship_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "snapshot_id", Type: field.TypeUUID},
-		{Name: "source_snapshot_entity_id", Type: field.TypeUUID},
-		{Name: "target_snapshot_entity_id", Type: field.TypeUUID},
-	}
-	// SystemTopologySnapshotRelationshipsTable holds the schema information for the "system_topology_snapshot_relationships" table.
-	SystemTopologySnapshotRelationshipsTable = &schema.Table{
-		Name:       "system_topology_snapshot_relationships",
-		Columns:    SystemTopologySnapshotRelationshipsColumns,
-		PrimaryKey: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_topology_snapshot_relationships_tenants_tenant",
-				Columns:    []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_topology_snapshot_relationships_knowledge_relationships_knowledge_relationship",
-				Columns:    []*schema.Column{SystemTopologySnapshotRelationshipsColumns[7]},
-				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "system_topology_snapshot_relationships_system_topology_snapshots_snapshot",
-				Columns:    []*schema.Column{SystemTopologySnapshotRelationshipsColumns[8]},
-				RefColumns: []*schema.Column{SystemTopologySnapshotsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_topology_snapshot_relationships_system_topology_snapshot_entities_source_snapshot_entity",
-				Columns:    []*schema.Column{SystemTopologySnapshotRelationshipsColumns[9]},
-				RefColumns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_topology_snapshot_relationships_system_topology_snapshot_entities_target_snapshot_entity",
-				Columns:    []*schema.Column{SystemTopologySnapshotRelationshipsColumns[10]},
-				RefColumns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemtopologysnapshotrelationship_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6]},
-			},
-			{
-				Name:    "systemtopologysnapshotrelationship_tenant_id_snapshot_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6], SystemTopologySnapshotRelationshipsColumns[8]},
-			},
-			{
-				Name:    "systemtopologysnapshotrelationship_tenant_id_knowledge_relationship_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6], SystemTopologySnapshotRelationshipsColumns[7]},
-			},
-			{
-				Name:    "systemtopologysnapshotrelationship_tenant_id_source_snapshot_entity_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6], SystemTopologySnapshotRelationshipsColumns[9]},
-			},
-			{
-				Name:    "systemtopologysnapshotrelationship_tenant_id_target_snapshot_entity_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6], SystemTopologySnapshotRelationshipsColumns[10]},
-			},
-			{
-				Name:    "systemtopologysnapshotrelationship_tenant_id_snapshot_id_knowledge_relationship_id",
-				Unique:  true,
-				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6], SystemTopologySnapshotRelationshipsColumns[8], SystemTopologySnapshotRelationshipsColumns[7]},
 			},
 		},
 	}
@@ -3751,6 +3742,9 @@ var (
 		KnowledgeEntitiesTable,
 		KnowledgeEntityAliasTable,
 		KnowledgeEvidencesTable,
+		KnowledgeGraphSnapshotsTable,
+		KnowledgeGraphSnapshotEntitiesTable,
+		KnowledgeGraphSnapshotRelationshipsTable,
 		KnowledgeRelationshipsTable,
 		MeetingSchedulesTable,
 		MeetingSessionsTable,
@@ -3775,9 +3769,6 @@ var (
 		SystemAnalysesTable,
 		SystemAnalysisTopologyEdgesTable,
 		SystemAnalysisTopologyNodesTable,
-		SystemTopologySnapshotsTable,
-		SystemTopologySnapshotEntitiesTable,
-		SystemTopologySnapshotRelationshipsTable,
 		TasksTable,
 		TeamsTable,
 		TeamMembershipsTable,
@@ -3882,8 +3873,7 @@ func init() {
 	IncidentTimelineEventEvidencesTable.ForeignKeys[1].RefTable = TenantsTable
 	IncidentTimelineEventTopologyContextsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentTimelineEventTopologyContextsTable.ForeignKeys[1].RefTable = IncidentTimelineEventsTable
-	IncidentTimelineEventTopologyContextsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
-	IncidentTimelineEventTopologyContextsTable.ForeignKeys[3].RefTable = SystemTopologySnapshotEntitiesTable
+	IncidentTimelineEventTopologyContextsTable.ForeignKeys[2].RefTable = KnowledgeGraphSnapshotEntitiesTable
 	IncidentTypesTable.ForeignKeys[0].RefTable = TenantsTable
 	IntegrationsTable.ForeignKeys[0].RefTable = TenantsTable
 	IntegrationEventSyncCursorsTable.ForeignKeys[0].RefTable = TenantsTable
@@ -3900,6 +3890,15 @@ func init() {
 	KnowledgeEvidencesTable.ForeignKeys[2].RefTable = KnowledgeRelationshipsTable
 	KnowledgeEvidencesTable.ForeignKeys[3].RefTable = KnowledgeEntityAliasTable
 	KnowledgeEvidencesTable.ForeignKeys[4].RefTable = NormalizedEventsTable
+	KnowledgeGraphSnapshotsTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeGraphSnapshotEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeGraphSnapshotEntitiesTable.ForeignKeys[1].RefTable = KnowledgeGraphSnapshotsTable
+	KnowledgeGraphSnapshotEntitiesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	KnowledgeGraphSnapshotRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeGraphSnapshotRelationshipsTable.ForeignKeys[1].RefTable = KnowledgeRelationshipsTable
+	KnowledgeGraphSnapshotRelationshipsTable.ForeignKeys[2].RefTable = KnowledgeGraphSnapshotsTable
+	KnowledgeGraphSnapshotRelationshipsTable.ForeignKeys[3].RefTable = KnowledgeGraphSnapshotEntitiesTable
+	KnowledgeGraphSnapshotRelationshipsTable.ForeignKeys[4].RefTable = KnowledgeGraphSnapshotEntitiesTable
 	KnowledgeRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeRelationshipsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	KnowledgeRelationshipsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
@@ -3951,22 +3950,13 @@ func init() {
 	RetrospectiveReviewsTable.ForeignKeys[3].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[4].RefTable = RetrospectiveCommentsTable
 	SystemAnalysesTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemAnalysesTable.ForeignKeys[1].RefTable = SystemTopologySnapshotsTable
+	SystemAnalysesTable.ForeignKeys[1].RefTable = KnowledgeGraphSnapshotsTable
 	SystemAnalysisTopologyEdgesTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemAnalysisTopologyEdgesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
-	SystemAnalysisTopologyEdgesTable.ForeignKeys[2].RefTable = SystemTopologySnapshotRelationshipsTable
+	SystemAnalysisTopologyEdgesTable.ForeignKeys[2].RefTable = KnowledgeGraphSnapshotRelationshipsTable
 	SystemAnalysisTopologyNodesTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemAnalysisTopologyNodesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
-	SystemAnalysisTopologyNodesTable.ForeignKeys[2].RefTable = SystemTopologySnapshotEntitiesTable
-	SystemTopologySnapshotsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemTopologySnapshotEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemTopologySnapshotEntitiesTable.ForeignKeys[1].RefTable = SystemTopologySnapshotsTable
-	SystemTopologySnapshotEntitiesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
-	SystemTopologySnapshotRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemTopologySnapshotRelationshipsTable.ForeignKeys[1].RefTable = KnowledgeRelationshipsTable
-	SystemTopologySnapshotRelationshipsTable.ForeignKeys[2].RefTable = SystemTopologySnapshotsTable
-	SystemTopologySnapshotRelationshipsTable.ForeignKeys[3].RefTable = SystemTopologySnapshotEntitiesTable
-	SystemTopologySnapshotRelationshipsTable.ForeignKeys[4].RefTable = SystemTopologySnapshotEntitiesTable
+	SystemAnalysisTopologyNodesTable.ForeignKeys[2].RefTable = KnowledgeGraphSnapshotEntitiesTable
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable
 	TasksTable.ForeignKeys[1].RefTable = TenantsTable
 	TasksTable.ForeignKeys[2].RefTable = UsersTable

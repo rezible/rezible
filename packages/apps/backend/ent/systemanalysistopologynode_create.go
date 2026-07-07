@@ -13,9 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -139,8 +139,8 @@ func (_c *SystemAnalysisTopologyNodeCreate) SetAnalysis(v *SystemAnalysis) *Syst
 	return _c.SetAnalysisID(v.ID)
 }
 
-// SetSnapshotEntity sets the "snapshot_entity" edge to the SystemTopologySnapshotEntity entity.
-func (_c *SystemAnalysisTopologyNodeCreate) SetSnapshotEntity(v *SystemTopologySnapshotEntity) *SystemAnalysisTopologyNodeCreate {
+// SetSnapshotEntity sets the "snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity.
+func (_c *SystemAnalysisTopologyNodeCreate) SetSnapshotEntity(v *KnowledgeGraphSnapshotEntity) *SystemAnalysisTopologyNodeCreate {
 	return _c.SetSnapshotEntityID(v.ID)
 }
 
@@ -346,7 +346,7 @@ func (_c *SystemAnalysisTopologyNodeCreate) createSpec() (*SystemAnalysisTopolog
 			Columns: []string{systemanalysistopologynode.SnapshotEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshotentity.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.SystemAnalysisTopologyNode

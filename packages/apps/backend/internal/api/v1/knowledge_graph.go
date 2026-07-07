@@ -15,8 +15,8 @@ func newSystemTopologyHandler(topology rez.SystemTopologyService) *systemTopolog
 	return &systemTopologyHandler{topology: topology}
 }
 
-func (h *systemTopologyHandler) ListSystemTopologyEntities(ctx context.Context, request *oapi.ListSystemTopologyEntitiesRequest) (*oapi.ListSystemTopologyEntitiesResponse, error) {
-	var resp oapi.ListSystemTopologyEntitiesResponse
+func (h *systemTopologyHandler) ListKnowledgeGraphEntities(ctx context.Context, request *oapi.ListKnowledgeGraphEntitiesRequest) (*oapi.ListKnowledgeGraphEntitiesResponse, error) {
+	var resp oapi.ListKnowledgeGraphEntitiesResponse
 	result, queryErr := h.topology.ListEntities(ctx, rez.ListSystemTopologyEntitiesParams{
 		ListParams: request.ListParams(),
 		Kinds:      request.Kind,

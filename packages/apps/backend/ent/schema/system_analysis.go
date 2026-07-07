@@ -24,9 +24,7 @@ func (SystemAnalysis) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
-		field.UUID("topology_snapshot_id", uuid.UUID{}).
-			Optional().
-			Nillable(),
+		field.UUID("knowledge_graph_snapshot_id", uuid.UUID{}),
 		field.Time("created_at").
 			Default(time.Now),
 		field.Time("updated_at").
@@ -37,11 +35,10 @@ func (SystemAnalysis) Fields() []ent.Field {
 
 func (SystemAnalysis) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("retrospective", Retrospective.Type).
-			Unique().Required(),
-		edge.To("topology_snapshot", SystemTopologySnapshot.Type).
+		edge.To("knowledge_graph_snapshot", KnowledgeGraphSnapshot.Type).
 			Unique().
-			Field("topology_snapshot_id"),
+			Required().
+			Field("knowledge_graph_snapshot_id"),
 		edge.From("analysis_nodes", SystemAnalysisTopologyNode.Type).
 			Ref("analysis"),
 		edge.From("analysis_edges", SystemAnalysisTopologyEdge.Type).
@@ -78,7 +75,7 @@ func (SystemAnalysisTopologyNode) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("analysis_id"),
-		edge.To("snapshot_entity", SystemTopologySnapshotEntity.Type).
+		edge.To("snapshot_entity", KnowledgeGraphSnapshotEntity.Type).
 			Required().
 			Unique().
 			Field("snapshot_entity_id"),
@@ -112,7 +109,7 @@ func (SystemAnalysisTopologyEdge) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("analysis_id"),
-		edge.To("snapshot_relationship", SystemTopologySnapshotRelationship.Type).
+		edge.To("snapshot_relationship", KnowledgeGraphSnapshotRelationship.Type).
 			Required().
 			Unique().
 			Field("snapshot_relationship_id"),

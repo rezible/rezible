@@ -15,28 +15,26 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
-	"github.com/rezible/rezible/ent/systemtopologysnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemAnalysisQuery is the builder for querying SystemAnalysis entities.
 type SystemAnalysisQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []systemanalysis.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.SystemAnalysis
-	withTenant           *TenantQuery
-	withRetrospective    *RetrospectiveQuery
-	withTopologySnapshot *SystemTopologySnapshotQuery
-	withAnalysisNodes    *SystemAnalysisTopologyNodeQuery
-	withAnalysisEdges    *SystemAnalysisTopologyEdgeQuery
-	modifiers            []func(*sql.Selector)
+	ctx                        *QueryContext
+	order                      []systemanalysis.OrderOption
+	inters                     []Interceptor
+	predicates                 []predicate.SystemAnalysis
+	withTenant                 *TenantQuery
+	withKnowledgeGraphSnapshot *KnowledgeGraphSnapshotQuery
+	withAnalysisNodes          *SystemAnalysisTopologyNodeQuery
+	withAnalysisEdges          *SystemAnalysisTopologyEdgeQuery
+	modifiers                  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -98,9 +96,9 @@ func (_q *SystemAnalysisQuery) QueryTenant() *TenantQuery {
 	return query
 }
 
-// QueryRetrospective chains the current query on the "retrospective" edge.
-func (_q *SystemAnalysisQuery) QueryRetrospective() *RetrospectiveQuery {
-	query := (&RetrospectiveClient{config: _q.config}).Query()
+// QueryKnowledgeGraphSnapshot chains the current query on the "knowledge_graph_snapshot" edge.
+func (_q *SystemAnalysisQuery) QueryKnowledgeGraphSnapshot() *KnowledgeGraphSnapshotQuery {
+	query := (&KnowledgeGraphSnapshotClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -111,36 +109,11 @@ func (_q *SystemAnalysisQuery) QueryRetrospective() *RetrospectiveQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
-			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, systemanalysis.RetrospectiveTable, systemanalysis.RetrospectiveColumn),
+			sqlgraph.To(knowledgegraphsnapshot.Table, knowledgegraphsnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.KnowledgeGraphSnapshotTable, systemanalysis.KnowledgeGraphSnapshotColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.Retrospective
-		step.Edge.Schema = schemaConfig.Retrospective
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryTopologySnapshot chains the current query on the "topology_snapshot" edge.
-func (_q *SystemAnalysisQuery) QueryTopologySnapshot() *SystemTopologySnapshotQuery {
-	query := (&SystemTopologySnapshotClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
-			sqlgraph.To(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.TopologySnapshotTable, systemanalysis.TopologySnapshotColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshot
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshot
 		step.Edge.Schema = schemaConfig.SystemAnalysis
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -385,16 +358,15 @@ func (_q *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
 		return nil
 	}
 	return &SystemAnalysisQuery{
-		config:               _q.config,
-		ctx:                  _q.ctx.Clone(),
-		order:                append([]systemanalysis.OrderOption{}, _q.order...),
-		inters:               append([]Interceptor{}, _q.inters...),
-		predicates:           append([]predicate.SystemAnalysis{}, _q.predicates...),
-		withTenant:           _q.withTenant.Clone(),
-		withRetrospective:    _q.withRetrospective.Clone(),
-		withTopologySnapshot: _q.withTopologySnapshot.Clone(),
-		withAnalysisNodes:    _q.withAnalysisNodes.Clone(),
-		withAnalysisEdges:    _q.withAnalysisEdges.Clone(),
+		config:                     _q.config,
+		ctx:                        _q.ctx.Clone(),
+		order:                      append([]systemanalysis.OrderOption{}, _q.order...),
+		inters:                     append([]Interceptor{}, _q.inters...),
+		predicates:                 append([]predicate.SystemAnalysis{}, _q.predicates...),
+		withTenant:                 _q.withTenant.Clone(),
+		withKnowledgeGraphSnapshot: _q.withKnowledgeGraphSnapshot.Clone(),
+		withAnalysisNodes:          _q.withAnalysisNodes.Clone(),
+		withAnalysisEdges:          _q.withAnalysisEdges.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -413,25 +385,14 @@ func (_q *SystemAnalysisQuery) WithTenant(opts ...func(*TenantQuery)) *SystemAna
 	return _q
 }
 
-// WithRetrospective tells the query-builder to eager-load the nodes that are connected to
-// the "retrospective" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *SystemAnalysisQuery {
-	query := (&RetrospectiveClient{config: _q.config}).Query()
+// WithKnowledgeGraphSnapshot tells the query-builder to eager-load the nodes that are connected to
+// the "knowledge_graph_snapshot" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisQuery) WithKnowledgeGraphSnapshot(opts ...func(*KnowledgeGraphSnapshotQuery)) *SystemAnalysisQuery {
+	query := (&KnowledgeGraphSnapshotClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withRetrospective = query
-	return _q
-}
-
-// WithTopologySnapshot tells the query-builder to eager-load the nodes that are connected to
-// the "topology_snapshot" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisQuery) WithTopologySnapshot(opts ...func(*SystemTopologySnapshotQuery)) *SystemAnalysisQuery {
-	query := (&SystemTopologySnapshotClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withTopologySnapshot = query
+	_q.withKnowledgeGraphSnapshot = query
 	return _q
 }
 
@@ -541,10 +502,9 @@ func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	var (
 		nodes       = []*SystemAnalysis{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
-			_q.withRetrospective != nil,
-			_q.withTopologySnapshot != nil,
+			_q.withKnowledgeGraphSnapshot != nil,
 			_q.withAnalysisNodes != nil,
 			_q.withAnalysisEdges != nil,
 		}
@@ -578,15 +538,9 @@ func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 			return nil, err
 		}
 	}
-	if query := _q.withRetrospective; query != nil {
-		if err := _q.loadRetrospective(ctx, query, nodes, nil,
-			func(n *SystemAnalysis, e *Retrospective) { n.Edges.Retrospective = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withTopologySnapshot; query != nil {
-		if err := _q.loadTopologySnapshot(ctx, query, nodes, nil,
-			func(n *SystemAnalysis, e *SystemTopologySnapshot) { n.Edges.TopologySnapshot = e }); err != nil {
+	if query := _q.withKnowledgeGraphSnapshot; query != nil {
+		if err := _q.loadKnowledgeGraphSnapshot(ctx, query, nodes, nil,
+			func(n *SystemAnalysis, e *KnowledgeGraphSnapshot) { n.Edges.KnowledgeGraphSnapshot = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -640,41 +594,11 @@ func (_q *SystemAnalysisQuery) loadTenant(ctx context.Context, query *TenantQuer
 	}
 	return nil
 }
-func (_q *SystemAnalysisQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *Retrospective)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*SystemAnalysis)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(retrospective.FieldSystemAnalysisID)
-	}
-	query.Where(predicate.Retrospective(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(systemanalysis.RetrospectiveColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.SystemAnalysisID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "system_analysis_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *SystemAnalysisQuery) loadTopologySnapshot(ctx context.Context, query *SystemTopologySnapshotQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemTopologySnapshot)) error {
+func (_q *SystemAnalysisQuery) loadKnowledgeGraphSnapshot(ctx context.Context, query *KnowledgeGraphSnapshotQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *KnowledgeGraphSnapshot)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemAnalysis)
 	for i := range nodes {
-		if nodes[i].TopologySnapshotID == nil {
-			continue
-		}
-		fk := *nodes[i].TopologySnapshotID
+		fk := nodes[i].KnowledgeGraphSnapshotID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -683,7 +607,7 @@ func (_q *SystemAnalysisQuery) loadTopologySnapshot(ctx context.Context, query *
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(systemtopologysnapshot.IDIn(ids...))
+	query.Where(knowledgegraphsnapshot.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -691,7 +615,7 @@ func (_q *SystemAnalysisQuery) loadTopologySnapshot(ctx context.Context, query *
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "topology_snapshot_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "knowledge_graph_snapshot_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -793,8 +717,8 @@ func (_q *SystemAnalysisQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(systemanalysis.FieldTenantID)
 		}
-		if _q.withTopologySnapshot != nil {
-			_spec.Node.AddColumnOnce(systemanalysis.FieldTopologySnapshotID)
+		if _q.withKnowledgeGraphSnapshot != nil {
+			_spec.Node.AddColumnOnce(systemanalysis.FieldKnowledgeGraphSnapshotID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

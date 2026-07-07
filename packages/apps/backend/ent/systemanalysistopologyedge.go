@@ -10,9 +10,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotrelationship"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -46,7 +46,7 @@ type SystemAnalysisTopologyEdgeEdges struct {
 	// Analysis holds the value of the analysis edge.
 	Analysis *SystemAnalysis `json:"analysis,omitempty"`
 	// SnapshotRelationship holds the value of the snapshot_relationship edge.
-	SnapshotRelationship *SystemTopologySnapshotRelationship `json:"snapshot_relationship,omitempty"`
+	SnapshotRelationship *KnowledgeGraphSnapshotRelationship `json:"snapshot_relationship,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -76,11 +76,11 @@ func (e SystemAnalysisTopologyEdgeEdges) AnalysisOrErr() (*SystemAnalysis, error
 
 // SnapshotRelationshipOrErr returns the SnapshotRelationship value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemAnalysisTopologyEdgeEdges) SnapshotRelationshipOrErr() (*SystemTopologySnapshotRelationship, error) {
+func (e SystemAnalysisTopologyEdgeEdges) SnapshotRelationshipOrErr() (*KnowledgeGraphSnapshotRelationship, error) {
 	if e.SnapshotRelationship != nil {
 		return e.SnapshotRelationship, nil
 	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: systemtopologysnapshotrelationship.Label}
+		return nil, &NotFoundError{label: knowledgegraphsnapshotrelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "snapshot_relationship"}
 }
@@ -179,7 +179,7 @@ func (_m *SystemAnalysisTopologyEdge) QueryAnalysis() *SystemAnalysisQuery {
 }
 
 // QuerySnapshotRelationship queries the "snapshot_relationship" edge of the SystemAnalysisTopologyEdge entity.
-func (_m *SystemAnalysisTopologyEdge) QuerySnapshotRelationship() *SystemTopologySnapshotRelationshipQuery {
+func (_m *SystemAnalysisTopologyEdge) QuerySnapshotRelationship() *KnowledgeGraphSnapshotRelationshipQuery {
 	return NewSystemAnalysisTopologyEdgeClient(_m.config).QuerySnapshotRelationship(_m)
 }
 

@@ -53,6 +53,9 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
@@ -77,9 +80,6 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
-	"github.com/rezible/rezible/ent/systemtopologysnapshot"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotrelationship"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -189,6 +189,9 @@ func checkColumn(t, c string) error {
 			knowledgeentity.Table:                         knowledgeentity.ValidColumn,
 			knowledgeentityalias.Table:                    knowledgeentityalias.ValidColumn,
 			knowledgeevidence.Table:                       knowledgeevidence.ValidColumn,
+			knowledgegraphsnapshot.Table:                  knowledgegraphsnapshot.ValidColumn,
+			knowledgegraphsnapshotentity.Table:            knowledgegraphsnapshotentity.ValidColumn,
+			knowledgegraphsnapshotrelationship.Table:      knowledgegraphsnapshotrelationship.ValidColumn,
 			knowledgerelationship.Table:                   knowledgerelationship.ValidColumn,
 			meetingschedule.Table:                         meetingschedule.ValidColumn,
 			meetingsession.Table:                          meetingsession.ValidColumn,
@@ -213,9 +216,6 @@ func checkColumn(t, c string) error {
 			systemanalysis.Table:                          systemanalysis.ValidColumn,
 			systemanalysistopologyedge.Table:              systemanalysistopologyedge.ValidColumn,
 			systemanalysistopologynode.Table:              systemanalysistopologynode.ValidColumn,
-			systemtopologysnapshot.Table:                  systemtopologysnapshot.ValidColumn,
-			systemtopologysnapshotentity.Table:            systemtopologysnapshotentity.ValidColumn,
-			systemtopologysnapshotrelationship.Table:      systemtopologysnapshotrelationship.ValidColumn,
 			task.Table:                                    task.ValidColumn,
 			team.Table:                                    team.ValidColumn,
 			teammembership.Table:                          teammembership.ValidColumn,

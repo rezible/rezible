@@ -56,9 +56,9 @@ const (
 	AnalysisColumn = "analysis_id"
 	// SnapshotEntityTable is the table that holds the snapshot_entity relation/edge.
 	SnapshotEntityTable = "system_analysis_topology_nodes"
-	// SnapshotEntityInverseTable is the table name for the SystemTopologySnapshotEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "systemtopologysnapshotentity" package.
-	SnapshotEntityInverseTable = "system_topology_snapshot_entities"
+	// SnapshotEntityInverseTable is the table name for the KnowledgeGraphSnapshotEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgegraphsnapshotentity" package.
+	SnapshotEntityInverseTable = "knowledge_graph_snapshot_entities"
 	// SnapshotEntityColumn is the table column denoting the snapshot_entity relation/edge.
 	SnapshotEntityColumn = "snapshot_entity_id"
 )

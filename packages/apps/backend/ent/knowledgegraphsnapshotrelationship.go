@@ -11,15 +11,15 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
-	"github.com/rezible/rezible/ent/systemtopologysnapshot"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotrelationship"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// SystemTopologySnapshotRelationship is the model entity for the SystemTopologySnapshotRelationship schema.
-type SystemTopologySnapshotRelationship struct {
+// KnowledgeGraphSnapshotRelationship is the model entity for the KnowledgeGraphSnapshotRelationship schema.
+type KnowledgeGraphSnapshotRelationship struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -44,23 +44,23 @@ type SystemTopologySnapshotRelationship struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the SystemTopologySnapshotRelationshipQuery when eager-loading is set.
-	Edges        SystemTopologySnapshotRelationshipEdges `json:"edges"`
+	// The values are being populated by the KnowledgeGraphSnapshotRelationshipQuery when eager-loading is set.
+	Edges        KnowledgeGraphSnapshotRelationshipEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// SystemTopologySnapshotRelationshipEdges holds the relations/edges for other nodes in the graph.
-type SystemTopologySnapshotRelationshipEdges struct {
+// KnowledgeGraphSnapshotRelationshipEdges holds the relations/edges for other nodes in the graph.
+type KnowledgeGraphSnapshotRelationshipEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// KnowledgeRelationship holds the value of the knowledge_relationship edge.
 	KnowledgeRelationship *KnowledgeRelationship `json:"knowledge_relationship,omitempty"`
 	// Snapshot holds the value of the snapshot edge.
-	Snapshot *SystemTopologySnapshot `json:"snapshot,omitempty"`
+	Snapshot *KnowledgeGraphSnapshot `json:"snapshot,omitempty"`
 	// SourceSnapshotEntity holds the value of the source_snapshot_entity edge.
-	SourceSnapshotEntity *SystemTopologySnapshotEntity `json:"source_snapshot_entity,omitempty"`
+	SourceSnapshotEntity *KnowledgeGraphSnapshotEntity `json:"source_snapshot_entity,omitempty"`
 	// TargetSnapshotEntity holds the value of the target_snapshot_entity edge.
-	TargetSnapshotEntity *SystemTopologySnapshotEntity `json:"target_snapshot_entity,omitempty"`
+	TargetSnapshotEntity *KnowledgeGraphSnapshotEntity `json:"target_snapshot_entity,omitempty"`
 	// AnalysisEdges holds the value of the analysis_edges edge.
 	AnalysisEdges []*SystemAnalysisTopologyEdge `json:"analysis_edges,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -70,7 +70,7 @@ type SystemTopologySnapshotRelationshipEdges struct {
 
 // TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemTopologySnapshotRelationshipEdges) TenantOrErr() (*Tenant, error) {
+func (e KnowledgeGraphSnapshotRelationshipEdges) TenantOrErr() (*Tenant, error) {
 	if e.Tenant != nil {
 		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
@@ -81,7 +81,7 @@ func (e SystemTopologySnapshotRelationshipEdges) TenantOrErr() (*Tenant, error) 
 
 // KnowledgeRelationshipOrErr returns the KnowledgeRelationship value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemTopologySnapshotRelationshipEdges) KnowledgeRelationshipOrErr() (*KnowledgeRelationship, error) {
+func (e KnowledgeGraphSnapshotRelationshipEdges) KnowledgeRelationshipOrErr() (*KnowledgeRelationship, error) {
 	if e.KnowledgeRelationship != nil {
 		return e.KnowledgeRelationship, nil
 	} else if e.loadedTypes[1] {
@@ -92,40 +92,40 @@ func (e SystemTopologySnapshotRelationshipEdges) KnowledgeRelationshipOrErr() (*
 
 // SnapshotOrErr returns the Snapshot value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemTopologySnapshotRelationshipEdges) SnapshotOrErr() (*SystemTopologySnapshot, error) {
+func (e KnowledgeGraphSnapshotRelationshipEdges) SnapshotOrErr() (*KnowledgeGraphSnapshot, error) {
 	if e.Snapshot != nil {
 		return e.Snapshot, nil
 	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: systemtopologysnapshot.Label}
+		return nil, &NotFoundError{label: knowledgegraphsnapshot.Label}
 	}
 	return nil, &NotLoadedError{edge: "snapshot"}
 }
 
 // SourceSnapshotEntityOrErr returns the SourceSnapshotEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemTopologySnapshotRelationshipEdges) SourceSnapshotEntityOrErr() (*SystemTopologySnapshotEntity, error) {
+func (e KnowledgeGraphSnapshotRelationshipEdges) SourceSnapshotEntityOrErr() (*KnowledgeGraphSnapshotEntity, error) {
 	if e.SourceSnapshotEntity != nil {
 		return e.SourceSnapshotEntity, nil
 	} else if e.loadedTypes[3] {
-		return nil, &NotFoundError{label: systemtopologysnapshotentity.Label}
+		return nil, &NotFoundError{label: knowledgegraphsnapshotentity.Label}
 	}
 	return nil, &NotLoadedError{edge: "source_snapshot_entity"}
 }
 
 // TargetSnapshotEntityOrErr returns the TargetSnapshotEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemTopologySnapshotRelationshipEdges) TargetSnapshotEntityOrErr() (*SystemTopologySnapshotEntity, error) {
+func (e KnowledgeGraphSnapshotRelationshipEdges) TargetSnapshotEntityOrErr() (*KnowledgeGraphSnapshotEntity, error) {
 	if e.TargetSnapshotEntity != nil {
 		return e.TargetSnapshotEntity, nil
 	} else if e.loadedTypes[4] {
-		return nil, &NotFoundError{label: systemtopologysnapshotentity.Label}
+		return nil, &NotFoundError{label: knowledgegraphsnapshotentity.Label}
 	}
 	return nil, &NotLoadedError{edge: "target_snapshot_entity"}
 }
 
 // AnalysisEdgesOrErr returns the AnalysisEdges value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemTopologySnapshotRelationshipEdges) AnalysisEdgesOrErr() ([]*SystemAnalysisTopologyEdge, error) {
+func (e KnowledgeGraphSnapshotRelationshipEdges) AnalysisEdgesOrErr() ([]*SystemAnalysisTopologyEdge, error) {
 	if e.loadedTypes[5] {
 		return e.AnalysisEdges, nil
 	}
@@ -133,21 +133,21 @@ func (e SystemTopologySnapshotRelationshipEdges) AnalysisEdgesOrErr() ([]*System
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*SystemTopologySnapshotRelationship) scanValues(columns []string) ([]any, error) {
+func (*KnowledgeGraphSnapshotRelationship) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case systemtopologysnapshotrelationship.FieldKnowledgeRelationshipID:
+		case knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case systemtopologysnapshotrelationship.FieldProperties:
+		case knowledgegraphsnapshotrelationship.FieldProperties:
 			values[i] = new([]byte)
-		case systemtopologysnapshotrelationship.FieldTenantID:
+		case knowledgegraphsnapshotrelationship.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case systemtopologysnapshotrelationship.FieldRelationshipKind, systemtopologysnapshotrelationship.FieldDisplayName, systemtopologysnapshotrelationship.FieldDescription:
+		case knowledgegraphsnapshotrelationship.FieldRelationshipKind, knowledgegraphsnapshotrelationship.FieldDisplayName, knowledgegraphsnapshotrelationship.FieldDescription:
 			values[i] = new(sql.NullString)
-		case systemtopologysnapshotrelationship.FieldCreatedAt:
+		case knowledgegraphsnapshotrelationship.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case systemtopologysnapshotrelationship.FieldID, systemtopologysnapshotrelationship.FieldSnapshotID, systemtopologysnapshotrelationship.FieldSourceSnapshotEntityID, systemtopologysnapshotrelationship.FieldTargetSnapshotEntityID:
+		case knowledgegraphsnapshotrelationship.FieldID, knowledgegraphsnapshotrelationship.FieldSnapshotID, knowledgegraphsnapshotrelationship.FieldSourceSnapshotEntityID, knowledgegraphsnapshotrelationship.FieldTargetSnapshotEntityID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -157,69 +157,69 @@ func (*SystemTopologySnapshotRelationship) scanValues(columns []string) ([]any, 
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the SystemTopologySnapshotRelationship fields.
-func (_m *SystemTopologySnapshotRelationship) assignValues(columns []string, values []any) error {
+// to the KnowledgeGraphSnapshotRelationship fields.
+func (_m *KnowledgeGraphSnapshotRelationship) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case systemtopologysnapshotrelationship.FieldID:
+		case knowledgegraphsnapshotrelationship.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case systemtopologysnapshotrelationship.FieldTenantID:
+		case knowledgegraphsnapshotrelationship.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case systemtopologysnapshotrelationship.FieldSnapshotID:
+		case knowledgegraphsnapshotrelationship.FieldSnapshotID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field snapshot_id", values[i])
 			} else if value != nil {
 				_m.SnapshotID = *value
 			}
-		case systemtopologysnapshotrelationship.FieldKnowledgeRelationshipID:
+		case knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field knowledge_relationship_id", values[i])
 			} else if value.Valid {
 				_m.KnowledgeRelationshipID = new(uuid.UUID)
 				*_m.KnowledgeRelationshipID = *value.S.(*uuid.UUID)
 			}
-		case systemtopologysnapshotrelationship.FieldSourceSnapshotEntityID:
+		case knowledgegraphsnapshotrelationship.FieldSourceSnapshotEntityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field source_snapshot_entity_id", values[i])
 			} else if value != nil {
 				_m.SourceSnapshotEntityID = *value
 			}
-		case systemtopologysnapshotrelationship.FieldTargetSnapshotEntityID:
+		case knowledgegraphsnapshotrelationship.FieldTargetSnapshotEntityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field target_snapshot_entity_id", values[i])
 			} else if value != nil {
 				_m.TargetSnapshotEntityID = *value
 			}
-		case systemtopologysnapshotrelationship.FieldRelationshipKind:
+		case knowledgegraphsnapshotrelationship.FieldRelationshipKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field relationship_kind", values[i])
 			} else if value.Valid {
 				_m.RelationshipKind = value.String
 			}
-		case systemtopologysnapshotrelationship.FieldDisplayName:
+		case knowledgegraphsnapshotrelationship.FieldDisplayName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field display_name", values[i])
 			} else if value.Valid {
 				_m.DisplayName = value.String
 			}
-		case systemtopologysnapshotrelationship.FieldDescription:
+		case knowledgegraphsnapshotrelationship.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				_m.Description = value.String
 			}
-		case systemtopologysnapshotrelationship.FieldProperties:
+		case knowledgegraphsnapshotrelationship.FieldProperties:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field properties", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -227,7 +227,7 @@ func (_m *SystemTopologySnapshotRelationship) assignValues(columns []string, val
 					return fmt.Errorf("unmarshal field properties: %w", err)
 				}
 			}
-		case systemtopologysnapshotrelationship.FieldCreatedAt:
+		case knowledgegraphsnapshotrelationship.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
@@ -240,64 +240,64 @@ func (_m *SystemTopologySnapshotRelationship) assignValues(columns []string, val
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the SystemTopologySnapshotRelationship.
+// Value returns the ent.Value that was dynamically selected and assigned to the KnowledgeGraphSnapshotRelationship.
 // This includes values selected through modifiers, order, etc.
-func (_m *SystemTopologySnapshotRelationship) Value(name string) (ent.Value, error) {
+func (_m *KnowledgeGraphSnapshotRelationship) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryTenant queries the "tenant" edge of the SystemTopologySnapshotRelationship entity.
-func (_m *SystemTopologySnapshotRelationship) QueryTenant() *TenantQuery {
-	return NewSystemTopologySnapshotRelationshipClient(_m.config).QueryTenant(_m)
+// QueryTenant queries the "tenant" edge of the KnowledgeGraphSnapshotRelationship entity.
+func (_m *KnowledgeGraphSnapshotRelationship) QueryTenant() *TenantQuery {
+	return NewKnowledgeGraphSnapshotRelationshipClient(_m.config).QueryTenant(_m)
 }
 
-// QueryKnowledgeRelationship queries the "knowledge_relationship" edge of the SystemTopologySnapshotRelationship entity.
-func (_m *SystemTopologySnapshotRelationship) QueryKnowledgeRelationship() *KnowledgeRelationshipQuery {
-	return NewSystemTopologySnapshotRelationshipClient(_m.config).QueryKnowledgeRelationship(_m)
+// QueryKnowledgeRelationship queries the "knowledge_relationship" edge of the KnowledgeGraphSnapshotRelationship entity.
+func (_m *KnowledgeGraphSnapshotRelationship) QueryKnowledgeRelationship() *KnowledgeRelationshipQuery {
+	return NewKnowledgeGraphSnapshotRelationshipClient(_m.config).QueryKnowledgeRelationship(_m)
 }
 
-// QuerySnapshot queries the "snapshot" edge of the SystemTopologySnapshotRelationship entity.
-func (_m *SystemTopologySnapshotRelationship) QuerySnapshot() *SystemTopologySnapshotQuery {
-	return NewSystemTopologySnapshotRelationshipClient(_m.config).QuerySnapshot(_m)
+// QuerySnapshot queries the "snapshot" edge of the KnowledgeGraphSnapshotRelationship entity.
+func (_m *KnowledgeGraphSnapshotRelationship) QuerySnapshot() *KnowledgeGraphSnapshotQuery {
+	return NewKnowledgeGraphSnapshotRelationshipClient(_m.config).QuerySnapshot(_m)
 }
 
-// QuerySourceSnapshotEntity queries the "source_snapshot_entity" edge of the SystemTopologySnapshotRelationship entity.
-func (_m *SystemTopologySnapshotRelationship) QuerySourceSnapshotEntity() *SystemTopologySnapshotEntityQuery {
-	return NewSystemTopologySnapshotRelationshipClient(_m.config).QuerySourceSnapshotEntity(_m)
+// QuerySourceSnapshotEntity queries the "source_snapshot_entity" edge of the KnowledgeGraphSnapshotRelationship entity.
+func (_m *KnowledgeGraphSnapshotRelationship) QuerySourceSnapshotEntity() *KnowledgeGraphSnapshotEntityQuery {
+	return NewKnowledgeGraphSnapshotRelationshipClient(_m.config).QuerySourceSnapshotEntity(_m)
 }
 
-// QueryTargetSnapshotEntity queries the "target_snapshot_entity" edge of the SystemTopologySnapshotRelationship entity.
-func (_m *SystemTopologySnapshotRelationship) QueryTargetSnapshotEntity() *SystemTopologySnapshotEntityQuery {
-	return NewSystemTopologySnapshotRelationshipClient(_m.config).QueryTargetSnapshotEntity(_m)
+// QueryTargetSnapshotEntity queries the "target_snapshot_entity" edge of the KnowledgeGraphSnapshotRelationship entity.
+func (_m *KnowledgeGraphSnapshotRelationship) QueryTargetSnapshotEntity() *KnowledgeGraphSnapshotEntityQuery {
+	return NewKnowledgeGraphSnapshotRelationshipClient(_m.config).QueryTargetSnapshotEntity(_m)
 }
 
-// QueryAnalysisEdges queries the "analysis_edges" edge of the SystemTopologySnapshotRelationship entity.
-func (_m *SystemTopologySnapshotRelationship) QueryAnalysisEdges() *SystemAnalysisTopologyEdgeQuery {
-	return NewSystemTopologySnapshotRelationshipClient(_m.config).QueryAnalysisEdges(_m)
+// QueryAnalysisEdges queries the "analysis_edges" edge of the KnowledgeGraphSnapshotRelationship entity.
+func (_m *KnowledgeGraphSnapshotRelationship) QueryAnalysisEdges() *SystemAnalysisTopologyEdgeQuery {
+	return NewKnowledgeGraphSnapshotRelationshipClient(_m.config).QueryAnalysisEdges(_m)
 }
 
-// Update returns a builder for updating this SystemTopologySnapshotRelationship.
-// Note that you need to call SystemTopologySnapshotRelationship.Unwrap() before calling this method if this SystemTopologySnapshotRelationship
+// Update returns a builder for updating this KnowledgeGraphSnapshotRelationship.
+// Note that you need to call KnowledgeGraphSnapshotRelationship.Unwrap() before calling this method if this KnowledgeGraphSnapshotRelationship
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *SystemTopologySnapshotRelationship) Update() *SystemTopologySnapshotRelationshipUpdateOne {
-	return NewSystemTopologySnapshotRelationshipClient(_m.config).UpdateOne(_m)
+func (_m *KnowledgeGraphSnapshotRelationship) Update() *KnowledgeGraphSnapshotRelationshipUpdateOne {
+	return NewKnowledgeGraphSnapshotRelationshipClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the SystemTopologySnapshotRelationship entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the KnowledgeGraphSnapshotRelationship entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *SystemTopologySnapshotRelationship) Unwrap() *SystemTopologySnapshotRelationship {
+func (_m *KnowledgeGraphSnapshotRelationship) Unwrap() *KnowledgeGraphSnapshotRelationship {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: SystemTopologySnapshotRelationship is not a transactional entity")
+		panic("ent: KnowledgeGraphSnapshotRelationship is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *SystemTopologySnapshotRelationship) String() string {
+func (_m *KnowledgeGraphSnapshotRelationship) String() string {
 	var builder strings.Builder
-	builder.WriteString("SystemTopologySnapshotRelationship(")
+	builder.WriteString("KnowledgeGraphSnapshotRelationship(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
@@ -334,5 +334,5 @@ func (_m *SystemTopologySnapshotRelationship) String() string {
 	return builder.String()
 }
 
-// SystemTopologySnapshotRelationships is a parsable slice of SystemTopologySnapshotRelationship.
-type SystemTopologySnapshotRelationships []*SystemTopologySnapshotRelationship
+// KnowledgeGraphSnapshotRelationships is a parsable slice of KnowledgeGraphSnapshotRelationship.
+type KnowledgeGraphSnapshotRelationships []*KnowledgeGraphSnapshotRelationship

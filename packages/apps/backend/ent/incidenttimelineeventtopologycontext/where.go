@@ -67,11 +67,6 @@ func IncidentEventID(v uuid.UUID) predicate.IncidentTimelineEventTopologyContext
 	return predicate.IncidentTimelineEventTopologyContext(sql.FieldEQ(FieldIncidentEventID, v))
 }
 
-// KnowledgeEntityID applies equality check predicate on the "knowledge_entity_id" field. It's identical to KnowledgeEntityIDEQ.
-func KnowledgeEntityID(v uuid.UUID) predicate.IncidentTimelineEventTopologyContext {
-	return predicate.IncidentTimelineEventTopologyContext(sql.FieldEQ(FieldKnowledgeEntityID, v))
-}
-
 // SnapshotEntityID applies equality check predicate on the "snapshot_entity_id" field. It's identical to SnapshotEntityIDEQ.
 func SnapshotEntityID(v uuid.UUID) predicate.IncidentTimelineEventTopologyContext {
 	return predicate.IncidentTimelineEventTopologyContext(sql.FieldEQ(FieldSnapshotEntityID, v))
@@ -120,36 +115,6 @@ func IncidentEventIDIn(vs ...uuid.UUID) predicate.IncidentTimelineEventTopologyC
 // IncidentEventIDNotIn applies the NotIn predicate on the "incident_event_id" field.
 func IncidentEventIDNotIn(vs ...uuid.UUID) predicate.IncidentTimelineEventTopologyContext {
 	return predicate.IncidentTimelineEventTopologyContext(sql.FieldNotIn(FieldIncidentEventID, vs...))
-}
-
-// KnowledgeEntityIDEQ applies the EQ predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDEQ(v uuid.UUID) predicate.IncidentTimelineEventTopologyContext {
-	return predicate.IncidentTimelineEventTopologyContext(sql.FieldEQ(FieldKnowledgeEntityID, v))
-}
-
-// KnowledgeEntityIDNEQ applies the NEQ predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDNEQ(v uuid.UUID) predicate.IncidentTimelineEventTopologyContext {
-	return predicate.IncidentTimelineEventTopologyContext(sql.FieldNEQ(FieldKnowledgeEntityID, v))
-}
-
-// KnowledgeEntityIDIn applies the In predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDIn(vs ...uuid.UUID) predicate.IncidentTimelineEventTopologyContext {
-	return predicate.IncidentTimelineEventTopologyContext(sql.FieldIn(FieldKnowledgeEntityID, vs...))
-}
-
-// KnowledgeEntityIDNotIn applies the NotIn predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDNotIn(vs ...uuid.UUID) predicate.IncidentTimelineEventTopologyContext {
-	return predicate.IncidentTimelineEventTopologyContext(sql.FieldNotIn(FieldKnowledgeEntityID, vs...))
-}
-
-// KnowledgeEntityIDIsNil applies the IsNil predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDIsNil() predicate.IncidentTimelineEventTopologyContext {
-	return predicate.IncidentTimelineEventTopologyContext(sql.FieldIsNull(FieldKnowledgeEntityID))
-}
-
-// KnowledgeEntityIDNotNil applies the NotNil predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDNotNil() predicate.IncidentTimelineEventTopologyContext {
-	return predicate.IncidentTimelineEventTopologyContext(sql.FieldNotNull(FieldKnowledgeEntityID))
 }
 
 // SnapshotEntityIDEQ applies the EQ predicate on the "snapshot_entity_id" field.
@@ -300,35 +265,6 @@ func HasEventWith(preds ...predicate.IncidentTimelineEvent) predicate.IncidentTi
 	})
 }
 
-// HasKnowledgeEntity applies the HasEdge predicate on the "knowledge_entity" edge.
-func HasKnowledgeEntity() predicate.IncidentTimelineEventTopologyContext {
-	return predicate.IncidentTimelineEventTopologyContext(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasKnowledgeEntityWith applies the HasEdge predicate on the "knowledge_entity" edge with a given conditions (other predicates).
-func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.IncidentTimelineEventTopologyContext {
-	return predicate.IncidentTimelineEventTopologyContext(func(s *sql.Selector) {
-		step := newKnowledgeEntityStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasSnapshotEntity applies the HasEdge predicate on the "snapshot_entity" edge.
 func HasSnapshotEntity() predicate.IncidentTimelineEventTopologyContext {
 	return predicate.IncidentTimelineEventTopologyContext(func(s *sql.Selector) {
@@ -337,18 +273,18 @@ func HasSnapshotEntity() predicate.IncidentTimelineEventTopologyContext {
 			sqlgraph.Edge(sqlgraph.M2O, false, SnapshotEntityTable, SnapshotEntityColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
 		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
 // HasSnapshotEntityWith applies the HasEdge predicate on the "snapshot_entity" edge with a given conditions (other predicates).
-func HasSnapshotEntityWith(preds ...predicate.SystemTopologySnapshotEntity) predicate.IncidentTimelineEventTopologyContext {
+func HasSnapshotEntityWith(preds ...predicate.KnowledgeGraphSnapshotEntity) predicate.IncidentTimelineEventTopologyContext {
 	return predicate.IncidentTimelineEventTopologyContext(func(s *sql.Selector) {
 		step := newSnapshotEntityStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
 		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

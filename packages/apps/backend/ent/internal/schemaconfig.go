@@ -58,6 +58,9 @@ type SchemaConfig struct {
 	KnowledgeEntity                           string // KnowledgeEntity table.
 	KnowledgeEntityAlias                      string // KnowledgeEntityAlias table.
 	KnowledgeEvidence                         string // KnowledgeEvidence table.
+	KnowledgeGraphSnapshot                    string // KnowledgeGraphSnapshot table.
+	KnowledgeGraphSnapshotEntity              string // KnowledgeGraphSnapshotEntity table.
+	KnowledgeGraphSnapshotRelationship        string // KnowledgeGraphSnapshotRelationship table.
 	KnowledgeRelationship                     string // KnowledgeRelationship table.
 	MeetingSchedule                           string // MeetingSchedule table.
 	MeetingScheduleOwningTeam                 string // MeetingSchedule-owning_team->Team table.
@@ -85,9 +88,6 @@ type SchemaConfig struct {
 	SystemAnalysis                            string // SystemAnalysis table.
 	SystemAnalysisTopologyEdge                string // SystemAnalysisTopologyEdge table.
 	SystemAnalysisTopologyNode                string // SystemAnalysisTopologyNode table.
-	SystemTopologySnapshot                    string // SystemTopologySnapshot table.
-	SystemTopologySnapshotEntity              string // SystemTopologySnapshotEntity table.
-	SystemTopologySnapshotRelationship        string // SystemTopologySnapshotRelationship table.
 	Task                                      string // Task table.
 	TaskTickets                               string // Task-tickets->Ticket table.
 	Team                                      string // Team table.

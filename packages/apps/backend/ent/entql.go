@@ -44,6 +44,9 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
@@ -69,9 +72,6 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
-	"github.com/rezible/rezible/ent/systemtopologysnapshot"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotrelationship"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -708,12 +708,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "IncidentTimelineEventTopologyContext",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			incidenttimelineeventtopologycontext.FieldTenantID:          {Type: field.TypeInt, Column: incidenttimelineeventtopologycontext.FieldTenantID},
-			incidenttimelineeventtopologycontext.FieldIncidentEventID:   {Type: field.TypeUUID, Column: incidenttimelineeventtopologycontext.FieldIncidentEventID},
-			incidenttimelineeventtopologycontext.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: incidenttimelineeventtopologycontext.FieldKnowledgeEntityID},
-			incidenttimelineeventtopologycontext.FieldSnapshotEntityID:  {Type: field.TypeUUID, Column: incidenttimelineeventtopologycontext.FieldSnapshotEntityID},
-			incidenttimelineeventtopologycontext.FieldRelationship:      {Type: field.TypeEnum, Column: incidenttimelineeventtopologycontext.FieldRelationship},
-			incidenttimelineeventtopologycontext.FieldCreatedAt:         {Type: field.TypeTime, Column: incidenttimelineeventtopologycontext.FieldCreatedAt},
+			incidenttimelineeventtopologycontext.FieldTenantID:         {Type: field.TypeInt, Column: incidenttimelineeventtopologycontext.FieldTenantID},
+			incidenttimelineeventtopologycontext.FieldIncidentEventID:  {Type: field.TypeUUID, Column: incidenttimelineeventtopologycontext.FieldIncidentEventID},
+			incidenttimelineeventtopologycontext.FieldSnapshotEntityID: {Type: field.TypeUUID, Column: incidenttimelineeventtopologycontext.FieldSnapshotEntityID},
+			incidenttimelineeventtopologycontext.FieldRelationship:     {Type: field.TypeEnum, Column: incidenttimelineeventtopologycontext.FieldRelationship},
+			incidenttimelineeventtopologycontext.FieldCreatedAt:        {Type: field.TypeTime, Column: incidenttimelineeventtopologycontext.FieldCreatedAt},
 		},
 	}
 	graph.Nodes[33] = &sqlgraph.Node{
@@ -887,6 +886,68 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[41] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   knowledgegraphsnapshot.Table,
+			Columns: knowledgegraphsnapshot.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: knowledgegraphsnapshot.FieldID,
+			},
+		},
+		Type: "KnowledgeGraphSnapshot",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			knowledgegraphsnapshot.FieldTenantID:  {Type: field.TypeInt, Column: knowledgegraphsnapshot.FieldTenantID},
+			knowledgegraphsnapshot.FieldAsOf:      {Type: field.TypeTime, Column: knowledgegraphsnapshot.FieldAsOf},
+			knowledgegraphsnapshot.FieldName:      {Type: field.TypeString, Column: knowledgegraphsnapshot.FieldName},
+			knowledgegraphsnapshot.FieldCreatedAt: {Type: field.TypeTime, Column: knowledgegraphsnapshot.FieldCreatedAt},
+		},
+	}
+	graph.Nodes[42] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   knowledgegraphsnapshotentity.Table,
+			Columns: knowledgegraphsnapshotentity.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: knowledgegraphsnapshotentity.FieldID,
+			},
+		},
+		Type: "KnowledgeGraphSnapshotEntity",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			knowledgegraphsnapshotentity.FieldTenantID:          {Type: field.TypeInt, Column: knowledgegraphsnapshotentity.FieldTenantID},
+			knowledgegraphsnapshotentity.FieldSnapshotID:        {Type: field.TypeUUID, Column: knowledgegraphsnapshotentity.FieldSnapshotID},
+			knowledgegraphsnapshotentity.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: knowledgegraphsnapshotentity.FieldKnowledgeEntityID},
+			knowledgegraphsnapshotentity.FieldEntityKind:        {Type: field.TypeString, Column: knowledgegraphsnapshotentity.FieldEntityKind},
+			knowledgegraphsnapshotentity.FieldDisplayName:       {Type: field.TypeString, Column: knowledgegraphsnapshotentity.FieldDisplayName},
+			knowledgegraphsnapshotentity.FieldDescription:       {Type: field.TypeString, Column: knowledgegraphsnapshotentity.FieldDescription},
+			knowledgegraphsnapshotentity.FieldProperties:        {Type: field.TypeJSON, Column: knowledgegraphsnapshotentity.FieldProperties},
+			knowledgegraphsnapshotentity.FieldAliases:           {Type: field.TypeJSON, Column: knowledgegraphsnapshotentity.FieldAliases},
+			knowledgegraphsnapshotentity.FieldCreatedAt:         {Type: field.TypeTime, Column: knowledgegraphsnapshotentity.FieldCreatedAt},
+		},
+	}
+	graph.Nodes[43] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   knowledgegraphsnapshotrelationship.Table,
+			Columns: knowledgegraphsnapshotrelationship.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: knowledgegraphsnapshotrelationship.FieldID,
+			},
+		},
+		Type: "KnowledgeGraphSnapshotRelationship",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			knowledgegraphsnapshotrelationship.FieldTenantID:                {Type: field.TypeInt, Column: knowledgegraphsnapshotrelationship.FieldTenantID},
+			knowledgegraphsnapshotrelationship.FieldSnapshotID:              {Type: field.TypeUUID, Column: knowledgegraphsnapshotrelationship.FieldSnapshotID},
+			knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID: {Type: field.TypeUUID, Column: knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID},
+			knowledgegraphsnapshotrelationship.FieldSourceSnapshotEntityID:  {Type: field.TypeUUID, Column: knowledgegraphsnapshotrelationship.FieldSourceSnapshotEntityID},
+			knowledgegraphsnapshotrelationship.FieldTargetSnapshotEntityID:  {Type: field.TypeUUID, Column: knowledgegraphsnapshotrelationship.FieldTargetSnapshotEntityID},
+			knowledgegraphsnapshotrelationship.FieldRelationshipKind:        {Type: field.TypeString, Column: knowledgegraphsnapshotrelationship.FieldRelationshipKind},
+			knowledgegraphsnapshotrelationship.FieldDisplayName:             {Type: field.TypeString, Column: knowledgegraphsnapshotrelationship.FieldDisplayName},
+			knowledgegraphsnapshotrelationship.FieldDescription:             {Type: field.TypeString, Column: knowledgegraphsnapshotrelationship.FieldDescription},
+			knowledgegraphsnapshotrelationship.FieldProperties:              {Type: field.TypeJSON, Column: knowledgegraphsnapshotrelationship.FieldProperties},
+			knowledgegraphsnapshotrelationship.FieldCreatedAt:               {Type: field.TypeTime, Column: knowledgegraphsnapshotrelationship.FieldCreatedAt},
+		},
+	}
+	graph.Nodes[44] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   knowledgerelationship.Table,
 			Columns: knowledgerelationship.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -910,7 +971,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgerelationship.FieldProperties:      {Type: field.TypeJSON, Column: knowledgerelationship.FieldProperties},
 		},
 	}
-	graph.Nodes[42] = &sqlgraph.Node{
+	graph.Nodes[45] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   meetingschedule.Table,
 			Columns: meetingschedule.Columns,
@@ -936,7 +997,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			meetingschedule.FieldNumRepetitions:  {Type: field.TypeInt, Column: meetingschedule.FieldNumRepetitions},
 		},
 	}
-	graph.Nodes[43] = &sqlgraph.Node{
+	graph.Nodes[46] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   meetingsession.Table,
 			Columns: meetingsession.Columns,
@@ -954,7 +1015,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			meetingsession.FieldDocumentName: {Type: field.TypeString, Column: meetingsession.FieldDocumentName},
 		},
 	}
-	graph.Nodes[44] = &sqlgraph.Node{
+	graph.Nodes[47] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   normalizedevent.Table,
 			Columns: normalizedevent.Columns,
@@ -978,7 +1039,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			normalizedevent.FieldReceivedAt:         {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
 		},
 	}
-	graph.Nodes[45] = &sqlgraph.Node{
+	graph.Nodes[48] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   normalizedeventprojection.Table,
 			Columns: normalizedeventprojection.Columns,
@@ -998,7 +1059,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			normalizedeventprojection.FieldError:      {Type: field.TypeString, Column: normalizedeventprojection.FieldError},
 		},
 	}
-	graph.Nodes[46] = &sqlgraph.Node{
+	graph.Nodes[49] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   normalizedeventprojectionentity.Table,
 			Columns: normalizedeventprojectionentity.Columns,
@@ -1015,7 +1076,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			normalizedeventprojectionentity.FieldDomainEntityID:   {Type: field.TypeUUID, Column: normalizedeventprojectionentity.FieldDomainEntityID},
 		},
 	}
-	graph.Nodes[47] = &sqlgraph.Node{
+	graph.Nodes[50] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallhandovertemplate.Table,
 			Columns: oncallhandovertemplate.Columns,
@@ -1033,7 +1094,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallhandovertemplate.FieldIsDefault: {Type: field.TypeBool, Column: oncallhandovertemplate.FieldIsDefault},
 		},
 	}
-	graph.Nodes[48] = &sqlgraph.Node{
+	graph.Nodes[51] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallroster.Table,
 			Columns: oncallroster.Columns,
@@ -1054,7 +1115,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallroster.FieldHandoverTemplateID: {Type: field.TypeUUID, Column: oncallroster.FieldHandoverTemplateID},
 		},
 	}
-	graph.Nodes[49] = &sqlgraph.Node{
+	graph.Nodes[52] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallrostermetrics.Table,
 			Columns: oncallrostermetrics.Columns,
@@ -1069,7 +1130,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallrostermetrics.FieldRosterID: {Type: field.TypeUUID, Column: oncallrostermetrics.FieldRosterID},
 		},
 	}
-	graph.Nodes[50] = &sqlgraph.Node{
+	graph.Nodes[53] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallschedule.Table,
 			Columns: oncallschedule.Columns,
@@ -1087,7 +1148,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallschedule.FieldTimezone:    {Type: field.TypeString, Column: oncallschedule.FieldTimezone},
 		},
 	}
-	graph.Nodes[51] = &sqlgraph.Node{
+	graph.Nodes[54] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallscheduleparticipant.Table,
 			Columns: oncallscheduleparticipant.Columns,
@@ -1104,7 +1165,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallscheduleparticipant.FieldIndex:      {Type: field.TypeInt, Column: oncallscheduleparticipant.FieldIndex},
 		},
 	}
-	graph.Nodes[52] = &sqlgraph.Node{
+	graph.Nodes[55] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallshift.Table,
 			Columns: oncallshift.Columns,
@@ -1124,7 +1185,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallshift.FieldEndAt:          {Type: field.TypeTime, Column: oncallshift.FieldEndAt},
 		},
 	}
-	graph.Nodes[53] = &sqlgraph.Node{
+	graph.Nodes[56] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallshifthandover.Table,
 			Columns: oncallshifthandover.Columns,
@@ -1144,7 +1205,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallshifthandover.FieldContents:     {Type: field.TypeBytes, Column: oncallshifthandover.FieldContents},
 		},
 	}
-	graph.Nodes[54] = &sqlgraph.Node{
+	graph.Nodes[57] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallshiftmetrics.Table,
 			Columns: oncallshiftmetrics.Columns,
@@ -1173,7 +1234,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallshiftmetrics.FieldInterruptsBusinessHours: {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldInterruptsBusinessHours},
 		},
 	}
-	graph.Nodes[55] = &sqlgraph.Node{
+	graph.Nodes[58] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   organization.Table,
 			Columns: organization.Columns,
@@ -1189,7 +1250,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			organization.FieldName:           {Type: field.TypeString, Column: organization.FieldName},
 		},
 	}
-	graph.Nodes[56] = &sqlgraph.Node{
+	graph.Nodes[59] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   organizationpreferences.Table,
 			Columns: organizationpreferences.Columns,
@@ -1206,7 +1267,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			organizationpreferences.FieldEnableIncidentManagement: {Type: field.TypeBool, Column: organizationpreferences.FieldEnableIncidentManagement},
 		},
 	}
-	graph.Nodes[57] = &sqlgraph.Node{
+	graph.Nodes[60] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   organizationrole.Table,
 			Columns: organizationrole.Columns,
@@ -1223,7 +1284,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			organizationrole.FieldRole:           {Type: field.TypeEnum, Column: organizationrole.FieldRole},
 		},
 	}
-	graph.Nodes[58] = &sqlgraph.Node{
+	graph.Nodes[61] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   playbook.Table,
 			Columns: playbook.Columns,
@@ -1239,7 +1300,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			playbook.FieldContent:  {Type: field.TypeBytes, Column: playbook.FieldContent},
 		},
 	}
-	graph.Nodes[59] = &sqlgraph.Node{
+	graph.Nodes[62] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   retrospective.Table,
 			Columns: retrospective.Columns,
@@ -1258,7 +1319,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			retrospective.FieldState:            {Type: field.TypeEnum, Column: retrospective.FieldState},
 		},
 	}
-	graph.Nodes[60] = &sqlgraph.Node{
+	graph.Nodes[63] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   retrospectivecomment.Table,
 			Columns: retrospectivecomment.Columns,
@@ -1277,7 +1338,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			retrospectivecomment.FieldContent:               {Type: field.TypeBytes, Column: retrospectivecomment.FieldContent},
 		},
 	}
-	graph.Nodes[61] = &sqlgraph.Node{
+	graph.Nodes[64] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   retrospectivereview.Table,
 			Columns: retrospectivereview.Columns,
@@ -1296,7 +1357,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			retrospectivereview.FieldState:           {Type: field.TypeEnum, Column: retrospectivereview.FieldState},
 		},
 	}
-	graph.Nodes[62] = &sqlgraph.Node{
+	graph.Nodes[65] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemanalysis.Table,
 			Columns: systemanalysis.Columns,
@@ -1307,13 +1368,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "SystemAnalysis",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			systemanalysis.FieldTenantID:           {Type: field.TypeInt, Column: systemanalysis.FieldTenantID},
-			systemanalysis.FieldTopologySnapshotID: {Type: field.TypeUUID, Column: systemanalysis.FieldTopologySnapshotID},
-			systemanalysis.FieldCreatedAt:          {Type: field.TypeTime, Column: systemanalysis.FieldCreatedAt},
-			systemanalysis.FieldUpdatedAt:          {Type: field.TypeTime, Column: systemanalysis.FieldUpdatedAt},
+			systemanalysis.FieldTenantID:                 {Type: field.TypeInt, Column: systemanalysis.FieldTenantID},
+			systemanalysis.FieldKnowledgeGraphSnapshotID: {Type: field.TypeUUID, Column: systemanalysis.FieldKnowledgeGraphSnapshotID},
+			systemanalysis.FieldCreatedAt:                {Type: field.TypeTime, Column: systemanalysis.FieldCreatedAt},
+			systemanalysis.FieldUpdatedAt:                {Type: field.TypeTime, Column: systemanalysis.FieldUpdatedAt},
 		},
 	}
-	graph.Nodes[63] = &sqlgraph.Node{
+	graph.Nodes[66] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemanalysistopologyedge.Table,
 			Columns: systemanalysistopologyedge.Columns,
@@ -1332,7 +1393,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysistopologyedge.FieldDescription:            {Type: field.TypeString, Column: systemanalysistopologyedge.FieldDescription},
 		},
 	}
-	graph.Nodes[64] = &sqlgraph.Node{
+	graph.Nodes[67] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemanalysistopologynode.Table,
 			Columns: systemanalysistopologynode.Columns,
@@ -1351,70 +1412,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysistopologynode.FieldDescription:      {Type: field.TypeString, Column: systemanalysistopologynode.FieldDescription},
 			systemanalysistopologynode.FieldPosX:             {Type: field.TypeFloat64, Column: systemanalysistopologynode.FieldPosX},
 			systemanalysistopologynode.FieldPosY:             {Type: field.TypeFloat64, Column: systemanalysistopologynode.FieldPosY},
-		},
-	}
-	graph.Nodes[65] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   systemtopologysnapshot.Table,
-			Columns: systemtopologysnapshot.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: systemtopologysnapshot.FieldID,
-			},
-		},
-		Type: "SystemTopologySnapshot",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			systemtopologysnapshot.FieldTenantID:        {Type: field.TypeInt, Column: systemtopologysnapshot.FieldTenantID},
-			systemtopologysnapshot.FieldAsOf:            {Type: field.TypeTime, Column: systemtopologysnapshot.FieldAsOf},
-			systemtopologysnapshot.FieldName:            {Type: field.TypeString, Column: systemtopologysnapshot.FieldName},
-			systemtopologysnapshot.FieldScope:           {Type: field.TypeEnum, Column: systemtopologysnapshot.FieldScope},
-			systemtopologysnapshot.FieldScopeProperties: {Type: field.TypeJSON, Column: systemtopologysnapshot.FieldScopeProperties},
-			systemtopologysnapshot.FieldCreatedAt:       {Type: field.TypeTime, Column: systemtopologysnapshot.FieldCreatedAt},
-		},
-	}
-	graph.Nodes[66] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   systemtopologysnapshotentity.Table,
-			Columns: systemtopologysnapshotentity.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: systemtopologysnapshotentity.FieldID,
-			},
-		},
-		Type: "SystemTopologySnapshotEntity",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			systemtopologysnapshotentity.FieldTenantID:          {Type: field.TypeInt, Column: systemtopologysnapshotentity.FieldTenantID},
-			systemtopologysnapshotentity.FieldSnapshotID:        {Type: field.TypeUUID, Column: systemtopologysnapshotentity.FieldSnapshotID},
-			systemtopologysnapshotentity.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: systemtopologysnapshotentity.FieldKnowledgeEntityID},
-			systemtopologysnapshotentity.FieldEntityKind:        {Type: field.TypeString, Column: systemtopologysnapshotentity.FieldEntityKind},
-			systemtopologysnapshotentity.FieldDisplayName:       {Type: field.TypeString, Column: systemtopologysnapshotentity.FieldDisplayName},
-			systemtopologysnapshotentity.FieldDescription:       {Type: field.TypeString, Column: systemtopologysnapshotentity.FieldDescription},
-			systemtopologysnapshotentity.FieldProperties:        {Type: field.TypeJSON, Column: systemtopologysnapshotentity.FieldProperties},
-			systemtopologysnapshotentity.FieldAliases:           {Type: field.TypeJSON, Column: systemtopologysnapshotentity.FieldAliases},
-			systemtopologysnapshotentity.FieldCreatedAt:         {Type: field.TypeTime, Column: systemtopologysnapshotentity.FieldCreatedAt},
-		},
-	}
-	graph.Nodes[67] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   systemtopologysnapshotrelationship.Table,
-			Columns: systemtopologysnapshotrelationship.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: systemtopologysnapshotrelationship.FieldID,
-			},
-		},
-		Type: "SystemTopologySnapshotRelationship",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			systemtopologysnapshotrelationship.FieldTenantID:                {Type: field.TypeInt, Column: systemtopologysnapshotrelationship.FieldTenantID},
-			systemtopologysnapshotrelationship.FieldSnapshotID:              {Type: field.TypeUUID, Column: systemtopologysnapshotrelationship.FieldSnapshotID},
-			systemtopologysnapshotrelationship.FieldKnowledgeRelationshipID: {Type: field.TypeUUID, Column: systemtopologysnapshotrelationship.FieldKnowledgeRelationshipID},
-			systemtopologysnapshotrelationship.FieldSourceSnapshotEntityID:  {Type: field.TypeUUID, Column: systemtopologysnapshotrelationship.FieldSourceSnapshotEntityID},
-			systemtopologysnapshotrelationship.FieldTargetSnapshotEntityID:  {Type: field.TypeUUID, Column: systemtopologysnapshotrelationship.FieldTargetSnapshotEntityID},
-			systemtopologysnapshotrelationship.FieldRelationshipKind:        {Type: field.TypeString, Column: systemtopologysnapshotrelationship.FieldRelationshipKind},
-			systemtopologysnapshotrelationship.FieldDisplayName:             {Type: field.TypeString, Column: systemtopologysnapshotrelationship.FieldDisplayName},
-			systemtopologysnapshotrelationship.FieldDescription:             {Type: field.TypeString, Column: systemtopologysnapshotrelationship.FieldDescription},
-			systemtopologysnapshotrelationship.FieldProperties:              {Type: field.TypeJSON, Column: systemtopologysnapshotrelationship.FieldProperties},
-			systemtopologysnapshotrelationship.FieldCreatedAt:               {Type: field.TypeTime, Column: systemtopologysnapshotrelationship.FieldCreatedAt},
 		},
 	}
 	graph.Nodes[68] = &sqlgraph.Node{
@@ -3076,18 +3073,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"IncidentTimelineEvent",
 	)
 	graph.MustAddE(
-		"knowledge_entity",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidenttimelineeventtopologycontext.KnowledgeEntityTable,
-			Columns: []string{incidenttimelineeventtopologycontext.KnowledgeEntityColumn},
-			Bidi:    false,
-		},
-		"IncidentTimelineEventTopologyContext",
-		"KnowledgeEntity",
-	)
-	graph.MustAddE(
 		"snapshot_entity",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -3097,7 +3082,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"IncidentTimelineEventTopologyContext",
-		"SystemTopologySnapshotEntity",
+		"KnowledgeGraphSnapshotEntity",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -3374,6 +3359,186 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"KnowledgeEvidence",
 		"NormalizedEvent",
+	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgegraphsnapshot.TenantTable,
+			Columns: []string{knowledgegraphsnapshot.TenantColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshot",
+		"Tenant",
+	)
+	graph.MustAddE(
+		"system_analyses",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
+			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshot",
+		"SystemAnalysis",
+	)
+	graph.MustAddE(
+		"entities",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshot.EntitiesTable,
+			Columns: []string{knowledgegraphsnapshot.EntitiesColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshot",
+		"KnowledgeGraphSnapshotEntity",
+	)
+	graph.MustAddE(
+		"relationships",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshot.RelationshipsTable,
+			Columns: []string{knowledgegraphsnapshot.RelationshipsColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshot",
+		"KnowledgeGraphSnapshotRelationship",
+	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgegraphsnapshotentity.TenantTable,
+			Columns: []string{knowledgegraphsnapshotentity.TenantColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshotEntity",
+		"Tenant",
+	)
+	graph.MustAddE(
+		"snapshot",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgegraphsnapshotentity.SnapshotTable,
+			Columns: []string{knowledgegraphsnapshotentity.SnapshotColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshotEntity",
+		"KnowledgeGraphSnapshot",
+	)
+	graph.MustAddE(
+		"knowledge_entity",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgegraphsnapshotentity.KnowledgeEntityTable,
+			Columns: []string{knowledgegraphsnapshotentity.KnowledgeEntityColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshotEntity",
+		"KnowledgeEntity",
+	)
+	graph.MustAddE(
+		"source_relationships",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshotentity.SourceRelationshipsTable,
+			Columns: []string{knowledgegraphsnapshotentity.SourceRelationshipsColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshotEntity",
+		"KnowledgeGraphSnapshotRelationship",
+	)
+	graph.MustAddE(
+		"target_relationships",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshotentity.TargetRelationshipsTable,
+			Columns: []string{knowledgegraphsnapshotentity.TargetRelationshipsColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshotEntity",
+		"KnowledgeGraphSnapshotRelationship",
+	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgegraphsnapshotrelationship.TenantTable,
+			Columns: []string{knowledgegraphsnapshotrelationship.TenantColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshotRelationship",
+		"Tenant",
+	)
+	graph.MustAddE(
+		"knowledge_relationship",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgegraphsnapshotrelationship.KnowledgeRelationshipTable,
+			Columns: []string{knowledgegraphsnapshotrelationship.KnowledgeRelationshipColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshotRelationship",
+		"KnowledgeRelationship",
+	)
+	graph.MustAddE(
+		"snapshot",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgegraphsnapshotrelationship.SnapshotTable,
+			Columns: []string{knowledgegraphsnapshotrelationship.SnapshotColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshotRelationship",
+		"KnowledgeGraphSnapshot",
+	)
+	graph.MustAddE(
+		"source_snapshot_entity",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgegraphsnapshotrelationship.SourceSnapshotEntityTable,
+			Columns: []string{knowledgegraphsnapshotrelationship.SourceSnapshotEntityColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshotRelationship",
+		"KnowledgeGraphSnapshotEntity",
+	)
+	graph.MustAddE(
+		"target_snapshot_entity",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgegraphsnapshotrelationship.TargetSnapshotEntityTable,
+			Columns: []string{knowledgegraphsnapshotrelationship.TargetSnapshotEntityColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshotRelationship",
+		"KnowledgeGraphSnapshotEntity",
+	)
+	graph.MustAddE(
+		"analysis_edges",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshotrelationship.AnalysisEdgesTable,
+			Columns: []string{knowledgegraphsnapshotrelationship.AnalysisEdgesColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshotRelationship",
+		"SystemAnalysisTopologyEdge",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -4098,8 +4263,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"system_analysis",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   retrospective.SystemAnalysisTable,
 			Columns: []string{retrospective.SystemAnalysisColumn},
 			Bidi:    false,
@@ -4252,28 +4417,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Tenant",
 	)
 	graph.MustAddE(
-		"retrospective",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   systemanalysis.RetrospectiveTable,
-			Columns: []string{systemanalysis.RetrospectiveColumn},
-			Bidi:    false,
-		},
-		"SystemAnalysis",
-		"Retrospective",
-	)
-	graph.MustAddE(
-		"topology_snapshot",
+		"knowledge_graph_snapshot",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysis.TopologySnapshotTable,
-			Columns: []string{systemanalysis.TopologySnapshotColumn},
+			Table:   systemanalysis.KnowledgeGraphSnapshotTable,
+			Columns: []string{systemanalysis.KnowledgeGraphSnapshotColumn},
 			Bidi:    false,
 		},
 		"SystemAnalysis",
-		"SystemTopologySnapshot",
+		"KnowledgeGraphSnapshot",
 	)
 	graph.MustAddE(
 		"analysis_nodes",
@@ -4333,7 +4486,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"SystemAnalysisTopologyEdge",
-		"SystemTopologySnapshotRelationship",
+		"KnowledgeGraphSnapshotRelationship",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -4369,199 +4522,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"SystemAnalysisTopologyNode",
-		"SystemTopologySnapshotEntity",
-	)
-	graph.MustAddE(
-		"tenant",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshot.TenantTable,
-			Columns: []string{systemtopologysnapshot.TenantColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshot",
-		"Tenant",
-	)
-	graph.MustAddE(
-		"entities",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemtopologysnapshot.EntitiesTable,
-			Columns: []string{systemtopologysnapshot.EntitiesColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshot",
-		"SystemTopologySnapshotEntity",
-	)
-	graph.MustAddE(
-		"relationships",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemtopologysnapshot.RelationshipsTable,
-			Columns: []string{systemtopologysnapshot.RelationshipsColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshot",
-		"SystemTopologySnapshotRelationship",
-	)
-	graph.MustAddE(
-		"system_analyses",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemtopologysnapshot.SystemAnalysesTable,
-			Columns: []string{systemtopologysnapshot.SystemAnalysesColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshot",
-		"SystemAnalysis",
-	)
-	graph.MustAddE(
-		"tenant",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotentity.TenantTable,
-			Columns: []string{systemtopologysnapshotentity.TenantColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotEntity",
-		"Tenant",
-	)
-	graph.MustAddE(
-		"snapshot",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotentity.SnapshotTable,
-			Columns: []string{systemtopologysnapshotentity.SnapshotColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotEntity",
-		"SystemTopologySnapshot",
-	)
-	graph.MustAddE(
-		"knowledge_entity",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotentity.KnowledgeEntityTable,
-			Columns: []string{systemtopologysnapshotentity.KnowledgeEntityColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotEntity",
-		"KnowledgeEntity",
-	)
-	graph.MustAddE(
-		"source_relationships",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemtopologysnapshotentity.SourceRelationshipsTable,
-			Columns: []string{systemtopologysnapshotentity.SourceRelationshipsColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotEntity",
-		"SystemTopologySnapshotRelationship",
-	)
-	graph.MustAddE(
-		"target_relationships",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemtopologysnapshotentity.TargetRelationshipsTable,
-			Columns: []string{systemtopologysnapshotentity.TargetRelationshipsColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotEntity",
-		"SystemTopologySnapshotRelationship",
-	)
-	graph.MustAddE(
-		"analysis_nodes",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemtopologysnapshotentity.AnalysisNodesTable,
-			Columns: []string{systemtopologysnapshotentity.AnalysisNodesColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotEntity",
-		"SystemAnalysisTopologyNode",
-	)
-	graph.MustAddE(
-		"tenant",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotrelationship.TenantTable,
-			Columns: []string{systemtopologysnapshotrelationship.TenantColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotRelationship",
-		"Tenant",
-	)
-	graph.MustAddE(
-		"knowledge_relationship",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotrelationship.KnowledgeRelationshipTable,
-			Columns: []string{systemtopologysnapshotrelationship.KnowledgeRelationshipColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotRelationship",
-		"KnowledgeRelationship",
-	)
-	graph.MustAddE(
-		"snapshot",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotrelationship.SnapshotTable,
-			Columns: []string{systemtopologysnapshotrelationship.SnapshotColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotRelationship",
-		"SystemTopologySnapshot",
-	)
-	graph.MustAddE(
-		"source_snapshot_entity",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotrelationship.SourceSnapshotEntityTable,
-			Columns: []string{systemtopologysnapshotrelationship.SourceSnapshotEntityColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotRelationship",
-		"SystemTopologySnapshotEntity",
-	)
-	graph.MustAddE(
-		"target_snapshot_entity",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotrelationship.TargetSnapshotEntityTable,
-			Columns: []string{systemtopologysnapshotrelationship.TargetSnapshotEntityColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotRelationship",
-		"SystemTopologySnapshotEntity",
-	)
-	graph.MustAddE(
-		"analysis_edges",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemtopologysnapshotrelationship.AnalysisEdgesTable,
-			Columns: []string{systemtopologysnapshotrelationship.AnalysisEdgesColumn},
-			Bidi:    false,
-		},
-		"SystemTopologySnapshotRelationship",
-		"SystemAnalysisTopologyEdge",
+		"KnowledgeGraphSnapshotEntity",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -9097,11 +9058,6 @@ func (f *IncidentTimelineEventTopologyContextFilter) WhereIncidentEventID(p entq
 	f.Where(p.Field(incidenttimelineeventtopologycontext.FieldIncidentEventID))
 }
 
-// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
-func (f *IncidentTimelineEventTopologyContextFilter) WhereKnowledgeEntityID(p entql.ValueP) {
-	f.Where(p.Field(incidenttimelineeventtopologycontext.FieldKnowledgeEntityID))
-}
-
 // WhereSnapshotEntityID applies the entql [16]byte predicate on the snapshot_entity_id field.
 func (f *IncidentTimelineEventTopologyContextFilter) WhereSnapshotEntityID(p entql.ValueP) {
 	f.Where(p.Field(incidenttimelineeventtopologycontext.FieldSnapshotEntityID))
@@ -9145,27 +9101,13 @@ func (f *IncidentTimelineEventTopologyContextFilter) WhereHasEventWith(preds ...
 	})))
 }
 
-// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
-func (f *IncidentTimelineEventTopologyContextFilter) WhereHasKnowledgeEntity() {
-	f.Where(entql.HasEdge("knowledge_entity"))
-}
-
-// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
-func (f *IncidentTimelineEventTopologyContextFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
-	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // WhereHasSnapshotEntity applies a predicate to check if query has an edge snapshot_entity.
 func (f *IncidentTimelineEventTopologyContextFilter) WhereHasSnapshotEntity() {
 	f.Where(entql.HasEdge("snapshot_entity"))
 }
 
 // WhereHasSnapshotEntityWith applies a predicate to check if query has an edge snapshot_entity with a given conditions (other predicates).
-func (f *IncidentTimelineEventTopologyContextFilter) WhereHasSnapshotEntityWith(preds ...predicate.SystemTopologySnapshotEntity) {
+func (f *IncidentTimelineEventTopologyContextFilter) WhereHasSnapshotEntityWith(preds ...predicate.KnowledgeGraphSnapshotEntity) {
 	f.Where(entql.HasEdgeWith("snapshot_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -10141,6 +10083,451 @@ func (f *KnowledgeEvidenceFilter) WhereHasEventWith(preds ...predicate.Normalize
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *KnowledgeGraphSnapshotQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the KnowledgeGraphSnapshotQuery builder.
+func (_q *KnowledgeGraphSnapshotQuery) Filter() *KnowledgeGraphSnapshotFilter {
+	return &KnowledgeGraphSnapshotFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *KnowledgeGraphSnapshotMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the KnowledgeGraphSnapshotMutation builder.
+func (m *KnowledgeGraphSnapshotMutation) Filter() *KnowledgeGraphSnapshotFilter {
+	return &KnowledgeGraphSnapshotFilter{config: m.config, predicateAdder: m}
+}
+
+// KnowledgeGraphSnapshotFilter provides a generic filtering capability at runtime for KnowledgeGraphSnapshotQuery.
+type KnowledgeGraphSnapshotFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *KnowledgeGraphSnapshotFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[41].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *KnowledgeGraphSnapshotFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(knowledgegraphsnapshot.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *KnowledgeGraphSnapshotFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(knowledgegraphsnapshot.FieldTenantID))
+}
+
+// WhereAsOf applies the entql time.Time predicate on the as_of field.
+func (f *KnowledgeGraphSnapshotFilter) WhereAsOf(p entql.TimeP) {
+	f.Where(p.Field(knowledgegraphsnapshot.FieldAsOf))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *KnowledgeGraphSnapshotFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(knowledgegraphsnapshot.FieldName))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *KnowledgeGraphSnapshotFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgegraphsnapshot.FieldCreatedAt))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *KnowledgeGraphSnapshotFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSystemAnalyses applies a predicate to check if query has an edge system_analyses.
+func (f *KnowledgeGraphSnapshotFilter) WhereHasSystemAnalyses() {
+	f.Where(entql.HasEdge("system_analyses"))
+}
+
+// WhereHasSystemAnalysesWith applies a predicate to check if query has an edge system_analyses with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotFilter) WhereHasSystemAnalysesWith(preds ...predicate.SystemAnalysis) {
+	f.Where(entql.HasEdgeWith("system_analyses", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasEntities applies a predicate to check if query has an edge entities.
+func (f *KnowledgeGraphSnapshotFilter) WhereHasEntities() {
+	f.Where(entql.HasEdge("entities"))
+}
+
+// WhereHasEntitiesWith applies a predicate to check if query has an edge entities with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotFilter) WhereHasEntitiesWith(preds ...predicate.KnowledgeGraphSnapshotEntity) {
+	f.Where(entql.HasEdgeWith("entities", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasRelationships applies a predicate to check if query has an edge relationships.
+func (f *KnowledgeGraphSnapshotFilter) WhereHasRelationships() {
+	f.Where(entql.HasEdge("relationships"))
+}
+
+// WhereHasRelationshipsWith applies a predicate to check if query has an edge relationships with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotFilter) WhereHasRelationshipsWith(preds ...predicate.KnowledgeGraphSnapshotRelationship) {
+	f.Where(entql.HasEdgeWith("relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *KnowledgeGraphSnapshotEntityQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the KnowledgeGraphSnapshotEntityQuery builder.
+func (_q *KnowledgeGraphSnapshotEntityQuery) Filter() *KnowledgeGraphSnapshotEntityFilter {
+	return &KnowledgeGraphSnapshotEntityFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *KnowledgeGraphSnapshotEntityMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the KnowledgeGraphSnapshotEntityMutation builder.
+func (m *KnowledgeGraphSnapshotEntityMutation) Filter() *KnowledgeGraphSnapshotEntityFilter {
+	return &KnowledgeGraphSnapshotEntityFilter{config: m.config, predicateAdder: m}
+}
+
+// KnowledgeGraphSnapshotEntityFilter provides a generic filtering capability at runtime for KnowledgeGraphSnapshotEntityQuery.
+type KnowledgeGraphSnapshotEntityFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *KnowledgeGraphSnapshotEntityFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[42].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(knowledgegraphsnapshotentity.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(knowledgegraphsnapshotentity.FieldTenantID))
+}
+
+// WhereSnapshotID applies the entql [16]byte predicate on the snapshot_id field.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereSnapshotID(p entql.ValueP) {
+	f.Where(p.Field(knowledgegraphsnapshotentity.FieldSnapshotID))
+}
+
+// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereKnowledgeEntityID(p entql.ValueP) {
+	f.Where(p.Field(knowledgegraphsnapshotentity.FieldKnowledgeEntityID))
+}
+
+// WhereEntityKind applies the entql string predicate on the entity_kind field.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereEntityKind(p entql.StringP) {
+	f.Where(p.Field(knowledgegraphsnapshotentity.FieldEntityKind))
+}
+
+// WhereDisplayName applies the entql string predicate on the display_name field.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereDisplayName(p entql.StringP) {
+	f.Where(p.Field(knowledgegraphsnapshotentity.FieldDisplayName))
+}
+
+// WhereDescription applies the entql string predicate on the description field.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(knowledgegraphsnapshotentity.FieldDescription))
+}
+
+// WhereProperties applies the entql json.RawMessage predicate on the properties field.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereProperties(p entql.BytesP) {
+	f.Where(p.Field(knowledgegraphsnapshotentity.FieldProperties))
+}
+
+// WhereAliases applies the entql json.RawMessage predicate on the aliases field.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereAliases(p entql.BytesP) {
+	f.Where(p.Field(knowledgegraphsnapshotentity.FieldAliases))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgegraphsnapshotentity.FieldCreatedAt))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSnapshot applies a predicate to check if query has an edge snapshot.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereHasSnapshot() {
+	f.Where(entql.HasEdge("snapshot"))
+}
+
+// WhereHasSnapshotWith applies a predicate to check if query has an edge snapshot with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereHasSnapshotWith(preds ...predicate.KnowledgeGraphSnapshot) {
+	f.Where(entql.HasEdgeWith("snapshot", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereHasKnowledgeEntity() {
+	f.Where(entql.HasEdge("knowledge_entity"))
+}
+
+// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSourceRelationships applies a predicate to check if query has an edge source_relationships.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereHasSourceRelationships() {
+	f.Where(entql.HasEdge("source_relationships"))
+}
+
+// WhereHasSourceRelationshipsWith applies a predicate to check if query has an edge source_relationships with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereHasSourceRelationshipsWith(preds ...predicate.KnowledgeGraphSnapshotRelationship) {
+	f.Where(entql.HasEdgeWith("source_relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTargetRelationships applies a predicate to check if query has an edge target_relationships.
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereHasTargetRelationships() {
+	f.Where(entql.HasEdge("target_relationships"))
+}
+
+// WhereHasTargetRelationshipsWith applies a predicate to check if query has an edge target_relationships with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotEntityFilter) WhereHasTargetRelationshipsWith(preds ...predicate.KnowledgeGraphSnapshotRelationship) {
+	f.Where(entql.HasEdgeWith("target_relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *KnowledgeGraphSnapshotRelationshipQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the KnowledgeGraphSnapshotRelationshipQuery builder.
+func (_q *KnowledgeGraphSnapshotRelationshipQuery) Filter() *KnowledgeGraphSnapshotRelationshipFilter {
+	return &KnowledgeGraphSnapshotRelationshipFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *KnowledgeGraphSnapshotRelationshipMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the KnowledgeGraphSnapshotRelationshipMutation builder.
+func (m *KnowledgeGraphSnapshotRelationshipMutation) Filter() *KnowledgeGraphSnapshotRelationshipFilter {
+	return &KnowledgeGraphSnapshotRelationshipFilter{config: m.config, predicateAdder: m}
+}
+
+// KnowledgeGraphSnapshotRelationshipFilter provides a generic filtering capability at runtime for KnowledgeGraphSnapshotRelationshipQuery.
+type KnowledgeGraphSnapshotRelationshipFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[43].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(knowledgegraphsnapshotrelationship.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(knowledgegraphsnapshotrelationship.FieldTenantID))
+}
+
+// WhereSnapshotID applies the entql [16]byte predicate on the snapshot_id field.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereSnapshotID(p entql.ValueP) {
+	f.Where(p.Field(knowledgegraphsnapshotrelationship.FieldSnapshotID))
+}
+
+// WhereKnowledgeRelationshipID applies the entql [16]byte predicate on the knowledge_relationship_id field.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereKnowledgeRelationshipID(p entql.ValueP) {
+	f.Where(p.Field(knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID))
+}
+
+// WhereSourceSnapshotEntityID applies the entql [16]byte predicate on the source_snapshot_entity_id field.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereSourceSnapshotEntityID(p entql.ValueP) {
+	f.Where(p.Field(knowledgegraphsnapshotrelationship.FieldSourceSnapshotEntityID))
+}
+
+// WhereTargetSnapshotEntityID applies the entql [16]byte predicate on the target_snapshot_entity_id field.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereTargetSnapshotEntityID(p entql.ValueP) {
+	f.Where(p.Field(knowledgegraphsnapshotrelationship.FieldTargetSnapshotEntityID))
+}
+
+// WhereRelationshipKind applies the entql string predicate on the relationship_kind field.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereRelationshipKind(p entql.StringP) {
+	f.Where(p.Field(knowledgegraphsnapshotrelationship.FieldRelationshipKind))
+}
+
+// WhereDisplayName applies the entql string predicate on the display_name field.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereDisplayName(p entql.StringP) {
+	f.Where(p.Field(knowledgegraphsnapshotrelationship.FieldDisplayName))
+}
+
+// WhereDescription applies the entql string predicate on the description field.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(knowledgegraphsnapshotrelationship.FieldDescription))
+}
+
+// WhereProperties applies the entql json.RawMessage predicate on the properties field.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereProperties(p entql.BytesP) {
+	f.Where(p.Field(knowledgegraphsnapshotrelationship.FieldProperties))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgegraphsnapshotrelationship.FieldCreatedAt))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasKnowledgeRelationship applies a predicate to check if query has an edge knowledge_relationship.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasKnowledgeRelationship() {
+	f.Where(entql.HasEdge("knowledge_relationship"))
+}
+
+// WhereHasKnowledgeRelationshipWith applies a predicate to check if query has an edge knowledge_relationship with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) {
+	f.Where(entql.HasEdgeWith("knowledge_relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSnapshot applies a predicate to check if query has an edge snapshot.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasSnapshot() {
+	f.Where(entql.HasEdge("snapshot"))
+}
+
+// WhereHasSnapshotWith applies a predicate to check if query has an edge snapshot with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasSnapshotWith(preds ...predicate.KnowledgeGraphSnapshot) {
+	f.Where(entql.HasEdgeWith("snapshot", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSourceSnapshotEntity applies a predicate to check if query has an edge source_snapshot_entity.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasSourceSnapshotEntity() {
+	f.Where(entql.HasEdge("source_snapshot_entity"))
+}
+
+// WhereHasSourceSnapshotEntityWith applies a predicate to check if query has an edge source_snapshot_entity with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasSourceSnapshotEntityWith(preds ...predicate.KnowledgeGraphSnapshotEntity) {
+	f.Where(entql.HasEdgeWith("source_snapshot_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTargetSnapshotEntity applies a predicate to check if query has an edge target_snapshot_entity.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasTargetSnapshotEntity() {
+	f.Where(entql.HasEdge("target_snapshot_entity"))
+}
+
+// WhereHasTargetSnapshotEntityWith applies a predicate to check if query has an edge target_snapshot_entity with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasTargetSnapshotEntityWith(preds ...predicate.KnowledgeGraphSnapshotEntity) {
+	f.Where(entql.HasEdgeWith("target_snapshot_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasAnalysisEdges applies a predicate to check if query has an edge analysis_edges.
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasAnalysisEdges() {
+	f.Where(entql.HasEdge("analysis_edges"))
+}
+
+// WhereHasAnalysisEdgesWith applies a predicate to check if query has an edge analysis_edges with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotRelationshipFilter) WhereHasAnalysisEdgesWith(preds ...predicate.SystemAnalysisTopologyEdge) {
+	f.Where(entql.HasEdgeWith("analysis_edges", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *KnowledgeRelationshipQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -10169,7 +10556,7 @@ type KnowledgeRelationshipFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *KnowledgeRelationshipFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[41].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[44].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10325,7 +10712,7 @@ type MeetingScheduleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *MeetingScheduleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[42].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[45].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10472,7 +10859,7 @@ type MeetingSessionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *MeetingSessionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[43].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[46].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10593,7 +10980,7 @@ type NormalizedEventFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *NormalizedEventFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[44].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[47].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10716,7 +11103,7 @@ type NormalizedEventProjectionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *NormalizedEventProjectionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[45].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[48].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10833,7 +11220,7 @@ type NormalizedEventProjectionEntityFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *NormalizedEventProjectionEntityFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[46].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[49].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10921,7 +11308,7 @@ type OncallHandoverTemplateFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallHandoverTemplateFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[47].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[50].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11014,7 +11401,7 @@ type OncallRosterFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallRosterFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[48].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[51].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11192,7 +11579,7 @@ type OncallRosterMetricsFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallRosterMetricsFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[49].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[52].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11270,7 +11657,7 @@ type OncallScheduleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallScheduleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[50].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[53].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11377,7 +11764,7 @@ type OncallScheduleParticipantFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallScheduleParticipantFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[51].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[54].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11479,7 +11866,7 @@ type OncallShiftFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallShiftFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[52].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[55].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11638,7 +12025,7 @@ type OncallShiftHandoverFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallShiftHandoverFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[53].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[56].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11755,7 +12142,7 @@ type OncallShiftMetricsFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallShiftMetricsFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[54].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[57].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11903,7 +12290,7 @@ type OrganizationFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OrganizationFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[55].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[58].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12000,7 +12387,7 @@ type OrganizationPreferencesFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OrganizationPreferencesFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[56].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[59].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12088,7 +12475,7 @@ type OrganizationRoleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OrganizationRoleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[57].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[60].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12190,7 +12577,7 @@ type PlaybookFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *PlaybookFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[58].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[61].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12273,7 +12660,7 @@ type RetrospectiveFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RetrospectiveFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[59].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[62].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12413,7 +12800,7 @@ type RetrospectiveCommentFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RetrospectiveCommentFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[60].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[63].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12567,7 +12954,7 @@ type RetrospectiveReviewFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RetrospectiveReviewFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[61].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[64].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12707,7 +13094,7 @@ type SystemAnalysisFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemAnalysisFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[62].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[65].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12723,9 +13110,9 @@ func (f *SystemAnalysisFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(systemanalysis.FieldTenantID))
 }
 
-// WhereTopologySnapshotID applies the entql [16]byte predicate on the topology_snapshot_id field.
-func (f *SystemAnalysisFilter) WhereTopologySnapshotID(p entql.ValueP) {
-	f.Where(p.Field(systemanalysis.FieldTopologySnapshotID))
+// WhereKnowledgeGraphSnapshotID applies the entql [16]byte predicate on the knowledge_graph_snapshot_id field.
+func (f *SystemAnalysisFilter) WhereKnowledgeGraphSnapshotID(p entql.ValueP) {
+	f.Where(p.Field(systemanalysis.FieldKnowledgeGraphSnapshotID))
 }
 
 // WhereCreatedAt applies the entql time.Time predicate on the created_at field.
@@ -12752,28 +13139,14 @@ func (f *SystemAnalysisFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	})))
 }
 
-// WhereHasRetrospective applies a predicate to check if query has an edge retrospective.
-func (f *SystemAnalysisFilter) WhereHasRetrospective() {
-	f.Where(entql.HasEdge("retrospective"))
+// WhereHasKnowledgeGraphSnapshot applies a predicate to check if query has an edge knowledge_graph_snapshot.
+func (f *SystemAnalysisFilter) WhereHasKnowledgeGraphSnapshot() {
+	f.Where(entql.HasEdge("knowledge_graph_snapshot"))
 }
 
-// WhereHasRetrospectiveWith applies a predicate to check if query has an edge retrospective with a given conditions (other predicates).
-func (f *SystemAnalysisFilter) WhereHasRetrospectiveWith(preds ...predicate.Retrospective) {
-	f.Where(entql.HasEdgeWith("retrospective", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasTopologySnapshot applies a predicate to check if query has an edge topology_snapshot.
-func (f *SystemAnalysisFilter) WhereHasTopologySnapshot() {
-	f.Where(entql.HasEdge("topology_snapshot"))
-}
-
-// WhereHasTopologySnapshotWith applies a predicate to check if query has an edge topology_snapshot with a given conditions (other predicates).
-func (f *SystemAnalysisFilter) WhereHasTopologySnapshotWith(preds ...predicate.SystemTopologySnapshot) {
-	f.Where(entql.HasEdgeWith("topology_snapshot", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasKnowledgeGraphSnapshotWith applies a predicate to check if query has an edge knowledge_graph_snapshot with a given conditions (other predicates).
+func (f *SystemAnalysisFilter) WhereHasKnowledgeGraphSnapshotWith(preds ...predicate.KnowledgeGraphSnapshot) {
+	f.Where(entql.HasEdgeWith("knowledge_graph_snapshot", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -12837,7 +13210,7 @@ type SystemAnalysisTopologyEdgeFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemAnalysisTopologyEdgeFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[63].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[66].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12912,7 +13285,7 @@ func (f *SystemAnalysisTopologyEdgeFilter) WhereHasSnapshotRelationship() {
 }
 
 // WhereHasSnapshotRelationshipWith applies a predicate to check if query has an edge snapshot_relationship with a given conditions (other predicates).
-func (f *SystemAnalysisTopologyEdgeFilter) WhereHasSnapshotRelationshipWith(preds ...predicate.SystemTopologySnapshotRelationship) {
+func (f *SystemAnalysisTopologyEdgeFilter) WhereHasSnapshotRelationshipWith(preds ...predicate.KnowledgeGraphSnapshotRelationship) {
 	f.Where(entql.HasEdgeWith("snapshot_relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -12949,7 +13322,7 @@ type SystemAnalysisTopologyNodeFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemAnalysisTopologyNodeFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[64].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[67].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -13034,477 +13407,8 @@ func (f *SystemAnalysisTopologyNodeFilter) WhereHasSnapshotEntity() {
 }
 
 // WhereHasSnapshotEntityWith applies a predicate to check if query has an edge snapshot_entity with a given conditions (other predicates).
-func (f *SystemAnalysisTopologyNodeFilter) WhereHasSnapshotEntityWith(preds ...predicate.SystemTopologySnapshotEntity) {
+func (f *SystemAnalysisTopologyNodeFilter) WhereHasSnapshotEntityWith(preds ...predicate.KnowledgeGraphSnapshotEntity) {
 	f.Where(entql.HasEdgeWith("snapshot_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (_q *SystemTopologySnapshotQuery) addPredicate(pred func(s *sql.Selector)) {
-	_q.predicates = append(_q.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the SystemTopologySnapshotQuery builder.
-func (_q *SystemTopologySnapshotQuery) Filter() *SystemTopologySnapshotFilter {
-	return &SystemTopologySnapshotFilter{config: _q.config, predicateAdder: _q}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *SystemTopologySnapshotMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the SystemTopologySnapshotMutation builder.
-func (m *SystemTopologySnapshotMutation) Filter() *SystemTopologySnapshotFilter {
-	return &SystemTopologySnapshotFilter{config: m.config, predicateAdder: m}
-}
-
-// SystemTopologySnapshotFilter provides a generic filtering capability at runtime for SystemTopologySnapshotQuery.
-type SystemTopologySnapshotFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *SystemTopologySnapshotFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[65].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql [16]byte predicate on the id field.
-func (f *SystemTopologySnapshotFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(systemtopologysnapshot.FieldID))
-}
-
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *SystemTopologySnapshotFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(systemtopologysnapshot.FieldTenantID))
-}
-
-// WhereAsOf applies the entql time.Time predicate on the as_of field.
-func (f *SystemTopologySnapshotFilter) WhereAsOf(p entql.TimeP) {
-	f.Where(p.Field(systemtopologysnapshot.FieldAsOf))
-}
-
-// WhereName applies the entql string predicate on the name field.
-func (f *SystemTopologySnapshotFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(systemtopologysnapshot.FieldName))
-}
-
-// WhereScope applies the entql string predicate on the scope field.
-func (f *SystemTopologySnapshotFilter) WhereScope(p entql.StringP) {
-	f.Where(p.Field(systemtopologysnapshot.FieldScope))
-}
-
-// WhereScopeProperties applies the entql json.RawMessage predicate on the scope_properties field.
-func (f *SystemTopologySnapshotFilter) WhereScopeProperties(p entql.BytesP) {
-	f.Where(p.Field(systemtopologysnapshot.FieldScopeProperties))
-}
-
-// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *SystemTopologySnapshotFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(systemtopologysnapshot.FieldCreatedAt))
-}
-
-// WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *SystemTopologySnapshotFilter) WhereHasTenant() {
-	f.Where(entql.HasEdge("tenant"))
-}
-
-// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *SystemTopologySnapshotFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
-	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasEntities applies a predicate to check if query has an edge entities.
-func (f *SystemTopologySnapshotFilter) WhereHasEntities() {
-	f.Where(entql.HasEdge("entities"))
-}
-
-// WhereHasEntitiesWith applies a predicate to check if query has an edge entities with a given conditions (other predicates).
-func (f *SystemTopologySnapshotFilter) WhereHasEntitiesWith(preds ...predicate.SystemTopologySnapshotEntity) {
-	f.Where(entql.HasEdgeWith("entities", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasRelationships applies a predicate to check if query has an edge relationships.
-func (f *SystemTopologySnapshotFilter) WhereHasRelationships() {
-	f.Where(entql.HasEdge("relationships"))
-}
-
-// WhereHasRelationshipsWith applies a predicate to check if query has an edge relationships with a given conditions (other predicates).
-func (f *SystemTopologySnapshotFilter) WhereHasRelationshipsWith(preds ...predicate.SystemTopologySnapshotRelationship) {
-	f.Where(entql.HasEdgeWith("relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasSystemAnalyses applies a predicate to check if query has an edge system_analyses.
-func (f *SystemTopologySnapshotFilter) WhereHasSystemAnalyses() {
-	f.Where(entql.HasEdge("system_analyses"))
-}
-
-// WhereHasSystemAnalysesWith applies a predicate to check if query has an edge system_analyses with a given conditions (other predicates).
-func (f *SystemTopologySnapshotFilter) WhereHasSystemAnalysesWith(preds ...predicate.SystemAnalysis) {
-	f.Where(entql.HasEdgeWith("system_analyses", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (_q *SystemTopologySnapshotEntityQuery) addPredicate(pred func(s *sql.Selector)) {
-	_q.predicates = append(_q.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the SystemTopologySnapshotEntityQuery builder.
-func (_q *SystemTopologySnapshotEntityQuery) Filter() *SystemTopologySnapshotEntityFilter {
-	return &SystemTopologySnapshotEntityFilter{config: _q.config, predicateAdder: _q}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *SystemTopologySnapshotEntityMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the SystemTopologySnapshotEntityMutation builder.
-func (m *SystemTopologySnapshotEntityMutation) Filter() *SystemTopologySnapshotEntityFilter {
-	return &SystemTopologySnapshotEntityFilter{config: m.config, predicateAdder: m}
-}
-
-// SystemTopologySnapshotEntityFilter provides a generic filtering capability at runtime for SystemTopologySnapshotEntityQuery.
-type SystemTopologySnapshotEntityFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *SystemTopologySnapshotEntityFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[66].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql [16]byte predicate on the id field.
-func (f *SystemTopologySnapshotEntityFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(systemtopologysnapshotentity.FieldID))
-}
-
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *SystemTopologySnapshotEntityFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(systemtopologysnapshotentity.FieldTenantID))
-}
-
-// WhereSnapshotID applies the entql [16]byte predicate on the snapshot_id field.
-func (f *SystemTopologySnapshotEntityFilter) WhereSnapshotID(p entql.ValueP) {
-	f.Where(p.Field(systemtopologysnapshotentity.FieldSnapshotID))
-}
-
-// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
-func (f *SystemTopologySnapshotEntityFilter) WhereKnowledgeEntityID(p entql.ValueP) {
-	f.Where(p.Field(systemtopologysnapshotentity.FieldKnowledgeEntityID))
-}
-
-// WhereEntityKind applies the entql string predicate on the entity_kind field.
-func (f *SystemTopologySnapshotEntityFilter) WhereEntityKind(p entql.StringP) {
-	f.Where(p.Field(systemtopologysnapshotentity.FieldEntityKind))
-}
-
-// WhereDisplayName applies the entql string predicate on the display_name field.
-func (f *SystemTopologySnapshotEntityFilter) WhereDisplayName(p entql.StringP) {
-	f.Where(p.Field(systemtopologysnapshotentity.FieldDisplayName))
-}
-
-// WhereDescription applies the entql string predicate on the description field.
-func (f *SystemTopologySnapshotEntityFilter) WhereDescription(p entql.StringP) {
-	f.Where(p.Field(systemtopologysnapshotentity.FieldDescription))
-}
-
-// WhereProperties applies the entql json.RawMessage predicate on the properties field.
-func (f *SystemTopologySnapshotEntityFilter) WhereProperties(p entql.BytesP) {
-	f.Where(p.Field(systemtopologysnapshotentity.FieldProperties))
-}
-
-// WhereAliases applies the entql json.RawMessage predicate on the aliases field.
-func (f *SystemTopologySnapshotEntityFilter) WhereAliases(p entql.BytesP) {
-	f.Where(p.Field(systemtopologysnapshotentity.FieldAliases))
-}
-
-// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *SystemTopologySnapshotEntityFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(systemtopologysnapshotentity.FieldCreatedAt))
-}
-
-// WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *SystemTopologySnapshotEntityFilter) WhereHasTenant() {
-	f.Where(entql.HasEdge("tenant"))
-}
-
-// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *SystemTopologySnapshotEntityFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
-	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasSnapshot applies a predicate to check if query has an edge snapshot.
-func (f *SystemTopologySnapshotEntityFilter) WhereHasSnapshot() {
-	f.Where(entql.HasEdge("snapshot"))
-}
-
-// WhereHasSnapshotWith applies a predicate to check if query has an edge snapshot with a given conditions (other predicates).
-func (f *SystemTopologySnapshotEntityFilter) WhereHasSnapshotWith(preds ...predicate.SystemTopologySnapshot) {
-	f.Where(entql.HasEdgeWith("snapshot", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
-func (f *SystemTopologySnapshotEntityFilter) WhereHasKnowledgeEntity() {
-	f.Where(entql.HasEdge("knowledge_entity"))
-}
-
-// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
-func (f *SystemTopologySnapshotEntityFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
-	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasSourceRelationships applies a predicate to check if query has an edge source_relationships.
-func (f *SystemTopologySnapshotEntityFilter) WhereHasSourceRelationships() {
-	f.Where(entql.HasEdge("source_relationships"))
-}
-
-// WhereHasSourceRelationshipsWith applies a predicate to check if query has an edge source_relationships with a given conditions (other predicates).
-func (f *SystemTopologySnapshotEntityFilter) WhereHasSourceRelationshipsWith(preds ...predicate.SystemTopologySnapshotRelationship) {
-	f.Where(entql.HasEdgeWith("source_relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasTargetRelationships applies a predicate to check if query has an edge target_relationships.
-func (f *SystemTopologySnapshotEntityFilter) WhereHasTargetRelationships() {
-	f.Where(entql.HasEdge("target_relationships"))
-}
-
-// WhereHasTargetRelationshipsWith applies a predicate to check if query has an edge target_relationships with a given conditions (other predicates).
-func (f *SystemTopologySnapshotEntityFilter) WhereHasTargetRelationshipsWith(preds ...predicate.SystemTopologySnapshotRelationship) {
-	f.Where(entql.HasEdgeWith("target_relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasAnalysisNodes applies a predicate to check if query has an edge analysis_nodes.
-func (f *SystemTopologySnapshotEntityFilter) WhereHasAnalysisNodes() {
-	f.Where(entql.HasEdge("analysis_nodes"))
-}
-
-// WhereHasAnalysisNodesWith applies a predicate to check if query has an edge analysis_nodes with a given conditions (other predicates).
-func (f *SystemTopologySnapshotEntityFilter) WhereHasAnalysisNodesWith(preds ...predicate.SystemAnalysisTopologyNode) {
-	f.Where(entql.HasEdgeWith("analysis_nodes", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (_q *SystemTopologySnapshotRelationshipQuery) addPredicate(pred func(s *sql.Selector)) {
-	_q.predicates = append(_q.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the SystemTopologySnapshotRelationshipQuery builder.
-func (_q *SystemTopologySnapshotRelationshipQuery) Filter() *SystemTopologySnapshotRelationshipFilter {
-	return &SystemTopologySnapshotRelationshipFilter{config: _q.config, predicateAdder: _q}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *SystemTopologySnapshotRelationshipMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the SystemTopologySnapshotRelationshipMutation builder.
-func (m *SystemTopologySnapshotRelationshipMutation) Filter() *SystemTopologySnapshotRelationshipFilter {
-	return &SystemTopologySnapshotRelationshipFilter{config: m.config, predicateAdder: m}
-}
-
-// SystemTopologySnapshotRelationshipFilter provides a generic filtering capability at runtime for SystemTopologySnapshotRelationshipQuery.
-type SystemTopologySnapshotRelationshipFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *SystemTopologySnapshotRelationshipFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[67].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql [16]byte predicate on the id field.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(systemtopologysnapshotrelationship.FieldID))
-}
-
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(systemtopologysnapshotrelationship.FieldTenantID))
-}
-
-// WhereSnapshotID applies the entql [16]byte predicate on the snapshot_id field.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereSnapshotID(p entql.ValueP) {
-	f.Where(p.Field(systemtopologysnapshotrelationship.FieldSnapshotID))
-}
-
-// WhereKnowledgeRelationshipID applies the entql [16]byte predicate on the knowledge_relationship_id field.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereKnowledgeRelationshipID(p entql.ValueP) {
-	f.Where(p.Field(systemtopologysnapshotrelationship.FieldKnowledgeRelationshipID))
-}
-
-// WhereSourceSnapshotEntityID applies the entql [16]byte predicate on the source_snapshot_entity_id field.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereSourceSnapshotEntityID(p entql.ValueP) {
-	f.Where(p.Field(systemtopologysnapshotrelationship.FieldSourceSnapshotEntityID))
-}
-
-// WhereTargetSnapshotEntityID applies the entql [16]byte predicate on the target_snapshot_entity_id field.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereTargetSnapshotEntityID(p entql.ValueP) {
-	f.Where(p.Field(systemtopologysnapshotrelationship.FieldTargetSnapshotEntityID))
-}
-
-// WhereRelationshipKind applies the entql string predicate on the relationship_kind field.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereRelationshipKind(p entql.StringP) {
-	f.Where(p.Field(systemtopologysnapshotrelationship.FieldRelationshipKind))
-}
-
-// WhereDisplayName applies the entql string predicate on the display_name field.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereDisplayName(p entql.StringP) {
-	f.Where(p.Field(systemtopologysnapshotrelationship.FieldDisplayName))
-}
-
-// WhereDescription applies the entql string predicate on the description field.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereDescription(p entql.StringP) {
-	f.Where(p.Field(systemtopologysnapshotrelationship.FieldDescription))
-}
-
-// WhereProperties applies the entql json.RawMessage predicate on the properties field.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereProperties(p entql.BytesP) {
-	f.Where(p.Field(systemtopologysnapshotrelationship.FieldProperties))
-}
-
-// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(systemtopologysnapshotrelationship.FieldCreatedAt))
-}
-
-// WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasTenant() {
-	f.Where(entql.HasEdge("tenant"))
-}
-
-// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
-	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasKnowledgeRelationship applies a predicate to check if query has an edge knowledge_relationship.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasKnowledgeRelationship() {
-	f.Where(entql.HasEdge("knowledge_relationship"))
-}
-
-// WhereHasKnowledgeRelationshipWith applies a predicate to check if query has an edge knowledge_relationship with a given conditions (other predicates).
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) {
-	f.Where(entql.HasEdgeWith("knowledge_relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasSnapshot applies a predicate to check if query has an edge snapshot.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasSnapshot() {
-	f.Where(entql.HasEdge("snapshot"))
-}
-
-// WhereHasSnapshotWith applies a predicate to check if query has an edge snapshot with a given conditions (other predicates).
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasSnapshotWith(preds ...predicate.SystemTopologySnapshot) {
-	f.Where(entql.HasEdgeWith("snapshot", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasSourceSnapshotEntity applies a predicate to check if query has an edge source_snapshot_entity.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasSourceSnapshotEntity() {
-	f.Where(entql.HasEdge("source_snapshot_entity"))
-}
-
-// WhereHasSourceSnapshotEntityWith applies a predicate to check if query has an edge source_snapshot_entity with a given conditions (other predicates).
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasSourceSnapshotEntityWith(preds ...predicate.SystemTopologySnapshotEntity) {
-	f.Where(entql.HasEdgeWith("source_snapshot_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasTargetSnapshotEntity applies a predicate to check if query has an edge target_snapshot_entity.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasTargetSnapshotEntity() {
-	f.Where(entql.HasEdge("target_snapshot_entity"))
-}
-
-// WhereHasTargetSnapshotEntityWith applies a predicate to check if query has an edge target_snapshot_entity with a given conditions (other predicates).
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasTargetSnapshotEntityWith(preds ...predicate.SystemTopologySnapshotEntity) {
-	f.Where(entql.HasEdgeWith("target_snapshot_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasAnalysisEdges applies a predicate to check if query has an edge analysis_edges.
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasAnalysisEdges() {
-	f.Where(entql.HasEdge("analysis_edges"))
-}
-
-// WhereHasAnalysisEdgesWith applies a predicate to check if query has an edge analysis_edges with a given conditions (other predicates).
-func (f *SystemTopologySnapshotRelationshipFilter) WhereHasAnalysisEdgesWith(preds ...predicate.SystemAnalysisTopologyEdge) {
-	f.Where(entql.HasEdgeWith("analysis_edges", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

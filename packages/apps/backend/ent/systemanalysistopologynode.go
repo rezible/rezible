@@ -10,9 +10,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -50,7 +50,7 @@ type SystemAnalysisTopologyNodeEdges struct {
 	// Analysis holds the value of the analysis edge.
 	Analysis *SystemAnalysis `json:"analysis,omitempty"`
 	// SnapshotEntity holds the value of the snapshot_entity edge.
-	SnapshotEntity *SystemTopologySnapshotEntity `json:"snapshot_entity,omitempty"`
+	SnapshotEntity *KnowledgeGraphSnapshotEntity `json:"snapshot_entity,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -80,11 +80,11 @@ func (e SystemAnalysisTopologyNodeEdges) AnalysisOrErr() (*SystemAnalysis, error
 
 // SnapshotEntityOrErr returns the SnapshotEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemAnalysisTopologyNodeEdges) SnapshotEntityOrErr() (*SystemTopologySnapshotEntity, error) {
+func (e SystemAnalysisTopologyNodeEdges) SnapshotEntityOrErr() (*KnowledgeGraphSnapshotEntity, error) {
 	if e.SnapshotEntity != nil {
 		return e.SnapshotEntity, nil
 	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: systemtopologysnapshotentity.Label}
+		return nil, &NotFoundError{label: knowledgegraphsnapshotentity.Label}
 	}
 	return nil, &NotLoadedError{edge: "snapshot_entity"}
 }
@@ -197,7 +197,7 @@ func (_m *SystemAnalysisTopologyNode) QueryAnalysis() *SystemAnalysisQuery {
 }
 
 // QuerySnapshotEntity queries the "snapshot_entity" edge of the SystemAnalysisTopologyNode entity.
-func (_m *SystemAnalysisTopologyNode) QuerySnapshotEntity() *SystemTopologySnapshotEntityQuery {
+func (_m *SystemAnalysisTopologyNode) QuerySnapshotEntity() *KnowledgeGraphSnapshotEntityQuery {
 	return NewSystemAnalysisTopologyNodeClient(_m.config).QuerySnapshotEntity(_m)
 }
 

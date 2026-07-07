@@ -21,8 +21,6 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldIncidentEventID holds the string denoting the incident_event_id field in the database.
 	FieldIncidentEventID = "incident_event_id"
-	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
-	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldSnapshotEntityID holds the string denoting the snapshot_entity_id field in the database.
 	FieldSnapshotEntityID = "snapshot_entity_id"
 	// FieldRelationship holds the string denoting the relationship field in the database.
@@ -33,8 +31,6 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
 	EdgeEvent = "event"
-	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
-	EdgeKnowledgeEntity = "knowledge_entity"
 	// EdgeSnapshotEntity holds the string denoting the snapshot_entity edge name in mutations.
 	EdgeSnapshotEntity = "snapshot_entity"
 	// Table holds the table name of the incidenttimelineeventtopologycontext in the database.
@@ -53,18 +49,11 @@ const (
 	EventInverseTable = "incident_timeline_events"
 	// EventColumn is the table column denoting the event relation/edge.
 	EventColumn = "incident_event_id"
-	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
-	KnowledgeEntityTable = "incident_timeline_event_topology_contexts"
-	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
-	KnowledgeEntityInverseTable = "knowledge_entities"
-	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
-	KnowledgeEntityColumn = "knowledge_entity_id"
 	// SnapshotEntityTable is the table that holds the snapshot_entity relation/edge.
 	SnapshotEntityTable = "incident_timeline_event_topology_contexts"
-	// SnapshotEntityInverseTable is the table name for the SystemTopologySnapshotEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "systemtopologysnapshotentity" package.
-	SnapshotEntityInverseTable = "system_topology_snapshot_entities"
+	// SnapshotEntityInverseTable is the table name for the KnowledgeGraphSnapshotEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgegraphsnapshotentity" package.
+	SnapshotEntityInverseTable = "knowledge_graph_snapshot_entities"
 	// SnapshotEntityColumn is the table column denoting the snapshot_entity relation/edge.
 	SnapshotEntityColumn = "snapshot_entity_id"
 )
@@ -74,7 +63,6 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldIncidentEventID,
-	FieldKnowledgeEntityID,
 	FieldSnapshotEntityID,
 	FieldRelationship,
 	FieldCreatedAt,
@@ -146,11 +134,6 @@ func ByIncidentEventID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIncidentEventID, opts...).ToFunc()
 }
 
-// ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
-func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKnowledgeEntityID, opts...).ToFunc()
-}
-
 // BySnapshotEntityID orders the results by the snapshot_entity_id field.
 func BySnapshotEntityID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSnapshotEntityID, opts...).ToFunc()
@@ -180,13 +163,6 @@ func ByEventField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByKnowledgeEntityField orders the results by knowledge_entity field.
-func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // BySnapshotEntityField orders the results by snapshot_entity field.
 func BySnapshotEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -205,13 +181,6 @@ func newEventStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EventInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
-	)
-}
-func newKnowledgeEntityStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(KnowledgeEntityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 	)
 }
 func newSnapshotEntityStep() *sqlgraph.Step {

@@ -76,12 +76,6 @@ func (_u *RetrospectiveUpdate) SetNillableSystemAnalysisID(v *uuid.UUID) *Retros
 	return _u
 }
 
-// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
-func (_u *RetrospectiveUpdate) ClearSystemAnalysisID() *RetrospectiveUpdate {
-	_u.mutation.ClearSystemAnalysisID()
-	return _u
-}
-
 // SetKind sets the "kind" field.
 func (_u *RetrospectiveUpdate) SetKind(v retrospective.Kind) *RetrospectiveUpdate {
 	_u.mutation.SetKind(v)
@@ -232,6 +226,9 @@ func (_u *RetrospectiveUpdate) check() error {
 	if _u.mutation.DocumentCleared() && len(_u.mutation.DocumentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.document"`)
 	}
+	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Retrospective.system_analysis"`)
+	}
 	return nil
 }
 
@@ -371,8 +368,8 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if _u.mutation.SystemAnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   retrospective.SystemAnalysisTable,
 			Columns: []string{retrospective.SystemAnalysisColumn},
 			Bidi:    false,
@@ -385,8 +382,8 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if nodes := _u.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   retrospective.SystemAnalysisTable,
 			Columns: []string{retrospective.SystemAnalysisColumn},
 			Bidi:    false,
@@ -463,12 +460,6 @@ func (_u *RetrospectiveUpdateOne) SetNillableSystemAnalysisID(v *uuid.UUID) *Ret
 	if v != nil {
 		_u.SetSystemAnalysisID(*v)
 	}
-	return _u
-}
-
-// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
-func (_u *RetrospectiveUpdateOne) ClearSystemAnalysisID() *RetrospectiveUpdateOne {
-	_u.mutation.ClearSystemAnalysisID()
 	return _u
 }
 
@@ -635,6 +626,9 @@ func (_u *RetrospectiveUpdateOne) check() error {
 	if _u.mutation.DocumentCleared() && len(_u.mutation.DocumentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.document"`)
 	}
+	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Retrospective.system_analysis"`)
+	}
 	return nil
 }
 
@@ -791,8 +785,8 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 	}
 	if _u.mutation.SystemAnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   retrospective.SystemAnalysisTable,
 			Columns: []string{retrospective.SystemAnalysisColumn},
 			Bidi:    false,
@@ -805,8 +799,8 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 	}
 	if nodes := _u.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   retrospective.SystemAnalysisTable,
 			Columns: []string{retrospective.SystemAnalysisColumn},
 			Bidi:    false,

@@ -52,14 +52,6 @@ func (_c *RetrospectiveCreate) SetSystemAnalysisID(v uuid.UUID) *RetrospectiveCr
 	return _c
 }
 
-// SetNillableSystemAnalysisID sets the "system_analysis_id" field if the given value is not nil.
-func (_c *RetrospectiveCreate) SetNillableSystemAnalysisID(v *uuid.UUID) *RetrospectiveCreate {
-	if v != nil {
-		_c.SetSystemAnalysisID(*v)
-	}
-	return _c
-}
-
 // SetKind sets the "kind" field.
 func (_c *RetrospectiveCreate) SetKind(v retrospective.Kind) *RetrospectiveCreate {
 	_c.mutation.SetKind(v)
@@ -179,6 +171,9 @@ func (_c *RetrospectiveCreate) check() error {
 	if _, ok := _c.mutation.DocumentID(); !ok {
 		return &ValidationError{Name: "document_id", err: errors.New(`ent: missing required field "Retrospective.document_id"`)}
 	}
+	if _, ok := _c.mutation.SystemAnalysisID(); !ok {
+		return &ValidationError{Name: "system_analysis_id", err: errors.New(`ent: missing required field "Retrospective.system_analysis_id"`)}
+	}
 	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "Retrospective.kind"`)}
 	}
@@ -203,6 +198,9 @@ func (_c *RetrospectiveCreate) check() error {
 	}
 	if len(_c.mutation.DocumentIDs()) == 0 {
 		return &ValidationError{Name: "document", err: errors.New(`ent: missing required edge "Retrospective.document"`)}
+	}
+	if len(_c.mutation.SystemAnalysisIDs()) == 0 {
+		return &ValidationError{Name: "system_analysis", err: errors.New(`ent: missing required edge "Retrospective.system_analysis"`)}
 	}
 	return nil
 }
@@ -322,8 +320,8 @@ func (_c *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 	}
 	if nodes := _c.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   retrospective.SystemAnalysisTable,
 			Columns: []string{retrospective.SystemAnalysisColumn},
 			Bidi:    false,
@@ -423,12 +421,6 @@ func (u *RetrospectiveUpsert) SetSystemAnalysisID(v uuid.UUID) *RetrospectiveUps
 // UpdateSystemAnalysisID sets the "system_analysis_id" field to the value that was provided on create.
 func (u *RetrospectiveUpsert) UpdateSystemAnalysisID() *RetrospectiveUpsert {
 	u.SetExcluded(retrospective.FieldSystemAnalysisID)
-	return u
-}
-
-// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
-func (u *RetrospectiveUpsert) ClearSystemAnalysisID() *RetrospectiveUpsert {
-	u.SetNull(retrospective.FieldSystemAnalysisID)
 	return u
 }
 
@@ -546,13 +538,6 @@ func (u *RetrospectiveUpsertOne) SetSystemAnalysisID(v uuid.UUID) *Retrospective
 func (u *RetrospectiveUpsertOne) UpdateSystemAnalysisID() *RetrospectiveUpsertOne {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateSystemAnalysisID()
-	})
-}
-
-// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
-func (u *RetrospectiveUpsertOne) ClearSystemAnalysisID() *RetrospectiveUpsertOne {
-	return u.Update(func(s *RetrospectiveUpsert) {
-		s.ClearSystemAnalysisID()
 	})
 }
 
@@ -841,13 +826,6 @@ func (u *RetrospectiveUpsertBulk) SetSystemAnalysisID(v uuid.UUID) *Retrospectiv
 func (u *RetrospectiveUpsertBulk) UpdateSystemAnalysisID() *RetrospectiveUpsertBulk {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateSystemAnalysisID()
-	})
-}
-
-// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
-func (u *RetrospectiveUpsertBulk) ClearSystemAnalysisID() *RetrospectiveUpsertBulk {
-	return u.Update(func(s *RetrospectiveUpsert) {
-		s.ClearSystemAnalysisID()
 	})
 }
 

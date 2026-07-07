@@ -16,24 +16,22 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineevent"
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentTimelineEventTopologyContextQuery is the builder for querying IncidentTimelineEventTopologyContext entities.
 type IncidentTimelineEventTopologyContextQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []incidenttimelineeventtopologycontext.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.IncidentTimelineEventTopologyContext
-	withTenant          *TenantQuery
-	withEvent           *IncidentTimelineEventQuery
-	withKnowledgeEntity *KnowledgeEntityQuery
-	withSnapshotEntity  *SystemTopologySnapshotEntityQuery
-	modifiers           []func(*sql.Selector)
+	ctx                *QueryContext
+	order              []incidenttimelineeventtopologycontext.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.IncidentTimelineEventTopologyContext
+	withTenant         *TenantQuery
+	withEvent          *IncidentTimelineEventQuery
+	withSnapshotEntity *KnowledgeGraphSnapshotEntityQuery
+	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -120,34 +118,9 @@ func (_q *IncidentTimelineEventTopologyContextQuery) QueryEvent() *IncidentTimel
 	return query
 }
 
-// QueryKnowledgeEntity chains the current query on the "knowledge_entity" edge.
-func (_q *IncidentTimelineEventTopologyContextQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenttimelineeventtopologycontext.Table, incidenttimelineeventtopologycontext.FieldID, selector),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineeventtopologycontext.KnowledgeEntityTable, incidenttimelineeventtopologycontext.KnowledgeEntityColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QuerySnapshotEntity chains the current query on the "snapshot_entity" edge.
-func (_q *IncidentTimelineEventTopologyContextQuery) QuerySnapshotEntity() *SystemTopologySnapshotEntityQuery {
-	query := (&SystemTopologySnapshotEntityClient{config: _q.config}).Query()
+func (_q *IncidentTimelineEventTopologyContextQuery) QuerySnapshotEntity() *KnowledgeGraphSnapshotEntityQuery {
+	query := (&KnowledgeGraphSnapshotEntityClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -158,11 +131,11 @@ func (_q *IncidentTimelineEventTopologyContextQuery) QuerySnapshotEntity() *Syst
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incidenttimelineeventtopologycontext.Table, incidenttimelineeventtopologycontext.FieldID, selector),
-			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
+			sqlgraph.To(knowledgegraphsnapshotentity.Table, knowledgegraphsnapshotentity.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineeventtopologycontext.SnapshotEntityTable, incidenttimelineeventtopologycontext.SnapshotEntityColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
+		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
 		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -357,15 +330,14 @@ func (_q *IncidentTimelineEventTopologyContextQuery) Clone() *IncidentTimelineEv
 		return nil
 	}
 	return &IncidentTimelineEventTopologyContextQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]incidenttimelineeventtopologycontext.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.IncidentTimelineEventTopologyContext{}, _q.predicates...),
-		withTenant:          _q.withTenant.Clone(),
-		withEvent:           _q.withEvent.Clone(),
-		withKnowledgeEntity: _q.withKnowledgeEntity.Clone(),
-		withSnapshotEntity:  _q.withSnapshotEntity.Clone(),
+		config:             _q.config,
+		ctx:                _q.ctx.Clone(),
+		order:              append([]incidenttimelineeventtopologycontext.OrderOption{}, _q.order...),
+		inters:             append([]Interceptor{}, _q.inters...),
+		predicates:         append([]predicate.IncidentTimelineEventTopologyContext{}, _q.predicates...),
+		withTenant:         _q.withTenant.Clone(),
+		withEvent:          _q.withEvent.Clone(),
+		withSnapshotEntity: _q.withSnapshotEntity.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -395,21 +367,10 @@ func (_q *IncidentTimelineEventTopologyContextQuery) WithEvent(opts ...func(*Inc
 	return _q
 }
 
-// WithKnowledgeEntity tells the query-builder to eager-load the nodes that are connected to
-// the "knowledge_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentTimelineEventTopologyContextQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *IncidentTimelineEventTopologyContextQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withKnowledgeEntity = query
-	return _q
-}
-
 // WithSnapshotEntity tells the query-builder to eager-load the nodes that are connected to
 // the "snapshot_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentTimelineEventTopologyContextQuery) WithSnapshotEntity(opts ...func(*SystemTopologySnapshotEntityQuery)) *IncidentTimelineEventTopologyContextQuery {
-	query := (&SystemTopologySnapshotEntityClient{config: _q.config}).Query()
+func (_q *IncidentTimelineEventTopologyContextQuery) WithSnapshotEntity(opts ...func(*KnowledgeGraphSnapshotEntityQuery)) *IncidentTimelineEventTopologyContextQuery {
+	query := (&KnowledgeGraphSnapshotEntityClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -501,10 +462,9 @@ func (_q *IncidentTimelineEventTopologyContextQuery) sqlAll(ctx context.Context,
 	var (
 		nodes       = []*IncidentTimelineEventTopologyContext{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withEvent != nil,
-			_q.withKnowledgeEntity != nil,
 			_q.withSnapshotEntity != nil,
 		}
 	)
@@ -543,15 +503,9 @@ func (_q *IncidentTimelineEventTopologyContextQuery) sqlAll(ctx context.Context,
 			return nil, err
 		}
 	}
-	if query := _q.withKnowledgeEntity; query != nil {
-		if err := _q.loadKnowledgeEntity(ctx, query, nodes, nil,
-			func(n *IncidentTimelineEventTopologyContext, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withSnapshotEntity; query != nil {
 		if err := _q.loadSnapshotEntity(ctx, query, nodes, nil,
-			func(n *IncidentTimelineEventTopologyContext, e *SystemTopologySnapshotEntity) {
+			func(n *IncidentTimelineEventTopologyContext, e *KnowledgeGraphSnapshotEntity) {
 				n.Edges.SnapshotEntity = e
 			}); err != nil {
 			return nil, err
@@ -618,39 +572,7 @@ func (_q *IncidentTimelineEventTopologyContextQuery) loadEvent(ctx context.Conte
 	}
 	return nil
 }
-func (_q *IncidentTimelineEventTopologyContextQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*IncidentTimelineEventTopologyContext, init func(*IncidentTimelineEventTopologyContext), assign func(*IncidentTimelineEventTopologyContext, *KnowledgeEntity)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*IncidentTimelineEventTopologyContext)
-	for i := range nodes {
-		if nodes[i].KnowledgeEntityID == nil {
-			continue
-		}
-		fk := *nodes[i].KnowledgeEntityID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(knowledgeentity.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "knowledge_entity_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *IncidentTimelineEventTopologyContextQuery) loadSnapshotEntity(ctx context.Context, query *SystemTopologySnapshotEntityQuery, nodes []*IncidentTimelineEventTopologyContext, init func(*IncidentTimelineEventTopologyContext), assign func(*IncidentTimelineEventTopologyContext, *SystemTopologySnapshotEntity)) error {
+func (_q *IncidentTimelineEventTopologyContextQuery) loadSnapshotEntity(ctx context.Context, query *KnowledgeGraphSnapshotEntityQuery, nodes []*IncidentTimelineEventTopologyContext, init func(*IncidentTimelineEventTopologyContext), assign func(*IncidentTimelineEventTopologyContext, *KnowledgeGraphSnapshotEntity)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentTimelineEventTopologyContext)
 	for i := range nodes {
@@ -666,7 +588,7 @@ func (_q *IncidentTimelineEventTopologyContextQuery) loadSnapshotEntity(ctx cont
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(systemtopologysnapshotentity.IDIn(ids...))
+	query.Where(knowledgegraphsnapshotentity.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -718,9 +640,6 @@ func (_q *IncidentTimelineEventTopologyContextQuery) querySpec() *sqlgraph.Query
 		}
 		if _q.withEvent != nil {
 			_spec.Node.AddColumnOnce(incidenttimelineeventtopologycontext.FieldIncidentEventID)
-		}
-		if _q.withKnowledgeEntity != nil {
-			_spec.Node.AddColumnOnce(incidenttimelineeventtopologycontext.FieldKnowledgeEntityID)
 		}
 		if _q.withSnapshotEntity != nil {
 			_spec.Node.AddColumnOnce(incidenttimelineeventtopologycontext.FieldSnapshotEntityID)

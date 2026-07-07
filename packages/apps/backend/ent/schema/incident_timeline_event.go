@@ -88,7 +88,6 @@ func (IncidentTimelineEventTopologyContext) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.UUID("incident_event_id", uuid.UUID{}),
-		field.UUID("knowledge_entity_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("snapshot_entity_id", uuid.UUID{}).Optional().Nillable(),
 		field.Enum("relationship").
 			Values("primary", "affected", "contributing"),
@@ -103,10 +102,7 @@ func (IncidentTimelineEventTopologyContext) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Field("incident_event_id"),
-		edge.To("knowledge_entity", KnowledgeEntity.Type).
-			Unique().
-			Field("knowledge_entity_id"),
-		edge.To("snapshot_entity", SystemTopologySnapshotEntity.Type).
+		edge.To("snapshot_entity", KnowledgeGraphSnapshotEntity.Type).
 			Unique().
 			Field("snapshot_entity_id"),
 	}

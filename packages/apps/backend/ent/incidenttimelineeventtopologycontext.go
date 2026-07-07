@@ -12,8 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidenttimelineevent"
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
-	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
+	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -26,8 +25,6 @@ type IncidentTimelineEventTopologyContext struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// IncidentEventID holds the value of the "incident_event_id" field.
 	IncidentEventID uuid.UUID `json:"incident_event_id,omitempty"`
-	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
-	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// SnapshotEntityID holds the value of the "snapshot_entity_id" field.
 	SnapshotEntityID *uuid.UUID `json:"snapshot_entity_id,omitempty"`
 	// Relationship holds the value of the "relationship" field.
@@ -46,13 +43,11 @@ type IncidentTimelineEventTopologyContextEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Event holds the value of the event edge.
 	Event *IncidentTimelineEvent `json:"event,omitempty"`
-	// KnowledgeEntity holds the value of the knowledge_entity edge.
-	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// SnapshotEntity holds the value of the snapshot_entity edge.
-	SnapshotEntity *SystemTopologySnapshotEntity `json:"snapshot_entity,omitempty"`
+	SnapshotEntity *KnowledgeGraphSnapshotEntity `json:"snapshot_entity,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -77,24 +72,13 @@ func (e IncidentTimelineEventTopologyContextEdges) EventOrErr() (*IncidentTimeli
 	return nil, &NotLoadedError{edge: "event"}
 }
 
-// KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e IncidentTimelineEventTopologyContextEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
-	if e.KnowledgeEntity != nil {
-		return e.KnowledgeEntity, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: knowledgeentity.Label}
-	}
-	return nil, &NotLoadedError{edge: "knowledge_entity"}
-}
-
 // SnapshotEntityOrErr returns the SnapshotEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e IncidentTimelineEventTopologyContextEdges) SnapshotEntityOrErr() (*SystemTopologySnapshotEntity, error) {
+func (e IncidentTimelineEventTopologyContextEdges) SnapshotEntityOrErr() (*KnowledgeGraphSnapshotEntity, error) {
 	if e.SnapshotEntity != nil {
 		return e.SnapshotEntity, nil
-	} else if e.loadedTypes[3] {
-		return nil, &NotFoundError{label: systemtopologysnapshotentity.Label}
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: knowledgegraphsnapshotentity.Label}
 	}
 	return nil, &NotLoadedError{edge: "snapshot_entity"}
 }
@@ -104,7 +88,7 @@ func (*IncidentTimelineEventTopologyContext) scanValues(columns []string) ([]any
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case incidenttimelineeventtopologycontext.FieldKnowledgeEntityID, incidenttimelineeventtopologycontext.FieldSnapshotEntityID:
+		case incidenttimelineeventtopologycontext.FieldSnapshotEntityID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case incidenttimelineeventtopologycontext.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -146,13 +130,6 @@ func (_m *IncidentTimelineEventTopologyContext) assignValues(columns []string, v
 				return fmt.Errorf("unexpected type %T for field incident_event_id", values[i])
 			} else if value != nil {
 				_m.IncidentEventID = *value
-			}
-		case incidenttimelineeventtopologycontext.FieldKnowledgeEntityID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field knowledge_entity_id", values[i])
-			} else if value.Valid {
-				_m.KnowledgeEntityID = new(uuid.UUID)
-				*_m.KnowledgeEntityID = *value.S.(*uuid.UUID)
 			}
 		case incidenttimelineeventtopologycontext.FieldSnapshotEntityID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -196,13 +173,8 @@ func (_m *IncidentTimelineEventTopologyContext) QueryEvent() *IncidentTimelineEv
 	return NewIncidentTimelineEventTopologyContextClient(_m.config).QueryEvent(_m)
 }
 
-// QueryKnowledgeEntity queries the "knowledge_entity" edge of the IncidentTimelineEventTopologyContext entity.
-func (_m *IncidentTimelineEventTopologyContext) QueryKnowledgeEntity() *KnowledgeEntityQuery {
-	return NewIncidentTimelineEventTopologyContextClient(_m.config).QueryKnowledgeEntity(_m)
-}
-
 // QuerySnapshotEntity queries the "snapshot_entity" edge of the IncidentTimelineEventTopologyContext entity.
-func (_m *IncidentTimelineEventTopologyContext) QuerySnapshotEntity() *SystemTopologySnapshotEntityQuery {
+func (_m *IncidentTimelineEventTopologyContext) QuerySnapshotEntity() *KnowledgeGraphSnapshotEntityQuery {
 	return NewIncidentTimelineEventTopologyContextClient(_m.config).QuerySnapshotEntity(_m)
 }
 
@@ -234,11 +206,6 @@ func (_m *IncidentTimelineEventTopologyContext) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("incident_event_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IncidentEventID))
-	builder.WriteString(", ")
-	if v := _m.KnowledgeEntityID; v != nil {
-		builder.WriteString("knowledge_entity_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
 	builder.WriteString(", ")
 	if v := _m.SnapshotEntityID; v != nil {
 		builder.WriteString("snapshot_entity_id=")

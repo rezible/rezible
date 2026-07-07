@@ -489,6 +489,42 @@ func (f KnowledgeEvidenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEvidenceMutation", m)
 }
 
+// The KnowledgeGraphSnapshotFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeGraphSnapshot mutator.
+type KnowledgeGraphSnapshotFunc func(context.Context, *ent.KnowledgeGraphSnapshotMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KnowledgeGraphSnapshotFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeGraphSnapshotMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeGraphSnapshotMutation", m)
+}
+
+// The KnowledgeGraphSnapshotEntityFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeGraphSnapshotEntity mutator.
+type KnowledgeGraphSnapshotEntityFunc func(context.Context, *ent.KnowledgeGraphSnapshotEntityMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KnowledgeGraphSnapshotEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeGraphSnapshotEntityMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeGraphSnapshotEntityMutation", m)
+}
+
+// The KnowledgeGraphSnapshotRelationshipFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeGraphSnapshotRelationship mutator.
+type KnowledgeGraphSnapshotRelationshipFunc func(context.Context, *ent.KnowledgeGraphSnapshotRelationshipMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KnowledgeGraphSnapshotRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeGraphSnapshotRelationshipMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeGraphSnapshotRelationshipMutation", m)
+}
+
 // The KnowledgeRelationshipFunc type is an adapter to allow the use of ordinary
 // function as KnowledgeRelationship mutator.
 type KnowledgeRelationshipFunc func(context.Context, *ent.KnowledgeRelationshipMutation) (ent.Value, error)
@@ -775,42 +811,6 @@ func (f SystemAnalysisTopologyNodeFunc) Mutate(ctx context.Context, m ent.Mutati
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemAnalysisTopologyNodeMutation", m)
-}
-
-// The SystemTopologySnapshotFunc type is an adapter to allow the use of ordinary
-// function as SystemTopologySnapshot mutator.
-type SystemTopologySnapshotFunc func(context.Context, *ent.SystemTopologySnapshotMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SystemTopologySnapshotFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SystemTopologySnapshotMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemTopologySnapshotMutation", m)
-}
-
-// The SystemTopologySnapshotEntityFunc type is an adapter to allow the use of ordinary
-// function as SystemTopologySnapshotEntity mutator.
-type SystemTopologySnapshotEntityFunc func(context.Context, *ent.SystemTopologySnapshotEntityMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SystemTopologySnapshotEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SystemTopologySnapshotEntityMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemTopologySnapshotEntityMutation", m)
-}
-
-// The SystemTopologySnapshotRelationshipFunc type is an adapter to allow the use of ordinary
-// function as SystemTopologySnapshotRelationship mutator.
-type SystemTopologySnapshotRelationshipFunc func(context.Context, *ent.SystemTopologySnapshotRelationshipMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SystemTopologySnapshotRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SystemTopologySnapshotRelationshipMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemTopologySnapshotRelationshipMutation", m)
 }
 
 // The TaskFunc type is an adapter to allow the use of ordinary
