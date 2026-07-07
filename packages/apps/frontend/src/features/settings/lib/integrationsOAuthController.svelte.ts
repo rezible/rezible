@@ -27,11 +27,13 @@ export class IntegrationOAuthController {
     inFlowForName = $state<string>();
     error = $state<ErrorModel>();
     popup = $state.raw<Window>();
-
+    private clearPopupInterval: VoidFunction | undefined;
     private onSuccess: (res: IntegrationOAuthInstallResult) => void;
+    private onCancel: VoidFunction | undefined;
 
-    constructor(onSuccess: (res: IntegrationOAuthInstallResult) => void) {
+    constructor(onSuccess: (res: IntegrationOAuthInstallResult) => void, onCancel?: () => void) {
         this.onSuccess = onSuccess;
+        this.onCancel = onCancel;
         if (browser) {
             window.addEventListener("message", this.handleOAuthMessage);
             onDestroy(() => window.removeEventListener("message", this.handleOAuthMessage));
@@ -45,10 +47,26 @@ export class IntegrationOAuthController {
         };
     };
 
-    clearFlow() {
+    clearPopup() {
         this.inFlowForName = undefined;
         this.error = undefined;
         this.popup = undefined;
+        this.clearPopupInterval?.();
+    }
+
+    createPopupCloseCheck() {
+        const check = setInterval(() => {
+            if (!!this && this.popup?.closed) {
+                if (!!this.inFlowForName) {
+                    this.onCancel?.();
+                }
+                this.clearPopup();
+            }
+        }, 500);
+        this.clearPopupInterval = () => {
+            clearInterval(check);
+            if (this) this.clearPopupInterval = undefined;
+        };
     }
 
     private startOAuthFlowMut = createMutation(() => ({
@@ -57,8 +75,9 @@ export class IntegrationOAuthController {
 
     async startFlowFor(name: string) {
         if (!browser) return;
+        this.clearPopup();
+
         this.inFlowForName = name;
-        this.error = undefined;
 
         const popup = window.open("about:blank", `rezible-oauth-${name}`, "popup,width=640,height=760");
         if (!popup) {
@@ -68,7 +87,7 @@ export class IntegrationOAuthController {
         }
 
         this.popup = popup;
-
+        this.createPopupCloseCheck();
         try {
             const resp = await this.startOAuthFlowMut.mutateAsync({path: { name }});
             popup.location.assign(new URL(resp.data.flow_url));
@@ -85,15 +104,12 @@ export class IntegrationOAuthController {
         if (event.data?.type !== OAuthMessageType) return;
         if (this.inFlowForName && event.data.name !== this.inFlowForName) return;
 
+        this.clearPopup();
         if (event.data.error) {
             this.error = event.data.error;
         } else if (event.data.result) {
-            this.error = undefined;
             this.onSuccess?.(event.data.result);
         }
-
-        this.popup = undefined;
-        this.inFlowForName = undefined;
     }
 
     inFlow = $derived(this.startOAuthFlowMut.isPending || !!this.inFlowForName);

@@ -2,7 +2,6 @@ package slackagent
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -74,7 +73,7 @@ func (i *Integration) RetrieveInstallationTargetOptions(ctx context.Context, t *
 	return i.appSvc.RetrieveInstallationTargetOptions(ctx, t)
 }
 
-func (i *Integration) ValidateInstallationConfig(cfg json.RawMessage) (rez.IntegrationInstallationConfig, error) {
+func (i *Integration) ValidateInstallationConfig(cfg []byte) (rez.IntegrationInstallationConfig, error) {
 	return slackintegration.GetValidatedConfig(cfg)
 }
 
