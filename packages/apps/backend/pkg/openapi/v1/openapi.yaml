@@ -3109,12 +3109,8 @@ components:
         config:
           additionalProperties: {}
           type: object
-        userSettings:
-          additionalProperties: {}
-          type: object
       required:
         - config
-        - userSettings
       type: object
     InstallIntegrationRequestBody:
       additionalProperties: false
@@ -3231,9 +3227,6 @@ components:
     IntegrationInstallationAttributes:
       additionalProperties: false
       properties:
-        config:
-          additionalProperties: {}
-          type: object
         displayName:
           type: string
         externalRef:
@@ -3242,7 +3235,10 @@ components:
           type: string
         providerName:
           type: string
-        settings:
+        sanitizedConfig:
+          additionalProperties: {}
+          type: object
+        userSettings:
           additionalProperties: {}
           type: object
       required:
@@ -3250,8 +3246,8 @@ components:
         - providerName
         - displayName
         - externalRef
-        - config
-        - settings
+        - sanitizedConfig
+        - userSettings
       type: object
     IntegrationOAuthFlow:
       additionalProperties: false

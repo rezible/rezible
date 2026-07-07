@@ -1,5 +1,4 @@
 import { Context, watch, type Getter } from "runed";
-import { SvelteSet } from "svelte/reactivity";
 import type { Component } from "svelte";
 
 import {
@@ -119,7 +118,6 @@ export class IntegrationProviderConfigController {
 			if (!this.editingInstallation) {
 				const attributes: InstallIntegrationRequestAttributes = {
 					config: this.installConfig,
-					userSettings: this.userSettings,
 				};
 				await this.integrations.installNew(this.editingIntegrationName, attributes);
 			} else {

@@ -1440,9 +1440,6 @@ export type InstallIntegrationRequestAttributes = {
     config: {
         [key: string]: unknown;
     };
-    userSettings: {
-        [key: string]: unknown;
-    };
 };
 
 export type InstallIntegrationRequestBody = {
@@ -1493,14 +1490,14 @@ export type IntegrationInstallation = {
 };
 
 export type IntegrationInstallationAttributes = {
-    config: {
-        [key: string]: unknown;
-    };
     displayName: string;
     externalRef: string;
     integrationName: string;
     providerName: string;
-    settings: {
+    sanitizedConfig: {
+        [key: string]: unknown;
+    };
+    userSettings: {
         [key: string]: unknown;
     };
 };
