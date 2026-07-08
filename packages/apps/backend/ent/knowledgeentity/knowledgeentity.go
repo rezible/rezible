@@ -24,18 +24,14 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
+	// FieldReference holds the string denoting the reference field in the database.
+	FieldReference = "reference"
 	// FieldDisplayName holds the string denoting the display_name field in the database.
 	FieldDisplayName = "display_name"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldFirstObservedAt holds the string denoting the first_observed_at field in the database.
-	FieldFirstObservedAt = "first_observed_at"
-	// FieldLastObservedAt holds the string denoting the last_observed_at field in the database.
-	FieldLastObservedAt = "last_observed_at"
-	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
-	FieldDeletedAt = "deleted_at"
-	// FieldProperties holds the string denoting the properties field in the database.
-	FieldProperties = "properties"
+	// FieldLiveProperties holds the string denoting the live_properties field in the database.
+	FieldLiveProperties = "live_properties"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAliases holds the string denoting the aliases edge name in mutations.
@@ -44,8 +40,6 @@ const (
 	EdgeSourceRelationships = "source_relationships"
 	// EdgeTargetRelationships holds the string denoting the target_relationships edge name in mutations.
 	EdgeTargetRelationships = "target_relationships"
-	// EdgeEvidence holds the string denoting the evidence edge name in mutations.
-	EdgeEvidence = "evidence"
 	// Table holds the table name of the knowledgeentity in the database.
 	Table = "knowledge_entities"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -56,10 +50,10 @@ const (
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
 	// AliasesTable is the table that holds the aliases relation/edge.
-	AliasesTable = "knowledge_entity_alias"
-	// AliasesInverseTable is the table name for the KnowledgeEntityAlias entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentityalias" package.
-	AliasesInverseTable = "knowledge_entity_alias"
+	AliasesTable = "knowledge_subject_alias"
+	// AliasesInverseTable is the table name for the KnowledgeSubjectAlias entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgesubjectalias" package.
+	AliasesInverseTable = "knowledge_subject_alias"
 	// AliasesColumn is the table column denoting the aliases relation/edge.
 	AliasesColumn = "entity_id"
 	// SourceRelationshipsTable is the table that holds the source_relationships relation/edge.
@@ -76,13 +70,6 @@ const (
 	TargetRelationshipsInverseTable = "knowledge_relationships"
 	// TargetRelationshipsColumn is the table column denoting the target_relationships relation/edge.
 	TargetRelationshipsColumn = "target_entity_id"
-	// EvidenceTable is the table that holds the evidence relation/edge.
-	EvidenceTable = "knowledge_evidences"
-	// EvidenceInverseTable is the table name for the KnowledgeEvidence entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeevidence" package.
-	EvidenceInverseTable = "knowledge_evidences"
-	// EvidenceColumn is the table column denoting the evidence relation/edge.
-	EvidenceColumn = "entity_id"
 )
 
 // Columns holds all SQL columns for knowledgeentity fields.
@@ -92,12 +79,10 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldKind,
+	FieldReference,
 	FieldDisplayName,
 	FieldDescription,
-	FieldFirstObservedAt,
-	FieldLastObservedAt,
-	FieldDeletedAt,
-	FieldProperties,
+	FieldLiveProperties,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -126,8 +111,10 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// KindValidator is a validator for the "kind" field. It is called by the builders before save.
 	KindValidator func(string) error
-	// DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
-	DisplayNameValidator func(string) error
+	// ReferenceValidator is a validator for the "reference" field. It is called by the builders before save.
+	ReferenceValidator func(string) error
+	// DefaultLiveProperties holds the default value on creation for the "live_properties" field.
+	DefaultLiveProperties map[string]interface{}
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -160,6 +147,11 @@ func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
+// ByReference orders the results by the reference field.
+func ByReference(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReference, opts...).ToFunc()
+}
+
 // ByDisplayName orders the results by the display_name field.
 func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDisplayName, opts...).ToFunc()
@@ -168,21 +160,6 @@ func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
-}
-
-// ByFirstObservedAt orders the results by the first_observed_at field.
-func ByFirstObservedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldFirstObservedAt, opts...).ToFunc()
-}
-
-// ByLastObservedAt orders the results by the last_observed_at field.
-func ByLastObservedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLastObservedAt, opts...).ToFunc()
-}
-
-// ByDeletedAt orders the results by the deleted_at field.
-func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDeletedAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -233,20 +210,6 @@ func ByTargetRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOpti
 		sqlgraph.OrderByNeighborTerms(s, newTargetRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByEvidenceCount orders the results by evidence count.
-func ByEvidenceCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newEvidenceStep(), opts...)
-	}
-}
-
-// ByEvidence orders the results by evidence terms.
-func ByEvidence(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEvidenceStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -273,12 +236,5 @@ func newTargetRelationshipsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TargetRelationshipsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, TargetRelationshipsTable, TargetRelationshipsColumn),
-	)
-}
-func newEvidenceStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EvidenceInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, EvidenceTable, EvidenceColumn),
 	)
 }

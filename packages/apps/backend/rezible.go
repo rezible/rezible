@@ -19,6 +19,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/rezible/rezible/ent"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -134,8 +135,13 @@ type (
 		ProcessProviderEvent(context.Context, ProviderEvent) (ent.NormalizedEvents, error)
 	}
 
+	ProjectedDomainEntityRef struct {
+		Kind string
+		Id   uuid.UUID
+	}
+
 	NormalizedEventProjector interface {
-		HandleEventProjection(context.Context, *ent.NormalizedEvent) (map[string][]uuid.UUID, error)
+		HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]ProjectedDomainEntityRef, error)
 	}
 
 	ProviderEventSyncResult struct {
@@ -303,64 +309,82 @@ type (
 )
 
 type (
-	ProjectedKnowledgeEntity struct {
-		IsPlaceholder     bool
-		Kind              string
-		DisplayName       string
-		Description       string
-		Properties        map[string]any
-		AliasRefs         []ent.KnowledgeEntityAliasRef
-		EvidenceAssertion string
+	//ProjectedKnowledgeEntity struct {
+	//	IsPlaceholder     bool
+	//	Kind              string
+	//	DisplayName       string
+	//	Description       string
+	//	Properties        map[string]any
+	//	AliasRefs         []ent.KnowledgeSubjectAliasRef
+	//	EvidenceAssertion string
+	//}
+	//
+	//ProjectedKnowledgeRelationship struct {
+	//	Kind              string
+	//	DisplayName       string
+	//	Description       string
+	//	Properties        map[string]any
+	//	FromAliasRef      ent.KnowledgeSubjectAliasRef
+	//	ToAliasRef        ent.KnowledgeSubjectAliasRef
+	//	EvidenceAssertion string
+	//}
+
+	ProjectedKnowledgeEvidence struct {
+		Kind         ke.EvidenceKind
+		Assertion    string
+		EffectiveAt  time.Time
+		Properties   map[string]any
+		SubjectAlias ProjectedKnowledgeEvidenceSubjectAlias
 	}
 
-	ProjectedKnowledgeRelationship struct {
-		Kind              string
-		DisplayName       string
-		Description       string
-		Properties        map[string]any
-		FromAliasRef      ent.KnowledgeEntityAliasRef
-		ToAliasRef        ent.KnowledgeEntityAliasRef
-		EvidenceAssertion string
+	ProjectedKnowledgeEvidenceSubjectAlias struct {
+		Description            string
+		AliasRef               ent.KnowledgeSubjectAliasRef
+		SubjectEntityRef       *ent.KnowledgeEntityRef
+		SubjectRelationshipRef *ent.KnowledgeRelationshipRef
 	}
 
-	KnowledgeService interface {
-		GetEntity(context.Context, predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error)
-		SetEntity(context.Context, uuid.UUID, func(*ent.KnowledgeEntityMutation)) (*ent.KnowledgeEntity, error)
-		LookupEntityIDFromAliasRefs(ctx context.Context, refs ...ent.KnowledgeEntityAliasRef) (uuid.UUID, error)
+	//ProjectedKnowledgeEvidenceSubjectAlias struct {
+	//	Kind               ksa.SubjectKind
+	//	Provider           string
+	//	ProviderSubjectRef string
+	//	DisplayName        string
+	//	Description        string
+	//
+	//	SubjectEntityRef       *ent.KnowledgeEntityRef
+	//	SubjectRelationshipRef *ent.KnowledgeRelationshipRef
+	//}
 
-		ResolveProjectedEntity(context.Context, *ent.NormalizedEvent, ProjectedKnowledgeEntity) (uuid.UUID, error)
-		ResolveProjectedRelationship(context.Context, *ent.NormalizedEvent, ProjectedKnowledgeRelationship) (uuid.UUID, error)
+	KnowledgeFactService interface {
+		IngestProjectedEventEvidence(context.Context, *ent.NormalizedEvent, []ProjectedKnowledgeEvidence) error
+		LookupEntityIdByAliasRefs(context.Context, ...ent.KnowledgeSubjectAliasRef) (uuid.UUID, error)
 
-		GetEntityAlias(context.Context, predicate.KnowledgeEntityAlias) (*ent.KnowledgeEntityAlias, error)
-		SetEntityAlias(context.Context, uuid.UUID, func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error)
+		//ResolveProjectedEntity(context.Context, *ent.NormalizedEvent, ProjectedKnowledgeEntity) (uuid.UUID, error)
+		//ResolveProjectedRelationship(context.Context, *ent.NormalizedEvent, ProjectedKnowledgeRelationship) (uuid.UUID, error)
 
-		GetRelationship(context.Context, predicate.KnowledgeRelationship) (*ent.KnowledgeRelationship, error)
-		SetRelationship(context.Context, uuid.UUID, func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error)
+		//GetEntity(context.Context, predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error)
+		//SetEntity(context.Context, uuid.UUID, func(*ent.KnowledgeEntityMutation)) (*ent.KnowledgeEntity, error)
+		//
+		//GetRelationship(context.Context, predicate.KnowledgeRelationship) (*ent.KnowledgeRelationship, error)
+		//SetRelationship(context.Context, uuid.UUID, func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error)
 
-		AddEvidence(context.Context, ...*ent.KnowledgeEvidenceCreate) ([]*ent.KnowledgeEvidence, error)
+		//GetSubjectAlias(context.Context, predicate.KnowledgeSubjectAlias) (*ent.KnowledgeSubjectAlias, error)
+		//SetSubjectAlias(context.Context, uuid.UUID, func(*ent.KnowledgeSubjectAliasMutation)) (*ent.KnowledgeSubjectAlias, error)
 	}
 )
 
 type (
-	ListSystemTopologyEntitiesParams struct {
+	ListKnowledgeGraphEntitiesParams struct {
 		ent.ListParams
-		Kinds []string
+		Predicates []predicate.KnowledgeEntity
 	}
 
-	ListSystemTopologyRelationshipsParams struct {
+	ListKnowledgeGraphRelationshipsParams struct {
 		ent.ListParams
-		Kinds          []string
-		EntityID       uuid.UUID
-		SourceEntityID uuid.UUID
-		TargetEntityID uuid.UUID
+		Predicates []predicate.KnowledgeRelationship
 	}
 
-	SystemTopologyNeighborhoodParams struct {
-		Depth             int
-		RelationshipKinds []string
-	}
-
-	CreateSystemTopologySnapshotParams struct {
+	CreateKnowledgeGraphSnapshotParams struct {
 		Name              string
 		AsOf              time.Time
 		Scope             string
@@ -370,24 +394,26 @@ type (
 		Depth             int
 		EntityKinds       []string
 		RelationshipKinds []string
-		IncludeIncidents  bool
-		IncludeChanges    bool
-		IncludeAlerts     bool
 	}
 
-	SystemTopologyGraph struct {
-		Entities      []*ent.KnowledgeEntity
-		Relationships []*ent.KnowledgeRelationship
+	GetKnowledgeGraphViewParams struct {
+		Depth             int
+		RelationshipKinds []string
 	}
 
-	SystemTopologyService interface {
-		ListEntities(context.Context, ListSystemTopologyEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
+	KnowledgeGraphView struct {
+		Entities      ent.KnowledgeEntities
+		Relationships ent.KnowledgeRelationships
+	}
+
+	KnowledgeGraphService interface {
+		ListEntities(context.Context, ListKnowledgeGraphEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
 		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
-		GetNeighborhood(context.Context, uuid.UUID, SystemTopologyNeighborhoodParams) (*SystemTopologyGraph, error)
-		ListRelationships(context.Context, ListSystemTopologyRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
+		GetView(context.Context, uuid.UUID, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
+		ListRelationships(context.Context, ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
 
-		CreateSnapshot(context.Context, CreateSystemTopologySnapshotParams) (*ent.SystemTopologySnapshot, error)
-		GetSnapshot(context.Context, uuid.UUID) (*ent.SystemTopologySnapshot, error)
+		CreateSnapshot(context.Context, CreateKnowledgeGraphSnapshotParams) (*ent.KnowledgeGraphSnapshot, error)
+		GetSnapshot(context.Context, uuid.UUID) (*ent.KnowledgeGraphSnapshot, error)
 	}
 )
 
@@ -536,24 +562,12 @@ type (
 		OpenedBefore time.Time
 	}
 
-	IncidentImpactInput struct {
-		KnowledgeEntityID uuid.UUID
-		Kind              string
-		DisplayName       string
-		Description       string
-		Source            string
-		Note              string
-	}
-
 	IncidentService interface {
 		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[ent.Incident], error)
 		Query(context.Context, predicate.Incident, func(*ent.IncidentQuery)) (*ent.Incident, error)
 		Get(context.Context, predicate.Incident) (*ent.Incident, error)
 		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation)) (*ent.Incident, error)
 		Archive(context.Context, uuid.UUID) error
-
-		ListIncidentImpacts(context.Context, uuid.UUID) ([]*ent.IncidentImpact, error)
-		SetIncidentImpacts(context.Context, uuid.UUID, []IncidentImpactInput) ([]*ent.IncidentImpact, error)
 
 		GetIncidentMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
 		SetIncidentMilestone(context.Context, uuid.UUID, func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)

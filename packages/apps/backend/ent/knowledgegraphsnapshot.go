@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -23,10 +24,12 @@ type KnowledgeGraphSnapshot struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// AsOf holds the value of the "as_of" field.
 	AsOf time.Time `json:"as_of,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// ScopeKind holds the value of the "scope_kind" field.
+	ScopeKind string `json:"scope_kind,omitempty"`
+	// ScopeProperties holds the value of the "scope_properties" field.
+	ScopeProperties map[string]interface{} `json:"scope_properties,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeGraphSnapshotQuery when eager-loading is set.
 	Edges        KnowledgeGraphSnapshotEdges `json:"edges"`
@@ -37,12 +40,12 @@ type KnowledgeGraphSnapshot struct {
 type KnowledgeGraphSnapshotEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// SystemAnalyses holds the value of the system_analyses edge.
-	SystemAnalyses []*SystemAnalysis `json:"system_analyses,omitempty"`
 	// Entities holds the value of the entities edge.
 	Entities []*KnowledgeGraphSnapshotEntity `json:"entities,omitempty"`
 	// Relationships holds the value of the relationships edge.
 	Relationships []*KnowledgeGraphSnapshotRelationship `json:"relationships,omitempty"`
+	// SystemAnalyses holds the value of the system_analyses edge.
+	SystemAnalyses []*SystemAnalysis `json:"system_analyses,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -59,19 +62,10 @@ func (e KnowledgeGraphSnapshotEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// SystemAnalysesOrErr returns the SystemAnalyses value or an error if the edge
-// was not loaded in eager-loading.
-func (e KnowledgeGraphSnapshotEdges) SystemAnalysesOrErr() ([]*SystemAnalysis, error) {
-	if e.loadedTypes[1] {
-		return e.SystemAnalyses, nil
-	}
-	return nil, &NotLoadedError{edge: "system_analyses"}
-}
-
 // EntitiesOrErr returns the Entities value or an error if the edge
 // was not loaded in eager-loading.
 func (e KnowledgeGraphSnapshotEdges) EntitiesOrErr() ([]*KnowledgeGraphSnapshotEntity, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Entities, nil
 	}
 	return nil, &NotLoadedError{edge: "entities"}
@@ -80,10 +74,19 @@ func (e KnowledgeGraphSnapshotEdges) EntitiesOrErr() ([]*KnowledgeGraphSnapshotE
 // RelationshipsOrErr returns the Relationships value or an error if the edge
 // was not loaded in eager-loading.
 func (e KnowledgeGraphSnapshotEdges) RelationshipsOrErr() ([]*KnowledgeGraphSnapshotRelationship, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Relationships, nil
 	}
 	return nil, &NotLoadedError{edge: "relationships"}
+}
+
+// SystemAnalysesOrErr returns the SystemAnalyses value or an error if the edge
+// was not loaded in eager-loading.
+func (e KnowledgeGraphSnapshotEdges) SystemAnalysesOrErr() ([]*SystemAnalysis, error) {
+	if e.loadedTypes[3] {
+		return e.SystemAnalyses, nil
+	}
+	return nil, &NotLoadedError{edge: "system_analyses"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -91,9 +94,11 @@ func (*KnowledgeGraphSnapshot) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case knowledgegraphsnapshot.FieldScopeProperties:
+			values[i] = new([]byte)
 		case knowledgegraphsnapshot.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgegraphsnapshot.FieldName:
+		case knowledgegraphsnapshot.FieldScopeKind:
 			values[i] = new(sql.NullString)
 		case knowledgegraphsnapshot.FieldAsOf, knowledgegraphsnapshot.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -132,17 +137,25 @@ func (_m *KnowledgeGraphSnapshot) assignValues(columns []string, values []any) e
 			} else if value.Valid {
 				_m.AsOf = value.Time
 			}
-		case knowledgegraphsnapshot.FieldName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
-			} else if value.Valid {
-				_m.Name = value.String
-			}
 		case knowledgegraphsnapshot.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
+			}
+		case knowledgegraphsnapshot.FieldScopeKind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field scope_kind", values[i])
+			} else if value.Valid {
+				_m.ScopeKind = value.String
+			}
+		case knowledgegraphsnapshot.FieldScopeProperties:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field scope_properties", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.ScopeProperties); err != nil {
+					return fmt.Errorf("unmarshal field scope_properties: %w", err)
+				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -162,11 +175,6 @@ func (_m *KnowledgeGraphSnapshot) QueryTenant() *TenantQuery {
 	return NewKnowledgeGraphSnapshotClient(_m.config).QueryTenant(_m)
 }
 
-// QuerySystemAnalyses queries the "system_analyses" edge of the KnowledgeGraphSnapshot entity.
-func (_m *KnowledgeGraphSnapshot) QuerySystemAnalyses() *SystemAnalysisQuery {
-	return NewKnowledgeGraphSnapshotClient(_m.config).QuerySystemAnalyses(_m)
-}
-
 // QueryEntities queries the "entities" edge of the KnowledgeGraphSnapshot entity.
 func (_m *KnowledgeGraphSnapshot) QueryEntities() *KnowledgeGraphSnapshotEntityQuery {
 	return NewKnowledgeGraphSnapshotClient(_m.config).QueryEntities(_m)
@@ -175,6 +183,11 @@ func (_m *KnowledgeGraphSnapshot) QueryEntities() *KnowledgeGraphSnapshotEntityQ
 // QueryRelationships queries the "relationships" edge of the KnowledgeGraphSnapshot entity.
 func (_m *KnowledgeGraphSnapshot) QueryRelationships() *KnowledgeGraphSnapshotRelationshipQuery {
 	return NewKnowledgeGraphSnapshotClient(_m.config).QueryRelationships(_m)
+}
+
+// QuerySystemAnalyses queries the "system_analyses" edge of the KnowledgeGraphSnapshot entity.
+func (_m *KnowledgeGraphSnapshot) QuerySystemAnalyses() *SystemAnalysisQuery {
+	return NewKnowledgeGraphSnapshotClient(_m.config).QuerySystemAnalyses(_m)
 }
 
 // Update returns a builder for updating this KnowledgeGraphSnapshot.
@@ -206,11 +219,14 @@ func (_m *KnowledgeGraphSnapshot) String() string {
 	builder.WriteString("as_of=")
 	builder.WriteString(_m.AsOf.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("name=")
-	builder.WriteString(_m.Name)
-	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("scope_kind=")
+	builder.WriteString(_m.ScopeKind)
+	builder.WriteString(", ")
+	builder.WriteString("scope_properties=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ScopeProperties))
 	builder.WriteByte(')')
 	return builder.String()
 }

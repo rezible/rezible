@@ -151,39 +151,6 @@ var demoChatMessageEvents = []chatMessageObservedPayload{
 	},
 }
 
-type playbookObservedPayload struct {
-	ExternalID               string    `json:"external_id"`
-	Title                    string    `json:"title"`
-	Content                  string    `json:"content"`
-	UpdatedAt                time.Time `json:"updated_at"`
-	RelatedAlertExternalRefs []string  `json:"related_alert_external_refs,omitempty"`
-}
-
-func (p playbookObservedPayload) getEventRef() string {
-	return "demo:playbooks:" + p.ExternalID
-}
-
-func (p playbookObservedPayload) getSubjectRef() string {
-	return "demo:playbook:" + p.ExternalID
-}
-
-func (p playbookObservedPayload) toEvent() (*rez.ProviderEvent, error) {
-	return payloadToEvent(sourcePlaybooks, p.getEventRef(), p.getSubjectRef(), p.UpdatedAt, p)
-}
-
-var demoPlaybookEvents = []playbookObservedPayload{
-	{
-		ExternalID: "checkout-search-latency",
-		Title:      "Checkout search latency triage",
-		Content:    "Check Search API p95 latency, Elasticsearch CPU, retry volume, and rollback PR #1842 if retry amplification continues.",
-		UpdatedAt:  demoObservedAt,
-		RelatedAlertExternalRefs: []string{
-			"demo:alert:search-api-latency",
-			"demo:alert:elasticsearch-cpu-critical",
-		},
-	},
-}
-
 type incidentImpactObservedPayload struct {
 	ExternalID          string    `json:"external_id"`
 	IncidentExternalRef string    `json:"incident_external_ref"`
@@ -299,10 +266,6 @@ func (q *eventQuerier) pullCodeChangeEvents(cursor string) iter.Seq2[*rez.Provid
 
 func (q *eventQuerier) pullChatMessageEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return pullPayloadEvents(demoChatMessageEvents, cursor)
-}
-
-func (q *eventQuerier) pullPlaybookEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
-	return pullPayloadEvents(demoPlaybookEvents, cursor)
 }
 
 func (q *eventQuerier) pullIncidentImpactEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {

@@ -90,8 +90,6 @@ type Tx struct {
 	IntegrationUserInstallState *IntegrationUserInstallStateClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
 	KnowledgeEntity *KnowledgeEntityClient
-	// KnowledgeEntityAlias is the client for interacting with the KnowledgeEntityAlias builders.
-	KnowledgeEntityAlias *KnowledgeEntityAliasClient
 	// KnowledgeEvidence is the client for interacting with the KnowledgeEvidence builders.
 	KnowledgeEvidence *KnowledgeEvidenceClient
 	// KnowledgeGraphSnapshot is the client for interacting with the KnowledgeGraphSnapshot builders.
@@ -102,6 +100,8 @@ type Tx struct {
 	KnowledgeGraphSnapshotRelationship *KnowledgeGraphSnapshotRelationshipClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
 	KnowledgeRelationship *KnowledgeRelationshipClient
+	// KnowledgeSubjectAlias is the client for interacting with the KnowledgeSubjectAlias builders.
+	KnowledgeSubjectAlias *KnowledgeSubjectAliasClient
 	// MeetingSchedule is the client for interacting with the MeetingSchedule builders.
 	MeetingSchedule *MeetingScheduleClient
 	// MeetingSession is the client for interacting with the MeetingSession builders.
@@ -334,12 +334,12 @@ func (tx *Tx) init() {
 	tx.IntegrationEventSyncRun = NewIntegrationEventSyncRunClient(tx.config)
 	tx.IntegrationUserInstallState = NewIntegrationUserInstallStateClient(tx.config)
 	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
-	tx.KnowledgeEntityAlias = NewKnowledgeEntityAliasClient(tx.config)
 	tx.KnowledgeEvidence = NewKnowledgeEvidenceClient(tx.config)
 	tx.KnowledgeGraphSnapshot = NewKnowledgeGraphSnapshotClient(tx.config)
 	tx.KnowledgeGraphSnapshotEntity = NewKnowledgeGraphSnapshotEntityClient(tx.config)
 	tx.KnowledgeGraphSnapshotRelationship = NewKnowledgeGraphSnapshotRelationshipClient(tx.config)
 	tx.KnowledgeRelationship = NewKnowledgeRelationshipClient(tx.config)
+	tx.KnowledgeSubjectAlias = NewKnowledgeSubjectAliasClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
 	tx.NormalizedEvent = NewNormalizedEventClient(tx.config)

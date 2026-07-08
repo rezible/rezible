@@ -8,300 +8,278 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
-type SystemTopologyHandler interface {
-	ListSystemTopologyEntities(context.Context, *ListSystemTopologyEntitiesRequest) (*ListSystemTopologyEntitiesResponse, error)
-	GetSystemTopologyEntity(context.Context, *GetSystemTopologyEntityRequest) (*GetSystemTopologyEntityResponse, error)
-	GetSystemTopologyEntityNeighborhood(context.Context, *GetSystemTopologyEntityNeighborhoodRequest) (*GetSystemTopologyEntityNeighborhoodResponse, error)
-	ListSystemTopologyRelationships(context.Context, *ListSystemTopologyRelationshipsRequest) (*ListSystemTopologyRelationshipsResponse, error)
-	CreateSystemTopologySnapshot(context.Context, *CreateSystemTopologySnapshotRequest) (*CreateSystemTopologySnapshotResponse, error)
-	GetSystemTopologySnapshot(context.Context, *GetSystemTopologySnapshotRequest) (*GetSystemTopologySnapshotResponse, error)
+type KnowledgeGraphHandler interface {
+	ListKnowledgeGraphEntities(context.Context, *ListKnowledgeGraphEntitiesRequest) (*ListKnowledgeGraphEntitiesResponse, error)
+	ListKnowledgeGraphRelationships(context.Context, *ListKnowledgeGraphRelationshipsRequest) (*ListKnowledgeGraphRelationshipsResponse, error)
+	GetKnowledgeGraphEntity(context.Context, *GetKnowledgeGraphEntityRequest) (*GetKnowledgeGraphEntityResponse, error)
+	CreateKnowledgeGraphSnapshot(context.Context, *CreateKnowledgeGraphSnapshotRequest) (*CreateKnowledgeGraphSnapshotResponse, error)
+	GetKnowledgeGraphSnapshot(context.Context, *GetKnowledgeGraphSnapshotRequest) (*GetKnowledgeGraphSnapshotResponse, error)
 }
 
-func (o operations) RegisterSystemTopology(api huma.API) {
-	huma.Register(api, ListSystemTopologyEntities, o.ListSystemTopologyEntities)
-	huma.Register(api, GetSystemTopologyEntity, o.GetSystemTopologyEntity)
-	huma.Register(api, GetSystemTopologyEntityNeighborhood, o.GetSystemTopologyEntityNeighborhood)
-	huma.Register(api, ListSystemTopologyRelationships, o.ListSystemTopologyRelationships)
-	huma.Register(api, CreateSystemTopologySnapshot, o.CreateSystemTopologySnapshot)
-	huma.Register(api, GetSystemTopologySnapshot, o.GetSystemTopologySnapshot)
+func (o operations) RegisterKnowledgeGraph(api huma.API) {
+	huma.Register(api, ListKnowledgeGraphEntities, o.ListKnowledgeGraphEntities)
+	huma.Register(api, ListKnowledgeGraphRelationships, o.ListKnowledgeGraphRelationships)
+	huma.Register(api, GetKnowledgeGraphEntity, o.GetKnowledgeGraphEntity)
+	huma.Register(api, CreateKnowledgeGraphSnapshot, o.CreateKnowledgeGraphSnapshot)
+	huma.Register(api, GetKnowledgeGraphSnapshot, o.GetKnowledgeGraphSnapshot)
 }
 
 type (
-	SystemTopologyEntity struct {
+	KnowledgeGraphView struct {
+		Entities      []KnowledgeGraphEntity       `json:"entities"`
+		Relationships []KnowledgeGraphRelationship `json:"relationships"`
+	}
+
+	KnowledgeGraphEntity struct {
 		Id         uuid.UUID                      `json:"id"`
-		Attributes SystemTopologyEntityAttributes `json:"attributes"`
+		Attributes KnowledgeGraphEntityAttributes `json:"attributes"`
 	}
-	SystemTopologyEntityAttributes struct {
-		Kind          string                       `json:"kind"`
-		DisplayName   string                       `json:"displayName"`
-		Description   string                       `json:"description"`
-		Properties    map[string]any               `json:"properties"`
-		Aliases       []SystemTopologyEntityAlias  `json:"aliases"`
-		Relationships []SystemTopologyRelationship `json:"relationships,omitempty"`
-		CreatedAt     time.Time                    `json:"createdAt"`
-		UpdatedAt     time.Time                    `json:"updatedAt"`
-	}
-	SystemTopologyEntityAlias struct {
-		Id             uuid.UUID `json:"id"`
-		Provider       string    `json:"provider"`
-		ProviderSource string    `json:"providerSource"`
-		SubjectKind    string    `json:"subjectKind"`
-		SubjectRef     string    `json:"subjectRef"`
-		FirstSeenAt    time.Time `json:"firstSeenAt"`
-		LastSeenAt     time.Time `json:"lastSeenAt"`
+	KnowledgeGraphEntityAttributes struct {
+		Kind        string                       `json:"kind"`
+		DisplayName string                       `json:"displayName"`
+		Description string                       `json:"description"`
+		Properties  map[string]any               `json:"properties"`
+		Aliases     []KnowledgeGraphSubjectAlias `json:"aliases"`
+		CreatedAt   time.Time                    `json:"createdAt"`
+		UpdatedAt   time.Time                    `json:"updatedAt"`
 	}
 
-	SystemTopologyRelationship struct {
+	KnowledgeGraphRelationship struct {
 		Id         uuid.UUID                            `json:"id"`
-		Attributes SystemTopologyRelationshipAttributes `json:"attributes"`
+		Attributes KnowledgeGraphRelationshipAttributes `json:"attributes"`
 	}
-	SystemTopologyRelationshipAttributes struct {
-		SourceEntityId uuid.UUID             `json:"sourceEntityId"`
-		TargetEntityId uuid.UUID             `json:"targetEntityId"`
-		Kind           string                `json:"kind"`
-		DisplayName    string                `json:"displayName"`
-		Description    string                `json:"description"`
-		Properties     map[string]any        `json:"properties"`
-		Source         *SystemTopologyEntity `json:"source,omitempty"`
-		Target         *SystemTopologyEntity `json:"target,omitempty"`
-		FirstSeenAt    time.Time             `json:"firstSeenAt"`
-		LastSeenAt     time.Time             `json:"lastSeenAt"`
-		CreatedAt      time.Time             `json:"createdAt"`
-		UpdatedAt      time.Time             `json:"updatedAt"`
+	KnowledgeGraphRelationshipAttributes struct {
+		Source      Expandable[KnowledgeGraphEntityAttributes] `json:"source"`
+		Target      Expandable[KnowledgeGraphEntityAttributes] `json:"target"`
+		Kind        string                                     `json:"kind"`
+		DisplayName string                                     `json:"displayName"`
+		Description string                                     `json:"description"`
+		Properties  map[string]any                             `json:"properties"`
+		FirstSeenAt time.Time                                  `json:"firstSeenAt"`
+		LastSeenAt  time.Time                                  `json:"lastSeenAt"`
+		CreatedAt   time.Time                                  `json:"createdAt"`
+		UpdatedAt   time.Time                                  `json:"updatedAt"`
 	}
 
-	SystemTopologyGraph struct {
-		Entities      []SystemTopologyEntity       `json:"entities"`
-		Relationships []SystemTopologyRelationship `json:"relationships"`
+	KnowledgeGraphSubjectAlias struct {
+		Id         uuid.UUID                            `json:"id"`
+		Attributes KnowledgeGraphSubjectAliasAttributes `json:"attributes"`
 	}
 
-	SystemTopologySnapshot struct {
+	KnowledgeGraphSubjectAliasAttributes struct {
+		Kind               string `json:"kind" enum:"entity,relationship"`
+		Provider           string `json:"provider"`
+		ProviderSubjectRef string `json:"providerSubjectRef"`
+		Description        string `json:"displayName"`
+	}
+
+	KnowledgeGraphSnapshot struct {
 		Id         uuid.UUID                        `json:"id"`
-		Attributes SystemTopologySnapshotAttributes `json:"attributes"`
+		Attributes KnowledgeGraphSnapshotAttributes `json:"attributes"`
 	}
-	SystemTopologySnapshotAttributes struct {
-		Name            string                               `json:"name"`
+	KnowledgeGraphSnapshotAttributes struct {
 		AsOf            time.Time                            `json:"asOf"`
+		CreatedAt       time.Time                            `json:"createdAt"`
 		Scope           string                               `json:"scope"`
 		ScopeProperties map[string]any                       `json:"scopeProperties"`
-		Entities        []SystemTopologySnapshotEntity       `json:"entities"`
-		Relationships   []SystemTopologySnapshotRelationship `json:"relationships"`
-		CreatedAt       time.Time                            `json:"createdAt"`
+		Entities        []KnowledgeGraphSnapshotEntity       `json:"entities"`
+		Relationships   []KnowledgeGraphSnapshotRelationship `json:"relationships"`
 	}
-	SystemTopologySnapshotEntity struct {
+	KnowledgeGraphSnapshotEntity struct {
 		Id         uuid.UUID                              `json:"id"`
-		Attributes SystemTopologySnapshotEntityAttributes `json:"attributes"`
+		Attributes KnowledgeGraphSnapshotEntityAttributes `json:"attributes"`
 	}
-	SystemTopologySnapshotEntityAttributes struct {
-		KnowledgeEntityId *uuid.UUID       `json:"knowledgeEntityId,omitempty"`
-		Kind              string           `json:"kind"`
-		DisplayName       string           `json:"displayName"`
-		Description       string           `json:"description"`
-		Properties        map[string]any   `json:"properties"`
-		Aliases           []map[string]any `json:"aliases"`
+	KnowledgeGraphSnapshotEntityAttributes struct {
+		EntityId    *uuid.UUID     `json:"entityId,omitempty"`
+		Kind        string         `json:"kind"`
+		DisplayName string         `json:"displayName"`
+		Description string         `json:"description"`
+		Properties  map[string]any `json:"properties"`
 	}
-	SystemTopologySnapshotRelationship struct {
+	KnowledgeGraphSnapshotRelationship struct {
 		Id         uuid.UUID                                    `json:"id"`
-		Attributes SystemTopologySnapshotRelationshipAttributes `json:"attributes"`
+		Attributes KnowledgeGraphSnapshotRelationshipAttributes `json:"attributes"`
 	}
-	SystemTopologySnapshotRelationshipAttributes struct {
-		KnowledgeRelationshipId *uuid.UUID     `json:"knowledgeRelationshipId,omitempty"`
-		SourceSnapshotEntityId  uuid.UUID      `json:"sourceSnapshotEntityId"`
-		TargetSnapshotEntityId  uuid.UUID      `json:"targetSnapshotEntityId"`
-		Kind                    string         `json:"kind"`
-		DisplayName             string         `json:"displayName"`
-		Description             string         `json:"description"`
-		Properties              map[string]any `json:"properties"`
+	KnowledgeGraphSnapshotRelationshipAttributes struct {
+		RelationshipId         *uuid.UUID     `json:"relationshipId,omitempty"`
+		SourceSnapshotEntityId uuid.UUID      `json:"sourceSnapshotEntityId"`
+		TargetSnapshotEntityId uuid.UUID      `json:"targetSnapshotEntityId"`
+		Kind                   string         `json:"kind"`
+		DisplayName            string         `json:"displayName"`
+		Description            string         `json:"description"`
+		Properties             map[string]any `json:"properties"`
 	}
 )
 
-func SystemTopologyEntityFromEnt(entity *ent.KnowledgeEntity) SystemTopologyEntity {
-	attr := SystemTopologyEntityAttributes{
+func KnowledgeGraphEntityFromEnt(entity *ent.KnowledgeEntity) KnowledgeGraphEntity {
+	attr := KnowledgeGraphEntityAttributes{
 		Kind:        entity.Kind,
 		DisplayName: entity.DisplayName,
 		Description: entity.Description,
-		Properties:  entity.Properties,
+		Properties:  entity.LiveProperties,
 		CreatedAt:   entity.CreatedAt,
 		UpdatedAt:   entity.UpdatedAt,
 	}
 
-	attr.Aliases = make([]SystemTopologyEntityAlias, len(entity.Edges.Aliases))
+	attr.Aliases = make([]KnowledgeGraphSubjectAlias, len(entity.Edges.Aliases))
 	for i, alias := range entity.Edges.Aliases {
-		attr.Aliases[i] = SystemTopologyEntityAliasFromEnt(alias)
+		attr.Aliases[i] = KnowledgeGraphSubjectAliasFromEnt(alias)
 	}
 
-	numSourceRels := len(entity.Edges.SourceRelationships)
-	attr.Relationships = make([]SystemTopologyRelationship, numSourceRels+len(entity.Edges.TargetRelationships))
-	for i, rel := range entity.Edges.SourceRelationships {
-		attr.Relationships[i] = SystemTopologyRelationshipFromEnt(rel)
-	}
-	for i, rel := range entity.Edges.TargetRelationships {
-		attr.Relationships[numSourceRels+i] = SystemTopologyRelationshipFromEnt(rel)
-	}
-
-	return SystemTopologyEntity{Id: entity.ID, Attributes: attr}
+	return KnowledgeGraphEntity{Id: entity.ID, Attributes: attr}
 }
 
-func SystemTopologyEntityAliasFromEnt(alias *ent.KnowledgeEntityAlias) SystemTopologyEntityAlias {
-	return SystemTopologyEntityAlias{
-		Id: alias.ID,
-		//Provider:       alias.Provider,
-		//ProviderSource: alias.ProviderSource,
-		//SubjectKind:    alias.SubjectKind,
-		//SubjectRef:     alias.SubjectRef,
-		//FirstSeenAt:    alias.FirstSeenAt,
-		//LastSeenAt:     alias.LastSeenAt,
+func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) KnowledgeGraphSubjectAlias {
+	attrs := KnowledgeGraphSubjectAliasAttributes{
+		Description:        alias.Description,
+		Provider:           alias.Provider,
+		ProviderSubjectRef: alias.ProviderSubjectRef,
 	}
+	return KnowledgeGraphSubjectAlias{Id: alias.ID, Attributes: attrs}
 }
 
-func SystemTopologyRelationshipFromEnt(rel *ent.KnowledgeRelationship) SystemTopologyRelationship {
-	attr := SystemTopologyRelationshipAttributes{
-		SourceEntityId: rel.SourceEntityID,
-		TargetEntityId: rel.TargetEntityID,
-		Kind:           rel.Kind,
-		DisplayName:    rel.DisplayName,
-		Description:    rel.Description,
-		Properties:     rel.Properties,
-		CreatedAt:      rel.CreatedAt,
-		UpdatedAt:      rel.UpdatedAt,
+func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) KnowledgeGraphRelationship {
+	attr := KnowledgeGraphRelationshipAttributes{
+		Kind:        rel.Kind,
+		Description: rel.Description,
+		Properties:  rel.Properties,
+		CreatedAt:   rel.CreatedAt,
+		UpdatedAt:   rel.UpdatedAt,
+		Source:      Expandable[KnowledgeGraphEntityAttributes]{Id: rel.SourceEntityID},
+		Target:      Expandable[KnowledgeGraphEntityAttributes]{Id: rel.TargetEntityID},
 	}
 	if source, err := rel.Edges.SourceEntityOrErr(); err == nil {
-		attr.Source = new(SystemTopologyEntityFromEnt(source))
+		s := KnowledgeGraphEntityFromEnt(source)
+		attr.Source.Attributes = &s.Attributes
 	}
 	if target, err := rel.Edges.TargetEntityOrErr(); err == nil {
-		attr.Target = new(SystemTopologyEntityFromEnt(target))
+		t := KnowledgeGraphEntityFromEnt(target)
+		attr.Target.Attributes = &t.Attributes
 	}
-	return SystemTopologyRelationship{Id: rel.ID, Attributes: attr}
+	return KnowledgeGraphRelationship{Id: rel.ID, Attributes: attr}
 }
 
-func SystemTopologySnapshotFromEnt(snapshot *ent.SystemTopologySnapshot) SystemTopologySnapshot {
-	attr := SystemTopologySnapshotAttributes{
-		Name:            snapshot.Name,
-		AsOf:            snapshot.AsOf,
-		Scope:           snapshot.Scope.String(),
+func KnowledgeGraphSnapshotFromEnt(snapshot *ent.KnowledgeGraphSnapshot) KnowledgeGraphSnapshot {
+	attr := KnowledgeGraphSnapshotAttributes{
+		Scope:           snapshot.ScopeKind,
 		ScopeProperties: snapshot.ScopeProperties,
+		AsOf:            snapshot.AsOf,
 		CreatedAt:       snapshot.CreatedAt,
 	}
-	attr.Entities = make([]SystemTopologySnapshotEntity, len(snapshot.Edges.Entities))
+	attr.Entities = make([]KnowledgeGraphSnapshotEntity, len(snapshot.Edges.Entities))
 	for i, entity := range snapshot.Edges.Entities {
-		attr.Entities[i] = SystemTopologySnapshotEntityFromEnt(entity)
+		attr.Entities[i] = KnowledgeGraphSnapshotEntityFromEnt(entity)
 	}
-	attr.Relationships = make([]SystemTopologySnapshotRelationship, len(snapshot.Edges.Relationships))
+	attr.Relationships = make([]KnowledgeGraphSnapshotRelationship, len(snapshot.Edges.Relationships))
 	for i, rel := range snapshot.Edges.Relationships {
-		attr.Relationships[i] = SystemTopologySnapshotRelationshipFromEnt(rel)
+		attr.Relationships[i] = KnowledgeGraphSnapshotRelationshipFromEnt(rel)
 	}
-	return SystemTopologySnapshot{Id: snapshot.ID, Attributes: attr}
+	return KnowledgeGraphSnapshot{Id: snapshot.ID, Attributes: attr}
 }
 
-func SystemTopologySnapshotEntityFromEnt(entity *ent.SystemTopologySnapshotEntity) SystemTopologySnapshotEntity {
-	return SystemTopologySnapshotEntity{
-		Id: entity.ID,
-		Attributes: SystemTopologySnapshotEntityAttributes{
-			KnowledgeEntityId: entity.KnowledgeEntityID,
-			Kind:              entity.EntityKind,
-			DisplayName:       entity.DisplayName,
-			Description:       entity.Description,
-			Properties:        entity.Properties,
-			Aliases:           entity.Aliases,
-		},
+func KnowledgeGraphSnapshotEntityFromEnt(entity *ent.KnowledgeGraphSnapshotEntity) KnowledgeGraphSnapshotEntity {
+	attrs := KnowledgeGraphSnapshotEntityAttributes{
+		EntityId:    entity.KnowledgeEntityID,
+		Kind:        entity.EntityKind,
+		DisplayName: entity.DisplayName,
+		Description: entity.Description,
+		Properties:  entity.Properties,
 	}
+	return KnowledgeGraphSnapshotEntity{Id: entity.ID, Attributes: attrs}
 }
 
-func SystemTopologySnapshotRelationshipFromEnt(rel *ent.SystemTopologySnapshotRelationship) SystemTopologySnapshotRelationship {
-	return SystemTopologySnapshotRelationship{
-		Id: rel.ID,
-		Attributes: SystemTopologySnapshotRelationshipAttributes{
-			KnowledgeRelationshipId: rel.KnowledgeRelationshipID,
-			SourceSnapshotEntityId:  rel.SourceSnapshotEntityID,
-			TargetSnapshotEntityId:  rel.TargetSnapshotEntityID,
-			Kind:                    rel.RelationshipKind,
-			DisplayName:             rel.DisplayName,
-			Description:             rel.Description,
-			Properties:              rel.Properties,
-		},
+func KnowledgeGraphSnapshotRelationshipFromEnt(rel *ent.KnowledgeGraphSnapshotRelationship) KnowledgeGraphSnapshotRelationship {
+	attrs := KnowledgeGraphSnapshotRelationshipAttributes{
+		RelationshipId:         rel.KnowledgeRelationshipID,
+		SourceSnapshotEntityId: rel.SourceSnapshotEntityID,
+		TargetSnapshotEntityId: rel.TargetSnapshotEntityID,
+		Kind:                   rel.RelationshipKind,
+		DisplayName:            rel.DisplayName,
+		Description:            rel.Description,
+		Properties:             rel.Properties,
 	}
+	return KnowledgeGraphSnapshotRelationship{Id: rel.ID, Attributes: attrs}
 }
 
-var topologyTags = []string{"SystemTopology"}
+var knowledgeGraphTags = []string{"Knowledge Graph"}
 
-var ListSystemTopologyEntities = huma.Operation{
-	OperationID: "list-system-topology-entities",
+var ListKnowledgeGraphEntities = huma.Operation{
+	OperationID: "list-knowledge-graph-entities",
 	Method:      http.MethodGet,
-	Path:        "/system_topology/entities",
-	Summary:     "List System Topology Entities",
-	Tags:        topologyTags,
+	Path:        "/knowledge_graph/entities",
+	Summary:     "List Knowledge Graph Entities",
+	Tags:        knowledgeGraphTags,
 	Errors:      ErrorCodes(),
 }
 
-type ListSystemTopologyEntitiesRequest struct {
+type ListKnowledgeGraphEntitiesRequest struct {
 	ListRequest
 	Kind           []string `query:"kind" required:"false"`
 	Provider       string   `query:"provider" required:"false"`
 	ProviderSource string   `query:"providerSource" required:"false"`
 	SubjectKind    string   `query:"subjectKind" required:"false"`
 }
-type ListSystemTopologyEntitiesResponse ListResponse[SystemTopologyEntity]
+type ListKnowledgeGraphEntitiesResponse ListResponse[KnowledgeGraphEntity]
 
-var GetSystemTopologyEntity = huma.Operation{
-	OperationID: "get-system-topology-entity",
+var GetKnowledgeGraphEntity = huma.Operation{
+	OperationID: "get-knowledge-graph-entity",
 	Method:      http.MethodGet,
-	Path:        "/system_topology/entities/{id}",
-	Summary:     "Get System Topology Entity",
-	Tags:        topologyTags,
+	Path:        "/knowledge_graph/entities/{id}",
+	Summary:     "Get Knowledge Graph Entity",
+	Tags:        knowledgeGraphTags,
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemTopologyEntityRequest IdRequest
-type GetSystemTopologyEntityResponse ItemResponse[SystemTopologyEntity]
+type GetKnowledgeGraphEntityRequest IdRequest
+type GetKnowledgeGraphEntityResponse ItemResponse[KnowledgeGraphEntity]
 
-var GetSystemTopologyEntityNeighborhood = huma.Operation{
-	OperationID: "get-system-topology-entity-neighborhood",
+var GetKnowledgeGraphView = huma.Operation{
+	OperationID: "get-knowledge-graph-view",
 	Method:      http.MethodGet,
-	Path:        "/system_topology/entities/{id}/neighborhood",
-	Summary:     "Get System Topology Entity Neighborhood",
-	Tags:        topologyTags,
+	Path:        "/knowledge_graph/view",
+	Summary:     "Get Knowledge Graph View",
+	Tags:        knowledgeGraphTags,
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemTopologyEntityNeighborhoodRequest struct {
-	Id               uuid.UUID `path:"id"`
+type GetKnowledgeGraphViewRequest struct {
+	EntityId         uuid.UUID `path:"entityId"`
 	Depth            int       `query:"depth" default:"1" minimum:"1" maximum:"4" required:"false"`
 	RelationshipKind []string  `query:"relationshipKind" required:"false"`
 }
-type GetSystemTopologyEntityNeighborhoodResponse ItemResponse[SystemTopologyGraph]
+type GetKnowledgeGraphViewResponse ItemResponse[KnowledgeGraphView]
 
-var ListSystemTopologyRelationships = huma.Operation{
-	OperationID: "list-system-topology-relationships",
+var ListKnowledgeGraphRelationships = huma.Operation{
+	OperationID: "list-knowledge-graph-relationships",
 	Method:      http.MethodGet,
-	Path:        "/system_topology/relationships",
-	Summary:     "List System Topology Relationships",
-	Tags:        topologyTags,
+	Path:        "/knowledge_graph/relationships",
+	Summary:     "List Knowledge Graph Relationships",
+	Tags:        knowledgeGraphTags,
 	Errors:      ErrorCodes(),
 }
 
-type ListSystemTopologyRelationshipsRequest struct {
+type ListKnowledgeGraphRelationshipsRequest struct {
 	ListRequest
 	Kind           []string  `query:"kind" required:"false"`
 	EntityId       uuid.UUID `query:"entityId" required:"false"`
 	SourceEntityId uuid.UUID `query:"sourceEntityId" required:"false"`
 	TargetEntityId uuid.UUID `query:"targetEntityId" required:"false"`
 }
-type ListSystemTopologyRelationshipsResponse ListResponse[SystemTopologyRelationship]
+type ListKnowledgeGraphRelationshipsResponse ListResponse[KnowledgeGraphRelationship]
 
-var CreateSystemTopologySnapshot = huma.Operation{
-	OperationID: "create-system-topology-snapshot",
+var CreateKnowledgeGraphSnapshot = huma.Operation{
+	OperationID: "create-knowledge-graph-snapshot",
 	Method:      http.MethodPost,
-	Path:        "/system_topology/snapshots",
-	Summary:     "Create System Topology Snapshot",
-	Tags:        topologyTags,
+	Path:        "/knowledge_graph/snapshots",
+	Summary:     "Create Knowledge Graph Snapshot",
+	Tags:        knowledgeGraphTags,
 	Errors:      ErrorCodes(),
 }
 
-type CreateSystemTopologySnapshotAttributes struct {
+type CreateKnowledgeGraphSnapshotRequestAttributes struct {
 	Name              string         `json:"name"`
 	AsOf              *time.Time     `json:"asOf,omitempty"`
 	Scope             string         `json:"scope" enum:"explicit_entities,root_entities,incident,retrospective,search,analysis"`
@@ -315,38 +293,17 @@ type CreateSystemTopologySnapshotAttributes struct {
 	IncludeChanges    bool           `json:"includeChanges"`
 	IncludeAlerts     bool           `json:"includeAlerts"`
 }
-type CreateSystemTopologySnapshotRequest RequestWithBodyAttributes[CreateSystemTopologySnapshotAttributes]
-type CreateSystemTopologySnapshotResponse ItemResponse[SystemTopologySnapshot]
+type CreateKnowledgeGraphSnapshotRequest RequestWithBodyAttributes[CreateKnowledgeGraphSnapshotRequestAttributes]
+type CreateKnowledgeGraphSnapshotResponse ItemResponse[KnowledgeGraphSnapshot]
 
-var GetSystemTopologySnapshot = huma.Operation{
-	OperationID: "get-system-topology-snapshot",
+var GetKnowledgeGraphSnapshot = huma.Operation{
+	OperationID: "get-knowledge-graph-snapshot",
 	Method:      http.MethodGet,
-	Path:        "/system_topology/snapshots/{id}",
-	Summary:     "Get System Topology Snapshot",
-	Tags:        topologyTags,
+	Path:        "/knowledge_graph/snapshots/{id}",
+	Summary:     "Get Knowledge Graph Snapshot",
+	Tags:        knowledgeGraphTags,
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemTopologySnapshotRequest IdRequest
-type GetSystemTopologySnapshotResponse ItemResponse[SystemTopologySnapshot]
-
-func CreateSystemTopologySnapshotParamsFromAttributes(attr CreateSystemTopologySnapshotAttributes) rez.CreateSystemTopologySnapshotParams {
-	var asOf time.Time
-	if attr.AsOf != nil {
-		asOf = *attr.AsOf
-	}
-	return rez.CreateSystemTopologySnapshotParams{
-		Name:              attr.Name,
-		AsOf:              asOf,
-		Scope:             attr.Scope,
-		ScopeProperties:   attr.ScopeProperties,
-		EntityIDs:         attr.EntityIds,
-		RootEntityIDs:     attr.RootEntityIds,
-		Depth:             attr.Depth,
-		EntityKinds:       attr.EntityKinds,
-		RelationshipKinds: attr.RelationshipKinds,
-		IncludeIncidents:  attr.IncludeIncidents,
-		IncludeChanges:    attr.IncludeChanges,
-		IncludeAlerts:     attr.IncludeAlerts,
-	}
-}
+type GetKnowledgeGraphSnapshotRequest IdRequest
+type GetKnowledgeGraphSnapshotResponse ItemResponse[KnowledgeGraphSnapshot]

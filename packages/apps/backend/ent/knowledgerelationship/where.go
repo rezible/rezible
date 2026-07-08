@@ -72,6 +72,11 @@ func UpdatedAt(v time.Time) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// Kind applies equality check predicate on the "kind" field. It's identical to KindEQ.
+func Kind(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldKind, v))
+}
+
 // SourceEntityID applies equality check predicate on the "source_entity_id" field. It's identical to SourceEntityIDEQ.
 func SourceEntityID(v uuid.UUID) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldSourceEntityID, v))
@@ -82,34 +87,9 @@ func TargetEntityID(v uuid.UUID) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldTargetEntityID, v))
 }
 
-// Kind applies equality check predicate on the "kind" field. It's identical to KindEQ.
-func Kind(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldKind, v))
-}
-
-// DisplayName applies equality check predicate on the "display_name" field. It's identical to DisplayNameEQ.
-func DisplayName(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldDisplayName, v))
-}
-
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
 func Description(v string) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldDescription, v))
-}
-
-// FirstObservedAt applies equality check predicate on the "first_observed_at" field. It's identical to FirstObservedAtEQ.
-func FirstObservedAt(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldFirstObservedAt, v))
-}
-
-// LastObservedAt applies equality check predicate on the "last_observed_at" field. It's identical to LastObservedAtEQ.
-func LastObservedAt(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldLastObservedAt, v))
-}
-
-// DeletedAt applies equality check predicate on the "deleted_at" field. It's identical to DeletedAtEQ.
-func DeletedAt(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldDeletedAt, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -212,46 +192,6 @@ func UpdatedAtLTE(v time.Time) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// SourceEntityIDEQ applies the EQ predicate on the "source_entity_id" field.
-func SourceEntityIDEQ(v uuid.UUID) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldSourceEntityID, v))
-}
-
-// SourceEntityIDNEQ applies the NEQ predicate on the "source_entity_id" field.
-func SourceEntityIDNEQ(v uuid.UUID) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldSourceEntityID, v))
-}
-
-// SourceEntityIDIn applies the In predicate on the "source_entity_id" field.
-func SourceEntityIDIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIn(FieldSourceEntityID, vs...))
-}
-
-// SourceEntityIDNotIn applies the NotIn predicate on the "source_entity_id" field.
-func SourceEntityIDNotIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldSourceEntityID, vs...))
-}
-
-// TargetEntityIDEQ applies the EQ predicate on the "target_entity_id" field.
-func TargetEntityIDEQ(v uuid.UUID) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldTargetEntityID, v))
-}
-
-// TargetEntityIDNEQ applies the NEQ predicate on the "target_entity_id" field.
-func TargetEntityIDNEQ(v uuid.UUID) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldTargetEntityID, v))
-}
-
-// TargetEntityIDIn applies the In predicate on the "target_entity_id" field.
-func TargetEntityIDIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIn(FieldTargetEntityID, vs...))
-}
-
-// TargetEntityIDNotIn applies the NotIn predicate on the "target_entity_id" field.
-func TargetEntityIDNotIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldTargetEntityID, vs...))
-}
-
 // KindEQ applies the EQ predicate on the "kind" field.
 func KindEQ(v string) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldKind, v))
@@ -317,79 +257,44 @@ func KindContainsFold(v string) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldContainsFold(FieldKind, v))
 }
 
-// DisplayNameEQ applies the EQ predicate on the "display_name" field.
-func DisplayNameEQ(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldDisplayName, v))
+// SourceEntityIDEQ applies the EQ predicate on the "source_entity_id" field.
+func SourceEntityIDEQ(v uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldSourceEntityID, v))
 }
 
-// DisplayNameNEQ applies the NEQ predicate on the "display_name" field.
-func DisplayNameNEQ(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldDisplayName, v))
+// SourceEntityIDNEQ applies the NEQ predicate on the "source_entity_id" field.
+func SourceEntityIDNEQ(v uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldSourceEntityID, v))
 }
 
-// DisplayNameIn applies the In predicate on the "display_name" field.
-func DisplayNameIn(vs ...string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIn(FieldDisplayName, vs...))
+// SourceEntityIDIn applies the In predicate on the "source_entity_id" field.
+func SourceEntityIDIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIn(FieldSourceEntityID, vs...))
 }
 
-// DisplayNameNotIn applies the NotIn predicate on the "display_name" field.
-func DisplayNameNotIn(vs ...string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldDisplayName, vs...))
+// SourceEntityIDNotIn applies the NotIn predicate on the "source_entity_id" field.
+func SourceEntityIDNotIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldSourceEntityID, vs...))
 }
 
-// DisplayNameGT applies the GT predicate on the "display_name" field.
-func DisplayNameGT(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGT(FieldDisplayName, v))
+// TargetEntityIDEQ applies the EQ predicate on the "target_entity_id" field.
+func TargetEntityIDEQ(v uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldTargetEntityID, v))
 }
 
-// DisplayNameGTE applies the GTE predicate on the "display_name" field.
-func DisplayNameGTE(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGTE(FieldDisplayName, v))
+// TargetEntityIDNEQ applies the NEQ predicate on the "target_entity_id" field.
+func TargetEntityIDNEQ(v uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldTargetEntityID, v))
 }
 
-// DisplayNameLT applies the LT predicate on the "display_name" field.
-func DisplayNameLT(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLT(FieldDisplayName, v))
+// TargetEntityIDIn applies the In predicate on the "target_entity_id" field.
+func TargetEntityIDIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIn(FieldTargetEntityID, vs...))
 }
 
-// DisplayNameLTE applies the LTE predicate on the "display_name" field.
-func DisplayNameLTE(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldDisplayName, v))
-}
-
-// DisplayNameContains applies the Contains predicate on the "display_name" field.
-func DisplayNameContains(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldContains(FieldDisplayName, v))
-}
-
-// DisplayNameHasPrefix applies the HasPrefix predicate on the "display_name" field.
-func DisplayNameHasPrefix(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldHasPrefix(FieldDisplayName, v))
-}
-
-// DisplayNameHasSuffix applies the HasSuffix predicate on the "display_name" field.
-func DisplayNameHasSuffix(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldHasSuffix(FieldDisplayName, v))
-}
-
-// DisplayNameIsNil applies the IsNil predicate on the "display_name" field.
-func DisplayNameIsNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldDisplayName))
-}
-
-// DisplayNameNotNil applies the NotNil predicate on the "display_name" field.
-func DisplayNameNotNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldDisplayName))
-}
-
-// DisplayNameEqualFold applies the EqualFold predicate on the "display_name" field.
-func DisplayNameEqualFold(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEqualFold(FieldDisplayName, v))
-}
-
-// DisplayNameContainsFold applies the ContainsFold predicate on the "display_name" field.
-func DisplayNameContainsFold(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldContainsFold(FieldDisplayName, v))
+// TargetEntityIDNotIn applies the NotIn predicate on the "target_entity_id" field.
+func TargetEntityIDNotIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldTargetEntityID, vs...))
 }
 
 // DescriptionEQ applies the EQ predicate on the "description" field.
@@ -465,156 +370,6 @@ func DescriptionEqualFold(v string) predicate.KnowledgeRelationship {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldContainsFold(FieldDescription, v))
-}
-
-// FirstObservedAtEQ applies the EQ predicate on the "first_observed_at" field.
-func FirstObservedAtEQ(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtNEQ applies the NEQ predicate on the "first_observed_at" field.
-func FirstObservedAtNEQ(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtIn applies the In predicate on the "first_observed_at" field.
-func FirstObservedAtIn(vs ...time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIn(FieldFirstObservedAt, vs...))
-}
-
-// FirstObservedAtNotIn applies the NotIn predicate on the "first_observed_at" field.
-func FirstObservedAtNotIn(vs ...time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldFirstObservedAt, vs...))
-}
-
-// FirstObservedAtGT applies the GT predicate on the "first_observed_at" field.
-func FirstObservedAtGT(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGT(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtGTE applies the GTE predicate on the "first_observed_at" field.
-func FirstObservedAtGTE(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGTE(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtLT applies the LT predicate on the "first_observed_at" field.
-func FirstObservedAtLT(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLT(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtLTE applies the LTE predicate on the "first_observed_at" field.
-func FirstObservedAtLTE(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtIsNil applies the IsNil predicate on the "first_observed_at" field.
-func FirstObservedAtIsNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldFirstObservedAt))
-}
-
-// FirstObservedAtNotNil applies the NotNil predicate on the "first_observed_at" field.
-func FirstObservedAtNotNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldFirstObservedAt))
-}
-
-// LastObservedAtEQ applies the EQ predicate on the "last_observed_at" field.
-func LastObservedAtEQ(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldLastObservedAt, v))
-}
-
-// LastObservedAtNEQ applies the NEQ predicate on the "last_observed_at" field.
-func LastObservedAtNEQ(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldLastObservedAt, v))
-}
-
-// LastObservedAtIn applies the In predicate on the "last_observed_at" field.
-func LastObservedAtIn(vs ...time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIn(FieldLastObservedAt, vs...))
-}
-
-// LastObservedAtNotIn applies the NotIn predicate on the "last_observed_at" field.
-func LastObservedAtNotIn(vs ...time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldLastObservedAt, vs...))
-}
-
-// LastObservedAtGT applies the GT predicate on the "last_observed_at" field.
-func LastObservedAtGT(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGT(FieldLastObservedAt, v))
-}
-
-// LastObservedAtGTE applies the GTE predicate on the "last_observed_at" field.
-func LastObservedAtGTE(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGTE(FieldLastObservedAt, v))
-}
-
-// LastObservedAtLT applies the LT predicate on the "last_observed_at" field.
-func LastObservedAtLT(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLT(FieldLastObservedAt, v))
-}
-
-// LastObservedAtLTE applies the LTE predicate on the "last_observed_at" field.
-func LastObservedAtLTE(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldLastObservedAt, v))
-}
-
-// LastObservedAtIsNil applies the IsNil predicate on the "last_observed_at" field.
-func LastObservedAtIsNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldLastObservedAt))
-}
-
-// LastObservedAtNotNil applies the NotNil predicate on the "last_observed_at" field.
-func LastObservedAtNotNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldLastObservedAt))
-}
-
-// DeletedAtEQ applies the EQ predicate on the "deleted_at" field.
-func DeletedAtEQ(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldDeletedAt, v))
-}
-
-// DeletedAtNEQ applies the NEQ predicate on the "deleted_at" field.
-func DeletedAtNEQ(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldDeletedAt, v))
-}
-
-// DeletedAtIn applies the In predicate on the "deleted_at" field.
-func DeletedAtIn(vs ...time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIn(FieldDeletedAt, vs...))
-}
-
-// DeletedAtNotIn applies the NotIn predicate on the "deleted_at" field.
-func DeletedAtNotIn(vs ...time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldDeletedAt, vs...))
-}
-
-// DeletedAtGT applies the GT predicate on the "deleted_at" field.
-func DeletedAtGT(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGT(FieldDeletedAt, v))
-}
-
-// DeletedAtGTE applies the GTE predicate on the "deleted_at" field.
-func DeletedAtGTE(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGTE(FieldDeletedAt, v))
-}
-
-// DeletedAtLT applies the LT predicate on the "deleted_at" field.
-func DeletedAtLT(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLT(FieldDeletedAt, v))
-}
-
-// DeletedAtLTE applies the LTE predicate on the "deleted_at" field.
-func DeletedAtLTE(v time.Time) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldDeletedAt, v))
-}
-
-// DeletedAtIsNil applies the IsNil predicate on the "deleted_at" field.
-func DeletedAtIsNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldDeletedAt))
-}
-
-// DeletedAtNotNil applies the NotNil predicate on the "deleted_at" field.
-func DeletedAtNotNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldDeletedAt))
 }
 
 // PropertiesIsNil applies the IsNil predicate on the "properties" field.
@@ -714,27 +469,27 @@ func HasTargetEntityWith(preds ...predicate.KnowledgeEntity) predicate.Knowledge
 	})
 }
 
-// HasEvidence applies the HasEdge predicate on the "evidence" edge.
-func HasEvidence() predicate.KnowledgeRelationship {
+// HasAliases applies the HasEdge predicate on the "aliases" edge.
+func HasAliases() predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, EvidenceTable, EvidenceColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, AliasesTable, AliasesColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEvidence
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
+		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
+		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasEvidenceWith applies the HasEdge predicate on the "evidence" edge with a given conditions (other predicates).
-func HasEvidenceWith(preds ...predicate.KnowledgeEvidence) predicate.KnowledgeRelationship {
+// HasAliasesWith applies the HasEdge predicate on the "aliases" edge with a given conditions (other predicates).
+func HasAliasesWith(preds ...predicate.KnowledgeSubjectAlias) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(func(s *sql.Selector) {
-		step := newEvidenceStep()
+		step := newAliasesStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEvidence
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
+		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
+		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

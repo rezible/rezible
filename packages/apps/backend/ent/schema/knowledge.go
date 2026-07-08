@@ -24,78 +24,29 @@ func (KnowledgeEntity) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("kind").NotEmpty(),
-		field.String("display_name").NotEmpty(),
+		field.String("reference").NotEmpty(),
+		field.String("display_name").Optional(),
 		field.Text("description").Optional(),
-		field.Time("first_observed_at").Optional().Nillable().
-			Comment("Time first observed evidence supporting this entity."),
-		field.Time("last_observed_at").Optional().Nillable().
-			Comment("Time most recently observed evidence supporting this entity."),
-		field.Time("deleted_at").Optional().Nillable().
-			Comment("Time observed explicit evidence that this entity no longer exists or applies."),
-		field.JSON("properties", map[string]any{}).
-			Optional().
-			SchemaType(schemaTypeJsonB),
+		field.JSON("live_properties", map[string]any{}).SchemaType(schemaTypeJsonB).
+			Optional().Default(map[string]any{}),
 	}
 }
 
 func (KnowledgeEntity) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("aliases", KnowledgeEntityAlias.Type).
+		edge.From("aliases", KnowledgeSubjectAlias.Type).
 			Ref("entity"),
 		edge.From("source_relationships", KnowledgeRelationship.Type).
 			Ref("source_entity"),
 		edge.From("target_relationships", KnowledgeRelationship.Type).
 			Ref("target_entity"),
-		edge.From("evidence", KnowledgeEvidence.Type).
-			Ref("entity"),
 	}
 }
 
 func (KnowledgeEntity) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "kind"),
-		index.Fields("tenant_id", "updated_at"),
-		index.Fields("tenant_id", "kind", "last_observed_at"),
-		index.Fields("tenant_id", "kind", "deleted_at"),
-	}
-}
-
-type KnowledgeEntityAlias struct {
-	ent.Schema
-}
-
-func (KnowledgeEntityAlias) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-		TimestampsMixin{},
-	}
-}
-
-func (KnowledgeEntityAlias) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("entity_id", uuid.UUID{}),
-		field.String("display_name").Optional(),
-		field.String("provider"),
-		field.String("provider_subject_ref"),
-	}
-}
-
-func (KnowledgeEntityAlias) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("entity", KnowledgeEntity.Type).
-			Required().Unique().
-			Field("entity_id"),
-		edge.From("evidence", KnowledgeEvidence.Type).
-			Ref("alias"),
-	}
-}
-
-func (KnowledgeEntityAlias) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "entity_id"),
-		index.Fields("tenant_id", "provider", "provider_subject_ref").Unique(),
+		index.Fields("tenant_id", "kind", "reference").Unique(),
 	}
 }
 
@@ -114,17 +65,10 @@ func (KnowledgeRelationship) Mixin() []ent.Mixin {
 func (KnowledgeRelationship) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.String("kind").NotEmpty(),
 		field.UUID("source_entity_id", uuid.UUID{}),
 		field.UUID("target_entity_id", uuid.UUID{}),
-		field.String("kind").NotEmpty(),
-		field.String("display_name").Optional(),
 		field.Text("description").Optional(),
-		field.Time("first_observed_at").Optional().Nillable().
-			Comment("Time first observed evidence supporting this relationship."),
-		field.Time("last_observed_at").Optional().Nillable().
-			Comment("Time most recently observed evidence supporting this relationship."),
-		field.Time("deleted_at").Optional().Nillable().
-			Comment("Time observed explicit evidence that this relationship no longer exists or applies."),
 		field.JSON("properties", map[string]any{}).
 			Optional().
 			SchemaType(schemaTypeJsonB),
@@ -141,8 +85,7 @@ func (KnowledgeRelationship) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("target_entity_id"),
-
-		edge.From("evidence", KnowledgeEvidence.Type).
+		edge.From("aliases", KnowledgeSubjectAlias.Type).
 			Ref("relationship"),
 	}
 }
@@ -155,9 +98,53 @@ func (KnowledgeRelationship) Indexes() []ent.Index {
 		index.Fields("tenant_id", "kind"),
 		index.Fields("tenant_id", "source_entity_id"),
 		index.Fields("tenant_id", "target_entity_id"),
-		index.Fields("tenant_id", "updated_at"),
-		index.Fields("tenant_id", "kind", "last_observed_at"),
-		index.Fields("tenant_id", "kind", "deleted_at"),
+	}
+}
+
+type KnowledgeSubjectAlias struct {
+	ent.Schema
+}
+
+func (KnowledgeSubjectAlias) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+		TimestampsMixin{},
+	}
+}
+
+func (KnowledgeSubjectAlias) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.Enum("subject_kind").Values("entity", "relationship").Immutable(),
+		field.String("provider").NotEmpty().Immutable(),
+		field.String("provider_subject_ref").NotEmpty().Immutable(),
+		field.UUID("entity_id", uuid.UUID{}).Optional().Immutable(),
+		field.UUID("relationship_id", uuid.UUID{}).Optional().Immutable(),
+		field.String("description"),
+		//field.Time("deleted_at").Optional().Nillable().
+		//	Comment("Time observed explicit evidence that this subject no longer exists or applies."),
+	}
+}
+
+func (KnowledgeSubjectAlias) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("evidence", KnowledgeEvidence.Type).
+			Ref("alias"),
+
+		edge.To("entity", KnowledgeEntity.Type).
+			Unique().Immutable().Field("entity_id"),
+		edge.To("relationship", KnowledgeRelationship.Type).
+			Unique().Immutable().Field("relationship_id"),
+	}
+}
+
+func (KnowledgeSubjectAlias) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "entity_id"),
+		index.Fields("tenant_id", "relationship_id"),
+		index.Fields("tenant_id", "subject_kind", "entity_id", "relationship_id"),
+		index.Fields("tenant_id", "subject_kind", "provider", "provider_subject_ref").Unique(),
 	}
 }
 
@@ -176,52 +163,38 @@ func (KnowledgeEvidence) Mixin() []ent.Mixin {
 func (KnowledgeEvidence) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.Enum("subject_type").Values("entity", "relationship"),
-		field.UUID("entity_id", uuid.UUID{}).Optional().Nillable().
-			Comment("Entity this evidence supports. Exactly one of entity_id or relationship_id should be set."),
-		field.UUID("relationship_id", uuid.UUID{}).Optional().Nillable().
-			Comment("Relationship this evidence supports. Exactly one of entity_id or relationship_id should be set."),
-		field.UUID("alias_id", uuid.UUID{}).Optional().Nillable().
-			Comment("Provider alias used to resolve entity evidence, when applicable."),
-		field.UUID("event_id", uuid.UUID{}).
+		field.UUID("event_id", uuid.UUID{}).Immutable().
 			Comment("Normalized event that produced this evidence record."),
-		field.String("assertion").NotEmpty().
-			Comment("Domain assertion supported by this evidence, such as code_repository_exists or team_owns_service."),
-		field.Enum("evidence_kind").Values("observed", "changed", "deleted", "contradicted").
+		field.UUID("alias_id", uuid.UUID{}).Immutable().
+			Comment("Alias used to resolve a single entity or relationship from evidence."),
+		field.String("assertion").NotEmpty().Immutable().
+			Comment("Domain assertion supported by this evidence (eg service_exists, team_owns_service)"),
+		field.Enum("evidence_kind").Immutable().
+			Values("observed", "changed", "contradicted", "deleted").
 			Comment("How this event affects evidence for the assertion."),
-		field.Time("observed_at").
-			Comment("Time observed this evidence, usually the normalized event occurred_at."),
-		field.Time("effective_at").Optional().Nillable().
-			Comment("Provider/domain effective time when it differs from observed_at."),
+		field.Time("effective_at").Immutable().
+			Comment("Domain effective time (may differ from the event occurred_at)"),
+		field.JSON("properties", map[string]any{}).Immutable().
+			SchemaType(schemaTypeJsonB),
 	}
 }
 
 func (KnowledgeEvidence) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("entity", KnowledgeEntity.Type).
-			Unique().
-			Field("entity_id"),
-
-		edge.To("relationship", KnowledgeRelationship.Type).
-			Unique().
-			Field("relationship_id"),
-
-		edge.To("alias", KnowledgeEntityAlias.Type).
-			Unique().
-			Field("alias_id"),
-
 		edge.To("event", NormalizedEvent.Type).
-			Unique().Required().
+			Unique().Required().Immutable().
 			Field("event_id"),
+		edge.To("alias", KnowledgeSubjectAlias.Type).
+			Unique().Required().Immutable().
+			Field("alias_id"),
 	}
 }
 
 func (KnowledgeEvidence) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "entity_id", "event_id", "subject_type", "relationship_id", "alias_id").Unique(),
-		index.Fields("tenant_id", "entity_id"),
-		index.Fields("tenant_id", "relationship_id"),
+		index.Fields("tenant_id", "event_id", "alias_id", "evidence_kind").Unique(),
 		index.Fields("tenant_id", "alias_id"),
 		index.Fields("tenant_id", "event_id"),
+		index.Fields("tenant_id", "effective_at"),
 	}
 }

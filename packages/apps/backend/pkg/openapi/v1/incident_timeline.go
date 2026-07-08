@@ -181,9 +181,8 @@ func IncidentTimelineEventTopologyContextFromEnt(c *ent.IncidentTimelineEventTop
 	return IncidentTimelineEventTopologyContext{
 		Id: c.ID,
 		Attributes: IncidentTimelineEventTopologyContextAttributes{
-			KnowledgeEntityId: c.KnowledgeEntityID,
-			SnapshotEntityId:  c.SnapshotEntityID,
-			Relationship:      c.Relationship.String(),
+			SnapshotEntityId: c.SnapshotEntityID,
+			Relationship:     c.Relationship.String(),
 		},
 	}
 }

@@ -48,26 +48,6 @@ func (_u *KnowledgeGraphSnapshotUpdate) SetNillableAsOf(v *time.Time) *Knowledge
 	return _u
 }
 
-// SetName sets the "name" field.
-func (_u *KnowledgeGraphSnapshotUpdate) SetName(v string) *KnowledgeGraphSnapshotUpdate {
-	_u.mutation.SetName(v)
-	return _u
-}
-
-// SetNillableName sets the "name" field if the given value is not nil.
-func (_u *KnowledgeGraphSnapshotUpdate) SetNillableName(v *string) *KnowledgeGraphSnapshotUpdate {
-	if v != nil {
-		_u.SetName(*v)
-	}
-	return _u
-}
-
-// ClearName clears the value of the "name" field.
-func (_u *KnowledgeGraphSnapshotUpdate) ClearName() *KnowledgeGraphSnapshotUpdate {
-	_u.mutation.ClearName()
-	return _u
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (_u *KnowledgeGraphSnapshotUpdate) SetCreatedAt(v time.Time) *KnowledgeGraphSnapshotUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -82,19 +62,24 @@ func (_u *KnowledgeGraphSnapshotUpdate) SetNillableCreatedAt(v *time.Time) *Know
 	return _u
 }
 
-// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysis entity by IDs.
-func (_u *KnowledgeGraphSnapshotUpdate) AddSystemAnalysisIDs(ids ...uuid.UUID) *KnowledgeGraphSnapshotUpdate {
-	_u.mutation.AddSystemAnalysisIDs(ids...)
+// SetScopeKind sets the "scope_kind" field.
+func (_u *KnowledgeGraphSnapshotUpdate) SetScopeKind(v string) *KnowledgeGraphSnapshotUpdate {
+	_u.mutation.SetScopeKind(v)
 	return _u
 }
 
-// AddSystemAnalyses adds the "system_analyses" edges to the SystemAnalysis entity.
-func (_u *KnowledgeGraphSnapshotUpdate) AddSystemAnalyses(v ...*SystemAnalysis) *KnowledgeGraphSnapshotUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
+// SetNillableScopeKind sets the "scope_kind" field if the given value is not nil.
+func (_u *KnowledgeGraphSnapshotUpdate) SetNillableScopeKind(v *string) *KnowledgeGraphSnapshotUpdate {
+	if v != nil {
+		_u.SetScopeKind(*v)
 	}
-	return _u.AddSystemAnalysisIDs(ids...)
+	return _u
+}
+
+// SetScopeProperties sets the "scope_properties" field.
+func (_u *KnowledgeGraphSnapshotUpdate) SetScopeProperties(v map[string]interface{}) *KnowledgeGraphSnapshotUpdate {
+	_u.mutation.SetScopeProperties(v)
+	return _u
 }
 
 // AddEntityIDs adds the "entities" edge to the KnowledgeGraphSnapshotEntity entity by IDs.
@@ -127,30 +112,24 @@ func (_u *KnowledgeGraphSnapshotUpdate) AddRelationships(v ...*KnowledgeGraphSna
 	return _u.AddRelationshipIDs(ids...)
 }
 
-// Mutation returns the KnowledgeGraphSnapshotMutation object of the builder.
-func (_u *KnowledgeGraphSnapshotUpdate) Mutation() *KnowledgeGraphSnapshotMutation {
-	return _u.mutation
-}
-
-// ClearSystemAnalyses clears all "system_analyses" edges to the SystemAnalysis entity.
-func (_u *KnowledgeGraphSnapshotUpdate) ClearSystemAnalyses() *KnowledgeGraphSnapshotUpdate {
-	_u.mutation.ClearSystemAnalyses()
+// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysis entity by IDs.
+func (_u *KnowledgeGraphSnapshotUpdate) AddSystemAnalysisIDs(ids ...uuid.UUID) *KnowledgeGraphSnapshotUpdate {
+	_u.mutation.AddSystemAnalysisIDs(ids...)
 	return _u
 }
 
-// RemoveSystemAnalysisIDs removes the "system_analyses" edge to SystemAnalysis entities by IDs.
-func (_u *KnowledgeGraphSnapshotUpdate) RemoveSystemAnalysisIDs(ids ...uuid.UUID) *KnowledgeGraphSnapshotUpdate {
-	_u.mutation.RemoveSystemAnalysisIDs(ids...)
-	return _u
-}
-
-// RemoveSystemAnalyses removes "system_analyses" edges to SystemAnalysis entities.
-func (_u *KnowledgeGraphSnapshotUpdate) RemoveSystemAnalyses(v ...*SystemAnalysis) *KnowledgeGraphSnapshotUpdate {
+// AddSystemAnalyses adds the "system_analyses" edges to the SystemAnalysis entity.
+func (_u *KnowledgeGraphSnapshotUpdate) AddSystemAnalyses(v ...*SystemAnalysis) *KnowledgeGraphSnapshotUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveSystemAnalysisIDs(ids...)
+	return _u.AddSystemAnalysisIDs(ids...)
+}
+
+// Mutation returns the KnowledgeGraphSnapshotMutation object of the builder.
+func (_u *KnowledgeGraphSnapshotUpdate) Mutation() *KnowledgeGraphSnapshotMutation {
+	return _u.mutation
 }
 
 // ClearEntities clears all "entities" edges to the KnowledgeGraphSnapshotEntity entity.
@@ -193,6 +172,27 @@ func (_u *KnowledgeGraphSnapshotUpdate) RemoveRelationships(v ...*KnowledgeGraph
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRelationshipIDs(ids...)
+}
+
+// ClearSystemAnalyses clears all "system_analyses" edges to the SystemAnalysis entity.
+func (_u *KnowledgeGraphSnapshotUpdate) ClearSystemAnalyses() *KnowledgeGraphSnapshotUpdate {
+	_u.mutation.ClearSystemAnalyses()
+	return _u
+}
+
+// RemoveSystemAnalysisIDs removes the "system_analyses" edge to SystemAnalysis entities by IDs.
+func (_u *KnowledgeGraphSnapshotUpdate) RemoveSystemAnalysisIDs(ids ...uuid.UUID) *KnowledgeGraphSnapshotUpdate {
+	_u.mutation.RemoveSystemAnalysisIDs(ids...)
+	return _u
+}
+
+// RemoveSystemAnalyses removes "system_analyses" edges to SystemAnalysis entities.
+func (_u *KnowledgeGraphSnapshotUpdate) RemoveSystemAnalyses(v ...*SystemAnalysis) *KnowledgeGraphSnapshotUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSystemAnalysisIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -251,62 +251,14 @@ func (_u *KnowledgeGraphSnapshotUpdate) sqlSave(ctx context.Context) (_node int,
 	if value, ok := _u.mutation.AsOf(); ok {
 		_spec.SetField(knowledgegraphsnapshot.FieldAsOf, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Name(); ok {
-		_spec.SetField(knowledgegraphsnapshot.FieldName, field.TypeString, value)
-	}
-	if _u.mutation.NameCleared() {
-		_spec.ClearField(knowledgegraphsnapshot.FieldName, field.TypeString)
-	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(knowledgegraphsnapshot.FieldCreatedAt, field.TypeTime, value)
 	}
-	if _u.mutation.SystemAnalysesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
-			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysis
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := _u.mutation.ScopeKind(); ok {
+		_spec.SetField(knowledgegraphsnapshot.FieldScopeKind, field.TypeString, value)
 	}
-	if nodes := _u.mutation.RemovedSystemAnalysesIDs(); len(nodes) > 0 && !_u.mutation.SystemAnalysesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
-			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysis
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SystemAnalysesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
-			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysis
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := _u.mutation.ScopeProperties(); ok {
+		_spec.SetField(knowledgegraphsnapshot.FieldScopeProperties, field.TypeJSON, value)
 	}
 	if _u.mutation.EntitiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -404,6 +356,54 @@ func (_u *KnowledgeGraphSnapshotUpdate) sqlSave(ctx context.Context) (_node int,
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.SystemAnalysesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
+			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysis
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSystemAnalysesIDs(); len(nodes) > 0 && !_u.mutation.SystemAnalysesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
+			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysis
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SystemAnalysesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
+			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysis
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeGraphSnapshot
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -442,26 +442,6 @@ func (_u *KnowledgeGraphSnapshotUpdateOne) SetNillableAsOf(v *time.Time) *Knowle
 	return _u
 }
 
-// SetName sets the "name" field.
-func (_u *KnowledgeGraphSnapshotUpdateOne) SetName(v string) *KnowledgeGraphSnapshotUpdateOne {
-	_u.mutation.SetName(v)
-	return _u
-}
-
-// SetNillableName sets the "name" field if the given value is not nil.
-func (_u *KnowledgeGraphSnapshotUpdateOne) SetNillableName(v *string) *KnowledgeGraphSnapshotUpdateOne {
-	if v != nil {
-		_u.SetName(*v)
-	}
-	return _u
-}
-
-// ClearName clears the value of the "name" field.
-func (_u *KnowledgeGraphSnapshotUpdateOne) ClearName() *KnowledgeGraphSnapshotUpdateOne {
-	_u.mutation.ClearName()
-	return _u
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (_u *KnowledgeGraphSnapshotUpdateOne) SetCreatedAt(v time.Time) *KnowledgeGraphSnapshotUpdateOne {
 	_u.mutation.SetCreatedAt(v)
@@ -476,19 +456,24 @@ func (_u *KnowledgeGraphSnapshotUpdateOne) SetNillableCreatedAt(v *time.Time) *K
 	return _u
 }
 
-// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysis entity by IDs.
-func (_u *KnowledgeGraphSnapshotUpdateOne) AddSystemAnalysisIDs(ids ...uuid.UUID) *KnowledgeGraphSnapshotUpdateOne {
-	_u.mutation.AddSystemAnalysisIDs(ids...)
+// SetScopeKind sets the "scope_kind" field.
+func (_u *KnowledgeGraphSnapshotUpdateOne) SetScopeKind(v string) *KnowledgeGraphSnapshotUpdateOne {
+	_u.mutation.SetScopeKind(v)
 	return _u
 }
 
-// AddSystemAnalyses adds the "system_analyses" edges to the SystemAnalysis entity.
-func (_u *KnowledgeGraphSnapshotUpdateOne) AddSystemAnalyses(v ...*SystemAnalysis) *KnowledgeGraphSnapshotUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
+// SetNillableScopeKind sets the "scope_kind" field if the given value is not nil.
+func (_u *KnowledgeGraphSnapshotUpdateOne) SetNillableScopeKind(v *string) *KnowledgeGraphSnapshotUpdateOne {
+	if v != nil {
+		_u.SetScopeKind(*v)
 	}
-	return _u.AddSystemAnalysisIDs(ids...)
+	return _u
+}
+
+// SetScopeProperties sets the "scope_properties" field.
+func (_u *KnowledgeGraphSnapshotUpdateOne) SetScopeProperties(v map[string]interface{}) *KnowledgeGraphSnapshotUpdateOne {
+	_u.mutation.SetScopeProperties(v)
+	return _u
 }
 
 // AddEntityIDs adds the "entities" edge to the KnowledgeGraphSnapshotEntity entity by IDs.
@@ -521,30 +506,24 @@ func (_u *KnowledgeGraphSnapshotUpdateOne) AddRelationships(v ...*KnowledgeGraph
 	return _u.AddRelationshipIDs(ids...)
 }
 
-// Mutation returns the KnowledgeGraphSnapshotMutation object of the builder.
-func (_u *KnowledgeGraphSnapshotUpdateOne) Mutation() *KnowledgeGraphSnapshotMutation {
-	return _u.mutation
-}
-
-// ClearSystemAnalyses clears all "system_analyses" edges to the SystemAnalysis entity.
-func (_u *KnowledgeGraphSnapshotUpdateOne) ClearSystemAnalyses() *KnowledgeGraphSnapshotUpdateOne {
-	_u.mutation.ClearSystemAnalyses()
+// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysis entity by IDs.
+func (_u *KnowledgeGraphSnapshotUpdateOne) AddSystemAnalysisIDs(ids ...uuid.UUID) *KnowledgeGraphSnapshotUpdateOne {
+	_u.mutation.AddSystemAnalysisIDs(ids...)
 	return _u
 }
 
-// RemoveSystemAnalysisIDs removes the "system_analyses" edge to SystemAnalysis entities by IDs.
-func (_u *KnowledgeGraphSnapshotUpdateOne) RemoveSystemAnalysisIDs(ids ...uuid.UUID) *KnowledgeGraphSnapshotUpdateOne {
-	_u.mutation.RemoveSystemAnalysisIDs(ids...)
-	return _u
-}
-
-// RemoveSystemAnalyses removes "system_analyses" edges to SystemAnalysis entities.
-func (_u *KnowledgeGraphSnapshotUpdateOne) RemoveSystemAnalyses(v ...*SystemAnalysis) *KnowledgeGraphSnapshotUpdateOne {
+// AddSystemAnalyses adds the "system_analyses" edges to the SystemAnalysis entity.
+func (_u *KnowledgeGraphSnapshotUpdateOne) AddSystemAnalyses(v ...*SystemAnalysis) *KnowledgeGraphSnapshotUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveSystemAnalysisIDs(ids...)
+	return _u.AddSystemAnalysisIDs(ids...)
+}
+
+// Mutation returns the KnowledgeGraphSnapshotMutation object of the builder.
+func (_u *KnowledgeGraphSnapshotUpdateOne) Mutation() *KnowledgeGraphSnapshotMutation {
+	return _u.mutation
 }
 
 // ClearEntities clears all "entities" edges to the KnowledgeGraphSnapshotEntity entity.
@@ -587,6 +566,27 @@ func (_u *KnowledgeGraphSnapshotUpdateOne) RemoveRelationships(v ...*KnowledgeGr
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRelationshipIDs(ids...)
+}
+
+// ClearSystemAnalyses clears all "system_analyses" edges to the SystemAnalysis entity.
+func (_u *KnowledgeGraphSnapshotUpdateOne) ClearSystemAnalyses() *KnowledgeGraphSnapshotUpdateOne {
+	_u.mutation.ClearSystemAnalyses()
+	return _u
+}
+
+// RemoveSystemAnalysisIDs removes the "system_analyses" edge to SystemAnalysis entities by IDs.
+func (_u *KnowledgeGraphSnapshotUpdateOne) RemoveSystemAnalysisIDs(ids ...uuid.UUID) *KnowledgeGraphSnapshotUpdateOne {
+	_u.mutation.RemoveSystemAnalysisIDs(ids...)
+	return _u
+}
+
+// RemoveSystemAnalyses removes "system_analyses" edges to SystemAnalysis entities.
+func (_u *KnowledgeGraphSnapshotUpdateOne) RemoveSystemAnalyses(v ...*SystemAnalysis) *KnowledgeGraphSnapshotUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSystemAnalysisIDs(ids...)
 }
 
 // Where appends a list predicates to the KnowledgeGraphSnapshotUpdate builder.
@@ -675,62 +675,14 @@ func (_u *KnowledgeGraphSnapshotUpdateOne) sqlSave(ctx context.Context) (_node *
 	if value, ok := _u.mutation.AsOf(); ok {
 		_spec.SetField(knowledgegraphsnapshot.FieldAsOf, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Name(); ok {
-		_spec.SetField(knowledgegraphsnapshot.FieldName, field.TypeString, value)
-	}
-	if _u.mutation.NameCleared() {
-		_spec.ClearField(knowledgegraphsnapshot.FieldName, field.TypeString)
-	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(knowledgegraphsnapshot.FieldCreatedAt, field.TypeTime, value)
 	}
-	if _u.mutation.SystemAnalysesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
-			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysis
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := _u.mutation.ScopeKind(); ok {
+		_spec.SetField(knowledgegraphsnapshot.FieldScopeKind, field.TypeString, value)
 	}
-	if nodes := _u.mutation.RemovedSystemAnalysesIDs(); len(nodes) > 0 && !_u.mutation.SystemAnalysesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
-			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysis
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SystemAnalysesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
-			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysis
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := _u.mutation.ScopeProperties(); ok {
+		_spec.SetField(knowledgegraphsnapshot.FieldScopeProperties, field.TypeJSON, value)
 	}
 	if _u.mutation.EntitiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -823,6 +775,54 @@ func (_u *KnowledgeGraphSnapshotUpdateOne) sqlSave(ctx context.Context) (_node *
 			},
 		}
 		edge.Schema = _u.schemaConfig.KnowledgeGraphSnapshotRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SystemAnalysesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
+			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysis
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSystemAnalysesIDs(); len(nodes) > 0 && !_u.mutation.SystemAnalysesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
+			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysis
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SystemAnalysesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
+			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysis
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

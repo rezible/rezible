@@ -13,10 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -63,57 +61,15 @@ func (_c *KnowledgeEvidenceCreate) SetNillableUpdatedAt(v *time.Time) *Knowledge
 	return _c
 }
 
-// SetSubjectType sets the "subject_type" field.
-func (_c *KnowledgeEvidenceCreate) SetSubjectType(v knowledgeevidence.SubjectType) *KnowledgeEvidenceCreate {
-	_c.mutation.SetSubjectType(v)
-	return _c
-}
-
-// SetEntityID sets the "entity_id" field.
-func (_c *KnowledgeEvidenceCreate) SetEntityID(v uuid.UUID) *KnowledgeEvidenceCreate {
-	_c.mutation.SetEntityID(v)
-	return _c
-}
-
-// SetNillableEntityID sets the "entity_id" field if the given value is not nil.
-func (_c *KnowledgeEvidenceCreate) SetNillableEntityID(v *uuid.UUID) *KnowledgeEvidenceCreate {
-	if v != nil {
-		_c.SetEntityID(*v)
-	}
-	return _c
-}
-
-// SetRelationshipID sets the "relationship_id" field.
-func (_c *KnowledgeEvidenceCreate) SetRelationshipID(v uuid.UUID) *KnowledgeEvidenceCreate {
-	_c.mutation.SetRelationshipID(v)
-	return _c
-}
-
-// SetNillableRelationshipID sets the "relationship_id" field if the given value is not nil.
-func (_c *KnowledgeEvidenceCreate) SetNillableRelationshipID(v *uuid.UUID) *KnowledgeEvidenceCreate {
-	if v != nil {
-		_c.SetRelationshipID(*v)
-	}
+// SetEventID sets the "event_id" field.
+func (_c *KnowledgeEvidenceCreate) SetEventID(v uuid.UUID) *KnowledgeEvidenceCreate {
+	_c.mutation.SetEventID(v)
 	return _c
 }
 
 // SetAliasID sets the "alias_id" field.
 func (_c *KnowledgeEvidenceCreate) SetAliasID(v uuid.UUID) *KnowledgeEvidenceCreate {
 	_c.mutation.SetAliasID(v)
-	return _c
-}
-
-// SetNillableAliasID sets the "alias_id" field if the given value is not nil.
-func (_c *KnowledgeEvidenceCreate) SetNillableAliasID(v *uuid.UUID) *KnowledgeEvidenceCreate {
-	if v != nil {
-		_c.SetAliasID(*v)
-	}
-	return _c
-}
-
-// SetEventID sets the "event_id" field.
-func (_c *KnowledgeEvidenceCreate) SetEventID(v uuid.UUID) *KnowledgeEvidenceCreate {
-	_c.mutation.SetEventID(v)
 	return _c
 }
 
@@ -129,23 +85,15 @@ func (_c *KnowledgeEvidenceCreate) SetEvidenceKind(v knowledgeevidence.EvidenceK
 	return _c
 }
 
-// SetObservedAt sets the "observed_at" field.
-func (_c *KnowledgeEvidenceCreate) SetObservedAt(v time.Time) *KnowledgeEvidenceCreate {
-	_c.mutation.SetObservedAt(v)
-	return _c
-}
-
 // SetEffectiveAt sets the "effective_at" field.
 func (_c *KnowledgeEvidenceCreate) SetEffectiveAt(v time.Time) *KnowledgeEvidenceCreate {
 	_c.mutation.SetEffectiveAt(v)
 	return _c
 }
 
-// SetNillableEffectiveAt sets the "effective_at" field if the given value is not nil.
-func (_c *KnowledgeEvidenceCreate) SetNillableEffectiveAt(v *time.Time) *KnowledgeEvidenceCreate {
-	if v != nil {
-		_c.SetEffectiveAt(*v)
-	}
+// SetProperties sets the "properties" field.
+func (_c *KnowledgeEvidenceCreate) SetProperties(v map[string]interface{}) *KnowledgeEvidenceCreate {
+	_c.mutation.SetProperties(v)
 	return _c
 }
 
@@ -168,24 +116,14 @@ func (_c *KnowledgeEvidenceCreate) SetTenant(v *Tenant) *KnowledgeEvidenceCreate
 	return _c.SetTenantID(v.ID)
 }
 
-// SetEntity sets the "entity" edge to the KnowledgeEntity entity.
-func (_c *KnowledgeEvidenceCreate) SetEntity(v *KnowledgeEntity) *KnowledgeEvidenceCreate {
-	return _c.SetEntityID(v.ID)
-}
-
-// SetRelationship sets the "relationship" edge to the KnowledgeRelationship entity.
-func (_c *KnowledgeEvidenceCreate) SetRelationship(v *KnowledgeRelationship) *KnowledgeEvidenceCreate {
-	return _c.SetRelationshipID(v.ID)
-}
-
-// SetAlias sets the "alias" edge to the KnowledgeEntityAlias entity.
-func (_c *KnowledgeEvidenceCreate) SetAlias(v *KnowledgeEntityAlias) *KnowledgeEvidenceCreate {
-	return _c.SetAliasID(v.ID)
-}
-
 // SetEvent sets the "event" edge to the NormalizedEvent entity.
 func (_c *KnowledgeEvidenceCreate) SetEvent(v *NormalizedEvent) *KnowledgeEvidenceCreate {
 	return _c.SetEventID(v.ID)
+}
+
+// SetAlias sets the "alias" edge to the KnowledgeSubjectAlias entity.
+func (_c *KnowledgeEvidenceCreate) SetAlias(v *KnowledgeSubjectAlias) *KnowledgeEvidenceCreate {
+	return _c.SetAliasID(v.ID)
 }
 
 // Mutation returns the KnowledgeEvidenceMutation object of the builder.
@@ -260,16 +198,11 @@ func (_c *KnowledgeEvidenceCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeEvidence.updated_at"`)}
 	}
-	if _, ok := _c.mutation.SubjectType(); !ok {
-		return &ValidationError{Name: "subject_type", err: errors.New(`ent: missing required field "KnowledgeEvidence.subject_type"`)}
-	}
-	if v, ok := _c.mutation.SubjectType(); ok {
-		if err := knowledgeevidence.SubjectTypeValidator(v); err != nil {
-			return &ValidationError{Name: "subject_type", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.subject_type": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.EventID(); !ok {
 		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "KnowledgeEvidence.event_id"`)}
+	}
+	if _, ok := _c.mutation.AliasID(); !ok {
+		return &ValidationError{Name: "alias_id", err: errors.New(`ent: missing required field "KnowledgeEvidence.alias_id"`)}
 	}
 	if _, ok := _c.mutation.Assertion(); !ok {
 		return &ValidationError{Name: "assertion", err: errors.New(`ent: missing required field "KnowledgeEvidence.assertion"`)}
@@ -287,14 +220,20 @@ func (_c *KnowledgeEvidenceCreate) check() error {
 			return &ValidationError{Name: "evidence_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.evidence_kind": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.ObservedAt(); !ok {
-		return &ValidationError{Name: "observed_at", err: errors.New(`ent: missing required field "KnowledgeEvidence.observed_at"`)}
+	if _, ok := _c.mutation.EffectiveAt(); !ok {
+		return &ValidationError{Name: "effective_at", err: errors.New(`ent: missing required field "KnowledgeEvidence.effective_at"`)}
+	}
+	if _, ok := _c.mutation.Properties(); !ok {
+		return &ValidationError{Name: "properties", err: errors.New(`ent: missing required field "KnowledgeEvidence.properties"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeEvidence.tenant"`)}
 	}
 	if len(_c.mutation.EventIDs()) == 0 {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "KnowledgeEvidence.event"`)}
+	}
+	if len(_c.mutation.AliasIDs()) == 0 {
+		return &ValidationError{Name: "alias", err: errors.New(`ent: missing required edge "KnowledgeEvidence.alias"`)}
 	}
 	return nil
 }
@@ -341,10 +280,6 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 		_spec.SetField(knowledgeevidence.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.SubjectType(); ok {
-		_spec.SetField(knowledgeevidence.FieldSubjectType, field.TypeEnum, value)
-		_node.SubjectType = value
-	}
 	if value, ok := _c.mutation.Assertion(); ok {
 		_spec.SetField(knowledgeevidence.FieldAssertion, field.TypeString, value)
 		_node.Assertion = value
@@ -353,13 +288,13 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 		_spec.SetField(knowledgeevidence.FieldEvidenceKind, field.TypeEnum, value)
 		_node.EvidenceKind = value
 	}
-	if value, ok := _c.mutation.ObservedAt(); ok {
-		_spec.SetField(knowledgeevidence.FieldObservedAt, field.TypeTime, value)
-		_node.ObservedAt = value
-	}
 	if value, ok := _c.mutation.EffectiveAt(); ok {
 		_spec.SetField(knowledgeevidence.FieldEffectiveAt, field.TypeTime, value)
-		_node.EffectiveAt = &value
+		_node.EffectiveAt = value
+	}
+	if value, ok := _c.mutation.Properties(); ok {
+		_spec.SetField(knowledgeevidence.FieldProperties, field.TypeJSON, value)
+		_node.Properties = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -379,60 +314,6 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.EntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   knowledgeevidence.EntityTable,
-			Columns: []string{knowledgeevidence.EntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.KnowledgeEvidence
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.EntityID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.RelationshipIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   knowledgeevidence.RelationshipTable,
-			Columns: []string{knowledgeevidence.RelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.KnowledgeEvidence
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.RelationshipID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AliasIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   knowledgeevidence.AliasTable,
-			Columns: []string{knowledgeevidence.AliasColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentityalias.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.KnowledgeEvidence
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.AliasID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -449,6 +330,24 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.EventID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AliasIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgeevidence.AliasTable,
+			Columns: []string{knowledgeevidence.AliasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgesubjectalias.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.KnowledgeEvidence
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.AliasID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -527,138 +426,6 @@ func (u *KnowledgeEvidenceUpsert) UpdateUpdatedAt() *KnowledgeEvidenceUpsert {
 	return u
 }
 
-// SetSubjectType sets the "subject_type" field.
-func (u *KnowledgeEvidenceUpsert) SetSubjectType(v knowledgeevidence.SubjectType) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldSubjectType, v)
-	return u
-}
-
-// UpdateSubjectType sets the "subject_type" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateSubjectType() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldSubjectType)
-	return u
-}
-
-// SetEntityID sets the "entity_id" field.
-func (u *KnowledgeEvidenceUpsert) SetEntityID(v uuid.UUID) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldEntityID, v)
-	return u
-}
-
-// UpdateEntityID sets the "entity_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateEntityID() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldEntityID)
-	return u
-}
-
-// ClearEntityID clears the value of the "entity_id" field.
-func (u *KnowledgeEvidenceUpsert) ClearEntityID() *KnowledgeEvidenceUpsert {
-	u.SetNull(knowledgeevidence.FieldEntityID)
-	return u
-}
-
-// SetRelationshipID sets the "relationship_id" field.
-func (u *KnowledgeEvidenceUpsert) SetRelationshipID(v uuid.UUID) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldRelationshipID, v)
-	return u
-}
-
-// UpdateRelationshipID sets the "relationship_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateRelationshipID() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldRelationshipID)
-	return u
-}
-
-// ClearRelationshipID clears the value of the "relationship_id" field.
-func (u *KnowledgeEvidenceUpsert) ClearRelationshipID() *KnowledgeEvidenceUpsert {
-	u.SetNull(knowledgeevidence.FieldRelationshipID)
-	return u
-}
-
-// SetAliasID sets the "alias_id" field.
-func (u *KnowledgeEvidenceUpsert) SetAliasID(v uuid.UUID) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldAliasID, v)
-	return u
-}
-
-// UpdateAliasID sets the "alias_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateAliasID() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldAliasID)
-	return u
-}
-
-// ClearAliasID clears the value of the "alias_id" field.
-func (u *KnowledgeEvidenceUpsert) ClearAliasID() *KnowledgeEvidenceUpsert {
-	u.SetNull(knowledgeevidence.FieldAliasID)
-	return u
-}
-
-// SetEventID sets the "event_id" field.
-func (u *KnowledgeEvidenceUpsert) SetEventID(v uuid.UUID) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldEventID, v)
-	return u
-}
-
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateEventID() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldEventID)
-	return u
-}
-
-// SetAssertion sets the "assertion" field.
-func (u *KnowledgeEvidenceUpsert) SetAssertion(v string) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldAssertion, v)
-	return u
-}
-
-// UpdateAssertion sets the "assertion" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateAssertion() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldAssertion)
-	return u
-}
-
-// SetEvidenceKind sets the "evidence_kind" field.
-func (u *KnowledgeEvidenceUpsert) SetEvidenceKind(v knowledgeevidence.EvidenceKind) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldEvidenceKind, v)
-	return u
-}
-
-// UpdateEvidenceKind sets the "evidence_kind" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateEvidenceKind() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldEvidenceKind)
-	return u
-}
-
-// SetObservedAt sets the "observed_at" field.
-func (u *KnowledgeEvidenceUpsert) SetObservedAt(v time.Time) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldObservedAt, v)
-	return u
-}
-
-// UpdateObservedAt sets the "observed_at" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateObservedAt() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldObservedAt)
-	return u
-}
-
-// SetEffectiveAt sets the "effective_at" field.
-func (u *KnowledgeEvidenceUpsert) SetEffectiveAt(v time.Time) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldEffectiveAt, v)
-	return u
-}
-
-// UpdateEffectiveAt sets the "effective_at" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateEffectiveAt() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldEffectiveAt)
-	return u
-}
-
-// ClearEffectiveAt clears the value of the "effective_at" field.
-func (u *KnowledgeEvidenceUpsert) ClearEffectiveAt() *KnowledgeEvidenceUpsert {
-	u.SetNull(knowledgeevidence.FieldEffectiveAt)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -678,6 +445,24 @@ func (u *KnowledgeEvidenceUpsertOne) UpdateNewValues() *KnowledgeEvidenceUpsertO
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(knowledgeevidence.FieldTenantID)
+		}
+		if _, exists := u.create.mutation.EventID(); exists {
+			s.SetIgnore(knowledgeevidence.FieldEventID)
+		}
+		if _, exists := u.create.mutation.AliasID(); exists {
+			s.SetIgnore(knowledgeevidence.FieldAliasID)
+		}
+		if _, exists := u.create.mutation.Assertion(); exists {
+			s.SetIgnore(knowledgeevidence.FieldAssertion)
+		}
+		if _, exists := u.create.mutation.EvidenceKind(); exists {
+			s.SetIgnore(knowledgeevidence.FieldEvidenceKind)
+		}
+		if _, exists := u.create.mutation.EffectiveAt(); exists {
+			s.SetIgnore(knowledgeevidence.FieldEffectiveAt)
+		}
+		if _, exists := u.create.mutation.Properties(); exists {
+			s.SetIgnore(knowledgeevidence.FieldProperties)
 		}
 	}))
 	return u
@@ -735,160 +520,6 @@ func (u *KnowledgeEvidenceUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeEvidenc
 func (u *KnowledgeEvidenceUpsertOne) UpdateUpdatedAt() *KnowledgeEvidenceUpsertOne {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetSubjectType sets the "subject_type" field.
-func (u *KnowledgeEvidenceUpsertOne) SetSubjectType(v knowledgeevidence.SubjectType) *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetSubjectType(v)
-	})
-}
-
-// UpdateSubjectType sets the "subject_type" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateSubjectType() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateSubjectType()
-	})
-}
-
-// SetEntityID sets the "entity_id" field.
-func (u *KnowledgeEvidenceUpsertOne) SetEntityID(v uuid.UUID) *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetEntityID(v)
-	})
-}
-
-// UpdateEntityID sets the "entity_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateEntityID() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateEntityID()
-	})
-}
-
-// ClearEntityID clears the value of the "entity_id" field.
-func (u *KnowledgeEvidenceUpsertOne) ClearEntityID() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.ClearEntityID()
-	})
-}
-
-// SetRelationshipID sets the "relationship_id" field.
-func (u *KnowledgeEvidenceUpsertOne) SetRelationshipID(v uuid.UUID) *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetRelationshipID(v)
-	})
-}
-
-// UpdateRelationshipID sets the "relationship_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateRelationshipID() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateRelationshipID()
-	})
-}
-
-// ClearRelationshipID clears the value of the "relationship_id" field.
-func (u *KnowledgeEvidenceUpsertOne) ClearRelationshipID() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.ClearRelationshipID()
-	})
-}
-
-// SetAliasID sets the "alias_id" field.
-func (u *KnowledgeEvidenceUpsertOne) SetAliasID(v uuid.UUID) *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetAliasID(v)
-	})
-}
-
-// UpdateAliasID sets the "alias_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateAliasID() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateAliasID()
-	})
-}
-
-// ClearAliasID clears the value of the "alias_id" field.
-func (u *KnowledgeEvidenceUpsertOne) ClearAliasID() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.ClearAliasID()
-	})
-}
-
-// SetEventID sets the "event_id" field.
-func (u *KnowledgeEvidenceUpsertOne) SetEventID(v uuid.UUID) *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetEventID(v)
-	})
-}
-
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateEventID() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateEventID()
-	})
-}
-
-// SetAssertion sets the "assertion" field.
-func (u *KnowledgeEvidenceUpsertOne) SetAssertion(v string) *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetAssertion(v)
-	})
-}
-
-// UpdateAssertion sets the "assertion" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateAssertion() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateAssertion()
-	})
-}
-
-// SetEvidenceKind sets the "evidence_kind" field.
-func (u *KnowledgeEvidenceUpsertOne) SetEvidenceKind(v knowledgeevidence.EvidenceKind) *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetEvidenceKind(v)
-	})
-}
-
-// UpdateEvidenceKind sets the "evidence_kind" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateEvidenceKind() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateEvidenceKind()
-	})
-}
-
-// SetObservedAt sets the "observed_at" field.
-func (u *KnowledgeEvidenceUpsertOne) SetObservedAt(v time.Time) *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetObservedAt(v)
-	})
-}
-
-// UpdateObservedAt sets the "observed_at" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateObservedAt() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateObservedAt()
-	})
-}
-
-// SetEffectiveAt sets the "effective_at" field.
-func (u *KnowledgeEvidenceUpsertOne) SetEffectiveAt(v time.Time) *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetEffectiveAt(v)
-	})
-}
-
-// UpdateEffectiveAt sets the "effective_at" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateEffectiveAt() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateEffectiveAt()
-	})
-}
-
-// ClearEffectiveAt clears the value of the "effective_at" field.
-func (u *KnowledgeEvidenceUpsertOne) ClearEffectiveAt() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.ClearEffectiveAt()
 	})
 }
 
@@ -1078,6 +709,24 @@ func (u *KnowledgeEvidenceUpsertBulk) UpdateNewValues() *KnowledgeEvidenceUpsert
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(knowledgeevidence.FieldTenantID)
 			}
+			if _, exists := b.mutation.EventID(); exists {
+				s.SetIgnore(knowledgeevidence.FieldEventID)
+			}
+			if _, exists := b.mutation.AliasID(); exists {
+				s.SetIgnore(knowledgeevidence.FieldAliasID)
+			}
+			if _, exists := b.mutation.Assertion(); exists {
+				s.SetIgnore(knowledgeevidence.FieldAssertion)
+			}
+			if _, exists := b.mutation.EvidenceKind(); exists {
+				s.SetIgnore(knowledgeevidence.FieldEvidenceKind)
+			}
+			if _, exists := b.mutation.EffectiveAt(); exists {
+				s.SetIgnore(knowledgeevidence.FieldEffectiveAt)
+			}
+			if _, exists := b.mutation.Properties(); exists {
+				s.SetIgnore(knowledgeevidence.FieldProperties)
+			}
 		}
 	}))
 	return u
@@ -1135,160 +784,6 @@ func (u *KnowledgeEvidenceUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeEviden
 func (u *KnowledgeEvidenceUpsertBulk) UpdateUpdatedAt() *KnowledgeEvidenceUpsertBulk {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetSubjectType sets the "subject_type" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetSubjectType(v knowledgeevidence.SubjectType) *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetSubjectType(v)
-	})
-}
-
-// UpdateSubjectType sets the "subject_type" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateSubjectType() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateSubjectType()
-	})
-}
-
-// SetEntityID sets the "entity_id" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetEntityID(v uuid.UUID) *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetEntityID(v)
-	})
-}
-
-// UpdateEntityID sets the "entity_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateEntityID() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateEntityID()
-	})
-}
-
-// ClearEntityID clears the value of the "entity_id" field.
-func (u *KnowledgeEvidenceUpsertBulk) ClearEntityID() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.ClearEntityID()
-	})
-}
-
-// SetRelationshipID sets the "relationship_id" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetRelationshipID(v uuid.UUID) *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetRelationshipID(v)
-	})
-}
-
-// UpdateRelationshipID sets the "relationship_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateRelationshipID() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateRelationshipID()
-	})
-}
-
-// ClearRelationshipID clears the value of the "relationship_id" field.
-func (u *KnowledgeEvidenceUpsertBulk) ClearRelationshipID() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.ClearRelationshipID()
-	})
-}
-
-// SetAliasID sets the "alias_id" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetAliasID(v uuid.UUID) *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetAliasID(v)
-	})
-}
-
-// UpdateAliasID sets the "alias_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateAliasID() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateAliasID()
-	})
-}
-
-// ClearAliasID clears the value of the "alias_id" field.
-func (u *KnowledgeEvidenceUpsertBulk) ClearAliasID() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.ClearAliasID()
-	})
-}
-
-// SetEventID sets the "event_id" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetEventID(v uuid.UUID) *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetEventID(v)
-	})
-}
-
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateEventID() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateEventID()
-	})
-}
-
-// SetAssertion sets the "assertion" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetAssertion(v string) *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetAssertion(v)
-	})
-}
-
-// UpdateAssertion sets the "assertion" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateAssertion() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateAssertion()
-	})
-}
-
-// SetEvidenceKind sets the "evidence_kind" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetEvidenceKind(v knowledgeevidence.EvidenceKind) *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetEvidenceKind(v)
-	})
-}
-
-// UpdateEvidenceKind sets the "evidence_kind" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateEvidenceKind() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateEvidenceKind()
-	})
-}
-
-// SetObservedAt sets the "observed_at" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetObservedAt(v time.Time) *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetObservedAt(v)
-	})
-}
-
-// UpdateObservedAt sets the "observed_at" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateObservedAt() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateObservedAt()
-	})
-}
-
-// SetEffectiveAt sets the "effective_at" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetEffectiveAt(v time.Time) *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetEffectiveAt(v)
-	})
-}
-
-// UpdateEffectiveAt sets the "effective_at" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateEffectiveAt() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateEffectiveAt()
-	})
-}
-
-// ClearEffectiveAt clears the value of the "effective_at" field.
-func (u *KnowledgeEvidenceUpsertBulk) ClearEffectiveAt() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.ClearEffectiveAt()
 	})
 }
 

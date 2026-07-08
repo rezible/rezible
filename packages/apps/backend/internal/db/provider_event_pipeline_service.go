@@ -304,12 +304,12 @@ func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Contex
 			res.addHandlerError(name, fmt.Errorf("set status pending: %w", setPendingErr))
 		}
 
-		projIds, projErr := s.runEventProjector(ctx, ev, projector)
+		projRefs, projErr := s.runEventProjector(ctx, ev, projector)
 		if projErr != nil {
 			res.addHandlerError(name, projErr)
 		}
 
-		if resErr := s.setEventProjectionResult(ctx, proj.ID, projIds, projErr); resErr != nil {
+		if resErr := s.setEventProjectionResult(ctx, proj.ID, projRefs, projErr); resErr != nil {
 			res.addHandlerError(name, fmt.Errorf("set projection result status: %w", setPendingErr))
 		}
 	}
@@ -317,8 +317,8 @@ func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Contex
 	return &res, nil
 }
 
-func (s *ProviderEventPipelineService) runEventProjector(ctx context.Context, ev *ent.NormalizedEvent, p rez.NormalizedEventProjector) (map[string][]uuid.UUID, error) {
-	var projIds map[string][]uuid.UUID
+func (s *ProviderEventPipelineService) runEventProjector(ctx context.Context, ev *ent.NormalizedEvent, p rez.NormalizedEventProjector) ([]rez.ProjectedDomainEntityRef, error) {
+	var projRefs []rez.ProjectedDomainEntityRef
 	projErr := s.db.WithTx(ctx, func(ctx context.Context, _ *ent.Client) (err error) {
 		defer func() {
 			if v := recover(); v != nil {
@@ -329,13 +329,13 @@ func (s *ProviderEventPipelineService) runEventProjector(ctx context.Context, ev
 				err = fmt.Errorf("projector panic: %v", v)
 			}
 		}()
-		projIds, err = p.HandleEventProjection(ctx, ev)
+		projRefs, err = p.HandleEventProjection(ctx, ev)
 		return err
 	})
 	if s.db.IsTransientError(projErr) {
 		projErr = projections.Retryable(projErr)
 	}
-	return projIds, projErr
+	return projRefs, projErr
 }
 
 type eventProjectionResult struct {
@@ -402,7 +402,7 @@ func (s *ProviderEventPipelineService) setEventProjectionPending(ctx context.Con
 	})
 }
 
-func (s *ProviderEventPipelineService) setEventProjectionResult(ctx context.Context, projId uuid.UUID, projEnts map[string][]uuid.UUID, projErr error) error {
+func (s *ProviderEventPipelineService) setEventProjectionResult(ctx context.Context, projId uuid.UUID, projRefs []rez.ProjectedDomainEntityRef, projErr error) error {
 	setProjFn := func(m *ent.NormalizedEventProjectionMutation) {
 		if projErr == nil {
 			m.ClearError()
@@ -413,27 +413,24 @@ func (s *ProviderEventPipelineService) setEventProjectionResult(ctx context.Cont
 		}
 		m.SetFinishedAt(time.Now().UTC())
 	}
+
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		proj, setProjErr := s.setEventProjection(ctx, projId, setProjFn)
 		if setProjErr != nil {
 			return fmt.Errorf("set projection: %w", setProjErr)
 		}
-		if len(projEnts) > 0 {
-			var builders []*ent.NormalizedEventProjectionEntityCreate
-			for kind, ids := range projEnts {
-				for _, id := range ids {
-					create := tx.NormalizedEventProjectionEntity.Create().
-						SetProjection(proj).
-						SetDomainEntityKind(kind).
-						SetDomainEntityID(id)
-					builders = append(builders, create)
-				}
+		if len(projRefs) > 0 {
+			mapCreateRefsFn := func(c *ent.NormalizedEventProjectionEntityCreate, i int) {
+				c.SetProjectionID(proj.ID)
+				ref := projRefs[i]
+				c.SetDomainEntityKind(ref.Kind)
+				c.SetDomainEntityID(ref.Id)
 			}
-			createEnts := tx.NormalizedEventProjectionEntity.CreateBulk(builders...).
+			createRefs := tx.NormalizedEventProjectionEntity.MapCreateBulk(projRefs, mapCreateRefsFn).
 				OnConflictColumns(nepe.FieldTenantID, nepe.FieldDomainEntityID).
 				DoNothing()
-			if entsErr := createEnts.Exec(ctx); entsErr != nil {
-				return fmt.Errorf("create projection entities: %w", entsErr)
+			if refsErr := createRefs.Exec(ctx); refsErr != nil {
+				return fmt.Errorf("create projection entities: %w", refsErr)
 			}
 		}
 		return nil

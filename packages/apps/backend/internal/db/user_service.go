@@ -15,10 +15,10 @@ import (
 type UserService struct {
 	db        rez.Database
 	orgs      rez.OrganizationService
-	knowledge rez.KnowledgeService
+	knowledge rez.KnowledgeFactService
 }
 
-func NewUserService(db rez.Database, orgs rez.OrganizationService, knowledge rez.KnowledgeService) (*UserService, error) {
+func NewUserService(db rez.Database, orgs rez.OrganizationService, knowledge rez.KnowledgeFactService) (*UserService, error) {
 	s := &UserService{
 		db:        db,
 		orgs:      orgs,
@@ -36,6 +36,7 @@ func (s *UserService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.Use
 	var res *ent.User
 	return res, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		var mutator ent.EntityMutator[*ent.User, *ent.UserMutation]
+
 		if id == uuid.Nil {
 			mutator = tx.User.Create().SetID(uuid.New())
 		} else {

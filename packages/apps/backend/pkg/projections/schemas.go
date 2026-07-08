@@ -85,6 +85,7 @@ type (
 
 	// IncidentSubjectAttributes are the provider-neutral attributes persisted for incident observations.
 	IncidentSubjectAttributes struct {
+		ExternalRef string    `json:"external_ref" validate:"required"`
 		Title       string    `json:"title" validate:"required"`
 		Summary     string    `json:"summary"`
 		SeverityRef string    `json:"severity_ref" validate:"required"`
@@ -108,6 +109,7 @@ type (
 		Title           string             `json:"title" validate:"required"`
 		Description     string             `json:"description"`
 		Definition      string             `json:"definition"`
+		ExternalRef     string             `json:"external_ref" validate:"required"`
 		RelatedEntities []RelatedEntityRef `json:"related_entities"`
 	}
 )
@@ -116,22 +118,6 @@ const SubjectKindAlert SubjectKind = "Alert"
 
 func DecodeAlertEvent(ev *ent.NormalizedEvent) (*AlertEvent, error) {
 	return DecodeSubjectAttributes[AlertSubjectAttributes](ev)
-}
-
-type (
-	PlaybookEvent = Event[PlaybookSubjectAttributes]
-
-	PlaybookSubjectAttributes struct {
-		Title         string   `json:"title" validate:"required"`
-		Content       string   `json:"content" validate:"required"`
-		RelatedAlerts []string `json:"related_alerts"`
-	}
-)
-
-const SubjectKindPlaybook SubjectKind = "Playbook"
-
-func DecodePlaybookEvent(ev *ent.NormalizedEvent) (*PlaybookEvent, error) {
-	return DecodeSubjectAttributes[PlaybookSubjectAttributes](ev)
 }
 
 type (

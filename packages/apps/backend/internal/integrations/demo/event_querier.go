@@ -76,13 +76,6 @@ func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.Prov
 				}
 			}
 		}
-		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourcePlaybooks); shouldQuery {
-			for ev, evErr := range q.pullPlaybookEvents(cursor) {
-				if !yield(ev, evErr) {
-					return
-				}
-			}
-		}
 		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceIncidentImpacts); shouldQuery {
 			for ev, evErr := range q.pullIncidentImpactEvents(cursor) {
 				if !yield(ev, evErr) {
@@ -95,7 +88,7 @@ func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.Prov
 
 var demoIncidentEvents = []incidentObservedPayload{
 	{
-		ExternalID:    "checkout-search-timeouts",
+		ExternalRef:   "checkout-search-timeouts",
 		Title:         "Checkout search lookups timing out",
 		Summary:       "Checkout requests that need product search enrichment are timing out for a subset of customers.",
 		SeverityRef:   "SEV-1",
@@ -104,7 +97,7 @@ var demoIncidentEvents = []incidentObservedPayload{
 		ObservationID: "checkout-search-timeouts-observed",
 	},
 	{
-		ExternalID:    "catalog-search-stale-results",
+		ExternalRef:   "catalog-search-stale-results",
 		Title:         "Catalog search returning stale results",
 		Summary:       "The catalog search index failed to refresh after the nightly product import.",
 		SeverityRef:   "SEV-2",
@@ -113,7 +106,7 @@ var demoIncidentEvents = []incidentObservedPayload{
 		ObservationID: "catalog-search-stale-results-observed",
 	},
 	{
-		ExternalID:    "search-admin-dashboard-degraded",
+		ExternalRef:   "search-admin-dashboard-degraded",
 		Title:         "Search admin dashboard degraded",
 		Summary:       "Internal teams are seeing slow loads and intermittent errors in search administration views.",
 		SeverityRef:   "SEV-3",
@@ -124,7 +117,7 @@ var demoIncidentEvents = []incidentObservedPayload{
 }
 
 type incidentObservedPayload struct {
-	ExternalID    string    `json:"external_id"`
+	ExternalRef   string    `json:"external_ref"`
 	Title         string    `json:"title"`
 	Summary       string    `json:"summary,omitempty"`
 	SeverityRef   string    `json:"severity_ref"`
@@ -138,7 +131,7 @@ func (p incidentObservedPayload) getEventRef() string {
 }
 
 func (p incidentObservedPayload) getSubjectRef() string {
-	return "demo:incident:" + p.ExternalID
+	return "demo:incident:" + p.ExternalRef
 }
 
 func (p incidentObservedPayload) toEvent() (*rez.ProviderEvent, error) {
@@ -173,7 +166,7 @@ func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.Provider
 					Provider:           integrationName,
 					ProviderSource:     sourceIncidents,
 					ProviderEventRef:   fmt.Sprintf("demo:%s:%s", sourceIncidents, payload.ObservationID),
-					ProviderSubjectRef: fmt.Sprintf("demo:incident:%s", payload.ExternalID),
+					ProviderSubjectRef: fmt.Sprintf("demo:incident:%s", payload.ExternalRef),
 					ReceivedAt:         payload.OccurredAt,
 					Payload:            payloadBytes,
 					ContentType:        "application/json",
@@ -189,7 +182,7 @@ func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.Provider
 }
 
 type alertObservedPayload struct {
-	ExternalID      string                         `json:"external_id"`
+	ExternalRef     string                         `json:"external_ref"`
 	Title           string                         `json:"title"`
 	Description     string                         `json:"description,omitempty"`
 	Definition      string                         `json:"definition,omitempty"`
@@ -203,7 +196,7 @@ func (p alertObservedPayload) getEventRef() string {
 }
 
 func (p alertObservedPayload) getSubjectRef() string {
-	return "demo:alert:" + p.ExternalID
+	return "demo:alert:" + p.ExternalRef
 }
 
 func (p alertObservedPayload) toEvent() (*rez.ProviderEvent, error) {
@@ -224,7 +217,7 @@ func (p alertObservedPayload) toEvent() (*rez.ProviderEvent, error) {
 
 var demoAlertEvents = []alertObservedPayload{
 	{
-		ExternalID:  "search-api-latency",
+		ExternalRef: "search-api-latency",
 		Title:       "Search API response time high",
 		Description: "p95 latency for the search API is above 2 seconds.",
 		Definition:  "avg(last_5m):p95:search.api.response_time > 2000",
@@ -236,7 +229,7 @@ var demoAlertEvents = []alertObservedPayload{
 		},
 	},
 	{
-		ExternalID:  "elasticsearch-cpu-critical",
+		ExternalRef: "elasticsearch-cpu-critical",
 		Title:       "Elasticsearch cluster CPU critical",
 		Description: "Primary search cluster CPU is above 95 percent.",
 		Definition:  "avg(last_5m):avg:elasticsearch.cpu.utilization > 95",
@@ -248,7 +241,7 @@ var demoAlertEvents = []alertObservedPayload{
 		},
 	},
 	{
-		ExternalID:  "search-index-build-failed",
+		ExternalRef: "search-index-build-failed",
 		Title:       "Search index build failed",
 		Description: "Nightly catalog search index rebuild exited with a failure.",
 		Definition:  "sum(last_1h):search.indexer.failures > 0",
@@ -256,7 +249,7 @@ var demoAlertEvents = []alertObservedPayload{
 		InstanceRef: "search-index-build-failed-20260513T021000Z",
 	},
 	{
-		ExternalID:  "redis-search-cache-down",
+		ExternalRef: "redis-search-cache-down",
 		Title:       "Redis search cache down",
 		Description: "Search cache node is unreachable from application hosts.",
 		Definition:  "min(last_5m):redis.search_cache.up < 1",
@@ -264,7 +257,7 @@ var demoAlertEvents = []alertObservedPayload{
 		InstanceRef: "redis-search-cache-down-20260513T140500Z",
 	},
 	{
-		ExternalID:  "search-query-backlog",
+		ExternalRef: "search-query-backlog",
 		Title:       "Search query queue backing up",
 		Description: "Search query processing queue depth is above 5000 messages.",
 		Definition:  "avg(last_10m):search.query_queue.depth > 5000",

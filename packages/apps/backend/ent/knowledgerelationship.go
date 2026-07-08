@@ -27,22 +27,14 @@ type KnowledgeRelationship struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Kind holds the value of the "kind" field.
+	Kind string `json:"kind,omitempty"`
 	// SourceEntityID holds the value of the "source_entity_id" field.
 	SourceEntityID uuid.UUID `json:"source_entity_id,omitempty"`
 	// TargetEntityID holds the value of the "target_entity_id" field.
 	TargetEntityID uuid.UUID `json:"target_entity_id,omitempty"`
-	// Kind holds the value of the "kind" field.
-	Kind string `json:"kind,omitempty"`
-	// DisplayName holds the value of the "display_name" field.
-	DisplayName string `json:"display_name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
-	// Time first observed evidence supporting this relationship.
-	FirstObservedAt *time.Time `json:"first_observed_at,omitempty"`
-	// Time most recently observed evidence supporting this relationship.
-	LastObservedAt *time.Time `json:"last_observed_at,omitempty"`
-	// Time observed explicit evidence that this relationship no longer exists or applies.
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	// Properties holds the value of the "properties" field.
 	Properties map[string]interface{} `json:"properties,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -59,8 +51,8 @@ type KnowledgeRelationshipEdges struct {
 	SourceEntity *KnowledgeEntity `json:"source_entity,omitempty"`
 	// TargetEntity holds the value of the target_entity edge.
 	TargetEntity *KnowledgeEntity `json:"target_entity,omitempty"`
-	// Evidence holds the value of the evidence edge.
-	Evidence []*KnowledgeEvidence `json:"evidence,omitempty"`
+	// Aliases holds the value of the aliases edge.
+	Aliases []*KnowledgeSubjectAlias `json:"aliases,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -99,13 +91,13 @@ func (e KnowledgeRelationshipEdges) TargetEntityOrErr() (*KnowledgeEntity, error
 	return nil, &NotLoadedError{edge: "target_entity"}
 }
 
-// EvidenceOrErr returns the Evidence value or an error if the edge
+// AliasesOrErr returns the Aliases value or an error if the edge
 // was not loaded in eager-loading.
-func (e KnowledgeRelationshipEdges) EvidenceOrErr() ([]*KnowledgeEvidence, error) {
+func (e KnowledgeRelationshipEdges) AliasesOrErr() ([]*KnowledgeSubjectAlias, error) {
 	if e.loadedTypes[3] {
-		return e.Evidence, nil
+		return e.Aliases, nil
 	}
-	return nil, &NotLoadedError{edge: "evidence"}
+	return nil, &NotLoadedError{edge: "aliases"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -117,9 +109,9 @@ func (*KnowledgeRelationship) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case knowledgerelationship.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgerelationship.FieldKind, knowledgerelationship.FieldDisplayName, knowledgerelationship.FieldDescription:
+		case knowledgerelationship.FieldKind, knowledgerelationship.FieldDescription:
 			values[i] = new(sql.NullString)
-		case knowledgerelationship.FieldCreatedAt, knowledgerelationship.FieldUpdatedAt, knowledgerelationship.FieldFirstObservedAt, knowledgerelationship.FieldLastObservedAt, knowledgerelationship.FieldDeletedAt:
+		case knowledgerelationship.FieldCreatedAt, knowledgerelationship.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case knowledgerelationship.FieldID, knowledgerelationship.FieldSourceEntityID, knowledgerelationship.FieldTargetEntityID:
 			values[i] = new(uuid.UUID)
@@ -162,6 +154,12 @@ func (_m *KnowledgeRelationship) assignValues(columns []string, values []any) er
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
+		case knowledgerelationship.FieldKind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field kind", values[i])
+			} else if value.Valid {
+				_m.Kind = value.String
+			}
 		case knowledgerelationship.FieldSourceEntityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field source_entity_id", values[i])
@@ -174,44 +172,11 @@ func (_m *KnowledgeRelationship) assignValues(columns []string, values []any) er
 			} else if value != nil {
 				_m.TargetEntityID = *value
 			}
-		case knowledgerelationship.FieldKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field kind", values[i])
-			} else if value.Valid {
-				_m.Kind = value.String
-			}
-		case knowledgerelationship.FieldDisplayName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field display_name", values[i])
-			} else if value.Valid {
-				_m.DisplayName = value.String
-			}
 		case knowledgerelationship.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				_m.Description = value.String
-			}
-		case knowledgerelationship.FieldFirstObservedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field first_observed_at", values[i])
-			} else if value.Valid {
-				_m.FirstObservedAt = new(time.Time)
-				*_m.FirstObservedAt = value.Time
-			}
-		case knowledgerelationship.FieldLastObservedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field last_observed_at", values[i])
-			} else if value.Valid {
-				_m.LastObservedAt = new(time.Time)
-				*_m.LastObservedAt = value.Time
-			}
-		case knowledgerelationship.FieldDeletedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
-			} else if value.Valid {
-				_m.DeletedAt = new(time.Time)
-				*_m.DeletedAt = value.Time
 			}
 		case knowledgerelationship.FieldProperties:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -249,9 +214,9 @@ func (_m *KnowledgeRelationship) QueryTargetEntity() *KnowledgeEntityQuery {
 	return NewKnowledgeRelationshipClient(_m.config).QueryTargetEntity(_m)
 }
 
-// QueryEvidence queries the "evidence" edge of the KnowledgeRelationship entity.
-func (_m *KnowledgeRelationship) QueryEvidence() *KnowledgeEvidenceQuery {
-	return NewKnowledgeRelationshipClient(_m.config).QueryEvidence(_m)
+// QueryAliases queries the "aliases" edge of the KnowledgeRelationship entity.
+func (_m *KnowledgeRelationship) QueryAliases() *KnowledgeSubjectAliasQuery {
+	return NewKnowledgeRelationshipClient(_m.config).QueryAliases(_m)
 }
 
 // Update returns a builder for updating this KnowledgeRelationship.
@@ -286,35 +251,17 @@ func (_m *KnowledgeRelationship) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
+	builder.WriteString("kind=")
+	builder.WriteString(_m.Kind)
+	builder.WriteString(", ")
 	builder.WriteString("source_entity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SourceEntityID))
 	builder.WriteString(", ")
 	builder.WriteString("target_entity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TargetEntityID))
 	builder.WriteString(", ")
-	builder.WriteString("kind=")
-	builder.WriteString(_m.Kind)
-	builder.WriteString(", ")
-	builder.WriteString("display_name=")
-	builder.WriteString(_m.DisplayName)
-	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)
-	builder.WriteString(", ")
-	if v := _m.FirstObservedAt; v != nil {
-		builder.WriteString("first_observed_at=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
-	builder.WriteString(", ")
-	if v := _m.LastObservedAt; v != nil {
-		builder.WriteString("last_observed_at=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
-	builder.WriteString(", ")
-	if v := _m.DeletedAt; v != nil {
-		builder.WriteString("deleted_at=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
 	builder.WriteString(", ")
 	builder.WriteString("properties=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Properties))

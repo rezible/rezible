@@ -51,12 +51,12 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
 	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
 	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
@@ -187,12 +187,12 @@ func checkColumn(t, c string) error {
 			integrationeventsyncrun.Table:                 integrationeventsyncrun.ValidColumn,
 			integrationuserinstallstate.Table:             integrationuserinstallstate.ValidColumn,
 			knowledgeentity.Table:                         knowledgeentity.ValidColumn,
-			knowledgeentityalias.Table:                    knowledgeentityalias.ValidColumn,
 			knowledgeevidence.Table:                       knowledgeevidence.ValidColumn,
 			knowledgegraphsnapshot.Table:                  knowledgegraphsnapshot.ValidColumn,
 			knowledgegraphsnapshotentity.Table:            knowledgegraphsnapshotentity.ValidColumn,
 			knowledgegraphsnapshotrelationship.Table:      knowledgegraphsnapshotrelationship.ValidColumn,
 			knowledgerelationship.Table:                   knowledgerelationship.ValidColumn,
+			knowledgesubjectalias.Table:                   knowledgesubjectalias.ValidColumn,
 			meetingschedule.Table:                         meetingschedule.ValidColumn,
 			meetingsession.Table:                          meetingsession.ValidColumn,
 			normalizedevent.Table:                         normalizedevent.ValidColumn,

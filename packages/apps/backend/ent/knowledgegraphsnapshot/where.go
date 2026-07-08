@@ -67,14 +67,14 @@ func AsOf(v time.Time) predicate.KnowledgeGraphSnapshot {
 	return predicate.KnowledgeGraphSnapshot(sql.FieldEQ(FieldAsOf, v))
 }
 
-// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
-func Name(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldEQ(FieldName, v))
-}
-
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.KnowledgeGraphSnapshot {
 	return predicate.KnowledgeGraphSnapshot(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// ScopeKind applies equality check predicate on the "scope_kind" field. It's identical to ScopeKindEQ.
+func ScopeKind(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldEQ(FieldScopeKind, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -137,81 +137,6 @@ func AsOfLTE(v time.Time) predicate.KnowledgeGraphSnapshot {
 	return predicate.KnowledgeGraphSnapshot(sql.FieldLTE(FieldAsOf, v))
 }
 
-// NameEQ applies the EQ predicate on the "name" field.
-func NameEQ(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldEQ(FieldName, v))
-}
-
-// NameNEQ applies the NEQ predicate on the "name" field.
-func NameNEQ(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldNEQ(FieldName, v))
-}
-
-// NameIn applies the In predicate on the "name" field.
-func NameIn(vs ...string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldIn(FieldName, vs...))
-}
-
-// NameNotIn applies the NotIn predicate on the "name" field.
-func NameNotIn(vs ...string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldNotIn(FieldName, vs...))
-}
-
-// NameGT applies the GT predicate on the "name" field.
-func NameGT(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldGT(FieldName, v))
-}
-
-// NameGTE applies the GTE predicate on the "name" field.
-func NameGTE(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldGTE(FieldName, v))
-}
-
-// NameLT applies the LT predicate on the "name" field.
-func NameLT(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldLT(FieldName, v))
-}
-
-// NameLTE applies the LTE predicate on the "name" field.
-func NameLTE(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldLTE(FieldName, v))
-}
-
-// NameContains applies the Contains predicate on the "name" field.
-func NameContains(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldContains(FieldName, v))
-}
-
-// NameHasPrefix applies the HasPrefix predicate on the "name" field.
-func NameHasPrefix(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldHasPrefix(FieldName, v))
-}
-
-// NameHasSuffix applies the HasSuffix predicate on the "name" field.
-func NameHasSuffix(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldHasSuffix(FieldName, v))
-}
-
-// NameIsNil applies the IsNil predicate on the "name" field.
-func NameIsNil() predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldIsNull(FieldName))
-}
-
-// NameNotNil applies the NotNil predicate on the "name" field.
-func NameNotNil() predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldNotNull(FieldName))
-}
-
-// NameEqualFold applies the EqualFold predicate on the "name" field.
-func NameEqualFold(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldEqualFold(FieldName, v))
-}
-
-// NameContainsFold applies the ContainsFold predicate on the "name" field.
-func NameContainsFold(v string) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(sql.FieldContainsFold(FieldName, v))
-}
-
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.KnowledgeGraphSnapshot {
 	return predicate.KnowledgeGraphSnapshot(sql.FieldEQ(FieldCreatedAt, v))
@@ -252,6 +177,71 @@ func CreatedAtLTE(v time.Time) predicate.KnowledgeGraphSnapshot {
 	return predicate.KnowledgeGraphSnapshot(sql.FieldLTE(FieldCreatedAt, v))
 }
 
+// ScopeKindEQ applies the EQ predicate on the "scope_kind" field.
+func ScopeKindEQ(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldEQ(FieldScopeKind, v))
+}
+
+// ScopeKindNEQ applies the NEQ predicate on the "scope_kind" field.
+func ScopeKindNEQ(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldNEQ(FieldScopeKind, v))
+}
+
+// ScopeKindIn applies the In predicate on the "scope_kind" field.
+func ScopeKindIn(vs ...string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldIn(FieldScopeKind, vs...))
+}
+
+// ScopeKindNotIn applies the NotIn predicate on the "scope_kind" field.
+func ScopeKindNotIn(vs ...string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldNotIn(FieldScopeKind, vs...))
+}
+
+// ScopeKindGT applies the GT predicate on the "scope_kind" field.
+func ScopeKindGT(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldGT(FieldScopeKind, v))
+}
+
+// ScopeKindGTE applies the GTE predicate on the "scope_kind" field.
+func ScopeKindGTE(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldGTE(FieldScopeKind, v))
+}
+
+// ScopeKindLT applies the LT predicate on the "scope_kind" field.
+func ScopeKindLT(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldLT(FieldScopeKind, v))
+}
+
+// ScopeKindLTE applies the LTE predicate on the "scope_kind" field.
+func ScopeKindLTE(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldLTE(FieldScopeKind, v))
+}
+
+// ScopeKindContains applies the Contains predicate on the "scope_kind" field.
+func ScopeKindContains(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldContains(FieldScopeKind, v))
+}
+
+// ScopeKindHasPrefix applies the HasPrefix predicate on the "scope_kind" field.
+func ScopeKindHasPrefix(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldHasPrefix(FieldScopeKind, v))
+}
+
+// ScopeKindHasSuffix applies the HasSuffix predicate on the "scope_kind" field.
+func ScopeKindHasSuffix(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldHasSuffix(FieldScopeKind, v))
+}
+
+// ScopeKindEqualFold applies the EqualFold predicate on the "scope_kind" field.
+func ScopeKindEqualFold(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldEqualFold(FieldScopeKind, v))
+}
+
+// ScopeKindContainsFold applies the ContainsFold predicate on the "scope_kind" field.
+func ScopeKindContainsFold(v string) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(sql.FieldContainsFold(FieldScopeKind, v))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.KnowledgeGraphSnapshot {
 	return predicate.KnowledgeGraphSnapshot(func(s *sql.Selector) {
@@ -273,35 +263,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.KnowledgeGraphSnapshot {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
 		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshot
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasSystemAnalyses applies the HasEdge predicate on the "system_analyses" edge.
-func HasSystemAnalyses() predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysesTable, SystemAnalysesColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysis
-		step.Edge.Schema = schemaConfig.SystemAnalysis
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSystemAnalysesWith applies the HasEdge predicate on the "system_analyses" edge with a given conditions (other predicates).
-func HasSystemAnalysesWith(preds ...predicate.SystemAnalysis) predicate.KnowledgeGraphSnapshot {
-	return predicate.KnowledgeGraphSnapshot(func(s *sql.Selector) {
-		step := newSystemAnalysesStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysis
-		step.Edge.Schema = schemaConfig.SystemAnalysis
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -360,6 +321,35 @@ func HasRelationshipsWith(preds ...predicate.KnowledgeGraphSnapshotRelationship)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
 		step.Edge.Schema = schemaConfig.KnowledgeGraphSnapshotRelationship
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSystemAnalyses applies the HasEdge predicate on the "system_analyses" edge.
+func HasSystemAnalyses() predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysesTable, SystemAnalysesColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.SystemAnalysis
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSystemAnalysesWith applies the HasEdge predicate on the "system_analyses" edge with a given conditions (other predicates).
+func HasSystemAnalysesWith(preds ...predicate.SystemAnalysis) predicate.KnowledgeGraphSnapshot {
+	return predicate.KnowledgeGraphSnapshot(func(s *sql.Selector) {
+		step := newSystemAnalysesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.SystemAnalysis
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

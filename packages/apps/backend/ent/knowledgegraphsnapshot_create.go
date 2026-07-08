@@ -48,20 +48,6 @@ func (_c *KnowledgeGraphSnapshotCreate) SetNillableAsOf(v *time.Time) *Knowledge
 	return _c
 }
 
-// SetName sets the "name" field.
-func (_c *KnowledgeGraphSnapshotCreate) SetName(v string) *KnowledgeGraphSnapshotCreate {
-	_c.mutation.SetName(v)
-	return _c
-}
-
-// SetNillableName sets the "name" field if the given value is not nil.
-func (_c *KnowledgeGraphSnapshotCreate) SetNillableName(v *string) *KnowledgeGraphSnapshotCreate {
-	if v != nil {
-		_c.SetName(*v)
-	}
-	return _c
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (_c *KnowledgeGraphSnapshotCreate) SetCreatedAt(v time.Time) *KnowledgeGraphSnapshotCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -73,6 +59,18 @@ func (_c *KnowledgeGraphSnapshotCreate) SetNillableCreatedAt(v *time.Time) *Know
 	if v != nil {
 		_c.SetCreatedAt(*v)
 	}
+	return _c
+}
+
+// SetScopeKind sets the "scope_kind" field.
+func (_c *KnowledgeGraphSnapshotCreate) SetScopeKind(v string) *KnowledgeGraphSnapshotCreate {
+	_c.mutation.SetScopeKind(v)
+	return _c
+}
+
+// SetScopeProperties sets the "scope_properties" field.
+func (_c *KnowledgeGraphSnapshotCreate) SetScopeProperties(v map[string]interface{}) *KnowledgeGraphSnapshotCreate {
+	_c.mutation.SetScopeProperties(v)
 	return _c
 }
 
@@ -93,21 +91,6 @@ func (_c *KnowledgeGraphSnapshotCreate) SetNillableID(v *uuid.UUID) *KnowledgeGr
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *KnowledgeGraphSnapshotCreate) SetTenant(v *Tenant) *KnowledgeGraphSnapshotCreate {
 	return _c.SetTenantID(v.ID)
-}
-
-// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysis entity by IDs.
-func (_c *KnowledgeGraphSnapshotCreate) AddSystemAnalysisIDs(ids ...uuid.UUID) *KnowledgeGraphSnapshotCreate {
-	_c.mutation.AddSystemAnalysisIDs(ids...)
-	return _c
-}
-
-// AddSystemAnalyses adds the "system_analyses" edges to the SystemAnalysis entity.
-func (_c *KnowledgeGraphSnapshotCreate) AddSystemAnalyses(v ...*SystemAnalysis) *KnowledgeGraphSnapshotCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddSystemAnalysisIDs(ids...)
 }
 
 // AddEntityIDs adds the "entities" edge to the KnowledgeGraphSnapshotEntity entity by IDs.
@@ -138,6 +121,21 @@ func (_c *KnowledgeGraphSnapshotCreate) AddRelationships(v ...*KnowledgeGraphSna
 		ids[i] = v[i].ID
 	}
 	return _c.AddRelationshipIDs(ids...)
+}
+
+// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysis entity by IDs.
+func (_c *KnowledgeGraphSnapshotCreate) AddSystemAnalysisIDs(ids ...uuid.UUID) *KnowledgeGraphSnapshotCreate {
+	_c.mutation.AddSystemAnalysisIDs(ids...)
+	return _c
+}
+
+// AddSystemAnalyses adds the "system_analyses" edges to the SystemAnalysis entity.
+func (_c *KnowledgeGraphSnapshotCreate) AddSystemAnalyses(v ...*SystemAnalysis) *KnowledgeGraphSnapshotCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSystemAnalysisIDs(ids...)
 }
 
 // Mutation returns the KnowledgeGraphSnapshotMutation object of the builder.
@@ -212,6 +210,12 @@ func (_c *KnowledgeGraphSnapshotCreate) check() error {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeGraphSnapshot.created_at"`)}
 	}
+	if _, ok := _c.mutation.ScopeKind(); !ok {
+		return &ValidationError{Name: "scope_kind", err: errors.New(`ent: missing required field "KnowledgeGraphSnapshot.scope_kind"`)}
+	}
+	if _, ok := _c.mutation.ScopeProperties(); !ok {
+		return &ValidationError{Name: "scope_properties", err: errors.New(`ent: missing required field "KnowledgeGraphSnapshot.scope_properties"`)}
+	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeGraphSnapshot.tenant"`)}
 	}
@@ -256,13 +260,17 @@ func (_c *KnowledgeGraphSnapshotCreate) createSpec() (*KnowledgeGraphSnapshot, *
 		_spec.SetField(knowledgegraphsnapshot.FieldAsOf, field.TypeTime, value)
 		_node.AsOf = value
 	}
-	if value, ok := _c.mutation.Name(); ok {
-		_spec.SetField(knowledgegraphsnapshot.FieldName, field.TypeString, value)
-		_node.Name = value
-	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(knowledgegraphsnapshot.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.ScopeKind(); ok {
+		_spec.SetField(knowledgegraphsnapshot.FieldScopeKind, field.TypeString, value)
+		_node.ScopeKind = value
+	}
+	if value, ok := _c.mutation.ScopeProperties(); ok {
+		_spec.SetField(knowledgegraphsnapshot.FieldScopeProperties, field.TypeJSON, value)
+		_node.ScopeProperties = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -280,23 +288,6 @@ func (_c *KnowledgeGraphSnapshotCreate) createSpec() (*KnowledgeGraphSnapshot, *
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.SystemAnalysesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
-			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.SystemAnalysis
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.EntitiesIDs(); len(nodes) > 0 {
@@ -328,6 +319,23 @@ func (_c *KnowledgeGraphSnapshotCreate) createSpec() (*KnowledgeGraphSnapshot, *
 			},
 		}
 		edge.Schema = _c.schemaConfig.KnowledgeGraphSnapshotRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SystemAnalysesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
+			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SystemAnalysis
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -397,24 +405,6 @@ func (u *KnowledgeGraphSnapshotUpsert) UpdateAsOf() *KnowledgeGraphSnapshotUpser
 	return u
 }
 
-// SetName sets the "name" field.
-func (u *KnowledgeGraphSnapshotUpsert) SetName(v string) *KnowledgeGraphSnapshotUpsert {
-	u.Set(knowledgegraphsnapshot.FieldName, v)
-	return u
-}
-
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *KnowledgeGraphSnapshotUpsert) UpdateName() *KnowledgeGraphSnapshotUpsert {
-	u.SetExcluded(knowledgegraphsnapshot.FieldName)
-	return u
-}
-
-// ClearName clears the value of the "name" field.
-func (u *KnowledgeGraphSnapshotUpsert) ClearName() *KnowledgeGraphSnapshotUpsert {
-	u.SetNull(knowledgegraphsnapshot.FieldName)
-	return u
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (u *KnowledgeGraphSnapshotUpsert) SetCreatedAt(v time.Time) *KnowledgeGraphSnapshotUpsert {
 	u.Set(knowledgegraphsnapshot.FieldCreatedAt, v)
@@ -424,6 +414,30 @@ func (u *KnowledgeGraphSnapshotUpsert) SetCreatedAt(v time.Time) *KnowledgeGraph
 // UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
 func (u *KnowledgeGraphSnapshotUpsert) UpdateCreatedAt() *KnowledgeGraphSnapshotUpsert {
 	u.SetExcluded(knowledgegraphsnapshot.FieldCreatedAt)
+	return u
+}
+
+// SetScopeKind sets the "scope_kind" field.
+func (u *KnowledgeGraphSnapshotUpsert) SetScopeKind(v string) *KnowledgeGraphSnapshotUpsert {
+	u.Set(knowledgegraphsnapshot.FieldScopeKind, v)
+	return u
+}
+
+// UpdateScopeKind sets the "scope_kind" field to the value that was provided on create.
+func (u *KnowledgeGraphSnapshotUpsert) UpdateScopeKind() *KnowledgeGraphSnapshotUpsert {
+	u.SetExcluded(knowledgegraphsnapshot.FieldScopeKind)
+	return u
+}
+
+// SetScopeProperties sets the "scope_properties" field.
+func (u *KnowledgeGraphSnapshotUpsert) SetScopeProperties(v map[string]interface{}) *KnowledgeGraphSnapshotUpsert {
+	u.Set(knowledgegraphsnapshot.FieldScopeProperties, v)
+	return u
+}
+
+// UpdateScopeProperties sets the "scope_properties" field to the value that was provided on create.
+func (u *KnowledgeGraphSnapshotUpsert) UpdateScopeProperties() *KnowledgeGraphSnapshotUpsert {
+	u.SetExcluded(knowledgegraphsnapshot.FieldScopeProperties)
 	return u
 }
 
@@ -492,27 +506,6 @@ func (u *KnowledgeGraphSnapshotUpsertOne) UpdateAsOf() *KnowledgeGraphSnapshotUp
 	})
 }
 
-// SetName sets the "name" field.
-func (u *KnowledgeGraphSnapshotUpsertOne) SetName(v string) *KnowledgeGraphSnapshotUpsertOne {
-	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
-		s.SetName(v)
-	})
-}
-
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *KnowledgeGraphSnapshotUpsertOne) UpdateName() *KnowledgeGraphSnapshotUpsertOne {
-	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
-		s.UpdateName()
-	})
-}
-
-// ClearName clears the value of the "name" field.
-func (u *KnowledgeGraphSnapshotUpsertOne) ClearName() *KnowledgeGraphSnapshotUpsertOne {
-	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
-		s.ClearName()
-	})
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (u *KnowledgeGraphSnapshotUpsertOne) SetCreatedAt(v time.Time) *KnowledgeGraphSnapshotUpsertOne {
 	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
@@ -524,6 +517,34 @@ func (u *KnowledgeGraphSnapshotUpsertOne) SetCreatedAt(v time.Time) *KnowledgeGr
 func (u *KnowledgeGraphSnapshotUpsertOne) UpdateCreatedAt() *KnowledgeGraphSnapshotUpsertOne {
 	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
 		s.UpdateCreatedAt()
+	})
+}
+
+// SetScopeKind sets the "scope_kind" field.
+func (u *KnowledgeGraphSnapshotUpsertOne) SetScopeKind(v string) *KnowledgeGraphSnapshotUpsertOne {
+	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
+		s.SetScopeKind(v)
+	})
+}
+
+// UpdateScopeKind sets the "scope_kind" field to the value that was provided on create.
+func (u *KnowledgeGraphSnapshotUpsertOne) UpdateScopeKind() *KnowledgeGraphSnapshotUpsertOne {
+	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
+		s.UpdateScopeKind()
+	})
+}
+
+// SetScopeProperties sets the "scope_properties" field.
+func (u *KnowledgeGraphSnapshotUpsertOne) SetScopeProperties(v map[string]interface{}) *KnowledgeGraphSnapshotUpsertOne {
+	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
+		s.SetScopeProperties(v)
+	})
+}
+
+// UpdateScopeProperties sets the "scope_properties" field to the value that was provided on create.
+func (u *KnowledgeGraphSnapshotUpsertOne) UpdateScopeProperties() *KnowledgeGraphSnapshotUpsertOne {
+	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
+		s.UpdateScopeProperties()
 	})
 }
 
@@ -759,27 +780,6 @@ func (u *KnowledgeGraphSnapshotUpsertBulk) UpdateAsOf() *KnowledgeGraphSnapshotU
 	})
 }
 
-// SetName sets the "name" field.
-func (u *KnowledgeGraphSnapshotUpsertBulk) SetName(v string) *KnowledgeGraphSnapshotUpsertBulk {
-	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
-		s.SetName(v)
-	})
-}
-
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *KnowledgeGraphSnapshotUpsertBulk) UpdateName() *KnowledgeGraphSnapshotUpsertBulk {
-	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
-		s.UpdateName()
-	})
-}
-
-// ClearName clears the value of the "name" field.
-func (u *KnowledgeGraphSnapshotUpsertBulk) ClearName() *KnowledgeGraphSnapshotUpsertBulk {
-	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
-		s.ClearName()
-	})
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (u *KnowledgeGraphSnapshotUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeGraphSnapshotUpsertBulk {
 	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
@@ -791,6 +791,34 @@ func (u *KnowledgeGraphSnapshotUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeG
 func (u *KnowledgeGraphSnapshotUpsertBulk) UpdateCreatedAt() *KnowledgeGraphSnapshotUpsertBulk {
 	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
 		s.UpdateCreatedAt()
+	})
+}
+
+// SetScopeKind sets the "scope_kind" field.
+func (u *KnowledgeGraphSnapshotUpsertBulk) SetScopeKind(v string) *KnowledgeGraphSnapshotUpsertBulk {
+	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
+		s.SetScopeKind(v)
+	})
+}
+
+// UpdateScopeKind sets the "scope_kind" field to the value that was provided on create.
+func (u *KnowledgeGraphSnapshotUpsertBulk) UpdateScopeKind() *KnowledgeGraphSnapshotUpsertBulk {
+	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
+		s.UpdateScopeKind()
+	})
+}
+
+// SetScopeProperties sets the "scope_properties" field.
+func (u *KnowledgeGraphSnapshotUpsertBulk) SetScopeProperties(v map[string]interface{}) *KnowledgeGraphSnapshotUpsertBulk {
+	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
+		s.SetScopeProperties(v)
+	})
+}
+
+// UpdateScopeProperties sets the "scope_properties" field to the value that was provided on create.
+func (u *KnowledgeGraphSnapshotUpsertBulk) UpdateScopeProperties() *KnowledgeGraphSnapshotUpsertBulk {
+	return u.Update(func(s *KnowledgeGraphSnapshotUpsert) {
+		s.UpdateScopeProperties()
 	})
 }
 

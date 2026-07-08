@@ -26,7 +26,7 @@ type Handler struct {
 	*playbooksHandler
 	*retrospectivesHandler
 	*systemAnalysisHandler
-	*systemTopologyHandler
+	*knowledgeGraphHandler
 	*teamsHandler
 	*usersHandler
 }
@@ -49,7 +49,7 @@ func NewHandler(
 	oncallMetrics rez.OncallMetricsService,
 	playbooks rez.PlaybookService,
 	retros rez.RetrospectiveService,
-	topology rez.SystemTopologyService,
+	knowledge rez.KnowledgeGraphService,
 ) *Handler {
 	return &Handler{
 		alertsHandler:             newAlertsHandler(alerts),
@@ -72,7 +72,7 @@ func NewHandler(
 		playbooksHandler:          newPlaybooksHandler(playbooks),
 		retrospectivesHandler:     newRetrospectivesHandler(users, incidents, retros, documents),
 		systemAnalysisHandler:     newSystemAnalysisHandler(db),
-		systemTopologyHandler:     newSystemTopologyHandler(topology),
+		knowledgeGraphHandler:     newKnowledgeGraphHandler(knowledge),
 		teamsHandler:              newTeamsHandler(db),
 		usersHandler:              newUsersHandler(users),
 	}

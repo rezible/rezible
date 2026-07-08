@@ -23,34 +23,24 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldSubjectType holds the string denoting the subject_type field in the database.
-	FieldSubjectType = "subject_type"
-	// FieldEntityID holds the string denoting the entity_id field in the database.
-	FieldEntityID = "entity_id"
-	// FieldRelationshipID holds the string denoting the relationship_id field in the database.
-	FieldRelationshipID = "relationship_id"
-	// FieldAliasID holds the string denoting the alias_id field in the database.
-	FieldAliasID = "alias_id"
 	// FieldEventID holds the string denoting the event_id field in the database.
 	FieldEventID = "event_id"
+	// FieldAliasID holds the string denoting the alias_id field in the database.
+	FieldAliasID = "alias_id"
 	// FieldAssertion holds the string denoting the assertion field in the database.
 	FieldAssertion = "assertion"
 	// FieldEvidenceKind holds the string denoting the evidence_kind field in the database.
 	FieldEvidenceKind = "evidence_kind"
-	// FieldObservedAt holds the string denoting the observed_at field in the database.
-	FieldObservedAt = "observed_at"
 	// FieldEffectiveAt holds the string denoting the effective_at field in the database.
 	FieldEffectiveAt = "effective_at"
+	// FieldProperties holds the string denoting the properties field in the database.
+	FieldProperties = "properties"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeEntity holds the string denoting the entity edge name in mutations.
-	EdgeEntity = "entity"
-	// EdgeRelationship holds the string denoting the relationship edge name in mutations.
-	EdgeRelationship = "relationship"
-	// EdgeAlias holds the string denoting the alias edge name in mutations.
-	EdgeAlias = "alias"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
 	EdgeEvent = "event"
+	// EdgeAlias holds the string denoting the alias edge name in mutations.
+	EdgeAlias = "alias"
 	// Table holds the table name of the knowledgeevidence in the database.
 	Table = "knowledge_evidences"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -60,27 +50,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// EntityTable is the table that holds the entity relation/edge.
-	EntityTable = "knowledge_evidences"
-	// EntityInverseTable is the table name for the KnowledgeEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
-	EntityInverseTable = "knowledge_entities"
-	// EntityColumn is the table column denoting the entity relation/edge.
-	EntityColumn = "entity_id"
-	// RelationshipTable is the table that holds the relationship relation/edge.
-	RelationshipTable = "knowledge_evidences"
-	// RelationshipInverseTable is the table name for the KnowledgeRelationship entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgerelationship" package.
-	RelationshipInverseTable = "knowledge_relationships"
-	// RelationshipColumn is the table column denoting the relationship relation/edge.
-	RelationshipColumn = "relationship_id"
-	// AliasTable is the table that holds the alias relation/edge.
-	AliasTable = "knowledge_evidences"
-	// AliasInverseTable is the table name for the KnowledgeEntityAlias entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentityalias" package.
-	AliasInverseTable = "knowledge_entity_alias"
-	// AliasColumn is the table column denoting the alias relation/edge.
-	AliasColumn = "alias_id"
 	// EventTable is the table that holds the event relation/edge.
 	EventTable = "knowledge_evidences"
 	// EventInverseTable is the table name for the NormalizedEvent entity.
@@ -88,6 +57,13 @@ const (
 	EventInverseTable = "normalized_events"
 	// EventColumn is the table column denoting the event relation/edge.
 	EventColumn = "event_id"
+	// AliasTable is the table that holds the alias relation/edge.
+	AliasTable = "knowledge_evidences"
+	// AliasInverseTable is the table name for the KnowledgeSubjectAlias entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgesubjectalias" package.
+	AliasInverseTable = "knowledge_subject_alias"
+	// AliasColumn is the table column denoting the alias relation/edge.
+	AliasColumn = "alias_id"
 )
 
 // Columns holds all SQL columns for knowledgeevidence fields.
@@ -96,15 +72,12 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldSubjectType,
-	FieldEntityID,
-	FieldRelationshipID,
-	FieldAliasID,
 	FieldEventID,
+	FieldAliasID,
 	FieldAssertion,
 	FieldEvidenceKind,
-	FieldObservedAt,
 	FieldEffectiveAt,
+	FieldProperties,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -137,29 +110,6 @@ var (
 	DefaultID func() uuid.UUID
 )
 
-// SubjectType defines the type for the "subject_type" enum field.
-type SubjectType string
-
-// SubjectType values.
-const (
-	SubjectTypeEntity       SubjectType = "entity"
-	SubjectTypeRelationship SubjectType = "relationship"
-)
-
-func (st SubjectType) String() string {
-	return string(st)
-}
-
-// SubjectTypeValidator is a validator for the "subject_type" field enum values. It is called by the builders before save.
-func SubjectTypeValidator(st SubjectType) error {
-	switch st {
-	case SubjectTypeEntity, SubjectTypeRelationship:
-		return nil
-	default:
-		return fmt.Errorf("knowledgeevidence: invalid enum value for subject_type field: %q", st)
-	}
-}
-
 // EvidenceKind defines the type for the "evidence_kind" enum field.
 type EvidenceKind string
 
@@ -167,8 +117,8 @@ type EvidenceKind string
 const (
 	EvidenceKindObserved     EvidenceKind = "observed"
 	EvidenceKindChanged      EvidenceKind = "changed"
-	EvidenceKindDeleted      EvidenceKind = "deleted"
 	EvidenceKindContradicted EvidenceKind = "contradicted"
+	EvidenceKindDeleted      EvidenceKind = "deleted"
 )
 
 func (ek EvidenceKind) String() string {
@@ -178,7 +128,7 @@ func (ek EvidenceKind) String() string {
 // EvidenceKindValidator is a validator for the "evidence_kind" field enum values. It is called by the builders before save.
 func EvidenceKindValidator(ek EvidenceKind) error {
 	switch ek {
-	case EvidenceKindObserved, EvidenceKindChanged, EvidenceKindDeleted, EvidenceKindContradicted:
+	case EvidenceKindObserved, EvidenceKindChanged, EvidenceKindContradicted, EvidenceKindDeleted:
 		return nil
 	default:
 		return fmt.Errorf("knowledgeevidence: invalid enum value for evidence_kind field: %q", ek)
@@ -208,29 +158,14 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// BySubjectType orders the results by the subject_type field.
-func BySubjectType(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSubjectType, opts...).ToFunc()
-}
-
-// ByEntityID orders the results by the entity_id field.
-func ByEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEntityID, opts...).ToFunc()
-}
-
-// ByRelationshipID orders the results by the relationship_id field.
-func ByRelationshipID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRelationshipID, opts...).ToFunc()
+// ByEventID orders the results by the event_id field.
+func ByEventID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEventID, opts...).ToFunc()
 }
 
 // ByAliasID orders the results by the alias_id field.
 func ByAliasID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAliasID, opts...).ToFunc()
-}
-
-// ByEventID orders the results by the event_id field.
-func ByEventID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEventID, opts...).ToFunc()
 }
 
 // ByAssertion orders the results by the assertion field.
@@ -241,11 +176,6 @@ func ByAssertion(opts ...sql.OrderTermOption) OrderOption {
 // ByEvidenceKind orders the results by the evidence_kind field.
 func ByEvidenceKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEvidenceKind, opts...).ToFunc()
-}
-
-// ByObservedAt orders the results by the observed_at field.
-func ByObservedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldObservedAt, opts...).ToFunc()
 }
 
 // ByEffectiveAt orders the results by the effective_at field.
@@ -260,17 +190,10 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByEntityField orders the results by entity field.
-func ByEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByEventField orders the results by event field.
+func ByEventField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEntityStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByRelationshipField orders the results by relationship field.
-func ByRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRelationshipStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newEventStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -280,13 +203,6 @@ func ByAliasField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAliasStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByEventField orders the results by event field.
-func ByEventField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEventStep(), sql.OrderByField(field, opts...))
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -294,18 +210,11 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newEntityStep() *sqlgraph.Step {
+func newEventStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EntityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, EntityTable, EntityColumn),
-	)
-}
-func newRelationshipStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RelationshipInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, RelationshipTable, RelationshipColumn),
+		sqlgraph.To(EventInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
 	)
 }
 func newAliasStep() *sqlgraph.Step {
@@ -313,12 +222,5 @@ func newAliasStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AliasInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, AliasTable, AliasColumn),
-	)
-}
-func newEventStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EventInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
 	)
 }

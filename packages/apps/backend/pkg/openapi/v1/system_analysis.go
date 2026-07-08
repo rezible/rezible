@@ -47,9 +47,9 @@ type (
 		Attributes SystemAnalysisAttributes `json:"attributes"`
 	}
 	SystemAnalysisAttributes struct {
-		TopologySnapshot *SystemTopologySnapshot `json:"topologySnapshot,omitempty"`
-		Nodes            []SystemAnalysisNode    `json:"nodes"`
-		Edges            []SystemAnalysisEdge    `json:"edges"`
+		KnowledgeGraphSnapshot *KnowledgeGraphSnapshot `json:"knowledgeGraphSnapshot,omitempty"`
+		Nodes                  []SystemAnalysisNode    `json:"nodes"`
+		Edges                  []SystemAnalysisEdge    `json:"edges"`
 	}
 
 	SystemAnalysisNode struct {
@@ -57,7 +57,7 @@ type (
 		Attributes SystemAnalysisNodeAttributes `json:"attributes"`
 	}
 	SystemAnalysisNodeAttributes struct {
-		SnapshotEntity SystemTopologySnapshotEntity  `json:"snapshotEntity"`
+		SnapshotEntity KnowledgeGraphSnapshotEntity  `json:"snapshotEntity"`
 		Position       SystemAnalysisDiagramPosition `json:"position"`
 		Description    string                        `json:"description"`
 	}
@@ -73,7 +73,7 @@ type (
 		Attributes SystemAnalysisTopologyEdgeAttributes `json:"attributes"`
 	}
 	SystemAnalysisTopologyEdgeAttributes struct {
-		SnapshotRelationship SystemTopologySnapshotRelationship `json:"snapshotRelationship"`
+		SnapshotRelationship KnowledgeGraphSnapshotRelationship `json:"snapshotRelationship"`
 		Description          string                             `json:"description"`
 	}
 )
@@ -81,8 +81,8 @@ type (
 func SystemAnalysisFromEnt(sc *ent.SystemAnalysis) SystemAnalysis {
 	attr := SystemAnalysisAttributes{}
 
-	if snapshot, err := sc.Edges.TopologySnapshotOrErr(); err == nil {
-		attr.TopologySnapshot = new(SystemTopologySnapshotFromEnt(snapshot))
+	if snapshot, err := sc.Edges.KnowledgeGraphSnapshotOrErr(); err == nil {
+		attr.KnowledgeGraphSnapshot = new(KnowledgeGraphSnapshotFromEnt(snapshot))
 	}
 
 	attr.Nodes = make([]SystemAnalysisNode, len(sc.Edges.AnalysisNodes))
@@ -109,7 +109,7 @@ func SystemAnalysisNodeFromEnt(node *ent.SystemAnalysisTopologyNode) SystemAnaly
 	}
 
 	if snapshotEntity, err := node.Edges.SnapshotEntityOrErr(); err == nil {
-		attr.SnapshotEntity = SystemTopologySnapshotEntityFromEnt(snapshotEntity)
+		attr.SnapshotEntity = KnowledgeGraphSnapshotEntityFromEnt(snapshotEntity)
 	}
 
 	return SystemAnalysisNode{Id: node.ID, Attributes: attr}
@@ -120,7 +120,7 @@ func SystemAnalysisEdgeFromEnt(edge *ent.SystemAnalysisTopologyEdge) SystemAnaly
 		Description: edge.Description,
 	}
 	if snapshotRelationship, err := edge.Edges.SnapshotRelationshipOrErr(); err == nil {
-		attr.SnapshotRelationship = SystemTopologySnapshotRelationshipFromEnt(snapshotRelationship)
+		attr.SnapshotRelationship = KnowledgeGraphSnapshotRelationshipFromEnt(snapshotRelationship)
 	}
 
 	return SystemAnalysisEdge{Id: edge.ID, Attributes: attr}

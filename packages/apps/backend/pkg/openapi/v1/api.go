@@ -22,7 +22,7 @@ type Handler interface {
 
 	OncallMetricsHandler
 
-	SystemTopologyHandler
+	KnowledgeGraphHandler
 	SystemAnalysisHandler
 
 	IncidentsHandler

@@ -7,10 +7,6 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/alert"
-	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
-	"github.com/rezible/rezible/ent/playbook"
-	"github.com/rezible/rezible/pkg/projections"
 )
 
 type PlaybookService struct {
@@ -64,71 +60,4 @@ func (s *PlaybookService) SetPlaybook(ctx context.Context, playbook *ent.Playboo
 			SetContent(playbook.Content)
 	}
 	return q.Save(ctx)
-}
-
-func (s *PlaybookService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) (map[string][]uuid.UUID, error) {
-	if !projections.SubjectKindPlaybook.Matches(event) {
-		return nil, nil
-	}
-
-	decoded, validationErr := projections.DecodePlaybookEvent(event)
-	if validationErr != nil || decoded == nil {
-		return nil, fmt.Errorf("invalid event: %w", validationErr)
-	}
-	attrs := decoded.Attributes
-
-	dbc := s.db.Client(ctx)
-
-	queryExisting := dbc.Playbook.Query().
-		Where(playbook.Title(attrs.Title))
-	existing, queryErr := queryExisting.Only(ctx)
-	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return nil, fmt.Errorf("query playbook: %w", queryErr)
-	}
-
-	alertIDs := make([]uuid.UUID, 0, len(attrs.RelatedAlerts))
-	for _, alertRef := range attrs.RelatedAlerts {
-		queryAlias := dbc.KnowledgeEntityAlias.Query().
-			Where(knea.Provider(event.Provider), knea.ProviderSubjectRef(alertRef))
-
-		alias, aliasErr := queryAlias.Only(ctx)
-		if aliasErr != nil && !ent.IsNotFound(aliasErr) {
-			return nil, fmt.Errorf("query alert alias: %w", aliasErr)
-		}
-		if alias == nil {
-			continue
-		}
-		queryAlert := dbc.Alert.Query().
-			Where(alert.KnowledgeEntityID(alias.EntityID))
-		a, alertErr := queryAlert.Only(ctx)
-		if alertErr != nil && !ent.IsNotFound(alertErr) {
-			return nil, fmt.Errorf("query related alert: %w", alertErr)
-		}
-		if a != nil {
-			alertIDs = append(alertIDs, a.ID)
-		}
-	}
-
-	var mutator ent.EntityMutator[*ent.Playbook, *ent.PlaybookMutation]
-	if existing == nil {
-		mutator = dbc.Playbook.Create()
-	} else {
-		mutator = existing.Update()
-	}
-
-	m := mutator.Mutation()
-	m.SetTitle(attrs.Title)
-	m.SetContent([]byte(attrs.Content))
-	if len(alertIDs) > 0 {
-		m.AddAlertIDs(alertIDs...)
-	}
-
-	pb, saveErr := mutator.Save(ctx)
-	if saveErr != nil {
-		return nil, fmt.Errorf("save playbook: %w", saveErr)
-	}
-	projIds := map[string][]uuid.UUID{
-		"playbook": {pb.ID},
-	}
-	return projIds, nil
 }

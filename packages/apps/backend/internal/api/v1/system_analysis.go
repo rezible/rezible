@@ -24,7 +24,7 @@ func (s *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *
 
 	analysis, queryErr := s.db.Client(ctx).SystemAnalysis.Query().
 		Where(sa.ID(request.Id)).
-		WithTopologySnapshot(func(q *ent.SystemTopologySnapshotQuery) {
+		WithKnowledgeGraphSnapshot(func(q *ent.KnowledgeGraphSnapshotQuery) {
 			q.WithEntities()
 			q.WithRelationships()
 		}).
@@ -143,7 +143,7 @@ func (s *systemAnalysisHandler) AddSystemAnalysisEdge(ctx context.Context, reque
 	if createErr != nil {
 		return nil, oapi.Error(ctx, "failed to add system analysis edge", createErr)
 	}
-	created.Edges.SnapshotRelationship, _ = s.db.Client(ctx).SystemTopologySnapshotRelationship.Get(ctx, attr.SnapshotRelationshipId)
+	created.Edges.SnapshotRelationship, _ = s.db.Client(ctx).KnowledgeGraphSnapshotRelationship.Get(ctx, attr.SnapshotRelationshipId)
 	resp.Body.Data = oapi.SystemAnalysisEdgeFromEnt(created)
 
 	return &resp, nil

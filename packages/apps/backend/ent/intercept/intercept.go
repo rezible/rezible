@@ -47,12 +47,12 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
 	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
 	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
@@ -1196,33 +1196,6 @@ func (f TraverseKnowledgeEntity) Traverse(ctx context.Context, q ent.Query) erro
 	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityQuery", q)
 }
 
-// The KnowledgeEntityAliasFunc type is an adapter to allow the use of ordinary function as a Querier.
-type KnowledgeEntityAliasFunc func(context.Context, *ent.KnowledgeEntityAliasQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f KnowledgeEntityAliasFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.KnowledgeEntityAliasQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityAliasQuery", q)
-}
-
-// The TraverseKnowledgeEntityAlias type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseKnowledgeEntityAlias func(context.Context, *ent.KnowledgeEntityAliasQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseKnowledgeEntityAlias) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseKnowledgeEntityAlias) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeEntityAliasQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityAliasQuery", q)
-}
-
 // The KnowledgeEvidenceFunc type is an adapter to allow the use of ordinary function as a Querier.
 type KnowledgeEvidenceFunc func(context.Context, *ent.KnowledgeEvidenceQuery) (ent.Value, error)
 
@@ -1356,6 +1329,33 @@ func (f TraverseKnowledgeRelationship) Traverse(ctx context.Context, q ent.Query
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeRelationshipQuery", q)
+}
+
+// The KnowledgeSubjectAliasFunc type is an adapter to allow the use of ordinary function as a Querier.
+type KnowledgeSubjectAliasFunc func(context.Context, *ent.KnowledgeSubjectAliasQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f KnowledgeSubjectAliasFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.KnowledgeSubjectAliasQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeSubjectAliasQuery", q)
+}
+
+// The TraverseKnowledgeSubjectAlias type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseKnowledgeSubjectAlias func(context.Context, *ent.KnowledgeSubjectAliasQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseKnowledgeSubjectAlias) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseKnowledgeSubjectAlias) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeSubjectAliasQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeSubjectAliasQuery", q)
 }
 
 // The MeetingScheduleFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2276,8 +2276,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IntegrationUserInstallStateQuery, predicate.IntegrationUserInstallState, integrationuserinstallstate.OrderOption]{typ: ent.TypeIntegrationUserInstallState, tq: q}, nil
 	case *ent.KnowledgeEntityQuery:
 		return &query[*ent.KnowledgeEntityQuery, predicate.KnowledgeEntity, knowledgeentity.OrderOption]{typ: ent.TypeKnowledgeEntity, tq: q}, nil
-	case *ent.KnowledgeEntityAliasQuery:
-		return &query[*ent.KnowledgeEntityAliasQuery, predicate.KnowledgeEntityAlias, knowledgeentityalias.OrderOption]{typ: ent.TypeKnowledgeEntityAlias, tq: q}, nil
 	case *ent.KnowledgeEvidenceQuery:
 		return &query[*ent.KnowledgeEvidenceQuery, predicate.KnowledgeEvidence, knowledgeevidence.OrderOption]{typ: ent.TypeKnowledgeEvidence, tq: q}, nil
 	case *ent.KnowledgeGraphSnapshotQuery:
@@ -2288,6 +2286,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.KnowledgeGraphSnapshotRelationshipQuery, predicate.KnowledgeGraphSnapshotRelationship, knowledgegraphsnapshotrelationship.OrderOption]{typ: ent.TypeKnowledgeGraphSnapshotRelationship, tq: q}, nil
 	case *ent.KnowledgeRelationshipQuery:
 		return &query[*ent.KnowledgeRelationshipQuery, predicate.KnowledgeRelationship, knowledgerelationship.OrderOption]{typ: ent.TypeKnowledgeRelationship, tq: q}, nil
+	case *ent.KnowledgeSubjectAliasQuery:
+		return &query[*ent.KnowledgeSubjectAliasQuery, predicate.KnowledgeSubjectAlias, knowledgesubjectalias.OrderOption]{typ: ent.TypeKnowledgeSubjectAlias, tq: q}, nil
 	case *ent.MeetingScheduleQuery:
 		return &query[*ent.MeetingScheduleQuery, predicate.MeetingSchedule, meetingschedule.OrderOption]{typ: ent.TypeMeetingSchedule, tq: q}, nil
 	case *ent.MeetingSessionQuery:

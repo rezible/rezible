@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/incident"
-	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/systemtopologysnapshot"
+	"github.com/rezible/rezible/pkg/jobs"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 )
@@ -81,10 +82,6 @@ func (s *RetrospectiveService) Get(ctx context.Context, p predicate.Retrospectiv
 	return s.db.Client(ctx).Retrospective.Query().Where(p).Only(ctx)
 }
 
-func (s *RetrospectiveService) GetById(ctx context.Context, id uuid.UUID) (*ent.Retrospective, error) {
-	return s.db.Client(ctx).Retrospective.Get(ctx, id)
-}
-
 func (s *RetrospectiveService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error) {
 	update := s.db.Client(ctx).Retrospective.UpdateOneID(id)
 
@@ -113,7 +110,7 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 		return nil, fmt.Errorf("get retrospective kind: %w", kindErr)
 	}
 
-	var created *ent.Retrospective
+	var retro *ent.Retrospective
 	createTxFn := func(txCtx context.Context, tx *ent.Client) error {
 		createdDoc, createDocErr := tx.Document.Create().
 			SetContent([]byte("")).
@@ -123,44 +120,48 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 			return fmt.Errorf("create doc: %w", createDocErr)
 		}
 
-		create := tx.Retrospective.Create().
+		createRetro := tx.Retrospective.Create().
 			SetIncident(inc).
 			SetDocument(createdDoc).
 			SetKind(kind).
 			SetState(retrospective.StateDraft)
 
-		var createRetroErr error
-		created, createRetroErr = create.Save(txCtx)
-		if createRetroErr != nil {
-			return fmt.Errorf("create retrospective: %w", createRetroErr)
-		}
-
+		var snapshotId uuid.UUID
 		if kind == retrospective.KindFull {
-			topologySnapshot, createSnapshotErr := tx.SystemTopologySnapshot.Create().
-				SetScope(systemtopologysnapshot.ScopeIncident).
+			createSnapshot := tx.KnowledgeGraphSnapshot.Create().
+				SetScopeKind("incident").
 				SetScopeProperties(map[string]any{
-					"incidentId": inc.ID.String(),
-				}).
-				Save(txCtx)
+					"incident_id": inc.ID,
+				})
+			snapshot, createSnapshotErr := createSnapshot.Save(txCtx)
 			if createSnapshotErr != nil {
-				return fmt.Errorf("create topology snapshot: %w", createSnapshotErr)
+				return fmt.Errorf("create knowledge graph snapshot: %w", createSnapshotErr)
 			}
+			snapshotId = snapshot.ID
 
-			createdAnalysis, createAnalysisErr := tx.SystemAnalysis.Create().
-				SetRetrospective(created).
-				SetTopologySnapshot(topologySnapshot).
-				Save(txCtx)
+			createAnalysis := tx.SystemAnalysis.Create().
+				SetKnowledgeGraphSnapshot(snapshot)
+			createdAnalysis, createAnalysisErr := createAnalysis.Save(txCtx)
 			if createAnalysisErr != nil {
 				return fmt.Errorf("create analysis: %w", createAnalysisErr)
 			}
-			created.SystemAnalysisID = createdAnalysis.ID
+			createRetro.SetSystemAnalysisID(createdAnalysis.ID)
+		}
+
+		created, createRetroErr := createRetro.Save(txCtx)
+		if createRetroErr != nil {
+			return fmt.Errorf("create retrospective: %w", createRetroErr)
+		}
+		retro = created.Unwrap()
+
+		if snapshotId != uuid.Nil {
+			args := jobs.PopulateKnowledgeGraphSnapshot{SnapshotId: snapshotId}
+			// TODO: queue job
+			slog.Debug("TODO: populate knowledge graph snapshot job", "args", args)
 		}
 		return nil
 	}
-	if txErr := s.db.WithTx(ctx, createTxFn); txErr != nil {
-		return nil, fmt.Errorf("create tx failed: %w", txErr)
-	}
-	return created, nil
+	return retro, s.db.WithTx(ctx, createTxFn)
 }
 
 func (s *RetrospectiveService) GetForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {

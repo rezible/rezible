@@ -121,7 +121,7 @@ func doRegistrations(i do.Injector) error {
 		}
 	}
 
-	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.KnowledgeService](i),
+	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.KnowledgeFactService](i),
 		projections.SubjectKindChatMessage,
 		projections.SubjectKindCodeForge,
 		projections.SubjectKindCodeChange,
@@ -134,7 +134,6 @@ func doRegistrations(i do.Injector) error {
 		projections.SubjectKindIncidentImpact,
 	)
 	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.AlertService](i), projections.SubjectKindAlert)
-	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.PlaybookService](i), projections.SubjectKindPlaybook)
 
 	return nil
 }
@@ -205,7 +204,7 @@ func declareServices(ctx context.Context, i do.Injector) {
 			do.MustInvoke[rez.OncallMetricsService](i),
 			do.MustInvoke[rez.PlaybookService](i),
 			do.MustInvoke[rez.RetrospectiveService](i),
-			do.MustInvoke[rez.SystemTopologyService](i),
+			do.MustInvoke[rez.KnowledgeGraphService](i),
 		), nil
 	})
 
@@ -298,10 +297,10 @@ var provideServices = do.Package(
 	}),
 	do.Bind[*db.ProviderEventPipelineService, rez.ProviderEventPipelineService](),
 
-	do.Lazy(func(i do.Injector) (*db.KnowledgeService, error) {
-		return db.NewKnowledgeService(do.MustInvoke[rez.Database](i)), nil
+	do.Lazy(func(i do.Injector) (*db.KnowledgeFactService, error) {
+		return db.NewKnowledgeFactService(do.MustInvoke[rez.Database](i)), nil
 	}),
-	do.Bind[*db.KnowledgeService, rez.KnowledgeService](),
+	do.Bind[*db.KnowledgeFactService, rez.KnowledgeFactService](),
 
 	do.Lazy(func(i do.Injector) (*db.IntegrationsService, error) {
 		return db.NewIntegrationsService(
@@ -326,7 +325,7 @@ var provideServices = do.Package(
 		return db.NewUserService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.OrganizationService](i),
-			do.MustInvoke[rez.KnowledgeService](i),
+			do.MustInvoke[rez.KnowledgeFactService](i),
 		)
 	}),
 	do.Bind[*db.UserService, rez.UserService](),
@@ -356,7 +355,7 @@ var provideServices = do.Package(
 		return db.NewIncidentService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.KnowledgeService](i),
+			do.MustInvoke[rez.KnowledgeFactService](i),
 		)
 	}),
 	do.Bind[*db.IncidentService, rez.IncidentService](),
@@ -386,12 +385,12 @@ var provideServices = do.Package(
 	}),
 	do.Bind[*db.OncallMetricsService, rez.OncallMetricsService](),
 
-	do.Lazy(func(i do.Injector) (*db.SystemTopologyService, error) {
-		return db.NewSystemTopologyService(
+	do.Lazy(func(i do.Injector) (*db.KnowledgeGraphService, error) {
+		return db.NewKnowledgeGraphService(
 			do.MustInvoke[rez.Database](i),
 		)
 	}),
-	do.Bind[*db.SystemTopologyService, rez.SystemTopologyService](),
+	do.Bind[*db.KnowledgeGraphService, rez.KnowledgeGraphService](),
 
 	do.Lazy(func(i do.Injector) (*db.DebriefService, error) {
 		return db.NewDebriefService(
@@ -413,7 +412,7 @@ var provideServices = do.Package(
 	do.Lazy(func(i do.Injector) (*db.AlertService, error) {
 		return db.NewAlertService(
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.KnowledgeService](i),
+			do.MustInvoke[rez.KnowledgeFactService](i),
 		)
 	}),
 	do.Bind[*db.AlertService, rez.AlertService](),

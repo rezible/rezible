@@ -26,6 +26,7 @@ func TestEncodeAttributesUsesJSONTags(t *testing.T) {
 func TestDecodeIncidentObservedEvent(t *testing.T) {
 	openedAt := time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC)
 	attrs := IncidentSubjectAttributes{
+		ExternalRef: "foo-bar",
 		Title:       "Checkout search lookups timing out",
 		Summary:     "Checkout requests are timing out.",
 		SeverityRef: "SEV-1",
@@ -35,9 +36,7 @@ func TestDecodeIncidentObservedEvent(t *testing.T) {
 	encAttrs, encErr := EncodeAttributes(attrs)
 	require.NoError(t, encErr)
 	assert.Equal(t, openedAt.Format(time.RFC3339Nano), encAttrs["opened_at"])
-	ev := &ent.NormalizedEvent{
-		Attributes: encAttrs,
-	}
+	ev := &ent.NormalizedEvent{Attributes: encAttrs}
 	incEv, err := DecodeSubjectAttributes[IncidentSubjectAttributes](ev)
 	require.NoError(t, err)
 	assert.Equal(t, "Checkout search lookups timing out", incEv.Attributes.Title)

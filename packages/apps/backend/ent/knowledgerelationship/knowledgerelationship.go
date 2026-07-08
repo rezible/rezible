@@ -22,22 +22,14 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
 	// FieldSourceEntityID holds the string denoting the source_entity_id field in the database.
 	FieldSourceEntityID = "source_entity_id"
 	// FieldTargetEntityID holds the string denoting the target_entity_id field in the database.
 	FieldTargetEntityID = "target_entity_id"
-	// FieldKind holds the string denoting the kind field in the database.
-	FieldKind = "kind"
-	// FieldDisplayName holds the string denoting the display_name field in the database.
-	FieldDisplayName = "display_name"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldFirstObservedAt holds the string denoting the first_observed_at field in the database.
-	FieldFirstObservedAt = "first_observed_at"
-	// FieldLastObservedAt holds the string denoting the last_observed_at field in the database.
-	FieldLastObservedAt = "last_observed_at"
-	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
-	FieldDeletedAt = "deleted_at"
 	// FieldProperties holds the string denoting the properties field in the database.
 	FieldProperties = "properties"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -46,8 +38,8 @@ const (
 	EdgeSourceEntity = "source_entity"
 	// EdgeTargetEntity holds the string denoting the target_entity edge name in mutations.
 	EdgeTargetEntity = "target_entity"
-	// EdgeEvidence holds the string denoting the evidence edge name in mutations.
-	EdgeEvidence = "evidence"
+	// EdgeAliases holds the string denoting the aliases edge name in mutations.
+	EdgeAliases = "aliases"
 	// Table holds the table name of the knowledgerelationship in the database.
 	Table = "knowledge_relationships"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -71,13 +63,13 @@ const (
 	TargetEntityInverseTable = "knowledge_entities"
 	// TargetEntityColumn is the table column denoting the target_entity relation/edge.
 	TargetEntityColumn = "target_entity_id"
-	// EvidenceTable is the table that holds the evidence relation/edge.
-	EvidenceTable = "knowledge_evidences"
-	// EvidenceInverseTable is the table name for the KnowledgeEvidence entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeevidence" package.
-	EvidenceInverseTable = "knowledge_evidences"
-	// EvidenceColumn is the table column denoting the evidence relation/edge.
-	EvidenceColumn = "relationship_id"
+	// AliasesTable is the table that holds the aliases relation/edge.
+	AliasesTable = "knowledge_subject_alias"
+	// AliasesInverseTable is the table name for the KnowledgeSubjectAlias entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgesubjectalias" package.
+	AliasesInverseTable = "knowledge_subject_alias"
+	// AliasesColumn is the table column denoting the aliases relation/edge.
+	AliasesColumn = "relationship_id"
 )
 
 // Columns holds all SQL columns for knowledgerelationship fields.
@@ -86,14 +78,10 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldKind,
 	FieldSourceEntityID,
 	FieldTargetEntityID,
-	FieldKind,
-	FieldDisplayName,
 	FieldDescription,
-	FieldFirstObservedAt,
-	FieldLastObservedAt,
-	FieldDeletedAt,
 	FieldProperties,
 }
 
@@ -150,6 +138,11 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
+}
+
 // BySourceEntityID orders the results by the source_entity_id field.
 func BySourceEntityID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSourceEntityID, opts...).ToFunc()
@@ -160,34 +153,9 @@ func ByTargetEntityID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTargetEntityID, opts...).ToFunc()
 }
 
-// ByKind orders the results by the kind field.
-func ByKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKind, opts...).ToFunc()
-}
-
-// ByDisplayName orders the results by the display_name field.
-func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDisplayName, opts...).ToFunc()
-}
-
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
-}
-
-// ByFirstObservedAt orders the results by the first_observed_at field.
-func ByFirstObservedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldFirstObservedAt, opts...).ToFunc()
-}
-
-// ByLastObservedAt orders the results by the last_observed_at field.
-func ByLastObservedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLastObservedAt, opts...).ToFunc()
-}
-
-// ByDeletedAt orders the results by the deleted_at field.
-func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDeletedAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -211,17 +179,17 @@ func ByTargetEntityField(field string, opts ...sql.OrderTermOption) OrderOption 
 	}
 }
 
-// ByEvidenceCount orders the results by evidence count.
-func ByEvidenceCount(opts ...sql.OrderTermOption) OrderOption {
+// ByAliasesCount orders the results by aliases count.
+func ByAliasesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newEvidenceStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newAliasesStep(), opts...)
 	}
 }
 
-// ByEvidence orders the results by evidence terms.
-func ByEvidence(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByAliases orders the results by aliases terms.
+func ByAliases(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEvidenceStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newAliasesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -245,10 +213,10 @@ func newTargetEntityStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TargetEntityTable, TargetEntityColumn),
 	)
 }
-func newEvidenceStep() *sqlgraph.Step {
+func newAliasesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EvidenceInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, EvidenceTable, EvidenceColumn),
+		sqlgraph.To(AliasesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, AliasesTable, AliasesColumn),
 	)
 }

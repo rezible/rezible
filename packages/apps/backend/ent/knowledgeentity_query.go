@@ -16,9 +16,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
-	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -31,10 +30,9 @@ type KnowledgeEntityQuery struct {
 	inters                  []Interceptor
 	predicates              []predicate.KnowledgeEntity
 	withTenant              *TenantQuery
-	withAliases             *KnowledgeEntityAliasQuery
+	withAliases             *KnowledgeSubjectAliasQuery
 	withSourceRelationships *KnowledgeRelationshipQuery
 	withTargetRelationships *KnowledgeRelationshipQuery
-	withEvidence            *KnowledgeEvidenceQuery
 	modifiers               []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -98,8 +96,8 @@ func (_q *KnowledgeEntityQuery) QueryTenant() *TenantQuery {
 }
 
 // QueryAliases chains the current query on the "aliases" edge.
-func (_q *KnowledgeEntityQuery) QueryAliases() *KnowledgeEntityAliasQuery {
-	query := (&KnowledgeEntityAliasClient{config: _q.config}).Query()
+func (_q *KnowledgeEntityQuery) QueryAliases() *KnowledgeSubjectAliasQuery {
+	query := (&KnowledgeSubjectAliasClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -110,12 +108,12 @@ func (_q *KnowledgeEntityQuery) QueryAliases() *KnowledgeEntityAliasQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(knowledgeentity.Table, knowledgeentity.FieldID, selector),
-			sqlgraph.To(knowledgeentityalias.Table, knowledgeentityalias.FieldID),
+			sqlgraph.To(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, knowledgeentity.AliasesTable, knowledgeentity.AliasesColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntityAlias
-		step.Edge.Schema = schemaConfig.KnowledgeEntityAlias
+		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
+		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -166,31 +164,6 @@ func (_q *KnowledgeEntityQuery) QueryTargetRelationships() *KnowledgeRelationshi
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.KnowledgeRelationship
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryEvidence chains the current query on the "evidence" edge.
-func (_q *KnowledgeEntityQuery) QueryEvidence() *KnowledgeEvidenceQuery {
-	query := (&KnowledgeEvidenceClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgeentity.Table, knowledgeentity.FieldID, selector),
-			sqlgraph.To(knowledgeevidence.Table, knowledgeevidence.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, knowledgeentity.EvidenceTable, knowledgeentity.EvidenceColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEvidence
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -393,7 +366,6 @@ func (_q *KnowledgeEntityQuery) Clone() *KnowledgeEntityQuery {
 		withAliases:             _q.withAliases.Clone(),
 		withSourceRelationships: _q.withSourceRelationships.Clone(),
 		withTargetRelationships: _q.withTargetRelationships.Clone(),
-		withEvidence:            _q.withEvidence.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -414,8 +386,8 @@ func (_q *KnowledgeEntityQuery) WithTenant(opts ...func(*TenantQuery)) *Knowledg
 
 // WithAliases tells the query-builder to eager-load the nodes that are connected to
 // the "aliases" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeEntityQuery) WithAliases(opts ...func(*KnowledgeEntityAliasQuery)) *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityAliasClient{config: _q.config}).Query()
+func (_q *KnowledgeEntityQuery) WithAliases(opts ...func(*KnowledgeSubjectAliasQuery)) *KnowledgeEntityQuery {
+	query := (&KnowledgeSubjectAliasClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -442,17 +414,6 @@ func (_q *KnowledgeEntityQuery) WithTargetRelationships(opts ...func(*KnowledgeR
 		opt(query)
 	}
 	_q.withTargetRelationships = query
-	return _q
-}
-
-// WithEvidence tells the query-builder to eager-load the nodes that are connected to
-// the "evidence" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeEntityQuery) WithEvidence(opts ...func(*KnowledgeEvidenceQuery)) *KnowledgeEntityQuery {
-	query := (&KnowledgeEvidenceClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withEvidence = query
 	return _q
 }
 
@@ -540,12 +501,11 @@ func (_q *KnowledgeEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*KnowledgeEntity{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
 			_q.withAliases != nil,
 			_q.withSourceRelationships != nil,
 			_q.withTargetRelationships != nil,
-			_q.withEvidence != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -579,8 +539,8 @@ func (_q *KnowledgeEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	}
 	if query := _q.withAliases; query != nil {
 		if err := _q.loadAliases(ctx, query, nodes,
-			func(n *KnowledgeEntity) { n.Edges.Aliases = []*KnowledgeEntityAlias{} },
-			func(n *KnowledgeEntity, e *KnowledgeEntityAlias) { n.Edges.Aliases = append(n.Edges.Aliases, e) }); err != nil {
+			func(n *KnowledgeEntity) { n.Edges.Aliases = []*KnowledgeSubjectAlias{} },
+			func(n *KnowledgeEntity, e *KnowledgeSubjectAlias) { n.Edges.Aliases = append(n.Edges.Aliases, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -599,13 +559,6 @@ func (_q *KnowledgeEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			func(n *KnowledgeEntity, e *KnowledgeRelationship) {
 				n.Edges.TargetRelationships = append(n.Edges.TargetRelationships, e)
 			}); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withEvidence; query != nil {
-		if err := _q.loadEvidence(ctx, query, nodes,
-			func(n *KnowledgeEntity) { n.Edges.Evidence = []*KnowledgeEvidence{} },
-			func(n *KnowledgeEntity, e *KnowledgeEvidence) { n.Edges.Evidence = append(n.Edges.Evidence, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -641,7 +594,7 @@ func (_q *KnowledgeEntityQuery) loadTenant(ctx context.Context, query *TenantQue
 	}
 	return nil
 }
-func (_q *KnowledgeEntityQuery) loadAliases(ctx context.Context, query *KnowledgeEntityAliasQuery, nodes []*KnowledgeEntity, init func(*KnowledgeEntity), assign func(*KnowledgeEntity, *KnowledgeEntityAlias)) error {
+func (_q *KnowledgeEntityQuery) loadAliases(ctx context.Context, query *KnowledgeSubjectAliasQuery, nodes []*KnowledgeEntity, init func(*KnowledgeEntity), assign func(*KnowledgeEntity, *KnowledgeSubjectAlias)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*KnowledgeEntity)
 	for i := range nodes {
@@ -652,9 +605,9 @@ func (_q *KnowledgeEntityQuery) loadAliases(ctx context.Context, query *Knowledg
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(knowledgeentityalias.FieldEntityID)
+		query.ctx.AppendFieldOnce(knowledgesubjectalias.FieldEntityID)
 	}
-	query.Where(predicate.KnowledgeEntityAlias(func(s *sql.Selector) {
+	query.Where(predicate.KnowledgeSubjectAlias(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(knowledgeentity.AliasesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
@@ -726,39 +679,6 @@ func (_q *KnowledgeEntityQuery) loadTargetRelationships(ctx context.Context, que
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "target_entity_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *KnowledgeEntityQuery) loadEvidence(ctx context.Context, query *KnowledgeEvidenceQuery, nodes []*KnowledgeEntity, init func(*KnowledgeEntity), assign func(*KnowledgeEntity, *KnowledgeEvidence)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*KnowledgeEntity)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(knowledgeevidence.FieldEntityID)
-	}
-	query.Where(predicate.KnowledgeEvidence(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(knowledgeentity.EvidenceColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.EntityID
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "entity_id" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "entity_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

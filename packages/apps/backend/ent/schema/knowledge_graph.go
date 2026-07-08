@@ -26,19 +26,21 @@ func (KnowledgeGraphSnapshot) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.Time("as_of").Default(time.Now),
-		field.String("name").Optional(),
 		field.Time("created_at").Default(time.Now),
+		field.String("scope_kind"),
+		field.JSON("scope_properties", map[string]any{}).
+			SchemaType(schemaTypeJsonB),
 	}
 }
 
 func (KnowledgeGraphSnapshot) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("system_analyses", SystemAnalysis.Type).
-			Ref("knowledge_graph_snapshot"),
 		edge.From("entities", KnowledgeGraphSnapshotEntity.Type).
 			Ref("snapshot"),
 		edge.From("relationships", KnowledgeGraphSnapshotRelationship.Type).
 			Ref("snapshot"),
+		edge.From("system_analyses", SystemAnalysis.Type).
+			Ref("knowledge_graph_snapshot"),
 	}
 }
 

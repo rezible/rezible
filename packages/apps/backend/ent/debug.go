@@ -316,14 +316,6 @@ func (c *KnowledgeEntityClient) Debug() *KnowledgeEntityClient {
 	return &KnowledgeEntityClient{config: cfg}
 }
 
-func (c *KnowledgeEntityAliasClient) Debug() *KnowledgeEntityAliasClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &KnowledgeEntityAliasClient{config: cfg}
-}
-
 func (c *KnowledgeEvidenceClient) Debug() *KnowledgeEvidenceClient {
 	if c.debug {
 		return c
@@ -362,6 +354,14 @@ func (c *KnowledgeRelationshipClient) Debug() *KnowledgeRelationshipClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &KnowledgeRelationshipClient{config: cfg}
+}
+
+func (c *KnowledgeSubjectAliasClient) Debug() *KnowledgeSubjectAliasClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeSubjectAliasClient{config: cfg}
 }
 
 func (c *MeetingScheduleClient) Debug() *MeetingScheduleClient {

@@ -47,6 +47,14 @@ func (GenerateIncidentDebriefSuggestions) Kind() string {
 	return "generate-incident-debrief-suggestions"
 }
 
+type PopulateKnowledgeGraphSnapshot struct {
+	SnapshotId uuid.UUID `json:"snapshot_id"`
+}
+
+func (PopulateKnowledgeGraphSnapshot) Kind() string {
+	return "create-knowledge-graph-snapshot"
+}
+
 type ScanOncallShifts struct{}
 
 func (ScanOncallShifts) Kind() string {

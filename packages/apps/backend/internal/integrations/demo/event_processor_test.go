@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
@@ -20,18 +21,23 @@ func processPayload(t *testing.T, ev convertablePayload) ent.NormalizedEvents {
 	provEvent, eventErr := ev.toEvent()
 	require.NoError(t, eventErr)
 	require.NotNil(t, provEvent)
-	events, procErr := (&eventProcessor{event: provEvent}).process()
+	proc := &eventProcessor{event: provEvent}
+	events, procErr := proc.process()
 	require.NoError(t, procErr)
 	return events
 }
 
 func TestProcessAlertObservedEvent(t *testing.T) {
 	payload := alertObservedPayload{
-		Title:           "Search API response time high",
-		Description:     "p95 latency is above threshold.",
-		Definition:      "avg(last_5m):p95:search.api.response_time > 2000",
-		OccurredAt:      time.Date(2026, 5, 12, 9, 15, 0, 0, time.UTC),
-		RelatedEntities: []projections.RelatedEntityRef{relatedComponent("search_api", "service", "Search API")},
+		ExternalRef: "foo-bar",
+		Title:       "Search API response time high",
+		Description: "p95 latency is above threshold.",
+		Definition:  "avg(last_5m):p95:search.api.response_time > 2000",
+		OccurredAt:  time.Date(2026, 5, 12, 9, 15, 0, 0, time.UTC),
+		InstanceRef: uuid.New().String(),
+		RelatedEntities: []projections.RelatedEntityRef{
+			relatedComponent("search_api", "service", "Search API"),
+		},
 	}
 	events := processPayload(t, payload)
 	require.Len(t, events, 1)
@@ -51,7 +57,7 @@ func TestProcessAlertObservedEvent(t *testing.T) {
 
 func TestProcessIncidentObservedEvent(t *testing.T) {
 	payload := incidentObservedPayload{
-		ExternalID:  "foobar",
+		ExternalRef: "foobar",
 		Title:       "Checkout search lookups timing out",
 		Summary:     "Checkout requests are timing out.",
 		SeverityRef: "SEV-1",
@@ -116,21 +122,6 @@ func TestProcessChatMessageObservedEvent(t *testing.T) {
 	assert.Equal(t, payload.Body, decoded.Attributes.Body)
 	assert.Equal(t, payload.ConversationExternalRef, decoded.Attributes.ConversationExternalRef)
 	require.Len(t, decoded.Attributes.RelatedEntities, 3)
-}
-
-func TestProcessPlaybookObservedEvent(t *testing.T) {
-	payload := demoPlaybookEvents[0]
-
-	events := processPayload(t, payload)
-	require.Len(t, events, 1)
-	ev := events[0]
-	assert.True(t, projections.SubjectKindPlaybook.Matches(ev))
-
-	decoded, decodeErr := projections.DecodePlaybookEvent(ev)
-	require.NoError(t, decodeErr)
-	assert.Equal(t, payload.Title, decoded.Attributes.Title)
-	assert.Contains(t, decoded.Attributes.Content, "Search API p95 latency")
-	require.Len(t, decoded.Attributes.RelatedAlerts, 2)
 }
 
 func TestProcessIncidentImpactObservedEvent(t *testing.T) {

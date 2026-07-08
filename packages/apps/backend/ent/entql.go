@@ -42,12 +42,12 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
 	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
 	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
@@ -827,39 +827,17 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "KnowledgeEntity",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			knowledgeentity.FieldTenantID:        {Type: field.TypeInt, Column: knowledgeentity.FieldTenantID},
-			knowledgeentity.FieldCreatedAt:       {Type: field.TypeTime, Column: knowledgeentity.FieldCreatedAt},
-			knowledgeentity.FieldUpdatedAt:       {Type: field.TypeTime, Column: knowledgeentity.FieldUpdatedAt},
-			knowledgeentity.FieldKind:            {Type: field.TypeString, Column: knowledgeentity.FieldKind},
-			knowledgeentity.FieldDisplayName:     {Type: field.TypeString, Column: knowledgeentity.FieldDisplayName},
-			knowledgeentity.FieldDescription:     {Type: field.TypeString, Column: knowledgeentity.FieldDescription},
-			knowledgeentity.FieldFirstObservedAt: {Type: field.TypeTime, Column: knowledgeentity.FieldFirstObservedAt},
-			knowledgeentity.FieldLastObservedAt:  {Type: field.TypeTime, Column: knowledgeentity.FieldLastObservedAt},
-			knowledgeentity.FieldDeletedAt:       {Type: field.TypeTime, Column: knowledgeentity.FieldDeletedAt},
-			knowledgeentity.FieldProperties:      {Type: field.TypeJSON, Column: knowledgeentity.FieldProperties},
+			knowledgeentity.FieldTenantID:       {Type: field.TypeInt, Column: knowledgeentity.FieldTenantID},
+			knowledgeentity.FieldCreatedAt:      {Type: field.TypeTime, Column: knowledgeentity.FieldCreatedAt},
+			knowledgeentity.FieldUpdatedAt:      {Type: field.TypeTime, Column: knowledgeentity.FieldUpdatedAt},
+			knowledgeentity.FieldKind:           {Type: field.TypeString, Column: knowledgeentity.FieldKind},
+			knowledgeentity.FieldReference:      {Type: field.TypeString, Column: knowledgeentity.FieldReference},
+			knowledgeentity.FieldDisplayName:    {Type: field.TypeString, Column: knowledgeentity.FieldDisplayName},
+			knowledgeentity.FieldDescription:    {Type: field.TypeString, Column: knowledgeentity.FieldDescription},
+			knowledgeentity.FieldLiveProperties: {Type: field.TypeJSON, Column: knowledgeentity.FieldLiveProperties},
 		},
 	}
 	graph.Nodes[39] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   knowledgeentityalias.Table,
-			Columns: knowledgeentityalias.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: knowledgeentityalias.FieldID,
-			},
-		},
-		Type: "KnowledgeEntityAlias",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			knowledgeentityalias.FieldTenantID:           {Type: field.TypeInt, Column: knowledgeentityalias.FieldTenantID},
-			knowledgeentityalias.FieldCreatedAt:          {Type: field.TypeTime, Column: knowledgeentityalias.FieldCreatedAt},
-			knowledgeentityalias.FieldUpdatedAt:          {Type: field.TypeTime, Column: knowledgeentityalias.FieldUpdatedAt},
-			knowledgeentityalias.FieldEntityID:           {Type: field.TypeUUID, Column: knowledgeentityalias.FieldEntityID},
-			knowledgeentityalias.FieldDisplayName:        {Type: field.TypeString, Column: knowledgeentityalias.FieldDisplayName},
-			knowledgeentityalias.FieldProvider:           {Type: field.TypeString, Column: knowledgeentityalias.FieldProvider},
-			knowledgeentityalias.FieldProviderSubjectRef: {Type: field.TypeString, Column: knowledgeentityalias.FieldProviderSubjectRef},
-		},
-	}
-	graph.Nodes[40] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   knowledgeevidence.Table,
 			Columns: knowledgeevidence.Columns,
@@ -870,21 +848,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "KnowledgeEvidence",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			knowledgeevidence.FieldTenantID:       {Type: field.TypeInt, Column: knowledgeevidence.FieldTenantID},
-			knowledgeevidence.FieldCreatedAt:      {Type: field.TypeTime, Column: knowledgeevidence.FieldCreatedAt},
-			knowledgeevidence.FieldUpdatedAt:      {Type: field.TypeTime, Column: knowledgeevidence.FieldUpdatedAt},
-			knowledgeevidence.FieldSubjectType:    {Type: field.TypeEnum, Column: knowledgeevidence.FieldSubjectType},
-			knowledgeevidence.FieldEntityID:       {Type: field.TypeUUID, Column: knowledgeevidence.FieldEntityID},
-			knowledgeevidence.FieldRelationshipID: {Type: field.TypeUUID, Column: knowledgeevidence.FieldRelationshipID},
-			knowledgeevidence.FieldAliasID:        {Type: field.TypeUUID, Column: knowledgeevidence.FieldAliasID},
-			knowledgeevidence.FieldEventID:        {Type: field.TypeUUID, Column: knowledgeevidence.FieldEventID},
-			knowledgeevidence.FieldAssertion:      {Type: field.TypeString, Column: knowledgeevidence.FieldAssertion},
-			knowledgeevidence.FieldEvidenceKind:   {Type: field.TypeEnum, Column: knowledgeevidence.FieldEvidenceKind},
-			knowledgeevidence.FieldObservedAt:     {Type: field.TypeTime, Column: knowledgeevidence.FieldObservedAt},
-			knowledgeevidence.FieldEffectiveAt:    {Type: field.TypeTime, Column: knowledgeevidence.FieldEffectiveAt},
+			knowledgeevidence.FieldTenantID:     {Type: field.TypeInt, Column: knowledgeevidence.FieldTenantID},
+			knowledgeevidence.FieldCreatedAt:    {Type: field.TypeTime, Column: knowledgeevidence.FieldCreatedAt},
+			knowledgeevidence.FieldUpdatedAt:    {Type: field.TypeTime, Column: knowledgeevidence.FieldUpdatedAt},
+			knowledgeevidence.FieldEventID:      {Type: field.TypeUUID, Column: knowledgeevidence.FieldEventID},
+			knowledgeevidence.FieldAliasID:      {Type: field.TypeUUID, Column: knowledgeevidence.FieldAliasID},
+			knowledgeevidence.FieldAssertion:    {Type: field.TypeString, Column: knowledgeevidence.FieldAssertion},
+			knowledgeevidence.FieldEvidenceKind: {Type: field.TypeEnum, Column: knowledgeevidence.FieldEvidenceKind},
+			knowledgeevidence.FieldEffectiveAt:  {Type: field.TypeTime, Column: knowledgeevidence.FieldEffectiveAt},
+			knowledgeevidence.FieldProperties:   {Type: field.TypeJSON, Column: knowledgeevidence.FieldProperties},
 		},
 	}
-	graph.Nodes[41] = &sqlgraph.Node{
+	graph.Nodes[40] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   knowledgegraphsnapshot.Table,
 			Columns: knowledgegraphsnapshot.Columns,
@@ -895,13 +870,14 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "KnowledgeGraphSnapshot",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			knowledgegraphsnapshot.FieldTenantID:  {Type: field.TypeInt, Column: knowledgegraphsnapshot.FieldTenantID},
-			knowledgegraphsnapshot.FieldAsOf:      {Type: field.TypeTime, Column: knowledgegraphsnapshot.FieldAsOf},
-			knowledgegraphsnapshot.FieldName:      {Type: field.TypeString, Column: knowledgegraphsnapshot.FieldName},
-			knowledgegraphsnapshot.FieldCreatedAt: {Type: field.TypeTime, Column: knowledgegraphsnapshot.FieldCreatedAt},
+			knowledgegraphsnapshot.FieldTenantID:        {Type: field.TypeInt, Column: knowledgegraphsnapshot.FieldTenantID},
+			knowledgegraphsnapshot.FieldAsOf:            {Type: field.TypeTime, Column: knowledgegraphsnapshot.FieldAsOf},
+			knowledgegraphsnapshot.FieldCreatedAt:       {Type: field.TypeTime, Column: knowledgegraphsnapshot.FieldCreatedAt},
+			knowledgegraphsnapshot.FieldScopeKind:       {Type: field.TypeString, Column: knowledgegraphsnapshot.FieldScopeKind},
+			knowledgegraphsnapshot.FieldScopeProperties: {Type: field.TypeJSON, Column: knowledgegraphsnapshot.FieldScopeProperties},
 		},
 	}
-	graph.Nodes[42] = &sqlgraph.Node{
+	graph.Nodes[41] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   knowledgegraphsnapshotentity.Table,
 			Columns: knowledgegraphsnapshotentity.Columns,
@@ -923,7 +899,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgegraphsnapshotentity.FieldCreatedAt:         {Type: field.TypeTime, Column: knowledgegraphsnapshotentity.FieldCreatedAt},
 		},
 	}
-	graph.Nodes[43] = &sqlgraph.Node{
+	graph.Nodes[42] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   knowledgegraphsnapshotrelationship.Table,
 			Columns: knowledgegraphsnapshotrelationship.Columns,
@@ -946,7 +922,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgegraphsnapshotrelationship.FieldCreatedAt:               {Type: field.TypeTime, Column: knowledgegraphsnapshotrelationship.FieldCreatedAt},
 		},
 	}
-	graph.Nodes[44] = &sqlgraph.Node{
+	graph.Nodes[43] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   knowledgerelationship.Table,
 			Columns: knowledgerelationship.Columns,
@@ -957,18 +933,36 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "KnowledgeRelationship",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			knowledgerelationship.FieldTenantID:        {Type: field.TypeInt, Column: knowledgerelationship.FieldTenantID},
-			knowledgerelationship.FieldCreatedAt:       {Type: field.TypeTime, Column: knowledgerelationship.FieldCreatedAt},
-			knowledgerelationship.FieldUpdatedAt:       {Type: field.TypeTime, Column: knowledgerelationship.FieldUpdatedAt},
-			knowledgerelationship.FieldSourceEntityID:  {Type: field.TypeUUID, Column: knowledgerelationship.FieldSourceEntityID},
-			knowledgerelationship.FieldTargetEntityID:  {Type: field.TypeUUID, Column: knowledgerelationship.FieldTargetEntityID},
-			knowledgerelationship.FieldKind:            {Type: field.TypeString, Column: knowledgerelationship.FieldKind},
-			knowledgerelationship.FieldDisplayName:     {Type: field.TypeString, Column: knowledgerelationship.FieldDisplayName},
-			knowledgerelationship.FieldDescription:     {Type: field.TypeString, Column: knowledgerelationship.FieldDescription},
-			knowledgerelationship.FieldFirstObservedAt: {Type: field.TypeTime, Column: knowledgerelationship.FieldFirstObservedAt},
-			knowledgerelationship.FieldLastObservedAt:  {Type: field.TypeTime, Column: knowledgerelationship.FieldLastObservedAt},
-			knowledgerelationship.FieldDeletedAt:       {Type: field.TypeTime, Column: knowledgerelationship.FieldDeletedAt},
-			knowledgerelationship.FieldProperties:      {Type: field.TypeJSON, Column: knowledgerelationship.FieldProperties},
+			knowledgerelationship.FieldTenantID:       {Type: field.TypeInt, Column: knowledgerelationship.FieldTenantID},
+			knowledgerelationship.FieldCreatedAt:      {Type: field.TypeTime, Column: knowledgerelationship.FieldCreatedAt},
+			knowledgerelationship.FieldUpdatedAt:      {Type: field.TypeTime, Column: knowledgerelationship.FieldUpdatedAt},
+			knowledgerelationship.FieldKind:           {Type: field.TypeString, Column: knowledgerelationship.FieldKind},
+			knowledgerelationship.FieldSourceEntityID: {Type: field.TypeUUID, Column: knowledgerelationship.FieldSourceEntityID},
+			knowledgerelationship.FieldTargetEntityID: {Type: field.TypeUUID, Column: knowledgerelationship.FieldTargetEntityID},
+			knowledgerelationship.FieldDescription:    {Type: field.TypeString, Column: knowledgerelationship.FieldDescription},
+			knowledgerelationship.FieldProperties:     {Type: field.TypeJSON, Column: knowledgerelationship.FieldProperties},
+		},
+	}
+	graph.Nodes[44] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   knowledgesubjectalias.Table,
+			Columns: knowledgesubjectalias.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: knowledgesubjectalias.FieldID,
+			},
+		},
+		Type: "KnowledgeSubjectAlias",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			knowledgesubjectalias.FieldTenantID:           {Type: field.TypeInt, Column: knowledgesubjectalias.FieldTenantID},
+			knowledgesubjectalias.FieldCreatedAt:          {Type: field.TypeTime, Column: knowledgesubjectalias.FieldCreatedAt},
+			knowledgesubjectalias.FieldUpdatedAt:          {Type: field.TypeTime, Column: knowledgesubjectalias.FieldUpdatedAt},
+			knowledgesubjectalias.FieldSubjectKind:        {Type: field.TypeEnum, Column: knowledgesubjectalias.FieldSubjectKind},
+			knowledgesubjectalias.FieldProvider:           {Type: field.TypeString, Column: knowledgesubjectalias.FieldProvider},
+			knowledgesubjectalias.FieldProviderSubjectRef: {Type: field.TypeString, Column: knowledgesubjectalias.FieldProviderSubjectRef},
+			knowledgesubjectalias.FieldEntityID:           {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldEntityID},
+			knowledgesubjectalias.FieldRelationshipID:     {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldRelationshipID},
+			knowledgesubjectalias.FieldDescription:        {Type: field.TypeString, Column: knowledgesubjectalias.FieldDescription},
 		},
 	}
 	graph.Nodes[45] = &sqlgraph.Node{
@@ -3226,7 +3220,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"KnowledgeEntity",
-		"KnowledgeEntityAlias",
+		"KnowledgeSubjectAlias",
 	)
 	graph.MustAddE(
 		"source_relationships",
@@ -3253,54 +3247,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"KnowledgeRelationship",
 	)
 	graph.MustAddE(
-		"evidence",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgeentity.EvidenceTable,
-			Columns: []string{knowledgeentity.EvidenceColumn},
-			Bidi:    false,
-		},
-		"KnowledgeEntity",
-		"KnowledgeEvidence",
-	)
-	graph.MustAddE(
-		"tenant",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   knowledgeentityalias.TenantTable,
-			Columns: []string{knowledgeentityalias.TenantColumn},
-			Bidi:    false,
-		},
-		"KnowledgeEntityAlias",
-		"Tenant",
-	)
-	graph.MustAddE(
-		"entity",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   knowledgeentityalias.EntityTable,
-			Columns: []string{knowledgeentityalias.EntityColumn},
-			Bidi:    false,
-		},
-		"KnowledgeEntityAlias",
-		"KnowledgeEntity",
-	)
-	graph.MustAddE(
-		"evidence",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgeentityalias.EvidenceTable,
-			Columns: []string{knowledgeentityalias.EvidenceColumn},
-			Bidi:    false,
-		},
-		"KnowledgeEntityAlias",
-		"KnowledgeEvidence",
-	)
-	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -3311,42 +3257,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"KnowledgeEvidence",
 		"Tenant",
-	)
-	graph.MustAddE(
-		"entity",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   knowledgeevidence.EntityTable,
-			Columns: []string{knowledgeevidence.EntityColumn},
-			Bidi:    false,
-		},
-		"KnowledgeEvidence",
-		"KnowledgeEntity",
-	)
-	graph.MustAddE(
-		"relationship",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   knowledgeevidence.RelationshipTable,
-			Columns: []string{knowledgeevidence.RelationshipColumn},
-			Bidi:    false,
-		},
-		"KnowledgeEvidence",
-		"KnowledgeRelationship",
-	)
-	graph.MustAddE(
-		"alias",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   knowledgeevidence.AliasTable,
-			Columns: []string{knowledgeevidence.AliasColumn},
-			Bidi:    false,
-		},
-		"KnowledgeEvidence",
-		"KnowledgeEntityAlias",
 	)
 	graph.MustAddE(
 		"event",
@@ -3361,6 +3271,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"NormalizedEvent",
 	)
 	graph.MustAddE(
+		"alias",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgeevidence.AliasTable,
+			Columns: []string{knowledgeevidence.AliasColumn},
+			Bidi:    false,
+		},
+		"KnowledgeEvidence",
+		"KnowledgeSubjectAlias",
+	)
+	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -3371,18 +3293,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"KnowledgeGraphSnapshot",
 		"Tenant",
-	)
-	graph.MustAddE(
-		"system_analyses",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
-			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
-			Bidi:    false,
-		},
-		"KnowledgeGraphSnapshot",
-		"SystemAnalysis",
 	)
 	graph.MustAddE(
 		"entities",
@@ -3407,6 +3317,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"KnowledgeGraphSnapshot",
 		"KnowledgeGraphSnapshotRelationship",
+	)
+	graph.MustAddE(
+		"system_analyses",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgegraphsnapshot.SystemAnalysesTable,
+			Columns: []string{knowledgegraphsnapshot.SystemAnalysesColumn},
+			Bidi:    false,
+		},
+		"KnowledgeGraphSnapshot",
+		"SystemAnalysis",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -3577,16 +3499,64 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"KnowledgeEntity",
 	)
 	graph.MustAddE(
+		"aliases",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgerelationship.AliasesTable,
+			Columns: []string{knowledgerelationship.AliasesColumn},
+			Bidi:    false,
+		},
+		"KnowledgeRelationship",
+		"KnowledgeSubjectAlias",
+	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.TenantTable,
+			Columns: []string{knowledgesubjectalias.TenantColumn},
+			Bidi:    false,
+		},
+		"KnowledgeSubjectAlias",
+		"Tenant",
+	)
+	graph.MustAddE(
 		"evidence",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   knowledgerelationship.EvidenceTable,
-			Columns: []string{knowledgerelationship.EvidenceColumn},
+			Table:   knowledgesubjectalias.EvidenceTable,
+			Columns: []string{knowledgesubjectalias.EvidenceColumn},
 			Bidi:    false,
 		},
-		"KnowledgeRelationship",
+		"KnowledgeSubjectAlias",
 		"KnowledgeEvidence",
+	)
+	graph.MustAddE(
+		"entity",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.EntityTable,
+			Columns: []string{knowledgesubjectalias.EntityColumn},
+			Bidi:    false,
+		},
+		"KnowledgeSubjectAlias",
+		"KnowledgeEntity",
+	)
+	graph.MustAddE(
+		"relationship",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.RelationshipTable,
+			Columns: []string{knowledgesubjectalias.RelationshipColumn},
+			Bidi:    false,
+		},
+		"KnowledgeSubjectAlias",
+		"KnowledgeRelationship",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -9695,6 +9665,11 @@ func (f *KnowledgeEntityFilter) WhereKind(p entql.StringP) {
 	f.Where(p.Field(knowledgeentity.FieldKind))
 }
 
+// WhereReference applies the entql string predicate on the reference field.
+func (f *KnowledgeEntityFilter) WhereReference(p entql.StringP) {
+	f.Where(p.Field(knowledgeentity.FieldReference))
+}
+
 // WhereDisplayName applies the entql string predicate on the display_name field.
 func (f *KnowledgeEntityFilter) WhereDisplayName(p entql.StringP) {
 	f.Where(p.Field(knowledgeentity.FieldDisplayName))
@@ -9705,24 +9680,9 @@ func (f *KnowledgeEntityFilter) WhereDescription(p entql.StringP) {
 	f.Where(p.Field(knowledgeentity.FieldDescription))
 }
 
-// WhereFirstObservedAt applies the entql time.Time predicate on the first_observed_at field.
-func (f *KnowledgeEntityFilter) WhereFirstObservedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgeentity.FieldFirstObservedAt))
-}
-
-// WhereLastObservedAt applies the entql time.Time predicate on the last_observed_at field.
-func (f *KnowledgeEntityFilter) WhereLastObservedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgeentity.FieldLastObservedAt))
-}
-
-// WhereDeletedAt applies the entql time.Time predicate on the deleted_at field.
-func (f *KnowledgeEntityFilter) WhereDeletedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgeentity.FieldDeletedAt))
-}
-
-// WhereProperties applies the entql json.RawMessage predicate on the properties field.
-func (f *KnowledgeEntityFilter) WhereProperties(p entql.BytesP) {
-	f.Where(p.Field(knowledgeentity.FieldProperties))
+// WhereLiveProperties applies the entql json.RawMessage predicate on the live_properties field.
+func (f *KnowledgeEntityFilter) WhereLiveProperties(p entql.BytesP) {
+	f.Where(p.Field(knowledgeentity.FieldLiveProperties))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -9745,7 +9705,7 @@ func (f *KnowledgeEntityFilter) WhereHasAliases() {
 }
 
 // WhereHasAliasesWith applies a predicate to check if query has an edge aliases with a given conditions (other predicates).
-func (f *KnowledgeEntityFilter) WhereHasAliasesWith(preds ...predicate.KnowledgeEntityAlias) {
+func (f *KnowledgeEntityFilter) WhereHasAliasesWith(preds ...predicate.KnowledgeSubjectAlias) {
 	f.Where(entql.HasEdgeWith("aliases", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -9781,137 +9741,6 @@ func (f *KnowledgeEntityFilter) WhereHasTargetRelationshipsWith(preds ...predica
 	})))
 }
 
-// WhereHasEvidence applies a predicate to check if query has an edge evidence.
-func (f *KnowledgeEntityFilter) WhereHasEvidence() {
-	f.Where(entql.HasEdge("evidence"))
-}
-
-// WhereHasEvidenceWith applies a predicate to check if query has an edge evidence with a given conditions (other predicates).
-func (f *KnowledgeEntityFilter) WhereHasEvidenceWith(preds ...predicate.KnowledgeEvidence) {
-	f.Where(entql.HasEdgeWith("evidence", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (_q *KnowledgeEntityAliasQuery) addPredicate(pred func(s *sql.Selector)) {
-	_q.predicates = append(_q.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the KnowledgeEntityAliasQuery builder.
-func (_q *KnowledgeEntityAliasQuery) Filter() *KnowledgeEntityAliasFilter {
-	return &KnowledgeEntityAliasFilter{config: _q.config, predicateAdder: _q}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *KnowledgeEntityAliasMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the KnowledgeEntityAliasMutation builder.
-func (m *KnowledgeEntityAliasMutation) Filter() *KnowledgeEntityAliasFilter {
-	return &KnowledgeEntityAliasFilter{config: m.config, predicateAdder: m}
-}
-
-// KnowledgeEntityAliasFilter provides a generic filtering capability at runtime for KnowledgeEntityAliasQuery.
-type KnowledgeEntityAliasFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *KnowledgeEntityAliasFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[39].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql [16]byte predicate on the id field.
-func (f *KnowledgeEntityAliasFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(knowledgeentityalias.FieldID))
-}
-
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *KnowledgeEntityAliasFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(knowledgeentityalias.FieldTenantID))
-}
-
-// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *KnowledgeEntityAliasFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgeentityalias.FieldCreatedAt))
-}
-
-// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *KnowledgeEntityAliasFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgeentityalias.FieldUpdatedAt))
-}
-
-// WhereEntityID applies the entql [16]byte predicate on the entity_id field.
-func (f *KnowledgeEntityAliasFilter) WhereEntityID(p entql.ValueP) {
-	f.Where(p.Field(knowledgeentityalias.FieldEntityID))
-}
-
-// WhereDisplayName applies the entql string predicate on the display_name field.
-func (f *KnowledgeEntityAliasFilter) WhereDisplayName(p entql.StringP) {
-	f.Where(p.Field(knowledgeentityalias.FieldDisplayName))
-}
-
-// WhereProvider applies the entql string predicate on the provider field.
-func (f *KnowledgeEntityAliasFilter) WhereProvider(p entql.StringP) {
-	f.Where(p.Field(knowledgeentityalias.FieldProvider))
-}
-
-// WhereProviderSubjectRef applies the entql string predicate on the provider_subject_ref field.
-func (f *KnowledgeEntityAliasFilter) WhereProviderSubjectRef(p entql.StringP) {
-	f.Where(p.Field(knowledgeentityalias.FieldProviderSubjectRef))
-}
-
-// WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *KnowledgeEntityAliasFilter) WhereHasTenant() {
-	f.Where(entql.HasEdge("tenant"))
-}
-
-// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *KnowledgeEntityAliasFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
-	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasEntity applies a predicate to check if query has an edge entity.
-func (f *KnowledgeEntityAliasFilter) WhereHasEntity() {
-	f.Where(entql.HasEdge("entity"))
-}
-
-// WhereHasEntityWith applies a predicate to check if query has an edge entity with a given conditions (other predicates).
-func (f *KnowledgeEntityAliasFilter) WhereHasEntityWith(preds ...predicate.KnowledgeEntity) {
-	f.Where(entql.HasEdgeWith("entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasEvidence applies a predicate to check if query has an edge evidence.
-func (f *KnowledgeEntityAliasFilter) WhereHasEvidence() {
-	f.Where(entql.HasEdge("evidence"))
-}
-
-// WhereHasEvidenceWith applies a predicate to check if query has an edge evidence with a given conditions (other predicates).
-func (f *KnowledgeEntityAliasFilter) WhereHasEvidenceWith(preds ...predicate.KnowledgeEvidence) {
-	f.Where(entql.HasEdgeWith("evidence", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // addPredicate implements the predicateAdder interface.
 func (_q *KnowledgeEvidenceQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
@@ -9941,7 +9770,7 @@ type KnowledgeEvidenceFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *KnowledgeEvidenceFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[40].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[39].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9967,29 +9796,14 @@ func (f *KnowledgeEvidenceFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgeevidence.FieldUpdatedAt))
 }
 
-// WhereSubjectType applies the entql string predicate on the subject_type field.
-func (f *KnowledgeEvidenceFilter) WhereSubjectType(p entql.StringP) {
-	f.Where(p.Field(knowledgeevidence.FieldSubjectType))
-}
-
-// WhereEntityID applies the entql [16]byte predicate on the entity_id field.
-func (f *KnowledgeEvidenceFilter) WhereEntityID(p entql.ValueP) {
-	f.Where(p.Field(knowledgeevidence.FieldEntityID))
-}
-
-// WhereRelationshipID applies the entql [16]byte predicate on the relationship_id field.
-func (f *KnowledgeEvidenceFilter) WhereRelationshipID(p entql.ValueP) {
-	f.Where(p.Field(knowledgeevidence.FieldRelationshipID))
+// WhereEventID applies the entql [16]byte predicate on the event_id field.
+func (f *KnowledgeEvidenceFilter) WhereEventID(p entql.ValueP) {
+	f.Where(p.Field(knowledgeevidence.FieldEventID))
 }
 
 // WhereAliasID applies the entql [16]byte predicate on the alias_id field.
 func (f *KnowledgeEvidenceFilter) WhereAliasID(p entql.ValueP) {
 	f.Where(p.Field(knowledgeevidence.FieldAliasID))
-}
-
-// WhereEventID applies the entql [16]byte predicate on the event_id field.
-func (f *KnowledgeEvidenceFilter) WhereEventID(p entql.ValueP) {
-	f.Where(p.Field(knowledgeevidence.FieldEventID))
 }
 
 // WhereAssertion applies the entql string predicate on the assertion field.
@@ -10002,14 +9816,14 @@ func (f *KnowledgeEvidenceFilter) WhereEvidenceKind(p entql.StringP) {
 	f.Where(p.Field(knowledgeevidence.FieldEvidenceKind))
 }
 
-// WhereObservedAt applies the entql time.Time predicate on the observed_at field.
-func (f *KnowledgeEvidenceFilter) WhereObservedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgeevidence.FieldObservedAt))
-}
-
 // WhereEffectiveAt applies the entql time.Time predicate on the effective_at field.
 func (f *KnowledgeEvidenceFilter) WhereEffectiveAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgeevidence.FieldEffectiveAt))
+}
+
+// WhereProperties applies the entql json.RawMessage predicate on the properties field.
+func (f *KnowledgeEvidenceFilter) WhereProperties(p entql.BytesP) {
+	f.Where(p.Field(knowledgeevidence.FieldProperties))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -10026,28 +9840,14 @@ func (f *KnowledgeEvidenceFilter) WhereHasTenantWith(preds ...predicate.Tenant) 
 	})))
 }
 
-// WhereHasEntity applies a predicate to check if query has an edge entity.
-func (f *KnowledgeEvidenceFilter) WhereHasEntity() {
-	f.Where(entql.HasEdge("entity"))
+// WhereHasEvent applies a predicate to check if query has an edge event.
+func (f *KnowledgeEvidenceFilter) WhereHasEvent() {
+	f.Where(entql.HasEdge("event"))
 }
 
-// WhereHasEntityWith applies a predicate to check if query has an edge entity with a given conditions (other predicates).
-func (f *KnowledgeEvidenceFilter) WhereHasEntityWith(preds ...predicate.KnowledgeEntity) {
-	f.Where(entql.HasEdgeWith("entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasRelationship applies a predicate to check if query has an edge relationship.
-func (f *KnowledgeEvidenceFilter) WhereHasRelationship() {
-	f.Where(entql.HasEdge("relationship"))
-}
-
-// WhereHasRelationshipWith applies a predicate to check if query has an edge relationship with a given conditions (other predicates).
-func (f *KnowledgeEvidenceFilter) WhereHasRelationshipWith(preds ...predicate.KnowledgeRelationship) {
-	f.Where(entql.HasEdgeWith("relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasEventWith applies a predicate to check if query has an edge event with a given conditions (other predicates).
+func (f *KnowledgeEvidenceFilter) WhereHasEventWith(preds ...predicate.NormalizedEvent) {
+	f.Where(entql.HasEdgeWith("event", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -10060,22 +9860,8 @@ func (f *KnowledgeEvidenceFilter) WhereHasAlias() {
 }
 
 // WhereHasAliasWith applies a predicate to check if query has an edge alias with a given conditions (other predicates).
-func (f *KnowledgeEvidenceFilter) WhereHasAliasWith(preds ...predicate.KnowledgeEntityAlias) {
+func (f *KnowledgeEvidenceFilter) WhereHasAliasWith(preds ...predicate.KnowledgeSubjectAlias) {
 	f.Where(entql.HasEdgeWith("alias", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasEvent applies a predicate to check if query has an edge event.
-func (f *KnowledgeEvidenceFilter) WhereHasEvent() {
-	f.Where(entql.HasEdge("event"))
-}
-
-// WhereHasEventWith applies a predicate to check if query has an edge event with a given conditions (other predicates).
-func (f *KnowledgeEvidenceFilter) WhereHasEventWith(preds ...predicate.NormalizedEvent) {
-	f.Where(entql.HasEdgeWith("event", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -10111,7 +9897,7 @@ type KnowledgeGraphSnapshotFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *KnowledgeGraphSnapshotFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[41].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[40].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10132,14 +9918,19 @@ func (f *KnowledgeGraphSnapshotFilter) WhereAsOf(p entql.TimeP) {
 	f.Where(p.Field(knowledgegraphsnapshot.FieldAsOf))
 }
 
-// WhereName applies the entql string predicate on the name field.
-func (f *KnowledgeGraphSnapshotFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(knowledgegraphsnapshot.FieldName))
-}
-
 // WhereCreatedAt applies the entql time.Time predicate on the created_at field.
 func (f *KnowledgeGraphSnapshotFilter) WhereCreatedAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgegraphsnapshot.FieldCreatedAt))
+}
+
+// WhereScopeKind applies the entql string predicate on the scope_kind field.
+func (f *KnowledgeGraphSnapshotFilter) WhereScopeKind(p entql.StringP) {
+	f.Where(p.Field(knowledgegraphsnapshot.FieldScopeKind))
+}
+
+// WhereScopeProperties applies the entql json.RawMessage predicate on the scope_properties field.
+func (f *KnowledgeGraphSnapshotFilter) WhereScopeProperties(p entql.BytesP) {
+	f.Where(p.Field(knowledgegraphsnapshot.FieldScopeProperties))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -10150,20 +9941,6 @@ func (f *KnowledgeGraphSnapshotFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *KnowledgeGraphSnapshotFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasSystemAnalyses applies a predicate to check if query has an edge system_analyses.
-func (f *KnowledgeGraphSnapshotFilter) WhereHasSystemAnalyses() {
-	f.Where(entql.HasEdge("system_analyses"))
-}
-
-// WhereHasSystemAnalysesWith applies a predicate to check if query has an edge system_analyses with a given conditions (other predicates).
-func (f *KnowledgeGraphSnapshotFilter) WhereHasSystemAnalysesWith(preds ...predicate.SystemAnalysis) {
-	f.Where(entql.HasEdgeWith("system_analyses", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -10192,6 +9969,20 @@ func (f *KnowledgeGraphSnapshotFilter) WhereHasRelationships() {
 // WhereHasRelationshipsWith applies a predicate to check if query has an edge relationships with a given conditions (other predicates).
 func (f *KnowledgeGraphSnapshotFilter) WhereHasRelationshipsWith(preds ...predicate.KnowledgeGraphSnapshotRelationship) {
 	f.Where(entql.HasEdgeWith("relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSystemAnalyses applies a predicate to check if query has an edge system_analyses.
+func (f *KnowledgeGraphSnapshotFilter) WhereHasSystemAnalyses() {
+	f.Where(entql.HasEdge("system_analyses"))
+}
+
+// WhereHasSystemAnalysesWith applies a predicate to check if query has an edge system_analyses with a given conditions (other predicates).
+func (f *KnowledgeGraphSnapshotFilter) WhereHasSystemAnalysesWith(preds ...predicate.SystemAnalysis) {
+	f.Where(entql.HasEdgeWith("system_analyses", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -10227,7 +10018,7 @@ type KnowledgeGraphSnapshotEntityFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *KnowledgeGraphSnapshotEntityFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[42].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[41].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10382,7 +10173,7 @@ type KnowledgeGraphSnapshotRelationshipFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *KnowledgeGraphSnapshotRelationshipFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[43].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[42].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10556,7 +10347,7 @@ type KnowledgeRelationshipFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *KnowledgeRelationshipFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[44].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[43].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10582,6 +10373,11 @@ func (f *KnowledgeRelationshipFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgerelationship.FieldUpdatedAt))
 }
 
+// WhereKind applies the entql string predicate on the kind field.
+func (f *KnowledgeRelationshipFilter) WhereKind(p entql.StringP) {
+	f.Where(p.Field(knowledgerelationship.FieldKind))
+}
+
 // WhereSourceEntityID applies the entql [16]byte predicate on the source_entity_id field.
 func (f *KnowledgeRelationshipFilter) WhereSourceEntityID(p entql.ValueP) {
 	f.Where(p.Field(knowledgerelationship.FieldSourceEntityID))
@@ -10592,34 +10388,9 @@ func (f *KnowledgeRelationshipFilter) WhereTargetEntityID(p entql.ValueP) {
 	f.Where(p.Field(knowledgerelationship.FieldTargetEntityID))
 }
 
-// WhereKind applies the entql string predicate on the kind field.
-func (f *KnowledgeRelationshipFilter) WhereKind(p entql.StringP) {
-	f.Where(p.Field(knowledgerelationship.FieldKind))
-}
-
-// WhereDisplayName applies the entql string predicate on the display_name field.
-func (f *KnowledgeRelationshipFilter) WhereDisplayName(p entql.StringP) {
-	f.Where(p.Field(knowledgerelationship.FieldDisplayName))
-}
-
 // WhereDescription applies the entql string predicate on the description field.
 func (f *KnowledgeRelationshipFilter) WhereDescription(p entql.StringP) {
 	f.Where(p.Field(knowledgerelationship.FieldDescription))
-}
-
-// WhereFirstObservedAt applies the entql time.Time predicate on the first_observed_at field.
-func (f *KnowledgeRelationshipFilter) WhereFirstObservedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgerelationship.FieldFirstObservedAt))
-}
-
-// WhereLastObservedAt applies the entql time.Time predicate on the last_observed_at field.
-func (f *KnowledgeRelationshipFilter) WhereLastObservedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgerelationship.FieldLastObservedAt))
-}
-
-// WhereDeletedAt applies the entql time.Time predicate on the deleted_at field.
-func (f *KnowledgeRelationshipFilter) WhereDeletedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgerelationship.FieldDeletedAt))
 }
 
 // WhereProperties applies the entql json.RawMessage predicate on the properties field.
@@ -10669,14 +10440,155 @@ func (f *KnowledgeRelationshipFilter) WhereHasTargetEntityWith(preds ...predicat
 	})))
 }
 
+// WhereHasAliases applies a predicate to check if query has an edge aliases.
+func (f *KnowledgeRelationshipFilter) WhereHasAliases() {
+	f.Where(entql.HasEdge("aliases"))
+}
+
+// WhereHasAliasesWith applies a predicate to check if query has an edge aliases with a given conditions (other predicates).
+func (f *KnowledgeRelationshipFilter) WhereHasAliasesWith(preds ...predicate.KnowledgeSubjectAlias) {
+	f.Where(entql.HasEdgeWith("aliases", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *KnowledgeSubjectAliasQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the KnowledgeSubjectAliasQuery builder.
+func (_q *KnowledgeSubjectAliasQuery) Filter() *KnowledgeSubjectAliasFilter {
+	return &KnowledgeSubjectAliasFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *KnowledgeSubjectAliasMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the KnowledgeSubjectAliasMutation builder.
+func (m *KnowledgeSubjectAliasMutation) Filter() *KnowledgeSubjectAliasFilter {
+	return &KnowledgeSubjectAliasFilter{config: m.config, predicateAdder: m}
+}
+
+// KnowledgeSubjectAliasFilter provides a generic filtering capability at runtime for KnowledgeSubjectAliasQuery.
+type KnowledgeSubjectAliasFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *KnowledgeSubjectAliasFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[44].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *KnowledgeSubjectAliasFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *KnowledgeSubjectAliasFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldTenantID))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *KnowledgeSubjectAliasFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *KnowledgeSubjectAliasFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldUpdatedAt))
+}
+
+// WhereSubjectKind applies the entql string predicate on the subject_kind field.
+func (f *KnowledgeSubjectAliasFilter) WhereSubjectKind(p entql.StringP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldSubjectKind))
+}
+
+// WhereProvider applies the entql string predicate on the provider field.
+func (f *KnowledgeSubjectAliasFilter) WhereProvider(p entql.StringP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldProvider))
+}
+
+// WhereProviderSubjectRef applies the entql string predicate on the provider_subject_ref field.
+func (f *KnowledgeSubjectAliasFilter) WhereProviderSubjectRef(p entql.StringP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldProviderSubjectRef))
+}
+
+// WhereEntityID applies the entql [16]byte predicate on the entity_id field.
+func (f *KnowledgeSubjectAliasFilter) WhereEntityID(p entql.ValueP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldEntityID))
+}
+
+// WhereRelationshipID applies the entql [16]byte predicate on the relationship_id field.
+func (f *KnowledgeSubjectAliasFilter) WhereRelationshipID(p entql.ValueP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldRelationshipID))
+}
+
+// WhereDescription applies the entql string predicate on the description field.
+func (f *KnowledgeSubjectAliasFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldDescription))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *KnowledgeSubjectAliasFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *KnowledgeSubjectAliasFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // WhereHasEvidence applies a predicate to check if query has an edge evidence.
-func (f *KnowledgeRelationshipFilter) WhereHasEvidence() {
+func (f *KnowledgeSubjectAliasFilter) WhereHasEvidence() {
 	f.Where(entql.HasEdge("evidence"))
 }
 
 // WhereHasEvidenceWith applies a predicate to check if query has an edge evidence with a given conditions (other predicates).
-func (f *KnowledgeRelationshipFilter) WhereHasEvidenceWith(preds ...predicate.KnowledgeEvidence) {
+func (f *KnowledgeSubjectAliasFilter) WhereHasEvidenceWith(preds ...predicate.KnowledgeEvidence) {
 	f.Where(entql.HasEdgeWith("evidence", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasEntity applies a predicate to check if query has an edge entity.
+func (f *KnowledgeSubjectAliasFilter) WhereHasEntity() {
+	f.Where(entql.HasEdge("entity"))
+}
+
+// WhereHasEntityWith applies a predicate to check if query has an edge entity with a given conditions (other predicates).
+func (f *KnowledgeSubjectAliasFilter) WhereHasEntityWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasRelationship applies a predicate to check if query has an edge relationship.
+func (f *KnowledgeSubjectAliasFilter) WhereHasRelationship() {
+	f.Where(entql.HasEdge("relationship"))
+}
+
+// WhereHasRelationshipWith applies a predicate to check if query has an edge relationship with a given conditions (other predicates).
+func (f *KnowledgeSubjectAliasFilter) WhereHasRelationshipWith(preds ...predicate.KnowledgeRelationship) {
+	f.Where(entql.HasEdgeWith("relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

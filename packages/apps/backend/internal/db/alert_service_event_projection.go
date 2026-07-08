@@ -4,20 +4,20 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
+	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 const (
-	assertionAlertDefinitionObserved = "alert_definition_observed"
-	assertionAlertRelatedEntity      = "alert_related_entity"
-	knowledgeEntityKindAlert         = "alert"
+	assertionAlertInstanceObserved = "alert_instance_observed"
+	knowledgeEntityKindAlert       = "alert"
 )
 
-func (s *AlertService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) (map[string][]uuid.UUID, error) {
+func (s *AlertService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) ([]rez.ProjectedDomainEntityRef, error) {
 	if projections.SubjectKindAlert.Matches(event) {
 		observed, validationErr := projections.DecodeAlertEvent(event)
 		if validationErr != nil || observed == nil {
@@ -28,69 +28,60 @@ func (s *AlertService) HandleEventProjection(ctx context.Context, event *ent.Nor
 	return nil, nil
 }
 
-func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *projections.AlertEvent) (map[string][]uuid.UUID, error) {
-	projIds := make(map[string][]uuid.UUID)
+func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *projections.AlertEvent) ([]rez.ProjectedDomainEntityRef, error) {
 	attrs := ae.Attributes
-	projKnowledgeEntity := rez.ProjectedKnowledgeEntity{
-		EvidenceAssertion: assertionAlertDefinitionObserved,
-		Kind:              knowledgeEntityKindAlert,
-		DisplayName:       attrs.Title,
-		AliasRefs: []ent.KnowledgeEntityAliasRef{
-			{Provider: ae.Event.Provider, ProviderSubjectRef: ae.Event.ProviderSubjectRef},
+
+	alertSubjectAliasRef := ent.KnowledgeSubjectAliasRef{
+		Kind:               ksa.SubjectKindEntity,
+		Provider:           ae.Event.Provider,
+		ProviderSubjectRef: ae.Event.ProviderSubjectRef,
+	}
+	alertObservedEvidence := rez.ProjectedKnowledgeEvidence{
+		Kind:        ke.EvidenceKindObserved,
+		Assertion:   assertionAlertInstanceObserved,
+		EffectiveAt: ae.Event.OccurredAt,
+		SubjectAlias: rez.ProjectedKnowledgeEvidenceSubjectAlias{
+			Description: "Alert Opened",
+			AliasRef:    alertSubjectAliasRef,
+			SubjectEntityRef: &ent.KnowledgeEntityRef{
+				Kind:        knowledgeEntityKindAlert,
+				Reference:   attrs.ExternalRef,
+				DisplayName: attrs.Title,
+				Description: attrs.Description,
+			},
 		},
 	}
-	keId, saveKnowledgeErr := s.knowledge.ResolveProjectedEntity(ctx, ae.Event, projKnowledgeEntity)
-	if saveKnowledgeErr != nil {
-		return nil, fmt.Errorf("save projected entity: %w", saveKnowledgeErr)
-	}
+	knowledgeEvidence := []rez.ProjectedKnowledgeEvidence{alertObservedEvidence}
 
-	// TODO: use regular alert service update flow here instead
+	var projEnts []rez.ProjectedDomainEntityRef
+	return projEnts, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		saveKnowledgeErr := s.knowledge.IngestProjectedEventEvidence(ctx, ae.Event, knowledgeEvidence)
+		if saveKnowledgeErr != nil {
+			return fmt.Errorf("save projected entity: %w", saveKnowledgeErr)
+		}
 
-	upsert := s.db.Client(ctx).Alert.Create().
-		SetKnowledgeEntityID(keId).
-		SetTitle(attrs.Title).
-		SetDescription(attrs.Description).
-		SetDefinition(attrs.Definition).
-		OnConflictColumns(alert.FieldTenantID, alert.FieldKnowledgeEntityID).
-		UpdateNewValues()
-	alertId, saveErr := upsert.ID(ctx)
-	if saveErr != nil {
-		return nil, fmt.Errorf("upsert alert: %w", saveErr)
-	}
-	projIds["alert"] = append(projIds["alert"], alertId)
+		keId, lookupErr := s.knowledge.LookupEntityIdByAliasRefs(ctx, alertSubjectAliasRef)
+		if lookupErr != nil {
+			if ent.IsNotFound(lookupErr) {
+				return projections.Retryable(fmt.Errorf("alert entity not found: %s", alertSubjectAliasRef.ProviderSubjectRef))
+			}
+			return fmt.Errorf("lookup alert entity alias: %w", lookupErr)
+		}
 
-	alertAlias := ae.Event.MakeEntityAliasRef()
+		// TODO: use regular alert service update flow here instead
 
-	for _, related := range projections.SortRelatedEntityRefs(attrs.RelatedEntities) {
-		relatedAlias := ent.KnowledgeEntityAliasRef{
-			Provider:           ae.Event.Provider,
-			ProviderSubjectRef: related.ExternalRef,
+		upsert := s.db.Client(ctx).Alert.Create().
+			SetKnowledgeEntityID(keId).
+			SetTitle(attrs.Title).
+			SetDescription(attrs.Description).
+			SetDefinition(attrs.Definition).
+			OnConflictColumns(alert.FieldTenantID, alert.FieldKnowledgeEntityID).
+			UpdateNewValues()
+		alertId, saveErr := upsert.ID(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("upsert alert: %w", saveErr)
 		}
-		projRelatedEnt := rez.ProjectedKnowledgeEntity{
-			EvidenceAssertion: assertionSystemComponentExists,
-			Kind:              related.Kind,
-			DisplayName:       related.DisplayName,
-			Properties:        map[string]any{"external_ref": related.ExternalRef},
-			AliasRefs:         []ent.KnowledgeEntityAliasRef{relatedAlias},
-			IsPlaceholder:     true,
-		}
-		if _, entErr := s.knowledge.ResolveProjectedEntity(ctx, ae.Event, projRelatedEnt); entErr != nil {
-			return nil, fmt.Errorf("resolve related entity: %w", entErr)
-		}
-		projRelatedRel := rez.ProjectedKnowledgeRelationship{
-			Kind:              relationshipKindRelatedTo,
-			EvidenceAssertion: assertionAlertRelatedEntity,
-			DisplayName:       "alert related to " + related.DisplayName,
-			Properties: map[string]any{
-				"related_external_ref": related.ExternalRef,
-			},
-			FromAliasRef: alertAlias,
-			ToAliasRef:   relatedAlias,
-		}
-		if _, relErr := s.knowledge.ResolveProjectedRelationship(ctx, ae.Event, projRelatedRel); relErr != nil {
-			return nil, fmt.Errorf("resolve related relationship: %w", relErr)
-		}
-	}
-
-	return projIds, nil
+		projEnts = append(projEnts, rez.ProjectedDomainEntityRef{Kind: "alert", Id: alertId})
+		return nil
+	})
 }

@@ -16,62 +16,63 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// KnowledgeRelationshipQuery is the builder for querying KnowledgeRelationship entities.
-type KnowledgeRelationshipQuery struct {
+// KnowledgeSubjectAliasQuery is the builder for querying KnowledgeSubjectAlias entities.
+type KnowledgeSubjectAliasQuery struct {
 	config
 	ctx              *QueryContext
-	order            []knowledgerelationship.OrderOption
+	order            []knowledgesubjectalias.OrderOption
 	inters           []Interceptor
-	predicates       []predicate.KnowledgeRelationship
+	predicates       []predicate.KnowledgeSubjectAlias
 	withTenant       *TenantQuery
-	withSourceEntity *KnowledgeEntityQuery
-	withTargetEntity *KnowledgeEntityQuery
-	withAliases      *KnowledgeSubjectAliasQuery
+	withEvidence     *KnowledgeEvidenceQuery
+	withEntity       *KnowledgeEntityQuery
+	withRelationship *KnowledgeRelationshipQuery
 	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the KnowledgeRelationshipQuery builder.
-func (_q *KnowledgeRelationshipQuery) Where(ps ...predicate.KnowledgeRelationship) *KnowledgeRelationshipQuery {
+// Where adds a new predicate for the KnowledgeSubjectAliasQuery builder.
+func (_q *KnowledgeSubjectAliasQuery) Where(ps ...predicate.KnowledgeSubjectAlias) *KnowledgeSubjectAliasQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *KnowledgeRelationshipQuery) Limit(limit int) *KnowledgeRelationshipQuery {
+func (_q *KnowledgeSubjectAliasQuery) Limit(limit int) *KnowledgeSubjectAliasQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *KnowledgeRelationshipQuery) Offset(offset int) *KnowledgeRelationshipQuery {
+func (_q *KnowledgeSubjectAliasQuery) Offset(offset int) *KnowledgeSubjectAliasQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *KnowledgeRelationshipQuery) Unique(unique bool) *KnowledgeRelationshipQuery {
+func (_q *KnowledgeSubjectAliasQuery) Unique(unique bool) *KnowledgeSubjectAliasQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *KnowledgeRelationshipQuery) Order(o ...knowledgerelationship.OrderOption) *KnowledgeRelationshipQuery {
+func (_q *KnowledgeSubjectAliasQuery) Order(o ...knowledgesubjectalias.OrderOption) *KnowledgeSubjectAliasQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *KnowledgeRelationshipQuery) QueryTenant() *TenantQuery {
+func (_q *KnowledgeSubjectAliasQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -82,87 +83,12 @@ func (_q *KnowledgeRelationshipQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgerelationship.Table, knowledgerelationship.FieldID, selector),
+			sqlgraph.From(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgerelationship.TenantTable, knowledgerelationship.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgesubjectalias.TenantTable, knowledgesubjectalias.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.KnowledgeRelationship
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySourceEntity chains the current query on the "source_entity" edge.
-func (_q *KnowledgeRelationshipQuery) QuerySourceEntity() *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgerelationship.Table, knowledgerelationship.FieldID, selector),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgerelationship.SourceEntityTable, knowledgerelationship.SourceEntityColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.KnowledgeRelationship
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryTargetEntity chains the current query on the "target_entity" edge.
-func (_q *KnowledgeRelationshipQuery) QueryTargetEntity() *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgerelationship.Table, knowledgerelationship.FieldID, selector),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgerelationship.TargetEntityTable, knowledgerelationship.TargetEntityColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.KnowledgeRelationship
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryAliases chains the current query on the "aliases" edge.
-func (_q *KnowledgeRelationshipQuery) QueryAliases() *KnowledgeSubjectAliasQuery {
-	query := (&KnowledgeSubjectAliasClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgerelationship.Table, knowledgerelationship.FieldID, selector),
-			sqlgraph.To(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, knowledgerelationship.AliasesTable, knowledgerelationship.AliasesColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
 		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -170,21 +96,96 @@ func (_q *KnowledgeRelationshipQuery) QueryAliases() *KnowledgeSubjectAliasQuery
 	return query
 }
 
-// First returns the first KnowledgeRelationship entity from the query.
-// Returns a *NotFoundError when no KnowledgeRelationship was found.
-func (_q *KnowledgeRelationshipQuery) First(ctx context.Context) (*KnowledgeRelationship, error) {
+// QueryEvidence chains the current query on the "evidence" edge.
+func (_q *KnowledgeSubjectAliasQuery) QueryEvidence() *KnowledgeEvidenceQuery {
+	query := (&KnowledgeEvidenceClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID, selector),
+			sqlgraph.To(knowledgeevidence.Table, knowledgeevidence.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgesubjectalias.EvidenceTable, knowledgesubjectalias.EvidenceColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.KnowledgeEvidence
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEntity chains the current query on the "entity" edge.
+func (_q *KnowledgeSubjectAliasQuery) QueryEntity() *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID, selector),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgesubjectalias.EntityTable, knowledgesubjectalias.EntityColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRelationship chains the current query on the "relationship" edge.
+func (_q *KnowledgeSubjectAliasQuery) QueryRelationship() *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID, selector),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgesubjectalias.RelationshipTable, knowledgesubjectalias.RelationshipColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// First returns the first KnowledgeSubjectAlias entity from the query.
+// Returns a *NotFoundError when no KnowledgeSubjectAlias was found.
+func (_q *KnowledgeSubjectAliasQuery) First(ctx context.Context) (*KnowledgeSubjectAlias, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{knowledgerelationship.Label}
+		return nil, &NotFoundError{knowledgesubjectalias.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) FirstX(ctx context.Context) *KnowledgeRelationship {
+func (_q *KnowledgeSubjectAliasQuery) FirstX(ctx context.Context) *KnowledgeSubjectAlias {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -192,22 +193,22 @@ func (_q *KnowledgeRelationshipQuery) FirstX(ctx context.Context) *KnowledgeRela
 	return node
 }
 
-// FirstID returns the first KnowledgeRelationship ID from the query.
-// Returns a *NotFoundError when no KnowledgeRelationship ID was found.
-func (_q *KnowledgeRelationshipQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first KnowledgeSubjectAlias ID from the query.
+// Returns a *NotFoundError when no KnowledgeSubjectAlias ID was found.
+func (_q *KnowledgeSubjectAliasQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{knowledgerelationship.Label}
+		err = &NotFoundError{knowledgesubjectalias.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *KnowledgeSubjectAliasQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -215,10 +216,10 @@ func (_q *KnowledgeRelationshipQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single KnowledgeRelationship entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one KnowledgeRelationship entity is found.
-// Returns a *NotFoundError when no KnowledgeRelationship entities are found.
-func (_q *KnowledgeRelationshipQuery) Only(ctx context.Context) (*KnowledgeRelationship, error) {
+// Only returns a single KnowledgeSubjectAlias entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one KnowledgeSubjectAlias entity is found.
+// Returns a *NotFoundError when no KnowledgeSubjectAlias entities are found.
+func (_q *KnowledgeSubjectAliasQuery) Only(ctx context.Context) (*KnowledgeSubjectAlias, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -227,14 +228,14 @@ func (_q *KnowledgeRelationshipQuery) Only(ctx context.Context) (*KnowledgeRelat
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{knowledgerelationship.Label}
+		return nil, &NotFoundError{knowledgesubjectalias.Label}
 	default:
-		return nil, &NotSingularError{knowledgerelationship.Label}
+		return nil, &NotSingularError{knowledgesubjectalias.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) OnlyX(ctx context.Context) *KnowledgeRelationship {
+func (_q *KnowledgeSubjectAliasQuery) OnlyX(ctx context.Context) *KnowledgeSubjectAlias {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -242,10 +243,10 @@ func (_q *KnowledgeRelationshipQuery) OnlyX(ctx context.Context) *KnowledgeRelat
 	return node
 }
 
-// OnlyID is like Only, but returns the only KnowledgeRelationship ID in the query.
-// Returns a *NotSingularError when more than one KnowledgeRelationship ID is found.
+// OnlyID is like Only, but returns the only KnowledgeSubjectAlias ID in the query.
+// Returns a *NotSingularError when more than one KnowledgeSubjectAlias ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *KnowledgeRelationshipQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *KnowledgeSubjectAliasQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -254,15 +255,15 @@ func (_q *KnowledgeRelationshipQuery) OnlyID(ctx context.Context) (id uuid.UUID,
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{knowledgerelationship.Label}
+		err = &NotFoundError{knowledgesubjectalias.Label}
 	default:
-		err = &NotSingularError{knowledgerelationship.Label}
+		err = &NotSingularError{knowledgesubjectalias.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *KnowledgeSubjectAliasQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -270,18 +271,18 @@ func (_q *KnowledgeRelationshipQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of KnowledgeRelationships.
-func (_q *KnowledgeRelationshipQuery) All(ctx context.Context) ([]*KnowledgeRelationship, error) {
+// All executes the query and returns a list of KnowledgeSubjectAliasSlice.
+func (_q *KnowledgeSubjectAliasQuery) All(ctx context.Context) ([]*KnowledgeSubjectAlias, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*KnowledgeRelationship, *KnowledgeRelationshipQuery]()
-	return withInterceptors[[]*KnowledgeRelationship](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*KnowledgeSubjectAlias, *KnowledgeSubjectAliasQuery]()
+	return withInterceptors[[]*KnowledgeSubjectAlias](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) AllX(ctx context.Context) []*KnowledgeRelationship {
+func (_q *KnowledgeSubjectAliasQuery) AllX(ctx context.Context) []*KnowledgeSubjectAlias {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -289,20 +290,20 @@ func (_q *KnowledgeRelationshipQuery) AllX(ctx context.Context) []*KnowledgeRela
 	return nodes
 }
 
-// IDs executes the query and returns a list of KnowledgeRelationship IDs.
-func (_q *KnowledgeRelationshipQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of KnowledgeSubjectAlias IDs.
+func (_q *KnowledgeSubjectAliasQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(knowledgerelationship.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(knowledgesubjectalias.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *KnowledgeSubjectAliasQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -311,16 +312,16 @@ func (_q *KnowledgeRelationshipQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *KnowledgeRelationshipQuery) Count(ctx context.Context) (int, error) {
+func (_q *KnowledgeSubjectAliasQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*KnowledgeRelationshipQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*KnowledgeSubjectAliasQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) CountX(ctx context.Context) int {
+func (_q *KnowledgeSubjectAliasQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -329,7 +330,7 @@ func (_q *KnowledgeRelationshipQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *KnowledgeRelationshipQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *KnowledgeSubjectAliasQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -342,7 +343,7 @@ func (_q *KnowledgeRelationshipQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) ExistX(ctx context.Context) bool {
+func (_q *KnowledgeSubjectAliasQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -350,22 +351,22 @@ func (_q *KnowledgeRelationshipQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the KnowledgeRelationshipQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the KnowledgeSubjectAliasQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *KnowledgeRelationshipQuery) Clone() *KnowledgeRelationshipQuery {
+func (_q *KnowledgeSubjectAliasQuery) Clone() *KnowledgeSubjectAliasQuery {
 	if _q == nil {
 		return nil
 	}
-	return &KnowledgeRelationshipQuery{
+	return &KnowledgeSubjectAliasQuery{
 		config:           _q.config,
 		ctx:              _q.ctx.Clone(),
-		order:            append([]knowledgerelationship.OrderOption{}, _q.order...),
+		order:            append([]knowledgesubjectalias.OrderOption{}, _q.order...),
 		inters:           append([]Interceptor{}, _q.inters...),
-		predicates:       append([]predicate.KnowledgeRelationship{}, _q.predicates...),
+		predicates:       append([]predicate.KnowledgeSubjectAlias{}, _q.predicates...),
 		withTenant:       _q.withTenant.Clone(),
-		withSourceEntity: _q.withSourceEntity.Clone(),
-		withTargetEntity: _q.withTargetEntity.Clone(),
-		withAliases:      _q.withAliases.Clone(),
+		withEvidence:     _q.withEvidence.Clone(),
+		withEntity:       _q.withEntity.Clone(),
+		withRelationship: _q.withRelationship.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -375,7 +376,7 @@ func (_q *KnowledgeRelationshipQuery) Clone() *KnowledgeRelationshipQuery {
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeRelationshipQuery) WithTenant(opts ...func(*TenantQuery)) *KnowledgeRelationshipQuery {
+func (_q *KnowledgeSubjectAliasQuery) WithTenant(opts ...func(*TenantQuery)) *KnowledgeSubjectAliasQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -384,36 +385,36 @@ func (_q *KnowledgeRelationshipQuery) WithTenant(opts ...func(*TenantQuery)) *Kn
 	return _q
 }
 
-// WithSourceEntity tells the query-builder to eager-load the nodes that are connected to
-// the "source_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeRelationshipQuery) WithSourceEntity(opts ...func(*KnowledgeEntityQuery)) *KnowledgeRelationshipQuery {
+// WithEvidence tells the query-builder to eager-load the nodes that are connected to
+// the "evidence" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeSubjectAliasQuery) WithEvidence(opts ...func(*KnowledgeEvidenceQuery)) *KnowledgeSubjectAliasQuery {
+	query := (&KnowledgeEvidenceClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withEvidence = query
+	return _q
+}
+
+// WithEntity tells the query-builder to eager-load the nodes that are connected to
+// the "entity" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeSubjectAliasQuery) WithEntity(opts ...func(*KnowledgeEntityQuery)) *KnowledgeSubjectAliasQuery {
 	query := (&KnowledgeEntityClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withSourceEntity = query
+	_q.withEntity = query
 	return _q
 }
 
-// WithTargetEntity tells the query-builder to eager-load the nodes that are connected to
-// the "target_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeRelationshipQuery) WithTargetEntity(opts ...func(*KnowledgeEntityQuery)) *KnowledgeRelationshipQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+// WithRelationship tells the query-builder to eager-load the nodes that are connected to
+// the "relationship" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeSubjectAliasQuery) WithRelationship(opts ...func(*KnowledgeRelationshipQuery)) *KnowledgeSubjectAliasQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withTargetEntity = query
-	return _q
-}
-
-// WithAliases tells the query-builder to eager-load the nodes that are connected to
-// the "aliases" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeRelationshipQuery) WithAliases(opts ...func(*KnowledgeSubjectAliasQuery)) *KnowledgeRelationshipQuery {
-	query := (&KnowledgeSubjectAliasClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withAliases = query
+	_q.withRelationship = query
 	return _q
 }
 
@@ -427,15 +428,15 @@ func (_q *KnowledgeRelationshipQuery) WithAliases(opts ...func(*KnowledgeSubject
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.KnowledgeRelationship.Query().
-//		GroupBy(knowledgerelationship.FieldTenantID).
+//	client.KnowledgeSubjectAlias.Query().
+//		GroupBy(knowledgesubjectalias.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *KnowledgeRelationshipQuery) GroupBy(field string, fields ...string) *KnowledgeRelationshipGroupBy {
+func (_q *KnowledgeSubjectAliasQuery) GroupBy(field string, fields ...string) *KnowledgeSubjectAliasGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &KnowledgeRelationshipGroupBy{build: _q}
+	grbuild := &KnowledgeSubjectAliasGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = knowledgerelationship.Label
+	grbuild.label = knowledgesubjectalias.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -449,23 +450,23 @@ func (_q *KnowledgeRelationshipQuery) GroupBy(field string, fields ...string) *K
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.KnowledgeRelationship.Query().
-//		Select(knowledgerelationship.FieldTenantID).
+//	client.KnowledgeSubjectAlias.Query().
+//		Select(knowledgesubjectalias.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *KnowledgeRelationshipQuery) Select(fields ...string) *KnowledgeRelationshipSelect {
+func (_q *KnowledgeSubjectAliasQuery) Select(fields ...string) *KnowledgeSubjectAliasSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &KnowledgeRelationshipSelect{KnowledgeRelationshipQuery: _q}
-	sbuild.label = knowledgerelationship.Label
+	sbuild := &KnowledgeSubjectAliasSelect{KnowledgeSubjectAliasQuery: _q}
+	sbuild.label = knowledgesubjectalias.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a KnowledgeRelationshipSelect configured with the given aggregations.
-func (_q *KnowledgeRelationshipQuery) Aggregate(fns ...AggregateFunc) *KnowledgeRelationshipSelect {
+// Aggregate returns a KnowledgeSubjectAliasSelect configured with the given aggregations.
+func (_q *KnowledgeSubjectAliasQuery) Aggregate(fns ...AggregateFunc) *KnowledgeSubjectAliasSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *KnowledgeRelationshipQuery) prepareQuery(ctx context.Context) error {
+func (_q *KnowledgeSubjectAliasQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -477,7 +478,7 @@ func (_q *KnowledgeRelationshipQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !knowledgerelationship.ValidColumn(f) {
+		if !knowledgesubjectalias.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -488,36 +489,36 @@ func (_q *KnowledgeRelationshipQuery) prepareQuery(ctx context.Context) error {
 		}
 		_q.sql = prev
 	}
-	if knowledgerelationship.Policy == nil {
-		return errors.New("ent: uninitialized knowledgerelationship.Policy (forgotten import ent/runtime?)")
+	if knowledgesubjectalias.Policy == nil {
+		return errors.New("ent: uninitialized knowledgesubjectalias.Policy (forgotten import ent/runtime?)")
 	}
-	if err := knowledgerelationship.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := knowledgesubjectalias.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *KnowledgeRelationshipQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*KnowledgeRelationship, error) {
+func (_q *KnowledgeSubjectAliasQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*KnowledgeSubjectAlias, error) {
 	var (
-		nodes       = []*KnowledgeRelationship{}
+		nodes       = []*KnowledgeSubjectAlias{}
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
 			_q.withTenant != nil,
-			_q.withSourceEntity != nil,
-			_q.withTargetEntity != nil,
-			_q.withAliases != nil,
+			_q.withEvidence != nil,
+			_q.withEntity != nil,
+			_q.withRelationship != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*KnowledgeRelationship).scanValues(nil, columns)
+		return (*KnowledgeSubjectAlias).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &KnowledgeRelationship{config: _q.config}
+		node := &KnowledgeSubjectAlias{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.KnowledgeRelationship
+	_spec.Node.Schema = _q.schemaConfig.KnowledgeSubjectAlias
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -533,35 +534,35 @@ func (_q *KnowledgeRelationshipQuery) sqlAll(ctx context.Context, hooks ...query
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *KnowledgeRelationship, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *KnowledgeSubjectAlias, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withSourceEntity; query != nil {
-		if err := _q.loadSourceEntity(ctx, query, nodes, nil,
-			func(n *KnowledgeRelationship, e *KnowledgeEntity) { n.Edges.SourceEntity = e }); err != nil {
+	if query := _q.withEvidence; query != nil {
+		if err := _q.loadEvidence(ctx, query, nodes,
+			func(n *KnowledgeSubjectAlias) { n.Edges.Evidence = []*KnowledgeEvidence{} },
+			func(n *KnowledgeSubjectAlias, e *KnowledgeEvidence) { n.Edges.Evidence = append(n.Edges.Evidence, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withTargetEntity; query != nil {
-		if err := _q.loadTargetEntity(ctx, query, nodes, nil,
-			func(n *KnowledgeRelationship, e *KnowledgeEntity) { n.Edges.TargetEntity = e }); err != nil {
+	if query := _q.withEntity; query != nil {
+		if err := _q.loadEntity(ctx, query, nodes, nil,
+			func(n *KnowledgeSubjectAlias, e *KnowledgeEntity) { n.Edges.Entity = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withAliases; query != nil {
-		if err := _q.loadAliases(ctx, query, nodes,
-			func(n *KnowledgeRelationship) { n.Edges.Aliases = []*KnowledgeSubjectAlias{} },
-			func(n *KnowledgeRelationship, e *KnowledgeSubjectAlias) { n.Edges.Aliases = append(n.Edges.Aliases, e) }); err != nil {
+	if query := _q.withRelationship; query != nil {
+		if err := _q.loadRelationship(ctx, query, nodes, nil,
+			func(n *KnowledgeSubjectAlias, e *KnowledgeRelationship) { n.Edges.Relationship = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *KnowledgeRelationshipQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*KnowledgeRelationship, init func(*KnowledgeRelationship), assign func(*KnowledgeRelationship, *Tenant)) error {
+func (_q *KnowledgeSubjectAliasQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*KnowledgeSubjectAlias, init func(*KnowledgeSubjectAlias), assign func(*KnowledgeSubjectAlias, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*KnowledgeRelationship)
+	nodeids := make(map[int][]*KnowledgeSubjectAlias)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -588,67 +589,9 @@ func (_q *KnowledgeRelationshipQuery) loadTenant(ctx context.Context, query *Ten
 	}
 	return nil
 }
-func (_q *KnowledgeRelationshipQuery) loadSourceEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*KnowledgeRelationship, init func(*KnowledgeRelationship), assign func(*KnowledgeRelationship, *KnowledgeEntity)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*KnowledgeRelationship)
-	for i := range nodes {
-		fk := nodes[i].SourceEntityID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(knowledgeentity.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "source_entity_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *KnowledgeRelationshipQuery) loadTargetEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*KnowledgeRelationship, init func(*KnowledgeRelationship), assign func(*KnowledgeRelationship, *KnowledgeEntity)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*KnowledgeRelationship)
-	for i := range nodes {
-		fk := nodes[i].TargetEntityID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(knowledgeentity.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "target_entity_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *KnowledgeRelationshipQuery) loadAliases(ctx context.Context, query *KnowledgeSubjectAliasQuery, nodes []*KnowledgeRelationship, init func(*KnowledgeRelationship), assign func(*KnowledgeRelationship, *KnowledgeSubjectAlias)) error {
+func (_q *KnowledgeSubjectAliasQuery) loadEvidence(ctx context.Context, query *KnowledgeEvidenceQuery, nodes []*KnowledgeSubjectAlias, init func(*KnowledgeSubjectAlias), assign func(*KnowledgeSubjectAlias, *KnowledgeEvidence)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*KnowledgeRelationship)
+	nodeids := make(map[uuid.UUID]*KnowledgeSubjectAlias)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -657,29 +600,87 @@ func (_q *KnowledgeRelationshipQuery) loadAliases(ctx context.Context, query *Kn
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(knowledgesubjectalias.FieldRelationshipID)
+		query.ctx.AppendFieldOnce(knowledgeevidence.FieldAliasID)
 	}
-	query.Where(predicate.KnowledgeSubjectAlias(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(knowledgerelationship.AliasesColumn), fks...))
+	query.Where(predicate.KnowledgeEvidence(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(knowledgesubjectalias.EvidenceColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.RelationshipID
+		fk := n.AliasID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "relationship_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "alias_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
 	return nil
 }
+func (_q *KnowledgeSubjectAliasQuery) loadEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*KnowledgeSubjectAlias, init func(*KnowledgeSubjectAlias), assign func(*KnowledgeSubjectAlias, *KnowledgeEntity)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*KnowledgeSubjectAlias)
+	for i := range nodes {
+		fk := nodes[i].EntityID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgeentity.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "entity_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *KnowledgeSubjectAliasQuery) loadRelationship(ctx context.Context, query *KnowledgeRelationshipQuery, nodes []*KnowledgeSubjectAlias, init func(*KnowledgeSubjectAlias), assign func(*KnowledgeSubjectAlias, *KnowledgeRelationship)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*KnowledgeSubjectAlias)
+	for i := range nodes {
+		fk := nodes[i].RelationshipID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgerelationship.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "relationship_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
-func (_q *KnowledgeRelationshipQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *KnowledgeSubjectAliasQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.KnowledgeRelationship
+	_spec.Node.Schema = _q.schemaConfig.KnowledgeSubjectAlias
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -691,8 +692,8 @@ func (_q *KnowledgeRelationshipQuery) sqlCount(ctx context.Context) (int, error)
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *KnowledgeRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(knowledgerelationship.Table, knowledgerelationship.Columns, sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID))
+func (_q *KnowledgeSubjectAliasQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(knowledgesubjectalias.Table, knowledgesubjectalias.Columns, sqlgraph.NewFieldSpec(knowledgesubjectalias.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -701,20 +702,20 @@ func (_q *KnowledgeRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, knowledgerelationship.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, knowledgesubjectalias.FieldID)
 		for i := range fields {
-			if fields[i] != knowledgerelationship.FieldID {
+			if fields[i] != knowledgesubjectalias.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(knowledgerelationship.FieldTenantID)
+			_spec.Node.AddColumnOnce(knowledgesubjectalias.FieldTenantID)
 		}
-		if _q.withSourceEntity != nil {
-			_spec.Node.AddColumnOnce(knowledgerelationship.FieldSourceEntityID)
+		if _q.withEntity != nil {
+			_spec.Node.AddColumnOnce(knowledgesubjectalias.FieldEntityID)
 		}
-		if _q.withTargetEntity != nil {
-			_spec.Node.AddColumnOnce(knowledgerelationship.FieldTargetEntityID)
+		if _q.withRelationship != nil {
+			_spec.Node.AddColumnOnce(knowledgesubjectalias.FieldRelationshipID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -740,12 +741,12 @@ func (_q *KnowledgeRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *KnowledgeRelationshipQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *KnowledgeSubjectAliasQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(knowledgerelationship.Table)
+	t1 := builder.Table(knowledgesubjectalias.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = knowledgerelationship.Columns
+		columns = knowledgesubjectalias.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -755,7 +756,7 @@ func (_q *KnowledgeRelationshipQuery) sqlQuery(ctx context.Context) *sql.Selecto
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.KnowledgeRelationship)
+	t1.Schema(_q.schemaConfig.KnowledgeSubjectAlias)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -779,33 +780,33 @@ func (_q *KnowledgeRelationshipQuery) sqlQuery(ctx context.Context) *sql.Selecto
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *KnowledgeRelationshipQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeRelationshipSelect {
+func (_q *KnowledgeSubjectAliasQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeSubjectAliasSelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// KnowledgeRelationshipGroupBy is the group-by builder for KnowledgeRelationship entities.
-type KnowledgeRelationshipGroupBy struct {
+// KnowledgeSubjectAliasGroupBy is the group-by builder for KnowledgeSubjectAlias entities.
+type KnowledgeSubjectAliasGroupBy struct {
 	selector
-	build *KnowledgeRelationshipQuery
+	build *KnowledgeSubjectAliasQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *KnowledgeRelationshipGroupBy) Aggregate(fns ...AggregateFunc) *KnowledgeRelationshipGroupBy {
+func (_g *KnowledgeSubjectAliasGroupBy) Aggregate(fns ...AggregateFunc) *KnowledgeSubjectAliasGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *KnowledgeRelationshipGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *KnowledgeSubjectAliasGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*KnowledgeRelationshipQuery, *KnowledgeRelationshipGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*KnowledgeSubjectAliasQuery, *KnowledgeSubjectAliasGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *KnowledgeRelationshipGroupBy) sqlScan(ctx context.Context, root *KnowledgeRelationshipQuery, v any) error {
+func (_g *KnowledgeSubjectAliasGroupBy) sqlScan(ctx context.Context, root *KnowledgeSubjectAliasQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -832,28 +833,28 @@ func (_g *KnowledgeRelationshipGroupBy) sqlScan(ctx context.Context, root *Knowl
 	return sql.ScanSlice(rows, v)
 }
 
-// KnowledgeRelationshipSelect is the builder for selecting fields of KnowledgeRelationship entities.
-type KnowledgeRelationshipSelect struct {
-	*KnowledgeRelationshipQuery
+// KnowledgeSubjectAliasSelect is the builder for selecting fields of KnowledgeSubjectAlias entities.
+type KnowledgeSubjectAliasSelect struct {
+	*KnowledgeSubjectAliasQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *KnowledgeRelationshipSelect) Aggregate(fns ...AggregateFunc) *KnowledgeRelationshipSelect {
+func (_s *KnowledgeSubjectAliasSelect) Aggregate(fns ...AggregateFunc) *KnowledgeSubjectAliasSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *KnowledgeRelationshipSelect) Scan(ctx context.Context, v any) error {
+func (_s *KnowledgeSubjectAliasSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*KnowledgeRelationshipQuery, *KnowledgeRelationshipSelect](ctx, _s.KnowledgeRelationshipQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*KnowledgeSubjectAliasQuery, *KnowledgeSubjectAliasSelect](ctx, _s.KnowledgeSubjectAliasQuery, _s, _s.inters, v)
 }
 
-func (_s *KnowledgeRelationshipSelect) sqlScan(ctx context.Context, root *KnowledgeRelationshipQuery, v any) error {
+func (_s *KnowledgeSubjectAliasSelect) sqlScan(ctx context.Context, root *KnowledgeSubjectAliasQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -875,7 +876,7 @@ func (_s *KnowledgeRelationshipSelect) sqlScan(ctx context.Context, root *Knowle
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *KnowledgeRelationshipSelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeRelationshipSelect {
+func (_s *KnowledgeSubjectAliasSelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeSubjectAliasSelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

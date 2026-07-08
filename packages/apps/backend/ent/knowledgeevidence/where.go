@@ -72,14 +72,9 @@ func UpdatedAt(v time.Time) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// EntityID applies equality check predicate on the "entity_id" field. It's identical to EntityIDEQ.
-func EntityID(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEntityID, v))
-}
-
-// RelationshipID applies equality check predicate on the "relationship_id" field. It's identical to RelationshipIDEQ.
-func RelationshipID(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldRelationshipID, v))
+// EventID applies equality check predicate on the "event_id" field. It's identical to EventIDEQ.
+func EventID(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEventID, v))
 }
 
 // AliasID applies equality check predicate on the "alias_id" field. It's identical to AliasIDEQ.
@@ -87,19 +82,9 @@ func AliasID(v uuid.UUID) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAliasID, v))
 }
 
-// EventID applies equality check predicate on the "event_id" field. It's identical to EventIDEQ.
-func EventID(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEventID, v))
-}
-
 // Assertion applies equality check predicate on the "assertion" field. It's identical to AssertionEQ.
 func Assertion(v string) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAssertion, v))
-}
-
-// ObservedAt applies equality check predicate on the "observed_at" field. It's identical to ObservedAtEQ.
-func ObservedAt(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldObservedAt, v))
 }
 
 // EffectiveAt applies equality check predicate on the "effective_at" field. It's identical to EffectiveAtEQ.
@@ -207,84 +192,24 @@ func UpdatedAtLTE(v time.Time) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// SubjectTypeEQ applies the EQ predicate on the "subject_type" field.
-func SubjectTypeEQ(v SubjectType) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldSubjectType, v))
+// EventIDEQ applies the EQ predicate on the "event_id" field.
+func EventIDEQ(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEventID, v))
 }
 
-// SubjectTypeNEQ applies the NEQ predicate on the "subject_type" field.
-func SubjectTypeNEQ(v SubjectType) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldSubjectType, v))
+// EventIDNEQ applies the NEQ predicate on the "event_id" field.
+func EventIDNEQ(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldEventID, v))
 }
 
-// SubjectTypeIn applies the In predicate on the "subject_type" field.
-func SubjectTypeIn(vs ...SubjectType) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldSubjectType, vs...))
+// EventIDIn applies the In predicate on the "event_id" field.
+func EventIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIn(FieldEventID, vs...))
 }
 
-// SubjectTypeNotIn applies the NotIn predicate on the "subject_type" field.
-func SubjectTypeNotIn(vs ...SubjectType) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldSubjectType, vs...))
-}
-
-// EntityIDEQ applies the EQ predicate on the "entity_id" field.
-func EntityIDEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEntityID, v))
-}
-
-// EntityIDNEQ applies the NEQ predicate on the "entity_id" field.
-func EntityIDNEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldEntityID, v))
-}
-
-// EntityIDIn applies the In predicate on the "entity_id" field.
-func EntityIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldEntityID, vs...))
-}
-
-// EntityIDNotIn applies the NotIn predicate on the "entity_id" field.
-func EntityIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldEntityID, vs...))
-}
-
-// EntityIDIsNil applies the IsNil predicate on the "entity_id" field.
-func EntityIDIsNil() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIsNull(FieldEntityID))
-}
-
-// EntityIDNotNil applies the NotNil predicate on the "entity_id" field.
-func EntityIDNotNil() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotNull(FieldEntityID))
-}
-
-// RelationshipIDEQ applies the EQ predicate on the "relationship_id" field.
-func RelationshipIDEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldRelationshipID, v))
-}
-
-// RelationshipIDNEQ applies the NEQ predicate on the "relationship_id" field.
-func RelationshipIDNEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldRelationshipID, v))
-}
-
-// RelationshipIDIn applies the In predicate on the "relationship_id" field.
-func RelationshipIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldRelationshipID, vs...))
-}
-
-// RelationshipIDNotIn applies the NotIn predicate on the "relationship_id" field.
-func RelationshipIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldRelationshipID, vs...))
-}
-
-// RelationshipIDIsNil applies the IsNil predicate on the "relationship_id" field.
-func RelationshipIDIsNil() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIsNull(FieldRelationshipID))
-}
-
-// RelationshipIDNotNil applies the NotNil predicate on the "relationship_id" field.
-func RelationshipIDNotNil() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotNull(FieldRelationshipID))
+// EventIDNotIn applies the NotIn predicate on the "event_id" field.
+func EventIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldEventID, vs...))
 }
 
 // AliasIDEQ applies the EQ predicate on the "alias_id" field.
@@ -305,36 +230,6 @@ func AliasIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
 // AliasIDNotIn applies the NotIn predicate on the "alias_id" field.
 func AliasIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldAliasID, vs...))
-}
-
-// AliasIDIsNil applies the IsNil predicate on the "alias_id" field.
-func AliasIDIsNil() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIsNull(FieldAliasID))
-}
-
-// AliasIDNotNil applies the NotNil predicate on the "alias_id" field.
-func AliasIDNotNil() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotNull(FieldAliasID))
-}
-
-// EventIDEQ applies the EQ predicate on the "event_id" field.
-func EventIDEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEventID, v))
-}
-
-// EventIDNEQ applies the NEQ predicate on the "event_id" field.
-func EventIDNEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldEventID, v))
-}
-
-// EventIDIn applies the In predicate on the "event_id" field.
-func EventIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldEventID, vs...))
-}
-
-// EventIDNotIn applies the NotIn predicate on the "event_id" field.
-func EventIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldEventID, vs...))
 }
 
 // AssertionEQ applies the EQ predicate on the "assertion" field.
@@ -422,46 +317,6 @@ func EvidenceKindNotIn(vs ...EvidenceKind) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldEvidenceKind, vs...))
 }
 
-// ObservedAtEQ applies the EQ predicate on the "observed_at" field.
-func ObservedAtEQ(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldObservedAt, v))
-}
-
-// ObservedAtNEQ applies the NEQ predicate on the "observed_at" field.
-func ObservedAtNEQ(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldObservedAt, v))
-}
-
-// ObservedAtIn applies the In predicate on the "observed_at" field.
-func ObservedAtIn(vs ...time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldObservedAt, vs...))
-}
-
-// ObservedAtNotIn applies the NotIn predicate on the "observed_at" field.
-func ObservedAtNotIn(vs ...time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldObservedAt, vs...))
-}
-
-// ObservedAtGT applies the GT predicate on the "observed_at" field.
-func ObservedAtGT(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldGT(FieldObservedAt, v))
-}
-
-// ObservedAtGTE applies the GTE predicate on the "observed_at" field.
-func ObservedAtGTE(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldGTE(FieldObservedAt, v))
-}
-
-// ObservedAtLT applies the LT predicate on the "observed_at" field.
-func ObservedAtLT(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldLT(FieldObservedAt, v))
-}
-
-// ObservedAtLTE applies the LTE predicate on the "observed_at" field.
-func ObservedAtLTE(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldObservedAt, v))
-}
-
 // EffectiveAtEQ applies the EQ predicate on the "effective_at" field.
 func EffectiveAtEQ(v time.Time) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEffectiveAt, v))
@@ -502,16 +357,6 @@ func EffectiveAtLTE(v time.Time) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldEffectiveAt, v))
 }
 
-// EffectiveAtIsNil applies the IsNil predicate on the "effective_at" field.
-func EffectiveAtIsNil() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIsNull(FieldEffectiveAt))
-}
-
-// EffectiveAtNotNil applies the NotNil predicate on the "effective_at" field.
-func EffectiveAtNotNil() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotNull(FieldEffectiveAt))
-}
-
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
@@ -541,93 +386,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.KnowledgeEvidence {
 	})
 }
 
-// HasEntity applies the HasEdge predicate on the "entity" edge.
-func HasEntity() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, EntityTable, EntityColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasEntityWith applies the HasEdge predicate on the "entity" edge with a given conditions (other predicates).
-func HasEntityWith(preds ...predicate.KnowledgeEntity) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
-		step := newEntityStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasRelationship applies the HasEdge predicate on the "relationship" edge.
-func HasRelationship() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, RelationshipTable, RelationshipColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeRelationship
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasRelationshipWith applies the HasEdge predicate on the "relationship" edge with a given conditions (other predicates).
-func HasRelationshipWith(preds ...predicate.KnowledgeRelationship) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
-		step := newRelationshipStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeRelationship
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasAlias applies the HasEdge predicate on the "alias" edge.
-func HasAlias() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AliasTable, AliasColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntityAlias
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAliasWith applies the HasEdge predicate on the "alias" edge with a given conditions (other predicates).
-func HasAliasWith(preds ...predicate.KnowledgeEntityAlias) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
-		step := newAliasStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntityAlias
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasEvent applies the HasEdge predicate on the "event" edge.
 func HasEvent() predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
@@ -648,6 +406,35 @@ func HasEventWith(preds ...predicate.NormalizedEvent) predicate.KnowledgeEvidenc
 		step := newEventStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.KnowledgeEvidence
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAlias applies the HasEdge predicate on the "alias" edge.
+func HasAlias() predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, AliasTable, AliasColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
+		step.Edge.Schema = schemaConfig.KnowledgeEvidence
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAliasWith applies the HasEdge predicate on the "alias" edge with a given conditions (other predicates).
+func HasAliasWith(preds ...predicate.KnowledgeSubjectAlias) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
+		step := newAliasStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
 		step.Edge.Schema = schemaConfig.KnowledgeEvidence
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

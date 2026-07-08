@@ -1035,30 +1035,6 @@ func (f KnowledgeEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEntityMutation", m)
 }
 
-// The KnowledgeEntityAliasQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type KnowledgeEntityAliasQueryRuleFunc func(context.Context, *ent.KnowledgeEntityAliasQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f KnowledgeEntityAliasQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeEntityAliasQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeEntityAliasQuery", q)
-}
-
-// The KnowledgeEntityAliasMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type KnowledgeEntityAliasMutationRuleFunc func(context.Context, *ent.KnowledgeEntityAliasMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f KnowledgeEntityAliasMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.KnowledgeEntityAliasMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEntityAliasMutation", m)
-}
-
 // The KnowledgeEvidenceQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type KnowledgeEvidenceQueryRuleFunc func(context.Context, *ent.KnowledgeEvidenceQuery) error
@@ -1177,6 +1153,30 @@ func (f KnowledgeRelationshipMutationRuleFunc) EvalMutation(ctx context.Context,
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeRelationshipMutation", m)
+}
+
+// The KnowledgeSubjectAliasQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type KnowledgeSubjectAliasQueryRuleFunc func(context.Context, *ent.KnowledgeSubjectAliasQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f KnowledgeSubjectAliasQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeSubjectAliasQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeSubjectAliasQuery", q)
+}
+
+// The KnowledgeSubjectAliasMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type KnowledgeSubjectAliasMutationRuleFunc func(context.Context, *ent.KnowledgeSubjectAliasMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f KnowledgeSubjectAliasMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.KnowledgeSubjectAliasMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeSubjectAliasMutation", m)
 }
 
 // The MeetingScheduleQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -2036,8 +2036,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.KnowledgeEntityQuery:
 		return q.Filter(), nil
-	case *ent.KnowledgeEntityAliasQuery:
-		return q.Filter(), nil
 	case *ent.KnowledgeEvidenceQuery:
 		return q.Filter(), nil
 	case *ent.KnowledgeGraphSnapshotQuery:
@@ -2047,6 +2045,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 	case *ent.KnowledgeGraphSnapshotRelationshipQuery:
 		return q.Filter(), nil
 	case *ent.KnowledgeRelationshipQuery:
+		return q.Filter(), nil
+	case *ent.KnowledgeSubjectAliasQuery:
 		return q.Filter(), nil
 	case *ent.MeetingScheduleQuery:
 		return q.Filter(), nil
@@ -2193,8 +2193,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.KnowledgeEntityMutation:
 		return m.Filter(), nil
-	case *ent.KnowledgeEntityAliasMutation:
-		return m.Filter(), nil
 	case *ent.KnowledgeEvidenceMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeGraphSnapshotMutation:
@@ -2204,6 +2202,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.KnowledgeGraphSnapshotRelationshipMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeRelationshipMutation:
+		return m.Filter(), nil
+	case *ent.KnowledgeSubjectAliasMutation:
 		return m.Filter(), nil
 	case *ent.MeetingScheduleMutation:
 		return m.Filter(), nil

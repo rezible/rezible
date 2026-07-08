@@ -29,7 +29,6 @@ const (
 	sourceCodeRepos       = "code_repositories"
 	sourceCodeChanges     = "code_changes"
 	sourceChatMessages    = "chat_messages"
-	sourcePlaybooks       = "playbooks"
 	sourceIncidentImpacts = "incident_impacts"
 )
 
@@ -49,8 +48,6 @@ func (p *eventProcessor) process() (ent.NormalizedEvents, error) {
 		return p.processCodeChange()
 	case sourceChatMessages:
 		return p.processChatMessage()
-	case sourcePlaybooks:
-		return p.processPlaybook()
 	case sourceIncidentImpacts:
 		return p.processIncidentImpact()
 	default:
@@ -76,6 +73,7 @@ func (p *eventProcessor) processAlert() (ent.NormalizedEvents, error) {
 		Title:           payload.Title,
 		Description:     payload.Description,
 		Definition:      payload.Definition,
+		ExternalRef:     payload.ExternalRef,
 		RelatedEntities: payload.RelatedEntities,
 	}
 	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
@@ -251,43 +249,6 @@ func (p *eventProcessor) processChatMessage() (ent.NormalizedEvents, error) {
 	}}, nil
 }
 
-func (p *eventProcessor) processPlaybook() (ent.NormalizedEvents, error) {
-	var payload playbookObservedPayload
-	if jsonErr := json.Unmarshal(p.event.Payload, &payload); jsonErr != nil {
-		return nil, fmt.Errorf("unmarshal playbook observed payload: %w", jsonErr)
-	}
-
-	occurredAt := payload.UpdatedAt
-	if occurredAt.IsZero() {
-		occurredAt = p.event.ReceivedAt
-	}
-	if occurredAt.IsZero() {
-		occurredAt = time.Now().UTC()
-	}
-
-	attrs := projections.PlaybookSubjectAttributes{
-		Title:         payload.Title,
-		Content:       payload.Content,
-		RelatedAlerts: payload.RelatedAlertExternalRefs,
-	}
-	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
-	if encodeErr != nil {
-		return nil, fmt.Errorf("encode playbook attributes: %w", encodeErr)
-	}
-
-	return ent.NormalizedEvents{&ent.NormalizedEvent{
-		Provider:           integrationName,
-		ProviderSource:     sourcePlaybooks,
-		Kind:               ne.KindObserved,
-		SubjectKind:        projections.SubjectKindPlaybook.String(),
-		ProviderSubjectRef: p.event.ProviderSubjectRef,
-		ProviderEventRef:   p.event.ProviderEventRef,
-		OccurredAt:         occurredAt,
-		ReceivedAt:         p.event.ReceivedAt,
-		Attributes:         encodedAttrs,
-	}}, nil
-}
-
 func (p *eventProcessor) processIncidentImpact() (ent.NormalizedEvents, error) {
 	var payload incidentImpactObservedPayload
 	if jsonErr := json.Unmarshal(p.event.Payload, &payload); jsonErr != nil {
@@ -343,6 +304,7 @@ func (p *eventProcessor) processIncident() (ent.NormalizedEvents, error) {
 	}
 
 	attrs := projections.IncidentSubjectAttributes{
+		ExternalRef: payload.ExternalRef,
 		Title:       payload.Title,
 		Summary:     payload.Summary,
 		SeverityRef: payload.SeverityRef,

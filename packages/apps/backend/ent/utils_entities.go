@@ -3,15 +3,14 @@ package ent
 import (
 	"time"
 
-	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
+	ke "github.com/rezible/rezible/ent/knowledgeentity"
+	kr "github.com/rezible/rezible/ent/knowledgerelationship"
+	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
 	vc "github.com/rezible/rezible/ent/videoconference"
 )
 
 func (ims IncidentMilestones) GetLatest() *IncidentMilestone {
-	if len(ims) == 0 {
-		return nil
-	}
 	var latest *IncidentMilestone
 	for _, im := range ims {
 		if latest == nil || latest.Timestamp.After(im.Timestamp) {
@@ -65,19 +64,51 @@ func (ev *NormalizedEvent) DeriveObservedAt() time.Time {
 	return time.Now()
 }
 
-func (ev *NormalizedEvent) MakeEntityAliasRef() KnowledgeEntityAliasRef {
-	return KnowledgeEntityAliasRef{Provider: ev.Provider, ProviderSubjectRef: ev.ProviderSubjectRef}
+func (ev *NormalizedEvent) MakeSubjectAliasRef(kind ksa.SubjectKind) KnowledgeSubjectAliasRef {
+	return KnowledgeSubjectAliasRef{
+		Kind:               kind,
+		Provider:           ev.Provider,
+		ProviderSubjectRef: ev.ProviderSubjectRef,
+	}
 }
 
-type KnowledgeEntityAliasRef struct {
+type KnowledgeEntityRef struct {
+	Kind        string
+	Reference   string
+	DisplayName string
+	Description string
+}
+
+func (r *KnowledgeEntityRef) Predicate() predicate.KnowledgeEntity {
+	return ke.And(ke.Kind(r.Kind), ke.Reference(r.Reference))
+}
+
+type KnowledgeRelationshipRef struct {
+	Kind        string
+	Description string
+	EntityRefs  [2]KnowledgeEntityRef
+}
+
+func (r *KnowledgeRelationshipRef) Predicate() predicate.KnowledgeRelationship {
+	return kr.And(
+		kr.Kind(r.Kind),
+		kr.HasSourceEntityWith(r.EntityRefs[0].Predicate()),
+		kr.HasTargetEntityWith(r.EntityRefs[1].Predicate()))
+}
+
+type KnowledgeSubjectAliasRef struct {
+	Kind               ksa.SubjectKind
 	Provider           string
 	ProviderSubjectRef string
 }
 
-func (ref KnowledgeEntityAliasRef) Predicate() predicate.KnowledgeEntityAlias {
-	return knea.And(knea.Provider(ref.Provider), knea.ProviderSubjectRef(ref.ProviderSubjectRef))
+func (r *KnowledgeSubjectAliasRef) Predicate() predicate.KnowledgeSubjectAlias {
+	return ksa.And(
+		ksa.SubjectKindEQ(r.Kind),
+		ksa.Provider(r.Provider),
+		ksa.ProviderSubjectRef(r.ProviderSubjectRef))
 }
 
-func (ref KnowledgeEntityAliasRef) SortKey() string {
-	return ref.Provider + "\x1f" + ref.ProviderSubjectRef
+func (r *KnowledgeSubjectAliasRef) SortKey() string {
+	return r.Provider + "\x1f" + r.ProviderSubjectRef
 }

@@ -20,18 +20,20 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldAsOf holds the string denoting the as_of field in the database.
 	FieldAsOf = "as_of"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldScopeKind holds the string denoting the scope_kind field in the database.
+	FieldScopeKind = "scope_kind"
+	// FieldScopeProperties holds the string denoting the scope_properties field in the database.
+	FieldScopeProperties = "scope_properties"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeSystemAnalyses holds the string denoting the system_analyses edge name in mutations.
-	EdgeSystemAnalyses = "system_analyses"
 	// EdgeEntities holds the string denoting the entities edge name in mutations.
 	EdgeEntities = "entities"
 	// EdgeRelationships holds the string denoting the relationships edge name in mutations.
 	EdgeRelationships = "relationships"
+	// EdgeSystemAnalyses holds the string denoting the system_analyses edge name in mutations.
+	EdgeSystemAnalyses = "system_analyses"
 	// Table holds the table name of the knowledgegraphsnapshot in the database.
 	Table = "knowledge_graph_snapshots"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -41,13 +43,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// SystemAnalysesTable is the table that holds the system_analyses relation/edge.
-	SystemAnalysesTable = "system_analyses"
-	// SystemAnalysesInverseTable is the table name for the SystemAnalysis entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
-	SystemAnalysesInverseTable = "system_analyses"
-	// SystemAnalysesColumn is the table column denoting the system_analyses relation/edge.
-	SystemAnalysesColumn = "knowledge_graph_snapshot_id"
 	// EntitiesTable is the table that holds the entities relation/edge.
 	EntitiesTable = "knowledge_graph_snapshot_entities"
 	// EntitiesInverseTable is the table name for the KnowledgeGraphSnapshotEntity entity.
@@ -62,6 +57,13 @@ const (
 	RelationshipsInverseTable = "knowledge_graph_snapshot_relationships"
 	// RelationshipsColumn is the table column denoting the relationships relation/edge.
 	RelationshipsColumn = "snapshot_id"
+	// SystemAnalysesTable is the table that holds the system_analyses relation/edge.
+	SystemAnalysesTable = "system_analyses"
+	// SystemAnalysesInverseTable is the table name for the SystemAnalysis entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
+	SystemAnalysesInverseTable = "system_analyses"
+	// SystemAnalysesColumn is the table column denoting the system_analyses relation/edge.
+	SystemAnalysesColumn = "knowledge_graph_snapshot_id"
 )
 
 // Columns holds all SQL columns for knowledgegraphsnapshot fields.
@@ -69,8 +71,9 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldAsOf,
-	FieldName,
 	FieldCreatedAt,
+	FieldScopeKind,
+	FieldScopeProperties,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -117,34 +120,20 @@ func ByAsOf(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAsOf, opts...).ToFunc()
 }
 
-// ByName orders the results by the name field.
-func ByName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldName, opts...).ToFunc()
-}
-
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByScopeKind orders the results by the scope_kind field.
+func ByScopeKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldScopeKind, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// BySystemAnalysesCount orders the results by system_analyses count.
-func BySystemAnalysesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSystemAnalysesStep(), opts...)
-	}
-}
-
-// BySystemAnalyses orders the results by system_analyses terms.
-func BySystemAnalyses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -175,18 +164,25 @@ func ByRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySystemAnalysesCount orders the results by system_analyses count.
+func BySystemAnalysesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSystemAnalysesStep(), opts...)
+	}
+}
+
+// BySystemAnalyses orders the results by system_analyses terms.
+func BySystemAnalyses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newSystemAnalysesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SystemAnalysesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysesTable, SystemAnalysesColumn),
 	)
 }
 func newEntitiesStep() *sqlgraph.Step {
@@ -201,5 +197,12 @@ func newRelationshipsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RelationshipsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, RelationshipsTable, RelationshipsColumn),
+	)
+}
+func newSystemAnalysesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SystemAnalysesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysesTable, SystemAnalysesColumn),
 	)
 }

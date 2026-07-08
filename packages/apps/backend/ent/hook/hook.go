@@ -465,18 +465,6 @@ func (f KnowledgeEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityMutation", m)
 }
 
-// The KnowledgeEntityAliasFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeEntityAlias mutator.
-type KnowledgeEntityAliasFunc func(context.Context, *ent.KnowledgeEntityAliasMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f KnowledgeEntityAliasFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeEntityAliasMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityAliasMutation", m)
-}
-
 // The KnowledgeEvidenceFunc type is an adapter to allow the use of ordinary
 // function as KnowledgeEvidence mutator.
 type KnowledgeEvidenceFunc func(context.Context, *ent.KnowledgeEvidenceMutation) (ent.Value, error)
@@ -535,6 +523,18 @@ func (f KnowledgeRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeRelationshipMutation", m)
+}
+
+// The KnowledgeSubjectAliasFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeSubjectAlias mutator.
+type KnowledgeSubjectAliasFunc func(context.Context, *ent.KnowledgeSubjectAliasMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KnowledgeSubjectAliasFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeSubjectAliasMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeSubjectAliasMutation", m)
 }
 
 // The MeetingScheduleFunc type is an adapter to allow the use of ordinary

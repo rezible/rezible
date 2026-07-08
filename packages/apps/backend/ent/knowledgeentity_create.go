@@ -14,9 +14,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
-	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -68,9 +67,23 @@ func (_c *KnowledgeEntityCreate) SetKind(v string) *KnowledgeEntityCreate {
 	return _c
 }
 
+// SetReference sets the "reference" field.
+func (_c *KnowledgeEntityCreate) SetReference(v string) *KnowledgeEntityCreate {
+	_c.mutation.SetReference(v)
+	return _c
+}
+
 // SetDisplayName sets the "display_name" field.
 func (_c *KnowledgeEntityCreate) SetDisplayName(v string) *KnowledgeEntityCreate {
 	_c.mutation.SetDisplayName(v)
+	return _c
+}
+
+// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableDisplayName(v *string) *KnowledgeEntityCreate {
+	if v != nil {
+		_c.SetDisplayName(*v)
+	}
 	return _c
 }
 
@@ -88,51 +101,9 @@ func (_c *KnowledgeEntityCreate) SetNillableDescription(v *string) *KnowledgeEnt
 	return _c
 }
 
-// SetFirstObservedAt sets the "first_observed_at" field.
-func (_c *KnowledgeEntityCreate) SetFirstObservedAt(v time.Time) *KnowledgeEntityCreate {
-	_c.mutation.SetFirstObservedAt(v)
-	return _c
-}
-
-// SetNillableFirstObservedAt sets the "first_observed_at" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableFirstObservedAt(v *time.Time) *KnowledgeEntityCreate {
-	if v != nil {
-		_c.SetFirstObservedAt(*v)
-	}
-	return _c
-}
-
-// SetLastObservedAt sets the "last_observed_at" field.
-func (_c *KnowledgeEntityCreate) SetLastObservedAt(v time.Time) *KnowledgeEntityCreate {
-	_c.mutation.SetLastObservedAt(v)
-	return _c
-}
-
-// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableLastObservedAt(v *time.Time) *KnowledgeEntityCreate {
-	if v != nil {
-		_c.SetLastObservedAt(*v)
-	}
-	return _c
-}
-
-// SetDeletedAt sets the "deleted_at" field.
-func (_c *KnowledgeEntityCreate) SetDeletedAt(v time.Time) *KnowledgeEntityCreate {
-	_c.mutation.SetDeletedAt(v)
-	return _c
-}
-
-// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableDeletedAt(v *time.Time) *KnowledgeEntityCreate {
-	if v != nil {
-		_c.SetDeletedAt(*v)
-	}
-	return _c
-}
-
-// SetProperties sets the "properties" field.
-func (_c *KnowledgeEntityCreate) SetProperties(v map[string]interface{}) *KnowledgeEntityCreate {
-	_c.mutation.SetProperties(v)
+// SetLiveProperties sets the "live_properties" field.
+func (_c *KnowledgeEntityCreate) SetLiveProperties(v map[string]interface{}) *KnowledgeEntityCreate {
+	_c.mutation.SetLiveProperties(v)
 	return _c
 }
 
@@ -155,14 +126,14 @@ func (_c *KnowledgeEntityCreate) SetTenant(v *Tenant) *KnowledgeEntityCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// AddAliasIDs adds the "aliases" edge to the KnowledgeEntityAlias entity by IDs.
+// AddAliasIDs adds the "aliases" edge to the KnowledgeSubjectAlias entity by IDs.
 func (_c *KnowledgeEntityCreate) AddAliasIDs(ids ...uuid.UUID) *KnowledgeEntityCreate {
 	_c.mutation.AddAliasIDs(ids...)
 	return _c
 }
 
-// AddAliases adds the "aliases" edges to the KnowledgeEntityAlias entity.
-func (_c *KnowledgeEntityCreate) AddAliases(v ...*KnowledgeEntityAlias) *KnowledgeEntityCreate {
+// AddAliases adds the "aliases" edges to the KnowledgeSubjectAlias entity.
+func (_c *KnowledgeEntityCreate) AddAliases(v ...*KnowledgeSubjectAlias) *KnowledgeEntityCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -198,21 +169,6 @@ func (_c *KnowledgeEntityCreate) AddTargetRelationships(v ...*KnowledgeRelations
 		ids[i] = v[i].ID
 	}
 	return _c.AddTargetRelationshipIDs(ids...)
-}
-
-// AddEvidenceIDs adds the "evidence" edge to the KnowledgeEvidence entity by IDs.
-func (_c *KnowledgeEntityCreate) AddEvidenceIDs(ids ...uuid.UUID) *KnowledgeEntityCreate {
-	_c.mutation.AddEvidenceIDs(ids...)
-	return _c
-}
-
-// AddEvidence adds the "evidence" edges to the KnowledgeEvidence entity.
-func (_c *KnowledgeEntityCreate) AddEvidence(v ...*KnowledgeEvidence) *KnowledgeEntityCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddEvidenceIDs(ids...)
 }
 
 // Mutation returns the KnowledgeEntityMutation object of the builder.
@@ -266,6 +222,10 @@ func (_c *KnowledgeEntityCreate) defaults() error {
 		v := knowledgeentity.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.LiveProperties(); !ok {
+		v := knowledgeentity.DefaultLiveProperties
+		_c.mutation.SetLiveProperties(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if knowledgeentity.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized knowledgeentity.DefaultID (forgotten import ent/runtime?)")
@@ -295,12 +255,12 @@ func (_c *KnowledgeEntityCreate) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.kind": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.DisplayName(); !ok {
-		return &ValidationError{Name: "display_name", err: errors.New(`ent: missing required field "KnowledgeEntity.display_name"`)}
+	if _, ok := _c.mutation.Reference(); !ok {
+		return &ValidationError{Name: "reference", err: errors.New(`ent: missing required field "KnowledgeEntity.reference"`)}
 	}
-	if v, ok := _c.mutation.DisplayName(); ok {
-		if err := knowledgeentity.DisplayNameValidator(v); err != nil {
-			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.display_name": %w`, err)}
+	if v, ok := _c.mutation.Reference(); ok {
+		if err := knowledgeentity.ReferenceValidator(v); err != nil {
+			return &ValidationError{Name: "reference", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.reference": %w`, err)}
 		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
@@ -355,6 +315,10 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
 		_node.Kind = value
 	}
+	if value, ok := _c.mutation.Reference(); ok {
+		_spec.SetField(knowledgeentity.FieldReference, field.TypeString, value)
+		_node.Reference = value
+	}
 	if value, ok := _c.mutation.DisplayName(); ok {
 		_spec.SetField(knowledgeentity.FieldDisplayName, field.TypeString, value)
 		_node.DisplayName = value
@@ -363,21 +327,9 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		_spec.SetField(knowledgeentity.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := _c.mutation.FirstObservedAt(); ok {
-		_spec.SetField(knowledgeentity.FieldFirstObservedAt, field.TypeTime, value)
-		_node.FirstObservedAt = &value
-	}
-	if value, ok := _c.mutation.LastObservedAt(); ok {
-		_spec.SetField(knowledgeentity.FieldLastObservedAt, field.TypeTime, value)
-		_node.LastObservedAt = &value
-	}
-	if value, ok := _c.mutation.DeletedAt(); ok {
-		_spec.SetField(knowledgeentity.FieldDeletedAt, field.TypeTime, value)
-		_node.DeletedAt = &value
-	}
-	if value, ok := _c.mutation.Properties(); ok {
-		_spec.SetField(knowledgeentity.FieldProperties, field.TypeJSON, value)
-		_node.Properties = value
+	if value, ok := _c.mutation.LiveProperties(); ok {
+		_spec.SetField(knowledgeentity.FieldLiveProperties, field.TypeJSON, value)
+		_node.LiveProperties = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -405,10 +357,10 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 			Columns: []string{knowledgeentity.AliasesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentityalias.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgesubjectalias.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.KnowledgeEntityAlias
+		edge.Schema = _c.schemaConfig.KnowledgeSubjectAlias
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -443,23 +395,6 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 			},
 		}
 		edge.Schema = _c.schemaConfig.KnowledgeRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.EvidenceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgeentity.EvidenceTable,
-			Columns: []string{knowledgeentity.EvidenceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeevidence.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.KnowledgeEvidence
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -553,6 +488,18 @@ func (u *KnowledgeEntityUpsert) UpdateKind() *KnowledgeEntityUpsert {
 	return u
 }
 
+// SetReference sets the "reference" field.
+func (u *KnowledgeEntityUpsert) SetReference(v string) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldReference, v)
+	return u
+}
+
+// UpdateReference sets the "reference" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateReference() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldReference)
+	return u
+}
+
 // SetDisplayName sets the "display_name" field.
 func (u *KnowledgeEntityUpsert) SetDisplayName(v string) *KnowledgeEntityUpsert {
 	u.Set(knowledgeentity.FieldDisplayName, v)
@@ -562,6 +509,12 @@ func (u *KnowledgeEntityUpsert) SetDisplayName(v string) *KnowledgeEntityUpsert 
 // UpdateDisplayName sets the "display_name" field to the value that was provided on create.
 func (u *KnowledgeEntityUpsert) UpdateDisplayName() *KnowledgeEntityUpsert {
 	u.SetExcluded(knowledgeentity.FieldDisplayName)
+	return u
+}
+
+// ClearDisplayName clears the value of the "display_name" field.
+func (u *KnowledgeEntityUpsert) ClearDisplayName() *KnowledgeEntityUpsert {
+	u.SetNull(knowledgeentity.FieldDisplayName)
 	return u
 }
 
@@ -583,75 +536,21 @@ func (u *KnowledgeEntityUpsert) ClearDescription() *KnowledgeEntityUpsert {
 	return u
 }
 
-// SetFirstObservedAt sets the "first_observed_at" field.
-func (u *KnowledgeEntityUpsert) SetFirstObservedAt(v time.Time) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldFirstObservedAt, v)
+// SetLiveProperties sets the "live_properties" field.
+func (u *KnowledgeEntityUpsert) SetLiveProperties(v map[string]interface{}) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldLiveProperties, v)
 	return u
 }
 
-// UpdateFirstObservedAt sets the "first_observed_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateFirstObservedAt() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldFirstObservedAt)
+// UpdateLiveProperties sets the "live_properties" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateLiveProperties() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldLiveProperties)
 	return u
 }
 
-// ClearFirstObservedAt clears the value of the "first_observed_at" field.
-func (u *KnowledgeEntityUpsert) ClearFirstObservedAt() *KnowledgeEntityUpsert {
-	u.SetNull(knowledgeentity.FieldFirstObservedAt)
-	return u
-}
-
-// SetLastObservedAt sets the "last_observed_at" field.
-func (u *KnowledgeEntityUpsert) SetLastObservedAt(v time.Time) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldLastObservedAt, v)
-	return u
-}
-
-// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateLastObservedAt() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldLastObservedAt)
-	return u
-}
-
-// ClearLastObservedAt clears the value of the "last_observed_at" field.
-func (u *KnowledgeEntityUpsert) ClearLastObservedAt() *KnowledgeEntityUpsert {
-	u.SetNull(knowledgeentity.FieldLastObservedAt)
-	return u
-}
-
-// SetDeletedAt sets the "deleted_at" field.
-func (u *KnowledgeEntityUpsert) SetDeletedAt(v time.Time) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldDeletedAt, v)
-	return u
-}
-
-// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateDeletedAt() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldDeletedAt)
-	return u
-}
-
-// ClearDeletedAt clears the value of the "deleted_at" field.
-func (u *KnowledgeEntityUpsert) ClearDeletedAt() *KnowledgeEntityUpsert {
-	u.SetNull(knowledgeentity.FieldDeletedAt)
-	return u
-}
-
-// SetProperties sets the "properties" field.
-func (u *KnowledgeEntityUpsert) SetProperties(v map[string]interface{}) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldProperties, v)
-	return u
-}
-
-// UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateProperties() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldProperties)
-	return u
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeEntityUpsert) ClearProperties() *KnowledgeEntityUpsert {
-	u.SetNull(knowledgeentity.FieldProperties)
+// ClearLiveProperties clears the value of the "live_properties" field.
+func (u *KnowledgeEntityUpsert) ClearLiveProperties() *KnowledgeEntityUpsert {
+	u.SetNull(knowledgeentity.FieldLiveProperties)
 	return u
 }
 
@@ -748,6 +647,20 @@ func (u *KnowledgeEntityUpsertOne) UpdateKind() *KnowledgeEntityUpsertOne {
 	})
 }
 
+// SetReference sets the "reference" field.
+func (u *KnowledgeEntityUpsertOne) SetReference(v string) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetReference(v)
+	})
+}
+
+// UpdateReference sets the "reference" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateReference() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateReference()
+	})
+}
+
 // SetDisplayName sets the "display_name" field.
 func (u *KnowledgeEntityUpsertOne) SetDisplayName(v string) *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
@@ -759,6 +672,13 @@ func (u *KnowledgeEntityUpsertOne) SetDisplayName(v string) *KnowledgeEntityUpse
 func (u *KnowledgeEntityUpsertOne) UpdateDisplayName() *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.UpdateDisplayName()
+	})
+}
+
+// ClearDisplayName clears the value of the "display_name" field.
+func (u *KnowledgeEntityUpsertOne) ClearDisplayName() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearDisplayName()
 	})
 }
 
@@ -783,87 +703,24 @@ func (u *KnowledgeEntityUpsertOne) ClearDescription() *KnowledgeEntityUpsertOne 
 	})
 }
 
-// SetFirstObservedAt sets the "first_observed_at" field.
-func (u *KnowledgeEntityUpsertOne) SetFirstObservedAt(v time.Time) *KnowledgeEntityUpsertOne {
+// SetLiveProperties sets the "live_properties" field.
+func (u *KnowledgeEntityUpsertOne) SetLiveProperties(v map[string]interface{}) *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetFirstObservedAt(v)
+		s.SetLiveProperties(v)
 	})
 }
 
-// UpdateFirstObservedAt sets the "first_observed_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateFirstObservedAt() *KnowledgeEntityUpsertOne {
+// UpdateLiveProperties sets the "live_properties" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateLiveProperties() *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateFirstObservedAt()
+		s.UpdateLiveProperties()
 	})
 }
 
-// ClearFirstObservedAt clears the value of the "first_observed_at" field.
-func (u *KnowledgeEntityUpsertOne) ClearFirstObservedAt() *KnowledgeEntityUpsertOne {
+// ClearLiveProperties clears the value of the "live_properties" field.
+func (u *KnowledgeEntityUpsertOne) ClearLiveProperties() *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearFirstObservedAt()
-	})
-}
-
-// SetLastObservedAt sets the "last_observed_at" field.
-func (u *KnowledgeEntityUpsertOne) SetLastObservedAt(v time.Time) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetLastObservedAt(v)
-	})
-}
-
-// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateLastObservedAt() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateLastObservedAt()
-	})
-}
-
-// ClearLastObservedAt clears the value of the "last_observed_at" field.
-func (u *KnowledgeEntityUpsertOne) ClearLastObservedAt() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearLastObservedAt()
-	})
-}
-
-// SetDeletedAt sets the "deleted_at" field.
-func (u *KnowledgeEntityUpsertOne) SetDeletedAt(v time.Time) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetDeletedAt(v)
-	})
-}
-
-// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateDeletedAt() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateDeletedAt()
-	})
-}
-
-// ClearDeletedAt clears the value of the "deleted_at" field.
-func (u *KnowledgeEntityUpsertOne) ClearDeletedAt() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearDeletedAt()
-	})
-}
-
-// SetProperties sets the "properties" field.
-func (u *KnowledgeEntityUpsertOne) SetProperties(v map[string]interface{}) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetProperties(v)
-	})
-}
-
-// UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateProperties() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateProperties()
-	})
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeEntityUpsertOne) ClearProperties() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearProperties()
+		s.ClearLiveProperties()
 	})
 }
 
@@ -1127,6 +984,20 @@ func (u *KnowledgeEntityUpsertBulk) UpdateKind() *KnowledgeEntityUpsertBulk {
 	})
 }
 
+// SetReference sets the "reference" field.
+func (u *KnowledgeEntityUpsertBulk) SetReference(v string) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetReference(v)
+	})
+}
+
+// UpdateReference sets the "reference" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateReference() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateReference()
+	})
+}
+
 // SetDisplayName sets the "display_name" field.
 func (u *KnowledgeEntityUpsertBulk) SetDisplayName(v string) *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
@@ -1138,6 +1009,13 @@ func (u *KnowledgeEntityUpsertBulk) SetDisplayName(v string) *KnowledgeEntityUps
 func (u *KnowledgeEntityUpsertBulk) UpdateDisplayName() *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.UpdateDisplayName()
+	})
+}
+
+// ClearDisplayName clears the value of the "display_name" field.
+func (u *KnowledgeEntityUpsertBulk) ClearDisplayName() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearDisplayName()
 	})
 }
 
@@ -1162,87 +1040,24 @@ func (u *KnowledgeEntityUpsertBulk) ClearDescription() *KnowledgeEntityUpsertBul
 	})
 }
 
-// SetFirstObservedAt sets the "first_observed_at" field.
-func (u *KnowledgeEntityUpsertBulk) SetFirstObservedAt(v time.Time) *KnowledgeEntityUpsertBulk {
+// SetLiveProperties sets the "live_properties" field.
+func (u *KnowledgeEntityUpsertBulk) SetLiveProperties(v map[string]interface{}) *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetFirstObservedAt(v)
+		s.SetLiveProperties(v)
 	})
 }
 
-// UpdateFirstObservedAt sets the "first_observed_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateFirstObservedAt() *KnowledgeEntityUpsertBulk {
+// UpdateLiveProperties sets the "live_properties" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateLiveProperties() *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateFirstObservedAt()
+		s.UpdateLiveProperties()
 	})
 }
 
-// ClearFirstObservedAt clears the value of the "first_observed_at" field.
-func (u *KnowledgeEntityUpsertBulk) ClearFirstObservedAt() *KnowledgeEntityUpsertBulk {
+// ClearLiveProperties clears the value of the "live_properties" field.
+func (u *KnowledgeEntityUpsertBulk) ClearLiveProperties() *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearFirstObservedAt()
-	})
-}
-
-// SetLastObservedAt sets the "last_observed_at" field.
-func (u *KnowledgeEntityUpsertBulk) SetLastObservedAt(v time.Time) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetLastObservedAt(v)
-	})
-}
-
-// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateLastObservedAt() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateLastObservedAt()
-	})
-}
-
-// ClearLastObservedAt clears the value of the "last_observed_at" field.
-func (u *KnowledgeEntityUpsertBulk) ClearLastObservedAt() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearLastObservedAt()
-	})
-}
-
-// SetDeletedAt sets the "deleted_at" field.
-func (u *KnowledgeEntityUpsertBulk) SetDeletedAt(v time.Time) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetDeletedAt(v)
-	})
-}
-
-// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateDeletedAt() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateDeletedAt()
-	})
-}
-
-// ClearDeletedAt clears the value of the "deleted_at" field.
-func (u *KnowledgeEntityUpsertBulk) ClearDeletedAt() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearDeletedAt()
-	})
-}
-
-// SetProperties sets the "properties" field.
-func (u *KnowledgeEntityUpsertBulk) SetProperties(v map[string]interface{}) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetProperties(v)
-	})
-}
-
-// UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateProperties() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateProperties()
-	})
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeEntityUpsertBulk) ClearProperties() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearProperties()
+		s.ClearLiveProperties()
 	})
 }
 

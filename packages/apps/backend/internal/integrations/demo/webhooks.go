@@ -68,7 +68,7 @@ const (
 func (h *webhookHandler) handleDemoAlertEvent(ctx context.Context, body []byte) error {
 	now := time.Now().UTC()
 	payload := alertObservedPayload{
-		ExternalID:  "search-api-latency",
+		ExternalRef: "search-api-latency",
 		Title:       "Search API response time high",
 		Description: "p95 latency for the search API is above 2 seconds.",
 		Definition:  "avg(last_5m):p95:search.api.response_time > 2000",

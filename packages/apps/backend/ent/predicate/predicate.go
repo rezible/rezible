@@ -123,9 +123,6 @@ type IntegrationUserInstallState func(*sql.Selector)
 // KnowledgeEntity is the predicate function for knowledgeentity builders.
 type KnowledgeEntity func(*sql.Selector)
 
-// KnowledgeEntityAlias is the predicate function for knowledgeentityalias builders.
-type KnowledgeEntityAlias func(*sql.Selector)
-
 // KnowledgeEvidence is the predicate function for knowledgeevidence builders.
 type KnowledgeEvidence func(*sql.Selector)
 
@@ -140,6 +137,9 @@ type KnowledgeGraphSnapshotRelationship func(*sql.Selector)
 
 // KnowledgeRelationship is the predicate function for knowledgerelationship builders.
 type KnowledgeRelationship func(*sql.Selector)
+
+// KnowledgeSubjectAlias is the predicate function for knowledgesubjectalias builders.
+type KnowledgeSubjectAlias func(*sql.Selector)
 
 // MeetingSchedule is the predicate function for meetingschedule builders.
 type MeetingSchedule func(*sql.Selector)
