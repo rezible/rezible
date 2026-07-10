@@ -465,18 +465,11 @@ type (
 		GetAgentRunSnapshot(context.Context, uuid.UUID) (*ent.AiAgentRunSnapshot, error)
 		SetAgentRunSnapshot(context.Context, uuid.UUID, func(*ent.AiAgentRunSnapshotMutation)) (*ent.AiAgentRunSnapshot, error)
 		UpdateAgentRunSnapshot(context.Context, uuid.UUID, func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) error) (*ent.AiAgentRunSnapshot, error)
-		SetAgentRunResultOutput(ctx context.Context, runId uuid.UUID, output any) error
+		WriteAgentRunOutput(ctx context.Context, runId uuid.UUID, output any) error
 	}
 
-	ContinueAgentRunParams struct {
-		ParentSnapshotID *uuid.UUID
-		Message          *ai.Message
-		Resume           *ai.GenerateActionResume
-	}
-
-	AiAgentRunner interface {
-		Start(context.Context) (uuid.UUID, error)
-		Continue(context.Context, ContinueAgentRunParams) (uuid.UUID, error)
+	AiAgentInvoker interface {
+		Invoke(ctx context.Context, parentId *uuid.UUID, msg *ai.Message, resume *ai.GenerateActionResume) (uuid.UUID, error)
 	}
 
 	AiWorkflowInvoker interface {
@@ -485,7 +478,7 @@ type (
 
 	AiService interface {
 		ValidateAgentRunInput(name string, input []byte) error
-		GetAgentRunner(run *ent.AiAgentRun) (AiAgentRunner, error)
+		GetAgentRunner(run *ent.AiAgentRun) (AiAgentInvoker, error)
 		GetWorkflowInvoker(name string) (AiWorkflowInvoker, error)
 	}
 
@@ -501,19 +494,28 @@ type (
 		Predicates []predicate.AiAgentRun
 	}
 
-	AiAgentService interface {
-		AiSessionStateService
-		CreateAgentRun(context.Context, string, CreateAgentRunParams) (*ent.AiAgentRun, error)
-		GetAgentRun(context.Context, uuid.UUID) (*ent.AiAgentRun, error)
-		GetAgentRunResult(ctx context.Context, runId uuid.UUID) (*ent.AiAgentRunResult, error)
-		ListAgentRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AiAgentRun], error)
+	InvokeAgentRunParams struct {
+		ParentSnapshotID uuid.UUID
+		Message          *ai.Message
+		Resume           *ai.GenerateActionResume
 	}
 
-	EventOnAiAgentRunSnapshot struct {
-		AgentName       string
-		RunMetadata     map[string]any
-		AgentRunId      uuid.UUID
-		AgentSnapshotId uuid.UUID
+	AiAgentService interface {
+		AiSessionStateService
+		LookupAgentRunsByMetadata(context.Context, map[string]any) (ent.AiAgentRuns, error)
+		ListAgentRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AiAgentRun], error)
+		CreateAgentRun(context.Context, string, CreateAgentRunParams) (*ent.AiAgentRun, error)
+		InvokeAgentRun(context.Context, uuid.UUID, InvokeAgentRunParams) error
+		GetAgentRun(context.Context, uuid.UUID) (*ent.AiAgentRun, error)
+		GetAgentRunOutput(context.Context, uuid.UUID) (*ent.AiAgentRunOutput, error)
+		//ClaimAgentRunOutput(context.Context, uuid.UUID, func(context.Context, []byte) (map[string]any, error)) error
+	}
+
+	EventOnAiAgentRunOutput struct {
+		AgentName        string
+		AgentRunMetadata map[string]any
+		AgentRunId       uuid.UUID
+		AgentOutputId    uuid.UUID
 	}
 )
 

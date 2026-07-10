@@ -81,21 +81,13 @@ func (GenerateShiftMetrics) Kind() string {
 	return "generate-shift-metrics"
 }
 
-type StartAgentRun struct {
-	AgentRunID uuid.UUID `json:"agent_run_id"`
-}
-
-func (StartAgentRun) Kind() string {
-	return "start-agent-run"
-}
-
-type ContinueAgentRun struct {
+type InvokeAgentRun struct {
 	AgentRunID       uuid.UUID                `json:"agent_run_id"`
 	ParentSnapshotID *uuid.UUID               `json:"parent_snapshot_id,omitempty"`
 	Message          *ai.Message              `json:"message,omitempty"`
 	Resume           *ai.GenerateActionResume `json:"resume,omitempty"`
 }
 
-func (ContinueAgentRun) Kind() string {
+func (InvokeAgentRun) Kind() string {
 	return "invoke-agent-run"
 }

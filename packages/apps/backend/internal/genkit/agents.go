@@ -19,7 +19,7 @@ import (
 type (
 	AgentInvoker interface {
 		ValidateInput([]byte) error
-		MakeRunner(*ent.AiAgentRun) rez.AiAgentRunner
+		MakeRunner(*ent.AiAgentRun) rez.AiAgentInvoker
 	}
 
 	agentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput] interface {
@@ -62,7 +62,7 @@ func wrapAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutp
 		runFunc := cr.makeAgentFunc(middleware, tools)
 		agent = genkitx.DefineCustomAgent(svc.gk, def.Name, runFunc, opts...)
 	} else {
-		systemPrompt := fmt.Sprintf("%s\n\nRemember to write your output using the 'write_output' tool!!", def.SystemPrompt)
+		systemPrompt := fmt.Sprintf("%s\n\nRemember to write outputs using the 'write_output' tool!!", def.SystemPrompt)
 		prompt := aix.InlinePrompt{
 			ai.WithModel(flashModel),
 			ai.WithSystem(systemPrompt),
@@ -88,7 +88,7 @@ func wrapAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutp
 			_, err := validateInputFunc(input)
 			return err
 		},
-		makeRunnerFunc: func(run *ent.AiAgentRun) rez.AiAgentRunner {
+		makeRunnerFunc: func(run *ent.AiAgentRun) rez.AiAgentInvoker {
 			return &agentSessionInvoker[I, S]{
 				agent:     agent,
 				sessionId: run.ID.String(),
@@ -106,10 +106,10 @@ func wrapAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutp
 
 type agentWrapper struct {
 	inputValidatorFunc func([]byte) error
-	makeRunnerFunc     func(run *ent.AiAgentRun) rez.AiAgentRunner
+	makeRunnerFunc     func(run *ent.AiAgentRun) rez.AiAgentInvoker
 }
 
-func (w *agentWrapper) MakeRunner(run *ent.AiAgentRun) rez.AiAgentRunner {
+func (w *agentWrapper) MakeRunner(run *ent.AiAgentRun) rez.AiAgentInvoker {
 	return w.makeRunnerFunc(run)
 }
 
@@ -150,43 +150,38 @@ func (i *agentSessionInvoker[I, S]) Start(ctx context.Context) (uuid.UUID, error
 	return i.checkAgentOutput(out)
 }
 
-func (i *agentSessionInvoker[I, S]) getInvokeOpts(ctx context.Context, parentId *uuid.UUID) ([]aix.InvocationOption[S], error) {
+func (i *agentSessionInvoker[I, S]) Invoke(ctx context.Context, parentId *uuid.UUID, msg *ai.Message, resume *ai.GenerateActionResume) (uuid.UUID, error) {
 	invokeOpts := []aix.InvocationOption[S]{
 		aix.WithSessionID[S](i.sessionId),
 	}
+	input := &aix.AgentInput{
+		Message: msg,
+	}
+	if resume != nil {
+		input.Resume = &aix.ToolResume{
+			Respond: resume.Respond,
+			Restart: resume.Restart,
+		}
+	}
+
 	if parentId != nil {
 		invokeOpts = append(invokeOpts, aix.WithSnapshotID[S](parentId.String()))
 	} else {
 		parent, parentErr := i.agent.Store().GetLatestSnapshot(ctx, i.sessionId)
 		if parentErr != nil {
-			return nil, fmt.Errorf("get parent snapshot: %w", parentErr)
-		} else if parent != nil {
+			return uuid.Nil, fmt.Errorf("get parent snapshot: %w", parentErr)
+		}
+		if parent != nil {
 			invokeOpts = append(invokeOpts, aix.WithSnapshotID[S](parent.SnapshotID))
+		} else if msg == nil {
+			// no parent, no message == session start
+			initialMsg, initialMsgErr := i.makeInitialUserMessageFn(ctx)
+			if initialMsgErr != nil {
+				return uuid.Nil, fmt.Errorf("create initial user message: %w", initialMsgErr)
+			}
+			input.Message = initialMsg
 		}
 	}
-	return invokeOpts, nil
-}
-
-func (i *agentSessionInvoker[I, S]) Continue(ctx context.Context, params rez.ContinueAgentRunParams) (uuid.UUID, error) {
-	if params.Message == nil && params.Resume == nil {
-		return uuid.Nil, fmt.Errorf("invalid params")
-	}
-
-	invokeOpts, optsErr := i.getInvokeOpts(ctx, params.ParentSnapshotID)
-	if optsErr != nil {
-		return uuid.Nil, fmt.Errorf("opts: %w", optsErr)
-	}
-
-	input := &aix.AgentInput{
-		Message: params.Message,
-	}
-	if params.Resume != nil {
-		input.Resume = &aix.ToolResume{
-			Respond: params.Resume.Respond,
-			Restart: params.Resume.Restart,
-		}
-	}
-
 	out, runErr := i.agent.Run(ctx, input, invokeOpts...)
 	if runErr != nil {
 		return uuid.Nil, fmt.Errorf("run agent: %w", runErr)

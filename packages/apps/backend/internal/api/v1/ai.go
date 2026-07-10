@@ -38,7 +38,7 @@ func (h *aiHandler) ListAiAgentRuns(ctx context.Context, req *oapi.ListAiAgentRu
 		predicates = append(predicates, aar.AgentName(req.Name))
 	}
 	if req.Resulted.IsSet {
-		p := aar.HasResult()
+		p := aar.HasOutputs()
 		if req.Resulted.Value {
 			p = aar.Not(p)
 		}

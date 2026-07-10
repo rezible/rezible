@@ -82,7 +82,7 @@ func (s *AiService) getAgentWrapper(name string) (*agentWrapper, error) {
 	return wrapper, nil
 }
 
-func (s *AiService) GetAgentRunner(run *ent.AiAgentRun) (rez.AiAgentRunner, error) {
+func (s *AiService) GetAgentRunner(run *ent.AiAgentRun) (rez.AiAgentInvoker, error) {
 	if run == nil {
 		return nil, fmt.Errorf("nil run")
 	}

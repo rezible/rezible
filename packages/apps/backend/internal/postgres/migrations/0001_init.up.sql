@@ -36,18 +36,14 @@ CREATE INDEX "aiagentrunfindingcitation_tenant_id_finding_id" ON "ai_agent_run_f
 CREATE INDEX "aiagentrunfindingcitation_tenant_id_citation_id" ON "ai_agent_run_finding_citations" ("tenant_id", "citation_id");
 -- create index "aiagentrunfindingcitation_finding_id_citation_id" to table: "ai_agent_run_finding_citations"
 CREATE UNIQUE INDEX "aiagentrunfindingcitation_finding_id_citation_id" ON "ai_agent_run_finding_citations" ("finding_id", "citation_id");
--- create "ai_agent_run_results" table
-CREATE TABLE "ai_agent_run_results" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "output" bytea NOT NULL, "ai_agent_run_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "ai_agent_run_results_ai_agent_run_id_key" to table: "ai_agent_run_results"
-CREATE UNIQUE INDEX "ai_agent_run_results_ai_agent_run_id_key" ON "ai_agent_run_results" ("ai_agent_run_id");
--- create index "aiagentrunresult_tenant_id" to table: "ai_agent_run_results"
-CREATE INDEX "aiagentrunresult_tenant_id" ON "ai_agent_run_results" ("tenant_id");
--- create index "aiagentrunresult_tenant_id_ai_agent_run_id" to table: "ai_agent_run_results"
-CREATE UNIQUE INDEX "aiagentrunresult_tenant_id_ai_agent_run_id" ON "ai_agent_run_results" ("tenant_id", "ai_agent_run_id");
+-- create "ai_agent_run_outputs" table
+CREATE TABLE "ai_agent_run_outputs" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "data" bytea NOT NULL, "metadata" jsonb NOT NULL, "tenant_id" bigint NOT NULL, "ai_agent_run_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "aiagentrunoutput_tenant_id" to table: "ai_agent_run_outputs"
+CREATE INDEX "aiagentrunoutput_tenant_id" ON "ai_agent_run_outputs" ("tenant_id");
+-- create index "aiagentrunoutput_tenant_id_ai_agent_run_id" to table: "ai_agent_run_outputs"
+CREATE INDEX "aiagentrunoutput_tenant_id_ai_agent_run_id" ON "ai_agent_run_outputs" ("tenant_id", "ai_agent_run_id");
 -- create "ai_agent_run_snapshots" table
 CREATE TABLE "ai_agent_run_snapshots" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "status" character varying NOT NULL, "finish_reason" character varying NOT NULL, "heartbeat_at" timestamptz NULL, "state" bytea NOT NULL, "error" bytea NULL, "tenant_id" bigint NOT NULL, "ai_agent_run_id" uuid NOT NULL, "parent_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "ai_agent_run_snapshots_ai_agent_run_snapshots_parent" FOREIGN KEY ("parent_id") REFERENCES "ai_agent_run_snapshots" ("id") ON DELETE SET NULL);
--- create index "ai_agent_run_snapshots_parent_id_key" to table: "ai_agent_run_snapshots"
-CREATE UNIQUE INDEX "ai_agent_run_snapshots_parent_id_key" ON "ai_agent_run_snapshots" ("parent_id");
 -- create index "aiagentrunsnapshot_tenant_id" to table: "ai_agent_run_snapshots"
 CREATE INDEX "aiagentrunsnapshot_tenant_id" ON "ai_agent_run_snapshots" ("tenant_id");
 -- create index "aiagentrunsnapshot_tenant_id_ai_agent_run_id" to table: "ai_agent_run_snapshots"
@@ -497,11 +493,11 @@ ALTER TABLE "ai_agent_runs" ADD CONSTRAINT "ai_agent_runs_tenants_tenant" FOREIG
 -- modify "ai_agent_run_citations" table
 ALTER TABLE "ai_agent_run_citations" ADD CONSTRAINT "ai_agent_run_citations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_run_citations_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "ai_agent_run_citations_knowled_9250558352d9c3b88095e1e139a0799e" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "ai_agent_run_citations_knowledge_evidences_knowledge_evidence" FOREIGN KEY ("knowledge_evidence_id") REFERENCES "knowledge_evidences" ("id") ON DELETE SET NULL;
 -- modify "ai_agent_run_findings" table
-ALTER TABLE "ai_agent_run_findings" ADD CONSTRAINT "ai_agent_run_findings_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_run_findings_ai_agent_run_results_ai_agent_run_result" FOREIGN KEY ("ai_agent_run_result_id") REFERENCES "ai_agent_run_results" ("id") ON DELETE NO ACTION;
+ALTER TABLE "ai_agent_run_findings" ADD CONSTRAINT "ai_agent_run_findings_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_run_findings_ai_agent_run_outputs_ai_agent_run_result" FOREIGN KEY ("ai_agent_run_result_id") REFERENCES "ai_agent_run_outputs" ("id") ON DELETE NO ACTION;
 -- modify "ai_agent_run_finding_citations" table
 ALTER TABLE "ai_agent_run_finding_citations" ADD CONSTRAINT "ai_agent_run_finding_citations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_run_finding_citations_ai_agent_run_findings_finding" FOREIGN KEY ("finding_id") REFERENCES "ai_agent_run_findings" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_run_finding_citations_ai_agent_run_citations_citation" FOREIGN KEY ("citation_id") REFERENCES "ai_agent_run_citations" ("id") ON DELETE NO ACTION;
--- modify "ai_agent_run_results" table
-ALTER TABLE "ai_agent_run_results" ADD CONSTRAINT "ai_agent_run_results_ai_agent_runs_result" FOREIGN KEY ("ai_agent_run_id") REFERENCES "ai_agent_runs" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_run_results_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "ai_agent_run_outputs" table
+ALTER TABLE "ai_agent_run_outputs" ADD CONSTRAINT "ai_agent_run_outputs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_run_outputs_ai_agent_runs_ai_agent_run" FOREIGN KEY ("ai_agent_run_id") REFERENCES "ai_agent_runs" ("id") ON DELETE NO ACTION;
 -- modify "ai_agent_run_snapshots" table
 ALTER TABLE "ai_agent_run_snapshots" ADD CONSTRAINT "ai_agent_run_snapshots_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_run_snapshots_ai_agent_runs_ai_agent_run" FOREIGN KEY ("ai_agent_run_id") REFERENCES "ai_agent_runs" ("id") ON DELETE NO ACTION;
 -- modify "alerts" table

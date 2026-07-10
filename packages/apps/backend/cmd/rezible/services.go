@@ -445,7 +445,10 @@ var provideServices = do.Package(
 	do.Bind[*db.DocumentsService, rez.DocumentsService](),
 
 	do.Lazy(func(i do.Injector) (*db.AiSessionStateService, error) {
-		return db.NewAiSessionStateService(do.MustInvoke[rez.Database](i))
+		return db.NewAiSessionStateService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.MessageService](i),
+		)
 	}),
 	do.Bind[*db.AiSessionStateService, rez.AiSessionStateService](),
 

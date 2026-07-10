@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	aar "github.com/rezible/rezible/ent/aiagentrun"
-	aarr "github.com/rezible/rezible/ent/aiagentrunresult"
-	ars "github.com/rezible/rezible/ent/aiagentrunsnapshot"
+	aars "github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 )
@@ -38,8 +38,7 @@ func NewAiAgentService(tel rez.TelemetryService, db rez.Database, jobSvc rez.Job
 		msgs:                  msgSvc,
 		ai:                    aiSvc,
 	}
-	jobs.RegisterWorkerFunc(s.handleStartAgentRun)
-	jobs.RegisterWorkerFunc(s.handleContinueAgentRun)
+	jobs.RegisterWorkerFunc(s.handleInvokeAgentRun)
 	return s, nil
 }
 
@@ -77,12 +76,6 @@ func (s *AiAgentService) SetRun(ctx context.Context, id uuid.UUID, setFn func(*e
 	})
 }
 
-func (s *AiAgentService) GetAgentRunResult(ctx context.Context, runID uuid.UUID) (*ent.AiAgentRunResult, error) {
-	return s.db.Client(ctx).AiAgentRunResult.Query().
-		Where(aarr.AiAgentRunID(runID)).
-		Only(ctx)
-}
-
 func (s *AiAgentService) CreateAgentRun(ctx context.Context, name string, params rez.CreateAgentRunParams) (*ent.AiAgentRun, error) {
 	jsonInput, inputOk := params.Input.([]byte)
 	if !inputOk {
@@ -91,6 +84,7 @@ func (s *AiAgentService) CreateAgentRun(ctx context.Context, name string, params
 			return nil, jsonErr
 		}
 	}
+
 	inputErr := s.ai.ValidateAgentRunInput(name, jsonInput)
 	if inputErr != nil {
 		return nil, fmt.Errorf("invalid input: %w", inputErr)
@@ -119,24 +113,40 @@ func (s *AiAgentService) CreateAgentRun(ctx context.Context, name string, params
 		}
 		run = created.Unwrap()
 
-		startJobOpts := &river.InsertOpts{
-			UniqueOpts: river.UniqueOpts{
-				ByArgs:  true,
-				ByState: jobs.UniqueStateNonCompleted,
-			},
-		}
-		_, jobErr := s.jobs.Insert(ctx, jobs.StartAgentRun{AgentRunID: created.ID}, startJobOpts)
-		if jobErr != nil {
-			return fmt.Errorf("insert start agent run job: %w", jobErr)
+		if invokeErr := s.InvokeAgentRun(ctx, run.ID, rez.InvokeAgentRunParams{}); invokeErr != nil {
+			return fmt.Errorf("invoke run: %w", invokeErr)
 		}
 
 		return nil
 	})
 }
 
-func (s *AiAgentService) getAndStartAgentRun(ctx context.Context, id uuid.UUID) (*ent.AiAgentRun, rez.AiAgentRunner, error) {
+func (s *AiAgentService) InvokeAgentRun(ctx context.Context, id uuid.UUID, params rez.InvokeAgentRunParams) error {
+	args := jobs.InvokeAgentRun{
+		AgentRunID: id,
+		Message:    params.Message,
+		Resume:     params.Resume,
+	}
+	if params.ParentSnapshotID != uuid.Nil {
+		args.ParentSnapshotID = &params.ParentSnapshotID
+	}
+	jobOpts := &river.InsertOpts{
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: jobs.UniqueStateNonCompleted,
+		},
+	}
+	_, jobErr := s.jobs.Insert(ctx, args, jobOpts)
+	if jobErr != nil {
+		return fmt.Errorf("insert start agent run job: %w", jobErr)
+	}
+	return nil
+}
+
+/*
+func (s *AiAgentService) getAndStartAgentRun(ctx context.Context, id uuid.UUID) (*ent.AiAgentRun, rez.AiAgentInvoker, error) {
 	var run *ent.AiAgentRun
-	var agent rez.AiAgentRunner
+	var agent rez.AiAgentInvoker
 	return run, agent, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		getStartedRun := tx.AiAgentRun.UpdateOneID(id).
 			Where(aar.ID(id), aar.StartedAtIsNil()).
@@ -173,67 +183,72 @@ func (s *AiAgentService) handleStartAgentRun(ctx context.Context, args jobs.Star
 		return fmt.Errorf("start agent run: %w", startErr)
 	}
 
-	event := rez.EventOnAiAgentRunSnapshot{
-		AgentName:       run.AgentName,
-		AgentRunId:      run.ID,
-		AgentSnapshotId: snapshotId,
-		RunMetadata:     run.Metadata,
-	}
-	if eventErr := s.msgs.PublishEvent(ctx, event); eventErr != nil {
-		slog.Error("failed to publish agent run finished event",
-			"error", eventErr.Error(),
-		)
-	}
+	//event := rez.EventOnAiAgentRunSnapshot{
+	//	AgentName:       run.AgentName,
+	//	AgentRunId:      run.ID,
+	//	AgentSnapshotId: snapshotId,
+	//	RunMetadata:     run.Metadata,
+	//}
+	//if eventErr := s.msgs.PublishEvent(ctx, event); eventErr != nil {
+	//	slog.Error("failed to publish agent run finished event",
+	//		"error", eventErr.Error(),
+	//	)
+	//}
 
 	return nil
 }
+*/
 
-func (s *AiAgentService) getAndResumeAgentRun(ctx context.Context, id uuid.UUID) (*ent.AiAgentRun, rez.AiAgentRunner, error) {
+func (s *AiAgentService) LookupAgentRunsByMetadata(ctx context.Context, metadata map[string]any) (ent.AiAgentRuns, error) {
+	query := s.db.Client(ctx).AiAgentRun.Query()
+	for key, val := range metadata {
+		query = query.Where(func(s *sql.Selector) {
+			s.Where(sqljson.ValueEQ(aar.FieldMetadata, val, sqljson.DotPath(key)))
+		})
+	}
+	return query.All(ctx)
+}
+
+func (s *AiAgentService) lookupAgentRunInvoker(ctx context.Context, id uuid.UUID, parentSnapshotId *uuid.UUID) (*ent.AiAgentRun, rez.AiAgentInvoker, error) {
 	var run *ent.AiAgentRun
-	var agent rez.AiAgentRunner
+	var agent rez.AiAgentInvoker
 	return run, agent, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		queryRun := tx.AiAgentRun.Query().
-			Where(aar.ID(id)).
-			WithSnapshots(func(q *ent.AiAgentRunSnapshotQuery) {
-				q.Order(ars.ByCreatedAt()).Limit(1)
-			})
-		txRun, queryErr := queryRun.Only(ctx)
-		if queryErr != nil {
-			if ent.IsNotFound(queryErr) {
-				return nil
-			}
-			return fmt.Errorf("get agent run: %w", queryErr)
+		var txRun *ent.AiAgentRun
+		var runErr error
+		if parentSnapshotId != nil {
+			txRun, runErr = tx.AiAgentRun.Query().
+				Where(aar.And(
+					aar.ID(id),
+					aar.HasSnapshotsWith(aars.ID(*parentSnapshotId)),
+					aar.StartedAtNotNil(),
+				)).Only(ctx)
+		} else {
+			txRun, runErr = tx.AiAgentRun.UpdateOneID(id).
+				SetStartedAt(time.Now()).
+				Save(ctx)
+		}
+		if runErr != nil {
+			return fmt.Errorf("get agent run: %w", runErr)
 		}
 		run = txRun.Unwrap()
 
 		var agentErr error
-		agent, agentErr = s.ai.GetAgentRunner(txRun)
-		if agentErr != nil {
-			return fmt.Errorf("get agent run invoker: %w", agentErr)
+		if agent, agentErr = s.ai.GetAgentRunner(run); agentErr != nil {
+			return fmt.Errorf("get agent runner: %w", agentErr)
 		}
 
 		return nil
 	})
 }
 
-func (s *AiAgentService) handleContinueAgentRun(ctx context.Context, args jobs.ContinueAgentRun) error {
-	if args.Message == nil && args.Resume == nil {
-		return fmt.Errorf("invalid args")
-	}
-	run, agent, runErr := s.getAndResumeAgentRun(ctx, args.AgentRunID)
+func (s *AiAgentService) handleInvokeAgentRun(ctx context.Context, args jobs.InvokeAgentRun) error {
+	run, agent, runErr := s.lookupAgentRunInvoker(ctx, args.AgentRunID, args.ParentSnapshotID)
 	if run == nil || runErr != nil {
 		return runErr
 	}
 	ctx = execution.NewAiAgentRunContext(ctx, run)
 
-	var snapshotId uuid.UUID
-	var sendErr error
-	params := rez.ContinueAgentRunParams{
-		ParentSnapshotID: args.ParentSnapshotID,
-		Message:          args.Message,
-		Resume:           args.Resume,
-	}
-	snapshotId, sendErr = agent.Continue(ctx, params)
+	snapshotId, sendErr := agent.Invoke(ctx, args.ParentSnapshotID, args.Message, args.Resume)
 	if sendErr != nil {
 		return fmt.Errorf("continue agent run: %w", sendErr)
 	}
@@ -245,26 +260,45 @@ func (s *AiAgentService) handleContinueAgentRun(ctx context.Context, args jobs.C
 	return nil
 }
 
-//func (s *AiAgentService) GetAgentRunSnapshotState(ctx context.Context, snapshotId uuid.UUID) error {
-//
-//}
-
-type AiSessionStateService struct {
-	db rez.Database
+func (s *AiAgentService) GetAgentRunOutput(ctx context.Context, id uuid.UUID) (*ent.AiAgentRunOutput, error) {
+	return s.db.Client(ctx).AiAgentRunOutput.Get(ctx, id)
 }
 
-func NewAiSessionStateService(db rez.Database) (*AiSessionStateService, error) {
-	s := &AiSessionStateService{db: db}
+func (s *AiAgentService) ClaimAgentRunOutput(ctx context.Context, id uuid.UUID, fn func(context.Context, []byte) (map[string]any, error)) error {
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		// claim transactional lock?
+		output, queryErr := tx.AiAgentRunOutput.Get(ctx, id)
+		if queryErr != nil {
+			return fmt.Errorf("get agent run output: %w", queryErr)
+		}
+		md, mdErr := fn(ctx, output.Data)
+		if mdErr != nil {
+			return fmt.Errorf("get agent run output metadata: %w", mdErr)
+		}
+		return output.Update().SetMetadata(md).Exec(ctx)
+	})
+}
+
+type AiSessionStateService struct {
+	db   rez.Database
+	msgs rez.MessageService
+}
+
+func NewAiSessionStateService(db rez.Database, msgs rez.MessageService) (*AiSessionStateService, error) {
+	s := &AiSessionStateService{db: db, msgs: msgs}
 	return s, nil
 }
 
 func (s *AiSessionStateService) GetLatestAgentRunSnapshot(ctx context.Context, runId uuid.UUID) (*ent.AiAgentRunSnapshot, error) {
 	query := s.db.Client(ctx).AiAgentRunSnapshot.Query().
-		Where(ars.AiAgentRunID(runId)).
-		Order(ars.ByCreatedAt()).
+		Where(aars.AiAgentRunID(runId)).
+		Order(aars.ByCreatedAt(sql.OrderDesc())).
 		Limit(1)
-	res, resErr := query.Only(ctx)
-	if resErr != nil && !ent.IsNotFound(resErr) {
+	res, resErr := query.First(ctx)
+	if resErr != nil {
+		if ent.IsNotFound(resErr) {
+			return nil, nil
+		}
 		return nil, resErr
 	}
 	return res, nil
@@ -333,18 +367,33 @@ func (s *AiSessionStateService) UpdateAgentRunSnapshot(ctx context.Context, id u
 	})
 }
 
-func (s *AiSessionStateService) SetAgentRunResultOutput(ctx context.Context, runId uuid.UUID, output any) error {
+func (s *AiSessionStateService) WriteAgentRunOutput(ctx context.Context, runId uuid.UUID, output any) error {
 	outputBytes, jsonErr := json.Marshal(output)
 	if jsonErr != nil {
 		return fmt.Errorf("marshalling output: %w", jsonErr)
 	}
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		return tx.AiAgentRunResult.Create().
-			SetAiAgentRunID(runId).
-			SetOutput(outputBytes).
-			OnConflictColumns(aarr.FieldTenantID, aarr.FieldAiAgentRunID).
-			UpdateOutput().
-			UpdateUpdatedAt().
-			Exec(ctx)
+		run, runErr := tx.AiAgentRun.Get(ctx, runId)
+		if runErr != nil {
+			return fmt.Errorf("getting run: %w", runErr)
+		}
+		createOutput := tx.AiAgentRunOutput.Create().
+			SetAiAgentRun(run).
+			SetData(outputBytes).
+			SetMetadata(map[string]any{})
+		created, saveErr := createOutput.Save(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("failed to save output: %w", saveErr)
+		}
+		event := rez.EventOnAiAgentRunOutput{
+			AgentName:        run.AgentName,
+			AgentRunMetadata: run.Metadata,
+			AgentRunId:       runId,
+			AgentOutputId:    created.ID,
+		}
+		if eventErr := s.msgs.PublishEvent(ctx, event); eventErr != nil {
+			return fmt.Errorf("failed to publish event: %w", eventErr)
+		}
+		return nil
 	})
 }

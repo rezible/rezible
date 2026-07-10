@@ -59,8 +59,8 @@ func (a *agentRunOutputWriter[S, O]) writeOutput(ctx context.Context, output O) 
 	if validErr := output.Validate(); validErr != nil {
 		return fmt.Errorf("validation error: %w", validErr)
 	}
-	if setErr := a.sessions.SetAgentRunResultOutput(ctx, runId, output); setErr != nil {
-		return fmt.Errorf("save result error: %w", setErr)
+	if setErr := a.sessions.WriteAgentRunOutput(ctx, runId, output); setErr != nil {
+		return fmt.Errorf("internal error saving the output. retrying will not succeed")
 	}
 
 	return nil

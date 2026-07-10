@@ -4,12 +4,17 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"regexp"
+	"strings"
 
+	"github.com/firebase/genkit/go/ai"
+	"github.com/go-viper/mapstructure/v2"
+	"github.com/k0kubun/pp/v3"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
-	"github.com/rezible/rezible/pkg/ai"
+	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
@@ -46,10 +51,79 @@ func (a *App) EventsApiHandler() slackintegration.EventsApiHandler {
 	}
 }
 
+type aiChatReplyAgentRunMetadata struct {
+	IsSlackReply      bool   `json:"slack_reply"`
+	IntegrationRef    string `mapstructure:"integration_ref"`
+	SlackReplyChannel string `mapstructure:"slack_reply_channel"`
+	SlackReplyTs      string `mapstructure:"slack_reply_ts"`
+}
+
+func (m aiChatReplyAgentRunMetadata) Encode() (map[string]any, error) {
+	var md map[string]any
+	return md, mapstructure.Decode(m, &md)
+}
+
+func (a *App) startOrContinueAgentThreadReply(ctx context.Context, md aiChatReplyAgentRunMetadata, usr *ent.User, msg string) error {
+	runMd, mdErr := md.Encode()
+	if mdErr != nil {
+		return fmt.Errorf("failed to create agent run metadata: %w", mdErr)
+	}
+
+	// TODO: better match agent runs to user requester
+	runs, runsErr := a.agents.LookupAgentRunsByMetadata(ctx, runMd)
+	if runsErr != nil && !ent.IsNotFound(runsErr) {
+		return fmt.Errorf("failed to lookup agent runs: %w", runsErr)
+	}
+	if len(runs) == 1 && runs[0].OwnerUserID == usr.ID {
+		slog.Debug("continuing existing agent run in thread")
+		run := runs[0]
+		snap, snapErr := a.agents.GetLatestAgentRunSnapshot(ctx, run.ID)
+		if snapErr != nil {
+			return fmt.Errorf("failed to get latest agent run snapshot: %w", snapErr)
+		}
+		invokeRunParams := rez.InvokeAgentRunParams{
+			ParentSnapshotID: snap.ID,
+			Message:          ai.NewUserTextMessage(msg),
+		}
+		invokeErr := a.agents.InvokeAgentRun(ctx, run.ID, invokeRunParams)
+		if invokeErr != nil {
+			slog.Error("failed to create chat agent run", "error", invokeErr)
+		}
+		return nil
+	}
+	if len(runs) > 1 {
+		slog.Warn("multiple agent runs found matching slack thread metadata")
+	}
+	createRunParams := rez.CreateAgentRunParams{
+		OwnerUserID: usr.ID,
+		Input: rezai.ChatAgentInput{
+			UserId:  usr.ID,
+			Message: msg,
+		},
+		Metadata: runMd,
+	}
+	_, runErr := a.agents.CreateAgentRun(ctx, rezai.ChatAgent.Name, createRunParams)
+	if runErr != nil {
+		slog.Error("failed to create chat agent run", "error", runErr)
+	}
+	return nil
+}
+
+var mentionRe = regexp.MustCompile(`<@([^>]+)>`)
+
 func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.AppMentionEvent) error {
 	replyTs := data.TimeStamp
 	if data.ThreadTimeStamp != "" {
 		replyTs = data.ThreadTimeStamp
+	}
+
+	pp.Println(data)
+
+	md := aiChatReplyAgentRunMetadata{
+		IsSlackReply:      true,
+		IntegrationRef:    cw.Integration().ExternalRef,
+		SlackReplyChannel: data.Channel,
+		SlackReplyTs:      replyTs,
 	}
 
 	usr, usrErr := a.users.Get(ctx, user.ChatID(data.User))
@@ -57,28 +131,13 @@ func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWra
 		return fmt.Errorf("failed to lookup chat user: %w", usrErr)
 	}
 
-	fmt.Printf("slack mention event: \n%+v\n\n", data)
-	createRunParams := rez.CreateAgentRunParams{
-		OwnerUserID: usr.ID,
-		Input: ai.ChatAgentInput{
-			UserId:  usr.ID,
-			Message: data.Text,
-		},
-		Metadata: map[string]any{
-			"integration_ref":        cw.Integration().ExternalRef,
-			"slack_reply_channel_id": data.Channel,
-			"slack_reply_thread_id":  replyTs,
-		},
-	}
-	_, runErr := a.agents.CreateAgentRun(ctx, ai.ChatAgent.Name, createRunParams)
-	if runErr != nil {
-		slog.Error("failed to create chat agent run", "error", runErr)
-	}
-	return nil
+	text := strings.TrimSpace(mentionRe.ReplaceAllString(data.Text, ""))
+
+	return a.startOrContinueAgentThreadReply(ctx, md, usr, text)
 }
 
 func (a *App) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent) error {
-	slog.Debug("message event", "message", data)
+	//slog.Debug("message event", "message", data)
 	/*
 		threadTs := data.ThreadTimeStamp
 		// TODO check if thread is 'monitored'

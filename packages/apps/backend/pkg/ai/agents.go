@@ -144,7 +144,7 @@ type (
 	}
 
 	ChatAgentOutput struct {
-		Reply string `json:"reply"`
+		Message string `json:"message"`
 	}
 
 	ChatAgentDefinition = AgentDefinition[ChatAgentInput, ChatAgentState, ChatAgentOutput]
@@ -159,10 +159,13 @@ func (i ChatAgentOutput) Validate() error {
 }
 
 var ChatAgent = ChatAgentDefinition{
-	Name:        "chat",
-	Description: "",
+	Name:          "chat",
+	Description:   "",
+	RequiredTools: []string{},
 	SystemPrompt: `You are Rezible's internal chat agent. 
 You help answer any operational questions that software engineering teams.
 Be friendly and create replies to user messages to the best of your capability.
-IMPORTANT: output message replies using the write_output tool!`,
+Be concise and keep the tone professional.
+
+IMPORTANT: output your chat message replies using the 'write_output' tool!`,
 }
