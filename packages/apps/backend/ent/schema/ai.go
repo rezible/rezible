@@ -8,53 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-//type AiAgentRun struct {
-//	ent.Schema
-//}
-//
-//func (AiAgentRun) Mixin() []ent.Mixin {
-//	return []ent.Mixin{
-//		BaseMixin{},
-//		TenantMixin{},
-//		TimestampsMixin{},
-//	}
-//}
-//
-//func (AiAgentRun) Fields() []ent.Field {
-//	return []ent.Field{
-//		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-//		field.String("agent_name").NotEmpty(),
-//		field.UUID("owner_user_id", uuid.UUID{}),
-//		field.Strings("scopes"),
-//		field.Time("started_at").Optional().Nillable(),
-//		field.Bytes("input"),
-//		field.JSON("metadata", map[string]any{}).
-//			SchemaType(schemaTypeJsonB).
-//			Optional(),
-//	}
-//}
-//
-//func (AiAgentRun) Edges() []ent.Edge {
-//	return []ent.Edge{
-//		edge.To("owner_user", User.Type).
-//			Required().
-//			Unique().
-//			Field("owner_user_id"),
-//		edge.To("subjects", AiAgentRunSubject.Type),
-//		edge.To("result", AiAgentRunResult.Type).
-//			Unique(),
-//		edge.From("snapshots", AiAgentRunSnapshot.Type).
-//			Ref("ai_agent_run"),
-//	}
-//}
-//
-//func (AiAgentRun) Indexes() []ent.Index {
-//	return []ent.Index{
-//		index.Fields("tenant_id", "owner_user_id", "created_at"),
-//		index.Fields("tenant_id", "agent_name", "created_at"),
-//	}
-//}
-
 type AiAgentRun struct {
 	ent.Schema
 }
@@ -87,8 +40,7 @@ func (AiAgentRun) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("owner_user_id"),
-		edge.To("result", AiAgentRunResult.Type).
-			Unique(),
+		edge.To("result", AiAgentRunResult.Type).Unique(),
 		edge.From("snapshots", AiAgentRunSnapshot.Type).
 			Ref("ai_agent_run"),
 	}
@@ -168,12 +120,11 @@ func (AiAgentRunResult) Fields() []ent.Field {
 
 func (AiAgentRunResult) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("ai_agent_run", AiAgentRunSnapshot.Type).
-			Required().
+		edge.From("ai_agent_run", AiAgentRun.Type).
+			Ref("result").
 			Unique().
+			Required().
 			Field("ai_agent_run_id"),
-		edge.From("findings", AiAgentRunFinding.Type).
-			Ref("ai_agent_run_result"),
 	}
 }
 

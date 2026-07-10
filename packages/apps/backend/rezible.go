@@ -2,7 +2,6 @@ package rez
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"iter"
 	"log/slog"
@@ -461,36 +460,32 @@ type (
 )
 
 type (
-	AiStateService interface {
+	AiSessionStateService interface {
 		GetLatestAgentRunSnapshot(ctx context.Context, runId uuid.UUID) (*ent.AiAgentRunSnapshot, error)
 		GetAgentRunSnapshot(context.Context, uuid.UUID) (*ent.AiAgentRunSnapshot, error)
 		SetAgentRunSnapshot(context.Context, uuid.UUID, func(*ent.AiAgentRunSnapshotMutation)) (*ent.AiAgentRunSnapshot, error)
 		UpdateAgentRunSnapshot(context.Context, uuid.UUID, func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) error) (*ent.AiAgentRunSnapshot, error)
+		SetAgentRunResultOutput(ctx context.Context, runId uuid.UUID, output any) error
 	}
 
-	SendAgentRunMessageParams struct {
+	ContinueAgentRunParams struct {
 		ParentSnapshotID *uuid.UUID
 		Message          *ai.Message
+		Resume           *ai.GenerateActionResume
 	}
 
-	ResumeAgentRunParams struct {
-		ParentSnapshotID *uuid.UUID
-		Respond          []*ai.Part
-		Restart          []*ai.Part
-	}
-
-	AiAgentRunInvoker interface {
+	AiAgentRunner interface {
 		Start(context.Context) (uuid.UUID, error)
-		SendMessage(context.Context, SendAgentRunMessageParams) (uuid.UUID, error)
-		Resume(context.Context, ResumeAgentRunParams) (uuid.UUID, error)
+		Continue(context.Context, ContinueAgentRunParams) (uuid.UUID, error)
 	}
 
 	AiWorkflowInvoker interface {
-		Run(context.Context) (json.RawMessage, error)
+		Run(context.Context, any) (any, error)
 	}
 
 	AiService interface {
-		GetAgentRunInvoker(run *ent.AiAgentRun) (AiAgentRunInvoker, error)
+		ValidateAgentRunInput(name string, input []byte) error
+		GetAgentRunner(run *ent.AiAgentRun) (AiAgentRunner, error)
 		GetWorkflowInvoker(name string) (AiWorkflowInvoker, error)
 	}
 
@@ -507,7 +502,7 @@ type (
 		Predicates []predicate.AiAgentRun
 	}
 
-	AiSessionService interface {
+	AiAgentService interface {
 		CreateAgentRun(context.Context, CreateAgentRunParams) (*ent.AiAgentRun, error)
 		GetAgentRun(context.Context, uuid.UUID) (*ent.AiAgentRun, error)
 		ListAgentRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AiAgentRun], error)
@@ -529,6 +524,7 @@ type (
 	AlertService interface {
 		ListAlerts(context.Context, ListAlertsParams) ([]*ent.Alert, int, error)
 		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
+		GetAlertInstance(context.Context, uuid.UUID) (*ent.AlertInstance, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
 		GetActiveAlertsForComponents(context.Context, []uuid.UUID) ([]*ent.Alert, error)
 	}

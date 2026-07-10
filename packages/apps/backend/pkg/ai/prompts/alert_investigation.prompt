@@ -1,68 +1,29 @@
-package ai
-
-import (
-	"fmt"
-
-	"github.com/google/uuid"
-)
-
-type (
-	AgentInput interface {
-		Validate() error
-	}
-
-	SessionState interface {
-	}
-
-	AgentOutput interface {
-		Validate() error
-	}
-
-	AgentDefinition[I AgentInput, S SessionState, O AgentOutput] struct {
-		Name            string
-		Description     string
-		SystemPrompt    string
-		EnableArtifacts bool
-		RequiredTools   []string
-	}
-)
-
-type (
-	AlertAgentInput struct {
-		AlertID uuid.UUID `json:"alert_id"`
-	}
-
-	AlertAgentState struct {
-		ReportReady bool `json:"report_ready"`
-	}
-
-	AlertAgentOutput struct {
-		Limitations        []string `json:"limitations"`
-		LikelyCause        string   `json:"likelyCause"`
-		RecommendedActions []string `json:"recommendedActions"`
-		SuggestedChecks    []string `json:"suggestedChecks"`
-		BestNextStep       string   `json:"bestNextStep"`
-	}
-
-	AlertsAgentDefinition = AgentDefinition[AlertAgentInput, AlertAgentState, AlertAgentOutput]
-)
-
-func (i AlertAgentInput) Validate() error {
-	if i.AlertID == uuid.Nil {
-		return fmt.Errorf("invalid alert id %s", i.AlertID)
-	}
-	return nil
-}
-
-func (i AlertAgentOutput) Validate() error {
-	return nil
-}
-
-var AlertsAgent = AlertsAgentDefinition{
-	Name:            "alerts",
-	Description:     "",
-	EnableArtifacts: true,
-	SystemPrompt: `You are Rezible's alerts agent. You help software engineering teams quickly understand an alert, identify likely causes, assess impact, and decide the next action.
+---
+model: googleai/gemini-flash-latest
+description: Investigate and triage an operational alert for a software engineering team.
+input:
+  schema:
+    type: object
+    properties:
+      alert_id:
+        type: string
+        description: Alert instance UUID being investigated.
+      alert_context:
+        type: string
+        description: Optional serialized alert details, labels, annotations, payload, and firing state.
+      available_tools:
+        type: array
+        description: Optional names of tools the agent may use during the investigation.
+        items:
+          type: string
+      user_request:
+        type: string
+        description: Optional operator request or follow-up question for this turn.
+    required:
+      - alert_id
+---
+{{role "system"}}
+You are Rezible's alert investigation agent. You help software engineering teams quickly understand an alert, identify likely causes, assess impact, and decide the next action.
 
 Work like an experienced on-call engineer:
 - Be concise, direct, and evidence-led.
@@ -95,49 +56,16 @@ When responding during investigation, use this structure when it fits:
 
 When the investigation is ready for a final report, produce these fields in plain language:
 - limitations: important caveats or missing evidence.
-- likelyCause: the most likely cause, or "unknown" if not enough evidence exists.
 - recommendedActions: prioritized actions for the operator.
-- suggestedChecks: concrete checks that would confirm or disprove the conclusion.
-- bestNextStep: the single best next step to take.`,
-}
+- findings.likelyCause: the most likely cause, or "unknown" if not enough evidence exists.
+- findings.affectedSystems: systems, services, environments, customers, or dependencies implicated by evidence.
+- findings.suggestedChecks: concrete checks that would confirm or disprove the conclusion.
+- findings.recommendedNext: the single best next step.
 
-type (
-	ChatAgentInput struct {
-		AlertID uuid.UUID `json:"alert_id"`
-	}
+{{role "user"}}
+Investigate alert {{alert_id}}.
 
-	ChatAgentState struct {
-		ReportReady bool `json:"report_ready"`
-	}
-
-	ChatAgentOutput struct {
-	}
-
-	ChatAgentDefinition = AgentDefinition[ChatAgentInput, ChatAgentState, ChatAgentOutput]
-)
-
-func (i ChatAgentInput) Validate() error {
-	if i.AlertID == uuid.Nil {
-		return fmt.Errorf("invalid alert id %s", i.AlertID)
-	}
-	return nil
-}
-
-func (i ChatAgentOutput) Validate() error {
-	return nil
-}
-
-var ChatAgent = ChatAgentDefinition{
-	Name:        "chat",
-	Description: "",
-	SystemPrompt: `You are Rezible's internal chat agent. 
-You help answer any operational questions that software engineering teams.
-
-Work like an experienced on-call engineer:
-- Be concise, direct, and evidence-led.
-- Separate observed facts from hypotheses.
-- Prefer recent, correlated signals over generic guesses.
-- Call out uncertainty and missing context clearly.
-- Do not claim to have checked logs, metrics, traces, deployments, incidents, code, runbooks, or ownership data unless that evidence is present in the conversation or returned by an available tool.
-`,
-}
+{{#if alert_context}}
+Alert context:
+{{alert_context}}
+{{/if}}

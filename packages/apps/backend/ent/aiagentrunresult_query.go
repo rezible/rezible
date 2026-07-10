@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -14,9 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/aiagentrunfinding"
+	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunresult"
-	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
@@ -30,8 +28,7 @@ type AiAgentRunResultQuery struct {
 	inters         []Interceptor
 	predicates     []predicate.AiAgentRunResult
 	withTenant     *TenantQuery
-	withAiAgentRun *AiAgentRunSnapshotQuery
-	withFindings   *AiAgentRunFindingQuery
+	withAiAgentRun *AiAgentRunQuery
 	modifiers      []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -95,8 +92,8 @@ func (_q *AiAgentRunResultQuery) QueryTenant() *TenantQuery {
 }
 
 // QueryAiAgentRun chains the current query on the "ai_agent_run" edge.
-func (_q *AiAgentRunResultQuery) QueryAiAgentRun() *AiAgentRunSnapshotQuery {
-	query := (&AiAgentRunSnapshotClient{config: _q.config}).Query()
+func (_q *AiAgentRunResultQuery) QueryAiAgentRun() *AiAgentRunQuery {
+	query := (&AiAgentRunClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -107,37 +104,12 @@ func (_q *AiAgentRunResultQuery) QueryAiAgentRun() *AiAgentRunSnapshotQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(aiagentrunresult.Table, aiagentrunresult.FieldID, selector),
-			sqlgraph.To(aiagentrunsnapshot.Table, aiagentrunsnapshot.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunresult.AiAgentRunTable, aiagentrunresult.AiAgentRunColumn),
+			sqlgraph.To(aiagentrun.Table, aiagentrun.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, aiagentrunresult.AiAgentRunTable, aiagentrunresult.AiAgentRunColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunSnapshot
+		step.To.Schema = schemaConfig.AiAgentRun
 		step.Edge.Schema = schemaConfig.AiAgentRunResult
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryFindings chains the current query on the "findings" edge.
-func (_q *AiAgentRunResultQuery) QueryFindings() *AiAgentRunFindingQuery {
-	query := (&AiAgentRunFindingClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunresult.Table, aiagentrunresult.FieldID, selector),
-			sqlgraph.To(aiagentrunfinding.Table, aiagentrunfinding.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, aiagentrunresult.FindingsTable, aiagentrunresult.FindingsColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunFinding
-		step.Edge.Schema = schemaConfig.AiAgentRunFinding
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -338,7 +310,6 @@ func (_q *AiAgentRunResultQuery) Clone() *AiAgentRunResultQuery {
 		predicates:     append([]predicate.AiAgentRunResult{}, _q.predicates...),
 		withTenant:     _q.withTenant.Clone(),
 		withAiAgentRun: _q.withAiAgentRun.Clone(),
-		withFindings:   _q.withFindings.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -359,23 +330,12 @@ func (_q *AiAgentRunResultQuery) WithTenant(opts ...func(*TenantQuery)) *AiAgent
 
 // WithAiAgentRun tells the query-builder to eager-load the nodes that are connected to
 // the "ai_agent_run" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AiAgentRunResultQuery) WithAiAgentRun(opts ...func(*AiAgentRunSnapshotQuery)) *AiAgentRunResultQuery {
-	query := (&AiAgentRunSnapshotClient{config: _q.config}).Query()
+func (_q *AiAgentRunResultQuery) WithAiAgentRun(opts ...func(*AiAgentRunQuery)) *AiAgentRunResultQuery {
+	query := (&AiAgentRunClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
 	_q.withAiAgentRun = query
-	return _q
-}
-
-// WithFindings tells the query-builder to eager-load the nodes that are connected to
-// the "findings" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AiAgentRunResultQuery) WithFindings(opts ...func(*AiAgentRunFindingQuery)) *AiAgentRunResultQuery {
-	query := (&AiAgentRunFindingClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withFindings = query
 	return _q
 }
 
@@ -463,10 +423,9 @@ func (_q *AiAgentRunResultQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	var (
 		nodes       = []*AiAgentRunResult{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [2]bool{
 			_q.withTenant != nil,
 			_q.withAiAgentRun != nil,
-			_q.withFindings != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -500,14 +459,7 @@ func (_q *AiAgentRunResultQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	}
 	if query := _q.withAiAgentRun; query != nil {
 		if err := _q.loadAiAgentRun(ctx, query, nodes, nil,
-			func(n *AiAgentRunResult, e *AiAgentRunSnapshot) { n.Edges.AiAgentRun = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withFindings; query != nil {
-		if err := _q.loadFindings(ctx, query, nodes,
-			func(n *AiAgentRunResult) { n.Edges.Findings = []*AiAgentRunFinding{} },
-			func(n *AiAgentRunResult, e *AiAgentRunFinding) { n.Edges.Findings = append(n.Edges.Findings, e) }); err != nil {
+			func(n *AiAgentRunResult, e *AiAgentRun) { n.Edges.AiAgentRun = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -543,7 +495,7 @@ func (_q *AiAgentRunResultQuery) loadTenant(ctx context.Context, query *TenantQu
 	}
 	return nil
 }
-func (_q *AiAgentRunResultQuery) loadAiAgentRun(ctx context.Context, query *AiAgentRunSnapshotQuery, nodes []*AiAgentRunResult, init func(*AiAgentRunResult), assign func(*AiAgentRunResult, *AiAgentRunSnapshot)) error {
+func (_q *AiAgentRunResultQuery) loadAiAgentRun(ctx context.Context, query *AiAgentRunQuery, nodes []*AiAgentRunResult, init func(*AiAgentRunResult), assign func(*AiAgentRunResult, *AiAgentRun)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AiAgentRunResult)
 	for i := range nodes {
@@ -556,7 +508,7 @@ func (_q *AiAgentRunResultQuery) loadAiAgentRun(ctx context.Context, query *AiAg
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(aiagentrunsnapshot.IDIn(ids...))
+	query.Where(aiagentrun.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -569,36 +521,6 @@ func (_q *AiAgentRunResultQuery) loadAiAgentRun(ctx context.Context, query *AiAg
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
-	}
-	return nil
-}
-func (_q *AiAgentRunResultQuery) loadFindings(ctx context.Context, query *AiAgentRunFindingQuery, nodes []*AiAgentRunResult, init func(*AiAgentRunResult), assign func(*AiAgentRunResult, *AiAgentRunFinding)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*AiAgentRunResult)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(aiagentrunfinding.FieldAiAgentRunResultID)
-	}
-	query.Where(predicate.AiAgentRunFinding(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(aiagentrunresult.FindingsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.AiAgentRunResultID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "ai_agent_run_result_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

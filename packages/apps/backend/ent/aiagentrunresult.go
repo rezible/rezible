@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunresult"
-	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -41,12 +41,10 @@ type AiAgentRunResultEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// AiAgentRun holds the value of the ai_agent_run edge.
-	AiAgentRun *AiAgentRunSnapshot `json:"ai_agent_run,omitempty"`
-	// Findings holds the value of the findings edge.
-	Findings []*AiAgentRunFinding `json:"findings,omitempty"`
+	AiAgentRun *AiAgentRun `json:"ai_agent_run,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -62,22 +60,13 @@ func (e AiAgentRunResultEdges) TenantOrErr() (*Tenant, error) {
 
 // AiAgentRunOrErr returns the AiAgentRun value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AiAgentRunResultEdges) AiAgentRunOrErr() (*AiAgentRunSnapshot, error) {
+func (e AiAgentRunResultEdges) AiAgentRunOrErr() (*AiAgentRun, error) {
 	if e.AiAgentRun != nil {
 		return e.AiAgentRun, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: aiagentrunsnapshot.Label}
+		return nil, &NotFoundError{label: aiagentrun.Label}
 	}
 	return nil, &NotLoadedError{edge: "ai_agent_run"}
-}
-
-// FindingsOrErr returns the Findings value or an error if the edge
-// was not loaded in eager-loading.
-func (e AiAgentRunResultEdges) FindingsOrErr() ([]*AiAgentRunFinding, error) {
-	if e.loadedTypes[2] {
-		return e.Findings, nil
-	}
-	return nil, &NotLoadedError{edge: "findings"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -163,13 +152,8 @@ func (_m *AiAgentRunResult) QueryTenant() *TenantQuery {
 }
 
 // QueryAiAgentRun queries the "ai_agent_run" edge of the AiAgentRunResult entity.
-func (_m *AiAgentRunResult) QueryAiAgentRun() *AiAgentRunSnapshotQuery {
+func (_m *AiAgentRunResult) QueryAiAgentRun() *AiAgentRunQuery {
 	return NewAiAgentRunResultClient(_m.config).QueryAiAgentRun(_m)
-}
-
-// QueryFindings queries the "findings" edge of the AiAgentRunResult entity.
-func (_m *AiAgentRunResult) QueryFindings() *AiAgentRunFindingQuery {
-	return NewAiAgentRunResultClient(_m.config).QueryFindings(_m)
 }
 
 // Update returns a builder for updating this AiAgentRunResult.

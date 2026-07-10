@@ -13,9 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/aiagentrunfinding"
+	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunresult"
-	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -92,24 +91,9 @@ func (_c *AiAgentRunResultCreate) SetTenant(v *Tenant) *AiAgentRunResultCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRunSnapshot entity.
-func (_c *AiAgentRunResultCreate) SetAiAgentRun(v *AiAgentRunSnapshot) *AiAgentRunResultCreate {
+// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRun entity.
+func (_c *AiAgentRunResultCreate) SetAiAgentRun(v *AiAgentRun) *AiAgentRunResultCreate {
 	return _c.SetAiAgentRunID(v.ID)
-}
-
-// AddFindingIDs adds the "findings" edge to the AiAgentRunFinding entity by IDs.
-func (_c *AiAgentRunResultCreate) AddFindingIDs(ids ...uuid.UUID) *AiAgentRunResultCreate {
-	_c.mutation.AddFindingIDs(ids...)
-	return _c
-}
-
-// AddFindings adds the "findings" edges to the AiAgentRunFinding entity.
-func (_c *AiAgentRunResultCreate) AddFindings(v ...*AiAgentRunFinding) *AiAgentRunResultCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddFindingIDs(ids...)
 }
 
 // Mutation returns the AiAgentRunResultMutation object of the builder.
@@ -265,13 +249,13 @@ func (_c *AiAgentRunResultCreate) createSpec() (*AiAgentRunResult, *sqlgraph.Cre
 	}
 	if nodes := _c.mutation.AiAgentRunIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   aiagentrunresult.AiAgentRunTable,
 			Columns: []string{aiagentrunresult.AiAgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.AiAgentRunResult
@@ -279,23 +263,6 @@ func (_c *AiAgentRunResultCreate) createSpec() (*AiAgentRunResult, *sqlgraph.Cre
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.AiAgentRunID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.FindingsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrunresult.FindingsTable,
-			Columns: []string{aiagentrunresult.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AiAgentRunFinding
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -30,8 +30,6 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeAiAgentRun holds the string denoting the ai_agent_run edge name in mutations.
 	EdgeAiAgentRun = "ai_agent_run"
-	// EdgeFindings holds the string denoting the findings edge name in mutations.
-	EdgeFindings = "findings"
 	// Table holds the table name of the aiagentrunresult in the database.
 	Table = "ai_agent_run_results"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -43,18 +41,11 @@ const (
 	TenantColumn = "tenant_id"
 	// AiAgentRunTable is the table that holds the ai_agent_run relation/edge.
 	AiAgentRunTable = "ai_agent_run_results"
-	// AiAgentRunInverseTable is the table name for the AiAgentRunSnapshot entity.
-	// It exists in this package in order to avoid circular dependency with the "aiagentrunsnapshot" package.
-	AiAgentRunInverseTable = "ai_agent_run_snapshots"
+	// AiAgentRunInverseTable is the table name for the AiAgentRun entity.
+	// It exists in this package in order to avoid circular dependency with the "aiagentrun" package.
+	AiAgentRunInverseTable = "ai_agent_runs"
 	// AiAgentRunColumn is the table column denoting the ai_agent_run relation/edge.
 	AiAgentRunColumn = "ai_agent_run_id"
-	// FindingsTable is the table that holds the findings relation/edge.
-	FindingsTable = "ai_agent_run_findings"
-	// FindingsInverseTable is the table name for the AiAgentRunFinding entity.
-	// It exists in this package in order to avoid circular dependency with the "aiagentrunfinding" package.
-	FindingsInverseTable = "ai_agent_run_findings"
-	// FindingsColumn is the table column denoting the findings relation/edge.
-	FindingsColumn = "ai_agent_run_result_id"
 )
 
 // Columns holds all SQL columns for aiagentrunresult fields.
@@ -136,20 +127,6 @@ func ByAiAgentRunField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAiAgentRunStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByFindingsCount orders the results by findings count.
-func ByFindingsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newFindingsStep(), opts...)
-	}
-}
-
-// ByFindings orders the results by findings terms.
-func ByFindings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newFindingsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -161,13 +138,6 @@ func newAiAgentRunStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AiAgentRunInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AiAgentRunTable, AiAgentRunColumn),
-	)
-}
-func newFindingsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(FindingsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, FindingsTable, FindingsColumn),
+		sqlgraph.Edge(sqlgraph.O2O, true, AiAgentRunTable, AiAgentRunColumn),
 	)
 }

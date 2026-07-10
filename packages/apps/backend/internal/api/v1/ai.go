@@ -10,10 +10,10 @@ import (
 )
 
 type aiHandler struct {
-	agents rez.AiSessionService
+	agents rez.AiAgentService
 }
 
-func newAiHandler(agents rez.AiSessionService) *aiHandler {
+func newAiHandler(agents rez.AiAgentService) *aiHandler {
 	return &aiHandler{agents: agents}
 }
 

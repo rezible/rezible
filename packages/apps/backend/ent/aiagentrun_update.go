@@ -351,7 +351,7 @@ func (_u *AiAgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if _u.mutation.ResultCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   aiagentrun.ResultTable,
 			Columns: []string{aiagentrun.ResultColumn},
@@ -360,12 +360,12 @@ func (_u *AiAgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 				IDSpec: sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AiAgentRun
+		edge.Schema = _u.schemaConfig.AiAgentRunResult
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.ResultIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   aiagentrun.ResultTable,
 			Columns: []string{aiagentrun.ResultColumn},
@@ -374,7 +374,7 @@ func (_u *AiAgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 				IDSpec: sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AiAgentRun
+		edge.Schema = _u.schemaConfig.AiAgentRunResult
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -798,7 +798,7 @@ func (_u *AiAgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AiAgentRun, 
 	}
 	if _u.mutation.ResultCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   aiagentrun.ResultTable,
 			Columns: []string{aiagentrun.ResultColumn},
@@ -807,12 +807,12 @@ func (_u *AiAgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AiAgentRun, 
 				IDSpec: sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AiAgentRun
+		edge.Schema = _u.schemaConfig.AiAgentRunResult
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.ResultIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   aiagentrun.ResultTable,
 			Columns: []string{aiagentrun.ResultColumn},
@@ -821,7 +821,7 @@ func (_u *AiAgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AiAgentRun, 
 				IDSpec: sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AiAgentRun
+		edge.Schema = _u.schemaConfig.AiAgentRunResult
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

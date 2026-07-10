@@ -12,32 +12,10 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	aars "github.com/rezible/rezible/ent/aiagentrunsnapshot"
+	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
-type workflowStateStore[S any] struct {
-	state rez.AiStateService
-}
-
-func makeWorkflowStateStore[S any](state rez.AiStateService) *workflowStateStore[S] {
-	return &workflowStateStore[S]{
-		state: state,
-	}
-}
-
-type agentSessionStore[S any] struct {
-	state        rez.AiStateService
-	statusSubs   map[string][]chan aix.SnapshotStatus
-	statusSubsMu sync.RWMutex
-}
-
-func makeAgentSessionStore[S any](state rez.AiStateService) *agentSessionStore[S] {
-	return &agentSessionStore[S]{
-		state:      state,
-		statusSubs: make(map[string][]chan aix.SnapshotStatus),
-	}
-}
-
-func convertToSessionSnapshot[S any](rs *ent.AiAgentRunSnapshot) (*aix.SessionSnapshot[S], error) {
+func convertToSessionSnapshot[S rezai.SessionState](rs *ent.AiAgentRunSnapshot) (*aix.SessionSnapshot[S], error) {
 	if rs == nil {
 		return nil, nil
 	}
@@ -66,7 +44,7 @@ func convertToSessionSnapshot[S any](rs *ent.AiAgentRunSnapshot) (*aix.SessionSn
 	return snapshot, nil
 }
 
-func convertFromSessionSnapshot[S any](s *aix.SessionSnapshot[S]) (*ent.AiAgentRunSnapshot, error) {
+func convertFromSessionSnapshot[S rezai.SessionState](s *aix.SessionSnapshot[S]) (*ent.AiAgentRunSnapshot, error) {
 	if s == nil {
 		return nil, nil
 	}
@@ -113,7 +91,20 @@ func convertFromSessionSnapshot[S any](s *aix.SessionSnapshot[S]) (*ent.AiAgentR
 	return snap, nil
 }
 
-func (s *agentSessionStore[S]) GetLatestSnapshot(ctx context.Context, sessionID string) (*aix.SessionSnapshot[S], error) {
+type sessionStore[S rezai.SessionState] struct {
+	state        rez.AiSessionStateService
+	statusSubs   map[string][]chan aix.SnapshotStatus
+	statusSubsMu sync.RWMutex
+}
+
+func makeSessionStore[S rezai.SessionState](state rez.AiSessionStateService) *sessionStore[S] {
+	return &sessionStore[S]{
+		state:      state,
+		statusSubs: make(map[string][]chan aix.SnapshotStatus),
+	}
+}
+
+func (s *sessionStore[S]) GetLatestSnapshot(ctx context.Context, sessionID string) (*aix.SessionSnapshot[S], error) {
 	runId, idErr := uuid.Parse(sessionID)
 	if idErr != nil {
 		return nil, fmt.Errorf("invalid session ID: %s", sessionID)
@@ -125,7 +116,7 @@ func (s *agentSessionStore[S]) GetLatestSnapshot(ctx context.Context, sessionID 
 	return convertToSessionSnapshot[S](rs)
 }
 
-func (s *agentSessionStore[S]) GetSnapshot(ctx context.Context, snapshotID string) (*aix.SessionSnapshot[S], error) {
+func (s *sessionStore[S]) GetSnapshot(ctx context.Context, snapshotID string) (*aix.SessionSnapshot[S], error) {
 	id, idErr := uuid.Parse(snapshotID)
 	if idErr != nil {
 		return nil, fmt.Errorf("invalid snapshot ID: %s", snapshotID)
@@ -137,9 +128,11 @@ func (s *agentSessionStore[S]) GetSnapshot(ctx context.Context, snapshotID strin
 	return convertToSessionSnapshot[S](rs)
 }
 
-type setSnapshotDataFunc[S any] = func(*aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error)
-
-func (s *agentSessionStore[S]) SaveSnapshot(ctx context.Context, id string, setFn setSnapshotDataFunc[S]) (*aix.SessionSnapshot[S], error) {
+func (s *sessionStore[S]) SaveSnapshot(
+	ctx context.Context,
+	id string,
+	setFn func(*aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error),
+) (*aix.SessionSnapshot[S], error) {
 	var snapshotId uuid.UUID
 	if id != "" {
 		var idErr error
@@ -215,7 +208,7 @@ func (s *agentSessionStore[S]) SaveSnapshot(ctx context.Context, id string, setF
 	return convertToSessionSnapshot[S](updated)
 }
 
-func (s *agentSessionStore[S]) OnSnapshotStatusChange(ctx context.Context, snapshotID string) <-chan aix.SnapshotStatus {
+func (s *sessionStore[S]) OnSnapshotStatusChange(ctx context.Context, snapshotID string) <-chan aix.SnapshotStatus {
 	ch := make(chan aix.SnapshotStatus, 1)
 
 	s.statusSubsMu.Lock()
@@ -236,7 +229,7 @@ func (s *agentSessionStore[S]) OnSnapshotStatusChange(ctx context.Context, snaps
 	return ch
 }
 
-func (s *agentSessionStore[State]) removeSub(snapshotID string, ch chan aix.SnapshotStatus) {
+func (s *sessionStore[State]) removeSub(snapshotID string, ch chan aix.SnapshotStatus) {
 	s.statusSubsMu.Lock()
 	defer s.statusSubsMu.Unlock()
 	subs := s.statusSubs[snapshotID]
@@ -253,7 +246,7 @@ func (s *agentSessionStore[State]) removeSub(snapshotID string, ch chan aix.Snap
 	close(ch)
 }
 
-func (s *agentSessionStore[State]) notifyLocked(snapshotID string, status aix.SnapshotStatus) {
+func (s *sessionStore[State]) notifyLocked(snapshotID string, status aix.SnapshotStatus) {
 	s.statusSubsMu.Lock()
 	defer s.statusSubsMu.Unlock()
 	for _, ch := range s.statusSubs[snapshotID] {

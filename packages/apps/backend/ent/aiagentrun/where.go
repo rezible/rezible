@@ -440,11 +440,11 @@ func HasResult() predicate.AiAgentRun {
 	return predicate.AiAgentRun(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, ResultTable, ResultColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, ResultTable, ResultColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AiAgentRunResult
-		step.Edge.Schema = schemaConfig.AiAgentRun
+		step.Edge.Schema = schemaConfig.AiAgentRunResult
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -455,7 +455,7 @@ func HasResultWith(preds ...predicate.AiAgentRunResult) predicate.AiAgentRun {
 		step := newResultStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AiAgentRunResult
-		step.Edge.Schema = schemaConfig.AiAgentRun
+		step.Edge.Schema = schemaConfig.AiAgentRunResult
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

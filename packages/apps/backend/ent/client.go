@@ -1010,11 +1010,11 @@ func (c *AiAgentRunClient) QueryResult(_m *AiAgentRun) *AiAgentRunResultQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(aiagentrun.Table, aiagentrun.FieldID, id),
 			sqlgraph.To(aiagentrunresult.Table, aiagentrunresult.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrun.ResultTable, aiagentrun.ResultColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, aiagentrun.ResultTable, aiagentrun.ResultColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AiAgentRunResult
-		step.Edge.Schema = schemaConfig.AiAgentRun
+		step.Edge.Schema = schemaConfig.AiAgentRunResult
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -1843,37 +1843,18 @@ func (c *AiAgentRunResultClient) QueryTenant(_m *AiAgentRunResult) *TenantQuery 
 }
 
 // QueryAiAgentRun queries the ai_agent_run edge of a AiAgentRunResult.
-func (c *AiAgentRunResultClient) QueryAiAgentRun(_m *AiAgentRunResult) *AiAgentRunSnapshotQuery {
-	query := (&AiAgentRunSnapshotClient{config: c.config}).Query()
+func (c *AiAgentRunResultClient) QueryAiAgentRun(_m *AiAgentRunResult) *AiAgentRunQuery {
+	query := (&AiAgentRunClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(aiagentrunresult.Table, aiagentrunresult.FieldID, id),
-			sqlgraph.To(aiagentrunsnapshot.Table, aiagentrunsnapshot.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunresult.AiAgentRunTable, aiagentrunresult.AiAgentRunColumn),
+			sqlgraph.To(aiagentrun.Table, aiagentrun.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, aiagentrunresult.AiAgentRunTable, aiagentrunresult.AiAgentRunColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunSnapshot
+		step.To.Schema = schemaConfig.AiAgentRun
 		step.Edge.Schema = schemaConfig.AiAgentRunResult
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFindings queries the findings edge of a AiAgentRunResult.
-func (c *AiAgentRunResultClient) QueryFindings(_m *AiAgentRunResult) *AiAgentRunFindingQuery {
-	query := (&AiAgentRunFindingClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunresult.Table, aiagentrunresult.FieldID, id),
-			sqlgraph.To(aiagentrunfinding.Table, aiagentrunfinding.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, aiagentrunresult.FindingsTable, aiagentrunresult.FindingsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunFinding
-		step.Edge.Schema = schemaConfig.AiAgentRunFinding
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}

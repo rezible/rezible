@@ -4235,9 +4235,6 @@ type AiAgentRunResultMutation struct {
 	clearedtenant       bool
 	ai_agent_run        *uuid.UUID
 	clearedai_agent_run bool
-	findings            map[uuid.UUID]struct{}
-	removedfindings     map[uuid.UUID]struct{}
-	clearedfindings     bool
 	done                bool
 	oldValue            func(context.Context) (*AiAgentRunResult, error)
 	predicates          []predicate.AiAgentRunResult
@@ -4554,13 +4551,13 @@ func (m *AiAgentRunResultMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRunSnapshot entity.
+// ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRun entity.
 func (m *AiAgentRunResultMutation) ClearAiAgentRun() {
 	m.clearedai_agent_run = true
 	m.clearedFields[aiagentrunresult.FieldAiAgentRunID] = struct{}{}
 }
 
-// AiAgentRunCleared reports if the "ai_agent_run" edge to the AiAgentRunSnapshot entity was cleared.
+// AiAgentRunCleared reports if the "ai_agent_run" edge to the AiAgentRun entity was cleared.
 func (m *AiAgentRunResultMutation) AiAgentRunCleared() bool {
 	return m.clearedai_agent_run
 }
@@ -4579,60 +4576,6 @@ func (m *AiAgentRunResultMutation) AiAgentRunIDs() (ids []uuid.UUID) {
 func (m *AiAgentRunResultMutation) ResetAiAgentRun() {
 	m.ai_agent_run = nil
 	m.clearedai_agent_run = false
-}
-
-// AddFindingIDs adds the "findings" edge to the AiAgentRunFinding entity by ids.
-func (m *AiAgentRunResultMutation) AddFindingIDs(ids ...uuid.UUID) {
-	if m.findings == nil {
-		m.findings = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.findings[ids[i]] = struct{}{}
-	}
-}
-
-// ClearFindings clears the "findings" edge to the AiAgentRunFinding entity.
-func (m *AiAgentRunResultMutation) ClearFindings() {
-	m.clearedfindings = true
-}
-
-// FindingsCleared reports if the "findings" edge to the AiAgentRunFinding entity was cleared.
-func (m *AiAgentRunResultMutation) FindingsCleared() bool {
-	return m.clearedfindings
-}
-
-// RemoveFindingIDs removes the "findings" edge to the AiAgentRunFinding entity by IDs.
-func (m *AiAgentRunResultMutation) RemoveFindingIDs(ids ...uuid.UUID) {
-	if m.removedfindings == nil {
-		m.removedfindings = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.findings, ids[i])
-		m.removedfindings[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFindings returns the removed IDs of the "findings" edge to the AiAgentRunFinding entity.
-func (m *AiAgentRunResultMutation) RemovedFindingsIDs() (ids []uuid.UUID) {
-	for id := range m.removedfindings {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// FindingsIDs returns the "findings" edge IDs in the mutation.
-func (m *AiAgentRunResultMutation) FindingsIDs() (ids []uuid.UUID) {
-	for id := range m.findings {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetFindings resets all changes to the "findings" edge.
-func (m *AiAgentRunResultMutation) ResetFindings() {
-	m.findings = nil
-	m.clearedfindings = false
-	m.removedfindings = nil
 }
 
 // Where appends a list predicates to the AiAgentRunResultMutation builder.
@@ -4839,15 +4782,12 @@ func (m *AiAgentRunResultMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AiAgentRunResultMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.tenant != nil {
 		edges = append(edges, aiagentrunresult.EdgeTenant)
 	}
 	if m.ai_agent_run != nil {
 		edges = append(edges, aiagentrunresult.EdgeAiAgentRun)
-	}
-	if m.findings != nil {
-		edges = append(edges, aiagentrunresult.EdgeFindings)
 	}
 	return edges
 }
@@ -4864,50 +4804,30 @@ func (m *AiAgentRunResultMutation) AddedIDs(name string) []ent.Value {
 		if id := m.ai_agent_run; id != nil {
 			return []ent.Value{*id}
 		}
-	case aiagentrunresult.EdgeFindings:
-		ids := make([]ent.Value, 0, len(m.findings))
-		for id := range m.findings {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AiAgentRunResultMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.removedfindings != nil {
-		edges = append(edges, aiagentrunresult.EdgeFindings)
-	}
+	edges := make([]string, 0, 2)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *AiAgentRunResultMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case aiagentrunresult.EdgeFindings:
-		ids := make([]ent.Value, 0, len(m.removedfindings))
-		for id := range m.removedfindings {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AiAgentRunResultMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.clearedtenant {
 		edges = append(edges, aiagentrunresult.EdgeTenant)
 	}
 	if m.clearedai_agent_run {
 		edges = append(edges, aiagentrunresult.EdgeAiAgentRun)
-	}
-	if m.clearedfindings {
-		edges = append(edges, aiagentrunresult.EdgeFindings)
 	}
 	return edges
 }
@@ -4920,8 +4840,6 @@ func (m *AiAgentRunResultMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case aiagentrunresult.EdgeAiAgentRun:
 		return m.clearedai_agent_run
-	case aiagentrunresult.EdgeFindings:
-		return m.clearedfindings
 	}
 	return false
 }
@@ -4949,9 +4867,6 @@ func (m *AiAgentRunResultMutation) ResetEdge(name string) error {
 		return nil
 	case aiagentrunresult.EdgeAiAgentRun:
 		m.ResetAiAgentRun()
-		return nil
-	case aiagentrunresult.EdgeFindings:
-		m.ResetFindings()
 		return nil
 	}
 	return fmt.Errorf("unknown AiAgentRunResult edge %s", name)

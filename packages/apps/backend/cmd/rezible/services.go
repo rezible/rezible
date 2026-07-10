@@ -147,12 +147,6 @@ func declareServices(ctx context.Context, i do.Injector) {
 		return integrations.NewPackageRegistry(), nil
 	})
 
-	do.Provide(i, func(i do.Injector) (rez.AiService, error) {
-		r := genkit.NewAiService(ctx, do.MustInvoke[rez.Config](i), do.MustInvoke[rez.AiStateService](i))
-		genkit.RegisterAgent(r, genkit.NewAlertInvestigationAgent(do.MustInvoke[rez.AlertService](i)))
-		return r, nil
-	})
-
 	do.Provide(i, func(i do.Injector) (rez.MigrationService, error) {
 		pgPool, poolErr := postgres.MakePgxPool(ctx, do.MustInvoke[rez.Config](i).Postgres, true)
 		if poolErr != nil {
@@ -184,13 +178,26 @@ func declareServices(ctx context.Context, i do.Injector) {
 		return watermill.NewMessageService(do.MustInvoke[rez.TelemetryService](i))
 	})
 
+	do.Provide(i, func(i do.Injector) (rez.AiService, error) {
+		s := genkit.NewAiService(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.AiSessionStateService](i),
+			do.MustInvoke[rez.KnowledgeGraphService](i),
+		)
+		return s, s.Init(ctx,
+			//genkit.WithTool(genkit.NewKnowledgeGraphTool(do.MustInvoke[rez.KnowledgeGraphService](i))),
+			genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i))),
+			genkit.WithAgent(genkit.NewChatAgent()),
+		)
+	})
+
 	provideServices(i)
 	provideIntegrations(i)
 
 	do.Provide(i, func(i do.Injector) (oapiv1.Handler, error) {
 		return apiv1.NewHandler(
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.AiSessionService](i),
+			do.MustInvoke[rez.AiAgentService](i),
 			do.MustInvoke[rez.AlertService](i),
 			do.MustInvoke[rez.OrganizationService](i),
 			do.MustInvoke[rez.UserService](i),
@@ -251,7 +258,7 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.AiSessionService](i),
+			do.MustInvoke[rez.AiAgentService](i),
 			do.MustInvoke[rez.EventsService](i),
 		)
 		if appErr != nil {
@@ -431,13 +438,13 @@ var provideServices = do.Package(
 	}),
 	do.Bind[*db.DocumentsService, rez.DocumentsService](),
 
-	do.Lazy(func(i do.Injector) (*db.AiAgentRunSnapshotService, error) {
-		return db.NewAgentRunSnapshotService(do.MustInvoke[rez.Database](i))
+	do.Lazy(func(i do.Injector) (*db.AiSessionStateService, error) {
+		return db.NewAiSessionStateService(do.MustInvoke[rez.Database](i))
 	}),
-	do.Bind[*db.AiAgentRunSnapshotService, rez.AiStateService](),
+	do.Bind[*db.AiSessionStateService, rez.AiSessionStateService](),
 
-	do.Lazy(func(i do.Injector) (*db.AiSessionService, error) {
-		return db.NewAiSessionService(
+	do.Lazy(func(i do.Injector) (*db.AiAgentService, error) {
+		return db.NewAiAgentService(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
@@ -445,5 +452,5 @@ var provideServices = do.Package(
 			do.MustInvoke[rez.AiService](i),
 		)
 	}),
-	do.Bind[*db.AiSessionService, rez.AiSessionService](),
+	do.Bind[*db.AiAgentService, rez.AiAgentService](),
 )

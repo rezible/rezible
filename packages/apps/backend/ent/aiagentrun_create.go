@@ -366,7 +366,7 @@ func (_c *AiAgentRunCreate) createSpec() (*AiAgentRun, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.ResultIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   aiagentrun.ResultTable,
 			Columns: []string{aiagentrun.ResultColumn},
@@ -375,11 +375,10 @@ func (_c *AiAgentRunCreate) createSpec() (*AiAgentRun, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.AiAgentRun
+		edge.Schema = _c.schemaConfig.AiAgentRunResult
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.ai_agent_run_result = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.SnapshotsIDs(); len(nodes) > 0 {

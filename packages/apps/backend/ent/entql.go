@@ -1581,7 +1581,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"result",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   aiagentrun.ResultTable,
 			Columns: []string{aiagentrun.ResultColumn},
@@ -1773,26 +1773,14 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"ai_agent_run",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   aiagentrunresult.AiAgentRunTable,
 			Columns: []string{aiagentrunresult.AiAgentRunColumn},
 			Bidi:    false,
 		},
 		"AiAgentRunResult",
-		"AiAgentRunSnapshot",
-	)
-	graph.MustAddE(
-		"findings",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrunresult.FindingsTable,
-			Columns: []string{aiagentrunresult.FindingsColumn},
-			Bidi:    false,
-		},
-		"AiAgentRunResult",
-		"AiAgentRunFinding",
+		"AiAgentRun",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -5650,22 +5638,8 @@ func (f *AiAgentRunResultFilter) WhereHasAiAgentRun() {
 }
 
 // WhereHasAiAgentRunWith applies a predicate to check if query has an edge ai_agent_run with a given conditions (other predicates).
-func (f *AiAgentRunResultFilter) WhereHasAiAgentRunWith(preds ...predicate.AiAgentRunSnapshot) {
+func (f *AiAgentRunResultFilter) WhereHasAiAgentRunWith(preds ...predicate.AiAgentRun) {
 	f.Where(entql.HasEdgeWith("ai_agent_run", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasFindings applies a predicate to check if query has an edge findings.
-func (f *AiAgentRunResultFilter) WhereHasFindings() {
-	f.Where(entql.HasEdge("findings"))
-}
-
-// WhereHasFindingsWith applies a predicate to check if query has an edge findings with a given conditions (other predicates).
-func (f *AiAgentRunResultFilter) WhereHasFindingsWith(preds ...predicate.AiAgentRunFinding) {
-	f.Where(entql.HasEdgeWith("findings", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

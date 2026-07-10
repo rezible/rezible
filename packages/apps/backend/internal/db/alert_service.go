@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertinstance"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -48,6 +49,13 @@ func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsPara
 
 func (s *AlertService) GetAlert(ctx context.Context, id uuid.UUID) (*ent.Alert, error) {
 	return s.db.Client(ctx).Alert.Query().Where(alert.ID(id)).Only(ctx)
+}
+
+func (s *AlertService) GetAlertInstance(ctx context.Context, id uuid.UUID) (*ent.AlertInstance, error) {
+	query := s.db.Client(ctx).AlertInstance.Query().
+		Where(alertinstance.ID(id)).
+		WithAlert()
+	return query.Only(ctx)
 }
 
 func (s *AlertService) GetAlertMetrics(ctx context.Context, params rez.GetAlertMetricsParams) (*ent.AlertMetrics, error) {

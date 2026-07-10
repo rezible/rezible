@@ -2,7 +2,8 @@ package genkit
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
+	"log/slog"
 
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/core"
@@ -14,47 +15,48 @@ import (
 type (
 	WorkflowInvokerFunc func() rez.AiWorkflowInvoker
 
-	workflowRunner[I rezai.WorkflowInput, S any, O rezai.WorkflowOutput] interface {
-		definition() rezai.WorkflowDefinition[I, S, O]
-		run(context.Context, I) (O, error)
+	workflowRunner[I rezai.WorkflowInput, O rezai.WorkflowOutput, S rezai.WorkflowState] interface {
+		definition() rezai.WorkflowDefinition[I, O, S]
+		run(context.Context, I, core.StreamCallback[S]) (O, error)
 	}
 )
 
-type exampleWorkflowRunner struct{}
-
-func (w *exampleWorkflowRunner) run(ctx context.Context, input rezai.ExampleWorkflowInput) (rezai.ExampleWorkflowOutput, error) {
-	return rezai.ExampleWorkflowOutput{}, nil
-}
-
-func makeWorkflowInvokerFunc[I rezai.WorkflowInput, S any, O rezai.WorkflowOutput](g *genkit.Genkit, store aix.SessionStore[S], r workflowRunner[I, S, O]) WorkflowInvokerFunc {
+func makeWorkflowInvokerFunc[I rezai.WorkflowInput, O rezai.WorkflowOutput, S rezai.WorkflowState](g *genkit.Genkit, store aix.SessionStore[S], r workflowRunner[I, O, S]) WorkflowInvokerFunc {
 	name := r.definition().Name
-	flow := genkit.DefineFlow[I, O](g, name, r.run)
+	flow := genkit.DefineStreamingFlow[I, O, S](g, name, r.run)
 	return func() rez.AiWorkflowInvoker {
-		return newWorkflowInvoker[I, any](flow)
+		return &workflowInvoker[I, O, S]{flow: flow}
 	}
 }
 
-type workflowInvoker[I rezai.WorkflowInput, State any, O rezai.WorkflowOutput, StreamChunk any] struct {
-	flow            *core.Flow[I, O, StreamChunk]
-	streamCallbacks []core.StreamCallback[json.RawMessage]
-	input           json.RawMessage
+type workflowInvoker[I rezai.WorkflowInput, O rezai.WorkflowOutput, S rezai.WorkflowState] struct {
+	flow            *core.Flow[I, O, S]
+	streamCallbacks []core.StreamCallback[S]
 }
 
-func newWorkflowInvoker[I rezai.WorkflowInput, S any, O rezai.WorkflowOutput, C any](flow *core.Flow[I, O, C]) *workflowInvoker[I, S, O, C] {
-	return &workflowInvoker[I, S, O, C]{flow: flow}
-}
-
-func (i workflowInvoker[I, S, O, C]) AddStreamCallback(cb func(ctx context.Context, msg json.RawMessage) error) {
+func (i workflowInvoker[I, O, S]) AddStreamCallback(cb func(ctx context.Context, stream S) error) {
 	i.streamCallbacks = append(i.streamCallbacks, cb)
 }
 
-func (i workflowInvoker[I, S, O, C]) Run(ctx context.Context) (json.RawMessage, error) {
-	return i.flow.RunJSON(ctx, i.input, func(ctx context.Context, msg json.RawMessage) error {
+func (i workflowInvoker[I, O, S]) Run(ctx context.Context, inp any) (any, error) {
+	var output *O
+	input, ok := inp.(I)
+	if !ok {
+		return nil, fmt.Errorf("invalid input value")
+	}
+	for res, err := range i.flow.Stream(ctx, input) {
+		if err != nil {
+			return nil, err
+		}
+		if res.Done {
+			output = &res.Output
+			break
+		}
 		for _, cb := range i.streamCallbacks {
-			if cbErr := cb(ctx, msg); cbErr != nil {
-				return cbErr
+			if cbErr := cb(ctx, res.Stream); cbErr != nil {
+				slog.Warn("stream callback error", "error", cbErr)
 			}
 		}
-		return nil
-	})
+	}
+	return output, nil
 }

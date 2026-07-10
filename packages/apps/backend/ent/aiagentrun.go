@@ -42,9 +42,8 @@ type AiAgentRun struct {
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AiAgentRunQuery when eager-loading is set.
-	Edges               AiAgentRunEdges `json:"edges"`
-	ai_agent_run_result *uuid.UUID
-	selectValues        sql.SelectValues
+	Edges        AiAgentRunEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // AiAgentRunEdges holds the relations/edges for other nodes in the graph.
@@ -119,8 +118,6 @@ func (*AiAgentRun) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case aiagentrun.FieldID, aiagentrun.FieldOwnerUserID:
 			values[i] = new(uuid.UUID)
-		case aiagentrun.ForeignKeys[0]: // ai_agent_run_result
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -200,13 +197,6 @@ func (_m *AiAgentRun) assignValues(columns []string, values []any) error {
 				if err := json.Unmarshal(*value, &_m.Metadata); err != nil {
 					return fmt.Errorf("unmarshal field metadata: %w", err)
 				}
-			}
-		case aiagentrun.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field ai_agent_run_result", values[i])
-			} else if value.Valid {
-				_m.ai_agent_run_result = new(uuid.UUID)
-				*_m.ai_agent_run_result = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

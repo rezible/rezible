@@ -12,9 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/aiagentrunfinding"
+	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunresult"
-	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -73,24 +72,9 @@ func (_u *AiAgentRunResultUpdate) SetOutput(v []byte) *AiAgentRunResultUpdate {
 	return _u
 }
 
-// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRunSnapshot entity.
-func (_u *AiAgentRunResultUpdate) SetAiAgentRun(v *AiAgentRunSnapshot) *AiAgentRunResultUpdate {
+// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRun entity.
+func (_u *AiAgentRunResultUpdate) SetAiAgentRun(v *AiAgentRun) *AiAgentRunResultUpdate {
 	return _u.SetAiAgentRunID(v.ID)
-}
-
-// AddFindingIDs adds the "findings" edge to the AiAgentRunFinding entity by IDs.
-func (_u *AiAgentRunResultUpdate) AddFindingIDs(ids ...uuid.UUID) *AiAgentRunResultUpdate {
-	_u.mutation.AddFindingIDs(ids...)
-	return _u
-}
-
-// AddFindings adds the "findings" edges to the AiAgentRunFinding entity.
-func (_u *AiAgentRunResultUpdate) AddFindings(v ...*AiAgentRunFinding) *AiAgentRunResultUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddFindingIDs(ids...)
 }
 
 // Mutation returns the AiAgentRunResultMutation object of the builder.
@@ -98,31 +82,10 @@ func (_u *AiAgentRunResultUpdate) Mutation() *AiAgentRunResultMutation {
 	return _u.mutation
 }
 
-// ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRunSnapshot entity.
+// ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRun entity.
 func (_u *AiAgentRunResultUpdate) ClearAiAgentRun() *AiAgentRunResultUpdate {
 	_u.mutation.ClearAiAgentRun()
 	return _u
-}
-
-// ClearFindings clears all "findings" edges to the AiAgentRunFinding entity.
-func (_u *AiAgentRunResultUpdate) ClearFindings() *AiAgentRunResultUpdate {
-	_u.mutation.ClearFindings()
-	return _u
-}
-
-// RemoveFindingIDs removes the "findings" edge to AiAgentRunFinding entities by IDs.
-func (_u *AiAgentRunResultUpdate) RemoveFindingIDs(ids ...uuid.UUID) *AiAgentRunResultUpdate {
-	_u.mutation.RemoveFindingIDs(ids...)
-	return _u
-}
-
-// RemoveFindings removes "findings" edges to AiAgentRunFinding entities.
-func (_u *AiAgentRunResultUpdate) RemoveFindings(v ...*AiAgentRunFinding) *AiAgentRunResultUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveFindingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -207,13 +170,13 @@ func (_u *AiAgentRunResultUpdate) sqlSave(ctx context.Context) (_node int, err e
 	}
 	if _u.mutation.AiAgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   aiagentrunresult.AiAgentRunTable,
 			Columns: []string{aiagentrunresult.AiAgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunResult
@@ -221,64 +184,16 @@ func (_u *AiAgentRunResultUpdate) sqlSave(ctx context.Context) (_node int, err e
 	}
 	if nodes := _u.mutation.AiAgentRunIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   aiagentrunresult.AiAgentRunTable,
 			Columns: []string{aiagentrunresult.AiAgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunResult
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.FindingsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrunresult.FindingsTable,
-			Columns: []string{aiagentrunresult.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AiAgentRunFinding
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !_u.mutation.FindingsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrunresult.FindingsTable,
-			Columns: []string{aiagentrunresult.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AiAgentRunFinding
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.FindingsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrunresult.FindingsTable,
-			Columns: []string{aiagentrunresult.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AiAgentRunFinding
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -348,24 +263,9 @@ func (_u *AiAgentRunResultUpdateOne) SetOutput(v []byte) *AiAgentRunResultUpdate
 	return _u
 }
 
-// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRunSnapshot entity.
-func (_u *AiAgentRunResultUpdateOne) SetAiAgentRun(v *AiAgentRunSnapshot) *AiAgentRunResultUpdateOne {
+// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRun entity.
+func (_u *AiAgentRunResultUpdateOne) SetAiAgentRun(v *AiAgentRun) *AiAgentRunResultUpdateOne {
 	return _u.SetAiAgentRunID(v.ID)
-}
-
-// AddFindingIDs adds the "findings" edge to the AiAgentRunFinding entity by IDs.
-func (_u *AiAgentRunResultUpdateOne) AddFindingIDs(ids ...uuid.UUID) *AiAgentRunResultUpdateOne {
-	_u.mutation.AddFindingIDs(ids...)
-	return _u
-}
-
-// AddFindings adds the "findings" edges to the AiAgentRunFinding entity.
-func (_u *AiAgentRunResultUpdateOne) AddFindings(v ...*AiAgentRunFinding) *AiAgentRunResultUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddFindingIDs(ids...)
 }
 
 // Mutation returns the AiAgentRunResultMutation object of the builder.
@@ -373,31 +273,10 @@ func (_u *AiAgentRunResultUpdateOne) Mutation() *AiAgentRunResultMutation {
 	return _u.mutation
 }
 
-// ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRunSnapshot entity.
+// ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRun entity.
 func (_u *AiAgentRunResultUpdateOne) ClearAiAgentRun() *AiAgentRunResultUpdateOne {
 	_u.mutation.ClearAiAgentRun()
 	return _u
-}
-
-// ClearFindings clears all "findings" edges to the AiAgentRunFinding entity.
-func (_u *AiAgentRunResultUpdateOne) ClearFindings() *AiAgentRunResultUpdateOne {
-	_u.mutation.ClearFindings()
-	return _u
-}
-
-// RemoveFindingIDs removes the "findings" edge to AiAgentRunFinding entities by IDs.
-func (_u *AiAgentRunResultUpdateOne) RemoveFindingIDs(ids ...uuid.UUID) *AiAgentRunResultUpdateOne {
-	_u.mutation.RemoveFindingIDs(ids...)
-	return _u
-}
-
-// RemoveFindings removes "findings" edges to AiAgentRunFinding entities.
-func (_u *AiAgentRunResultUpdateOne) RemoveFindings(v ...*AiAgentRunFinding) *AiAgentRunResultUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveFindingIDs(ids...)
 }
 
 // Where appends a list predicates to the AiAgentRunResultUpdate builder.
@@ -512,13 +391,13 @@ func (_u *AiAgentRunResultUpdateOne) sqlSave(ctx context.Context) (_node *AiAgen
 	}
 	if _u.mutation.AiAgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   aiagentrunresult.AiAgentRunTable,
 			Columns: []string{aiagentrunresult.AiAgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunResult
@@ -526,64 +405,16 @@ func (_u *AiAgentRunResultUpdateOne) sqlSave(ctx context.Context) (_node *AiAgen
 	}
 	if nodes := _u.mutation.AiAgentRunIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   aiagentrunresult.AiAgentRunTable,
 			Columns: []string{aiagentrunresult.AiAgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunResult
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.FindingsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrunresult.FindingsTable,
-			Columns: []string{aiagentrunresult.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AiAgentRunFinding
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !_u.mutation.FindingsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrunresult.FindingsTable,
-			Columns: []string{aiagentrunresult.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AiAgentRunFinding
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.FindingsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrunresult.FindingsTable,
-			Columns: []string{aiagentrunresult.FindingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunfinding.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AiAgentRunFinding
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

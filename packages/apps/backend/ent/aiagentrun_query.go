@@ -34,7 +34,6 @@ type AiAgentRunQuery struct {
 	withOwnerUser *UserQuery
 	withResult    *AiAgentRunResultQuery
 	withSnapshots *AiAgentRunSnapshotQuery
-	withFKs       bool
 	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -136,11 +135,11 @@ func (_q *AiAgentRunQuery) QueryResult() *AiAgentRunResultQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(aiagentrun.Table, aiagentrun.FieldID, selector),
 			sqlgraph.To(aiagentrunresult.Table, aiagentrunresult.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrun.ResultTable, aiagentrun.ResultColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, aiagentrun.ResultTable, aiagentrun.ResultColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AiAgentRunResult
-		step.Edge.Schema = schemaConfig.AiAgentRun
+		step.Edge.Schema = schemaConfig.AiAgentRunResult
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -502,7 +501,6 @@ func (_q *AiAgentRunQuery) prepareQuery(ctx context.Context) error {
 func (_q *AiAgentRunQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AiAgentRun, error) {
 	var (
 		nodes       = []*AiAgentRun{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
 			_q.withTenant != nil,
@@ -511,12 +509,6 @@ func (_q *AiAgentRunQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*A
 			_q.withSnapshots != nil,
 		}
 	)
-	if _q.withResult != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, aiagentrun.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*AiAgentRun).scanValues(nil, columns)
 	}
@@ -627,34 +619,29 @@ func (_q *AiAgentRunQuery) loadOwnerUser(ctx context.Context, query *UserQuery, 
 	return nil
 }
 func (_q *AiAgentRunQuery) loadResult(ctx context.Context, query *AiAgentRunResultQuery, nodes []*AiAgentRun, init func(*AiAgentRun), assign func(*AiAgentRun, *AiAgentRunResult)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*AiAgentRun)
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*AiAgentRun)
 	for i := range nodes {
-		if nodes[i].ai_agent_run_result == nil {
-			continue
-		}
-		fk := *nodes[i].ai_agent_run_result
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
 	}
-	if len(ids) == 0 {
-		return nil
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(aiagentrunresult.FieldAiAgentRunID)
 	}
-	query.Where(aiagentrunresult.IDIn(ids...))
+	query.Where(predicate.AiAgentRunResult(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(aiagentrun.ResultColumn), fks...))
+	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		fk := n.AiAgentRunID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "ai_agent_run_result" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "ai_agent_run_id" returned %v for node %v`, fk, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
+		assign(node, n)
 	}
 	return nil
 }

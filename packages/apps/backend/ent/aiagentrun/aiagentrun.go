@@ -59,12 +59,12 @@ const (
 	// OwnerUserColumn is the table column denoting the owner_user relation/edge.
 	OwnerUserColumn = "owner_user_id"
 	// ResultTable is the table that holds the result relation/edge.
-	ResultTable = "ai_agent_runs"
+	ResultTable = "ai_agent_run_results"
 	// ResultInverseTable is the table name for the AiAgentRunResult entity.
 	// It exists in this package in order to avoid circular dependency with the "aiagentrunresult" package.
 	ResultInverseTable = "ai_agent_run_results"
 	// ResultColumn is the table column denoting the result relation/edge.
-	ResultColumn = "ai_agent_run_result"
+	ResultColumn = "ai_agent_run_id"
 	// SnapshotsTable is the table that holds the snapshots relation/edge.
 	SnapshotsTable = "ai_agent_run_snapshots"
 	// SnapshotsInverseTable is the table name for the AiAgentRunSnapshot entity.
@@ -88,21 +88,10 @@ var Columns = []string{
 	FieldMetadata,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "ai_agent_runs"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"ai_agent_run_result",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -221,7 +210,7 @@ func newResultStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ResultInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, ResultTable, ResultColumn),
+		sqlgraph.Edge(sqlgraph.O2O, false, ResultTable, ResultColumn),
 	)
 }
 func newSnapshotsStep() *sqlgraph.Step {
