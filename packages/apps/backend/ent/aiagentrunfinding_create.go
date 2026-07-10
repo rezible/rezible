@@ -16,7 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/aiagentruncitation"
 	"github.com/rezible/rezible/ent/aiagentrunfinding"
 	"github.com/rezible/rezible/ent/aiagentrunfindingcitation"
-	"github.com/rezible/rezible/ent/aiagentrunresult"
+	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -99,8 +99,8 @@ func (_c *AiAgentRunFindingCreate) SetTenant(v *Tenant) *AiAgentRunFindingCreate
 	return _c.SetTenantID(v.ID)
 }
 
-// SetAiAgentRunResult sets the "ai_agent_run_result" edge to the AiAgentRunResult entity.
-func (_c *AiAgentRunFindingCreate) SetAiAgentRunResult(v *AiAgentRunResult) *AiAgentRunFindingCreate {
+// SetAiAgentRunResult sets the "ai_agent_run_result" edge to the AiAgentRunOutput entity.
+func (_c *AiAgentRunFindingCreate) SetAiAgentRunResult(v *AiAgentRunOutput) *AiAgentRunFindingCreate {
 	return _c.SetAiAgentRunResultID(v.ID)
 }
 
@@ -310,7 +310,7 @@ func (_c *AiAgentRunFindingCreate) createSpec() (*AiAgentRunFinding, *sqlgraph.C
 			Columns: []string{aiagentrunfinding.AiAgentRunResultColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.AiAgentRunFinding

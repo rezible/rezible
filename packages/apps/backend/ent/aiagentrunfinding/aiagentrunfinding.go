@@ -47,9 +47,9 @@ const (
 	TenantColumn = "tenant_id"
 	// AiAgentRunResultTable is the table that holds the ai_agent_run_result relation/edge.
 	AiAgentRunResultTable = "ai_agent_run_findings"
-	// AiAgentRunResultInverseTable is the table name for the AiAgentRunResult entity.
-	// It exists in this package in order to avoid circular dependency with the "aiagentrunresult" package.
-	AiAgentRunResultInverseTable = "ai_agent_run_results"
+	// AiAgentRunResultInverseTable is the table name for the AiAgentRunOutput entity.
+	// It exists in this package in order to avoid circular dependency with the "aiagentrunoutput" package.
+	AiAgentRunResultInverseTable = "ai_agent_run_outputs"
 	// AiAgentRunResultColumn is the table column denoting the ai_agent_run_result relation/edge.
 	AiAgentRunResultColumn = "ai_agent_run_result_id"
 	// CitationsTable is the table that holds the citations relation/edge. The primary key declared below.

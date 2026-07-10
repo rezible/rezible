@@ -147,6 +147,21 @@ func (_c *AiAgentRunSnapshotCreate) SetParent(v *AiAgentRunSnapshot) *AiAgentRun
 	return _c.SetParentID(v.ID)
 }
 
+// AddChildIDs adds the "children" edge to the AiAgentRunSnapshot entity by IDs.
+func (_c *AiAgentRunSnapshotCreate) AddChildIDs(ids ...uuid.UUID) *AiAgentRunSnapshotCreate {
+	_c.mutation.AddChildIDs(ids...)
+	return _c
+}
+
+// AddChildren adds the "children" edges to the AiAgentRunSnapshot entity.
+func (_c *AiAgentRunSnapshotCreate) AddChildren(v ...*AiAgentRunSnapshot) *AiAgentRunSnapshotCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddChildIDs(ids...)
+}
+
 // Mutation returns the AiAgentRunSnapshotMutation object of the builder.
 func (_c *AiAgentRunSnapshotCreate) Mutation() *AiAgentRunSnapshotMutation {
 	return _c.mutation
@@ -345,7 +360,7 @@ func (_c *AiAgentRunSnapshotCreate) createSpec() (*AiAgentRunSnapshot, *sqlgraph
 	}
 	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   aiagentrunsnapshot.ParentTable,
 			Columns: []string{aiagentrunsnapshot.ParentColumn},
@@ -359,6 +374,23 @@ func (_c *AiAgentRunSnapshotCreate) createSpec() (*AiAgentRunSnapshot, *sqlgraph
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.ParentID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.ChildrenTable,
+			Columns: []string{aiagentrunsnapshot.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AiAgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -15,7 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/aiagentruncitation"
 	"github.com/rezible/rezible/ent/aiagentrunfinding"
 	"github.com/rezible/rezible/ent/aiagentrunfindingcitation"
-	"github.com/rezible/rezible/ent/aiagentrunresult"
+	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -96,8 +96,8 @@ func (_u *AiAgentRunFindingUpdate) SetNillableContent(v *string) *AiAgentRunFind
 	return _u
 }
 
-// SetAiAgentRunResult sets the "ai_agent_run_result" edge to the AiAgentRunResult entity.
-func (_u *AiAgentRunFindingUpdate) SetAiAgentRunResult(v *AiAgentRunResult) *AiAgentRunFindingUpdate {
+// SetAiAgentRunResult sets the "ai_agent_run_result" edge to the AiAgentRunOutput entity.
+func (_u *AiAgentRunFindingUpdate) SetAiAgentRunResult(v *AiAgentRunOutput) *AiAgentRunFindingUpdate {
 	return _u.SetAiAgentRunResultID(v.ID)
 }
 
@@ -136,7 +136,7 @@ func (_u *AiAgentRunFindingUpdate) Mutation() *AiAgentRunFindingMutation {
 	return _u.mutation
 }
 
-// ClearAiAgentRunResult clears the "ai_agent_run_result" edge to the AiAgentRunResult entity.
+// ClearAiAgentRunResult clears the "ai_agent_run_result" edge to the AiAgentRunOutput entity.
 func (_u *AiAgentRunFindingUpdate) ClearAiAgentRunResult() *AiAgentRunFindingUpdate {
 	_u.mutation.ClearAiAgentRunResult()
 	return _u
@@ -285,7 +285,7 @@ func (_u *AiAgentRunFindingUpdate) sqlSave(ctx context.Context) (_node int, err 
 			Columns: []string{aiagentrunfinding.AiAgentRunResultColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunFinding
@@ -299,7 +299,7 @@ func (_u *AiAgentRunFindingUpdate) sqlSave(ctx context.Context) (_node int, err 
 			Columns: []string{aiagentrunfinding.AiAgentRunResultColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunFinding
@@ -511,8 +511,8 @@ func (_u *AiAgentRunFindingUpdateOne) SetNillableContent(v *string) *AiAgentRunF
 	return _u
 }
 
-// SetAiAgentRunResult sets the "ai_agent_run_result" edge to the AiAgentRunResult entity.
-func (_u *AiAgentRunFindingUpdateOne) SetAiAgentRunResult(v *AiAgentRunResult) *AiAgentRunFindingUpdateOne {
+// SetAiAgentRunResult sets the "ai_agent_run_result" edge to the AiAgentRunOutput entity.
+func (_u *AiAgentRunFindingUpdateOne) SetAiAgentRunResult(v *AiAgentRunOutput) *AiAgentRunFindingUpdateOne {
 	return _u.SetAiAgentRunResultID(v.ID)
 }
 
@@ -551,7 +551,7 @@ func (_u *AiAgentRunFindingUpdateOne) Mutation() *AiAgentRunFindingMutation {
 	return _u.mutation
 }
 
-// ClearAiAgentRunResult clears the "ai_agent_run_result" edge to the AiAgentRunResult entity.
+// ClearAiAgentRunResult clears the "ai_agent_run_result" edge to the AiAgentRunOutput entity.
 func (_u *AiAgentRunFindingUpdateOne) ClearAiAgentRunResult() *AiAgentRunFindingUpdateOne {
 	_u.mutation.ClearAiAgentRunResult()
 	return _u
@@ -730,7 +730,7 @@ func (_u *AiAgentRunFindingUpdateOne) sqlSave(ctx context.Context) (_node *AiAge
 			Columns: []string{aiagentrunfinding.AiAgentRunResultColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunFinding
@@ -744,7 +744,7 @@ func (_u *AiAgentRunFindingUpdateOne) sqlSave(ctx context.Context) (_node *AiAge
 			Columns: []string{aiagentrunfinding.AiAgentRunResultColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunFinding

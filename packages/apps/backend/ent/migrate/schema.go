@@ -160,9 +160,9 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "ai_agent_run_findings_ai_agent_run_results_ai_agent_run_result",
+				Symbol:     "ai_agent_run_findings_ai_agent_run_outputs_ai_agent_run_result",
 				Columns:    []*schema.Column{AiAgentRunFindingsColumns[6]},
-				RefColumns: []*schema.Column{AiAgentRunResultsColumns[0]},
+				RefColumns: []*schema.Column{AiAgentRunOutputsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -237,44 +237,45 @@ var (
 			},
 		},
 	}
-	// AiAgentRunResultsColumns holds the columns for the "ai_agent_run_results" table.
-	AiAgentRunResultsColumns = []*schema.Column{
+	// AiAgentRunOutputsColumns holds the columns for the "ai_agent_run_outputs" table.
+	AiAgentRunOutputsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "output", Type: field.TypeBytes},
-		{Name: "ai_agent_run_id", Type: field.TypeUUID, Unique: true},
+		{Name: "data", Type: field.TypeBytes},
+		{Name: "metadata", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "ai_agent_run_id", Type: field.TypeUUID},
 	}
-	// AiAgentRunResultsTable holds the schema information for the "ai_agent_run_results" table.
-	AiAgentRunResultsTable = &schema.Table{
-		Name:       "ai_agent_run_results",
-		Columns:    AiAgentRunResultsColumns,
-		PrimaryKey: []*schema.Column{AiAgentRunResultsColumns[0]},
+	// AiAgentRunOutputsTable holds the schema information for the "ai_agent_run_outputs" table.
+	AiAgentRunOutputsTable = &schema.Table{
+		Name:       "ai_agent_run_outputs",
+		Columns:    AiAgentRunOutputsColumns,
+		PrimaryKey: []*schema.Column{AiAgentRunOutputsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "ai_agent_run_results_ai_agent_runs_result",
-				Columns:    []*schema.Column{AiAgentRunResultsColumns[4]},
-				RefColumns: []*schema.Column{AiAgentRunsColumns[0]},
+				Symbol:     "ai_agent_run_outputs_tenants_tenant",
+				Columns:    []*schema.Column{AiAgentRunOutputsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "ai_agent_run_results_tenants_tenant",
-				Columns:    []*schema.Column{AiAgentRunResultsColumns[5]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
+				Symbol:     "ai_agent_run_outputs_ai_agent_runs_ai_agent_run",
+				Columns:    []*schema.Column{AiAgentRunOutputsColumns[6]},
+				RefColumns: []*schema.Column{AiAgentRunsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "aiagentrunresult_tenant_id",
+				Name:    "aiagentrunoutput_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunResultsColumns[5]},
+				Columns: []*schema.Column{AiAgentRunOutputsColumns[5]},
 			},
 			{
-				Name:    "aiagentrunresult_tenant_id_ai_agent_run_id",
-				Unique:  true,
-				Columns: []*schema.Column{AiAgentRunResultsColumns[5], AiAgentRunResultsColumns[4]},
+				Name:    "aiagentrunoutput_tenant_id_ai_agent_run_id",
+				Unique:  false,
+				Columns: []*schema.Column{AiAgentRunOutputsColumns[5], AiAgentRunOutputsColumns[6]},
 			},
 		},
 	}
@@ -290,7 +291,7 @@ var (
 		{Name: "error", Type: field.TypeBytes, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "ai_agent_run_id", Type: field.TypeUUID},
-		{Name: "parent_id", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AiAgentRunSnapshotsTable holds the schema information for the "ai_agent_run_snapshots" table.
 	AiAgentRunSnapshotsTable = &schema.Table{
@@ -3667,7 +3668,7 @@ var (
 		AiAgentRunCitationsTable,
 		AiAgentRunFindingsTable,
 		AiAgentRunFindingCitationsTable,
-		AiAgentRunResultsTable,
+		AiAgentRunOutputsTable,
 		AiAgentRunSnapshotsTable,
 		AlertsTable,
 		AlertFeedbacksTable,
@@ -3763,12 +3764,12 @@ func init() {
 	AiAgentRunCitationsTable.ForeignKeys[2].RefTable = KnowledgeRelationshipsTable
 	AiAgentRunCitationsTable.ForeignKeys[3].RefTable = KnowledgeEvidencesTable
 	AiAgentRunFindingsTable.ForeignKeys[0].RefTable = TenantsTable
-	AiAgentRunFindingsTable.ForeignKeys[1].RefTable = AiAgentRunResultsTable
+	AiAgentRunFindingsTable.ForeignKeys[1].RefTable = AiAgentRunOutputsTable
 	AiAgentRunFindingCitationsTable.ForeignKeys[0].RefTable = TenantsTable
 	AiAgentRunFindingCitationsTable.ForeignKeys[1].RefTable = AiAgentRunFindingsTable
 	AiAgentRunFindingCitationsTable.ForeignKeys[2].RefTable = AiAgentRunCitationsTable
-	AiAgentRunResultsTable.ForeignKeys[0].RefTable = AiAgentRunsTable
-	AiAgentRunResultsTable.ForeignKeys[1].RefTable = TenantsTable
+	AiAgentRunOutputsTable.ForeignKeys[0].RefTable = TenantsTable
+	AiAgentRunOutputsTable.ForeignKeys[1].RefTable = AiAgentRunsTable
 	AiAgentRunSnapshotsTable.ForeignKeys[0].RefTable = TenantsTable
 	AiAgentRunSnapshotsTable.ForeignKeys[1].RefTable = AiAgentRunsTable
 	AiAgentRunSnapshotsTable.ForeignKeys[2].RefTable = AiAgentRunSnapshotsTable

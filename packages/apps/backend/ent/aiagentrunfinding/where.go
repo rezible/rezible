@@ -374,18 +374,18 @@ func HasAiAgentRunResult() predicate.AiAgentRunFinding {
 			sqlgraph.Edge(sqlgraph.M2O, false, AiAgentRunResultTable, AiAgentRunResultColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AiAgentRunResult
+		step.To.Schema = schemaConfig.AiAgentRunOutput
 		step.Edge.Schema = schemaConfig.AiAgentRunFinding
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
 // HasAiAgentRunResultWith applies the HasEdge predicate on the "ai_agent_run_result" edge with a given conditions (other predicates).
-func HasAiAgentRunResultWith(preds ...predicate.AiAgentRunResult) predicate.AiAgentRunFinding {
+func HasAiAgentRunResultWith(preds ...predicate.AiAgentRunOutput) predicate.AiAgentRunFinding {
 	return predicate.AiAgentRunFinding(func(s *sql.Selector) {
 		step := newAiAgentRunResultStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AiAgentRunResult
+		step.To.Schema = schemaConfig.AiAgentRunOutput
 		step.Edge.Schema = schemaConfig.AiAgentRunFinding
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

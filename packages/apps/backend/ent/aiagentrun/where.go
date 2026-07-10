@@ -435,35 +435,6 @@ func HasOwnerUserWith(preds ...predicate.User) predicate.AiAgentRun {
 	})
 }
 
-// HasResult applies the HasEdge predicate on the "result" edge.
-func HasResult() predicate.AiAgentRun {
-	return predicate.AiAgentRun(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, ResultTable, ResultColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AiAgentRunResult
-		step.Edge.Schema = schemaConfig.AiAgentRunResult
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasResultWith applies the HasEdge predicate on the "result" edge with a given conditions (other predicates).
-func HasResultWith(preds ...predicate.AiAgentRunResult) predicate.AiAgentRun {
-	return predicate.AiAgentRun(func(s *sql.Selector) {
-		step := newResultStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AiAgentRunResult
-		step.Edge.Schema = schemaConfig.AiAgentRunResult
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasSnapshots applies the HasEdge predicate on the "snapshots" edge.
 func HasSnapshots() predicate.AiAgentRun {
 	return predicate.AiAgentRun(func(s *sql.Selector) {
@@ -485,6 +456,35 @@ func HasSnapshotsWith(preds ...predicate.AiAgentRunSnapshot) predicate.AiAgentRu
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AiAgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AiAgentRunSnapshot
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOutputs applies the HasEdge predicate on the "outputs" edge.
+func HasOutputs() predicate.AiAgentRun {
+	return predicate.AiAgentRun(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, OutputsTable, OutputsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AiAgentRunOutput
+		step.Edge.Schema = schemaConfig.AiAgentRunOutput
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOutputsWith applies the HasEdge predicate on the "outputs" edge with a given conditions (other predicates).
+func HasOutputsWith(preds ...predicate.AiAgentRunOutput) predicate.AiAgentRun {
+	return predicate.AiAgentRun(func(s *sql.Selector) {
+		step := newOutputsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AiAgentRunOutput
+		step.Edge.Schema = schemaConfig.AiAgentRunOutput
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

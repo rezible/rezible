@@ -38,10 +38,10 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeOwnerUser holds the string denoting the owner_user edge name in mutations.
 	EdgeOwnerUser = "owner_user"
-	// EdgeResult holds the string denoting the result edge name in mutations.
-	EdgeResult = "result"
 	// EdgeSnapshots holds the string denoting the snapshots edge name in mutations.
 	EdgeSnapshots = "snapshots"
+	// EdgeOutputs holds the string denoting the outputs edge name in mutations.
+	EdgeOutputs = "outputs"
 	// Table holds the table name of the aiagentrun in the database.
 	Table = "ai_agent_runs"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -58,13 +58,6 @@ const (
 	OwnerUserInverseTable = "users"
 	// OwnerUserColumn is the table column denoting the owner_user relation/edge.
 	OwnerUserColumn = "owner_user_id"
-	// ResultTable is the table that holds the result relation/edge.
-	ResultTable = "ai_agent_run_results"
-	// ResultInverseTable is the table name for the AiAgentRunResult entity.
-	// It exists in this package in order to avoid circular dependency with the "aiagentrunresult" package.
-	ResultInverseTable = "ai_agent_run_results"
-	// ResultColumn is the table column denoting the result relation/edge.
-	ResultColumn = "ai_agent_run_id"
 	// SnapshotsTable is the table that holds the snapshots relation/edge.
 	SnapshotsTable = "ai_agent_run_snapshots"
 	// SnapshotsInverseTable is the table name for the AiAgentRunSnapshot entity.
@@ -72,6 +65,13 @@ const (
 	SnapshotsInverseTable = "ai_agent_run_snapshots"
 	// SnapshotsColumn is the table column denoting the snapshots relation/edge.
 	SnapshotsColumn = "ai_agent_run_id"
+	// OutputsTable is the table that holds the outputs relation/edge.
+	OutputsTable = "ai_agent_run_outputs"
+	// OutputsInverseTable is the table name for the AiAgentRunOutput entity.
+	// It exists in this package in order to avoid circular dependency with the "aiagentrunoutput" package.
+	OutputsInverseTable = "ai_agent_run_outputs"
+	// OutputsColumn is the table column denoting the outputs relation/edge.
+	OutputsColumn = "ai_agent_run_id"
 )
 
 // Columns holds all SQL columns for aiagentrun fields.
@@ -172,13 +172,6 @@ func ByOwnerUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByResultField orders the results by result field.
-func ByResultField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newResultStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // BySnapshotsCount orders the results by snapshots count.
 func BySnapshotsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -190,6 +183,20 @@ func BySnapshotsCount(opts ...sql.OrderTermOption) OrderOption {
 func BySnapshots(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newSnapshotsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByOutputsCount orders the results by outputs count.
+func ByOutputsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOutputsStep(), opts...)
+	}
+}
+
+// ByOutputs orders the results by outputs terms.
+func ByOutputs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOutputsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -206,17 +213,17 @@ func newOwnerUserStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, OwnerUserTable, OwnerUserColumn),
 	)
 }
-func newResultStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ResultInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, ResultTable, ResultColumn),
-	)
-}
 func newSnapshotsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SnapshotsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, SnapshotsTable, SnapshotsColumn),
+	)
+}
+func newOutputsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OutputsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, OutputsTable, OutputsColumn),
 	)
 }

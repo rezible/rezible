@@ -14,7 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrun"
-	"github.com/rezible/rezible/ent/aiagentrunresult"
+	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
@@ -130,25 +130,6 @@ func (_c *AiAgentRunCreate) SetOwnerUser(v *User) *AiAgentRunCreate {
 	return _c.SetOwnerUserID(v.ID)
 }
 
-// SetResultID sets the "result" edge to the AiAgentRunResult entity by ID.
-func (_c *AiAgentRunCreate) SetResultID(id uuid.UUID) *AiAgentRunCreate {
-	_c.mutation.SetResultID(id)
-	return _c
-}
-
-// SetNillableResultID sets the "result" edge to the AiAgentRunResult entity by ID if the given value is not nil.
-func (_c *AiAgentRunCreate) SetNillableResultID(id *uuid.UUID) *AiAgentRunCreate {
-	if id != nil {
-		_c = _c.SetResultID(*id)
-	}
-	return _c
-}
-
-// SetResult sets the "result" edge to the AiAgentRunResult entity.
-func (_c *AiAgentRunCreate) SetResult(v *AiAgentRunResult) *AiAgentRunCreate {
-	return _c.SetResultID(v.ID)
-}
-
 // AddSnapshotIDs adds the "snapshots" edge to the AiAgentRunSnapshot entity by IDs.
 func (_c *AiAgentRunCreate) AddSnapshotIDs(ids ...uuid.UUID) *AiAgentRunCreate {
 	_c.mutation.AddSnapshotIDs(ids...)
@@ -162,6 +143,21 @@ func (_c *AiAgentRunCreate) AddSnapshots(v ...*AiAgentRunSnapshot) *AiAgentRunCr
 		ids[i] = v[i].ID
 	}
 	return _c.AddSnapshotIDs(ids...)
+}
+
+// AddOutputIDs adds the "outputs" edge to the AiAgentRunOutput entity by IDs.
+func (_c *AiAgentRunCreate) AddOutputIDs(ids ...uuid.UUID) *AiAgentRunCreate {
+	_c.mutation.AddOutputIDs(ids...)
+	return _c
+}
+
+// AddOutputs adds the "outputs" edges to the AiAgentRunOutput entity.
+func (_c *AiAgentRunCreate) AddOutputs(v ...*AiAgentRunOutput) *AiAgentRunCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddOutputIDs(ids...)
 }
 
 // Mutation returns the AiAgentRunMutation object of the builder.
@@ -364,23 +360,6 @@ func (_c *AiAgentRunCreate) createSpec() (*AiAgentRun, *sqlgraph.CreateSpec) {
 		_node.OwnerUserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ResultIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   aiagentrun.ResultTable,
-			Columns: []string{aiagentrun.ResultColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AiAgentRunResult
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.SnapshotsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -393,6 +372,23 @@ func (_c *AiAgentRunCreate) createSpec() (*AiAgentRun, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.AiAgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.OutputsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrun.OutputsTable,
+			Columns: []string{aiagentrun.OutputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AiAgentRunOutput
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

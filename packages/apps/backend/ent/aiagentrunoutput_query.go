@@ -14,19 +14,19 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrun"
-	"github.com/rezible/rezible/ent/aiagentrunresult"
+	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// AiAgentRunResultQuery is the builder for querying AiAgentRunResult entities.
-type AiAgentRunResultQuery struct {
+// AiAgentRunOutputQuery is the builder for querying AiAgentRunOutput entities.
+type AiAgentRunOutputQuery struct {
 	config
 	ctx            *QueryContext
-	order          []aiagentrunresult.OrderOption
+	order          []aiagentrunoutput.OrderOption
 	inters         []Interceptor
-	predicates     []predicate.AiAgentRunResult
+	predicates     []predicate.AiAgentRunOutput
 	withTenant     *TenantQuery
 	withAiAgentRun *AiAgentRunQuery
 	modifiers      []func(*sql.Selector)
@@ -35,39 +35,39 @@ type AiAgentRunResultQuery struct {
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the AiAgentRunResultQuery builder.
-func (_q *AiAgentRunResultQuery) Where(ps ...predicate.AiAgentRunResult) *AiAgentRunResultQuery {
+// Where adds a new predicate for the AiAgentRunOutputQuery builder.
+func (_q *AiAgentRunOutputQuery) Where(ps ...predicate.AiAgentRunOutput) *AiAgentRunOutputQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *AiAgentRunResultQuery) Limit(limit int) *AiAgentRunResultQuery {
+func (_q *AiAgentRunOutputQuery) Limit(limit int) *AiAgentRunOutputQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *AiAgentRunResultQuery) Offset(offset int) *AiAgentRunResultQuery {
+func (_q *AiAgentRunOutputQuery) Offset(offset int) *AiAgentRunOutputQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *AiAgentRunResultQuery) Unique(unique bool) *AiAgentRunResultQuery {
+func (_q *AiAgentRunOutputQuery) Unique(unique bool) *AiAgentRunOutputQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *AiAgentRunResultQuery) Order(o ...aiagentrunresult.OrderOption) *AiAgentRunResultQuery {
+func (_q *AiAgentRunOutputQuery) Order(o ...aiagentrunoutput.OrderOption) *AiAgentRunOutputQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *AiAgentRunResultQuery) QueryTenant() *TenantQuery {
+func (_q *AiAgentRunOutputQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -78,13 +78,13 @@ func (_q *AiAgentRunResultQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunresult.Table, aiagentrunresult.FieldID, selector),
+			sqlgraph.From(aiagentrunoutput.Table, aiagentrunoutput.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunresult.TenantTable, aiagentrunresult.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunoutput.TenantTable, aiagentrunoutput.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AiAgentRunResult
+		step.Edge.Schema = schemaConfig.AiAgentRunOutput
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -92,7 +92,7 @@ func (_q *AiAgentRunResultQuery) QueryTenant() *TenantQuery {
 }
 
 // QueryAiAgentRun chains the current query on the "ai_agent_run" edge.
-func (_q *AiAgentRunResultQuery) QueryAiAgentRun() *AiAgentRunQuery {
+func (_q *AiAgentRunOutputQuery) QueryAiAgentRun() *AiAgentRunQuery {
 	query := (&AiAgentRunClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -103,34 +103,34 @@ func (_q *AiAgentRunResultQuery) QueryAiAgentRun() *AiAgentRunQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunresult.Table, aiagentrunresult.FieldID, selector),
+			sqlgraph.From(aiagentrunoutput.Table, aiagentrunoutput.FieldID, selector),
 			sqlgraph.To(aiagentrun.Table, aiagentrun.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, aiagentrunresult.AiAgentRunTable, aiagentrunresult.AiAgentRunColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunoutput.AiAgentRunTable, aiagentrunoutput.AiAgentRunColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AiAgentRun
-		step.Edge.Schema = schemaConfig.AiAgentRunResult
+		step.Edge.Schema = schemaConfig.AiAgentRunOutput
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// First returns the first AiAgentRunResult entity from the query.
-// Returns a *NotFoundError when no AiAgentRunResult was found.
-func (_q *AiAgentRunResultQuery) First(ctx context.Context) (*AiAgentRunResult, error) {
+// First returns the first AiAgentRunOutput entity from the query.
+// Returns a *NotFoundError when no AiAgentRunOutput was found.
+func (_q *AiAgentRunOutputQuery) First(ctx context.Context) (*AiAgentRunOutput, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{aiagentrunresult.Label}
+		return nil, &NotFoundError{aiagentrunoutput.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *AiAgentRunResultQuery) FirstX(ctx context.Context) *AiAgentRunResult {
+func (_q *AiAgentRunOutputQuery) FirstX(ctx context.Context) *AiAgentRunOutput {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -138,22 +138,22 @@ func (_q *AiAgentRunResultQuery) FirstX(ctx context.Context) *AiAgentRunResult {
 	return node
 }
 
-// FirstID returns the first AiAgentRunResult ID from the query.
-// Returns a *NotFoundError when no AiAgentRunResult ID was found.
-func (_q *AiAgentRunResultQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first AiAgentRunOutput ID from the query.
+// Returns a *NotFoundError when no AiAgentRunOutput ID was found.
+func (_q *AiAgentRunOutputQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{aiagentrunresult.Label}
+		err = &NotFoundError{aiagentrunoutput.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *AiAgentRunResultQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *AiAgentRunOutputQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,10 +161,10 @@ func (_q *AiAgentRunResultQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single AiAgentRunResult entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one AiAgentRunResult entity is found.
-// Returns a *NotFoundError when no AiAgentRunResult entities are found.
-func (_q *AiAgentRunResultQuery) Only(ctx context.Context) (*AiAgentRunResult, error) {
+// Only returns a single AiAgentRunOutput entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one AiAgentRunOutput entity is found.
+// Returns a *NotFoundError when no AiAgentRunOutput entities are found.
+func (_q *AiAgentRunOutputQuery) Only(ctx context.Context) (*AiAgentRunOutput, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -173,14 +173,14 @@ func (_q *AiAgentRunResultQuery) Only(ctx context.Context) (*AiAgentRunResult, e
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{aiagentrunresult.Label}
+		return nil, &NotFoundError{aiagentrunoutput.Label}
 	default:
-		return nil, &NotSingularError{aiagentrunresult.Label}
+		return nil, &NotSingularError{aiagentrunoutput.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *AiAgentRunResultQuery) OnlyX(ctx context.Context) *AiAgentRunResult {
+func (_q *AiAgentRunOutputQuery) OnlyX(ctx context.Context) *AiAgentRunOutput {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -188,10 +188,10 @@ func (_q *AiAgentRunResultQuery) OnlyX(ctx context.Context) *AiAgentRunResult {
 	return node
 }
 
-// OnlyID is like Only, but returns the only AiAgentRunResult ID in the query.
-// Returns a *NotSingularError when more than one AiAgentRunResult ID is found.
+// OnlyID is like Only, but returns the only AiAgentRunOutput ID in the query.
+// Returns a *NotSingularError when more than one AiAgentRunOutput ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *AiAgentRunResultQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *AiAgentRunOutputQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -200,15 +200,15 @@ func (_q *AiAgentRunResultQuery) OnlyID(ctx context.Context) (id uuid.UUID, err 
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{aiagentrunresult.Label}
+		err = &NotFoundError{aiagentrunoutput.Label}
 	default:
-		err = &NotSingularError{aiagentrunresult.Label}
+		err = &NotSingularError{aiagentrunoutput.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *AiAgentRunResultQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *AiAgentRunOutputQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -216,18 +216,18 @@ func (_q *AiAgentRunResultQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of AiAgentRunResults.
-func (_q *AiAgentRunResultQuery) All(ctx context.Context) ([]*AiAgentRunResult, error) {
+// All executes the query and returns a list of AiAgentRunOutputs.
+func (_q *AiAgentRunOutputQuery) All(ctx context.Context) ([]*AiAgentRunOutput, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*AiAgentRunResult, *AiAgentRunResultQuery]()
-	return withInterceptors[[]*AiAgentRunResult](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*AiAgentRunOutput, *AiAgentRunOutputQuery]()
+	return withInterceptors[[]*AiAgentRunOutput](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *AiAgentRunResultQuery) AllX(ctx context.Context) []*AiAgentRunResult {
+func (_q *AiAgentRunOutputQuery) AllX(ctx context.Context) []*AiAgentRunOutput {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -235,20 +235,20 @@ func (_q *AiAgentRunResultQuery) AllX(ctx context.Context) []*AiAgentRunResult {
 	return nodes
 }
 
-// IDs executes the query and returns a list of AiAgentRunResult IDs.
-func (_q *AiAgentRunResultQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of AiAgentRunOutput IDs.
+func (_q *AiAgentRunOutputQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(aiagentrunresult.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(aiagentrunoutput.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *AiAgentRunResultQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *AiAgentRunOutputQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -257,16 +257,16 @@ func (_q *AiAgentRunResultQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *AiAgentRunResultQuery) Count(ctx context.Context) (int, error) {
+func (_q *AiAgentRunOutputQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*AiAgentRunResultQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*AiAgentRunOutputQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *AiAgentRunResultQuery) CountX(ctx context.Context) int {
+func (_q *AiAgentRunOutputQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -275,7 +275,7 @@ func (_q *AiAgentRunResultQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *AiAgentRunResultQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *AiAgentRunOutputQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -288,7 +288,7 @@ func (_q *AiAgentRunResultQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *AiAgentRunResultQuery) ExistX(ctx context.Context) bool {
+func (_q *AiAgentRunOutputQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -296,18 +296,18 @@ func (_q *AiAgentRunResultQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the AiAgentRunResultQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the AiAgentRunOutputQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *AiAgentRunResultQuery) Clone() *AiAgentRunResultQuery {
+func (_q *AiAgentRunOutputQuery) Clone() *AiAgentRunOutputQuery {
 	if _q == nil {
 		return nil
 	}
-	return &AiAgentRunResultQuery{
+	return &AiAgentRunOutputQuery{
 		config:         _q.config,
 		ctx:            _q.ctx.Clone(),
-		order:          append([]aiagentrunresult.OrderOption{}, _q.order...),
+		order:          append([]aiagentrunoutput.OrderOption{}, _q.order...),
 		inters:         append([]Interceptor{}, _q.inters...),
-		predicates:     append([]predicate.AiAgentRunResult{}, _q.predicates...),
+		predicates:     append([]predicate.AiAgentRunOutput{}, _q.predicates...),
 		withTenant:     _q.withTenant.Clone(),
 		withAiAgentRun: _q.withAiAgentRun.Clone(),
 		// clone intermediate query.
@@ -319,7 +319,7 @@ func (_q *AiAgentRunResultQuery) Clone() *AiAgentRunResultQuery {
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AiAgentRunResultQuery) WithTenant(opts ...func(*TenantQuery)) *AiAgentRunResultQuery {
+func (_q *AiAgentRunOutputQuery) WithTenant(opts ...func(*TenantQuery)) *AiAgentRunOutputQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -330,7 +330,7 @@ func (_q *AiAgentRunResultQuery) WithTenant(opts ...func(*TenantQuery)) *AiAgent
 
 // WithAiAgentRun tells the query-builder to eager-load the nodes that are connected to
 // the "ai_agent_run" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AiAgentRunResultQuery) WithAiAgentRun(opts ...func(*AiAgentRunQuery)) *AiAgentRunResultQuery {
+func (_q *AiAgentRunOutputQuery) WithAiAgentRun(opts ...func(*AiAgentRunQuery)) *AiAgentRunOutputQuery {
 	query := (&AiAgentRunClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -349,15 +349,15 @@ func (_q *AiAgentRunResultQuery) WithAiAgentRun(opts ...func(*AiAgentRunQuery)) 
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.AiAgentRunResult.Query().
-//		GroupBy(aiagentrunresult.FieldTenantID).
+//	client.AiAgentRunOutput.Query().
+//		GroupBy(aiagentrunoutput.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *AiAgentRunResultQuery) GroupBy(field string, fields ...string) *AiAgentRunResultGroupBy {
+func (_q *AiAgentRunOutputQuery) GroupBy(field string, fields ...string) *AiAgentRunOutputGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &AiAgentRunResultGroupBy{build: _q}
+	grbuild := &AiAgentRunOutputGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = aiagentrunresult.Label
+	grbuild.label = aiagentrunoutput.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -371,23 +371,23 @@ func (_q *AiAgentRunResultQuery) GroupBy(field string, fields ...string) *AiAgen
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.AiAgentRunResult.Query().
-//		Select(aiagentrunresult.FieldTenantID).
+//	client.AiAgentRunOutput.Query().
+//		Select(aiagentrunoutput.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *AiAgentRunResultQuery) Select(fields ...string) *AiAgentRunResultSelect {
+func (_q *AiAgentRunOutputQuery) Select(fields ...string) *AiAgentRunOutputSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &AiAgentRunResultSelect{AiAgentRunResultQuery: _q}
-	sbuild.label = aiagentrunresult.Label
+	sbuild := &AiAgentRunOutputSelect{AiAgentRunOutputQuery: _q}
+	sbuild.label = aiagentrunoutput.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a AiAgentRunResultSelect configured with the given aggregations.
-func (_q *AiAgentRunResultQuery) Aggregate(fns ...AggregateFunc) *AiAgentRunResultSelect {
+// Aggregate returns a AiAgentRunOutputSelect configured with the given aggregations.
+func (_q *AiAgentRunOutputQuery) Aggregate(fns ...AggregateFunc) *AiAgentRunOutputSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *AiAgentRunResultQuery) prepareQuery(ctx context.Context) error {
+func (_q *AiAgentRunOutputQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -399,7 +399,7 @@ func (_q *AiAgentRunResultQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !aiagentrunresult.ValidColumn(f) {
+		if !aiagentrunoutput.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -410,18 +410,18 @@ func (_q *AiAgentRunResultQuery) prepareQuery(ctx context.Context) error {
 		}
 		_q.sql = prev
 	}
-	if aiagentrunresult.Policy == nil {
-		return errors.New("ent: uninitialized aiagentrunresult.Policy (forgotten import ent/runtime?)")
+	if aiagentrunoutput.Policy == nil {
+		return errors.New("ent: uninitialized aiagentrunoutput.Policy (forgotten import ent/runtime?)")
 	}
-	if err := aiagentrunresult.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := aiagentrunoutput.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *AiAgentRunResultQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AiAgentRunResult, error) {
+func (_q *AiAgentRunOutputQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AiAgentRunOutput, error) {
 	var (
-		nodes       = []*AiAgentRunResult{}
+		nodes       = []*AiAgentRunOutput{}
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withTenant != nil,
@@ -429,15 +429,15 @@ func (_q *AiAgentRunResultQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*AiAgentRunResult).scanValues(nil, columns)
+		return (*AiAgentRunOutput).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &AiAgentRunResult{config: _q.config}
+		node := &AiAgentRunOutput{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.AiAgentRunResult
+	_spec.Node.Schema = _q.schemaConfig.AiAgentRunOutput
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -453,22 +453,22 @@ func (_q *AiAgentRunResultQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *AiAgentRunResult, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *AiAgentRunOutput, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := _q.withAiAgentRun; query != nil {
 		if err := _q.loadAiAgentRun(ctx, query, nodes, nil,
-			func(n *AiAgentRunResult, e *AiAgentRun) { n.Edges.AiAgentRun = e }); err != nil {
+			func(n *AiAgentRunOutput, e *AiAgentRun) { n.Edges.AiAgentRun = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *AiAgentRunResultQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*AiAgentRunResult, init func(*AiAgentRunResult), assign func(*AiAgentRunResult, *Tenant)) error {
+func (_q *AiAgentRunOutputQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*AiAgentRunOutput, init func(*AiAgentRunOutput), assign func(*AiAgentRunOutput, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*AiAgentRunResult)
+	nodeids := make(map[int][]*AiAgentRunOutput)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -495,9 +495,9 @@ func (_q *AiAgentRunResultQuery) loadTenant(ctx context.Context, query *TenantQu
 	}
 	return nil
 }
-func (_q *AiAgentRunResultQuery) loadAiAgentRun(ctx context.Context, query *AiAgentRunQuery, nodes []*AiAgentRunResult, init func(*AiAgentRunResult), assign func(*AiAgentRunResult, *AiAgentRun)) error {
+func (_q *AiAgentRunOutputQuery) loadAiAgentRun(ctx context.Context, query *AiAgentRunQuery, nodes []*AiAgentRunOutput, init func(*AiAgentRunOutput), assign func(*AiAgentRunOutput, *AiAgentRun)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*AiAgentRunResult)
+	nodeids := make(map[uuid.UUID][]*AiAgentRunOutput)
 	for i := range nodes {
 		fk := nodes[i].AiAgentRunID
 		if _, ok := nodeids[fk]; !ok {
@@ -525,9 +525,9 @@ func (_q *AiAgentRunResultQuery) loadAiAgentRun(ctx context.Context, query *AiAg
 	return nil
 }
 
-func (_q *AiAgentRunResultQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *AiAgentRunOutputQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.AiAgentRunResult
+	_spec.Node.Schema = _q.schemaConfig.AiAgentRunOutput
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -539,8 +539,8 @@ func (_q *AiAgentRunResultQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *AiAgentRunResultQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(aiagentrunresult.Table, aiagentrunresult.Columns, sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID))
+func (_q *AiAgentRunOutputQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(aiagentrunoutput.Table, aiagentrunoutput.Columns, sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -549,17 +549,17 @@ func (_q *AiAgentRunResultQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, aiagentrunresult.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, aiagentrunoutput.FieldID)
 		for i := range fields {
-			if fields[i] != aiagentrunresult.FieldID {
+			if fields[i] != aiagentrunoutput.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(aiagentrunresult.FieldTenantID)
+			_spec.Node.AddColumnOnce(aiagentrunoutput.FieldTenantID)
 		}
 		if _q.withAiAgentRun != nil {
-			_spec.Node.AddColumnOnce(aiagentrunresult.FieldAiAgentRunID)
+			_spec.Node.AddColumnOnce(aiagentrunoutput.FieldAiAgentRunID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -585,12 +585,12 @@ func (_q *AiAgentRunResultQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *AiAgentRunResultQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *AiAgentRunOutputQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(aiagentrunresult.Table)
+	t1 := builder.Table(aiagentrunoutput.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = aiagentrunresult.Columns
+		columns = aiagentrunoutput.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -600,7 +600,7 @@ func (_q *AiAgentRunResultQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.AiAgentRunResult)
+	t1.Schema(_q.schemaConfig.AiAgentRunOutput)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -624,33 +624,33 @@ func (_q *AiAgentRunResultQuery) sqlQuery(ctx context.Context) *sql.Selector {
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *AiAgentRunResultQuery) Modify(modifiers ...func(s *sql.Selector)) *AiAgentRunResultSelect {
+func (_q *AiAgentRunOutputQuery) Modify(modifiers ...func(s *sql.Selector)) *AiAgentRunOutputSelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// AiAgentRunResultGroupBy is the group-by builder for AiAgentRunResult entities.
-type AiAgentRunResultGroupBy struct {
+// AiAgentRunOutputGroupBy is the group-by builder for AiAgentRunOutput entities.
+type AiAgentRunOutputGroupBy struct {
 	selector
-	build *AiAgentRunResultQuery
+	build *AiAgentRunOutputQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *AiAgentRunResultGroupBy) Aggregate(fns ...AggregateFunc) *AiAgentRunResultGroupBy {
+func (_g *AiAgentRunOutputGroupBy) Aggregate(fns ...AggregateFunc) *AiAgentRunOutputGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *AiAgentRunResultGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *AiAgentRunOutputGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*AiAgentRunResultQuery, *AiAgentRunResultGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*AiAgentRunOutputQuery, *AiAgentRunOutputGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *AiAgentRunResultGroupBy) sqlScan(ctx context.Context, root *AiAgentRunResultQuery, v any) error {
+func (_g *AiAgentRunOutputGroupBy) sqlScan(ctx context.Context, root *AiAgentRunOutputQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -677,28 +677,28 @@ func (_g *AiAgentRunResultGroupBy) sqlScan(ctx context.Context, root *AiAgentRun
 	return sql.ScanSlice(rows, v)
 }
 
-// AiAgentRunResultSelect is the builder for selecting fields of AiAgentRunResult entities.
-type AiAgentRunResultSelect struct {
-	*AiAgentRunResultQuery
+// AiAgentRunOutputSelect is the builder for selecting fields of AiAgentRunOutput entities.
+type AiAgentRunOutputSelect struct {
+	*AiAgentRunOutputQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *AiAgentRunResultSelect) Aggregate(fns ...AggregateFunc) *AiAgentRunResultSelect {
+func (_s *AiAgentRunOutputSelect) Aggregate(fns ...AggregateFunc) *AiAgentRunOutputSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *AiAgentRunResultSelect) Scan(ctx context.Context, v any) error {
+func (_s *AiAgentRunOutputSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*AiAgentRunResultQuery, *AiAgentRunResultSelect](ctx, _s.AiAgentRunResultQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*AiAgentRunOutputQuery, *AiAgentRunOutputSelect](ctx, _s.AiAgentRunOutputQuery, _s, _s.inters, v)
 }
 
-func (_s *AiAgentRunResultSelect) sqlScan(ctx context.Context, root *AiAgentRunResultQuery, v any) error {
+func (_s *AiAgentRunOutputSelect) sqlScan(ctx context.Context, root *AiAgentRunOutputQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -720,7 +720,7 @@ func (_s *AiAgentRunResultSelect) sqlScan(ctx context.Context, root *AiAgentRunR
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *AiAgentRunResultSelect) Modify(modifiers ...func(s *sql.Selector)) *AiAgentRunResultSelect {
+func (_s *AiAgentRunOutputSelect) Modify(modifiers ...func(s *sql.Selector)) *AiAgentRunOutputSelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

@@ -8,31 +8,31 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/rezible/rezible/ent/aiagentrunresult"
+	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
-// AiAgentRunResultDelete is the builder for deleting a AiAgentRunResult entity.
-type AiAgentRunResultDelete struct {
+// AiAgentRunOutputDelete is the builder for deleting a AiAgentRunOutput entity.
+type AiAgentRunOutputDelete struct {
 	config
 	hooks    []Hook
-	mutation *AiAgentRunResultMutation
+	mutation *AiAgentRunOutputMutation
 }
 
-// Where appends a list predicates to the AiAgentRunResultDelete builder.
-func (_d *AiAgentRunResultDelete) Where(ps ...predicate.AiAgentRunResult) *AiAgentRunResultDelete {
+// Where appends a list predicates to the AiAgentRunOutputDelete builder.
+func (_d *AiAgentRunOutputDelete) Where(ps ...predicate.AiAgentRunOutput) *AiAgentRunOutputDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *AiAgentRunResultDelete) Exec(ctx context.Context) (int, error) {
+func (_d *AiAgentRunOutputDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *AiAgentRunResultDelete) ExecX(ctx context.Context) int {
+func (_d *AiAgentRunOutputDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -40,9 +40,9 @@ func (_d *AiAgentRunResultDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *AiAgentRunResultDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(aiagentrunresult.Table, sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID))
-	_spec.Node.Schema = _d.schemaConfig.AiAgentRunResult
+func (_d *AiAgentRunOutputDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(aiagentrunoutput.Table, sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.AiAgentRunOutput
 	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -59,32 +59,32 @@ func (_d *AiAgentRunResultDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// AiAgentRunResultDeleteOne is the builder for deleting a single AiAgentRunResult entity.
-type AiAgentRunResultDeleteOne struct {
-	_d *AiAgentRunResultDelete
+// AiAgentRunOutputDeleteOne is the builder for deleting a single AiAgentRunOutput entity.
+type AiAgentRunOutputDeleteOne struct {
+	_d *AiAgentRunOutputDelete
 }
 
-// Where appends a list predicates to the AiAgentRunResultDelete builder.
-func (_d *AiAgentRunResultDeleteOne) Where(ps ...predicate.AiAgentRunResult) *AiAgentRunResultDeleteOne {
+// Where appends a list predicates to the AiAgentRunOutputDelete builder.
+func (_d *AiAgentRunOutputDeleteOne) Where(ps ...predicate.AiAgentRunOutput) *AiAgentRunOutputDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *AiAgentRunResultDeleteOne) Exec(ctx context.Context) error {
+func (_d *AiAgentRunOutputDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{aiagentrunresult.Label}
+		return &NotFoundError{aiagentrunoutput.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *AiAgentRunResultDeleteOne) ExecX(ctx context.Context) {
+func (_d *AiAgentRunOutputDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

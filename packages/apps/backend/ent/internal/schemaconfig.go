@@ -12,7 +12,7 @@ type SchemaConfig struct {
 	AiAgentRunFinding                         string // AiAgentRunFinding table.
 	AiAgentRunFindingCitations                string // AiAgentRunFinding-citations->AiAgentRunCitation table.
 	AiAgentRunFindingCitation                 string // AiAgentRunFindingCitation table.
-	AiAgentRunResult                          string // AiAgentRunResult table.
+	AiAgentRunOutput                          string // AiAgentRunOutput table.
 	AiAgentRunSnapshot                        string // AiAgentRunSnapshot table.
 	Alert                                     string // Alert table.
 	AlertFeedback                             string // AlertFeedback table.

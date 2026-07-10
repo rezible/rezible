@@ -540,7 +540,7 @@ func HasParent() predicate.AiAgentRunSnapshot {
 	return predicate.AiAgentRunSnapshot(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, ParentTable, ParentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, ParentTable, ParentColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AiAgentRunSnapshot
@@ -553,6 +553,35 @@ func HasParent() predicate.AiAgentRunSnapshot {
 func HasParentWith(preds ...predicate.AiAgentRunSnapshot) predicate.AiAgentRunSnapshot {
 	return predicate.AiAgentRunSnapshot(func(s *sql.Selector) {
 		step := newParentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AiAgentRunSnapshot
+		step.Edge.Schema = schemaConfig.AiAgentRunSnapshot
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasChildren applies the HasEdge predicate on the "children" edge.
+func HasChildren() predicate.AiAgentRunSnapshot {
+	return predicate.AiAgentRunSnapshot(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ChildrenTable, ChildrenColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AiAgentRunSnapshot
+		step.Edge.Schema = schemaConfig.AiAgentRunSnapshot
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasChildrenWith applies the HasEdge predicate on the "children" edge with a given conditions (other predicates).
+func HasChildrenWith(preds ...predicate.AiAgentRunSnapshot) predicate.AiAgentRunSnapshot {
+	return predicate.AiAgentRunSnapshot(func(s *sql.Selector) {
+		step := newChildrenStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AiAgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AiAgentRunSnapshot

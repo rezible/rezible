@@ -18,8 +18,8 @@ type AiAgentRunFinding func(*sql.Selector)
 // AiAgentRunFindingCitation is the predicate function for aiagentrunfindingcitation builders.
 type AiAgentRunFindingCitation func(*sql.Selector)
 
-// AiAgentRunResult is the predicate function for aiagentrunresult builders.
-type AiAgentRunResult func(*sql.Selector)
+// AiAgentRunOutput is the predicate function for aiagentrunoutput builders.
+type AiAgentRunOutput func(*sql.Selector)
 
 // AiAgentRunSnapshot is the predicate function for aiagentrunsnapshot builders.
 type AiAgentRunSnapshot func(*sql.Selector)

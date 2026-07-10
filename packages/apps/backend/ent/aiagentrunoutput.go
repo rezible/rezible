@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -11,12 +12,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrun"
-	"github.com/rezible/rezible/ent/aiagentrunresult"
+	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// AiAgentRunResult is the model entity for the AiAgentRunResult schema.
-type AiAgentRunResult struct {
+// AiAgentRunOutput is the model entity for the AiAgentRunOutput schema.
+type AiAgentRunOutput struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -28,16 +29,18 @@ type AiAgentRunResult struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AiAgentRunID holds the value of the "ai_agent_run_id" field.
 	AiAgentRunID uuid.UUID `json:"ai_agent_run_id,omitempty"`
-	// Output holds the value of the "output" field.
-	Output []byte `json:"output,omitempty"`
+	// Data holds the value of the "data" field.
+	Data []byte `json:"data,omitempty"`
+	// Metadata holds the value of the "metadata" field.
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the AiAgentRunResultQuery when eager-loading is set.
-	Edges        AiAgentRunResultEdges `json:"edges"`
+	// The values are being populated by the AiAgentRunOutputQuery when eager-loading is set.
+	Edges        AiAgentRunOutputEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// AiAgentRunResultEdges holds the relations/edges for other nodes in the graph.
-type AiAgentRunResultEdges struct {
+// AiAgentRunOutputEdges holds the relations/edges for other nodes in the graph.
+type AiAgentRunOutputEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// AiAgentRun holds the value of the ai_agent_run edge.
@@ -49,7 +52,7 @@ type AiAgentRunResultEdges struct {
 
 // TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AiAgentRunResultEdges) TenantOrErr() (*Tenant, error) {
+func (e AiAgentRunOutputEdges) TenantOrErr() (*Tenant, error) {
 	if e.Tenant != nil {
 		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
@@ -60,7 +63,7 @@ func (e AiAgentRunResultEdges) TenantOrErr() (*Tenant, error) {
 
 // AiAgentRunOrErr returns the AiAgentRun value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AiAgentRunResultEdges) AiAgentRunOrErr() (*AiAgentRun, error) {
+func (e AiAgentRunOutputEdges) AiAgentRunOrErr() (*AiAgentRun, error) {
 	if e.AiAgentRun != nil {
 		return e.AiAgentRun, nil
 	} else if e.loadedTypes[1] {
@@ -70,17 +73,17 @@ func (e AiAgentRunResultEdges) AiAgentRunOrErr() (*AiAgentRun, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*AiAgentRunResult) scanValues(columns []string) ([]any, error) {
+func (*AiAgentRunOutput) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case aiagentrunresult.FieldOutput:
+		case aiagentrunoutput.FieldData, aiagentrunoutput.FieldMetadata:
 			values[i] = new([]byte)
-		case aiagentrunresult.FieldTenantID:
+		case aiagentrunoutput.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case aiagentrunresult.FieldCreatedAt, aiagentrunresult.FieldUpdatedAt:
+		case aiagentrunoutput.FieldCreatedAt, aiagentrunoutput.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case aiagentrunresult.FieldID, aiagentrunresult.FieldAiAgentRunID:
+		case aiagentrunoutput.FieldID, aiagentrunoutput.FieldAiAgentRunID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -90,48 +93,56 @@ func (*AiAgentRunResult) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the AiAgentRunResult fields.
-func (_m *AiAgentRunResult) assignValues(columns []string, values []any) error {
+// to the AiAgentRunOutput fields.
+func (_m *AiAgentRunOutput) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case aiagentrunresult.FieldID:
+		case aiagentrunoutput.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case aiagentrunresult.FieldTenantID:
+		case aiagentrunoutput.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case aiagentrunresult.FieldCreatedAt:
+		case aiagentrunoutput.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
 			}
-		case aiagentrunresult.FieldUpdatedAt:
+		case aiagentrunoutput.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case aiagentrunresult.FieldAiAgentRunID:
+		case aiagentrunoutput.FieldAiAgentRunID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field ai_agent_run_id", values[i])
 			} else if value != nil {
 				_m.AiAgentRunID = *value
 			}
-		case aiagentrunresult.FieldOutput:
+		case aiagentrunoutput.FieldData:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field output", values[i])
+				return fmt.Errorf("unexpected type %T for field data", values[i])
 			} else if value != nil {
-				_m.Output = *value
+				_m.Data = *value
+			}
+		case aiagentrunoutput.FieldMetadata:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field metadata", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Metadata); err != nil {
+					return fmt.Errorf("unmarshal field metadata: %w", err)
+				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -140,44 +151,44 @@ func (_m *AiAgentRunResult) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the AiAgentRunResult.
+// Value returns the ent.Value that was dynamically selected and assigned to the AiAgentRunOutput.
 // This includes values selected through modifiers, order, etc.
-func (_m *AiAgentRunResult) Value(name string) (ent.Value, error) {
+func (_m *AiAgentRunOutput) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryTenant queries the "tenant" edge of the AiAgentRunResult entity.
-func (_m *AiAgentRunResult) QueryTenant() *TenantQuery {
-	return NewAiAgentRunResultClient(_m.config).QueryTenant(_m)
+// QueryTenant queries the "tenant" edge of the AiAgentRunOutput entity.
+func (_m *AiAgentRunOutput) QueryTenant() *TenantQuery {
+	return NewAiAgentRunOutputClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAiAgentRun queries the "ai_agent_run" edge of the AiAgentRunResult entity.
-func (_m *AiAgentRunResult) QueryAiAgentRun() *AiAgentRunQuery {
-	return NewAiAgentRunResultClient(_m.config).QueryAiAgentRun(_m)
+// QueryAiAgentRun queries the "ai_agent_run" edge of the AiAgentRunOutput entity.
+func (_m *AiAgentRunOutput) QueryAiAgentRun() *AiAgentRunQuery {
+	return NewAiAgentRunOutputClient(_m.config).QueryAiAgentRun(_m)
 }
 
-// Update returns a builder for updating this AiAgentRunResult.
-// Note that you need to call AiAgentRunResult.Unwrap() before calling this method if this AiAgentRunResult
+// Update returns a builder for updating this AiAgentRunOutput.
+// Note that you need to call AiAgentRunOutput.Unwrap() before calling this method if this AiAgentRunOutput
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *AiAgentRunResult) Update() *AiAgentRunResultUpdateOne {
-	return NewAiAgentRunResultClient(_m.config).UpdateOne(_m)
+func (_m *AiAgentRunOutput) Update() *AiAgentRunOutputUpdateOne {
+	return NewAiAgentRunOutputClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the AiAgentRunResult entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the AiAgentRunOutput entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *AiAgentRunResult) Unwrap() *AiAgentRunResult {
+func (_m *AiAgentRunOutput) Unwrap() *AiAgentRunOutput {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: AiAgentRunResult is not a transactional entity")
+		panic("ent: AiAgentRunOutput is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *AiAgentRunResult) String() string {
+func (_m *AiAgentRunOutput) String() string {
 	var builder strings.Builder
-	builder.WriteString("AiAgentRunResult(")
+	builder.WriteString("AiAgentRunOutput(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
@@ -191,11 +202,14 @@ func (_m *AiAgentRunResult) String() string {
 	builder.WriteString("ai_agent_run_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AiAgentRunID))
 	builder.WriteString(", ")
-	builder.WriteString("output=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Output))
+	builder.WriteString("data=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Data))
+	builder.WriteString(", ")
+	builder.WriteString("metadata=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Metadata))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// AiAgentRunResults is a parsable slice of AiAgentRunResult.
-type AiAgentRunResults []*AiAgentRunResult
+// AiAgentRunOutputs is a parsable slice of AiAgentRunOutput.
+type AiAgentRunOutputs []*AiAgentRunOutput

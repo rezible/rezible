@@ -162,6 +162,21 @@ func (_u *AiAgentRunSnapshotUpdate) SetParent(v *AiAgentRunSnapshot) *AiAgentRun
 	return _u.SetParentID(v.ID)
 }
 
+// AddChildIDs adds the "children" edge to the AiAgentRunSnapshot entity by IDs.
+func (_u *AiAgentRunSnapshotUpdate) AddChildIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdate {
+	_u.mutation.AddChildIDs(ids...)
+	return _u
+}
+
+// AddChildren adds the "children" edges to the AiAgentRunSnapshot entity.
+func (_u *AiAgentRunSnapshotUpdate) AddChildren(v ...*AiAgentRunSnapshot) *AiAgentRunSnapshotUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddChildIDs(ids...)
+}
+
 // Mutation returns the AiAgentRunSnapshotMutation object of the builder.
 func (_u *AiAgentRunSnapshotUpdate) Mutation() *AiAgentRunSnapshotMutation {
 	return _u.mutation
@@ -177,6 +192,27 @@ func (_u *AiAgentRunSnapshotUpdate) ClearAiAgentRun() *AiAgentRunSnapshotUpdate 
 func (_u *AiAgentRunSnapshotUpdate) ClearParent() *AiAgentRunSnapshotUpdate {
 	_u.mutation.ClearParent()
 	return _u
+}
+
+// ClearChildren clears all "children" edges to the AiAgentRunSnapshot entity.
+func (_u *AiAgentRunSnapshotUpdate) ClearChildren() *AiAgentRunSnapshotUpdate {
+	_u.mutation.ClearChildren()
+	return _u
+}
+
+// RemoveChildIDs removes the "children" edge to AiAgentRunSnapshot entities by IDs.
+func (_u *AiAgentRunSnapshotUpdate) RemoveChildIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdate {
+	_u.mutation.RemoveChildIDs(ids...)
+	return _u
+}
+
+// RemoveChildren removes "children" edges to AiAgentRunSnapshot entities.
+func (_u *AiAgentRunSnapshotUpdate) RemoveChildren(v ...*AiAgentRunSnapshot) *AiAgentRunSnapshotUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveChildIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -315,7 +351,7 @@ func (_u *AiAgentRunSnapshotUpdate) sqlSave(ctx context.Context) (_node int, err
 	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   aiagentrunsnapshot.ParentTable,
 			Columns: []string{aiagentrunsnapshot.ParentColumn},
@@ -329,11 +365,59 @@ func (_u *AiAgentRunSnapshotUpdate) sqlSave(ctx context.Context) (_node int, err
 	}
 	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   aiagentrunsnapshot.ParentTable,
 			Columns: []string{aiagentrunsnapshot.ParentColumn},
 			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.ChildrenTable,
+			Columns: []string{aiagentrunsnapshot.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunSnapshot
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !_u.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.ChildrenTable,
+			Columns: []string{aiagentrunsnapshot.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.ChildrenTable,
+			Columns: []string{aiagentrunsnapshot.ChildrenColumn},
+			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
 			},
@@ -498,6 +582,21 @@ func (_u *AiAgentRunSnapshotUpdateOne) SetParent(v *AiAgentRunSnapshot) *AiAgent
 	return _u.SetParentID(v.ID)
 }
 
+// AddChildIDs adds the "children" edge to the AiAgentRunSnapshot entity by IDs.
+func (_u *AiAgentRunSnapshotUpdateOne) AddChildIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdateOne {
+	_u.mutation.AddChildIDs(ids...)
+	return _u
+}
+
+// AddChildren adds the "children" edges to the AiAgentRunSnapshot entity.
+func (_u *AiAgentRunSnapshotUpdateOne) AddChildren(v ...*AiAgentRunSnapshot) *AiAgentRunSnapshotUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddChildIDs(ids...)
+}
+
 // Mutation returns the AiAgentRunSnapshotMutation object of the builder.
 func (_u *AiAgentRunSnapshotUpdateOne) Mutation() *AiAgentRunSnapshotMutation {
 	return _u.mutation
@@ -513,6 +612,27 @@ func (_u *AiAgentRunSnapshotUpdateOne) ClearAiAgentRun() *AiAgentRunSnapshotUpda
 func (_u *AiAgentRunSnapshotUpdateOne) ClearParent() *AiAgentRunSnapshotUpdateOne {
 	_u.mutation.ClearParent()
 	return _u
+}
+
+// ClearChildren clears all "children" edges to the AiAgentRunSnapshot entity.
+func (_u *AiAgentRunSnapshotUpdateOne) ClearChildren() *AiAgentRunSnapshotUpdateOne {
+	_u.mutation.ClearChildren()
+	return _u
+}
+
+// RemoveChildIDs removes the "children" edge to AiAgentRunSnapshot entities by IDs.
+func (_u *AiAgentRunSnapshotUpdateOne) RemoveChildIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdateOne {
+	_u.mutation.RemoveChildIDs(ids...)
+	return _u
+}
+
+// RemoveChildren removes "children" edges to AiAgentRunSnapshot entities.
+func (_u *AiAgentRunSnapshotUpdateOne) RemoveChildren(v ...*AiAgentRunSnapshot) *AiAgentRunSnapshotUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveChildIDs(ids...)
 }
 
 // Where appends a list predicates to the AiAgentRunSnapshotUpdate builder.
@@ -681,7 +801,7 @@ func (_u *AiAgentRunSnapshotUpdateOne) sqlSave(ctx context.Context) (_node *AiAg
 	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   aiagentrunsnapshot.ParentTable,
 			Columns: []string{aiagentrunsnapshot.ParentColumn},
@@ -695,11 +815,59 @@ func (_u *AiAgentRunSnapshotUpdateOne) sqlSave(ctx context.Context) (_node *AiAg
 	}
 	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   aiagentrunsnapshot.ParentTable,
 			Columns: []string{aiagentrunsnapshot.ParentColumn},
 			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.ChildrenTable,
+			Columns: []string{aiagentrunsnapshot.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunSnapshot
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !_u.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.ChildrenTable,
+			Columns: []string{aiagentrunsnapshot.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.ChildrenTable,
+			Columns: []string{aiagentrunsnapshot.ChildrenColumn},
+			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
 			},

@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrunfinding"
-	"github.com/rezible/rezible/ent/aiagentrunresult"
+	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -43,7 +43,7 @@ type AiAgentRunFindingEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// AiAgentRunResult holds the value of the ai_agent_run_result edge.
-	AiAgentRunResult *AiAgentRunResult `json:"ai_agent_run_result,omitempty"`
+	AiAgentRunResult *AiAgentRunOutput `json:"ai_agent_run_result,omitempty"`
 	// Citations holds the value of the citations edge.
 	Citations []*AiAgentRunCitation `json:"citations,omitempty"`
 	// FindingCitations holds the value of the finding_citations edge.
@@ -66,11 +66,11 @@ func (e AiAgentRunFindingEdges) TenantOrErr() (*Tenant, error) {
 
 // AiAgentRunResultOrErr returns the AiAgentRunResult value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AiAgentRunFindingEdges) AiAgentRunResultOrErr() (*AiAgentRunResult, error) {
+func (e AiAgentRunFindingEdges) AiAgentRunResultOrErr() (*AiAgentRunOutput, error) {
 	if e.AiAgentRunResult != nil {
 		return e.AiAgentRunResult, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: aiagentrunresult.Label}
+		return nil, &NotFoundError{label: aiagentrunoutput.Label}
 	}
 	return nil, &NotLoadedError{edge: "ai_agent_run_result"}
 }
@@ -182,7 +182,7 @@ func (_m *AiAgentRunFinding) QueryTenant() *TenantQuery {
 }
 
 // QueryAiAgentRunResult queries the "ai_agent_run_result" edge of the AiAgentRunFinding entity.
-func (_m *AiAgentRunFinding) QueryAiAgentRunResult() *AiAgentRunResultQuery {
+func (_m *AiAgentRunFinding) QueryAiAgentRunResult() *AiAgentRunOutputQuery {
 	return NewAiAgentRunFindingClient(_m.config).QueryAiAgentRunResult(_m)
 }
 

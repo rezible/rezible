@@ -40,8 +40,9 @@ func (AiAgentRun) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("owner_user_id"),
-		edge.To("result", AiAgentRunResult.Type).Unique(),
 		edge.From("snapshots", AiAgentRunSnapshot.Type).
+			Ref("ai_agent_run"),
+		edge.From("outputs", AiAgentRunOutput.Type).
 			Ref("ai_agent_run"),
 	}
 }
@@ -88,6 +89,8 @@ func (AiAgentRunSnapshot) Edges() []ent.Edge {
 		edge.To("parent", AiAgentRunSnapshot.Type).
 			Unique().
 			Field("parent_id"),
+		edge.From("children", AiAgentRunSnapshot.Type).
+			Ref("parent"),
 	}
 }
 
@@ -98,11 +101,11 @@ func (AiAgentRunSnapshot) Indexes() []ent.Index {
 	}
 }
 
-type AiAgentRunResult struct {
+type AiAgentRunOutput struct {
 	ent.Schema
 }
 
-func (AiAgentRunResult) Mixin() []ent.Mixin {
+func (AiAgentRunOutput) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
@@ -110,27 +113,28 @@ func (AiAgentRunResult) Mixin() []ent.Mixin {
 	}
 }
 
-func (AiAgentRunResult) Fields() []ent.Field {
+func (AiAgentRunOutput) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("ai_agent_run_id", uuid.UUID{}),
-		field.Bytes("output"),
+		field.Bytes("data"),
+		field.JSON("metadata", map[string]any{}).
+			SchemaType(schemaTypeJsonB),
 	}
 }
 
-func (AiAgentRunResult) Edges() []ent.Edge {
+func (AiAgentRunOutput) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("ai_agent_run", AiAgentRun.Type).
-			Ref("result").
+		edge.To("ai_agent_run", AiAgentRun.Type).
 			Unique().
 			Required().
 			Field("ai_agent_run_id"),
 	}
 }
 
-func (AiAgentRunResult) Indexes() []ent.Index {
+func (AiAgentRunOutput) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "ai_agent_run_id").Unique(),
+		index.Fields("tenant_id", "ai_agent_run_id"),
 	}
 }
 
@@ -157,7 +161,7 @@ func (AiAgentRunFinding) Fields() []ent.Field {
 
 func (AiAgentRunFinding) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("ai_agent_run_result", AiAgentRunResult.Type).
+		edge.To("ai_agent_run_result", AiAgentRunOutput.Type).
 			Required().
 			Unique().
 			Field("ai_agent_run_result_id"),

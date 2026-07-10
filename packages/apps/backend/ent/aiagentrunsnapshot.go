@@ -54,9 +54,11 @@ type AiAgentRunSnapshotEdges struct {
 	AiAgentRun *AiAgentRun `json:"ai_agent_run,omitempty"`
 	// Parent holds the value of the parent edge.
 	Parent *AiAgentRunSnapshot `json:"parent,omitempty"`
+	// Children holds the value of the children edge.
+	Children []*AiAgentRunSnapshot `json:"children,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -90,6 +92,15 @@ func (e AiAgentRunSnapshotEdges) ParentOrErr() (*AiAgentRunSnapshot, error) {
 		return nil, &NotFoundError{label: aiagentrunsnapshot.Label}
 	}
 	return nil, &NotLoadedError{edge: "parent"}
+}
+
+// ChildrenOrErr returns the Children value or an error if the edge
+// was not loaded in eager-loading.
+func (e AiAgentRunSnapshotEdges) ChildrenOrErr() ([]*AiAgentRunSnapshot, error) {
+	if e.loadedTypes[3] {
+		return e.Children, nil
+	}
+	return nil, &NotLoadedError{edge: "children"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -218,6 +229,11 @@ func (_m *AiAgentRunSnapshot) QueryAiAgentRun() *AiAgentRunQuery {
 // QueryParent queries the "parent" edge of the AiAgentRunSnapshot entity.
 func (_m *AiAgentRunSnapshot) QueryParent() *AiAgentRunSnapshotQuery {
 	return NewAiAgentRunSnapshotClient(_m.config).QueryParent(_m)
+}
+
+// QueryChildren queries the "children" edge of the AiAgentRunSnapshot entity.
+func (_m *AiAgentRunSnapshot) QueryChildren() *AiAgentRunSnapshotQuery {
+	return NewAiAgentRunSnapshotClient(_m.config).QueryChildren(_m)
 }
 
 // Update returns a builder for updating this AiAgentRunSnapshot.

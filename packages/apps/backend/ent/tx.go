@@ -20,8 +20,8 @@ type Tx struct {
 	AiAgentRunFinding *AiAgentRunFindingClient
 	// AiAgentRunFindingCitation is the client for interacting with the AiAgentRunFindingCitation builders.
 	AiAgentRunFindingCitation *AiAgentRunFindingCitationClient
-	// AiAgentRunResult is the client for interacting with the AiAgentRunResult builders.
-	AiAgentRunResult *AiAgentRunResultClient
+	// AiAgentRunOutput is the client for interacting with the AiAgentRunOutput builders.
+	AiAgentRunOutput *AiAgentRunOutputClient
 	// AiAgentRunSnapshot is the client for interacting with the AiAgentRunSnapshot builders.
 	AiAgentRunSnapshot *AiAgentRunSnapshotClient
 	// Alert is the client for interacting with the Alert builders.
@@ -299,7 +299,7 @@ func (tx *Tx) init() {
 	tx.AiAgentRunCitation = NewAiAgentRunCitationClient(tx.config)
 	tx.AiAgentRunFinding = NewAiAgentRunFindingClient(tx.config)
 	tx.AiAgentRunFindingCitation = NewAiAgentRunFindingCitationClient(tx.config)
-	tx.AiAgentRunResult = NewAiAgentRunResultClient(tx.config)
+	tx.AiAgentRunOutput = NewAiAgentRunOutputClient(tx.config)
 	tx.AiAgentRunSnapshot = NewAiAgentRunSnapshotClient(tx.config)
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)

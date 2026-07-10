@@ -16,7 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/aiagentruncitation"
 	"github.com/rezible/rezible/ent/aiagentrunfinding"
 	"github.com/rezible/rezible/ent/aiagentrunfindingcitation"
-	"github.com/rezible/rezible/ent/aiagentrunresult"
+	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
@@ -152,7 +152,7 @@ func checkColumn(t, c string) error {
 			aiagentruncitation.Table:                      aiagentruncitation.ValidColumn,
 			aiagentrunfinding.Table:                       aiagentrunfinding.ValidColumn,
 			aiagentrunfindingcitation.Table:               aiagentrunfindingcitation.ValidColumn,
-			aiagentrunresult.Table:                        aiagentrunresult.ValidColumn,
+			aiagentrunoutput.Table:                        aiagentrunoutput.ValidColumn,
 			aiagentrunsnapshot.Table:                      aiagentrunsnapshot.ValidColumn,
 			alert.Table:                                   alert.ValidColumn,
 			alertfeedback.Table:                           alertfeedback.ValidColumn,

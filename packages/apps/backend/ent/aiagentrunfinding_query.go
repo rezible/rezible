@@ -17,7 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/aiagentruncitation"
 	"github.com/rezible/rezible/ent/aiagentrunfinding"
 	"github.com/rezible/rezible/ent/aiagentrunfindingcitation"
-	"github.com/rezible/rezible/ent/aiagentrunresult"
+	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
@@ -31,7 +31,7 @@ type AiAgentRunFindingQuery struct {
 	inters               []Interceptor
 	predicates           []predicate.AiAgentRunFinding
 	withTenant           *TenantQuery
-	withAiAgentRunResult *AiAgentRunResultQuery
+	withAiAgentRunResult *AiAgentRunOutputQuery
 	withCitations        *AiAgentRunCitationQuery
 	withFindingCitations *AiAgentRunFindingCitationQuery
 	modifiers            []func(*sql.Selector)
@@ -97,8 +97,8 @@ func (_q *AiAgentRunFindingQuery) QueryTenant() *TenantQuery {
 }
 
 // QueryAiAgentRunResult chains the current query on the "ai_agent_run_result" edge.
-func (_q *AiAgentRunFindingQuery) QueryAiAgentRunResult() *AiAgentRunResultQuery {
-	query := (&AiAgentRunResultClient{config: _q.config}).Query()
+func (_q *AiAgentRunFindingQuery) QueryAiAgentRunResult() *AiAgentRunOutputQuery {
+	query := (&AiAgentRunOutputClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -109,11 +109,11 @@ func (_q *AiAgentRunFindingQuery) QueryAiAgentRunResult() *AiAgentRunResultQuery
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(aiagentrunfinding.Table, aiagentrunfinding.FieldID, selector),
-			sqlgraph.To(aiagentrunresult.Table, aiagentrunresult.FieldID),
+			sqlgraph.To(aiagentrunoutput.Table, aiagentrunoutput.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunfinding.AiAgentRunResultTable, aiagentrunfinding.AiAgentRunResultColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunResult
+		step.To.Schema = schemaConfig.AiAgentRunOutput
 		step.Edge.Schema = schemaConfig.AiAgentRunFinding
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -387,8 +387,8 @@ func (_q *AiAgentRunFindingQuery) WithTenant(opts ...func(*TenantQuery)) *AiAgen
 
 // WithAiAgentRunResult tells the query-builder to eager-load the nodes that are connected to
 // the "ai_agent_run_result" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AiAgentRunFindingQuery) WithAiAgentRunResult(opts ...func(*AiAgentRunResultQuery)) *AiAgentRunFindingQuery {
-	query := (&AiAgentRunResultClient{config: _q.config}).Query()
+func (_q *AiAgentRunFindingQuery) WithAiAgentRunResult(opts ...func(*AiAgentRunOutputQuery)) *AiAgentRunFindingQuery {
+	query := (&AiAgentRunOutputClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -540,7 +540,7 @@ func (_q *AiAgentRunFindingQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	}
 	if query := _q.withAiAgentRunResult; query != nil {
 		if err := _q.loadAiAgentRunResult(ctx, query, nodes, nil,
-			func(n *AiAgentRunFinding, e *AiAgentRunResult) { n.Edges.AiAgentRunResult = e }); err != nil {
+			func(n *AiAgentRunFinding, e *AiAgentRunOutput) { n.Edges.AiAgentRunResult = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -592,7 +592,7 @@ func (_q *AiAgentRunFindingQuery) loadTenant(ctx context.Context, query *TenantQ
 	}
 	return nil
 }
-func (_q *AiAgentRunFindingQuery) loadAiAgentRunResult(ctx context.Context, query *AiAgentRunResultQuery, nodes []*AiAgentRunFinding, init func(*AiAgentRunFinding), assign func(*AiAgentRunFinding, *AiAgentRunResult)) error {
+func (_q *AiAgentRunFindingQuery) loadAiAgentRunResult(ctx context.Context, query *AiAgentRunOutputQuery, nodes []*AiAgentRunFinding, init func(*AiAgentRunFinding), assign func(*AiAgentRunFinding, *AiAgentRunOutput)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AiAgentRunFinding)
 	for i := range nodes {
@@ -605,7 +605,7 @@ func (_q *AiAgentRunFindingQuery) loadAiAgentRunResult(ctx context.Context, quer
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(aiagentrunresult.IDIn(ids...))
+	query.Where(aiagentrunoutput.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err

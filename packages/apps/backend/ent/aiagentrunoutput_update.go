@@ -13,33 +13,33 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrun"
-	"github.com/rezible/rezible/ent/aiagentrunresult"
+	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
-// AiAgentRunResultUpdate is the builder for updating AiAgentRunResult entities.
-type AiAgentRunResultUpdate struct {
+// AiAgentRunOutputUpdate is the builder for updating AiAgentRunOutput entities.
+type AiAgentRunOutputUpdate struct {
 	config
 	hooks     []Hook
-	mutation  *AiAgentRunResultMutation
+	mutation  *AiAgentRunOutputMutation
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// Where appends a list predicates to the AiAgentRunResultUpdate builder.
-func (_u *AiAgentRunResultUpdate) Where(ps ...predicate.AiAgentRunResult) *AiAgentRunResultUpdate {
+// Where appends a list predicates to the AiAgentRunOutputUpdate builder.
+func (_u *AiAgentRunOutputUpdate) Where(ps ...predicate.AiAgentRunOutput) *AiAgentRunOutputUpdate {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (_u *AiAgentRunResultUpdate) SetCreatedAt(v time.Time) *AiAgentRunResultUpdate {
+func (_u *AiAgentRunOutputUpdate) SetCreatedAt(v time.Time) *AiAgentRunOutputUpdate {
 	_u.mutation.SetCreatedAt(v)
 	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *AiAgentRunResultUpdate) SetNillableCreatedAt(v *time.Time) *AiAgentRunResultUpdate {
+func (_u *AiAgentRunOutputUpdate) SetNillableCreatedAt(v *time.Time) *AiAgentRunOutputUpdate {
 	if v != nil {
 		_u.SetCreatedAt(*v)
 	}
@@ -47,49 +47,55 @@ func (_u *AiAgentRunResultUpdate) SetNillableCreatedAt(v *time.Time) *AiAgentRun
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (_u *AiAgentRunResultUpdate) SetUpdatedAt(v time.Time) *AiAgentRunResultUpdate {
+func (_u *AiAgentRunOutputUpdate) SetUpdatedAt(v time.Time) *AiAgentRunOutputUpdate {
 	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
 // SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (_u *AiAgentRunResultUpdate) SetAiAgentRunID(v uuid.UUID) *AiAgentRunResultUpdate {
+func (_u *AiAgentRunOutputUpdate) SetAiAgentRunID(v uuid.UUID) *AiAgentRunOutputUpdate {
 	_u.mutation.SetAiAgentRunID(v)
 	return _u
 }
 
 // SetNillableAiAgentRunID sets the "ai_agent_run_id" field if the given value is not nil.
-func (_u *AiAgentRunResultUpdate) SetNillableAiAgentRunID(v *uuid.UUID) *AiAgentRunResultUpdate {
+func (_u *AiAgentRunOutputUpdate) SetNillableAiAgentRunID(v *uuid.UUID) *AiAgentRunOutputUpdate {
 	if v != nil {
 		_u.SetAiAgentRunID(*v)
 	}
 	return _u
 }
 
-// SetOutput sets the "output" field.
-func (_u *AiAgentRunResultUpdate) SetOutput(v []byte) *AiAgentRunResultUpdate {
-	_u.mutation.SetOutput(v)
+// SetData sets the "data" field.
+func (_u *AiAgentRunOutputUpdate) SetData(v []byte) *AiAgentRunOutputUpdate {
+	_u.mutation.SetData(v)
+	return _u
+}
+
+// SetMetadata sets the "metadata" field.
+func (_u *AiAgentRunOutputUpdate) SetMetadata(v map[string]interface{}) *AiAgentRunOutputUpdate {
+	_u.mutation.SetMetadata(v)
 	return _u
 }
 
 // SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AiAgentRunResultUpdate) SetAiAgentRun(v *AiAgentRun) *AiAgentRunResultUpdate {
+func (_u *AiAgentRunOutputUpdate) SetAiAgentRun(v *AiAgentRun) *AiAgentRunOutputUpdate {
 	return _u.SetAiAgentRunID(v.ID)
 }
 
-// Mutation returns the AiAgentRunResultMutation object of the builder.
-func (_u *AiAgentRunResultUpdate) Mutation() *AiAgentRunResultMutation {
+// Mutation returns the AiAgentRunOutputMutation object of the builder.
+func (_u *AiAgentRunOutputUpdate) Mutation() *AiAgentRunOutputMutation {
 	return _u.mutation
 }
 
 // ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AiAgentRunResultUpdate) ClearAiAgentRun() *AiAgentRunResultUpdate {
+func (_u *AiAgentRunOutputUpdate) ClearAiAgentRun() *AiAgentRunOutputUpdate {
 	_u.mutation.ClearAiAgentRun()
 	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (_u *AiAgentRunResultUpdate) Save(ctx context.Context) (int, error) {
+func (_u *AiAgentRunOutputUpdate) Save(ctx context.Context) (int, error) {
 	if err := _u.defaults(); err != nil {
 		return 0, err
 	}
@@ -97,7 +103,7 @@ func (_u *AiAgentRunResultUpdate) Save(ctx context.Context) (int, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *AiAgentRunResultUpdate) SaveX(ctx context.Context) int {
+func (_u *AiAgentRunOutputUpdate) SaveX(ctx context.Context) int {
 	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -106,52 +112,52 @@ func (_u *AiAgentRunResultUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (_u *AiAgentRunResultUpdate) Exec(ctx context.Context) error {
+func (_u *AiAgentRunOutputUpdate) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *AiAgentRunResultUpdate) ExecX(ctx context.Context) {
+func (_u *AiAgentRunOutputUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (_u *AiAgentRunResultUpdate) defaults() error {
+func (_u *AiAgentRunOutputUpdate) defaults() error {
 	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		if aiagentrunresult.UpdateDefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized aiagentrunresult.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		if aiagentrunoutput.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized aiagentrunoutput.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
-		v := aiagentrunresult.UpdateDefaultUpdatedAt()
+		v := aiagentrunoutput.UpdateDefaultUpdatedAt()
 		_u.mutation.SetUpdatedAt(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_u *AiAgentRunResultUpdate) check() error {
+func (_u *AiAgentRunOutputUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AiAgentRunResult.tenant"`)
+		return errors.New(`ent: clearing a required unique edge "AiAgentRunOutput.tenant"`)
 	}
 	if _u.mutation.AiAgentRunCleared() && len(_u.mutation.AiAgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AiAgentRunResult.ai_agent_run"`)
+		return errors.New(`ent: clearing a required unique edge "AiAgentRunOutput.ai_agent_run"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AiAgentRunResultUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AiAgentRunResultUpdate {
+func (_u *AiAgentRunOutputUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AiAgentRunOutputUpdate {
 	_u.modifiers = append(_u.modifiers, modifiers...)
 	return _u
 }
 
-func (_u *AiAgentRunResultUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+func (_u *AiAgentRunOutputUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(aiagentrunresult.Table, aiagentrunresult.Columns, sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(aiagentrunoutput.Table, aiagentrunoutput.Columns, sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -160,51 +166,54 @@ func (_u *AiAgentRunResultUpdate) sqlSave(ctx context.Context) (_node int, err e
 		}
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(aiagentrunresult.FieldCreatedAt, field.TypeTime, value)
+		_spec.SetField(aiagentrunoutput.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(aiagentrunresult.FieldUpdatedAt, field.TypeTime, value)
+		_spec.SetField(aiagentrunoutput.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Output(); ok {
-		_spec.SetField(aiagentrunresult.FieldOutput, field.TypeBytes, value)
+	if value, ok := _u.mutation.Data(); ok {
+		_spec.SetField(aiagentrunoutput.FieldData, field.TypeBytes, value)
+	}
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(aiagentrunoutput.FieldMetadata, field.TypeJSON, value)
 	}
 	if _u.mutation.AiAgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   aiagentrunresult.AiAgentRunTable,
-			Columns: []string{aiagentrunresult.AiAgentRunColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   aiagentrunoutput.AiAgentRunTable,
+			Columns: []string{aiagentrunoutput.AiAgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AiAgentRunResult
+		edge.Schema = _u.schemaConfig.AiAgentRunOutput
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.AiAgentRunIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   aiagentrunresult.AiAgentRunTable,
-			Columns: []string{aiagentrunresult.AiAgentRunColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   aiagentrunoutput.AiAgentRunTable,
+			Columns: []string{aiagentrunoutput.AiAgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AiAgentRunResult
+		edge.Schema = _u.schemaConfig.AiAgentRunOutput
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.Node.Schema = _u.schemaConfig.AiAgentRunResult
+	_spec.Node.Schema = _u.schemaConfig.AiAgentRunOutput
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{aiagentrunresult.Label}
+			err = &NotFoundError{aiagentrunoutput.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -214,23 +223,23 @@ func (_u *AiAgentRunResultUpdate) sqlSave(ctx context.Context) (_node int, err e
 	return _node, nil
 }
 
-// AiAgentRunResultUpdateOne is the builder for updating a single AiAgentRunResult entity.
-type AiAgentRunResultUpdateOne struct {
+// AiAgentRunOutputUpdateOne is the builder for updating a single AiAgentRunOutput entity.
+type AiAgentRunOutputUpdateOne struct {
 	config
 	fields    []string
 	hooks     []Hook
-	mutation  *AiAgentRunResultMutation
+	mutation  *AiAgentRunOutputMutation
 	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (_u *AiAgentRunResultUpdateOne) SetCreatedAt(v time.Time) *AiAgentRunResultUpdateOne {
+func (_u *AiAgentRunOutputUpdateOne) SetCreatedAt(v time.Time) *AiAgentRunOutputUpdateOne {
 	_u.mutation.SetCreatedAt(v)
 	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *AiAgentRunResultUpdateOne) SetNillableCreatedAt(v *time.Time) *AiAgentRunResultUpdateOne {
+func (_u *AiAgentRunOutputUpdateOne) SetNillableCreatedAt(v *time.Time) *AiAgentRunOutputUpdateOne {
 	if v != nil {
 		_u.SetCreatedAt(*v)
 	}
@@ -238,62 +247,68 @@ func (_u *AiAgentRunResultUpdateOne) SetNillableCreatedAt(v *time.Time) *AiAgent
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (_u *AiAgentRunResultUpdateOne) SetUpdatedAt(v time.Time) *AiAgentRunResultUpdateOne {
+func (_u *AiAgentRunOutputUpdateOne) SetUpdatedAt(v time.Time) *AiAgentRunOutputUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
 // SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (_u *AiAgentRunResultUpdateOne) SetAiAgentRunID(v uuid.UUID) *AiAgentRunResultUpdateOne {
+func (_u *AiAgentRunOutputUpdateOne) SetAiAgentRunID(v uuid.UUID) *AiAgentRunOutputUpdateOne {
 	_u.mutation.SetAiAgentRunID(v)
 	return _u
 }
 
 // SetNillableAiAgentRunID sets the "ai_agent_run_id" field if the given value is not nil.
-func (_u *AiAgentRunResultUpdateOne) SetNillableAiAgentRunID(v *uuid.UUID) *AiAgentRunResultUpdateOne {
+func (_u *AiAgentRunOutputUpdateOne) SetNillableAiAgentRunID(v *uuid.UUID) *AiAgentRunOutputUpdateOne {
 	if v != nil {
 		_u.SetAiAgentRunID(*v)
 	}
 	return _u
 }
 
-// SetOutput sets the "output" field.
-func (_u *AiAgentRunResultUpdateOne) SetOutput(v []byte) *AiAgentRunResultUpdateOne {
-	_u.mutation.SetOutput(v)
+// SetData sets the "data" field.
+func (_u *AiAgentRunOutputUpdateOne) SetData(v []byte) *AiAgentRunOutputUpdateOne {
+	_u.mutation.SetData(v)
+	return _u
+}
+
+// SetMetadata sets the "metadata" field.
+func (_u *AiAgentRunOutputUpdateOne) SetMetadata(v map[string]interface{}) *AiAgentRunOutputUpdateOne {
+	_u.mutation.SetMetadata(v)
 	return _u
 }
 
 // SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AiAgentRunResultUpdateOne) SetAiAgentRun(v *AiAgentRun) *AiAgentRunResultUpdateOne {
+func (_u *AiAgentRunOutputUpdateOne) SetAiAgentRun(v *AiAgentRun) *AiAgentRunOutputUpdateOne {
 	return _u.SetAiAgentRunID(v.ID)
 }
 
-// Mutation returns the AiAgentRunResultMutation object of the builder.
-func (_u *AiAgentRunResultUpdateOne) Mutation() *AiAgentRunResultMutation {
+// Mutation returns the AiAgentRunOutputMutation object of the builder.
+func (_u *AiAgentRunOutputUpdateOne) Mutation() *AiAgentRunOutputMutation {
 	return _u.mutation
 }
 
 // ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AiAgentRunResultUpdateOne) ClearAiAgentRun() *AiAgentRunResultUpdateOne {
+func (_u *AiAgentRunOutputUpdateOne) ClearAiAgentRun() *AiAgentRunOutputUpdateOne {
 	_u.mutation.ClearAiAgentRun()
 	return _u
 }
 
-// Where appends a list predicates to the AiAgentRunResultUpdate builder.
-func (_u *AiAgentRunResultUpdateOne) Where(ps ...predicate.AiAgentRunResult) *AiAgentRunResultUpdateOne {
+// Where appends a list predicates to the AiAgentRunOutputUpdate builder.
+func (_u *AiAgentRunOutputUpdateOne) Where(ps ...predicate.AiAgentRunOutput) *AiAgentRunOutputUpdateOne {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (_u *AiAgentRunResultUpdateOne) Select(field string, fields ...string) *AiAgentRunResultUpdateOne {
+func (_u *AiAgentRunOutputUpdateOne) Select(field string, fields ...string) *AiAgentRunOutputUpdateOne {
 	_u.fields = append([]string{field}, fields...)
 	return _u
 }
 
-// Save executes the query and returns the updated AiAgentRunResult entity.
-func (_u *AiAgentRunResultUpdateOne) Save(ctx context.Context) (*AiAgentRunResult, error) {
+// Save executes the query and returns the updated AiAgentRunOutput entity.
+func (_u *AiAgentRunOutputUpdateOne) Save(ctx context.Context) (*AiAgentRunOutput, error) {
 	if err := _u.defaults(); err != nil {
 		return nil, err
 	}
@@ -301,7 +316,7 @@ func (_u *AiAgentRunResultUpdateOne) Save(ctx context.Context) (*AiAgentRunResul
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *AiAgentRunResultUpdateOne) SaveX(ctx context.Context) *AiAgentRunResult {
+func (_u *AiAgentRunOutputUpdateOne) SaveX(ctx context.Context) *AiAgentRunOutput {
 	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -310,65 +325,65 @@ func (_u *AiAgentRunResultUpdateOne) SaveX(ctx context.Context) *AiAgentRunResul
 }
 
 // Exec executes the query on the entity.
-func (_u *AiAgentRunResultUpdateOne) Exec(ctx context.Context) error {
+func (_u *AiAgentRunOutputUpdateOne) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *AiAgentRunResultUpdateOne) ExecX(ctx context.Context) {
+func (_u *AiAgentRunOutputUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (_u *AiAgentRunResultUpdateOne) defaults() error {
+func (_u *AiAgentRunOutputUpdateOne) defaults() error {
 	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		if aiagentrunresult.UpdateDefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized aiagentrunresult.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		if aiagentrunoutput.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized aiagentrunoutput.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
-		v := aiagentrunresult.UpdateDefaultUpdatedAt()
+		v := aiagentrunoutput.UpdateDefaultUpdatedAt()
 		_u.mutation.SetUpdatedAt(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_u *AiAgentRunResultUpdateOne) check() error {
+func (_u *AiAgentRunOutputUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AiAgentRunResult.tenant"`)
+		return errors.New(`ent: clearing a required unique edge "AiAgentRunOutput.tenant"`)
 	}
 	if _u.mutation.AiAgentRunCleared() && len(_u.mutation.AiAgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AiAgentRunResult.ai_agent_run"`)
+		return errors.New(`ent: clearing a required unique edge "AiAgentRunOutput.ai_agent_run"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AiAgentRunResultUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AiAgentRunResultUpdateOne {
+func (_u *AiAgentRunOutputUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AiAgentRunOutputUpdateOne {
 	_u.modifiers = append(_u.modifiers, modifiers...)
 	return _u
 }
 
-func (_u *AiAgentRunResultUpdateOne) sqlSave(ctx context.Context) (_node *AiAgentRunResult, err error) {
+func (_u *AiAgentRunOutputUpdateOne) sqlSave(ctx context.Context) (_node *AiAgentRunOutput, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(aiagentrunresult.Table, aiagentrunresult.Columns, sqlgraph.NewFieldSpec(aiagentrunresult.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(aiagentrunoutput.Table, aiagentrunoutput.Columns, sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "AiAgentRunResult.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "AiAgentRunOutput.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, aiagentrunresult.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, aiagentrunoutput.FieldID)
 		for _, f := range fields {
-			if !aiagentrunresult.ValidColumn(f) {
+			if !aiagentrunoutput.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != aiagentrunresult.FieldID {
+			if f != aiagentrunoutput.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)
 			}
 		}
@@ -381,54 +396,57 @@ func (_u *AiAgentRunResultUpdateOne) sqlSave(ctx context.Context) (_node *AiAgen
 		}
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(aiagentrunresult.FieldCreatedAt, field.TypeTime, value)
+		_spec.SetField(aiagentrunoutput.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(aiagentrunresult.FieldUpdatedAt, field.TypeTime, value)
+		_spec.SetField(aiagentrunoutput.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Output(); ok {
-		_spec.SetField(aiagentrunresult.FieldOutput, field.TypeBytes, value)
+	if value, ok := _u.mutation.Data(); ok {
+		_spec.SetField(aiagentrunoutput.FieldData, field.TypeBytes, value)
+	}
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(aiagentrunoutput.FieldMetadata, field.TypeJSON, value)
 	}
 	if _u.mutation.AiAgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   aiagentrunresult.AiAgentRunTable,
-			Columns: []string{aiagentrunresult.AiAgentRunColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   aiagentrunoutput.AiAgentRunTable,
+			Columns: []string{aiagentrunoutput.AiAgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AiAgentRunResult
+		edge.Schema = _u.schemaConfig.AiAgentRunOutput
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.AiAgentRunIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   aiagentrunresult.AiAgentRunTable,
-			Columns: []string{aiagentrunresult.AiAgentRunColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   aiagentrunoutput.AiAgentRunTable,
+			Columns: []string{aiagentrunoutput.AiAgentRunColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AiAgentRunResult
+		edge.Schema = _u.schemaConfig.AiAgentRunOutput
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.Node.Schema = _u.schemaConfig.AiAgentRunResult
+	_spec.Node.Schema = _u.schemaConfig.AiAgentRunOutput
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
-	_node = &AiAgentRunResult{config: _u.config}
+	_node = &AiAgentRunOutput{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{aiagentrunresult.Label}
+			err = &NotFoundError{aiagentrunoutput.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}

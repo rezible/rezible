@@ -36,12 +36,12 @@ func (c *AiAgentRunFindingCitationClient) Debug() *AiAgentRunFindingCitationClie
 	return &AiAgentRunFindingCitationClient{config: cfg}
 }
 
-func (c *AiAgentRunResultClient) Debug() *AiAgentRunResultClient {
+func (c *AiAgentRunOutputClient) Debug() *AiAgentRunOutputClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AiAgentRunResultClient{config: cfg}
+	return &AiAgentRunOutputClient{config: cfg}
 }
 
 func (c *AiAgentRunSnapshotClient) Debug() *AiAgentRunSnapshotClient {

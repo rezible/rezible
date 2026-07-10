@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrun"
-	"github.com/rezible/rezible/ent/aiagentrunresult"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -52,10 +51,10 @@ type AiAgentRunEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// OwnerUser holds the value of the owner_user edge.
 	OwnerUser *User `json:"owner_user,omitempty"`
-	// Result holds the value of the result edge.
-	Result *AiAgentRunResult `json:"result,omitempty"`
 	// Snapshots holds the value of the snapshots edge.
 	Snapshots []*AiAgentRunSnapshot `json:"snapshots,omitempty"`
+	// Outputs holds the value of the outputs edge.
+	Outputs []*AiAgentRunOutput `json:"outputs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -83,24 +82,22 @@ func (e AiAgentRunEdges) OwnerUserOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "owner_user"}
 }
 
-// ResultOrErr returns the Result value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AiAgentRunEdges) ResultOrErr() (*AiAgentRunResult, error) {
-	if e.Result != nil {
-		return e.Result, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: aiagentrunresult.Label}
-	}
-	return nil, &NotLoadedError{edge: "result"}
-}
-
 // SnapshotsOrErr returns the Snapshots value or an error if the edge
 // was not loaded in eager-loading.
 func (e AiAgentRunEdges) SnapshotsOrErr() ([]*AiAgentRunSnapshot, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Snapshots, nil
 	}
 	return nil, &NotLoadedError{edge: "snapshots"}
+}
+
+// OutputsOrErr returns the Outputs value or an error if the edge
+// was not loaded in eager-loading.
+func (e AiAgentRunEdges) OutputsOrErr() ([]*AiAgentRunOutput, error) {
+	if e.loadedTypes[3] {
+		return e.Outputs, nil
+	}
+	return nil, &NotLoadedError{edge: "outputs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -221,14 +218,14 @@ func (_m *AiAgentRun) QueryOwnerUser() *UserQuery {
 	return NewAiAgentRunClient(_m.config).QueryOwnerUser(_m)
 }
 
-// QueryResult queries the "result" edge of the AiAgentRun entity.
-func (_m *AiAgentRun) QueryResult() *AiAgentRunResultQuery {
-	return NewAiAgentRunClient(_m.config).QueryResult(_m)
-}
-
 // QuerySnapshots queries the "snapshots" edge of the AiAgentRun entity.
 func (_m *AiAgentRun) QuerySnapshots() *AiAgentRunSnapshotQuery {
 	return NewAiAgentRunClient(_m.config).QuerySnapshots(_m)
+}
+
+// QueryOutputs queries the "outputs" edge of the AiAgentRun entity.
+func (_m *AiAgentRun) QueryOutputs() *AiAgentRunOutputQuery {
+	return NewAiAgentRunClient(_m.config).QueryOutputs(_m)
 }
 
 // Update returns a builder for updating this AiAgentRun.
