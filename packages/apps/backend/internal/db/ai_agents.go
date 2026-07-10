@@ -21,6 +21,7 @@ import (
 )
 
 type AiAgentService struct {
+	rez.AiSessionStateService
 	logger *slog.Logger
 	db     rez.Database
 	jobs   rez.JobService
@@ -28,13 +29,14 @@ type AiAgentService struct {
 	ai     rez.AiService
 }
 
-func NewAiAgentService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, aiSvc rez.AiService) (*AiAgentService, error) {
+func NewAiAgentService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, sessions rez.AiSessionStateService, aiSvc rez.AiService) (*AiAgentService, error) {
 	s := &AiAgentService{
-		logger: tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_service"}),
-		db:     db,
-		jobs:   jobSvc,
-		msgs:   msgSvc,
-		ai:     aiSvc,
+		AiSessionStateService: sessions,
+		logger:                tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_service"}),
+		db:                    db,
+		jobs:                  jobSvc,
+		msgs:                  msgSvc,
+		ai:                    aiSvc,
 	}
 	jobs.RegisterWorkerFunc(s.handleStartAgentRun)
 	jobs.RegisterWorkerFunc(s.handleContinueAgentRun)
@@ -75,13 +77,13 @@ func (s *AiAgentService) SetRun(ctx context.Context, id uuid.UUID, setFn func(*e
 	})
 }
 
-func (s *AiAgentService) GetRunResult(ctx context.Context, runID uuid.UUID) (*ent.AiAgentRunResult, error) {
+func (s *AiAgentService) GetAgentRunResult(ctx context.Context, runID uuid.UUID) (*ent.AiAgentRunResult, error) {
 	return s.db.Client(ctx).AiAgentRunResult.Query().
 		Where(aarr.AiAgentRunID(runID)).
 		Only(ctx)
 }
 
-func (s *AiAgentService) CreateAgentRun(ctx context.Context, params rez.CreateAgentRunParams) (*ent.AiAgentRun, error) {
+func (s *AiAgentService) CreateAgentRun(ctx context.Context, name string, params rez.CreateAgentRunParams) (*ent.AiAgentRun, error) {
 	jsonInput, inputOk := params.Input.([]byte)
 	if !inputOk {
 		var jsonErr error
@@ -89,7 +91,7 @@ func (s *AiAgentService) CreateAgentRun(ctx context.Context, params rez.CreateAg
 			return nil, jsonErr
 		}
 	}
-	inputErr := s.ai.ValidateAgentRunInput(params.AgentName, jsonInput)
+	inputErr := s.ai.ValidateAgentRunInput(name, jsonInput)
 	if inputErr != nil {
 		return nil, fmt.Errorf("invalid input: %w", inputErr)
 	}
@@ -107,7 +109,7 @@ func (s *AiAgentService) CreateAgentRun(ctx context.Context, params rez.CreateAg
 	return run, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		create := tx.AiAgentRun.Create().
 			SetOwnerUserID(ownerID).
-			SetAgentName(params.AgentName).
+			SetAgentName(name).
 			SetScopes(params.PermissionScopes).
 			SetInput(jsonInput).
 			SetMetadata(params.Metadata)
@@ -171,9 +173,17 @@ func (s *AiAgentService) handleStartAgentRun(ctx context.Context, args jobs.Star
 		return fmt.Errorf("start agent run: %w", startErr)
 	}
 
-	slog.InfoContext(ctx, "started agent run",
-		"name", run.AgentName,
-		"snapshot", snapshotId.String())
+	event := rez.EventOnAiAgentRunSnapshot{
+		AgentName:       run.AgentName,
+		AgentRunId:      run.ID,
+		AgentSnapshotId: snapshotId,
+		RunMetadata:     run.Metadata,
+	}
+	if eventErr := s.msgs.PublishEvent(ctx, event); eventErr != nil {
+		slog.Error("failed to publish agent run finished event",
+			"error", eventErr.Error(),
+		)
+	}
 
 	return nil
 }
@@ -234,6 +244,10 @@ func (s *AiAgentService) handleContinueAgentRun(ctx context.Context, args jobs.C
 
 	return nil
 }
+
+//func (s *AiAgentService) GetAgentRunSnapshotState(ctx context.Context, snapshotId uuid.UUID) error {
+//
+//}
 
 type AiSessionStateService struct {
 	db rez.Database

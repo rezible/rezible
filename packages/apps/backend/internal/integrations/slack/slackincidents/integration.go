@@ -2,7 +2,6 @@ package slackincidents
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/go-viper/mapstructure/v2"
@@ -14,12 +13,8 @@ import (
 
 const integrationName = "slack_incidents"
 
-func MakeIntegration(app *App, msgs rez.MessageService, intgs rez.IntegrationService, users rez.UserService, events rez.ProviderEventPipelineService) (*Integration, error) {
-	svc, svcErr := slackintegration.NewAppService(app, msgs, intgs, users, events)
-	if svcErr != nil {
-		return nil, fmt.Errorf("making slackintegration: %w", svcErr)
-	}
-	return &Integration{appSvc: svc}, nil
+func MakeIntegration(appSvc *slackintegration.AppService[*App]) *Integration {
+	return &Integration{appSvc: appSvc}
 }
 
 type Integration struct {

@@ -27,6 +27,10 @@ func NewClientWrapper(intg *ent.Integration) (*ClientWrapper, error) {
 	return cw, nil
 }
 
+func (w *ClientWrapper) Integration() *ent.Integration {
+	return w.intg
+}
+
 func (w *ClientWrapper) Client() *slack.Client {
 	return w.client
 }

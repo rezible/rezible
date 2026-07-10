@@ -31,5 +31,5 @@ func (a *ChatAgent) transformStreamChunk(ctx context.Context, chunk *aix.AgentSt
 }
 
 func (a *ChatAgent) makeInitialUserMessage(ctx context.Context, input rezai.ChatAgentInput) (*ai.Message, error) {
-	return ai.NewUserTextMessage("hello!"), nil
+	return ai.NewUserTextMessage(input.Message), nil
 }

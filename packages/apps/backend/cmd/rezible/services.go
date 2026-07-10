@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/rezible/rezible/internal/genkit"
+	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/samber/do/v2"
 	"github.com/sourcegraph/conc/pool"
 
@@ -255,22 +256,25 @@ var provideIntegrations = do.Package(
 	do.Lazy(func(i do.Injector) (*slackagent.Integration, error) {
 		app, appErr := slackagent.MakeApp(
 			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.AiAgentService](i),
 			do.MustInvoke[rez.EventsService](i),
 		)
 		if appErr != nil {
 			return nil, fmt.Errorf("making slackagent app: %w", appErr)
 		}
-		return slackagent.MakeIntegration(
-			app,
+		svc, svcErr := slackintegration.NewAppService(app,
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i),
-		)
+			do.MustInvoke[rez.ProviderEventPipelineService](i))
+		if svcErr != nil {
+			return nil, fmt.Errorf("making slackagent app service: %w", svcErr)
+		}
+		return slackagent.MakeIntegration(svc), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (*slackincidents.Integration, error) {
@@ -281,15 +285,17 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.IncidentService](i),
 		)
 		if appErr != nil {
-			return nil, appErr
+			return nil, fmt.Errorf("making slackincidents app: %w", appErr)
 		}
-		return slackincidents.MakeIntegration(
-			app,
+		svc, svcErr := slackintegration.NewAppService(app,
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i),
-		)
+			do.MustInvoke[rez.ProviderEventPipelineService](i))
+		if svcErr != nil {
+			return nil, fmt.Errorf("making slackincidents app service: %w", svcErr)
+		}
+		return slackincidents.MakeIntegration(svc), nil
 	}),
 )
 
@@ -449,6 +455,7 @@ var provideServices = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.AiSessionStateService](i),
 			do.MustInvoke[rez.AiService](i),
 		)
 	}),

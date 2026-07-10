@@ -51,7 +51,7 @@ func wrapAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutp
 		return nil, fmt.Errorf("tools: %w", toolsErr)
 	}
 	middleware := []ai.Middleware{
-		newAgentRunResultWriter[S, O](svc.sessions),
+		newAgentRunOutputWriter[S, O](svc.sessions),
 	}
 	if def.EnableArtifacts {
 		middleware = append(middleware, &middlewarex.Artifacts{})
@@ -62,9 +62,10 @@ func wrapAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutp
 		runFunc := cr.makeAgentFunc(middleware, tools)
 		agent = genkitx.DefineCustomAgent(svc.gk, def.Name, runFunc, opts...)
 	} else {
+		systemPrompt := fmt.Sprintf("%s\n\nRemember to write your output using the 'write_output' tool!!", def.SystemPrompt)
 		prompt := aix.InlinePrompt{
 			ai.WithModel(flashModel),
-			ai.WithSystem(def.SystemPrompt),
+			ai.WithSystem(systemPrompt),
 			ai.WithUse(middleware...),
 			ai.WithTools(tools...),
 		}

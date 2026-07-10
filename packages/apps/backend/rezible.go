@@ -490,7 +490,6 @@ type (
 	}
 
 	CreateAgentRunParams struct {
-		AgentName        string
 		OwnerUserID      uuid.UUID
 		PermissionScopes []string
 		Input            any
@@ -503,9 +502,18 @@ type (
 	}
 
 	AiAgentService interface {
-		CreateAgentRun(context.Context, CreateAgentRunParams) (*ent.AiAgentRun, error)
+		AiSessionStateService
+		CreateAgentRun(context.Context, string, CreateAgentRunParams) (*ent.AiAgentRun, error)
 		GetAgentRun(context.Context, uuid.UUID) (*ent.AiAgentRun, error)
+		GetAgentRunResult(ctx context.Context, runId uuid.UUID) (*ent.AiAgentRunResult, error)
 		ListAgentRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AiAgentRun], error)
+	}
+
+	EventOnAiAgentRunSnapshot struct {
+		AgentName       string
+		RunMetadata     map[string]any
+		AgentRunId      uuid.UUID
+		AgentSnapshotId uuid.UUID
 	}
 )
 

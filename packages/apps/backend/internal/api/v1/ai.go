@@ -21,10 +21,9 @@ func (h *aiHandler) RequestAiAgentRun(ctx context.Context, req *oapi.RequestAiAg
 	var resp oapi.RequestAiAgentRunResponse
 	attr := req.Body.Attributes
 	params := rez.CreateAgentRunParams{
-		AgentName: attr.Workflow,
-		Input:     attr.Input,
+		Input: attr.Input,
 	}
-	run, createErr := h.agents.CreateAgentRun(ctx, params)
+	run, createErr := h.agents.CreateAgentRun(ctx, attr.Workflow, params)
 	if createErr != nil {
 		return nil, oapi.Error(ctx, "create agent task", createErr)
 	}

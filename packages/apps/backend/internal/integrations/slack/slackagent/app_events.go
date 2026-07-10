@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"log/slog"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/user"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/pkg/ai"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
@@ -31,7 +34,7 @@ func (a *App) EventsApiHandler() slackintegration.EventsApiHandler {
 		case *slackevents.AppHomeOpenedEvent:
 			return a.onUserHomeOpenedEvent(ctx, cw, data)
 		case *slackevents.AppMentionEvent:
-			return a.onMentionEvent(ctx, data)
+			return a.onMentionEvent(ctx, cw, data)
 		case *slackevents.AssistantThreadStartedEvent:
 			return a.onAssistantThreadStartedEvent(ctx, data)
 		case *slackevents.MessageEvent:
@@ -43,14 +46,34 @@ func (a *App) EventsApiHandler() slackintegration.EventsApiHandler {
 	}
 }
 
-func (a *App) onMentionEvent(ctx context.Context, data *slackevents.AppMentionEvent) error {
+func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.AppMentionEvent) error {
 	replyTs := data.TimeStamp
 	if data.ThreadTimeStamp != "" {
 		replyTs = data.ThreadTimeStamp
 	}
 
-	// data.Channel, replyTs, data.User, data.Text
-	slog.Debug("mention event", "replyTs", replyTs)
+	usr, usrErr := a.users.Get(ctx, user.ChatID(data.User))
+	if usrErr != nil {
+		return fmt.Errorf("failed to lookup chat user: %w", usrErr)
+	}
+
+	fmt.Printf("slack mention event: \n%+v\n\n", data)
+	createRunParams := rez.CreateAgentRunParams{
+		OwnerUserID: usr.ID,
+		Input: ai.ChatAgentInput{
+			UserId:  usr.ID,
+			Message: data.Text,
+		},
+		Metadata: map[string]any{
+			"integration_ref":        cw.Integration().ExternalRef,
+			"slack_reply_channel_id": data.Channel,
+			"slack_reply_thread_id":  replyTs,
+		},
+	}
+	_, runErr := a.agents.CreateAgentRun(ctx, ai.ChatAgent.Name, createRunParams)
+	if runErr != nil {
+		slog.Error("failed to create chat agent run", "error", runErr)
+	}
 	return nil
 }
 

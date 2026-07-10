@@ -143,6 +143,26 @@ func (s *AppService[A]) createInstallationContext(ctx context.Context, ids Insta
 	return intg, execution.NewTenantContext(ctx, intg.TenantID), nil
 }
 
+func (s *AppService[A]) LookupChatUser(ctx context.Context, userId string) (*ent.User, error) {
+	return s.users.Get(ctx, user.ChatID(userId))
+}
+
+func (s *AppService[A]) createUserContext(ctx context.Context, userId string) (context.Context, error) {
+	usr, usrErr := s.LookupChatUser(ctx, userId)
+	if usrErr != nil {
+		slog.ErrorContext(ctx, "failed to lookup chat user",
+			"error", usrErr,
+			"chat_id", userId,
+		)
+		return nil, fmt.Errorf("lookup user: %w", usrErr)
+	}
+	sess := &ent.UserAuthSession{
+		TenantID: usr.TenantID,
+		UserID:   usr.ID,
+	}
+	return execution.NewUserContext(ctx, sess), nil
+}
+
 func (s *AppService[A]) handleEventsApiCallbackEvent(baseCtx context.Context, ev *handleEventsApiCallbackEvent) error {
 	if s.integrationName != ev.IntegrationName {
 		return nil
@@ -156,22 +176,6 @@ func (s *AppService[A]) handleEventsApiCallbackEvent(baseCtx context.Context, ev
 		return fmt.Errorf("lookup integration: %w", intgsErr)
 	}
 	return s.eventsApiHandler(ctx, intg, &cb)
-}
-
-func (s *AppService[A]) createUserContext(ctx context.Context, userId string) (context.Context, error) {
-	usr, usrErr := s.users.Get(ctx, user.ChatID(userId))
-	if usrErr != nil {
-		slog.ErrorContext(ctx, "failed to lookup chat user",
-			"error", usrErr,
-			"chat_id", userId,
-		)
-		return nil, fmt.Errorf("lookup user: %w", usrErr)
-	}
-	sess := &ent.UserAuthSession{
-		TenantID: usr.TenantID,
-		UserID:   usr.ID,
-	}
-	return execution.NewUserContext(ctx, sess), nil
 }
 
 func (s *AppService[A]) handleInteractionCallback(baseCtx context.Context, ev *interactionCallbackEvent) error {

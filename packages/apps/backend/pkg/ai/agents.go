@@ -1,12 +1,17 @@
 package ai
 
 import (
+	"encoding/json"
 	"fmt"
 
+	"github.com/firebase/genkit/go/ai"
+	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
 )
 
 type (
+	AgentSnapshotState[S SessionState] aix.SessionState[S]
+
 	AgentInput interface {
 		Validate() error
 	}
@@ -26,6 +31,34 @@ type (
 		RequiredTools   []string
 	}
 )
+
+func (d AgentDefinition[I, S, O]) ParseOutput(raw []byte) (*O, error) {
+	var output O
+	if err := json.Unmarshal(raw, &output); err != nil {
+		return nil, fmt.Errorf("json: %w", err)
+	}
+	return &output, output.Validate()
+}
+
+func (d AgentDefinition[I, S, O]) ParseSnapshotState(raw []byte) (*AgentSnapshotState[S], error) {
+	var state AgentSnapshotState[S]
+	if err := json.Unmarshal(raw, &state); err != nil {
+		return nil, fmt.Errorf("json: %w", err)
+	}
+	return &state, nil
+}
+
+func (s *AgentSnapshotState[S]) GetModelTextMessages() []string {
+	var messages []string
+	for _, msg := range s.Messages {
+		if msg.Role == ai.RoleModel {
+			if msgText := msg.Text(); msgText != "" {
+				messages = append(messages, msgText)
+			}
+		}
+	}
+	return messages
+}
 
 type (
 	AlertAgentInput struct {
@@ -103,23 +136,21 @@ When the investigation is ready for a final report, produce these fields in plai
 
 type (
 	ChatAgentInput struct {
-		AlertID uuid.UUID `json:"alert_id"`
+		UserId  uuid.UUID `json:"userId"`
+		Message string    `json:"message"`
 	}
 
 	ChatAgentState struct {
-		ReportReady bool `json:"report_ready"`
 	}
 
 	ChatAgentOutput struct {
+		Reply string `json:"reply"`
 	}
 
 	ChatAgentDefinition = AgentDefinition[ChatAgentInput, ChatAgentState, ChatAgentOutput]
 )
 
 func (i ChatAgentInput) Validate() error {
-	if i.AlertID == uuid.Nil {
-		return fmt.Errorf("invalid alert id %s", i.AlertID)
-	}
 	return nil
 }
 
@@ -132,12 +163,6 @@ var ChatAgent = ChatAgentDefinition{
 	Description: "",
 	SystemPrompt: `You are Rezible's internal chat agent. 
 You help answer any operational questions that software engineering teams.
-
-Work like an experienced on-call engineer:
-- Be concise, direct, and evidence-led.
-- Separate observed facts from hypotheses.
-- Prefer recent, correlated signals over generic guesses.
-- Call out uncertainty and missing context clearly.
-- Do not claim to have checked logs, metrics, traces, deployments, incidents, code, runbooks, or ownership data unless that evidence is present in the conversation or returned by an available tool.
-`,
+Be friendly and create replies to user messages to the best of your capability.
+IMPORTANT: output message replies using the write_output tool!`,
 }
