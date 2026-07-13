@@ -42341,7 +42341,7 @@ type NormalizedEventMutation struct {
 	provider_event_ref   *string
 	provider_subject_ref *string
 	subject_kind         *string
-	attributes           *map[string]interface{}
+	attributes           *[]byte
 	created_at           *time.Time
 	occurred_at          *time.Time
 	received_at          *time.Time
@@ -42713,12 +42713,12 @@ func (m *NormalizedEventMutation) ResetSubjectKind() {
 }
 
 // SetAttributes sets the "attributes" field.
-func (m *NormalizedEventMutation) SetAttributes(value map[string]interface{}) {
-	m.attributes = &value
+func (m *NormalizedEventMutation) SetAttributes(b []byte) {
+	m.attributes = &b
 }
 
 // Attributes returns the value of the "attributes" field in the mutation.
-func (m *NormalizedEventMutation) Attributes() (r map[string]interface{}, exists bool) {
+func (m *NormalizedEventMutation) Attributes() (r []byte, exists bool) {
 	v := m.attributes
 	if v == nil {
 		return
@@ -42729,7 +42729,7 @@ func (m *NormalizedEventMutation) Attributes() (r map[string]interface{}, exists
 // OldAttributes returns the old "attributes" field's value of the NormalizedEvent entity.
 // If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldAttributes(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *NormalizedEventMutation) OldAttributes(ctx context.Context) (v []byte, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAttributes is only allowed on UpdateOne operations")
 	}
@@ -43125,7 +43125,7 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 		m.SetSubjectKind(v)
 		return nil
 	case normalizedevent.FieldAttributes:
-		v, ok := value.(map[string]interface{})
+		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

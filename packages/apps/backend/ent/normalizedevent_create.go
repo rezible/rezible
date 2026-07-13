@@ -69,7 +69,7 @@ func (_c *NormalizedEventCreate) SetSubjectKind(v string) *NormalizedEventCreate
 }
 
 // SetAttributes sets the "attributes" field.
-func (_c *NormalizedEventCreate) SetAttributes(v map[string]interface{}) *NormalizedEventCreate {
+func (_c *NormalizedEventCreate) SetAttributes(v []byte) *NormalizedEventCreate {
 	_c.mutation.SetAttributes(v)
 	return _c
 }
@@ -313,7 +313,7 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_node.SubjectKind = value
 	}
 	if value, ok := _c.mutation.Attributes(); ok {
-		_spec.SetField(normalizedevent.FieldAttributes, field.TypeJSON, value)
+		_spec.SetField(normalizedevent.FieldAttributes, field.TypeBytes, value)
 		_node.Attributes = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
@@ -488,7 +488,7 @@ func (u *NormalizedEventUpsert) UpdateSubjectKind() *NormalizedEventUpsert {
 }
 
 // SetAttributes sets the "attributes" field.
-func (u *NormalizedEventUpsert) SetAttributes(v map[string]interface{}) *NormalizedEventUpsert {
+func (u *NormalizedEventUpsert) SetAttributes(v []byte) *NormalizedEventUpsert {
 	u.Set(normalizedevent.FieldAttributes, v)
 	return u
 }
@@ -671,7 +671,7 @@ func (u *NormalizedEventUpsertOne) UpdateSubjectKind() *NormalizedEventUpsertOne
 }
 
 // SetAttributes sets the "attributes" field.
-func (u *NormalizedEventUpsertOne) SetAttributes(v map[string]interface{}) *NormalizedEventUpsertOne {
+func (u *NormalizedEventUpsertOne) SetAttributes(v []byte) *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
 		s.SetAttributes(v)
 	})
@@ -1029,7 +1029,7 @@ func (u *NormalizedEventUpsertBulk) UpdateSubjectKind() *NormalizedEventUpsertBu
 }
 
 // SetAttributes sets the "attributes" field.
-func (u *NormalizedEventUpsertBulk) SetAttributes(v map[string]interface{}) *NormalizedEventUpsertBulk {
+func (u *NormalizedEventUpsertBulk) SetAttributes(v []byte) *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
 		s.SetAttributes(v)
 	})

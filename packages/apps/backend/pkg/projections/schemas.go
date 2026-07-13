@@ -6,7 +6,15 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-const attributeFieldNameTag = "json"
+type SubjectKind string
+
+func (k SubjectKind) String() string {
+	return string(k)
+}
+
+func (k SubjectKind) Matches(ev *ent.NormalizedEvent) bool {
+	return SubjectKind(ev.SubjectKind) == k
+}
 
 type (
 	// ChatMessage is a normalized chat message observed from a messaging provider.
@@ -21,6 +29,8 @@ type (
 		RelatedEntities         []RelatedEntityRef `json:"related_entities"`
 	}
 )
+
+const SubjectKindChatMessage SubjectKind = "chat_message"
 
 func DecodeChatMessageEvent(ev *ent.NormalizedEvent) (*ChatMessage, error) {
 	return DecodeSubjectAttributes[ChatMessageAttributes](ev)

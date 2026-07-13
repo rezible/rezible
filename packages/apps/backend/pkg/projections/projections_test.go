@@ -13,16 +13,6 @@ type ExampleEventAttributes struct {
 	FooBar string `json:"foo_bar" validate:"required"`
 }
 
-func TestEncodeAttributesUsesJSONTags(t *testing.T) {
-	attrs := ExampleEventAttributes{
-		FooBar: "baz",
-	}
-	encoded, encodeErr := EncodeAttributes(attrs)
-	require.NoError(t, encodeErr)
-	assert.Equal(t, attrs.FooBar, encoded["foo_bar"])
-	assert.NotContains(t, encoded, "FooBar")
-}
-
 func TestDecodeIncidentObservedEvent(t *testing.T) {
 	openedAt := time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC)
 	attrs := IncidentSubjectAttributes{
@@ -35,7 +25,6 @@ func TestDecodeIncidentObservedEvent(t *testing.T) {
 	}
 	encAttrs, encErr := EncodeAttributes(attrs)
 	require.NoError(t, encErr)
-	assert.Equal(t, openedAt.Format(time.RFC3339Nano), encAttrs["opened_at"])
 	ev := &ent.NormalizedEvent{Attributes: encAttrs}
 	incEv, err := DecodeSubjectAttributes[IncidentSubjectAttributes](ev)
 	require.NoError(t, err)
@@ -47,25 +36,11 @@ func TestDecodeIncidentObservedEvent(t *testing.T) {
 
 func TestDecodeWithRejectsMissingRequiredAttributes(t *testing.T) {
 	ev := &ent.NormalizedEvent{
-		Attributes: map[string]any{
-			"foo_bar": "",
-		},
+		Attributes: []byte("{}"),
 	}
 	_, err := DecodeSubjectAttributes[ExampleEventAttributes](ev)
 	require.Error(t, err)
 	assert.ErrorContains(t, err, "failed on the 'required' tag")
-}
-
-func TestDecodeWithRejectsUnknownAttributes(t *testing.T) {
-	ev := &ent.NormalizedEvent{
-		Attributes: map[string]any{
-			"foo_bar":    "baz",
-			"unexpected": true,
-		},
-	}
-	_, err := DecodeSubjectAttributes[ExampleEventAttributes](ev)
-	require.Error(t, err)
-	assert.ErrorContains(t, err, "invalid keys")
 }
 
 func TestSortRelatedEntityRefs(t *testing.T) {

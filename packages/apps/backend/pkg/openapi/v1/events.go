@@ -34,7 +34,7 @@ type (
 		ProviderSource     string            `json:"providerSource"`
 		ProviderSubjectRef string            `json:"providerSubjectRef"`
 		SubjectKind        string            `json:"subjectKind"`
-		Attributes         map[string]any    `json:"attributes"`
+		Attributes         []byte            `json:"attributes"`
 		Projections        []EventProjection `json:"projections"`
 	}
 

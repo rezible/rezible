@@ -861,6 +861,94 @@ components:
       required:
         - data
       type: object
+    CreateKnowledgeGraphSnapshotRequestAttributes:
+      additionalProperties: false
+      properties:
+        asOf:
+          format: date-time
+          type: string
+        depth:
+          format: int64
+          type: integer
+        entityIds:
+          items:
+            type: string
+          type: array
+        entityKinds:
+          items:
+            type: string
+          type: array
+        includeAlerts:
+          type: boolean
+        includeChanges:
+          type: boolean
+        includeIncidents:
+          type: boolean
+        name:
+          type: string
+        relationshipKinds:
+          items:
+            type: string
+          type: array
+        rootEntityIds:
+          items:
+            type: string
+          type: array
+        scope:
+          enum:
+            - explicit_entities
+            - root_entities
+            - incident
+            - retrospective
+            - search
+            - analysis
+          type: string
+        scopeProperties:
+          additionalProperties: {}
+          type: object
+      required:
+        - name
+        - scope
+        - scopeProperties
+        - entityIds
+        - rootEntityIds
+        - depth
+        - entityKinds
+        - relationshipKinds
+        - includeIncidents
+        - includeChanges
+        - includeAlerts
+      type: object
+    CreateKnowledgeGraphSnapshotRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateKnowledgeGraphSnapshotRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/CreateKnowledgeGraphSnapshotRequestAttributes"
+      required:
+        - attributes
+      type: object
+    CreateKnowledgeGraphSnapshotResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateKnowledgeGraphSnapshotResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/KnowledgeGraphSnapshot"
+      required:
+        - data
+      type: object
     CreateMeetingScheduleAttributes:
       additionalProperties: false
       properties:
@@ -1138,94 +1226,6 @@ components:
       required:
         - data
       type: object
-    CreateSystemTopologySnapshotAttributes:
-      additionalProperties: false
-      properties:
-        asOf:
-          format: date-time
-          type: string
-        depth:
-          format: int64
-          type: integer
-        entityIds:
-          items:
-            type: string
-          type: array
-        entityKinds:
-          items:
-            type: string
-          type: array
-        includeAlerts:
-          type: boolean
-        includeChanges:
-          type: boolean
-        includeIncidents:
-          type: boolean
-        name:
-          type: string
-        relationshipKinds:
-          items:
-            type: string
-          type: array
-        rootEntityIds:
-          items:
-            type: string
-          type: array
-        scope:
-          enum:
-            - explicit_entities
-            - root_entities
-            - incident
-            - retrospective
-            - search
-            - analysis
-          type: string
-        scopeProperties:
-          additionalProperties: {}
-          type: object
-      required:
-        - name
-        - scope
-        - scopeProperties
-        - entityIds
-        - rootEntityIds
-        - depth
-        - entityKinds
-        - relationshipKinds
-        - includeIncidents
-        - includeChanges
-        - includeAlerts
-      type: object
-    CreateSystemTopologySnapshotRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateSystemTopologySnapshotRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/CreateSystemTopologySnapshotAttributes"
-      required:
-        - attributes
-      type: object
-    CreateSystemTopologySnapshotResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateSystemTopologySnapshotResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemTopologySnapshot"
-      required:
-        - data
-      type: object
     CreateTaskAttributes:
       additionalProperties: false
       properties:
@@ -1494,8 +1494,8 @@ components:
       additionalProperties: false
       properties:
         attributes:
-          additionalProperties: {}
-          type: object
+          contentEncoding: base64
+          type: string
         kind:
           type: string
         occurredAt:
@@ -1580,6 +1580,16 @@ components:
       properties:
         attributes:
           $ref: "#/components/schemas/EventAttributes"
+        id:
+          type: string
+      required:
+        - id
+      type: object
+    ExpandableKnowledgeGraphEntityAttributes:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeGraphEntityAttributes"
         id:
           type: string
       required:
@@ -1920,6 +1930,36 @@ components:
       required:
         - data
       type: object
+    GetKnowledgeGraphEntityResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetKnowledgeGraphEntityResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/KnowledgeGraphEntity"
+      required:
+        - data
+      type: object
+    GetKnowledgeGraphSnapshotResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetKnowledgeGraphSnapshotResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/KnowledgeGraphSnapshot"
+      required:
+        - data
+      type: object
     GetMeetingScheduleResponseBody:
       additionalProperties: false
       properties:
@@ -2157,51 +2197,6 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/SystemAnalysis"
-      required:
-        - data
-      type: object
-    GetSystemTopologyEntityNeighborhoodResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetSystemTopologyEntityNeighborhoodResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemTopologyGraph"
-      required:
-        - data
-      type: object
-    GetSystemTopologyEntityResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetSystemTopologyEntityResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemTopologyEntity"
-      required:
-        - data
-      type: object
-    GetSystemTopologySnapshotResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetSystemTopologySnapshotResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemTopologySnapshot"
       required:
         - data
       type: object
@@ -3273,6 +3268,239 @@ components:
       required:
         - targetSelectionRequired
       type: object
+    KnowledgeGraphEntity:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeGraphEntityAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    KnowledgeGraphEntityAttributes:
+      additionalProperties: false
+      properties:
+        aliases:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphSubjectAlias"
+          type: array
+        createdAt:
+          format: date-time
+          type: string
+        description:
+          type: string
+        displayName:
+          type: string
+        kind:
+          type: string
+        properties:
+          additionalProperties: {}
+          type: object
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - kind
+        - displayName
+        - description
+        - properties
+        - aliases
+        - createdAt
+        - updatedAt
+      type: object
+    KnowledgeGraphRelationship:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeGraphRelationshipAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    KnowledgeGraphRelationshipAttributes:
+      additionalProperties: false
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        description:
+          type: string
+        displayName:
+          type: string
+        firstSeenAt:
+          format: date-time
+          type: string
+        kind:
+          type: string
+        lastSeenAt:
+          format: date-time
+          type: string
+        properties:
+          additionalProperties: {}
+          type: object
+        source:
+          $ref: "#/components/schemas/ExpandableKnowledgeGraphEntityAttributes"
+        target:
+          $ref: "#/components/schemas/ExpandableKnowledgeGraphEntityAttributes"
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - source
+        - target
+        - kind
+        - displayName
+        - description
+        - properties
+        - firstSeenAt
+        - lastSeenAt
+        - createdAt
+        - updatedAt
+      type: object
+    KnowledgeGraphSnapshot:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeGraphSnapshotAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    KnowledgeGraphSnapshotAttributes:
+      additionalProperties: false
+      properties:
+        asOf:
+          format: date-time
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        entities:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphSnapshotEntity"
+          type: array
+        relationships:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphSnapshotRelationship"
+          type: array
+        scope:
+          type: string
+        scopeProperties:
+          additionalProperties: {}
+          type: object
+      required:
+        - asOf
+        - createdAt
+        - scope
+        - scopeProperties
+        - entities
+        - relationships
+      type: object
+    KnowledgeGraphSnapshotEntity:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeGraphSnapshotEntityAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    KnowledgeGraphSnapshotEntityAttributes:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        displayName:
+          type: string
+        entityId:
+          type: string
+        kind:
+          type: string
+        properties:
+          additionalProperties: {}
+          type: object
+      required:
+        - kind
+        - displayName
+        - description
+        - properties
+      type: object
+    KnowledgeGraphSnapshotRelationship:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeGraphSnapshotRelationshipAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    KnowledgeGraphSnapshotRelationshipAttributes:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        displayName:
+          type: string
+        kind:
+          type: string
+        properties:
+          additionalProperties: {}
+          type: object
+        relationshipId:
+          type: string
+        sourceSnapshotEntityId:
+          type: string
+        targetSnapshotEntityId:
+          type: string
+      required:
+        - sourceSnapshotEntityId
+        - targetSnapshotEntityId
+        - kind
+        - displayName
+        - description
+        - properties
+      type: object
+    KnowledgeGraphSubjectAlias:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectAliasAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    KnowledgeGraphSubjectAliasAttributes:
+      additionalProperties: false
+      properties:
+        displayName:
+          type: string
+        kind:
+          enum:
+            - entity
+            - relationship
+          type: string
+        provider:
+          type: string
+        providerSubjectRef:
+          type: string
+      required:
+        - kind
+        - provider
+        - providerSubjectRef
+        - displayName
+      type: object
     ListAiAgentRunsResponseBody:
       additionalProperties: false
       properties:
@@ -3673,6 +3901,46 @@ components:
         - data
         - pagination
       type: object
+    ListKnowledgeGraphEntitiesResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListKnowledgeGraphEntitiesResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphEntity"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListKnowledgeGraphRelationshipsResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListKnowledgeGraphRelationshipsResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphRelationship"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
     ListMeetingSchedulesResponseBody:
       additionalProperties: false
       properties:
@@ -3886,46 +4154,6 @@ components:
         data:
           items:
             $ref: "#/components/schemas/SystemAnalysisNode"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListSystemTopologyEntitiesResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListSystemTopologyEntitiesResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/SystemTopologyEntity"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListSystemTopologyRelationshipsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListSystemTopologyRelationshipsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/SystemTopologyRelationship"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -4912,12 +5140,12 @@ components:
           items:
             $ref: "#/components/schemas/SystemAnalysisEdge"
           type: array
+        knowledgeGraphSnapshot:
+          $ref: "#/components/schemas/KnowledgeGraphSnapshot"
         nodes:
           items:
             $ref: "#/components/schemas/SystemAnalysisNode"
           type: array
-        topologySnapshot:
-          $ref: "#/components/schemas/SystemTopologySnapshot"
       required:
         - nodes
         - edges
@@ -4968,7 +5196,7 @@ components:
         position:
           $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
         snapshotEntity:
-          $ref: "#/components/schemas/SystemTopologySnapshotEntity"
+          $ref: "#/components/schemas/KnowledgeGraphSnapshotEntity"
       required:
         - snapshotEntity
         - position
@@ -4980,272 +5208,10 @@ components:
         description:
           type: string
         snapshotRelationship:
-          $ref: "#/components/schemas/SystemTopologySnapshotRelationship"
+          $ref: "#/components/schemas/KnowledgeGraphSnapshotRelationship"
       required:
         - snapshotRelationship
         - description
-      type: object
-    SystemTopologyEntity:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SystemTopologyEntityAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SystemTopologyEntityAlias:
-      additionalProperties: false
-      properties:
-        firstSeenAt:
-          format: date-time
-          type: string
-        id:
-          type: string
-        lastSeenAt:
-          format: date-time
-          type: string
-        provider:
-          type: string
-        providerSource:
-          type: string
-        subjectKind:
-          type: string
-        subjectRef:
-          type: string
-      required:
-        - id
-        - provider
-        - providerSource
-        - subjectKind
-        - subjectRef
-        - firstSeenAt
-        - lastSeenAt
-      type: object
-    SystemTopologyEntityAttributes:
-      additionalProperties: false
-      properties:
-        aliases:
-          items:
-            $ref: "#/components/schemas/SystemTopologyEntityAlias"
-          type: array
-        createdAt:
-          format: date-time
-          type: string
-        description:
-          type: string
-        displayName:
-          type: string
-        kind:
-          type: string
-        properties:
-          additionalProperties: {}
-          type: object
-        relationships:
-          items:
-            $ref: "#/components/schemas/SystemTopologyRelationship"
-          type: array
-        updatedAt:
-          format: date-time
-          type: string
-      required:
-        - kind
-        - displayName
-        - description
-        - properties
-        - aliases
-        - createdAt
-        - updatedAt
-      type: object
-    SystemTopologyGraph:
-      additionalProperties: false
-      properties:
-        entities:
-          items:
-            $ref: "#/components/schemas/SystemTopologyEntity"
-          type: array
-        relationships:
-          items:
-            $ref: "#/components/schemas/SystemTopologyRelationship"
-          type: array
-      required:
-        - entities
-        - relationships
-      type: object
-    SystemTopologyRelationship:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SystemTopologyRelationshipAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SystemTopologyRelationshipAttributes:
-      additionalProperties: false
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        description:
-          type: string
-        displayName:
-          type: string
-        firstSeenAt:
-          format: date-time
-          type: string
-        kind:
-          type: string
-        lastSeenAt:
-          format: date-time
-          type: string
-        properties:
-          additionalProperties: {}
-          type: object
-        source:
-          $ref: "#/components/schemas/SystemTopologyEntity"
-        sourceEntityId:
-          type: string
-        target:
-          $ref: "#/components/schemas/SystemTopologyEntity"
-        targetEntityId:
-          type: string
-        updatedAt:
-          format: date-time
-          type: string
-      required:
-        - sourceEntityId
-        - targetEntityId
-        - kind
-        - displayName
-        - description
-        - properties
-        - firstSeenAt
-        - lastSeenAt
-        - createdAt
-        - updatedAt
-      type: object
-    SystemTopologySnapshot:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SystemTopologySnapshotAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SystemTopologySnapshotAttributes:
-      additionalProperties: false
-      properties:
-        asOf:
-          format: date-time
-          type: string
-        createdAt:
-          format: date-time
-          type: string
-        entities:
-          items:
-            $ref: "#/components/schemas/SystemTopologySnapshotEntity"
-          type: array
-        name:
-          type: string
-        relationships:
-          items:
-            $ref: "#/components/schemas/SystemTopologySnapshotRelationship"
-          type: array
-        scope:
-          type: string
-        scopeProperties:
-          additionalProperties: {}
-          type: object
-      required:
-        - name
-        - asOf
-        - scope
-        - scopeProperties
-        - entities
-        - relationships
-        - createdAt
-      type: object
-    SystemTopologySnapshotEntity:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SystemTopologySnapshotEntityAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SystemTopologySnapshotEntityAttributes:
-      additionalProperties: false
-      properties:
-        aliases:
-          items:
-            additionalProperties: {}
-            type: object
-          type: array
-        description:
-          type: string
-        displayName:
-          type: string
-        kind:
-          type: string
-        knowledgeEntityId:
-          type: string
-        properties:
-          additionalProperties: {}
-          type: object
-      required:
-        - kind
-        - displayName
-        - description
-        - properties
-        - aliases
-      type: object
-    SystemTopologySnapshotRelationship:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SystemTopologySnapshotRelationshipAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SystemTopologySnapshotRelationshipAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        displayName:
-          type: string
-        kind:
-          type: string
-        knowledgeRelationshipId:
-          type: string
-        properties:
-          additionalProperties: {}
-          type: object
-        sourceSnapshotEntityId:
-          type: string
-        targetSnapshotEntityId:
-          type: string
-      required:
-        - sourceSnapshotEntityId
-        - targetSnapshotEntityId
-        - kind
-        - displayName
-        - description
-        - properties
       type: object
     Task:
       additionalProperties: false
@@ -11539,6 +11505,371 @@ paths:
       summary: Request a manual event sync for an integration
       tags:
         - Integrations
+  /knowledge_graph/entities:
+    get:
+      operationId: list-knowledge-graph-entities
+      parameters:
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 10
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: search
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: archived
+          schema:
+            default: false
+            type: boolean
+        - explode: false
+          in: query
+          name: kind
+          schema:
+            items:
+              type: string
+            type: array
+        - explode: false
+          in: query
+          name: provider
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: providerSource
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: subjectKind
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListKnowledgeGraphEntitiesResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Knowledge Graph Entities
+      tags:
+        - Knowledge Graph
+  /knowledge_graph/entities/{id}:
+    get:
+      operationId: get-knowledge-graph-entity
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetKnowledgeGraphEntityResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Knowledge Graph Entity
+      tags:
+        - Knowledge Graph
+  /knowledge_graph/relationships:
+    get:
+      operationId: list-knowledge-graph-relationships
+      parameters:
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 10
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: search
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: archived
+          schema:
+            default: false
+            type: boolean
+        - explode: false
+          in: query
+          name: kind
+          schema:
+            items:
+              type: string
+            type: array
+        - explode: false
+          in: query
+          name: entityId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: sourceEntityId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: targetEntityId
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListKnowledgeGraphRelationshipsResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Knowledge Graph Relationships
+      tags:
+        - Knowledge Graph
+  /knowledge_graph/snapshots:
+    post:
+      operationId: create-knowledge-graph-snapshot
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateKnowledgeGraphSnapshotRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateKnowledgeGraphSnapshotResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Create Knowledge Graph Snapshot
+      tags:
+        - Knowledge Graph
+  /knowledge_graph/snapshots/{id}:
+    get:
+      operationId: get-knowledge-graph-snapshot
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetKnowledgeGraphSnapshotResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Knowledge Graph Snapshot
+      tags:
+        - Knowledge Graph
   /meeting_schedules:
     get:
       operationId: list-meeting-schedules
@@ -15116,442 +15447,6 @@ paths:
       summary: Update a system analysis node
       tags:
         - System Analysis
-  /system_topology/entities:
-    get:
-      operationId: list-system-topology-entities
-      parameters:
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-        - explode: false
-          in: query
-          name: kind
-          schema:
-            items:
-              type: string
-            type: array
-        - explode: false
-          in: query
-          name: provider
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: providerSource
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: subjectKind
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListSystemTopologyEntitiesResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List System Topology Entities
-      tags:
-        - SystemTopology
-  /system_topology/entities/{id}:
-    get:
-      operationId: get-system-topology-entity
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetSystemTopologyEntityResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get System Topology Entity
-      tags:
-        - SystemTopology
-  /system_topology/entities/{id}/neighborhood:
-    get:
-      operationId: get-system-topology-entity-neighborhood
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: depth
-          schema:
-            default: 1
-            format: int64
-            maximum: 4
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: relationshipKind
-          schema:
-            items:
-              type: string
-            type: array
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetSystemTopologyEntityNeighborhoodResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get System Topology Entity Neighborhood
-      tags:
-        - SystemTopology
-  /system_topology/relationships:
-    get:
-      operationId: list-system-topology-relationships
-      parameters:
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-        - explode: false
-          in: query
-          name: kind
-          schema:
-            items:
-              type: string
-            type: array
-        - explode: false
-          in: query
-          name: entityId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: sourceEntityId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: targetEntityId
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListSystemTopologyRelationshipsResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List System Topology Relationships
-      tags:
-        - SystemTopology
-  /system_topology/snapshots:
-    post:
-      operationId: create-system-topology-snapshot
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateSystemTopologySnapshotRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateSystemTopologySnapshotResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Create System Topology Snapshot
-      tags:
-        - SystemTopology
-  /system_topology/snapshots/{id}:
-    get:
-      operationId: get-system-topology-snapshot
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetSystemTopologySnapshotResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get System Topology Snapshot
-      tags:
-        - SystemTopology
   /tasks:
     get:
       operationId: list-tasks

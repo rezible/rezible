@@ -1,67 +1,10 @@
 package demoprovider
 
 import (
-	"encoding/json"
 	"fmt"
-	"iter"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/pkg/projections"
 )
-
-type demoTopologyEvent struct {
-	Cursor              string
-	ComponentPayload    *topologyComponentObservedPayload
-	RelationshipPayload *topologyRelationshipObservedPayload
-}
-
-func makeDemoTopologyEvents() []demoTopologyEvent {
-	demoComponents := makeDemoTopologyComponents()
-	demoRels := makeDemoTopologyRelationships(demoComponents)
-
-	events := make([]demoTopologyEvent, 0, len(demoComponents)+len(demoRels))
-	for i, payload := range demoComponents {
-		events = append(events, demoTopologyEvent{
-			Cursor:           fmt.Sprintf("component:%03d:%s", i+1, payload.ExternalRef),
-			ComponentPayload: &payload,
-		})
-	}
-	for i, payload := range demoRels {
-		payload.Properties["source_external_ref"] = payload.SourceExternalRef
-		payload.Properties["target_external_ref"] = payload.TargetExternalRef
-		events = append(events, demoTopologyEvent{
-			Cursor:              fmt.Sprintf("relationship:%03d:%s", i+1, payload.ExternalRef),
-			RelationshipPayload: &payload,
-		})
-	}
-	return events
-}
-
-func (q *eventQuerier) pullTopologyEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
-	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
-		for _, demoEvent := range makeDemoTopologyEvents() {
-			if cursor != "" && demoEvent.Cursor <= cursor {
-				continue
-			}
-			res := &rez.ProviderEventQueryResult{
-				SourceCursorAfter: new(demoEvent.Cursor),
-			}
-			var prov *rez.ProviderEvent
-			provErr := fmt.Errorf("no embedded payload")
-			if demoEvent.ComponentPayload != nil {
-				prov, provErr = demoEvent.ComponentPayload.toEvent()
-			} else if demoEvent.RelationshipPayload != nil {
-				prov, provErr = demoEvent.RelationshipPayload.toEvent()
-			}
-			if prov != nil {
-				res.Event = *prov
-			}
-			if !yield(res, provErr) {
-				return
-			}
-		}
-	}
-}
 
 type topologyComponentObservedPayload struct {
 	ExternalRef string         `json:"external_ref"`
@@ -71,55 +14,27 @@ type topologyComponentObservedPayload struct {
 	Properties  map[string]any `json:"properties,omitempty"`
 }
 
-const componentRefPrefix = "demo:component:"
-
-func (p topologyComponentObservedPayload) getEventRef() string {
-	return "demo:topology:" + p.ExternalRef
-}
-
-func (p topologyComponentObservedPayload) getSubjectRef() string {
+func (p topologyComponentObservedPayload) subjectRef() string {
 	return p.ExternalRef
 }
 
-func (p topologyComponentObservedPayload) toEvent() (*rez.ProviderEvent, error) {
-	enc, jsonErr := json.Marshal(p)
-	if jsonErr != nil {
-		return nil, jsonErr
+func (p topologyComponentObservedPayload) getAttributes() projections.SystemComponentSubjectAttributes {
+	return projections.SystemComponentSubjectAttributes{
+		ExternalRef: p.ExternalRef,
+		Kind:        p.Kind,
+		DisplayName: p.DisplayName,
+		Description: p.Description,
+		Properties:  p.Properties,
 	}
-	prov := &rez.ProviderEvent{
-		Provider:           integrationName,
-		ProviderSource:     sourceTopology,
-		ProviderEventRef:   p.getEventRef(),
-		ProviderSubjectRef: p.getSubjectRef(),
-		ReceivedAt:         demoObservedAt,
-		Payload:            enc,
-	}
-	return prov, nil
-}
-
-func getTopologyComponentAttributes(payload []byte) (projections.EventAttributes, error) {
-	var cop topologyComponentObservedPayload
-	if err := json.Unmarshal(payload, &cop); err != nil {
-		return nil, err
-	}
-	return projections.EncodeAttributes(projections.SystemComponentSubjectAttributes{
-		ExternalRef: cop.ExternalRef,
-		Kind:        cop.Kind,
-		DisplayName: cop.DisplayName,
-		Description: cop.Description,
-		Properties:  cop.Properties,
-	})
 }
 
 func componentRef(id string) string {
-	return componentRefPrefix + id
+	return "demo:component:" + id
 }
 
 func makeDemoTopologyComponents() []topologyComponentObservedPayload {
 	component := func(id string, kind string, displayName string, description string, properties map[string]any) topologyComponentObservedPayload {
-		props := map[string]any{
-			"external_ref": componentRef(id),
-		}
+		props := map[string]any{}
 		for k, v := range properties {
 			props[k] = v
 		}
@@ -172,71 +87,51 @@ func makeDemoTopologyComponents() []topologyComponentObservedPayload {
 }
 
 type topologyRelationshipObservedPayload struct {
-	ExternalRef       string         `json:"external_ref"`
-	Kind              string         `json:"kind"`
-	DisplayName       string         `json:"display_name,omitempty"`
-	Description       string         `json:"description,omitempty"`
-	SourceExternalRef string         `json:"source_external_ref"`
-	SourceKind        string         `json:"source_kind"`
-	SourceDisplayName string         `json:"source_display_name"`
-	TargetExternalRef string         `json:"target_external_ref"`
-	TargetKind        string         `json:"target_kind"`
-	TargetDisplayName string         `json:"target_display_name"`
-	Properties        map[string]any `json:"properties,omitempty"`
+	ExternalRef string                                       `json:"external_ref"`
+	Kind        string                                       `json:"kind"`
+	DisplayName string                                       `json:"display_name,omitempty"`
+	Description string                                       `json:"description,omitempty"`
+	Properties  map[string]any                               `json:"properties,omitempty"`
+	Source      topologyRelationshipObservedPayloadComponent `json:"source"`
+	Target      topologyRelationshipObservedPayloadComponent `json:"target"`
 }
 
-const relationshipRefPrefix = "demo:relationship:"
-
-func (p topologyRelationshipObservedPayload) getEventRef() string {
-	return "demo:topology:" + p.ExternalRef
+type topologyRelationshipObservedPayloadComponent struct {
+	ExternalRef string `json:"external_ref"`
+	Kind        string `json:"kind"`
+	DisplayName string `json:"display_name"`
 }
 
-func (p topologyRelationshipObservedPayload) getSubjectRef() string {
+func (p topologyRelationshipObservedPayload) subjectRef() string {
 	return p.ExternalRef
 }
 
-func (p topologyRelationshipObservedPayload) toEvent() (*rez.ProviderEvent, error) {
-	enc, jsonErr := json.Marshal(p)
-	if jsonErr != nil {
-		return nil, jsonErr
+func (p topologyRelationshipObservedPayload) getAttributes() projections.SystemRelationshipSubjectAttributes {
+	return projections.SystemRelationshipSubjectAttributes{
+		ExternalRef:       p.ExternalRef,
+		Kind:              p.Kind,
+		DisplayName:       p.DisplayName,
+		Description:       p.Description,
+		SourceExternalRef: p.Source.ExternalRef,
+		SourceKind:        p.Source.Kind,
+		SourceDisplayName: p.Source.DisplayName,
+		TargetExternalRef: p.Target.ExternalRef,
+		TargetKind:        p.Target.Kind,
+		TargetDisplayName: p.Target.DisplayName,
+		Properties:        p.Properties,
 	}
-	prov := &rez.ProviderEvent{
-		Provider:           integrationName,
-		ProviderSource:     sourceTopology,
-		ProviderEventRef:   p.getEventRef(),
-		ProviderSubjectRef: p.getSubjectRef(),
-		ReceivedAt:         demoObservedAt,
-		Payload:            enc,
-	}
-	return prov, nil
-}
-
-func getTopologyRelationshipAttributes(payload []byte) (projections.EventAttributes, error) {
-	var rop topologyRelationshipObservedPayload
-	if err := json.Unmarshal(payload, &rop); err != nil {
-		return nil, err
-	}
-	return projections.EncodeAttributes(projections.SystemRelationshipSubjectAttributes{
-		ExternalRef:       rop.ExternalRef,
-		Kind:              rop.Kind,
-		DisplayName:       rop.DisplayName,
-		Description:       rop.Description,
-		SourceExternalRef: rop.SourceExternalRef,
-		SourceKind:        rop.SourceKind,
-		SourceDisplayName: rop.SourceDisplayName,
-		TargetExternalRef: rop.TargetExternalRef,
-		TargetKind:        rop.TargetKind,
-		TargetDisplayName: rop.TargetDisplayName,
-		Properties:        rop.Properties,
-	})
 }
 
 func makeDemoTopologyRelationships(cmps []topologyComponentObservedPayload) []topologyRelationshipObservedPayload {
-	mustTopologyComponent := func(id string) topologyComponentObservedPayload {
+	mustTopologyComponent := func(id string) topologyRelationshipObservedPayloadComponent {
 		ref := componentRef(id)
 		for _, c := range cmps {
 			if c.ExternalRef == ref {
-				return c
+				return topologyRelationshipObservedPayloadComponent{
+					ExternalRef: c.ExternalRef,
+					Kind:        c.Kind,
+					DisplayName: c.DisplayName,
+				}
 			}
 		}
 		panic(fmt.Sprintf("unknown demo topology component: %s", id))
@@ -247,15 +142,11 @@ func makeDemoTopologyRelationships(cmps []topologyComponentObservedPayload) []to
 		target := mustTopologyComponent(targetID)
 		externalRef := fmt.Sprintf("demo:relationship:%s:%s:%s", sourceID, kind, targetID)
 		return topologyRelationshipObservedPayload{
-			ExternalRef:       externalRef,
-			Kind:              kind,
-			DisplayName:       displayName,
-			SourceExternalRef: source.ExternalRef,
-			SourceKind:        source.Kind,
-			SourceDisplayName: source.DisplayName,
-			TargetExternalRef: target.ExternalRef,
-			TargetKind:        target.Kind,
-			TargetDisplayName: target.DisplayName,
+			ExternalRef: externalRef,
+			Kind:        kind,
+			DisplayName: displayName,
+			Source:      source,
+			Target:      target,
 			Properties: map[string]any{
 				"external_ref": externalRef,
 				"source":       sourceID,

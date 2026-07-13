@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"testing"
 	"time"
@@ -83,7 +84,7 @@ func (s *ProviderEventPipelineServiceSuite) createPipelineNormalizedEvent(ctx co
 		SetSubjectKind(pipelineTestSubjectKind.String()).
 		SetOccurredAt(ev.ReceivedAt.Add(-time.Minute)).
 		SetReceivedAt(ev.ReceivedAt).
-		SetAttributes(map[string]any{"summary": "processed " + ev.ProviderSubjectRef}).
+		SetAttributes([]byte(fmt.Sprintf(`{"summary": "processed %s"}`, ev.ProviderSubjectRef))).
 		Save(ctx)
 	s.Require().NoError(err)
 	return normalized
@@ -145,7 +146,7 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 	s.Equal(ev.ProviderSubjectRef, normalized.ProviderSubjectRef)
 	s.Equal(ne.KindObserved, normalized.Kind)
 	s.Equal(pipelineTestSubjectKind.String(), normalized.SubjectKind)
-	s.Equal("processed subject-1", normalized.Attributes["summary"])
+	s.Equal(`{"summary": "processed subject-1"}`, string(normalized.Attributes))
 	s.Equal(normalized.ID, capturedProjectArgs.EventId)
 
 	s.Require().NoError(svc.HandleEventProjectionJob(ctx, capturedProjectArgs))
@@ -316,9 +317,7 @@ func (pipelineTestProcessor) ProcessProviderEvent(_ context.Context, ev rez.Prov
 			SubjectKind:        pipelineTestSubjectKind.String(),
 			OccurredAt:         ev.ReceivedAt.Add(-time.Minute),
 			ReceivedAt:         ev.ReceivedAt,
-			Attributes: map[string]any{
-				"summary": "processed " + ev.ProviderSubjectRef,
-			},
+			Attributes:         []byte(fmt.Sprintf(`{"summary": "processed %s"}`, ev.ProviderSubjectRef)),
 		},
 	}, nil
 }

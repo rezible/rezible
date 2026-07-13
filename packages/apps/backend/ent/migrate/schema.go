@@ -2127,7 +2127,7 @@ var (
 		{Name: "provider_event_ref", Type: field.TypeString},
 		{Name: "provider_subject_ref", Type: field.TypeString},
 		{Name: "subject_kind", Type: field.TypeString},
-		{Name: "attributes", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "attributes", Type: field.TypeBytes},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "occurred_at", Type: field.TypeTime},
 		{Name: "received_at", Type: field.TypeTime},

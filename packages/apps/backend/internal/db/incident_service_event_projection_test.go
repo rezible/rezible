@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -71,7 +72,16 @@ func (s *IncidentServiceSuite) TestIncidentProjectionDoesNotPanicForDemoCatalogS
 	eventID := uuid.MustParse("d1be3113-c03a-45f0-adcb-1191041c3b02")
 	createdAt := time.Date(2026, 6, 19, 10, 4, 46, 429693000, time.UTC)
 	occurredAt := time.Date(2026, 4, 18, 2, 30, 0, 0, time.UTC)
-	ev, err := s.Client(ctx).NormalizedEvent.Create().
+	attrs, attrsErr := json.Marshal(projections.IncidentSubjectAttributes{
+		ExternalRef: "foo-bar",
+		Title:       "Catalog search returning stale results",
+		Summary:     "The catalog search index failed to refresh after the nightly product import.",
+		SeverityRef: "SEV-2",
+		TypeRef:     "Data Freshness",
+		OpenedAt:    occurredAt,
+	})
+	s.Require().NoError(attrsErr)
+	createEvent := s.Client(ctx).NormalizedEvent.Create().
 		SetID(eventID).
 		SetKind(ne.KindObserved).
 		SetProvider("demo").
@@ -79,18 +89,12 @@ func (s *IncidentServiceSuite) TestIncidentProjectionDoesNotPanicForDemoCatalogS
 		SetProviderEventRef("demo:incidents:catalog-search-stale-results-observed").
 		SetProviderSubjectRef("demo:incident:catalog-search-stale-results").
 		SetSubjectKind(projections.SubjectKindIncident.String()).
-		SetAttributes(map[string]any{
-			"title":        "Catalog search returning stale results",
-			"summary":      "The catalog search index failed to refresh after the nightly product import.",
-			"type_ref":     "Data Freshness",
-			"opened_at":    "2026-04-18T02:30:00Z",
-			"severity_ref": "SEV-2",
-			"external_ref": "foo-bar",
-		}).
+		SetAttributes(attrs).
 		SetCreatedAt(createdAt).
 		SetOccurredAt(occurredAt).
-		SetReceivedAt(occurredAt).
-		Save(ctx)
+		SetReceivedAt(occurredAt)
+
+	ev, err := createEvent.Save(ctx)
 	s.Require().NoError(err)
 
 	var projectionErr error

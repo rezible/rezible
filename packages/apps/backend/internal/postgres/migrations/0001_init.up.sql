@@ -299,7 +299,7 @@ CREATE TABLE "meeting_sessions" ("id" uuid NOT NULL, "title" character varying N
 -- create index "meetingsession_tenant_id" to table: "meeting_sessions"
 CREATE INDEX "meetingsession_tenant_id" ON "meeting_sessions" ("tenant_id");
 -- create "normalized_events" table
-CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "subject_kind" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "subject_kind" character varying NOT NULL, "attributes" bytea NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "normalizedevent_tenant_id" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id" ON "normalized_events" ("tenant_id");
 -- create index "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433" to table: "normalized_events"

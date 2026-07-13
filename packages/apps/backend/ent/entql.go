@@ -1029,7 +1029,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			normalizedevent.FieldProviderEventRef:   {Type: field.TypeString, Column: normalizedevent.FieldProviderEventRef},
 			normalizedevent.FieldProviderSubjectRef: {Type: field.TypeString, Column: normalizedevent.FieldProviderSubjectRef},
 			normalizedevent.FieldSubjectKind:        {Type: field.TypeString, Column: normalizedevent.FieldSubjectKind},
-			normalizedevent.FieldAttributes:         {Type: field.TypeJSON, Column: normalizedevent.FieldAttributes},
+			normalizedevent.FieldAttributes:         {Type: field.TypeBytes, Column: normalizedevent.FieldAttributes},
 			normalizedevent.FieldCreatedAt:          {Type: field.TypeTime, Column: normalizedevent.FieldCreatedAt},
 			normalizedevent.FieldOccurredAt:         {Type: field.TypeTime, Column: normalizedevent.FieldOccurredAt},
 			normalizedevent.FieldReceivedAt:         {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
@@ -10950,7 +10950,7 @@ func (f *NormalizedEventFilter) WhereSubjectKind(p entql.StringP) {
 	f.Where(p.Field(normalizedevent.FieldSubjectKind))
 }
 
-// WhereAttributes applies the entql json.RawMessage predicate on the attributes field.
+// WhereAttributes applies the entql []byte predicate on the attributes field.
 func (f *NormalizedEventFilter) WhereAttributes(p entql.BytesP) {
 	f.Where(p.Field(normalizedevent.FieldAttributes))
 }

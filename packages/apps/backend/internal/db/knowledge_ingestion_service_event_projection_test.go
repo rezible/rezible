@@ -46,12 +46,6 @@ func (s *KnowledgeServiceProjectionSuite) createNormalizedEvent(subjectKind proj
 	return ev
 }
 
-func (s *KnowledgeServiceProjectionSuite) mustEncodeAttrs(attrs any) map[string]any {
-	encoded, err := projections.EncodeAttributes(attrs)
-	s.Require().NoError(err)
-	return encoded
-}
-
 func (s *KnowledgeServiceProjectionSuite) TestCodeChangeProjectionPersistsEvidenceAndIsIdempotent() {
 	ctx := s.SeedTenantContext()
 	svc := s.newKnowledgeService()

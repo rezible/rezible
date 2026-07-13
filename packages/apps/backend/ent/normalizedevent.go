@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -34,8 +33,8 @@ type NormalizedEvent struct {
 	ProviderSubjectRef string `json:"provider_subject_ref,omitempty"`
 	// Provider-neutral type of the primary subject this event is about.
 	SubjectKind string `json:"subject_kind,omitempty"`
-	// Normalized attributes for this event kind.
-	Attributes map[string]interface{} `json:"attributes,omitempty"`
+	// Normalized JSON attributes for this event kind.
+	Attributes []byte `json:"attributes,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// OccurredAt holds the value of the "occurred_at" field.
@@ -160,10 +159,8 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 		case normalizedevent.FieldAttributes:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field attributes", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Attributes); err != nil {
-					return fmt.Errorf("unmarshal field attributes: %w", err)
-				}
+			} else if value != nil {
+				_m.Attributes = *value
 			}
 		case normalizedevent.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {

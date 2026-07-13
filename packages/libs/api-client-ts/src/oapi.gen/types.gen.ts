@@ -403,6 +403,39 @@ export type CreateIncidentTypeResponseBody = {
     data: IncidentType;
 };
 
+export type CreateKnowledgeGraphSnapshotRequestAttributes = {
+    asOf?: string;
+    depth: number;
+    entityIds: Array<string>;
+    entityKinds: Array<string>;
+    includeAlerts: boolean;
+    includeChanges: boolean;
+    includeIncidents: boolean;
+    name: string;
+    relationshipKinds: Array<string>;
+    rootEntityIds: Array<string>;
+    scope: 'explicit_entities' | 'root_entities' | 'incident' | 'retrospective' | 'search' | 'analysis';
+    scopeProperties: {
+        [key: string]: unknown;
+    };
+};
+
+export type CreateKnowledgeGraphSnapshotRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateKnowledgeGraphSnapshotRequestAttributes;
+};
+
+export type CreateKnowledgeGraphSnapshotResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeGraphSnapshot;
+};
+
 export type CreateMeetingScheduleAttributes = {
     attendees: MeetingAttendees;
     description?: string;
@@ -533,39 +566,6 @@ export type CreateRetrospectiveReviewResponseBody = {
      */
     readonly $schema?: string;
     data: RetrospectiveReview;
-};
-
-export type CreateSystemTopologySnapshotAttributes = {
-    asOf?: string;
-    depth: number;
-    entityIds: Array<string>;
-    entityKinds: Array<string>;
-    includeAlerts: boolean;
-    includeChanges: boolean;
-    includeIncidents: boolean;
-    name: string;
-    relationshipKinds: Array<string>;
-    rootEntityIds: Array<string>;
-    scope: 'explicit_entities' | 'root_entities' | 'incident' | 'retrospective' | 'search' | 'analysis';
-    scopeProperties: {
-        [key: string]: unknown;
-    };
-};
-
-export type CreateSystemTopologySnapshotRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateSystemTopologySnapshotAttributes;
-};
-
-export type CreateSystemTopologySnapshotResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemTopologySnapshot;
 };
 
 export type CreateTaskAttributes = {
@@ -712,9 +712,7 @@ export type EventAnnotationAttributes = {
 };
 
 export type EventAttributes = {
-    attributes: {
-        [key: string]: unknown;
-    };
+    attributes: string;
     kind: string;
     occurredAt: string;
     projections: Array<EventProjection>;
@@ -745,6 +743,11 @@ export type EventProjectionEntity = {
 
 export type ExpandableEventAttributes = {
     attributes?: EventAttributes;
+    id: string;
+};
+
+export type ExpandableKnowledgeGraphEntityAttributes = {
+    attributes?: KnowledgeGraphEntityAttributes;
     id: string;
 };
 
@@ -924,6 +927,22 @@ export type GetIntegrationInstallationResponseBody = {
     data: IntegrationInstallation;
 };
 
+export type GetKnowledgeGraphEntityResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeGraphEntity;
+};
+
+export type GetKnowledgeGraphSnapshotResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeGraphSnapshot;
+};
+
 export type GetMeetingScheduleResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1050,30 +1069,6 @@ export type GetSystemAnalysisResponseBody = {
      */
     readonly $schema?: string;
     data: SystemAnalysis;
-};
-
-export type GetSystemTopologyEntityNeighborhoodResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemTopologyGraph;
-};
-
-export type GetSystemTopologyEntityResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemTopologyEntity;
-};
-
-export type GetSystemTopologySnapshotResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemTopologySnapshot;
 };
 
 export type GetTaskResponseBody = {
@@ -1512,6 +1507,103 @@ export type IntegrationOAuthInstallResult = {
     targetSelectionRequired: boolean;
 };
 
+export type KnowledgeGraphEntity = {
+    attributes: KnowledgeGraphEntityAttributes;
+    id: string;
+};
+
+export type KnowledgeGraphEntityAttributes = {
+    aliases: Array<KnowledgeGraphSubjectAlias>;
+    createdAt: string;
+    description: string;
+    displayName: string;
+    kind: string;
+    properties: {
+        [key: string]: unknown;
+    };
+    updatedAt: string;
+};
+
+export type KnowledgeGraphRelationship = {
+    attributes: KnowledgeGraphRelationshipAttributes;
+    id: string;
+};
+
+export type KnowledgeGraphRelationshipAttributes = {
+    createdAt: string;
+    description: string;
+    displayName: string;
+    firstSeenAt: string;
+    kind: string;
+    lastSeenAt: string;
+    properties: {
+        [key: string]: unknown;
+    };
+    source: ExpandableKnowledgeGraphEntityAttributes;
+    target: ExpandableKnowledgeGraphEntityAttributes;
+    updatedAt: string;
+};
+
+export type KnowledgeGraphSnapshot = {
+    attributes: KnowledgeGraphSnapshotAttributes;
+    id: string;
+};
+
+export type KnowledgeGraphSnapshotAttributes = {
+    asOf: string;
+    createdAt: string;
+    entities: Array<KnowledgeGraphSnapshotEntity>;
+    relationships: Array<KnowledgeGraphSnapshotRelationship>;
+    scope: string;
+    scopeProperties: {
+        [key: string]: unknown;
+    };
+};
+
+export type KnowledgeGraphSnapshotEntity = {
+    attributes: KnowledgeGraphSnapshotEntityAttributes;
+    id: string;
+};
+
+export type KnowledgeGraphSnapshotEntityAttributes = {
+    description: string;
+    displayName: string;
+    entityId?: string;
+    kind: string;
+    properties: {
+        [key: string]: unknown;
+    };
+};
+
+export type KnowledgeGraphSnapshotRelationship = {
+    attributes: KnowledgeGraphSnapshotRelationshipAttributes;
+    id: string;
+};
+
+export type KnowledgeGraphSnapshotRelationshipAttributes = {
+    description: string;
+    displayName: string;
+    kind: string;
+    properties: {
+        [key: string]: unknown;
+    };
+    relationshipId?: string;
+    sourceSnapshotEntityId: string;
+    targetSnapshotEntityId: string;
+};
+
+export type KnowledgeGraphSubjectAlias = {
+    attributes: KnowledgeGraphSubjectAliasAttributes;
+    id: string;
+};
+
+export type KnowledgeGraphSubjectAliasAttributes = {
+    displayName: string;
+    kind: 'entity' | 'relationship';
+    provider: string;
+    providerSubjectRef: string;
+};
+
 export type ListAiAgentRunsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1692,6 +1784,24 @@ export type ListIntegrationInstallationsResponseBody = {
     pagination: ResponsePagination;
 };
 
+export type ListKnowledgeGraphEntitiesResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<KnowledgeGraphEntity>;
+    pagination: ResponsePagination;
+};
+
+export type ListKnowledgeGraphRelationshipsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<KnowledgeGraphRelationship>;
+    pagination: ResponsePagination;
+};
+
 export type ListMeetingSchedulesResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1788,24 +1898,6 @@ export type ListSystemAnalysisNodesResponseBody = {
      */
     readonly $schema?: string;
     data: Array<SystemAnalysisNode>;
-    pagination: ResponsePagination;
-};
-
-export type ListSystemTopologyEntitiesResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<SystemTopologyEntity>;
-    pagination: ResponsePagination;
-};
-
-export type ListSystemTopologyRelationshipsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<SystemTopologyRelationship>;
     pagination: ResponsePagination;
 };
 
@@ -2231,8 +2323,8 @@ export type SystemAnalysis = {
 
 export type SystemAnalysisAttributes = {
     edges: Array<SystemAnalysisEdge>;
+    knowledgeGraphSnapshot?: KnowledgeGraphSnapshot;
     nodes: Array<SystemAnalysisNode>;
-    topologySnapshot?: SystemTopologySnapshot;
 };
 
 export type SystemAnalysisDiagramPosition = {
@@ -2254,119 +2346,12 @@ export type SystemAnalysisNode = {
 export type SystemAnalysisNodeAttributes = {
     description: string;
     position: SystemAnalysisDiagramPosition;
-    snapshotEntity: SystemTopologySnapshotEntity;
+    snapshotEntity: KnowledgeGraphSnapshotEntity;
 };
 
 export type SystemAnalysisTopologyEdgeAttributes = {
     description: string;
-    snapshotRelationship: SystemTopologySnapshotRelationship;
-};
-
-export type SystemTopologyEntity = {
-    attributes: SystemTopologyEntityAttributes;
-    id: string;
-};
-
-export type SystemTopologyEntityAlias = {
-    firstSeenAt: string;
-    id: string;
-    lastSeenAt: string;
-    provider: string;
-    providerSource: string;
-    subjectKind: string;
-    subjectRef: string;
-};
-
-export type SystemTopologyEntityAttributes = {
-    aliases: Array<SystemTopologyEntityAlias>;
-    createdAt: string;
-    description: string;
-    displayName: string;
-    kind: string;
-    properties: {
-        [key: string]: unknown;
-    };
-    relationships?: Array<SystemTopologyRelationship>;
-    updatedAt: string;
-};
-
-export type SystemTopologyGraph = {
-    entities: Array<SystemTopologyEntity>;
-    relationships: Array<SystemTopologyRelationship>;
-};
-
-export type SystemTopologyRelationship = {
-    attributes: SystemTopologyRelationshipAttributes;
-    id: string;
-};
-
-export type SystemTopologyRelationshipAttributes = {
-    createdAt: string;
-    description: string;
-    displayName: string;
-    firstSeenAt: string;
-    kind: string;
-    lastSeenAt: string;
-    properties: {
-        [key: string]: unknown;
-    };
-    source?: SystemTopologyEntity;
-    sourceEntityId: string;
-    target?: SystemTopologyEntity;
-    targetEntityId: string;
-    updatedAt: string;
-};
-
-export type SystemTopologySnapshot = {
-    attributes: SystemTopologySnapshotAttributes;
-    id: string;
-};
-
-export type SystemTopologySnapshotAttributes = {
-    asOf: string;
-    createdAt: string;
-    entities: Array<SystemTopologySnapshotEntity>;
-    name: string;
-    relationships: Array<SystemTopologySnapshotRelationship>;
-    scope: string;
-    scopeProperties: {
-        [key: string]: unknown;
-    };
-};
-
-export type SystemTopologySnapshotEntity = {
-    attributes: SystemTopologySnapshotEntityAttributes;
-    id: string;
-};
-
-export type SystemTopologySnapshotEntityAttributes = {
-    aliases: Array<{
-        [key: string]: unknown;
-    }>;
-    description: string;
-    displayName: string;
-    kind: string;
-    knowledgeEntityId?: string;
-    properties: {
-        [key: string]: unknown;
-    };
-};
-
-export type SystemTopologySnapshotRelationship = {
-    attributes: SystemTopologySnapshotRelationshipAttributes;
-    id: string;
-};
-
-export type SystemTopologySnapshotRelationshipAttributes = {
-    description: string;
-    displayName: string;
-    kind: string;
-    knowledgeRelationshipId?: string;
-    properties: {
-        [key: string]: unknown;
-    };
-    sourceSnapshotEntityId: string;
-    targetSnapshotEntityId: string;
+    snapshotRelationship: KnowledgeGraphSnapshotRelationship;
 };
 
 export type Task = {
@@ -6887,6 +6872,253 @@ export type RequestIntegrationEventSyncResponses = {
 
 export type RequestIntegrationEventSyncResponse = RequestIntegrationEventSyncResponses[keyof RequestIntegrationEventSyncResponses];
 
+export type ListKnowledgeGraphEntitiesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+        kind?: Array<string>;
+        provider?: string;
+        providerSource?: string;
+        subjectKind?: string;
+    };
+    url: '/knowledge_graph/entities';
+};
+
+export type ListKnowledgeGraphEntitiesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListKnowledgeGraphEntitiesError = ListKnowledgeGraphEntitiesErrors[keyof ListKnowledgeGraphEntitiesErrors];
+
+export type ListKnowledgeGraphEntitiesResponses = {
+    /**
+     * OK
+     */
+    200: ListKnowledgeGraphEntitiesResponseBody;
+};
+
+export type ListKnowledgeGraphEntitiesResponse = ListKnowledgeGraphEntitiesResponses[keyof ListKnowledgeGraphEntitiesResponses];
+
+export type GetKnowledgeGraphEntityData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/knowledge_graph/entities/{id}';
+};
+
+export type GetKnowledgeGraphEntityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetKnowledgeGraphEntityError = GetKnowledgeGraphEntityErrors[keyof GetKnowledgeGraphEntityErrors];
+
+export type GetKnowledgeGraphEntityResponses = {
+    /**
+     * OK
+     */
+    200: GetKnowledgeGraphEntityResponseBody;
+};
+
+export type GetKnowledgeGraphEntityResponse = GetKnowledgeGraphEntityResponses[keyof GetKnowledgeGraphEntityResponses];
+
+export type ListKnowledgeGraphRelationshipsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+        kind?: Array<string>;
+        entityId?: string;
+        sourceEntityId?: string;
+        targetEntityId?: string;
+    };
+    url: '/knowledge_graph/relationships';
+};
+
+export type ListKnowledgeGraphRelationshipsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListKnowledgeGraphRelationshipsError = ListKnowledgeGraphRelationshipsErrors[keyof ListKnowledgeGraphRelationshipsErrors];
+
+export type ListKnowledgeGraphRelationshipsResponses = {
+    /**
+     * OK
+     */
+    200: ListKnowledgeGraphRelationshipsResponseBody;
+};
+
+export type ListKnowledgeGraphRelationshipsResponse = ListKnowledgeGraphRelationshipsResponses[keyof ListKnowledgeGraphRelationshipsResponses];
+
+export type CreateKnowledgeGraphSnapshotData = {
+    body: CreateKnowledgeGraphSnapshotRequestBody;
+    path?: never;
+    query?: never;
+    url: '/knowledge_graph/snapshots';
+};
+
+export type CreateKnowledgeGraphSnapshotErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateKnowledgeGraphSnapshotError = CreateKnowledgeGraphSnapshotErrors[keyof CreateKnowledgeGraphSnapshotErrors];
+
+export type CreateKnowledgeGraphSnapshotResponses = {
+    /**
+     * OK
+     */
+    200: CreateKnowledgeGraphSnapshotResponseBody;
+};
+
+export type CreateKnowledgeGraphSnapshotResponse = CreateKnowledgeGraphSnapshotResponses[keyof CreateKnowledgeGraphSnapshotResponses];
+
+export type GetKnowledgeGraphSnapshotData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/knowledge_graph/snapshots/{id}';
+};
+
+export type GetKnowledgeGraphSnapshotErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetKnowledgeGraphSnapshotError = GetKnowledgeGraphSnapshotErrors[keyof GetKnowledgeGraphSnapshotErrors];
+
+export type GetKnowledgeGraphSnapshotResponses = {
+    /**
+     * OK
+     */
+    200: GetKnowledgeGraphSnapshotResponseBody;
+};
+
+export type GetKnowledgeGraphSnapshotResponse = GetKnowledgeGraphSnapshotResponses[keyof GetKnowledgeGraphSnapshotResponses];
+
 export type ListMeetingSchedulesData = {
     body?: never;
     path?: never;
@@ -9656,303 +9888,6 @@ export type UpdateSystemAnalysisNodeResponses = {
 };
 
 export type UpdateSystemAnalysisNodeResponse = UpdateSystemAnalysisNodeResponses[keyof UpdateSystemAnalysisNodeResponses];
-
-export type ListSystemTopologyEntitiesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-        kind?: Array<string>;
-        provider?: string;
-        providerSource?: string;
-        subjectKind?: string;
-    };
-    url: '/system_topology/entities';
-};
-
-export type ListSystemTopologyEntitiesErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListSystemTopologyEntitiesError = ListSystemTopologyEntitiesErrors[keyof ListSystemTopologyEntitiesErrors];
-
-export type ListSystemTopologyEntitiesResponses = {
-    /**
-     * OK
-     */
-    200: ListSystemTopologyEntitiesResponseBody;
-};
-
-export type ListSystemTopologyEntitiesResponse = ListSystemTopologyEntitiesResponses[keyof ListSystemTopologyEntitiesResponses];
-
-export type GetSystemTopologyEntityData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_topology/entities/{id}';
-};
-
-export type GetSystemTopologyEntityErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemTopologyEntityError = GetSystemTopologyEntityErrors[keyof GetSystemTopologyEntityErrors];
-
-export type GetSystemTopologyEntityResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemTopologyEntityResponseBody;
-};
-
-export type GetSystemTopologyEntityResponse = GetSystemTopologyEntityResponses[keyof GetSystemTopologyEntityResponses];
-
-export type GetSystemTopologyEntityNeighborhoodData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: {
-        depth?: number;
-        relationshipKind?: Array<string>;
-    };
-    url: '/system_topology/entities/{id}/neighborhood';
-};
-
-export type GetSystemTopologyEntityNeighborhoodErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemTopologyEntityNeighborhoodError = GetSystemTopologyEntityNeighborhoodErrors[keyof GetSystemTopologyEntityNeighborhoodErrors];
-
-export type GetSystemTopologyEntityNeighborhoodResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemTopologyEntityNeighborhoodResponseBody;
-};
-
-export type GetSystemTopologyEntityNeighborhoodResponse = GetSystemTopologyEntityNeighborhoodResponses[keyof GetSystemTopologyEntityNeighborhoodResponses];
-
-export type ListSystemTopologyRelationshipsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-        kind?: Array<string>;
-        entityId?: string;
-        sourceEntityId?: string;
-        targetEntityId?: string;
-    };
-    url: '/system_topology/relationships';
-};
-
-export type ListSystemTopologyRelationshipsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListSystemTopologyRelationshipsError = ListSystemTopologyRelationshipsErrors[keyof ListSystemTopologyRelationshipsErrors];
-
-export type ListSystemTopologyRelationshipsResponses = {
-    /**
-     * OK
-     */
-    200: ListSystemTopologyRelationshipsResponseBody;
-};
-
-export type ListSystemTopologyRelationshipsResponse = ListSystemTopologyRelationshipsResponses[keyof ListSystemTopologyRelationshipsResponses];
-
-export type CreateSystemTopologySnapshotData = {
-    body: CreateSystemTopologySnapshotRequestBody;
-    path?: never;
-    query?: never;
-    url: '/system_topology/snapshots';
-};
-
-export type CreateSystemTopologySnapshotErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateSystemTopologySnapshotError = CreateSystemTopologySnapshotErrors[keyof CreateSystemTopologySnapshotErrors];
-
-export type CreateSystemTopologySnapshotResponses = {
-    /**
-     * OK
-     */
-    200: CreateSystemTopologySnapshotResponseBody;
-};
-
-export type CreateSystemTopologySnapshotResponse = CreateSystemTopologySnapshotResponses[keyof CreateSystemTopologySnapshotResponses];
-
-export type GetSystemTopologySnapshotData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_topology/snapshots/{id}';
-};
-
-export type GetSystemTopologySnapshotErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemTopologySnapshotError = GetSystemTopologySnapshotErrors[keyof GetSystemTopologySnapshotErrors];
-
-export type GetSystemTopologySnapshotResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemTopologySnapshotResponseBody;
-};
-
-export type GetSystemTopologySnapshotResponse = GetSystemTopologySnapshotResponses[keyof GetSystemTopologySnapshotResponses];
 
 export type ListTasksData = {
     body?: never;

@@ -7,10 +7,8 @@ import (
 	"reflect"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/go-viper/mapstructure/v2"
 	"github.com/rezible/rezible/ent"
 )
 
@@ -36,9 +34,7 @@ func GetEventDisplay(ev *ent.NormalizedEvent) (*EventDisplay, error) {
 	return disp, nil
 }
 
-type EventAttributes map[string]any
-
-func EncodeAttributes[A any](attrs A) (EventAttributes, error) {
+func EncodeAttributes[A any](attrs A) ([]byte, error) {
 	if validationErr := validateAttributes(attrs); validationErr != nil {
 		return nil, fmt.Errorf("validate attributes: %w", validationErr)
 	}
@@ -46,34 +42,15 @@ func EncodeAttributes[A any](attrs A) (EventAttributes, error) {
 	if marshalErr != nil {
 		return nil, fmt.Errorf("marshal attributes: %w", marshalErr)
 	}
-	var encodedAttrs EventAttributes
-	if unmarshalErr := json.Unmarshal(attrBytes, &encodedAttrs); unmarshalErr != nil {
-		return nil, fmt.Errorf("unmarshal encoded attributes: %w", unmarshalErr)
-	}
-	return encodedAttrs, nil
+	return attrBytes, nil
 }
 
 func DecodeSubjectAttributes[A any](ev *ent.NormalizedEvent) (*Event[A], error) {
 	if ev == nil {
 		return nil, fmt.Errorf("normalized event is nil")
 	}
-	eventAttrs := ev.Attributes
-	if eventAttrs == nil {
-		eventAttrs = EventAttributes{}
-	}
 	var attrs A
-	cfg := &mapstructure.DecoderConfig{
-		Result:      &attrs,
-		TagName:     attributeFieldNameTag,
-		ErrorUnused: true,
-		MatchName:   matchAttributeName,
-		DecodeHook:  projectionAttributeDecodeHook(),
-	}
-	decoder, decoderErr := mapstructure.NewDecoder(cfg)
-	if decoderErr != nil {
-		return nil, fmt.Errorf("create decoder: %w", decoderErr)
-	}
-	if decodeErr := decoder.Decode(eventAttrs); decodeErr != nil {
+	if decodeErr := json.Unmarshal(ev.Attributes, &attrs); decodeErr != nil {
 		return nil, fmt.Errorf("decode attributes: %w", decodeErr)
 	}
 	if validationErr := validateAttributes(attrs); validationErr != nil {
@@ -97,35 +74,10 @@ func IsRetryable(err error) bool {
 	return errors.Is(err, ErrRetryableProjection)
 }
 
-func matchAttributeName(mapKey, fieldName string) bool {
-	mapKey = strings.ReplaceAll(mapKey, "_", "")
-	fieldName = strings.ReplaceAll(fieldName, "_", "")
-	return strings.EqualFold(mapKey, fieldName)
-}
-
-func projectionAttributeDecodeHook() mapstructure.DecodeHookFunc {
-	timeType := reflect.TypeOf(time.Time{})
-	return mapstructure.ComposeDecodeHookFunc(
-		func(from reflect.Type, to reflect.Type, data any) (any, error) {
-			if to != timeType {
-				return data, nil
-			}
-			if from.Kind() == reflect.Map {
-				value := reflect.ValueOf(data)
-				if value.Len() == 0 {
-					return time.Time{}, nil
-				}
-			}
-			return data, nil
-		},
-		mapstructure.StringToTimeHookFunc(time.RFC3339Nano),
-	)
-}
-
 func newProjectionValidator() *validator.Validate {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
-		name, _, found := strings.Cut(field.Tag.Get(attributeFieldNameTag), ",")
+		name, _, found := strings.Cut(field.Tag.Get("json"), ",")
 		if found && name != "" && name != "-" {
 			return name
 		}
@@ -146,18 +98,6 @@ func validateAttributes[A any](attrs A) error {
 	}
 	return nil
 }
-
-type SubjectKind string
-
-func (k SubjectKind) String() string {
-	return string(k)
-}
-
-func (k SubjectKind) Matches(ev *ent.NormalizedEvent) bool {
-	return SubjectKind(ev.SubjectKind) == k
-}
-
-const SubjectKindChatMessage SubjectKind = "chat_message"
 
 type RelatedEntityRef struct {
 	ExternalRef string `json:"external_ref" validate:"required"`

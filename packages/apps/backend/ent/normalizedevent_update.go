@@ -117,7 +117,7 @@ func (_u *NormalizedEventUpdate) SetNillableSubjectKind(v *string) *NormalizedEv
 }
 
 // SetAttributes sets the "attributes" field.
-func (_u *NormalizedEventUpdate) SetAttributes(v map[string]interface{}) *NormalizedEventUpdate {
+func (_u *NormalizedEventUpdate) SetAttributes(v []byte) *NormalizedEventUpdate {
 	_u.mutation.SetAttributes(v)
 	return _u
 }
@@ -302,7 +302,7 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 		_spec.SetField(normalizedevent.FieldSubjectKind, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Attributes(); ok {
-		_spec.SetField(normalizedevent.FieldAttributes, field.TypeJSON, value)
+		_spec.SetField(normalizedevent.FieldAttributes, field.TypeBytes, value)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(normalizedevent.FieldCreatedAt, field.TypeTime, value)
@@ -470,7 +470,7 @@ func (_u *NormalizedEventUpdateOne) SetNillableSubjectKind(v *string) *Normalize
 }
 
 // SetAttributes sets the "attributes" field.
-func (_u *NormalizedEventUpdateOne) SetAttributes(v map[string]interface{}) *NormalizedEventUpdateOne {
+func (_u *NormalizedEventUpdateOne) SetAttributes(v []byte) *NormalizedEventUpdateOne {
 	_u.mutation.SetAttributes(v)
 	return _u
 }
@@ -685,7 +685,7 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 		_spec.SetField(normalizedevent.FieldSubjectKind, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Attributes(); ok {
-		_spec.SetField(normalizedevent.FieldAttributes, field.TypeJSON, value)
+		_spec.SetField(normalizedevent.FieldAttributes, field.TypeBytes, value)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(normalizedevent.FieldCreatedAt, field.TypeTime, value)

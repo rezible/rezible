@@ -33,9 +33,10 @@ func (s *UserServiceSuite) createUserProjectionEvent(subjectRef string, attrs pr
 func (s *UserServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntity() {
 	ctx := s.SeedTenantContext()
 	svc := s.newUserService(nil)
+	email := "projected+" + uuid.NewString() + "@example.com"
 	ev := s.createUserProjectionEvent("user-1", projections.UserSubjectAttributes{
 		Name:     "Projected User",
-		Email:    "projected+" + uuid.NewString() + "@example.com",
+		Email:    email,
 		ChatId:   "U123",
 		Timezone: "Australia/Perth",
 	})
@@ -44,7 +45,7 @@ func (s *UserServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntity() {
 	s.Require().NoError(projErr)
 
 	created, err := s.Client(ctx).User.Query().
-		Where(entuser.Email(ev.Attributes["email"].(string))).
+		Where(entuser.Email(email)).
 		Only(ctx)
 	s.Require().NoError(err)
 	s.NotNil(created.KnowledgeEntityID)

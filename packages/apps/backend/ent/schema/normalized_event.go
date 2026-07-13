@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"entgo.io/ent"
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -37,9 +36,8 @@ func (NormalizedEvent) Fields() []ent.Field {
 			Comment("Stable provider reference for the primary subject this event is about."),
 		field.String("subject_kind").
 			Comment("Provider-neutral type of the primary subject this event is about."),
-		field.JSON("attributes", map[string]any{}).
-			Comment("Normalized attributes for this event kind.").
-			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
+		field.Bytes("attributes").
+			Comment("Normalized JSON attributes for this event kind."),
 		field.Time("created_at").Default(time.Now),
 		field.Time("occurred_at"),
 		field.Time("received_at"),

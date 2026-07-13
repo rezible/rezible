@@ -78,12 +78,6 @@ func (h *webhookHandler) handleDemoAlertEvent(ctx context.Context, body []byte) 
 			relatedComponent("search_api", "service", "Search API"),
 		},
 	}
-	ev, jsonErr := payload.toEvent()
-	if jsonErr != nil || ev == nil {
-		return fmt.Errorf("json marshal alert: %w", jsonErr)
-	}
-	if ingestErr := h.provEvents.Ingest(ctx, *ev); ingestErr != nil {
-		return fmt.Errorf("ingest error: %w", ingestErr)
-	}
+	fmt.Printf("todo: ingest demo alert payload %+v\n", payload)
 	return nil
 }

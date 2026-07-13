@@ -87,6 +87,11 @@ func SubjectKind(v string) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldEQ(FieldSubjectKind, v))
 }
 
+// Attributes applies equality check predicate on the "attributes" field. It's identical to AttributesEQ.
+func Attributes(v []byte) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldAttributes, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldEQ(FieldCreatedAt, v))
@@ -465,6 +470,46 @@ func SubjectKindEqualFold(v string) predicate.NormalizedEvent {
 // SubjectKindContainsFold applies the ContainsFold predicate on the "subject_kind" field.
 func SubjectKindContainsFold(v string) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldSubjectKind, v))
+}
+
+// AttributesEQ applies the EQ predicate on the "attributes" field.
+func AttributesEQ(v []byte) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldAttributes, v))
+}
+
+// AttributesNEQ applies the NEQ predicate on the "attributes" field.
+func AttributesNEQ(v []byte) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNEQ(FieldAttributes, v))
+}
+
+// AttributesIn applies the In predicate on the "attributes" field.
+func AttributesIn(vs ...[]byte) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIn(FieldAttributes, vs...))
+}
+
+// AttributesNotIn applies the NotIn predicate on the "attributes" field.
+func AttributesNotIn(vs ...[]byte) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotIn(FieldAttributes, vs...))
+}
+
+// AttributesGT applies the GT predicate on the "attributes" field.
+func AttributesGT(v []byte) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGT(FieldAttributes, v))
+}
+
+// AttributesGTE applies the GTE predicate on the "attributes" field.
+func AttributesGTE(v []byte) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGTE(FieldAttributes, v))
+}
+
+// AttributesLT applies the LT predicate on the "attributes" field.
+func AttributesLT(v []byte) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLT(FieldAttributes, v))
+}
+
+// AttributesLTE applies the LTE predicate on the "attributes" field.
+func AttributesLTE(v []byte) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLTE(FieldAttributes, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
