@@ -73,7 +73,7 @@ type (
 	}
 )
 
-const SubjectKindUser SubjectKind = "User"
+const SubjectKindUser SubjectKind = "user"
 
 func DecodeUserEvent(ev *ent.NormalizedEvent) (*UserEvent, error) {
 	return DecodeSubjectAttributes[UserSubjectAttributes](ev)
@@ -94,18 +94,18 @@ type (
 	}
 )
 
-const SubjectKindIncident SubjectKind = "Incident"
+const SubjectKindIncident SubjectKind = "incident"
 
 func DecodeIncidentEvent(ev *ent.NormalizedEvent) (*IncidentEvent, error) {
 	return DecodeSubjectAttributes[IncidentSubjectAttributes](ev)
 }
 
 type (
-	// AlertEvent is a normalized alert observation from an alerting provider.
-	AlertEvent = Event[AlertSubjectAttributes]
+	// AlertInstanceEvent is a normalized alert observation from an alerting provider.
+	AlertInstanceEvent = Event[AlertInstanceSubjectAttributes]
 
-	// AlertSubjectAttributes are the provider-neutral attributes persisted for alert observations.
-	AlertSubjectAttributes struct {
+	// AlertInstanceSubjectAttributes are the provider-neutral attributes persisted for alert observations.
+	AlertInstanceSubjectAttributes struct {
 		Title           string             `json:"title" validate:"required"`
 		Description     string             `json:"description"`
 		Definition      string             `json:"definition"`
@@ -114,10 +114,10 @@ type (
 	}
 )
 
-const SubjectKindAlert SubjectKind = "Alert"
+const SubjectKindAlertInstance SubjectKind = "alert_instance"
 
-func DecodeAlertEvent(ev *ent.NormalizedEvent) (*AlertEvent, error) {
-	return DecodeSubjectAttributes[AlertSubjectAttributes](ev)
+func DecodeAlertInstanceEvent(ev *ent.NormalizedEvent) (*AlertInstanceEvent, error) {
+	return DecodeSubjectAttributes[AlertInstanceSubjectAttributes](ev)
 }
 
 type (

@@ -44,7 +44,7 @@ func (s *AlertServiceSuite) createAlertForEntity(entity *ent.KnowledgeEntity, ti
 	return alert
 }
 
-func (s *AlertServiceSuite) createAlertProjectionEvent(subjectRef string, attrs projections.AlertSubjectAttributes) *ent.NormalizedEvent {
+func (s *AlertServiceSuite) createAlertProjectionEvent(subjectRef string, attrs projections.AlertInstanceSubjectAttributes) *ent.NormalizedEvent {
 	ctx := s.SeedTenantContext()
 	encoded, err := projections.EncodeAttributes(attrs)
 	s.Require().NoError(err)
@@ -55,7 +55,7 @@ func (s *AlertServiceSuite) createAlertProjectionEvent(subjectRef string, attrs 
 		SetProviderEventRef("alert-event-" + uuid.NewString()).
 		SetProviderSubjectRef(subjectRef).
 		SetKind(ne.KindObserved).
-		SetSubjectKind(projections.SubjectKindAlert.String()).
+		SetSubjectKind(projections.SubjectKindAlertInstance.String()).
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
 		SetAttributes(encoded).
@@ -66,9 +66,9 @@ func (s *AlertServiceSuite) createAlertProjectionEvent(subjectRef string, attrs 
 
 func (s *AlertServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvidence() {
 	ctx := s.SeedTenantContext()
-	svc, err := NewAlertService(s.Database(), NewKnowledgeFactService(s.Database()))
+	svc, err := NewAlertService(s.Database(), NewKnowledgeIngestionService(s.Database()))
 	s.Require().NoError(err)
-	attrs := projections.AlertSubjectAttributes{
+	attrs := projections.AlertInstanceSubjectAttributes{
 		Title:       "Search latency high",
 		Description: "p95 latency above threshold",
 		Definition:  "latency > 2000",
@@ -107,10 +107,10 @@ func (s *AlertServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvidence(
 
 func (s *AlertServiceSuite) TestAlertProjectionLinksRelatedEntities() {
 	ctx := s.SeedTenantContext()
-	svc, err := NewAlertService(s.Database(), NewKnowledgeFactService(s.Database()))
+	svc, err := NewAlertService(s.Database(), NewKnowledgeIngestionService(s.Database()))
 	s.Require().NoError(err)
 
-	attrs := projections.AlertSubjectAttributes{
+	attrs := projections.AlertInstanceSubjectAttributes{
 		Title:       "Search latency high",
 		Description: "p95 latency above threshold",
 		Definition:  "latency > 2000",

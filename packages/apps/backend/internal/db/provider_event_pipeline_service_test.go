@@ -328,7 +328,7 @@ type pipelineTestProjector struct {
 	creatorID uuid.UUID
 }
 
-func (p *pipelineTestProjector) HandleEventProjection(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedDomainEntityRef, error) {
+func (p *pipelineTestProjector) HandleEventProjection(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
 	_, err := p.db.Client(ctx).EventAnnotation.Create().
 		SetEventID(ev.ID).
 		SetCreatorID(p.creatorID).
@@ -343,7 +343,7 @@ type countingPipelineProjector struct {
 	calls int
 }
 
-func (p *countingPipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedDomainEntityRef, error) {
+func (p *countingPipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
 	p.calls++
 	return nil, nil
 }
@@ -353,7 +353,7 @@ type rollbackPipelineProjector struct {
 	creatorID uuid.UUID
 }
 
-func (p *rollbackPipelineProjector) HandleEventProjection(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedDomainEntityRef, error) {
+func (p *rollbackPipelineProjector) HandleEventProjection(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
 	create := p.db.Client(ctx).EventAnnotation.Create().
 		SetEventID(ev.ID).
 		SetCreatorID(p.creatorID).
@@ -368,7 +368,7 @@ func (p *rollbackPipelineProjector) HandleEventProjection(ctx context.Context, e
 
 type retryablePipelineProjector struct{}
 
-func (p *retryablePipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedDomainEntityRef, error) {
+func (p *retryablePipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
 	return nil, projections.Retryable(errors.New("dependency not ready"))
 }
 
@@ -385,12 +385,12 @@ type transientDatabasePipelineProjector struct {
 	err error
 }
 
-func (p *transientDatabasePipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedDomainEntityRef, error) {
+func (p *transientDatabasePipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
 	return nil, p.err
 }
 
 type panicPipelineProjector struct{}
 
-func (p *panicPipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedDomainEntityRef, error) {
+func (p *panicPipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
 	panic("boom")
 }

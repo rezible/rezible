@@ -1062,7 +1062,7 @@ func init() {
 	// knowledgeevidence.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	knowledgeevidence.UpdateDefaultUpdatedAt = knowledgeevidenceDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// knowledgeevidenceDescAssertion is the schema descriptor for assertion field.
-	knowledgeevidenceDescAssertion := knowledgeevidenceFields[3].Descriptor()
+	knowledgeevidenceDescAssertion := knowledgeevidenceFields[2].Descriptor()
 	// knowledgeevidence.AssertionValidator is a validator for the "assertion" field. It is called by the builders before save.
 	knowledgeevidence.AssertionValidator = knowledgeevidenceDescAssertion.Validators[0].(func(string) error)
 	// knowledgeevidenceDescID is the schema descriptor for id field.
@@ -1187,20 +1187,8 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	knowledgesubjectaliasMixinFields2 := knowledgesubjectaliasMixin[2].Fields()
-	_ = knowledgesubjectaliasMixinFields2
 	knowledgesubjectaliasFields := schema.KnowledgeSubjectAlias{}.Fields()
 	_ = knowledgesubjectaliasFields
-	// knowledgesubjectaliasDescCreatedAt is the schema descriptor for created_at field.
-	knowledgesubjectaliasDescCreatedAt := knowledgesubjectaliasMixinFields2[0].Descriptor()
-	// knowledgesubjectalias.DefaultCreatedAt holds the default value on creation for the created_at field.
-	knowledgesubjectalias.DefaultCreatedAt = knowledgesubjectaliasDescCreatedAt.Default.(func() time.Time)
-	// knowledgesubjectaliasDescUpdatedAt is the schema descriptor for updated_at field.
-	knowledgesubjectaliasDescUpdatedAt := knowledgesubjectaliasMixinFields2[1].Descriptor()
-	// knowledgesubjectalias.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	knowledgesubjectalias.DefaultUpdatedAt = knowledgesubjectaliasDescUpdatedAt.Default.(func() time.Time)
-	// knowledgesubjectalias.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	knowledgesubjectalias.UpdateDefaultUpdatedAt = knowledgesubjectaliasDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// knowledgesubjectaliasDescProvider is the schema descriptor for provider field.
 	knowledgesubjectaliasDescProvider := knowledgesubjectaliasFields[2].Descriptor()
 	// knowledgesubjectalias.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
@@ -1209,6 +1197,16 @@ func init() {
 	knowledgesubjectaliasDescProviderSubjectRef := knowledgesubjectaliasFields[3].Descriptor()
 	// knowledgesubjectalias.ProviderSubjectRefValidator is a validator for the "provider_subject_ref" field. It is called by the builders before save.
 	knowledgesubjectalias.ProviderSubjectRefValidator = knowledgesubjectaliasDescProviderSubjectRef.Validators[0].(func(string) error)
+	// knowledgesubjectaliasDescFirstObservedAt is the schema descriptor for first_observed_at field.
+	knowledgesubjectaliasDescFirstObservedAt := knowledgesubjectaliasFields[7].Descriptor()
+	// knowledgesubjectalias.DefaultFirstObservedAt holds the default value on creation for the first_observed_at field.
+	knowledgesubjectalias.DefaultFirstObservedAt = knowledgesubjectaliasDescFirstObservedAt.Default.(func() time.Time)
+	// knowledgesubjectaliasDescLastObservedAt is the schema descriptor for last_observed_at field.
+	knowledgesubjectaliasDescLastObservedAt := knowledgesubjectaliasFields[8].Descriptor()
+	// knowledgesubjectalias.DefaultLastObservedAt holds the default value on creation for the last_observed_at field.
+	knowledgesubjectalias.DefaultLastObservedAt = knowledgesubjectaliasDescLastObservedAt.Default.(func() time.Time)
+	// knowledgesubjectalias.UpdateDefaultLastObservedAt holds the default value on update for the last_observed_at field.
+	knowledgesubjectalias.UpdateDefaultLastObservedAt = knowledgesubjectaliasDescLastObservedAt.UpdateDefault.(func() time.Time)
 	// knowledgesubjectaliasDescID is the schema descriptor for id field.
 	knowledgesubjectaliasDescID := knowledgesubjectaliasFields[0].Descriptor()
 	// knowledgesubjectalias.DefaultID holds the default value on creation for the id field.

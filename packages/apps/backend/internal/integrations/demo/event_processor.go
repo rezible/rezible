@@ -69,7 +69,7 @@ func (p *eventProcessor) processAlert() (ent.NormalizedEvents, error) {
 		occurredAt = time.Now().UTC()
 	}
 
-	attrs := projections.AlertSubjectAttributes{
+	attrs := projections.AlertInstanceSubjectAttributes{
 		Title:           payload.Title,
 		Description:     payload.Description,
 		Definition:      payload.Definition,
@@ -85,7 +85,7 @@ func (p *eventProcessor) processAlert() (ent.NormalizedEvents, error) {
 		Provider:           integrationName,
 		ProviderSource:     sourceAlerts,
 		Kind:               ne.KindObserved,
-		SubjectKind:        projections.SubjectKindAlert.String(),
+		SubjectKind:        projections.SubjectKindAlertInstance.String(),
 		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		ProviderEventRef:   p.event.ProviderEventRef,
 		OccurredAt:         occurredAt,

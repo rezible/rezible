@@ -43,11 +43,11 @@ func TestProcessAlertObservedEvent(t *testing.T) {
 	require.Len(t, events, 1)
 	ev := events[0]
 	assert.Equal(t, ne.KindObserved, ev.Kind)
-	assert.True(t, projections.SubjectKindAlert.Matches(ev))
+	assert.True(t, projections.SubjectKindAlertInstance.Matches(ev))
 	assert.Equal(t, payload.getSubjectRef(), ev.ProviderSubjectRef)
 	assert.Equal(t, payload.OccurredAt, ev.OccurredAt)
 
-	decoded, decodeErr := projections.DecodeAlertEvent(ev)
+	decoded, decodeErr := projections.DecodeAlertInstanceEvent(ev)
 	require.NoError(t, decodeErr)
 	assert.Equal(t, "Search API response time high", decoded.Attributes.Title)
 	assert.Equal(t, "p95 latency is above threshold.", decoded.Attributes.Description)

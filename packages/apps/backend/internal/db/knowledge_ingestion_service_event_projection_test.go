@@ -23,8 +23,8 @@ func TestKnowledgeServiceProjectionSuite(t *testing.T) {
 	suite.Run(t, &KnowledgeServiceProjectionSuite{Suite: test.NewSuite()})
 }
 
-func (s *KnowledgeServiceProjectionSuite) newKnowledgeService() *KnowledgeFactService {
-	return NewKnowledgeFactService(s.Database())
+func (s *KnowledgeServiceProjectionSuite) newKnowledgeService() *KnowledgeIngestionService {
+	return NewKnowledgeIngestionService(s.Database())
 }
 
 func (s *KnowledgeServiceProjectionSuite) createNormalizedEvent(subjectKind projections.SubjectKind, providerSubjectRef string, occurredAt time.Time, attrs any) *ent.NormalizedEvent {

@@ -25,12 +25,12 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldEventID holds the string denoting the event_id field in the database.
 	FieldEventID = "event_id"
-	// FieldAliasID holds the string denoting the alias_id field in the database.
-	FieldAliasID = "alias_id"
 	// FieldAssertion holds the string denoting the assertion field in the database.
 	FieldAssertion = "assertion"
 	// FieldEvidenceKind holds the string denoting the evidence_kind field in the database.
 	FieldEvidenceKind = "evidence_kind"
+	// FieldAliasID holds the string denoting the alias_id field in the database.
+	FieldAliasID = "alias_id"
 	// FieldEffectiveAt holds the string denoting the effective_at field in the database.
 	FieldEffectiveAt = "effective_at"
 	// FieldProperties holds the string denoting the properties field in the database.
@@ -73,9 +73,9 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldEventID,
-	FieldAliasID,
 	FieldAssertion,
 	FieldEvidenceKind,
+	FieldAliasID,
 	FieldEffectiveAt,
 	FieldProperties,
 }
@@ -115,10 +115,9 @@ type EvidenceKind string
 
 // EvidenceKind values.
 const (
-	EvidenceKindObserved     EvidenceKind = "observed"
-	EvidenceKindChanged      EvidenceKind = "changed"
-	EvidenceKindContradicted EvidenceKind = "contradicted"
-	EvidenceKindDeleted      EvidenceKind = "deleted"
+	EvidenceKindObserved EvidenceKind = "observed"
+	EvidenceKindChanged  EvidenceKind = "changed"
+	EvidenceKindDeleted  EvidenceKind = "deleted"
 )
 
 func (ek EvidenceKind) String() string {
@@ -128,7 +127,7 @@ func (ek EvidenceKind) String() string {
 // EvidenceKindValidator is a validator for the "evidence_kind" field enum values. It is called by the builders before save.
 func EvidenceKindValidator(ek EvidenceKind) error {
 	switch ek {
-	case EvidenceKindObserved, EvidenceKindChanged, EvidenceKindContradicted, EvidenceKindDeleted:
+	case EvidenceKindObserved, EvidenceKindChanged, EvidenceKindDeleted:
 		return nil
 	default:
 		return fmt.Errorf("knowledgeevidence: invalid enum value for evidence_kind field: %q", ek)
@@ -163,11 +162,6 @@ func ByEventID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEventID, opts...).ToFunc()
 }
 
-// ByAliasID orders the results by the alias_id field.
-func ByAliasID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAliasID, opts...).ToFunc()
-}
-
 // ByAssertion orders the results by the assertion field.
 func ByAssertion(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAssertion, opts...).ToFunc()
@@ -176,6 +170,11 @@ func ByAssertion(opts ...sql.OrderTermOption) OrderOption {
 // ByEvidenceKind orders the results by the evidence_kind field.
 func ByEvidenceKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEvidenceKind, opts...).ToFunc()
+}
+
+// ByAliasID orders the results by the alias_id field.
+func ByAliasID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAliasID, opts...).ToFunc()
 }
 
 // ByEffectiveAt orders the results by the effective_at field.

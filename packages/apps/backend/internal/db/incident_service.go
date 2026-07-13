@@ -23,10 +23,10 @@ import (
 type IncidentService struct {
 	db        rez.Database
 	msgs      rez.MessageService
-	knowledge rez.KnowledgeFactService
+	knowledge rez.KnowledgeIngestionService
 }
 
-func NewIncidentService(db rez.Database, msgs rez.MessageService, knowledge rez.KnowledgeFactService) (*IncidentService, error) {
+func NewIncidentService(db rez.Database, msgs rez.MessageService, knowledge rez.KnowledgeIngestionService) (*IncidentService, error) {
 	svc := &IncidentService{
 		db:        db,
 		msgs:      msgs,

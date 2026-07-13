@@ -19,10 +19,6 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
-	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
-	FieldUpdatedAt = "updated_at"
 	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
 	FieldSubjectKind = "subject_kind"
 	// FieldProvider holds the string denoting the provider field in the database.
@@ -35,6 +31,12 @@ const (
 	FieldRelationshipID = "relationship_id"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// FieldFirstObservedAt holds the string denoting the first_observed_at field in the database.
+	FieldFirstObservedAt = "first_observed_at"
+	// FieldLastObservedAt holds the string denoting the last_observed_at field in the database.
+	FieldLastObservedAt = "last_observed_at"
+	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
+	FieldDeletedAt = "deleted_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeEvidence holds the string denoting the evidence edge name in mutations.
@@ -79,14 +81,15 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldCreatedAt,
-	FieldUpdatedAt,
 	FieldSubjectKind,
 	FieldProvider,
 	FieldProviderSubjectRef,
 	FieldEntityID,
 	FieldRelationshipID,
 	FieldDescription,
+	FieldFirstObservedAt,
+	FieldLastObservedAt,
+	FieldDeletedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -107,16 +110,16 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
-	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
-	DefaultUpdatedAt func() time.Time
-	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
-	UpdateDefaultUpdatedAt func() time.Time
 	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	ProviderValidator func(string) error
 	// ProviderSubjectRefValidator is a validator for the "provider_subject_ref" field. It is called by the builders before save.
 	ProviderSubjectRefValidator func(string) error
+	// DefaultFirstObservedAt holds the default value on creation for the "first_observed_at" field.
+	DefaultFirstObservedAt func() time.Time
+	// DefaultLastObservedAt holds the default value on creation for the "last_observed_at" field.
+	DefaultLastObservedAt func() time.Time
+	// UpdateDefaultLastObservedAt holds the default value on update for the "last_observed_at" field.
+	UpdateDefaultLastObservedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -157,16 +160,6 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
-}
-
-// ByUpdatedAt orders the results by the updated_at field.
-func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
-}
-
 // BySubjectKind orders the results by the subject_kind field.
 func BySubjectKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSubjectKind, opts...).ToFunc()
@@ -195,6 +188,21 @@ func ByRelationshipID(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByFirstObservedAt orders the results by the first_observed_at field.
+func ByFirstObservedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFirstObservedAt, opts...).ToFunc()
+}
+
+// ByLastObservedAt orders the results by the last_observed_at field.
+func ByLastObservedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastObservedAt, opts...).ToFunc()
+}
+
+// ByDeletedAt orders the results by the deleted_at field.
+func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDeletedAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

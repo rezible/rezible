@@ -26,14 +26,21 @@ type AiServiceSuite struct {
 }
 
 func TestAiServiceSuite(t *testing.T) {
-	if os.Getenv("AI_SERVICE_TESTS_ENABLED") != "true" {
-		t.Skip("Skipping live AI service tests")
-	}
+
 	suite.Run(t, &AiServiceSuite{Suite: test.NewSuite()})
 }
 
+func (s *AiServiceSuite) checkSkip(name string) {
+	if os.Getenv("AI_TESTS_ALL") != "true" && os.Getenv("AI_TESTS_"+name) != "true" {
+		s.T().Skipf("Skipping live AI test '%s'", name)
+	}
+}
+
 func (s *AiServiceSuite) makeService(opts ...AiServiceOption) *AiService {
-	snapshots, snapshotsErr := db.NewAiSessionStateService(s.Database())
+	msgs := mocks.NewMockMessageService(s.T())
+	msgs.EXPECT().PublishEvent(mock.Anything, mock.Anything).Return(nil).Maybe()
+
+	snapshots, snapshotsErr := db.NewAiSessionStateService(s.Database(), msgs)
 	s.Require().NoError(snapshotsErr)
 
 	kg, kgErr := db.NewKnowledgeGraphService(s.Database())
@@ -59,45 +66,31 @@ func (s *AiServiceSuite) makeAgentRun(name string, inputState rezai.SessionState
 }
 
 func (s *AiServiceSuite) TestAlertInvestigation() {
-	s.T().Skip("Skipping alert investigation test")
+	s.checkSkip("alert_investigation")
+
 	s.SeedTestEntities()
 
 	ctx := s.SeedTenantContext()
 
 	agentName := rezai.AlertsAgent.Name
 
-	var alert *ent.Alert
-	var run *ent.AiAgentRun
-	makeEntitiesTx := func(ctx context.Context, tx *ent.Client) error {
-		createAlert := tx.Alert.Create().
-			SetTitle("foo")
-		txAlert, saveAlertErr := createAlert.Save(ctx)
-		if saveAlertErr != nil {
-			return saveAlertErr
-		}
-		alert = txAlert.Unwrap()
+	createAlert := s.Client(ctx).Alert.Create().
+		SetTitle("foo")
+	fooAlert, saveAlertErr := createAlert.Save(ctx)
+	s.Require().NoError(saveAlertErr)
 
-		input, inputErr := json.Marshal(rezai.AlertAgentInput{AlertID: alert.ID})
-		if inputErr != nil {
-			return inputErr
-		}
+	input, inputErr := json.Marshal(rezai.AlertAgentInput{AlertID: fooAlert.ID})
+	s.Require().NoError(inputErr)
 
-		createRun := tx.AiAgentRun.Create().
-			SetAgentName(agentName).
-			SetInput(input).
-			SetOwnerUserID(s.SeedUser.ID)
-		txRun, saveRunErr := createRun.Save(ctx)
-		if saveRunErr != nil {
-			return saveRunErr
-		}
-		run = txRun.Unwrap()
-
-		return nil
-	}
-	s.Require().NoError(s.Database().WithTx(ctx, makeEntitiesTx))
+	createRun := s.Client(ctx).AiAgentRun.Create().
+		SetAgentName(agentName).
+		SetInput(input).
+		SetOwnerUserID(s.SeedUser.ID)
+	run, saveRunErr := createRun.Save(ctx)
+	s.Require().NoError(saveRunErr)
 
 	alerts := mocks.NewMockAlertService(s.T())
-	alerts.EXPECT().GetAlert(mock.Anything, mock.Anything).Return(alert, nil)
+	alerts.EXPECT().GetAlert(mock.Anything, mock.Anything).Return(fooAlert, nil)
 
 	aia := &AlertsAgent{alerts: alerts}
 	reg := s.makeService(WithAgent(aia))
@@ -105,7 +98,7 @@ func (s *AiServiceSuite) TestAlertInvestigation() {
 	a, invErr := reg.GetAgentRunner(run)
 	s.Require().NoError(invErr)
 
-	_, invokeErr := a.Start(ctx)
+	_, invokeErr := a.Invoke(ctx, nil, ai.NewUserTextMessage("investigate this"), nil)
 	s.Require().NoError(invokeErr)
 }
 
@@ -143,6 +136,8 @@ func makeTestAgent[S rezai.SessionState](userMessage string) *testAgent[S] {
 }
 
 func (s *AiServiceSuite) TestSimpleGreetingAgent() {
+	s.checkSkip("simple_greeting")
+
 	s.SeedTestEntities()
 
 	ctx := s.SeedTenantContext()
@@ -158,14 +153,14 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 	s.Require().NoError(invErr)
 
 	s.T().Logf("Starting test agent run (id %s)", runId.String())
-	snapshotId, startErr := a.Start(ctx)
+	snapshotId, startErr := a.Invoke(ctx, nil, ai.NewUserTextMessage(ta.userMessage), nil)
 	s.Require().NoError(startErr)
 	s.Require().NotEmpty(snapshotId)
 
 	queryRun := s.Client(ctx).AiAgentRun.Query().
 		Where(aar.ID(runId)).
 		WithSnapshots().
-		WithResult()
+		WithOutputs()
 	run, runErr := queryRun.Only(ctx)
 	s.Require().NoError(runErr)
 
@@ -194,11 +189,14 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 		}
 	}
 
-	s.Require().NotNil(run.Edges.Result)
-	var output testAgentOutput
-	s.Require().NoError(json.Unmarshal(run.Edges.Result.Output, &output))
-	s.Require().NoError(output.Validate())
-	s.T().Logf("Result: %+v", output)
+	s.Require().NotEmpty(run.Edges.Outputs)
+	s.T().Log("Outputs:")
+	for i, o := range run.Edges.Outputs {
+		var output testAgentOutput
+		s.Require().NoError(json.Unmarshal(o.Data, &output))
+		s.Require().NoError(output.Validate())
+		s.T().Logf("\t[%d]: %+v", i, output)
+	}
 }
 
 type (

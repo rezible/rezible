@@ -67,12 +67,6 @@ func (_c *KnowledgeEvidenceCreate) SetEventID(v uuid.UUID) *KnowledgeEvidenceCre
 	return _c
 }
 
-// SetAliasID sets the "alias_id" field.
-func (_c *KnowledgeEvidenceCreate) SetAliasID(v uuid.UUID) *KnowledgeEvidenceCreate {
-	_c.mutation.SetAliasID(v)
-	return _c
-}
-
 // SetAssertion sets the "assertion" field.
 func (_c *KnowledgeEvidenceCreate) SetAssertion(v string) *KnowledgeEvidenceCreate {
 	_c.mutation.SetAssertion(v)
@@ -82,6 +76,12 @@ func (_c *KnowledgeEvidenceCreate) SetAssertion(v string) *KnowledgeEvidenceCrea
 // SetEvidenceKind sets the "evidence_kind" field.
 func (_c *KnowledgeEvidenceCreate) SetEvidenceKind(v knowledgeevidence.EvidenceKind) *KnowledgeEvidenceCreate {
 	_c.mutation.SetEvidenceKind(v)
+	return _c
+}
+
+// SetAliasID sets the "alias_id" field.
+func (_c *KnowledgeEvidenceCreate) SetAliasID(v uuid.UUID) *KnowledgeEvidenceCreate {
+	_c.mutation.SetAliasID(v)
 	return _c
 }
 
@@ -201,9 +201,6 @@ func (_c *KnowledgeEvidenceCreate) check() error {
 	if _, ok := _c.mutation.EventID(); !ok {
 		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "KnowledgeEvidence.event_id"`)}
 	}
-	if _, ok := _c.mutation.AliasID(); !ok {
-		return &ValidationError{Name: "alias_id", err: errors.New(`ent: missing required field "KnowledgeEvidence.alias_id"`)}
-	}
 	if _, ok := _c.mutation.Assertion(); !ok {
 		return &ValidationError{Name: "assertion", err: errors.New(`ent: missing required field "KnowledgeEvidence.assertion"`)}
 	}
@@ -219,6 +216,9 @@ func (_c *KnowledgeEvidenceCreate) check() error {
 		if err := knowledgeevidence.EvidenceKindValidator(v); err != nil {
 			return &ValidationError{Name: "evidence_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.evidence_kind": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.AliasID(); !ok {
+		return &ValidationError{Name: "alias_id", err: errors.New(`ent: missing required field "KnowledgeEvidence.alias_id"`)}
 	}
 	if _, ok := _c.mutation.EffectiveAt(); !ok {
 		return &ValidationError{Name: "effective_at", err: errors.New(`ent: missing required field "KnowledgeEvidence.effective_at"`)}
@@ -449,14 +449,14 @@ func (u *KnowledgeEvidenceUpsertOne) UpdateNewValues() *KnowledgeEvidenceUpsertO
 		if _, exists := u.create.mutation.EventID(); exists {
 			s.SetIgnore(knowledgeevidence.FieldEventID)
 		}
-		if _, exists := u.create.mutation.AliasID(); exists {
-			s.SetIgnore(knowledgeevidence.FieldAliasID)
-		}
 		if _, exists := u.create.mutation.Assertion(); exists {
 			s.SetIgnore(knowledgeevidence.FieldAssertion)
 		}
 		if _, exists := u.create.mutation.EvidenceKind(); exists {
 			s.SetIgnore(knowledgeevidence.FieldEvidenceKind)
+		}
+		if _, exists := u.create.mutation.AliasID(); exists {
+			s.SetIgnore(knowledgeevidence.FieldAliasID)
 		}
 		if _, exists := u.create.mutation.EffectiveAt(); exists {
 			s.SetIgnore(knowledgeevidence.FieldEffectiveAt)
@@ -712,14 +712,14 @@ func (u *KnowledgeEvidenceUpsertBulk) UpdateNewValues() *KnowledgeEvidenceUpsert
 			if _, exists := b.mutation.EventID(); exists {
 				s.SetIgnore(knowledgeevidence.FieldEventID)
 			}
-			if _, exists := b.mutation.AliasID(); exists {
-				s.SetIgnore(knowledgeevidence.FieldAliasID)
-			}
 			if _, exists := b.mutation.Assertion(); exists {
 				s.SetIgnore(knowledgeevidence.FieldAssertion)
 			}
 			if _, exists := b.mutation.EvidenceKind(); exists {
 				s.SetIgnore(knowledgeevidence.FieldEvidenceKind)
+			}
+			if _, exists := b.mutation.AliasID(); exists {
+				s.SetIgnore(knowledgeevidence.FieldAliasID)
 			}
 			if _, exists := b.mutation.EffectiveAt(); exists {
 				s.SetIgnore(knowledgeevidence.FieldEffectiveAt)

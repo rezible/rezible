@@ -317,8 +317,8 @@ func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Contex
 	return &res, nil
 }
 
-func (s *ProviderEventPipelineService) runEventProjector(ctx context.Context, ev *ent.NormalizedEvent, p rez.NormalizedEventProjector) ([]rez.ProjectedDomainEntityRef, error) {
-	var projRefs []rez.ProjectedDomainEntityRef
+func (s *ProviderEventPipelineService) runEventProjector(ctx context.Context, ev *ent.NormalizedEvent, p rez.NormalizedEventProjector) ([]rez.ProjectedEntityRef, error) {
+	var projRefs []rez.ProjectedEntityRef
 	projErr := s.db.WithTx(ctx, func(ctx context.Context, _ *ent.Client) (err error) {
 		defer func() {
 			if v := recover(); v != nil {
@@ -402,7 +402,7 @@ func (s *ProviderEventPipelineService) setEventProjectionPending(ctx context.Con
 	})
 }
 
-func (s *ProviderEventPipelineService) setEventProjectionResult(ctx context.Context, projId uuid.UUID, projRefs []rez.ProjectedDomainEntityRef, projErr error) error {
+func (s *ProviderEventPipelineService) setEventProjectionResult(ctx context.Context, projId uuid.UUID, projRefs []rez.ProjectedEntityRef, projErr error) error {
 	setProjFn := func(m *ent.NormalizedEventProjectionMutation) {
 		if projErr == nil {
 			m.ClearError()

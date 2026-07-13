@@ -23,10 +23,6 @@ type KnowledgeSubjectAlias struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// SubjectKind holds the value of the "subject_kind" field.
 	SubjectKind knowledgesubjectalias.SubjectKind `json:"subject_kind,omitempty"`
 	// Provider holds the value of the "provider" field.
@@ -39,6 +35,12 @@ type KnowledgeSubjectAlias struct {
 	RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
+	// FirstObservedAt holds the value of the "first_observed_at" field.
+	FirstObservedAt time.Time `json:"first_observed_at,omitempty"`
+	// LastObservedAt holds the value of the "last_observed_at" field.
+	LastObservedAt time.Time `json:"last_observed_at,omitempty"`
+	// Time observed explicit evidence that this subject no longer exists or applies.
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeSubjectAliasQuery when eager-loading is set.
 	Edges        KnowledgeSubjectAliasEdges `json:"edges"`
@@ -111,7 +113,7 @@ func (*KnowledgeSubjectAlias) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case knowledgesubjectalias.FieldSubjectKind, knowledgesubjectalias.FieldProvider, knowledgesubjectalias.FieldProviderSubjectRef, knowledgesubjectalias.FieldDescription:
 			values[i] = new(sql.NullString)
-		case knowledgesubjectalias.FieldCreatedAt, knowledgesubjectalias.FieldUpdatedAt:
+		case knowledgesubjectalias.FieldFirstObservedAt, knowledgesubjectalias.FieldLastObservedAt, knowledgesubjectalias.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		case knowledgesubjectalias.FieldID, knowledgesubjectalias.FieldEntityID, knowledgesubjectalias.FieldRelationshipID:
 			values[i] = new(uuid.UUID)
@@ -141,18 +143,6 @@ func (_m *KnowledgeSubjectAlias) assignValues(columns []string, values []any) er
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
-			}
-		case knowledgesubjectalias.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				_m.CreatedAt = value.Time
-			}
-		case knowledgesubjectalias.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				_m.UpdatedAt = value.Time
 			}
 		case knowledgesubjectalias.FieldSubjectKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -189,6 +179,25 @@ func (_m *KnowledgeSubjectAlias) assignValues(columns []string, values []any) er
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				_m.Description = value.String
+			}
+		case knowledgesubjectalias.FieldFirstObservedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field first_observed_at", values[i])
+			} else if value.Valid {
+				_m.FirstObservedAt = value.Time
+			}
+		case knowledgesubjectalias.FieldLastObservedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_observed_at", values[i])
+			} else if value.Valid {
+				_m.LastObservedAt = value.Time
+			}
+		case knowledgesubjectalias.FieldDeletedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
+			} else if value.Valid {
+				_m.DeletedAt = new(time.Time)
+				*_m.DeletedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -249,12 +258,6 @@ func (_m *KnowledgeSubjectAlias) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
 	builder.WriteString("subject_kind=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SubjectKind))
 	builder.WriteString(", ")
@@ -272,6 +275,17 @@ func (_m *KnowledgeSubjectAlias) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)
+	builder.WriteString(", ")
+	builder.WriteString("first_observed_at=")
+	builder.WriteString(_m.FirstObservedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("last_observed_at=")
+	builder.WriteString(_m.LastObservedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := _m.DeletedAt; v != nil {
+		builder.WriteString("deleted_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

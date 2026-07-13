@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -27,8 +29,10 @@ func (KnowledgeEntity) Fields() []ent.Field {
 		field.String("reference").NotEmpty(),
 		field.String("display_name").Optional(),
 		field.Text("description").Optional(),
-		field.JSON("live_properties", map[string]any{}).SchemaType(schemaTypeJsonB).
-			Optional().Default(map[string]any{}),
+		field.JSON("live_properties", map[string]any{}).
+			SchemaType(schemaTypeJsonB).
+			Optional().
+			Default(map[string]any{}),
 	}
 }
 
@@ -109,7 +113,6 @@ func (KnowledgeSubjectAlias) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		TimestampsMixin{},
 	}
 }
 
@@ -122,8 +125,12 @@ func (KnowledgeSubjectAlias) Fields() []ent.Field {
 		field.UUID("entity_id", uuid.UUID{}).Optional().Immutable(),
 		field.UUID("relationship_id", uuid.UUID{}).Optional().Immutable(),
 		field.String("description"),
-		//field.Time("deleted_at").Optional().Nillable().
-		//	Comment("Time observed explicit evidence that this subject no longer exists or applies."),
+		field.Time("first_observed_at").Optional().
+			Default(time.Now).Immutable(),
+		field.Time("last_observed_at").Optional().
+			Default(time.Now).UpdateDefault(time.Now),
+		field.Time("deleted_at").Optional().Nillable().
+			Comment("Time observed explicit evidence that this subject no longer exists or applies."),
 	}
 }
 
@@ -165,17 +172,16 @@ func (KnowledgeEvidence) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("event_id", uuid.UUID{}).Immutable().
 			Comment("Normalized event that produced this evidence record."),
-		field.UUID("alias_id", uuid.UUID{}).Immutable().
-			Comment("Alias used to resolve a single entity or relationship from evidence."),
 		field.String("assertion").NotEmpty().Immutable().
 			Comment("Domain assertion supported by this evidence (eg service_exists, team_owns_service)"),
 		field.Enum("evidence_kind").Immutable().
-			Values("observed", "changed", "contradicted", "deleted").
+			Values("observed", "changed", "deleted").
 			Comment("How this event affects evidence for the assertion."),
+		field.UUID("alias_id", uuid.UUID{}).Immutable().
+			Comment("Alias used to resolve a single entity or relationship from evidence."),
 		field.Time("effective_at").Immutable().
 			Comment("Domain effective time (may differ from the event occurred_at)"),
-		field.JSON("properties", map[string]any{}).Immutable().
-			SchemaType(schemaTypeJsonB),
+		field.JSON("properties", map[string]any{}).SchemaType(schemaTypeJsonB).Immutable(),
 	}
 }
 

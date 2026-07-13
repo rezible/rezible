@@ -11,6 +11,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
@@ -18,7 +19,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/rezible/rezible/ent"
-	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -134,13 +134,13 @@ type (
 		ProcessProviderEvent(context.Context, ProviderEvent) (ent.NormalizedEvents, error)
 	}
 
-	ProjectedDomainEntityRef struct {
+	ProjectedEntityRef struct {
 		Kind string
 		Id   uuid.UUID
 	}
 
 	NormalizedEventProjector interface {
-		HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]ProjectedDomainEntityRef, error)
+		HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]ProjectedEntityRef, error)
 	}
 
 	ProviderEventSyncResult struct {
@@ -154,6 +154,28 @@ type (
 	ProviderEventPipelineService interface {
 		Ingest(context.Context, ProviderEvent) error
 		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventQuerySourceCursors) ProviderEventSyncResult
+	}
+)
+
+type (
+	ProjectedKnowledgeEvidence struct {
+		Kind         ke.EvidenceKind
+		Assertion    string
+		EffectiveAt  time.Time
+		Properties   map[string]any
+		SubjectAlias ProjectedKnowledgeEvidenceSubjectAlias
+	}
+
+	ProjectedKnowledgeEvidenceSubjectAlias struct {
+		Description            string
+		AliasRef               ent.KnowledgeSubjectAliasRef
+		SubjectEntityRef       *ent.KnowledgeEntityRef
+		SubjectRelationshipRef *ent.KnowledgeRelationshipRef
+	}
+
+	KnowledgeIngestionService interface {
+		IngestProjectedEvidence(context.Context, *ent.NormalizedEvent, ...ProjectedKnowledgeEvidence) error
+		IngestDomainEntityEvidence(context.Context, *ent.NormalizedEvent, ProjectedKnowledgeEvidence) (uuid.UUID, error)
 	}
 )
 
@@ -304,71 +326,6 @@ type (
 		CreateForToken(context.Context, string) (*ent.UserAuthSession, error)
 		LookupSession(context.Context, uuid.UUID) (*ent.UserAuthSession, error)
 		DeleteSession(context.Context, uuid.UUID) error
-	}
-)
-
-type (
-	//ProjectedKnowledgeEntity struct {
-	//	IsPlaceholder     bool
-	//	Kind              string
-	//	DisplayName       string
-	//	Description       string
-	//	Properties        map[string]any
-	//	AliasRefs         []ent.KnowledgeSubjectAliasRef
-	//	EvidenceAssertion string
-	//}
-	//
-	//ProjectedKnowledgeRelationship struct {
-	//	Kind              string
-	//	DisplayName       string
-	//	Description       string
-	//	Properties        map[string]any
-	//	FromAliasRef      ent.KnowledgeSubjectAliasRef
-	//	ToAliasRef        ent.KnowledgeSubjectAliasRef
-	//	EvidenceAssertion string
-	//}
-
-	ProjectedKnowledgeEvidence struct {
-		Kind         ke.EvidenceKind
-		Assertion    string
-		EffectiveAt  time.Time
-		Properties   map[string]any
-		SubjectAlias ProjectedKnowledgeEvidenceSubjectAlias
-	}
-
-	ProjectedKnowledgeEvidenceSubjectAlias struct {
-		Description            string
-		AliasRef               ent.KnowledgeSubjectAliasRef
-		SubjectEntityRef       *ent.KnowledgeEntityRef
-		SubjectRelationshipRef *ent.KnowledgeRelationshipRef
-	}
-
-	//ProjectedKnowledgeEvidenceSubjectAlias struct {
-	//	Kind               ksa.SubjectKind
-	//	Provider           string
-	//	ProviderSubjectRef string
-	//	DisplayName        string
-	//	Description        string
-	//
-	//	SubjectEntityRef       *ent.KnowledgeEntityRef
-	//	SubjectRelationshipRef *ent.KnowledgeRelationshipRef
-	//}
-
-	KnowledgeFactService interface {
-		IngestProjectedEventEvidence(context.Context, *ent.NormalizedEvent, []ProjectedKnowledgeEvidence) error
-		LookupEntityIdByAliasRefs(context.Context, ...ent.KnowledgeSubjectAliasRef) (uuid.UUID, error)
-
-		//ResolveProjectedEntity(context.Context, *ent.NormalizedEvent, ProjectedKnowledgeEntity) (uuid.UUID, error)
-		//ResolveProjectedRelationship(context.Context, *ent.NormalizedEvent, ProjectedKnowledgeRelationship) (uuid.UUID, error)
-
-		//GetEntity(context.Context, predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error)
-		//SetEntity(context.Context, uuid.UUID, func(*ent.KnowledgeEntityMutation)) (*ent.KnowledgeEntity, error)
-		//
-		//GetRelationship(context.Context, predicate.KnowledgeRelationship) (*ent.KnowledgeRelationship, error)
-		//SetRelationship(context.Context, uuid.UUID, func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error)
-
-		//GetSubjectAlias(context.Context, predicate.KnowledgeSubjectAlias) (*ent.KnowledgeSubjectAlias, error)
-		//SetSubjectAlias(context.Context, uuid.UUID, func(*ent.KnowledgeSubjectAliasMutation)) (*ent.KnowledgeSubjectAlias, error)
 	}
 )
 

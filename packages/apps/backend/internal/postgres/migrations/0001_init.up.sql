@@ -279,7 +279,7 @@ CREATE INDEX "knowledgerelationship_tenant_id_source_entity_id" ON "knowledge_re
 -- create index "knowledgerelationship_tenant_id_target_entity_id" to table: "knowledge_relationships"
 CREATE INDEX "knowledgerelationship_tenant_id_target_entity_id" ON "knowledge_relationships" ("tenant_id", "target_entity_id");
 -- create "knowledge_subject_alias" table
-CREATE TABLE "knowledge_subject_alias" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "subject_kind" character varying NOT NULL, "provider" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "description" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NULL, "relationship_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_subject_alias" ("id" uuid NOT NULL, "subject_kind" character varying NOT NULL, "provider" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "description" character varying NOT NULL, "first_observed_at" timestamptz NULL, "last_observed_at" timestamptz NULL, "deleted_at" timestamptz NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NULL, "relationship_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "knowledgesubjectalias_tenant_id" to table: "knowledge_subject_alias"
 CREATE INDEX "knowledgesubjectalias_tenant_id" ON "knowledge_subject_alias" ("tenant_id");
 -- create index "knowledgesubjectalias_tenant_id_entity_id" to table: "knowledge_subject_alias"

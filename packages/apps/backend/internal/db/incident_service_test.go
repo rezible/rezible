@@ -49,7 +49,7 @@ func (s *IncidentServiceSuite) newServiceCapturingEvents(events *[]rez.EventOnIn
 		Return(nil).
 		Maybe()
 
-	svc, err := NewIncidentService(s.Database(), msgs, NewKnowledgeFactService(s.Database()))
+	svc, err := NewIncidentService(s.Database(), msgs, NewKnowledgeIngestionService(s.Database()))
 	s.Require().NoError(err)
 	return svc
 }

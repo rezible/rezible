@@ -18,7 +18,7 @@ const (
 	knowledgeKindUser            = "user"
 )
 
-func (s *UserService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) ([]rez.ProjectedDomainEntityRef, error) {
+func (s *UserService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
 	if projections.SubjectKindUser.Matches(event) {
 		decoded, eventErr := projections.DecodeUserEvent(event)
 		if eventErr != nil || decoded == nil {
@@ -29,17 +29,16 @@ func (s *UserService) HandleEventProjection(ctx context.Context, event *ent.Norm
 	return nil, nil
 }
 
-func (s *UserService) handleUserEventProjection(ctx context.Context, ue *projections.UserEvent) ([]rez.ProjectedDomainEntityRef, error) {
+func (s *UserService) handleUserEventProjection(ctx context.Context, ue *projections.UserEvent) ([]rez.ProjectedEntityRef, error) {
 	attrs := ue.Attributes
 
-	userSubjectAliasRef := ue.Event.MakeSubjectAliasRef(ksa.SubjectKindEntity)
 	userObservedEvidence := rez.ProjectedKnowledgeEvidence{
 		Kind:        ke.EvidenceKindObserved,
 		Assertion:   assertionUserProfileObserved,
 		EffectiveAt: ue.Event.OccurredAt,
 		SubjectAlias: rez.ProjectedKnowledgeEvidenceSubjectAlias{
-			Description: "User Profile",
-			AliasRef:    userSubjectAliasRef,
+			Description: "User",
+			AliasRef:    ue.Event.MakeSubjectAliasRef(ksa.SubjectKindEntity),
 			SubjectEntityRef: &ent.KnowledgeEntityRef{
 				Kind:        knowledgeKindUser,
 				Reference:   attrs.Email,
@@ -48,16 +47,10 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 			},
 		},
 	}
-	knowledgeEvidence := []rez.ProjectedKnowledgeEvidence{userObservedEvidence}
 
-	var projEnts []rez.ProjectedDomainEntityRef
+	var projEnts []rez.ProjectedEntityRef
 	return projEnts, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		evidenceErr := s.knowledge.IngestProjectedEventEvidence(ctx, ue.Event, knowledgeEvidence)
-		if evidenceErr != nil {
-			return fmt.Errorf("user knowledge entity: %w", evidenceErr)
-		}
-
-		keId, knowledgeErr := s.knowledge.LookupEntityIdByAliasRefs(ctx, userSubjectAliasRef)
+		keId, knowledgeErr := s.knowledge.IngestDomainEntityEvidence(ctx, ue.Event, userObservedEvidence)
 		if knowledgeErr != nil {
 			return fmt.Errorf("resolve user knowledge entity: %w", knowledgeErr)
 		}
@@ -85,7 +78,7 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 			return fmt.Errorf("save user: %w", setErr)
 		}
 
-		projEnts = append(projEnts, rez.ProjectedDomainEntityRef{Kind: "user", Id: usr.ID})
+		projEnts = append(projEnts, rez.ProjectedEntityRef{Kind: "user", Id: usr.ID})
 
 		return nil
 	})

@@ -32,26 +32,6 @@ func (_u *KnowledgeSubjectAliasUpdate) Where(ps ...predicate.KnowledgeSubjectAli
 	return _u
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (_u *KnowledgeSubjectAliasUpdate) SetCreatedAt(v time.Time) *KnowledgeSubjectAliasUpdate {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *KnowledgeSubjectAliasUpdate) SetNillableCreatedAt(v *time.Time) *KnowledgeSubjectAliasUpdate {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *KnowledgeSubjectAliasUpdate) SetUpdatedAt(v time.Time) *KnowledgeSubjectAliasUpdate {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
 // SetDescription sets the "description" field.
 func (_u *KnowledgeSubjectAliasUpdate) SetDescription(v string) *KnowledgeSubjectAliasUpdate {
 	_u.mutation.SetDescription(v)
@@ -63,6 +43,38 @@ func (_u *KnowledgeSubjectAliasUpdate) SetNillableDescription(v *string) *Knowle
 	if v != nil {
 		_u.SetDescription(*v)
 	}
+	return _u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetLastObservedAt(v)
+	return _u
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) ClearLastObservedAt() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearLastObservedAt()
+	return _u
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetDeletedAt(v time.Time) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetDeletedAt(v)
+	return _u
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableDeletedAt(v *time.Time) *KnowledgeSubjectAliasUpdate {
+	if v != nil {
+		_u.SetDeletedAt(*v)
+	}
+	return _u
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) ClearDeletedAt() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearDeletedAt()
 	return _u
 }
 
@@ -139,12 +151,12 @@ func (_u *KnowledgeSubjectAliasUpdate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_u *KnowledgeSubjectAliasUpdate) defaults() error {
-	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		if knowledgesubjectalias.UpdateDefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgesubjectalias.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+	if _, ok := _u.mutation.LastObservedAt(); !ok && !_u.mutation.LastObservedAtCleared() {
+		if knowledgesubjectalias.UpdateDefaultLastObservedAt == nil {
+			return fmt.Errorf("ent: uninitialized knowledgesubjectalias.UpdateDefaultLastObservedAt (forgotten import ent/runtime?)")
 		}
-		v := knowledgesubjectalias.UpdateDefaultUpdatedAt()
-		_u.mutation.SetUpdatedAt(v)
+		v := knowledgesubjectalias.UpdateDefaultLastObservedAt()
+		_u.mutation.SetLastObservedAt(v)
 	}
 	return nil
 }
@@ -175,14 +187,23 @@ func (_u *KnowledgeSubjectAliasUpdate) sqlSave(ctx context.Context) (_node int, 
 			}
 		}
 	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldUpdatedAt, field.TypeTime, value)
-	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(knowledgesubjectalias.FieldDescription, field.TypeString, value)
+	}
+	if _u.mutation.FirstObservedAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.LastObservedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastObservedAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.DeletedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldDeletedAt, field.TypeTime, value)
+	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldDeletedAt, field.TypeTime)
 	}
 	if _u.mutation.EvidenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -256,26 +277,6 @@ type KnowledgeSubjectAliasUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (_u *KnowledgeSubjectAliasUpdateOne) SetCreatedAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableCreatedAt(v *time.Time) *KnowledgeSubjectAliasUpdateOne {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *KnowledgeSubjectAliasUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
 // SetDescription sets the "description" field.
 func (_u *KnowledgeSubjectAliasUpdateOne) SetDescription(v string) *KnowledgeSubjectAliasUpdateOne {
 	_u.mutation.SetDescription(v)
@@ -287,6 +288,38 @@ func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableDescription(v *string) *Kno
 	if v != nil {
 		_u.SetDescription(*v)
 	}
+	return _u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetLastObservedAt(v)
+	return _u
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearLastObservedAt() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearLastObservedAt()
+	return _u
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetDeletedAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetDeletedAt(v)
+	return _u
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableDeletedAt(v *time.Time) *KnowledgeSubjectAliasUpdateOne {
+	if v != nil {
+		_u.SetDeletedAt(*v)
+	}
+	return _u
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearDeletedAt() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearDeletedAt()
 	return _u
 }
 
@@ -376,12 +409,12 @@ func (_u *KnowledgeSubjectAliasUpdateOne) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_u *KnowledgeSubjectAliasUpdateOne) defaults() error {
-	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		if knowledgesubjectalias.UpdateDefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgesubjectalias.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+	if _, ok := _u.mutation.LastObservedAt(); !ok && !_u.mutation.LastObservedAtCleared() {
+		if knowledgesubjectalias.UpdateDefaultLastObservedAt == nil {
+			return fmt.Errorf("ent: uninitialized knowledgesubjectalias.UpdateDefaultLastObservedAt (forgotten import ent/runtime?)")
 		}
-		v := knowledgesubjectalias.UpdateDefaultUpdatedAt()
-		_u.mutation.SetUpdatedAt(v)
+		v := knowledgesubjectalias.UpdateDefaultLastObservedAt()
+		_u.mutation.SetLastObservedAt(v)
 	}
 	return nil
 }
@@ -429,14 +462,23 @@ func (_u *KnowledgeSubjectAliasUpdateOne) sqlSave(ctx context.Context) (_node *K
 			}
 		}
 	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldUpdatedAt, field.TypeTime, value)
-	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(knowledgesubjectalias.FieldDescription, field.TypeString, value)
+	}
+	if _u.mutation.FirstObservedAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.LastObservedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastObservedAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.DeletedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldDeletedAt, field.TypeTime, value)
+	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldDeletedAt, field.TypeTime)
 	}
 	if _u.mutation.EvidenceCleared() {
 		edge := &sqlgraph.EdgeSpec{

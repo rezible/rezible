@@ -853,9 +853,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgeevidence.FieldCreatedAt:    {Type: field.TypeTime, Column: knowledgeevidence.FieldCreatedAt},
 			knowledgeevidence.FieldUpdatedAt:    {Type: field.TypeTime, Column: knowledgeevidence.FieldUpdatedAt},
 			knowledgeevidence.FieldEventID:      {Type: field.TypeUUID, Column: knowledgeevidence.FieldEventID},
-			knowledgeevidence.FieldAliasID:      {Type: field.TypeUUID, Column: knowledgeevidence.FieldAliasID},
 			knowledgeevidence.FieldAssertion:    {Type: field.TypeString, Column: knowledgeevidence.FieldAssertion},
 			knowledgeevidence.FieldEvidenceKind: {Type: field.TypeEnum, Column: knowledgeevidence.FieldEvidenceKind},
+			knowledgeevidence.FieldAliasID:      {Type: field.TypeUUID, Column: knowledgeevidence.FieldAliasID},
 			knowledgeevidence.FieldEffectiveAt:  {Type: field.TypeTime, Column: knowledgeevidence.FieldEffectiveAt},
 			knowledgeevidence.FieldProperties:   {Type: field.TypeJSON, Column: knowledgeevidence.FieldProperties},
 		},
@@ -956,14 +956,15 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "KnowledgeSubjectAlias",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			knowledgesubjectalias.FieldTenantID:           {Type: field.TypeInt, Column: knowledgesubjectalias.FieldTenantID},
-			knowledgesubjectalias.FieldCreatedAt:          {Type: field.TypeTime, Column: knowledgesubjectalias.FieldCreatedAt},
-			knowledgesubjectalias.FieldUpdatedAt:          {Type: field.TypeTime, Column: knowledgesubjectalias.FieldUpdatedAt},
 			knowledgesubjectalias.FieldSubjectKind:        {Type: field.TypeEnum, Column: knowledgesubjectalias.FieldSubjectKind},
 			knowledgesubjectalias.FieldProvider:           {Type: field.TypeString, Column: knowledgesubjectalias.FieldProvider},
 			knowledgesubjectalias.FieldProviderSubjectRef: {Type: field.TypeString, Column: knowledgesubjectalias.FieldProviderSubjectRef},
 			knowledgesubjectalias.FieldEntityID:           {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldEntityID},
 			knowledgesubjectalias.FieldRelationshipID:     {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldRelationshipID},
 			knowledgesubjectalias.FieldDescription:        {Type: field.TypeString, Column: knowledgesubjectalias.FieldDescription},
+			knowledgesubjectalias.FieldFirstObservedAt:    {Type: field.TypeTime, Column: knowledgesubjectalias.FieldFirstObservedAt},
+			knowledgesubjectalias.FieldLastObservedAt:     {Type: field.TypeTime, Column: knowledgesubjectalias.FieldLastObservedAt},
+			knowledgesubjectalias.FieldDeletedAt:          {Type: field.TypeTime, Column: knowledgesubjectalias.FieldDeletedAt},
 		},
 	}
 	graph.Nodes[45] = &sqlgraph.Node{
@@ -9807,11 +9808,6 @@ func (f *KnowledgeEvidenceFilter) WhereEventID(p entql.ValueP) {
 	f.Where(p.Field(knowledgeevidence.FieldEventID))
 }
 
-// WhereAliasID applies the entql [16]byte predicate on the alias_id field.
-func (f *KnowledgeEvidenceFilter) WhereAliasID(p entql.ValueP) {
-	f.Where(p.Field(knowledgeevidence.FieldAliasID))
-}
-
 // WhereAssertion applies the entql string predicate on the assertion field.
 func (f *KnowledgeEvidenceFilter) WhereAssertion(p entql.StringP) {
 	f.Where(p.Field(knowledgeevidence.FieldAssertion))
@@ -9820,6 +9816,11 @@ func (f *KnowledgeEvidenceFilter) WhereAssertion(p entql.StringP) {
 // WhereEvidenceKind applies the entql string predicate on the evidence_kind field.
 func (f *KnowledgeEvidenceFilter) WhereEvidenceKind(p entql.StringP) {
 	f.Where(p.Field(knowledgeevidence.FieldEvidenceKind))
+}
+
+// WhereAliasID applies the entql [16]byte predicate on the alias_id field.
+func (f *KnowledgeEvidenceFilter) WhereAliasID(p entql.ValueP) {
+	f.Where(p.Field(knowledgeevidence.FieldAliasID))
 }
 
 // WhereEffectiveAt applies the entql time.Time predicate on the effective_at field.
@@ -10505,16 +10506,6 @@ func (f *KnowledgeSubjectAliasFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(knowledgesubjectalias.FieldTenantID))
 }
 
-// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *KnowledgeSubjectAliasFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgesubjectalias.FieldCreatedAt))
-}
-
-// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *KnowledgeSubjectAliasFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgesubjectalias.FieldUpdatedAt))
-}
-
 // WhereSubjectKind applies the entql string predicate on the subject_kind field.
 func (f *KnowledgeSubjectAliasFilter) WhereSubjectKind(p entql.StringP) {
 	f.Where(p.Field(knowledgesubjectalias.FieldSubjectKind))
@@ -10543,6 +10534,21 @@ func (f *KnowledgeSubjectAliasFilter) WhereRelationshipID(p entql.ValueP) {
 // WhereDescription applies the entql string predicate on the description field.
 func (f *KnowledgeSubjectAliasFilter) WhereDescription(p entql.StringP) {
 	f.Where(p.Field(knowledgesubjectalias.FieldDescription))
+}
+
+// WhereFirstObservedAt applies the entql time.Time predicate on the first_observed_at field.
+func (f *KnowledgeSubjectAliasFilter) WhereFirstObservedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldFirstObservedAt))
+}
+
+// WhereLastObservedAt applies the entql time.Time predicate on the last_observed_at field.
+func (f *KnowledgeSubjectAliasFilter) WhereLastObservedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldLastObservedAt))
+}
+
+// WhereDeletedAt applies the entql time.Time predicate on the deleted_at field.
+func (f *KnowledgeSubjectAliasFilter) WhereDeletedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldDeletedAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

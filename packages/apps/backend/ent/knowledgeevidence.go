@@ -30,12 +30,12 @@ type KnowledgeEvidence struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Normalized event that produced this evidence record.
 	EventID uuid.UUID `json:"event_id,omitempty"`
-	// Alias used to resolve a single entity or relationship from evidence.
-	AliasID uuid.UUID `json:"alias_id,omitempty"`
 	// Domain assertion supported by this evidence (eg service_exists, team_owns_service)
 	Assertion string `json:"assertion,omitempty"`
 	// How this event affects evidence for the assertion.
 	EvidenceKind knowledgeevidence.EvidenceKind `json:"evidence_kind,omitempty"`
+	// Alias used to resolve a single entity or relationship from evidence.
+	AliasID uuid.UUID `json:"alias_id,omitempty"`
 	// Domain effective time (may differ from the event occurred_at)
 	EffectiveAt time.Time `json:"effective_at,omitempty"`
 	// Properties holds the value of the "properties" field.
@@ -152,12 +152,6 @@ func (_m *KnowledgeEvidence) assignValues(columns []string, values []any) error 
 			} else if value != nil {
 				_m.EventID = *value
 			}
-		case knowledgeevidence.FieldAliasID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field alias_id", values[i])
-			} else if value != nil {
-				_m.AliasID = *value
-			}
 		case knowledgeevidence.FieldAssertion:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field assertion", values[i])
@@ -169,6 +163,12 @@ func (_m *KnowledgeEvidence) assignValues(columns []string, values []any) error 
 				return fmt.Errorf("unexpected type %T for field evidence_kind", values[i])
 			} else if value.Valid {
 				_m.EvidenceKind = knowledgeevidence.EvidenceKind(value.String)
+			}
+		case knowledgeevidence.FieldAliasID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field alias_id", values[i])
+			} else if value != nil {
+				_m.AliasID = *value
 			}
 		case knowledgeevidence.FieldEffectiveAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -247,14 +247,14 @@ func (_m *KnowledgeEvidence) String() string {
 	builder.WriteString("event_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EventID))
 	builder.WriteString(", ")
-	builder.WriteString("alias_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.AliasID))
-	builder.WriteString(", ")
 	builder.WriteString("assertion=")
 	builder.WriteString(_m.Assertion)
 	builder.WriteString(", ")
 	builder.WriteString("evidence_kind=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EvidenceKind))
+	builder.WriteString(", ")
+	builder.WriteString("alias_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AliasID))
 	builder.WriteString(", ")
 	builder.WriteString("effective_at=")
 	builder.WriteString(_m.EffectiveAt.Format(time.ANSIC))

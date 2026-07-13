@@ -77,14 +77,14 @@ func EventID(v uuid.UUID) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEventID, v))
 }
 
-// AliasID applies equality check predicate on the "alias_id" field. It's identical to AliasIDEQ.
-func AliasID(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAliasID, v))
-}
-
 // Assertion applies equality check predicate on the "assertion" field. It's identical to AssertionEQ.
 func Assertion(v string) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAssertion, v))
+}
+
+// AliasID applies equality check predicate on the "alias_id" field. It's identical to AliasIDEQ.
+func AliasID(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAliasID, v))
 }
 
 // EffectiveAt applies equality check predicate on the "effective_at" field. It's identical to EffectiveAtEQ.
@@ -212,26 +212,6 @@ func EventIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldEventID, vs...))
 }
 
-// AliasIDEQ applies the EQ predicate on the "alias_id" field.
-func AliasIDEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAliasID, v))
-}
-
-// AliasIDNEQ applies the NEQ predicate on the "alias_id" field.
-func AliasIDNEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldAliasID, v))
-}
-
-// AliasIDIn applies the In predicate on the "alias_id" field.
-func AliasIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldAliasID, vs...))
-}
-
-// AliasIDNotIn applies the NotIn predicate on the "alias_id" field.
-func AliasIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldAliasID, vs...))
-}
-
 // AssertionEQ applies the EQ predicate on the "assertion" field.
 func AssertionEQ(v string) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAssertion, v))
@@ -315,6 +295,26 @@ func EvidenceKindIn(vs ...EvidenceKind) predicate.KnowledgeEvidence {
 // EvidenceKindNotIn applies the NotIn predicate on the "evidence_kind" field.
 func EvidenceKindNotIn(vs ...EvidenceKind) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldEvidenceKind, vs...))
+}
+
+// AliasIDEQ applies the EQ predicate on the "alias_id" field.
+func AliasIDEQ(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAliasID, v))
+}
+
+// AliasIDNEQ applies the NEQ predicate on the "alias_id" field.
+func AliasIDNEQ(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldAliasID, v))
+}
+
+// AliasIDIn applies the In predicate on the "alias_id" field.
+func AliasIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIn(FieldAliasID, vs...))
+}
+
+// AliasIDNotIn applies the NotIn predicate on the "alias_id" field.
+func AliasIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldAliasID, vs...))
 }
 
 // EffectiveAtEQ applies the EQ predicate on the "effective_at" field.

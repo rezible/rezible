@@ -1666,7 +1666,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "assertion", Type: field.TypeString},
-		{Name: "evidence_kind", Type: field.TypeEnum, Enums: []string{"observed", "changed", "contradicted", "deleted"}},
+		{Name: "evidence_kind", Type: field.TypeEnum, Enums: []string{"observed", "changed", "deleted"}},
 		{Name: "effective_at", Type: field.TypeTime},
 		{Name: "properties", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -1979,12 +1979,13 @@ var (
 	// KnowledgeSubjectAliasColumns holds the columns for the "knowledge_subject_alias" table.
 	KnowledgeSubjectAliasColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "subject_kind", Type: field.TypeEnum, Enums: []string{"entity", "relationship"}},
 		{Name: "provider", Type: field.TypeString},
 		{Name: "provider_subject_ref", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
+		{Name: "first_observed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_observed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "entity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "relationship_id", Type: field.TypeUUID, Nullable: true},
@@ -1997,19 +1998,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "knowledge_subject_alias_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[7]},
+				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[8]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "knowledge_subject_alias_knowledge_entities_entity",
-				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[8]},
+				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[9]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "knowledge_subject_alias_knowledge_relationships_relationship",
-				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[9]},
+				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[10]},
 				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -2018,27 +2019,27 @@ var (
 			{
 				Name:    "knowledgesubjectalias_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[7]},
+				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[8]},
 			},
 			{
 				Name:    "knowledgesubjectalias_tenant_id_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[7], KnowledgeSubjectAliasColumns[8]},
+				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[8], KnowledgeSubjectAliasColumns[9]},
 			},
 			{
 				Name:    "knowledgesubjectalias_tenant_id_relationship_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[7], KnowledgeSubjectAliasColumns[9]},
+				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[8], KnowledgeSubjectAliasColumns[10]},
 			},
 			{
 				Name:    "knowledgesubjectalias_tenant_id_subject_kind_entity_id_relationship_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[7], KnowledgeSubjectAliasColumns[3], KnowledgeSubjectAliasColumns[8], KnowledgeSubjectAliasColumns[9]},
+				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[8], KnowledgeSubjectAliasColumns[1], KnowledgeSubjectAliasColumns[9], KnowledgeSubjectAliasColumns[10]},
 			},
 			{
 				Name:    "knowledgesubjectalias_tenant_id_subject_kind_provider_provider_subject_ref",
 				Unique:  true,
-				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[7], KnowledgeSubjectAliasColumns[3], KnowledgeSubjectAliasColumns[4], KnowledgeSubjectAliasColumns[5]},
+				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[8], KnowledgeSubjectAliasColumns[1], KnowledgeSubjectAliasColumns[2], KnowledgeSubjectAliasColumns[3]},
 			},
 		},
 	}

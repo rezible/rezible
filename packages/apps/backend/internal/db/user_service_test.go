@@ -18,7 +18,7 @@ func TestUserServiceSuite(t *testing.T) {
 
 func (s *UserServiceSuite) newUserService(jobs *mocks.MockJobService) *UserService {
 	sdb := s.Database()
-	svc, err := NewUserService(sdb, NewOrganizationService(sdb, jobs), NewKnowledgeFactService(sdb))
+	svc, err := NewUserService(sdb, NewOrganizationService(sdb, jobs), NewKnowledgeIngestionService(sdb))
 	s.Require().NoError(err)
 	return svc
 }
