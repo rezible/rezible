@@ -51,7 +51,3 @@ Definition: %s`, alrt.Title, alrt.Description, alrt.Definition)
 
 	return ai.NewUserTextMessage(msgText), nil
 }
-
-func (a *AlertsAgent) makeOutputTool() *aix.Tool[rezai.AlertAgentOutput, AgentOutputToolResult] {
-	return makeWriteOutputArtifactTool(rezai.AlertsAgent.MakeOutputArtifactPart)
-}

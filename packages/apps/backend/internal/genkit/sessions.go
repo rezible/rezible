@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"hash/maphash"
 	"slices"
 	"sync"
 
+	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -55,45 +58,79 @@ func (s *sessionStore[S]) GetSnapshot(ctx context.Context, snapshotID string) (*
 	return rezai.SessionSnapshotFromEnt[S](rs)
 }
 
-func (s *sessionStore[S]) SaveSnapshot(
-	ctx context.Context,
-	id string,
-	setFn func(*aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error),
-) (*aix.SessionSnapshot[S], error) {
-	var snapshotId uuid.UUID
-	if id != "" {
-		var idErr error
-		if snapshotId, idErr = uuid.Parse(id); idErr != nil {
-			return nil, fmt.Errorf("invalid ID: %s", id)
+func (s *sessionStore[S]) getOutputArtifact(snap *aix.SessionSnapshot[S]) *aix.Artifact {
+	if snap == nil || snap.State == nil {
+		return nil
+	}
+	for _, a := range snap.State.Artifacts {
+		if a.Name == "output" {
+			return a
+		}
+	}
+	return nil
+}
+
+func (s *sessionStore[S]) getChangedParts(newSnap *aix.SessionSnapshot[S], prevSnap *aix.SessionSnapshot[S]) ([]*ai.Part, error) {
+	currOutput := s.getOutputArtifact(newSnap)
+	if currOutput == nil {
+		return nil, nil
+	}
+
+	hashSeed := maphash.MakeSeed()
+	prevHashes := mapset.NewThreadUnsafeSet[uint64]()
+	if prev := s.getOutputArtifact(prevSnap); prev != nil {
+		for _, art := range prev.Parts {
+			pb, jsonErr := art.MarshalJSON()
+			if jsonErr != nil {
+				return nil, fmt.Errorf("marshal part: %w", jsonErr)
+			}
+			prevHashes.Add(maphash.Bytes(hashSeed, pb))
 		}
 	}
 
-	var shouldNotify bool
-	var notifyStatus aix.SnapshotStatus
-	updateFn := func(rs *ent.AiAgentRunSnapshot, m *ent.AiAgentRunSnapshotMutation) error {
+	var changed []*ai.Part
+	for _, part := range currOutput.Parts {
+		pb, jsonErr := part.MarshalJSON()
+		if jsonErr != nil {
+			return nil, fmt.Errorf("marshal part: %w", jsonErr)
+		}
+		if !prevHashes.Contains(maphash.Bytes(hashSeed, pb)) {
+			changed = append(changed, part)
+		}
+	}
+	return changed, nil
+}
+
+type snapshotWriteSetter[S rezai.SessionState] = func(*aix.SessionSnapshot[S]) (*aix.SessionSnapshot[S], error)
+
+func (s *sessionStore[S]) SaveSnapshot(ctx context.Context, id string, setFn snapshotWriteSetter[S]) (*aix.SessionSnapshot[S], error) {
+	var notifyStatus *aix.SnapshotStatus
+	updateFn := func(rs *ent.AiAgentRunSnapshot, m *ent.AiAgentRunSnapshotMutation) ([]*ai.Part, error) {
 		var existing *aix.SessionSnapshot[S]
 		if rs != nil {
 			var convErr error
 			if existing, convErr = rezai.SessionSnapshotFromEnt[S](rs); convErr != nil {
-				return fmt.Errorf("convert existing snapshot: %w", convErr)
+				return nil, fmt.Errorf("convert existing snapshot: %w", convErr)
 			}
 		}
 
 		snapshot, updateErr := setFn(existing)
 		if updateErr != nil {
-			return fmt.Errorf("update existing snapshot: %w", updateErr)
-		} else if snapshot == nil {
-			return nil
+			return nil, fmt.Errorf("update existing snapshot: %w", updateErr)
 		}
-
-		shouldNotify = existing == nil || existing.Status != snapshot.Status
-		notifyStatus = snapshot.Status
+		if snapshot == nil {
+			return nil, nil
+		}
 
 		runId, runIdErr := uuid.Parse(snapshot.SessionID)
 		if runIdErr != nil {
-			return fmt.Errorf("invalid session ID: %s", snapshot.SessionID)
+			return nil, fmt.Errorf("invalid session ID: %s", snapshot.SessionID)
 		}
 		m.SetAiAgentRunID(runId)
+
+		if existing == nil || existing.Status != snapshot.Status {
+			notifyStatus = &snapshot.Status
+		}
 
 		m.SetStatus(aars.Status(snapshot.Status))
 		m.SetFinishReason(string(snapshot.FinishReason))
@@ -103,7 +140,7 @@ func (s *sessionStore[S]) SaveSnapshot(
 		if len(snapshot.ParentID) > 0 {
 			parentId, parentIdErr := uuid.Parse(snapshot.ParentID)
 			if parentIdErr != nil {
-				return fmt.Errorf("invalid parent ID: %s", snapshot.ParentID)
+				return nil, fmt.Errorf("invalid parent ID: %s", snapshot.ParentID)
 			}
 			m.SetParentID(parentId)
 		}
@@ -112,30 +149,49 @@ func (s *sessionStore[S]) SaveSnapshot(
 			m.SetHeartbeatAt(*snapshot.HeartbeatAt)
 		}
 
-		if snapshot.State != nil {
-			state, jsonErr := json.Marshal(snapshot.State)
-			if jsonErr != nil {
-				return fmt.Errorf("marshal state: %w", jsonErr)
-			}
-			m.SetState(state)
-		}
-
 		if snapshot.Error != nil {
 			sessErr, jsonErr := json.Marshal(snapshot.State)
 			if jsonErr != nil {
-				return fmt.Errorf("marshal error: %w", jsonErr)
+				return nil, fmt.Errorf("marshal error: %w", jsonErr)
 			}
 			m.SetError(sessErr)
 		}
-		return nil
+
+		var outputs []*ai.Part
+		if snapshot.State != nil {
+			state, jsonErr := json.Marshal(snapshot.State)
+			if jsonErr != nil {
+				return nil, fmt.Errorf("marshal state: %w", jsonErr)
+			}
+			m.SetState(state)
+
+			changedOutputs, changedErr := s.getChangedParts(snapshot, existing)
+			if changedErr != nil {
+				return nil, fmt.Errorf("changed outputs: %w", changedErr)
+			}
+			outputs = changedOutputs
+		}
+
+		return outputs, nil
 	}
-	updated, updateErr := s.snapshots.UpdateAgentRunSnapshot(ctx, snapshotId, updateFn)
+
+	var snapshotId uuid.UUID
+	if id != "" {
+		var idErr error
+		if snapshotId, idErr = uuid.Parse(id); idErr != nil {
+			return nil, fmt.Errorf("invalid ID: %s", id)
+		}
+	}
+
+	updated, updateErr := s.snapshots.SetAgentRunSnapshot(ctx, snapshotId, updateFn)
 	if updateErr != nil {
 		return nil, fmt.Errorf("save snapshot: %w", updateErr)
 	}
-	if shouldNotify {
-		s.notifyLocked(updated.ID.String(), notifyStatus)
+
+	if notifyStatus != nil {
+		s.notifyLocked(updated.ID.String(), *notifyStatus)
 	}
+
 	return rezai.SessionSnapshotFromEnt[S](updated)
 }
 

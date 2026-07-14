@@ -71,9 +71,25 @@ func (d AgentDefinition[I, S, O]) MakeOutputArtifactPart(output O) (*ai.Part, er
 	return ai.NewCustomPart(data), nil
 }
 
-func (d AgentDefinition[I, S, O]) GetOutputArtifacts(artifacts []*aix.Artifact) ([]O, error) {
+func (d AgentDefinition[I, S, O]) ParseOutputArtifactPart(p *ai.Part) (*O, error) {
+	if !p.IsCustom() {
+		return nil, fmt.Errorf("not a custom part")
+	}
+	var o O
+	if msErr := mapstructure.Decode(p.Custom, &o); msErr != nil {
+		return nil, fmt.Errorf("decode: %w", msErr)
+	}
+	return &o, nil
+}
+
+func (d AgentDefinition[I, S, O]) GetSnapshotOutputs(rs *ent.AiAgentRunSnapshot) ([]O, error) {
+	state, stateErr := d.ParseSnapshot(rs)
+	if stateErr != nil {
+		return nil, fmt.Errorf("parse state: %w", stateErr)
+	}
+
 	var outputs []O
-	for _, a := range artifacts {
+	for _, a := range state.Artifacts {
 		if a.Name != "output" {
 			continue
 		}
@@ -127,10 +143,6 @@ func (i AlertAgentInput) Validate() error {
 	if i.AlertID == uuid.Nil {
 		return fmt.Errorf("invalid alert id %s", i.AlertID)
 	}
-	return nil
-}
-
-func (i AlertAgentOutput) Validate() error {
 	return nil
 }
 
@@ -197,18 +209,16 @@ func (i ChatAgentInput) Validate() error {
 	return nil
 }
 
-func (i ChatAgentOutput) Validate() error {
-	return nil
+func (o ChatAgentOutput) WriteToolInfo() (name string, description string) {
+	return "send_message", "Send a chat message reply to the user"
 }
 
 var ChatAgent = ChatAgentDefinition{
-	Name:          "chat",
-	Description:   "",
-	RequiredTools: []string{},
-	SystemPrompt: `You are Rezible's internal chat agent. 
+	Name:        "chat",
+	Description: "",
+	SystemPrompt: `You are an AI agent responsible for generating responses to user chat messages. 
 You help answer any operational questions that software engineering teams.
-Be friendly and create replies to user messages to the best of your capability.
-Be concise and keep the tone professional.
+Create replies to user messages to the best of your capability - be concise and keep the tone professional.
 
-IMPORTANT: output your chat message replies using the 'write_output' tool!`,
+IMPORTANT: output your chat message replies using the supplied tool!`,
 }

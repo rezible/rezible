@@ -2,7 +2,6 @@ package genkit
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
@@ -35,19 +34,23 @@ func (a *ChatAgent) makeInitialUserMessage(ctx context.Context, input rezai.Chat
 	return ai.NewUserTextMessage(input.Message), nil
 }
 
-func (a *ChatAgent) makeOutputTool() *aix.Tool[rezai.ChatAgentOutput, AgentOutputToolResult] {
-	return aix.NewTool("send_message", "Reply with a chat message",
-		func(ctx context.Context, out rezai.ChatAgentOutput) (AgentOutputToolResult, error) {
-			status := "Message sent successfully"
-			if msgErr := a.sendChatMessage(ctx, out); msgErr != nil {
-				status = fmt.Sprintf("Error sending message: %s", msgErr.Error())
-			}
-			return AgentOutputToolResult{Status: status}, nil
-		},
-	)
-}
-
-func (a *ChatAgent) sendChatMessage(ctx context.Context, out rezai.ChatAgentOutput) error {
-	fmt.Printf("send chat message: %+v\n", out)
-	return nil
-}
+//func (a *ChatAgent) makeOutputTool() *aix.Tool[rezai.ChatAgentOutput, AgentOutputToolResult] {
+//	return aix.NewTool("send_message", "Reply with a chat message",
+//		func(ctx context.Context, out rezai.ChatAgentOutput) (AgentOutputToolResult, error) {
+//			status := "Message sent successfully"
+//			if msgErr := a.sendChatMessage(ctx, out); msgErr != nil {
+//				status = fmt.Sprintf("Error sending message: %s", msgErr.Error())
+//			}
+//			return AgentOutputToolResult{Status: status}, nil
+//		},
+//	)
+//}
+//
+//func (a *ChatAgent) sendChatMessage(ctx context.Context, out rezai.ChatAgentOutput) error {
+//	sess := aix.SessionFromContext[rezai.ChatAgentState](ctx)
+//	if sess == nil {
+//		return fmt.Errorf("session not found in context")
+//	}
+//	fmt.Printf("send chat message: %+v\n", out)
+//	return nil
+//}

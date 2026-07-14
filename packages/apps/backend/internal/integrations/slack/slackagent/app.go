@@ -14,6 +14,7 @@ import (
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/riverqueue/river"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
@@ -106,51 +107,48 @@ func (a *App) GetIntegrationClientWrapper(ctx context.Context, preds ...predicat
 
 func (a *App) registerMessageHandlers() error {
 	return errors.Join(
-		a.messages.AddEventHandlers(rez.NewEventHandler("slackagent.OnAiAgentRunSnapshot", a.onAiAgentRunOutput)))
+		a.messages.AddEventHandlers(rez.NewEventHandler("slackagent.HandleChatAgentOutput", a.onAiChatAgentOutput)))
 }
 
-func (a *App) onAiAgentRunOutput(ctx context.Context, ev *rez.EventOnAiAgentOutput) error {
+func (a *App) onAiChatAgentOutput(ctx context.Context, ev *rez.EventOnAiAgentRunOutput) error {
 	if ev.AgentName != ai.ChatAgent.Name {
 		return nil
 	}
 
-	var metadata aiChatReplyAgentRunMetadata
+	var metadata aiChatAgentRunMetadata
 	if mdErr := mapstructure.Decode(ev.AgentRunMetadata, &metadata); mdErr != nil {
 		return fmt.Errorf("decode metadata: %w", mdErr)
 	}
-	if !metadata.IsSlackReply {
+	if !metadata.IsSlack {
 		fmt.Printf("not a slack reply run?: %+v\n", ev.AgentRunMetadata)
 		return nil
 	}
 
-	snapshot, snapshotErr := a.agents.GetAgentRunSnapshot(ctx, ev.AgentRunSnapshotId)
-	if snapshotErr != nil {
-		return fmt.Errorf("get agent run output: %w", snapshotErr)
-	}
-
-	/*
-		parsed, parseErr := ai.ChatAgent.GetOutputArtifacts(snapshot.Data)
-		if parseErr != nil {
-			return fmt.Errorf("parse output: %w", parseErr)
+	sendMsgJobParams := make([]river.InsertManyParams, len(ev.Parts))
+	for i, p := range ev.Parts {
+		output, outputErr := ai.ChatAgent.ParseOutputArtifactPart(p)
+		if outputErr != nil {
+			return fmt.Errorf("parse output artifact: %w", outputErr)
 		}
-
-		args := SendMessageJobArgs{
-			Message:        parsed.Message,
-			IntegrationRef: metadata.IntegrationRef,
-			Channel:        metadata.SlackReplyChannel,
-			ReplyTs:        metadata.SlackReplyTs,
-		}
-		jobOpts := &river.InsertOpts{
-			UniqueOpts: river.UniqueOpts{
-				ByArgs:  true,
-				ByState: jobs.UniqueStateNonCompleted,
+		sendMsgJobParams[i] = river.InsertManyParams{
+			Args: SendMessageJobArgs{
+				Message:        output.Message,
+				IntegrationRef: metadata.IntegrationRef,
+				Channel:        metadata.SlackReplyChannel,
+				ReplyTs:        metadata.SlackReplyTs,
+			},
+			InsertOpts: &river.InsertOpts{
+				UniqueOpts: river.UniqueOpts{
+					ByArgs: true,
+					//ByState: jobs.UniqueStateNonCompleted,
+				},
 			},
 		}
-		if _, cmdErr := a.jobs.Insert(ctx, args, jobOpts); cmdErr != nil {
-			return fmt.Errorf("send command: %w", cmdErr)
-		}
-	*/
-	fmt.Printf("slack run output: %+v\n", snapshot)
+	}
+	if _, cmdErr := a.jobs.InsertMany(ctx, sendMsgJobParams); cmdErr != nil {
+		return fmt.Errorf("send command: %w", cmdErr)
+	}
+
 	return nil
 }
 
@@ -172,7 +170,6 @@ func (a *App) handleSendMessageJob(ctx context.Context, args SendMessageJobArgs)
 		return fmt.Errorf("get integration client wrapper: %w", wrapperErr)
 	}
 
-	//return w.PostMessage(ctx, channelId, slack.MsgOptionText(text, false), slack.MsgOptionTS(threadId))
 	_, _, msgErr := cw.Client().PostMessageContext(ctx, args.Channel,
 		slack.MsgOptionMarkdownText(args.Message),
 		slack.MsgOptionTS(args.ReplyTs))

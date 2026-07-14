@@ -21,16 +21,11 @@ type (
 		MakeRunner(*ent.AiAgentRun) rez.AiAgentInvoker
 	}
 
-	AgentOutputToolResult struct {
-		Status string `json:"status"`
-	}
-
 	agentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput] interface {
 		definition() rezai.AgentDefinition[I, S, O]
 		transformState(context.Context, *aix.SessionState[S]) (*aix.SessionState[S], error)
 		transformStreamChunk(context.Context, *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error)
 		makeInitialUserMessage(context.Context, I) (*ai.Message, error)
-		makeOutputTool() *aix.Tool[O, AgentOutputToolResult]
 	}
 
 	customAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput] interface {
@@ -53,7 +48,7 @@ func wrapAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutp
 	}
 
 	middleware := []ai.Middleware{
-		&agentOutputMiddleware[O]{outputTool: runner.makeOutputTool()},
+		&agentOutputMiddleware[S, O]{partFn: def.MakeOutputArtifactPart},
 		newKnowledgeGraphMiddleware(svc.knowledgeGraph),
 	}
 	if def.EnableArtifacts {

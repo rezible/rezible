@@ -401,12 +401,11 @@ type (
 )
 
 type (
+	AiAgentSnapshotSetFunc = func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) ([]*ai.Part, error)
 	AiAgentSnapshotService interface {
 		GetLatestSnapshotForRun(context.Context, uuid.UUID) (*ent.AiAgentRunSnapshot, error)
 		GetAgentRunSnapshot(context.Context, uuid.UUID) (*ent.AiAgentRunSnapshot, error)
-		//SetAgentRunSnapshot(context.Context, uuid.UUID, func(*ent.AiAgentRunSnapshotMutation)) (*ent.AiAgentRunSnapshot, error)
-		UpdateAgentRunSnapshot(context.Context, uuid.UUID, func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) error) (*ent.AiAgentRunSnapshot, error)
-		//WriteOutputForSnapshot(context.Context, uuid.UUID, any) error
+		SetAgentRunSnapshot(context.Context, uuid.UUID, AiAgentSnapshotSetFunc) (*ent.AiAgentRunSnapshot, error)
 	}
 
 	AiAgentInvoker interface {
@@ -433,6 +432,7 @@ type (
 	ListAgentRunsParams struct {
 		ent.ListParams
 		Predicates []predicate.AiAgentRun
+		Metadata   map[string]any
 	}
 
 	InvokeAgentRunParams struct {
@@ -448,15 +448,13 @@ type (
 		CreateAgentRun(context.Context, string, CreateAgentRunParams) (*ent.AiAgentRun, error)
 		InvokeAgentRun(context.Context, uuid.UUID, InvokeAgentRunParams) error
 		GetAgentRun(context.Context, uuid.UUID) (*ent.AiAgentRun, error)
-		//GetAgentRunOutput(context.Context, uuid.UUID) (*ent.AiAgentRunOutput, error)
-		//ClaimAgentRunOutput(context.Context, uuid.UUID, func(context.Context, []byte) (map[string]any, error)) error
 	}
 
-	EventOnAiAgentOutput struct {
+	EventOnAiAgentRunOutput struct {
 		AgentName          string
 		AgentRunMetadata   map[string]any
 		AgentRunSnapshotId uuid.UUID
-		//AgentOutputId      uuid.UUID
+		Parts              []*ai.Part
 	}
 )
 

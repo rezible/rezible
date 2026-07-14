@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/predicate"
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
@@ -51,8 +52,14 @@ func (s *AiAgentService) GetAgentRun(ctx context.Context, id uuid.UUID) (*ent.Ai
 func (s *AiAgentService) ListAgentRuns(ctx context.Context, params rez.ListAgentRunsParams) (*ent.ListResult[ent.AiAgentRun], error) {
 	query := s.db.Client(ctx).AiAgentRun.Query().
 		Order(aar.ByCreatedAt(sql.OrderDesc()))
-	if len(params.Predicates) > 0 {
-		query.Where(params.Predicates...)
+	predicates := params.Predicates
+	for key, val := range params.Metadata {
+		predicates = append(predicates, predicate.AiAgentRun(func(s *sql.Selector) {
+			s.Where(sqljson.ValueEQ(aar.FieldMetadata, val, sqljson.DotPath(key)))
+		}))
+	}
+	if len(predicates) > 0 {
+		query.Where(predicates...)
 	}
 	return ent.DoListQuery[ent.AiAgentRun, *ent.AiAgentRunQuery](ctx, query, params.ListParams)
 }
@@ -312,26 +319,7 @@ func (s *AiAgentSnapshotService) GetAgentRunSnapshot(ctx context.Context, id uui
 	return res, nil
 }
 
-func (s *AiAgentSnapshotService) SetAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AiAgentRunSnapshotMutation)) (*ent.AiAgentRunSnapshot, error) {
-	var snapshot *ent.AiAgentRunSnapshot
-	return snapshot, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		var mutator ent.EntityMutator[*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation]
-		if id != uuid.Nil {
-			mutator = tx.AiAgentRunSnapshot.UpdateOneID(id)
-		} else {
-			mutator = tx.AiAgentRunSnapshot.Create()
-		}
-		setFn(mutator.Mutation())
-		saved, saveErr := mutator.Save(ctx)
-		if saveErr != nil {
-			return fmt.Errorf("failed to save: %w", saveErr)
-		}
-		snapshot = saved.Unwrap()
-		return nil
-	})
-}
-
-func (s *AiAgentSnapshotService) UpdateAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) error) (*ent.AiAgentRunSnapshot, error) {
+func (s *AiAgentSnapshotService) SetAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn rez.AiAgentSnapshotSetFunc) (*ent.AiAgentRunSnapshot, error) {
 	var snapshot *ent.AiAgentRunSnapshot
 	return snapshot, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		var curr *ent.AiAgentRunSnapshot
@@ -347,60 +335,43 @@ func (s *AiAgentSnapshotService) UpdateAgentRunSnapshot(ctx context.Context, id 
 		} else {
 			mutator = tx.AiAgentRunSnapshot.Create()
 		}
+
 		m := mutator.Mutation()
-		if setErr := setFn(curr, m); setErr != nil {
-			return setErr
+		changedOutputs, setErr := setFn(curr, m)
+		if setErr != nil {
+			return fmt.Errorf("update snapshot: %w", setErr)
 		}
-		if len(m.Fields()) > 0 {
-			saved, saveErr := mutator.Save(ctx)
-			if saveErr != nil {
-				return fmt.Errorf("failed to save: %w", saveErr)
-			}
-			snapshot = saved.Unwrap()
-		} else {
+
+		if len(m.Fields()) == 0 {
 			if curr == nil {
 				return fmt.Errorf("no fields changed, no existing snapshot")
 			}
 			snapshot = curr.Unwrap()
+			return nil
 		}
+
+		saved, saveErr := mutator.Save(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("failed to save: %w", saveErr)
+		}
+
+		if len(changedOutputs) > 0 {
+			run, runErr := tx.AiAgentRun.Get(ctx, saved.AiAgentRunID)
+			if runErr != nil {
+				return fmt.Errorf("query run for outputs: %w", runErr)
+			}
+			event := rez.EventOnAiAgentRunOutput{
+				AgentName:          run.AgentName,
+				AgentRunMetadata:   run.Metadata,
+				AgentRunSnapshotId: saved.ID,
+				Parts:              changedOutputs,
+			}
+			if eventErr := s.msgs.PublishEvent(ctx, event); eventErr != nil {
+				return fmt.Errorf("failed to publish event: %w", eventErr)
+			}
+		}
+
+		snapshot = saved.Unwrap()
 		return nil
 	})
 }
-
-//func (s *AiAgentSnapshotService) WriteOutputForSnapshot(ctx context.Context, snapshotId uuid.UUID, output any) error {
-//	outputBytes, jsonErr := json.Marshal(output)
-//	if jsonErr != nil {
-//		return fmt.Errorf("marshalling output: %w", jsonErr)
-//	}
-//	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-//		querySnapshot := tx.AiAgentRunSnapshot.Query().
-//			Where(aars.ID(snapshotId)).
-//			WithAiAgentRun()
-//		snapshot, snapshotErr := querySnapshot.Only(ctx)
-//		if snapshotErr != nil {
-//			return fmt.Errorf("get snapshot: %w", snapshotErr)
-//		}
-//		run, runErr := snapshot.Edges.AiAgentRunOrErr()
-//		if runErr != nil {
-//			return fmt.Errorf("get run: %w", runErr)
-//		}
-//		createOutput := tx.AiAgentRunOutput.Create().
-//			SetAiAgentRunSnapshot(snapshot).
-//			SetData(outputBytes).
-//			SetMetadata(map[string]any{})
-//		created, saveErr := createOutput.Save(ctx)
-//		if saveErr != nil {
-//			return fmt.Errorf("failed to save output: %w", saveErr)
-//		}
-//		event := rez.EventOnAiAgentOutput{
-//			AgentName:          run.AgentName,
-//			AgentRunMetadata:   run.Metadata,
-//			AgentRunSnapshotId: snapshotId,
-//			AgentOutputId:      created.ID,
-//		}
-//		if eventErr := s.msgs.PublishEvent(ctx, event); eventErr != nil {
-//			return fmt.Errorf("failed to publish event: %w", eventErr)
-//		}
-//		return nil
-//	})
-//}

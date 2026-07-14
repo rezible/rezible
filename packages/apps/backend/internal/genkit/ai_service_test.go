@@ -186,18 +186,15 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 				}
 			}
 		}
-	}
 
-	//s.Require().NotEmpty(run.Edges.Outputs)
-	//s.T().Log("Outputs:")
-	//for i, o := range run.Edges.Outputs {
-	//	var output testAgentOutput
-	//	s.Require().NoError(json.Unmarshal(o.Data, &output))
-	//	s.Require().NoError(output.Validate())
-	//	s.T().Logf("\t[%d]: %+v", i, output)
-	//}
-	s.Require().NotNil(ta.output)
-	s.T().Logf("output: %+v", ta.output)
+		s.T().Log("Outputs:")
+		outputs, outputsErr := ta.def.GetSnapshotOutputs(snap)
+		s.Require().NoError(outputsErr)
+		s.Require().NotEmpty(outputs)
+		for i, o := range outputs {
+			s.T().Logf("\t[%d]: %+v", i, o)
+		}
+	}
 }
 
 type (
@@ -209,8 +206,6 @@ type (
 		customFn    func(S) S
 		userMessage string
 		fakeCall    bool
-
-		output *testAgentOutput
 	}
 )
 
@@ -228,14 +223,6 @@ func (t *testAgent[S]) transformState(ctx context.Context, state *aix.SessionSta
 
 func (t *testAgent[S]) transformStreamChunk(ctx context.Context, chunk *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error) {
 	return chunk, nil
-}
-
-func (t *testAgent[S]) makeOutputTool() *aix.Tool[testAgentOutput, AgentOutputToolResult] {
-	return aix.NewTool("write_output", "write the requested output",
-		func(ctx context.Context, input testAgentOutput) (AgentOutputToolResult, error) {
-			t.output = &input
-			return AgentOutputToolResult{Status: "Success"}, nil
-		})
 }
 
 //func (t *testAgent[S]) run(ctx context.Context, resp aix.Responder, sess *aix.SessionRunner[S]) (*aix.AgentResult, error) {

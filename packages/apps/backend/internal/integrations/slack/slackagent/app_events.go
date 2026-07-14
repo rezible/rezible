@@ -13,6 +13,8 @@ import (
 	"github.com/k0kubun/pp/v3"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	aar "github.com/rezible/rezible/ent/aiagentrun"
+	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/user"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -52,32 +54,31 @@ func (a *App) EventsApiHandler() slackintegration.EventsApiHandler {
 	}
 }
 
-type aiChatReplyAgentRunMetadata struct {
-	IsSlackReply      bool   `json:"slack_reply"`
+type aiChatAgentRunMetadata struct {
+	IsSlack           bool   `mapstructure:"slack"`
 	IntegrationRef    string `mapstructure:"integration_ref"`
 	SlackReplyChannel string `mapstructure:"slack_reply_channel"`
 	SlackReplyTs      string `mapstructure:"slack_reply_ts"`
 }
 
-func (m aiChatReplyAgentRunMetadata) Encode() (map[string]any, error) {
+func (m aiChatAgentRunMetadata) Encode() (map[string]any, error) {
 	var md map[string]any
 	return md, mapstructure.Decode(m, &md)
 }
 
-func (a *App) startOrContinueAgentThreadReply(ctx context.Context, md aiChatReplyAgentRunMetadata, userId uuid.UUID, msg string) error {
-	runMd, mdErr := md.Encode()
-	if mdErr != nil {
-		return fmt.Errorf("failed to create agent run metadata: %w", mdErr)
+func (a *App) startOrContinueAgentThreadReply(ctx context.Context, userId uuid.UUID, msg string, md map[string]any) error {
+	listRunsParams := rez.ListAgentRunsParams{
+		ListParams: ent.ListParams{Limit: 1},
+		Predicates: []predicate.AiAgentRun{aar.OwnerUserID(userId)},
+		Metadata:   md,
 	}
-
-	// TODO: better match agent runs to user requester
-	runs, runsErr := a.agents.LookupAgentRunsByMetadata(ctx, runMd)
+	runs, runsErr := a.agents.ListAgentRuns(ctx, listRunsParams)
 	if runsErr != nil && !ent.IsNotFound(runsErr) {
 		return fmt.Errorf("failed to lookup agent runs: %w", runsErr)
 	}
-	if len(runs) == 1 && runs[0].OwnerUserID == userId {
+	if len(runs.Data) == 1 {
 		slog.Debug("continuing existing agent run in thread")
-		run := runs[0]
+		run := runs.Data[0]
 		snap, snapErr := a.agents.GetLatestSnapshotForRun(ctx, run.ID)
 		if snapErr != nil {
 			return fmt.Errorf("failed to get latest agent run snapshot: %w", snapErr)
@@ -92,13 +93,10 @@ func (a *App) startOrContinueAgentThreadReply(ctx context.Context, md aiChatRepl
 		}
 		return nil
 	}
-	if len(runs) > 1 {
-		slog.Warn("multiple agent runs found matching slack thread metadata")
-	}
 	createRunParams := rez.CreateAgentRunParams{
 		OwnerUserID: userId,
 		Input:       rezai.ChatAgentInput{UserId: userId, Message: msg},
-		Metadata:    runMd,
+		Metadata:    md,
 	}
 	_, runErr := a.agents.CreateAgentRun(ctx, rezai.ChatAgent.Name, createRunParams)
 	if runErr != nil {
@@ -117,11 +115,15 @@ func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWra
 
 	pp.Println(data)
 
-	md := aiChatReplyAgentRunMetadata{
-		IsSlackReply:      true,
+	md := aiChatAgentRunMetadata{
+		IsSlack:           true,
 		IntegrationRef:    cw.Integration().ExternalRef,
 		SlackReplyChannel: data.Channel,
 		SlackReplyTs:      replyTs,
+	}
+	runMd, mdErr := md.Encode()
+	if mdErr != nil {
+		return fmt.Errorf("failed to create agent run metadata: %w", mdErr)
 	}
 
 	usr, usrErr := a.users.Get(ctx, user.ChatID(data.User))
@@ -129,9 +131,10 @@ func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWra
 		return fmt.Errorf("failed to lookup chat user: %w", usrErr)
 	}
 
-	text := strings.TrimSpace(mentionRe.ReplaceAllString(data.Text, ""))
+	cleanedText := strings.TrimSpace(mentionRe.ReplaceAllString(data.Text, ""))
+	fmt.Printf("clean mention text: '%s'\n", cleanedText)
 
-	return a.startOrContinueAgentThreadReply(ctx, md, usr.ID, text)
+	return a.startOrContinueAgentThreadReply(ctx, usr.ID, cleanedText, runMd)
 }
 
 func (a *App) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent) error {
