@@ -32,20 +32,18 @@ func (s *UserService) HandleEventProjection(ctx context.Context, event *ent.Norm
 func (s *UserService) handleUserEventProjection(ctx context.Context, ue *projections.UserEvent) ([]rez.ProjectedEntityRef, error) {
 	attrs := ue.Attributes
 
-	userObservedEvidence := rez.ProjectedKnowledgeEvidence{
-		Kind:        ke.EvidenceKindObserved,
-		Assertion:   assertionUserProfileObserved,
-		EffectiveAt: ue.Event.OccurredAt,
-		SubjectAlias: rez.ProjectedKnowledgeEvidenceSubjectAlias{
-			Description: "User",
-			AliasRef:    ue.Event.MakeSubjectAliasRef(ksa.SubjectKindEntity),
-			SubjectEntityRef: &ent.KnowledgeEntityRef{
-				Kind:        knowledgeKindUser,
-				Reference:   attrs.Email,
-				DisplayName: attrs.Name,
-				Description: "",
-			},
-		},
+	userSubjectRef := ue.Event.MakeSubjectAliasRef(ksa.SubjectKindEntity, "User")
+	userSubjectRef.SubjectEntityRef = &ent.KnowledgeEntityRef{
+		Kind:        knowledgeKindUser,
+		Reference:   attrs.Email,
+		DisplayName: attrs.Name,
+		Description: "",
+	}
+	userObservedEvidence := ent.KnowledgeEvidenceRef{
+		Kind:            ke.EvidenceKindObserved,
+		Assertion:       assertionUserProfileObserved,
+		EffectiveAt:     ue.Event.OccurredAt,
+		SubjectAliasRef: userSubjectRef,
 	}
 
 	var projEnts []rez.ProjectedEntityRef

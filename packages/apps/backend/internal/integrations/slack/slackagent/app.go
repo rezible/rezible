@@ -14,7 +14,6 @@ import (
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
-	"github.com/riverqueue/river"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
@@ -110,7 +109,7 @@ func (a *App) registerMessageHandlers() error {
 		a.messages.AddEventHandlers(rez.NewEventHandler("slackagent.OnAiAgentRunSnapshot", a.onAiAgentRunOutput)))
 }
 
-func (a *App) onAiAgentRunOutput(ctx context.Context, ev *rez.EventOnAiAgentRunOutput) error {
+func (a *App) onAiAgentRunOutput(ctx context.Context, ev *rez.EventOnAiAgentOutput) error {
 	if ev.AgentName != ai.ChatAgent.Name {
 		return nil
 	}
@@ -124,31 +123,34 @@ func (a *App) onAiAgentRunOutput(ctx context.Context, ev *rez.EventOnAiAgentRunO
 		return nil
 	}
 
-	output, outputErr := a.agents.GetAgentRunOutput(ctx, ev.AgentOutputId)
-	if outputErr != nil {
-		return fmt.Errorf("get agent run output: %w", outputErr)
+	snapshot, snapshotErr := a.agents.GetAgentRunSnapshot(ctx, ev.AgentRunSnapshotId)
+	if snapshotErr != nil {
+		return fmt.Errorf("get agent run output: %w", snapshotErr)
 	}
 
-	parsed, parseErr := ai.ChatAgent.ParseOutput(output.Data)
-	if parseErr != nil {
-		return fmt.Errorf("parse output: %w", parseErr)
-	}
+	/*
+		parsed, parseErr := ai.ChatAgent.GetOutputArtifacts(snapshot.Data)
+		if parseErr != nil {
+			return fmt.Errorf("parse output: %w", parseErr)
+		}
 
-	args := SendMessageJobArgs{
-		Message:        parsed.Message,
-		IntegrationRef: metadata.IntegrationRef,
-		Channel:        metadata.SlackReplyChannel,
-		ReplyTs:        metadata.SlackReplyTs,
-	}
-	jobOpts := &river.InsertOpts{
-		UniqueOpts: river.UniqueOpts{
-			ByArgs:  true,
-			ByState: jobs.UniqueStateNonCompleted,
-		},
-	}
-	if _, cmdErr := a.jobs.Insert(ctx, args, jobOpts); cmdErr != nil {
-		return fmt.Errorf("send command: %w", cmdErr)
-	}
+		args := SendMessageJobArgs{
+			Message:        parsed.Message,
+			IntegrationRef: metadata.IntegrationRef,
+			Channel:        metadata.SlackReplyChannel,
+			ReplyTs:        metadata.SlackReplyTs,
+		}
+		jobOpts := &river.InsertOpts{
+			UniqueOpts: river.UniqueOpts{
+				ByArgs:  true,
+				ByState: jobs.UniqueStateNonCompleted,
+			},
+		}
+		if _, cmdErr := a.jobs.Insert(ctx, args, jobOpts); cmdErr != nil {
+			return fmt.Errorf("send command: %w", cmdErr)
+		}
+	*/
+	fmt.Printf("slack run output: %+v\n", snapshot)
 	return nil
 }
 

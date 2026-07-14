@@ -69,22 +69,21 @@ func (s *KnowledgeIngestionService) setRelationshipFromRef(ctx context.Context, 
 		ID(ctx)
 }
 
-func (s *KnowledgeIngestionService) setSubjectAliasFromProjection(ctx context.Context, proj rez.ProjectedKnowledgeEvidenceSubjectAlias) (uuid.UUID, error) {
-	sar := proj.AliasRef
+func (s *KnowledgeIngestionService) setSubjectAliasFromProjection(ctx context.Context, sar ent.KnowledgeSubjectAliasRef) (uuid.UUID, error) {
 	create := s.db.Client(ctx).KnowledgeSubjectAlias.Create().
 		SetProvider(sar.Provider).
 		SetProviderSubjectRef(sar.ProviderSubjectRef).
 		SetSubjectKind(sar.Kind).
-		SetDescription(proj.Description)
+		SetDescription(sar.Description)
 
 	if sar.Kind == ksa.SubjectKindEntity {
-		id, setEntityErr := s.setEntityFromRef(ctx, proj.SubjectEntityRef)
+		id, setEntityErr := s.setEntityFromRef(ctx, sar.SubjectEntityRef)
 		if setEntityErr != nil {
 			return uuid.Nil, fmt.Errorf("entity: %w", setEntityErr)
 		}
 		create.SetEntityID(id)
 	} else if sar.Kind == ksa.SubjectKindRelationship {
-		id, setRelErr := s.setRelationshipFromRef(ctx, proj.SubjectRelationshipRef)
+		id, setRelErr := s.setRelationshipFromRef(ctx, sar.SubjectRelationshipRef)
 		if setRelErr != nil {
 			return uuid.Nil, fmt.Errorf("relationship: %w", setRelErr)
 		}
@@ -99,11 +98,11 @@ func (s *KnowledgeIngestionService) setSubjectAliasFromProjection(ctx context.Co
 	return upsert.ID(ctx)
 }
 
-func (s *KnowledgeIngestionService) IngestProjectedEvidence(ctx context.Context, event *ent.NormalizedEvent, projected ...rez.ProjectedKnowledgeEvidence) error {
+func (s *KnowledgeIngestionService) IngestProjectedEvidence(ctx context.Context, event *ent.NormalizedEvent, projected ...ent.KnowledgeEvidenceRef) error {
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		evidenceBuilders := make([]*ent.KnowledgeEvidenceCreate, len(projected))
 		for i, projEv := range projected {
-			aliasId, setAliasErr := s.setSubjectAliasFromProjection(ctx, projEv.SubjectAlias)
+			aliasId, setAliasErr := s.setSubjectAliasFromProjection(ctx, projEv.SubjectAliasRef)
 			if setAliasErr != nil {
 				return fmt.Errorf("set subject alias: %w", setAliasErr)
 			}
@@ -135,13 +134,13 @@ func (s *KnowledgeIngestionService) LookupEntityIdByAliasRef(ctx context.Context
 	return alias.EntityID, nil
 }
 
-func (s *KnowledgeIngestionService) IngestDomainEntityEvidence(ctx context.Context, evt *ent.NormalizedEvent, evi rez.ProjectedKnowledgeEvidence) (uuid.UUID, error) {
-	if evi.SubjectAlias.SubjectEntityRef == nil {
+func (s *KnowledgeIngestionService) IngestDomainEntityEvidence(ctx context.Context, evt *ent.NormalizedEvent, evi ent.KnowledgeEvidenceRef) (uuid.UUID, error) {
+	if evi.SubjectAliasRef.SubjectEntityRef == nil {
 		return uuid.Nil, fmt.Errorf("missing subject entity ref")
 	}
 	var entityId uuid.UUID
 	return entityId, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		aliasId, setAliasErr := s.setSubjectAliasFromProjection(ctx, evi.SubjectAlias)
+		aliasId, setAliasErr := s.setSubjectAliasFromProjection(ctx, evi.SubjectAliasRef)
 		if setAliasErr != nil {
 			return fmt.Errorf("set subject alias: %w", setAliasErr)
 		}

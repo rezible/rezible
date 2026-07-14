@@ -40,7 +40,7 @@ func (s *AiServiceSuite) makeService(opts ...AiServiceOption) *AiService {
 	msgs := mocks.NewMockMessageService(s.T())
 	msgs.EXPECT().PublishEvent(mock.Anything, mock.Anything).Return(nil).Maybe()
 
-	snapshots, snapshotsErr := db.NewAiSessionStateService(s.Database(), msgs)
+	snapshots, snapshotsErr := db.NewAiAgentSnapshotService(s.Database(), msgs)
 	s.Require().NoError(snapshotsErr)
 
 	kg, kgErr := db.NewKnowledgeGraphService(s.Database())
@@ -159,8 +159,7 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 
 	queryRun := s.Client(ctx).AiAgentRun.Query().
 		Where(aar.ID(runId)).
-		WithSnapshots().
-		WithOutputs()
+		WithSnapshots()
 	run, runErr := queryRun.Only(ctx)
 	s.Require().NoError(runErr)
 
@@ -189,14 +188,16 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 		}
 	}
 
-	s.Require().NotEmpty(run.Edges.Outputs)
-	s.T().Log("Outputs:")
-	for i, o := range run.Edges.Outputs {
-		var output testAgentOutput
-		s.Require().NoError(json.Unmarshal(o.Data, &output))
-		s.Require().NoError(output.Validate())
-		s.T().Logf("\t[%d]: %+v", i, output)
-	}
+	//s.Require().NotEmpty(run.Edges.Outputs)
+	//s.T().Log("Outputs:")
+	//for i, o := range run.Edges.Outputs {
+	//	var output testAgentOutput
+	//	s.Require().NoError(json.Unmarshal(o.Data, &output))
+	//	s.Require().NoError(output.Validate())
+	//	s.T().Logf("\t[%d]: %+v", i, output)
+	//}
+	s.Require().NotNil(ta.output)
+	s.T().Logf("output: %+v", ta.output)
 }
 
 type (
@@ -208,6 +209,8 @@ type (
 		customFn    func(S) S
 		userMessage string
 		fakeCall    bool
+
+		output *testAgentOutput
 	}
 )
 
@@ -225,6 +228,14 @@ func (t *testAgent[S]) transformState(ctx context.Context, state *aix.SessionSta
 
 func (t *testAgent[S]) transformStreamChunk(ctx context.Context, chunk *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error) {
 	return chunk, nil
+}
+
+func (t *testAgent[S]) makeOutputTool() *aix.Tool[testAgentOutput, AgentOutputToolResult] {
+	return aix.NewTool("write_output", "write the requested output",
+		func(ctx context.Context, input testAgentOutput) (AgentOutputToolResult, error) {
+			t.output = &input
+			return AgentOutputToolResult{Status: "Success"}, nil
+		})
 }
 
 //func (t *testAgent[S]) run(ctx context.Context, resp aix.Responder, sess *aix.SessionRunner[S]) (*aix.AgentResult, error) {

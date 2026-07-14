@@ -46,7 +46,7 @@ func newKnowledgeEntityEventProjector(ev *ent.NormalizedEvent, knowledge *Knowle
 	return &knowledgeEntityEventProjector{event: ev, knowledge: knowledge}
 }
 
-func (kp *knowledgeEntityEventProjector) projectEvent(ev *ent.NormalizedEvent) ([]rez.ProjectedKnowledgeEvidence, error) {
+func (kp *knowledgeEntityEventProjector) projectEvent(ev *ent.NormalizedEvent) ([]ent.KnowledgeEvidenceRef, error) {
 	var decErr error
 	switch projections.SubjectKind(ev.SubjectKind) {
 	case projections.SubjectKindCodeForge:
@@ -100,49 +100,45 @@ func (kp *knowledgeEntityEventProjector) makeRelationshipRef(kind string, desc s
 	}
 }
 
-func (kp *knowledgeEntityEventProjector) makeSubjectEntityAliasRef(ser *ent.KnowledgeEntityRef, desc string) rez.ProjectedKnowledgeEvidenceSubjectAlias {
-	return rez.ProjectedKnowledgeEvidenceSubjectAlias{
-		SubjectEntityRef: ser,
-		Description:      desc,
-		AliasRef: ent.KnowledgeSubjectAliasRef{
-			Kind:               ksa.SubjectKindEntity,
-			Provider:           kp.event.Provider,
-			ProviderSubjectRef: kp.event.ProviderSubjectRef,
-		},
+func (kp *knowledgeEntityEventProjector) makeSubjectEntityAliasRef(ser *ent.KnowledgeEntityRef, desc string) ent.KnowledgeSubjectAliasRef {
+	return ent.KnowledgeSubjectAliasRef{
+		Kind:               ksa.SubjectKindEntity,
+		Provider:           kp.event.Provider,
+		ProviderSubjectRef: kp.event.ProviderSubjectRef,
+		SubjectEntityRef:   ser,
+		Description:        desc,
 	}
 }
-func (kp *knowledgeEntityEventProjector) makeSubjectRelationshipAliasRef(srr *ent.KnowledgeRelationshipRef, desc string) rez.ProjectedKnowledgeEvidenceSubjectAlias {
-	return rez.ProjectedKnowledgeEvidenceSubjectAlias{
-		SubjectRelationshipRef: srr,
+func (kp *knowledgeEntityEventProjector) makeSubjectRelationshipAliasRef(srr *ent.KnowledgeRelationshipRef, desc string) ent.KnowledgeSubjectAliasRef {
+	return ent.KnowledgeSubjectAliasRef{
+		Kind:                   ksa.SubjectKindRelationship,
+		Provider:               kp.event.Provider,
+		ProviderSubjectRef:     kp.event.ProviderSubjectRef,
 		Description:            desc,
-		AliasRef: ent.KnowledgeSubjectAliasRef{
-			Kind:               ksa.SubjectKindRelationship,
-			Provider:           kp.event.Provider,
-			ProviderSubjectRef: kp.event.ProviderSubjectRef,
-		},
+		SubjectRelationshipRef: srr,
 	}
 }
 
-func (kp *knowledgeEntityEventProjector) makeObservedEvidence(assertion string, props map[string]any, aliasRef rez.ProjectedKnowledgeEvidenceSubjectAlias) rez.ProjectedKnowledgeEvidence {
-	return rez.ProjectedKnowledgeEvidence{
-		Kind:         ke.EvidenceKindObserved,
-		Assertion:    assertion,
-		EffectiveAt:  kp.event.OccurredAt,
-		Properties:   props,
-		SubjectAlias: aliasRef,
+func (kp *knowledgeEntityEventProjector) makeObservedEvidence(assertion string, props map[string]any, aliasRef ent.KnowledgeSubjectAliasRef) ent.KnowledgeEvidenceRef {
+	return ent.KnowledgeEvidenceRef{
+		Kind:            ke.EvidenceKindObserved,
+		Assertion:       assertion,
+		EffectiveAt:     kp.event.OccurredAt,
+		Properties:      props,
+		SubjectAliasRef: aliasRef,
 	}
 }
 
-func (kp *knowledgeEntityEventProjector) projectCodeForgeEvent(pe *projections.CodeForgeEvent) []rez.ProjectedKnowledgeEvidence {
+func (kp *knowledgeEntityEventProjector) projectCodeForgeEvent(pe *projections.CodeForgeEvent) []ent.KnowledgeEvidenceRef {
 	name := pe.Attributes.DisplayName
 	repoEntityRef := kp.makeEntityRef(knowledgeEntityKindCodeRepository, pe.Attributes.URL, name, "")
 	repoSubjectRef := kp.makeSubjectEntityAliasRef(repoEntityRef, "")
-	return []rez.ProjectedKnowledgeEvidence{
+	return []ent.KnowledgeEvidenceRef{
 		kp.makeObservedEvidence(assertionCodeRepositoryExists, nil, repoSubjectRef),
 	}
 }
 
-func (kp *knowledgeEntityEventProjector) projectCodeChangeEvent(pe *projections.CodeChangeEvent) []rez.ProjectedKnowledgeEvidence {
+func (kp *knowledgeEntityEventProjector) projectCodeChangeEvent(pe *projections.CodeChangeEvent) []ent.KnowledgeEvidenceRef {
 	attrs := pe.Attributes
 	codeChangeEntity := ent.KnowledgeEntityRef{
 		Kind:        "code_change",
@@ -156,55 +152,53 @@ func (kp *knowledgeEntityEventProjector) projectCodeChangeEvent(pe *projections.
 
 	repoChangedEvidence := kp.makeObservedEvidence(assertionCodeChangeTouchedRepository, nil, repoSubjectRef)
 
-	results := []rez.ProjectedKnowledgeEvidence{
+	results := []ent.KnowledgeEvidenceRef{
 		repoChangedEvidence,
 	}
 
 	for _, rel := range attrs.RelatedEntities {
 		entityRef := kp.makeEntityRef(rel.Kind, rel.ExternalRef, rel.DisplayName, "")
 		relationshipRef := kp.makeRelationshipRef("code_change_impacted", "", codeChangeEntity, *entityRef)
-		results = append(results, rez.ProjectedKnowledgeEvidence{
-			Kind:         ke.EvidenceKindObserved,
-			Assertion:    assertionCodeChangeRelatedEntity,
-			SubjectAlias: kp.makeSubjectRelationshipAliasRef(relationshipRef, ""),
-			EffectiveAt:  kp.event.OccurredAt,
-			Properties:   nil,
+		results = append(results, ent.KnowledgeEvidenceRef{
+			Kind:            ke.EvidenceKindObserved,
+			Assertion:       assertionCodeChangeRelatedEntity,
+			SubjectAliasRef: kp.makeSubjectRelationshipAliasRef(relationshipRef, ""),
+			EffectiveAt:     kp.event.OccurredAt,
+			Properties:      nil,
 		})
 	}
 
 	return results
 }
 
-func (kp *knowledgeEntityEventProjector) makeSystemComponentExistsEvidence(kind, ref, name, desc string) rez.ProjectedKnowledgeEvidence {
+func (kp *knowledgeEntityEventProjector) makeSystemComponentExistsEvidence(kind, ref, name, desc string) ent.KnowledgeEvidenceRef {
 	componentRef := kp.makeEntityRef(knowledgeEntityKindSystemComponent, ref, name, desc)
 	componentSubjectRef := kp.makeSubjectEntityAliasRef(componentRef, "")
 	props := map[string]any{"component_kind": kind}
 	return kp.makeObservedEvidence(assertionSystemComponentExists, props, componentSubjectRef)
 }
 
-func (kp *knowledgeEntityEventProjector) projectSystemComponentEvent(pe *projections.SystemComponentEvent) []rez.ProjectedKnowledgeEvidence {
+func (kp *knowledgeEntityEventProjector) projectSystemComponentEvent(pe *projections.SystemComponentEvent) []ent.KnowledgeEvidenceRef {
 	attrs := pe.Attributes
-	return []rez.ProjectedKnowledgeEvidence{
+	return []ent.KnowledgeEvidenceRef{
 		kp.makeSystemComponentExistsEvidence(attrs.Kind, attrs.ExternalRef, attrs.DisplayName, attrs.Description),
 	}
 }
 
-func (kp *knowledgeEntityEventProjector) projectSystemRelationshipEvent(pe *projections.SystemRelationshipEvent) []rez.ProjectedKnowledgeEvidence {
+func (kp *knowledgeEntityEventProjector) projectSystemRelationshipEvent(pe *projections.SystemRelationshipEvent) []ent.KnowledgeEvidenceRef {
 	attrs := pe.Attributes
 
 	sourceExists := kp.makeSystemComponentExistsEvidence(attrs.SourceKind, attrs.SourceExternalRef, attrs.SourceDisplayName, "")
-	sourceEntityRef := *sourceExists.SubjectAlias.SubjectEntityRef
+	sourceEntityRef := *sourceExists.SubjectAliasRef.SubjectEntityRef
 
 	targetExists := kp.makeSystemComponentExistsEvidence(attrs.TargetKind, attrs.TargetExternalRef, attrs.TargetDisplayName, "")
-	targetEntityRef := *targetExists.SubjectAlias.SubjectEntityRef
+	targetEntityRef := *targetExists.SubjectAliasRef.SubjectEntityRef
 
-	relationshipAlias := rez.ProjectedKnowledgeEvidenceSubjectAlias{
-		Description: attrs.Description,
-		AliasRef: ent.KnowledgeSubjectAliasRef{
-			Kind:               ksa.SubjectKindRelationship,
-			Provider:           kp.event.Provider,
-			ProviderSubjectRef: kp.event.ProviderSubjectRef,
-		},
+	relationshipAlias := ent.KnowledgeSubjectAliasRef{
+		Kind:               ksa.SubjectKindRelationship,
+		Provider:           kp.event.Provider,
+		ProviderSubjectRef: kp.event.ProviderSubjectRef,
+		Description:        attrs.Description,
 		SubjectRelationshipRef: &ent.KnowledgeRelationshipRef{
 			Kind:        attrs.Kind,
 			Description: attrs.Description,
@@ -213,7 +207,7 @@ func (kp *knowledgeEntityEventProjector) projectSystemRelationshipEvent(pe *proj
 	}
 	relationshipExists := kp.makeObservedEvidence(assertionSystemRelationshipExists, nil, relationshipAlias)
 
-	return []rez.ProjectedKnowledgeEvidence{
+	return []ent.KnowledgeEvidenceRef{
 		sourceExists,
 		targetExists,
 		relationshipExists,

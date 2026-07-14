@@ -14,10 +14,11 @@ import (
 )
 
 type AiService struct {
-	sessions       rez.AiSessionStateService
+	cfg rez.AiConfig
+
+	sessions       rez.AiAgentSnapshotService
 	knowledgeGraph rez.KnowledgeGraphService
 
-	plugins  []gkapi.Plugin
 	toolRefs []ai.ToolRef
 	gk       *genkit.Genkit
 
@@ -25,28 +26,30 @@ type AiService struct {
 	workflowInvokers map[string]WorkflowInvokerFunc
 }
 
-func NewAiService(cfg rez.Config, sessions rez.AiSessionStateService, kg rez.KnowledgeGraphService) *AiService {
+func NewAiService(cfg rez.Config, sessions rez.AiAgentSnapshotService, kg rez.KnowledgeGraphService) *AiService {
 	s := &AiService{
+		cfg: cfg.AI,
+
 		sessions:       sessions,
 		knowledgeGraph: kg,
 
-		plugins:          make([]gkapi.Plugin, 0),
 		toolRefs:         make([]ai.ToolRef, 0),
 		agentWrappers:    make(map[string]*agentWrapper),
 		workflowInvokers: make(map[string]WorkflowInvokerFunc),
-	}
-
-	if cfg.AI.Gemini.Enabled {
-		googleAiPlugin := &googlegenai.GoogleAI{APIKey: cfg.AI.Gemini.APIKey}
-		s.plugins = append(s.plugins, googleAiPlugin)
 	}
 
 	return s
 }
 
 func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
+	var plugins []gkapi.Plugin
+
+	if geminiCfg := s.cfg.Gemini; geminiCfg.Enabled {
+		plugins = append(plugins, &googlegenai.GoogleAI{APIKey: geminiCfg.APIKey})
+	}
+
 	s.gk = genkit.Init(ctx,
-		genkit.WithPlugins(s.plugins...),
+		genkit.WithPlugins(plugins...),
 		genkit.WithDefaultModel(flashModel.Name()),
 		genkit.WithExperimental(),
 		genkit.WithPromptFS(rezai.PromptsDir),
@@ -82,6 +85,14 @@ func (s *AiService) getAgentWrapper(name string) (*agentWrapper, error) {
 	return wrapper, nil
 }
 
+func (s *AiService) ValidateAgentRunInput(name string, input []byte) error {
+	wrapper, wrapperErr := s.getAgentWrapper(name)
+	if wrapperErr != nil {
+		return wrapperErr
+	}
+	return wrapper.ValidateInput(input)
+}
+
 func (s *AiService) GetAgentRunner(run *ent.AiAgentRun) (rez.AiAgentInvoker, error) {
 	if run == nil {
 		return nil, fmt.Errorf("nil run")
@@ -91,14 +102,6 @@ func (s *AiService) GetAgentRunner(run *ent.AiAgentRun) (rez.AiAgentInvoker, err
 		return nil, wrapperErr
 	}
 	return wrapper.MakeRunner(run), nil
-}
-
-func (s *AiService) ValidateAgentRunInput(name string, input []byte) error {
-	wrapper, wrapperErr := s.getAgentWrapper(name)
-	if wrapperErr != nil {
-		return wrapperErr
-	}
-	return wrapper.ValidateInput(input)
 }
 
 //func RegisterWorkflow[I rezai.WorkflowInput, O rezai.WorkflowOutput, S rezai.SessionState](s *AiService, w workflowRunner[I, O, S]) {

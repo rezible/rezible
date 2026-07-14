@@ -21,7 +21,7 @@ import (
 )
 
 type AiAgentService struct {
-	rez.AiSessionStateService
+	rez.AiAgentSnapshotService
 	logger *slog.Logger
 	db     rez.Database
 	jobs   rez.JobService
@@ -29,14 +29,14 @@ type AiAgentService struct {
 	ai     rez.AiService
 }
 
-func NewAiAgentService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, sessions rez.AiSessionStateService, aiSvc rez.AiService) (*AiAgentService, error) {
+func NewAiAgentService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, sessions rez.AiAgentSnapshotService, aiSvc rez.AiService) (*AiAgentService, error) {
 	s := &AiAgentService{
-		AiSessionStateService: sessions,
-		logger:                tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_service"}),
-		db:                    db,
-		jobs:                  jobSvc,
-		msgs:                  msgSvc,
-		ai:                    aiSvc,
+		AiAgentSnapshotService: sessions,
+		logger:                 tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_service"}),
+		db:                     db,
+		jobs:                   jobSvc,
+		msgs:                   msgSvc,
+		ai:                     aiSvc,
 	}
 	jobs.RegisterWorkerFunc(s.handleInvokeAgentRun)
 	return s, nil
@@ -279,17 +279,17 @@ func (s *AiAgentService) ClaimAgentRunOutput(ctx context.Context, id uuid.UUID, 
 	})
 }
 
-type AiSessionStateService struct {
+type AiAgentSnapshotService struct {
 	db   rez.Database
 	msgs rez.MessageService
 }
 
-func NewAiSessionStateService(db rez.Database, msgs rez.MessageService) (*AiSessionStateService, error) {
-	s := &AiSessionStateService{db: db, msgs: msgs}
+func NewAiAgentSnapshotService(db rez.Database, msgs rez.MessageService) (*AiAgentSnapshotService, error) {
+	s := &AiAgentSnapshotService{db: db, msgs: msgs}
 	return s, nil
 }
 
-func (s *AiSessionStateService) GetLatestAgentRunSnapshot(ctx context.Context, runId uuid.UUID) (*ent.AiAgentRunSnapshot, error) {
+func (s *AiAgentSnapshotService) GetLatestSnapshotForRun(ctx context.Context, runId uuid.UUID) (*ent.AiAgentRunSnapshot, error) {
 	query := s.db.Client(ctx).AiAgentRunSnapshot.Query().
 		Where(aars.AiAgentRunID(runId)).
 		Order(aars.ByCreatedAt(sql.OrderDesc())).
@@ -304,7 +304,7 @@ func (s *AiSessionStateService) GetLatestAgentRunSnapshot(ctx context.Context, r
 	return res, nil
 }
 
-func (s *AiSessionStateService) GetAgentRunSnapshot(ctx context.Context, id uuid.UUID) (*ent.AiAgentRunSnapshot, error) {
+func (s *AiAgentSnapshotService) GetAgentRunSnapshot(ctx context.Context, id uuid.UUID) (*ent.AiAgentRunSnapshot, error) {
 	res, resErr := s.db.Client(ctx).AiAgentRunSnapshot.Get(ctx, id)
 	if resErr != nil && !ent.IsNotFound(resErr) {
 		return nil, resErr
@@ -312,7 +312,7 @@ func (s *AiSessionStateService) GetAgentRunSnapshot(ctx context.Context, id uuid
 	return res, nil
 }
 
-func (s *AiSessionStateService) SetAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AiAgentRunSnapshotMutation)) (*ent.AiAgentRunSnapshot, error) {
+func (s *AiAgentSnapshotService) SetAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AiAgentRunSnapshotMutation)) (*ent.AiAgentRunSnapshot, error) {
 	var snapshot *ent.AiAgentRunSnapshot
 	return snapshot, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		var mutator ent.EntityMutator[*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation]
@@ -331,7 +331,7 @@ func (s *AiSessionStateService) SetAgentRunSnapshot(ctx context.Context, id uuid
 	})
 }
 
-func (s *AiSessionStateService) UpdateAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) error) (*ent.AiAgentRunSnapshot, error) {
+func (s *AiAgentSnapshotService) UpdateAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) error) (*ent.AiAgentRunSnapshot, error) {
 	var snapshot *ent.AiAgentRunSnapshot
 	return snapshot, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		var curr *ent.AiAgentRunSnapshot
@@ -367,33 +367,40 @@ func (s *AiSessionStateService) UpdateAgentRunSnapshot(ctx context.Context, id u
 	})
 }
 
-func (s *AiSessionStateService) WriteAgentRunOutput(ctx context.Context, runId uuid.UUID, output any) error {
-	outputBytes, jsonErr := json.Marshal(output)
-	if jsonErr != nil {
-		return fmt.Errorf("marshalling output: %w", jsonErr)
-	}
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		run, runErr := tx.AiAgentRun.Get(ctx, runId)
-		if runErr != nil {
-			return fmt.Errorf("getting run: %w", runErr)
-		}
-		createOutput := tx.AiAgentRunOutput.Create().
-			SetAiAgentRun(run).
-			SetData(outputBytes).
-			SetMetadata(map[string]any{})
-		created, saveErr := createOutput.Save(ctx)
-		if saveErr != nil {
-			return fmt.Errorf("failed to save output: %w", saveErr)
-		}
-		event := rez.EventOnAiAgentRunOutput{
-			AgentName:        run.AgentName,
-			AgentRunMetadata: run.Metadata,
-			AgentRunId:       runId,
-			AgentOutputId:    created.ID,
-		}
-		if eventErr := s.msgs.PublishEvent(ctx, event); eventErr != nil {
-			return fmt.Errorf("failed to publish event: %w", eventErr)
-		}
-		return nil
-	})
-}
+//func (s *AiAgentSnapshotService) WriteOutputForSnapshot(ctx context.Context, snapshotId uuid.UUID, output any) error {
+//	outputBytes, jsonErr := json.Marshal(output)
+//	if jsonErr != nil {
+//		return fmt.Errorf("marshalling output: %w", jsonErr)
+//	}
+//	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+//		querySnapshot := tx.AiAgentRunSnapshot.Query().
+//			Where(aars.ID(snapshotId)).
+//			WithAiAgentRun()
+//		snapshot, snapshotErr := querySnapshot.Only(ctx)
+//		if snapshotErr != nil {
+//			return fmt.Errorf("get snapshot: %w", snapshotErr)
+//		}
+//		run, runErr := snapshot.Edges.AiAgentRunOrErr()
+//		if runErr != nil {
+//			return fmt.Errorf("get run: %w", runErr)
+//		}
+//		createOutput := tx.AiAgentRunOutput.Create().
+//			SetAiAgentRunSnapshot(snapshot).
+//			SetData(outputBytes).
+//			SetMetadata(map[string]any{})
+//		created, saveErr := createOutput.Save(ctx)
+//		if saveErr != nil {
+//			return fmt.Errorf("failed to save output: %w", saveErr)
+//		}
+//		event := rez.EventOnAiAgentOutput{
+//			AgentName:          run.AgentName,
+//			AgentRunMetadata:   run.Metadata,
+//			AgentRunSnapshotId: snapshotId,
+//			AgentOutputId:      created.ID,
+//		}
+//		if eventErr := s.msgs.PublishEvent(ctx, event); eventErr != nil {
+//			return fmt.Errorf("failed to publish event: %w", eventErr)
+//		}
+//		return nil
+//	})
+//}

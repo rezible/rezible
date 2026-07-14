@@ -31,20 +31,18 @@ func (s *AlertService) HandleEventProjection(ctx context.Context, event *ent.Nor
 func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *projections.AlertInstanceEvent) ([]rez.ProjectedEntityRef, error) {
 	attrs := ae.Attributes
 
-	alertObservedEvidence := rez.ProjectedKnowledgeEvidence{
-		Kind:        ke.EvidenceKindObserved,
-		Assertion:   assertionAlertInstanceObserved,
-		EffectiveAt: ae.Event.OccurredAt,
-		SubjectAlias: rez.ProjectedKnowledgeEvidenceSubjectAlias{
-			Description: "Alert Opened",
-			AliasRef:    ae.Event.MakeSubjectAliasRef(ksa.SubjectKindEntity),
-			SubjectEntityRef: &ent.KnowledgeEntityRef{
-				Kind:        knowledgeEntityKindAlert,
-				Reference:   attrs.ExternalRef,
-				DisplayName: attrs.Title,
-				Description: attrs.Description,
-			},
-		},
+	alertSubject := ae.Event.MakeSubjectAliasRef(ksa.SubjectKindEntity, "Alert")
+	alertSubject.SubjectEntityRef = &ent.KnowledgeEntityRef{
+		Kind:        knowledgeEntityKindAlert,
+		Reference:   attrs.ExternalRef,
+		DisplayName: attrs.Title,
+		Description: attrs.Description,
+	}
+	alertObservedEvidence := ent.KnowledgeEvidenceRef{
+		Kind:            ke.EvidenceKindObserved,
+		Assertion:       assertionAlertInstanceObserved,
+		EffectiveAt:     ae.Event.OccurredAt,
+		SubjectAliasRef: alertSubject,
 	}
 
 	var projEnts []rez.ProjectedEntityRef

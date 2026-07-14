@@ -10,7 +10,6 @@ import (
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -147,14 +146,6 @@ func TestProjectCodeChangeEventMapsRelatedEntities(t *testing.T) {
 	//assert.Equal(t, relationshipKindRelatedTo, related.Kind)
 	//assert.Equal(t, assertionCodeChangeRelatedEntity, related.EvidenceAssertion)
 	//assert.Equal(t, "demo:component:search_api", related.ToAliasRef.ProviderSubjectRef)
-}
-
-func TestProjectorObservedAtPrefersOccurredAt(t *testing.T) {
-	occurredAt := time.Date(2026, 5, 11, 10, 0, 0, 0, time.UTC)
-	receivedAt := occurredAt.Add(time.Hour)
-	ev := &ent.NormalizedEvent{OccurredAt: occurredAt, ReceivedAt: receivedAt}
-
-	assert.Equal(t, occurredAt, ev.DeriveObservedAt())
 }
 
 func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {

@@ -6,11 +6,14 @@ import (
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
 )
 
 type (
-	AgentSnapshotState[S SessionState] aix.SessionState[S]
+	AgentRunState[S SessionState]    aix.SessionState[S]
+	AgentRunSnapshot[S SessionState] aix.SessionSnapshot[S]
 
 	AgentInput interface {
 		Validate() error
@@ -20,7 +23,6 @@ type (
 	}
 
 	AgentOutput interface {
-		Validate() error
 	}
 
 	AgentDefinition[I AgentInput, S SessionState, O AgentOutput] struct {
@@ -29,26 +31,67 @@ type (
 		SystemPrompt    string
 		EnableArtifacts bool
 		RequiredTools   []string
+		inputValidator  func(I) error
 	}
 )
 
-func (d AgentDefinition[I, S, O]) ParseOutput(raw []byte) (*O, error) {
-	var output O
-	if err := json.Unmarshal(raw, &output); err != nil {
-		return nil, fmt.Errorf("json: %w", err)
+func (d AgentDefinition[I, S, O]) ValidateInput(raw []byte) (*I, error) {
+	var input I
+	if jsonErr := json.Unmarshal(raw, &input); jsonErr != nil {
+		return nil, fmt.Errorf("unmarshal: %w", jsonErr)
 	}
-	return &output, output.Validate()
+	var validationErr error
+	if validErr := input.Validate(); validErr != nil {
+		validationErr = fmt.Errorf("validate: %w", validErr)
+	}
+	if d.inputValidator != nil {
+		if validErr := d.inputValidator(input); validErr != nil {
+			validationErr = fmt.Errorf("validate: %w", validErr)
+		}
+	}
+	return &input, validationErr
 }
 
-func (d AgentDefinition[I, S, O]) ParseSnapshotState(raw []byte) (*AgentSnapshotState[S], error) {
-	var state AgentSnapshotState[S]
-	if err := json.Unmarshal(raw, &state); err != nil {
+func (d AgentDefinition[I, S, O]) ParseSnapshot(rs *ent.AiAgentRunSnapshot) (*AgentRunState[S], error) {
+	var state AgentRunState[S]
+	if rs.State == nil {
+		return nil, fmt.Errorf("state is nil")
+	}
+	if err := json.Unmarshal(*rs.State, &state); err != nil {
 		return nil, fmt.Errorf("json: %w", err)
 	}
 	return &state, nil
 }
 
-func (s *AgentSnapshotState[S]) GetModelTextMessages() []string {
+func (d AgentDefinition[I, S, O]) MakeOutputArtifactPart(output O) (*ai.Part, error) {
+	var data map[string]any
+	if msErr := mapstructure.Decode(output, &data); msErr != nil {
+		return nil, fmt.Errorf("mapstructure: %w", msErr)
+	}
+	return ai.NewCustomPart(data), nil
+}
+
+func (d AgentDefinition[I, S, O]) GetOutputArtifacts(artifacts []*aix.Artifact) ([]O, error) {
+	var outputs []O
+	for _, a := range artifacts {
+		if a.Name != "output" {
+			continue
+		}
+		for _, p := range a.Parts {
+			if !p.IsCustom() {
+				continue
+			}
+			var output O
+			if msErr := mapstructure.Decode(p.Custom, &output); msErr != nil {
+				return nil, fmt.Errorf("failed to decode output: %w", msErr)
+			}
+			outputs = append(outputs, output)
+		}
+	}
+	return outputs, nil
+}
+
+func (s *AgentRunState[S]) GetModelTextMessages() []string {
 	var messages []string
 	for _, msg := range s.Messages {
 		if msg.Role == ai.RoleModel {

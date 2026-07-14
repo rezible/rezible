@@ -40,25 +40,24 @@ func (s *IncidentService) HandleEventProjection(ctx context.Context, event *ent.
 
 func (s *IncidentService) handleIncidentEventProjection(ctx context.Context, ie *projections.IncidentEvent) ([]rez.ProjectedEntityRef, error) {
 	attrs := ie.Attributes
+
 	openedAt := attrs.OpenedAt
 	if openedAt.IsZero() {
-		openedAt = ie.Event.DeriveObservedAt()
+		openedAt = ie.Event.OccurredAt
 	}
 
-	incidentObservedEvidence := rez.ProjectedKnowledgeEvidence{
-		Kind:        ke.EvidenceKindObserved,
-		Assertion:   assertionIncidentObserved,
-		EffectiveAt: openedAt,
-		SubjectAlias: rez.ProjectedKnowledgeEvidenceSubjectAlias{
-			Description: "Incident Opened",
-			SubjectEntityRef: &ent.KnowledgeEntityRef{
-				Kind:        knowledgeKindIncident,
-				Reference:   attrs.ExternalRef,
-				DisplayName: attrs.Title,
-				Description: attrs.Summary,
-			},
-			AliasRef: ie.Event.MakeSubjectAliasRef(ksa.SubjectKindEntity),
-		},
+	incidentSubject := ie.Event.MakeSubjectAliasRef(ksa.SubjectKindEntity, "Incident")
+	incidentSubject.SubjectEntityRef = &ent.KnowledgeEntityRef{
+		Kind:        knowledgeEntityKindAlert,
+		Reference:   attrs.ExternalRef,
+		DisplayName: attrs.Title,
+		Description: attrs.Summary,
+	}
+	incidentObservedEvidence := ent.KnowledgeEvidenceRef{
+		Kind:            ke.EvidenceKindObserved,
+		Assertion:       assertionIncidentObserved,
+		EffectiveAt:     openedAt,
+		SubjectAliasRef: incidentSubject,
 	}
 
 	var projEnts []rez.ProjectedEntityRef

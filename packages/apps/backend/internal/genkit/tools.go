@@ -6,8 +6,9 @@ import (
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/firebase/genkit/go/ai"
+	aix "github.com/firebase/genkit/go/ai/exp"
 	genkitx "github.com/firebase/genkit/go/genkit/exp"
-	rez "github.com/rezible/rezible"
+	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
 type Tool[Input any, Output any] interface {
@@ -37,26 +38,37 @@ func (s *AiService) getRequiredToolRefs(names []string) ([]ai.ToolRef, error) {
 	return refs, nil
 }
 
-type KnowledgeGraphTool struct {
-	kg rez.KnowledgeGraphService
-}
-
-func NewKnowledgeGraphTool(kg rez.KnowledgeGraphService) *KnowledgeGraphTool {
-	return &KnowledgeGraphTool{kg: kg}
-}
-
-func (kg *KnowledgeGraphTool) Name() string {
-	return "query_knowledge_graph"
-}
-
-func (kg *KnowledgeGraphTool) Description() string {
-	return ""
-}
-
-func (kg *KnowledgeGraphTool) ToolFunc(ctx context.Context, inp string) (string, error) {
-	return "", nil
-}
-
-func (kg *KnowledgeGraphTool) ToolOpts() []ai.ToolOption {
-	return nil
+func makeWriteOutputArtifactTool[O rezai.AgentOutput](partFn func(O) (*ai.Part, error)) *aix.Tool[O, AgentOutputToolResult] {
+	artifactName := "output"
+	writeOutputArtifactFn := func(ctx context.Context, output O) error {
+		as := aix.ArtifactStoreFromContext(ctx)
+		if as == nil {
+			return fmt.Errorf("no artifact store found in context")
+		}
+		part, partErr := partFn(output)
+		if partErr != nil {
+			return fmt.Errorf("encoding part: %w", partErr)
+		}
+		outputArtifact := &aix.Artifact{Name: artifactName, Parts: []*ai.Part{part}}
+		for _, art := range as.Artifacts() {
+			if art.Name == artifactName {
+				outputArtifact.Parts = append(art.Parts, outputArtifact.Parts...)
+				outputArtifact.Metadata = art.Metadata
+				break
+			}
+		}
+		as.AddArtifacts(outputArtifact)
+		return nil
+	}
+	return aix.NewTool(
+		"write_output",
+		"Writes outputs of an agent run. For example a chat message response.",
+		func(ctx context.Context, output O) (AgentOutputToolResult, error) {
+			status := "Output artifact saved successfully"
+			if writeErr := writeOutputArtifactFn(ctx, output); writeErr != nil {
+				status = fmt.Sprintf("Error writing result: %s", writeErr.Error())
+			}
+			return AgentOutputToolResult{Status: status}, nil
+		},
+	)
 }

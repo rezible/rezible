@@ -38,10 +38,12 @@ func (a *AlertsAgent) makeInitialUserMessage(ctx context.Context, input rezai.Al
 	if instErr != nil {
 		return nil, fmt.Errorf("get alert instance: %w", instErr)
 	}
+
 	alrt, alrtErr := inst.Edges.AlertOrErr()
 	if alrtErr != nil {
 		return nil, fmt.Errorf("get alert: %w", alrtErr)
 	}
+
 	msgText := fmt.Sprintf(`You are an ai agent built to help software engineering teams investigate & triage alerts.
 Title: %s
 Description: %s
@@ -50,28 +52,6 @@ Definition: %s`, alrt.Title, alrt.Description, alrt.Definition)
 	return ai.NewUserTextMessage(msgText), nil
 }
 
-/*
-func (a *AlertInvestigationAgent) run(ctx context.Context, resp aix.Responder, sr *aix.SessionRunner[rezai.AlertInvestigationState]) (*aix.AgentResult, error) {
-	runTurn := func(ctx context.Context, input *aix.AgentInput) (*aix.TurnResult, error) {
-		turn := aix.TurnContextFromContext(ctx)
-
-		if turn.TurnIndex == 0 {
-
-		}
-
-		if sr.Custom().ReportReady {
-
-		}
-
-		slog.DebugContext(ctx, "agent alert investigation",
-			"turn", turn.TurnIndex,
-		)
-
-		return nil, nil
-	}
-	if turnErr := sr.Run(ctx, runTurn); turnErr != nil {
-		return nil, fmt.Errorf("run: %w", turnErr)
-	}
-	return sr.Result(), fmt.Errorf("not implemented")
+func (a *AlertsAgent) makeOutputTool() *aix.Tool[rezai.AlertAgentOutput, AgentOutputToolResult] {
+	return makeWriteOutputArtifactTool(rezai.AlertsAgent.MakeOutputArtifactPart)
 }
-*/

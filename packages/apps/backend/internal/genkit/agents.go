@@ -2,7 +2,6 @@ package genkit
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	middlewarex "github.com/firebase/genkit/go/plugins/middleware/exp"
@@ -22,16 +21,20 @@ type (
 		MakeRunner(*ent.AiAgentRun) rez.AiAgentInvoker
 	}
 
+	AgentOutputToolResult struct {
+		Status string `json:"status"`
+	}
+
 	agentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput] interface {
 		definition() rezai.AgentDefinition[I, S, O]
 		transformState(context.Context, *aix.SessionState[S]) (*aix.SessionState[S], error)
 		transformStreamChunk(context.Context, *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error)
 		makeInitialUserMessage(context.Context, I) (*ai.Message, error)
+		makeOutputTool() *aix.Tool[O, AgentOutputToolResult]
 	}
 
 	customAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput] interface {
 		makeAgentFunc([]ai.Middleware, []ai.ToolRef) aix.AgentFunc[S]
-		//run(context.Context, aix.Responder, *aix.SessionRunner[S]) (*aix.AgentResult, error)
 	}
 )
 
@@ -44,14 +47,14 @@ func wrapAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutp
 		aix.WithStreamTransform[S](runner.transformStreamChunk),
 	}
 
-	//model, modelErr := svc.getModel()
-
 	tools, toolsErr := svc.getRequiredToolRefs(def.RequiredTools)
 	if toolsErr != nil {
 		return nil, fmt.Errorf("tools: %w", toolsErr)
 	}
+
 	middleware := []ai.Middleware{
-		newAgentRunOutputWriter[S, O](svc.sessions),
+		&agentOutputMiddleware[O]{outputTool: runner.makeOutputTool()},
+		newKnowledgeGraphMiddleware(svc.knowledgeGraph),
 	}
 	if def.EnableArtifacts {
 		middleware = append(middleware, &middlewarex.Artifacts{})
@@ -72,20 +75,9 @@ func wrapAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutp
 		agent = genkitx.DefineAgent(svc.gk, def.Name, prompt, opts...)
 	}
 
-	validateInputFunc := func(raw []byte) (*I, error) {
-		var input I
-		if jsonErr := json.Unmarshal(raw, &input); jsonErr != nil {
-			return nil, fmt.Errorf("unmarshal: %w", jsonErr)
-		}
-		if validationErr := input.Validate(); validationErr != nil {
-			return nil, fmt.Errorf("validate: %w", validationErr)
-		}
-		return &input, nil
-	}
-
 	return &agentWrapper{
 		inputValidatorFunc: func(input []byte) error {
-			_, err := validateInputFunc(input)
+			_, err := def.ValidateInput(input)
 			return err
 		},
 		makeRunnerFunc: func(run *ent.AiAgentRun) rez.AiAgentInvoker {
@@ -93,7 +85,7 @@ func wrapAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutp
 				agent:     agent,
 				sessionId: run.ID.String(),
 				makeInitialUserMessageFn: func(ctx context.Context) (*ai.Message, error) {
-					input, inputErr := validateInputFunc(run.Input)
+					input, inputErr := def.ValidateInput(run.Input)
 					if inputErr != nil || input == nil {
 						return nil, fmt.Errorf("input: %w", inputErr)
 					}

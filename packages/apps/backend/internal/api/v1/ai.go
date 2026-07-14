@@ -5,6 +5,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	aar "github.com/rezible/rezible/ent/aiagentrun"
+	aars "github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/predicate"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -38,8 +39,8 @@ func (h *aiHandler) ListAiAgentRuns(ctx context.Context, req *oapi.ListAiAgentRu
 		predicates = append(predicates, aar.AgentName(req.Name))
 	}
 	if req.Resulted.IsSet {
-		p := aar.HasOutputs()
-		if req.Resulted.Value {
+		p := aar.HasSnapshotsWith(aars.StatusNEQ(aars.StatusPending))
+		if !req.Resulted.Value {
 			p = aar.Not(p)
 		}
 		predicates = append(predicates, p)

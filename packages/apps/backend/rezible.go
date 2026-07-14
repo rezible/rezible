@@ -11,7 +11,6 @@ import (
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
-	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
@@ -158,24 +157,9 @@ type (
 )
 
 type (
-	ProjectedKnowledgeEvidence struct {
-		Kind         ke.EvidenceKind
-		Assertion    string
-		EffectiveAt  time.Time
-		Properties   map[string]any
-		SubjectAlias ProjectedKnowledgeEvidenceSubjectAlias
-	}
-
-	ProjectedKnowledgeEvidenceSubjectAlias struct {
-		Description            string
-		AliasRef               ent.KnowledgeSubjectAliasRef
-		SubjectEntityRef       *ent.KnowledgeEntityRef
-		SubjectRelationshipRef *ent.KnowledgeRelationshipRef
-	}
-
 	KnowledgeIngestionService interface {
-		IngestProjectedEvidence(context.Context, *ent.NormalizedEvent, ...ProjectedKnowledgeEvidence) error
-		IngestDomainEntityEvidence(context.Context, *ent.NormalizedEvent, ProjectedKnowledgeEvidence) (uuid.UUID, error)
+		IngestProjectedEvidence(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) error
+		IngestDomainEntityEvidence(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (uuid.UUID, error)
 	}
 )
 
@@ -417,12 +401,12 @@ type (
 )
 
 type (
-	AiSessionStateService interface {
-		GetLatestAgentRunSnapshot(ctx context.Context, runId uuid.UUID) (*ent.AiAgentRunSnapshot, error)
+	AiAgentSnapshotService interface {
+		GetLatestSnapshotForRun(context.Context, uuid.UUID) (*ent.AiAgentRunSnapshot, error)
 		GetAgentRunSnapshot(context.Context, uuid.UUID) (*ent.AiAgentRunSnapshot, error)
-		SetAgentRunSnapshot(context.Context, uuid.UUID, func(*ent.AiAgentRunSnapshotMutation)) (*ent.AiAgentRunSnapshot, error)
+		//SetAgentRunSnapshot(context.Context, uuid.UUID, func(*ent.AiAgentRunSnapshotMutation)) (*ent.AiAgentRunSnapshot, error)
 		UpdateAgentRunSnapshot(context.Context, uuid.UUID, func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) error) (*ent.AiAgentRunSnapshot, error)
-		WriteAgentRunOutput(ctx context.Context, runId uuid.UUID, output any) error
+		//WriteOutputForSnapshot(context.Context, uuid.UUID, any) error
 	}
 
 	AiAgentInvoker interface {
@@ -458,21 +442,21 @@ type (
 	}
 
 	AiAgentService interface {
-		AiSessionStateService
+		AiAgentSnapshotService
 		LookupAgentRunsByMetadata(context.Context, map[string]any) (ent.AiAgentRuns, error)
 		ListAgentRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AiAgentRun], error)
 		CreateAgentRun(context.Context, string, CreateAgentRunParams) (*ent.AiAgentRun, error)
 		InvokeAgentRun(context.Context, uuid.UUID, InvokeAgentRunParams) error
 		GetAgentRun(context.Context, uuid.UUID) (*ent.AiAgentRun, error)
-		GetAgentRunOutput(context.Context, uuid.UUID) (*ent.AiAgentRunOutput, error)
+		//GetAgentRunOutput(context.Context, uuid.UUID) (*ent.AiAgentRunOutput, error)
 		//ClaimAgentRunOutput(context.Context, uuid.UUID, func(context.Context, []byte) (map[string]any, error)) error
 	}
 
-	EventOnAiAgentRunOutput struct {
-		AgentName        string
-		AgentRunMetadata map[string]any
-		AgentRunId       uuid.UUID
-		AgentOutputId    uuid.UUID
+	EventOnAiAgentOutput struct {
+		AgentName          string
+		AgentRunMetadata   map[string]any
+		AgentRunSnapshotId uuid.UUID
+		//AgentOutputId      uuid.UUID
 	}
 )
 

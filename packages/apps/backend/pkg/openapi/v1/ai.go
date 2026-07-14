@@ -67,43 +67,6 @@ type (
 		Parts    []*ai.Part     `json:"parts"`
 		Metadata map[string]any `json:"metadata,omitempty"`
 	}
-
-	AgentRunFinding struct {
-		Id         uuid.UUID                 `json:"id"`
-		Attributes AgentRunFindingAttributes `json:"attributes"`
-	}
-
-	AgentRunFindingAttributes struct {
-		AgentRunId  uuid.UUID                 `json:"agentRunId"`
-		FindingKind string                    `json:"findingKind"`
-		Content     string                    `json:"content"`
-		CreatedAt   time.Time                 `json:"createdAt"`
-		UpdatedAt   time.Time                 `json:"updatedAt"`
-		Citations   []AgentRunFindingCitation `json:"citations"`
-	}
-
-	AgentRunFindingCitation struct {
-		SupportKind string           `json:"supportKind"`
-		Citation    AgentRunCitation `json:"citation"`
-	}
-
-	AgentRunCitation struct {
-		Id         uuid.UUID                  `json:"id"`
-		Attributes AgentRunCitationAttributes `json:"attributes"`
-	}
-
-	AgentRunCitationAttributes struct {
-		CitationKind            string         `json:"citationKind"`
-		Summary                 string         `json:"summary"`
-		KnowledgeEntityId       *uuid.UUID     `json:"knowledgeEntityId,omitempty"`
-		KnowledgeRelationshipId *uuid.UUID     `json:"knowledgeRelationshipId,omitempty"`
-		KnowledgeEvidenceId     *uuid.UUID     `json:"knowledgeEvidenceId,omitempty"`
-		DomainEntityType        string         `json:"domainEntityType,omitempty"`
-		DomainEntityId          *uuid.UUID     `json:"domainEntityId,omitempty"`
-		DomainEntitySnapshot    map[string]any `json:"snapshot,omitempty"`
-		CreatedAt               time.Time      `json:"createdAt"`
-		UpdatedAt               time.Time      `json:"updatedAt"`
-	}
 )
 
 func AiAgentRunFromEnt(run *ent.AiAgentRun) AiAgentRun {
@@ -144,42 +107,6 @@ func AiAgentRunSnapshotFromEnt(s *ent.AiAgentRunSnapshot) AiAgentRunSnapshot {
 		}
 	}
 	return AiAgentRunSnapshot{Id: s.ID, Attributes: attrs}
-}
-
-func AiAgentRunFindingFromEnt(f *ent.AiAgentRunFinding) AgentRunFinding {
-	attrs := AgentRunFindingAttributes{
-		FindingKind: f.FindingKind,
-		Content:     f.Content,
-		CreatedAt:   f.CreatedAt,
-		UpdatedAt:   f.UpdatedAt,
-		Citations:   nil,
-	}
-	if len(f.Edges.FindingCitations) > 0 {
-		attrs.Citations = make([]AgentRunFindingCitation, len(f.Edges.FindingCitations))
-		for i, fc := range f.Edges.FindingCitations {
-			attrs.Citations[i] = AgentRunFindingCitation{
-				SupportKind: fc.SupportKind,
-				Citation:    AiAgentRunCitationFromEnt(fc.Edges.Citation),
-			}
-		}
-	}
-	return AgentRunFinding{Id: f.ID, Attributes: attrs}
-}
-
-func AiAgentRunCitationFromEnt(c *ent.AiAgentRunCitation) AgentRunCitation {
-	attrs := AgentRunCitationAttributes{
-		CitationKind:            c.Kind,
-		Summary:                 c.Summary,
-		KnowledgeEntityId:       c.KnowledgeEntityID,
-		KnowledgeRelationshipId: c.KnowledgeRelationshipID,
-		KnowledgeEvidenceId:     c.KnowledgeEvidenceID,
-		DomainEntityType:        c.DomainEntityType,
-		DomainEntityId:          c.DomainEntityID,
-		DomainEntitySnapshot:    c.DomainEntitySnapshot,
-		CreatedAt:               c.CreatedAt,
-		UpdatedAt:               c.UpdatedAt,
-	}
-	return AgentRunCitation{Id: c.ID, Attributes: attrs}
 }
 
 var aiTags = []string{"AI"}

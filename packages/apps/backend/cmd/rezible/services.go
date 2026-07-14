@@ -182,7 +182,7 @@ func declareServices(ctx context.Context, i do.Injector) {
 	do.Provide(i, func(i do.Injector) (rez.AiService, error) {
 		s := genkit.NewAiService(
 			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.AiSessionStateService](i),
+			do.MustInvoke[rez.AiAgentSnapshotService](i),
 			do.MustInvoke[rez.KnowledgeGraphService](i),
 		)
 		return s, s.Init(ctx,
@@ -444,13 +444,13 @@ var provideServices = do.Package(
 	}),
 	do.Bind[*db.DocumentsService, rez.DocumentsService](),
 
-	do.Lazy(func(i do.Injector) (*db.AiSessionStateService, error) {
-		return db.NewAiSessionStateService(
+	do.Lazy(func(i do.Injector) (*db.AiAgentSnapshotService, error) {
+		return db.NewAiAgentSnapshotService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
 		)
 	}),
-	do.Bind[*db.AiSessionStateService, rez.AiSessionStateService](),
+	do.Bind[*db.AiAgentSnapshotService, rez.AiAgentSnapshotService](),
 
 	do.Lazy(func(i do.Injector) (*db.AiAgentService, error) {
 		return db.NewAiAgentService(
@@ -458,7 +458,7 @@ var provideServices = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.AiSessionStateService](i),
+			do.MustInvoke[rez.AiAgentSnapshotService](i),
 			do.MustInvoke[rez.AiService](i),
 		)
 	}),

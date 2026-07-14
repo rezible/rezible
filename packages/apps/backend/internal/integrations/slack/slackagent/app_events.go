@@ -9,6 +9,7 @@ import (
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/go-viper/mapstructure/v2"
+	"github.com/google/uuid"
 	"github.com/k0kubun/pp/v3"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -63,7 +64,7 @@ func (m aiChatReplyAgentRunMetadata) Encode() (map[string]any, error) {
 	return md, mapstructure.Decode(m, &md)
 }
 
-func (a *App) startOrContinueAgentThreadReply(ctx context.Context, md aiChatReplyAgentRunMetadata, usr *ent.User, msg string) error {
+func (a *App) startOrContinueAgentThreadReply(ctx context.Context, md aiChatReplyAgentRunMetadata, userId uuid.UUID, msg string) error {
 	runMd, mdErr := md.Encode()
 	if mdErr != nil {
 		return fmt.Errorf("failed to create agent run metadata: %w", mdErr)
@@ -74,10 +75,10 @@ func (a *App) startOrContinueAgentThreadReply(ctx context.Context, md aiChatRepl
 	if runsErr != nil && !ent.IsNotFound(runsErr) {
 		return fmt.Errorf("failed to lookup agent runs: %w", runsErr)
 	}
-	if len(runs) == 1 && runs[0].OwnerUserID == usr.ID {
+	if len(runs) == 1 && runs[0].OwnerUserID == userId {
 		slog.Debug("continuing existing agent run in thread")
 		run := runs[0]
-		snap, snapErr := a.agents.GetLatestAgentRunSnapshot(ctx, run.ID)
+		snap, snapErr := a.agents.GetLatestSnapshotForRun(ctx, run.ID)
 		if snapErr != nil {
 			return fmt.Errorf("failed to get latest agent run snapshot: %w", snapErr)
 		}
@@ -95,12 +96,9 @@ func (a *App) startOrContinueAgentThreadReply(ctx context.Context, md aiChatRepl
 		slog.Warn("multiple agent runs found matching slack thread metadata")
 	}
 	createRunParams := rez.CreateAgentRunParams{
-		OwnerUserID: usr.ID,
-		Input: rezai.ChatAgentInput{
-			UserId:  usr.ID,
-			Message: msg,
-		},
-		Metadata: runMd,
+		OwnerUserID: userId,
+		Input:       rezai.ChatAgentInput{UserId: userId, Message: msg},
+		Metadata:    runMd,
 	}
 	_, runErr := a.agents.CreateAgentRun(ctx, rezai.ChatAgent.Name, createRunParams)
 	if runErr != nil {
@@ -133,7 +131,7 @@ func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWra
 
 	text := strings.TrimSpace(mentionRe.ReplaceAllString(data.Text, ""))
 
-	return a.startOrContinueAgentThreadReply(ctx, md, usr, text)
+	return a.startOrContinueAgentThreadReply(ctx, md, usr.ID, text)
 }
 
 func (a *App) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent) error {
