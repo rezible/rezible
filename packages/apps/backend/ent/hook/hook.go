@@ -21,40 +21,16 @@ func (f AiAgentRunFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunMutation", m)
 }
 
-// The AiAgentRunCitationFunc type is an adapter to allow the use of ordinary
-// function as AiAgentRunCitation mutator.
-type AiAgentRunCitationFunc func(context.Context, *ent.AiAgentRunCitationMutation) (ent.Value, error)
+// The AiAgentRunKnowledgeCitationFunc type is an adapter to allow the use of ordinary
+// function as AiAgentRunKnowledgeCitation mutator.
+type AiAgentRunKnowledgeCitationFunc func(context.Context, *ent.AiAgentRunKnowledgeCitationMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AiAgentRunCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AiAgentRunCitationMutation); ok {
+func (f AiAgentRunKnowledgeCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AiAgentRunKnowledgeCitationMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunCitationMutation", m)
-}
-
-// The AiAgentRunFindingFunc type is an adapter to allow the use of ordinary
-// function as AiAgentRunFinding mutator.
-type AiAgentRunFindingFunc func(context.Context, *ent.AiAgentRunFindingMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AiAgentRunFindingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AiAgentRunFindingMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunFindingMutation", m)
-}
-
-// The AiAgentRunFindingCitationFunc type is an adapter to allow the use of ordinary
-// function as AiAgentRunFindingCitation mutator.
-type AiAgentRunFindingCitationFunc func(context.Context, *ent.AiAgentRunFindingCitationMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AiAgentRunFindingCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AiAgentRunFindingCitationMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunFindingCitationMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunKnowledgeCitationMutation", m)
 }
 
 // The AiAgentRunOutputFunc type is an adapter to allow the use of ordinary

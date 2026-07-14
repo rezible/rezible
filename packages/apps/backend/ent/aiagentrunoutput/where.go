@@ -72,9 +72,9 @@ func UpdatedAt(v time.Time) predicate.AiAgentRunOutput {
 	return predicate.AiAgentRunOutput(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// AiAgentRunID applies equality check predicate on the "ai_agent_run_id" field. It's identical to AiAgentRunIDEQ.
-func AiAgentRunID(v uuid.UUID) predicate.AiAgentRunOutput {
-	return predicate.AiAgentRunOutput(sql.FieldEQ(FieldAiAgentRunID, v))
+// AiAgentRunSnapshotID applies equality check predicate on the "ai_agent_run_snapshot_id" field. It's identical to AiAgentRunSnapshotIDEQ.
+func AiAgentRunSnapshotID(v uuid.UUID) predicate.AiAgentRunOutput {
+	return predicate.AiAgentRunOutput(sql.FieldEQ(FieldAiAgentRunSnapshotID, v))
 }
 
 // Data applies equality check predicate on the "data" field. It's identical to DataEQ.
@@ -182,24 +182,24 @@ func UpdatedAtLTE(v time.Time) predicate.AiAgentRunOutput {
 	return predicate.AiAgentRunOutput(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// AiAgentRunIDEQ applies the EQ predicate on the "ai_agent_run_id" field.
-func AiAgentRunIDEQ(v uuid.UUID) predicate.AiAgentRunOutput {
-	return predicate.AiAgentRunOutput(sql.FieldEQ(FieldAiAgentRunID, v))
+// AiAgentRunSnapshotIDEQ applies the EQ predicate on the "ai_agent_run_snapshot_id" field.
+func AiAgentRunSnapshotIDEQ(v uuid.UUID) predicate.AiAgentRunOutput {
+	return predicate.AiAgentRunOutput(sql.FieldEQ(FieldAiAgentRunSnapshotID, v))
 }
 
-// AiAgentRunIDNEQ applies the NEQ predicate on the "ai_agent_run_id" field.
-func AiAgentRunIDNEQ(v uuid.UUID) predicate.AiAgentRunOutput {
-	return predicate.AiAgentRunOutput(sql.FieldNEQ(FieldAiAgentRunID, v))
+// AiAgentRunSnapshotIDNEQ applies the NEQ predicate on the "ai_agent_run_snapshot_id" field.
+func AiAgentRunSnapshotIDNEQ(v uuid.UUID) predicate.AiAgentRunOutput {
+	return predicate.AiAgentRunOutput(sql.FieldNEQ(FieldAiAgentRunSnapshotID, v))
 }
 
-// AiAgentRunIDIn applies the In predicate on the "ai_agent_run_id" field.
-func AiAgentRunIDIn(vs ...uuid.UUID) predicate.AiAgentRunOutput {
-	return predicate.AiAgentRunOutput(sql.FieldIn(FieldAiAgentRunID, vs...))
+// AiAgentRunSnapshotIDIn applies the In predicate on the "ai_agent_run_snapshot_id" field.
+func AiAgentRunSnapshotIDIn(vs ...uuid.UUID) predicate.AiAgentRunOutput {
+	return predicate.AiAgentRunOutput(sql.FieldIn(FieldAiAgentRunSnapshotID, vs...))
 }
 
-// AiAgentRunIDNotIn applies the NotIn predicate on the "ai_agent_run_id" field.
-func AiAgentRunIDNotIn(vs ...uuid.UUID) predicate.AiAgentRunOutput {
-	return predicate.AiAgentRunOutput(sql.FieldNotIn(FieldAiAgentRunID, vs...))
+// AiAgentRunSnapshotIDNotIn applies the NotIn predicate on the "ai_agent_run_snapshot_id" field.
+func AiAgentRunSnapshotIDNotIn(vs ...uuid.UUID) predicate.AiAgentRunOutput {
+	return predicate.AiAgentRunOutput(sql.FieldNotIn(FieldAiAgentRunSnapshotID, vs...))
 }
 
 // DataEQ applies the EQ predicate on the "data" field.
@@ -242,6 +242,16 @@ func DataLTE(v []byte) predicate.AiAgentRunOutput {
 	return predicate.AiAgentRunOutput(sql.FieldLTE(FieldData, v))
 }
 
+// MetadataIsNil applies the IsNil predicate on the "metadata" field.
+func MetadataIsNil() predicate.AiAgentRunOutput {
+	return predicate.AiAgentRunOutput(sql.FieldIsNull(FieldMetadata))
+}
+
+// MetadataNotNil applies the NotNil predicate on the "metadata" field.
+func MetadataNotNil() predicate.AiAgentRunOutput {
+	return predicate.AiAgentRunOutput(sql.FieldNotNull(FieldMetadata))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.AiAgentRunOutput {
 	return predicate.AiAgentRunOutput(func(s *sql.Selector) {
@@ -271,26 +281,26 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.AiAgentRunOutput {
 	})
 }
 
-// HasAiAgentRun applies the HasEdge predicate on the "ai_agent_run" edge.
-func HasAiAgentRun() predicate.AiAgentRunOutput {
+// HasAiAgentRunSnapshot applies the HasEdge predicate on the "ai_agent_run_snapshot" edge.
+func HasAiAgentRunSnapshot() predicate.AiAgentRunOutput {
 	return predicate.AiAgentRunOutput(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AiAgentRunTable, AiAgentRunColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, AiAgentRunSnapshotTable, AiAgentRunSnapshotColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AiAgentRun
+		step.To.Schema = schemaConfig.AiAgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AiAgentRunOutput
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAiAgentRunWith applies the HasEdge predicate on the "ai_agent_run" edge with a given conditions (other predicates).
-func HasAiAgentRunWith(preds ...predicate.AiAgentRun) predicate.AiAgentRunOutput {
+// HasAiAgentRunSnapshotWith applies the HasEdge predicate on the "ai_agent_run_snapshot" edge with a given conditions (other predicates).
+func HasAiAgentRunSnapshotWith(preds ...predicate.AiAgentRunSnapshot) predicate.AiAgentRunOutput {
 	return predicate.AiAgentRunOutput(func(s *sql.Selector) {
-		step := newAiAgentRunStep()
+		step := newAiAgentRunSnapshotStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AiAgentRun
+		step.To.Schema = schemaConfig.AiAgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AiAgentRunOutput
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

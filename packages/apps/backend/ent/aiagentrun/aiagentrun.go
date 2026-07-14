@@ -40,8 +40,6 @@ const (
 	EdgeOwnerUser = "owner_user"
 	// EdgeSnapshots holds the string denoting the snapshots edge name in mutations.
 	EdgeSnapshots = "snapshots"
-	// EdgeOutputs holds the string denoting the outputs edge name in mutations.
-	EdgeOutputs = "outputs"
 	// Table holds the table name of the aiagentrun in the database.
 	Table = "ai_agent_runs"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -65,13 +63,6 @@ const (
 	SnapshotsInverseTable = "ai_agent_run_snapshots"
 	// SnapshotsColumn is the table column denoting the snapshots relation/edge.
 	SnapshotsColumn = "ai_agent_run_id"
-	// OutputsTable is the table that holds the outputs relation/edge.
-	OutputsTable = "ai_agent_run_outputs"
-	// OutputsInverseTable is the table name for the AiAgentRunOutput entity.
-	// It exists in this package in order to avoid circular dependency with the "aiagentrunoutput" package.
-	OutputsInverseTable = "ai_agent_run_outputs"
-	// OutputsColumn is the table column denoting the outputs relation/edge.
-	OutputsColumn = "ai_agent_run_id"
 )
 
 // Columns holds all SQL columns for aiagentrun fields.
@@ -185,20 +176,6 @@ func BySnapshots(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newSnapshotsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByOutputsCount orders the results by outputs count.
-func ByOutputsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newOutputsStep(), opts...)
-	}
-}
-
-// ByOutputs orders the results by outputs terms.
-func ByOutputs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newOutputsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -218,12 +195,5 @@ func newSnapshotsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SnapshotsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, SnapshotsTable, SnapshotsColumn),
-	)
-}
-func newOutputsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(OutputsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, OutputsTable, OutputsColumn),
 	)
 }

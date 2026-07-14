@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunoutput"
+	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -52,16 +52,16 @@ func (_u *AiAgentRunOutputUpdate) SetUpdatedAt(v time.Time) *AiAgentRunOutputUpd
 	return _u
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (_u *AiAgentRunOutputUpdate) SetAiAgentRunID(v uuid.UUID) *AiAgentRunOutputUpdate {
-	_u.mutation.SetAiAgentRunID(v)
+// SetAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field.
+func (_u *AiAgentRunOutputUpdate) SetAiAgentRunSnapshotID(v uuid.UUID) *AiAgentRunOutputUpdate {
+	_u.mutation.SetAiAgentRunSnapshotID(v)
 	return _u
 }
 
-// SetNillableAiAgentRunID sets the "ai_agent_run_id" field if the given value is not nil.
-func (_u *AiAgentRunOutputUpdate) SetNillableAiAgentRunID(v *uuid.UUID) *AiAgentRunOutputUpdate {
+// SetNillableAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field if the given value is not nil.
+func (_u *AiAgentRunOutputUpdate) SetNillableAiAgentRunSnapshotID(v *uuid.UUID) *AiAgentRunOutputUpdate {
 	if v != nil {
-		_u.SetAiAgentRunID(*v)
+		_u.SetAiAgentRunSnapshotID(*v)
 	}
 	return _u
 }
@@ -78,9 +78,15 @@ func (_u *AiAgentRunOutputUpdate) SetMetadata(v map[string]interface{}) *AiAgent
 	return _u
 }
 
-// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AiAgentRunOutputUpdate) SetAiAgentRun(v *AiAgentRun) *AiAgentRunOutputUpdate {
-	return _u.SetAiAgentRunID(v.ID)
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *AiAgentRunOutputUpdate) ClearMetadata() *AiAgentRunOutputUpdate {
+	_u.mutation.ClearMetadata()
+	return _u
+}
+
+// SetAiAgentRunSnapshot sets the "ai_agent_run_snapshot" edge to the AiAgentRunSnapshot entity.
+func (_u *AiAgentRunOutputUpdate) SetAiAgentRunSnapshot(v *AiAgentRunSnapshot) *AiAgentRunOutputUpdate {
+	return _u.SetAiAgentRunSnapshotID(v.ID)
 }
 
 // Mutation returns the AiAgentRunOutputMutation object of the builder.
@@ -88,9 +94,9 @@ func (_u *AiAgentRunOutputUpdate) Mutation() *AiAgentRunOutputMutation {
 	return _u.mutation
 }
 
-// ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AiAgentRunOutputUpdate) ClearAiAgentRun() *AiAgentRunOutputUpdate {
-	_u.mutation.ClearAiAgentRun()
+// ClearAiAgentRunSnapshot clears the "ai_agent_run_snapshot" edge to the AiAgentRunSnapshot entity.
+func (_u *AiAgentRunOutputUpdate) ClearAiAgentRunSnapshot() *AiAgentRunOutputUpdate {
+	_u.mutation.ClearAiAgentRunSnapshot()
 	return _u
 }
 
@@ -141,8 +147,8 @@ func (_u *AiAgentRunOutputUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AiAgentRunOutput.tenant"`)
 	}
-	if _u.mutation.AiAgentRunCleared() && len(_u.mutation.AiAgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AiAgentRunOutput.ai_agent_run"`)
+	if _u.mutation.AiAgentRunSnapshotCleared() && len(_u.mutation.AiAgentRunSnapshotIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AiAgentRunOutput.ai_agent_run_snapshot"`)
 	}
 	return nil
 }
@@ -177,29 +183,32 @@ func (_u *AiAgentRunOutputUpdate) sqlSave(ctx context.Context) (_node int, err e
 	if value, ok := _u.mutation.Metadata(); ok {
 		_spec.SetField(aiagentrunoutput.FieldMetadata, field.TypeJSON, value)
 	}
-	if _u.mutation.AiAgentRunCleared() {
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(aiagentrunoutput.FieldMetadata, field.TypeJSON)
+	}
+	if _u.mutation.AiAgentRunSnapshotCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrunoutput.AiAgentRunTable,
-			Columns: []string{aiagentrunoutput.AiAgentRunColumn},
+			Table:   aiagentrunoutput.AiAgentRunSnapshotTable,
+			Columns: []string{aiagentrunoutput.AiAgentRunSnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunOutput
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AiAgentRunIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AiAgentRunSnapshotIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrunoutput.AiAgentRunTable,
-			Columns: []string{aiagentrunoutput.AiAgentRunColumn},
+			Table:   aiagentrunoutput.AiAgentRunSnapshotTable,
+			Columns: []string{aiagentrunoutput.AiAgentRunSnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunOutput
@@ -252,16 +261,16 @@ func (_u *AiAgentRunOutputUpdateOne) SetUpdatedAt(v time.Time) *AiAgentRunOutput
 	return _u
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (_u *AiAgentRunOutputUpdateOne) SetAiAgentRunID(v uuid.UUID) *AiAgentRunOutputUpdateOne {
-	_u.mutation.SetAiAgentRunID(v)
+// SetAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field.
+func (_u *AiAgentRunOutputUpdateOne) SetAiAgentRunSnapshotID(v uuid.UUID) *AiAgentRunOutputUpdateOne {
+	_u.mutation.SetAiAgentRunSnapshotID(v)
 	return _u
 }
 
-// SetNillableAiAgentRunID sets the "ai_agent_run_id" field if the given value is not nil.
-func (_u *AiAgentRunOutputUpdateOne) SetNillableAiAgentRunID(v *uuid.UUID) *AiAgentRunOutputUpdateOne {
+// SetNillableAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field if the given value is not nil.
+func (_u *AiAgentRunOutputUpdateOne) SetNillableAiAgentRunSnapshotID(v *uuid.UUID) *AiAgentRunOutputUpdateOne {
 	if v != nil {
-		_u.SetAiAgentRunID(*v)
+		_u.SetAiAgentRunSnapshotID(*v)
 	}
 	return _u
 }
@@ -278,9 +287,15 @@ func (_u *AiAgentRunOutputUpdateOne) SetMetadata(v map[string]interface{}) *AiAg
 	return _u
 }
 
-// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AiAgentRunOutputUpdateOne) SetAiAgentRun(v *AiAgentRun) *AiAgentRunOutputUpdateOne {
-	return _u.SetAiAgentRunID(v.ID)
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *AiAgentRunOutputUpdateOne) ClearMetadata() *AiAgentRunOutputUpdateOne {
+	_u.mutation.ClearMetadata()
+	return _u
+}
+
+// SetAiAgentRunSnapshot sets the "ai_agent_run_snapshot" edge to the AiAgentRunSnapshot entity.
+func (_u *AiAgentRunOutputUpdateOne) SetAiAgentRunSnapshot(v *AiAgentRunSnapshot) *AiAgentRunOutputUpdateOne {
+	return _u.SetAiAgentRunSnapshotID(v.ID)
 }
 
 // Mutation returns the AiAgentRunOutputMutation object of the builder.
@@ -288,9 +303,9 @@ func (_u *AiAgentRunOutputUpdateOne) Mutation() *AiAgentRunOutputMutation {
 	return _u.mutation
 }
 
-// ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AiAgentRunOutputUpdateOne) ClearAiAgentRun() *AiAgentRunOutputUpdateOne {
-	_u.mutation.ClearAiAgentRun()
+// ClearAiAgentRunSnapshot clears the "ai_agent_run_snapshot" edge to the AiAgentRunSnapshot entity.
+func (_u *AiAgentRunOutputUpdateOne) ClearAiAgentRunSnapshot() *AiAgentRunOutputUpdateOne {
+	_u.mutation.ClearAiAgentRunSnapshot()
 	return _u
 }
 
@@ -354,8 +369,8 @@ func (_u *AiAgentRunOutputUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AiAgentRunOutput.tenant"`)
 	}
-	if _u.mutation.AiAgentRunCleared() && len(_u.mutation.AiAgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AiAgentRunOutput.ai_agent_run"`)
+	if _u.mutation.AiAgentRunSnapshotCleared() && len(_u.mutation.AiAgentRunSnapshotIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AiAgentRunOutput.ai_agent_run_snapshot"`)
 	}
 	return nil
 }
@@ -407,29 +422,32 @@ func (_u *AiAgentRunOutputUpdateOne) sqlSave(ctx context.Context) (_node *AiAgen
 	if value, ok := _u.mutation.Metadata(); ok {
 		_spec.SetField(aiagentrunoutput.FieldMetadata, field.TypeJSON, value)
 	}
-	if _u.mutation.AiAgentRunCleared() {
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(aiagentrunoutput.FieldMetadata, field.TypeJSON)
+	}
+	if _u.mutation.AiAgentRunSnapshotCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrunoutput.AiAgentRunTable,
-			Columns: []string{aiagentrunoutput.AiAgentRunColumn},
+			Table:   aiagentrunoutput.AiAgentRunSnapshotTable,
+			Columns: []string{aiagentrunoutput.AiAgentRunSnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunOutput
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AiAgentRunIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AiAgentRunSnapshotIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrunoutput.AiAgentRunTable,
-			Columns: []string{aiagentrunoutput.AiAgentRunColumn},
+			Table:   aiagentrunoutput.AiAgentRunSnapshotTable,
+			Columns: []string{aiagentrunoutput.AiAgentRunSnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunOutput

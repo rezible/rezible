@@ -53,11 +53,9 @@ type AiAgentRunEdges struct {
 	OwnerUser *User `json:"owner_user,omitempty"`
 	// Snapshots holds the value of the snapshots edge.
 	Snapshots []*AiAgentRunSnapshot `json:"snapshots,omitempty"`
-	// Outputs holds the value of the outputs edge.
-	Outputs []*AiAgentRunOutput `json:"outputs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -89,15 +87,6 @@ func (e AiAgentRunEdges) SnapshotsOrErr() ([]*AiAgentRunSnapshot, error) {
 		return e.Snapshots, nil
 	}
 	return nil, &NotLoadedError{edge: "snapshots"}
-}
-
-// OutputsOrErr returns the Outputs value or an error if the edge
-// was not loaded in eager-loading.
-func (e AiAgentRunEdges) OutputsOrErr() ([]*AiAgentRunOutput, error) {
-	if e.loadedTypes[3] {
-		return e.Outputs, nil
-	}
-	return nil, &NotLoadedError{edge: "outputs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -221,11 +210,6 @@ func (_m *AiAgentRun) QueryOwnerUser() *UserQuery {
 // QuerySnapshots queries the "snapshots" edge of the AiAgentRun entity.
 func (_m *AiAgentRun) QuerySnapshots() *AiAgentRunSnapshotQuery {
 	return NewAiAgentRunClient(_m.config).QuerySnapshots(_m)
-}
-
-// QueryOutputs queries the "outputs" edge of the AiAgentRun entity.
-func (_m *AiAgentRun) QueryOutputs() *AiAgentRunOutputQuery {
-	return NewAiAgentRunClient(_m.config).QueryOutputs(_m)
 }
 
 // Update returns a builder for updating this AiAgentRun.

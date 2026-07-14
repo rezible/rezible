@@ -8,10 +8,7 @@ import "context"
 // that can be passed at runtime.
 type SchemaConfig struct {
 	AiAgentRun                                string // AiAgentRun table.
-	AiAgentRunCitation                        string // AiAgentRunCitation table.
-	AiAgentRunFinding                         string // AiAgentRunFinding table.
-	AiAgentRunFindingCitations                string // AiAgentRunFinding-citations->AiAgentRunCitation table.
-	AiAgentRunFindingCitation                 string // AiAgentRunFindingCitation table.
+	AiAgentRunKnowledgeCitation               string // AiAgentRunKnowledgeCitation table.
 	AiAgentRunOutput                          string // AiAgentRunOutput table.
 	AiAgentRunSnapshot                        string // AiAgentRunSnapshot table.
 	Alert                                     string // Alert table.

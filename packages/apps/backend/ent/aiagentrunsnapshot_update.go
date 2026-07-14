@@ -13,6 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrun"
+	"github.com/rezible/rezible/ent/aiagentrunknowledgecitation"
+	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
@@ -177,6 +179,36 @@ func (_u *AiAgentRunSnapshotUpdate) AddChildren(v ...*AiAgentRunSnapshot) *AiAge
 	return _u.AddChildIDs(ids...)
 }
 
+// AddOutputIDs adds the "outputs" edge to the AiAgentRunOutput entity by IDs.
+func (_u *AiAgentRunSnapshotUpdate) AddOutputIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdate {
+	_u.mutation.AddOutputIDs(ids...)
+	return _u
+}
+
+// AddOutputs adds the "outputs" edges to the AiAgentRunOutput entity.
+func (_u *AiAgentRunSnapshotUpdate) AddOutputs(v ...*AiAgentRunOutput) *AiAgentRunSnapshotUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOutputIDs(ids...)
+}
+
+// AddKnowledgeCitationIDs adds the "knowledge_citations" edge to the AiAgentRunKnowledgeCitation entity by IDs.
+func (_u *AiAgentRunSnapshotUpdate) AddKnowledgeCitationIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdate {
+	_u.mutation.AddKnowledgeCitationIDs(ids...)
+	return _u
+}
+
+// AddKnowledgeCitations adds the "knowledge_citations" edges to the AiAgentRunKnowledgeCitation entity.
+func (_u *AiAgentRunSnapshotUpdate) AddKnowledgeCitations(v ...*AiAgentRunKnowledgeCitation) *AiAgentRunSnapshotUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddKnowledgeCitationIDs(ids...)
+}
+
 // Mutation returns the AiAgentRunSnapshotMutation object of the builder.
 func (_u *AiAgentRunSnapshotUpdate) Mutation() *AiAgentRunSnapshotMutation {
 	return _u.mutation
@@ -213,6 +245,48 @@ func (_u *AiAgentRunSnapshotUpdate) RemoveChildren(v ...*AiAgentRunSnapshot) *Ai
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveChildIDs(ids...)
+}
+
+// ClearOutputs clears all "outputs" edges to the AiAgentRunOutput entity.
+func (_u *AiAgentRunSnapshotUpdate) ClearOutputs() *AiAgentRunSnapshotUpdate {
+	_u.mutation.ClearOutputs()
+	return _u
+}
+
+// RemoveOutputIDs removes the "outputs" edge to AiAgentRunOutput entities by IDs.
+func (_u *AiAgentRunSnapshotUpdate) RemoveOutputIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdate {
+	_u.mutation.RemoveOutputIDs(ids...)
+	return _u
+}
+
+// RemoveOutputs removes "outputs" edges to AiAgentRunOutput entities.
+func (_u *AiAgentRunSnapshotUpdate) RemoveOutputs(v ...*AiAgentRunOutput) *AiAgentRunSnapshotUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOutputIDs(ids...)
+}
+
+// ClearKnowledgeCitations clears all "knowledge_citations" edges to the AiAgentRunKnowledgeCitation entity.
+func (_u *AiAgentRunSnapshotUpdate) ClearKnowledgeCitations() *AiAgentRunSnapshotUpdate {
+	_u.mutation.ClearKnowledgeCitations()
+	return _u
+}
+
+// RemoveKnowledgeCitationIDs removes the "knowledge_citations" edge to AiAgentRunKnowledgeCitation entities by IDs.
+func (_u *AiAgentRunSnapshotUpdate) RemoveKnowledgeCitationIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdate {
+	_u.mutation.RemoveKnowledgeCitationIDs(ids...)
+	return _u
+}
+
+// RemoveKnowledgeCitations removes "knowledge_citations" edges to AiAgentRunKnowledgeCitation entities.
+func (_u *AiAgentRunSnapshotUpdate) RemoveKnowledgeCitations(v ...*AiAgentRunKnowledgeCitation) *AiAgentRunSnapshotUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveKnowledgeCitationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -428,6 +502,102 @@ func (_u *AiAgentRunSnapshotUpdate) sqlSave(ctx context.Context) (_node int, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.OutputsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.OutputsTable,
+			Columns: []string{aiagentrunsnapshot.OutputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunOutput
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOutputsIDs(); len(nodes) > 0 && !_u.mutation.OutputsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.OutputsTable,
+			Columns: []string{aiagentrunsnapshot.OutputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunOutput
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OutputsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.OutputsTable,
+			Columns: []string{aiagentrunsnapshot.OutputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunOutput
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.KnowledgeCitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.KnowledgeCitationsTable,
+			Columns: []string{aiagentrunsnapshot.KnowledgeCitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunknowledgecitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunKnowledgeCitation
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedKnowledgeCitationsIDs(); len(nodes) > 0 && !_u.mutation.KnowledgeCitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.KnowledgeCitationsTable,
+			Columns: []string{aiagentrunsnapshot.KnowledgeCitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunknowledgecitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunKnowledgeCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeCitationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.KnowledgeCitationsTable,
+			Columns: []string{aiagentrunsnapshot.KnowledgeCitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunknowledgecitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunKnowledgeCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.AiAgentRunSnapshot
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -597,6 +767,36 @@ func (_u *AiAgentRunSnapshotUpdateOne) AddChildren(v ...*AiAgentRunSnapshot) *Ai
 	return _u.AddChildIDs(ids...)
 }
 
+// AddOutputIDs adds the "outputs" edge to the AiAgentRunOutput entity by IDs.
+func (_u *AiAgentRunSnapshotUpdateOne) AddOutputIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdateOne {
+	_u.mutation.AddOutputIDs(ids...)
+	return _u
+}
+
+// AddOutputs adds the "outputs" edges to the AiAgentRunOutput entity.
+func (_u *AiAgentRunSnapshotUpdateOne) AddOutputs(v ...*AiAgentRunOutput) *AiAgentRunSnapshotUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOutputIDs(ids...)
+}
+
+// AddKnowledgeCitationIDs adds the "knowledge_citations" edge to the AiAgentRunKnowledgeCitation entity by IDs.
+func (_u *AiAgentRunSnapshotUpdateOne) AddKnowledgeCitationIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdateOne {
+	_u.mutation.AddKnowledgeCitationIDs(ids...)
+	return _u
+}
+
+// AddKnowledgeCitations adds the "knowledge_citations" edges to the AiAgentRunKnowledgeCitation entity.
+func (_u *AiAgentRunSnapshotUpdateOne) AddKnowledgeCitations(v ...*AiAgentRunKnowledgeCitation) *AiAgentRunSnapshotUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddKnowledgeCitationIDs(ids...)
+}
+
 // Mutation returns the AiAgentRunSnapshotMutation object of the builder.
 func (_u *AiAgentRunSnapshotUpdateOne) Mutation() *AiAgentRunSnapshotMutation {
 	return _u.mutation
@@ -633,6 +833,48 @@ func (_u *AiAgentRunSnapshotUpdateOne) RemoveChildren(v ...*AiAgentRunSnapshot) 
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveChildIDs(ids...)
+}
+
+// ClearOutputs clears all "outputs" edges to the AiAgentRunOutput entity.
+func (_u *AiAgentRunSnapshotUpdateOne) ClearOutputs() *AiAgentRunSnapshotUpdateOne {
+	_u.mutation.ClearOutputs()
+	return _u
+}
+
+// RemoveOutputIDs removes the "outputs" edge to AiAgentRunOutput entities by IDs.
+func (_u *AiAgentRunSnapshotUpdateOne) RemoveOutputIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdateOne {
+	_u.mutation.RemoveOutputIDs(ids...)
+	return _u
+}
+
+// RemoveOutputs removes "outputs" edges to AiAgentRunOutput entities.
+func (_u *AiAgentRunSnapshotUpdateOne) RemoveOutputs(v ...*AiAgentRunOutput) *AiAgentRunSnapshotUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOutputIDs(ids...)
+}
+
+// ClearKnowledgeCitations clears all "knowledge_citations" edges to the AiAgentRunKnowledgeCitation entity.
+func (_u *AiAgentRunSnapshotUpdateOne) ClearKnowledgeCitations() *AiAgentRunSnapshotUpdateOne {
+	_u.mutation.ClearKnowledgeCitations()
+	return _u
+}
+
+// RemoveKnowledgeCitationIDs removes the "knowledge_citations" edge to AiAgentRunKnowledgeCitation entities by IDs.
+func (_u *AiAgentRunSnapshotUpdateOne) RemoveKnowledgeCitationIDs(ids ...uuid.UUID) *AiAgentRunSnapshotUpdateOne {
+	_u.mutation.RemoveKnowledgeCitationIDs(ids...)
+	return _u
+}
+
+// RemoveKnowledgeCitations removes "knowledge_citations" edges to AiAgentRunKnowledgeCitation entities.
+func (_u *AiAgentRunSnapshotUpdateOne) RemoveKnowledgeCitations(v ...*AiAgentRunKnowledgeCitation) *AiAgentRunSnapshotUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveKnowledgeCitationIDs(ids...)
 }
 
 // Where appends a list predicates to the AiAgentRunSnapshotUpdate builder.
@@ -873,6 +1115,102 @@ func (_u *AiAgentRunSnapshotUpdateOne) sqlSave(ctx context.Context) (_node *AiAg
 			},
 		}
 		edge.Schema = _u.schemaConfig.AiAgentRunSnapshot
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OutputsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.OutputsTable,
+			Columns: []string{aiagentrunsnapshot.OutputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunOutput
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOutputsIDs(); len(nodes) > 0 && !_u.mutation.OutputsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.OutputsTable,
+			Columns: []string{aiagentrunsnapshot.OutputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunOutput
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OutputsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.OutputsTable,
+			Columns: []string{aiagentrunsnapshot.OutputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunOutput
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.KnowledgeCitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.KnowledgeCitationsTable,
+			Columns: []string{aiagentrunsnapshot.KnowledgeCitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunknowledgecitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunKnowledgeCitation
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedKnowledgeCitationsIDs(); len(nodes) > 0 && !_u.mutation.KnowledgeCitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.KnowledgeCitationsTable,
+			Columns: []string{aiagentrunsnapshot.KnowledgeCitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunknowledgecitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunKnowledgeCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeCitationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   aiagentrunsnapshot.KnowledgeCitationsTable,
+			Columns: []string{aiagentrunsnapshot.KnowledgeCitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunknowledgecitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AiAgentRunKnowledgeCitation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

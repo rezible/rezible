@@ -9,9 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/aiagentrun"
-	"github.com/rezible/rezible/ent/aiagentruncitation"
-	"github.com/rezible/rezible/ent/aiagentrunfinding"
-	"github.com/rezible/rezible/ent/aiagentrunfindingcitation"
+	"github.com/rezible/rezible/ent/aiagentrunknowledgecitation"
 	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/alert"
@@ -170,85 +168,31 @@ func (f TraverseAiAgentRun) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunQuery", q)
 }
 
-// The AiAgentRunCitationFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AiAgentRunCitationFunc func(context.Context, *ent.AiAgentRunCitationQuery) (ent.Value, error)
+// The AiAgentRunKnowledgeCitationFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AiAgentRunKnowledgeCitationFunc func(context.Context, *ent.AiAgentRunKnowledgeCitationQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f AiAgentRunCitationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AiAgentRunCitationQuery); ok {
+func (f AiAgentRunKnowledgeCitationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AiAgentRunKnowledgeCitationQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunCitationQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunKnowledgeCitationQuery", q)
 }
 
-// The TraverseAiAgentRunCitation type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAiAgentRunCitation func(context.Context, *ent.AiAgentRunCitationQuery) error
+// The TraverseAiAgentRunKnowledgeCitation type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAiAgentRunKnowledgeCitation func(context.Context, *ent.AiAgentRunKnowledgeCitationQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAiAgentRunCitation) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseAiAgentRunKnowledgeCitation) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseAiAgentRunCitation) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AiAgentRunCitationQuery); ok {
+func (f TraverseAiAgentRunKnowledgeCitation) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AiAgentRunKnowledgeCitationQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunCitationQuery", q)
-}
-
-// The AiAgentRunFindingFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AiAgentRunFindingFunc func(context.Context, *ent.AiAgentRunFindingQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f AiAgentRunFindingFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AiAgentRunFindingQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunFindingQuery", q)
-}
-
-// The TraverseAiAgentRunFinding type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAiAgentRunFinding func(context.Context, *ent.AiAgentRunFindingQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAiAgentRunFinding) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseAiAgentRunFinding) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AiAgentRunFindingQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunFindingQuery", q)
-}
-
-// The AiAgentRunFindingCitationFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AiAgentRunFindingCitationFunc func(context.Context, *ent.AiAgentRunFindingCitationQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f AiAgentRunFindingCitationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AiAgentRunFindingCitationQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunFindingCitationQuery", q)
-}
-
-// The TraverseAiAgentRunFindingCitation type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAiAgentRunFindingCitation func(context.Context, *ent.AiAgentRunFindingCitationQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAiAgentRunFindingCitation) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseAiAgentRunFindingCitation) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AiAgentRunFindingCitationQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunFindingCitationQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunKnowledgeCitationQuery", q)
 }
 
 // The AiAgentRunOutputFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2200,12 +2144,8 @@ func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
 	case *ent.AiAgentRunQuery:
 		return &query[*ent.AiAgentRunQuery, predicate.AiAgentRun, aiagentrun.OrderOption]{typ: ent.TypeAiAgentRun, tq: q}, nil
-	case *ent.AiAgentRunCitationQuery:
-		return &query[*ent.AiAgentRunCitationQuery, predicate.AiAgentRunCitation, aiagentruncitation.OrderOption]{typ: ent.TypeAiAgentRunCitation, tq: q}, nil
-	case *ent.AiAgentRunFindingQuery:
-		return &query[*ent.AiAgentRunFindingQuery, predicate.AiAgentRunFinding, aiagentrunfinding.OrderOption]{typ: ent.TypeAiAgentRunFinding, tq: q}, nil
-	case *ent.AiAgentRunFindingCitationQuery:
-		return &query[*ent.AiAgentRunFindingCitationQuery, predicate.AiAgentRunFindingCitation, aiagentrunfindingcitation.OrderOption]{typ: ent.TypeAiAgentRunFindingCitation, tq: q}, nil
+	case *ent.AiAgentRunKnowledgeCitationQuery:
+		return &query[*ent.AiAgentRunKnowledgeCitationQuery, predicate.AiAgentRunKnowledgeCitation, aiagentrunknowledgecitation.OrderOption]{typ: ent.TypeAiAgentRunKnowledgeCitation, tq: q}, nil
 	case *ent.AiAgentRunOutputQuery:
 		return &query[*ent.AiAgentRunOutputQuery, predicate.AiAgentRunOutput, aiagentrunoutput.OrderOption]{typ: ent.TypeAiAgentRunOutput, tq: q}, nil
 	case *ent.AiAgentRunSnapshotQuery:

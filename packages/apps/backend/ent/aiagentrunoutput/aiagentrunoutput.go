@@ -22,16 +22,16 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldAiAgentRunID holds the string denoting the ai_agent_run_id field in the database.
-	FieldAiAgentRunID = "ai_agent_run_id"
+	// FieldAiAgentRunSnapshotID holds the string denoting the ai_agent_run_snapshot_id field in the database.
+	FieldAiAgentRunSnapshotID = "ai_agent_run_snapshot_id"
 	// FieldData holds the string denoting the data field in the database.
 	FieldData = "data"
 	// FieldMetadata holds the string denoting the metadata field in the database.
 	FieldMetadata = "metadata"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeAiAgentRun holds the string denoting the ai_agent_run edge name in mutations.
-	EdgeAiAgentRun = "ai_agent_run"
+	// EdgeAiAgentRunSnapshot holds the string denoting the ai_agent_run_snapshot edge name in mutations.
+	EdgeAiAgentRunSnapshot = "ai_agent_run_snapshot"
 	// Table holds the table name of the aiagentrunoutput in the database.
 	Table = "ai_agent_run_outputs"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -41,13 +41,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// AiAgentRunTable is the table that holds the ai_agent_run relation/edge.
-	AiAgentRunTable = "ai_agent_run_outputs"
-	// AiAgentRunInverseTable is the table name for the AiAgentRun entity.
-	// It exists in this package in order to avoid circular dependency with the "aiagentrun" package.
-	AiAgentRunInverseTable = "ai_agent_runs"
-	// AiAgentRunColumn is the table column denoting the ai_agent_run relation/edge.
-	AiAgentRunColumn = "ai_agent_run_id"
+	// AiAgentRunSnapshotTable is the table that holds the ai_agent_run_snapshot relation/edge.
+	AiAgentRunSnapshotTable = "ai_agent_run_outputs"
+	// AiAgentRunSnapshotInverseTable is the table name for the AiAgentRunSnapshot entity.
+	// It exists in this package in order to avoid circular dependency with the "aiagentrunsnapshot" package.
+	AiAgentRunSnapshotInverseTable = "ai_agent_run_snapshots"
+	// AiAgentRunSnapshotColumn is the table column denoting the ai_agent_run_snapshot relation/edge.
+	AiAgentRunSnapshotColumn = "ai_agent_run_snapshot_id"
 )
 
 // Columns holds all SQL columns for aiagentrunoutput fields.
@@ -56,7 +56,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldAiAgentRunID,
+	FieldAiAgentRunSnapshotID,
 	FieldData,
 	FieldMetadata,
 }
@@ -85,6 +85,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultMetadata holds the default value on creation for the "metadata" field.
+	DefaultMetadata map[string]interface{}
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -112,9 +114,9 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByAiAgentRunID orders the results by the ai_agent_run_id field.
-func ByAiAgentRunID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAiAgentRunID, opts...).ToFunc()
+// ByAiAgentRunSnapshotID orders the results by the ai_agent_run_snapshot_id field.
+func ByAiAgentRunSnapshotID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAiAgentRunSnapshotID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -124,10 +126,10 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByAiAgentRunField orders the results by ai_agent_run field.
-func ByAiAgentRunField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByAiAgentRunSnapshotField orders the results by ai_agent_run_snapshot field.
+func ByAiAgentRunSnapshotField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAiAgentRunStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newAiAgentRunSnapshotStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -137,10 +139,10 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newAiAgentRunStep() *sqlgraph.Step {
+func newAiAgentRunSnapshotStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AiAgentRunInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AiAgentRunTable, AiAgentRunColumn),
+		sqlgraph.To(AiAgentRunSnapshotInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, AiAgentRunSnapshotTable, AiAgentRunSnapshotColumn),
 	)
 }

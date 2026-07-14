@@ -135,76 +135,28 @@ func (f AiAgentRunMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Muta
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AiAgentRunMutation", m)
 }
 
-// The AiAgentRunCitationQueryRuleFunc type is an adapter to allow the use of ordinary
+// The AiAgentRunKnowledgeCitationQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type AiAgentRunCitationQueryRuleFunc func(context.Context, *ent.AiAgentRunCitationQuery) error
+type AiAgentRunKnowledgeCitationQueryRuleFunc func(context.Context, *ent.AiAgentRunKnowledgeCitationQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f AiAgentRunCitationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AiAgentRunCitationQuery); ok {
+func (f AiAgentRunKnowledgeCitationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AiAgentRunKnowledgeCitationQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AiAgentRunCitationQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AiAgentRunKnowledgeCitationQuery", q)
 }
 
-// The AiAgentRunCitationMutationRuleFunc type is an adapter to allow the use of ordinary
+// The AiAgentRunKnowledgeCitationMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type AiAgentRunCitationMutationRuleFunc func(context.Context, *ent.AiAgentRunCitationMutation) error
+type AiAgentRunKnowledgeCitationMutationRuleFunc func(context.Context, *ent.AiAgentRunKnowledgeCitationMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f AiAgentRunCitationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.AiAgentRunCitationMutation); ok {
+func (f AiAgentRunKnowledgeCitationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AiAgentRunKnowledgeCitationMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AiAgentRunCitationMutation", m)
-}
-
-// The AiAgentRunFindingQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type AiAgentRunFindingQueryRuleFunc func(context.Context, *ent.AiAgentRunFindingQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f AiAgentRunFindingQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AiAgentRunFindingQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AiAgentRunFindingQuery", q)
-}
-
-// The AiAgentRunFindingMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type AiAgentRunFindingMutationRuleFunc func(context.Context, *ent.AiAgentRunFindingMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f AiAgentRunFindingMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.AiAgentRunFindingMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AiAgentRunFindingMutation", m)
-}
-
-// The AiAgentRunFindingCitationQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type AiAgentRunFindingCitationQueryRuleFunc func(context.Context, *ent.AiAgentRunFindingCitationQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f AiAgentRunFindingCitationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AiAgentRunFindingCitationQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AiAgentRunFindingCitationQuery", q)
-}
-
-// The AiAgentRunFindingCitationMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type AiAgentRunFindingCitationMutationRuleFunc func(context.Context, *ent.AiAgentRunFindingCitationMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f AiAgentRunFindingCitationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.AiAgentRunFindingCitationMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AiAgentRunFindingCitationMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AiAgentRunKnowledgeCitationMutation", m)
 }
 
 // The AiAgentRunOutputQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1960,11 +1912,7 @@ func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
 	case *ent.AiAgentRunQuery:
 		return q.Filter(), nil
-	case *ent.AiAgentRunCitationQuery:
-		return q.Filter(), nil
-	case *ent.AiAgentRunFindingQuery:
-		return q.Filter(), nil
-	case *ent.AiAgentRunFindingCitationQuery:
+	case *ent.AiAgentRunKnowledgeCitationQuery:
 		return q.Filter(), nil
 	case *ent.AiAgentRunOutputQuery:
 		return q.Filter(), nil
@@ -2119,11 +2067,7 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
 	case *ent.AiAgentRunMutation:
 		return m.Filter(), nil
-	case *ent.AiAgentRunCitationMutation:
-		return m.Filter(), nil
-	case *ent.AiAgentRunFindingMutation:
-		return m.Filter(), nil
-	case *ent.AiAgentRunFindingCitationMutation:
+	case *ent.AiAgentRunKnowledgeCitationMutation:
 		return m.Filter(), nil
 	case *ent.AiAgentRunOutputMutation:
 		return m.Filter(), nil

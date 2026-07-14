@@ -464,35 +464,6 @@ func HasSnapshotsWith(preds ...predicate.AiAgentRunSnapshot) predicate.AiAgentRu
 	})
 }
 
-// HasOutputs applies the HasEdge predicate on the "outputs" edge.
-func HasOutputs() predicate.AiAgentRun {
-	return predicate.AiAgentRun(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, OutputsTable, OutputsColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AiAgentRunOutput
-		step.Edge.Schema = schemaConfig.AiAgentRunOutput
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasOutputsWith applies the HasEdge predicate on the "outputs" edge with a given conditions (other predicates).
-func HasOutputsWith(preds ...predicate.AiAgentRunOutput) predicate.AiAgentRun {
-	return predicate.AiAgentRun(func(s *sql.Selector) {
-		step := newOutputsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AiAgentRunOutput
-		step.Edge.Schema = schemaConfig.AiAgentRunOutput
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.AiAgentRun) predicate.AiAgentRun {
 	return predicate.AiAgentRun(sql.AndPredicates(predicates...))

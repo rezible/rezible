@@ -9,14 +9,8 @@ import (
 // AiAgentRun is the predicate function for aiagentrun builders.
 type AiAgentRun func(*sql.Selector)
 
-// AiAgentRunCitation is the predicate function for aiagentruncitation builders.
-type AiAgentRunCitation func(*sql.Selector)
-
-// AiAgentRunFinding is the predicate function for aiagentrunfinding builders.
-type AiAgentRunFinding func(*sql.Selector)
-
-// AiAgentRunFindingCitation is the predicate function for aiagentrunfindingcitation builders.
-type AiAgentRunFindingCitation func(*sql.Selector)
+// AiAgentRunKnowledgeCitation is the predicate function for aiagentrunknowledgecitation builders.
+type AiAgentRunKnowledgeCitation func(*sql.Selector)
 
 // AiAgentRunOutput is the predicate function for aiagentrunoutput builders.
 type AiAgentRunOutput func(*sql.Selector)

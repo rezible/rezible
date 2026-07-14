@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrun"
-	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
@@ -143,21 +142,6 @@ func (_c *AiAgentRunCreate) AddSnapshots(v ...*AiAgentRunSnapshot) *AiAgentRunCr
 		ids[i] = v[i].ID
 	}
 	return _c.AddSnapshotIDs(ids...)
-}
-
-// AddOutputIDs adds the "outputs" edge to the AiAgentRunOutput entity by IDs.
-func (_c *AiAgentRunCreate) AddOutputIDs(ids ...uuid.UUID) *AiAgentRunCreate {
-	_c.mutation.AddOutputIDs(ids...)
-	return _c
-}
-
-// AddOutputs adds the "outputs" edges to the AiAgentRunOutput entity.
-func (_c *AiAgentRunCreate) AddOutputs(v ...*AiAgentRunOutput) *AiAgentRunCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddOutputIDs(ids...)
 }
 
 // Mutation returns the AiAgentRunMutation object of the builder.
@@ -372,23 +356,6 @@ func (_c *AiAgentRunCreate) createSpec() (*AiAgentRun, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.AiAgentRunSnapshot
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.OutputsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrun.OutputsTable,
-			Columns: []string{aiagentrun.OutputsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrunoutput.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AiAgentRunOutput
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

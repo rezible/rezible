@@ -593,6 +593,64 @@ func HasChildrenWith(preds ...predicate.AiAgentRunSnapshot) predicate.AiAgentRun
 	})
 }
 
+// HasOutputs applies the HasEdge predicate on the "outputs" edge.
+func HasOutputs() predicate.AiAgentRunSnapshot {
+	return predicate.AiAgentRunSnapshot(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, OutputsTable, OutputsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AiAgentRunOutput
+		step.Edge.Schema = schemaConfig.AiAgentRunOutput
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOutputsWith applies the HasEdge predicate on the "outputs" edge with a given conditions (other predicates).
+func HasOutputsWith(preds ...predicate.AiAgentRunOutput) predicate.AiAgentRunSnapshot {
+	return predicate.AiAgentRunSnapshot(func(s *sql.Selector) {
+		step := newOutputsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AiAgentRunOutput
+		step.Edge.Schema = schemaConfig.AiAgentRunOutput
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasKnowledgeCitations applies the HasEdge predicate on the "knowledge_citations" edge.
+func HasKnowledgeCitations() predicate.AiAgentRunSnapshot {
+	return predicate.AiAgentRunSnapshot(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, KnowledgeCitationsTable, KnowledgeCitationsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AiAgentRunKnowledgeCitation
+		step.Edge.Schema = schemaConfig.AiAgentRunKnowledgeCitation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasKnowledgeCitationsWith applies the HasEdge predicate on the "knowledge_citations" edge with a given conditions (other predicates).
+func HasKnowledgeCitationsWith(preds ...predicate.AiAgentRunKnowledgeCitation) predicate.AiAgentRunSnapshot {
+	return predicate.AiAgentRunSnapshot(func(s *sql.Selector) {
+		step := newKnowledgeCitationsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AiAgentRunKnowledgeCitation
+		step.Edge.Schema = schemaConfig.AiAgentRunKnowledgeCitation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.AiAgentRunSnapshot) predicate.AiAgentRunSnapshot {
 	return predicate.AiAgentRunSnapshot(sql.AndPredicates(predicates...))

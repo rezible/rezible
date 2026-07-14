@@ -42,8 +42,6 @@ func (AiAgentRun) Edges() []ent.Edge {
 			Field("owner_user_id"),
 		edge.From("snapshots", AiAgentRunSnapshot.Type).
 			Ref("ai_agent_run"),
-		edge.From("outputs", AiAgentRunOutput.Type).
-			Ref("ai_agent_run"),
 	}
 }
 
@@ -91,6 +89,12 @@ func (AiAgentRunSnapshot) Edges() []ent.Edge {
 			Field("parent_id"),
 		edge.From("children", AiAgentRunSnapshot.Type).
 			Ref("parent"),
+
+		edge.From("outputs", AiAgentRunOutput.Type).
+			Ref("ai_agent_run_snapshot"),
+
+		edge.From("knowledge_citations", AiAgentRunKnowledgeCitation.Type).
+			Ref("ai_agent_run_snapshot"),
 	}
 }
 
@@ -116,33 +120,33 @@ func (AiAgentRunOutput) Mixin() []ent.Mixin {
 func (AiAgentRunOutput) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("ai_agent_run_id", uuid.UUID{}),
+		field.UUID("ai_agent_run_snapshot_id", uuid.UUID{}),
 		field.Bytes("data"),
-		field.JSON("metadata", map[string]any{}).
-			SchemaType(schemaTypeJsonB),
+		field.JSON("metadata", map[string]any{}).SchemaType(schemaTypeJsonB).
+			Optional().Default(map[string]any{}),
 	}
 }
 
 func (AiAgentRunOutput) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("ai_agent_run", AiAgentRun.Type).
+		edge.To("ai_agent_run_snapshot", AiAgentRunSnapshot.Type).
 			Unique().
 			Required().
-			Field("ai_agent_run_id"),
+			Field("ai_agent_run_snapshot_id"),
 	}
 }
 
 func (AiAgentRunOutput) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "ai_agent_run_id"),
+		index.Fields("tenant_id", "ai_agent_run_snapshot_id"),
 	}
 }
 
-type AiAgentRunFinding struct {
+type AiAgentRunKnowledgeCitation struct {
 	ent.Schema
 }
 
-func (AiAgentRunFinding) Mixin() []ent.Mixin {
+func (AiAgentRunKnowledgeCitation) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
@@ -150,63 +154,24 @@ func (AiAgentRunFinding) Mixin() []ent.Mixin {
 	}
 }
 
-func (AiAgentRunFinding) Fields() []ent.Field {
+func (AiAgentRunKnowledgeCitation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("ai_agent_run_result_id", uuid.UUID{}),
-		field.String("finding_kind").NotEmpty(),
-		field.Text("content").NotEmpty(),
-	}
-}
-
-func (AiAgentRunFinding) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("ai_agent_run_result", AiAgentRunOutput.Type).
-			Required().
-			Unique().
-			Field("ai_agent_run_result_id"),
-
-		edge.To("citations", AiAgentRunCitation.Type).
-			Through("finding_citations", AiAgentRunFindingCitation.Type),
-	}
-}
-
-func (AiAgentRunFinding) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "ai_agent_run_result_id"),
-	}
-}
-
-type AiAgentRunCitation struct {
-	ent.Schema
-}
-
-func (AiAgentRunCitation) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-		TimestampsMixin{},
-	}
-}
-
-func (AiAgentRunCitation) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.String("kind").NotEmpty(),
-		field.Text("summary").NotEmpty(),
+		field.UUID("ai_agent_run_snapshot_id", uuid.UUID{}),
 		field.UUID("knowledge_entity_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("knowledge_relationship_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("knowledge_evidence_id", uuid.UUID{}).Optional().Nillable(),
-		field.String("domain_entity_type").Optional(),
-		field.UUID("domain_entity_id", uuid.UUID{}).Optional().Nillable(),
-		field.JSON("domain_entity_snapshot", map[string]any{}).
-			SchemaType(schemaTypeJsonB).
-			Optional(),
+		field.Text("summary").NotEmpty(),
 	}
 }
 
-func (AiAgentRunCitation) Edges() []ent.Edge {
+func (AiAgentRunKnowledgeCitation) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("ai_agent_run_snapshot", AiAgentRunSnapshot.Type).
+			Unique().
+			Required().
+			Field("ai_agent_run_snapshot_id"),
+
 		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Unique().
 			Field("knowledge_entity_id"),
@@ -216,60 +181,13 @@ func (AiAgentRunCitation) Edges() []ent.Edge {
 		edge.To("knowledge_evidence", KnowledgeEvidence.Type).
 			Unique().
 			Field("knowledge_evidence_id"),
-
-		edge.From("findings", AiAgentRunFinding.Type).
-			Through("finding_citations", AiAgentRunFindingCitation.Type).
-			Ref("citations"),
 	}
 }
 
-func (AiAgentRunCitation) Indexes() []ent.Index {
+func (AiAgentRunKnowledgeCitation) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "kind"),
-		index.Fields("tenant_id", "domain_entity_type", "domain_entity_id"),
 		index.Fields("tenant_id", "knowledge_entity_id"),
 		index.Fields("tenant_id", "knowledge_relationship_id"),
 		index.Fields("tenant_id", "knowledge_evidence_id"),
-	}
-}
-
-type AiAgentRunFindingCitation struct {
-	ent.Schema
-}
-
-func (AiAgentRunFindingCitation) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-		TimestampsMixin{},
-	}
-}
-
-func (AiAgentRunFindingCitation) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("finding_id", uuid.UUID{}),
-		field.UUID("citation_id", uuid.UUID{}),
-		field.String("support_kind").NotEmpty(),
-	}
-}
-
-func (AiAgentRunFindingCitation) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("finding", AiAgentRunFinding.Type).
-			Required().
-			Unique().
-			Field("finding_id"),
-		edge.To("citation", AiAgentRunCitation.Type).
-			Required().
-			Unique().
-			Field("citation_id"),
-	}
-}
-
-func (AiAgentRunFindingCitation) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "finding_id"),
-		index.Fields("tenant_id", "citation_id"),
 	}
 }

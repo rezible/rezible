@@ -17,9 +17,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/aiagentrun"
-	"github.com/rezible/rezible/ent/aiagentruncitation"
-	"github.com/rezible/rezible/ent/aiagentrunfinding"
-	"github.com/rezible/rezible/ent/aiagentrunfindingcitation"
+	"github.com/rezible/rezible/ent/aiagentrunknowledgecitation"
 	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/alert"
@@ -102,12 +100,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// AiAgentRun is the client for interacting with the AiAgentRun builders.
 	AiAgentRun *AiAgentRunClient
-	// AiAgentRunCitation is the client for interacting with the AiAgentRunCitation builders.
-	AiAgentRunCitation *AiAgentRunCitationClient
-	// AiAgentRunFinding is the client for interacting with the AiAgentRunFinding builders.
-	AiAgentRunFinding *AiAgentRunFindingClient
-	// AiAgentRunFindingCitation is the client for interacting with the AiAgentRunFindingCitation builders.
-	AiAgentRunFindingCitation *AiAgentRunFindingCitationClient
+	// AiAgentRunKnowledgeCitation is the client for interacting with the AiAgentRunKnowledgeCitation builders.
+	AiAgentRunKnowledgeCitation *AiAgentRunKnowledgeCitationClient
 	// AiAgentRunOutput is the client for interacting with the AiAgentRunOutput builders.
 	AiAgentRunOutput *AiAgentRunOutputClient
 	// AiAgentRunSnapshot is the client for interacting with the AiAgentRunSnapshot builders.
@@ -264,9 +258,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.AiAgentRun = NewAiAgentRunClient(c.config)
-	c.AiAgentRunCitation = NewAiAgentRunCitationClient(c.config)
-	c.AiAgentRunFinding = NewAiAgentRunFindingClient(c.config)
-	c.AiAgentRunFindingCitation = NewAiAgentRunFindingCitationClient(c.config)
+	c.AiAgentRunKnowledgeCitation = NewAiAgentRunKnowledgeCitationClient(c.config)
 	c.AiAgentRunOutput = NewAiAgentRunOutputClient(c.config)
 	c.AiAgentRunSnapshot = NewAiAgentRunSnapshotClient(c.config)
 	c.Alert = NewAlertClient(c.config)
@@ -435,9 +427,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                                     ctx,
 		config:                                  cfg,
 		AiAgentRun:                              NewAiAgentRunClient(cfg),
-		AiAgentRunCitation:                      NewAiAgentRunCitationClient(cfg),
-		AiAgentRunFinding:                       NewAiAgentRunFindingClient(cfg),
-		AiAgentRunFindingCitation:               NewAiAgentRunFindingCitationClient(cfg),
+		AiAgentRunKnowledgeCitation:             NewAiAgentRunKnowledgeCitationClient(cfg),
 		AiAgentRunOutput:                        NewAiAgentRunOutputClient(cfg),
 		AiAgentRunSnapshot:                      NewAiAgentRunSnapshotClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
@@ -530,9 +520,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:                                     ctx,
 		config:                                  cfg,
 		AiAgentRun:                              NewAiAgentRunClient(cfg),
-		AiAgentRunCitation:                      NewAiAgentRunCitationClient(cfg),
-		AiAgentRunFinding:                       NewAiAgentRunFindingClient(cfg),
-		AiAgentRunFindingCitation:               NewAiAgentRunFindingCitationClient(cfg),
+		AiAgentRunKnowledgeCitation:             NewAiAgentRunKnowledgeCitationClient(cfg),
 		AiAgentRunOutput:                        NewAiAgentRunOutputClient(cfg),
 		AiAgentRunSnapshot:                      NewAiAgentRunSnapshotClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
@@ -634,14 +622,13 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.AiAgentRun, c.AiAgentRunCitation, c.AiAgentRunFinding,
-		c.AiAgentRunFindingCitation, c.AiAgentRunOutput, c.AiAgentRunSnapshot, c.Alert,
-		c.AlertFeedback, c.AlertInstance, c.AlertInvestigation, c.Document,
-		c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
-		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
-		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
-		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
-		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.AiAgentRun, c.AiAgentRunKnowledgeCitation, c.AiAgentRunOutput,
+		c.AiAgentRunSnapshot, c.Alert, c.AlertFeedback, c.AlertInstance,
+		c.AlertInvestigation, c.Document, c.DocumentAccess, c.EventAnnotation,
+		c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
+		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
+		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
+		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
 		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
 		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
@@ -668,14 +655,13 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.AiAgentRun, c.AiAgentRunCitation, c.AiAgentRunFinding,
-		c.AiAgentRunFindingCitation, c.AiAgentRunOutput, c.AiAgentRunSnapshot, c.Alert,
-		c.AlertFeedback, c.AlertInstance, c.AlertInvestigation, c.AlertMetrics,
-		c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
-		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
-		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
-		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
-		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.AiAgentRun, c.AiAgentRunKnowledgeCitation, c.AiAgentRunOutput,
+		c.AiAgentRunSnapshot, c.Alert, c.AlertFeedback, c.AlertInstance,
+		c.AlertInvestigation, c.AlertMetrics, c.Document, c.DocumentAccess,
+		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
+		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
+		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
+		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
 		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
 		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
@@ -703,12 +689,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AiAgentRunMutation:
 		return c.AiAgentRun.mutate(ctx, m)
-	case *AiAgentRunCitationMutation:
-		return c.AiAgentRunCitation.mutate(ctx, m)
-	case *AiAgentRunFindingMutation:
-		return c.AiAgentRunFinding.mutate(ctx, m)
-	case *AiAgentRunFindingCitationMutation:
-		return c.AiAgentRunFindingCitation.mutate(ctx, m)
+	case *AiAgentRunKnowledgeCitationMutation:
+		return c.AiAgentRunKnowledgeCitation.mutate(ctx, m)
 	case *AiAgentRunOutputMutation:
 		return c.AiAgentRunOutput.mutate(ctx, m)
 	case *AiAgentRunSnapshotMutation:
@@ -1021,25 +1003,6 @@ func (c *AiAgentRunClient) QuerySnapshots(_m *AiAgentRun) *AiAgentRunSnapshotQue
 	return query
 }
 
-// QueryOutputs queries the outputs edge of a AiAgentRun.
-func (c *AiAgentRunClient) QueryOutputs(_m *AiAgentRun) *AiAgentRunOutputQuery {
-	query := (&AiAgentRunOutputClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrun.Table, aiagentrun.FieldID, id),
-			sqlgraph.To(aiagentrunoutput.Table, aiagentrunoutput.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, aiagentrun.OutputsTable, aiagentrun.OutputsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunOutput
-		step.Edge.Schema = schemaConfig.AiAgentRunOutput
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *AiAgentRunClient) Hooks() []Hook {
 	hooks := c.hooks.AiAgentRun
@@ -1066,107 +1029,107 @@ func (c *AiAgentRunClient) mutate(ctx context.Context, m *AiAgentRunMutation) (V
 	}
 }
 
-// AiAgentRunCitationClient is a client for the AiAgentRunCitation schema.
-type AiAgentRunCitationClient struct {
+// AiAgentRunKnowledgeCitationClient is a client for the AiAgentRunKnowledgeCitation schema.
+type AiAgentRunKnowledgeCitationClient struct {
 	config
 }
 
-// NewAiAgentRunCitationClient returns a client for the AiAgentRunCitation from the given config.
-func NewAiAgentRunCitationClient(c config) *AiAgentRunCitationClient {
-	return &AiAgentRunCitationClient{config: c}
+// NewAiAgentRunKnowledgeCitationClient returns a client for the AiAgentRunKnowledgeCitation from the given config.
+func NewAiAgentRunKnowledgeCitationClient(c config) *AiAgentRunKnowledgeCitationClient {
+	return &AiAgentRunKnowledgeCitationClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `aiagentruncitation.Hooks(f(g(h())))`.
-func (c *AiAgentRunCitationClient) Use(hooks ...Hook) {
-	c.hooks.AiAgentRunCitation = append(c.hooks.AiAgentRunCitation, hooks...)
+// A call to `Use(f, g, h)` equals to `aiagentrunknowledgecitation.Hooks(f(g(h())))`.
+func (c *AiAgentRunKnowledgeCitationClient) Use(hooks ...Hook) {
+	c.hooks.AiAgentRunKnowledgeCitation = append(c.hooks.AiAgentRunKnowledgeCitation, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `aiagentruncitation.Intercept(f(g(h())))`.
-func (c *AiAgentRunCitationClient) Intercept(interceptors ...Interceptor) {
-	c.inters.AiAgentRunCitation = append(c.inters.AiAgentRunCitation, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `aiagentrunknowledgecitation.Intercept(f(g(h())))`.
+func (c *AiAgentRunKnowledgeCitationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AiAgentRunKnowledgeCitation = append(c.inters.AiAgentRunKnowledgeCitation, interceptors...)
 }
 
-// Create returns a builder for creating a AiAgentRunCitation entity.
-func (c *AiAgentRunCitationClient) Create() *AiAgentRunCitationCreate {
-	mutation := newAiAgentRunCitationMutation(c.config, OpCreate)
-	return &AiAgentRunCitationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a AiAgentRunKnowledgeCitation entity.
+func (c *AiAgentRunKnowledgeCitationClient) Create() *AiAgentRunKnowledgeCitationCreate {
+	mutation := newAiAgentRunKnowledgeCitationMutation(c.config, OpCreate)
+	return &AiAgentRunKnowledgeCitationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of AiAgentRunCitation entities.
-func (c *AiAgentRunCitationClient) CreateBulk(builders ...*AiAgentRunCitationCreate) *AiAgentRunCitationCreateBulk {
-	return &AiAgentRunCitationCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of AiAgentRunKnowledgeCitation entities.
+func (c *AiAgentRunKnowledgeCitationClient) CreateBulk(builders ...*AiAgentRunKnowledgeCitationCreate) *AiAgentRunKnowledgeCitationCreateBulk {
+	return &AiAgentRunKnowledgeCitationCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *AiAgentRunCitationClient) MapCreateBulk(slice any, setFunc func(*AiAgentRunCitationCreate, int)) *AiAgentRunCitationCreateBulk {
+func (c *AiAgentRunKnowledgeCitationClient) MapCreateBulk(slice any, setFunc func(*AiAgentRunKnowledgeCitationCreate, int)) *AiAgentRunKnowledgeCitationCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &AiAgentRunCitationCreateBulk{err: fmt.Errorf("calling to AiAgentRunCitationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &AiAgentRunKnowledgeCitationCreateBulk{err: fmt.Errorf("calling to AiAgentRunKnowledgeCitationClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*AiAgentRunCitationCreate, rv.Len())
+	builders := make([]*AiAgentRunKnowledgeCitationCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &AiAgentRunCitationCreateBulk{config: c.config, builders: builders}
+	return &AiAgentRunKnowledgeCitationCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for AiAgentRunCitation.
-func (c *AiAgentRunCitationClient) Update() *AiAgentRunCitationUpdate {
-	mutation := newAiAgentRunCitationMutation(c.config, OpUpdate)
-	return &AiAgentRunCitationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for AiAgentRunKnowledgeCitation.
+func (c *AiAgentRunKnowledgeCitationClient) Update() *AiAgentRunKnowledgeCitationUpdate {
+	mutation := newAiAgentRunKnowledgeCitationMutation(c.config, OpUpdate)
+	return &AiAgentRunKnowledgeCitationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *AiAgentRunCitationClient) UpdateOne(_m *AiAgentRunCitation) *AiAgentRunCitationUpdateOne {
-	mutation := newAiAgentRunCitationMutation(c.config, OpUpdateOne, withAiAgentRunCitation(_m))
-	return &AiAgentRunCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *AiAgentRunKnowledgeCitationClient) UpdateOne(_m *AiAgentRunKnowledgeCitation) *AiAgentRunKnowledgeCitationUpdateOne {
+	mutation := newAiAgentRunKnowledgeCitationMutation(c.config, OpUpdateOne, withAiAgentRunKnowledgeCitation(_m))
+	return &AiAgentRunKnowledgeCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *AiAgentRunCitationClient) UpdateOneID(id uuid.UUID) *AiAgentRunCitationUpdateOne {
-	mutation := newAiAgentRunCitationMutation(c.config, OpUpdateOne, withAiAgentRunCitationID(id))
-	return &AiAgentRunCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *AiAgentRunKnowledgeCitationClient) UpdateOneID(id uuid.UUID) *AiAgentRunKnowledgeCitationUpdateOne {
+	mutation := newAiAgentRunKnowledgeCitationMutation(c.config, OpUpdateOne, withAiAgentRunKnowledgeCitationID(id))
+	return &AiAgentRunKnowledgeCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for AiAgentRunCitation.
-func (c *AiAgentRunCitationClient) Delete() *AiAgentRunCitationDelete {
-	mutation := newAiAgentRunCitationMutation(c.config, OpDelete)
-	return &AiAgentRunCitationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for AiAgentRunKnowledgeCitation.
+func (c *AiAgentRunKnowledgeCitationClient) Delete() *AiAgentRunKnowledgeCitationDelete {
+	mutation := newAiAgentRunKnowledgeCitationMutation(c.config, OpDelete)
+	return &AiAgentRunKnowledgeCitationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *AiAgentRunCitationClient) DeleteOne(_m *AiAgentRunCitation) *AiAgentRunCitationDeleteOne {
+func (c *AiAgentRunKnowledgeCitationClient) DeleteOne(_m *AiAgentRunKnowledgeCitation) *AiAgentRunKnowledgeCitationDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *AiAgentRunCitationClient) DeleteOneID(id uuid.UUID) *AiAgentRunCitationDeleteOne {
-	builder := c.Delete().Where(aiagentruncitation.ID(id))
+func (c *AiAgentRunKnowledgeCitationClient) DeleteOneID(id uuid.UUID) *AiAgentRunKnowledgeCitationDeleteOne {
+	builder := c.Delete().Where(aiagentrunknowledgecitation.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &AiAgentRunCitationDeleteOne{builder}
+	return &AiAgentRunKnowledgeCitationDeleteOne{builder}
 }
 
-// Query returns a query builder for AiAgentRunCitation.
-func (c *AiAgentRunCitationClient) Query() *AiAgentRunCitationQuery {
-	return &AiAgentRunCitationQuery{
+// Query returns a query builder for AiAgentRunKnowledgeCitation.
+func (c *AiAgentRunKnowledgeCitationClient) Query() *AiAgentRunKnowledgeCitationQuery {
+	return &AiAgentRunKnowledgeCitationQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeAiAgentRunCitation},
+		ctx:    &QueryContext{Type: TypeAiAgentRunKnowledgeCitation},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a AiAgentRunCitation entity by its id.
-func (c *AiAgentRunCitationClient) Get(ctx context.Context, id uuid.UUID) (*AiAgentRunCitation, error) {
-	return c.Query().Where(aiagentruncitation.ID(id)).Only(ctx)
+// Get returns a AiAgentRunKnowledgeCitation entity by its id.
+func (c *AiAgentRunKnowledgeCitationClient) Get(ctx context.Context, id uuid.UUID) (*AiAgentRunKnowledgeCitation, error) {
+	return c.Query().Where(aiagentrunknowledgecitation.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *AiAgentRunCitationClient) GetX(ctx context.Context, id uuid.UUID) *AiAgentRunCitation {
+func (c *AiAgentRunKnowledgeCitationClient) GetX(ctx context.Context, id uuid.UUID) *AiAgentRunKnowledgeCitation {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1174,114 +1137,95 @@ func (c *AiAgentRunCitationClient) GetX(ctx context.Context, id uuid.UUID) *AiAg
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a AiAgentRunCitation.
-func (c *AiAgentRunCitationClient) QueryTenant(_m *AiAgentRunCitation) *TenantQuery {
+// QueryTenant queries the tenant edge of a AiAgentRunKnowledgeCitation.
+func (c *AiAgentRunKnowledgeCitationClient) QueryTenant(_m *AiAgentRunKnowledgeCitation) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentruncitation.Table, aiagentruncitation.FieldID, id),
+			sqlgraph.From(aiagentrunknowledgecitation.Table, aiagentrunknowledgecitation.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentruncitation.TenantTable, aiagentruncitation.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunknowledgecitation.TenantTable, aiagentrunknowledgecitation.TenantColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AiAgentRunCitation
+		step.Edge.Schema = schemaConfig.AiAgentRunKnowledgeCitation
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryKnowledgeEntity queries the knowledge_entity edge of a AiAgentRunCitation.
-func (c *AiAgentRunCitationClient) QueryKnowledgeEntity(_m *AiAgentRunCitation) *KnowledgeEntityQuery {
+// QueryAiAgentRunSnapshot queries the ai_agent_run_snapshot edge of a AiAgentRunKnowledgeCitation.
+func (c *AiAgentRunKnowledgeCitationClient) QueryAiAgentRunSnapshot(_m *AiAgentRunKnowledgeCitation) *AiAgentRunSnapshotQuery {
+	query := (&AiAgentRunSnapshotClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(aiagentrunknowledgecitation.Table, aiagentrunknowledgecitation.FieldID, id),
+			sqlgraph.To(aiagentrunsnapshot.Table, aiagentrunsnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunknowledgecitation.AiAgentRunSnapshotTable, aiagentrunknowledgecitation.AiAgentRunSnapshotColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AiAgentRunSnapshot
+		step.Edge.Schema = schemaConfig.AiAgentRunKnowledgeCitation
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeEntity queries the knowledge_entity edge of a AiAgentRunKnowledgeCitation.
+func (c *AiAgentRunKnowledgeCitationClient) QueryKnowledgeEntity(_m *AiAgentRunKnowledgeCitation) *KnowledgeEntityQuery {
 	query := (&KnowledgeEntityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentruncitation.Table, aiagentruncitation.FieldID, id),
+			sqlgraph.From(aiagentrunknowledgecitation.Table, aiagentrunknowledgecitation.FieldID, id),
 			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentruncitation.KnowledgeEntityTable, aiagentruncitation.KnowledgeEntityColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunknowledgecitation.KnowledgeEntityTable, aiagentrunknowledgecitation.KnowledgeEntityColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.AiAgentRunCitation
+		step.Edge.Schema = schemaConfig.AiAgentRunKnowledgeCitation
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryKnowledgeRelationship queries the knowledge_relationship edge of a AiAgentRunCitation.
-func (c *AiAgentRunCitationClient) QueryKnowledgeRelationship(_m *AiAgentRunCitation) *KnowledgeRelationshipQuery {
+// QueryKnowledgeRelationship queries the knowledge_relationship edge of a AiAgentRunKnowledgeCitation.
+func (c *AiAgentRunKnowledgeCitationClient) QueryKnowledgeRelationship(_m *AiAgentRunKnowledgeCitation) *KnowledgeRelationshipQuery {
 	query := (&KnowledgeRelationshipClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentruncitation.Table, aiagentruncitation.FieldID, id),
+			sqlgraph.From(aiagentrunknowledgecitation.Table, aiagentrunknowledgecitation.FieldID, id),
 			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentruncitation.KnowledgeRelationshipTable, aiagentruncitation.KnowledgeRelationshipColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunknowledgecitation.KnowledgeRelationshipTable, aiagentrunknowledgecitation.KnowledgeRelationshipColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeRelationship
-		step.Edge.Schema = schemaConfig.AiAgentRunCitation
+		step.Edge.Schema = schemaConfig.AiAgentRunKnowledgeCitation
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryKnowledgeEvidence queries the knowledge_evidence edge of a AiAgentRunCitation.
-func (c *AiAgentRunCitationClient) QueryKnowledgeEvidence(_m *AiAgentRunCitation) *KnowledgeEvidenceQuery {
+// QueryKnowledgeEvidence queries the knowledge_evidence edge of a AiAgentRunKnowledgeCitation.
+func (c *AiAgentRunKnowledgeCitationClient) QueryKnowledgeEvidence(_m *AiAgentRunKnowledgeCitation) *KnowledgeEvidenceQuery {
 	query := (&KnowledgeEvidenceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentruncitation.Table, aiagentruncitation.FieldID, id),
+			sqlgraph.From(aiagentrunknowledgecitation.Table, aiagentrunknowledgecitation.FieldID, id),
 			sqlgraph.To(knowledgeevidence.Table, knowledgeevidence.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentruncitation.KnowledgeEvidenceTable, aiagentruncitation.KnowledgeEvidenceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunknowledgecitation.KnowledgeEvidenceTable, aiagentrunknowledgecitation.KnowledgeEvidenceColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEvidence
-		step.Edge.Schema = schemaConfig.AiAgentRunCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFindings queries the findings edge of a AiAgentRunCitation.
-func (c *AiAgentRunCitationClient) QueryFindings(_m *AiAgentRunCitation) *AiAgentRunFindingQuery {
-	query := (&AiAgentRunFindingClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentruncitation.Table, aiagentruncitation.FieldID, id),
-			sqlgraph.To(aiagentrunfinding.Table, aiagentrunfinding.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, aiagentruncitation.FindingsTable, aiagentruncitation.FindingsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunFinding
-		step.Edge.Schema = schemaConfig.AiAgentRunFindingCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFindingCitations queries the finding_citations edge of a AiAgentRunCitation.
-func (c *AiAgentRunCitationClient) QueryFindingCitations(_m *AiAgentRunCitation) *AiAgentRunFindingCitationQuery {
-	query := (&AiAgentRunFindingCitationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentruncitation.Table, aiagentruncitation.FieldID, id),
-			sqlgraph.To(aiagentrunfindingcitation.Table, aiagentrunfindingcitation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, aiagentruncitation.FindingCitationsTable, aiagentruncitation.FindingCitationsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunFindingCitation
-		step.Edge.Schema = schemaConfig.AiAgentRunFindingCitation
+		step.Edge.Schema = schemaConfig.AiAgentRunKnowledgeCitation
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -1289,429 +1233,28 @@ func (c *AiAgentRunCitationClient) QueryFindingCitations(_m *AiAgentRunCitation)
 }
 
 // Hooks returns the client hooks.
-func (c *AiAgentRunCitationClient) Hooks() []Hook {
-	hooks := c.hooks.AiAgentRunCitation
-	return append(hooks[:len(hooks):len(hooks)], aiagentruncitation.Hooks[:]...)
+func (c *AiAgentRunKnowledgeCitationClient) Hooks() []Hook {
+	hooks := c.hooks.AiAgentRunKnowledgeCitation
+	return append(hooks[:len(hooks):len(hooks)], aiagentrunknowledgecitation.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *AiAgentRunCitationClient) Interceptors() []Interceptor {
-	return c.inters.AiAgentRunCitation
+func (c *AiAgentRunKnowledgeCitationClient) Interceptors() []Interceptor {
+	return c.inters.AiAgentRunKnowledgeCitation
 }
 
-func (c *AiAgentRunCitationClient) mutate(ctx context.Context, m *AiAgentRunCitationMutation) (Value, error) {
+func (c *AiAgentRunKnowledgeCitationClient) mutate(ctx context.Context, m *AiAgentRunKnowledgeCitationMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&AiAgentRunCitationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&AiAgentRunKnowledgeCitationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&AiAgentRunCitationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&AiAgentRunKnowledgeCitationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&AiAgentRunCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&AiAgentRunKnowledgeCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&AiAgentRunCitationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&AiAgentRunKnowledgeCitationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown AiAgentRunCitation mutation op: %q", m.Op())
-	}
-}
-
-// AiAgentRunFindingClient is a client for the AiAgentRunFinding schema.
-type AiAgentRunFindingClient struct {
-	config
-}
-
-// NewAiAgentRunFindingClient returns a client for the AiAgentRunFinding from the given config.
-func NewAiAgentRunFindingClient(c config) *AiAgentRunFindingClient {
-	return &AiAgentRunFindingClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `aiagentrunfinding.Hooks(f(g(h())))`.
-func (c *AiAgentRunFindingClient) Use(hooks ...Hook) {
-	c.hooks.AiAgentRunFinding = append(c.hooks.AiAgentRunFinding, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `aiagentrunfinding.Intercept(f(g(h())))`.
-func (c *AiAgentRunFindingClient) Intercept(interceptors ...Interceptor) {
-	c.inters.AiAgentRunFinding = append(c.inters.AiAgentRunFinding, interceptors...)
-}
-
-// Create returns a builder for creating a AiAgentRunFinding entity.
-func (c *AiAgentRunFindingClient) Create() *AiAgentRunFindingCreate {
-	mutation := newAiAgentRunFindingMutation(c.config, OpCreate)
-	return &AiAgentRunFindingCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of AiAgentRunFinding entities.
-func (c *AiAgentRunFindingClient) CreateBulk(builders ...*AiAgentRunFindingCreate) *AiAgentRunFindingCreateBulk {
-	return &AiAgentRunFindingCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *AiAgentRunFindingClient) MapCreateBulk(slice any, setFunc func(*AiAgentRunFindingCreate, int)) *AiAgentRunFindingCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &AiAgentRunFindingCreateBulk{err: fmt.Errorf("calling to AiAgentRunFindingClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*AiAgentRunFindingCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &AiAgentRunFindingCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for AiAgentRunFinding.
-func (c *AiAgentRunFindingClient) Update() *AiAgentRunFindingUpdate {
-	mutation := newAiAgentRunFindingMutation(c.config, OpUpdate)
-	return &AiAgentRunFindingUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *AiAgentRunFindingClient) UpdateOne(_m *AiAgentRunFinding) *AiAgentRunFindingUpdateOne {
-	mutation := newAiAgentRunFindingMutation(c.config, OpUpdateOne, withAiAgentRunFinding(_m))
-	return &AiAgentRunFindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *AiAgentRunFindingClient) UpdateOneID(id uuid.UUID) *AiAgentRunFindingUpdateOne {
-	mutation := newAiAgentRunFindingMutation(c.config, OpUpdateOne, withAiAgentRunFindingID(id))
-	return &AiAgentRunFindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for AiAgentRunFinding.
-func (c *AiAgentRunFindingClient) Delete() *AiAgentRunFindingDelete {
-	mutation := newAiAgentRunFindingMutation(c.config, OpDelete)
-	return &AiAgentRunFindingDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *AiAgentRunFindingClient) DeleteOne(_m *AiAgentRunFinding) *AiAgentRunFindingDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *AiAgentRunFindingClient) DeleteOneID(id uuid.UUID) *AiAgentRunFindingDeleteOne {
-	builder := c.Delete().Where(aiagentrunfinding.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &AiAgentRunFindingDeleteOne{builder}
-}
-
-// Query returns a query builder for AiAgentRunFinding.
-func (c *AiAgentRunFindingClient) Query() *AiAgentRunFindingQuery {
-	return &AiAgentRunFindingQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeAiAgentRunFinding},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a AiAgentRunFinding entity by its id.
-func (c *AiAgentRunFindingClient) Get(ctx context.Context, id uuid.UUID) (*AiAgentRunFinding, error) {
-	return c.Query().Where(aiagentrunfinding.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *AiAgentRunFindingClient) GetX(ctx context.Context, id uuid.UUID) *AiAgentRunFinding {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a AiAgentRunFinding.
-func (c *AiAgentRunFindingClient) QueryTenant(_m *AiAgentRunFinding) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunfinding.Table, aiagentrunfinding.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunfinding.TenantTable, aiagentrunfinding.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AiAgentRunFinding
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAiAgentRunResult queries the ai_agent_run_result edge of a AiAgentRunFinding.
-func (c *AiAgentRunFindingClient) QueryAiAgentRunResult(_m *AiAgentRunFinding) *AiAgentRunOutputQuery {
-	query := (&AiAgentRunOutputClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunfinding.Table, aiagentrunfinding.FieldID, id),
-			sqlgraph.To(aiagentrunoutput.Table, aiagentrunoutput.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunfinding.AiAgentRunResultTable, aiagentrunfinding.AiAgentRunResultColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunOutput
-		step.Edge.Schema = schemaConfig.AiAgentRunFinding
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCitations queries the citations edge of a AiAgentRunFinding.
-func (c *AiAgentRunFindingClient) QueryCitations(_m *AiAgentRunFinding) *AiAgentRunCitationQuery {
-	query := (&AiAgentRunCitationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunfinding.Table, aiagentrunfinding.FieldID, id),
-			sqlgraph.To(aiagentruncitation.Table, aiagentruncitation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, aiagentrunfinding.CitationsTable, aiagentrunfinding.CitationsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunCitation
-		step.Edge.Schema = schemaConfig.AiAgentRunFindingCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFindingCitations queries the finding_citations edge of a AiAgentRunFinding.
-func (c *AiAgentRunFindingClient) QueryFindingCitations(_m *AiAgentRunFinding) *AiAgentRunFindingCitationQuery {
-	query := (&AiAgentRunFindingCitationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunfinding.Table, aiagentrunfinding.FieldID, id),
-			sqlgraph.To(aiagentrunfindingcitation.Table, aiagentrunfindingcitation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, aiagentrunfinding.FindingCitationsTable, aiagentrunfinding.FindingCitationsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunFindingCitation
-		step.Edge.Schema = schemaConfig.AiAgentRunFindingCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *AiAgentRunFindingClient) Hooks() []Hook {
-	hooks := c.hooks.AiAgentRunFinding
-	return append(hooks[:len(hooks):len(hooks)], aiagentrunfinding.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *AiAgentRunFindingClient) Interceptors() []Interceptor {
-	return c.inters.AiAgentRunFinding
-}
-
-func (c *AiAgentRunFindingClient) mutate(ctx context.Context, m *AiAgentRunFindingMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&AiAgentRunFindingCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&AiAgentRunFindingUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&AiAgentRunFindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&AiAgentRunFindingDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown AiAgentRunFinding mutation op: %q", m.Op())
-	}
-}
-
-// AiAgentRunFindingCitationClient is a client for the AiAgentRunFindingCitation schema.
-type AiAgentRunFindingCitationClient struct {
-	config
-}
-
-// NewAiAgentRunFindingCitationClient returns a client for the AiAgentRunFindingCitation from the given config.
-func NewAiAgentRunFindingCitationClient(c config) *AiAgentRunFindingCitationClient {
-	return &AiAgentRunFindingCitationClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `aiagentrunfindingcitation.Hooks(f(g(h())))`.
-func (c *AiAgentRunFindingCitationClient) Use(hooks ...Hook) {
-	c.hooks.AiAgentRunFindingCitation = append(c.hooks.AiAgentRunFindingCitation, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `aiagentrunfindingcitation.Intercept(f(g(h())))`.
-func (c *AiAgentRunFindingCitationClient) Intercept(interceptors ...Interceptor) {
-	c.inters.AiAgentRunFindingCitation = append(c.inters.AiAgentRunFindingCitation, interceptors...)
-}
-
-// Create returns a builder for creating a AiAgentRunFindingCitation entity.
-func (c *AiAgentRunFindingCitationClient) Create() *AiAgentRunFindingCitationCreate {
-	mutation := newAiAgentRunFindingCitationMutation(c.config, OpCreate)
-	return &AiAgentRunFindingCitationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of AiAgentRunFindingCitation entities.
-func (c *AiAgentRunFindingCitationClient) CreateBulk(builders ...*AiAgentRunFindingCitationCreate) *AiAgentRunFindingCitationCreateBulk {
-	return &AiAgentRunFindingCitationCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *AiAgentRunFindingCitationClient) MapCreateBulk(slice any, setFunc func(*AiAgentRunFindingCitationCreate, int)) *AiAgentRunFindingCitationCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &AiAgentRunFindingCitationCreateBulk{err: fmt.Errorf("calling to AiAgentRunFindingCitationClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*AiAgentRunFindingCitationCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &AiAgentRunFindingCitationCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for AiAgentRunFindingCitation.
-func (c *AiAgentRunFindingCitationClient) Update() *AiAgentRunFindingCitationUpdate {
-	mutation := newAiAgentRunFindingCitationMutation(c.config, OpUpdate)
-	return &AiAgentRunFindingCitationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *AiAgentRunFindingCitationClient) UpdateOne(_m *AiAgentRunFindingCitation) *AiAgentRunFindingCitationUpdateOne {
-	mutation := newAiAgentRunFindingCitationMutation(c.config, OpUpdateOne, withAiAgentRunFindingCitation(_m))
-	return &AiAgentRunFindingCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *AiAgentRunFindingCitationClient) UpdateOneID(id uuid.UUID) *AiAgentRunFindingCitationUpdateOne {
-	mutation := newAiAgentRunFindingCitationMutation(c.config, OpUpdateOne, withAiAgentRunFindingCitationID(id))
-	return &AiAgentRunFindingCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for AiAgentRunFindingCitation.
-func (c *AiAgentRunFindingCitationClient) Delete() *AiAgentRunFindingCitationDelete {
-	mutation := newAiAgentRunFindingCitationMutation(c.config, OpDelete)
-	return &AiAgentRunFindingCitationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *AiAgentRunFindingCitationClient) DeleteOne(_m *AiAgentRunFindingCitation) *AiAgentRunFindingCitationDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *AiAgentRunFindingCitationClient) DeleteOneID(id uuid.UUID) *AiAgentRunFindingCitationDeleteOne {
-	builder := c.Delete().Where(aiagentrunfindingcitation.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &AiAgentRunFindingCitationDeleteOne{builder}
-}
-
-// Query returns a query builder for AiAgentRunFindingCitation.
-func (c *AiAgentRunFindingCitationClient) Query() *AiAgentRunFindingCitationQuery {
-	return &AiAgentRunFindingCitationQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeAiAgentRunFindingCitation},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a AiAgentRunFindingCitation entity by its id.
-func (c *AiAgentRunFindingCitationClient) Get(ctx context.Context, id uuid.UUID) (*AiAgentRunFindingCitation, error) {
-	return c.Query().Where(aiagentrunfindingcitation.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *AiAgentRunFindingCitationClient) GetX(ctx context.Context, id uuid.UUID) *AiAgentRunFindingCitation {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a AiAgentRunFindingCitation.
-func (c *AiAgentRunFindingCitationClient) QueryTenant(_m *AiAgentRunFindingCitation) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunfindingcitation.Table, aiagentrunfindingcitation.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunfindingcitation.TenantTable, aiagentrunfindingcitation.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AiAgentRunFindingCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFinding queries the finding edge of a AiAgentRunFindingCitation.
-func (c *AiAgentRunFindingCitationClient) QueryFinding(_m *AiAgentRunFindingCitation) *AiAgentRunFindingQuery {
-	query := (&AiAgentRunFindingClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunfindingcitation.Table, aiagentrunfindingcitation.FieldID, id),
-			sqlgraph.To(aiagentrunfinding.Table, aiagentrunfinding.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunfindingcitation.FindingTable, aiagentrunfindingcitation.FindingColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunFinding
-		step.Edge.Schema = schemaConfig.AiAgentRunFindingCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCitation queries the citation edge of a AiAgentRunFindingCitation.
-func (c *AiAgentRunFindingCitationClient) QueryCitation(_m *AiAgentRunFindingCitation) *AiAgentRunCitationQuery {
-	query := (&AiAgentRunCitationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunfindingcitation.Table, aiagentrunfindingcitation.FieldID, id),
-			sqlgraph.To(aiagentruncitation.Table, aiagentruncitation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunfindingcitation.CitationTable, aiagentrunfindingcitation.CitationColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunCitation
-		step.Edge.Schema = schemaConfig.AiAgentRunFindingCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *AiAgentRunFindingCitationClient) Hooks() []Hook {
-	hooks := c.hooks.AiAgentRunFindingCitation
-	return append(hooks[:len(hooks):len(hooks)], aiagentrunfindingcitation.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *AiAgentRunFindingCitationClient) Interceptors() []Interceptor {
-	return c.inters.AiAgentRunFindingCitation
-}
-
-func (c *AiAgentRunFindingCitationClient) mutate(ctx context.Context, m *AiAgentRunFindingCitationMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&AiAgentRunFindingCitationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&AiAgentRunFindingCitationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&AiAgentRunFindingCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&AiAgentRunFindingCitationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown AiAgentRunFindingCitation mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown AiAgentRunKnowledgeCitation mutation op: %q", m.Op())
 	}
 }
 
@@ -1842,18 +1385,18 @@ func (c *AiAgentRunOutputClient) QueryTenant(_m *AiAgentRunOutput) *TenantQuery 
 	return query
 }
 
-// QueryAiAgentRun queries the ai_agent_run edge of a AiAgentRunOutput.
-func (c *AiAgentRunOutputClient) QueryAiAgentRun(_m *AiAgentRunOutput) *AiAgentRunQuery {
-	query := (&AiAgentRunClient{config: c.config}).Query()
+// QueryAiAgentRunSnapshot queries the ai_agent_run_snapshot edge of a AiAgentRunOutput.
+func (c *AiAgentRunOutputClient) QueryAiAgentRunSnapshot(_m *AiAgentRunOutput) *AiAgentRunSnapshotQuery {
+	query := (&AiAgentRunSnapshotClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(aiagentrunoutput.Table, aiagentrunoutput.FieldID, id),
-			sqlgraph.To(aiagentrun.Table, aiagentrun.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunoutput.AiAgentRunTable, aiagentrunoutput.AiAgentRunColumn),
+			sqlgraph.To(aiagentrunsnapshot.Table, aiagentrunsnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunoutput.AiAgentRunSnapshotTable, aiagentrunoutput.AiAgentRunSnapshotColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRun
+		step.To.Schema = schemaConfig.AiAgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AiAgentRunOutput
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2065,6 +1608,44 @@ func (c *AiAgentRunSnapshotClient) QueryChildren(_m *AiAgentRunSnapshot) *AiAgen
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AiAgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AiAgentRunSnapshot
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOutputs queries the outputs edge of a AiAgentRunSnapshot.
+func (c *AiAgentRunSnapshotClient) QueryOutputs(_m *AiAgentRunSnapshot) *AiAgentRunOutputQuery {
+	query := (&AiAgentRunOutputClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(aiagentrunsnapshot.Table, aiagentrunsnapshot.FieldID, id),
+			sqlgraph.To(aiagentrunoutput.Table, aiagentrunoutput.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, aiagentrunsnapshot.OutputsTable, aiagentrunsnapshot.OutputsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AiAgentRunOutput
+		step.Edge.Schema = schemaConfig.AiAgentRunOutput
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeCitations queries the knowledge_citations edge of a AiAgentRunSnapshot.
+func (c *AiAgentRunSnapshotClient) QueryKnowledgeCitations(_m *AiAgentRunSnapshot) *AiAgentRunKnowledgeCitationQuery {
+	query := (&AiAgentRunKnowledgeCitationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(aiagentrunsnapshot.Table, aiagentrunsnapshot.FieldID, id),
+			sqlgraph.To(aiagentrunknowledgecitation.Table, aiagentrunknowledgecitation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, aiagentrunsnapshot.KnowledgeCitationsTable, aiagentrunsnapshot.KnowledgeCitationsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AiAgentRunKnowledgeCitation
+		step.Edge.Schema = schemaConfig.AiAgentRunKnowledgeCitation
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -16401,16 +15982,16 @@ func (c *VideoConferenceClient) mutate(ctx context.Context, m *VideoConferenceMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AiAgentRun, AiAgentRunCitation, AiAgentRunFinding, AiAgentRunFindingCitation,
-		AiAgentRunOutput, AiAgentRunSnapshot, Alert, AlertFeedback, AlertInstance,
-		AlertInvestigation, Document, DocumentAccess, EventAnnotation, Incident,
-		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
-		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
-		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
-		IncidentSeverity, IncidentTag, IncidentTimelineEvent,
-		IncidentTimelineEventContext, IncidentTimelineEventContributingFactor,
-		IncidentTimelineEventEvidence, IncidentTimelineEventTopologyContext,
-		IncidentType, Integration, IntegrationEventSyncCursor, IntegrationEventSyncRun,
+		AiAgentRun, AiAgentRunKnowledgeCitation, AiAgentRunOutput, AiAgentRunSnapshot,
+		Alert, AlertFeedback, AlertInstance, AlertInvestigation, Document,
+		DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
+		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
+		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
+		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
+		IncidentTimelineEventTopologyContext, IncidentType, Integration,
+		IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEvidence,
 		KnowledgeGraphSnapshot, KnowledgeGraphSnapshotEntity,
 		KnowledgeGraphSnapshotRelationship, KnowledgeRelationship,
@@ -16425,16 +16006,16 @@ type (
 		VideoConference []ent.Hook
 	}
 	inters struct {
-		AiAgentRun, AiAgentRunCitation, AiAgentRunFinding, AiAgentRunFindingCitation,
-		AiAgentRunOutput, AiAgentRunSnapshot, Alert, AlertFeedback, AlertInstance,
-		AlertInvestigation, AlertMetrics, Document, DocumentAccess, EventAnnotation,
-		Incident, IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
-		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
-		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
-		IncidentSeverity, IncidentTag, IncidentTimelineEvent,
-		IncidentTimelineEventContext, IncidentTimelineEventContributingFactor,
-		IncidentTimelineEventEvidence, IncidentTimelineEventTopologyContext,
-		IncidentType, Integration, IntegrationEventSyncCursor, IntegrationEventSyncRun,
+		AiAgentRun, AiAgentRunKnowledgeCitation, AiAgentRunOutput, AiAgentRunSnapshot,
+		Alert, AlertFeedback, AlertInstance, AlertInvestigation, AlertMetrics,
+		Document, DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
+		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
+		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
+		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
+		IncidentTimelineEventTopologyContext, IncidentType, Integration,
+		IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEvidence,
 		KnowledgeGraphSnapshot, KnowledgeGraphSnapshotEntity,
 		KnowledgeGraphSnapshotRelationship, KnowledgeRelationship,
@@ -16454,9 +16035,7 @@ var (
 	// DefaultSchemaConfig represents the default schema names for all tables as defined in ent/schema.
 	DefaultSchemaConfig = SchemaConfig{
 		AiAgentRun:                            tableSchemas[0],
-		AiAgentRunCitation:                    tableSchemas[0],
-		AiAgentRunFinding:                     tableSchemas[0],
-		AiAgentRunFindingCitation:             tableSchemas[0],
+		AiAgentRunKnowledgeCitation:           tableSchemas[0],
 		AiAgentRunOutput:                      tableSchemas[0],
 		AiAgentRunSnapshot:                    tableSchemas[0],
 		Alert:                                 tableSchemas[0],

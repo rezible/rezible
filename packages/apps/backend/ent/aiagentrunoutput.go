@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunoutput"
+	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -27,8 +27,8 @@ type AiAgentRunOutput struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// AiAgentRunID holds the value of the "ai_agent_run_id" field.
-	AiAgentRunID uuid.UUID `json:"ai_agent_run_id,omitempty"`
+	// AiAgentRunSnapshotID holds the value of the "ai_agent_run_snapshot_id" field.
+	AiAgentRunSnapshotID uuid.UUID `json:"ai_agent_run_snapshot_id,omitempty"`
 	// Data holds the value of the "data" field.
 	Data []byte `json:"data,omitempty"`
 	// Metadata holds the value of the "metadata" field.
@@ -43,8 +43,8 @@ type AiAgentRunOutput struct {
 type AiAgentRunOutputEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// AiAgentRun holds the value of the ai_agent_run edge.
-	AiAgentRun *AiAgentRun `json:"ai_agent_run,omitempty"`
+	// AiAgentRunSnapshot holds the value of the ai_agent_run_snapshot edge.
+	AiAgentRunSnapshot *AiAgentRunSnapshot `json:"ai_agent_run_snapshot,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -61,15 +61,15 @@ func (e AiAgentRunOutputEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AiAgentRunOrErr returns the AiAgentRun value or an error if the edge
+// AiAgentRunSnapshotOrErr returns the AiAgentRunSnapshot value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AiAgentRunOutputEdges) AiAgentRunOrErr() (*AiAgentRun, error) {
-	if e.AiAgentRun != nil {
-		return e.AiAgentRun, nil
+func (e AiAgentRunOutputEdges) AiAgentRunSnapshotOrErr() (*AiAgentRunSnapshot, error) {
+	if e.AiAgentRunSnapshot != nil {
+		return e.AiAgentRunSnapshot, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: aiagentrun.Label}
+		return nil, &NotFoundError{label: aiagentrunsnapshot.Label}
 	}
-	return nil, &NotLoadedError{edge: "ai_agent_run"}
+	return nil, &NotLoadedError{edge: "ai_agent_run_snapshot"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -83,7 +83,7 @@ func (*AiAgentRunOutput) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case aiagentrunoutput.FieldCreatedAt, aiagentrunoutput.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case aiagentrunoutput.FieldID, aiagentrunoutput.FieldAiAgentRunID:
+		case aiagentrunoutput.FieldID, aiagentrunoutput.FieldAiAgentRunSnapshotID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -124,11 +124,11 @@ func (_m *AiAgentRunOutput) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case aiagentrunoutput.FieldAiAgentRunID:
+		case aiagentrunoutput.FieldAiAgentRunSnapshotID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field ai_agent_run_id", values[i])
+				return fmt.Errorf("unexpected type %T for field ai_agent_run_snapshot_id", values[i])
 			} else if value != nil {
-				_m.AiAgentRunID = *value
+				_m.AiAgentRunSnapshotID = *value
 			}
 		case aiagentrunoutput.FieldData:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -162,9 +162,9 @@ func (_m *AiAgentRunOutput) QueryTenant() *TenantQuery {
 	return NewAiAgentRunOutputClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAiAgentRun queries the "ai_agent_run" edge of the AiAgentRunOutput entity.
-func (_m *AiAgentRunOutput) QueryAiAgentRun() *AiAgentRunQuery {
-	return NewAiAgentRunOutputClient(_m.config).QueryAiAgentRun(_m)
+// QueryAiAgentRunSnapshot queries the "ai_agent_run_snapshot" edge of the AiAgentRunOutput entity.
+func (_m *AiAgentRunOutput) QueryAiAgentRunSnapshot() *AiAgentRunSnapshotQuery {
+	return NewAiAgentRunOutputClient(_m.config).QueryAiAgentRunSnapshot(_m)
 }
 
 // Update returns a builder for updating this AiAgentRunOutput.
@@ -199,8 +199,8 @@ func (_m *AiAgentRunOutput) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("ai_agent_run_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.AiAgentRunID))
+	builder.WriteString("ai_agent_run_snapshot_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AiAgentRunSnapshotID))
 	builder.WriteString(", ")
 	builder.WriteString("data=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Data))

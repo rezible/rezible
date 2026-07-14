@@ -8,9 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrun"
-	"github.com/rezible/rezible/ent/aiagentruncitation"
-	"github.com/rezible/rezible/ent/aiagentrunfinding"
-	"github.com/rezible/rezible/ent/aiagentrunfindingcitation"
+	"github.com/rezible/rezible/ent/aiagentrunknowledgecitation"
 	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/alert"
@@ -129,110 +127,38 @@ func init() {
 	aiagentrunDescID := aiagentrunFields[0].Descriptor()
 	// aiagentrun.DefaultID holds the default value on creation for the id field.
 	aiagentrun.DefaultID = aiagentrunDescID.Default.(func() uuid.UUID)
-	aiagentruncitationMixin := schema.AiAgentRunCitation{}.Mixin()
-	aiagentruncitation.Policy = privacy.NewPolicies(aiagentruncitationMixin[0], aiagentruncitationMixin[1], schema.AiAgentRunCitation{})
-	aiagentruncitation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	aiagentrunknowledgecitationMixin := schema.AiAgentRunKnowledgeCitation{}.Mixin()
+	aiagentrunknowledgecitation.Policy = privacy.NewPolicies(aiagentrunknowledgecitationMixin[0], aiagentrunknowledgecitationMixin[1], schema.AiAgentRunKnowledgeCitation{})
+	aiagentrunknowledgecitation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := aiagentruncitation.Policy.EvalMutation(ctx, m); err != nil {
+			if err := aiagentrunknowledgecitation.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	aiagentruncitationMixinFields2 := aiagentruncitationMixin[2].Fields()
-	_ = aiagentruncitationMixinFields2
-	aiagentruncitationFields := schema.AiAgentRunCitation{}.Fields()
-	_ = aiagentruncitationFields
-	// aiagentruncitationDescCreatedAt is the schema descriptor for created_at field.
-	aiagentruncitationDescCreatedAt := aiagentruncitationMixinFields2[0].Descriptor()
-	// aiagentruncitation.DefaultCreatedAt holds the default value on creation for the created_at field.
-	aiagentruncitation.DefaultCreatedAt = aiagentruncitationDescCreatedAt.Default.(func() time.Time)
-	// aiagentruncitationDescUpdatedAt is the schema descriptor for updated_at field.
-	aiagentruncitationDescUpdatedAt := aiagentruncitationMixinFields2[1].Descriptor()
-	// aiagentruncitation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	aiagentruncitation.DefaultUpdatedAt = aiagentruncitationDescUpdatedAt.Default.(func() time.Time)
-	// aiagentruncitation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	aiagentruncitation.UpdateDefaultUpdatedAt = aiagentruncitationDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// aiagentruncitationDescKind is the schema descriptor for kind field.
-	aiagentruncitationDescKind := aiagentruncitationFields[1].Descriptor()
-	// aiagentruncitation.KindValidator is a validator for the "kind" field. It is called by the builders before save.
-	aiagentruncitation.KindValidator = aiagentruncitationDescKind.Validators[0].(func(string) error)
-	// aiagentruncitationDescSummary is the schema descriptor for summary field.
-	aiagentruncitationDescSummary := aiagentruncitationFields[2].Descriptor()
-	// aiagentruncitation.SummaryValidator is a validator for the "summary" field. It is called by the builders before save.
-	aiagentruncitation.SummaryValidator = aiagentruncitationDescSummary.Validators[0].(func(string) error)
-	// aiagentruncitationDescID is the schema descriptor for id field.
-	aiagentruncitationDescID := aiagentruncitationFields[0].Descriptor()
-	// aiagentruncitation.DefaultID holds the default value on creation for the id field.
-	aiagentruncitation.DefaultID = aiagentruncitationDescID.Default.(func() uuid.UUID)
-	aiagentrunfindingMixin := schema.AiAgentRunFinding{}.Mixin()
-	aiagentrunfinding.Policy = privacy.NewPolicies(aiagentrunfindingMixin[0], aiagentrunfindingMixin[1], schema.AiAgentRunFinding{})
-	aiagentrunfinding.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := aiagentrunfinding.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	aiagentrunfindingMixinFields2 := aiagentrunfindingMixin[2].Fields()
-	_ = aiagentrunfindingMixinFields2
-	aiagentrunfindingFields := schema.AiAgentRunFinding{}.Fields()
-	_ = aiagentrunfindingFields
-	// aiagentrunfindingDescCreatedAt is the schema descriptor for created_at field.
-	aiagentrunfindingDescCreatedAt := aiagentrunfindingMixinFields2[0].Descriptor()
-	// aiagentrunfinding.DefaultCreatedAt holds the default value on creation for the created_at field.
-	aiagentrunfinding.DefaultCreatedAt = aiagentrunfindingDescCreatedAt.Default.(func() time.Time)
-	// aiagentrunfindingDescUpdatedAt is the schema descriptor for updated_at field.
-	aiagentrunfindingDescUpdatedAt := aiagentrunfindingMixinFields2[1].Descriptor()
-	// aiagentrunfinding.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	aiagentrunfinding.DefaultUpdatedAt = aiagentrunfindingDescUpdatedAt.Default.(func() time.Time)
-	// aiagentrunfinding.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	aiagentrunfinding.UpdateDefaultUpdatedAt = aiagentrunfindingDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// aiagentrunfindingDescFindingKind is the schema descriptor for finding_kind field.
-	aiagentrunfindingDescFindingKind := aiagentrunfindingFields[2].Descriptor()
-	// aiagentrunfinding.FindingKindValidator is a validator for the "finding_kind" field. It is called by the builders before save.
-	aiagentrunfinding.FindingKindValidator = aiagentrunfindingDescFindingKind.Validators[0].(func(string) error)
-	// aiagentrunfindingDescContent is the schema descriptor for content field.
-	aiagentrunfindingDescContent := aiagentrunfindingFields[3].Descriptor()
-	// aiagentrunfinding.ContentValidator is a validator for the "content" field. It is called by the builders before save.
-	aiagentrunfinding.ContentValidator = aiagentrunfindingDescContent.Validators[0].(func(string) error)
-	// aiagentrunfindingDescID is the schema descriptor for id field.
-	aiagentrunfindingDescID := aiagentrunfindingFields[0].Descriptor()
-	// aiagentrunfinding.DefaultID holds the default value on creation for the id field.
-	aiagentrunfinding.DefaultID = aiagentrunfindingDescID.Default.(func() uuid.UUID)
-	aiagentrunfindingcitationMixin := schema.AiAgentRunFindingCitation{}.Mixin()
-	aiagentrunfindingcitation.Policy = privacy.NewPolicies(aiagentrunfindingcitationMixin[0], aiagentrunfindingcitationMixin[1], schema.AiAgentRunFindingCitation{})
-	aiagentrunfindingcitation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := aiagentrunfindingcitation.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	aiagentrunfindingcitationMixinFields2 := aiagentrunfindingcitationMixin[2].Fields()
-	_ = aiagentrunfindingcitationMixinFields2
-	aiagentrunfindingcitationFields := schema.AiAgentRunFindingCitation{}.Fields()
-	_ = aiagentrunfindingcitationFields
-	// aiagentrunfindingcitationDescCreatedAt is the schema descriptor for created_at field.
-	aiagentrunfindingcitationDescCreatedAt := aiagentrunfindingcitationMixinFields2[0].Descriptor()
-	// aiagentrunfindingcitation.DefaultCreatedAt holds the default value on creation for the created_at field.
-	aiagentrunfindingcitation.DefaultCreatedAt = aiagentrunfindingcitationDescCreatedAt.Default.(func() time.Time)
-	// aiagentrunfindingcitationDescUpdatedAt is the schema descriptor for updated_at field.
-	aiagentrunfindingcitationDescUpdatedAt := aiagentrunfindingcitationMixinFields2[1].Descriptor()
-	// aiagentrunfindingcitation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	aiagentrunfindingcitation.DefaultUpdatedAt = aiagentrunfindingcitationDescUpdatedAt.Default.(func() time.Time)
-	// aiagentrunfindingcitation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	aiagentrunfindingcitation.UpdateDefaultUpdatedAt = aiagentrunfindingcitationDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// aiagentrunfindingcitationDescSupportKind is the schema descriptor for support_kind field.
-	aiagentrunfindingcitationDescSupportKind := aiagentrunfindingcitationFields[3].Descriptor()
-	// aiagentrunfindingcitation.SupportKindValidator is a validator for the "support_kind" field. It is called by the builders before save.
-	aiagentrunfindingcitation.SupportKindValidator = aiagentrunfindingcitationDescSupportKind.Validators[0].(func(string) error)
-	// aiagentrunfindingcitationDescID is the schema descriptor for id field.
-	aiagentrunfindingcitationDescID := aiagentrunfindingcitationFields[0].Descriptor()
-	// aiagentrunfindingcitation.DefaultID holds the default value on creation for the id field.
-	aiagentrunfindingcitation.DefaultID = aiagentrunfindingcitationDescID.Default.(func() uuid.UUID)
+	aiagentrunknowledgecitationMixinFields2 := aiagentrunknowledgecitationMixin[2].Fields()
+	_ = aiagentrunknowledgecitationMixinFields2
+	aiagentrunknowledgecitationFields := schema.AiAgentRunKnowledgeCitation{}.Fields()
+	_ = aiagentrunknowledgecitationFields
+	// aiagentrunknowledgecitationDescCreatedAt is the schema descriptor for created_at field.
+	aiagentrunknowledgecitationDescCreatedAt := aiagentrunknowledgecitationMixinFields2[0].Descriptor()
+	// aiagentrunknowledgecitation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	aiagentrunknowledgecitation.DefaultCreatedAt = aiagentrunknowledgecitationDescCreatedAt.Default.(func() time.Time)
+	// aiagentrunknowledgecitationDescUpdatedAt is the schema descriptor for updated_at field.
+	aiagentrunknowledgecitationDescUpdatedAt := aiagentrunknowledgecitationMixinFields2[1].Descriptor()
+	// aiagentrunknowledgecitation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	aiagentrunknowledgecitation.DefaultUpdatedAt = aiagentrunknowledgecitationDescUpdatedAt.Default.(func() time.Time)
+	// aiagentrunknowledgecitation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	aiagentrunknowledgecitation.UpdateDefaultUpdatedAt = aiagentrunknowledgecitationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// aiagentrunknowledgecitationDescSummary is the schema descriptor for summary field.
+	aiagentrunknowledgecitationDescSummary := aiagentrunknowledgecitationFields[5].Descriptor()
+	// aiagentrunknowledgecitation.SummaryValidator is a validator for the "summary" field. It is called by the builders before save.
+	aiagentrunknowledgecitation.SummaryValidator = aiagentrunknowledgecitationDescSummary.Validators[0].(func(string) error)
+	// aiagentrunknowledgecitationDescID is the schema descriptor for id field.
+	aiagentrunknowledgecitationDescID := aiagentrunknowledgecitationFields[0].Descriptor()
+	// aiagentrunknowledgecitation.DefaultID holds the default value on creation for the id field.
+	aiagentrunknowledgecitation.DefaultID = aiagentrunknowledgecitationDescID.Default.(func() uuid.UUID)
 	aiagentrunoutputMixin := schema.AiAgentRunOutput{}.Mixin()
 	aiagentrunoutput.Policy = privacy.NewPolicies(aiagentrunoutputMixin[0], aiagentrunoutputMixin[1], schema.AiAgentRunOutput{})
 	aiagentrunoutput.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -257,6 +183,10 @@ func init() {
 	aiagentrunoutput.DefaultUpdatedAt = aiagentrunoutputDescUpdatedAt.Default.(func() time.Time)
 	// aiagentrunoutput.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	aiagentrunoutput.UpdateDefaultUpdatedAt = aiagentrunoutputDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// aiagentrunoutputDescMetadata is the schema descriptor for metadata field.
+	aiagentrunoutputDescMetadata := aiagentrunoutputFields[3].Descriptor()
+	// aiagentrunoutput.DefaultMetadata holds the default value on creation for the metadata field.
+	aiagentrunoutput.DefaultMetadata = aiagentrunoutputDescMetadata.Default.(map[string]interface{})
 	// aiagentrunoutputDescID is the schema descriptor for id field.
 	aiagentrunoutputDescID := aiagentrunoutputFields[0].Descriptor()
 	// aiagentrunoutput.DefaultID holds the default value on creation for the id field.

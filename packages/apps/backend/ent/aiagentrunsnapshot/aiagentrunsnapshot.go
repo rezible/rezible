@@ -45,6 +45,10 @@ const (
 	EdgeParent = "parent"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
 	EdgeChildren = "children"
+	// EdgeOutputs holds the string denoting the outputs edge name in mutations.
+	EdgeOutputs = "outputs"
+	// EdgeKnowledgeCitations holds the string denoting the knowledge_citations edge name in mutations.
+	EdgeKnowledgeCitations = "knowledge_citations"
 	// Table holds the table name of the aiagentrunsnapshot in the database.
 	Table = "ai_agent_run_snapshots"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -69,6 +73,20 @@ const (
 	ChildrenTable = "ai_agent_run_snapshots"
 	// ChildrenColumn is the table column denoting the children relation/edge.
 	ChildrenColumn = "parent_id"
+	// OutputsTable is the table that holds the outputs relation/edge.
+	OutputsTable = "ai_agent_run_outputs"
+	// OutputsInverseTable is the table name for the AiAgentRunOutput entity.
+	// It exists in this package in order to avoid circular dependency with the "aiagentrunoutput" package.
+	OutputsInverseTable = "ai_agent_run_outputs"
+	// OutputsColumn is the table column denoting the outputs relation/edge.
+	OutputsColumn = "ai_agent_run_snapshot_id"
+	// KnowledgeCitationsTable is the table that holds the knowledge_citations relation/edge.
+	KnowledgeCitationsTable = "ai_agent_run_knowledge_citations"
+	// KnowledgeCitationsInverseTable is the table name for the AiAgentRunKnowledgeCitation entity.
+	// It exists in this package in order to avoid circular dependency with the "aiagentrunknowledgecitation" package.
+	KnowledgeCitationsInverseTable = "ai_agent_run_knowledge_citations"
+	// KnowledgeCitationsColumn is the table column denoting the knowledge_citations relation/edge.
+	KnowledgeCitationsColumn = "ai_agent_run_snapshot_id"
 )
 
 // Columns holds all SQL columns for aiagentrunsnapshot fields.
@@ -221,6 +239,34 @@ func ByChildren(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newChildrenStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByOutputsCount orders the results by outputs count.
+func ByOutputsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOutputsStep(), opts...)
+	}
+}
+
+// ByOutputs orders the results by outputs terms.
+func ByOutputs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOutputsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByKnowledgeCitationsCount orders the results by knowledge_citations count.
+func ByKnowledgeCitationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newKnowledgeCitationsStep(), opts...)
+	}
+}
+
+// ByKnowledgeCitations orders the results by knowledge_citations terms.
+func ByKnowledgeCitations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newKnowledgeCitationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -247,5 +293,19 @@ func newChildrenStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, ChildrenTable, ChildrenColumn),
+	)
+}
+func newOutputsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OutputsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, OutputsTable, OutputsColumn),
+	)
+}
+func newKnowledgeCitationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(KnowledgeCitationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, KnowledgeCitationsTable, KnowledgeCitationsColumn),
 	)
 }

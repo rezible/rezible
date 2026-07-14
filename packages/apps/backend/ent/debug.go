@@ -12,28 +12,12 @@ func (c *AiAgentRunClient) Debug() *AiAgentRunClient {
 	return &AiAgentRunClient{config: cfg}
 }
 
-func (c *AiAgentRunCitationClient) Debug() *AiAgentRunCitationClient {
+func (c *AiAgentRunKnowledgeCitationClient) Debug() *AiAgentRunKnowledgeCitationClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AiAgentRunCitationClient{config: cfg}
-}
-
-func (c *AiAgentRunFindingClient) Debug() *AiAgentRunFindingClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AiAgentRunFindingClient{config: cfg}
-}
-
-func (c *AiAgentRunFindingCitationClient) Debug() *AiAgentRunFindingCitationClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AiAgentRunFindingCitationClient{config: cfg}
+	return &AiAgentRunKnowledgeCitationClient{config: cfg}
 }
 
 func (c *AiAgentRunOutputClient) Debug() *AiAgentRunOutputClient {

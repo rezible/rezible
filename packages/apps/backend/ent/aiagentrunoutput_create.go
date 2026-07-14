@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunoutput"
+	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -60,9 +60,9 @@ func (_c *AiAgentRunOutputCreate) SetNillableUpdatedAt(v *time.Time) *AiAgentRun
 	return _c
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (_c *AiAgentRunOutputCreate) SetAiAgentRunID(v uuid.UUID) *AiAgentRunOutputCreate {
-	_c.mutation.SetAiAgentRunID(v)
+// SetAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field.
+func (_c *AiAgentRunOutputCreate) SetAiAgentRunSnapshotID(v uuid.UUID) *AiAgentRunOutputCreate {
+	_c.mutation.SetAiAgentRunSnapshotID(v)
 	return _c
 }
 
@@ -97,9 +97,9 @@ func (_c *AiAgentRunOutputCreate) SetTenant(v *Tenant) *AiAgentRunOutputCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRun entity.
-func (_c *AiAgentRunOutputCreate) SetAiAgentRun(v *AiAgentRun) *AiAgentRunOutputCreate {
-	return _c.SetAiAgentRunID(v.ID)
+// SetAiAgentRunSnapshot sets the "ai_agent_run_snapshot" edge to the AiAgentRunSnapshot entity.
+func (_c *AiAgentRunOutputCreate) SetAiAgentRunSnapshot(v *AiAgentRunSnapshot) *AiAgentRunOutputCreate {
+	return _c.SetAiAgentRunSnapshotID(v.ID)
 }
 
 // Mutation returns the AiAgentRunOutputMutation object of the builder.
@@ -153,6 +153,10 @@ func (_c *AiAgentRunOutputCreate) defaults() error {
 		v := aiagentrunoutput.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.Metadata(); !ok {
+		v := aiagentrunoutput.DefaultMetadata
+		_c.mutation.SetMetadata(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if aiagentrunoutput.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized aiagentrunoutput.DefaultID (forgotten import ent/runtime?)")
@@ -174,20 +178,17 @@ func (_c *AiAgentRunOutputCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "AiAgentRunOutput.updated_at"`)}
 	}
-	if _, ok := _c.mutation.AiAgentRunID(); !ok {
-		return &ValidationError{Name: "ai_agent_run_id", err: errors.New(`ent: missing required field "AiAgentRunOutput.ai_agent_run_id"`)}
+	if _, ok := _c.mutation.AiAgentRunSnapshotID(); !ok {
+		return &ValidationError{Name: "ai_agent_run_snapshot_id", err: errors.New(`ent: missing required field "AiAgentRunOutput.ai_agent_run_snapshot_id"`)}
 	}
 	if _, ok := _c.mutation.Data(); !ok {
 		return &ValidationError{Name: "data", err: errors.New(`ent: missing required field "AiAgentRunOutput.data"`)}
 	}
-	if _, ok := _c.mutation.Metadata(); !ok {
-		return &ValidationError{Name: "metadata", err: errors.New(`ent: missing required field "AiAgentRunOutput.metadata"`)}
-	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AiAgentRunOutput.tenant"`)}
 	}
-	if len(_c.mutation.AiAgentRunIDs()) == 0 {
-		return &ValidationError{Name: "ai_agent_run", err: errors.New(`ent: missing required edge "AiAgentRunOutput.ai_agent_run"`)}
+	if len(_c.mutation.AiAgentRunSnapshotIDs()) == 0 {
+		return &ValidationError{Name: "ai_agent_run_snapshot", err: errors.New(`ent: missing required edge "AiAgentRunOutput.ai_agent_run_snapshot"`)}
 	}
 	return nil
 }
@@ -260,22 +261,22 @@ func (_c *AiAgentRunOutputCreate) createSpec() (*AiAgentRunOutput, *sqlgraph.Cre
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AiAgentRunIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AiAgentRunSnapshotIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrunoutput.AiAgentRunTable,
-			Columns: []string{aiagentrunoutput.AiAgentRunColumn},
+			Table:   aiagentrunoutput.AiAgentRunSnapshotTable,
+			Columns: []string{aiagentrunoutput.AiAgentRunSnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(aiagentrunsnapshot.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.AiAgentRunOutput
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.AiAgentRunID = nodes[0]
+		_node.AiAgentRunSnapshotID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -354,15 +355,15 @@ func (u *AiAgentRunOutputUpsert) UpdateUpdatedAt() *AiAgentRunOutputUpsert {
 	return u
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (u *AiAgentRunOutputUpsert) SetAiAgentRunID(v uuid.UUID) *AiAgentRunOutputUpsert {
-	u.Set(aiagentrunoutput.FieldAiAgentRunID, v)
+// SetAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field.
+func (u *AiAgentRunOutputUpsert) SetAiAgentRunSnapshotID(v uuid.UUID) *AiAgentRunOutputUpsert {
+	u.Set(aiagentrunoutput.FieldAiAgentRunSnapshotID, v)
 	return u
 }
 
-// UpdateAiAgentRunID sets the "ai_agent_run_id" field to the value that was provided on create.
-func (u *AiAgentRunOutputUpsert) UpdateAiAgentRunID() *AiAgentRunOutputUpsert {
-	u.SetExcluded(aiagentrunoutput.FieldAiAgentRunID)
+// UpdateAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field to the value that was provided on create.
+func (u *AiAgentRunOutputUpsert) UpdateAiAgentRunSnapshotID() *AiAgentRunOutputUpsert {
+	u.SetExcluded(aiagentrunoutput.FieldAiAgentRunSnapshotID)
 	return u
 }
 
@@ -387,6 +388,12 @@ func (u *AiAgentRunOutputUpsert) SetMetadata(v map[string]interface{}) *AiAgentR
 // UpdateMetadata sets the "metadata" field to the value that was provided on create.
 func (u *AiAgentRunOutputUpsert) UpdateMetadata() *AiAgentRunOutputUpsert {
 	u.SetExcluded(aiagentrunoutput.FieldMetadata)
+	return u
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AiAgentRunOutputUpsert) ClearMetadata() *AiAgentRunOutputUpsert {
+	u.SetNull(aiagentrunoutput.FieldMetadata)
 	return u
 }
 
@@ -469,17 +476,17 @@ func (u *AiAgentRunOutputUpsertOne) UpdateUpdatedAt() *AiAgentRunOutputUpsertOne
 	})
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (u *AiAgentRunOutputUpsertOne) SetAiAgentRunID(v uuid.UUID) *AiAgentRunOutputUpsertOne {
+// SetAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field.
+func (u *AiAgentRunOutputUpsertOne) SetAiAgentRunSnapshotID(v uuid.UUID) *AiAgentRunOutputUpsertOne {
 	return u.Update(func(s *AiAgentRunOutputUpsert) {
-		s.SetAiAgentRunID(v)
+		s.SetAiAgentRunSnapshotID(v)
 	})
 }
 
-// UpdateAiAgentRunID sets the "ai_agent_run_id" field to the value that was provided on create.
-func (u *AiAgentRunOutputUpsertOne) UpdateAiAgentRunID() *AiAgentRunOutputUpsertOne {
+// UpdateAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field to the value that was provided on create.
+func (u *AiAgentRunOutputUpsertOne) UpdateAiAgentRunSnapshotID() *AiAgentRunOutputUpsertOne {
 	return u.Update(func(s *AiAgentRunOutputUpsert) {
-		s.UpdateAiAgentRunID()
+		s.UpdateAiAgentRunSnapshotID()
 	})
 }
 
@@ -508,6 +515,13 @@ func (u *AiAgentRunOutputUpsertOne) SetMetadata(v map[string]interface{}) *AiAge
 func (u *AiAgentRunOutputUpsertOne) UpdateMetadata() *AiAgentRunOutputUpsertOne {
 	return u.Update(func(s *AiAgentRunOutputUpsert) {
 		s.UpdateMetadata()
+	})
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AiAgentRunOutputUpsertOne) ClearMetadata() *AiAgentRunOutputUpsertOne {
+	return u.Update(func(s *AiAgentRunOutputUpsert) {
+		s.ClearMetadata()
 	})
 }
 
@@ -757,17 +771,17 @@ func (u *AiAgentRunOutputUpsertBulk) UpdateUpdatedAt() *AiAgentRunOutputUpsertBu
 	})
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (u *AiAgentRunOutputUpsertBulk) SetAiAgentRunID(v uuid.UUID) *AiAgentRunOutputUpsertBulk {
+// SetAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field.
+func (u *AiAgentRunOutputUpsertBulk) SetAiAgentRunSnapshotID(v uuid.UUID) *AiAgentRunOutputUpsertBulk {
 	return u.Update(func(s *AiAgentRunOutputUpsert) {
-		s.SetAiAgentRunID(v)
+		s.SetAiAgentRunSnapshotID(v)
 	})
 }
 
-// UpdateAiAgentRunID sets the "ai_agent_run_id" field to the value that was provided on create.
-func (u *AiAgentRunOutputUpsertBulk) UpdateAiAgentRunID() *AiAgentRunOutputUpsertBulk {
+// UpdateAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field to the value that was provided on create.
+func (u *AiAgentRunOutputUpsertBulk) UpdateAiAgentRunSnapshotID() *AiAgentRunOutputUpsertBulk {
 	return u.Update(func(s *AiAgentRunOutputUpsert) {
-		s.UpdateAiAgentRunID()
+		s.UpdateAiAgentRunSnapshotID()
 	})
 }
 
@@ -796,6 +810,13 @@ func (u *AiAgentRunOutputUpsertBulk) SetMetadata(v map[string]interface{}) *AiAg
 func (u *AiAgentRunOutputUpsertBulk) UpdateMetadata() *AiAgentRunOutputUpsertBulk {
 	return u.Update(func(s *AiAgentRunOutputUpsert) {
 		s.UpdateMetadata()
+	})
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AiAgentRunOutputUpsertBulk) ClearMetadata() *AiAgentRunOutputUpsertBulk {
+	return u.Update(func(s *AiAgentRunOutputUpsert) {
+		s.ClearMetadata()
 	})
 }
 
