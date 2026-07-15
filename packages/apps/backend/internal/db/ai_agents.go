@@ -253,7 +253,6 @@ func (s *AiAgentService) handleInvokeAgentRun(ctx context.Context, args jobs.Inv
 	if run == nil || runErr != nil {
 		return runErr
 	}
-	ctx = execution.NewAiAgentRunContext(ctx, run)
 
 	snapshotId, sendErr := agent.Invoke(ctx, args.ParentSnapshotID, args.Message, args.Resume)
 	if sendErr != nil {

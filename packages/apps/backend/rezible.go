@@ -443,7 +443,6 @@ type (
 
 	AiAgentService interface {
 		AiAgentSnapshotService
-		LookupAgentRunsByMetadata(context.Context, map[string]any) (ent.AiAgentRuns, error)
 		ListAgentRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AiAgentRun], error)
 		CreateAgentRun(context.Context, string, CreateAgentRunParams) (*ent.AiAgentRun, error)
 		InvokeAgentRun(context.Context, uuid.UUID, InvokeAgentRunParams) error

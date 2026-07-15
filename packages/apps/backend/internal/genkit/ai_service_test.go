@@ -209,7 +209,7 @@ type (
 	}
 )
 
-func (t *testAgent[S]) definition() testAgentDef[S] {
+func (t *testAgent[S]) agentDefinition() testAgentDef[S] {
 	return t.def
 }
 

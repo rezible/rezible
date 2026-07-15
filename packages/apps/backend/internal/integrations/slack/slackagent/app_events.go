@@ -11,6 +11,10 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/google/uuid"
 	"github.com/k0kubun/pp/v3"
+
+	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	aar "github.com/rezible/rezible/ent/aiagentrun"
@@ -18,8 +22,6 @@ import (
 	"github.com/rezible/rezible/ent/user"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/slack-go/slack"
-	"github.com/slack-go/slack/slackevents"
 )
 
 func (a *App) RespondEventTypes() []slackevents.EventsAPIType {

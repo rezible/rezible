@@ -8,15 +8,17 @@ import (
 
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/google/uuid"
+	"github.com/riverqueue/river"
+
+	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
+
 	rez "github.com/rezible/rezible"
 	in "github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/predicate"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
-	"github.com/rezible/rezible/pkg/ai"
+	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
-	"github.com/riverqueue/river"
-	"github.com/slack-go/slack"
-	"github.com/slack-go/slack/slackevents"
 )
 
 type App struct {
@@ -107,46 +109,42 @@ func (a *App) GetIntegrationClientWrapper(ctx context.Context, preds ...predicat
 
 func (a *App) registerMessageHandlers() error {
 	return errors.Join(
-		a.messages.AddEventHandlers(rez.NewEventHandler("slackagent.HandleChatAgentOutput", a.onAiChatAgentOutput)))
+		a.messages.AddEventHandlers(rez.NewEventHandler("slackagent.HandleAiAgentChatMessage", a.onAiAgentChatMessage)),
+		a.messages.AddCommandHandlers(rez.NewCommandHandler("slackagent.SendMessage", a.handleSendMessageCommand)))
 }
 
-func (a *App) onAiChatAgentOutput(ctx context.Context, ev *rez.EventOnAiAgentRunOutput) error {
-	if ev.AgentName != ai.ChatAgent.Name {
+func (a *App) onAiAgentChatMessage(ctx context.Context, ev *rezai.EventSendChatMessageToolInvoked) error {
+	run, runErr := a.agents.GetAgentRun(ctx, ev.AgentRunId)
+	if runErr != nil {
+		return fmt.Errorf("get agent run: %w", runErr)
+	}
+	if run.AgentName != rezai.ChatAgent.Name {
 		return nil
 	}
 
 	var metadata aiChatAgentRunMetadata
-	if mdErr := mapstructure.Decode(ev.AgentRunMetadata, &metadata); mdErr != nil {
+	if mdErr := mapstructure.Decode(run.Metadata, &metadata); mdErr != nil {
 		return fmt.Errorf("decode metadata: %w", mdErr)
 	}
 	if !metadata.IsSlack {
-		fmt.Printf("not a slack reply run?: %+v\n", ev.AgentRunMetadata)
+		fmt.Printf("not a slack agent reply run?: %+v\n", run.Metadata)
 		return nil
 	}
 
-	sendMsgJobParams := make([]river.InsertManyParams, len(ev.Parts))
-	for i, p := range ev.Parts {
-		output, outputErr := ai.ChatAgent.ParseOutputArtifactPart(p)
-		if outputErr != nil {
-			return fmt.Errorf("parse output artifact: %w", outputErr)
-		}
-		sendMsgJobParams[i] = river.InsertManyParams{
-			Args: SendMessageJobArgs{
-				Message:        output.Message,
-				IntegrationRef: metadata.IntegrationRef,
-				Channel:        metadata.SlackReplyChannel,
-				ReplyTs:        metadata.SlackReplyTs,
-			},
-			InsertOpts: &river.InsertOpts{
-				UniqueOpts: river.UniqueOpts{
-					ByArgs: true,
-					//ByState: jobs.UniqueStateNonCompleted,
-				},
-			},
-		}
+	args := SendMessageJobArgs{
+		Message:        ev.Input.Message,
+		IntegrationRef: metadata.IntegrationRef,
+		Channel:        metadata.SlackReplyChannel,
+		ReplyTs:        metadata.SlackReplyTs,
 	}
-	if _, cmdErr := a.jobs.InsertMany(ctx, sendMsgJobParams); cmdErr != nil {
-		return fmt.Errorf("send command: %w", cmdErr)
+	opts := &river.InsertOpts{
+		UniqueOpts: river.UniqueOpts{
+			ByArgs: true,
+			//ByState: jobs.UniqueStateNonCompleted,
+		},
+	}
+	if _, cmdErr := a.jobs.Insert(ctx, args, opts); cmdErr != nil {
+		return fmt.Errorf("insert job: %w", cmdErr)
 	}
 
 	return nil
@@ -173,6 +171,23 @@ func (a *App) handleSendMessageJob(ctx context.Context, args SendMessageJobArgs)
 	_, _, msgErr := cw.Client().PostMessageContext(ctx, args.Channel,
 		slack.MsgOptionMarkdownText(args.Message),
 		slack.MsgOptionTS(args.ReplyTs))
+	if msgErr != nil {
+		return fmt.Errorf("post message: %w", msgErr)
+	}
+
+	return nil
+}
+
+func (a *App) handleSendMessageCommand(ctx context.Context, cmd *SendMessageJobArgs) error {
+	cw, wrapperErr := a.GetIntegrationClientWrapper(ctx, in.ExternalRef(cmd.IntegrationRef))
+	if wrapperErr != nil {
+		slog.Warn("failed to get slack integration client wrapper", "err", wrapperErr)
+		return fmt.Errorf("get integration client wrapper: %w", wrapperErr)
+	}
+
+	_, _, msgErr := cw.Client().PostMessageContext(ctx, cmd.Channel,
+		slack.MsgOptionMarkdownText(cmd.Message),
+		slack.MsgOptionTS(cmd.ReplyTs))
 	if msgErr != nil {
 		return fmt.Errorf("post message: %w", msgErr)
 	}

@@ -30,7 +30,7 @@ type (
 		Description     string
 		SystemPrompt    string
 		EnableArtifacts bool
-		RequiredTools   []string
+		RequiredTools   []ai.ToolRef
 		inputValidator  func(I) error
 	}
 )
@@ -146,6 +146,10 @@ func (i AlertAgentInput) Validate() error {
 	return nil
 }
 
+func (o AlertAgentOutput) WriteArtifactToolDefinition() (name string, description string) {
+	return "output_investigation_report", "Output the final results of your investigation"
+}
+
 var AlertsAgent = AlertsAgentDefinition{
 	Name:            "alerts",
 	Description:     "",
@@ -209,16 +213,13 @@ func (i ChatAgentInput) Validate() error {
 	return nil
 }
 
-func (o ChatAgentOutput) WriteToolInfo() (name string, description string) {
-	return "send_message", "Send a chat message reply to the user"
-}
-
 var ChatAgent = ChatAgentDefinition{
-	Name:        "chat",
-	Description: "",
+	Name:          "chat",
+	Description:   "a chat presence agent that can respond to messages",
+	RequiredTools: []ai.ToolRef{SendChatMessageTool},
 	SystemPrompt: `You are an AI agent responsible for generating responses to user chat messages. 
 You help answer any operational questions that software engineering teams.
 Create replies to user messages to the best of your capability - be concise and keep the tone professional.
 
-IMPORTANT: output your chat message replies using the supplied tool!`,
+IMPORTANT: send chat message replies using the supplied tool!`,
 }

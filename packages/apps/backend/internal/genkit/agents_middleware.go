@@ -2,6 +2,7 @@ package genkit
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
@@ -9,79 +10,105 @@ import (
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
-type (
-	AgentOutputToolResult struct {
-		Status string `json:"status"`
+type agentRunnerMiddleware[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput] struct {
+	runner agentRunner[I, S, O]
+	tools  []ai.Tool
+}
+
+func newAgentRunnerMiddleware[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput](r agentRunner[I, S, O], reqTools []ai.ToolRef) (*agentRunnerMiddleware[I, S, O], error) {
+	mw := &agentRunnerMiddleware[I, S, O]{runner: r}
+	if toolsErr := mw.makeRequiredDynamicTools(reqTools); toolsErr != nil {
+		return nil, fmt.Errorf("required dynamic tools: %w", toolsErr)
 	}
-
-	outputWithWriteToolInfo interface {
-		WriteToolInfo() (name string, description string)
-	}
-)
-
-type agentOutputMiddleware[S rezai.SessionState, O rezai.AgentOutput] struct {
-	partFn func(O) (*ai.Part, error)
+	return mw, nil
 }
 
-func (a *agentOutputMiddleware[S, O]) Name() string {
-	return "agent_output"
+func (m *agentRunnerMiddleware[I, S, O]) Name() string {
+	return "rezible_agent_runner"
 }
 
-func (a *agentOutputMiddleware[S, O]) New(ctx context.Context) (*ai.Hooks, error) {
-	return &ai.Hooks{
-		Tools: []ai.Tool{a.makeWriteOutputArtifactTool()},
-	}, nil
+func (m *agentRunnerMiddleware[I, S, O]) New(ctx context.Context) (*ai.Hooks, error) {
+	return &ai.Hooks{Tools: m.tools}, nil
 }
 
-func (a *agentOutputMiddleware[S, O]) makeWriteOutputArtifactTool() *aix.Tool[O, AgentOutputToolResult] {
-	artifactName := "output"
-	toolFunc := func(ctx context.Context, output O) (AgentOutputToolResult, error) {
-		ss := aix.SessionFromContext[S](ctx)
-		if ss == nil {
-			return AgentOutputToolResult{Status: "Internal Error: no artifact store found in context (do not retry)"}, nil
+func (m *agentRunnerMiddleware[I, S, O]) makeRequiredDynamicTools(reqTools []ai.ToolRef) error {
+	var tools []ai.Tool
+
+	for _, ref := range reqTools {
+		tool, toolErr := m.supplyDynamicRunnerTool(ref.Name())
+		if toolErr != nil {
+			return fmt.Errorf("required tool '%s': %w", ref.Name(), toolErr)
 		}
-		part, partErr := a.partFn(output)
+		tools = append(tools, tool)
+	}
+
+	var o O
+	if wo, supportsWriteArtifact := any(o).(rezai.AgentOutputWithWriteArtifactTool); supportsWriteArtifact {
+		toolName, toolDesc := wo.WriteArtifactToolDefinition()
+		m.tools = append(m.tools, m.makeWriteOutputArtifactTool(toolName, toolDesc))
+	}
+
+	return nil
+}
+
+func (m *agentRunnerMiddleware[I, S, O]) supplyDynamicRunnerTool(name string) (ai.Tool, error) {
+	switch name {
+	// TODO: dynamic tools
+	default:
+		return nil, fmt.Errorf("not implemented")
+	}
+}
+
+func (m *agentRunnerMiddleware[I, S, O]) makeWriteOutputArtifactTool(name, desc string) *aix.Tool[O, rezai.WriteAgentOutputArtifactToolOutput] {
+	writeArtifactFn := func(ctx context.Context, output O) error {
+		as := aix.ArtifactStoreFromContext(ctx)
+		if as == nil {
+			return fmt.Errorf("no session found in context (do not retry)")
+		}
+
+		part, partErr := m.runner.agentDefinition().MakeOutputArtifactPart(output)
 		if partErr != nil {
-			return AgentOutputToolResult{Status: "failed to encode output: " + partErr.Error()}, nil
+			return fmt.Errorf("encode output artifact: %w", partErr)
 		}
-		outputArtifact := &aix.Artifact{Name: artifactName, Parts: []*ai.Part{part}}
-		for _, art := range ss.Artifacts() {
-			if art.Name == artifactName {
-				outputArtifact.Parts = append(art.Parts, outputArtifact.Parts...)
-				outputArtifact.Metadata = art.Metadata
+
+		oa := &aix.Artifact{Name: "output", Parts: []*ai.Part{part}}
+		for _, art := range as.Artifacts() {
+			if art.Name == oa.Name {
+				oa.Parts = append(art.Parts, oa.Parts...)
+				oa.Metadata = art.Metadata
 				break
 			}
 		}
-		ss.AddArtifacts(outputArtifact)
+		as.AddArtifacts(oa)
 
-		return AgentOutputToolResult{Status: "success"}, nil
+		return nil
 	}
-	toolName := "write_output"
-	toolDesc := "Writes outputs of an agent run. For example a chat message response."
-	var oe O
-	if info, ok := any(oe).(outputWithWriteToolInfo); ok {
-		toolName, toolDesc = info.WriteToolInfo()
-	}
-	return aix.NewTool(toolName, toolDesc, toolFunc)
+	return aix.NewTool(name, desc, func(ctx context.Context, output O) (rezai.WriteAgentOutputArtifactToolOutput, error) {
+		status := "success"
+		if writeErr := writeArtifactFn(ctx, output); writeErr != nil {
+			status = "failed to write: " + writeErr.Error()
+		}
+		return rezai.WriteAgentOutputArtifactToolOutput{Status: status}, nil
+	})
 }
 
 type (
-	knowledgeGraphMiddleware struct {
+	knowledgeGraphMiddleware[S rezai.SessionState] struct {
 		kg rez.KnowledgeGraphService
 	}
 	queryKnowledgeGraphToolInput  struct{}
 	queryKnowledgeGraphToolOutput struct{}
 )
 
-func newKnowledgeGraphMiddleware(kg rez.KnowledgeGraphService) *knowledgeGraphMiddleware {
-	return &knowledgeGraphMiddleware{kg: kg}
+func newKnowledgeGraphMiddleware[S rezai.SessionState](kg rez.KnowledgeGraphService) *knowledgeGraphMiddleware[S] {
+	return &knowledgeGraphMiddleware[S]{kg: kg}
 }
 
-func (kg *knowledgeGraphMiddleware) Name() string {
+func (kg *knowledgeGraphMiddleware[S]) Name() string {
 	return "knowledge_graph"
 }
 
-func (kg *knowledgeGraphMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
+func (kg *knowledgeGraphMiddleware[S]) New(ctx context.Context) (*ai.Hooks, error) {
 	tools := []ai.Tool{
 		aix.NewTool(
 			"query_knowledge_graph",

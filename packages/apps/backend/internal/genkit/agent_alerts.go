@@ -14,18 +14,17 @@ type (
 	AlertsAgent struct {
 		alerts rez.AlertService
 	}
-	alertsAgentSessionState = aix.SessionState[rezai.AlertAgentState]
 )
 
 func NewAlertsAgent(alerts rez.AlertService) *AlertsAgent {
 	return &AlertsAgent{alerts: alerts}
 }
 
-func (a *AlertsAgent) definition() rezai.AlertsAgentDefinition {
+func (a *AlertsAgent) agentDefinition() rezai.AlertsAgentDefinition {
 	return rezai.AlertsAgent
 }
 
-func (a *AlertsAgent) transformState(ctx context.Context, state *alertsAgentSessionState) (*alertsAgentSessionState, error) {
+func (a *AlertsAgent) transformState(ctx context.Context, state *aix.SessionState[rezai.AlertAgentState]) (*aix.SessionState[rezai.AlertAgentState], error) {
 	return state, nil
 }
 

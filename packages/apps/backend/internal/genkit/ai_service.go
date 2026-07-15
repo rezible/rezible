@@ -3,6 +3,8 @@ package genkit
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"slices"
 
 	"github.com/firebase/genkit/go/ai"
 	gkapi "github.com/firebase/genkit/go/core/api"
@@ -55,8 +57,20 @@ func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
 		genkit.WithPromptFS(rezai.PromptsDir),
 	)
 
-	for _, opt := range opts {
-		if optErr := opt(s); optErr != nil {
+	// apply tool registrations first
+	slices.SortFunc(opts, func(a, b AiServiceOption) int {
+		if a.kind == b.kind {
+			return 0
+		}
+		if a.kind == "tool" {
+			return -1
+		}
+		return 1
+	})
+
+	for _, o := range opts {
+		slog.Debug("ai init opt", "kind", o.kind)
+		if optErr := o.optFn(s); optErr != nil {
 			return fmt.Errorf("service init option: %w", optErr)
 		}
 	}
@@ -64,16 +78,22 @@ func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
 	return nil
 }
 
-type AiServiceOption = func(*AiService) error
+type AiServiceOption struct {
+	kind  string
+	optFn func(*AiService) error
+}
 
 func WithAgent[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput](r agentRunner[I, S, O]) AiServiceOption {
-	return func(s *AiService) error {
-		wrapper, wrapperErr := wrapAgentRunner(s, r)
-		if wrapperErr != nil || wrapper == nil {
-			return fmt.Errorf("wrap runner: %w", wrapperErr)
-		}
-		s.agentWrappers[r.definition().Name] = wrapper
-		return nil
+	return AiServiceOption{
+		kind: "agent",
+		optFn: func(s *AiService) error {
+			wrapper, wrapperErr := wrapAgentRunner(s, r)
+			if wrapperErr != nil || wrapper == nil {
+				return fmt.Errorf("wrap runner: %w", wrapperErr)
+			}
+			s.agentWrappers[r.agentDefinition().Name] = wrapper
+			return nil
+		},
 	}
 }
 
@@ -118,4 +138,21 @@ func (s *AiService) GetWorkflowInvoker(name string) (rez.AiWorkflowInvoker, erro
 		return nil, fmt.Errorf("workflow %s not found", name)
 	}
 	return invokerFn(), nil
+}
+
+func (s *AiService) getRegisteredTools(refs []ai.ToolRef) ([]ai.ToolRef, []ai.ToolRef) {
+	toolMap := make(map[string]ai.ToolRef)
+	for _, ref := range genkit.ListTools(s.gk) {
+		toolMap[ref.Name()] = ref
+	}
+	var registered []ai.ToolRef
+	var missing []ai.ToolRef
+	for _, t := range refs {
+		if ref, ok := toolMap[t.Name()]; ok {
+			registered = append(registered, ref)
+		} else {
+			missing = append(missing, t)
+		}
+	}
+	return registered, missing
 }

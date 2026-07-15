@@ -187,8 +187,9 @@ func declareServices(ctx context.Context, i do.Injector) {
 		)
 		return s, s.Init(ctx,
 			//genkit.WithTool(genkit.NewKnowledgeGraphTool(do.MustInvoke[rez.KnowledgeGraphService](i))),
-			genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i))),
+			genkit.WithTool(genkit.NewSendChatMessageTool(do.MustInvoke[rez.MessageService](i))),
 			genkit.WithAgent(genkit.NewChatAgent()),
+			genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i))),
 		)
 	})
 

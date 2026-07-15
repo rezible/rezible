@@ -59,6 +59,10 @@ func (c Context) IsUser() bool {
 	return c.ActorKind == KindUser
 }
 
+func (c Context) IsAiAgent() bool {
+	return c.ActorKind == KindAiAgent
+}
+
 func (c Context) TenantID() (int, bool) {
 	if c.Auth.TenantID == nil {
 		return -1, false
@@ -71,6 +75,13 @@ func (c Context) UserID() (uuid.UUID, bool) {
 		return uuid.Nil, false
 	}
 	return *c.Auth.UserID, true
+}
+
+func (c Context) AiAgentRunID() (uuid.UUID, bool) {
+	if c.Auth.AiAgentRunID == nil {
+		return uuid.Nil, false
+	}
+	return *c.Auth.AiAgentRunID, true
 }
 
 type ctxKey struct{}

@@ -1,15 +1,54 @@
 package ai
 
-type ToolDefinition[Input any, Output any] struct {
-	Name string
+import "github.com/google/uuid"
+
+type ToolDefinition[I any, O any] struct {
+	name        string
+	description string
+}
+
+func (d ToolDefinition[I, O]) Name() string {
+	return d.name
+}
+
+func (d ToolDefinition[I, O]) Description() string {
+	return d.description
+}
+
+func defineTool[D ToolDefinition[I, O], I any, O any](name, description string) D {
+	return D{name: name, description: description}
 }
 
 type (
-	WeatherToolInput struct {
-		Location string `json:"location"`
+	WriteAgentOutputArtifactToolOutput struct {
+		Status string `json:"status"`
 	}
-	WeatherToolOutput struct {
-		DegreesCelcius string `json:"degrees_celcius"`
+
+	AgentOutputWithWriteArtifactTool interface {
+		WriteArtifactToolDefinition() (name string, description string)
 	}
-	WeatherToolDefinition ToolDefinition[WeatherToolInput, WeatherToolOutput]
+
+	WriteAgentOutputArtifactToolDefinition[O AgentOutput] ToolDefinition[O, WriteAgentOutputArtifactToolOutput]
 )
+
+type (
+	SendChatMessageToolInput struct {
+		Message string `json:"message"`
+	}
+
+	SendChatMessageToolOutput struct {
+		Status string `json:"status"`
+	}
+
+	SendChatMessageToolDefinition = ToolDefinition[SendChatMessageToolInput, SendChatMessageToolOutput]
+
+	EventSendChatMessageToolInvoked struct {
+		AgentRunId uuid.UUID                `json:"agent_run_id"`
+		Input      SendChatMessageToolInput `json:"input"`
+	}
+)
+
+var SendChatMessageTool = SendChatMessageToolDefinition{
+	name:        "send_message",
+	description: "send a chat message reply",
+}
