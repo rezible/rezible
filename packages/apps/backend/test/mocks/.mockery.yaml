@@ -10,6 +10,7 @@ packages:
       pkgname: mocks
     interfaces:
       MessageService: {}
+      DatabaseNotificationService: {}
       JobService: {}
       ProviderEventPipelineService: {}
       OrganizationService: {}

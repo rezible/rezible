@@ -90,7 +90,7 @@ func (s *sessionStore[S]) SaveSnapshot(
 		if status == "" { // empty status is treated as completed
 			status = aix.SnapshotStatusCompleted
 		}
-		if existing == nil || existing.Status != updated.Status {
+		if existing == nil || existing.Status != status {
 			delta.Status = &status
 		}
 		m.SetStatus(aars.Status(status))
@@ -98,6 +98,8 @@ func (s *sessionStore[S]) SaveSnapshot(
 
 		if updated.HeartbeatAt != nil {
 			m.SetHeartbeatAt(*updated.HeartbeatAt)
+		} else if currSnap != nil && currSnap.HeartbeatAt != nil {
+			m.ClearHeartbeatAt()
 		}
 
 		if updated.Error != nil {
@@ -106,6 +108,8 @@ func (s *sessionStore[S]) SaveSnapshot(
 				return nil, fmt.Errorf("marshal snapshot error: %w", jsonErr)
 			}
 			m.SetError(errBytes)
+		} else if currSnap != nil && currSnap.Error != nil {
+			m.ClearError()
 		}
 
 		if updated.State != nil {

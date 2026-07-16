@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strconv"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/postgres/migrations"
@@ -28,6 +29,7 @@ type Suite struct {
 
 	cfg rez.Config
 	db  rez.Database
+	pg  *postgres.PgxPool
 
 	SeedTenant       *ent.Tenant
 	SeedOrganization *ent.Organization
@@ -91,6 +93,8 @@ func (s *Suite) Config() rez.Config { return s.cfg }
 
 func (s *Suite) Database() rez.Database { return s.db }
 
+func (s *Suite) PostgresPool() *postgres.PgxPool { return s.pg }
+
 func (s *Suite) Client(ctx context.Context) *ent.Client { return s.db.Client(ctx) }
 
 func (s *Suite) SystemContext() context.Context {
@@ -119,7 +123,33 @@ func (s *Suite) setupTestDatabase() {
 			Password: cfg.AppRole.Password,
 		},
 	}
-	s.db = postgres.NewStdDatabaseClient(pgtestdb.New(s.T(), pgxConf, newTestDbMigrator()))
+	testConfig := pgtestdb.Custom(s.T(), pgxConf, newTestDbMigrator())
+	s.Require().NotNil(testConfig)
+
+	port, portErr := strconv.ParseUint(testConfig.Port, 10, 16)
+	s.Require().NoError(portErr)
+
+	testDbCfg := rez.PostgresConfig{
+		Host:     testConfig.Host,
+		Port:     uint16(port),
+		Database: testConfig.Database,
+		AppRole: rez.PostgresRoleConfig{
+			Name:     testConfig.User,
+			Password: testConfig.Password,
+		},
+		AdminRole:    cfg.AdminRole,
+		SSLMode:      cfg.SSLMode,
+		PoolMaxConns: cfg.PoolMaxConns,
+	}
+
+	pool, poolErr := postgres.MakePgxPool(s.T().Context(), testDbCfg, false)
+	s.Require().NoError(poolErr)
+
+	db, dbErr := postgres.NewPgxPoolDatabaseClient(pool)
+	s.Require().NoError(dbErr)
+
+	s.pg = pool
+	s.db = db
 }
 
 type testDbMigrator struct {

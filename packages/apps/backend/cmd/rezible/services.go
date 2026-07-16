@@ -164,6 +164,10 @@ func declareServices(ctx context.Context, i do.Injector) {
 		return postgres.NewPgxPoolDatabaseClient(do.MustInvoke[*postgres.PgxPool](i))
 	})
 
+	do.Provide(i, func(i do.Injector) (rez.DatabaseNotificationService, error) {
+		return postgres.NewDatabaseNotificationService(do.MustInvoke[*postgres.PgxPool](i)), nil
+	})
+
 	do.Provide(i, func(i do.Injector) (rez.TelemetryService, error) {
 		return opentelemetry.NewOpenTelemetryService(ctx, do.MustInvoke[rez.Config](i))
 	})
@@ -449,6 +453,7 @@ var provideServices = do.Package(
 		return db.NewAiAgentSnapshotService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.DatabaseNotificationService](i),
 		)
 	}),
 	do.Bind[*db.AiAgentSnapshotService, rez.AiAgentSnapshotService](),

@@ -39,8 +39,9 @@ func (s *AiServiceSuite) checkSkip(name string) {
 func (s *AiServiceSuite) makeService(opts ...AiServiceOption) *AiService {
 	msgs := mocks.NewMockMessageService(s.T())
 	msgs.EXPECT().PublishEvent(mock.Anything, mock.Anything).Return(nil).Maybe()
+	notifications := mocks.NewMockDatabaseNotificationService(s.T())
 
-	snapshots, snapshotsErr := db.NewAiAgentSnapshotService(s.Database(), msgs)
+	snapshots, snapshotsErr := db.NewAiAgentSnapshotService(s.Database(), msgs, notifications)
 	s.Require().NoError(snapshotsErr)
 
 	kg, kgErr := db.NewKnowledgeGraphService(s.Database())

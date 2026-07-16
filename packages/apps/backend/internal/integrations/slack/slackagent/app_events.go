@@ -10,8 +10,6 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/google/uuid"
-	"github.com/k0kubun/pp/v3"
-
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 
@@ -114,8 +112,6 @@ func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWra
 	if data.ThreadTimeStamp != "" {
 		replyTs = data.ThreadTimeStamp
 	}
-
-	pp.Println(data)
 
 	md := aiChatAgentRunMetadata{
 		IsSlack:           true,
