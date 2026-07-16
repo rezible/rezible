@@ -13,7 +13,6 @@ import (
 type ToolRunner[Input any, Output any] interface {
 	Definition() rezai.ToolDefinition[Input, Output]
 	ToolFunc(context.Context, Input) (Output, error)
-	//ToolOpts() []ai.ToolOption
 }
 
 func WithTool[I any, O any](t ToolRunner[I, O]) AiServiceOption {
@@ -21,7 +20,7 @@ func WithTool[I any, O any](t ToolRunner[I, O]) AiServiceOption {
 		kind: "tool",
 		optFn: func(s *AiService) error {
 			def := t.Definition()
-			genkitx.DefineTool(s.gk, def.Name(), def.Description(), t.ToolFunc) //, t.ToolOpts()...)
+			genkitx.DefineTool(s.gk, def.Name(), def.Description(), t.ToolFunc)
 			return nil
 		},
 	}

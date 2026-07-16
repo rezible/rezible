@@ -9,7 +9,6 @@ import "context"
 type SchemaConfig struct {
 	AiAgentRun                                string // AiAgentRun table.
 	AiAgentRunKnowledgeCitation               string // AiAgentRunKnowledgeCitation table.
-	AiAgentRunOutput                          string // AiAgentRunOutput table.
 	AiAgentRunSnapshot                        string // AiAgentRunSnapshot table.
 	Alert                                     string // Alert table.
 	AlertFeedback                             string // AlertFeedback table.

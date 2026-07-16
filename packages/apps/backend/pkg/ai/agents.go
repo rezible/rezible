@@ -30,6 +30,7 @@ type (
 		Description     string
 		SystemPrompt    string
 		EnableArtifacts bool
+		Model           string
 		RequiredTools   []ai.ToolRef
 		inputValidator  func(I) error
 	}
@@ -82,6 +83,8 @@ func (d AgentDefinition[I, S, O]) ParseOutputArtifactPart(p *ai.Part) (*O, error
 	return &o, nil
 }
 
+const OutputArtifactName = "output"
+
 func (d AgentDefinition[I, S, O]) GetSnapshotOutputs(rs *ent.AiAgentRunSnapshot) ([]O, error) {
 	state, stateErr := d.ParseSnapshot(rs)
 	if stateErr != nil {
@@ -90,7 +93,7 @@ func (d AgentDefinition[I, S, O]) GetSnapshotOutputs(rs *ent.AiAgentRunSnapshot)
 
 	var outputs []O
 	for _, a := range state.Artifacts {
-		if a.Name != "output" {
+		if a.Name != OutputArtifactName {
 			continue
 		}
 		for _, p := range a.Parts {

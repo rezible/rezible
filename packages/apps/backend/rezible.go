@@ -10,6 +10,7 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/firebase/genkit/go/ai"
+	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
@@ -401,14 +402,28 @@ type (
 )
 
 type (
-	AiAgentSnapshotSetFunc = func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) ([]*ai.Part, error)
+	AiAgentSnapshotDelta struct {
+		Status      *aix.SnapshotStatus
+		OutputParts []*ai.Part
+	}
+
+	AiAgentSnapshotSetFunc = func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) (*AiAgentSnapshotDelta, error)
 	AiAgentSnapshotService interface {
 		GetLatestSnapshotForRun(context.Context, uuid.UUID) (*ent.AiAgentRunSnapshot, error)
 		GetAgentRunSnapshot(context.Context, uuid.UUID) (*ent.AiAgentRunSnapshot, error)
-		SetAgentRunSnapshot(context.Context, uuid.UUID, AiAgentSnapshotSetFunc) (*ent.AiAgentRunSnapshot, error)
+		UpdateAgentRunSnapshot(context.Context, uuid.UUID, AiAgentSnapshotSetFunc) (*ent.AiAgentRunSnapshot, error)
+		OnSnapshotStatusChange(context.Context, uuid.UUID) <-chan aix.SnapshotStatus
 	}
 
-	AiAgentInvoker interface {
+	EventOnAiAgentRunSnapshotChange struct {
+		AgentName          string
+		AgentRunMetadata   map[string]any
+		AgentRunId         uuid.UUID
+		AgentRunSnapshotId uuid.UUID
+		Delta              AiAgentSnapshotDelta
+	}
+
+	AiAgentRunInvoker interface {
 		Invoke(ctx context.Context, parentId *uuid.UUID, msg *ai.Message, resume *ai.GenerateActionResume) (uuid.UUID, error)
 	}
 
@@ -418,7 +433,7 @@ type (
 
 	AiService interface {
 		ValidateAgentRunInput(name string, input []byte) error
-		GetAgentRunner(run *ent.AiAgentRun) (AiAgentInvoker, error)
+		GetAgentRunInvoker(run *ent.AiAgentRun) (AiAgentRunInvoker, error)
 		GetWorkflowInvoker(name string) (AiWorkflowInvoker, error)
 	}
 
@@ -447,13 +462,6 @@ type (
 		CreateAgentRun(context.Context, string, CreateAgentRunParams) (*ent.AiAgentRun, error)
 		InvokeAgentRun(context.Context, uuid.UUID, InvokeAgentRunParams) error
 		GetAgentRun(context.Context, uuid.UUID) (*ent.AiAgentRun, error)
-	}
-
-	EventOnAiAgentRunOutput struct {
-		AgentName          string
-		AgentRunMetadata   map[string]any
-		AgentRunSnapshotId uuid.UUID
-		Parts              []*ai.Part
 	}
 )
 

@@ -3,22 +3,26 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
+	"sync"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
+	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/predicate"
-	"github.com/riverqueue/river"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	aar "github.com/rezible/rezible/ent/aiagentrun"
 	aars "github.com/rezible/rezible/ent/aiagentrunsnapshot"
+	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/riverqueue/river"
+	"github.com/sourcegraph/conc/pool"
 )
 
 type AiAgentService struct {
@@ -216,9 +220,9 @@ func (s *AiAgentService) LookupAgentRunsByMetadata(ctx context.Context, metadata
 	return query.All(ctx)
 }
 
-func (s *AiAgentService) lookupAgentRunInvoker(ctx context.Context, id uuid.UUID, parentSnapshotId *uuid.UUID) (*ent.AiAgentRun, rez.AiAgentInvoker, error) {
+func (s *AiAgentService) lookupAgentRunInvoker(ctx context.Context, id uuid.UUID, parentSnapshotId *uuid.UUID) (*ent.AiAgentRun, rez.AiAgentRunInvoker, error) {
 	var run *ent.AiAgentRun
-	var agent rez.AiAgentInvoker
+	var agent rez.AiAgentRunInvoker
 	return run, agent, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		var txRun *ent.AiAgentRun
 		var runErr error
@@ -240,7 +244,7 @@ func (s *AiAgentService) lookupAgentRunInvoker(ctx context.Context, id uuid.UUID
 		run = txRun.Unwrap()
 
 		var agentErr error
-		if agent, agentErr = s.ai.GetAgentRunner(run); agentErr != nil {
+		if agent, agentErr = s.ai.GetAgentRunInvoker(run); agentErr != nil {
 			return fmt.Errorf("get agent runner: %w", agentErr)
 		}
 
@@ -266,32 +270,22 @@ func (s *AiAgentService) handleInvokeAgentRun(ctx context.Context, args jobs.Inv
 	return nil
 }
 
-func (s *AiAgentService) GetAgentRunOutput(ctx context.Context, id uuid.UUID) (*ent.AiAgentRunOutput, error) {
-	return s.db.Client(ctx).AiAgentRunOutput.Get(ctx, id)
-}
-
-func (s *AiAgentService) ClaimAgentRunOutput(ctx context.Context, id uuid.UUID, fn func(context.Context, []byte) (map[string]any, error)) error {
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		// claim transactional lock?
-		output, queryErr := tx.AiAgentRunOutput.Get(ctx, id)
-		if queryErr != nil {
-			return fmt.Errorf("get agent run output: %w", queryErr)
-		}
-		md, mdErr := fn(ctx, output.Data)
-		if mdErr != nil {
-			return fmt.Errorf("get agent run output metadata: %w", mdErr)
-		}
-		return output.Update().SetMetadata(md).Exec(ctx)
-	})
-}
-
 type AiAgentSnapshotService struct {
 	db   rez.Database
 	msgs rez.MessageService
+
+	shutdownFn   func() error
+	statusSubs   map[uuid.UUID][]chan aix.SnapshotStatus
+	statusSubsMu sync.RWMutex
 }
 
 func NewAiAgentSnapshotService(db rez.Database, msgs rez.MessageService) (*AiAgentSnapshotService, error) {
-	s := &AiAgentSnapshotService{db: db, msgs: msgs}
+	s := &AiAgentSnapshotService{
+		db:         db,
+		msgs:       msgs,
+		shutdownFn: func() error { return nil },
+		statusSubs: make(map[uuid.UUID][]chan aix.SnapshotStatus),
+	}
 	return s, nil
 }
 
@@ -318,59 +312,183 @@ func (s *AiAgentSnapshotService) GetAgentRunSnapshot(ctx context.Context, id uui
 	return res, nil
 }
 
-func (s *AiAgentSnapshotService) SetAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn rez.AiAgentSnapshotSetFunc) (*ent.AiAgentRunSnapshot, error) {
+func (s *AiAgentSnapshotService) UpdateAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn rez.AiAgentSnapshotSetFunc) (*ent.AiAgentRunSnapshot, error) {
 	var snapshot *ent.AiAgentRunSnapshot
 	return snapshot, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		var curr *ent.AiAgentRunSnapshot
-		var mutator ent.EntityMutator[*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation]
+		var existing *ent.AiAgentRunSnapshot
 		if id != uuid.Nil {
 			var getErr error
-			if curr, getErr = tx.AiAgentRunSnapshot.Get(ctx, id); getErr != nil && !ent.IsNotFound(getErr) {
+			if existing, getErr = tx.AiAgentRunSnapshot.Get(ctx, id); getErr != nil && !ent.IsNotFound(getErr) {
 				return fmt.Errorf("failed to lookup existing (%s): %w", id, getErr)
 			}
 		}
-		if curr != nil {
-			mutator = curr.Update()
+
+		var mutator ent.EntityMutator[*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation]
+		if existing != nil {
+			mutator = existing.Update()
 		} else {
 			mutator = tx.AiAgentRunSnapshot.Create()
 		}
 
 		m := mutator.Mutation()
-		changedOutputs, setErr := setFn(curr, m)
+		delta, setErr := setFn(existing, m)
 		if setErr != nil {
 			return fmt.Errorf("update snapshot: %w", setErr)
 		}
 
-		if len(m.Fields()) == 0 {
-			if curr == nil {
-				return fmt.Errorf("no fields changed, no existing snapshot")
+		if delta == nil {
+			if existing != nil {
+				snapshot = existing.Unwrap()
 			}
-			snapshot = curr.Unwrap()
 			return nil
 		}
 
-		saved, saveErr := mutator.Save(ctx)
+		updated, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
 			return fmt.Errorf("failed to save: %w", saveErr)
 		}
 
-		if len(changedOutputs) > 0 {
-			run, runErr := tx.AiAgentRun.Get(ctx, saved.AiAgentRunID)
-			if runErr != nil {
-				return fmt.Errorf("query run for outputs: %w", runErr)
-			}
-			event := rez.EventOnAiAgentRunOutput{
-				AgentName:          run.AgentName,
-				AgentRunMetadata:   run.Metadata,
-				AgentRunSnapshotId: saved.ID,
-				Parts:              changedOutputs,
-			}
-			if eventErr := s.msgs.PublishEvent(ctx, event); eventErr != nil {
-				return fmt.Errorf("failed to publish event: %w", eventErr)
-			}
+		run, runErr := tx.AiAgentRun.Get(ctx, updated.AiAgentRunID)
+		if runErr != nil {
+			return fmt.Errorf("query agent run: %w", runErr)
+		}
+		event := rez.EventOnAiAgentRunSnapshotChange{
+			AgentName:          run.AgentName,
+			AgentRunMetadata:   run.Metadata,
+			AgentRunId:         run.ID,
+			AgentRunSnapshotId: updated.ID,
+			Delta:              *delta,
+		}
+		if eventErr := s.msgs.PublishEvent(ctx, event); eventErr != nil {
+			return fmt.Errorf("failed to publish event: %w", eventErr)
 		}
 
-		snapshot = saved.Unwrap()
+		snapshot = updated.Unwrap()
 		return nil
 	})
+}
+
+func (s *AiAgentSnapshotService) Start(ctx context.Context) error {
+	cancelCtx, cancel := context.WithCancel(ctx)
+
+	p := pool.New().WithErrors().WithContext(cancelCtx)
+	s.shutdownFn = func() error {
+		cancel()
+		if p != nil {
+			if poolErr := p.Wait(); poolErr != nil && !errors.Is(poolErr, context.Canceled) {
+				return fmt.Errorf("ai agent snapshot service shutdown: %w", poolErr)
+			}
+		}
+		return nil
+	}
+	p.Go(s.startSnapshotStatusPoll)
+
+	return nil
+}
+
+func (s *AiAgentSnapshotService) startSnapshotStatusPoll(ctx context.Context) error {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	statuses := make(map[uuid.UUID]aars.Status)
+	for {
+		select {
+		case <-ticker.C:
+			statuses = s.pollForStatusUpdates(ctx, statuses)
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (s *AiAgentSnapshotService) pollForStatusUpdates(ctx context.Context, prevStatuses map[uuid.UUID]aars.Status) map[uuid.UUID]aars.Status {
+	slog.Debug("ai agent snapshot service polling for status updates")
+	if len(s.statusSubs) == 0 {
+		return prevStatuses
+	}
+
+	ids := make([]uuid.UUID, 0, len(s.statusSubs))
+	for id := range s.statusSubs {
+		ids = append(ids, id)
+	}
+
+	queryStatuses := s.db.Client(ctx).AiAgentRunSnapshot.Query().Where(aars.IDIn(ids...))
+
+	var statuses []struct {
+		ID     uuid.UUID   `json:"id"`
+		Status aars.Status `json:"status"`
+	}
+	if queryErr := queryStatuses.Select(aars.FieldID, aars.FieldStatus).Scan(ctx, &statuses); queryErr != nil {
+		slog.Error("failed to query ai agent snapshot statuses", "err", queryErr)
+	}
+	newStatuses := make(map[uuid.UUID]aars.Status, len(statuses))
+	for _, status := range statuses {
+		newStatuses[status.ID] = status.Status
+	}
+
+	for id, newStatus := range newStatuses {
+		if oldStatus, existed := prevStatuses[id]; existed && oldStatus != newStatus {
+			s.notifyStatusUpdate(id, newStatus)
+		}
+	}
+
+	return newStatuses
+}
+
+func (s *AiAgentSnapshotService) notifyStatusUpdate(id uuid.UUID, status aars.Status) {
+	s.statusSubsMu.Lock()
+	defer s.statusSubsMu.Unlock()
+	for _, ch := range s.statusSubs[id] {
+		select {
+		case <-ch:
+		default:
+		}
+		select {
+		case ch <- aix.SnapshotStatus(status):
+		default:
+		}
+	}
+}
+
+func (s *AiAgentSnapshotService) Shutdown() error {
+	slog.Info("Stopping ai agent status poll")
+	return s.shutdownFn()
+}
+
+func (s *AiAgentSnapshotService) OnSnapshotStatusChange(ctx context.Context, id uuid.UUID) <-chan aix.SnapshotStatus {
+	ch := make(chan aix.SnapshotStatus, 1)
+
+	s.statusSubsMu.Lock()
+	snap, snapErr := s.GetAgentRunSnapshot(ctx, id)
+	if snapErr != nil {
+		s.statusSubsMu.Unlock()
+		close(ch)
+		return ch
+	}
+	ch <- aix.SnapshotStatus(snap.Status)
+	s.statusSubs[id] = append(s.statusSubs[id], ch)
+	s.statusSubsMu.Unlock()
+
+	context.AfterFunc(ctx, func() {
+		s.removeStatusSub(id, ch)
+	})
+
+	return ch
+}
+
+func (s *AiAgentSnapshotService) removeStatusSub(id uuid.UUID, ch chan aix.SnapshotStatus) {
+	s.statusSubsMu.Lock()
+	defer s.statusSubsMu.Unlock()
+	subs := s.statusSubs[id]
+	i := slices.Index(subs, ch)
+	if i < 0 {
+		return
+	}
+	subs = slices.Delete(subs, i, i+1)
+	if len(subs) == 0 {
+		delete(s.statusSubs, id)
+	} else {
+		s.statusSubs[id] = subs
+	}
+	close(ch)
 }

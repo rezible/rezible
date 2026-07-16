@@ -12,9 +12,6 @@ type AiAgentRun func(*sql.Selector)
 // AiAgentRunKnowledgeCitation is the predicate function for aiagentrunknowledgecitation builders.
 type AiAgentRunKnowledgeCitation func(*sql.Selector)
 
-// AiAgentRunOutput is the predicate function for aiagentrunoutput builders.
-type AiAgentRunOutput func(*sql.Selector)
-
 // AiAgentRunSnapshot is the predicate function for aiagentrunsnapshot builders.
 type AiAgentRunSnapshot func(*sql.Selector)
 

@@ -18,7 +18,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunknowledgecitation"
-	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
@@ -102,8 +101,6 @@ type Client struct {
 	AiAgentRun *AiAgentRunClient
 	// AiAgentRunKnowledgeCitation is the client for interacting with the AiAgentRunKnowledgeCitation builders.
 	AiAgentRunKnowledgeCitation *AiAgentRunKnowledgeCitationClient
-	// AiAgentRunOutput is the client for interacting with the AiAgentRunOutput builders.
-	AiAgentRunOutput *AiAgentRunOutputClient
 	// AiAgentRunSnapshot is the client for interacting with the AiAgentRunSnapshot builders.
 	AiAgentRunSnapshot *AiAgentRunSnapshotClient
 	// Alert is the client for interacting with the Alert builders.
@@ -259,7 +256,6 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.AiAgentRun = NewAiAgentRunClient(c.config)
 	c.AiAgentRunKnowledgeCitation = NewAiAgentRunKnowledgeCitationClient(c.config)
-	c.AiAgentRunOutput = NewAiAgentRunOutputClient(c.config)
 	c.AiAgentRunSnapshot = NewAiAgentRunSnapshotClient(c.config)
 	c.Alert = NewAlertClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
@@ -428,7 +424,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:                                  cfg,
 		AiAgentRun:                              NewAiAgentRunClient(cfg),
 		AiAgentRunKnowledgeCitation:             NewAiAgentRunKnowledgeCitationClient(cfg),
-		AiAgentRunOutput:                        NewAiAgentRunOutputClient(cfg),
 		AiAgentRunSnapshot:                      NewAiAgentRunSnapshotClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
 		AlertFeedback:                           NewAlertFeedbackClient(cfg),
@@ -521,7 +516,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:                                  cfg,
 		AiAgentRun:                              NewAiAgentRunClient(cfg),
 		AiAgentRunKnowledgeCitation:             NewAiAgentRunKnowledgeCitationClient(cfg),
-		AiAgentRunOutput:                        NewAiAgentRunOutputClient(cfg),
 		AiAgentRunSnapshot:                      NewAiAgentRunSnapshotClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
 		AlertFeedback:                           NewAlertFeedbackClient(cfg),
@@ -622,13 +616,13 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.AiAgentRun, c.AiAgentRunKnowledgeCitation, c.AiAgentRunOutput,
-		c.AiAgentRunSnapshot, c.Alert, c.AlertFeedback, c.AlertInstance,
-		c.AlertInvestigation, c.Document, c.DocumentAccess, c.EventAnnotation,
-		c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
-		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
-		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.AiAgentRun, c.AiAgentRunKnowledgeCitation, c.AiAgentRunSnapshot, c.Alert,
+		c.AlertFeedback, c.AlertInstance, c.AlertInvestigation, c.Document,
+		c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
 		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
 		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
@@ -655,13 +649,13 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.AiAgentRun, c.AiAgentRunKnowledgeCitation, c.AiAgentRunOutput,
-		c.AiAgentRunSnapshot, c.Alert, c.AlertFeedback, c.AlertInstance,
-		c.AlertInvestigation, c.AlertMetrics, c.Document, c.DocumentAccess,
-		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
-		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
-		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.AiAgentRun, c.AiAgentRunKnowledgeCitation, c.AiAgentRunSnapshot, c.Alert,
+		c.AlertFeedback, c.AlertInstance, c.AlertInvestigation, c.AlertMetrics,
+		c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
 		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
 		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
@@ -691,8 +685,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AiAgentRun.mutate(ctx, m)
 	case *AiAgentRunKnowledgeCitationMutation:
 		return c.AiAgentRunKnowledgeCitation.mutate(ctx, m)
-	case *AiAgentRunOutputMutation:
-		return c.AiAgentRunOutput.mutate(ctx, m)
 	case *AiAgentRunSnapshotMutation:
 		return c.AiAgentRunSnapshot.mutate(ctx, m)
 	case *AlertMutation:
@@ -1258,178 +1250,6 @@ func (c *AiAgentRunKnowledgeCitationClient) mutate(ctx context.Context, m *AiAge
 	}
 }
 
-// AiAgentRunOutputClient is a client for the AiAgentRunOutput schema.
-type AiAgentRunOutputClient struct {
-	config
-}
-
-// NewAiAgentRunOutputClient returns a client for the AiAgentRunOutput from the given config.
-func NewAiAgentRunOutputClient(c config) *AiAgentRunOutputClient {
-	return &AiAgentRunOutputClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `aiagentrunoutput.Hooks(f(g(h())))`.
-func (c *AiAgentRunOutputClient) Use(hooks ...Hook) {
-	c.hooks.AiAgentRunOutput = append(c.hooks.AiAgentRunOutput, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `aiagentrunoutput.Intercept(f(g(h())))`.
-func (c *AiAgentRunOutputClient) Intercept(interceptors ...Interceptor) {
-	c.inters.AiAgentRunOutput = append(c.inters.AiAgentRunOutput, interceptors...)
-}
-
-// Create returns a builder for creating a AiAgentRunOutput entity.
-func (c *AiAgentRunOutputClient) Create() *AiAgentRunOutputCreate {
-	mutation := newAiAgentRunOutputMutation(c.config, OpCreate)
-	return &AiAgentRunOutputCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of AiAgentRunOutput entities.
-func (c *AiAgentRunOutputClient) CreateBulk(builders ...*AiAgentRunOutputCreate) *AiAgentRunOutputCreateBulk {
-	return &AiAgentRunOutputCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *AiAgentRunOutputClient) MapCreateBulk(slice any, setFunc func(*AiAgentRunOutputCreate, int)) *AiAgentRunOutputCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &AiAgentRunOutputCreateBulk{err: fmt.Errorf("calling to AiAgentRunOutputClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*AiAgentRunOutputCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &AiAgentRunOutputCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for AiAgentRunOutput.
-func (c *AiAgentRunOutputClient) Update() *AiAgentRunOutputUpdate {
-	mutation := newAiAgentRunOutputMutation(c.config, OpUpdate)
-	return &AiAgentRunOutputUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *AiAgentRunOutputClient) UpdateOne(_m *AiAgentRunOutput) *AiAgentRunOutputUpdateOne {
-	mutation := newAiAgentRunOutputMutation(c.config, OpUpdateOne, withAiAgentRunOutput(_m))
-	return &AiAgentRunOutputUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *AiAgentRunOutputClient) UpdateOneID(id uuid.UUID) *AiAgentRunOutputUpdateOne {
-	mutation := newAiAgentRunOutputMutation(c.config, OpUpdateOne, withAiAgentRunOutputID(id))
-	return &AiAgentRunOutputUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for AiAgentRunOutput.
-func (c *AiAgentRunOutputClient) Delete() *AiAgentRunOutputDelete {
-	mutation := newAiAgentRunOutputMutation(c.config, OpDelete)
-	return &AiAgentRunOutputDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *AiAgentRunOutputClient) DeleteOne(_m *AiAgentRunOutput) *AiAgentRunOutputDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *AiAgentRunOutputClient) DeleteOneID(id uuid.UUID) *AiAgentRunOutputDeleteOne {
-	builder := c.Delete().Where(aiagentrunoutput.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &AiAgentRunOutputDeleteOne{builder}
-}
-
-// Query returns a query builder for AiAgentRunOutput.
-func (c *AiAgentRunOutputClient) Query() *AiAgentRunOutputQuery {
-	return &AiAgentRunOutputQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeAiAgentRunOutput},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a AiAgentRunOutput entity by its id.
-func (c *AiAgentRunOutputClient) Get(ctx context.Context, id uuid.UUID) (*AiAgentRunOutput, error) {
-	return c.Query().Where(aiagentrunoutput.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *AiAgentRunOutputClient) GetX(ctx context.Context, id uuid.UUID) *AiAgentRunOutput {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a AiAgentRunOutput.
-func (c *AiAgentRunOutputClient) QueryTenant(_m *AiAgentRunOutput) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunoutput.Table, aiagentrunoutput.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunoutput.TenantTable, aiagentrunoutput.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AiAgentRunOutput
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAiAgentRunSnapshot queries the ai_agent_run_snapshot edge of a AiAgentRunOutput.
-func (c *AiAgentRunOutputClient) QueryAiAgentRunSnapshot(_m *AiAgentRunOutput) *AiAgentRunSnapshotQuery {
-	query := (&AiAgentRunSnapshotClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunoutput.Table, aiagentrunoutput.FieldID, id),
-			sqlgraph.To(aiagentrunsnapshot.Table, aiagentrunsnapshot.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, aiagentrunoutput.AiAgentRunSnapshotTable, aiagentrunoutput.AiAgentRunSnapshotColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunSnapshot
-		step.Edge.Schema = schemaConfig.AiAgentRunOutput
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *AiAgentRunOutputClient) Hooks() []Hook {
-	hooks := c.hooks.AiAgentRunOutput
-	return append(hooks[:len(hooks):len(hooks)], aiagentrunoutput.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *AiAgentRunOutputClient) Interceptors() []Interceptor {
-	return c.inters.AiAgentRunOutput
-}
-
-func (c *AiAgentRunOutputClient) mutate(ctx context.Context, m *AiAgentRunOutputMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&AiAgentRunOutputCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&AiAgentRunOutputUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&AiAgentRunOutputUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&AiAgentRunOutputDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown AiAgentRunOutput mutation op: %q", m.Op())
-	}
-}
-
 // AiAgentRunSnapshotClient is a client for the AiAgentRunSnapshot schema.
 type AiAgentRunSnapshotClient struct {
 	config
@@ -1608,25 +1428,6 @@ func (c *AiAgentRunSnapshotClient) QueryChildren(_m *AiAgentRunSnapshot) *AiAgen
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AiAgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AiAgentRunSnapshot
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryOutputs queries the outputs edge of a AiAgentRunSnapshot.
-func (c *AiAgentRunSnapshotClient) QueryOutputs(_m *AiAgentRunSnapshot) *AiAgentRunOutputQuery {
-	query := (&AiAgentRunOutputClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunsnapshot.Table, aiagentrunsnapshot.FieldID, id),
-			sqlgraph.To(aiagentrunoutput.Table, aiagentrunoutput.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, aiagentrunsnapshot.OutputsTable, aiagentrunsnapshot.OutputsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunOutput
-		step.Edge.Schema = schemaConfig.AiAgentRunOutput
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -15982,13 +15783,13 @@ func (c *VideoConferenceClient) mutate(ctx context.Context, m *VideoConferenceMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AiAgentRun, AiAgentRunKnowledgeCitation, AiAgentRunOutput, AiAgentRunSnapshot,
-		Alert, AlertFeedback, AlertInstance, AlertInvestigation, Document,
-		DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
-		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
-		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
-		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
+		AiAgentRun, AiAgentRunKnowledgeCitation, AiAgentRunSnapshot, Alert,
+		AlertFeedback, AlertInstance, AlertInvestigation, Document, DocumentAccess,
+		EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
+		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentField,
+		IncidentFieldOption, IncidentImpact, IncidentLink, IncidentMilestone,
+		IncidentRole, IncidentRoleAssignment, IncidentSeverity, IncidentTag,
+		IncidentTimelineEvent, IncidentTimelineEventContext,
 		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
 		IncidentTimelineEventTopologyContext, IncidentType, Integration,
 		IntegrationEventSyncCursor, IntegrationEventSyncRun,
@@ -16006,9 +15807,9 @@ type (
 		VideoConference []ent.Hook
 	}
 	inters struct {
-		AiAgentRun, AiAgentRunKnowledgeCitation, AiAgentRunOutput, AiAgentRunSnapshot,
-		Alert, AlertFeedback, AlertInstance, AlertInvestigation, AlertMetrics,
-		Document, DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
+		AiAgentRun, AiAgentRunKnowledgeCitation, AiAgentRunSnapshot, Alert,
+		AlertFeedback, AlertInstance, AlertInvestigation, AlertMetrics, Document,
+		DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
 		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
 		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
@@ -16036,7 +15837,6 @@ var (
 	DefaultSchemaConfig = SchemaConfig{
 		AiAgentRun:                            tableSchemas[0],
 		AiAgentRunKnowledgeCitation:           tableSchemas[0],
-		AiAgentRunOutput:                      tableSchemas[0],
 		AiAgentRunSnapshot:                    tableSchemas[0],
 		Alert:                                 tableSchemas[0],
 		AlertFeedback:                         tableSchemas[0],

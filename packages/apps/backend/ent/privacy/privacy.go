@@ -159,30 +159,6 @@ func (f AiAgentRunKnowledgeCitationMutationRuleFunc) EvalMutation(ctx context.Co
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AiAgentRunKnowledgeCitationMutation", m)
 }
 
-// The AiAgentRunOutputQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type AiAgentRunOutputQueryRuleFunc func(context.Context, *ent.AiAgentRunOutputQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f AiAgentRunOutputQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AiAgentRunOutputQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AiAgentRunOutputQuery", q)
-}
-
-// The AiAgentRunOutputMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type AiAgentRunOutputMutationRuleFunc func(context.Context, *ent.AiAgentRunOutputMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f AiAgentRunOutputMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.AiAgentRunOutputMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AiAgentRunOutputMutation", m)
-}
-
 // The AiAgentRunSnapshotQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AiAgentRunSnapshotQueryRuleFunc func(context.Context, *ent.AiAgentRunSnapshotQuery) error
@@ -1914,8 +1890,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AiAgentRunKnowledgeCitationQuery:
 		return q.Filter(), nil
-	case *ent.AiAgentRunOutputQuery:
-		return q.Filter(), nil
 	case *ent.AiAgentRunSnapshotQuery:
 		return q.Filter(), nil
 	case *ent.AlertQuery:
@@ -2068,8 +2042,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.AiAgentRunMutation:
 		return m.Filter(), nil
 	case *ent.AiAgentRunKnowledgeCitationMutation:
-		return m.Filter(), nil
-	case *ent.AiAgentRunOutputMutation:
 		return m.Filter(), nil
 	case *ent.AiAgentRunSnapshotMutation:
 		return m.Filter(), nil

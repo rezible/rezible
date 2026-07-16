@@ -16,8 +16,6 @@ type Tx struct {
 	AiAgentRun *AiAgentRunClient
 	// AiAgentRunKnowledgeCitation is the client for interacting with the AiAgentRunKnowledgeCitation builders.
 	AiAgentRunKnowledgeCitation *AiAgentRunKnowledgeCitationClient
-	// AiAgentRunOutput is the client for interacting with the AiAgentRunOutput builders.
-	AiAgentRunOutput *AiAgentRunOutputClient
 	// AiAgentRunSnapshot is the client for interacting with the AiAgentRunSnapshot builders.
 	AiAgentRunSnapshot *AiAgentRunSnapshotClient
 	// Alert is the client for interacting with the Alert builders.
@@ -293,7 +291,6 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.AiAgentRun = NewAiAgentRunClient(tx.config)
 	tx.AiAgentRunKnowledgeCitation = NewAiAgentRunKnowledgeCitationClient(tx.config)
-	tx.AiAgentRunOutput = NewAiAgentRunOutputClient(tx.config)
 	tx.AiAgentRunSnapshot = NewAiAgentRunSnapshotClient(tx.config)
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)

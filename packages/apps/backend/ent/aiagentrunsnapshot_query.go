@@ -16,7 +16,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunknowledgecitation"
-	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
@@ -34,7 +33,6 @@ type AiAgentRunSnapshotQuery struct {
 	withAiAgentRun         *AiAgentRunQuery
 	withParent             *AiAgentRunSnapshotQuery
 	withChildren           *AiAgentRunSnapshotQuery
-	withOutputs            *AiAgentRunOutputQuery
 	withKnowledgeCitations *AiAgentRunKnowledgeCitationQuery
 	modifiers              []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -167,31 +165,6 @@ func (_q *AiAgentRunSnapshotQuery) QueryChildren() *AiAgentRunSnapshotQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AiAgentRunSnapshot
 		step.Edge.Schema = schemaConfig.AiAgentRunSnapshot
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryOutputs chains the current query on the "outputs" edge.
-func (_q *AiAgentRunSnapshotQuery) QueryOutputs() *AiAgentRunOutputQuery {
-	query := (&AiAgentRunOutputClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(aiagentrunsnapshot.Table, aiagentrunsnapshot.FieldID, selector),
-			sqlgraph.To(aiagentrunoutput.Table, aiagentrunoutput.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, aiagentrunsnapshot.OutputsTable, aiagentrunsnapshot.OutputsColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRunOutput
-		step.Edge.Schema = schemaConfig.AiAgentRunOutput
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -419,7 +392,6 @@ func (_q *AiAgentRunSnapshotQuery) Clone() *AiAgentRunSnapshotQuery {
 		withAiAgentRun:         _q.withAiAgentRun.Clone(),
 		withParent:             _q.withParent.Clone(),
 		withChildren:           _q.withChildren.Clone(),
-		withOutputs:            _q.withOutputs.Clone(),
 		withKnowledgeCitations: _q.withKnowledgeCitations.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
@@ -469,17 +441,6 @@ func (_q *AiAgentRunSnapshotQuery) WithChildren(opts ...func(*AiAgentRunSnapshot
 		opt(query)
 	}
 	_q.withChildren = query
-	return _q
-}
-
-// WithOutputs tells the query-builder to eager-load the nodes that are connected to
-// the "outputs" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AiAgentRunSnapshotQuery) WithOutputs(opts ...func(*AiAgentRunOutputQuery)) *AiAgentRunSnapshotQuery {
-	query := (&AiAgentRunOutputClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withOutputs = query
 	return _q
 }
 
@@ -578,12 +539,11 @@ func (_q *AiAgentRunSnapshotQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	var (
 		nodes       = []*AiAgentRunSnapshot{}
 		_spec       = _q.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withAiAgentRun != nil,
 			_q.withParent != nil,
 			_q.withChildren != nil,
-			_q.withOutputs != nil,
 			_q.withKnowledgeCitations != nil,
 		}
 	)
@@ -632,13 +592,6 @@ func (_q *AiAgentRunSnapshotQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 		if err := _q.loadChildren(ctx, query, nodes,
 			func(n *AiAgentRunSnapshot) { n.Edges.Children = []*AiAgentRunSnapshot{} },
 			func(n *AiAgentRunSnapshot, e *AiAgentRunSnapshot) { n.Edges.Children = append(n.Edges.Children, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withOutputs; query != nil {
-		if err := _q.loadOutputs(ctx, query, nodes,
-			func(n *AiAgentRunSnapshot) { n.Edges.Outputs = []*AiAgentRunOutput{} },
-			func(n *AiAgentRunSnapshot, e *AiAgentRunOutput) { n.Edges.Outputs = append(n.Edges.Outputs, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -772,36 +725,6 @@ func (_q *AiAgentRunSnapshotQuery) loadChildren(ctx context.Context, query *AiAg
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "parent_id" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *AiAgentRunSnapshotQuery) loadOutputs(ctx context.Context, query *AiAgentRunOutputQuery, nodes []*AiAgentRunSnapshot, init func(*AiAgentRunSnapshot), assign func(*AiAgentRunSnapshot, *AiAgentRunOutput)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*AiAgentRunSnapshot)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(aiagentrunoutput.FieldAiAgentRunSnapshotID)
-	}
-	query.Where(predicate.AiAgentRunOutput(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(aiagentrunsnapshot.OutputsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.AiAgentRunSnapshotID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "ai_agent_run_snapshot_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

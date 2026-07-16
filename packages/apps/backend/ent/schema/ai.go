@@ -69,7 +69,7 @@ func (AiAgentRunSnapshot) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("ai_agent_run_id", uuid.UUID{}),
 		field.UUID("parent_id", uuid.UUID{}).Optional().Nillable(),
-		field.Enum("status").Values("pending", "completed", "aborted", "failed"),
+		field.Enum("status").Values("pending", "completed", "failed", "aborted"),
 		field.String("finish_reason"),
 		field.Time("heartbeat_at").Optional().Nillable(),
 		field.Bytes("state").Nillable(),
@@ -90,9 +90,6 @@ func (AiAgentRunSnapshot) Edges() []ent.Edge {
 		edge.From("children", AiAgentRunSnapshot.Type).
 			Ref("parent"),
 
-		edge.From("outputs", AiAgentRunOutput.Type).
-			Ref("ai_agent_run_snapshot"),
-
 		edge.From("knowledge_citations", AiAgentRunKnowledgeCitation.Type).
 			Ref("ai_agent_run_snapshot"),
 	}
@@ -102,43 +99,6 @@ func (AiAgentRunSnapshot) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "ai_agent_run_id"),
 		index.Fields("tenant_id", "ai_agent_run_id", "created_at"),
-	}
-}
-
-type AiAgentRunOutput struct {
-	ent.Schema
-}
-
-func (AiAgentRunOutput) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-		TimestampsMixin{},
-	}
-}
-
-func (AiAgentRunOutput) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("ai_agent_run_snapshot_id", uuid.UUID{}),
-		field.Bytes("data"),
-		field.JSON("metadata", map[string]any{}).SchemaType(schemaTypeJsonB).
-			Optional().Default(map[string]any{}),
-	}
-}
-
-func (AiAgentRunOutput) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("ai_agent_run_snapshot", AiAgentRunSnapshot.Type).
-			Unique().
-			Required().
-			Field("ai_agent_run_snapshot_id"),
-	}
-}
-
-func (AiAgentRunOutput) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "ai_agent_run_snapshot_id"),
 	}
 }
 

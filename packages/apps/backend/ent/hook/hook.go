@@ -33,18 +33,6 @@ func (f AiAgentRunKnowledgeCitationFunc) Mutate(ctx context.Context, m ent.Mutat
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunKnowledgeCitationMutation", m)
 }
 
-// The AiAgentRunOutputFunc type is an adapter to allow the use of ordinary
-// function as AiAgentRunOutput mutator.
-type AiAgentRunOutputFunc func(context.Context, *ent.AiAgentRunOutputMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AiAgentRunOutputFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AiAgentRunOutputMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunOutputMutation", m)
-}
-
 // The AiAgentRunSnapshotFunc type is an adapter to allow the use of ordinary
 // function as AiAgentRunSnapshot mutator.
 type AiAgentRunSnapshotFunc func(context.Context, *ent.AiAgentRunSnapshotMutation) (ent.Value, error)

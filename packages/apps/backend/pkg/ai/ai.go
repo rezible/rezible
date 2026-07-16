@@ -4,7 +4,10 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"hash/maphash"
 
+	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
@@ -15,6 +18,9 @@ import (
 var PromptsDir embed.FS
 
 func SessionSnapshotFromEnt[S SessionState](rs *ent.AiAgentRunSnapshot) (*aix.SessionSnapshot[S], error) {
+	if rs == nil {
+		return nil, nil
+	}
 	snapshot := &aix.SessionSnapshot[S]{
 		SessionID:    rs.AiAgentRunID.String(),
 		SnapshotID:   rs.ID.String(),
@@ -41,6 +47,9 @@ func SessionSnapshotFromEnt[S SessionState](rs *ent.AiAgentRunSnapshot) (*aix.Se
 }
 
 func SessionSnapshotToEnt[S SessionState](s *aix.SessionSnapshot[S]) (*ent.AiAgentRunSnapshot, error) {
+	if s == nil {
+		return nil, nil
+	}
 	sessId, sessIdErr := uuid.Parse(s.SessionID)
 	if sessIdErr != nil {
 		return nil, sessIdErr
@@ -82,4 +91,83 @@ func SessionSnapshotToEnt[S SessionState](s *aix.SessionSnapshot[S]) (*ent.AiAge
 		snap.Error = &enc
 	}
 	return snap, nil
+}
+
+//func GetChangedSnapshotArtifactParts(updated *ent.AiAgentRunSnapshot, prev *ent.AiAgentRunSnapshot, artifactName string) ([]*ai.Part, error) {
+//	getOutputArtifactParts := func(snap *ent.AiAgentRunSnapshot) ([]*ai.Part, error) {
+//		if snap == nil || snap.State == nil {
+//			return nil, nil
+//		}
+//		var sa struct {
+//			State struct {
+//				Artifacts []*aix.Artifact `json:"artifacts"`
+//			} `json:"state"`
+//		}
+//		if jsonErr := json.Unmarshal(*snap.State, &sa); jsonErr != nil {
+//			return nil, fmt.Errorf("unmarshal snapshot state: %w", jsonErr)
+//		}
+//		for _, a := range sa.State.Artifacts {
+//			if a.Name == artifactName {
+//				return a.Parts, nil
+//			}
+//		}
+//		return nil, nil
+//	}
+//
+//	newParts, newPartsErr := getOutputArtifactParts(updated)
+//	if newPartsErr != nil {
+//		return nil, fmt.Errorf("get new parts: %w", newPartsErr)
+//	}
+//	prevParts, prevPartsErr := getOutputArtifactParts(prev)
+//	if prevPartsErr != nil {
+//		return nil, fmt.Errorf("get new parts: %w", prevPartsErr)
+//	}
+
+func GetChangedSnapshotArtifactParts[S SessionState](prev *aix.SessionSnapshot[S], updated *aix.SessionSnapshot[S], artifactName string) ([]*ai.Part, error) {
+	getOutputArtifactParts := func(snap *aix.SessionSnapshot[S]) []*ai.Part {
+		if snap != nil && snap.State != nil {
+			for _, a := range snap.State.Artifacts {
+				if a.Name == artifactName {
+					return a.Parts
+				}
+			}
+		}
+		return nil
+	}
+
+	prevParts := getOutputArtifactParts(prev)
+	newParts := getOutputArtifactParts(updated)
+	if len(prevParts) == 0 {
+		return newParts, nil
+	}
+
+	hashSeed := maphash.MakeSeed()
+	hashPart := func(p *ai.Part) (uint64, error) {
+		pb, jsonErr := p.MarshalJSON()
+		if jsonErr != nil {
+			return 0, fmt.Errorf("marshal part: %w", jsonErr)
+		}
+		return maphash.Bytes(hashSeed, pb), nil
+	}
+
+	prevHashes := mapset.NewThreadUnsafeSet[uint64]()
+	for _, p := range prevParts {
+		hash, hashErr := hashPart(p)
+		if hashErr != nil {
+			return nil, fmt.Errorf("hash prev part: %w", hashErr)
+		}
+		prevHashes.Add(hash)
+	}
+
+	var changedParts []*ai.Part
+	for _, p := range newParts {
+		hash, hashErr := hashPart(p)
+		if hashErr != nil {
+			return nil, fmt.Errorf("hash new part: %w", hashErr)
+		}
+		if !prevHashes.Contains(hash) {
+			changedParts = append(changedParts, p)
+		}
+	}
+	return changedParts, nil
 }

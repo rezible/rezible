@@ -56,13 +56,11 @@ type AiAgentRunSnapshotEdges struct {
 	Parent *AiAgentRunSnapshot `json:"parent,omitempty"`
 	// Children holds the value of the children edge.
 	Children []*AiAgentRunSnapshot `json:"children,omitempty"`
-	// Outputs holds the value of the outputs edge.
-	Outputs []*AiAgentRunOutput `json:"outputs,omitempty"`
 	// KnowledgeCitations holds the value of the knowledge_citations edge.
 	KnowledgeCitations []*AiAgentRunKnowledgeCitation `json:"knowledge_citations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -107,19 +105,10 @@ func (e AiAgentRunSnapshotEdges) ChildrenOrErr() ([]*AiAgentRunSnapshot, error) 
 	return nil, &NotLoadedError{edge: "children"}
 }
 
-// OutputsOrErr returns the Outputs value or an error if the edge
-// was not loaded in eager-loading.
-func (e AiAgentRunSnapshotEdges) OutputsOrErr() ([]*AiAgentRunOutput, error) {
-	if e.loadedTypes[4] {
-		return e.Outputs, nil
-	}
-	return nil, &NotLoadedError{edge: "outputs"}
-}
-
 // KnowledgeCitationsOrErr returns the KnowledgeCitations value or an error if the edge
 // was not loaded in eager-loading.
 func (e AiAgentRunSnapshotEdges) KnowledgeCitationsOrErr() ([]*AiAgentRunKnowledgeCitation, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[4] {
 		return e.KnowledgeCitations, nil
 	}
 	return nil, &NotLoadedError{edge: "knowledge_citations"}
@@ -256,11 +245,6 @@ func (_m *AiAgentRunSnapshot) QueryParent() *AiAgentRunSnapshotQuery {
 // QueryChildren queries the "children" edge of the AiAgentRunSnapshot entity.
 func (_m *AiAgentRunSnapshot) QueryChildren() *AiAgentRunSnapshotQuery {
 	return NewAiAgentRunSnapshotClient(_m.config).QueryChildren(_m)
-}
-
-// QueryOutputs queries the "outputs" edge of the AiAgentRunSnapshot entity.
-func (_m *AiAgentRunSnapshot) QueryOutputs() *AiAgentRunOutputQuery {
-	return NewAiAgentRunSnapshotClient(_m.config).QueryOutputs(_m)
 }
 
 // QueryKnowledgeCitations queries the "knowledge_citations" edge of the AiAgentRunSnapshot entity.

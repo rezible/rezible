@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunknowledgecitation"
-	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
@@ -148,7 +147,6 @@ func checkColumn(t, c string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			aiagentrun.Table:                              aiagentrun.ValidColumn,
 			aiagentrunknowledgecitation.Table:             aiagentrunknowledgecitation.ValidColumn,
-			aiagentrunoutput.Table:                        aiagentrunoutput.ValidColumn,
 			aiagentrunsnapshot.Table:                      aiagentrunsnapshot.ValidColumn,
 			alert.Table:                                   alert.ValidColumn,
 			alertfeedback.Table:                           alertfeedback.ValidColumn,

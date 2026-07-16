@@ -130,54 +130,12 @@ var (
 			},
 		},
 	}
-	// AiAgentRunOutputsColumns holds the columns for the "ai_agent_run_outputs" table.
-	AiAgentRunOutputsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "data", Type: field.TypeBytes},
-		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "ai_agent_run_snapshot_id", Type: field.TypeUUID},
-	}
-	// AiAgentRunOutputsTable holds the schema information for the "ai_agent_run_outputs" table.
-	AiAgentRunOutputsTable = &schema.Table{
-		Name:       "ai_agent_run_outputs",
-		Columns:    AiAgentRunOutputsColumns,
-		PrimaryKey: []*schema.Column{AiAgentRunOutputsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "ai_agent_run_outputs_tenants_tenant",
-				Columns:    []*schema.Column{AiAgentRunOutputsColumns[5]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "ai_agent_run_outputs_ai_agent_run_snapshots_ai_agent_run_snapshot",
-				Columns:    []*schema.Column{AiAgentRunOutputsColumns[6]},
-				RefColumns: []*schema.Column{AiAgentRunSnapshotsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "aiagentrunoutput_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunOutputsColumns[5]},
-			},
-			{
-				Name:    "aiagentrunoutput_tenant_id_ai_agent_run_snapshot_id",
-				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunOutputsColumns[5], AiAgentRunOutputsColumns[6]},
-			},
-		},
-	}
 	// AiAgentRunSnapshotsColumns holds the columns for the "ai_agent_run_snapshots" table.
 	AiAgentRunSnapshotsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "completed", "aborted", "failed"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "completed", "failed", "aborted"}},
 		{Name: "finish_reason", Type: field.TypeString},
 		{Name: "heartbeat_at", Type: field.TypeTime, Nullable: true},
 		{Name: "state", Type: field.TypeBytes},
@@ -3560,7 +3518,6 @@ var (
 	Tables = []*schema.Table{
 		AiAgentRunsTable,
 		AiAgentRunKnowledgeCitationsTable,
-		AiAgentRunOutputsTable,
 		AiAgentRunSnapshotsTable,
 		AlertsTable,
 		AlertFeedbacksTable,
@@ -3656,8 +3613,6 @@ func init() {
 	AiAgentRunKnowledgeCitationsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	AiAgentRunKnowledgeCitationsTable.ForeignKeys[3].RefTable = KnowledgeRelationshipsTable
 	AiAgentRunKnowledgeCitationsTable.ForeignKeys[4].RefTable = KnowledgeEvidencesTable
-	AiAgentRunOutputsTable.ForeignKeys[0].RefTable = TenantsTable
-	AiAgentRunOutputsTable.ForeignKeys[1].RefTable = AiAgentRunSnapshotsTable
 	AiAgentRunSnapshotsTable.ForeignKeys[0].RefTable = TenantsTable
 	AiAgentRunSnapshotsTable.ForeignKeys[1].RefTable = AiAgentRunsTable
 	AiAgentRunSnapshotsTable.ForeignKeys[2].RefTable = AiAgentRunSnapshotsTable

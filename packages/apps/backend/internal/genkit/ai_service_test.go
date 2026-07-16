@@ -95,7 +95,7 @@ func (s *AiServiceSuite) TestAlertInvestigation() {
 	aia := &AlertsAgent{alerts: alerts}
 	reg := s.makeService(WithAgent(aia))
 
-	a, invErr := reg.GetAgentRunner(run)
+	a, invErr := reg.GetAgentRunInvoker(run)
 	s.Require().NoError(invErr)
 
 	_, invokeErr := a.Invoke(ctx, nil, ai.NewUserTextMessage("investigate this"), nil)
@@ -149,7 +149,7 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 	ar := s.makeAgentRun(ta.def.Name, initialState)
 	runId := ar.ID
 
-	a, invErr := reg.GetAgentRunner(ar)
+	a, invErr := reg.GetAgentRunInvoker(ar)
 	s.Require().NoError(invErr)
 
 	s.T().Logf("Starting test agent run (id %s)", runId.String())

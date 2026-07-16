@@ -10,7 +10,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunknowledgecitation"
-	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
@@ -193,33 +192,6 @@ func (f TraverseAiAgentRunKnowledgeCitation) Traverse(ctx context.Context, q ent
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunKnowledgeCitationQuery", q)
-}
-
-// The AiAgentRunOutputFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AiAgentRunOutputFunc func(context.Context, *ent.AiAgentRunOutputQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f AiAgentRunOutputFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AiAgentRunOutputQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunOutputQuery", q)
-}
-
-// The TraverseAiAgentRunOutput type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAiAgentRunOutput func(context.Context, *ent.AiAgentRunOutputQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAiAgentRunOutput) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseAiAgentRunOutput) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AiAgentRunOutputQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AiAgentRunOutputQuery", q)
 }
 
 // The AiAgentRunSnapshotFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2146,8 +2118,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AiAgentRunQuery, predicate.AiAgentRun, aiagentrun.OrderOption]{typ: ent.TypeAiAgentRun, tq: q}, nil
 	case *ent.AiAgentRunKnowledgeCitationQuery:
 		return &query[*ent.AiAgentRunKnowledgeCitationQuery, predicate.AiAgentRunKnowledgeCitation, aiagentrunknowledgecitation.OrderOption]{typ: ent.TypeAiAgentRunKnowledgeCitation, tq: q}, nil
-	case *ent.AiAgentRunOutputQuery:
-		return &query[*ent.AiAgentRunOutputQuery, predicate.AiAgentRunOutput, aiagentrunoutput.OrderOption]{typ: ent.TypeAiAgentRunOutput, tq: q}, nil
 	case *ent.AiAgentRunSnapshotQuery:
 		return &query[*ent.AiAgentRunSnapshotQuery, predicate.AiAgentRunSnapshot, aiagentrunsnapshot.OrderOption]{typ: ent.TypeAiAgentRunSnapshot, tq: q}, nil
 	case *ent.AlertQuery:

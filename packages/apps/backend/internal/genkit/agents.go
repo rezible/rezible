@@ -17,11 +17,6 @@ import (
 )
 
 type (
-	AgentInvoker interface {
-		ValidateInput([]byte) error
-		MakeRunner(*ent.AiAgentRun) rez.AiAgentInvoker
-	}
-
 	agentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput] interface {
 		agentDefinition() rezai.AgentDefinition[I, S, O]
 		transformState(context.Context, *aix.SessionState[S]) (*aix.SessionState[S], error)
@@ -32,20 +27,30 @@ type (
 	customAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput] interface {
 		makeAgentFunc([]ai.Middleware, []ai.ToolRef) aix.AgentFunc[S]
 	}
+
+	AgentWrapper interface {
+		ValidateInput([]byte) error
+		MakeInvoker(*ent.AiAgentRun) rez.AiAgentRunInvoker
+	}
 )
 
-func wrapAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput](svc *AiService, ar agentRunner[I, S, O]) (*agentWrapper, error) {
-	d := ar.agentDefinition()
+func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput](svc *AiService, runner agentRunner[I, S, O]) (AgentWrapper, error) {
+	d := runner.agentDefinition()
 	opts := []aix.AgentOption[S]{
 		aix.WithSessionStore[S](makeSessionStore[S](svc.sessions)),
 		aix.WithDescription[S](d.Description),
-		aix.WithStateTransform[S](ar.transformState),
-		aix.WithStreamTransform[S](ar.transformStreamChunk),
+		aix.WithStateTransform[S](runner.transformState),
+		aix.WithStreamTransform[S](runner.transformStreamChunk),
+	}
+
+	modelOpt := ai.WithModel(svc.getDefaultModel())
+	if d.Model != "" {
+		modelOpt = ai.WithModelName(d.Model)
 	}
 
 	registeredTools, dynamicTools := svc.getRegisteredTools(d.RequiredTools)
 
-	agentMw, mwErr := newAgentRunnerMiddleware(ar, dynamicTools)
+	agentMw, mwErr := newAgentRunnerMiddleware(runner, dynamicTools)
 	if mwErr != nil {
 		return nil, fmt.Errorf("agent runner middleware: %w", mwErr)
 	}
@@ -59,68 +64,50 @@ func wrapAgentRunner[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutp
 	}
 
 	var agent *aix.Agent[S]
-	if cr, ok := ar.(customAgentRunner[I, S, O]); ok {
-		runFunc := cr.makeAgentFunc(middleware, registeredTools)
-		agent = genkitx.DefineCustomAgent(svc.gk, d.Name, runFunc, opts...)
+	if cr, ok := runner.(customAgentRunner[I, S, O]); ok {
+		agent = genkitx.DefineCustomAgent(svc.gk, d.Name, cr.makeAgentFunc(middleware, registeredTools), opts...)
+		//} else if d.Prompt != "" {
+		//genkitx.DefinePromptAgent(svc.gk, d.Name)
 	} else {
-		systemPrompt := fmt.Sprintf("%s\n\nRemember to write outputs using the 'write_output' tool!!", d.SystemPrompt)
 		prompt := aix.InlinePrompt{
-			ai.WithModel(flashModel),
-			ai.WithSystem(systemPrompt),
+			modelOpt,
+			ai.WithSystem(d.SystemPrompt),
 			ai.WithUse(middleware...),
 			ai.WithTools(registeredTools...),
 		}
 		agent = genkitx.DefineAgent(svc.gk, d.Name, prompt, opts...)
 	}
 
-	validateInputFunc := func(input []byte) error {
-		_, err := d.ValidateInput(input)
-		return err
-	}
-
-	makeInvokerFunc := func(run *ent.AiAgentRun) rez.AiAgentInvoker {
-		return &agentSessionInvoker[I, S, O]{
-			agent:  agent,
-			run:    run,
-			runner: ar,
-		}
-	}
-
-	return &agentWrapper{
-		inputValidatorFunc: validateInputFunc,
-		makeInvokerFunc:    makeInvokerFunc,
-	}, nil
+	return &agentWrapper[I, S, O]{agent: agent, runner: runner}, nil
 }
 
-type agentWrapper struct {
-	inputValidatorFunc func([]byte) error
-	makeInvokerFunc    func(run *ent.AiAgentRun) rez.AiAgentInvoker
+type agentWrapper[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput] struct {
+	agent  *aix.Agent[S]
+	runner agentRunner[I, S, O]
 }
 
-func (w *agentWrapper) MakeRunner(run *ent.AiAgentRun) rez.AiAgentInvoker {
-	return w.makeInvokerFunc(run)
+func (w *agentWrapper[I, S, O]) ValidateInput(raw []byte) error {
+	_, err := w.runner.agentDefinition().ValidateInput(raw)
+	return err
 }
 
-func (w *agentWrapper) ValidateInput(raw []byte) error {
-	return w.inputValidatorFunc(raw)
+func (w *agentWrapper[I, S, O]) MakeInvoker(run *ent.AiAgentRun) rez.AiAgentRunInvoker {
+	return &agentSessionInvoker[I, S, O]{agent: w.agent, runner: w.runner, run: run}
 }
 
 type agentSessionInvoker[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput] struct {
 	agent  *aix.Agent[S]
-	run    *ent.AiAgentRun
 	runner agentRunner[I, S, O]
+	run    *ent.AiAgentRun
 }
 
 func (i *agentSessionInvoker[I, S, O]) Invoke(ctx context.Context, parentId *uuid.UUID, msg *ai.Message, resume *ai.GenerateActionResume) (uuid.UUID, error) {
+	ctx = execution.NewAiAgentRunContext(ctx, i.run)
+
 	input := &aix.AgentInput{Message: msg}
 	if resume != nil {
-		input.Resume = &aix.ToolResume{
-			Respond: resume.Respond,
-			Restart: resume.Restart,
-		}
+		input.Resume = &aix.ToolResume{Respond: resume.Respond, Restart: resume.Restart}
 	}
-
-	ctx = execution.NewAiAgentRunContext(ctx, i.run)
 
 	invokeOpts, optsErr := i.getInvokeOpts(ctx, parentId, input)
 	if optsErr != nil {

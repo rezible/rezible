@@ -164,8 +164,6 @@ ALTER TABLE "alert_feedbacks" DROP CONSTRAINT "alert_feedbacks_alert_instances_a
 ALTER TABLE "alerts" DROP CONSTRAINT "alerts_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alerts_tenants_tenant";
 -- reverse: modify "ai_agent_run_snapshots" table
 ALTER TABLE "ai_agent_run_snapshots" DROP CONSTRAINT "ai_agent_run_snapshots_ai_agent_runs_ai_agent_run", DROP CONSTRAINT "ai_agent_run_snapshots_tenants_tenant";
--- reverse: modify "ai_agent_run_outputs" table
-ALTER TABLE "ai_agent_run_outputs" DROP CONSTRAINT "ai_agent_run_outputs_ai_agent__c9429a5826fd90a1b4bf618c256a8b4d", DROP CONSTRAINT "ai_agent_run_outputs_tenants_tenant";
 -- reverse: modify "ai_agent_run_knowledge_citations" table
 ALTER TABLE "ai_agent_run_knowledge_citations" DROP CONSTRAINT "ai_agent_run_knowledge_citatio_2756b8074a547f8626c19560b2b3fd6b", DROP CONSTRAINT "ai_agent_run_knowledge_citatio_9ebe5e0c26a98094846a65686c1e1f8d", DROP CONSTRAINT "ai_agent_run_knowledge_citatio_5aef10f200ecc812a61bf87c1df604f4", DROP CONSTRAINT "ai_agent_run_knowledge_citatio_afc0edd2d24cfa99c5f5b85ba6d0d3d5", DROP CONSTRAINT "ai_agent_run_knowledge_citations_tenants_tenant";
 -- reverse: modify "ai_agent_runs" table
@@ -616,12 +614,6 @@ DROP INDEX "aiagentrunsnapshot_tenant_id_ai_agent_run_id";
 DROP INDEX "aiagentrunsnapshot_tenant_id";
 -- reverse: create "ai_agent_run_snapshots" table
 DROP TABLE "ai_agent_run_snapshots";
--- reverse: create index "aiagentrunoutput_tenant_id_ai_agent_run_snapshot_id" to table: "ai_agent_run_outputs"
-DROP INDEX "aiagentrunoutput_tenant_id_ai_agent_run_snapshot_id";
--- reverse: create index "aiagentrunoutput_tenant_id" to table: "ai_agent_run_outputs"
-DROP INDEX "aiagentrunoutput_tenant_id";
--- reverse: create "ai_agent_run_outputs" table
-DROP TABLE "ai_agent_run_outputs";
 -- reverse: create index "aiagentrunknowledgecitation_tenant_id_knowledge_evidence_id" to table: "ai_agent_run_knowledge_citations"
 DROP INDEX "aiagentrunknowledgecitation_tenant_id_knowledge_evidence_id";
 -- reverse: create index "aiagentrunknowledgecitation_tenant_id_knowledge_relationship_id" to table: "ai_agent_run_knowledge_citations"

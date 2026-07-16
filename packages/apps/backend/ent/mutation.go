@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunknowledgecitation"
-	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
@@ -99,7 +98,6 @@ const (
 	// Node types.
 	TypeAiAgentRun                              = "AiAgentRun"
 	TypeAiAgentRunKnowledgeCitation             = "AiAgentRunKnowledgeCitation"
-	TypeAiAgentRunOutput                        = "AiAgentRunOutput"
 	TypeAiAgentRunSnapshot                      = "AiAgentRunSnapshot"
 	TypeAlert                                   = "Alert"
 	TypeAlertFeedback                           = "AlertFeedback"
@@ -2193,733 +2191,6 @@ func (m *AiAgentRunKnowledgeCitationMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown AiAgentRunKnowledgeCitation edge %s", name)
 }
 
-// AiAgentRunOutputMutation represents an operation that mutates the AiAgentRunOutput nodes in the graph.
-type AiAgentRunOutputMutation struct {
-	config
-	op                           Op
-	typ                          string
-	id                           *uuid.UUID
-	created_at                   *time.Time
-	updated_at                   *time.Time
-	data                         *[]byte
-	metadata                     *map[string]interface{}
-	clearedFields                map[string]struct{}
-	tenant                       *int
-	clearedtenant                bool
-	ai_agent_run_snapshot        *uuid.UUID
-	clearedai_agent_run_snapshot bool
-	done                         bool
-	oldValue                     func(context.Context) (*AiAgentRunOutput, error)
-	predicates                   []predicate.AiAgentRunOutput
-}
-
-var _ ent.Mutation = (*AiAgentRunOutputMutation)(nil)
-
-// aiagentrunoutputOption allows management of the mutation configuration using functional options.
-type aiagentrunoutputOption func(*AiAgentRunOutputMutation)
-
-// newAiAgentRunOutputMutation creates new mutation for the AiAgentRunOutput entity.
-func newAiAgentRunOutputMutation(c config, op Op, opts ...aiagentrunoutputOption) *AiAgentRunOutputMutation {
-	m := &AiAgentRunOutputMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeAiAgentRunOutput,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withAiAgentRunOutputID sets the ID field of the mutation.
-func withAiAgentRunOutputID(id uuid.UUID) aiagentrunoutputOption {
-	return func(m *AiAgentRunOutputMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *AiAgentRunOutput
-		)
-		m.oldValue = func(ctx context.Context) (*AiAgentRunOutput, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().AiAgentRunOutput.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withAiAgentRunOutput sets the old AiAgentRunOutput of the mutation.
-func withAiAgentRunOutput(node *AiAgentRunOutput) aiagentrunoutputOption {
-	return func(m *AiAgentRunOutputMutation) {
-		m.oldValue = func(context.Context) (*AiAgentRunOutput, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m AiAgentRunOutputMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m AiAgentRunOutputMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of AiAgentRunOutput entities.
-func (m *AiAgentRunOutputMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *AiAgentRunOutputMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *AiAgentRunOutputMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().AiAgentRunOutput.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *AiAgentRunOutputMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *AiAgentRunOutputMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the AiAgentRunOutput entity.
-// If the AiAgentRunOutput object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AiAgentRunOutputMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *AiAgentRunOutputMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *AiAgentRunOutputMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *AiAgentRunOutputMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the AiAgentRunOutput entity.
-// If the AiAgentRunOutput object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AiAgentRunOutputMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *AiAgentRunOutputMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *AiAgentRunOutputMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *AiAgentRunOutputMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the AiAgentRunOutput entity.
-// If the AiAgentRunOutput object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AiAgentRunOutputMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *AiAgentRunOutputMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetAiAgentRunSnapshotID sets the "ai_agent_run_snapshot_id" field.
-func (m *AiAgentRunOutputMutation) SetAiAgentRunSnapshotID(u uuid.UUID) {
-	m.ai_agent_run_snapshot = &u
-}
-
-// AiAgentRunSnapshotID returns the value of the "ai_agent_run_snapshot_id" field in the mutation.
-func (m *AiAgentRunOutputMutation) AiAgentRunSnapshotID() (r uuid.UUID, exists bool) {
-	v := m.ai_agent_run_snapshot
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAiAgentRunSnapshotID returns the old "ai_agent_run_snapshot_id" field's value of the AiAgentRunOutput entity.
-// If the AiAgentRunOutput object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AiAgentRunOutputMutation) OldAiAgentRunSnapshotID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAiAgentRunSnapshotID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAiAgentRunSnapshotID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAiAgentRunSnapshotID: %w", err)
-	}
-	return oldValue.AiAgentRunSnapshotID, nil
-}
-
-// ResetAiAgentRunSnapshotID resets all changes to the "ai_agent_run_snapshot_id" field.
-func (m *AiAgentRunOutputMutation) ResetAiAgentRunSnapshotID() {
-	m.ai_agent_run_snapshot = nil
-}
-
-// SetData sets the "data" field.
-func (m *AiAgentRunOutputMutation) SetData(b []byte) {
-	m.data = &b
-}
-
-// Data returns the value of the "data" field in the mutation.
-func (m *AiAgentRunOutputMutation) Data() (r []byte, exists bool) {
-	v := m.data
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldData returns the old "data" field's value of the AiAgentRunOutput entity.
-// If the AiAgentRunOutput object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AiAgentRunOutputMutation) OldData(ctx context.Context) (v []byte, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldData is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldData requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldData: %w", err)
-	}
-	return oldValue.Data, nil
-}
-
-// ResetData resets all changes to the "data" field.
-func (m *AiAgentRunOutputMutation) ResetData() {
-	m.data = nil
-}
-
-// SetMetadata sets the "metadata" field.
-func (m *AiAgentRunOutputMutation) SetMetadata(value map[string]interface{}) {
-	m.metadata = &value
-}
-
-// Metadata returns the value of the "metadata" field in the mutation.
-func (m *AiAgentRunOutputMutation) Metadata() (r map[string]interface{}, exists bool) {
-	v := m.metadata
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMetadata returns the old "metadata" field's value of the AiAgentRunOutput entity.
-// If the AiAgentRunOutput object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AiAgentRunOutputMutation) OldMetadata(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMetadata requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
-	}
-	return oldValue.Metadata, nil
-}
-
-// ClearMetadata clears the value of the "metadata" field.
-func (m *AiAgentRunOutputMutation) ClearMetadata() {
-	m.metadata = nil
-	m.clearedFields[aiagentrunoutput.FieldMetadata] = struct{}{}
-}
-
-// MetadataCleared returns if the "metadata" field was cleared in this mutation.
-func (m *AiAgentRunOutputMutation) MetadataCleared() bool {
-	_, ok := m.clearedFields[aiagentrunoutput.FieldMetadata]
-	return ok
-}
-
-// ResetMetadata resets all changes to the "metadata" field.
-func (m *AiAgentRunOutputMutation) ResetMetadata() {
-	m.metadata = nil
-	delete(m.clearedFields, aiagentrunoutput.FieldMetadata)
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *AiAgentRunOutputMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[aiagentrunoutput.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *AiAgentRunOutputMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *AiAgentRunOutputMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *AiAgentRunOutputMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// ClearAiAgentRunSnapshot clears the "ai_agent_run_snapshot" edge to the AiAgentRunSnapshot entity.
-func (m *AiAgentRunOutputMutation) ClearAiAgentRunSnapshot() {
-	m.clearedai_agent_run_snapshot = true
-	m.clearedFields[aiagentrunoutput.FieldAiAgentRunSnapshotID] = struct{}{}
-}
-
-// AiAgentRunSnapshotCleared reports if the "ai_agent_run_snapshot" edge to the AiAgentRunSnapshot entity was cleared.
-func (m *AiAgentRunOutputMutation) AiAgentRunSnapshotCleared() bool {
-	return m.clearedai_agent_run_snapshot
-}
-
-// AiAgentRunSnapshotIDs returns the "ai_agent_run_snapshot" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// AiAgentRunSnapshotID instead. It exists only for internal usage by the builders.
-func (m *AiAgentRunOutputMutation) AiAgentRunSnapshotIDs() (ids []uuid.UUID) {
-	if id := m.ai_agent_run_snapshot; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetAiAgentRunSnapshot resets all changes to the "ai_agent_run_snapshot" edge.
-func (m *AiAgentRunOutputMutation) ResetAiAgentRunSnapshot() {
-	m.ai_agent_run_snapshot = nil
-	m.clearedai_agent_run_snapshot = false
-}
-
-// Where appends a list predicates to the AiAgentRunOutputMutation builder.
-func (m *AiAgentRunOutputMutation) Where(ps ...predicate.AiAgentRunOutput) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the AiAgentRunOutputMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *AiAgentRunOutputMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.AiAgentRunOutput, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *AiAgentRunOutputMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *AiAgentRunOutputMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (AiAgentRunOutput).
-func (m *AiAgentRunOutputMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *AiAgentRunOutputMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.tenant != nil {
-		fields = append(fields, aiagentrunoutput.FieldTenantID)
-	}
-	if m.created_at != nil {
-		fields = append(fields, aiagentrunoutput.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, aiagentrunoutput.FieldUpdatedAt)
-	}
-	if m.ai_agent_run_snapshot != nil {
-		fields = append(fields, aiagentrunoutput.FieldAiAgentRunSnapshotID)
-	}
-	if m.data != nil {
-		fields = append(fields, aiagentrunoutput.FieldData)
-	}
-	if m.metadata != nil {
-		fields = append(fields, aiagentrunoutput.FieldMetadata)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *AiAgentRunOutputMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case aiagentrunoutput.FieldTenantID:
-		return m.TenantID()
-	case aiagentrunoutput.FieldCreatedAt:
-		return m.CreatedAt()
-	case aiagentrunoutput.FieldUpdatedAt:
-		return m.UpdatedAt()
-	case aiagentrunoutput.FieldAiAgentRunSnapshotID:
-		return m.AiAgentRunSnapshotID()
-	case aiagentrunoutput.FieldData:
-		return m.Data()
-	case aiagentrunoutput.FieldMetadata:
-		return m.Metadata()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *AiAgentRunOutputMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case aiagentrunoutput.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case aiagentrunoutput.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case aiagentrunoutput.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	case aiagentrunoutput.FieldAiAgentRunSnapshotID:
-		return m.OldAiAgentRunSnapshotID(ctx)
-	case aiagentrunoutput.FieldData:
-		return m.OldData(ctx)
-	case aiagentrunoutput.FieldMetadata:
-		return m.OldMetadata(ctx)
-	}
-	return nil, fmt.Errorf("unknown AiAgentRunOutput field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *AiAgentRunOutputMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case aiagentrunoutput.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case aiagentrunoutput.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case aiagentrunoutput.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	case aiagentrunoutput.FieldAiAgentRunSnapshotID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAiAgentRunSnapshotID(v)
-		return nil
-	case aiagentrunoutput.FieldData:
-		v, ok := value.([]byte)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetData(v)
-		return nil
-	case aiagentrunoutput.FieldMetadata:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMetadata(v)
-		return nil
-	}
-	return fmt.Errorf("unknown AiAgentRunOutput field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *AiAgentRunOutputMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *AiAgentRunOutputMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *AiAgentRunOutputMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown AiAgentRunOutput numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *AiAgentRunOutputMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(aiagentrunoutput.FieldMetadata) {
-		fields = append(fields, aiagentrunoutput.FieldMetadata)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *AiAgentRunOutputMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *AiAgentRunOutputMutation) ClearField(name string) error {
-	switch name {
-	case aiagentrunoutput.FieldMetadata:
-		m.ClearMetadata()
-		return nil
-	}
-	return fmt.Errorf("unknown AiAgentRunOutput nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *AiAgentRunOutputMutation) ResetField(name string) error {
-	switch name {
-	case aiagentrunoutput.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case aiagentrunoutput.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case aiagentrunoutput.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	case aiagentrunoutput.FieldAiAgentRunSnapshotID:
-		m.ResetAiAgentRunSnapshotID()
-		return nil
-	case aiagentrunoutput.FieldData:
-		m.ResetData()
-		return nil
-	case aiagentrunoutput.FieldMetadata:
-		m.ResetMetadata()
-		return nil
-	}
-	return fmt.Errorf("unknown AiAgentRunOutput field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *AiAgentRunOutputMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.tenant != nil {
-		edges = append(edges, aiagentrunoutput.EdgeTenant)
-	}
-	if m.ai_agent_run_snapshot != nil {
-		edges = append(edges, aiagentrunoutput.EdgeAiAgentRunSnapshot)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *AiAgentRunOutputMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case aiagentrunoutput.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case aiagentrunoutput.EdgeAiAgentRunSnapshot:
-		if id := m.ai_agent_run_snapshot; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *AiAgentRunOutputMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *AiAgentRunOutputMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *AiAgentRunOutputMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedtenant {
-		edges = append(edges, aiagentrunoutput.EdgeTenant)
-	}
-	if m.clearedai_agent_run_snapshot {
-		edges = append(edges, aiagentrunoutput.EdgeAiAgentRunSnapshot)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *AiAgentRunOutputMutation) EdgeCleared(name string) bool {
-	switch name {
-	case aiagentrunoutput.EdgeTenant:
-		return m.clearedtenant
-	case aiagentrunoutput.EdgeAiAgentRunSnapshot:
-		return m.clearedai_agent_run_snapshot
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *AiAgentRunOutputMutation) ClearEdge(name string) error {
-	switch name {
-	case aiagentrunoutput.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	case aiagentrunoutput.EdgeAiAgentRunSnapshot:
-		m.ClearAiAgentRunSnapshot()
-		return nil
-	}
-	return fmt.Errorf("unknown AiAgentRunOutput unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *AiAgentRunOutputMutation) ResetEdge(name string) error {
-	switch name {
-	case aiagentrunoutput.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	case aiagentrunoutput.EdgeAiAgentRunSnapshot:
-		m.ResetAiAgentRunSnapshot()
-		return nil
-	}
-	return fmt.Errorf("unknown AiAgentRunOutput edge %s", name)
-}
-
 // AiAgentRunSnapshotMutation represents an operation that mutates the AiAgentRunSnapshot nodes in the graph.
 type AiAgentRunSnapshotMutation struct {
 	config
@@ -2943,9 +2214,6 @@ type AiAgentRunSnapshotMutation struct {
 	children                   map[uuid.UUID]struct{}
 	removedchildren            map[uuid.UUID]struct{}
 	clearedchildren            bool
-	outputs                    map[uuid.UUID]struct{}
-	removedoutputs             map[uuid.UUID]struct{}
-	clearedoutputs             bool
 	knowledge_citations        map[uuid.UUID]struct{}
 	removedknowledge_citations map[uuid.UUID]struct{}
 	clearedknowledge_citations bool
@@ -3592,60 +2860,6 @@ func (m *AiAgentRunSnapshotMutation) ResetChildren() {
 	m.removedchildren = nil
 }
 
-// AddOutputIDs adds the "outputs" edge to the AiAgentRunOutput entity by ids.
-func (m *AiAgentRunSnapshotMutation) AddOutputIDs(ids ...uuid.UUID) {
-	if m.outputs == nil {
-		m.outputs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.outputs[ids[i]] = struct{}{}
-	}
-}
-
-// ClearOutputs clears the "outputs" edge to the AiAgentRunOutput entity.
-func (m *AiAgentRunSnapshotMutation) ClearOutputs() {
-	m.clearedoutputs = true
-}
-
-// OutputsCleared reports if the "outputs" edge to the AiAgentRunOutput entity was cleared.
-func (m *AiAgentRunSnapshotMutation) OutputsCleared() bool {
-	return m.clearedoutputs
-}
-
-// RemoveOutputIDs removes the "outputs" edge to the AiAgentRunOutput entity by IDs.
-func (m *AiAgentRunSnapshotMutation) RemoveOutputIDs(ids ...uuid.UUID) {
-	if m.removedoutputs == nil {
-		m.removedoutputs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.outputs, ids[i])
-		m.removedoutputs[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedOutputs returns the removed IDs of the "outputs" edge to the AiAgentRunOutput entity.
-func (m *AiAgentRunSnapshotMutation) RemovedOutputsIDs() (ids []uuid.UUID) {
-	for id := range m.removedoutputs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// OutputsIDs returns the "outputs" edge IDs in the mutation.
-func (m *AiAgentRunSnapshotMutation) OutputsIDs() (ids []uuid.UUID) {
-	for id := range m.outputs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetOutputs resets all changes to the "outputs" edge.
-func (m *AiAgentRunSnapshotMutation) ResetOutputs() {
-	m.outputs = nil
-	m.clearedoutputs = false
-	m.removedoutputs = nil
-}
-
 // AddKnowledgeCitationIDs adds the "knowledge_citations" edge to the AiAgentRunKnowledgeCitation entity by ids.
 func (m *AiAgentRunSnapshotMutation) AddKnowledgeCitationIDs(ids ...uuid.UUID) {
 	if m.knowledge_citations == nil {
@@ -4010,7 +3224,7 @@ func (m *AiAgentRunSnapshotMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AiAgentRunSnapshotMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.tenant != nil {
 		edges = append(edges, aiagentrunsnapshot.EdgeTenant)
 	}
@@ -4022,9 +3236,6 @@ func (m *AiAgentRunSnapshotMutation) AddedEdges() []string {
 	}
 	if m.children != nil {
 		edges = append(edges, aiagentrunsnapshot.EdgeChildren)
-	}
-	if m.outputs != nil {
-		edges = append(edges, aiagentrunsnapshot.EdgeOutputs)
 	}
 	if m.knowledge_citations != nil {
 		edges = append(edges, aiagentrunsnapshot.EdgeKnowledgeCitations)
@@ -4054,12 +3265,6 @@ func (m *AiAgentRunSnapshotMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case aiagentrunsnapshot.EdgeOutputs:
-		ids := make([]ent.Value, 0, len(m.outputs))
-		for id := range m.outputs {
-			ids = append(ids, id)
-		}
-		return ids
 	case aiagentrunsnapshot.EdgeKnowledgeCitations:
 		ids := make([]ent.Value, 0, len(m.knowledge_citations))
 		for id := range m.knowledge_citations {
@@ -4072,12 +3277,9 @@ func (m *AiAgentRunSnapshotMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AiAgentRunSnapshotMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.removedchildren != nil {
 		edges = append(edges, aiagentrunsnapshot.EdgeChildren)
-	}
-	if m.removedoutputs != nil {
-		edges = append(edges, aiagentrunsnapshot.EdgeOutputs)
 	}
 	if m.removedknowledge_citations != nil {
 		edges = append(edges, aiagentrunsnapshot.EdgeKnowledgeCitations)
@@ -4095,12 +3297,6 @@ func (m *AiAgentRunSnapshotMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case aiagentrunsnapshot.EdgeOutputs:
-		ids := make([]ent.Value, 0, len(m.removedoutputs))
-		for id := range m.removedoutputs {
-			ids = append(ids, id)
-		}
-		return ids
 	case aiagentrunsnapshot.EdgeKnowledgeCitations:
 		ids := make([]ent.Value, 0, len(m.removedknowledge_citations))
 		for id := range m.removedknowledge_citations {
@@ -4113,7 +3309,7 @@ func (m *AiAgentRunSnapshotMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AiAgentRunSnapshotMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.clearedtenant {
 		edges = append(edges, aiagentrunsnapshot.EdgeTenant)
 	}
@@ -4125,9 +3321,6 @@ func (m *AiAgentRunSnapshotMutation) ClearedEdges() []string {
 	}
 	if m.clearedchildren {
 		edges = append(edges, aiagentrunsnapshot.EdgeChildren)
-	}
-	if m.clearedoutputs {
-		edges = append(edges, aiagentrunsnapshot.EdgeOutputs)
 	}
 	if m.clearedknowledge_citations {
 		edges = append(edges, aiagentrunsnapshot.EdgeKnowledgeCitations)
@@ -4147,8 +3340,6 @@ func (m *AiAgentRunSnapshotMutation) EdgeCleared(name string) bool {
 		return m.clearedparent
 	case aiagentrunsnapshot.EdgeChildren:
 		return m.clearedchildren
-	case aiagentrunsnapshot.EdgeOutputs:
-		return m.clearedoutputs
 	case aiagentrunsnapshot.EdgeKnowledgeCitations:
 		return m.clearedknowledge_citations
 	}
@@ -4187,9 +3378,6 @@ func (m *AiAgentRunSnapshotMutation) ResetEdge(name string) error {
 		return nil
 	case aiagentrunsnapshot.EdgeChildren:
 		m.ResetChildren()
-		return nil
-	case aiagentrunsnapshot.EdgeOutputs:
-		m.ResetOutputs()
 		return nil
 	case aiagentrunsnapshot.EdgeKnowledgeCitations:
 		m.ResetKnowledgeCitations()

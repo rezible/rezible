@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/aiagentrun"
 	"github.com/rezible/rezible/ent/aiagentrunknowledgecitation"
-	"github.com/rezible/rezible/ent/aiagentrunoutput"
 	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
@@ -159,38 +158,6 @@ func init() {
 	aiagentrunknowledgecitationDescID := aiagentrunknowledgecitationFields[0].Descriptor()
 	// aiagentrunknowledgecitation.DefaultID holds the default value on creation for the id field.
 	aiagentrunknowledgecitation.DefaultID = aiagentrunknowledgecitationDescID.Default.(func() uuid.UUID)
-	aiagentrunoutputMixin := schema.AiAgentRunOutput{}.Mixin()
-	aiagentrunoutput.Policy = privacy.NewPolicies(aiagentrunoutputMixin[0], aiagentrunoutputMixin[1], schema.AiAgentRunOutput{})
-	aiagentrunoutput.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := aiagentrunoutput.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	aiagentrunoutputMixinFields2 := aiagentrunoutputMixin[2].Fields()
-	_ = aiagentrunoutputMixinFields2
-	aiagentrunoutputFields := schema.AiAgentRunOutput{}.Fields()
-	_ = aiagentrunoutputFields
-	// aiagentrunoutputDescCreatedAt is the schema descriptor for created_at field.
-	aiagentrunoutputDescCreatedAt := aiagentrunoutputMixinFields2[0].Descriptor()
-	// aiagentrunoutput.DefaultCreatedAt holds the default value on creation for the created_at field.
-	aiagentrunoutput.DefaultCreatedAt = aiagentrunoutputDescCreatedAt.Default.(func() time.Time)
-	// aiagentrunoutputDescUpdatedAt is the schema descriptor for updated_at field.
-	aiagentrunoutputDescUpdatedAt := aiagentrunoutputMixinFields2[1].Descriptor()
-	// aiagentrunoutput.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	aiagentrunoutput.DefaultUpdatedAt = aiagentrunoutputDescUpdatedAt.Default.(func() time.Time)
-	// aiagentrunoutput.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	aiagentrunoutput.UpdateDefaultUpdatedAt = aiagentrunoutputDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// aiagentrunoutputDescMetadata is the schema descriptor for metadata field.
-	aiagentrunoutputDescMetadata := aiagentrunoutputFields[3].Descriptor()
-	// aiagentrunoutput.DefaultMetadata holds the default value on creation for the metadata field.
-	aiagentrunoutput.DefaultMetadata = aiagentrunoutputDescMetadata.Default.(map[string]interface{})
-	// aiagentrunoutputDescID is the schema descriptor for id field.
-	aiagentrunoutputDescID := aiagentrunoutputFields[0].Descriptor()
-	// aiagentrunoutput.DefaultID holds the default value on creation for the id field.
-	aiagentrunoutput.DefaultID = aiagentrunoutputDescID.Default.(func() uuid.UUID)
 	aiagentrunsnapshotMixin := schema.AiAgentRunSnapshot{}.Mixin()
 	aiagentrunsnapshot.Policy = privacy.NewPolicies(aiagentrunsnapshotMixin[0], aiagentrunsnapshotMixin[1], schema.AiAgentRunSnapshot{})
 	aiagentrunsnapshot.Hooks[0] = func(next ent.Mutator) ent.Mutator {
