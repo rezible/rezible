@@ -1,0 +1,9 @@
+# Ent generates a large Go package. Keep its handwritten inputs and extensions
+# searchable while hiding generated output from normal repository searches.
+/packages/apps/backend/ent/**/*.go
+!/packages/apps/backend/ent/schema/**/*.go
+!/packages/apps/backend/ent/entpgx/driver.go
+!/packages/apps/backend/ent/generate.go
+!/packages/apps/backend/ent/generate_entc.go
+!/packages/apps/backend/ent/utils.go
+!/packages/apps/backend/ent/utils_entities.go
