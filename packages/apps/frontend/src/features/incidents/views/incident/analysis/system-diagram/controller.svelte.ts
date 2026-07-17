@@ -13,7 +13,7 @@ import {
 	type SystemAnalysis,
 	type SystemAnalysisNode,
 	type SystemAnalysisEdge,
-	type SystemTopologyEntity,
+	type KnowledgeGraphSnapshotEntity,
 } from "$lib/api";
 
 import { useIncidentAnalysis } from "../controller.svelte";
@@ -63,7 +63,7 @@ export class SystemDiagramState {
 	selectedLivePosition = $state<XYPosition>();
 
 	containerEl = $state.raw<HTMLElement>(null!);
-	addingEntityGhost = $state.raw<SystemTopologyEntity>();
+	addingEntityGhost = $state.raw<KnowledgeGraphSnapshotEntity>();
 
 	constructor(containerElFn: () => HTMLElement) {
 		watch(containerElFn, ref => { this.containerEl = ref });
@@ -135,8 +135,8 @@ export class SystemDiagramState {
 		});
 	};
 
-	setAddingEntityGhost(c?: SystemTopologyEntity) {
-		this.addingEntityGhost = c;
+	setAddingEntityGhost(e?: KnowledgeGraphSnapshotEntity) {
+		this.addingEntityGhost = e;
 	};
 
 	handlePaneClicked({ event }: { event: MouseEvent }) {

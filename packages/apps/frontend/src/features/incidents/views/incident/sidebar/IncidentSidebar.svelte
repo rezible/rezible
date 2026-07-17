@@ -2,7 +2,6 @@
 	import { fly } from "svelte/transition";
 	import { mdiCircleMedium } from "@mdi/js";
 	import Icon from "$components/common/icon/Icon.svelte";
-	import ComponentSelector from "./add-component-drawer/ComponentSelector.svelte";
 	import Header from "$src/components/layout/header/Header.svelte";
 
 	import { initIncidentSidebarController } from "./controller.svelte";
@@ -36,7 +35,7 @@
 				in:fly|global={{ x: "100%", y: 0 }}
 				out:fly={{ x: "100%", y: 0 }}
 			>
-				<ComponentSelector />
+				<span>component selector</span>
 			</div>
 		{/if}
 	</div>

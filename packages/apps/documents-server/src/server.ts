@@ -36,12 +36,12 @@ const createDatabase = (db: SQL): Database => {
 			const rows = await db`SELECT content FROM documents 
 			WHERE tenant_id=${context.tenantId}::INT AND id=${documentName}::UUID 
 			LIMIT 1`.raw();
-			console.log(rows);
 
 			if (rows.length === 0) return null;
 			if (rows[0].length === 0) return emptyDocument;
-			console.log(rows[0]);
-			return new Uint8Array(rows[0][0]);
+			const content = rows[0][0];
+			if (content.length === 0) return emptyDocument;
+			return new Uint8Array(content);
 		}, 
 		store: async ({documentName, state, lastContext}: storePayload<SessionContext>) => {
 			await db`INSERT INTO documents ("tenant_id", "id", "content") 
@@ -62,12 +62,6 @@ export class DocumentsServerExtension implements Extension<SessionContext> {
 		this.sessionTokenKey = sessionTokenSecretKey;
 		this.db = new SQL({
 			url: dbUrl,
-			onconnect: client => {
-				console.log("Connected to PostgreSQL");
-			},
-			onclose: client => {
-				console.log("PostgreSQL connection closed");
-			},
 		});
 		this.database = createDatabase(this.db);
 	}

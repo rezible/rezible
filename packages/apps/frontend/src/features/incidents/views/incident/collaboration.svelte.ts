@@ -32,6 +32,7 @@ export class IncidentCollaborationController {
 			token: token,
 			name: name,
 			onAwarenessChange: ({states}) => {
+				console.log("awareness", states);
 				this.awareness = states;
 			},
 			onStatus: ({status}) => {

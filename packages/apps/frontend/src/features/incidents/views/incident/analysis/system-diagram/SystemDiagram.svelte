@@ -16,7 +16,8 @@
 	import "@xyflow/svelte/dist/style.css";
 	import "./diagram-styles.css";
 
-	import { useSystemDiagram } from "./diagramState.svelte";
+	import { useSystemDiagram } from "./controller.svelte";
+	import { useIncidentAnalysis } from "../controller.svelte";
 
 	import SystemDiagramContextMenu from "./SystemDiagramContextMenu.svelte";
 	import ConnectionLine from "./ConnectionLine.svelte";
@@ -25,7 +26,6 @@
 	import AddingEntityGhostNode from "./AddingEntityGhostNode.svelte";
 	import ComponentNode from "./ComponentNode.svelte";
 	import RelationshipEdge from "./RelationshipEdge.svelte";
-	import { useIncidentAnalysis } from "../controller.svelte";
 
 	const analysis = useIncidentAnalysis();
 	const diagram = useSystemDiagram();

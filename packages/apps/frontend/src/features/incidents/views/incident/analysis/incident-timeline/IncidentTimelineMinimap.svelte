@@ -45,7 +45,6 @@
 
 	const incidentStartPct = $derived((controller.incidentWindow.start - viewBounds.start) / viewBoundsLength);
 	const incidentWidth = $derived(containerWidth * ((controller.incidentWindow.end - controller.incidentWindow.start) / viewBoundsLength));
-	$inspect(containerWidth, controller.incidentWindow, viewBoundsLength);
 
 	const incidentHighlightX = $derived(incidentStartPct * containerWidth);
 

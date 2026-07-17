@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type EdgeProps, EdgeLabel, getSmoothStepPath } from "@xyflow/svelte";
-	import type { SystemRelationshipEdgeData } from "./diagramState.svelte";
+	import type { SystemRelationshipEdgeData } from "./controller.svelte";
 
 	const props: EdgeProps = $props();
 	const data = $derived(props.data as SystemRelationshipEdgeData);

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useSvelteFlow, ViewportPortal } from "@xyflow/svelte";
 	import { Button } from "$components/ui/button";
-	import { useSystemDiagram, type SystemTopologyNodeData, type SystemRelationshipEdgeData } from "./diagramState.svelte";
+	import { useSystemDiagram, type SystemTopologyNodeData, type SystemRelationshipEdgeData } from "./controller.svelte";
 	import { IsMounted } from "runed";
 	import { useIncidentAnalysis } from "../controller.svelte";
 

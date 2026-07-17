@@ -10,7 +10,7 @@
 	const installation = $derived.by(() => {
 		const curr = ctrl.installations.at(0);
 		if (!curr) return;
-		const config = curr.attributes.config;
+		const config = curr.attributes.sanitizedConfig;
 		const org = typeof config.org === "string" ? config.org : curr.attributes.displayName;
 		const installationId =
 			typeof config.installation_id === "number" || typeof config.installation_id === "string"

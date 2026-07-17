@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type NodeProps, Handle, Position, useStore } from "@xyflow/svelte";
 
-	import type { SystemTopologyNodeData } from "./diagramState.svelte";
+	import type { SystemTopologyNodeData } from "./controller.svelte";
 
 	const { selected, data: arbitraryData }: NodeProps = $props();
 	const data = $derived(arbitraryData as SystemTopologyNodeData);
