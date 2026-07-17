@@ -5,7 +5,7 @@ client.setConfig({
 	credentials: "include",
 });
 client.interceptors.error.use(async (rawErr, resp, req, opts) => {
-	const status = resp.status;
+	const status = resp?.status || 500;
 	if (!rawErr) return { title: "Unknown Error", status, detail: "" } as ErrorModel;
 	const err = rawErr as Error;
 	try {

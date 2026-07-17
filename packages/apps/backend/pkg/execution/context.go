@@ -172,6 +172,7 @@ func NewAiAgentRunContext(ctx context.Context, run *ent.AiAgentRun) context.Cont
 		TenantID:     &run.TenantID,
 		UserID:       &run.OwnerUserID,
 		AiAgentRunID: &run.ID,
+		Scopes:       run.Scopes,
 	}
 	return SetContext(ctx, c)
 }

@@ -13,16 +13,20 @@ import (
 
 type KnowledgeGraphHandler interface {
 	ListKnowledgeGraphEntities(context.Context, *ListKnowledgeGraphEntitiesRequest) (*ListKnowledgeGraphEntitiesResponse, error)
-	ListKnowledgeGraphRelationships(context.Context, *ListKnowledgeGraphRelationshipsRequest) (*ListKnowledgeGraphRelationshipsResponse, error)
 	GetKnowledgeGraphEntity(context.Context, *GetKnowledgeGraphEntityRequest) (*GetKnowledgeGraphEntityResponse, error)
+
+	ListKnowledgeGraphRelationships(context.Context, *ListKnowledgeGraphRelationshipsRequest) (*ListKnowledgeGraphRelationshipsResponse, error)
+
 	CreateKnowledgeGraphSnapshot(context.Context, *CreateKnowledgeGraphSnapshotRequest) (*CreateKnowledgeGraphSnapshotResponse, error)
 	GetKnowledgeGraphSnapshot(context.Context, *GetKnowledgeGraphSnapshotRequest) (*GetKnowledgeGraphSnapshotResponse, error)
 }
 
 func (o operations) RegisterKnowledgeGraph(api huma.API) {
 	huma.Register(api, ListKnowledgeGraphEntities, o.ListKnowledgeGraphEntities)
-	huma.Register(api, ListKnowledgeGraphRelationships, o.ListKnowledgeGraphRelationships)
 	huma.Register(api, GetKnowledgeGraphEntity, o.GetKnowledgeGraphEntity)
+
+	huma.Register(api, ListKnowledgeGraphRelationships, o.ListKnowledgeGraphRelationships)
+
 	huma.Register(api, CreateKnowledgeGraphSnapshot, o.CreateKnowledgeGraphSnapshot)
 	huma.Register(api, GetKnowledgeGraphSnapshot, o.GetKnowledgeGraphSnapshot)
 }

@@ -8,11 +8,12 @@
     "./svelte-query": "./src/svelte-query.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "@hey-api/openapi-ts": "0.94.4"
+    "@hey-api/openapi-ts": "0.99.0",
+    "@types/bun": "catalog:tooling",
+    "typescript": "catalog:tooling"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5 || ^6"
   },
   "scripts": {
     "build": "openapi-ts -f ./openapi-ts.config.ts --no-log-file"
