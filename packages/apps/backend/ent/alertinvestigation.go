@@ -9,7 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/aiagentrun"
+	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinvestigation"
 	"github.com/rezible/rezible/ent/tenant"
@@ -24,8 +24,8 @@ type AlertInvestigation struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// AlertInstanceID holds the value of the "alert_instance_id" field.
 	AlertInstanceID uuid.UUID `json:"alert_instance_id,omitempty"`
-	// AiAgentRunID holds the value of the "ai_agent_run_id" field.
-	AiAgentRunID uuid.UUID `json:"ai_agent_run_id,omitempty"`
+	// AgentSessionID holds the value of the "agent_session_id" field.
+	AgentSessionID uuid.UUID `json:"agent_session_id,omitempty"`
 	// Output holds the value of the "output" field.
 	Output []byte `json:"output,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -40,8 +40,8 @@ type AlertInvestigationEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// AlertInstance holds the value of the alert_instance edge.
 	AlertInstance *AlertInstance `json:"alert_instance,omitempty"`
-	// AiAgentRun holds the value of the ai_agent_run edge.
-	AiAgentRun *AiAgentRun `json:"ai_agent_run,omitempty"`
+	// AgentSession holds the value of the agent_session edge.
+	AgentSession *AgentSession `json:"agent_session,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -69,15 +69,15 @@ func (e AlertInvestigationEdges) AlertInstanceOrErr() (*AlertInstance, error) {
 	return nil, &NotLoadedError{edge: "alert_instance"}
 }
 
-// AiAgentRunOrErr returns the AiAgentRun value or an error if the edge
+// AgentSessionOrErr returns the AgentSession value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AlertInvestigationEdges) AiAgentRunOrErr() (*AiAgentRun, error) {
-	if e.AiAgentRun != nil {
-		return e.AiAgentRun, nil
+func (e AlertInvestigationEdges) AgentSessionOrErr() (*AgentSession, error) {
+	if e.AgentSession != nil {
+		return e.AgentSession, nil
 	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: aiagentrun.Label}
+		return nil, &NotFoundError{label: agentsession.Label}
 	}
-	return nil, &NotLoadedError{edge: "ai_agent_run"}
+	return nil, &NotLoadedError{edge: "agent_session"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -89,7 +89,7 @@ func (*AlertInvestigation) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case alertinvestigation.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case alertinvestigation.FieldID, alertinvestigation.FieldAlertInstanceID, alertinvestigation.FieldAiAgentRunID:
+		case alertinvestigation.FieldID, alertinvestigation.FieldAlertInstanceID, alertinvestigation.FieldAgentSessionID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -124,11 +124,11 @@ func (_m *AlertInvestigation) assignValues(columns []string, values []any) error
 			} else if value != nil {
 				_m.AlertInstanceID = *value
 			}
-		case alertinvestigation.FieldAiAgentRunID:
+		case alertinvestigation.FieldAgentSessionID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field ai_agent_run_id", values[i])
+				return fmt.Errorf("unexpected type %T for field agent_session_id", values[i])
 			} else if value != nil {
-				_m.AiAgentRunID = *value
+				_m.AgentSessionID = *value
 			}
 		case alertinvestigation.FieldOutput:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -159,9 +159,9 @@ func (_m *AlertInvestigation) QueryAlertInstance() *AlertInstanceQuery {
 	return NewAlertInvestigationClient(_m.config).QueryAlertInstance(_m)
 }
 
-// QueryAiAgentRun queries the "ai_agent_run" edge of the AlertInvestigation entity.
-func (_m *AlertInvestigation) QueryAiAgentRun() *AiAgentRunQuery {
-	return NewAlertInvestigationClient(_m.config).QueryAiAgentRun(_m)
+// QueryAgentSession queries the "agent_session" edge of the AlertInvestigation entity.
+func (_m *AlertInvestigation) QueryAgentSession() *AgentSessionQuery {
+	return NewAlertInvestigationClient(_m.config).QueryAgentSession(_m)
 }
 
 // Update returns a builder for updating this AlertInvestigation.
@@ -193,8 +193,8 @@ func (_m *AlertInvestigation) String() string {
 	builder.WriteString("alert_instance_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AlertInstanceID))
 	builder.WriteString(", ")
-	builder.WriteString("ai_agent_run_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.AiAgentRunID))
+	builder.WriteString("agent_session_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AgentSessionID))
 	builder.WriteString(", ")
 	builder.WriteString("output=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Output))

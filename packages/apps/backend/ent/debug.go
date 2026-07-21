@@ -4,28 +4,28 @@ package ent
 
 import "entgo.io/ent/dialect"
 
-func (c *AiAgentRunClient) Debug() *AiAgentRunClient {
+func (c *AgentSessionClient) Debug() *AgentSessionClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AiAgentRunClient{config: cfg}
+	return &AgentSessionClient{config: cfg}
 }
 
-func (c *AiAgentRunKnowledgeCitationClient) Debug() *AiAgentRunKnowledgeCitationClient {
+func (c *AgentTurnClient) Debug() *AgentTurnClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AiAgentRunKnowledgeCitationClient{config: cfg}
+	return &AgentTurnClient{config: cfg}
 }
 
-func (c *AiAgentRunSnapshotClient) Debug() *AiAgentRunSnapshotClient {
+func (c *AgentTurnKnowledgeCitationClient) Debug() *AgentTurnKnowledgeCitationClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AiAgentRunSnapshotClient{config: cfg}
+	return &AgentTurnKnowledgeCitationClient{config: cfg}
 }
 
 func (c *AlertClient) Debug() *AlertClient {

@@ -1,29 +1,33 @@
--- create "ai_agent_runs" table
-CREATE TABLE "ai_agent_runs" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "agent_name" character varying NOT NULL, "scopes" jsonb NOT NULL, "started_at" timestamptz NULL, "input" bytea NOT NULL, "metadata" jsonb NULL, "tenant_id" bigint NOT NULL, "owner_user_id" uuid NOT NULL, PRIMARY KEY ("id"));
--- create index "aiagentrun_tenant_id" to table: "ai_agent_runs"
-CREATE INDEX "aiagentrun_tenant_id" ON "ai_agent_runs" ("tenant_id");
--- create index "aiagentrun_tenant_id_owner_user_id_created_at" to table: "ai_agent_runs"
-CREATE INDEX "aiagentrun_tenant_id_owner_user_id_created_at" ON "ai_agent_runs" ("tenant_id", "owner_user_id", "created_at");
--- create index "aiagentrun_tenant_id_agent_name_created_at" to table: "ai_agent_runs"
-CREATE INDEX "aiagentrun_tenant_id_agent_name_created_at" ON "ai_agent_runs" ("tenant_id", "agent_name", "created_at");
--- create "ai_agent_run_knowledge_citations" table
-CREATE TABLE "ai_agent_run_knowledge_citations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "summary" text NOT NULL, "tenant_id" bigint NOT NULL, "ai_agent_run_snapshot_id" uuid NOT NULL, "knowledge_entity_id" uuid NULL, "knowledge_relationship_id" uuid NULL, "knowledge_evidence_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "aiagentrunknowledgecitation_tenant_id" to table: "ai_agent_run_knowledge_citations"
-CREATE INDEX "aiagentrunknowledgecitation_tenant_id" ON "ai_agent_run_knowledge_citations" ("tenant_id");
--- create index "aiagentrunknowledgecitation_tenant_id_knowledge_entity_id" to table: "ai_agent_run_knowledge_citations"
-CREATE INDEX "aiagentrunknowledgecitation_tenant_id_knowledge_entity_id" ON "ai_agent_run_knowledge_citations" ("tenant_id", "knowledge_entity_id");
--- create index "aiagentrunknowledgecitation_tenant_id_knowledge_relationship_id" to table: "ai_agent_run_knowledge_citations"
-CREATE INDEX "aiagentrunknowledgecitation_tenant_id_knowledge_relationship_id" ON "ai_agent_run_knowledge_citations" ("tenant_id", "knowledge_relationship_id");
--- create index "aiagentrunknowledgecitation_tenant_id_knowledge_evidence_id" to table: "ai_agent_run_knowledge_citations"
-CREATE INDEX "aiagentrunknowledgecitation_tenant_id_knowledge_evidence_id" ON "ai_agent_run_knowledge_citations" ("tenant_id", "knowledge_evidence_id");
--- create "ai_agent_run_snapshots" table
-CREATE TABLE "ai_agent_run_snapshots" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "status" character varying NOT NULL, "finish_reason" character varying NOT NULL, "heartbeat_at" timestamptz NULL, "state" bytea NOT NULL, "error" bytea NULL, "tenant_id" bigint NOT NULL, "ai_agent_run_id" uuid NOT NULL, "parent_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "ai_agent_run_snapshots_ai_agent_run_snapshots_parent" FOREIGN KEY ("parent_id") REFERENCES "ai_agent_run_snapshots" ("id") ON DELETE SET NULL);
--- create index "aiagentrunsnapshot_tenant_id" to table: "ai_agent_run_snapshots"
-CREATE INDEX "aiagentrunsnapshot_tenant_id" ON "ai_agent_run_snapshots" ("tenant_id");
--- create index "aiagentrunsnapshot_tenant_id_ai_agent_run_id" to table: "ai_agent_run_snapshots"
-CREATE INDEX "aiagentrunsnapshot_tenant_id_ai_agent_run_id" ON "ai_agent_run_snapshots" ("tenant_id", "ai_agent_run_id");
--- create index "aiagentrunsnapshot_tenant_id_ai_agent_run_id_created_at" to table: "ai_agent_run_snapshots"
-CREATE INDEX "aiagentrunsnapshot_tenant_id_ai_agent_run_id_created_at" ON "ai_agent_run_snapshots" ("tenant_id", "ai_agent_run_id", "created_at");
+-- create "agent_sessions" table
+CREATE TABLE "agent_sessions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "agent_name" character varying NOT NULL, "default_scopes" jsonb NOT NULL, "metadata" jsonb NULL, "tenant_id" bigint NOT NULL, "owner_user_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "agentsession_tenant_id" to table: "agent_sessions"
+CREATE INDEX "agentsession_tenant_id" ON "agent_sessions" ("tenant_id");
+-- create index "agentsession_tenant_id_owner_user_id_created_at" to table: "agent_sessions"
+CREATE INDEX "agentsession_tenant_id_owner_user_id_created_at" ON "agent_sessions" ("tenant_id", "owner_user_id", "created_at");
+-- create index "agentsession_tenant_id_agent_name_created_at" to table: "agent_sessions"
+CREATE INDEX "agentsession_tenant_id_agent_name_created_at" ON "agent_sessions" ("tenant_id", "agent_name", "created_at");
+-- create "agent_turns" table
+CREATE TABLE "agent_turns" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "river_job_id" bigint NOT NULL, "scopes" jsonb NULL, "input" bytea NOT NULL, "status" character varying NOT NULL, "started_at" timestamptz NULL, "finished_at" timestamptz NULL, "finish_reason" character varying NOT NULL DEFAULT '', "state" bytea NULL, "error" bytea NULL, "agent_session_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "parent_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "agent_turns_agent_turns_parent" FOREIGN KEY ("parent_id") REFERENCES "agent_turns" ("id") ON DELETE SET NULL);
+-- create index "agentturn_tenant_id" to table: "agent_turns"
+CREATE INDEX "agentturn_tenant_id" ON "agent_turns" ("tenant_id");
+-- create index "agent_turn_one_running_per_session" to table: "agent_turns"
+CREATE UNIQUE INDEX "agent_turn_one_running_per_session" ON "agent_turns" ("agent_session_id") WHERE status = 'running';
+-- create index "agent_turn_one_successful_child_per_parent" to table: "agent_turns"
+CREATE UNIQUE INDEX "agent_turn_one_successful_child_per_parent" ON "agent_turns" ("parent_id") WHERE parent_id IS NOT NULL AND status IN ('running', 'completed');
+-- create index "agent_turn_one_successful_root_per_session" to table: "agent_turns"
+CREATE UNIQUE INDEX "agent_turn_one_successful_root_per_session" ON "agent_turns" ("agent_session_id") WHERE parent_id IS NULL AND status IN ('running', 'completed');
+-- create index "agentturn_tenant_id_agent_session_id_created_at" to table: "agent_turns"
+CREATE INDEX "agentturn_tenant_id_agent_session_id_created_at" ON "agent_turns" ("tenant_id", "agent_session_id", "created_at");
+-- create "agent_turn_knowledge_citations" table
+CREATE TABLE "agent_turn_knowledge_citations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "summary" text NOT NULL, "agent_turn_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, "knowledge_relationship_id" uuid NULL, "knowledge_evidence_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "agentturnknowledgecitation_tenant_id" to table: "agent_turn_knowledge_citations"
+CREATE INDEX "agentturnknowledgecitation_tenant_id" ON "agent_turn_knowledge_citations" ("tenant_id");
+-- create index "agentturnknowledgecitation_tenant_id_knowledge_entity_id" to table: "agent_turn_knowledge_citations"
+CREATE INDEX "agentturnknowledgecitation_tenant_id_knowledge_entity_id" ON "agent_turn_knowledge_citations" ("tenant_id", "knowledge_entity_id");
+-- create index "agentturnknowledgecitation_tenant_id_knowledge_relationship_id" to table: "agent_turn_knowledge_citations"
+CREATE INDEX "agentturnknowledgecitation_tenant_id_knowledge_relationship_id" ON "agent_turn_knowledge_citations" ("tenant_id", "knowledge_relationship_id");
+-- create index "agentturnknowledgecitation_tenant_id_knowledge_evidence_id" to table: "agent_turn_knowledge_citations"
+CREATE INDEX "agentturnknowledgecitation_tenant_id_knowledge_evidence_id" ON "agent_turn_knowledge_citations" ("tenant_id", "knowledge_evidence_id");
 -- create "alerts" table
 CREATE TABLE "alerts" ("id" uuid NOT NULL, "title" character varying NOT NULL, "description" character varying NULL, "definition" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "alert_tenant_id" to table: "alerts"
@@ -41,7 +45,7 @@ CREATE INDEX "alertinstance_tenant_id" ON "alert_instances" ("tenant_id");
 -- create index "alertinstance_tenant_id_knowledge_entity_id" to table: "alert_instances"
 CREATE UNIQUE INDEX "alertinstance_tenant_id_knowledge_entity_id" ON "alert_instances" ("tenant_id", "knowledge_entity_id");
 -- create "alert_investigations" table
-CREATE TABLE "alert_investigations" ("id" uuid NOT NULL, "output" bytea NOT NULL, "tenant_id" bigint NOT NULL, "alert_instance_id" uuid NOT NULL, "ai_agent_run_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "alert_investigations" ("id" uuid NOT NULL, "output" bytea NOT NULL, "tenant_id" bigint NOT NULL, "alert_instance_id" uuid NOT NULL, "agent_session_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "alertinvestigation_tenant_id" to table: "alert_investigations"
 CREATE INDEX "alertinvestigation_tenant_id" ON "alert_investigations" ("tenant_id");
 -- create "documents" table
@@ -462,12 +466,12 @@ CREATE TABLE "task_tickets" ("task_id" uuid NOT NULL, "ticket_id" uuid NOT NULL,
 CREATE TABLE "team_oncall_rosters" ("team_id" uuid NOT NULL, "oncall_roster_id" uuid NOT NULL, PRIMARY KEY ("team_id", "oncall_roster_id"));
 -- create "user_watched_oncall_rosters" table
 CREATE TABLE "user_watched_oncall_rosters" ("user_id" uuid NOT NULL, "oncall_roster_id" uuid NOT NULL, PRIMARY KEY ("user_id", "oncall_roster_id"));
--- modify "ai_agent_runs" table
-ALTER TABLE "ai_agent_runs" ADD CONSTRAINT "ai_agent_runs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_runs_users_owner_user" FOREIGN KEY ("owner_user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
--- modify "ai_agent_run_knowledge_citations" table
-ALTER TABLE "ai_agent_run_knowledge_citations" ADD CONSTRAINT "ai_agent_run_knowledge_citations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_run_knowledge_citatio_afc0edd2d24cfa99c5f5b85ba6d0d3d5" FOREIGN KEY ("ai_agent_run_snapshot_id") REFERENCES "ai_agent_run_snapshots" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_run_knowledge_citatio_5aef10f200ecc812a61bf87c1df604f4" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "ai_agent_run_knowledge_citatio_9ebe5e0c26a98094846a65686c1e1f8d" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "ai_agent_run_knowledge_citatio_2756b8074a547f8626c19560b2b3fd6b" FOREIGN KEY ("knowledge_evidence_id") REFERENCES "knowledge_evidences" ("id") ON DELETE SET NULL;
--- modify "ai_agent_run_snapshots" table
-ALTER TABLE "ai_agent_run_snapshots" ADD CONSTRAINT "ai_agent_run_snapshots_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "ai_agent_run_snapshots_ai_agent_runs_ai_agent_run" FOREIGN KEY ("ai_agent_run_id") REFERENCES "ai_agent_runs" ("id") ON DELETE NO ACTION;
+-- modify "agent_sessions" table
+ALTER TABLE "agent_sessions" ADD CONSTRAINT "agent_sessions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_sessions_users_owner_user" FOREIGN KEY ("owner_user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
+-- modify "agent_turns" table
+ALTER TABLE "agent_turns" ADD CONSTRAINT "agent_turns_agent_sessions_turns" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turns_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "agent_turn_knowledge_citations" table
+ALTER TABLE "agent_turn_knowledge_citations" ADD CONSTRAINT "agent_turn_knowledge_citations_agent_turns_knowledge_citations" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turn_knowledge_citations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turn_knowledge_citations_b456416a5106ae1df99b5ee0a7f94e70" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "agent_turn_knowledge_citations_5420c3316f14ab7fa60ba385678fac1f" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "agent_turn_knowledge_citations_4794ae641d5b312d64f1656ea2b13971" FOREIGN KEY ("knowledge_evidence_id") REFERENCES "knowledge_evidences" ("id") ON DELETE SET NULL;
 -- modify "alerts" table
 ALTER TABLE "alerts" ADD CONSTRAINT "alerts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alerts_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
 -- modify "alert_feedbacks" table
@@ -475,7 +479,7 @@ ALTER TABLE "alert_feedbacks" ADD CONSTRAINT "alert_feedbacks_tenants_tenant" FO
 -- modify "alert_instances" table
 ALTER TABLE "alert_instances" ADD CONSTRAINT "alert_instances_alerts_instances" FOREIGN KEY ("alert_id") REFERENCES "alerts" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
 -- modify "alert_investigations" table
-ALTER TABLE "alert_investigations" ADD CONSTRAINT "alert_investigations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_investigations_alert_instances_alert_instance" FOREIGN KEY ("alert_instance_id") REFERENCES "alert_instances" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_investigations_ai_agent_runs_ai_agent_run" FOREIGN KEY ("ai_agent_run_id") REFERENCES "ai_agent_runs" ("id") ON DELETE NO ACTION;
+ALTER TABLE "alert_investigations" ADD CONSTRAINT "alert_investigations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_investigations_alert_instances_alert_instance" FOREIGN KEY ("alert_instance_id") REFERENCES "alert_instances" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_investigations_agent_sessions_agent_session" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION;
 -- modify "documents" table
 ALTER TABLE "documents" ADD CONSTRAINT "documents_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "document_accesses" table

@@ -16,3 +16,4 @@ packages:
       OrganizationService: {}
       UserService: {}
       AlertService: {}
+      AiService: {}

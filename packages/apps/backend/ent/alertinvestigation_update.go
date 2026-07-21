@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/aiagentrun"
+	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinvestigation"
 	"github.com/rezible/rezible/ent/internal"
@@ -46,16 +46,16 @@ func (_u *AlertInvestigationUpdate) SetNillableAlertInstanceID(v *uuid.UUID) *Al
 	return _u
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (_u *AlertInvestigationUpdate) SetAiAgentRunID(v uuid.UUID) *AlertInvestigationUpdate {
-	_u.mutation.SetAiAgentRunID(v)
+// SetAgentSessionID sets the "agent_session_id" field.
+func (_u *AlertInvestigationUpdate) SetAgentSessionID(v uuid.UUID) *AlertInvestigationUpdate {
+	_u.mutation.SetAgentSessionID(v)
 	return _u
 }
 
-// SetNillableAiAgentRunID sets the "ai_agent_run_id" field if the given value is not nil.
-func (_u *AlertInvestigationUpdate) SetNillableAiAgentRunID(v *uuid.UUID) *AlertInvestigationUpdate {
+// SetNillableAgentSessionID sets the "agent_session_id" field if the given value is not nil.
+func (_u *AlertInvestigationUpdate) SetNillableAgentSessionID(v *uuid.UUID) *AlertInvestigationUpdate {
 	if v != nil {
-		_u.SetAiAgentRunID(*v)
+		_u.SetAgentSessionID(*v)
 	}
 	return _u
 }
@@ -71,9 +71,9 @@ func (_u *AlertInvestigationUpdate) SetAlertInstance(v *AlertInstance) *AlertInv
 	return _u.SetAlertInstanceID(v.ID)
 }
 
-// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AlertInvestigationUpdate) SetAiAgentRun(v *AiAgentRun) *AlertInvestigationUpdate {
-	return _u.SetAiAgentRunID(v.ID)
+// SetAgentSession sets the "agent_session" edge to the AgentSession entity.
+func (_u *AlertInvestigationUpdate) SetAgentSession(v *AgentSession) *AlertInvestigationUpdate {
+	return _u.SetAgentSessionID(v.ID)
 }
 
 // Mutation returns the AlertInvestigationMutation object of the builder.
@@ -87,9 +87,9 @@ func (_u *AlertInvestigationUpdate) ClearAlertInstance() *AlertInvestigationUpda
 	return _u
 }
 
-// ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AlertInvestigationUpdate) ClearAiAgentRun() *AlertInvestigationUpdate {
-	_u.mutation.ClearAiAgentRun()
+// ClearAgentSession clears the "agent_session" edge to the AgentSession entity.
+func (_u *AlertInvestigationUpdate) ClearAgentSession() *AlertInvestigationUpdate {
+	_u.mutation.ClearAgentSession()
 	return _u
 }
 
@@ -128,8 +128,8 @@ func (_u *AlertInvestigationUpdate) check() error {
 	if _u.mutation.AlertInstanceCleared() && len(_u.mutation.AlertInstanceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInvestigation.alert_instance"`)
 	}
-	if _u.mutation.AiAgentRunCleared() && len(_u.mutation.AiAgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AlertInvestigation.ai_agent_run"`)
+	if _u.mutation.AgentSessionCleared() && len(_u.mutation.AgentSessionIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertInvestigation.agent_session"`)
 	}
 	return nil
 }
@@ -186,29 +186,29 @@ func (_u *AlertInvestigationUpdate) sqlSave(ctx context.Context) (_node int, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.AiAgentRunCleared() {
+	if _u.mutation.AgentSessionCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alertinvestigation.AiAgentRunTable,
-			Columns: []string{alertinvestigation.AiAgentRunColumn},
+			Table:   alertinvestigation.AgentSessionTable,
+			Columns: []string{alertinvestigation.AgentSessionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AlertInvestigation
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AiAgentRunIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AgentSessionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alertinvestigation.AiAgentRunTable,
-			Columns: []string{alertinvestigation.AiAgentRunColumn},
+			Table:   alertinvestigation.AgentSessionTable,
+			Columns: []string{alertinvestigation.AgentSessionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AlertInvestigation
@@ -255,16 +255,16 @@ func (_u *AlertInvestigationUpdateOne) SetNillableAlertInstanceID(v *uuid.UUID) 
 	return _u
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (_u *AlertInvestigationUpdateOne) SetAiAgentRunID(v uuid.UUID) *AlertInvestigationUpdateOne {
-	_u.mutation.SetAiAgentRunID(v)
+// SetAgentSessionID sets the "agent_session_id" field.
+func (_u *AlertInvestigationUpdateOne) SetAgentSessionID(v uuid.UUID) *AlertInvestigationUpdateOne {
+	_u.mutation.SetAgentSessionID(v)
 	return _u
 }
 
-// SetNillableAiAgentRunID sets the "ai_agent_run_id" field if the given value is not nil.
-func (_u *AlertInvestigationUpdateOne) SetNillableAiAgentRunID(v *uuid.UUID) *AlertInvestigationUpdateOne {
+// SetNillableAgentSessionID sets the "agent_session_id" field if the given value is not nil.
+func (_u *AlertInvestigationUpdateOne) SetNillableAgentSessionID(v *uuid.UUID) *AlertInvestigationUpdateOne {
 	if v != nil {
-		_u.SetAiAgentRunID(*v)
+		_u.SetAgentSessionID(*v)
 	}
 	return _u
 }
@@ -280,9 +280,9 @@ func (_u *AlertInvestigationUpdateOne) SetAlertInstance(v *AlertInstance) *Alert
 	return _u.SetAlertInstanceID(v.ID)
 }
 
-// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AlertInvestigationUpdateOne) SetAiAgentRun(v *AiAgentRun) *AlertInvestigationUpdateOne {
-	return _u.SetAiAgentRunID(v.ID)
+// SetAgentSession sets the "agent_session" edge to the AgentSession entity.
+func (_u *AlertInvestigationUpdateOne) SetAgentSession(v *AgentSession) *AlertInvestigationUpdateOne {
+	return _u.SetAgentSessionID(v.ID)
 }
 
 // Mutation returns the AlertInvestigationMutation object of the builder.
@@ -296,9 +296,9 @@ func (_u *AlertInvestigationUpdateOne) ClearAlertInstance() *AlertInvestigationU
 	return _u
 }
 
-// ClearAiAgentRun clears the "ai_agent_run" edge to the AiAgentRun entity.
-func (_u *AlertInvestigationUpdateOne) ClearAiAgentRun() *AlertInvestigationUpdateOne {
-	_u.mutation.ClearAiAgentRun()
+// ClearAgentSession clears the "agent_session" edge to the AgentSession entity.
+func (_u *AlertInvestigationUpdateOne) ClearAgentSession() *AlertInvestigationUpdateOne {
+	_u.mutation.ClearAgentSession()
 	return _u
 }
 
@@ -350,8 +350,8 @@ func (_u *AlertInvestigationUpdateOne) check() error {
 	if _u.mutation.AlertInstanceCleared() && len(_u.mutation.AlertInstanceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInvestigation.alert_instance"`)
 	}
-	if _u.mutation.AiAgentRunCleared() && len(_u.mutation.AiAgentRunIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AlertInvestigation.ai_agent_run"`)
+	if _u.mutation.AgentSessionCleared() && len(_u.mutation.AgentSessionIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertInvestigation.agent_session"`)
 	}
 	return nil
 }
@@ -425,29 +425,29 @@ func (_u *AlertInvestigationUpdateOne) sqlSave(ctx context.Context) (_node *Aler
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.AiAgentRunCleared() {
+	if _u.mutation.AgentSessionCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alertinvestigation.AiAgentRunTable,
-			Columns: []string{alertinvestigation.AiAgentRunColumn},
+			Table:   alertinvestigation.AgentSessionTable,
+			Columns: []string{alertinvestigation.AgentSessionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AlertInvestigation
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AiAgentRunIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AgentSessionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alertinvestigation.AiAgentRunTable,
-			Columns: []string{alertinvestigation.AiAgentRunColumn},
+			Table:   alertinvestigation.AgentSessionTable,
+			Columns: []string{alertinvestigation.AgentSessionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AlertInvestigation

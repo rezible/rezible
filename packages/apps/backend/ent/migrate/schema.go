@@ -3,187 +3,209 @@
 package migrate
 
 import (
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
 
 var (
-	// AiAgentRunsColumns holds the columns for the "ai_agent_runs" table.
-	AiAgentRunsColumns = []*schema.Column{
+	// AgentSessionsColumns holds the columns for the "agent_sessions" table.
+	AgentSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "agent_name", Type: field.TypeString},
-		{Name: "scopes", Type: field.TypeJSON},
-		{Name: "started_at", Type: field.TypeTime, Nullable: true},
-		{Name: "input", Type: field.TypeBytes},
+		{Name: "default_scopes", Type: field.TypeJSON},
 		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "owner_user_id", Type: field.TypeUUID},
 	}
-	// AiAgentRunsTable holds the schema information for the "ai_agent_runs" table.
-	AiAgentRunsTable = &schema.Table{
-		Name:       "ai_agent_runs",
-		Columns:    AiAgentRunsColumns,
-		PrimaryKey: []*schema.Column{AiAgentRunsColumns[0]},
+	// AgentSessionsTable holds the schema information for the "agent_sessions" table.
+	AgentSessionsTable = &schema.Table{
+		Name:       "agent_sessions",
+		Columns:    AgentSessionsColumns,
+		PrimaryKey: []*schema.Column{AgentSessionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "ai_agent_runs_tenants_tenant",
-				Columns:    []*schema.Column{AiAgentRunsColumns[8]},
+				Symbol:     "agent_sessions_tenants_tenant",
+				Columns:    []*schema.Column{AgentSessionsColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "ai_agent_runs_users_owner_user",
-				Columns:    []*schema.Column{AiAgentRunsColumns[9]},
+				Symbol:     "agent_sessions_users_owner_user",
+				Columns:    []*schema.Column{AgentSessionsColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "aiagentrun_tenant_id",
+				Name:    "agentsession_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunsColumns[8]},
+				Columns: []*schema.Column{AgentSessionsColumns[6]},
 			},
 			{
-				Name:    "aiagentrun_tenant_id_owner_user_id_created_at",
+				Name:    "agentsession_tenant_id_owner_user_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunsColumns[8], AiAgentRunsColumns[9], AiAgentRunsColumns[1]},
+				Columns: []*schema.Column{AgentSessionsColumns[6], AgentSessionsColumns[7], AgentSessionsColumns[1]},
 			},
 			{
-				Name:    "aiagentrun_tenant_id_agent_name_created_at",
+				Name:    "agentsession_tenant_id_agent_name_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunsColumns[8], AiAgentRunsColumns[3], AiAgentRunsColumns[1]},
+				Columns: []*schema.Column{AgentSessionsColumns[6], AgentSessionsColumns[3], AgentSessionsColumns[1]},
 			},
 		},
 	}
-	// AiAgentRunKnowledgeCitationsColumns holds the columns for the "ai_agent_run_knowledge_citations" table.
-	AiAgentRunKnowledgeCitationsColumns = []*schema.Column{
+	// AgentTurnsColumns holds the columns for the "agent_turns" table.
+	AgentTurnsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "summary", Type: field.TypeString, Size: 2147483647},
+		{Name: "river_job_id", Type: field.TypeInt64},
+		{Name: "scopes", Type: field.TypeJSON, Nullable: true},
+		{Name: "input", Type: field.TypeBytes},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"queued", "running", "completed", "failed", "aborted"}},
+		{Name: "started_at", Type: field.TypeTime, Nullable: true},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+		{Name: "finish_reason", Type: field.TypeString, Default: ""},
+		{Name: "state", Type: field.TypeBytes, Nullable: true},
+		{Name: "error", Type: field.TypeBytes, Nullable: true},
+		{Name: "agent_session_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "ai_agent_run_snapshot_id", Type: field.TypeUUID},
-		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "knowledge_relationship_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "knowledge_evidence_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
 	}
-	// AiAgentRunKnowledgeCitationsTable holds the schema information for the "ai_agent_run_knowledge_citations" table.
-	AiAgentRunKnowledgeCitationsTable = &schema.Table{
-		Name:       "ai_agent_run_knowledge_citations",
-		Columns:    AiAgentRunKnowledgeCitationsColumns,
-		PrimaryKey: []*schema.Column{AiAgentRunKnowledgeCitationsColumns[0]},
+	// AgentTurnsTable holds the schema information for the "agent_turns" table.
+	AgentTurnsTable = &schema.Table{
+		Name:       "agent_turns",
+		Columns:    AgentTurnsColumns,
+		PrimaryKey: []*schema.Column{AgentTurnsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "ai_agent_run_knowledge_citations_tenants_tenant",
-				Columns:    []*schema.Column{AiAgentRunKnowledgeCitationsColumns[4]},
+				Symbol:     "agent_turns_agent_sessions_turns",
+				Columns:    []*schema.Column{AgentTurnsColumns[12]},
+				RefColumns: []*schema.Column{AgentSessionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_turns_tenants_tenant",
+				Columns:    []*schema.Column{AgentTurnsColumns[13]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "ai_agent_run_knowledge_citations_ai_agent_run_snapshots_ai_agent_run_snapshot",
-				Columns:    []*schema.Column{AiAgentRunKnowledgeCitationsColumns[5]},
-				RefColumns: []*schema.Column{AiAgentRunSnapshotsColumns[0]},
+				Symbol:     "agent_turns_agent_turns_parent",
+				Columns:    []*schema.Column{AgentTurnsColumns[14]},
+				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "agentturn_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentTurnsColumns[13]},
+			},
+			{
+				Name:    "agent_turn_one_running_per_session",
+				Unique:  true,
+				Columns: []*schema.Column{AgentTurnsColumns[12]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "status = 'running'",
+				},
+			},
+			{
+				Name:    "agent_turn_one_successful_child_per_parent",
+				Unique:  true,
+				Columns: []*schema.Column{AgentTurnsColumns[14]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "parent_id IS NOT NULL AND status IN ('running', 'completed')",
+				},
+			},
+			{
+				Name:    "agent_turn_one_successful_root_per_session",
+				Unique:  true,
+				Columns: []*schema.Column{AgentTurnsColumns[12]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "parent_id IS NULL AND status IN ('running', 'completed')",
+				},
+			},
+			{
+				Name:    "agentturn_tenant_id_agent_session_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{AgentTurnsColumns[13], AgentTurnsColumns[12], AgentTurnsColumns[1]},
+			},
+		},
+	}
+	// AgentTurnKnowledgeCitationsColumns holds the columns for the "agent_turn_knowledge_citations" table.
+	AgentTurnKnowledgeCitationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "summary", Type: field.TypeString, Size: 2147483647},
+		{Name: "agent_turn_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "knowledge_relationship_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "knowledge_evidence_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// AgentTurnKnowledgeCitationsTable holds the schema information for the "agent_turn_knowledge_citations" table.
+	AgentTurnKnowledgeCitationsTable = &schema.Table{
+		Name:       "agent_turn_knowledge_citations",
+		Columns:    AgentTurnKnowledgeCitationsColumns,
+		PrimaryKey: []*schema.Column{AgentTurnKnowledgeCitationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "agent_turn_knowledge_citations_agent_turns_knowledge_citations",
+				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[4]},
+				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "ai_agent_run_knowledge_citations_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{AiAgentRunKnowledgeCitationsColumns[6]},
+				Symbol:     "agent_turn_knowledge_citations_tenants_tenant",
+				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_turn_knowledge_citations_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[6]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "ai_agent_run_knowledge_citations_knowledge_relationships_knowledge_relationship",
-				Columns:    []*schema.Column{AiAgentRunKnowledgeCitationsColumns[7]},
+				Symbol:     "agent_turn_knowledge_citations_knowledge_relationships_knowledge_relationship",
+				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[7]},
 				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "ai_agent_run_knowledge_citations_knowledge_evidences_knowledge_evidence",
-				Columns:    []*schema.Column{AiAgentRunKnowledgeCitationsColumns[8]},
+				Symbol:     "agent_turn_knowledge_citations_knowledge_evidences_knowledge_evidence",
+				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[8]},
 				RefColumns: []*schema.Column{KnowledgeEvidencesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "aiagentrunknowledgecitation_tenant_id",
+				Name:    "agentturnknowledgecitation_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunKnowledgeCitationsColumns[4]},
+				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5]},
 			},
 			{
-				Name:    "aiagentrunknowledgecitation_tenant_id_knowledge_entity_id",
+				Name:    "agentturnknowledgecitation_tenant_id_knowledge_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunKnowledgeCitationsColumns[4], AiAgentRunKnowledgeCitationsColumns[6]},
+				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5], AgentTurnKnowledgeCitationsColumns[6]},
 			},
 			{
-				Name:    "aiagentrunknowledgecitation_tenant_id_knowledge_relationship_id",
+				Name:    "agentturnknowledgecitation_tenant_id_knowledge_relationship_id",
 				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunKnowledgeCitationsColumns[4], AiAgentRunKnowledgeCitationsColumns[7]},
+				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5], AgentTurnKnowledgeCitationsColumns[7]},
 			},
 			{
-				Name:    "aiagentrunknowledgecitation_tenant_id_knowledge_evidence_id",
+				Name:    "agentturnknowledgecitation_tenant_id_knowledge_evidence_id",
 				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunKnowledgeCitationsColumns[4], AiAgentRunKnowledgeCitationsColumns[8]},
-			},
-		},
-	}
-	// AiAgentRunSnapshotsColumns holds the columns for the "ai_agent_run_snapshots" table.
-	AiAgentRunSnapshotsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "completed", "failed", "aborted"}},
-		{Name: "finish_reason", Type: field.TypeString},
-		{Name: "heartbeat_at", Type: field.TypeTime, Nullable: true},
-		{Name: "state", Type: field.TypeBytes},
-		{Name: "error", Type: field.TypeBytes, Nullable: true},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "ai_agent_run_id", Type: field.TypeUUID},
-		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
-	}
-	// AiAgentRunSnapshotsTable holds the schema information for the "ai_agent_run_snapshots" table.
-	AiAgentRunSnapshotsTable = &schema.Table{
-		Name:       "ai_agent_run_snapshots",
-		Columns:    AiAgentRunSnapshotsColumns,
-		PrimaryKey: []*schema.Column{AiAgentRunSnapshotsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "ai_agent_run_snapshots_tenants_tenant",
-				Columns:    []*schema.Column{AiAgentRunSnapshotsColumns[8]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "ai_agent_run_snapshots_ai_agent_runs_ai_agent_run",
-				Columns:    []*schema.Column{AiAgentRunSnapshotsColumns[9]},
-				RefColumns: []*schema.Column{AiAgentRunsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "ai_agent_run_snapshots_ai_agent_run_snapshots_parent",
-				Columns:    []*schema.Column{AiAgentRunSnapshotsColumns[10]},
-				RefColumns: []*schema.Column{AiAgentRunSnapshotsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "aiagentrunsnapshot_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunSnapshotsColumns[8]},
-			},
-			{
-				Name:    "aiagentrunsnapshot_tenant_id_ai_agent_run_id",
-				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunSnapshotsColumns[8], AiAgentRunSnapshotsColumns[9]},
-			},
-			{
-				Name:    "aiagentrunsnapshot_tenant_id_ai_agent_run_id_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{AiAgentRunSnapshotsColumns[8], AiAgentRunSnapshotsColumns[9], AiAgentRunSnapshotsColumns[1]},
+				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5], AgentTurnKnowledgeCitationsColumns[8]},
 			},
 		},
 	}
@@ -316,7 +338,7 @@ var (
 		{Name: "output", Type: field.TypeBytes},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "alert_instance_id", Type: field.TypeUUID},
-		{Name: "ai_agent_run_id", Type: field.TypeUUID},
+		{Name: "agent_session_id", Type: field.TypeUUID},
 	}
 	// AlertInvestigationsTable holds the schema information for the "alert_investigations" table.
 	AlertInvestigationsTable = &schema.Table{
@@ -337,9 +359,9 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "alert_investigations_ai_agent_runs_ai_agent_run",
+				Symbol:     "alert_investigations_agent_sessions_agent_session",
 				Columns:    []*schema.Column{AlertInvestigationsColumns[4]},
-				RefColumns: []*schema.Column{AiAgentRunsColumns[0]},
+				RefColumns: []*schema.Column{AgentSessionsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -3516,9 +3538,9 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		AiAgentRunsTable,
-		AiAgentRunKnowledgeCitationsTable,
-		AiAgentRunSnapshotsTable,
+		AgentSessionsTable,
+		AgentTurnsTable,
+		AgentTurnKnowledgeCitationsTable,
 		AlertsTable,
 		AlertFeedbacksTable,
 		AlertInstancesTable,
@@ -3606,16 +3628,16 @@ var (
 )
 
 func init() {
-	AiAgentRunsTable.ForeignKeys[0].RefTable = TenantsTable
-	AiAgentRunsTable.ForeignKeys[1].RefTable = UsersTable
-	AiAgentRunKnowledgeCitationsTable.ForeignKeys[0].RefTable = TenantsTable
-	AiAgentRunKnowledgeCitationsTable.ForeignKeys[1].RefTable = AiAgentRunSnapshotsTable
-	AiAgentRunKnowledgeCitationsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
-	AiAgentRunKnowledgeCitationsTable.ForeignKeys[3].RefTable = KnowledgeRelationshipsTable
-	AiAgentRunKnowledgeCitationsTable.ForeignKeys[4].RefTable = KnowledgeEvidencesTable
-	AiAgentRunSnapshotsTable.ForeignKeys[0].RefTable = TenantsTable
-	AiAgentRunSnapshotsTable.ForeignKeys[1].RefTable = AiAgentRunsTable
-	AiAgentRunSnapshotsTable.ForeignKeys[2].RefTable = AiAgentRunSnapshotsTable
+	AgentSessionsTable.ForeignKeys[0].RefTable = TenantsTable
+	AgentSessionsTable.ForeignKeys[1].RefTable = UsersTable
+	AgentTurnsTable.ForeignKeys[0].RefTable = AgentSessionsTable
+	AgentTurnsTable.ForeignKeys[1].RefTable = TenantsTable
+	AgentTurnsTable.ForeignKeys[2].RefTable = AgentTurnsTable
+	AgentTurnKnowledgeCitationsTable.ForeignKeys[0].RefTable = AgentTurnsTable
+	AgentTurnKnowledgeCitationsTable.ForeignKeys[1].RefTable = TenantsTable
+	AgentTurnKnowledgeCitationsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	AgentTurnKnowledgeCitationsTable.ForeignKeys[3].RefTable = KnowledgeRelationshipsTable
+	AgentTurnKnowledgeCitationsTable.ForeignKeys[4].RefTable = KnowledgeEvidencesTable
 	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable
@@ -3625,7 +3647,7 @@ func init() {
 	AlertInstancesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	AlertInvestigationsTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertInvestigationsTable.ForeignKeys[1].RefTable = AlertInstancesTable
-	AlertInvestigationsTable.ForeignKeys[2].RefTable = AiAgentRunsTable
+	AlertInvestigationsTable.ForeignKeys[2].RefTable = AgentSessionsTable
 	DocumentsTable.ForeignKeys[0].RefTable = TenantsTable
 	DocumentAccessesTable.ForeignKeys[0].RefTable = TenantsTable
 	DocumentAccessesTable.ForeignKeys[1].RefTable = DocumentsTable

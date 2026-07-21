@@ -77,49 +77,53 @@ export type AddWatchedOncallRosterResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type AiAgentRun = {
-    attributes: AiAgentRunAttributes;
+export type AgentSession = {
+    attributes: AgentSessionAttributes;
     id: string;
 };
 
-export type AiAgentRunAttributes = {
-    agentname: string;
+export type AgentSessionAttributes = {
+    agentName: string;
     createdAt: string;
+    initialTurn?: AgentTurn;
+    latestTurn?: AgentTurn;
     ownerUserId: string;
     permissionScopes: Array<string>;
-    snapshots: Array<AiAgentRunSnapshot>;
-    startedAt?: string;
 };
 
-export type AiAgentRunSnapshot = {
-    attributes: AiAgentRunSnapshotAttributes;
+export type AgentTurn = {
+    attributes: AgentTurnAttributes;
     id: string;
 };
 
-export type AiAgentRunSnapshotAttributes = {
-    created_at: string;
-    error?: string;
-    finish_reason: string;
-    heartbeat_at: string | null;
-    parent_id: string;
-    state?: AiAgentRunSnapshotState;
+export type AgentTurnActionResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AgentTurn;
+};
+
+export type AgentTurnAttributes = {
+    createdAt: string;
+    error?: AgentTurnError;
+    finishReason?: string;
+    finishedAt?: string;
+    parentTurnId?: string;
+    startedAt?: string;
+    state?: SessionStateRawMessage;
     status: string;
+    updatedAt: string;
 };
 
-export type AiAgentRunSnapshotState = {
-    artifacts: Array<AiAgentRunSnapshotStateArtifact>;
-    custom: {
-        [key: string]: unknown;
-    };
-    messages: Array<Message>;
+export type AgentTurnError = {
+    code: string;
+    message: string;
 };
 
-export type AiAgentRunSnapshotStateArtifact = {
-    metadata?: {
-        [key: string]: unknown;
-    };
-    name?: string;
-    parts: Array<Part>;
+export type AgentTurnResume = {
+    respond?: Array<Part>;
+    restart?: Array<Part>;
 };
 
 export type Alert = {
@@ -158,6 +162,14 @@ export type AlertMetrics = {
     triggers: number;
 };
 
+export type Artifact = {
+    metadata?: {
+        [key: string]: unknown;
+    };
+    name?: string;
+    parts: Array<Part>;
+};
+
 export type CompleteIntegrationOAuthFlowRequestAttributes = {
     client_verifier?: string;
     code: string;
@@ -178,6 +190,29 @@ export type CompleteIntegrationOAuthFlowResponseBody = {
      */
     readonly $schema?: string;
     data: IntegrationOAuthInstallResult;
+};
+
+export type CreateAgentSessionAttributes = {
+    agentName: string;
+    input: {
+        [key: string]: unknown;
+    };
+};
+
+export type CreateAgentSessionRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateAgentSessionAttributes;
+};
+
+export type CreateAgentSessionResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AgentSession;
 };
 
 export type CreateEventAnnotationRequestAttributes = {
@@ -783,12 +818,12 @@ export type GetAdjacentOncallShiftsResponseBody = {
     data: OncallShiftsAdjacent;
 };
 
-export type GetAiAgentRunResponseBody = {
+export type GetAgentSessionResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: AiAgentRun;
+    data: AgentSession;
 };
 
 export type GetAlertMetricsResponseBody = {
@@ -1604,12 +1639,21 @@ export type KnowledgeGraphSubjectAliasAttributes = {
     providerSubjectRef: string;
 };
 
-export type ListAiAgentRunsResponseBody = {
+export type ListAgentSessionsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<AiAgentRun>;
+    data: Array<AgentSession>;
+    pagination: ResponsePagination;
+};
+
+export type ListAgentTurnsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AgentTurn>;
     pagination: ResponsePagination;
 };
 
@@ -2163,27 +2207,25 @@ export type RemoveWatchedOncallRosterResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type RequestAgentRunRequestAttributes = {
-    input: {
-        [key: string]: unknown;
-    };
-    workflow: string;
+export type RequestAgentTurnRequestAttributes = {
+    message?: string;
+    resume?: AgentTurnResume;
 };
 
-export type RequestAiAgentRunRequestBody = {
+export type RequestAgentTurnRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: RequestAgentRunRequestAttributes;
+    attributes: RequestAgentTurnRequestAttributes;
 };
 
-export type RequestAiAgentRunResponseBody = {
+export type RequestAgentTurnResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: AiAgentRun;
+    data: AgentTurn;
 };
 
 export type RequestDocumentSessionAuthResponseBody = {
@@ -2276,6 +2318,13 @@ export type SendOncallShiftHandoverResponseBody = {
      */
     readonly $schema?: string;
     data: OncallShiftHandover;
+};
+
+export type SessionStateRawMessage = {
+    artifacts?: Array<Artifact>;
+    custom?: unknown;
+    messages?: Array<Message>;
+    sessionId?: string;
 };
 
 export type SetIncidentImpactAttributes = {
@@ -3008,7 +3057,7 @@ export type VideoConferenceAttributes = {
     status: string;
 };
 
-export type ListAiAgentRunsData = {
+export type ListAgentSessionsData = {
     body?: never;
     path?: never;
     query?: {
@@ -3016,14 +3065,11 @@ export type ListAiAgentRunsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
-        agentTaskId?: string;
-        name?: string;
-        resulted?: boolean;
     };
-    url: '/ai/agents/runs';
+    url: '/ai/agent_sessions';
 };
 
-export type ListAiAgentRunsErrors = {
+export type ListAgentSessionsErrors = {
     /**
      * Bad Request
      */
@@ -3050,25 +3096,25 @@ export type ListAiAgentRunsErrors = {
     500: ErrorModel;
 };
 
-export type ListAiAgentRunsError = ListAiAgentRunsErrors[keyof ListAiAgentRunsErrors];
+export type ListAgentSessionsError = ListAgentSessionsErrors[keyof ListAgentSessionsErrors];
 
-export type ListAiAgentRunsResponses = {
+export type ListAgentSessionsResponses = {
     /**
      * OK
      */
-    200: ListAiAgentRunsResponseBody;
+    200: ListAgentSessionsResponseBody;
 };
 
-export type ListAiAgentRunsResponse = ListAiAgentRunsResponses[keyof ListAiAgentRunsResponses];
+export type ListAgentSessionsResponse = ListAgentSessionsResponses[keyof ListAgentSessionsResponses];
 
-export type RequestAiAgentRunData = {
-    body: RequestAiAgentRunRequestBody;
+export type CreateAgentSessionData = {
+    body: CreateAgentSessionRequestBody;
     path?: never;
     query?: never;
-    url: '/ai/agents/runs';
+    url: '/ai/agent_sessions';
 };
 
-export type RequestAiAgentRunErrors = {
+export type CreateAgentSessionErrors = {
     /**
      * Bad Request
      */
@@ -3086,6 +3132,10 @@ export type RequestAiAgentRunErrors = {
      */
     404: ErrorModel;
     /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
      * Unprocessable Entity
      */
     422: ErrorModel;
@@ -3095,27 +3145,27 @@ export type RequestAiAgentRunErrors = {
     500: ErrorModel;
 };
 
-export type RequestAiAgentRunError = RequestAiAgentRunErrors[keyof RequestAiAgentRunErrors];
+export type CreateAgentSessionError = CreateAgentSessionErrors[keyof CreateAgentSessionErrors];
 
-export type RequestAiAgentRunResponses = {
+export type CreateAgentSessionResponses = {
     /**
-     * OK
+     * Created
      */
-    200: RequestAiAgentRunResponseBody;
+    201: CreateAgentSessionResponseBody;
 };
 
-export type RequestAiAgentRunResponse = RequestAiAgentRunResponses[keyof RequestAiAgentRunResponses];
+export type CreateAgentSessionResponse = CreateAgentSessionResponses[keyof CreateAgentSessionResponses];
 
-export type GetAiAgentRunData = {
+export type GetAgentSessionData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/ai/agents/runs/{id}';
+    url: '/ai/agent_sessions/{id}';
 };
 
-export type GetAiAgentRunErrors = {
+export type GetAgentSessionErrors = {
     /**
      * Bad Request
      */
@@ -3142,16 +3192,221 @@ export type GetAiAgentRunErrors = {
     500: ErrorModel;
 };
 
-export type GetAiAgentRunError = GetAiAgentRunErrors[keyof GetAiAgentRunErrors];
+export type GetAgentSessionError = GetAgentSessionErrors[keyof GetAgentSessionErrors];
 
-export type GetAiAgentRunResponses = {
+export type GetAgentSessionResponses = {
     /**
      * OK
      */
-    200: GetAiAgentRunResponseBody;
+    200: GetAgentSessionResponseBody;
 };
 
-export type GetAiAgentRunResponse = GetAiAgentRunResponses[keyof GetAiAgentRunResponses];
+export type GetAgentSessionResponse = GetAgentSessionResponses[keyof GetAgentSessionResponses];
+
+export type ListAgentTurnsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/ai/agent_sessions/{id}/turns';
+};
+
+export type ListAgentTurnsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAgentTurnsError = ListAgentTurnsErrors[keyof ListAgentTurnsErrors];
+
+export type ListAgentTurnsResponses = {
+    /**
+     * OK
+     */
+    200: ListAgentTurnsResponseBody;
+};
+
+export type ListAgentTurnsResponse = ListAgentTurnsResponses[keyof ListAgentTurnsResponses];
+
+export type RequestAgentTurnData = {
+    body: RequestAgentTurnRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/ai/agent_sessions/{id}/turns';
+};
+
+export type RequestAgentTurnErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RequestAgentTurnError = RequestAgentTurnErrors[keyof RequestAgentTurnErrors];
+
+export type RequestAgentTurnResponses = {
+    /**
+     * Accepted
+     */
+    202: RequestAgentTurnResponseBody;
+};
+
+export type RequestAgentTurnResponse = RequestAgentTurnResponses[keyof RequestAgentTurnResponses];
+
+export type AbortAgentTurnData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/ai/agent_turns/{id}/abort';
+};
+
+export type AbortAgentTurnErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type AbortAgentTurnError = AbortAgentTurnErrors[keyof AbortAgentTurnErrors];
+
+export type AbortAgentTurnResponses = {
+    /**
+     * OK
+     */
+    200: AgentTurnActionResponseBody;
+};
+
+export type AbortAgentTurnResponse = AbortAgentTurnResponses[keyof AbortAgentTurnResponses];
+
+export type RetryAgentTurnData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/ai/agent_turns/{id}/retry';
+};
+
+export type RetryAgentTurnErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RetryAgentTurnError = RetryAgentTurnErrors[keyof RetryAgentTurnErrors];
+
+export type RetryAgentTurnResponses = {
+    /**
+     * Accepted
+     */
+    202: AgentTurnActionResponseBody;
+};
+
+export type RetryAgentTurnResponse = RetryAgentTurnResponses[keyof RetryAgentTurnResponses];
 
 export type ListAlertsData = {
     body?: never;

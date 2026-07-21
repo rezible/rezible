@@ -20,11 +20,12 @@ type (
 
 	Auth struct {
 		TenantID            *int       `json:"tenant_id,omitempty"`
-		UserID              *uuid.UUID `json:"user_id,omitempty"`
-		AiAgentRunID        *uuid.UUID `json:"ai_agent_run_id,omitempty"`
-		ImpersonatingUserID *uuid.UUID `json:"impersonating_user_id,omitempty"`
 		Scopes              []string   `json:"scopes,omitempty"`
-		ExpiresAt           time.Time  `json:"exp"`
+		UserID              *uuid.UUID `json:"user_id,omitempty"`
+		AgentSessionID      *uuid.UUID `json:"agent_session_id,omitempty"`
+		AgentTurnID         *uuid.UUID `json:"agent_turn_id,omitempty"`
+		ImpersonatingUserID *uuid.UUID `json:"impersonating_user_id,omitempty"`
+		ExpiresAt           *time.Time `json:"exp,omitempty"`
 	}
 
 	SourceKind string
@@ -77,11 +78,18 @@ func (c Context) UserID() (uuid.UUID, bool) {
 	return *c.Auth.UserID, true
 }
 
-func (c Context) AiAgentRunID() (uuid.UUID, bool) {
-	if c.Auth.AiAgentRunID == nil {
+func (c Context) AgentSessionID() (uuid.UUID, bool) {
+	if c.Auth.AgentSessionID == nil {
 		return uuid.Nil, false
 	}
-	return *c.Auth.AiAgentRunID, true
+	return *c.Auth.AgentSessionID, true
+}
+
+func (c Context) AgentTurnID() (uuid.UUID, bool) {
+	if c.Auth.AgentTurnID == nil {
+		return uuid.Nil, false
+	}
+	return *c.Auth.AgentTurnID, true
 }
 
 type ctxKey struct{}
@@ -160,19 +168,20 @@ func NewUserContext(ctx context.Context, sess *ent.UserAuthSession) context.Cont
 	c.Auth = Auth{
 		TenantID:  &sess.TenantID,
 		UserID:    &sess.UserID,
-		ExpiresAt: sess.ExpiresAt,
+		ExpiresAt: &sess.ExpiresAt,
 	}
 	return SetContext(ctx, c)
 }
 
-func NewAiAgentRunContext(ctx context.Context, run *ent.AiAgentRun) context.Context {
+func NewAiAgentContext(ctx context.Context, sess *ent.AgentSession, turn *ent.AgentTurn) context.Context {
 	c := GetContext(ctx)
 	c.ActorKind = KindAiAgent
 	c.Auth = Auth{
-		TenantID:     &run.TenantID,
-		UserID:       &run.OwnerUserID,
-		AiAgentRunID: &run.ID,
-		Scopes:       run.Scopes,
+		TenantID:       &sess.TenantID,
+		UserID:         &sess.OwnerUserID,
+		AgentSessionID: &sess.ID,
+		AgentTurnID:    &turn.ID,
+		Scopes:         append(sess.DefaultScopes, turn.Scopes...), // TODO: scopes for turn
 	}
 	return SetContext(ctx, c)
 }
@@ -197,8 +206,11 @@ func (c Context) validate() error {
 		if c.Auth.UserID == nil {
 			return fmt.Errorf("agent actor missing user id")
 		}
-		if c.Auth.AiAgentRunID == nil {
-			return fmt.Errorf("agent actor missing run id")
+		if c.Auth.AgentSessionID == nil {
+			return fmt.Errorf("agent actor missing session id")
+		}
+		if c.Auth.AgentTurnID == nil {
+			return fmt.Errorf("agent actor missing turn id")
 		}
 	case KindSystem:
 	default:

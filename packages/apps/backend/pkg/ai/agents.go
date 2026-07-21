@@ -6,14 +6,14 @@ import (
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
+	"github.com/firebase/genkit/go/core"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 )
 
 type (
-	AgentRunState[S SessionState]    aix.SessionState[S]
-	AgentRunSnapshot[S SessionState] aix.SessionSnapshot[S]
+	AgentState[S SessionState] aix.SessionState[S]
 
 	AgentInput interface {
 		Validate() error
@@ -24,7 +24,13 @@ type (
 
 	AgentOutput interface {
 	}
+)
 
+var (
+	ErrAgentInterrupted = core.NewError(core.INTERNAL, "agent turn execution was interrupted after it started; explicit retry is required")
+)
+
+type (
 	AgentDefinition[I AgentInput, S SessionState, O AgentOutput] struct {
 		Name            string
 		Description     string
@@ -53,15 +59,12 @@ func (d AgentDefinition[I, S, O]) ValidateInput(raw []byte) (*I, error) {
 	return &input, validationErr
 }
 
-func (d AgentDefinition[I, S, O]) ParseSnapshot(rs *ent.AiAgentRunSnapshot) (*AgentRunState[S], error) {
-	var state AgentRunState[S]
-	if rs.State == nil {
+func (d AgentDefinition[I, S, O]) ParseTurn(turn *ent.AgentTurn) (*AgentState[S], error) {
+	var state AgentState[S]
+	if turn.State == nil {
 		return nil, fmt.Errorf("state is nil")
 	}
-	if err := json.Unmarshal(*rs.State, &state); err != nil {
-		return nil, fmt.Errorf("json: %w", err)
-	}
-	return &state, nil
+	return &state, json.Unmarshal(turn.State, &state)
 }
 
 func (d AgentDefinition[I, S, O]) MakeOutputArtifactPart(output O) (*ai.Part, error) {
@@ -85,8 +88,8 @@ func (d AgentDefinition[I, S, O]) ParseOutputArtifactPart(p *ai.Part) (*O, error
 
 const OutputArtifactName = "output"
 
-func (d AgentDefinition[I, S, O]) GetSnapshotOutputs(rs *ent.AiAgentRunSnapshot) ([]O, error) {
-	state, stateErr := d.ParseSnapshot(rs)
+func (d AgentDefinition[I, S, O]) GetTurnOutputs(turn *ent.AgentTurn) ([]O, error) {
+	state, stateErr := d.ParseTurn(turn)
 	if stateErr != nil {
 		return nil, fmt.Errorf("parse state: %w", stateErr)
 	}
@@ -110,7 +113,7 @@ func (d AgentDefinition[I, S, O]) GetSnapshotOutputs(rs *ent.AiAgentRunSnapshot)
 	return outputs, nil
 }
 
-func (s *AgentRunState[S]) GetModelTextMessages() []string {
+func (s *AgentState[S]) GetModelTextMessages() []string {
 	var messages []string
 	for _, msg := range s.Messages {
 		if msg.Role == ai.RoleModel {

@@ -24,15 +24,7 @@ func (a *AlertsAgent) agentDefinition() rezai.AlertsAgentDefinition {
 	return rezai.AlertsAgent
 }
 
-func (a *AlertsAgent) transformState(ctx context.Context, state *aix.SessionState[rezai.AlertAgentState]) (*aix.SessionState[rezai.AlertAgentState], error) {
-	return state, nil
-}
-
-func (a *AlertsAgent) transformStreamChunk(ctx context.Context, chunk *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error) {
-	return chunk, nil
-}
-
-func (a *AlertsAgent) makeInitialUserMessage(ctx context.Context, input rezai.AlertAgentInput) (*ai.Message, error) {
+func (a *AlertsAgent) makeInitialTurnInput(ctx context.Context, input rezai.AlertAgentInput) (*rez.AgentTurnInput, error) {
 	inst, instErr := a.alerts.GetAlertInstance(ctx, input.AlertID)
 	if instErr != nil {
 		return nil, fmt.Errorf("get alert instance: %w", instErr)
@@ -48,5 +40,13 @@ Title: %s
 Description: %s
 Definition: %s`, alrt.Title, alrt.Description, alrt.Definition)
 
-	return ai.NewUserTextMessage(msgText), nil
+	return &rez.AgentTurnInput{Message: ai.NewUserTextMessage(msgText)}, nil
+}
+
+func (a *AlertsAgent) transformState(ctx context.Context, state *aix.SessionState[rezai.AlertAgentState]) (*aix.SessionState[rezai.AlertAgentState], error) {
+	return state, nil
+}
+
+func (a *AlertsAgent) transformStreamChunk(ctx context.Context, chunk *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error) {
+	return chunk, nil
 }

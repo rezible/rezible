@@ -11,6 +11,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
+	"github.com/firebase/genkit/go/core"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
@@ -30,6 +31,8 @@ var (
 	ErrAuthSessionMissing   = fmt.Errorf("no auth session")
 	ErrAuthSessionExpired   = fmt.Errorf("auth session expired")
 	ErrAuthSessionInvalid   = fmt.Errorf("auth session invalid")
+	ErrConflict             = fmt.Errorf("conflict")
+	ErrInvalidInput         = fmt.Errorf("invalid input")
 )
 
 type ConfigLoader interface {
@@ -108,6 +111,7 @@ type (
 	JobService interface {
 		Insert(context.Context, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
 		InsertMany(context.Context, []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
+		Cancel(context.Context, int64) error
 	}
 )
 
@@ -406,66 +410,65 @@ type (
 )
 
 type (
-	AiAgentSnapshotDelta struct {
-		Status      *aix.SnapshotStatus
-		OutputParts []*ai.Part
+	AgentTurnInput struct {
+		Message *ai.Message              `json:"message,omitempty"`
+		Resume  *ai.GenerateActionResume `json:"resume,omitempty"`
 	}
 
-	AiAgentSnapshotSetFunc = func(*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation) (*AiAgentSnapshotDelta, error)
-	AiAgentSnapshotService interface {
-		GetLatestSnapshotForRun(context.Context, uuid.UUID) (*ent.AiAgentRunSnapshot, error)
-		GetAgentRunSnapshot(context.Context, uuid.UUID) (*ent.AiAgentRunSnapshot, error)
-		UpdateAgentRunSnapshot(context.Context, uuid.UUID, AiAgentSnapshotSetFunc) (*ent.AiAgentRunSnapshot, error)
-		OnSnapshotStatusChange(context.Context, uuid.UUID) <-chan aix.SnapshotStatus
+	InvokeAgentTurnParams struct {
+		Session *ent.AgentSession
+		Parent  *ent.AgentTurn
+		Turn    *ent.AgentTurn
+		Input   *AgentTurnInput
 	}
 
-	EventOnAiAgentRunSnapshotChange struct {
-		AgentName          string
-		AgentRunMetadata   map[string]any
-		AgentRunId         uuid.UUID
-		AgentRunSnapshotId uuid.UUID
-		Delta              AiAgentSnapshotDelta
-	}
-
-	AiAgentRunInvoker interface {
-		Invoke(ctx context.Context, parentId *uuid.UUID, msg *ai.Message, resume *ai.GenerateActionResume) (uuid.UUID, error)
-	}
-
-	AiWorkflowInvoker interface {
-		Run(context.Context, any) (any, error)
+	AgentTurnResult struct {
+		State        []byte
+		FinishReason aix.AgentFinishReason
+		Error        *core.GenkitError
 	}
 
 	AiService interface {
-		ValidateAgentRunInput(name string, input []byte) error
-		GetAgentRunInvoker(run *ent.AiAgentRun) (AiAgentRunInvoker, error)
-		GetWorkflowInvoker(name string) (AiWorkflowInvoker, error)
+		MakeInitialAgentTurnInput(context.Context, string, any) (*AgentTurnInput, error)
+		InvokeAgentTurn(context.Context, *ent.AgentSession, *ent.AgentTurn, []byte, *AgentTurnInput) (*AgentTurnResult, error)
 	}
 
-	CreateAgentRunParams struct {
+	CreateAgentSessionParams struct {
+		AgentName        string
 		OwnerUserID      uuid.UUID
 		PermissionScopes []string
 		Input            any
 		Metadata         map[string]any
 	}
 
-	ListAgentRunsParams struct {
+	ListAgentSessionsParams struct {
 		ent.ListParams
-		Predicates []predicate.AiAgentRun
+		Predicates []predicate.AgentSession
 		Metadata   map[string]any
 	}
 
-	InvokeAgentRunParams struct {
-		ParentSnapshotID uuid.UUID
-		Message          *ai.Message
-		Resume           *ai.GenerateActionResume
+	RequestAgentTurnParams struct {
+		Input        *AgentTurnInput
+		ParentTurnID *uuid.UUID
 	}
 
-	AiAgentService interface {
-		AiAgentSnapshotService
-		ListAgentRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AiAgentRun], error)
-		CreateAgentRun(context.Context, string, CreateAgentRunParams) (*ent.AiAgentRun, error)
-		InvokeAgentRun(context.Context, uuid.UUID, InvokeAgentRunParams) error
-		GetAgentRun(context.Context, uuid.UUID) (*ent.AiAgentRun, error)
+	ListAgentTurnsParams struct {
+		ent.ListParams
+		Predicates []predicate.AgentTurn
+	}
+
+	AgentSessionService interface {
+		ListAgentSessions(context.Context, ListAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error)
+		CreateAgentSession(context.Context, CreateAgentSessionParams) (*ent.AgentSession, error)
+		GetAgentSession(context.Context, uuid.UUID) (*ent.AgentSession, error)
+
+		RequestAgentTurn(context.Context, uuid.UUID, *RequestAgentTurnParams) (*ent.AgentTurn, error)
+		//GetLastSuccessfulAgentTurnForSession(context.Context, uuid.UUID) (*ent.AgentTurn, error)
+
+		ListAgentTurns(context.Context, ListAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error)
+		GetAgentTurn(context.Context, uuid.UUID) (*ent.AgentTurn, error)
+		RetryAgentTurn(context.Context, uuid.UUID) (*ent.AgentTurn, error)
+		AbortAgentTurn(context.Context, uuid.UUID) (*ent.AgentTurn, error)
 	}
 )
 

@@ -12,12 +12,12 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// AiAgentRun is the client for interacting with the AiAgentRun builders.
-	AiAgentRun *AiAgentRunClient
-	// AiAgentRunKnowledgeCitation is the client for interacting with the AiAgentRunKnowledgeCitation builders.
-	AiAgentRunKnowledgeCitation *AiAgentRunKnowledgeCitationClient
-	// AiAgentRunSnapshot is the client for interacting with the AiAgentRunSnapshot builders.
-	AiAgentRunSnapshot *AiAgentRunSnapshotClient
+	// AgentSession is the client for interacting with the AgentSession builders.
+	AgentSession *AgentSessionClient
+	// AgentTurn is the client for interacting with the AgentTurn builders.
+	AgentTurn *AgentTurnClient
+	// AgentTurnKnowledgeCitation is the client for interacting with the AgentTurnKnowledgeCitation builders.
+	AgentTurnKnowledgeCitation *AgentTurnKnowledgeCitationClient
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
@@ -289,9 +289,9 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.AiAgentRun = NewAiAgentRunClient(tx.config)
-	tx.AiAgentRunKnowledgeCitation = NewAiAgentRunKnowledgeCitationClient(tx.config)
-	tx.AiAgentRunSnapshot = NewAiAgentRunSnapshotClient(tx.config)
+	tx.AgentSession = NewAgentSessionClient(tx.config)
+	tx.AgentTurn = NewAgentTurnClient(tx.config)
+	tx.AgentTurnKnowledgeCitation = NewAgentTurnKnowledgeCitationClient(tx.config)
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertInstance = NewAlertInstanceClient(tx.config)
@@ -371,7 +371,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: AiAgentRun.QueryXXX(), the query will be executed
+// applies a query, for example: AgentSession.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

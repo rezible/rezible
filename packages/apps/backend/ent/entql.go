@@ -3,9 +3,9 @@
 package ent
 
 import (
-	"github.com/rezible/rezible/ent/aiagentrun"
-	"github.com/rezible/rezible/ent/aiagentrunknowledgecitation"
-	"github.com/rezible/rezible/ent/aiagentrunsnapshot"
+	"github.com/rezible/rezible/ent/agentsession"
+	"github.com/rezible/rezible/ent/agentturn"
+	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
@@ -89,68 +89,70 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 73)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   aiagentrun.Table,
-			Columns: aiagentrun.Columns,
+			Table:   agentsession.Table,
+			Columns: agentsession.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUUID,
-				Column: aiagentrun.FieldID,
+				Column: agentsession.FieldID,
 			},
 		},
-		Type: "AiAgentRun",
+		Type: "AgentSession",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			aiagentrun.FieldTenantID:    {Type: field.TypeInt, Column: aiagentrun.FieldTenantID},
-			aiagentrun.FieldCreatedAt:   {Type: field.TypeTime, Column: aiagentrun.FieldCreatedAt},
-			aiagentrun.FieldUpdatedAt:   {Type: field.TypeTime, Column: aiagentrun.FieldUpdatedAt},
-			aiagentrun.FieldAgentName:   {Type: field.TypeString, Column: aiagentrun.FieldAgentName},
-			aiagentrun.FieldOwnerUserID: {Type: field.TypeUUID, Column: aiagentrun.FieldOwnerUserID},
-			aiagentrun.FieldScopes:      {Type: field.TypeJSON, Column: aiagentrun.FieldScopes},
-			aiagentrun.FieldStartedAt:   {Type: field.TypeTime, Column: aiagentrun.FieldStartedAt},
-			aiagentrun.FieldInput:       {Type: field.TypeBytes, Column: aiagentrun.FieldInput},
-			aiagentrun.FieldMetadata:    {Type: field.TypeJSON, Column: aiagentrun.FieldMetadata},
+			agentsession.FieldTenantID:      {Type: field.TypeInt, Column: agentsession.FieldTenantID},
+			agentsession.FieldCreatedAt:     {Type: field.TypeTime, Column: agentsession.FieldCreatedAt},
+			agentsession.FieldUpdatedAt:     {Type: field.TypeTime, Column: agentsession.FieldUpdatedAt},
+			agentsession.FieldAgentName:     {Type: field.TypeString, Column: agentsession.FieldAgentName},
+			agentsession.FieldOwnerUserID:   {Type: field.TypeUUID, Column: agentsession.FieldOwnerUserID},
+			agentsession.FieldDefaultScopes: {Type: field.TypeJSON, Column: agentsession.FieldDefaultScopes},
+			agentsession.FieldMetadata:      {Type: field.TypeJSON, Column: agentsession.FieldMetadata},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   aiagentrunknowledgecitation.Table,
-			Columns: aiagentrunknowledgecitation.Columns,
+			Table:   agentturn.Table,
+			Columns: agentturn.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUUID,
-				Column: aiagentrunknowledgecitation.FieldID,
+				Column: agentturn.FieldID,
 			},
 		},
-		Type: "AiAgentRunKnowledgeCitation",
+		Type: "AgentTurn",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			aiagentrunknowledgecitation.FieldTenantID:                {Type: field.TypeInt, Column: aiagentrunknowledgecitation.FieldTenantID},
-			aiagentrunknowledgecitation.FieldCreatedAt:               {Type: field.TypeTime, Column: aiagentrunknowledgecitation.FieldCreatedAt},
-			aiagentrunknowledgecitation.FieldUpdatedAt:               {Type: field.TypeTime, Column: aiagentrunknowledgecitation.FieldUpdatedAt},
-			aiagentrunknowledgecitation.FieldAiAgentRunSnapshotID:    {Type: field.TypeUUID, Column: aiagentrunknowledgecitation.FieldAiAgentRunSnapshotID},
-			aiagentrunknowledgecitation.FieldKnowledgeEntityID:       {Type: field.TypeUUID, Column: aiagentrunknowledgecitation.FieldKnowledgeEntityID},
-			aiagentrunknowledgecitation.FieldKnowledgeRelationshipID: {Type: field.TypeUUID, Column: aiagentrunknowledgecitation.FieldKnowledgeRelationshipID},
-			aiagentrunknowledgecitation.FieldKnowledgeEvidenceID:     {Type: field.TypeUUID, Column: aiagentrunknowledgecitation.FieldKnowledgeEvidenceID},
-			aiagentrunknowledgecitation.FieldSummary:                 {Type: field.TypeString, Column: aiagentrunknowledgecitation.FieldSummary},
+			agentturn.FieldTenantID:       {Type: field.TypeInt, Column: agentturn.FieldTenantID},
+			agentturn.FieldCreatedAt:      {Type: field.TypeTime, Column: agentturn.FieldCreatedAt},
+			agentturn.FieldUpdatedAt:      {Type: field.TypeTime, Column: agentturn.FieldUpdatedAt},
+			agentturn.FieldAgentSessionID: {Type: field.TypeUUID, Column: agentturn.FieldAgentSessionID},
+			agentturn.FieldRiverJobID:     {Type: field.TypeInt64, Column: agentturn.FieldRiverJobID},
+			agentturn.FieldParentID:       {Type: field.TypeUUID, Column: agentturn.FieldParentID},
+			agentturn.FieldScopes:         {Type: field.TypeJSON, Column: agentturn.FieldScopes},
+			agentturn.FieldInput:          {Type: field.TypeBytes, Column: agentturn.FieldInput},
+			agentturn.FieldStatus:         {Type: field.TypeEnum, Column: agentturn.FieldStatus},
+			agentturn.FieldStartedAt:      {Type: field.TypeTime, Column: agentturn.FieldStartedAt},
+			agentturn.FieldFinishedAt:     {Type: field.TypeTime, Column: agentturn.FieldFinishedAt},
+			agentturn.FieldFinishReason:   {Type: field.TypeString, Column: agentturn.FieldFinishReason},
+			agentturn.FieldState:          {Type: field.TypeBytes, Column: agentturn.FieldState},
+			agentturn.FieldError:          {Type: field.TypeBytes, Column: agentturn.FieldError},
 		},
 	}
 	graph.Nodes[2] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   aiagentrunsnapshot.Table,
-			Columns: aiagentrunsnapshot.Columns,
+			Table:   agentturnknowledgecitation.Table,
+			Columns: agentturnknowledgecitation.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUUID,
-				Column: aiagentrunsnapshot.FieldID,
+				Column: agentturnknowledgecitation.FieldID,
 			},
 		},
-		Type: "AiAgentRunSnapshot",
+		Type: "AgentTurnKnowledgeCitation",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			aiagentrunsnapshot.FieldTenantID:     {Type: field.TypeInt, Column: aiagentrunsnapshot.FieldTenantID},
-			aiagentrunsnapshot.FieldCreatedAt:    {Type: field.TypeTime, Column: aiagentrunsnapshot.FieldCreatedAt},
-			aiagentrunsnapshot.FieldUpdatedAt:    {Type: field.TypeTime, Column: aiagentrunsnapshot.FieldUpdatedAt},
-			aiagentrunsnapshot.FieldAiAgentRunID: {Type: field.TypeUUID, Column: aiagentrunsnapshot.FieldAiAgentRunID},
-			aiagentrunsnapshot.FieldParentID:     {Type: field.TypeUUID, Column: aiagentrunsnapshot.FieldParentID},
-			aiagentrunsnapshot.FieldStatus:       {Type: field.TypeEnum, Column: aiagentrunsnapshot.FieldStatus},
-			aiagentrunsnapshot.FieldFinishReason: {Type: field.TypeString, Column: aiagentrunsnapshot.FieldFinishReason},
-			aiagentrunsnapshot.FieldHeartbeatAt:  {Type: field.TypeTime, Column: aiagentrunsnapshot.FieldHeartbeatAt},
-			aiagentrunsnapshot.FieldState:        {Type: field.TypeBytes, Column: aiagentrunsnapshot.FieldState},
-			aiagentrunsnapshot.FieldError:        {Type: field.TypeBytes, Column: aiagentrunsnapshot.FieldError},
+			agentturnknowledgecitation.FieldTenantID:                {Type: field.TypeInt, Column: agentturnknowledgecitation.FieldTenantID},
+			agentturnknowledgecitation.FieldCreatedAt:               {Type: field.TypeTime, Column: agentturnknowledgecitation.FieldCreatedAt},
+			agentturnknowledgecitation.FieldUpdatedAt:               {Type: field.TypeTime, Column: agentturnknowledgecitation.FieldUpdatedAt},
+			agentturnknowledgecitation.FieldAgentTurnID:             {Type: field.TypeUUID, Column: agentturnknowledgecitation.FieldAgentTurnID},
+			agentturnknowledgecitation.FieldKnowledgeEntityID:       {Type: field.TypeUUID, Column: agentturnknowledgecitation.FieldKnowledgeEntityID},
+			agentturnknowledgecitation.FieldKnowledgeRelationshipID: {Type: field.TypeUUID, Column: agentturnknowledgecitation.FieldKnowledgeRelationshipID},
+			agentturnknowledgecitation.FieldKnowledgeEvidenceID:     {Type: field.TypeUUID, Column: agentturnknowledgecitation.FieldKnowledgeEvidenceID},
+			agentturnknowledgecitation.FieldSummary:                 {Type: field.TypeString, Column: agentturnknowledgecitation.FieldSummary},
 		},
 	}
 	graph.Nodes[3] = &sqlgraph.Node{
@@ -219,7 +221,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Fields: map[string]*sqlgraph.FieldSpec{
 			alertinvestigation.FieldTenantID:        {Type: field.TypeInt, Column: alertinvestigation.FieldTenantID},
 			alertinvestigation.FieldAlertInstanceID: {Type: field.TypeUUID, Column: alertinvestigation.FieldAlertInstanceID},
-			alertinvestigation.FieldAiAgentRunID:    {Type: field.TypeUUID, Column: alertinvestigation.FieldAiAgentRunID},
+			alertinvestigation.FieldAgentSessionID:  {Type: field.TypeUUID, Column: alertinvestigation.FieldAgentSessionID},
 			alertinvestigation.FieldOutput:          {Type: field.TypeBytes, Column: alertinvestigation.FieldOutput},
 		},
 	}
@@ -1498,11 +1500,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrun.TenantTable,
-			Columns: []string{aiagentrun.TenantColumn},
+			Table:   agentsession.TenantTable,
+			Columns: []string{agentsession.TenantColumn},
 			Bidi:    false,
 		},
-		"AiAgentRun",
+		"AgentSession",
 		"Tenant",
 	)
 	graph.MustAddE(
@@ -1510,59 +1512,119 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrun.OwnerUserTable,
-			Columns: []string{aiagentrun.OwnerUserColumn},
+			Table:   agentsession.OwnerUserTable,
+			Columns: []string{agentsession.OwnerUserColumn},
 			Bidi:    false,
 		},
-		"AiAgentRun",
+		"AgentSession",
 		"User",
 	)
 	graph.MustAddE(
-		"snapshots",
+		"turns",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrun.SnapshotsTable,
-			Columns: []string{aiagentrun.SnapshotsColumn},
+			Inverse: false,
+			Table:   agentsession.TurnsTable,
+			Columns: []string{agentsession.TurnsColumn},
 			Bidi:    false,
 		},
-		"AiAgentRun",
-		"AiAgentRunSnapshot",
+		"AgentSession",
+		"AgentTurn",
 	)
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrunknowledgecitation.TenantTable,
-			Columns: []string{aiagentrunknowledgecitation.TenantColumn},
+			Table:   agentturn.TenantTable,
+			Columns: []string{agentturn.TenantColumn},
 			Bidi:    false,
 		},
-		"AiAgentRunKnowledgeCitation",
+		"AgentTurn",
 		"Tenant",
 	)
 	graph.MustAddE(
-		"ai_agent_run_snapshot",
+		"agent_session",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   agentturn.AgentSessionTable,
+			Columns: []string{agentturn.AgentSessionColumn},
+			Bidi:    false,
+		},
+		"AgentTurn",
+		"AgentSession",
+	)
+	graph.MustAddE(
+		"parent",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrunknowledgecitation.AiAgentRunSnapshotTable,
-			Columns: []string{aiagentrunknowledgecitation.AiAgentRunSnapshotColumn},
+			Table:   agentturn.ParentTable,
+			Columns: []string{agentturn.ParentColumn},
+			Bidi:    true,
+		},
+		"AgentTurn",
+		"AgentTurn",
+	)
+	graph.MustAddE(
+		"children",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentturn.ChildrenTable,
+			Columns: []string{agentturn.ChildrenColumn},
 			Bidi:    false,
 		},
-		"AiAgentRunKnowledgeCitation",
-		"AiAgentRunSnapshot",
+		"AgentTurn",
+		"AgentTurn",
+	)
+	graph.MustAddE(
+		"knowledge_citations",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.KnowledgeCitationsTable,
+			Columns: []string{agentturn.KnowledgeCitationsColumn},
+			Bidi:    false,
+		},
+		"AgentTurn",
+		"AgentTurnKnowledgeCitation",
+	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentturnknowledgecitation.TenantTable,
+			Columns: []string{agentturnknowledgecitation.TenantColumn},
+			Bidi:    false,
+		},
+		"AgentTurnKnowledgeCitation",
+		"Tenant",
+	)
+	graph.MustAddE(
+		"agent_turn",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   agentturnknowledgecitation.AgentTurnTable,
+			Columns: []string{agentturnknowledgecitation.AgentTurnColumn},
+			Bidi:    false,
+		},
+		"AgentTurnKnowledgeCitation",
+		"AgentTurn",
 	)
 	graph.MustAddE(
 		"knowledge_entity",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrunknowledgecitation.KnowledgeEntityTable,
-			Columns: []string{aiagentrunknowledgecitation.KnowledgeEntityColumn},
+			Table:   agentturnknowledgecitation.KnowledgeEntityTable,
+			Columns: []string{agentturnknowledgecitation.KnowledgeEntityColumn},
 			Bidi:    false,
 		},
-		"AiAgentRunKnowledgeCitation",
+		"AgentTurnKnowledgeCitation",
 		"KnowledgeEntity",
 	)
 	graph.MustAddE(
@@ -1570,11 +1632,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrunknowledgecitation.KnowledgeRelationshipTable,
-			Columns: []string{aiagentrunknowledgecitation.KnowledgeRelationshipColumn},
+			Table:   agentturnknowledgecitation.KnowledgeRelationshipTable,
+			Columns: []string{agentturnknowledgecitation.KnowledgeRelationshipColumn},
 			Bidi:    false,
 		},
-		"AiAgentRunKnowledgeCitation",
+		"AgentTurnKnowledgeCitation",
 		"KnowledgeRelationship",
 	)
 	graph.MustAddE(
@@ -1582,72 +1644,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   aiagentrunknowledgecitation.KnowledgeEvidenceTable,
-			Columns: []string{aiagentrunknowledgecitation.KnowledgeEvidenceColumn},
+			Table:   agentturnknowledgecitation.KnowledgeEvidenceTable,
+			Columns: []string{agentturnknowledgecitation.KnowledgeEvidenceColumn},
 			Bidi:    false,
 		},
-		"AiAgentRunKnowledgeCitation",
+		"AgentTurnKnowledgeCitation",
 		"KnowledgeEvidence",
-	)
-	graph.MustAddE(
-		"tenant",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   aiagentrunsnapshot.TenantTable,
-			Columns: []string{aiagentrunsnapshot.TenantColumn},
-			Bidi:    false,
-		},
-		"AiAgentRunSnapshot",
-		"Tenant",
-	)
-	graph.MustAddE(
-		"ai_agent_run",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   aiagentrunsnapshot.AiAgentRunTable,
-			Columns: []string{aiagentrunsnapshot.AiAgentRunColumn},
-			Bidi:    false,
-		},
-		"AiAgentRunSnapshot",
-		"AiAgentRun",
-	)
-	graph.MustAddE(
-		"parent",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   aiagentrunsnapshot.ParentTable,
-			Columns: []string{aiagentrunsnapshot.ParentColumn},
-			Bidi:    true,
-		},
-		"AiAgentRunSnapshot",
-		"AiAgentRunSnapshot",
-	)
-	graph.MustAddE(
-		"children",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrunsnapshot.ChildrenTable,
-			Columns: []string{aiagentrunsnapshot.ChildrenColumn},
-			Bidi:    false,
-		},
-		"AiAgentRunSnapshot",
-		"AiAgentRunSnapshot",
-	)
-	graph.MustAddE(
-		"knowledge_citations",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   aiagentrunsnapshot.KnowledgeCitationsTable,
-			Columns: []string{aiagentrunsnapshot.KnowledgeCitationsColumn},
-			Bidi:    false,
-		},
-		"AiAgentRunSnapshot",
-		"AiAgentRunKnowledgeCitation",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -1794,16 +1796,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"AlertInstance",
 	)
 	graph.MustAddE(
-		"ai_agent_run",
+		"agent_session",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alertinvestigation.AiAgentRunTable,
-			Columns: []string{alertinvestigation.AiAgentRunColumn},
+			Table:   alertinvestigation.AgentSessionTable,
+			Columns: []string{alertinvestigation.AgentSessionColumn},
 			Bidi:    false,
 		},
 		"AlertInvestigation",
-		"AiAgentRun",
+		"AgentSession",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -4827,33 +4829,33 @@ type predicateAdder interface {
 }
 
 // addPredicate implements the predicateAdder interface.
-func (_q *AiAgentRunQuery) addPredicate(pred func(s *sql.Selector)) {
+func (_q *AgentSessionQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the AiAgentRunQuery builder.
-func (_q *AiAgentRunQuery) Filter() *AiAgentRunFilter {
-	return &AiAgentRunFilter{config: _q.config, predicateAdder: _q}
+// Filter returns a Filter implementation to apply filters on the AgentSessionQuery builder.
+func (_q *AgentSessionQuery) Filter() *AgentSessionFilter {
+	return &AgentSessionFilter{config: _q.config, predicateAdder: _q}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *AiAgentRunMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *AgentSessionMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the AiAgentRunMutation builder.
-func (m *AiAgentRunMutation) Filter() *AiAgentRunFilter {
-	return &AiAgentRunFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the AgentSessionMutation builder.
+func (m *AgentSessionMutation) Filter() *AgentSessionFilter {
+	return &AgentSessionFilter{config: m.config, predicateAdder: m}
 }
 
-// AiAgentRunFilter provides a generic filtering capability at runtime for AiAgentRunQuery.
-type AiAgentRunFilter struct {
+// AgentSessionFilter provides a generic filtering capability at runtime for AgentSessionQuery.
+type AgentSessionFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *AiAgentRunFilter) Where(p entql.P) {
+func (f *AgentSessionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
 			s.AddError(err)
@@ -4862,62 +4864,52 @@ func (f *AiAgentRunFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql [16]byte predicate on the id field.
-func (f *AiAgentRunFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(aiagentrun.FieldID))
+func (f *AgentSessionFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(agentsession.FieldID))
 }
 
 // WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *AiAgentRunFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(aiagentrun.FieldTenantID))
+func (f *AgentSessionFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(agentsession.FieldTenantID))
 }
 
 // WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *AiAgentRunFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(aiagentrun.FieldCreatedAt))
+func (f *AgentSessionFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(agentsession.FieldCreatedAt))
 }
 
 // WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *AiAgentRunFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(aiagentrun.FieldUpdatedAt))
+func (f *AgentSessionFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(agentsession.FieldUpdatedAt))
 }
 
 // WhereAgentName applies the entql string predicate on the agent_name field.
-func (f *AiAgentRunFilter) WhereAgentName(p entql.StringP) {
-	f.Where(p.Field(aiagentrun.FieldAgentName))
+func (f *AgentSessionFilter) WhereAgentName(p entql.StringP) {
+	f.Where(p.Field(agentsession.FieldAgentName))
 }
 
 // WhereOwnerUserID applies the entql [16]byte predicate on the owner_user_id field.
-func (f *AiAgentRunFilter) WhereOwnerUserID(p entql.ValueP) {
-	f.Where(p.Field(aiagentrun.FieldOwnerUserID))
+func (f *AgentSessionFilter) WhereOwnerUserID(p entql.ValueP) {
+	f.Where(p.Field(agentsession.FieldOwnerUserID))
 }
 
-// WhereScopes applies the entql json.RawMessage predicate on the scopes field.
-func (f *AiAgentRunFilter) WhereScopes(p entql.BytesP) {
-	f.Where(p.Field(aiagentrun.FieldScopes))
-}
-
-// WhereStartedAt applies the entql time.Time predicate on the started_at field.
-func (f *AiAgentRunFilter) WhereStartedAt(p entql.TimeP) {
-	f.Where(p.Field(aiagentrun.FieldStartedAt))
-}
-
-// WhereInput applies the entql []byte predicate on the input field.
-func (f *AiAgentRunFilter) WhereInput(p entql.BytesP) {
-	f.Where(p.Field(aiagentrun.FieldInput))
+// WhereDefaultScopes applies the entql json.RawMessage predicate on the default_scopes field.
+func (f *AgentSessionFilter) WhereDefaultScopes(p entql.BytesP) {
+	f.Where(p.Field(agentsession.FieldDefaultScopes))
 }
 
 // WhereMetadata applies the entql json.RawMessage predicate on the metadata field.
-func (f *AiAgentRunFilter) WhereMetadata(p entql.BytesP) {
-	f.Where(p.Field(aiagentrun.FieldMetadata))
+func (f *AgentSessionFilter) WhereMetadata(p entql.BytesP) {
+	f.Where(p.Field(agentsession.FieldMetadata))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *AiAgentRunFilter) WhereHasTenant() {
+func (f *AgentSessionFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
 }
 
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *AiAgentRunFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+func (f *AgentSessionFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -4926,12 +4918,12 @@ func (f *AiAgentRunFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 }
 
 // WhereHasOwnerUser applies a predicate to check if query has an edge owner_user.
-func (f *AiAgentRunFilter) WhereHasOwnerUser() {
+func (f *AgentSessionFilter) WhereHasOwnerUser() {
 	f.Where(entql.HasEdge("owner_user"))
 }
 
 // WhereHasOwnerUserWith applies a predicate to check if query has an edge owner_user with a given conditions (other predicates).
-func (f *AiAgentRunFilter) WhereHasOwnerUserWith(preds ...predicate.User) {
+func (f *AgentSessionFilter) WhereHasOwnerUserWith(preds ...predicate.User) {
 	f.Where(entql.HasEdgeWith("owner_user", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -4939,14 +4931,14 @@ func (f *AiAgentRunFilter) WhereHasOwnerUserWith(preds ...predicate.User) {
 	})))
 }
 
-// WhereHasSnapshots applies a predicate to check if query has an edge snapshots.
-func (f *AiAgentRunFilter) WhereHasSnapshots() {
-	f.Where(entql.HasEdge("snapshots"))
+// WhereHasTurns applies a predicate to check if query has an edge turns.
+func (f *AgentSessionFilter) WhereHasTurns() {
+	f.Where(entql.HasEdge("turns"))
 }
 
-// WhereHasSnapshotsWith applies a predicate to check if query has an edge snapshots with a given conditions (other predicates).
-func (f *AiAgentRunFilter) WhereHasSnapshotsWith(preds ...predicate.AiAgentRunSnapshot) {
-	f.Where(entql.HasEdgeWith("snapshots", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasTurnsWith applies a predicate to check if query has an edge turns with a given conditions (other predicates).
+func (f *AgentSessionFilter) WhereHasTurnsWith(preds ...predicate.AgentTurn) {
+	f.Where(entql.HasEdgeWith("turns", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -4954,33 +4946,33 @@ func (f *AiAgentRunFilter) WhereHasSnapshotsWith(preds ...predicate.AiAgentRunSn
 }
 
 // addPredicate implements the predicateAdder interface.
-func (_q *AiAgentRunKnowledgeCitationQuery) addPredicate(pred func(s *sql.Selector)) {
+func (_q *AgentTurnQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the AiAgentRunKnowledgeCitationQuery builder.
-func (_q *AiAgentRunKnowledgeCitationQuery) Filter() *AiAgentRunKnowledgeCitationFilter {
-	return &AiAgentRunKnowledgeCitationFilter{config: _q.config, predicateAdder: _q}
+// Filter returns a Filter implementation to apply filters on the AgentTurnQuery builder.
+func (_q *AgentTurnQuery) Filter() *AgentTurnFilter {
+	return &AgentTurnFilter{config: _q.config, predicateAdder: _q}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *AiAgentRunKnowledgeCitationMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *AgentTurnMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the AiAgentRunKnowledgeCitationMutation builder.
-func (m *AiAgentRunKnowledgeCitationMutation) Filter() *AiAgentRunKnowledgeCitationFilter {
-	return &AiAgentRunKnowledgeCitationFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the AgentTurnMutation builder.
+func (m *AgentTurnMutation) Filter() *AgentTurnFilter {
+	return &AgentTurnFilter{config: m.config, predicateAdder: m}
 }
 
-// AiAgentRunKnowledgeCitationFilter provides a generic filtering capability at runtime for AiAgentRunKnowledgeCitationQuery.
-type AiAgentRunKnowledgeCitationFilter struct {
+// AgentTurnFilter provides a generic filtering capability at runtime for AgentTurnQuery.
+type AgentTurnFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *AiAgentRunKnowledgeCitationFilter) Where(p entql.P) {
+func (f *AgentTurnFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
 			s.AddError(err)
@@ -4989,217 +4981,87 @@ func (f *AiAgentRunKnowledgeCitationFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql [16]byte predicate on the id field.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(aiagentrunknowledgecitation.FieldID))
+func (f *AgentTurnFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(agentturn.FieldID))
 }
 
 // WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(aiagentrunknowledgecitation.FieldTenantID))
+func (f *AgentTurnFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(agentturn.FieldTenantID))
 }
 
 // WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(aiagentrunknowledgecitation.FieldCreatedAt))
+func (f *AgentTurnFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(agentturn.FieldCreatedAt))
 }
 
 // WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(aiagentrunknowledgecitation.FieldUpdatedAt))
+func (f *AgentTurnFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(agentturn.FieldUpdatedAt))
 }
 
-// WhereAiAgentRunSnapshotID applies the entql [16]byte predicate on the ai_agent_run_snapshot_id field.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereAiAgentRunSnapshotID(p entql.ValueP) {
-	f.Where(p.Field(aiagentrunknowledgecitation.FieldAiAgentRunSnapshotID))
+// WhereAgentSessionID applies the entql [16]byte predicate on the agent_session_id field.
+func (f *AgentTurnFilter) WhereAgentSessionID(p entql.ValueP) {
+	f.Where(p.Field(agentturn.FieldAgentSessionID))
 }
 
-// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereKnowledgeEntityID(p entql.ValueP) {
-	f.Where(p.Field(aiagentrunknowledgecitation.FieldKnowledgeEntityID))
-}
-
-// WhereKnowledgeRelationshipID applies the entql [16]byte predicate on the knowledge_relationship_id field.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereKnowledgeRelationshipID(p entql.ValueP) {
-	f.Where(p.Field(aiagentrunknowledgecitation.FieldKnowledgeRelationshipID))
-}
-
-// WhereKnowledgeEvidenceID applies the entql [16]byte predicate on the knowledge_evidence_id field.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereKnowledgeEvidenceID(p entql.ValueP) {
-	f.Where(p.Field(aiagentrunknowledgecitation.FieldKnowledgeEvidenceID))
-}
-
-// WhereSummary applies the entql string predicate on the summary field.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereSummary(p entql.StringP) {
-	f.Where(p.Field(aiagentrunknowledgecitation.FieldSummary))
-}
-
-// WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereHasTenant() {
-	f.Where(entql.HasEdge("tenant"))
-}
-
-// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *AiAgentRunKnowledgeCitationFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
-	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasAiAgentRunSnapshot applies a predicate to check if query has an edge ai_agent_run_snapshot.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereHasAiAgentRunSnapshot() {
-	f.Where(entql.HasEdge("ai_agent_run_snapshot"))
-}
-
-// WhereHasAiAgentRunSnapshotWith applies a predicate to check if query has an edge ai_agent_run_snapshot with a given conditions (other predicates).
-func (f *AiAgentRunKnowledgeCitationFilter) WhereHasAiAgentRunSnapshotWith(preds ...predicate.AiAgentRunSnapshot) {
-	f.Where(entql.HasEdgeWith("ai_agent_run_snapshot", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereHasKnowledgeEntity() {
-	f.Where(entql.HasEdge("knowledge_entity"))
-}
-
-// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
-func (f *AiAgentRunKnowledgeCitationFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
-	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasKnowledgeRelationship applies a predicate to check if query has an edge knowledge_relationship.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereHasKnowledgeRelationship() {
-	f.Where(entql.HasEdge("knowledge_relationship"))
-}
-
-// WhereHasKnowledgeRelationshipWith applies a predicate to check if query has an edge knowledge_relationship with a given conditions (other predicates).
-func (f *AiAgentRunKnowledgeCitationFilter) WhereHasKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) {
-	f.Where(entql.HasEdgeWith("knowledge_relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasKnowledgeEvidence applies a predicate to check if query has an edge knowledge_evidence.
-func (f *AiAgentRunKnowledgeCitationFilter) WhereHasKnowledgeEvidence() {
-	f.Where(entql.HasEdge("knowledge_evidence"))
-}
-
-// WhereHasKnowledgeEvidenceWith applies a predicate to check if query has an edge knowledge_evidence with a given conditions (other predicates).
-func (f *AiAgentRunKnowledgeCitationFilter) WhereHasKnowledgeEvidenceWith(preds ...predicate.KnowledgeEvidence) {
-	f.Where(entql.HasEdgeWith("knowledge_evidence", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (_q *AiAgentRunSnapshotQuery) addPredicate(pred func(s *sql.Selector)) {
-	_q.predicates = append(_q.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the AiAgentRunSnapshotQuery builder.
-func (_q *AiAgentRunSnapshotQuery) Filter() *AiAgentRunSnapshotFilter {
-	return &AiAgentRunSnapshotFilter{config: _q.config, predicateAdder: _q}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *AiAgentRunSnapshotMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the AiAgentRunSnapshotMutation builder.
-func (m *AiAgentRunSnapshotMutation) Filter() *AiAgentRunSnapshotFilter {
-	return &AiAgentRunSnapshotFilter{config: m.config, predicateAdder: m}
-}
-
-// AiAgentRunSnapshotFilter provides a generic filtering capability at runtime for AiAgentRunSnapshotQuery.
-type AiAgentRunSnapshotFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *AiAgentRunSnapshotFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql [16]byte predicate on the id field.
-func (f *AiAgentRunSnapshotFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(aiagentrunsnapshot.FieldID))
-}
-
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *AiAgentRunSnapshotFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(aiagentrunsnapshot.FieldTenantID))
-}
-
-// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *AiAgentRunSnapshotFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(aiagentrunsnapshot.FieldCreatedAt))
-}
-
-// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *AiAgentRunSnapshotFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(aiagentrunsnapshot.FieldUpdatedAt))
-}
-
-// WhereAiAgentRunID applies the entql [16]byte predicate on the ai_agent_run_id field.
-func (f *AiAgentRunSnapshotFilter) WhereAiAgentRunID(p entql.ValueP) {
-	f.Where(p.Field(aiagentrunsnapshot.FieldAiAgentRunID))
+// WhereRiverJobID applies the entql int64 predicate on the river_job_id field.
+func (f *AgentTurnFilter) WhereRiverJobID(p entql.Int64P) {
+	f.Where(p.Field(agentturn.FieldRiverJobID))
 }
 
 // WhereParentID applies the entql [16]byte predicate on the parent_id field.
-func (f *AiAgentRunSnapshotFilter) WhereParentID(p entql.ValueP) {
-	f.Where(p.Field(aiagentrunsnapshot.FieldParentID))
+func (f *AgentTurnFilter) WhereParentID(p entql.ValueP) {
+	f.Where(p.Field(agentturn.FieldParentID))
+}
+
+// WhereScopes applies the entql json.RawMessage predicate on the scopes field.
+func (f *AgentTurnFilter) WhereScopes(p entql.BytesP) {
+	f.Where(p.Field(agentturn.FieldScopes))
+}
+
+// WhereInput applies the entql []byte predicate on the input field.
+func (f *AgentTurnFilter) WhereInput(p entql.BytesP) {
+	f.Where(p.Field(agentturn.FieldInput))
 }
 
 // WhereStatus applies the entql string predicate on the status field.
-func (f *AiAgentRunSnapshotFilter) WhereStatus(p entql.StringP) {
-	f.Where(p.Field(aiagentrunsnapshot.FieldStatus))
+func (f *AgentTurnFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(agentturn.FieldStatus))
+}
+
+// WhereStartedAt applies the entql time.Time predicate on the started_at field.
+func (f *AgentTurnFilter) WhereStartedAt(p entql.TimeP) {
+	f.Where(p.Field(agentturn.FieldStartedAt))
+}
+
+// WhereFinishedAt applies the entql time.Time predicate on the finished_at field.
+func (f *AgentTurnFilter) WhereFinishedAt(p entql.TimeP) {
+	f.Where(p.Field(agentturn.FieldFinishedAt))
 }
 
 // WhereFinishReason applies the entql string predicate on the finish_reason field.
-func (f *AiAgentRunSnapshotFilter) WhereFinishReason(p entql.StringP) {
-	f.Where(p.Field(aiagentrunsnapshot.FieldFinishReason))
-}
-
-// WhereHeartbeatAt applies the entql time.Time predicate on the heartbeat_at field.
-func (f *AiAgentRunSnapshotFilter) WhereHeartbeatAt(p entql.TimeP) {
-	f.Where(p.Field(aiagentrunsnapshot.FieldHeartbeatAt))
+func (f *AgentTurnFilter) WhereFinishReason(p entql.StringP) {
+	f.Where(p.Field(agentturn.FieldFinishReason))
 }
 
 // WhereState applies the entql []byte predicate on the state field.
-func (f *AiAgentRunSnapshotFilter) WhereState(p entql.BytesP) {
-	f.Where(p.Field(aiagentrunsnapshot.FieldState))
+func (f *AgentTurnFilter) WhereState(p entql.BytesP) {
+	f.Where(p.Field(agentturn.FieldState))
 }
 
 // WhereError applies the entql []byte predicate on the error field.
-func (f *AiAgentRunSnapshotFilter) WhereError(p entql.BytesP) {
-	f.Where(p.Field(aiagentrunsnapshot.FieldError))
+func (f *AgentTurnFilter) WhereError(p entql.BytesP) {
+	f.Where(p.Field(agentturn.FieldError))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *AiAgentRunSnapshotFilter) WhereHasTenant() {
+func (f *AgentTurnFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
 }
 
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *AiAgentRunSnapshotFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+func (f *AgentTurnFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -5207,14 +5069,14 @@ func (f *AiAgentRunSnapshotFilter) WhereHasTenantWith(preds ...predicate.Tenant)
 	})))
 }
 
-// WhereHasAiAgentRun applies a predicate to check if query has an edge ai_agent_run.
-func (f *AiAgentRunSnapshotFilter) WhereHasAiAgentRun() {
-	f.Where(entql.HasEdge("ai_agent_run"))
+// WhereHasAgentSession applies a predicate to check if query has an edge agent_session.
+func (f *AgentTurnFilter) WhereHasAgentSession() {
+	f.Where(entql.HasEdge("agent_session"))
 }
 
-// WhereHasAiAgentRunWith applies a predicate to check if query has an edge ai_agent_run with a given conditions (other predicates).
-func (f *AiAgentRunSnapshotFilter) WhereHasAiAgentRunWith(preds ...predicate.AiAgentRun) {
-	f.Where(entql.HasEdgeWith("ai_agent_run", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasAgentSessionWith applies a predicate to check if query has an edge agent_session with a given conditions (other predicates).
+func (f *AgentTurnFilter) WhereHasAgentSessionWith(preds ...predicate.AgentSession) {
+	f.Where(entql.HasEdgeWith("agent_session", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -5222,12 +5084,12 @@ func (f *AiAgentRunSnapshotFilter) WhereHasAiAgentRunWith(preds ...predicate.AiA
 }
 
 // WhereHasParent applies a predicate to check if query has an edge parent.
-func (f *AiAgentRunSnapshotFilter) WhereHasParent() {
+func (f *AgentTurnFilter) WhereHasParent() {
 	f.Where(entql.HasEdge("parent"))
 }
 
 // WhereHasParentWith applies a predicate to check if query has an edge parent with a given conditions (other predicates).
-func (f *AiAgentRunSnapshotFilter) WhereHasParentWith(preds ...predicate.AiAgentRunSnapshot) {
+func (f *AgentTurnFilter) WhereHasParentWith(preds ...predicate.AgentTurn) {
 	f.Where(entql.HasEdgeWith("parent", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -5236,12 +5098,12 @@ func (f *AiAgentRunSnapshotFilter) WhereHasParentWith(preds ...predicate.AiAgent
 }
 
 // WhereHasChildren applies a predicate to check if query has an edge children.
-func (f *AiAgentRunSnapshotFilter) WhereHasChildren() {
+func (f *AgentTurnFilter) WhereHasChildren() {
 	f.Where(entql.HasEdge("children"))
 }
 
 // WhereHasChildrenWith applies a predicate to check if query has an edge children with a given conditions (other predicates).
-func (f *AiAgentRunSnapshotFilter) WhereHasChildrenWith(preds ...predicate.AiAgentRunSnapshot) {
+func (f *AgentTurnFilter) WhereHasChildrenWith(preds ...predicate.AgentTurn) {
 	f.Where(entql.HasEdgeWith("children", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -5250,13 +5112,163 @@ func (f *AiAgentRunSnapshotFilter) WhereHasChildrenWith(preds ...predicate.AiAge
 }
 
 // WhereHasKnowledgeCitations applies a predicate to check if query has an edge knowledge_citations.
-func (f *AiAgentRunSnapshotFilter) WhereHasKnowledgeCitations() {
+func (f *AgentTurnFilter) WhereHasKnowledgeCitations() {
 	f.Where(entql.HasEdge("knowledge_citations"))
 }
 
 // WhereHasKnowledgeCitationsWith applies a predicate to check if query has an edge knowledge_citations with a given conditions (other predicates).
-func (f *AiAgentRunSnapshotFilter) WhereHasKnowledgeCitationsWith(preds ...predicate.AiAgentRunKnowledgeCitation) {
+func (f *AgentTurnFilter) WhereHasKnowledgeCitationsWith(preds ...predicate.AgentTurnKnowledgeCitation) {
 	f.Where(entql.HasEdgeWith("knowledge_citations", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *AgentTurnKnowledgeCitationQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the AgentTurnKnowledgeCitationQuery builder.
+func (_q *AgentTurnKnowledgeCitationQuery) Filter() *AgentTurnKnowledgeCitationFilter {
+	return &AgentTurnKnowledgeCitationFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *AgentTurnKnowledgeCitationMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the AgentTurnKnowledgeCitationMutation builder.
+func (m *AgentTurnKnowledgeCitationMutation) Filter() *AgentTurnKnowledgeCitationFilter {
+	return &AgentTurnKnowledgeCitationFilter{config: m.config, predicateAdder: m}
+}
+
+// AgentTurnKnowledgeCitationFilter provides a generic filtering capability at runtime for AgentTurnKnowledgeCitationQuery.
+type AgentTurnKnowledgeCitationFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *AgentTurnKnowledgeCitationFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *AgentTurnKnowledgeCitationFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(agentturnknowledgecitation.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *AgentTurnKnowledgeCitationFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(agentturnknowledgecitation.FieldTenantID))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *AgentTurnKnowledgeCitationFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(agentturnknowledgecitation.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *AgentTurnKnowledgeCitationFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(agentturnknowledgecitation.FieldUpdatedAt))
+}
+
+// WhereAgentTurnID applies the entql [16]byte predicate on the agent_turn_id field.
+func (f *AgentTurnKnowledgeCitationFilter) WhereAgentTurnID(p entql.ValueP) {
+	f.Where(p.Field(agentturnknowledgecitation.FieldAgentTurnID))
+}
+
+// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
+func (f *AgentTurnKnowledgeCitationFilter) WhereKnowledgeEntityID(p entql.ValueP) {
+	f.Where(p.Field(agentturnknowledgecitation.FieldKnowledgeEntityID))
+}
+
+// WhereKnowledgeRelationshipID applies the entql [16]byte predicate on the knowledge_relationship_id field.
+func (f *AgentTurnKnowledgeCitationFilter) WhereKnowledgeRelationshipID(p entql.ValueP) {
+	f.Where(p.Field(agentturnknowledgecitation.FieldKnowledgeRelationshipID))
+}
+
+// WhereKnowledgeEvidenceID applies the entql [16]byte predicate on the knowledge_evidence_id field.
+func (f *AgentTurnKnowledgeCitationFilter) WhereKnowledgeEvidenceID(p entql.ValueP) {
+	f.Where(p.Field(agentturnknowledgecitation.FieldKnowledgeEvidenceID))
+}
+
+// WhereSummary applies the entql string predicate on the summary field.
+func (f *AgentTurnKnowledgeCitationFilter) WhereSummary(p entql.StringP) {
+	f.Where(p.Field(agentturnknowledgecitation.FieldSummary))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *AgentTurnKnowledgeCitationFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *AgentTurnKnowledgeCitationFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasAgentTurn applies a predicate to check if query has an edge agent_turn.
+func (f *AgentTurnKnowledgeCitationFilter) WhereHasAgentTurn() {
+	f.Where(entql.HasEdge("agent_turn"))
+}
+
+// WhereHasAgentTurnWith applies a predicate to check if query has an edge agent_turn with a given conditions (other predicates).
+func (f *AgentTurnKnowledgeCitationFilter) WhereHasAgentTurnWith(preds ...predicate.AgentTurn) {
+	f.Where(entql.HasEdgeWith("agent_turn", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
+func (f *AgentTurnKnowledgeCitationFilter) WhereHasKnowledgeEntity() {
+	f.Where(entql.HasEdge("knowledge_entity"))
+}
+
+// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
+func (f *AgentTurnKnowledgeCitationFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasKnowledgeRelationship applies a predicate to check if query has an edge knowledge_relationship.
+func (f *AgentTurnKnowledgeCitationFilter) WhereHasKnowledgeRelationship() {
+	f.Where(entql.HasEdge("knowledge_relationship"))
+}
+
+// WhereHasKnowledgeRelationshipWith applies a predicate to check if query has an edge knowledge_relationship with a given conditions (other predicates).
+func (f *AgentTurnKnowledgeCitationFilter) WhereHasKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) {
+	f.Where(entql.HasEdgeWith("knowledge_relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasKnowledgeEvidence applies a predicate to check if query has an edge knowledge_evidence.
+func (f *AgentTurnKnowledgeCitationFilter) WhereHasKnowledgeEvidence() {
+	f.Where(entql.HasEdge("knowledge_evidence"))
+}
+
+// WhereHasKnowledgeEvidenceWith applies a predicate to check if query has an edge knowledge_evidence with a given conditions (other predicates).
+func (f *AgentTurnKnowledgeCitationFilter) WhereHasKnowledgeEvidenceWith(preds ...predicate.KnowledgeEvidence) {
+	f.Where(entql.HasEdgeWith("knowledge_evidence", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -5643,9 +5655,9 @@ func (f *AlertInvestigationFilter) WhereAlertInstanceID(p entql.ValueP) {
 	f.Where(p.Field(alertinvestigation.FieldAlertInstanceID))
 }
 
-// WhereAiAgentRunID applies the entql [16]byte predicate on the ai_agent_run_id field.
-func (f *AlertInvestigationFilter) WhereAiAgentRunID(p entql.ValueP) {
-	f.Where(p.Field(alertinvestigation.FieldAiAgentRunID))
+// WhereAgentSessionID applies the entql [16]byte predicate on the agent_session_id field.
+func (f *AlertInvestigationFilter) WhereAgentSessionID(p entql.ValueP) {
+	f.Where(p.Field(alertinvestigation.FieldAgentSessionID))
 }
 
 // WhereOutput applies the entql []byte predicate on the output field.
@@ -5681,14 +5693,14 @@ func (f *AlertInvestigationFilter) WhereHasAlertInstanceWith(preds ...predicate.
 	})))
 }
 
-// WhereHasAiAgentRun applies a predicate to check if query has an edge ai_agent_run.
-func (f *AlertInvestigationFilter) WhereHasAiAgentRun() {
-	f.Where(entql.HasEdge("ai_agent_run"))
+// WhereHasAgentSession applies a predicate to check if query has an edge agent_session.
+func (f *AlertInvestigationFilter) WhereHasAgentSession() {
+	f.Where(entql.HasEdge("agent_session"))
 }
 
-// WhereHasAiAgentRunWith applies a predicate to check if query has an edge ai_agent_run with a given conditions (other predicates).
-func (f *AlertInvestigationFilter) WhereHasAiAgentRunWith(preds ...predicate.AiAgentRun) {
-	f.Where(entql.HasEdgeWith("ai_agent_run", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasAgentSessionWith applies a predicate to check if query has an edge agent_session with a given conditions (other predicates).
+func (f *AlertInvestigationFilter) WhereHasAgentSessionWith(preds ...predicate.AgentSession) {
+	f.Where(entql.HasEdgeWith("agent_session", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

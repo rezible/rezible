@@ -111,3 +111,11 @@ type KnowledgeEvidenceRef struct {
 	Properties      map[string]any
 	SubjectAliasRef KnowledgeSubjectAliasRef
 }
+
+func (u *AgentTurnUpdateOne) ClearStateFields() *AgentTurnUpdateOne {
+	return u.SetFinishReason("").
+		ClearStartedAt().
+		ClearFinishedAt().
+		ClearState().
+		ClearError()
+}

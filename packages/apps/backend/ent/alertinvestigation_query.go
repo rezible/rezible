@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/aiagentrun"
+	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinvestigation"
 	"github.com/rezible/rezible/ent/internal"
@@ -30,7 +30,7 @@ type AlertInvestigationQuery struct {
 	predicates        []predicate.AlertInvestigation
 	withTenant        *TenantQuery
 	withAlertInstance *AlertInstanceQuery
-	withAiAgentRun    *AiAgentRunQuery
+	withAgentSession  *AgentSessionQuery
 	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -118,9 +118,9 @@ func (_q *AlertInvestigationQuery) QueryAlertInstance() *AlertInstanceQuery {
 	return query
 }
 
-// QueryAiAgentRun chains the current query on the "ai_agent_run" edge.
-func (_q *AlertInvestigationQuery) QueryAiAgentRun() *AiAgentRunQuery {
-	query := (&AiAgentRunClient{config: _q.config}).Query()
+// QueryAgentSession chains the current query on the "agent_session" edge.
+func (_q *AlertInvestigationQuery) QueryAgentSession() *AgentSessionQuery {
+	query := (&AgentSessionClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -131,11 +131,11 @@ func (_q *AlertInvestigationQuery) QueryAiAgentRun() *AiAgentRunQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alertinvestigation.Table, alertinvestigation.FieldID, selector),
-			sqlgraph.To(aiagentrun.Table, aiagentrun.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertinvestigation.AiAgentRunTable, alertinvestigation.AiAgentRunColumn),
+			sqlgraph.To(agentsession.Table, agentsession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertinvestigation.AgentSessionTable, alertinvestigation.AgentSessionColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AiAgentRun
+		step.To.Schema = schemaConfig.AgentSession
 		step.Edge.Schema = schemaConfig.AlertInvestigation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -337,7 +337,7 @@ func (_q *AlertInvestigationQuery) Clone() *AlertInvestigationQuery {
 		predicates:        append([]predicate.AlertInvestigation{}, _q.predicates...),
 		withTenant:        _q.withTenant.Clone(),
 		withAlertInstance: _q.withAlertInstance.Clone(),
-		withAiAgentRun:    _q.withAiAgentRun.Clone(),
+		withAgentSession:  _q.withAgentSession.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -367,14 +367,14 @@ func (_q *AlertInvestigationQuery) WithAlertInstance(opts ...func(*AlertInstance
 	return _q
 }
 
-// WithAiAgentRun tells the query-builder to eager-load the nodes that are connected to
-// the "ai_agent_run" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertInvestigationQuery) WithAiAgentRun(opts ...func(*AiAgentRunQuery)) *AlertInvestigationQuery {
-	query := (&AiAgentRunClient{config: _q.config}).Query()
+// WithAgentSession tells the query-builder to eager-load the nodes that are connected to
+// the "agent_session" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AlertInvestigationQuery) WithAgentSession(opts ...func(*AgentSessionQuery)) *AlertInvestigationQuery {
+	query := (&AgentSessionClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withAiAgentRun = query
+	_q.withAgentSession = query
 	return _q
 }
 
@@ -465,7 +465,7 @@ func (_q *AlertInvestigationQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withAlertInstance != nil,
-			_q.withAiAgentRun != nil,
+			_q.withAgentSession != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -503,9 +503,9 @@ func (_q *AlertInvestigationQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 			return nil, err
 		}
 	}
-	if query := _q.withAiAgentRun; query != nil {
-		if err := _q.loadAiAgentRun(ctx, query, nodes, nil,
-			func(n *AlertInvestigation, e *AiAgentRun) { n.Edges.AiAgentRun = e }); err != nil {
+	if query := _q.withAgentSession; query != nil {
+		if err := _q.loadAgentSession(ctx, query, nodes, nil,
+			func(n *AlertInvestigation, e *AgentSession) { n.Edges.AgentSession = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -570,11 +570,11 @@ func (_q *AlertInvestigationQuery) loadAlertInstance(ctx context.Context, query 
 	}
 	return nil
 }
-func (_q *AlertInvestigationQuery) loadAiAgentRun(ctx context.Context, query *AiAgentRunQuery, nodes []*AlertInvestigation, init func(*AlertInvestigation), assign func(*AlertInvestigation, *AiAgentRun)) error {
+func (_q *AlertInvestigationQuery) loadAgentSession(ctx context.Context, query *AgentSessionQuery, nodes []*AlertInvestigation, init func(*AlertInvestigation), assign func(*AlertInvestigation, *AgentSession)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AlertInvestigation)
 	for i := range nodes {
-		fk := nodes[i].AiAgentRunID
+		fk := nodes[i].AgentSessionID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -583,7 +583,7 @@ func (_q *AlertInvestigationQuery) loadAiAgentRun(ctx context.Context, query *Ai
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(aiagentrun.IDIn(ids...))
+	query.Where(agentsession.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -591,7 +591,7 @@ func (_q *AlertInvestigationQuery) loadAiAgentRun(ctx context.Context, query *Ai
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "ai_agent_run_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "agent_session_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -636,8 +636,8 @@ func (_q *AlertInvestigationQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withAlertInstance != nil {
 			_spec.Node.AddColumnOnce(alertinvestigation.FieldAlertInstanceID)
 		}
-		if _q.withAiAgentRun != nil {
-			_spec.Node.AddColumnOnce(alertinvestigation.FieldAiAgentRunID)
+		if _q.withAgentSession != nil {
+			_spec.Node.AddColumnOnce(alertinvestigation.FieldAgentSessionID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

@@ -105,12 +105,16 @@ func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Con
 	}
 	applyTxOptions(tx, opts...)
 
+	finished := false
 	defer func() {
 		if v := recover(); v != nil {
 			if rbErr := tx.Rollback(); rbErr != nil {
 				panic(fmt.Errorf("%v: rollback transaction: %w", v, rbErr))
 			}
 			panic(v)
+		}
+		if !finished {
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -121,9 +125,11 @@ func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Con
 		}
 		return fnErr
 	}
+
 	if commitErr := tx.Commit(); commitErr != nil {
 		return fmt.Errorf("commit transaction: %w", commitErr)
 	}
+	finished = true
 	return nil
 }
 

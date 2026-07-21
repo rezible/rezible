@@ -28,7 +28,7 @@ type JobService struct {
 	client *riverClient
 }
 
-func NewJobService(pool *pgxpool.Pool, tel rez.TelemetryService) (*JobService, error) {
+func NewJobService(cfg rez.Config, pool *pgxpool.Pool, tel rez.TelemetryService) (*JobService, error) {
 	s := &JobService{
 		logger: tel.NewLogger(rez.NewLoggerOptions{
 			PackageName: "river",
@@ -44,7 +44,7 @@ func NewJobService(pool *pgxpool.Pool, tel rez.TelemetryService) (*JobService, e
 		TracerProvider:              tel.TracerProvider(),
 	})
 
-	cfg := &river.Config{
+	riverCfg := &river.Config{
 		Schema:      SchemaName,
 		Logger:      s.logger,
 		MaxAttempts: 3,
@@ -54,11 +54,12 @@ func NewJobService(pool *pgxpool.Pool, tel rez.TelemetryService) (*JobService, e
 		},
 		Workers: jobs.GetWorkers(),
 		Queues: map[string]river.QueueConfig{
-			river.QueueDefault: {MaxWorkers: 20},
+			river.QueueDefault:   {MaxWorkers: 20},
+			jobs.AgentTurnsQueue: {MaxWorkers: cfg.AI.Agents.MaxWorkers},
 		},
 	}
 	var clientErr error
-	s.client, clientErr = river.NewClient(riverpgxv5.New(pool), cfg)
+	s.client, clientErr = river.NewClient(riverpgxv5.New(pool), riverCfg)
 	if clientErr != nil {
 		return nil, fmt.Errorf("failed to create client: %w", clientErr)
 	}
@@ -108,4 +109,20 @@ func (s *JobService) InsertMany(ctx context.Context, params []river.InsertManyPa
 		return s.client.InsertManyTx(ctx, pgxTx, params)
 	}
 	return s.client.InsertMany(ctx, params)
+}
+
+func (s *JobService) Cancel(ctx context.Context, jobID int64) error {
+	if isTx, pgxTx, txErr := s.extractContextPgxTx(ctx); isTx {
+		if txErr != nil {
+			return fmt.Errorf("extract pgx tx: %w", txErr)
+		}
+		if _, cancelErr := s.client.JobCancelTx(ctx, pgxTx, jobID); cancelErr != nil {
+			return fmt.Errorf("cancel job: %w", cancelErr)
+		}
+		return nil
+	}
+	if _, cancelErr := s.client.JobCancel(ctx, jobID); cancelErr != nil {
+		return fmt.Errorf("cancel job: %w", cancelErr)
+	}
+	return nil
 }

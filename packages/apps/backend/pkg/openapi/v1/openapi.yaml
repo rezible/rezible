@@ -144,117 +144,119 @@ components:
         - data
         - pagination
       type: object
-    AiAgentRun:
+    AgentSession:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/AiAgentRunAttributes"
+          $ref: "#/components/schemas/AgentSessionAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    AiAgentRunAttributes:
+    AgentSessionAttributes:
       additionalProperties: false
       properties:
-        agentname:
+        agentName:
           type: string
         createdAt:
           format: date-time
           type: string
+        initialTurn:
+          $ref: "#/components/schemas/AgentTurn"
+        latestTurn:
+          $ref: "#/components/schemas/AgentTurn"
         ownerUserId:
           type: string
         permissionScopes:
           items:
             type: string
           type: array
-        snapshots:
-          items:
-            $ref: "#/components/schemas/AiAgentRunSnapshot"
-          type: array
-        startedAt:
-          format: date-time
-          type: string
       required:
-        - agentname
+        - agentName
         - ownerUserId
         - permissionScopes
         - createdAt
-        - snapshots
       type: object
-    AiAgentRunSnapshot:
+    AgentTurn:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/AiAgentRunSnapshotAttributes"
+          $ref: "#/components/schemas/AgentTurnAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    AiAgentRunSnapshotAttributes:
+    AgentTurnActionResponseBody:
       additionalProperties: false
       properties:
-        created_at:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/AgentTurnActionResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/AgentTurn"
+      required:
+        - data
+      type: object
+    AgentTurnAttributes:
+      additionalProperties: false
+      properties:
+        createdAt:
           format: date-time
           type: string
         error:
+          $ref: "#/components/schemas/AgentTurnError"
+        finishReason:
           type: string
-        finish_reason:
-          type: string
-        heartbeat_at:
+        finishedAt:
           format: date-time
-          type:
-            - string
-            - "null"
-        parent_id:
+          type: string
+        parentTurnId:
+          type: string
+        startedAt:
+          format: date-time
           type: string
         state:
-          $ref: "#/components/schemas/AiAgentRunSnapshotState"
+          $ref: "#/components/schemas/SessionStateRawMessage"
         status:
+          type: string
+        updatedAt:
+          format: date-time
           type: string
       required:
         - status
-        - finish_reason
-        - parent_id
-        - heartbeat_at
-        - created_at
+        - createdAt
+        - updatedAt
       type: object
-    AiAgentRunSnapshotState:
+    AgentTurnError:
       additionalProperties: false
       properties:
-        artifacts:
-          items:
-            $ref: "#/components/schemas/AiAgentRunSnapshotStateArtifact"
-          type: array
-        custom:
-          additionalProperties: {}
-          type: object
-        messages:
-          items:
-            $ref: "#/components/schemas/Message"
-          type: array
-      required:
-        - artifacts
-        - messages
-        - custom
-      type: object
-    AiAgentRunSnapshotStateArtifact:
-      additionalProperties: false
-      properties:
-        metadata:
-          additionalProperties: {}
-          type: object
-        name:
+        code:
           type: string
-        parts:
+        message:
+          type: string
+      required:
+        - message
+        - code
+      type: object
+    AgentTurnResume:
+      additionalProperties: false
+      properties:
+        respond:
           items:
             $ref: "#/components/schemas/Part"
           type: array
-      required:
-        - parts
+        restart:
+          items:
+            $ref: "#/components/schemas/Part"
+          type: array
       type: object
     Alert:
       additionalProperties: false
@@ -353,6 +355,21 @@ components:
         - docsAvailable
         - docsNeedsUpdate
       type: object
+    Artifact:
+      additionalProperties: false
+      properties:
+        metadata:
+          additionalProperties: {}
+          type: object
+        name:
+          type: string
+        parts:
+          items:
+            $ref: "#/components/schemas/Part"
+          type: array
+      required:
+        - parts
+      type: object
     CompleteIntegrationOAuthFlowRequestAttributes:
       additionalProperties: false
       properties:
@@ -392,6 +409,49 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/IntegrationOAuthInstallResult"
+      required:
+        - data
+      type: object
+    CreateAgentSessionAttributes:
+      additionalProperties: false
+      properties:
+        agentName:
+          minLength: 1
+          type: string
+        input:
+          additionalProperties: {}
+          type: object
+      required:
+        - agentName
+        - input
+      type: object
+    CreateAgentSessionRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateAgentSessionRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/CreateAgentSessionAttributes"
+      required:
+        - attributes
+      type: object
+    CreateAgentSessionResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateAgentSessionResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/AgentSession"
       required:
         - data
       type: object
@@ -1658,18 +1718,18 @@ components:
       required:
         - data
       type: object
-    GetAiAgentRunResponseBody:
+    GetAgentSessionResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/GetAiAgentRunResponseBody.json
+            - /v1/schemas/GetAgentSessionResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/AiAgentRun"
+          $ref: "#/components/schemas/AgentSession"
       required:
         - data
       type: object
@@ -3501,19 +3561,39 @@ components:
         - providerSubjectRef
         - displayName
       type: object
-    ListAiAgentRunsResponseBody:
+    ListAgentSessionsResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListAiAgentRunsResponseBody.json
+            - /v1/schemas/ListAgentSessionsResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/AiAgentRun"
+            $ref: "#/components/schemas/AgentSession"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListAgentTurnsResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListAgentTurnsResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/AgentTurn"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -4803,45 +4883,41 @@ components:
         - data
         - pagination
       type: object
-    RequestAgentRunRequestAttributes:
+    RequestAgentTurnRequestAttributes:
       additionalProperties: false
       properties:
-        input:
-          additionalProperties: {}
-          type: object
-        workflow:
+        message:
           type: string
-      required:
-        - workflow
-        - input
+        resume:
+          $ref: "#/components/schemas/AgentTurnResume"
       type: object
-    RequestAiAgentRunRequestBody:
+    RequestAgentTurnRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/RequestAiAgentRunRequestBody.json
+            - /v1/schemas/RequestAgentTurnRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/RequestAgentRunRequestAttributes"
+          $ref: "#/components/schemas/RequestAgentTurnRequestAttributes"
       required:
         - attributes
       type: object
-    RequestAiAgentRunResponseBody:
+    RequestAgentTurnResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/RequestAiAgentRunResponseBody.json
+            - /v1/schemas/RequestAgentTurnResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/AiAgentRun"
+          $ref: "#/components/schemas/AgentTurn"
       required:
         - data
       type: object
@@ -5045,6 +5121,21 @@ components:
           $ref: "#/components/schemas/OncallShiftHandover"
       required:
         - data
+      type: object
+    SessionStateRawMessage:
+      additionalProperties: false
+      properties:
+        artifacts:
+          items:
+            $ref: "#/components/schemas/Artifact"
+          type: array
+        custom: {}
+        messages:
+          items:
+            $ref: "#/components/schemas/Message"
+          type: array
+        sessionId:
+          type: string
       type: object
     SetIncidentImpactAttributes:
       additionalProperties: false
@@ -6497,9 +6588,9 @@ info:
   version: 0.0.1
 openapi: 3.1.0
 paths:
-  /ai/agents/runs:
+  /ai/agent_sessions:
     get:
-      operationId: list-ai-agent-runs
+      operationId: list-agent-sessions
       parameters:
         - explode: false
           in: query
@@ -6529,27 +6620,12 @@ paths:
           schema:
             default: false
             type: boolean
-        - explode: false
-          in: query
-          name: agentTaskId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: name
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: resulted
-          schema:
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListAiAgentRunsResponseBody"
+                $ref: "#/components/schemas/ListAgentSessionsResponseBody"
           description: OK
         "400":
           content:
@@ -6587,24 +6663,24 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: List Agent Runs
+      summary: List Agent Sessions
       tags:
         - AI
     post:
-      operationId: request-ai-agent-run
+      operationId: create-agent-session
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RequestAiAgentRunRequestBody"
+              $ref: "#/components/schemas/CreateAgentSessionRequestBody"
         required: true
       responses:
-        "200":
+        "201":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RequestAiAgentRunResponseBody"
-          description: OK
+                $ref: "#/components/schemas/CreateAgentSessionResponseBody"
+          description: Created
         "400":
           content:
             application/problem+json:
@@ -6629,6 +6705,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
         "422":
           content:
             application/problem+json:
@@ -6641,12 +6723,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Request Agent Run
+      summary: Create Agent Session
       tags:
         - AI
-  /ai/agents/runs/{id}:
+  /ai/agent_sessions/{id}:
     get:
-      operationId: get-ai-agent-run
+      operationId: get-agent-session
       parameters:
         - in: path
           name: id
@@ -6658,7 +6740,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetAiAgentRunResponseBody"
+                $ref: "#/components/schemas/GetAgentSessionResponseBody"
           description: OK
         "400":
           content:
@@ -6696,7 +6778,278 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get an Agent Run
+      summary: Get Agent Session
+      tags:
+        - AI
+  /ai/agent_sessions/{id}/turns:
+    get:
+      operationId: list-agent-turns
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 10
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: search
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: archived
+          schema:
+            default: false
+            type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListAgentTurnsResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Agent Turns
+      tags:
+        - AI
+    post:
+      operationId: request-agent-turn
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestAgentTurnRequestBody"
+        required: true
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestAgentTurnResponseBody"
+          description: Accepted
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Request Agent Turn
+      tags:
+        - AI
+  /ai/agent_turns/{id}/abort:
+    post:
+      operationId: abort-agent-turn
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentTurnActionResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Abort Agent Turn
+      tags:
+        - AI
+  /ai/agent_turns/{id}/retry:
+    post:
+      operationId: retry-agent-turn
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentTurnActionResponseBody"
+          description: Accepted
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Retry Agent Turn
       tags:
         - AI
   /alerts:

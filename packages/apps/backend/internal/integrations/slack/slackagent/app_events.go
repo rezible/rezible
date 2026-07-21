@@ -15,7 +15,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	aar "github.com/rezible/rezible/ent/aiagentrun"
+	as "github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/user"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
@@ -54,53 +54,48 @@ func (a *App) EventsApiHandler() slackintegration.EventsApiHandler {
 	}
 }
 
-type aiChatAgentRunMetadata struct {
+type aiChatAgentSessionMetadata struct {
 	IsSlack           bool   `mapstructure:"slack"`
 	IntegrationRef    string `mapstructure:"integration_ref"`
 	SlackReplyChannel string `mapstructure:"slack_reply_channel"`
 	SlackReplyTs      string `mapstructure:"slack_reply_ts"`
 }
 
-func (m aiChatAgentRunMetadata) Encode() (map[string]any, error) {
+func (m aiChatAgentSessionMetadata) Encode() (map[string]any, error) {
 	var md map[string]any
 	return md, mapstructure.Decode(m, &md)
 }
 
 func (a *App) startOrContinueAgentThreadReply(ctx context.Context, userId uuid.UUID, msg string, md map[string]any) error {
-	listRunsParams := rez.ListAgentRunsParams{
+	listSessionsParams := rez.ListAgentSessionsParams{
 		ListParams: ent.ListParams{Limit: 1},
-		Predicates: []predicate.AiAgentRun{aar.OwnerUserID(userId)},
+		Predicates: []predicate.AgentSession{as.OwnerUserID(userId)},
 		Metadata:   md,
 	}
-	runs, runsErr := a.agents.ListAgentRuns(ctx, listRunsParams)
-	if runsErr != nil && !ent.IsNotFound(runsErr) {
-		return fmt.Errorf("failed to lookup agent runs: %w", runsErr)
+	sessions, sessionsErr := a.agents.ListAgentSessions(ctx, listSessionsParams)
+	if sessionsErr != nil && !ent.IsNotFound(sessionsErr) {
+		return fmt.Errorf("failed to lookup agent sessions: %w", sessionsErr)
 	}
-	if len(runs.Data) == 1 {
-		slog.Debug("continuing existing agent run in thread")
-		run := runs.Data[0]
-		snap, snapErr := a.agents.GetLatestSnapshotForRun(ctx, run.ID)
-		if snapErr != nil {
-			return fmt.Errorf("failed to get latest agent run snapshot: %w", snapErr)
+	if len(sessions.Data) == 1 {
+		slog.Debug("continuing existing agent session in thread")
+		session := sessions.Data[0]
+		params := &rez.RequestAgentTurnParams{
+			Input:        &rez.AgentTurnInput{Message: ai.NewUserTextMessage(msg)},
+			ParentTurnID: nil,
 		}
-		invokeRunParams := rez.InvokeAgentRunParams{
-			ParentSnapshotID: snap.ID,
-			Message:          ai.NewUserTextMessage(msg),
-		}
-		invokeErr := a.agents.InvokeAgentRun(ctx, run.ID, invokeRunParams)
-		if invokeErr != nil {
-			slog.Error("failed to create chat agent run", "error", invokeErr)
+		if _, requestErr := a.agents.RequestAgentTurn(ctx, session.ID, params); requestErr != nil {
+			slog.Error("failed to request chat agent turn", "error", requestErr)
 		}
 		return nil
 	}
-	createRunParams := rez.CreateAgentRunParams{
+	createSessionParams := rez.CreateAgentSessionParams{
+		AgentName:   rezai.ChatAgent.Name,
 		OwnerUserID: userId,
 		Input:       rezai.ChatAgentInput{UserId: userId, Message: msg},
 		Metadata:    md,
 	}
-	_, runErr := a.agents.CreateAgentRun(ctx, rezai.ChatAgent.Name, createRunParams)
-	if runErr != nil {
-		slog.Error("failed to create chat agent run", "error", runErr)
+	if _, sessionErr := a.agents.CreateAgentSession(ctx, createSessionParams); sessionErr != nil {
+		slog.Error("failed to create chat agent session", "error", sessionErr)
 	}
 	return nil
 }
@@ -113,15 +108,15 @@ func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWra
 		replyTs = data.ThreadTimeStamp
 	}
 
-	md := aiChatAgentRunMetadata{
+	md := aiChatAgentSessionMetadata{
 		IsSlack:           true,
 		IntegrationRef:    cw.Integration().ExternalRef,
 		SlackReplyChannel: data.Channel,
 		SlackReplyTs:      replyTs,
 	}
-	runMd, mdErr := md.Encode()
+	sessionMetadata, mdErr := md.Encode()
 	if mdErr != nil {
-		return fmt.Errorf("failed to create agent run metadata: %w", mdErr)
+		return fmt.Errorf("failed to create agent session metadata: %w", mdErr)
 	}
 
 	usr, usrErr := a.users.Get(ctx, user.ChatID(data.User))
@@ -132,7 +127,7 @@ func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWra
 	cleanedText := strings.TrimSpace(mentionRe.ReplaceAllString(data.Text, ""))
 	fmt.Printf("clean mention text: '%s'\n", cleanedText)
 
-	return a.startOrContinueAgentThreadReply(ctx, usr.ID, cleanedText, runMd)
+	return a.startOrContinueAgentThreadReply(ctx, usr.ID, cleanedText, sessionMetadata)
 }
 
 func (a *App) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent) error {

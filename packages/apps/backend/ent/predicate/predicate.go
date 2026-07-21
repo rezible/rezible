@@ -6,14 +6,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// AiAgentRun is the predicate function for aiagentrun builders.
-type AiAgentRun func(*sql.Selector)
+// AgentSession is the predicate function for agentsession builders.
+type AgentSession func(*sql.Selector)
 
-// AiAgentRunKnowledgeCitation is the predicate function for aiagentrunknowledgecitation builders.
-type AiAgentRunKnowledgeCitation func(*sql.Selector)
+// AgentTurn is the predicate function for agentturn builders.
+type AgentTurn func(*sql.Selector)
 
-// AiAgentRunSnapshot is the predicate function for aiagentrunsnapshot builders.
-type AiAgentRunSnapshot func(*sql.Selector)
+// AgentTurnKnowledgeCitation is the predicate function for agentturnknowledgecitation builders.
+type AgentTurnKnowledgeCitation func(*sql.Selector)
 
 // Alert is the predicate function for alert builders.
 type Alert func(*sql.Selector)

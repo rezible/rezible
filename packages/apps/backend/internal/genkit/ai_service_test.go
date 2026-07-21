@@ -5,20 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
-	aar "github.com/rezible/rezible/ent/aiagentrun"
-	"github.com/stretchr/testify/mock"
+	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/stretchr/testify/suite"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/db"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/test"
-	"github.com/rezible/rezible/test/mocks"
 )
 
 type AiServiceSuite struct {
@@ -26,7 +25,6 @@ type AiServiceSuite struct {
 }
 
 func TestAiServiceSuite(t *testing.T) {
-
 	suite.Run(t, &AiServiceSuite{Suite: test.NewSuite()})
 }
 
@@ -37,76 +35,54 @@ func (s *AiServiceSuite) checkSkip(name string) {
 }
 
 func (s *AiServiceSuite) makeService(opts ...AiServiceOption) *AiService {
-	msgs := mocks.NewMockMessageService(s.T())
-	msgs.EXPECT().PublishEvent(mock.Anything, mock.Anything).Return(nil).Maybe()
-	notifications := mocks.NewMockDatabaseNotificationService(s.T())
-
-	snapshots, snapshotsErr := db.NewAiAgentSnapshotService(s.Database(), msgs, notifications)
-	s.Require().NoError(snapshotsErr)
-
 	kg, kgErr := db.NewKnowledgeGraphService(s.Database())
 	s.Require().NoError(kgErr)
 
-	svc := NewAiService(s.Config(), snapshots, kg)
+	svc := NewAiService(s.Config(), kg)
 	s.Require().NoError(svc.Init(s.T().Context(), opts...))
 
 	return svc
 }
 
-func (s *AiServiceSuite) makeAgentRun(name string, inputState rezai.SessionState) *ent.AiAgentRun {
-	input, inputErr := json.Marshal(inputState)
-	s.Require().NoError(inputErr)
-	ctx := s.SeedTenantContext()
-	create := s.Database().Client(ctx).AiAgentRun.Create().
-		SetAgentName(name).
-		SetInput(input).
-		SetOwnerUserID(s.SeedUser.ID)
-	run, saveErr := create.Save(ctx)
-	s.Require().NoError(saveErr)
-	return run
-}
-
-func (s *AiServiceSuite) TestAlertInvestigation() {
-	s.checkSkip("alert_investigation")
-
-	s.SeedTestEntities()
-
-	ctx := s.SeedTenantContext()
-
-	agentName := rezai.AlertsAgent.Name
-
-	createAlert := s.Client(ctx).Alert.Create().
-		SetTitle("foo")
-	fooAlert, saveAlertErr := createAlert.Save(ctx)
-	s.Require().NoError(saveAlertErr)
-
-	input, inputErr := json.Marshal(rezai.AlertAgentInput{AlertID: fooAlert.ID})
+func (s *AiServiceSuite) makeAgentSession(name string, input rezai.AgentInput) (*ent.AgentSession, *ent.AgentTurn) {
+	initialInput, inputErr := json.Marshal(input)
 	s.Require().NoError(inputErr)
 
-	createRun := s.Client(ctx).AiAgentRun.Create().
-		SetAgentName(agentName).
-		SetInput(input).
-		SetOwnerUserID(s.SeedUser.ID)
-	run, saveRunErr := createRun.Save(ctx)
-	s.Require().NoError(saveRunErr)
+	var session *ent.AgentSession
+	var initialTurn *ent.AgentTurn
+	txFn := func(ctx context.Context, tx *ent.Client) error {
+		createSess := tx.AgentSession.Create().
+			SetAgentName(name).
+			SetOwnerUserID(s.SeedUser.ID)
+		createdSession, saveSessionErr := createSess.Save(ctx)
+		if saveSessionErr != nil {
+			return fmt.Errorf("create session: %w", saveSessionErr)
+		}
 
-	alerts := mocks.NewMockAlertService(s.T())
-	alerts.EXPECT().GetAlert(mock.Anything, mock.Anything).Return(fooAlert, nil)
+		createTurn := tx.AgentTurn.Create().
+			SetID(uuid.New()).
+			SetAgentSession(createdSession).
+			SetRiverJobID(1). // synthetic test handle
+			SetStatus(agentturn.StatusQueued).
+			SetInput(initialInput)
+		createdTurn, saveTurnErr := createTurn.Save(ctx)
+		if saveTurnErr != nil {
+			return fmt.Errorf("create turn: %w", saveTurnErr)
+		}
 
-	aia := &AlertsAgent{alerts: alerts}
-	reg := s.makeService(WithAgent(aia))
+		session = createdSession.Unwrap()
+		initialTurn = createdTurn.Unwrap()
 
-	a, invErr := reg.GetAgentRunInvoker(run)
-	s.Require().NoError(invErr)
-
-	_, invokeErr := a.Invoke(ctx, nil, ai.NewUserTextMessage("investigate this"), nil)
-	s.Require().NoError(invokeErr)
+		return nil
+	}
+	s.Require().NoError(s.Database().WithTx(s.SeedTenantContext(), txFn))
+	return session, initialTurn
 }
 
 type (
 	testAgentInput struct{}
 	testAgentState struct {
-		foo string
+		Foo string `json:"foo"`
 	}
 	testAgentOutput struct {
 		Greeting string `json:"greeting"`
@@ -136,6 +112,48 @@ func makeTestAgent[S rezai.SessionState](userMessage string) *testAgent[S] {
 	}
 }
 
+func (s *AiServiceSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
+	ctx := s.SeedTenantContext()
+	ta := makeTestAgent[testAgentState]("initial")
+	ta.customFn = func(state testAgentState) testAgentState {
+		state.Foo += "-updated"
+		return state
+	}
+	svc := s.makeService(WithAgent(ta))
+
+	sess, initialTurn := s.makeAgentSession(ta.def.Name, testAgentInput{})
+
+	initialInput := &rez.AgentTurnInput{Message: ai.NewUserTextMessage("root")}
+	initialRes, initialErr := svc.InvokeAgentTurn(ctx, sess, initialTurn, nil, initialInput)
+	s.Require().NoError(initialErr)
+	s.Require().NotNil(initialRes)
+	s.Equal(sess.ID.String(), ta.receivedSessionID)
+	s.False(ta.receivedDetach)
+	s.Empty(ta.receivedSnapshotID)
+	var rootState aix.SessionState[testAgentState]
+	s.Require().NoError(json.Unmarshal(initialRes.State, &rootState))
+	s.Equal(sess.ID.String(), rootState.SessionID)
+	s.Equal("-updated", rootState.Custom.Foo)
+
+	resumePart := ai.NewTextPart("resume")
+	resumeInput := &rez.AgentTurnInput{Resume: &ai.GenerateActionResume{
+		Respond: []*ai.Part{resumePart},
+	}}
+	next, nextErr := svc.InvokeAgentTurn(ctx, sess, initialTurn, initialRes.State, resumeInput)
+	s.Require().NoError(nextErr)
+	s.Require().NotNil(next)
+	s.Equal("-updated", ta.receivedCustom.Foo)
+	s.False(ta.receivedDetach)
+	s.Require().NotNil(ta.receivedResume)
+	s.Require().Len(ta.receivedResume.Respond, 1)
+	s.Equal(resumePart.Text, ta.receivedResume.Respond[0].Text)
+	s.Empty(ta.receivedSnapshotID)
+	var nextState aix.SessionState[testAgentState]
+	s.Require().NoError(json.Unmarshal(next.State, &nextState))
+	s.Equal(sess.ID.String(), nextState.SessionID)
+	s.Equal("-updated-updated", nextState.Custom.Foo)
+}
+
 func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 	s.checkSkip("simple_greeting")
 
@@ -143,70 +161,36 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 
 	ctx := s.SeedTenantContext()
 
-	initialState := testAgentState{foo: "bar"}
 	ta := makeTestAgent[testAgentState]("Write a one-word greeting to result, then reply with a simple 'done'.")
 	reg := s.makeService(WithAgent(ta))
 
-	ar := s.makeAgentRun(ta.def.Name, initialState)
-	runId := ar.ID
+	session, initialTurn := s.makeAgentSession(ta.def.Name, testAgentInput{})
+	s.T().Logf("Starting test agent session (id %s)", session.ID)
 
-	a, invErr := reg.GetAgentRunInvoker(ar)
-	s.Require().NoError(invErr)
+	initialInput := &rez.AgentTurnInput{Message: ai.NewUserTextMessage(ta.userMessage)}
+	result, startErr := reg.InvokeAgentTurn(ctx, session, initialTurn, nil, initialInput)
 
-	s.T().Logf("Starting test agent run (id %s)", runId.String())
-	snapshotId, startErr := a.Invoke(ctx, nil, ai.NewUserTextMessage(ta.userMessage), nil)
 	s.Require().NoError(startErr)
-	s.Require().NotEmpty(snapshotId)
-
-	queryRun := s.Client(ctx).AiAgentRun.Query().
-		Where(aar.ID(runId)).
-		WithSnapshots()
-	run, runErr := queryRun.Only(ctx)
-	s.Require().NoError(runErr)
-
-	s.Require().NotEmpty(run.Edges.Snapshots)
-	for _, snap := range run.Edges.Snapshots {
-		s.T().Logf("Snapshot ID: %s (%s, %s)\n", snap.ID, snap.Status.String(), snap.FinishReason)
-		s.Require().NotNil(snap.State)
-		var snapState *aix.SessionState[testAgentState]
-		s.Require().NoError(json.Unmarshal(*snap.State, &snapState))
-		s.Require().NotEmpty(snapState.Messages)
-		for _, m := range snapState.Messages {
-			if len(strings.TrimSpace(m.Text())) > 0 {
-				s.T().Logf("\t[%s]: %s", m.Role, m.Text())
-			} else {
-				s.T().Logf("\t[%s]: ", m.Role)
-				for _, p := range m.Content {
-					var line string
-					if p.IsToolRequest() {
-						line = fmt.Sprintf("[tool request] %s: %+v", p.ToolRequest.Name, p.ToolRequest.Input)
-					} else if p.IsToolResponse() {
-						line = fmt.Sprintf("[tool response] %s: %+v", p.ToolResponse.Name, p.ToolResponse.Output)
-					}
-					s.T().Logf("\t\t%s", line)
-				}
-			}
-		}
-
-		s.T().Log("Outputs:")
-		outputs, outputsErr := ta.def.GetSnapshotOutputs(snap)
-		s.Require().NoError(outputsErr)
-		s.Require().NotEmpty(outputs)
-		for i, o := range outputs {
-			s.T().Logf("\t[%d]: %+v", i, o)
-		}
-	}
+	s.Require().NotNil(result)
+	s.Require().NotEmpty(result.State)
+	var state aix.SessionState[testAgentState]
+	s.Require().NoError(json.Unmarshal(result.State, &state))
+	s.Equal(session.ID.String(), state.SessionID)
+	s.Require().NotEmpty(state.Messages)
 }
 
 type (
 	testAgentDef[S rezai.SessionState] = rezai.AgentDefinition[testAgentInput, S, testAgentOutput]
 
 	testAgent[S rezai.SessionState] struct {
-		def         testAgentDef[S]
-		custom      *S
-		customFn    func(S) S
-		userMessage string
-		fakeCall    bool
+		def                testAgentDef[S]
+		customFn           func(S) S
+		userMessage        string
+		receivedCustom     S
+		receivedDetach     bool
+		receivedResume     *aix.ToolResume
+		receivedSessionID  string
+		receivedSnapshotID string
 	}
 )
 
@@ -214,8 +198,28 @@ func (t *testAgent[S]) agentDefinition() testAgentDef[S] {
 	return t.def
 }
 
-func (t *testAgent[S]) makeInitialUserMessage(ctx context.Context, input testAgentInput) (*ai.Message, error) {
-	return ai.NewUserTextMessage(t.userMessage), nil
+func (t *testAgent[S]) makeInitialTurnInput(ctx context.Context, input testAgentInput) (*rez.AgentTurnInput, error) {
+	return &rez.AgentTurnInput{Message: ai.NewUserTextMessage(t.userMessage)}, nil
+}
+
+func (t *testAgent[S]) makeAgentFunc([]ai.Middleware, []ai.ToolRef) aix.AgentFunc[S] {
+	return func(ctx context.Context, _ aix.Responder, session *aix.SessionRunner[S]) (*aix.AgentResult, error) {
+		t.receivedSessionID = session.SessionID()
+		turnErr := session.Run(ctx, func(ctx context.Context, input *aix.AgentInput) (*aix.TurnResult, error) {
+			t.receivedCustom = session.Custom()
+			t.receivedDetach = input.Detach
+			t.receivedResume = input.Resume
+			if turnCtx := aix.TurnContextFromContext(ctx); turnCtx != nil {
+				t.receivedSnapshotID = turnCtx.SnapshotID
+			}
+			if t.customFn != nil {
+				session.UpdateCustom(t.customFn)
+			}
+			session.AddMessages(ai.NewModelTextMessage("done"))
+			return &aix.TurnResult{FinishReason: aix.AgentFinishReasonStop}, nil
+		})
+		return session.Result(), turnErr
+	}
 }
 
 func (t *testAgent[S]) transformState(ctx context.Context, state *aix.SessionState[S]) (*aix.SessionState[S], error) {

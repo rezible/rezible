@@ -3,543 +3,592 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
-	"slices"
-	"sync"
+	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
 	aix "github.com/firebase/genkit/go/ai/exp"
+	"github.com/firebase/genkit/go/core"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	aar "github.com/rezible/rezible/ent/aiagentrun"
-	aars "github.com/rezible/rezible/ent/aiagentrunsnapshot"
-	"github.com/rezible/rezible/ent/predicate"
+	as "github.com/rezible/rezible/ent/agentsession"
+	at "github.com/rezible/rezible/ent/agentturn"
+	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/riverqueue/river"
 )
 
-type AiAgentService struct {
-	rez.AiAgentSnapshotService
-	logger *slog.Logger
-	db     rez.Database
-	jobs   rez.JobService
-	msgs   rez.MessageService
-	ai     rez.AiService
+type AgentSessionService struct {
+	logger     *slog.Logger
+	db         rez.Database
+	jobs       rez.JobService
+	ai         rez.AiService
+	turnWorker *agentTurnWorker
 }
 
-func NewAiAgentService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, sessions rez.AiAgentSnapshotService, aiSvc rez.AiService) (*AiAgentService, error) {
-	s := &AiAgentService{
-		AiAgentSnapshotService: sessions,
-		logger:                 tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_service"}),
-		db:                     db,
-		jobs:                   jobSvc,
-		msgs:                   msgSvc,
-		ai:                     aiSvc,
-	}
-	jobs.RegisterWorkerFunc(s.handleInvokeAgentRun)
-	return s, nil
-}
-
-func (s *AiAgentService) GetAgentRun(ctx context.Context, id uuid.UUID) (*ent.AiAgentRun, error) {
-	return s.db.Client(ctx).AiAgentRun.Query().
-		Where(aar.ID(id)).
-		Only(ctx)
-}
-
-func (s *AiAgentService) ListAgentRuns(ctx context.Context, params rez.ListAgentRunsParams) (*ent.ListResult[ent.AiAgentRun], error) {
-	query := s.db.Client(ctx).AiAgentRun.Query().
-		Order(aar.ByCreatedAt(sql.OrderDesc()))
-	predicates := params.Predicates
-	for key, val := range params.Metadata {
-		predicates = append(predicates, predicate.AiAgentRun(func(s *sql.Selector) {
-			s.Where(sqljson.ValueEQ(aar.FieldMetadata, val, sqljson.DotPath(key)))
-		}))
-	}
-	if len(predicates) > 0 {
-		query.Where(predicates...)
-	}
-	return ent.DoListQuery[ent.AiAgentRun, *ent.AiAgentRunQuery](ctx, query, params.ListParams)
-}
-
-func (s *AiAgentService) SetRun(ctx context.Context, id uuid.UUID, setFn func(*ent.AiAgentRunMutation)) (*ent.AiAgentRun, error) {
-	var run *ent.AiAgentRun
-	return run, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		var mutator ent.EntityMutator[*ent.AiAgentRun, *ent.AiAgentRunMutation]
-		if id == uuid.Nil {
-			mutator = tx.AiAgentRun.Create()
-		} else {
-			mutator = tx.AiAgentRun.UpdateOneID(id)
-		}
-		setFn(mutator.Mutation())
-		txRun, saveErr := mutator.Save(ctx)
-		if saveErr != nil {
-			return fmt.Errorf("save: %w", saveErr)
-		}
-		run = txRun.Unwrap()
-		return nil
-	})
-}
-
-func (s *AiAgentService) CreateAgentRun(ctx context.Context, name string, params rez.CreateAgentRunParams) (*ent.AiAgentRun, error) {
-	jsonInput, inputOk := params.Input.([]byte)
-	if !inputOk {
-		var jsonErr error
-		if jsonInput, jsonErr = json.Marshal(params.Input); jsonErr != nil {
-			return nil, jsonErr
-		}
-	}
-
-	inputErr := s.ai.ValidateAgentRunInput(name, jsonInput)
-	if inputErr != nil {
-		return nil, fmt.Errorf("invalid input: %w", inputErr)
-	}
-
-	ownerID := params.OwnerUserID
-	if ownerID == uuid.Nil {
-		userID, userOK := execution.GetContext(ctx).UserID()
-		if !userOK {
-			return nil, fmt.Errorf("missing task owner user")
-		}
-		ownerID = userID
-	}
-
-	var run *ent.AiAgentRun
-	return run, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		create := tx.AiAgentRun.Create().
-			SetOwnerUserID(ownerID).
-			SetAgentName(name).
-			SetScopes(params.PermissionScopes).
-			SetInput(jsonInput).
-			SetMetadata(params.Metadata)
-		created, createErr := create.Save(ctx)
-		if createErr != nil {
-			return fmt.Errorf("create agent task: %w", createErr)
-		}
-		run = created.Unwrap()
-
-		if invokeErr := s.InvokeAgentRun(ctx, run.ID, rez.InvokeAgentRunParams{}); invokeErr != nil {
-			return fmt.Errorf("invoke run: %w", invokeErr)
-		}
-
-		return nil
-	})
-}
-
-func (s *AiAgentService) InvokeAgentRun(ctx context.Context, id uuid.UUID, params rez.InvokeAgentRunParams) error {
-	args := jobs.InvokeAgentRun{
-		AgentRunID: id,
-		Message:    params.Message,
-		Resume:     params.Resume,
-	}
-	if params.ParentSnapshotID != uuid.Nil {
-		args.ParentSnapshotID = &params.ParentSnapshotID
-	}
-	jobOpts := &river.InsertOpts{
-		UniqueOpts: river.UniqueOpts{
-			ByArgs:  true,
-			ByState: jobs.UniqueStateNonCompleted,
+func NewAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, aiSvc rez.AiService, cfg rez.AiConfig) (*AgentSessionService, error) {
+	s := &AgentSessionService{
+		logger: tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_session_service"}),
+		db:     db,
+		jobs:   jobSvc,
+		ai:     aiSvc,
+		turnWorker: &agentTurnWorker{
+			db:      db,
+			ai:      aiSvc,
+			logger:  tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_turn_worker"}),
+			timeout: cfg.Agents.WorkerTimeout,
 		},
 	}
-	_, jobErr := s.jobs.Insert(ctx, args, jobOpts)
-	if jobErr != nil {
-		return fmt.Errorf("insert start agent run job: %w", jobErr)
-	}
-	return nil
-}
 
-/*
-func (s *AiAgentService) getAndStartAgentRun(ctx context.Context, id uuid.UUID) (*ent.AiAgentRun, rez.AiAgentInvoker, error) {
-	var run *ent.AiAgentRun
-	var agent rez.AiAgentInvoker
-	return run, agent, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		getStartedRun := tx.AiAgentRun.UpdateOneID(id).
-			Where(aar.ID(id), aar.StartedAtIsNil()).
-			SetStartedAt(time.Now().UTC())
-		txRun, queryErr := getStartedRun.Save(ctx)
-		if queryErr != nil {
-			if ent.IsNotFound(queryErr) {
-				return nil
-			}
-			return fmt.Errorf("get agent run: %w", queryErr)
-		}
-		run = txRun.Unwrap()
+	jobs.RegisterWorker(s.turnWorker)
 
-		var agentErr error
-		agent, agentErr = s.ai.GetAgentRunner(txRun)
-		if agentErr != nil {
-			return fmt.Errorf("get agent run invoker: %w", agentErr)
-		}
-
-		return nil
-	})
-}
-
-func (s *AiAgentService) handleStartAgentRun(ctx context.Context, args jobs.StartAgentRun) error {
-	run, agent, runErr := s.getAndStartAgentRun(ctx, args.AgentRunID)
-	if run == nil || runErr != nil {
-		return runErr
-	}
-
-	ctx = execution.NewAiAgentRunContext(ctx, run)
-
-	snapshotId, startErr := agent.Start(ctx)
-	if startErr != nil {
-		return fmt.Errorf("start agent run: %w", startErr)
-	}
-
-	//event := rez.EventOnAiAgentRunSnapshot{
-	//	AgentName:       run.AgentName,
-	//	AgentRunId:      run.ID,
-	//	AgentSnapshotId: snapshotId,
-	//	RunMetadata:     run.Metadata,
-	//}
-	//if eventErr := s.msgs.PublishEvent(ctx, event); eventErr != nil {
-	//	slog.Error("failed to publish agent run finished event",
-	//		"error", eventErr.Error(),
-	//	)
-	//}
-
-	return nil
-}
-*/
-
-func (s *AiAgentService) LookupAgentRunsByMetadata(ctx context.Context, metadata map[string]any) (ent.AiAgentRuns, error) {
-	query := s.db.Client(ctx).AiAgentRun.Query()
-	for key, val := range metadata {
-		query = query.Where(func(s *sql.Selector) {
-			s.Where(sqljson.ValueEQ(aar.FieldMetadata, val, sqljson.DotPath(key)))
-		})
-	}
-	return query.All(ctx)
-}
-
-func (s *AiAgentService) lookupAgentRunInvoker(ctx context.Context, id uuid.UUID, parentSnapshotId *uuid.UUID) (*ent.AiAgentRun, rez.AiAgentRunInvoker, error) {
-	var run *ent.AiAgentRun
-	var agent rez.AiAgentRunInvoker
-	return run, agent, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		var txRun *ent.AiAgentRun
-		var runErr error
-		if parentSnapshotId != nil {
-			txRun, runErr = tx.AiAgentRun.Query().
-				Where(aar.And(
-					aar.ID(id),
-					aar.HasSnapshotsWith(aars.ID(*parentSnapshotId)),
-					aar.StartedAtNotNil(),
-				)).Only(ctx)
-		} else {
-			txRun, runErr = tx.AiAgentRun.UpdateOneID(id).
-				SetStartedAt(time.Now()).
-				Save(ctx)
-		}
-		if runErr != nil {
-			return fmt.Errorf("get agent run: %w", runErr)
-		}
-		run = txRun.Unwrap()
-
-		var agentErr error
-		if agent, agentErr = s.ai.GetAgentRunInvoker(run); agentErr != nil {
-			return fmt.Errorf("get agent runner: %w", agentErr)
-		}
-
-		return nil
-	})
-}
-
-func (s *AiAgentService) handleInvokeAgentRun(ctx context.Context, args jobs.InvokeAgentRun) error {
-	run, agent, runErr := s.lookupAgentRunInvoker(ctx, args.AgentRunID, args.ParentSnapshotID)
-	if run == nil || runErr != nil {
-		return runErr
-	}
-
-	snapshotId, sendErr := agent.Invoke(ctx, args.ParentSnapshotID, args.Message, args.Resume)
-	if sendErr != nil {
-		return fmt.Errorf("continue agent run: %w", sendErr)
-	}
-
-	slog.InfoContext(ctx, "continued agent run",
-		"name", run.AgentName,
-		"snapshot", snapshotId.String())
-
-	return nil
-}
-
-type AiAgentSnapshotService struct {
-	db            rez.Database
-	msgs          rez.MessageService
-	notifications rez.DatabaseNotificationService
-
-	statusSubs   map[uuid.UUID]*snapshotStatusSub
-	statusSubsMu sync.Mutex
-}
-
-type snapshotStatusSub struct {
-	tenantID    int
-	lastStatus  aars.Status
-	lastUpdated time.Time
-	chans       []chan aix.SnapshotStatus
-}
-
-const aiAgentSnapshotStatusChannel = "rezible_ai_agent_snapshot_status"
-
-func NewAiAgentSnapshotService(db rez.Database, msgs rez.MessageService, notifications rez.DatabaseNotificationService) (*AiAgentSnapshotService, error) {
-	s := &AiAgentSnapshotService{
-		db:            db,
-		msgs:          msgs,
-		notifications: notifications,
-		statusSubs:    make(map[uuid.UUID]*snapshotStatusSub),
-	}
 	return s, nil
 }
 
-func (s *AiAgentSnapshotService) GetLatestSnapshotForRun(ctx context.Context, runId uuid.UUID) (*ent.AiAgentRunSnapshot, error) {
-	query := s.db.Client(ctx).AiAgentRunSnapshot.Query().
-		Where(aars.AiAgentRunID(runId)).
-		Order(aars.ByCreatedAt(sql.OrderDesc()), aars.ByID(sql.OrderDesc())).
-		Limit(1)
-	res, resErr := query.First(ctx)
-	if resErr != nil {
-		if ent.IsNotFound(resErr) {
-			return nil, nil
-		}
-		return nil, resErr
+func (s *AgentSessionService) GetAgentSession(ctx context.Context, id uuid.UUID) (*ent.AgentSession, error) {
+	query := s.db.Client(ctx).AgentSession.Query().
+		Where(as.ID(id))
+	if userID, userOK := execution.GetContext(ctx).UserID(); userOK {
+		query.Where(as.OwnerUserID(userID))
 	}
-	return res, nil
+	return query.Only(ctx)
 }
 
-func (s *AiAgentSnapshotService) GetAgentRunSnapshot(ctx context.Context, id uuid.UUID) (*ent.AiAgentRunSnapshot, error) {
-	res, resErr := s.db.Client(ctx).AiAgentRunSnapshot.Get(ctx, id)
-	if resErr != nil && !ent.IsNotFound(resErr) {
-		return nil, resErr
+func (s *AgentSessionService) ListAgentSessions(ctx context.Context, params rez.ListAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error) {
+	query := s.db.Client(ctx).AgentSession.Query().
+		Order(as.ByCreatedAt(sql.OrderDesc()), as.ByID(sql.OrderDesc())).
+		Where(params.Predicates...)
+
+	if userID, userOK := execution.GetContext(ctx).UserID(); userOK {
+		query.Where(as.OwnerUserID(userID))
 	}
-	return res, nil
+
+	for key, val := range params.Metadata {
+		query.Where(func(s *sql.Selector) {
+			s.Where(sqljson.ValueEQ(as.FieldMetadata, val, sqljson.DotPath(key)))
+		})
+	}
+
+	return ent.DoListQuery[ent.AgentSession, *ent.AgentSessionQuery](ctx, query, params.ListParams)
 }
 
-func (s *AiAgentSnapshotService) UpdateAgentRunSnapshot(ctx context.Context, id uuid.UUID, setFn rez.AiAgentSnapshotSetFunc) (*ent.AiAgentRunSnapshot, error) {
-	if id == uuid.Nil {
-		id = uuid.New()
+func (s *AgentSessionService) insertInvokeAgentTurnJob(ctx context.Context, sessId uuid.UUID, turnId uuid.UUID) (int64, error) {
+	result, insertErr := s.jobs.Insert(ctx, jobs.InvokeAgentTurn{AgentSessionID: sessId, AgentTurnID: turnId}, nil)
+	if insertErr != nil {
+		return 0, fmt.Errorf("insert turn job: %w", insertErr)
+	}
+	if result == nil || result.Job == nil {
+		return 0, fmt.Errorf("no inserted job returned")
+	}
+	if result.UniqueSkippedAsDuplicate {
+		return 0, fmt.Errorf("%w: river skipped duplicate agent turn job", rez.ErrConflict)
+	}
+	return result.Job.ID, nil
+}
+
+func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez.CreateAgentSessionParams) (*ent.AgentSession, error) {
+	name := strings.TrimSpace(params.AgentName)
+	if name == "" {
+		return nil, fmt.Errorf("%w: agent name is required", rez.ErrInvalidInput)
+	}
+	if params.OwnerUserID == uuid.Nil {
+		return nil, fmt.Errorf("owner user ID is required")
 	}
 
-	var snapshot *ent.AiAgentRunSnapshot
-	var changeEvent *rez.EventOnAiAgentRunSnapshotChange
-	updateTxFn := func(ctx context.Context, tx *ent.Client) error {
-		if lockErr := s.db.AcquireTxLocks(ctx, "ai_agent_snapshot", id.String()); lockErr != nil {
-			return fmt.Errorf("lock snapshot: %w", lockErr)
+	initialInput, initialErr := s.ai.MakeInitialAgentTurnInput(ctx, name, params.Input)
+	if initialErr != nil {
+		return nil, fmt.Errorf("make initial turn input: %w", initialErr)
+	}
+
+	var session *ent.AgentSession
+	return session, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		createSession := tx.AgentSession.Create().
+			SetAgentName(name).
+			SetOwnerUserID(params.OwnerUserID)
+		if len(params.PermissionScopes) > 0 {
+			createSession.SetDefaultScopes(params.PermissionScopes)
+		}
+		if params.Metadata != nil {
+			createSession.SetMetadata(params.Metadata)
 		}
 
-		var existing *ent.AiAgentRunSnapshot
-		var getErr error
-		if existing, getErr = tx.AiAgentRunSnapshot.Get(ctx, id); getErr != nil && !ent.IsNotFound(getErr) {
-			return fmt.Errorf("failed to lookup existing (%s): %w", id, getErr)
+		createdSession, createErr := createSession.Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("create agent session: %w", createErr)
 		}
 
-		var mutator ent.EntityMutator[*ent.AiAgentRunSnapshot, *ent.AiAgentRunSnapshotMutation]
-		if existing != nil {
-			mutator = existing.Update()
-		} else {
-			mutator = tx.AiAgentRunSnapshot.Create()
+		turnParams := &rez.RequestAgentTurnParams{Input: initialInput}
+		createdTurn, turnErr := s.createAndRequestTurn(ctx, createdSession.ID, turnParams)
+		if turnErr != nil {
+			return fmt.Errorf("create turn: %w", turnErr)
 		}
 
-		m := mutator.Mutation()
-		if existing == nil {
-			m.SetID(id)
+		session = createdSession.Unwrap()
+		session.Edges.Turns = ent.AgentTurns{createdTurn.Unwrap()}
+		return nil
+	})
+}
+
+func (s *AgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
+	q := s.db.Client(ctx).AgentTurn.Query()
+	if userID, isUserContext := execution.GetContext(ctx).UserID(); isUserContext {
+		q.Where(at.HasAgentSessionWith(as.OwnerUserID(userID)))
+	}
+	return q
+}
+
+func (s *AgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAgentTurnParams) (*ent.AgentTurn, error) {
+	var turn *ent.AgentTurn
+	return turn, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		queryInitialTurn := s.queryAgentTurns(ctx).
+			Where(at.AgentSessionID(sessionID), at.ParentIDIsNil(), at.StatusEQ(at.StatusCompleted))
+
+		initialTurnExists, queryInitialTurnErr := queryInitialTurn.Exist(ctx)
+		if queryInitialTurnErr != nil {
+			return fmt.Errorf("query completed initial turn: %w", queryInitialTurnErr)
+		}
+		if !initialTurnExists {
+			return fmt.Errorf("%w: the initial turn must complete before requesting another turn", rez.ErrConflict)
 		}
 
-		delta, setErr := setFn(existing, m)
-		if setErr != nil {
-			return fmt.Errorf("update snapshot: %w", setErr)
+		createdTurn, turnErr := s.createAndRequestTurn(ctx, sessionID, params)
+		if turnErr != nil {
+			return fmt.Errorf("create turn: %w", turnErr)
 		}
+		turn = createdTurn.Unwrap()
+		return nil
+	})
+}
 
-		if delta == nil {
-			if existing != nil {
-				snapshot = existing.Unwrap()
-			}
+func (s *AgentSessionService) createAndRequestTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAgentTurnParams) (*ent.AgentTurn, error) {
+	normalized := *params.Input
+	if normalized.Resume != nil &&
+		len(normalized.Resume.Respond)+len(normalized.Resume.Restart) == 0 {
+		normalized.Resume = nil
+	}
+	if normalized.Message == nil && normalized.Resume == nil {
+		return nil, rez.ErrInvalidInput
+	}
+
+	encodedInput, encodeErr := json.Marshal(normalized)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode turn input: %w", encodeErr)
+	}
+
+	turnID := uuid.New()
+
+	jobID, jobErr := s.insertInvokeAgentTurnJob(ctx, sessionID, turnID)
+	if jobErr != nil {
+		return nil, fmt.Errorf("enqueue agent turn job: %w", jobErr)
+	}
+
+	createTurn := s.db.Client(ctx).AgentTurn.Create().
+		SetID(turnID).
+		SetAgentSessionID(sessionID).
+		SetNillableParentID(params.ParentTurnID).
+		SetRiverJobID(jobID).
+		SetInput(encodedInput).
+		SetStatus(at.StatusQueued)
+
+	return createTurn.Save(ctx)
+}
+
+func (s *AgentSessionService) GetAgentTurn(ctx context.Context, id uuid.UUID) (*ent.AgentTurn, error) {
+	return s.queryAgentTurns(ctx).Where(at.ID(id)).Only(ctx)
+}
+
+func (s *AgentSessionService) ListAgentTurns(ctx context.Context, params rez.ListAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error) {
+	query := s.queryAgentTurns(ctx).
+		Where(params.Predicates...).
+		Order(at.ByCreatedAt(sql.OrderDesc()), at.ByID(sql.OrderDesc()))
+	return ent.DoListQuery[ent.AgentTurn, *ent.AgentTurnQuery](ctx, query, params.ListParams)
+}
+
+func (s *AgentSessionService) GetLatestTurnForSession(ctx context.Context, sessionId uuid.UUID) (*ent.AgentTurn, error) {
+	queryByYoungest := s.queryAgentTurns(ctx).
+		Where(at.AgentSessionID(sessionId)).
+		Order(at.ByCreatedAt(sql.OrderDesc()), at.ByID(sql.OrderDesc()))
+	return queryByYoungest.First(ctx)
+}
+
+func (s *AgentSessionService) GetLastSuccessfulAgentTurn(ctx context.Context, sessionID uuid.UUID) (*ent.AgentTurn, error) {
+	queryTurn := s.queryAgentTurns(ctx).
+		Where(at.AgentSessionID(sessionID), at.StatusEQ(at.StatusCompleted),
+			at.Not(at.HasChildrenWith(at.StatusEQ(at.StatusCompleted))))
+	turn, turnErr := queryTurn.Only(ctx)
+	if turnErr != nil && !ent.IsNotFound(turnErr) {
+		return nil, turnErr
+	}
+	return turn, nil
+}
+
+func acquireAgentSessionTurnLock(ctx context.Context, db rez.Database, sessionId uuid.UUID) error {
+	return db.AcquireTxLocks(ctx, "agent_session_turn", sessionId.String())
+}
+
+func (s *AgentSessionService) lookupAgentTurnSessionAndAcquireLock(ctx context.Context, turnID uuid.UUID) (*ent.AgentSession, error) {
+	querySession := s.db.Client(ctx).AgentSession.Query().
+		Where(as.HasTurnsWith(at.ID(turnID)))
+	if userID, isUserContext := execution.GetContext(ctx).UserID(); isUserContext {
+		querySession.Where(as.OwnerUserID(userID))
+	}
+	sess, sessErr := querySession.Only(ctx)
+	if sessErr != nil {
+		return nil, sessErr
+	}
+	if lockErr := acquireAgentSessionTurnLock(ctx, s.db, sess.ID); lockErr != nil {
+		return nil, fmt.Errorf("lock agent session: %w", lockErr)
+	}
+	return sess, nil
+}
+
+func (s *AgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.UUID) (*ent.AgentTurn, error) {
+	var result *ent.AgentTurn
+	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		_, sessErr := s.lookupAgentTurnSessionAndAcquireLock(ctx, turnID)
+		if sessErr != nil {
+			return fmt.Errorf("agent session: %w", sessErr)
+		}
+		turn, turnErr := s.GetAgentTurn(ctx, turnID)
+		if turnErr != nil {
+			return turnErr
+		}
+		if turn.Status == at.StatusAborted {
+			result = turn.Unwrap()
 			return nil
 		}
-
-		if existing == nil {
-			if _, ok := m.AiAgentRunID(); !ok {
-				return fmt.Errorf("snapshot session ID is required")
-			}
-		} else {
-			m.SetAiAgentRunID(existing.AiAgentRunID)
+		if turn.Status != at.StatusQueued && turn.Status != at.StatusRunning {
+			return fmt.Errorf("%w: only queued or running turns can be aborted", rez.ErrConflict)
+		}
+		if cancelErr := s.jobs.Cancel(ctx, turn.RiverJobID); cancelErr != nil {
+			return fmt.Errorf("failed to cancel job: %w", cancelErr)
 		}
 
-		updated, saveErr := mutator.Save(ctx)
-		if saveErr != nil {
-			return fmt.Errorf("failed to save: %w", saveErr)
+		update := turn.Update().
+			SetStatus(at.StatusAborted).
+			SetFinishReason(string(aix.AgentFinishReasonAborted)).
+			SetFinishedAt(time.Now().UTC())
+		if turn.Status == at.StatusQueued {
+			update.ClearState()
+			update.ClearError()
 		}
-
-		run, runErr := tx.AiAgentRun.Get(ctx, updated.AiAgentRunID)
-		if runErr != nil {
-			return fmt.Errorf("query agent run: %w", runErr)
+		updated, updateErr := update.Save(ctx)
+		if updateErr != nil {
+			return fmt.Errorf("abort agent turn: %w", updateErr)
 		}
-		changeEvent = &rez.EventOnAiAgentRunSnapshotChange{
-			AgentName:          run.AgentName,
-			AgentRunMetadata:   run.Metadata,
-			AgentRunId:         run.ID,
-			AgentRunSnapshotId: updated.ID,
-			Delta:              *delta,
-		}
-
-		snapshot = updated.Unwrap()
+		result = updated.Unwrap()
 		return nil
-	}
-
-	if txErr := s.db.WithTx(ctx, updateTxFn); txErr != nil {
-		return nil, fmt.Errorf("tx error: %w", txErr)
-	}
-
-	if changeEvent != nil {
-		if eventErr := s.msgs.PublishEvent(ctx, *changeEvent); eventErr != nil {
-			slog.ErrorContext(ctx, "failed to publish ai agent snapshot change event",
-				"snapshotId", changeEvent.AgentRunSnapshotId.String(),
-				"error", eventErr,
-			)
-		}
-	}
-
-	return snapshot, nil
-}
-
-func (s *AiAgentSnapshotService) Start(ctx context.Context) error {
-	return s.notifications.Listen(ctx, "rezible_ai_agent_snapshot_status", s.refreshSubscribedStatuses, s.handleSnapshotStatusNotification)
-}
-
-type aiAgentSnapshotStatusNotification struct {
-	TenantID   int         `json:"tenant_id"`
-	SnapshotID uuid.UUID   `json:"snapshot_id"`
-	Status     aars.Status `json:"status"`
-	UpdatedAt  time.Time   `json:"updated_at"`
-}
-
-func (s *AiAgentSnapshotService) refreshSubscribedStatuses(ctx context.Context) error {
-	tenantIds := make(map[int][]uuid.UUID)
-	s.statusSubsMu.Lock()
-	for id, sub := range s.statusSubs {
-		tenantIds[sub.tenantID] = append(tenantIds[sub.tenantID], id)
-	}
-	s.statusSubsMu.Unlock()
-
-	for tenantID, ids := range tenantIds {
-		tenantCtx := execution.NewTenantContext(ctx, tenantID)
-
-		var statuses []struct {
-			ID        uuid.UUID   `json:"id"`
-			Status    aars.Status `json:"status"`
-			UpdatedAt time.Time   `json:"updated_at"`
-		}
-		queryStatus := s.db.Client(tenantCtx).AiAgentRunSnapshot.Query().
-			Where(aars.IDIn(ids...)).
-			Select(aars.FieldID, aars.FieldStatus, aars.FieldUpdatedAt)
-
-		if queryErr := queryStatus.Scan(tenantCtx, &statuses); queryErr != nil {
-			return fmt.Errorf("query ai agent snapshot statuses: %w", queryErr)
-		}
-		for _, status := range statuses {
-			s.notifyStatusUpdate(aiAgentSnapshotStatusNotification{
-				TenantID:   tenantID,
-				SnapshotID: status.ID,
-				Status:     status.Status,
-				UpdatedAt:  status.UpdatedAt,
-			})
-		}
-	}
-
-	return nil
-}
-
-func (s *AiAgentSnapshotService) handleSnapshotStatusNotification(ctx context.Context, payload []byte) error {
-	var notification aiAgentSnapshotStatusNotification
-	if jsonErr := json.Unmarshal(payload, &notification); jsonErr != nil {
-		slog.WarnContext(ctx, "failed to decode ai agent snapshot status notification", "error", jsonErr)
-		return nil
-	}
-	s.notifyStatusUpdate(notification)
-	return nil
-}
-
-func (s *AiAgentSnapshotService) notifyStatusUpdate(notif aiAgentSnapshotStatusNotification) {
-	s.statusSubsMu.Lock()
-	defer s.statusSubsMu.Unlock()
-
-	sub := s.statusSubs[notif.SnapshotID]
-	if sub == nil || notif.UpdatedAt.Before(sub.lastUpdated) {
-		return
-	}
-	if sub.lastStatus == notif.Status {
-		if notif.UpdatedAt.After(sub.lastUpdated) {
-			sub.lastUpdated = notif.UpdatedAt
-		}
-		return
-	}
-
-	sub.lastStatus = notif.Status
-	sub.lastUpdated = notif.UpdatedAt
-	for _, ch := range sub.chans {
-		select {
-		case <-ch:
-		default:
-		}
-		select {
-		case ch <- aix.SnapshotStatus(notif.Status):
-		default:
-		}
-	}
-}
-
-func (s *AiAgentSnapshotService) OnSnapshotStatusChange(ctx context.Context, id uuid.UUID) <-chan aix.SnapshotStatus {
-	ch := make(chan aix.SnapshotStatus, 1)
-
-	snap, snapErr := s.GetAgentRunSnapshot(ctx, id)
-	if snapErr != nil || snap == nil {
-		close(ch)
-		return ch
-	}
-
-	s.addStatusSub(id, ch, snap)
-
-	context.AfterFunc(ctx, func() {
-		s.removeStatusSub(id, ch)
 	})
-
-	return ch
 }
 
-func (s *AiAgentSnapshotService) addStatusSub(id uuid.UUID, ch chan aix.SnapshotStatus, snap *ent.AiAgentRunSnapshot) {
-	s.statusSubsMu.Lock()
-	defer s.statusSubsMu.Unlock()
-
-	sub := s.statusSubs[id]
-	status := snap.Status
-	if sub == nil {
-		sub = &snapshotStatusSub{
-			tenantID:    snap.TenantID,
-			lastStatus:  snap.Status,
-			lastUpdated: snap.UpdatedAt,
+func (s *AgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.UUID) (*ent.AgentTurn, error) {
+	var result *ent.AgentTurn
+	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		sess, sessErr := s.lookupAgentTurnSessionAndAcquireLock(ctx, turnID)
+		if sessErr != nil {
+			return fmt.Errorf("agent session: %w", sessErr)
 		}
-		s.statusSubs[id] = sub
-	} else {
-		status = sub.lastStatus
-	}
-	ch <- aix.SnapshotStatus(status)
-	sub.chans = append(sub.chans, ch)
+
+		turn, turnErr := s.GetAgentTurn(ctx, turnID)
+		if turnErr != nil {
+			return turnErr
+		}
+		if turn.Status != at.StatusFailed {
+			return fmt.Errorf("%w: only failed turns can be retried", rez.ErrConflict)
+		}
+
+		jobID, jobErr := s.insertInvokeAgentTurnJob(ctx, sess.ID, turn.ID)
+		if jobErr != nil {
+			return fmt.Errorf("enqueue agent turn retry: %w", jobErr)
+		}
+
+		updateTurn := turn.Update().ClearStateFields().
+			SetRiverJobID(jobID).
+			SetStatus(at.StatusQueued)
+
+		updated, updateErr := updateTurn.Save(ctx)
+		if updateErr != nil {
+			return fmt.Errorf("retry agent turn: %w", updateErr)
+		}
+		result = updated.Unwrap()
+		return nil
+	})
 }
 
-func (s *AiAgentSnapshotService) removeStatusSub(id uuid.UUID, ch chan aix.SnapshotStatus) {
-	s.statusSubsMu.Lock()
-	defer s.statusSubsMu.Unlock()
-	if sub, subExists := s.statusSubs[id]; subExists && sub != nil {
-		if i := slices.Index(sub.chans, ch); i >= 0 {
-			sub.chans = slices.Delete(sub.chans, i, i+1)
-			if len(sub.chans) == 0 {
-				delete(s.statusSubs, id)
+type agentTurnWorker struct {
+	river.WorkerDefaults[jobs.InvokeAgentTurn]
+
+	db      rez.Database
+	ai      rez.AiService
+	logger  *slog.Logger
+	timeout time.Duration
+}
+
+func (w *agentTurnWorker) Timeout(job *river.Job[jobs.InvokeAgentTurn]) time.Duration {
+	return w.timeout
+}
+
+func (w *agentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) error {
+	claim, claimErr := w.claimAgentTurn(ctx, job)
+	if claimErr != nil {
+		if ent.IsNotFound(claimErr) {
+			return river.JobCancel(fmt.Errorf("agent turn no longer exists"))
+		}
+		if errors.Is(claimErr, &river.JobCancelError{}) || errors.Is(claimErr, &river.JobSnoozeError{}) {
+			return claimErr
+		}
+		if errors.Is(claimErr, rezai.ErrAgentInterrupted) {
+			return w.saveInvocationError(ctx, job, claimErr)
+		}
+		if job.Attempt >= job.MaxAttempts {
+			return w.saveInvocationError(ctx, job, claimErr)
+		}
+		return claimErr
+	}
+	if claim == nil {
+		return nil
+	}
+
+	result, invokeErr := w.invokeClaimedTurn(ctx, claim)
+
+	w.logger.InfoContext(ctx, "agent turn invoked",
+		"sessionId", claim.session.ID,
+		"turnId", claim.turn.ID)
+
+	if invokeErr != nil {
+		return w.saveInvocationError(ctx, job, invokeErr)
+	}
+	return w.saveInvocationResult(ctx, job, result)
+}
+
+func (w *agentTurnWorker) invokeClaimedTurn(ctx context.Context, claim *claimedAgentTurn) (*rez.AgentTurnResult, error) {
+	var input rez.AgentTurnInput
+	if decodeErr := json.Unmarshal(claim.turn.Input, &input); decodeErr != nil {
+		return nil, fmt.Errorf("decode stored turn input: %w", decodeErr)
+	}
+	return w.ai.InvokeAgentTurn(ctx, claim.session, claim.turn, claim.parentState, &input)
+}
+
+type claimedAgentTurn struct {
+	session     *ent.AgentSession
+	turn        *ent.AgentTurn
+	parentState []byte
+}
+
+func (w *agentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) (*claimedAgentTurn, error) {
+	var claim *claimedAgentTurn
+	return claim, w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := acquireAgentSessionTurnLock(ctx, w.db, job.Args.AgentSessionID); lockErr != nil {
+			return fmt.Errorf("acquire agent session lock: %w", lockErr)
+		}
+		sess, sessErr := tx.AgentSession.Get(ctx, job.Args.AgentSessionID)
+		if sessErr != nil {
+			return fmt.Errorf("lookup agent session: %w", sessErr)
+		}
+
+		turn, turnErr := sess.QueryTurns().Where(at.ID(job.Args.AgentTurnID)).Only(ctx)
+		if turnErr != nil {
+			if ent.IsNotFound(turnErr) {
+				return river.JobCancel(fmt.Errorf("agent turn no longer exists"))
 			}
-			close(ch)
+			return fmt.Errorf("reload agent turn: %w", turnErr)
 		}
+
+		if turn.RiverJobID != job.ID {
+			return river.JobCancel(fmt.Errorf("stale agent turn job"))
+		}
+
+		if turn.Status != at.StatusQueued {
+			switch turn.Status {
+			case at.StatusCompleted:
+				return nil
+			case at.StatusFailed, at.StatusAborted:
+				return river.JobCancel(fmt.Errorf("agent turn is already %s", turn.Status))
+			case at.StatusRunning:
+				return rezai.ErrAgentInterrupted
+			}
+			return fmt.Errorf("invalid agent turn status %q", turn.Status)
+		}
+
+		isQueuedAndOlder := at.And(
+			at.StatusEQ(at.StatusQueued),
+			at.Or(
+				at.CreatedAtLT(turn.CreatedAt),
+				at.And(
+					at.CreatedAtEQ(turn.CreatedAt),
+					at.IDLT(turn.ID),
+				),
+			),
+		)
+
+		// query for any other turns of the same session that are currently running or have been queued for longer
+		queryOthers := sess.QueryTurns().
+			Where(at.AgentSessionID(sess.ID), at.IDNEQ(turn.ID),
+				at.Or(at.StatusEQ(at.StatusRunning), isQueuedAndOlder))
+		othersExist, queryOthersErr := queryOthers.Exist(ctx)
+		if queryOthersErr != nil {
+			return fmt.Errorf("query running agent turn: %w", queryOthersErr)
+		}
+		if othersExist {
+			return river.JobSnooze(time.Second * 5)
+		}
+
+		queryParent := sess.QueryTurns().
+			Where(at.StatusEQ(at.StatusCompleted), at.Not(at.HasChildrenWith(at.StatusEQ(at.StatusCompleted))))
+		parent, queryParentErr := queryParent.Only(ctx)
+		if queryParentErr != nil && !ent.IsNotFound(queryParentErr) {
+			return fmt.Errorf("query successful agent turn: %w", queryParentErr)
+		}
+
+		var parentId *uuid.UUID
+		var parentState []byte
+		if parent != nil {
+			parentId = &parent.ID
+			if parent.State == nil || len(parent.State) == 0 {
+				return fmt.Errorf("successful parent turn has no state")
+			}
+			parentState = append(parentState, parent.State...)
+		} else {
+			queryByYoungest := sess.QueryTurns().
+				Order(at.ByCreatedAt(sql.OrderAsc()), at.ByID(sql.OrderAsc()))
+			initialTurn, queryInitialTurnErr := queryByYoungest.First(ctx)
+			if queryInitialTurnErr != nil {
+				return fmt.Errorf("query initial agent turn: %w", queryInitialTurnErr)
+			}
+			if initialTurn.ID != turn.ID {
+				return fmt.Errorf("session has no successful root turn")
+			}
+		}
+
+		update := turn.Update().ClearStateFields().
+			SetNillableParentID(parentId).
+			SetStatus(at.StatusRunning).
+			SetStartedAt(time.Now().UTC())
+
+		started, updateErr := update.Save(ctx)
+		if updateErr != nil {
+			return fmt.Errorf("claim agent turn: %w", updateErr)
+		}
+
+		claim = &claimedAgentTurn{
+			session:     sess.Unwrap(),
+			turn:        started.Unwrap(),
+			parentState: parentState,
+		}
+		return nil
+	})
+}
+
+func (w *agentTurnWorker) saveInvocationError(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], err error) error {
+	return w.updateClaimedTurn(ctx, job, func(currStatus at.Status, u *ent.AgentTurnUpdateOne) error {
+		if currStatus != at.StatusRunning && currStatus != at.StatusQueued {
+			switch currStatus {
+			case at.StatusCompleted, at.StatusFailed:
+				return nil
+			case at.StatusAborted:
+				return river.JobCancel(fmt.Errorf("agent turn was aborted"))
+			default:
+				return fmt.Errorf("cannot fail agent turn in status %q", currStatus)
+			}
+		}
+
+		encErr, jsonErr := json.Marshal(core.AsGenkitError(err))
+		if jsonErr != nil {
+			return fmt.Errorf("encode invocation error: %w", err)
+		}
+		u.SetStatus(at.StatusFailed)
+		u.SetFinishedAt(time.Now().UTC())
+		u.SetFinishReason(string(aix.AgentFinishReasonFailed))
+		u.SetError(encErr)
+		u.ClearState()
+		return nil
+	})
+}
+
+func (w *agentTurnWorker) saveInvocationResult(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], result *rez.AgentTurnResult) error {
+	return w.updateClaimedTurn(ctx, job, func(currStatus at.Status, u *ent.AgentTurnUpdateOne) error {
+		if currStatus != at.StatusRunning {
+			switch currStatus {
+			case at.StatusCompleted, at.StatusFailed:
+				return nil
+			case at.StatusAborted:
+				return river.JobCancel(fmt.Errorf("agent turn was aborted"))
+			}
+			return fmt.Errorf("agent turn is %s, expected running", currStatus)
+		}
+
+		var resultErr *core.GenkitError
+		u.ClearState()
+		if result == nil {
+			resultErr = core.AsGenkitError(errors.New("agent returned no result"))
+		} else if result.Error != nil {
+			resultErr = result.Error
+			if json.Valid(result.State) {
+				u.SetState(result.State)
+			}
+		} else if !json.Valid(result.State) {
+			resultErr = core.AsGenkitError(errors.New("successful agent result has invalid state"))
+			u.ClearState()
+		} else {
+			u.SetState(result.State)
+		}
+
+		u.SetFinishedAt(time.Now().UTC())
+		if resultErr != nil {
+			encodedErr, jsonErr := json.Marshal(resultErr)
+			if jsonErr != nil {
+				return fmt.Errorf("encode agent result error: %w", jsonErr)
+			}
+			u.SetStatus(at.StatusFailed)
+			u.SetFinishReason(string(aix.AgentFinishReasonFailed))
+			u.SetError(encodedErr)
+		} else {
+			u.SetStatus(at.StatusCompleted)
+			u.SetFinishReason(string(result.FinishReason))
+			u.ClearError()
+		}
+
+		return nil
+	})
+}
+
+func (w *agentTurnWorker) updateClaimedTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], setFn func(at.Status, *ent.AgentTurnUpdateOne) error) error {
+	cleanupCancel := func() {}
+	if ctx.Err() != nil {
+		ctx, cleanupCancel = context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
 	}
+	defer cleanupCancel()
+
+	return w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := acquireAgentSessionTurnLock(ctx, w.db, job.Args.AgentSessionID); lockErr != nil {
+			return fmt.Errorf("acquire agent session lock: %w", lockErr)
+		}
+
+		turn, lookupTurnErr := tx.AgentTurn.Get(ctx, job.Args.AgentTurnID)
+		if lookupTurnErr != nil {
+			return fmt.Errorf("reload agent turn: %w", lookupTurnErr)
+		}
+		if turn.AgentSessionID != job.Args.AgentSessionID {
+			return river.JobCancel(fmt.Errorf("invalid job turn session"))
+		}
+		if turn.RiverJobID != job.ID {
+			return river.JobCancel(fmt.Errorf("stale agent turn job"))
+		}
+
+		update := turn.Update()
+		if setErr := setFn(turn.Status, update); setErr != nil {
+			return setErr
+		}
+
+		if updateErr := update.Exec(ctx); updateErr != nil {
+			return fmt.Errorf("persist terminal agent turn: %w", updateErr)
+		}
+		return nil
+	})
 }

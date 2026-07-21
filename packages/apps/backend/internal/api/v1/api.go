@@ -35,7 +35,7 @@ var _ oapi.Handler = (*Handler)(nil)
 
 func NewHandler(
 	db rez.Database,
-	agents rez.AiAgentService,
+	agents rez.AgentSessionService,
 	alerts rez.AlertService,
 	orgs rez.OrganizationService,
 	users rez.UserService,

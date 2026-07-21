@@ -18,16 +18,16 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldAlertInstanceID holds the string denoting the alert_instance_id field in the database.
 	FieldAlertInstanceID = "alert_instance_id"
-	// FieldAiAgentRunID holds the string denoting the ai_agent_run_id field in the database.
-	FieldAiAgentRunID = "ai_agent_run_id"
+	// FieldAgentSessionID holds the string denoting the agent_session_id field in the database.
+	FieldAgentSessionID = "agent_session_id"
 	// FieldOutput holds the string denoting the output field in the database.
 	FieldOutput = "output"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAlertInstance holds the string denoting the alert_instance edge name in mutations.
 	EdgeAlertInstance = "alert_instance"
-	// EdgeAiAgentRun holds the string denoting the ai_agent_run edge name in mutations.
-	EdgeAiAgentRun = "ai_agent_run"
+	// EdgeAgentSession holds the string denoting the agent_session edge name in mutations.
+	EdgeAgentSession = "agent_session"
 	// Table holds the table name of the alertinvestigation in the database.
 	Table = "alert_investigations"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -44,13 +44,13 @@ const (
 	AlertInstanceInverseTable = "alert_instances"
 	// AlertInstanceColumn is the table column denoting the alert_instance relation/edge.
 	AlertInstanceColumn = "alert_instance_id"
-	// AiAgentRunTable is the table that holds the ai_agent_run relation/edge.
-	AiAgentRunTable = "alert_investigations"
-	// AiAgentRunInverseTable is the table name for the AiAgentRun entity.
-	// It exists in this package in order to avoid circular dependency with the "aiagentrun" package.
-	AiAgentRunInverseTable = "ai_agent_runs"
-	// AiAgentRunColumn is the table column denoting the ai_agent_run relation/edge.
-	AiAgentRunColumn = "ai_agent_run_id"
+	// AgentSessionTable is the table that holds the agent_session relation/edge.
+	AgentSessionTable = "alert_investigations"
+	// AgentSessionInverseTable is the table name for the AgentSession entity.
+	// It exists in this package in order to avoid circular dependency with the "agentsession" package.
+	AgentSessionInverseTable = "agent_sessions"
+	// AgentSessionColumn is the table column denoting the agent_session relation/edge.
+	AgentSessionColumn = "agent_session_id"
 )
 
 // Columns holds all SQL columns for alertinvestigation fields.
@@ -58,7 +58,7 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldAlertInstanceID,
-	FieldAiAgentRunID,
+	FieldAgentSessionID,
 	FieldOutput,
 }
 
@@ -102,9 +102,9 @@ func ByAlertInstanceID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAlertInstanceID, opts...).ToFunc()
 }
 
-// ByAiAgentRunID orders the results by the ai_agent_run_id field.
-func ByAiAgentRunID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAiAgentRunID, opts...).ToFunc()
+// ByAgentSessionID orders the results by the agent_session_id field.
+func ByAgentSessionID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAgentSessionID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -121,10 +121,10 @@ func ByAlertInstanceField(field string, opts ...sql.OrderTermOption) OrderOption
 	}
 }
 
-// ByAiAgentRunField orders the results by ai_agent_run field.
-func ByAiAgentRunField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByAgentSessionField orders the results by agent_session field.
+func ByAgentSessionField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAiAgentRunStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newAgentSessionStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -141,10 +141,10 @@ func newAlertInstanceStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, AlertInstanceTable, AlertInstanceColumn),
 	)
 }
-func newAiAgentRunStep() *sqlgraph.Step {
+func newAgentSessionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AiAgentRunInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AiAgentRunTable, AiAgentRunColumn),
+		sqlgraph.To(AgentSessionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, AgentSessionTable, AgentSessionColumn),
 	)
 }

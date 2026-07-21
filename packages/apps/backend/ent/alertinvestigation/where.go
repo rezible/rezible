@@ -65,9 +65,9 @@ func AlertInstanceID(v uuid.UUID) predicate.AlertInvestigation {
 	return predicate.AlertInvestigation(sql.FieldEQ(FieldAlertInstanceID, v))
 }
 
-// AiAgentRunID applies equality check predicate on the "ai_agent_run_id" field. It's identical to AiAgentRunIDEQ.
-func AiAgentRunID(v uuid.UUID) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldEQ(FieldAiAgentRunID, v))
+// AgentSessionID applies equality check predicate on the "agent_session_id" field. It's identical to AgentSessionIDEQ.
+func AgentSessionID(v uuid.UUID) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldEQ(FieldAgentSessionID, v))
 }
 
 // Output applies equality check predicate on the "output" field. It's identical to OutputEQ.
@@ -115,24 +115,24 @@ func AlertInstanceIDNotIn(vs ...uuid.UUID) predicate.AlertInvestigation {
 	return predicate.AlertInvestigation(sql.FieldNotIn(FieldAlertInstanceID, vs...))
 }
 
-// AiAgentRunIDEQ applies the EQ predicate on the "ai_agent_run_id" field.
-func AiAgentRunIDEQ(v uuid.UUID) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldEQ(FieldAiAgentRunID, v))
+// AgentSessionIDEQ applies the EQ predicate on the "agent_session_id" field.
+func AgentSessionIDEQ(v uuid.UUID) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldEQ(FieldAgentSessionID, v))
 }
 
-// AiAgentRunIDNEQ applies the NEQ predicate on the "ai_agent_run_id" field.
-func AiAgentRunIDNEQ(v uuid.UUID) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldNEQ(FieldAiAgentRunID, v))
+// AgentSessionIDNEQ applies the NEQ predicate on the "agent_session_id" field.
+func AgentSessionIDNEQ(v uuid.UUID) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldNEQ(FieldAgentSessionID, v))
 }
 
-// AiAgentRunIDIn applies the In predicate on the "ai_agent_run_id" field.
-func AiAgentRunIDIn(vs ...uuid.UUID) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldIn(FieldAiAgentRunID, vs...))
+// AgentSessionIDIn applies the In predicate on the "agent_session_id" field.
+func AgentSessionIDIn(vs ...uuid.UUID) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldIn(FieldAgentSessionID, vs...))
 }
 
-// AiAgentRunIDNotIn applies the NotIn predicate on the "ai_agent_run_id" field.
-func AiAgentRunIDNotIn(vs ...uuid.UUID) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldNotIn(FieldAiAgentRunID, vs...))
+// AgentSessionIDNotIn applies the NotIn predicate on the "agent_session_id" field.
+func AgentSessionIDNotIn(vs ...uuid.UUID) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldNotIn(FieldAgentSessionID, vs...))
 }
 
 // OutputEQ applies the EQ predicate on the "output" field.
@@ -233,26 +233,26 @@ func HasAlertInstanceWith(preds ...predicate.AlertInstance) predicate.AlertInves
 	})
 }
 
-// HasAiAgentRun applies the HasEdge predicate on the "ai_agent_run" edge.
-func HasAiAgentRun() predicate.AlertInvestigation {
+// HasAgentSession applies the HasEdge predicate on the "agent_session" edge.
+func HasAgentSession() predicate.AlertInvestigation {
 	return predicate.AlertInvestigation(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AiAgentRunTable, AiAgentRunColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, AgentSessionTable, AgentSessionColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AiAgentRun
+		step.To.Schema = schemaConfig.AgentSession
 		step.Edge.Schema = schemaConfig.AlertInvestigation
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAiAgentRunWith applies the HasEdge predicate on the "ai_agent_run" edge with a given conditions (other predicates).
-func HasAiAgentRunWith(preds ...predicate.AiAgentRun) predicate.AlertInvestigation {
+// HasAgentSessionWith applies the HasEdge predicate on the "agent_session" edge with a given conditions (other predicates).
+func HasAgentSessionWith(preds ...predicate.AgentSession) predicate.AlertInvestigation {
 	return predicate.AlertInvestigation(func(s *sql.Selector) {
-		step := newAiAgentRunStep()
+		step := newAgentSessionStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AiAgentRun
+		step.To.Schema = schemaConfig.AgentSession
 		step.Edge.Schema = schemaConfig.AlertInvestigation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

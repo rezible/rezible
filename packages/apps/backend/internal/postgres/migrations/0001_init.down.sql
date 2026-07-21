@@ -155,19 +155,19 @@ ALTER TABLE "document_accesses" DROP CONSTRAINT "document_accesses_teams_team", 
 -- reverse: modify "documents" table
 ALTER TABLE "documents" DROP CONSTRAINT "documents_tenants_tenant";
 -- reverse: modify "alert_investigations" table
-ALTER TABLE "alert_investigations" DROP CONSTRAINT "alert_investigations_ai_agent_runs_ai_agent_run", DROP CONSTRAINT "alert_investigations_alert_instances_alert_instance", DROP CONSTRAINT "alert_investigations_tenants_tenant";
+ALTER TABLE "alert_investigations" DROP CONSTRAINT "alert_investigations_agent_sessions_agent_session", DROP CONSTRAINT "alert_investigations_alert_instances_alert_instance", DROP CONSTRAINT "alert_investigations_tenants_tenant";
 -- reverse: modify "alert_instances" table
 ALTER TABLE "alert_instances" DROP CONSTRAINT "alert_instances_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alert_instances_tenants_tenant", DROP CONSTRAINT "alert_instances_alerts_instances";
 -- reverse: modify "alert_feedbacks" table
 ALTER TABLE "alert_feedbacks" DROP CONSTRAINT "alert_feedbacks_alert_instances_alert_instance", DROP CONSTRAINT "alert_feedbacks_tenants_tenant";
 -- reverse: modify "alerts" table
 ALTER TABLE "alerts" DROP CONSTRAINT "alerts_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alerts_tenants_tenant";
--- reverse: modify "ai_agent_run_snapshots" table
-ALTER TABLE "ai_agent_run_snapshots" DROP CONSTRAINT "ai_agent_run_snapshots_ai_agent_runs_ai_agent_run", DROP CONSTRAINT "ai_agent_run_snapshots_tenants_tenant";
--- reverse: modify "ai_agent_run_knowledge_citations" table
-ALTER TABLE "ai_agent_run_knowledge_citations" DROP CONSTRAINT "ai_agent_run_knowledge_citatio_2756b8074a547f8626c19560b2b3fd6b", DROP CONSTRAINT "ai_agent_run_knowledge_citatio_9ebe5e0c26a98094846a65686c1e1f8d", DROP CONSTRAINT "ai_agent_run_knowledge_citatio_5aef10f200ecc812a61bf87c1df604f4", DROP CONSTRAINT "ai_agent_run_knowledge_citatio_afc0edd2d24cfa99c5f5b85ba6d0d3d5", DROP CONSTRAINT "ai_agent_run_knowledge_citations_tenants_tenant";
--- reverse: modify "ai_agent_runs" table
-ALTER TABLE "ai_agent_runs" DROP CONSTRAINT "ai_agent_runs_users_owner_user", DROP CONSTRAINT "ai_agent_runs_tenants_tenant";
+-- reverse: modify "agent_turn_knowledge_citations" table
+ALTER TABLE "agent_turn_knowledge_citations" DROP CONSTRAINT "agent_turn_knowledge_citations_4794ae641d5b312d64f1656ea2b13971", DROP CONSTRAINT "agent_turn_knowledge_citations_5420c3316f14ab7fa60ba385678fac1f", DROP CONSTRAINT "agent_turn_knowledge_citations_b456416a5106ae1df99b5ee0a7f94e70", DROP CONSTRAINT "agent_turn_knowledge_citations_tenants_tenant", DROP CONSTRAINT "agent_turn_knowledge_citations_agent_turns_knowledge_citations";
+-- reverse: modify "agent_turns" table
+ALTER TABLE "agent_turns" DROP CONSTRAINT "agent_turns_tenants_tenant", DROP CONSTRAINT "agent_turns_agent_sessions_turns";
+-- reverse: modify "agent_sessions" table
+ALTER TABLE "agent_sessions" DROP CONSTRAINT "agent_sessions_users_owner_user", DROP CONSTRAINT "agent_sessions_tenants_tenant";
 -- reverse: create "user_watched_oncall_rosters" table
 DROP TABLE "user_watched_oncall_rosters";
 -- reverse: create "team_oncall_rosters" table
@@ -606,29 +606,33 @@ DROP INDEX "alert_tenant_id_knowledge_entity_id";
 DROP INDEX "alert_tenant_id";
 -- reverse: create "alerts" table
 DROP TABLE "alerts";
--- reverse: create index "aiagentrunsnapshot_tenant_id_ai_agent_run_id_created_at" to table: "ai_agent_run_snapshots"
-DROP INDEX "aiagentrunsnapshot_tenant_id_ai_agent_run_id_created_at";
--- reverse: create index "aiagentrunsnapshot_tenant_id_ai_agent_run_id" to table: "ai_agent_run_snapshots"
-DROP INDEX "aiagentrunsnapshot_tenant_id_ai_agent_run_id";
--- reverse: create index "aiagentrunsnapshot_tenant_id" to table: "ai_agent_run_snapshots"
-DROP INDEX "aiagentrunsnapshot_tenant_id";
--- reverse: create "ai_agent_run_snapshots" table
-DROP TABLE "ai_agent_run_snapshots";
--- reverse: create index "aiagentrunknowledgecitation_tenant_id_knowledge_evidence_id" to table: "ai_agent_run_knowledge_citations"
-DROP INDEX "aiagentrunknowledgecitation_tenant_id_knowledge_evidence_id";
--- reverse: create index "aiagentrunknowledgecitation_tenant_id_knowledge_relationship_id" to table: "ai_agent_run_knowledge_citations"
-DROP INDEX "aiagentrunknowledgecitation_tenant_id_knowledge_relationship_id";
--- reverse: create index "aiagentrunknowledgecitation_tenant_id_knowledge_entity_id" to table: "ai_agent_run_knowledge_citations"
-DROP INDEX "aiagentrunknowledgecitation_tenant_id_knowledge_entity_id";
--- reverse: create index "aiagentrunknowledgecitation_tenant_id" to table: "ai_agent_run_knowledge_citations"
-DROP INDEX "aiagentrunknowledgecitation_tenant_id";
--- reverse: create "ai_agent_run_knowledge_citations" table
-DROP TABLE "ai_agent_run_knowledge_citations";
--- reverse: create index "aiagentrun_tenant_id_agent_name_created_at" to table: "ai_agent_runs"
-DROP INDEX "aiagentrun_tenant_id_agent_name_created_at";
--- reverse: create index "aiagentrun_tenant_id_owner_user_id_created_at" to table: "ai_agent_runs"
-DROP INDEX "aiagentrun_tenant_id_owner_user_id_created_at";
--- reverse: create index "aiagentrun_tenant_id" to table: "ai_agent_runs"
-DROP INDEX "aiagentrun_tenant_id";
--- reverse: create "ai_agent_runs" table
-DROP TABLE "ai_agent_runs";
+-- reverse: create index "agentturnknowledgecitation_tenant_id_knowledge_evidence_id" to table: "agent_turn_knowledge_citations"
+DROP INDEX "agentturnknowledgecitation_tenant_id_knowledge_evidence_id";
+-- reverse: create index "agentturnknowledgecitation_tenant_id_knowledge_relationship_id" to table: "agent_turn_knowledge_citations"
+DROP INDEX "agentturnknowledgecitation_tenant_id_knowledge_relationship_id";
+-- reverse: create index "agentturnknowledgecitation_tenant_id_knowledge_entity_id" to table: "agent_turn_knowledge_citations"
+DROP INDEX "agentturnknowledgecitation_tenant_id_knowledge_entity_id";
+-- reverse: create index "agentturnknowledgecitation_tenant_id" to table: "agent_turn_knowledge_citations"
+DROP INDEX "agentturnknowledgecitation_tenant_id";
+-- reverse: create "agent_turn_knowledge_citations" table
+DROP TABLE "agent_turn_knowledge_citations";
+-- reverse: create index "agentturn_tenant_id_agent_session_id_created_at" to table: "agent_turns"
+DROP INDEX "agentturn_tenant_id_agent_session_id_created_at";
+-- reverse: create index "agent_turn_one_successful_root_per_session" to table: "agent_turns"
+DROP INDEX "agent_turn_one_successful_root_per_session";
+-- reverse: create index "agent_turn_one_successful_child_per_parent" to table: "agent_turns"
+DROP INDEX "agent_turn_one_successful_child_per_parent";
+-- reverse: create index "agent_turn_one_running_per_session" to table: "agent_turns"
+DROP INDEX "agent_turn_one_running_per_session";
+-- reverse: create index "agentturn_tenant_id" to table: "agent_turns"
+DROP INDEX "agentturn_tenant_id";
+-- reverse: create "agent_turns" table
+DROP TABLE "agent_turns";
+-- reverse: create index "agentsession_tenant_id_agent_name_created_at" to table: "agent_sessions"
+DROP INDEX "agentsession_tenant_id_agent_name_created_at";
+-- reverse: create index "agentsession_tenant_id_owner_user_id_created_at" to table: "agent_sessions"
+DROP INDEX "agentsession_tenant_id_owner_user_id_created_at";
+-- reverse: create index "agentsession_tenant_id" to table: "agent_sessions"
+DROP INDEX "agentsession_tenant_id";
+-- reverse: create "agent_sessions" table
+DROP TABLE "agent_sessions";

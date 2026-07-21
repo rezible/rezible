@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/danielgtaylor/huma/v2"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
@@ -49,6 +50,12 @@ func asStatusError(msg string, err error) huma.StatusError {
 
 	if ent.IsNotFound(err) {
 		return huma.Error404NotFound("not found", err)
+	}
+	if errors.Is(err, rez.ErrConflict) {
+		return huma.Error409Conflict("conflict", err)
+	}
+	if errors.Is(err, rez.ErrInvalidInput) {
+		return huma.Error400BadRequest("invalid input", err)
 	}
 
 	if enumValidationErrFieldRe.MatchString(err.Error()) {

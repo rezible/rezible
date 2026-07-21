@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/aiagentrun"
+	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinvestigation"
 	"github.com/rezible/rezible/ent/tenant"
@@ -38,9 +38,9 @@ func (_c *AlertInvestigationCreate) SetAlertInstanceID(v uuid.UUID) *AlertInvest
 	return _c
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (_c *AlertInvestigationCreate) SetAiAgentRunID(v uuid.UUID) *AlertInvestigationCreate {
-	_c.mutation.SetAiAgentRunID(v)
+// SetAgentSessionID sets the "agent_session_id" field.
+func (_c *AlertInvestigationCreate) SetAgentSessionID(v uuid.UUID) *AlertInvestigationCreate {
+	_c.mutation.SetAgentSessionID(v)
 	return _c
 }
 
@@ -74,9 +74,9 @@ func (_c *AlertInvestigationCreate) SetAlertInstance(v *AlertInstance) *AlertInv
 	return _c.SetAlertInstanceID(v.ID)
 }
 
-// SetAiAgentRun sets the "ai_agent_run" edge to the AiAgentRun entity.
-func (_c *AlertInvestigationCreate) SetAiAgentRun(v *AiAgentRun) *AlertInvestigationCreate {
-	return _c.SetAiAgentRunID(v.ID)
+// SetAgentSession sets the "agent_session" edge to the AgentSession entity.
+func (_c *AlertInvestigationCreate) SetAgentSession(v *AgentSession) *AlertInvestigationCreate {
+	return _c.SetAgentSessionID(v.ID)
 }
 
 // Mutation returns the AlertInvestigationMutation object of the builder.
@@ -134,8 +134,8 @@ func (_c *AlertInvestigationCreate) check() error {
 	if _, ok := _c.mutation.AlertInstanceID(); !ok {
 		return &ValidationError{Name: "alert_instance_id", err: errors.New(`ent: missing required field "AlertInvestigation.alert_instance_id"`)}
 	}
-	if _, ok := _c.mutation.AiAgentRunID(); !ok {
-		return &ValidationError{Name: "ai_agent_run_id", err: errors.New(`ent: missing required field "AlertInvestigation.ai_agent_run_id"`)}
+	if _, ok := _c.mutation.AgentSessionID(); !ok {
+		return &ValidationError{Name: "agent_session_id", err: errors.New(`ent: missing required field "AlertInvestigation.agent_session_id"`)}
 	}
 	if _, ok := _c.mutation.Output(); !ok {
 		return &ValidationError{Name: "output", err: errors.New(`ent: missing required field "AlertInvestigation.output"`)}
@@ -146,8 +146,8 @@ func (_c *AlertInvestigationCreate) check() error {
 	if len(_c.mutation.AlertInstanceIDs()) == 0 {
 		return &ValidationError{Name: "alert_instance", err: errors.New(`ent: missing required edge "AlertInvestigation.alert_instance"`)}
 	}
-	if len(_c.mutation.AiAgentRunIDs()) == 0 {
-		return &ValidationError{Name: "ai_agent_run", err: errors.New(`ent: missing required edge "AlertInvestigation.ai_agent_run"`)}
+	if len(_c.mutation.AgentSessionIDs()) == 0 {
+		return &ValidationError{Name: "agent_session", err: errors.New(`ent: missing required edge "AlertInvestigation.agent_session"`)}
 	}
 	return nil
 }
@@ -226,22 +226,22 @@ func (_c *AlertInvestigationCreate) createSpec() (*AlertInvestigation, *sqlgraph
 		_node.AlertInstanceID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AiAgentRunIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AgentSessionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alertinvestigation.AiAgentRunTable,
-			Columns: []string{alertinvestigation.AiAgentRunColumn},
+			Table:   alertinvestigation.AgentSessionTable,
+			Columns: []string{alertinvestigation.AgentSessionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(aiagentrun.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.AlertInvestigation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.AiAgentRunID = nodes[0]
+		_node.AgentSessionID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -308,15 +308,15 @@ func (u *AlertInvestigationUpsert) UpdateAlertInstanceID() *AlertInvestigationUp
 	return u
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (u *AlertInvestigationUpsert) SetAiAgentRunID(v uuid.UUID) *AlertInvestigationUpsert {
-	u.Set(alertinvestigation.FieldAiAgentRunID, v)
+// SetAgentSessionID sets the "agent_session_id" field.
+func (u *AlertInvestigationUpsert) SetAgentSessionID(v uuid.UUID) *AlertInvestigationUpsert {
+	u.Set(alertinvestigation.FieldAgentSessionID, v)
 	return u
 }
 
-// UpdateAiAgentRunID sets the "ai_agent_run_id" field to the value that was provided on create.
-func (u *AlertInvestigationUpsert) UpdateAiAgentRunID() *AlertInvestigationUpsert {
-	u.SetExcluded(alertinvestigation.FieldAiAgentRunID)
+// UpdateAgentSessionID sets the "agent_session_id" field to the value that was provided on create.
+func (u *AlertInvestigationUpsert) UpdateAgentSessionID() *AlertInvestigationUpsert {
+	u.SetExcluded(alertinvestigation.FieldAgentSessionID)
 	return u
 }
 
@@ -397,17 +397,17 @@ func (u *AlertInvestigationUpsertOne) UpdateAlertInstanceID() *AlertInvestigatio
 	})
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (u *AlertInvestigationUpsertOne) SetAiAgentRunID(v uuid.UUID) *AlertInvestigationUpsertOne {
+// SetAgentSessionID sets the "agent_session_id" field.
+func (u *AlertInvestigationUpsertOne) SetAgentSessionID(v uuid.UUID) *AlertInvestigationUpsertOne {
 	return u.Update(func(s *AlertInvestigationUpsert) {
-		s.SetAiAgentRunID(v)
+		s.SetAgentSessionID(v)
 	})
 }
 
-// UpdateAiAgentRunID sets the "ai_agent_run_id" field to the value that was provided on create.
-func (u *AlertInvestigationUpsertOne) UpdateAiAgentRunID() *AlertInvestigationUpsertOne {
+// UpdateAgentSessionID sets the "agent_session_id" field to the value that was provided on create.
+func (u *AlertInvestigationUpsertOne) UpdateAgentSessionID() *AlertInvestigationUpsertOne {
 	return u.Update(func(s *AlertInvestigationUpsert) {
-		s.UpdateAiAgentRunID()
+		s.UpdateAgentSessionID()
 	})
 }
 
@@ -657,17 +657,17 @@ func (u *AlertInvestigationUpsertBulk) UpdateAlertInstanceID() *AlertInvestigati
 	})
 }
 
-// SetAiAgentRunID sets the "ai_agent_run_id" field.
-func (u *AlertInvestigationUpsertBulk) SetAiAgentRunID(v uuid.UUID) *AlertInvestigationUpsertBulk {
+// SetAgentSessionID sets the "agent_session_id" field.
+func (u *AlertInvestigationUpsertBulk) SetAgentSessionID(v uuid.UUID) *AlertInvestigationUpsertBulk {
 	return u.Update(func(s *AlertInvestigationUpsert) {
-		s.SetAiAgentRunID(v)
+		s.SetAgentSessionID(v)
 	})
 }
 
-// UpdateAiAgentRunID sets the "ai_agent_run_id" field to the value that was provided on create.
-func (u *AlertInvestigationUpsertBulk) UpdateAiAgentRunID() *AlertInvestigationUpsertBulk {
+// UpdateAgentSessionID sets the "agent_session_id" field to the value that was provided on create.
+func (u *AlertInvestigationUpsertBulk) UpdateAgentSessionID() *AlertInvestigationUpsertBulk {
 	return u.Update(func(s *AlertInvestigationUpsert) {
-		s.UpdateAiAgentRunID()
+		s.UpdateAgentSessionID()
 	})
 }
 

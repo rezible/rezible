@@ -9,40 +9,40 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-// The AiAgentRunFunc type is an adapter to allow the use of ordinary
-// function as AiAgentRun mutator.
-type AiAgentRunFunc func(context.Context, *ent.AiAgentRunMutation) (ent.Value, error)
+// The AgentSessionFunc type is an adapter to allow the use of ordinary
+// function as AgentSession mutator.
+type AgentSessionFunc func(context.Context, *ent.AgentSessionMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AiAgentRunFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AiAgentRunMutation); ok {
+func (f AgentSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentSessionMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentSessionMutation", m)
 }
 
-// The AiAgentRunKnowledgeCitationFunc type is an adapter to allow the use of ordinary
-// function as AiAgentRunKnowledgeCitation mutator.
-type AiAgentRunKnowledgeCitationFunc func(context.Context, *ent.AiAgentRunKnowledgeCitationMutation) (ent.Value, error)
+// The AgentTurnFunc type is an adapter to allow the use of ordinary
+// function as AgentTurn mutator.
+type AgentTurnFunc func(context.Context, *ent.AgentTurnMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AiAgentRunKnowledgeCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AiAgentRunKnowledgeCitationMutation); ok {
+func (f AgentTurnFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentTurnMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunKnowledgeCitationMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentTurnMutation", m)
 }
 
-// The AiAgentRunSnapshotFunc type is an adapter to allow the use of ordinary
-// function as AiAgentRunSnapshot mutator.
-type AiAgentRunSnapshotFunc func(context.Context, *ent.AiAgentRunSnapshotMutation) (ent.Value, error)
+// The AgentTurnKnowledgeCitationFunc type is an adapter to allow the use of ordinary
+// function as AgentTurnKnowledgeCitation mutator.
+type AgentTurnKnowledgeCitationFunc func(context.Context, *ent.AgentTurnKnowledgeCitationMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AiAgentRunSnapshotFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AiAgentRunSnapshotMutation); ok {
+func (f AgentTurnKnowledgeCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentTurnKnowledgeCitationMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AiAgentRunSnapshotMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentTurnKnowledgeCitationMutation", m)
 }
 
 // The AlertFunc type is an adapter to allow the use of ordinary

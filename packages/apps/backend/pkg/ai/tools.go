@@ -43,8 +43,9 @@ type (
 	SendChatMessageToolDefinition = ToolDefinition[SendChatMessageToolInput, SendChatMessageToolOutput]
 
 	EventSendChatMessageToolInvoked struct {
-		AgentRunId uuid.UUID                `json:"agent_run_id"`
-		Input      SendChatMessageToolInput `json:"input"`
+		AgentSessionId uuid.UUID                `json:"agent_session_id"`
+		AgentTurnId    uuid.UUID                `json:"agent_turn_id"`
+		Input          SendChatMessageToolInput `json:"input"`
 	}
 )
 

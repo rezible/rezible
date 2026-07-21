@@ -1,8 +1,8 @@
 package jobs
 
 import (
-	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
+	"github.com/riverqueue/river"
 )
 
 type ProjectNormalizedEvent struct {
@@ -81,13 +81,24 @@ func (GenerateShiftMetrics) Kind() string {
 	return "generate-shift-metrics"
 }
 
-type InvokeAgentRun struct {
-	AgentRunID       uuid.UUID                `json:"agent_run_id"`
-	ParentSnapshotID *uuid.UUID               `json:"parent_snapshot_id,omitempty"`
-	Message          *ai.Message              `json:"message,omitempty"`
-	Resume           *ai.GenerateActionResume `json:"resume,omitempty"`
+const AgentTurnsQueue = "agent-turns"
+
+type InvokeAgentTurn struct {
+	AgentSessionID uuid.UUID `json:"agent_session_id"`
+	AgentTurnID    uuid.UUID `json:"agent_turn_id" river:"unique"`
 }
 
-func (InvokeAgentRun) Kind() string {
-	return "invoke-agent-run"
+func (InvokeAgentTurn) Kind() string {
+	return "invoke-agent-turn"
+}
+
+func (InvokeAgentTurn) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{
+		Queue:       AgentTurnsQueue,
+		MaxAttempts: 3,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: UniqueStateNonCompleted,
+		},
+	}
 }

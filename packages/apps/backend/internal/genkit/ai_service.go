@@ -19,34 +19,25 @@ import (
 type AiService struct {
 	cfg rez.AiConfig
 
-	sessions       rez.AiAgentSnapshotService
 	knowledgeGraph rez.KnowledgeGraphService
 
 	toolRefs []ai.ToolRef
 	gk       *genkit.Genkit
 
-	agentWrappers    map[string]AgentWrapper
-	workflowWrappers map[string]WorkflowInvokerFunc
+	agentWrappers map[string]AgentWrapper
 }
 
-func NewAiService(cfg rez.Config, sessions rez.AiAgentSnapshotService, kg rez.KnowledgeGraphService) *AiService {
-	s := &AiService{
-		cfg: cfg.AI,
-
-		sessions:       sessions,
+func NewAiService(cfg rez.Config, kg rez.KnowledgeGraphService) *AiService {
+	return &AiService{
+		cfg:            cfg.AI,
 		knowledgeGraph: kg,
-
-		toolRefs:         make([]ai.ToolRef, 0),
-		agentWrappers:    make(map[string]AgentWrapper),
-		workflowWrappers: make(map[string]WorkflowInvokerFunc),
+		toolRefs:       make([]ai.ToolRef, 0),
+		agentWrappers:  make(map[string]AgentWrapper),
 	}
-
-	return s
 }
 
 func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
 	var plugins []gkapi.Plugin
-
 	if geminiCfg := s.cfg.Gemini; geminiCfg.Enabled {
 		plugins = append(plugins, &googlegenai.GoogleAI{APIKey: geminiCfg.APIKey})
 	}
@@ -58,7 +49,6 @@ func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
 		genkit.WithPromptFS(rezai.PromptsDir),
 	)
 
-	// apply tool registrations first
 	slices.SortFunc(opts, func(a, b AiServiceOption) int {
 		if a.kind == b.kind {
 			return 0
@@ -68,14 +58,12 @@ func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
 		}
 		return 1
 	})
-
 	for _, o := range opts {
 		slog.Debug("ai init opt", "kind", o.kind)
 		if optErr := o.optFn(s); optErr != nil {
 			return fmt.Errorf("service init option: %w", optErr)
 		}
 	}
-
 	return nil
 }
 
@@ -102,41 +90,30 @@ func (s *AiService) getAgentWrapper(name string) (AgentWrapper, error) {
 	if wrapper, ok := s.agentWrappers[name]; ok {
 		return wrapper, nil
 	}
-	return nil, fmt.Errorf("agent '%s' not found", name)
+	return nil, fmt.Errorf("agent %q not found", name)
 }
 
-func (s *AiService) ValidateAgentRunInput(name string, input []byte) error {
-	w, wrapperErr := s.getAgentWrapper(name)
-	if wrapperErr != nil {
-		return wrapperErr
-	}
-	return w.ValidateInput(input)
-}
-
-func (s *AiService) GetAgentRunInvoker(run *ent.AiAgentRun) (rez.AiAgentRunInvoker, error) {
-	if run == nil {
-		return nil, fmt.Errorf("nil run")
-	}
-	w, wrapperErr := s.getAgentWrapper(run.AgentName)
+func (s *AiService) MakeInitialAgentTurnInput(ctx context.Context, name string, input any) (*rez.AgentTurnInput, error) {
+	wrapper, wrapperErr := s.getAgentWrapper(name)
 	if wrapperErr != nil {
 		return nil, wrapperErr
 	}
-	return w.MakeInvoker(run), nil
+	enc, encErr := wrapper.ValidateAndEncodeInput(input)
+	if encErr != nil {
+		return nil, fmt.Errorf("validate input: %w", encErr)
+	}
+	return wrapper.MakeInitialTurnInput(ctx, enc)
 }
 
-func (s *AiService) getWorkflowWrapper(name string) (WorkflowInvokerFunc, error) {
-	if w, ok := s.workflowWrappers[name]; ok {
-		return w, nil
+func (s *AiService) InvokeAgentTurn(ctx context.Context, sess *ent.AgentSession, turn *ent.AgentTurn, state []byte, input *rez.AgentTurnInput) (*rez.AgentTurnResult, error) {
+	if sess == nil {
+		return nil, fmt.Errorf("agent session is required")
 	}
-	return nil, fmt.Errorf("workflow '%s' not found", name)
-}
-
-func (s *AiService) GetWorkflowInvoker(name string) (rez.AiWorkflowInvoker, error) {
-	w, workflowErr := s.getWorkflowWrapper(name)
-	if workflowErr != nil {
-		return nil, fmt.Errorf("workflow %s not found", name)
+	wrapper, wrapperErr := s.getAgentWrapper(sess.AgentName)
+	if wrapperErr != nil {
+		return nil, wrapperErr
 	}
-	return w(), nil
+	return wrapper.Invoke(ctx, sess, turn, state, input)
 }
 
 func (s *AiService) getRegisteredTools(refs []ai.ToolRef) ([]ai.ToolRef, []ai.ToolRef) {
@@ -160,10 +137,5 @@ var flashModel = googlegenai.ModelRef("googleai/gemini-flash-latest", &genai.Gen
 	ThinkingConfig: &genai.ThinkingConfig{ThinkingBudget: new(int32(0))},
 })
 
-func (s *AiService) getModel(name string) ai.ModelRef {
-	return flashModel
-}
-
-func (s *AiService) getDefaultModel() ai.ModelRef {
-	return flashModel
-}
+func (s *AiService) getModel(name string) ai.ModelRef { return flashModel }
+func (s *AiService) getDefaultModel() ai.ModelRef     { return flashModel }

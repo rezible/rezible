@@ -19,7 +19,12 @@ func DefaultConfig() Config {
 				OrgName: "Default",
 			},
 		},
-		AI: AiConfig{},
+		AI: AiConfig{
+			Agents: AgentsConfig{
+				MaxWorkers:    4,
+				WorkerTimeout: 15 * time.Minute,
+			},
+		},
 		HttpServer: HttpServerConfig{
 			Host:     cmp.Or(os.Getenv("HOST"), "0.0.0.0"),
 			Port:     cmp.Or(os.Getenv("PORT"), "7002"),
@@ -95,7 +100,12 @@ func (a AppConfig) GetFrontendUrl(paths ...string) (*url.URL, error) {
 
 type (
 	AiConfig struct {
+		Agents AgentsConfig   `cfg:"agents"`
 		Gemini AiConfigGemini `cfg:"gemini"`
+	}
+	AgentsConfig struct {
+		MaxWorkers    int           `cfg:"max_workers" validate:"min=1"`
+		WorkerTimeout time.Duration `cfg:"worker_timeout" validate:"gt=0"`
 	}
 	AiConfigGemini struct {
 		Enabled bool   `cfg:"enabled"`

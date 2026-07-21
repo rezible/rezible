@@ -47,13 +47,19 @@ func (t *SendChatMessageTool) ToolFunc(ctx context.Context, input rezai.SendChat
 }
 
 func (t *SendChatMessageTool) publishMessageEvent(ctx context.Context, input rezai.SendChatMessageToolInput) error {
-	runId, idOk := execution.GetContext(ctx).AiAgentRunID()
+	execCtx := execution.GetContext(ctx)
+	sessionID, idOk := execCtx.AgentSessionID()
 	if !idOk {
-		return fmt.Errorf("no agent run id in context")
+		return fmt.Errorf("no agent session ID in context")
+	}
+	turnID, turnIDOk := execCtx.AgentTurnID()
+	if !turnIDOk {
+		return fmt.Errorf("no agent turn ID in context")
 	}
 	evt := &rezai.EventSendChatMessageToolInvoked{
-		AgentRunId: runId,
-		Input:      input,
+		AgentSessionId: sessionID,
+		AgentTurnId:    turnID,
+		Input:          input,
 	}
 	if msgErr := t.msgs.PublishEvent(ctx, evt); msgErr != nil {
 		return fmt.Errorf("failed to send: %w", msgErr)

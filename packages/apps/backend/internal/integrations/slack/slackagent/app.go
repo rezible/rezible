@@ -27,11 +27,11 @@ type App struct {
 	messages rez.MessageService
 	intgs    rez.IntegrationService
 	users    rez.UserService
-	agents   rez.AiAgentService
+	agents   rez.AgentSessionService
 	events   rez.EventsService
 }
 
-func MakeApp(cfg rez.Config, jobSvc rez.JobService, msgs rez.MessageService, intgs rez.IntegrationService, users rez.UserService, agents rez.AiAgentService, events rez.EventsService) (*App, error) {
+func MakeApp(cfg rez.Config, jobSvc rez.JobService, msgs rez.MessageService, intgs rez.IntegrationService, users rez.UserService, agents rez.AgentSessionService, events rez.EventsService) (*App, error) {
 	h := &App{
 		cfg:      cfg,
 		jobs:     jobSvc,
@@ -114,20 +114,20 @@ func (a *App) registerMessageHandlers() error {
 }
 
 func (a *App) onAiAgentChatMessage(ctx context.Context, ev *rezai.EventSendChatMessageToolInvoked) error {
-	run, runErr := a.agents.GetAgentRun(ctx, ev.AgentRunId)
-	if runErr != nil {
-		return fmt.Errorf("get agent run: %w", runErr)
+	session, sessionErr := a.agents.GetAgentSession(ctx, ev.AgentSessionId)
+	if sessionErr != nil {
+		return fmt.Errorf("get agent session: %w", sessionErr)
 	}
-	if run.AgentName != rezai.ChatAgent.Name {
+	if session.AgentName != rezai.ChatAgent.Name {
 		return nil
 	}
 
-	var metadata aiChatAgentRunMetadata
-	if mdErr := mapstructure.Decode(run.Metadata, &metadata); mdErr != nil {
+	var metadata aiChatAgentSessionMetadata
+	if mdErr := mapstructure.Decode(session.Metadata, &metadata); mdErr != nil {
 		return fmt.Errorf("decode metadata: %w", mdErr)
 	}
 	if !metadata.IsSlack {
-		fmt.Printf("not a slack agent reply run?: %+v\n", run.Metadata)
+		fmt.Printf("not a slack agent reply session?: %+v\n", session.Metadata)
 		return nil
 	}
 
