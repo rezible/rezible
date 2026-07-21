@@ -2,12 +2,9 @@ package genkit
 
 import (
 	"context"
-	"fmt"
 
 	genkitx "github.com/firebase/genkit/go/genkit/exp"
-	rez "github.com/rezible/rezible"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/execution"
 )
 
 type ToolRunner[Input any, Output any] interface {
@@ -24,45 +21,4 @@ func WithTool[I any, O any](t ToolRunner[I, O]) AiServiceOption {
 			return nil
 		},
 	}
-}
-
-type SendChatMessageTool struct {
-	msgs rez.MessageService
-}
-
-func NewSendChatMessageTool(msgs rez.MessageService) *SendChatMessageTool {
-	return &SendChatMessageTool{msgs: msgs}
-}
-
-func (t *SendChatMessageTool) Definition() rezai.SendChatMessageToolDefinition {
-	return rezai.SendChatMessageTool
-}
-
-func (t *SendChatMessageTool) ToolFunc(ctx context.Context, input rezai.SendChatMessageToolInput) (rezai.SendChatMessageToolOutput, error) {
-	status := "message sent"
-	if msgErr := t.publishMessageEvent(ctx, input); msgErr != nil {
-		status = fmt.Sprintf("failed to send: %s", msgErr.Error())
-	}
-	return rezai.SendChatMessageToolOutput{Status: status}, nil
-}
-
-func (t *SendChatMessageTool) publishMessageEvent(ctx context.Context, input rezai.SendChatMessageToolInput) error {
-	execCtx := execution.GetContext(ctx)
-	sessionID, idOk := execCtx.AgentSessionID()
-	if !idOk {
-		return fmt.Errorf("no agent session ID in context")
-	}
-	turnID, turnIDOk := execCtx.AgentTurnID()
-	if !turnIDOk {
-		return fmt.Errorf("no agent turn ID in context")
-	}
-	evt := &rezai.EventSendChatMessageToolInvoked{
-		AgentSessionId: sessionID,
-		AgentTurnId:    turnID,
-		Input:          input,
-	}
-	if msgErr := t.msgs.PublishEvent(ctx, evt); msgErr != nil {
-		return fmt.Errorf("failed to send: %w", msgErr)
-	}
-	return nil
 }

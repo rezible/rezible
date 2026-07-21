@@ -7,7 +7,6 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/core"
-	"github.com/go-viper/mapstructure/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 )
@@ -21,9 +20,6 @@ type (
 
 	SessionState interface {
 	}
-
-	AgentOutput interface {
-	}
 )
 
 var (
@@ -31,7 +27,7 @@ var (
 )
 
 type (
-	AgentDefinition[I AgentInput, S SessionState, O AgentOutput] struct {
+	AgentDefinition[I AgentInput, S SessionState] struct {
 		Name            string
 		Description     string
 		SystemPrompt    string
@@ -42,7 +38,7 @@ type (
 	}
 )
 
-func (d AgentDefinition[I, S, O]) ValidateInput(raw []byte) (*I, error) {
+func (d AgentDefinition[I, S]) ValidateInput(raw []byte) (*I, error) {
 	var input I
 	if jsonErr := json.Unmarshal(raw, &input); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal: %w", jsonErr)
@@ -59,58 +55,12 @@ func (d AgentDefinition[I, S, O]) ValidateInput(raw []byte) (*I, error) {
 	return &input, validationErr
 }
 
-func (d AgentDefinition[I, S, O]) ParseTurn(turn *ent.AgentTurn) (*AgentState[S], error) {
+func (d AgentDefinition[I, S]) ParseTurn(turn *ent.AgentTurn) (*AgentState[S], error) {
 	var state AgentState[S]
 	if turn.State == nil {
 		return nil, fmt.Errorf("state is nil")
 	}
 	return &state, json.Unmarshal(turn.State, &state)
-}
-
-func (d AgentDefinition[I, S, O]) MakeOutputArtifactPart(output O) (*ai.Part, error) {
-	var data map[string]any
-	if msErr := mapstructure.Decode(output, &data); msErr != nil {
-		return nil, fmt.Errorf("mapstructure: %w", msErr)
-	}
-	return ai.NewCustomPart(data), nil
-}
-
-func (d AgentDefinition[I, S, O]) ParseOutputArtifactPart(p *ai.Part) (*O, error) {
-	if !p.IsCustom() {
-		return nil, fmt.Errorf("not a custom part")
-	}
-	var o O
-	if msErr := mapstructure.Decode(p.Custom, &o); msErr != nil {
-		return nil, fmt.Errorf("decode: %w", msErr)
-	}
-	return &o, nil
-}
-
-const OutputArtifactName = "output"
-
-func (d AgentDefinition[I, S, O]) GetTurnOutputs(turn *ent.AgentTurn) ([]O, error) {
-	state, stateErr := d.ParseTurn(turn)
-	if stateErr != nil {
-		return nil, fmt.Errorf("parse state: %w", stateErr)
-	}
-
-	var outputs []O
-	for _, a := range state.Artifacts {
-		if a.Name != OutputArtifactName {
-			continue
-		}
-		for _, p := range a.Parts {
-			if !p.IsCustom() {
-				continue
-			}
-			var output O
-			if msErr := mapstructure.Decode(p.Custom, &output); msErr != nil {
-				return nil, fmt.Errorf("failed to decode output: %w", msErr)
-			}
-			outputs = append(outputs, output)
-		}
-	}
-	return outputs, nil
 }
 
 func (s *AgentState[S]) GetModelTextMessages() []string {
@@ -134,7 +84,7 @@ type (
 		ReportReady bool `json:"report_ready"`
 	}
 
-	AlertAgentOutput struct {
+	AlertInvestigationReport struct {
 		Limitations        []string `json:"limitations"`
 		LikelyCause        string   `json:"likelyCause"`
 		RecommendedActions []string `json:"recommendedActions"`
@@ -142,7 +92,7 @@ type (
 		BestNextStep       string   `json:"bestNextStep"`
 	}
 
-	AlertsAgentDefinition = AgentDefinition[AlertAgentInput, AlertAgentState, AlertAgentOutput]
+	AlertsAgentDefinition = AgentDefinition[AlertAgentInput, AlertAgentState]
 )
 
 func (i AlertAgentInput) Validate() error {
@@ -150,10 +100,6 @@ func (i AlertAgentInput) Validate() error {
 		return fmt.Errorf("invalid alert id %s", i.AlertID)
 	}
 	return nil
-}
-
-func (o AlertAgentOutput) WriteArtifactToolDefinition() (name string, description string) {
-	return "output_investigation_report", "Output the final results of your investigation"
 }
 
 var AlertsAgent = AlertsAgentDefinition{
@@ -208,11 +154,7 @@ type (
 	ChatAgentState struct {
 	}
 
-	ChatAgentOutput struct {
-		Message string `json:"message"`
-	}
-
-	ChatAgentDefinition = AgentDefinition[ChatAgentInput, ChatAgentState, ChatAgentOutput]
+	ChatAgentDefinition = AgentDefinition[ChatAgentInput, ChatAgentState]
 )
 
 func (i ChatAgentInput) Validate() error {
@@ -222,7 +164,7 @@ func (i ChatAgentInput) Validate() error {
 var ChatAgent = ChatAgentDefinition{
 	Name:          "chat",
 	Description:   "a chat presence agent that can respond to messages",
-	RequiredTools: []ai.ToolRef{SendChatMessageTool},
+	RequiredTools: []ai.ToolRef{},
 	SystemPrompt: `You are an AI agent responsible for generating responses to user chat messages. 
 You help answer any operational questions that software engineering teams.
 Create replies to user messages to the best of your capability - be concise and keep the tone professional.

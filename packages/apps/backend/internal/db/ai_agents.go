@@ -25,28 +25,28 @@ import (
 )
 
 type AgentSessionService struct {
-	logger     *slog.Logger
-	db         rez.Database
-	jobs       rez.JobService
-	ai         rez.AiService
-	turnWorker *agentTurnWorker
+	logger *slog.Logger
+	db     rez.Database
+	jobs   rez.JobService
+	ai     rez.AiService
 }
 
-func NewAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, aiSvc rez.AiService, cfg rez.AiConfig) (*AgentSessionService, error) {
+func NewAgentSessionService(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgs rez.MessageService, aiSvc rez.AiService) (*AgentSessionService, error) {
 	s := &AgentSessionService{
 		logger: tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_session_service"}),
 		db:     db,
 		jobs:   jobSvc,
 		ai:     aiSvc,
-		turnWorker: &agentTurnWorker{
-			db:      db,
-			ai:      aiSvc,
-			logger:  tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_turn_worker"}),
-			timeout: cfg.Agents.WorkerTimeout,
-		},
 	}
 
-	jobs.RegisterWorker(s.turnWorker)
+	turnWorker := &agentTurnWorker{
+		db:      db,
+		ai:      aiSvc,
+		msgs:    msgs,
+		logger:  tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_turn_worker"}),
+		timeout: cfg.Agents.WorkerTimeout,
+	}
+	jobs.RegisterWorker(turnWorker)
 
 	return s, nil
 }
@@ -167,6 +167,10 @@ func (s *AgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uu
 }
 
 func (s *AgentSessionService) createAndRequestTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAgentTurnParams) (*ent.AgentTurn, error) {
+	if params == nil || params.Input == nil {
+		return nil, fmt.Errorf("%w: turn input nil", rez.ErrInvalidInput)
+	}
+
 	normalized := *params.Input
 	if normalized.Resume != nil &&
 		len(normalized.Resume.Respond)+len(normalized.Resume.Restart) == 0 {
@@ -325,6 +329,7 @@ type agentTurnWorker struct {
 	river.WorkerDefaults[jobs.InvokeAgentTurn]
 
 	db      rez.Database
+	msgs    rez.MessageService
 	ai      rez.AiService
 	logger  *slog.Logger
 	timeout time.Duration
@@ -357,6 +362,19 @@ func (w *agentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.InvokeAg
 
 	result, invokeErr := w.invokeClaimedTurn(ctx, claim)
 
+	if result != nil {
+		turnFinishedEvent := rezai.EventOnAgentTurnFinished{
+			AgentSessionId:       claim.session.ID,
+			AgentSessionMetadata: claim.session.Metadata,
+			AgentTurnId:          claim.turn.ID,
+			FinishReason:         result.FinishReason,
+			Response:             result.Response,
+		}
+		if eventErr := w.msgs.PublishEvent(ctx, &turnFinishedEvent); eventErr != nil {
+			w.logger.Warn("failed to publish event", "error", eventErr)
+		}
+	}
+
 	w.logger.InfoContext(ctx, "agent turn invoked",
 		"sessionId", claim.session.ID,
 		"turnId", claim.turn.ID)
@@ -367,7 +385,7 @@ func (w *agentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.InvokeAg
 	return w.saveInvocationResult(ctx, job, result)
 }
 
-func (w *agentTurnWorker) invokeClaimedTurn(ctx context.Context, claim *claimedAgentTurn) (*rez.AgentTurnResult, error) {
+func (w *agentTurnWorker) invokeClaimedTurn(ctx context.Context, claim *claimedAgentTurn) (*rez.AgentInvocationResult, error) {
 	var input rez.AgentTurnInput
 	if decodeErr := json.Unmarshal(claim.turn.Input, &input); decodeErr != nil {
 		return nil, fmt.Errorf("decode stored turn input: %w", decodeErr)
@@ -441,6 +459,10 @@ func (w *agentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[job
 
 		queryParent := sess.QueryTurns().
 			Where(at.StatusEQ(at.StatusCompleted), at.Not(at.HasChildrenWith(at.StatusEQ(at.StatusCompleted))))
+		// TODO: handle allowing explicit parents
+		//if turn.ParentID != nil {
+		//	queryParent.Where(at.ID(*turn.ParentID))
+		//}
 		parent, queryParentErr := queryParent.Only(ctx)
 		if queryParentErr != nil && !ent.IsNotFound(queryParentErr) {
 			return fmt.Errorf("query successful agent turn: %w", queryParentErr)
@@ -466,7 +488,11 @@ func (w *agentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[job
 			}
 		}
 
-		update := turn.Update().ClearStateFields().
+		update := turn.Update().
+			SetFinishReason("").
+			ClearFinishedAt().
+			ClearState().
+			ClearError().
 			SetNillableParentID(parentId).
 			SetStatus(at.StatusRunning).
 			SetStartedAt(time.Now().UTC())
@@ -500,7 +526,7 @@ func (w *agentTurnWorker) saveInvocationError(ctx context.Context, job *river.Jo
 
 		encErr, jsonErr := json.Marshal(core.AsGenkitError(err))
 		if jsonErr != nil {
-			return fmt.Errorf("encode invocation error: %w", err)
+			return fmt.Errorf("encode invocation error: %w", jsonErr)
 		}
 		u.SetStatus(at.StatusFailed)
 		u.SetFinishedAt(time.Now().UTC())
@@ -511,7 +537,7 @@ func (w *agentTurnWorker) saveInvocationError(ctx context.Context, job *river.Jo
 	})
 }
 
-func (w *agentTurnWorker) saveInvocationResult(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], result *rez.AgentTurnResult) error {
+func (w *agentTurnWorker) saveInvocationResult(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], result *rez.AgentInvocationResult) error {
 	return w.updateClaimedTurn(ctx, job, func(currStatus at.Status, u *ent.AgentTurnUpdateOne) error {
 		if currStatus != at.StatusRunning {
 			switch currStatus {
@@ -524,13 +550,15 @@ func (w *agentTurnWorker) saveInvocationResult(ctx context.Context, job *river.J
 		}
 
 		var resultErr *core.GenkitError
-		u.ClearState()
 		if result == nil {
 			resultErr = core.AsGenkitError(errors.New("agent returned no result"))
+			u.ClearState()
 		} else if result.Error != nil {
 			resultErr = result.Error
 			if json.Valid(result.State) {
 				u.SetState(result.State)
+			} else {
+				u.ClearState()
 			}
 		} else if !json.Valid(result.State) {
 			resultErr = core.AsGenkitError(errors.New("successful agent result has invalid state"))

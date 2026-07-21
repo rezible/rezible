@@ -180,7 +180,7 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 }
 
 type (
-	testAgentDef[S rezai.SessionState] = rezai.AgentDefinition[testAgentInput, S, testAgentOutput]
+	testAgentDef[S rezai.SessionState] = rezai.AgentDefinition[testAgentInput, S]
 
 	testAgent[S rezai.SessionState] struct {
 		def                testAgentDef[S]

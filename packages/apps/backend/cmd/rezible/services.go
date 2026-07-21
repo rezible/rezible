@@ -191,7 +191,6 @@ func declareServices(ctx context.Context, i do.Injector) {
 		)
 		return s, s.Init(ctx,
 			//genkit.WithTool(genkit.NewKnowledgeGraphTool(do.MustInvoke[rez.KnowledgeGraphService](i))),
-			genkit.WithTool(genkit.NewSendChatMessageTool(do.MustInvoke[rez.MessageService](i))),
 			genkit.WithAgent(genkit.NewChatAgent()),
 			genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i))),
 		)
@@ -451,11 +450,12 @@ var provideServices = do.Package(
 
 	do.Lazy(func(i do.Injector) (*db.AgentSessionService, error) {
 		return db.NewAgentSessionService(
+			do.MustInvoke[rez.Config](i).AI,
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.AiService](i),
-			do.MustInvoke[rez.Config](i).AI,
 		)
 	}),
 	do.Bind[*db.AgentSessionService, rez.AgentSessionService](),

@@ -72,7 +72,7 @@ type AiServiceOption struct {
 	optFn func(*AiService) error
 }
 
-func WithAgent[I rezai.AgentInput, S rezai.SessionState, O rezai.AgentOutput](r agentRunner[I, S, O]) AiServiceOption {
+func WithAgent[I rezai.AgentInput, S rezai.SessionState](r agentRunner[I, S]) AiServiceOption {
 	return AiServiceOption{
 		kind: "agent",
 		optFn: func(s *AiService) error {
@@ -105,7 +105,7 @@ func (s *AiService) MakeInitialAgentTurnInput(ctx context.Context, name string, 
 	return wrapper.MakeInitialTurnInput(ctx, enc)
 }
 
-func (s *AiService) InvokeAgentTurn(ctx context.Context, sess *ent.AgentSession, turn *ent.AgentTurn, state []byte, input *rez.AgentTurnInput) (*rez.AgentTurnResult, error) {
+func (s *AiService) InvokeAgentTurn(ctx context.Context, sess *ent.AgentSession, turn *ent.AgentTurn, state []byte, input *rez.AgentTurnInput) (*rez.AgentInvocationResult, error) {
 	if sess == nil {
 		return nil, fmt.Errorf("agent session is required")
 	}

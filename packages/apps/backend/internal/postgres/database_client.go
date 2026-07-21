@@ -112,8 +112,7 @@ func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Con
 				panic(fmt.Errorf("%v: rollback transaction: %w", v, rbErr))
 			}
 			panic(v)
-		}
-		if !finished {
+		} else if !finished {
 			_ = tx.Rollback()
 		}
 	}()
@@ -123,6 +122,7 @@ func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Con
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return fmt.Errorf("%w: rollback transaction: %w", fnErr, rbErr)
 		}
+		finished = true
 		return fnErr
 	}
 

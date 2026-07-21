@@ -422,15 +422,16 @@ type (
 		Input   *AgentTurnInput
 	}
 
-	AgentTurnResult struct {
+	AgentInvocationResult struct {
 		State        []byte
+		Response     *ai.Message
 		FinishReason aix.AgentFinishReason
 		Error        *core.GenkitError
 	}
 
 	AiService interface {
 		MakeInitialAgentTurnInput(context.Context, string, any) (*AgentTurnInput, error)
-		InvokeAgentTurn(context.Context, *ent.AgentSession, *ent.AgentTurn, []byte, *AgentTurnInput) (*AgentTurnResult, error)
+		InvokeAgentTurn(context.Context, *ent.AgentSession, *ent.AgentTurn, []byte, *AgentTurnInput) (*AgentInvocationResult, error)
 	}
 
 	CreateAgentSessionParams struct {

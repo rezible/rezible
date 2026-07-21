@@ -109,11 +109,11 @@ func (a *App) GetIntegrationClientWrapper(ctx context.Context, preds ...predicat
 
 func (a *App) registerMessageHandlers() error {
 	return errors.Join(
-		a.messages.AddEventHandlers(rez.NewEventHandler("slackagent.HandleAiAgentChatMessage", a.onAiAgentChatMessage)),
+		a.messages.AddEventHandlers(rez.NewEventHandler("slackagent.OnAiAgentTurnFinished", a.onAiAgentTurnFinished)),
 		a.messages.AddCommandHandlers(rez.NewCommandHandler("slackagent.SendMessage", a.handleSendMessageCommand)))
 }
 
-func (a *App) onAiAgentChatMessage(ctx context.Context, ev *rezai.EventSendChatMessageToolInvoked) error {
+func (a *App) onAiAgentTurnFinished(ctx context.Context, ev *rezai.EventOnAgentTurnFinished) error {
 	session, sessionErr := a.agents.GetAgentSession(ctx, ev.AgentSessionId)
 	if sessionErr != nil {
 		return fmt.Errorf("get agent session: %w", sessionErr)
@@ -130,20 +130,17 @@ func (a *App) onAiAgentChatMessage(ctx context.Context, ev *rezai.EventSendChatM
 		fmt.Printf("not a slack agent reply session?: %+v\n", session.Metadata)
 		return nil
 	}
+	if len(ev.Response.Text()) == 0 {
+		return nil
+	}
 
 	args := SendMessageJobArgs{
-		Message:        ev.Input.Message,
+		Message:        ev.Response.Text(),
 		IntegrationRef: metadata.IntegrationRef,
 		Channel:        metadata.SlackReplyChannel,
 		ReplyTs:        metadata.SlackReplyTs,
 	}
-	opts := &river.InsertOpts{
-		UniqueOpts: river.UniqueOpts{
-			ByArgs: true,
-			//ByState: jobs.UniqueStateNonCompleted,
-		},
-	}
-	if _, cmdErr := a.jobs.Insert(ctx, args, opts); cmdErr != nil {
+	if _, cmdErr := a.jobs.Insert(ctx, args, nil); cmdErr != nil {
 		return fmt.Errorf("insert job: %w", cmdErr)
 	}
 
@@ -151,14 +148,24 @@ func (a *App) onAiAgentChatMessage(ctx context.Context, ev *rezai.EventSendChatM
 }
 
 type SendMessageJobArgs struct {
-	IntegrationRef string `json:"integration_ref"`
-	Message        string `json:"message"`
+	IntegrationRef string `json:"integration_ref" river:"unique"`
+	Message        string `json:"message" river:"unique"`
 	Channel        string `json:"channel"`
-	ReplyTs        string `json:"reply_ts"`
+	ReplyTs        string `json:"reply_ts" river:"unique"`
 }
 
 func (a SendMessageJobArgs) Kind() string {
 	return "slack-send-message"
+}
+
+func (SendMessageJobArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{
+		MaxAttempts: 2,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: jobs.UniqueStateNonCompleted,
+		},
+	}
 }
 
 func (a *App) handleSendMessageJob(ctx context.Context, args SendMessageJobArgs) error {
