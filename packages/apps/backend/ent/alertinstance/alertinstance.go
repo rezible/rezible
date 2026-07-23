@@ -16,14 +16,10 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
-	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldAlertID holds the string denoting the alert_id field in the database.
 	FieldAlertID = "alert_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
-	EdgeKnowledgeEntity = "knowledge_entity"
 	// EdgeAlert holds the string denoting the alert edge name in mutations.
 	EdgeAlert = "alert"
 	// EdgeFeedback holds the string denoting the feedback edge name in mutations.
@@ -37,13 +33,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
-	KnowledgeEntityTable = "alert_instances"
-	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
-	KnowledgeEntityInverseTable = "knowledge_entities"
-	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
-	KnowledgeEntityColumn = "knowledge_entity_id"
 	// AlertTable is the table that holds the alert relation/edge.
 	AlertTable = "alert_instances"
 	// AlertInverseTable is the table name for the Alert entity.
@@ -64,7 +53,6 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldKnowledgeEntityID,
 	FieldAlertID,
 }
 
@@ -103,11 +91,6 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
-func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKnowledgeEntityID, opts...).ToFunc()
-}
-
 // ByAlertID orders the results by the alert_id field.
 func ByAlertID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAlertID, opts...).ToFunc()
@@ -117,13 +100,6 @@ func ByAlertID(opts ...sql.OrderTermOption) OrderOption {
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByKnowledgeEntityField orders the results by knowledge_entity field.
-func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -152,13 +128,6 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newKnowledgeEntityStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(KnowledgeEntityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 	)
 }
 func newAlertStep() *sqlgraph.Step {

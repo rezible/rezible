@@ -13,8 +13,8 @@ import (
 const (
 	knowledgeEntityKindSystemComponent = "system_component"
 
-	knowledgeAssertionSystemComponentObserved    = "system_component_exists"
-	knowledgeAssertionSystemRelationshipObserved = "system_relationship_exists"
+	knowledgeAssertionSystemComponentExists    = "system_component_exists"
+	knowledgeAssertionSystemRelationshipExists = "system_relationship_exists"
 )
 
 func systemComponentRef(kind, reference, displayName, description string, properties map[string]any) ent.KnowledgeEntityRef {
@@ -32,11 +32,7 @@ func systemComponentRef(kind, reference, displayName, description string, proper
 	}
 }
 
-func (s *ProjectionService) handleSystemComponentEventProjection(ctx context.Context, normalizedEvent *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	event, decodeErr := projections.DecodeSystemComponentEvent(normalizedEvent)
-	if decodeErr != nil {
-		return nil, fmt.Errorf("invalid system component event: %w", decodeErr)
-	}
+func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, event *projections.SystemComponentEvent) ([]rez.ProjectedEntityRef, error) {
 	attributes := event.Attributes
 	properties := make(map[string]any, len(attributes.Properties)+1)
 	for key, value := range attributes.Properties {
@@ -55,23 +51,19 @@ func (s *ProjectionService) handleSystemComponentEventProjection(ctx context.Con
 	aliasRef.SubjectEntityRef = entityRef
 	evidence := ent.KnowledgeEvidenceRef{
 		Kind:            projectionEvidenceKind(event.Event),
-		Assertion:       knowledgeAssertionSystemComponentObserved,
+		Assertion:       knowledgeAssertionSystemComponentExists,
 		EffectiveAt:     event.Event.OccurredAt,
 		Properties:      properties,
 		SubjectAliasRef: aliasRef,
 	}
 
-	if ingestErr := s.ingestProjectedEvidence(ctx, event.Event, evidence); ingestErr != nil {
+	if ingestErr := s.knowledge.IngestEvidence(ctx, event.Event, evidence); ingestErr != nil {
 		return nil, fmt.Errorf("ingest system component evidence: %w", ingestErr)
 	}
 	return nil, nil
 }
 
-func (s *ProjectionService) handleSystemRelationshipEventProjection(ctx context.Context, normalizedEvent *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	event, decodeErr := projections.DecodeSystemRelationshipEvent(normalizedEvent)
-	if decodeErr != nil {
-		return nil, fmt.Errorf("invalid system relationship event: %w", decodeErr)
-	}
+func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, event *projections.SystemRelationshipEvent) ([]rez.ProjectedEntityRef, error) {
 	attributes := event.Attributes
 	sourceRef := systemComponentRef(
 		attributes.SourceKind,
@@ -114,28 +106,28 @@ func (s *ProjectionService) handleSystemRelationshipEventProjection(ctx context.
 	evidence := []ent.KnowledgeEvidenceRef{
 		{
 			Kind:            projectionEvidenceKind(event.Event),
-			Assertion:       knowledgeAssertionSystemComponentObserved,
+			Assertion:       knowledgeAssertionSystemComponentExists,
 			EffectiveAt:     event.Event.OccurredAt,
 			Properties:      sourceRef.Properties,
 			SubjectAliasRef: sourceAlias,
 		},
 		{
 			Kind:            projectionEvidenceKind(event.Event),
-			Assertion:       knowledgeAssertionSystemComponentObserved,
+			Assertion:       knowledgeAssertionSystemComponentExists,
 			EffectiveAt:     event.Event.OccurredAt,
 			Properties:      targetRef.Properties,
 			SubjectAliasRef: targetAlias,
 		},
 		{
 			Kind:            projectionEvidenceKind(event.Event),
-			Assertion:       knowledgeAssertionSystemRelationshipObserved,
+			Assertion:       knowledgeAssertionSystemRelationshipExists,
 			EffectiveAt:     event.Event.OccurredAt,
 			Properties:      attributes.Properties,
 			SubjectAliasRef: relationshipAlias,
 		},
 	}
 
-	if ingestErr := s.ingestProjectedEvidence(ctx, event.Event, evidence...); ingestErr != nil {
+	if ingestErr := s.knowledge.IngestEvidence(ctx, event.Event, evidence...); ingestErr != nil {
 		return nil, fmt.Errorf("ingest system relationship evidence: %w", ingestErr)
 	}
 	return nil, nil

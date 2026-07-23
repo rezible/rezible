@@ -297,7 +297,6 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "alert_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AlertInstancesTable holds the schema information for the "alert_instances" table.
 	AlertInstancesTable = &schema.Table{
@@ -317,23 +316,12 @@ var (
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
-			{
-				Symbol:     "alert_instances_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{AlertInstancesColumns[3]},
-				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "alertinstance_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{AlertInstancesColumns[2]},
-			},
-			{
-				Name:    "alertinstance_tenant_id_knowledge_entity_id",
-				Unique:  true,
-				Columns: []*schema.Column{AlertInstancesColumns[2], AlertInstancesColumns[3]},
 			},
 		},
 	}
@@ -3465,7 +3453,6 @@ func init() {
 	AlertFeedbacksTable.ForeignKeys[1].RefTable = AlertInstancesTable
 	AlertInstancesTable.ForeignKeys[0].RefTable = AlertsTable
 	AlertInstancesTable.ForeignKeys[1].RefTable = TenantsTable
-	AlertInstancesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	AlertInvestigationsTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertInvestigationsTable.ForeignKeys[1].RefTable = AlertInstancesTable
 	AlertInvestigationsTable.ForeignKeys[2].RefTable = AgentSessionsTable

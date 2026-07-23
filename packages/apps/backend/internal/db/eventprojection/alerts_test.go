@@ -54,9 +54,6 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 	s.Require().Len(alerts, 1)
 	s.Equal(attrs.Title, alerts[0].Title)
 	s.NotNil(alerts[0].KnowledgeEntityID)
-	instances, err := s.Client(ctx).AlertInstance.Query().All(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(instances, 1)
 
 	attrs.Title = "Search latency critical"
 	second := s.createAlertProjectionEvent("alert-1", attrs)
@@ -71,7 +68,7 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 
 	evidenceCount, err := s.Client(ctx).KnowledgeEvidence.Query().Count(ctx)
 	s.Require().NoError(err)
-	s.Equal(6, evidenceCount)
+	s.Equal(2, evidenceCount)
 }
 
 func (s *ProjectionServiceSuite) TestAlertProjectionLinksRelatedEntities() {

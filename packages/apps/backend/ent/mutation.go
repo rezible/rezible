@@ -5163,22 +5163,20 @@ func (m *AlertFeedbackMutation) ResetEdge(name string) error {
 // AlertInstanceMutation represents an operation that mutates the AlertInstance nodes in the graph.
 type AlertInstanceMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	clearedFields           map[string]struct{}
-	tenant                  *int
-	clearedtenant           bool
-	knowledge_entity        *uuid.UUID
-	clearedknowledge_entity bool
-	alert                   *uuid.UUID
-	clearedalert            bool
-	feedback                map[uuid.UUID]struct{}
-	removedfeedback         map[uuid.UUID]struct{}
-	clearedfeedback         bool
-	done                    bool
-	oldValue                func(context.Context) (*AlertInstance, error)
-	predicates              []predicate.AlertInstance
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	clearedFields   map[string]struct{}
+	tenant          *int
+	clearedtenant   bool
+	alert           *uuid.UUID
+	clearedalert    bool
+	feedback        map[uuid.UUID]struct{}
+	removedfeedback map[uuid.UUID]struct{}
+	clearedfeedback bool
+	done            bool
+	oldValue        func(context.Context) (*AlertInstance, error)
+	predicates      []predicate.AlertInstance
 }
 
 var _ ent.Mutation = (*AlertInstanceMutation)(nil)
@@ -5321,55 +5319,6 @@ func (m *AlertInstanceMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (m *AlertInstanceMutation) SetKnowledgeEntityID(u uuid.UUID) {
-	m.knowledge_entity = &u
-}
-
-// KnowledgeEntityID returns the value of the "knowledge_entity_id" field in the mutation.
-func (m *AlertInstanceMutation) KnowledgeEntityID() (r uuid.UUID, exists bool) {
-	v := m.knowledge_entity
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeEntityID returns the old "knowledge_entity_id" field's value of the AlertInstance entity.
-// If the AlertInstance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AlertInstanceMutation) OldKnowledgeEntityID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeEntityID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeEntityID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeEntityID: %w", err)
-	}
-	return oldValue.KnowledgeEntityID, nil
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (m *AlertInstanceMutation) ClearKnowledgeEntityID() {
-	m.knowledge_entity = nil
-	m.clearedFields[alertinstance.FieldKnowledgeEntityID] = struct{}{}
-}
-
-// KnowledgeEntityIDCleared returns if the "knowledge_entity_id" field was cleared in this mutation.
-func (m *AlertInstanceMutation) KnowledgeEntityIDCleared() bool {
-	_, ok := m.clearedFields[alertinstance.FieldKnowledgeEntityID]
-	return ok
-}
-
-// ResetKnowledgeEntityID resets all changes to the "knowledge_entity_id" field.
-func (m *AlertInstanceMutation) ResetKnowledgeEntityID() {
-	m.knowledge_entity = nil
-	delete(m.clearedFields, alertinstance.FieldKnowledgeEntityID)
-}
-
 // SetAlertID sets the "alert_id" field.
 func (m *AlertInstanceMutation) SetAlertID(u uuid.UUID) {
 	m.alert = &u
@@ -5431,33 +5380,6 @@ func (m *AlertInstanceMutation) TenantIDs() (ids []int) {
 func (m *AlertInstanceMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (m *AlertInstanceMutation) ClearKnowledgeEntity() {
-	m.clearedknowledge_entity = true
-	m.clearedFields[alertinstance.FieldKnowledgeEntityID] = struct{}{}
-}
-
-// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
-func (m *AlertInstanceMutation) KnowledgeEntityCleared() bool {
-	return m.KnowledgeEntityIDCleared() || m.clearedknowledge_entity
-}
-
-// KnowledgeEntityIDs returns the "knowledge_entity" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// KnowledgeEntityID instead. It exists only for internal usage by the builders.
-func (m *AlertInstanceMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
-	if id := m.knowledge_entity; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetKnowledgeEntity resets all changes to the "knowledge_entity" edge.
-func (m *AlertInstanceMutation) ResetKnowledgeEntity() {
-	m.knowledge_entity = nil
-	m.clearedknowledge_entity = false
 }
 
 // ClearAlert clears the "alert" edge to the Alert entity.
@@ -5575,12 +5497,9 @@ func (m *AlertInstanceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AlertInstanceMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 2)
 	if m.tenant != nil {
 		fields = append(fields, alertinstance.FieldTenantID)
-	}
-	if m.knowledge_entity != nil {
-		fields = append(fields, alertinstance.FieldKnowledgeEntityID)
 	}
 	if m.alert != nil {
 		fields = append(fields, alertinstance.FieldAlertID)
@@ -5595,8 +5514,6 @@ func (m *AlertInstanceMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case alertinstance.FieldTenantID:
 		return m.TenantID()
-	case alertinstance.FieldKnowledgeEntityID:
-		return m.KnowledgeEntityID()
 	case alertinstance.FieldAlertID:
 		return m.AlertID()
 	}
@@ -5610,8 +5527,6 @@ func (m *AlertInstanceMutation) OldField(ctx context.Context, name string) (ent.
 	switch name {
 	case alertinstance.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case alertinstance.FieldKnowledgeEntityID:
-		return m.OldKnowledgeEntityID(ctx)
 	case alertinstance.FieldAlertID:
 		return m.OldAlertID(ctx)
 	}
@@ -5629,13 +5544,6 @@ func (m *AlertInstanceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
-		return nil
-	case alertinstance.FieldKnowledgeEntityID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeEntityID(v)
 		return nil
 	case alertinstance.FieldAlertID:
 		v, ok := value.(uuid.UUID)
@@ -5676,11 +5584,7 @@ func (m *AlertInstanceMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AlertInstanceMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(alertinstance.FieldKnowledgeEntityID) {
-		fields = append(fields, alertinstance.FieldKnowledgeEntityID)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -5693,11 +5597,6 @@ func (m *AlertInstanceMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AlertInstanceMutation) ClearField(name string) error {
-	switch name {
-	case alertinstance.FieldKnowledgeEntityID:
-		m.ClearKnowledgeEntityID()
-		return nil
-	}
 	return fmt.Errorf("unknown AlertInstance nullable field %s", name)
 }
 
@@ -5708,9 +5607,6 @@ func (m *AlertInstanceMutation) ResetField(name string) error {
 	case alertinstance.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case alertinstance.FieldKnowledgeEntityID:
-		m.ResetKnowledgeEntityID()
-		return nil
 	case alertinstance.FieldAlertID:
 		m.ResetAlertID()
 		return nil
@@ -5720,12 +5616,9 @@ func (m *AlertInstanceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AlertInstanceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, alertinstance.EdgeTenant)
-	}
-	if m.knowledge_entity != nil {
-		edges = append(edges, alertinstance.EdgeKnowledgeEntity)
 	}
 	if m.alert != nil {
 		edges = append(edges, alertinstance.EdgeAlert)
@@ -5744,10 +5637,6 @@ func (m *AlertInstanceMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case alertinstance.EdgeKnowledgeEntity:
-		if id := m.knowledge_entity; id != nil {
-			return []ent.Value{*id}
-		}
 	case alertinstance.EdgeAlert:
 		if id := m.alert; id != nil {
 			return []ent.Value{*id}
@@ -5764,7 +5653,7 @@ func (m *AlertInstanceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AlertInstanceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.removedfeedback != nil {
 		edges = append(edges, alertinstance.EdgeFeedback)
 	}
@@ -5787,12 +5676,9 @@ func (m *AlertInstanceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AlertInstanceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, alertinstance.EdgeTenant)
-	}
-	if m.clearedknowledge_entity {
-		edges = append(edges, alertinstance.EdgeKnowledgeEntity)
 	}
 	if m.clearedalert {
 		edges = append(edges, alertinstance.EdgeAlert)
@@ -5809,8 +5695,6 @@ func (m *AlertInstanceMutation) EdgeCleared(name string) bool {
 	switch name {
 	case alertinstance.EdgeTenant:
 		return m.clearedtenant
-	case alertinstance.EdgeKnowledgeEntity:
-		return m.clearedknowledge_entity
 	case alertinstance.EdgeAlert:
 		return m.clearedalert
 	case alertinstance.EdgeFeedback:
@@ -5826,9 +5710,6 @@ func (m *AlertInstanceMutation) ClearEdge(name string) error {
 	case alertinstance.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case alertinstance.EdgeKnowledgeEntity:
-		m.ClearKnowledgeEntity()
-		return nil
 	case alertinstance.EdgeAlert:
 		m.ClearAlert()
 		return nil
@@ -5842,9 +5723,6 @@ func (m *AlertInstanceMutation) ResetEdge(name string) error {
 	switch name {
 	case alertinstance.EdgeTenant:
 		m.ResetTenant()
-		return nil
-	case alertinstance.EdgeKnowledgeEntity:
-		m.ResetKnowledgeEntity()
 		return nil
 	case alertinstance.EdgeAlert:
 		m.ResetAlert()

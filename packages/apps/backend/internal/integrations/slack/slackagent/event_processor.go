@@ -5,44 +5,31 @@ import (
 	"encoding/json"
 	"fmt"
 
-	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/slack-go/slack/slackevents"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/pkg/projections"
 )
-
-func (i *Integration) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
-	p := &eventProcessor{event: &prov}
-	return p.process()
-}
-
-type eventProcessor struct {
-	event *rez.ProviderEvent
-}
 
 const (
 	sourceUsers             = "users"
 	sourceEventsApiCallback = "events_api/callback"
 )
 
-func (p *eventProcessor) process() (ent.NormalizedEvents, error) {
-	switch p.event.ProviderSource {
+func (i *Integration) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+	switch prov.ProviderSource {
 	case sourceUsers:
-		return p.processUserObserved()
+		return i.processUserObservedEvent(prov)
 	case sourceEventsApiCallback:
-		return p.processEventsApiCallback()
+		return i.processEventsApiCallbackEvent(prov)
 	default:
-		return nil, fmt.Errorf("unknown provider source: %s", p.event.ProviderSource)
+		return nil, fmt.Errorf("unknown provider source: %s", prov.ProviderSource)
 	}
 }
 
-func (p *eventProcessor) processUserObserved() (ent.NormalizedEvents, error) {
+func (i *Integration) processUserObservedEvent(ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
 	var payload userObservedPayload
-	if jsonErr := json.Unmarshal(p.event.Payload, &payload); jsonErr != nil {
+	if jsonErr := json.Unmarshal(ev.Payload, &payload); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal userObservedPayload: %w", jsonErr)
 	}
 
@@ -62,90 +49,89 @@ func (p *eventProcessor) processUserObserved() (ent.NormalizedEvents, error) {
 		ProviderSource:     sourceUsers,
 		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindUser.String(),
-		ProviderSubjectRef: p.event.ProviderSubjectRef,
-		ProviderEventRef:   p.event.ProviderEventRef,
+		ProviderSubjectRef: ev.ProviderSubjectRef,
+		ProviderEventRef:   ev.ProviderEventRef,
+		ReceivedAt:         ev.ReceivedAt,
 		OccurredAt:         payload.UpdatedAt.Time(),
-		ReceivedAt:         p.event.ReceivedAt,
 		Attributes:         encodedAttrs,
 	}
 
 	return ent.NormalizedEvents{result}, nil
 }
 
-var processCallbackEventTypes = mapset.NewSet(
-	slackevents.AppMention,
-	slackevents.Message,
-)
+func (i *Integration) processEventsApiCallbackEvent(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+	return ent.NormalizedEvents{}, nil
+	/*
+		ev, parseErr := slackevents.ParseEvent(prov.Payload, slackevents.OptionNoVerifyToken())
+		if parseErr != nil {
+			return nil, fmt.Errorf("parse event: %w", parseErr)
+		}
 
-func (p *eventProcessor) processEventsApiCallback() (ent.NormalizedEvents, error) {
-	ev, parseErr := slackevents.ParseEvent(p.event.Payload, slackevents.OptionNoVerifyToken())
-	if parseErr != nil {
-		return nil, fmt.Errorf("parse event: %w", parseErr)
-	}
+		providerEventRef := prov.ProviderEventRef
+		if cb, ok := ev.Data.(*slackevents.EventsAPICallbackEvent); ok {
+			providerEventRef = cb.EventID
+		}
 
-	providerEventRef := p.event.ProviderEventRef
-	if cb, ok := ev.Data.(*slackevents.EventsAPICallbackEvent); ok {
-		providerEventRef = cb.EventID
-	}
+		var attrs projections.ChatMessageAttributes
+		var ts string
+		var eventTS string
+		switch data := ev.InnerEvent.Data.(type) {
+		case *slackevents.MessageEvent:
+			attrs.ConversationExternalRef = data.Channel
+			attrs.SenderExternalRef = data.User
+			attrs.Body = data.Text
+			attrs.ThreadExternalRef = data.ThreadTimeStamp
 
-	var attrs projections.ChatMessageAttributes
-	var ts string
-	var eventTS string
-	switch data := ev.InnerEvent.Data.(type) {
-	case *slackevents.MessageEvent:
-		attrs.ConversationExternalRef = data.Channel
-		attrs.SenderExternalRef = data.User
-		attrs.Body = data.Text
-		attrs.ThreadExternalRef = data.ThreadTimeStamp
+			ts = data.TimeStamp
+			eventTS = data.EventTimeStamp
+		case *slackevents.AppMentionEvent:
+			attrs.ConversationExternalRef = data.Channel
+			attrs.SenderExternalRef = data.User
+			attrs.Body = data.Text
+			attrs.ThreadExternalRef = data.ThreadTimeStamp
 
-		ts = data.TimeStamp
-		eventTS = data.EventTimeStamp
-	case *slackevents.AppMentionEvent:
-		attrs.ConversationExternalRef = data.Channel
-		attrs.SenderExternalRef = data.User
-		attrs.Body = data.Text
-		attrs.ThreadExternalRef = data.ThreadTimeStamp
+			ts = data.TimeStamp
+			eventTS = data.EventTimeStamp
+		default:
+			return nil, nil
+		}
 
-		ts = data.TimeStamp
-		eventTS = data.EventTimeStamp
-	default:
-		return nil, nil
-	}
+		if attrs.ConversationExternalRef == "" || ts == "" {
+			return nil, nil
+		}
 
-	if attrs.ConversationExternalRef == "" || ts == "" {
-		return nil, nil
-	}
+		occurredAt := slackintegration.TryConvertSlackTs(ts, slackintegration.TryConvertSlackTs(eventTS, prov.ReceivedAt))
 
-	occurredAt := slackintegration.TryConvertSlackTs(ts, slackintegration.TryConvertSlackTs(eventTS, p.event.ReceivedAt))
+		receivedAt := prov.ReceivedAt
+		if receivedAt.IsZero() {
+			receivedAt = occurredAt
+		}
 
-	receivedAt := p.event.ReceivedAt
-	if receivedAt.IsZero() {
-		receivedAt = occurredAt
-	}
+		ProviderSubjectRef := prov.ProviderSubjectRef
+		if ProviderSubjectRef == "" {
+			ProviderSubjectRef = fmt.Sprintf("slack:%s:%s:%s", ev.TeamID, attrs.ConversationExternalRef, ts)
+		}
+		if providerEventRef == "" {
+			providerEventRef = ProviderSubjectRef
+		}
+		encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+		if encodeErr != nil {
+			return nil, fmt.Errorf("encode chat message attributes: %w", encodeErr)
+		}
 
-	ProviderSubjectRef := p.event.ProviderSubjectRef
-	if ProviderSubjectRef == "" {
-		ProviderSubjectRef = fmt.Sprintf("slack:%s:%s:%s", ev.TeamID, attrs.ConversationExternalRef, ts)
-	}
-	if providerEventRef == "" {
-		providerEventRef = ProviderSubjectRef
-	}
-	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
-	if encodeErr != nil {
-		return nil, fmt.Errorf("encode chat message attributes: %w", encodeErr)
-	}
+		result := &ent.NormalizedEvent{
+			Provider:           integrationName,
+			ProviderSource:     sourceEventsApiCallback,
+			ProviderEventRef:   providerEventRef,
+			Kind:               ne.KindReceived,
+			SubjectKind:        projections.SubjectKindChatMessage.String(),
+			ProviderSubjectRef: ProviderSubjectRef,
+			OccurredAt:         occurredAt,
+			ReceivedAt:         receivedAt,
+			Attributes:         encodedAttrs,
+		}
 
-	result := &ent.NormalizedEvent{
-		Provider:           integrationName,
-		ProviderSource:     sourceEventsApiCallback,
-		ProviderEventRef:   providerEventRef,
-		Kind:               ne.KindReceived,
-		SubjectKind:        projections.SubjectKindChatMessage.String(),
-		ProviderSubjectRef: ProviderSubjectRef,
-		OccurredAt:         occurredAt,
-		ReceivedAt:         receivedAt,
-		Attributes:         encodedAttrs,
-	}
+		return ent.NormalizedEvents{result}, nil
 
-	return ent.NormalizedEvents{result}, nil
+	*/
 }

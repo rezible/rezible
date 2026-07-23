@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
-	"github.com/rezible/rezible/pkg/openapi"
 )
 
 type IncidentsHandler interface {
@@ -18,8 +17,6 @@ type IncidentsHandler interface {
 	GetIncident(context.Context, *GetIncidentRequest) (*GetIncidentResponse, error)
 	UpdateIncident(context.Context, *UpdateIncidentRequest) (*UpdateIncidentResponse, error)
 	ArchiveIncident(context.Context, *ArchiveIncidentRequest) (*ArchiveIncidentResponse, error)
-	ListIncidentImpacts(context.Context, *ListIncidentImpactsRequest) (*ListIncidentImpactsResponse, error)
-	SetIncidentImpacts(context.Context, *SetIncidentImpactsRequest) (*SetIncidentImpactsResponse, error)
 }
 
 func (o operations) RegisterIncidents(api huma.API) {
@@ -28,8 +25,6 @@ func (o operations) RegisterIncidents(api huma.API) {
 	huma.Register(api, GetIncident, o.GetIncident)
 	huma.Register(api, UpdateIncident, o.UpdateIncident)
 	huma.Register(api, ArchiveIncident, o.ArchiveIncident)
-	huma.Register(api, ListIncidentImpacts, o.ListIncidentImpacts)
-	huma.Register(api, SetIncidentImpacts, o.SetIncidentImpacts)
 }
 
 type (
@@ -101,37 +96,6 @@ type (
 		FieldId   uuid.UUID           `json:"fieldId"`
 		FieldName string              `json:"fieldName"`
 		Option    IncidentFieldOption `json:"option"`
-	}
-
-	IncidentImpact struct {
-		Id         uuid.UUID                `json:"id"`
-		Attributes IncidentImpactAttributes `json:"attributes"`
-	}
-
-	IncidentImpactAttributes struct {
-		KnowledgeEntity IncidentImpactKnowledgeEntity `json:"knowledgeEntity"`
-		Source          string                        `json:"source,omitempty"`
-		Note            string                        `json:"note,omitempty"`
-	}
-
-	SetIncidentImpactsAttributes struct {
-		Impacts []SetIncidentImpactAttributes `json:"impacts"`
-	}
-
-	SetIncidentImpactAttributes struct {
-		KnowledgeEntityId *uuid.UUID `json:"knowledgeEntityId,omitempty"`
-		Kind              string     `json:"kind,omitempty"`
-		DisplayName       string     `json:"displayName,omitempty"`
-		Description       string     `json:"description,omitempty"`
-		Source            string     `json:"source,omitempty"`
-		Note              string     `json:"note,omitempty"`
-	}
-
-	IncidentImpactKnowledgeEntity struct {
-		Id          uuid.UUID `json:"id"`
-		Kind        string    `json:"kind"`
-		DisplayName string    `json:"displayName"`
-		Description string    `json:"description,omitempty"`
 	}
 )
 
@@ -220,29 +184,6 @@ func IncidentRoleAssignmentFromEnt(assn *ent.IncidentRoleAssignment) IncidentRol
 	}
 }
 
-func IncidentImpactFromEnt(impact *ent.IncidentImpact) IncidentImpact {
-	return IncidentImpact{
-		Id: impact.ID,
-		Attributes: IncidentImpactAttributes{
-			KnowledgeEntity: IncidentImpactKnowledgeEntityFromEnt(impact.Edges.KnowledgeEntity),
-			Source:          impact.Source,
-			Note:            impact.Note,
-		},
-	}
-}
-
-func IncidentImpactKnowledgeEntityFromEnt(entity *ent.KnowledgeEntity) IncidentImpactKnowledgeEntity {
-	if entity == nil {
-		return IncidentImpactKnowledgeEntity{}
-	}
-	return IncidentImpactKnowledgeEntity{
-		Id:          entity.ID,
-		Kind:        entity.Kind,
-		DisplayName: entity.DisplayName,
-		Description: entity.Description,
-	}
-}
-
 // Operations
 
 var incidentsTags = []string{"Incidents"}
@@ -323,30 +264,3 @@ var ArchiveIncident = huma.Operation{
 
 type ArchiveIncidentRequest IdRequest
 type ArchiveIncidentResponse EmptyResponse
-
-var ListIncidentImpacts = openapi.Operation{
-	OperationID: "list-incident-impacts",
-	Method:      http.MethodGet,
-	Path:        "/incidents/{id}/impacts",
-	Summary:     "List Incident Impacts",
-	Tags:        incidentsTags,
-	Errors:      ErrorCodes(),
-}
-
-type ListIncidentImpactsRequest = FlexibleIdRequest
-type ListIncidentImpactsResponse ListResponse[IncidentImpact]
-
-var SetIncidentImpacts = openapi.Operation{
-	OperationID: "set-incident-impacts",
-	Method:      http.MethodPut,
-	Path:        "/incidents/{id}/impacts",
-	Summary:     "Set Incident Impacts",
-	Tags:        incidentsTags,
-	Errors:      ErrorCodes(),
-}
-
-type SetIncidentImpactsRequest struct {
-	FlexibleIdRequest
-	RequestWithBodyAttributes[SetIncidentImpactsAttributes]
-}
-type SetIncidentImpactsResponse ListResponse[IncidentImpact]

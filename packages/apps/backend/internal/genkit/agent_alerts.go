@@ -45,9 +45,7 @@ func (a *AlertsAgent) makeInitialContextSeed(ctx context.Context, input rezai.Al
 Title: %s
 Description: %s
 Definition: %s`, input.AlertID, alrt.Title, alrt.Description, alrt.Definition)
-	if inst.KnowledgeEntityID != nil {
-		seed += fmt.Sprintf("\nKnowledge graph entity ID: %s", *inst.KnowledgeEntityID)
-	} else if alrt.KnowledgeEntityID != nil {
+	if alrt.KnowledgeEntityID != nil {
 		seed += fmt.Sprintf("\nKnowledge graph entity ID: %s", *alrt.KnowledgeEntityID)
 	}
 	return seed, nil

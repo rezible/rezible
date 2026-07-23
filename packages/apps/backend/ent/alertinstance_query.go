@@ -18,7 +18,6 @@ import (
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -26,15 +25,14 @@ import (
 // AlertInstanceQuery is the builder for querying AlertInstance entities.
 type AlertInstanceQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []alertinstance.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.AlertInstance
-	withTenant          *TenantQuery
-	withKnowledgeEntity *KnowledgeEntityQuery
-	withAlert           *AlertQuery
-	withFeedback        *AlertFeedbackQuery
-	modifiers           []func(*sql.Selector)
+	ctx          *QueryContext
+	order        []alertinstance.OrderOption
+	inters       []Interceptor
+	predicates   []predicate.AlertInstance
+	withTenant   *TenantQuery
+	withAlert    *AlertQuery
+	withFeedback *AlertFeedbackQuery
+	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -89,31 +87,6 @@ func (_q *AlertInstanceQuery) QueryTenant() *TenantQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AlertInstance
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryKnowledgeEntity chains the current query on the "knowledge_entity" edge.
-func (_q *AlertInstanceQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, selector),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.KnowledgeEntityTable, alertinstance.KnowledgeEntityColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.AlertInstance
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -358,15 +331,14 @@ func (_q *AlertInstanceQuery) Clone() *AlertInstanceQuery {
 		return nil
 	}
 	return &AlertInstanceQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]alertinstance.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.AlertInstance{}, _q.predicates...),
-		withTenant:          _q.withTenant.Clone(),
-		withKnowledgeEntity: _q.withKnowledgeEntity.Clone(),
-		withAlert:           _q.withAlert.Clone(),
-		withFeedback:        _q.withFeedback.Clone(),
+		config:       _q.config,
+		ctx:          _q.ctx.Clone(),
+		order:        append([]alertinstance.OrderOption{}, _q.order...),
+		inters:       append([]Interceptor{}, _q.inters...),
+		predicates:   append([]predicate.AlertInstance{}, _q.predicates...),
+		withTenant:   _q.withTenant.Clone(),
+		withAlert:    _q.withAlert.Clone(),
+		withFeedback: _q.withFeedback.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -382,17 +354,6 @@ func (_q *AlertInstanceQuery) WithTenant(opts ...func(*TenantQuery)) *AlertInsta
 		opt(query)
 	}
 	_q.withTenant = query
-	return _q
-}
-
-// WithKnowledgeEntity tells the query-builder to eager-load the nodes that are connected to
-// the "knowledge_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertInstanceQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *AlertInstanceQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withKnowledgeEntity = query
 	return _q
 }
 
@@ -502,9 +463,8 @@ func (_q *AlertInstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*AlertInstance{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
-			_q.withKnowledgeEntity != nil,
 			_q.withAlert != nil,
 			_q.withFeedback != nil,
 		}
@@ -535,12 +495,6 @@ func (_q *AlertInstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *AlertInstance, e *Tenant) { n.Edges.Tenant = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withKnowledgeEntity; query != nil {
-		if err := _q.loadKnowledgeEntity(ctx, query, nodes, nil,
-			func(n *AlertInstance, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -582,38 +536,6 @@ func (_q *AlertInstanceQuery) loadTenant(ctx context.Context, query *TenantQuery
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *AlertInstanceQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *KnowledgeEntity)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*AlertInstance)
-	for i := range nodes {
-		if nodes[i].KnowledgeEntityID == nil {
-			continue
-		}
-		fk := *nodes[i].KnowledgeEntityID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(knowledgeentity.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "knowledge_entity_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -713,9 +635,6 @@ func (_q *AlertInstanceQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(alertinstance.FieldTenantID)
-		}
-		if _q.withKnowledgeEntity != nil {
-			_spec.Node.AddColumnOnce(alertinstance.FieldKnowledgeEntityID)
 		}
 		if _q.withAlert != nil {
 			_spec.Node.AddColumnOnce(alertinstance.FieldAlertID)

@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -33,26 +32,6 @@ func (_u *AlertInstanceUpdate) Where(ps ...predicate.AlertInstance) *AlertInstan
 	return _u
 }
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *AlertInstanceUpdate) SetKnowledgeEntityID(v uuid.UUID) *AlertInstanceUpdate {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *AlertInstanceUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertInstanceUpdate {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *AlertInstanceUpdate) ClearKnowledgeEntityID() *AlertInstanceUpdate {
-	_u.mutation.ClearKnowledgeEntityID()
-	return _u
-}
-
 // SetAlertID sets the "alert_id" field.
 func (_u *AlertInstanceUpdate) SetAlertID(v uuid.UUID) *AlertInstanceUpdate {
 	_u.mutation.SetAlertID(v)
@@ -65,11 +44,6 @@ func (_u *AlertInstanceUpdate) SetNillableAlertID(v *uuid.UUID) *AlertInstanceUp
 		_u.SetAlertID(*v)
 	}
 	return _u
-}
-
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertInstanceUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertInstanceUpdate {
-	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // SetAlert sets the "alert" edge to the Alert entity.
@@ -95,12 +69,6 @@ func (_u *AlertInstanceUpdate) AddFeedback(v ...*AlertFeedback) *AlertInstanceUp
 // Mutation returns the AlertInstanceMutation object of the builder.
 func (_u *AlertInstanceUpdate) Mutation() *AlertInstanceMutation {
 	return _u.mutation
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertInstanceUpdate) ClearKnowledgeEntity() *AlertInstanceUpdate {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
 }
 
 // ClearAlert clears the "alert" edge to the Alert entity.
@@ -185,37 +153,6 @@ func (_u *AlertInstanceUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				ps[i](selector)
 			}
 		}
-	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   alertinstance.KnowledgeEntityTable,
-			Columns: []string{alertinstance.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertInstance
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   alertinstance.KnowledgeEntityTable,
-			Columns: []string{alertinstance.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertInstance
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.AlertCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -320,26 +257,6 @@ type AlertInstanceUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *AlertInstanceUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *AlertInstanceUpdateOne {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *AlertInstanceUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertInstanceUpdateOne {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *AlertInstanceUpdateOne) ClearKnowledgeEntityID() *AlertInstanceUpdateOne {
-	_u.mutation.ClearKnowledgeEntityID()
-	return _u
-}
-
 // SetAlertID sets the "alert_id" field.
 func (_u *AlertInstanceUpdateOne) SetAlertID(v uuid.UUID) *AlertInstanceUpdateOne {
 	_u.mutation.SetAlertID(v)
@@ -352,11 +269,6 @@ func (_u *AlertInstanceUpdateOne) SetNillableAlertID(v *uuid.UUID) *AlertInstanc
 		_u.SetAlertID(*v)
 	}
 	return _u
-}
-
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertInstanceUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *AlertInstanceUpdateOne {
-	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // SetAlert sets the "alert" edge to the Alert entity.
@@ -382,12 +294,6 @@ func (_u *AlertInstanceUpdateOne) AddFeedback(v ...*AlertFeedback) *AlertInstanc
 // Mutation returns the AlertInstanceMutation object of the builder.
 func (_u *AlertInstanceUpdateOne) Mutation() *AlertInstanceMutation {
 	return _u.mutation
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertInstanceUpdateOne) ClearKnowledgeEntity() *AlertInstanceUpdateOne {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
 }
 
 // ClearAlert clears the "alert" edge to the Alert entity.
@@ -502,37 +408,6 @@ func (_u *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertInst
 				ps[i](selector)
 			}
 		}
-	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   alertinstance.KnowledgeEntityTable,
-			Columns: []string{alertinstance.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertInstance
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   alertinstance.KnowledgeEntityTable,
-			Columns: []string{alertinstance.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertInstance
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.AlertCleared() {
 		edge := &sqlgraph.EdgeSpec{

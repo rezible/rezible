@@ -44,7 +44,6 @@ func (AlertInstance) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		KnowledgeEntityLinkMixin{},
 	}
 }
 

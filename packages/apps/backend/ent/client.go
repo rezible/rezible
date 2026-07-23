@@ -1960,25 +1960,6 @@ func (c *AlertInstanceClient) QueryTenant(_m *AlertInstance) *TenantQuery {
 	return query
 }
 
-// QueryKnowledgeEntity queries the knowledge_entity edge of a AlertInstance.
-func (c *AlertInstanceClient) QueryKnowledgeEntity(_m *AlertInstance) *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.KnowledgeEntityTable, alertinstance.KnowledgeEntityColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.AlertInstance
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryAlert queries the alert edge of a AlertInstance.
 func (c *AlertInstanceClient) QueryAlert(_m *AlertInstance) *AlertQuery {
 	query := (&AlertClient{config: c.config}).Query()

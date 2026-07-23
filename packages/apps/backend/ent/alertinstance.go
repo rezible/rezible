@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertinstance"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -22,8 +21,6 @@ type AlertInstance struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
-	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// AlertID holds the value of the "alert_id" field.
 	AlertID uuid.UUID `json:"alert_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -36,15 +33,13 @@ type AlertInstance struct {
 type AlertInstanceEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// KnowledgeEntity holds the value of the knowledge_entity edge.
-	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// Alert holds the value of the alert edge.
 	Alert *Alert `json:"alert,omitempty"`
 	// Feedback holds the value of the feedback edge.
 	Feedback []*AlertFeedback `json:"feedback,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -58,23 +53,12 @@ func (e AlertInstanceEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AlertInstanceEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
-	if e.KnowledgeEntity != nil {
-		return e.KnowledgeEntity, nil
-	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: knowledgeentity.Label}
-	}
-	return nil, &NotLoadedError{edge: "knowledge_entity"}
-}
-
 // AlertOrErr returns the Alert value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e AlertInstanceEdges) AlertOrErr() (*Alert, error) {
 	if e.Alert != nil {
 		return e.Alert, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: alert.Label}
 	}
 	return nil, &NotLoadedError{edge: "alert"}
@@ -83,7 +67,7 @@ func (e AlertInstanceEdges) AlertOrErr() (*Alert, error) {
 // FeedbackOrErr returns the Feedback value or an error if the edge
 // was not loaded in eager-loading.
 func (e AlertInstanceEdges) FeedbackOrErr() ([]*AlertFeedback, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Feedback, nil
 	}
 	return nil, &NotLoadedError{edge: "feedback"}
@@ -94,8 +78,6 @@ func (*AlertInstance) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case alertinstance.FieldKnowledgeEntityID:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case alertinstance.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case alertinstance.FieldID, alertinstance.FieldAlertID:
@@ -127,13 +109,6 @@ func (_m *AlertInstance) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case alertinstance.FieldKnowledgeEntityID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field knowledge_entity_id", values[i])
-			} else if value.Valid {
-				_m.KnowledgeEntityID = new(uuid.UUID)
-				*_m.KnowledgeEntityID = *value.S.(*uuid.UUID)
-			}
 		case alertinstance.FieldAlertID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field alert_id", values[i])
@@ -156,11 +131,6 @@ func (_m *AlertInstance) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the AlertInstance entity.
 func (_m *AlertInstance) QueryTenant() *TenantQuery {
 	return NewAlertInstanceClient(_m.config).QueryTenant(_m)
-}
-
-// QueryKnowledgeEntity queries the "knowledge_entity" edge of the AlertInstance entity.
-func (_m *AlertInstance) QueryKnowledgeEntity() *KnowledgeEntityQuery {
-	return NewAlertInstanceClient(_m.config).QueryKnowledgeEntity(_m)
 }
 
 // QueryAlert queries the "alert" edge of the AlertInstance entity.
@@ -198,11 +168,6 @@ func (_m *AlertInstance) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
-	builder.WriteString(", ")
-	if v := _m.KnowledgeEntityID; v != nil {
-		builder.WriteString("knowledge_entity_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
 	builder.WriteString(", ")
 	builder.WriteString("alert_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AlertID))

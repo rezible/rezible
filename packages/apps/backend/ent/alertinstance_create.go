@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -30,20 +29,6 @@ type AlertInstanceCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (_c *AlertInstanceCreate) SetTenantID(v int) *AlertInstanceCreate {
 	_c.mutation.SetTenantID(v)
-	return _c
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_c *AlertInstanceCreate) SetKnowledgeEntityID(v uuid.UUID) *AlertInstanceCreate {
-	_c.mutation.SetKnowledgeEntityID(v)
-	return _c
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_c *AlertInstanceCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertInstanceCreate {
-	if v != nil {
-		_c.SetKnowledgeEntityID(*v)
-	}
 	return _c
 }
 
@@ -70,11 +55,6 @@ func (_c *AlertInstanceCreate) SetNillableID(v *uuid.UUID) *AlertInstanceCreate 
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *AlertInstanceCreate) SetTenant(v *Tenant) *AlertInstanceCreate {
 	return _c.SetTenantID(v.ID)
-}
-
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_c *AlertInstanceCreate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertInstanceCreate {
-	return _c.SetKnowledgeEntityID(v.ID)
 }
 
 // SetAlert sets the "alert" edge to the Alert entity.
@@ -213,24 +193,6 @@ func (_c *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSpe
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   alertinstance.KnowledgeEntityTable,
-			Columns: []string{alertinstance.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AlertInstance
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.KnowledgeEntityID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.AlertIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -318,24 +280,6 @@ type (
 	}
 )
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *AlertInstanceUpsert) SetKnowledgeEntityID(v uuid.UUID) *AlertInstanceUpsert {
-	u.Set(alertinstance.FieldKnowledgeEntityID, v)
-	return u
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *AlertInstanceUpsert) UpdateKnowledgeEntityID() *AlertInstanceUpsert {
-	u.SetExcluded(alertinstance.FieldKnowledgeEntityID)
-	return u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *AlertInstanceUpsert) ClearKnowledgeEntityID() *AlertInstanceUpsert {
-	u.SetNull(alertinstance.FieldKnowledgeEntityID)
-	return u
-}
-
 // SetAlertID sets the "alert_id" field.
 func (u *AlertInstanceUpsert) SetAlertID(v uuid.UUID) *AlertInstanceUpsert {
 	u.Set(alertinstance.FieldAlertID, v)
@@ -397,27 +341,6 @@ func (u *AlertInstanceUpsertOne) Update(set func(*AlertInstanceUpsert)) *AlertIn
 		set(&AlertInstanceUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *AlertInstanceUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *AlertInstanceUpsertOne {
-	return u.Update(func(s *AlertInstanceUpsert) {
-		s.SetKnowledgeEntityID(v)
-	})
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *AlertInstanceUpsertOne) UpdateKnowledgeEntityID() *AlertInstanceUpsertOne {
-	return u.Update(func(s *AlertInstanceUpsert) {
-		s.UpdateKnowledgeEntityID()
-	})
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *AlertInstanceUpsertOne) ClearKnowledgeEntityID() *AlertInstanceUpsertOne {
-	return u.Update(func(s *AlertInstanceUpsert) {
-		s.ClearKnowledgeEntityID()
-	})
 }
 
 // SetAlertID sets the "alert_id" field.
@@ -650,27 +573,6 @@ func (u *AlertInstanceUpsertBulk) Update(set func(*AlertInstanceUpsert)) *AlertI
 		set(&AlertInstanceUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *AlertInstanceUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *AlertInstanceUpsertBulk {
-	return u.Update(func(s *AlertInstanceUpsert) {
-		s.SetKnowledgeEntityID(v)
-	})
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *AlertInstanceUpsertBulk) UpdateKnowledgeEntityID() *AlertInstanceUpsertBulk {
-	return u.Update(func(s *AlertInstanceUpsert) {
-		s.UpdateKnowledgeEntityID()
-	})
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *AlertInstanceUpsertBulk) ClearKnowledgeEntityID() *AlertInstanceUpsertBulk {
-	return u.Update(func(s *AlertInstanceUpsert) {
-		s.ClearKnowledgeEntityID()
-	})
 }
 
 // SetAlertID sets the "alert_id" field.

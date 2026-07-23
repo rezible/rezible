@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
@@ -12,7 +11,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	atkc "github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
@@ -66,6 +64,26 @@ func (s *KnowledgeGraphService) GetEntity(ctx context.Context, id uuid.UUID) (*e
 		WithTargetRelationships(func(query *ent.KnowledgeRelationshipQuery) {
 			query.WithSourceEntity()
 		})
+	return query.Only(ctx)
+}
+
+func (s *KnowledgeGraphService) ListRelationships(ctx context.Context, params rez.ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {
+	query := s.db.Client(ctx).KnowledgeRelationship.Query().
+		WithSourceEntity().
+		WithTargetEntity().
+		WithAliases()
+	if len(params.Predicates) > 0 {
+		query.Where(params.Predicates...)
+	}
+	return ent.DoListQuery[ent.KnowledgeRelationship, *ent.KnowledgeRelationshipQuery](ctx, query, params.ListParams)
+}
+
+func (s *KnowledgeGraphService) GetRelationship(ctx context.Context, id uuid.UUID) (*ent.KnowledgeRelationship, error) {
+	query := s.db.Client(ctx).KnowledgeRelationship.Query().
+		Where(knr.ID(id)).
+		WithAliases().
+		WithSourceEntity().
+		WithTargetEntity()
 	return query.Only(ctx)
 }
 
@@ -169,75 +187,6 @@ func (s *KnowledgeGraphService) GetRelationshipAt(ctx context.Context, id uuid.U
 		return nil, fmt.Errorf("%w: relationship did not exist at %s", rez.ErrConflict, referencedAt.Format(time.RFC3339))
 	}
 	return relationship, nil
-}
-
-func (s *KnowledgeGraphService) RecordTurnKnowledgeCitations(ctx context.Context, turnID uuid.UUID, citations []rez.KnowledgeCitation) error {
-	if len(citations) == 0 {
-		return nil
-	}
-
-	uniqueCitations := make(map[uuid.UUID]rez.KnowledgeCitation, len(citations))
-	evidenceIDs := make([]uuid.UUID, 0, len(citations))
-	for _, citation := range citations {
-		if citation.EvidenceID == uuid.Nil {
-			return fmt.Errorf("%w: knowledge evidence ID is required", rez.ErrInvalidInput)
-		}
-		citation.Summary = strings.TrimSpace(citation.Summary)
-		if citation.Summary == "" {
-			return fmt.Errorf("%w: knowledge citation summary is required", rez.ErrInvalidInput)
-		}
-		if _, exists := uniqueCitations[citation.EvidenceID]; exists {
-			continue
-		}
-		uniqueCitations[citation.EvidenceID] = citation
-		evidenceIDs = append(evidenceIDs, citation.EvidenceID)
-	}
-
-	evidence, queryErr := s.db.Client(ctx).KnowledgeEvidence.Query().
-		Where(ke.IDIn(evidenceIDs...)).
-		WithAlias().
-		All(ctx)
-	if queryErr != nil {
-		return fmt.Errorf("query knowledge evidence: %w", queryErr)
-	}
-	if len(evidence) != len(evidenceIDs) {
-		return fmt.Errorf("%w: one or more knowledge evidence records were not found", rez.ErrInvalidInput)
-	}
-
-	creates := make([]*ent.AgentTurnKnowledgeCitationCreate, 0, len(evidence))
-	for _, item := range evidence {
-		alias, aliasErr := item.Edges.AliasOrErr()
-		if aliasErr != nil {
-			return fmt.Errorf("get knowledge evidence alias: %w", aliasErr)
-		}
-		create := s.db.Client(ctx).AgentTurnKnowledgeCitation.Create().
-			SetAgentTurnID(turnID).
-			SetKnowledgeEvidenceID(item.ID).
-			SetSummary(uniqueCitations[item.ID].Summary)
-		if alias.EntityID != uuid.Nil {
-			create.SetKnowledgeEntityID(alias.EntityID)
-		}
-		if alias.RelationshipID != uuid.Nil {
-			create.SetKnowledgeRelationshipID(alias.RelationshipID)
-		}
-		creates = append(creates, create)
-	}
-
-	return s.db.Client(ctx).AgentTurnKnowledgeCitation.CreateBulk(creates...).
-		OnConflictColumns(atkc.FieldTenantID, atkc.FieldAgentTurnID, atkc.FieldKnowledgeEvidenceID).
-		DoNothing().
-		Exec(ctx)
-}
-
-func (s *KnowledgeGraphService) ListRelationships(ctx context.Context, params rez.ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {
-	query := s.db.Client(ctx).KnowledgeRelationship.Query().
-		WithSourceEntity().
-		WithTargetEntity().
-		WithAliases()
-	if len(params.Predicates) > 0 {
-		query.Where(params.Predicates...)
-	}
-	return ent.DoListQuery[ent.KnowledgeRelationship, *ent.KnowledgeRelationshipQuery](ctx, query, params.ListParams)
 }
 
 func (s *KnowledgeGraphService) GetView(ctx context.Context, rootID uuid.UUID, params rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error) {

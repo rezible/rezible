@@ -7,7 +7,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	entuser "github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -36,10 +35,6 @@ func (s *ProjectionServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntit
 
 	projector := s.projectionService()
 
-	userService, usersErr := db.NewUserService(s.Database(), nil)
-	s.Require().NoError(usersErr)
-	projector.users = userService
-
 	email := "projected+" + uuid.NewString() + "@example.com"
 	attrs := projections.UserSubjectAttributes{
 		Name:     "Projected User",
@@ -64,10 +59,6 @@ func (s *ProjectionServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntit
 func (s *ProjectionServiceSuite) TestUserProjectionReusesExistingEmailUser() {
 	ctx := s.SeedTenantContext()
 	projector := s.projectionService()
-
-	userService, usersErr := db.NewUserService(s.Database(), nil)
-	s.Require().NoError(usersErr)
-	projector.users = userService
 
 	email := "existing+" + uuid.NewString() + "@example.com"
 	existing, err := s.Client(ctx).User.Create().
@@ -96,10 +87,6 @@ func (s *ProjectionServiceSuite) TestUserProjectionReusesExistingEmailUser() {
 func (s *ProjectionServiceSuite) TestUserProjectionFailsWhenKnowledgeLinkConflictsWithEmailOwner() {
 	ctx := s.SeedTenantContext()
 	projector := s.projectionService()
-
-	userService, usersErr := db.NewUserService(s.Database(), nil)
-	s.Require().NoError(usersErr)
-	projector.users = userService
 
 	firstEmail := "linked+" + uuid.NewString() + "@example.com"
 	first := s.createUserProjectionEvent("user-3", projections.UserSubjectAttributes{

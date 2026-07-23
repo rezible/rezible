@@ -142,6 +142,10 @@ type (
 		ProcessProviderEvent(context.Context, ProviderEvent) (ent.NormalizedEvents, error)
 	}
 
+	NormalizedEventProjector interface {
+		ProjectEvent(context.Context, *ent.NormalizedEvent) ([]ProjectedEntityRef, error)
+	}
+
 	ProjectedEntityRef struct {
 		Kind string
 		Id   uuid.UUID
@@ -150,7 +154,7 @@ type (
 	EventProjectorFunc func(context.Context, *ent.NormalizedEvent) ([]ProjectedEntityRef, error)
 
 	EventProjectionService interface {
-		GetEventProjectorFunc(string) (EventProjectorFunc, bool)
+		GetEventProjectorFunc(*ent.NormalizedEvent) (EventProjectorFunc, bool)
 	}
 
 	ProviderEventSyncResult struct {
@@ -347,11 +351,16 @@ type (
 	KnowledgeGraphService interface {
 		ListEntities(context.Context, ListKnowledgeGraphEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
 		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
+
+		ListRelationships(context.Context, ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
+		GetRelationship(context.Context, uuid.UUID) (*ent.KnowledgeRelationship, error)
+
+		GetView(context.Context, uuid.UUID, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
 		GetEntityAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeEntity, error)
 		GetRelationshipAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeRelationship, error)
-		GetView(context.Context, uuid.UUID, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
-		ListRelationships(context.Context, ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
-		RecordTurnKnowledgeCitations(context.Context, uuid.UUID, []KnowledgeCitation) error
+
+		IngestEvidence(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) error
+		IngestDomainEntityEvidence(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error)
 	}
 )
 

@@ -1218,24 +1218,6 @@ export type IncidentFieldSelection = {
     option: IncidentFieldOption;
 };
 
-export type IncidentImpact = {
-    attributes: IncidentImpactAttributes;
-    id: string;
-};
-
-export type IncidentImpactAttributes = {
-    knowledgeEntity: IncidentImpactKnowledgeEntity;
-    note?: string;
-    source?: string;
-};
-
-export type IncidentImpactKnowledgeEntity = {
-    description?: string;
-    displayName: string;
-    id: string;
-    kind: string;
-};
-
 export type IncidentLink = {
     incidentId: string;
     incidentSummary: string;
@@ -1670,15 +1652,6 @@ export type ListIncidentFieldsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<IncidentField>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentImpactsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentImpact>;
     pagination: ResponsePagination;
 };
 
@@ -2269,36 +2242,6 @@ export type SessionStateRawMessage = {
     custom?: unknown;
     messages?: Array<Message>;
     sessionId?: string;
-};
-
-export type SetIncidentImpactAttributes = {
-    description?: string;
-    displayName?: string;
-    kind?: string;
-    knowledgeEntityId?: string;
-    note?: string;
-    source?: string;
-};
-
-export type SetIncidentImpactsAttributes = {
-    impacts: Array<SetIncidentImpactAttributes>;
-};
-
-export type SetIncidentImpactsRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: SetIncidentImpactsAttributes;
-};
-
-export type SetIncidentImpactsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentImpact>;
-    pagination: ResponsePagination;
 };
 
 export type SetIncidentTimelineEventSystemContextAttributes = {
@@ -6222,100 +6165,6 @@ export type GetIncidentUserDebriefResponses = {
 };
 
 export type GetIncidentUserDebriefResponse = GetIncidentUserDebriefResponses[keyof GetIncidentUserDebriefResponses];
-
-export type ListIncidentImpactsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incidents/{id}/impacts';
-};
-
-export type ListIncidentImpactsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListIncidentImpactsError = ListIncidentImpactsErrors[keyof ListIncidentImpactsErrors];
-
-export type ListIncidentImpactsResponses = {
-    /**
-     * OK
-     */
-    200: ListIncidentImpactsResponseBody;
-};
-
-export type ListIncidentImpactsResponse = ListIncidentImpactsResponses[keyof ListIncidentImpactsResponses];
-
-export type SetIncidentImpactsData = {
-    body: SetIncidentImpactsRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incidents/{id}/impacts';
-};
-
-export type SetIncidentImpactsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type SetIncidentImpactsError = SetIncidentImpactsErrors[keyof SetIncidentImpactsErrors];
-
-export type SetIncidentImpactsResponses = {
-    /**
-     * OK
-     */
-    200: SetIncidentImpactsResponseBody;
-};
-
-export type SetIncidentImpactsResponse = SetIncidentImpactsResponses[keyof SetIncidentImpactsResponses];
 
 export type ListIncidentMilestonesData = {
     body?: never;

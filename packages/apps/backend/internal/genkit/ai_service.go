@@ -44,7 +44,7 @@ func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
 		genkit.WithPlugins(plugins...),
 		genkit.WithDefaultModel(flashModel.Name()),
 		genkit.WithExperimental(),
-		genkit.WithPromptFS(rezai.PromptsDir),
+		//genkit.WithPromptFS(rezai.PromptsDir),
 	)
 
 	slices.SortFunc(opts, func(a, b AiServiceOption) int {

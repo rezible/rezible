@@ -1,4 +1,4 @@
-package eventprojection
+package db
 
 import (
 	"context"
@@ -23,7 +23,15 @@ var (
 	knowledgeEvidenceUniqueColumns     = sql.ConflictColumns(ke.FieldTenantID, ke.FieldEventID, ke.FieldAliasID, ke.FieldEvidenceKind, ke.FieldAssertion)
 )
 
-func (s *ProjectionService) setEntityFromRef(ctx context.Context, entityRef *ent.KnowledgeEntityRef, applyState bool) (uuid.UUID, error) {
+func cloneMap(values map[string]any) map[string]any {
+	cloned := make(map[string]any, len(values))
+	for key, value := range values {
+		cloned[key] = value
+	}
+	return cloned
+}
+
+func (s *KnowledgeGraphService) setEntityFromRef(ctx context.Context, entityRef *ent.KnowledgeEntityRef, applyState bool) (uuid.UUID, error) {
 	if entityRef == nil {
 		return uuid.Nil, fmt.Errorf("entity reference is required")
 	}
@@ -91,7 +99,7 @@ func (s *ProjectionService) setEntityFromRef(ctx context.Context, entityRef *ent
 	return entityID, nil
 }
 
-func (s *ProjectionService) setRelationshipFromRef(ctx context.Context, relationshipRef *ent.KnowledgeRelationshipRef, applyState bool) (uuid.UUID, error) {
+func (s *KnowledgeGraphService) setRelationshipFromRef(ctx context.Context, relationshipRef *ent.KnowledgeRelationshipRef, applyState bool) (uuid.UUID, error) {
 	if relationshipRef == nil {
 		return uuid.Nil, fmt.Errorf("relationship reference is required")
 	}
@@ -161,7 +169,7 @@ func (s *ProjectionService) setRelationshipFromRef(ctx context.Context, relation
 	return relationshipID, nil
 }
 
-func (s *ProjectionService) setSubjectAliasFromProjection(ctx context.Context, aliasRef ent.KnowledgeSubjectAliasRef, evidenceKind ke.EvidenceKind, observedAt time.Time) (uuid.UUID, error) {
+func (s *KnowledgeGraphService) setSubjectAliasFromProjection(ctx context.Context, aliasRef ent.KnowledgeSubjectAliasRef, evidenceKind ke.EvidenceKind, observedAt time.Time) (uuid.UUID, error) {
 	queryAlias := s.db.Client(ctx).KnowledgeSubjectAlias.Query().Where(
 		ksa.SubjectKindEQ(aliasRef.Kind),
 		ksa.Provider(aliasRef.Provider),
@@ -265,32 +273,80 @@ func (s *ProjectionService) setSubjectAliasFromProjection(ctx context.Context, a
 	return alias.ID, nil
 }
 
-func (s *ProjectionService) ingestProjectedEvidence(ctx context.Context, event *ent.NormalizedEvent, evidenceRefs ...ent.KnowledgeEvidenceRef) error {
-	if len(evidenceRefs) == 0 {
+func (s *KnowledgeGraphService) makeEvidenceCreate(ctx context.Context, ev *ent.NormalizedEvent, ref ent.KnowledgeEvidenceRef) (*ent.KnowledgeEvidenceCreate, error) {
+	aliasID, aliasErr := s.setSubjectAliasFromProjection(ctx, ref.SubjectAliasRef, ref.Kind, ref.EffectiveAt)
+	if aliasErr != nil {
+		return nil, fmt.Errorf("set subject alias: %w", aliasErr)
+	}
+	createEvidence := s.db.Client(ctx).KnowledgeEvidence.Create().
+		SetEventID(ev.ID).
+		SetAliasID(aliasID).
+		SetEvidenceKind(ref.Kind).
+		SetAssertion(ref.Assertion).
+		SetEffectiveAt(ref.EffectiveAt).
+		SetProperties(ref.Properties).
+		SetSubjectState(knowledgeEvidenceSubjectState(ref))
+	return createEvidence, nil
+}
+
+func (s *KnowledgeGraphService) IngestEvidence(ctx context.Context, event *ent.NormalizedEvent, refs ...ent.KnowledgeEvidenceRef) error {
+	if len(refs) == 0 {
 		return nil
 	}
-	return s.db.WithTx(ctx, func(txCtx context.Context, tx *ent.Client) error {
-		builders := make([]*ent.KnowledgeEvidenceCreate, len(evidenceRefs))
-		for i, evidenceRef := range evidenceRefs {
-			aliasID, aliasErr := s.setSubjectAliasFromProjection(txCtx, evidenceRef.SubjectAliasRef, evidenceRef.Kind, evidenceRef.EffectiveAt)
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		builders := make([]*ent.KnowledgeEvidenceCreate, len(refs))
+		for i, ref := range refs {
+			aliasID, aliasErr := s.setSubjectAliasFromProjection(ctx, ref.SubjectAliasRef, ref.Kind, ref.EffectiveAt)
 			if aliasErr != nil {
 				return fmt.Errorf("set subject alias: %w", aliasErr)
 			}
 			builders[i] = tx.KnowledgeEvidence.Create().
 				SetEventID(event.ID).
 				SetAliasID(aliasID).
-				SetEvidenceKind(evidenceRef.Kind).
-				SetAssertion(evidenceRef.Assertion).
-				SetEffectiveAt(evidenceRef.EffectiveAt).
-				SetProperties(evidenceRef.Properties).
-				SetSubjectState(knowledgeEvidenceSubjectState(evidenceRef))
+				SetEvidenceKind(ref.Kind).
+				SetAssertion(ref.Assertion).
+				SetEffectiveAt(ref.EffectiveAt).
+				SetProperties(ref.Properties).
+				SetSubjectState(knowledgeEvidenceSubjectState(ref))
 		}
 		createEvidence := tx.KnowledgeEvidence.CreateBulk(builders...).
 			OnConflict(knowledgeEvidenceUniqueColumns).
 			UpdateUpdatedAt()
-		if createErr := createEvidence.Exec(txCtx); createErr != nil {
+		if createErr := createEvidence.Exec(ctx); createErr != nil {
 			return fmt.Errorf("create knowledge evidence: %w", createErr)
 		}
+		return nil
+	})
+}
+
+func (s *KnowledgeGraphService) IngestDomainEntityEvidence(ctx context.Context, event *ent.NormalizedEvent, ref ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error) {
+	if ref.SubjectAliasRef.SubjectEntityRef == nil {
+		return nil, fmt.Errorf("evidence subject entity is required")
+	}
+
+	var alias *ent.KnowledgeSubjectAlias
+	return alias, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		createEvidence, createErr := s.makeEvidenceCreate(ctx, event, ref)
+		if createErr != nil {
+			return fmt.Errorf("create knowledge evidence: %w", createErr)
+		}
+
+		aliasId, hasAlias := createEvidence.Mutation().AliasID()
+		if !hasAlias {
+			return fmt.Errorf("no alias set")
+		}
+
+		insertEvidence := createEvidence.OnConflict(knowledgeEvidenceUniqueColumns).
+			Ignore()
+		if saveErr := insertEvidence.Exec(ctx); saveErr != nil {
+			return fmt.Errorf("exec create: %w", saveErr)
+		}
+
+		txAlias, getErr := tx.KnowledgeSubjectAlias.Get(ctx, aliasId)
+		if getErr != nil {
+			return fmt.Errorf("get subject alias: %w", getErr)
+		}
+		alias = txAlias.Unwrap()
 		return nil
 	})
 }
@@ -310,46 +366,4 @@ func knowledgeEvidenceSubjectState(evidenceRef ent.KnowledgeEvidenceRef) map[str
 		}
 	}
 	return map[string]any{}
-}
-
-func (s *ProjectionService) ingestDomainEntityEvidence(ctx context.Context, event *ent.NormalizedEvent, evidenceRef ent.KnowledgeEvidenceRef) (uuid.UUID, error) {
-	if evidenceRef.SubjectAliasRef.SubjectEntityRef == nil {
-		return uuid.Nil, fmt.Errorf("evidence subject entity is required")
-	}
-
-	var entityID uuid.UUID
-	return entityID, s.db.WithTx(ctx, func(txCtx context.Context, tx *ent.Client) error {
-		aliasID, aliasErr := s.setSubjectAliasFromProjection(txCtx, evidenceRef.SubjectAliasRef, evidenceRef.Kind, evidenceRef.EffectiveAt)
-		if aliasErr != nil {
-			return fmt.Errorf("set subject alias: %w", aliasErr)
-		}
-		createEvidence := tx.KnowledgeEvidence.Create().
-			SetEventID(event.ID).
-			SetAliasID(aliasID).
-			SetEvidenceKind(evidenceRef.Kind).
-			SetAssertion(evidenceRef.Assertion).
-			SetEffectiveAt(evidenceRef.EffectiveAt).
-			SetProperties(evidenceRef.Properties).
-			SetSubjectState(knowledgeEvidenceSubjectState(evidenceRef)).
-			OnConflict(knowledgeEvidenceUniqueColumns).
-			UpdateUpdatedAt()
-		if createErr := createEvidence.Exec(txCtx); createErr != nil {
-			return fmt.Errorf("create knowledge evidence: %w", createErr)
-		}
-
-		alias, getErr := tx.KnowledgeSubjectAlias.Get(txCtx, aliasID)
-		if getErr != nil {
-			return fmt.Errorf("get subject alias: %w", getErr)
-		}
-		entityID = alias.EntityID
-		return nil
-	})
-}
-
-func cloneMap(values map[string]any) map[string]any {
-	cloned := make(map[string]any, len(values))
-	for key, value := range values {
-		cloned[key] = value
-	}
-	return cloned
 }

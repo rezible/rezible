@@ -200,9 +200,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "AlertInstance",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			alertinstance.FieldTenantID:          {Type: field.TypeInt, Column: alertinstance.FieldTenantID},
-			alertinstance.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: alertinstance.FieldKnowledgeEntityID},
-			alertinstance.FieldAlertID:           {Type: field.TypeUUID, Column: alertinstance.FieldAlertID},
+			alertinstance.FieldTenantID: {Type: field.TypeInt, Column: alertinstance.FieldTenantID},
+			alertinstance.FieldAlertID:  {Type: field.TypeUUID, Column: alertinstance.FieldAlertID},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
@@ -1666,18 +1665,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"AlertInstance",
 		"Tenant",
-	)
-	graph.MustAddE(
-		"knowledge_entity",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   alertinstance.KnowledgeEntityTable,
-			Columns: []string{alertinstance.KnowledgeEntityColumn},
-			Bidi:    false,
-		},
-		"AlertInstance",
-		"KnowledgeEntity",
 	)
 	graph.MustAddE(
 		"alert",
@@ -5279,11 +5266,6 @@ func (f *AlertInstanceFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(alertinstance.FieldTenantID))
 }
 
-// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
-func (f *AlertInstanceFilter) WhereKnowledgeEntityID(p entql.ValueP) {
-	f.Where(p.Field(alertinstance.FieldKnowledgeEntityID))
-}
-
 // WhereAlertID applies the entql [16]byte predicate on the alert_id field.
 func (f *AlertInstanceFilter) WhereAlertID(p entql.ValueP) {
 	f.Where(p.Field(alertinstance.FieldAlertID))
@@ -5297,20 +5279,6 @@ func (f *AlertInstanceFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *AlertInstanceFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
-func (f *AlertInstanceFilter) WhereHasKnowledgeEntity() {
-	f.Where(entql.HasEdge("knowledge_entity"))
-}
-
-// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
-func (f *AlertInstanceFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
-	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

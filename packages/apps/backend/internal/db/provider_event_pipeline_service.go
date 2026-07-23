@@ -285,7 +285,7 @@ func (s *ProviderEventPipelineService) saveNormalizedEvents(ctx context.Context,
 }
 
 func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) error {
-	projectorFunc, ok := s.projection.GetEventProjectorFunc(ev.SubjectKind)
+	projectorFunc, ok := s.projection.GetEventProjectorFunc(ev)
 	if !ok {
 		return nil
 	}

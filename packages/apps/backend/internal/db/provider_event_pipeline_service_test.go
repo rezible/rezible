@@ -39,13 +39,13 @@ func TestProviderEventPipelineServiceSuite(t *testing.T) {
 	suite.Run(t, &ProviderEventPipelineServiceSuite{Suite: test.NewSuite()})
 }
 
-func (s *ProviderEventPipelineServiceSuite) newPipelineService(jobSvc rez.JobService, projector rez.EventProjectorFunc) *ProviderEventPipelineService {
+func (s *ProviderEventPipelineServiceSuite) newPipelineService(jobSvc rez.JobService, proj rez.EventProjectionService) *ProviderEventPipelineService {
 	return &ProviderEventPipelineService{
 		logger:     slog.Default(),
 		db:         s.Database(),
 		jobs:       jobSvc,
 		processors: map[string]rez.ProviderEventProcessor{pipelineTestProvider: pipelineTestProcessor{}},
-		projection: &pipelineTestProjectionService{kind: pipelineTestSubjectKind, projector: projector},
+		projection: proj,
 	}
 }
 
@@ -90,11 +90,11 @@ func (s *ProviderEventPipelineServiceSuite) createPipelineNormalizedEvent(ctx co
 
 func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd() {
 	ctx := s.SeedTenantContext()
-	client := s.Client(ctx)
+
 	jobSvc := mocks.NewMockJobService(s.T())
-	creator := s.makeTestUser(ctx)
-	projector := &pipelineTestProjector{db: s.Database(), creatorID: creator.ID}
-	svc := s.newPipelineService(jobSvc, projector.projectEvent)
+
+	projector := &countingEventProjectionService{}
+	svc := s.newPipelineService(jobSvc, projector)
 
 	ev := s.makeTestEvent()
 
@@ -131,7 +131,7 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 
 	s.Require().NoError(svc.HandleProcessEventJob(ctx, capturedProcessArgs))
 
-	queryNormalized := client.NormalizedEvent.Query().
+	queryNormalized := s.Client(ctx).NormalizedEvent.Query().
 		Where(ne.ProviderEventRef(ev.ProviderEventRef))
 
 	normalized, normalizedErr := queryNormalized.Only(ctx)
@@ -146,13 +146,7 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 
 	s.Require().NoError(svc.HandleEventProjectionJob(ctx, capturedProjectArgs))
 
-	queryAnno := client.EventAnnotation.Query().
-		Where(eventannotation.EventID(normalized.ID))
-	anno, annoErr := queryAnno.Only(ctx)
-	s.Require().NoError(annoErr)
-	s.Equal(creator.ID, anno.CreatorID)
-	s.Equal(5, anno.MinutesOccupied)
-	s.Equal("projected subject-1", anno.Notes)
+	s.Require().NotZero(projector.calls)
 
 	queryProj := s.Client(ctx).NormalizedEventProjection.Query().
 		Where(nep.EventID(normalized.ID))
@@ -170,9 +164,7 @@ func (s *ProviderEventPipelineServiceSuite) TestProcessProviderEventDoesNotReins
 		Return([]*rivertype.JobInsertResult{{}}, nil).
 		Twice()
 
-	creator := s.makeTestUser(ctx)
-	projector := &pipelineTestProjector{db: s.Database(), creatorID: creator.ID}
-	svc := s.newPipelineService(jobSvc, projector.projectEvent)
+	svc := s.newPipelineService(jobSvc, nil)
 
 	args := processProviderEventArgs{Event: s.makeTestEvent()}
 
@@ -200,8 +192,8 @@ func (s *ProviderEventPipelineServiceSuite) getProjection(ctx context.Context, e
 
 func (s *ProviderEventPipelineServiceSuite) TestProjectionSkipsEventWithReceipt() {
 	ctx := s.SeedTenantContext()
-	projector := &countingPipelineProjector{}
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector.projectEvent)
+	projector := &countingEventProjectionService{}
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
 	ev := s.createPipelineNormalizedEvent(ctx)
 
 	s.createProjectionResult(ctx, ev.ID)
@@ -214,7 +206,7 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionFailureRollsBackProjec
 	ctx := s.SeedTenantContext()
 	creator := s.makeTestUser(ctx)
 	projector := &rollbackPipelineProjector{db: s.Database(), creatorID: creator.ID}
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector.projectEvent)
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
 	ev := s.createPipelineNormalizedEvent(ctx)
 
 	err := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID})
@@ -234,8 +226,7 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionFailureRollsBackProjec
 
 func (s *ProviderEventPipelineServiceSuite) TestRetryableProjectionFailureReturnsError() {
 	ctx := s.SeedTenantContext()
-	projector := &retryablePipelineProjector{}
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector.projectEvent)
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), &retryablePipelineProjector{})
 	ev := s.createPipelineNormalizedEvent(ctx)
 
 	err := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID})
@@ -250,7 +241,7 @@ func (s *ProviderEventPipelineServiceSuite) TestTransientDatabaseProjectionFailu
 	ctx := s.SeedTenantContext()
 	transientErr := errors.New("database deadlock")
 	projector := &transientDatabasePipelineProjector{err: transientErr}
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector.projectEvent)
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
 	svc.db = transientDatabase{Database: s.Database(), transientErr: transientErr}
 	ev := s.createPipelineNormalizedEvent(ctx)
 
@@ -264,8 +255,7 @@ func (s *ProviderEventPipelineServiceSuite) TestTransientDatabaseProjectionFailu
 
 func (s *ProviderEventPipelineServiceSuite) TestProjectionPanicCancelsJobWithoutReceipt() {
 	ctx := s.SeedTenantContext()
-	projector := &panicPipelineProjector{}
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector.projectEvent)
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), &panickingEventProjectionService{panicText: "boom"})
 	ev := s.createPipelineNormalizedEvent(ctx)
 
 	err := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID})
@@ -284,7 +274,7 @@ func (s *ProviderEventPipelineServiceSuite) TestConcurrentProjectionRunsHandlerO
 		started: make(chan struct{}),
 		release: make(chan struct{}),
 	}
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector.projectEvent)
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
 	ev := s.createPipelineNormalizedEvent(ctx)
 	args := jobs.ProjectNormalizedEvent{EventId: ev.ID}
 	results := make(chan error, 2)
@@ -307,15 +297,6 @@ func (s *ProviderEventPipelineServiceSuite) TestConcurrentProjectionRunsHandlerO
 
 type pipelineTestProcessor struct{}
 
-type pipelineTestProjectionService struct {
-	kind      projections.SubjectKind
-	projector rez.EventProjectorFunc
-}
-
-func (s *pipelineTestProjectionService) GetEventProjectorFunc(kind string) (rez.EventProjectorFunc, bool) {
-	return s.projector, kind == s.kind.String()
-}
-
 func (pipelineTestProcessor) ProcessProviderEvent(_ context.Context, ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
 	return ent.NormalizedEvents{
 		{
@@ -332,29 +313,30 @@ func (pipelineTestProcessor) ProcessProviderEvent(_ context.Context, ev rez.Prov
 	}, nil
 }
 
-type pipelineTestProjector struct {
-	db        rez.Database
-	creatorID uuid.UUID
+type panickingEventProjectionService struct {
+	panicText string
 }
 
-func (p *pipelineTestProjector) projectEvent(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	_, err := p.db.Client(ctx).EventAnnotation.Create().
-		SetEventID(ev.ID).
-		SetCreatorID(p.creatorID).
-		SetMinutesOccupied(5).
-		SetNotes("projected " + ev.ProviderSubjectRef).
-		SetTags([]string{"pipeline-test"}).
-		Save(ctx)
-	return nil, err
+func (p *panickingEventProjectionService) GetEventProjectorFunc(*ent.NormalizedEvent) (rez.EventProjectorFunc, bool) {
+	return func(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
+		msg := p.panicText
+		if msg == "" {
+			msg = "boom"
+		}
+		panic(msg)
+		return nil, nil
+	}, true
 }
 
-type countingPipelineProjector struct {
+type countingEventProjectionService struct {
 	calls int
 }
 
-func (p *countingPipelineProjector) projectEvent(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	p.calls++
-	return nil, nil
+func (p *countingEventProjectionService) GetEventProjectorFunc(*ent.NormalizedEvent) (rez.EventProjectorFunc, bool) {
+	return func(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
+		p.calls++
+		return nil, nil
+	}, true
 }
 
 type blockingPipelineProjector struct {
@@ -363,11 +345,13 @@ type blockingPipelineProjector struct {
 	release chan struct{}
 }
 
-func (p *blockingPipelineProjector) projectEvent(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	p.calls.Add(1)
-	close(p.started)
-	<-p.release
-	return nil, nil
+func (p *blockingPipelineProjector) GetEventProjectorFunc(*ent.NormalizedEvent) (rez.EventProjectorFunc, bool) {
+	return func(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
+		p.calls.Add(1)
+		close(p.started)
+		<-p.release
+		return nil, nil
+	}, true
 }
 
 type rollbackPipelineProjector struct {
@@ -375,23 +359,27 @@ type rollbackPipelineProjector struct {
 	creatorID uuid.UUID
 }
 
-func (p *rollbackPipelineProjector) projectEvent(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	create := p.db.Client(ctx).EventAnnotation.Create().
-		SetEventID(ev.ID).
-		SetCreatorID(p.creatorID).
-		SetMinutesOccupied(1).
-		SetNotes("should roll back").
-		SetTags([]string{"rollback"})
-	if createErr := create.Exec(ctx); createErr != nil {
-		return nil, createErr
-	}
-	return nil, errors.New("projection failed after write")
+func (p *rollbackPipelineProjector) GetEventProjectorFunc(*ent.NormalizedEvent) (rez.EventProjectorFunc, bool) {
+	return func(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
+		create := p.db.Client(ctx).EventAnnotation.Create().
+			SetEventID(ev.ID).
+			SetCreatorID(p.creatorID).
+			SetMinutesOccupied(1).
+			SetNotes("should roll back").
+			SetTags([]string{"rollback"})
+		if createErr := create.Exec(ctx); createErr != nil {
+			return nil, createErr
+		}
+		return nil, errors.New("projection failed after write")
+	}, true
 }
 
 type retryablePipelineProjector struct{}
 
-func (p *retryablePipelineProjector) projectEvent(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	return nil, projections.Retryable(errors.New("dependency not ready"))
+func (p *retryablePipelineProjector) GetEventProjectorFunc(*ent.NormalizedEvent) (rez.EventProjectorFunc, bool) {
+	return func(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
+		return nil, projections.Retryable(errors.New("dependency not ready"))
+	}, true
 }
 
 type transientDatabase struct {
@@ -407,12 +395,8 @@ type transientDatabasePipelineProjector struct {
 	err error
 }
 
-func (p *transientDatabasePipelineProjector) projectEvent(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	return nil, p.err
-}
-
-type panicPipelineProjector struct{}
-
-func (p *panicPipelineProjector) projectEvent(context.Context, *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	panic("boom")
+func (p *transientDatabasePipelineProjector) GetEventProjectorFunc(*ent.NormalizedEvent) (rez.EventProjectorFunc, bool) {
+	return func(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
+		return nil, p.err
+	}, true
 }

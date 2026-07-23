@@ -17,11 +17,7 @@ const (
 	knowledgeAssertionUserProfileObserved = "user_profile_observed"
 )
 
-func (s *ProjectionService) handleUserEventProjection(ctx context.Context, normalizedEvent *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	event, decodeErr := projections.DecodeUserEvent(normalizedEvent)
-	if decodeErr != nil {
-		return nil, fmt.Errorf("invalid user event: %w", decodeErr)
-	}
+func (s *ProjectionService) handleUserEvent(ctx context.Context, event *projections.UserEvent) ([]rez.ProjectedEntityRef, error) {
 	attributes := event.Attributes
 
 	userSubjectRef := event.Event.MakeSubjectAliasRef(ksa.SubjectKindEntity, "User")
@@ -38,15 +34,15 @@ func (s *ProjectionService) handleUserEventProjection(ctx context.Context, norma
 	}
 
 	var projected []rez.ProjectedEntityRef
-	projectTxFn := func(txCtx context.Context, tx *ent.Client) error {
-		knowledgeEntityID, knowledgeErr := s.ingestDomainEntityEvidence(txCtx, event.Event, userObservedEvidence)
+	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		knSubj, knowledgeErr := s.knowledge.IngestDomainEntityEvidence(ctx, event.Event, userObservedEvidence)
 		if knowledgeErr != nil {
 			return fmt.Errorf("resolve user knowledge entity: %w", knowledgeErr)
 		}
 
 		queryLinked := tx.User.Query().
-			Where(user.Or(user.KnowledgeEntityID(knowledgeEntityID), user.Email(attributes.Email)))
-		linked, linkedErr := queryLinked.Only(txCtx)
+			Where(user.Or(user.KnowledgeEntityID(knSubj.EntityID), user.Email(attributes.Email)))
+		linked, linkedErr := queryLinked.Only(ctx)
 		if linkedErr != nil && !ent.IsNotFound(linkedErr) {
 			return fmt.Errorf("query linked user: %w", linkedErr)
 		}
@@ -56,8 +52,8 @@ func (s *ProjectionService) handleUserEventProjection(ctx context.Context, norma
 			userID = linked.ID
 		}
 
-		usr, setErr := s.users.Set(txCtx, userID, func(m *ent.UserMutation) {
-			m.SetKnowledgeEntityID(knowledgeEntityID)
+		usr, setErr := s.users.Set(ctx, userID, func(m *ent.UserMutation) {
+			m.SetKnowledgeEntityID(knSubj.EntityID)
 			m.SetName(attributes.Name)
 			m.SetEmail(attributes.Email)
 			m.SetChatID(attributes.ChatId)
@@ -70,6 +66,5 @@ func (s *ProjectionService) handleUserEventProjection(ctx context.Context, norma
 		projected = append(projected, rez.ProjectedEntityRef{Kind: knowledgeEntityKindUser, Id: usr.ID})
 
 		return nil
-	}
-	return projected, s.db.WithTx(ctx, projectTxFn)
+	})
 }

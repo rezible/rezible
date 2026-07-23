@@ -413,6 +413,7 @@ var provideServices = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.IncidentService](i),
+			do.MustInvoke[rez.KnowledgeGraphService](i),
 		)
 	}),
 	do.Bind[*eventprojection.ProjectionService, rez.EventProjectionService](),

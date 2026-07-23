@@ -1,6 +1,7 @@
 package eventprojection
 
 import (
+	"context"
 	"fmt"
 
 	rez "github.com/rezible/rezible"
@@ -14,29 +15,43 @@ type ProjectionService struct {
 	db        rez.Database
 	users     rez.UserService
 	incidents rez.IncidentService
+	knowledge rez.KnowledgeGraphService
+
+	projectorFuncs map[projections.SubjectKind]rez.EventProjectorFunc
 }
 
-func (s *ProjectionService) GetEventProjectorFunc(subjectKind string) (rez.EventProjectorFunc, bool) {
-	switch projections.SubjectKind(subjectKind) {
-	case projections.SubjectKindCodeForge:
-		return s.handleCodeForgeEventProjection, true
-	case projections.SubjectKindCodeChange:
-		return s.handleCodeChangeEventProjection, true
-	case projections.SubjectKindSystemComponent:
-		return s.handleSystemComponentEventProjection, true
-	case projections.SubjectKindSystemRelationship:
-		return s.handleSystemRelationshipEventProjection, true
-	case projections.SubjectKindUser:
-		return s.handleUserEventProjection, true
-	case projections.SubjectKindIncident:
-		return s.handleIncidentEventProjection, true
-	case projections.SubjectKindIncidentImpact:
-		return s.handleIncidentImpactEventProjection, true
-	case projections.SubjectKindAlertInstance:
-		return s.handleAlertEventProjection, true
-	default:
-		return nil, false
+func makeProjector[E any](decodeFn func(*ent.NormalizedEvent) (E, error), projFn func(context.Context, E) ([]rez.ProjectedEntityRef, error)) rez.EventProjectorFunc {
+	return func(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
+		proj, decodeErr := decodeFn(ev)
+		if decodeErr != nil {
+			return nil, fmt.Errorf("invalid event: %w", decodeErr)
+		}
+		return projFn(ctx, proj)
 	}
+}
+
+func NewProjectionService(db rez.Database, users rez.UserService, incidents rez.IncidentService, knowledge rez.KnowledgeGraphService) (*ProjectionService, error) {
+	s := &ProjectionService{
+		db:        db,
+		users:     users,
+		incidents: incidents,
+		knowledge: knowledge,
+	}
+	s.projectorFuncs = map[projections.SubjectKind]rez.EventProjectorFunc{
+		projections.SubjectKindUser:               makeProjector(projections.DecodeUserEvent, s.handleUserEvent),
+		projections.SubjectKindSystemComponent:    makeProjector(projections.DecodeSystemComponentEvent, s.handleSystemComponentEvent),
+		projections.SubjectKindSystemRelationship: makeProjector(projections.DecodeSystemRelationshipEvent, s.handleSystemRelationshipEvent),
+		projections.SubjectKindCodeForge:          makeProjector(projections.DecodeCodeForgeEvent, s.handleCodeForgeEvent),
+		projections.SubjectKindCodeChange:         makeProjector(projections.DecodeCodeChangeEvent, s.handleCodeChangeEvent),
+		projections.SubjectKindIncident:           makeProjector(projections.DecodeIncidentEvent, s.handleIncidentEvent),
+		projections.SubjectKindAlertInstance:      makeProjector(projections.DecodeAlertInstanceEvent, s.handleAlertInstanceEvent),
+	}
+	return s, nil
+}
+
+func (s *ProjectionService) GetEventProjectorFunc(ev *ent.NormalizedEvent) (rez.EventProjectorFunc, bool) {
+	fn, ok := s.projectorFuncs[projections.SubjectKind(ev.SubjectKind)]
+	return fn, ok
 }
 
 func projectionEvidenceKind(event *ent.NormalizedEvent) ke.EvidenceKind {
@@ -44,17 +59,4 @@ func projectionEvidenceKind(event *ent.NormalizedEvent) ke.EvidenceKind {
 		return ke.EvidenceKindDeleted
 	}
 	return ke.EvidenceKindObserved
-}
-
-func NewProjectionService(db rez.Database, users rez.UserService, incidents rez.IncidentService) (*ProjectionService, error) {
-	if db == nil {
-		return nil, fmt.Errorf("database is required")
-	}
-	if users == nil {
-		return nil, fmt.Errorf("user service is required")
-	}
-	if incidents == nil {
-		return nil, fmt.Errorf("incident service is required")
-	}
-	return &ProjectionService{db: db, users: users, incidents: incidents}, nil
 }

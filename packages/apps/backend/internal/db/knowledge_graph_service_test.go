@@ -1,24 +1,22 @@
 package db
 
 import (
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/mock"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/agentturn"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/internal/db/eventprojection"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
-	"github.com/rezible/rezible/test/mocks"
 )
 
 type KnowledgeGraphServiceSuite struct {
@@ -31,18 +29,6 @@ func TestKnowledgeGraphServiceSuite(t *testing.T) {
 
 func (s *KnowledgeGraphServiceSuite) knowledgeService() *KnowledgeGraphService {
 	return &KnowledgeGraphService{db: s.Database()}
-}
-
-func (s *KnowledgeGraphServiceSuite) projectionService() *eventprojection.ProjectionService {
-	users, userErr := NewUserService(s.Database(), nil)
-	s.Require().NoError(userErr)
-	messageService := mocks.NewMockMessageService(s.T())
-	messageService.EXPECT().AddEventHandlers(mock.Anything).Return(nil).Once()
-	incidents, incidentErr := NewIncidentService(s.Database(), messageService)
-	s.Require().NoError(incidentErr)
-	service, serviceErr := eventprojection.NewProjectionService(s.Database(), users, incidents)
-	s.Require().NoError(serviceErr)
-	return service
 }
 
 func (s *KnowledgeGraphServiceSuite) createEvent(kind projections.SubjectKind, subjectRef string, occurredAt time.Time, attributes any) *ent.NormalizedEvent {
@@ -64,57 +50,84 @@ func (s *KnowledgeGraphServiceSuite) createEvent(kind projections.SubjectKind, s
 	return event
 }
 
-func (s *KnowledgeGraphServiceSuite) TestViewReturnsEvidenceAndRecordsCitations() {
+func (s *KnowledgeGraphServiceSuite) TestOneEventCanStoreMultipleAssertionsForAnAlias() {
 	ctx := s.SeedTenantContext()
-	projector := s.projectionService()
-	event := s.createEvent(projections.SubjectKindAlertInstance, "alert:latency", time.Now().Add(-time.Minute), projections.AlertInstanceSubjectAttributes{
-		ExternalRef: "latency", Title: "Latency high", Description: "p95 is high",
-		RelatedEntities: []projections.RelatedEntityRef{{ExternalRef: "service:api", Kind: "service", DisplayName: "API"}},
+
+	attrs := projections.SystemComponentSubjectAttributes{
+		ExternalRef: "component:multi",
+		Kind:        "service",
+		DisplayName: "Multi",
+	}
+	event := s.createEvent(projections.SubjectKindSystemComponent, "component:multi", time.Now(), attrs)
+
+	makeEvidence := func(assertion string) ent.KnowledgeEvidenceRef {
+		aliasRef := event.MakeSubjectAliasRef(ksa.SubjectKindEntity, "System component")
+		aliasRef.SubjectEntityRef = &ent.KnowledgeEntityRef{
+			Kind:        "foo",
+			Reference:   "multi",
+			DisplayName: "Multi",
+		}
+		return ent.KnowledgeEvidenceRef{
+			Kind:            ke.EvidenceKindObserved,
+			Assertion:       assertion,
+			EffectiveAt:     event.OccurredAt,
+			SubjectAliasRef: aliasRef,
+		}
+	}
+
+	ingestErr := s.knowledgeService().IngestEvidence(ctx, event, makeEvidence("first"), makeEvidence("second"))
+	s.Require().NoError(ingestErr)
+
+	count, countErr := s.Client(ctx).KnowledgeEvidence.Query().Where(ke.EventID(event.ID)).Count(ctx)
+	s.Require().NoError(countErr)
+	s.Equal(2, count)
+}
+
+func (s *KnowledgeGraphServiceSuite) TestAliasCannotBeReassignedToAnotherEntity() {
+	ctx := s.SeedTenantContext()
+
+	subjRef := "component:shared"
+	attrs := projections.SystemComponentSubjectAttributes{
+		ExternalRef: subjRef,
+		Kind:        "service",
+		DisplayName: "Shared",
+	}
+	event := s.createEvent(projections.SubjectKindSystemComponent, subjRef, time.Now(), attrs)
+
+	firstAlias := event.MakeSubjectAliasRef(ksa.SubjectKindEntity, "System component")
+	firstAlias.SubjectEntityRef = &ent.KnowledgeEntityRef{
+		Kind:      "system_component",
+		Reference: "component:first",
+	}
+
+	svc := s.knowledgeService()
+	firstErr := svc.IngestEvidence(ctx, event, ent.KnowledgeEvidenceRef{
+		Kind:            ke.EvidenceKindObserved,
+		Assertion:       "first",
+		EffectiveAt:     event.OccurredAt,
+		SubjectAliasRef: firstAlias,
 	})
-	projectEvent, ok := projector.GetEventProjectorFunc(event.SubjectKind)
-	s.Require().True(ok)
-	_, projectErr := projectEvent(ctx, event)
-	s.Require().NoError(projectErr)
+	s.Require().NoError(firstErr)
 
-	alert, alertErr := s.Client(ctx).Alert.Query().Only(ctx)
-	s.Require().NoError(alertErr)
-	s.NotNil(alert.KnowledgeEntityID)
-	instance, instanceErr := s.Client(ctx).AlertInstance.Query().Only(ctx)
-	s.Require().NoError(instanceErr)
-	s.Require().NotNil(instance.KnowledgeEntityID)
-	service := s.knowledgeService()
-	result, contextErr := service.GetView(ctx, *instance.KnowledgeEntityID, rez.GetKnowledgeGraphViewParams{Depth: 2})
-	s.Require().NoError(contextErr)
-	s.Len(result.Entities, 3)
-	s.Len(result.Relationships, 2)
-	s.Len(result.Evidence, 5)
-	for _, evidence := range result.Evidence {
-		s.NotEmpty(evidence.Assertion)
-		s.NotNil(evidence.Edges.Event)
+	secondAlias := event.MakeSubjectAliasRef(ksa.SubjectKindEntity, "System component")
+	secondAlias.SubjectEntityRef = &ent.KnowledgeEntityRef{
+		Kind:      "system_component",
+		Reference: "component:second",
 	}
+	secondErr := svc.IngestEvidence(ctx, event, ent.KnowledgeEvidenceRef{
+		Kind:            ke.EvidenceKindObserved,
+		Assertion:       "second",
+		EffectiveAt:     event.OccurredAt,
+		SubjectAliasRef: secondAlias,
+	})
+	s.Require().Error(secondErr)
+	s.True(errors.Is(secondErr, rez.ErrConflict))
 
-	user, userErr := s.Client(ctx).User.Create().SetName("Investigator").SetEmail(uuid.NewString() + "@example.test").Save(ctx)
-	s.Require().NoError(userErr)
-	session, sessionErr := s.Client(ctx).AgentSession.Create().SetAgentName("alerts").SetOwnerUserID(user.ID).Save(ctx)
-	s.Require().NoError(sessionErr)
-	turnID := uuid.New()
-	_, turnErr := s.Client(ctx).AgentTurn.Create().
-		SetID(turnID).
-		SetAgentSessionID(session.ID).
-		SetRiverJobID(1).
-		SetInput([]byte("{}")).
-		SetStatus(agentturn.StatusRunning).
-		Save(ctx)
-	s.Require().NoError(turnErr)
-	citations := make([]rez.KnowledgeCitation, len(result.Evidence))
-	for i, evidence := range result.Evidence {
-		citations[i] = rez.KnowledgeCitation{EvidenceID: evidence.ID, Summary: "Supports the investigation"}
-	}
-	s.Require().NoError(service.RecordTurnKnowledgeCitations(ctx, turnID, citations))
-	s.Require().NoError(service.RecordTurnKnowledgeCitations(ctx, turnID, citations))
-	citationCount, citationErr := s.Client(ctx).AgentTurnKnowledgeCitation.Query().Count(ctx)
-	s.Require().NoError(citationErr)
-	s.Equal(len(citations), citationCount)
+	queryEntities := s.Client(ctx).KnowledgeEntity.Query().
+		Where(kne.ReferenceIn(firstAlias.SubjectEntityRef.Reference, secondAlias.SubjectEntityRef.Reference))
+	entityCount, countErr := queryEntities.Count(ctx)
+	s.Require().NoError(countErr)
+	s.Equal(1, entityCount)
 }
 
 func (s *KnowledgeGraphServiceSuite) TestViewHonorsTraversalDepth() {

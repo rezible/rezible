@@ -13,27 +13,7 @@ func (k SubjectKind) String() string {
 }
 
 func (k SubjectKind) Matches(ev *ent.NormalizedEvent) bool {
-	return SubjectKind(ev.SubjectKind) == k
-}
-
-type (
-	// ChatMessage is a normalized chat message observed from a messaging provider.
-	ChatMessage = Event[ChatMessageAttributes]
-
-	// ChatMessageAttributes are the provider-neutral attributes persisted for chat message events.
-	ChatMessageAttributes struct {
-		ConversationExternalRef string             `json:"conversation_external_ref" validate:"required"`
-		Body                    string             `json:"body" validate:"required"`
-		SenderExternalRef       string             `json:"sender_external_ref"`
-		ThreadExternalRef       string             `json:"thread_external_ref"`
-		RelatedEntities         []RelatedEntityRef `json:"related_entities"`
-	}
-)
-
-const SubjectKindChatMessage SubjectKind = "chat_message"
-
-func DecodeChatMessageEvent(ev *ent.NormalizedEvent) (*ChatMessage, error) {
-	return DecodeSubjectAttributes[ChatMessageAttributes](ev)
+	return ev.SubjectKind == string(k)
 }
 
 type (
@@ -129,25 +109,6 @@ const SubjectKindAlertInstance SubjectKind = "alert_instance"
 
 func DecodeAlertInstanceEvent(ev *ent.NormalizedEvent) (*AlertInstanceEvent, error) {
 	return DecodeSubjectAttributes[AlertInstanceSubjectAttributes](ev)
-}
-
-type (
-	IncidentImpactEvent = Event[IncidentImpactSubjectAttributes]
-
-	IncidentImpactSubjectAttributes struct {
-		IncidentExternalRef string `json:"incident_external_ref" validate:"required"`
-		EntityExternalRef   string `json:"entity_external_ref" validate:"required"`
-		EntityKind          string `json:"entity_kind" validate:"required"`
-		EntityDisplayName   string `json:"entity_display_name" validate:"required"`
-		Source              string `json:"source"`
-		Note                string `json:"note"`
-	}
-)
-
-const SubjectKindIncidentImpact SubjectKind = "IncidentImpact"
-
-func DecodeIncidentImpactEvent(ev *ent.NormalizedEvent) (*IncidentImpactEvent, error) {
-	return DecodeSubjectAttributes[IncidentImpactSubjectAttributes](ev)
 }
 
 type (

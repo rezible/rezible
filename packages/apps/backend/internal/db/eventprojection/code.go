@@ -23,11 +23,7 @@ const (
 	knowledgeAssertionCodeChangeImpact       = "code_change_related_entity"
 )
 
-func (s *ProjectionService) handleCodeForgeEventProjection(ctx context.Context, normalizedEvent *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	event, decodeErr := projections.DecodeCodeForgeEvent(normalizedEvent)
-	if decodeErr != nil {
-		return nil, fmt.Errorf("invalid code repository event: %w", decodeErr)
-	}
+func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *projections.CodeForgeEvent) ([]rez.ProjectedEntityRef, error) {
 	properties := make(map[string]any)
 	if event.Attributes.URL != "" {
 		properties["url"] = event.Attributes.URL
@@ -48,17 +44,13 @@ func (s *ProjectionService) handleCodeForgeEventProjection(ctx context.Context, 
 		SubjectAliasRef: aliasRef,
 	}
 
-	if ingestErr := s.ingestProjectedEvidence(ctx, event.Event, evidence); ingestErr != nil {
+	if ingestErr := s.knowledge.IngestEvidence(ctx, event.Event, evidence); ingestErr != nil {
 		return nil, fmt.Errorf("ingest code repository evidence: %w", ingestErr)
 	}
 	return nil, nil
 }
 
-func (s *ProjectionService) handleCodeChangeEventProjection(ctx context.Context, normalizedEvent *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-	event, decodeErr := projections.DecodeCodeChangeEvent(normalizedEvent)
-	if decodeErr != nil {
-		return nil, fmt.Errorf("invalid code change event: %w", decodeErr)
-	}
+func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *projections.CodeChangeEvent) ([]rez.ProjectedEntityRef, error) {
 	attributes := event.Attributes
 	changeRef := ent.KnowledgeEntityRef{
 		Kind:        knowledgeEntityKindCodeChange,
@@ -144,7 +136,7 @@ func (s *ProjectionService) handleCodeChangeEventProjection(ctx context.Context,
 		evidence = append(evidence,
 			ent.KnowledgeEvidenceRef{
 				Kind:            projectionEvidenceKind(event.Event),
-				Assertion:       knowledgeAssertionSystemComponentObserved,
+				Assertion:       knowledgeAssertionSystemComponentExists,
 				EffectiveAt:     event.Event.OccurredAt,
 				Properties:      componentRef.Properties,
 				SubjectAliasRef: componentAlias,
@@ -158,7 +150,7 @@ func (s *ProjectionService) handleCodeChangeEventProjection(ctx context.Context,
 		)
 	}
 
-	if ingestErr := s.ingestProjectedEvidence(ctx, event.Event, evidence...); ingestErr != nil {
+	if ingestErr := s.knowledge.IngestEvidence(ctx, event.Event, evidence...); ingestErr != nil {
 		return nil, fmt.Errorf("ingest code change evidence: %w", ingestErr)
 	}
 	return nil, nil
