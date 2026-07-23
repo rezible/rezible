@@ -3,10 +3,10 @@ package v1
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent"
 )
 
 type SystemAnalysisHandler interface {
@@ -27,13 +27,11 @@ type SystemAnalysisHandler interface {
 
 func (o operations) RegisterSystemAnalysis(api huma.API) {
 	huma.Register(api, GetSystemAnalysis, o.GetSystemAnalysis)
-
 	huma.Register(api, ListSystemAnalysisNodes, o.ListSystemAnalysisNodes)
 	huma.Register(api, AddSystemAnalysisNode, o.AddSystemAnalysisNode)
 	huma.Register(api, GetSystemAnalysisNode, o.GetSystemAnalysisNode)
 	huma.Register(api, UpdateSystemAnalysisNode, o.UpdateSystemAnalysisNode)
 	huma.Register(api, DeleteSystemAnalysisNode, o.DeleteSystemAnalysisNode)
-
 	huma.Register(api, ListSystemAnalysisEdges, o.ListSystemAnalysisEdges)
 	huma.Register(api, AddSystemAnalysisEdge, o.AddSystemAnalysisEdge)
 	huma.Register(api, GetSystemAnalysisEdge, o.GetSystemAnalysisEdge)
@@ -47,9 +45,8 @@ type (
 		Attributes SystemAnalysisAttributes `json:"attributes"`
 	}
 	SystemAnalysisAttributes struct {
-		KnowledgeGraphSnapshot *KnowledgeGraphSnapshot `json:"knowledgeGraphSnapshot,omitempty"`
-		Nodes                  []SystemAnalysisNode    `json:"nodes"`
-		Edges                  []SystemAnalysisEdge    `json:"edges"`
+		Nodes []SystemAnalysisNode `json:"nodes"`
+		Edges []SystemAnalysisEdge `json:"edges"`
 	}
 
 	SystemAnalysisNode struct {
@@ -57,9 +54,10 @@ type (
 		Attributes SystemAnalysisNodeAttributes `json:"attributes"`
 	}
 	SystemAnalysisNodeAttributes struct {
-		SnapshotEntity KnowledgeGraphSnapshotEntity  `json:"snapshotEntity"`
-		Position       SystemAnalysisDiagramPosition `json:"position"`
-		Description    string                        `json:"description"`
+		KnowledgeEntity KnowledgeGraphEntity          `json:"knowledgeEntity"`
+		ReferencedAt    time.Time                     `json:"referencedAt"`
+		Position        SystemAnalysisDiagramPosition `json:"position"`
+		Description     string                        `json:"description"`
 	}
 
 	SystemAnalysisDiagramPosition struct {
@@ -69,62 +67,15 @@ type (
 	}
 
 	SystemAnalysisEdge struct {
-		Id         uuid.UUID                            `json:"id"`
-		Attributes SystemAnalysisTopologyEdgeAttributes `json:"attributes"`
+		Id         uuid.UUID                    `json:"id"`
+		Attributes SystemAnalysisEdgeAttributes `json:"attributes"`
 	}
-	SystemAnalysisTopologyEdgeAttributes struct {
-		SnapshotRelationship KnowledgeGraphSnapshotRelationship `json:"snapshotRelationship"`
-		Description          string                             `json:"description"`
+	SystemAnalysisEdgeAttributes struct {
+		KnowledgeRelationship KnowledgeGraphRelationship `json:"knowledgeRelationship"`
+		ReferencedAt          time.Time                  `json:"referencedAt"`
+		Description           string                     `json:"description"`
 	}
 )
-
-func SystemAnalysisFromEnt(sc *ent.SystemAnalysis) SystemAnalysis {
-	attr := SystemAnalysisAttributes{}
-
-	if snapshot, err := sc.Edges.KnowledgeGraphSnapshotOrErr(); err == nil {
-		attr.KnowledgeGraphSnapshot = new(KnowledgeGraphSnapshotFromEnt(snapshot))
-	}
-
-	attr.Nodes = make([]SystemAnalysisNode, len(sc.Edges.AnalysisNodes))
-	for i, node := range sc.Edges.AnalysisNodes {
-		attr.Nodes[i] = SystemAnalysisNodeFromEnt(node)
-	}
-
-	attr.Edges = make([]SystemAnalysisEdge, len(sc.Edges.AnalysisEdges))
-	for i, edge := range sc.Edges.AnalysisEdges {
-		attr.Edges[i] = SystemAnalysisEdgeFromEnt(edge)
-	}
-
-	return SystemAnalysis{Id: sc.ID, Attributes: attr}
-}
-
-func SystemAnalysisNodeFromEnt(node *ent.SystemAnalysisTopologyNode) SystemAnalysisNode {
-	attr := SystemAnalysisNodeAttributes{
-		Position: SystemAnalysisDiagramPosition{
-			X: node.PosX,
-			Y: node.PosY,
-			Z: nil,
-		},
-		Description: node.Description,
-	}
-
-	if snapshotEntity, err := node.Edges.SnapshotEntityOrErr(); err == nil {
-		attr.SnapshotEntity = KnowledgeGraphSnapshotEntityFromEnt(snapshotEntity)
-	}
-
-	return SystemAnalysisNode{Id: node.ID, Attributes: attr}
-}
-
-func SystemAnalysisEdgeFromEnt(edge *ent.SystemAnalysisTopologyEdge) SystemAnalysisEdge {
-	attr := SystemAnalysisTopologyEdgeAttributes{
-		Description: edge.Description,
-	}
-	if snapshotRelationship, err := edge.Edges.SnapshotRelationshipOrErr(); err == nil {
-		attr.SnapshotRelationship = KnowledgeGraphSnapshotRelationshipFromEnt(snapshotRelationship)
-	}
-
-	return SystemAnalysisEdge{Id: edge.ID, Attributes: attr}
-}
 
 var systemAnalysisTags = []string{"System Analysis"}
 
@@ -150,8 +101,8 @@ var AddSystemAnalysisNode = huma.Operation{
 }
 
 type AddSystemAnalysisNodeAttributes struct {
-	SnapshotEntityId  *uuid.UUID                    `json:"snapshotEntityId,omitempty"`
-	KnowledgeEntityId *uuid.UUID                    `json:"knowledgeEntityId,omitempty"`
+	KnowledgeEntityId uuid.UUID                     `json:"knowledgeEntityId"`
+	ReferencedAt      *time.Time                    `json:"referencedAt,omitempty"`
 	Position          SystemAnalysisDiagramPosition `json:"position"`
 	Description       string                        `json:"description"`
 }
@@ -174,7 +125,7 @@ var GetSystemAnalysisNode = huma.Operation{
 	OperationID: "get-system-analysis-node",
 	Method:      http.MethodGet,
 	Path:        "/system_analysis_nodes/{id}",
-	Summary:     "Get a node in a system analysis",
+	Summary:     "Get a system analysis node",
 	Tags:        systemAnalysisTags,
 	Errors:      ErrorCodes(),
 }
@@ -202,7 +153,7 @@ var DeleteSystemAnalysisNode = huma.Operation{
 	OperationID: "delete-system-analysis-node",
 	Method:      http.MethodDelete,
 	Path:        "/system_analysis_nodes/{id}",
-	Summary:     "Delete a node from a system analysis",
+	Summary:     "Delete a system analysis node",
 	Tags:        systemAnalysisTags,
 	Errors:      ErrorCodes(),
 }
@@ -232,8 +183,9 @@ var AddSystemAnalysisEdge = huma.Operation{
 }
 
 type AddSystemAnalysisEdgeAttributes struct {
-	SnapshotRelationshipId uuid.UUID `json:"snapshotRelationshipId"`
-	Description            string    `json:"description"`
+	KnowledgeRelationshipId uuid.UUID  `json:"knowledgeRelationshipId"`
+	ReferencedAt            *time.Time `json:"referencedAt,omitempty"`
+	Description             string     `json:"description"`
 }
 type AddSystemAnalysisEdgeRequest IdRequestWithBody[AddSystemAnalysisEdgeAttributes]
 type AddSystemAnalysisEdgeResponse ItemResponse[SystemAnalysisEdge]
@@ -242,7 +194,7 @@ var GetSystemAnalysisEdge = huma.Operation{
 	OperationID: "get-system-analysis-edge",
 	Method:      http.MethodGet,
 	Path:        "/system_analysis_edges/{id}",
-	Summary:     "Get an edge in a system analysis",
+	Summary:     "Get a system analysis edge",
 	Tags:        systemAnalysisTags,
 	Errors:      ErrorCodes(),
 }
@@ -269,7 +221,7 @@ var DeleteSystemAnalysisEdge = huma.Operation{
 	OperationID: "delete-system-analysis-edge",
 	Method:      http.MethodDelete,
 	Path:        "/system_analysis_edges/{id}",
-	Summary:     "Delete an edge from a system analysis",
+	Summary:     "Delete a system analysis edge",
 	Tags:        systemAnalysisTags,
 	Errors:      ErrorCodes(),
 }

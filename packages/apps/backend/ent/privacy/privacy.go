@@ -795,28 +795,28 @@ func (f IncidentTimelineEventEvidenceMutationRuleFunc) EvalMutation(ctx context.
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTimelineEventEvidenceMutation", m)
 }
 
-// The IncidentTimelineEventTopologyContextQueryRuleFunc type is an adapter to allow the use of ordinary
+// The IncidentTimelineEventSystemContextQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type IncidentTimelineEventTopologyContextQueryRuleFunc func(context.Context, *ent.IncidentTimelineEventTopologyContextQuery) error
+type IncidentTimelineEventSystemContextQueryRuleFunc func(context.Context, *ent.IncidentTimelineEventSystemContextQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f IncidentTimelineEventTopologyContextQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentTimelineEventTopologyContextQuery); ok {
+func (f IncidentTimelineEventSystemContextQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IncidentTimelineEventSystemContextQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IncidentTimelineEventTopologyContextQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IncidentTimelineEventSystemContextQuery", q)
 }
 
-// The IncidentTimelineEventTopologyContextMutationRuleFunc type is an adapter to allow the use of ordinary
+// The IncidentTimelineEventSystemContextMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type IncidentTimelineEventTopologyContextMutationRuleFunc func(context.Context, *ent.IncidentTimelineEventTopologyContextMutation) error
+type IncidentTimelineEventSystemContextMutationRuleFunc func(context.Context, *ent.IncidentTimelineEventSystemContextMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f IncidentTimelineEventTopologyContextMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.IncidentTimelineEventTopologyContextMutation); ok {
+func (f IncidentTimelineEventSystemContextMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.IncidentTimelineEventSystemContextMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTimelineEventTopologyContextMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTimelineEventSystemContextMutation", m)
 }
 
 // The IncidentTypeQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -985,78 +985,6 @@ func (f KnowledgeEvidenceMutationRuleFunc) EvalMutation(ctx context.Context, m e
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEvidenceMutation", m)
-}
-
-// The KnowledgeGraphSnapshotQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type KnowledgeGraphSnapshotQueryRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f KnowledgeGraphSnapshotQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeGraphSnapshotQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeGraphSnapshotQuery", q)
-}
-
-// The KnowledgeGraphSnapshotMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type KnowledgeGraphSnapshotMutationRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f KnowledgeGraphSnapshotMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.KnowledgeGraphSnapshotMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeGraphSnapshotMutation", m)
-}
-
-// The KnowledgeGraphSnapshotEntityQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type KnowledgeGraphSnapshotEntityQueryRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotEntityQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f KnowledgeGraphSnapshotEntityQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeGraphSnapshotEntityQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeGraphSnapshotEntityQuery", q)
-}
-
-// The KnowledgeGraphSnapshotEntityMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type KnowledgeGraphSnapshotEntityMutationRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotEntityMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f KnowledgeGraphSnapshotEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.KnowledgeGraphSnapshotEntityMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeGraphSnapshotEntityMutation", m)
-}
-
-// The KnowledgeGraphSnapshotRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type KnowledgeGraphSnapshotRelationshipQueryRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotRelationshipQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f KnowledgeGraphSnapshotRelationshipQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeGraphSnapshotRelationshipQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeGraphSnapshotRelationshipQuery", q)
-}
-
-// The KnowledgeGraphSnapshotRelationshipMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type KnowledgeGraphSnapshotRelationshipMutationRuleFunc func(context.Context, *ent.KnowledgeGraphSnapshotRelationshipMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f KnowledgeGraphSnapshotRelationshipMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.KnowledgeGraphSnapshotRelationshipMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeGraphSnapshotRelationshipMutation", m)
 }
 
 // The KnowledgeRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1944,7 +1872,7 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.IncidentTimelineEventEvidenceQuery:
 		return q.Filter(), nil
-	case *ent.IncidentTimelineEventTopologyContextQuery:
+	case *ent.IncidentTimelineEventSystemContextQuery:
 		return q.Filter(), nil
 	case *ent.IncidentTypeQuery:
 		return q.Filter(), nil
@@ -1959,12 +1887,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 	case *ent.KnowledgeEntityQuery:
 		return q.Filter(), nil
 	case *ent.KnowledgeEvidenceQuery:
-		return q.Filter(), nil
-	case *ent.KnowledgeGraphSnapshotQuery:
-		return q.Filter(), nil
-	case *ent.KnowledgeGraphSnapshotEntityQuery:
-		return q.Filter(), nil
-	case *ent.KnowledgeGraphSnapshotRelationshipQuery:
 		return q.Filter(), nil
 	case *ent.KnowledgeRelationshipQuery:
 		return q.Filter(), nil
@@ -2095,7 +2017,7 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.IncidentTimelineEventEvidenceMutation:
 		return m.Filter(), nil
-	case *ent.IncidentTimelineEventTopologyContextMutation:
+	case *ent.IncidentTimelineEventSystemContextMutation:
 		return m.Filter(), nil
 	case *ent.IncidentTypeMutation:
 		return m.Filter(), nil
@@ -2110,12 +2032,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.KnowledgeEntityMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeEvidenceMutation:
-		return m.Filter(), nil
-	case *ent.KnowledgeGraphSnapshotMutation:
-		return m.Filter(), nil
-	case *ent.KnowledgeGraphSnapshotEntityMutation:
-		return m.Filter(), nil
-	case *ent.KnowledgeGraphSnapshotRelationshipMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeRelationshipMutation:
 		return m.Filter(), nil

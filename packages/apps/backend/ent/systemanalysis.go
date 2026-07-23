@@ -10,7 +10,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -22,8 +21,6 @@ type SystemAnalysis struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// KnowledgeGraphSnapshotID holds the value of the "knowledge_graph_snapshot_id" field.
-	KnowledgeGraphSnapshotID uuid.UUID `json:"knowledge_graph_snapshot_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -38,15 +35,13 @@ type SystemAnalysis struct {
 type SystemAnalysisEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// KnowledgeGraphSnapshot holds the value of the knowledge_graph_snapshot edge.
-	KnowledgeGraphSnapshot *KnowledgeGraphSnapshot `json:"knowledge_graph_snapshot,omitempty"`
 	// AnalysisNodes holds the value of the analysis_nodes edge.
 	AnalysisNodes []*SystemAnalysisTopologyNode `json:"analysis_nodes,omitempty"`
 	// AnalysisEdges holds the value of the analysis_edges edge.
 	AnalysisEdges []*SystemAnalysisTopologyEdge `json:"analysis_edges,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -60,21 +55,10 @@ func (e SystemAnalysisEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// KnowledgeGraphSnapshotOrErr returns the KnowledgeGraphSnapshot value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e SystemAnalysisEdges) KnowledgeGraphSnapshotOrErr() (*KnowledgeGraphSnapshot, error) {
-	if e.KnowledgeGraphSnapshot != nil {
-		return e.KnowledgeGraphSnapshot, nil
-	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: knowledgegraphsnapshot.Label}
-	}
-	return nil, &NotLoadedError{edge: "knowledge_graph_snapshot"}
-}
-
 // AnalysisNodesOrErr returns the AnalysisNodes value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisEdges) AnalysisNodesOrErr() ([]*SystemAnalysisTopologyNode, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.AnalysisNodes, nil
 	}
 	return nil, &NotLoadedError{edge: "analysis_nodes"}
@@ -83,7 +67,7 @@ func (e SystemAnalysisEdges) AnalysisNodesOrErr() ([]*SystemAnalysisTopologyNode
 // AnalysisEdgesOrErr returns the AnalysisEdges value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisEdges) AnalysisEdgesOrErr() ([]*SystemAnalysisTopologyEdge, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.AnalysisEdges, nil
 	}
 	return nil, &NotLoadedError{edge: "analysis_edges"}
@@ -98,7 +82,7 @@ func (*SystemAnalysis) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case systemanalysis.FieldCreatedAt, systemanalysis.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case systemanalysis.FieldID, systemanalysis.FieldKnowledgeGraphSnapshotID:
+		case systemanalysis.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -126,12 +110,6 @@ func (_m *SystemAnalysis) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
-			}
-		case systemanalysis.FieldKnowledgeGraphSnapshotID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field knowledge_graph_snapshot_id", values[i])
-			} else if value != nil {
-				_m.KnowledgeGraphSnapshotID = *value
 			}
 		case systemanalysis.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -161,11 +139,6 @@ func (_m *SystemAnalysis) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the SystemAnalysis entity.
 func (_m *SystemAnalysis) QueryTenant() *TenantQuery {
 	return NewSystemAnalysisClient(_m.config).QueryTenant(_m)
-}
-
-// QueryKnowledgeGraphSnapshot queries the "knowledge_graph_snapshot" edge of the SystemAnalysis entity.
-func (_m *SystemAnalysis) QueryKnowledgeGraphSnapshot() *KnowledgeGraphSnapshotQuery {
-	return NewSystemAnalysisClient(_m.config).QueryKnowledgeGraphSnapshot(_m)
 }
 
 // QueryAnalysisNodes queries the "analysis_nodes" edge of the SystemAnalysis entity.
@@ -203,9 +176,6 @@ func (_m *SystemAnalysis) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
-	builder.WriteString(", ")
-	builder.WriteString("knowledge_graph_snapshot_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.KnowledgeGraphSnapshotID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

@@ -681,27 +681,27 @@ func HasEvidenceWith(preds ...predicate.IncidentTimelineEventEvidence) predicate
 	})
 }
 
-// HasTopologyContext applies the HasEdge predicate on the "topology_context" edge.
-func HasTopologyContext() predicate.IncidentTimelineEvent {
+// HasSystemContext applies the HasEdge predicate on the "system_context" edge.
+func HasSystemContext() predicate.IncidentTimelineEvent {
 	return predicate.IncidentTimelineEvent(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, TopologyContextTable, TopologyContextColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, SystemContextTable, SystemContextColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentTimelineEventTopologyContext
-		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
+		step.To.Schema = schemaConfig.IncidentTimelineEventSystemContext
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventSystemContext
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTopologyContextWith applies the HasEdge predicate on the "topology_context" edge with a given conditions (other predicates).
-func HasTopologyContextWith(preds ...predicate.IncidentTimelineEventTopologyContext) predicate.IncidentTimelineEvent {
+// HasSystemContextWith applies the HasEdge predicate on the "system_context" edge with a given conditions (other predicates).
+func HasSystemContextWith(preds ...predicate.IncidentTimelineEventSystemContext) predicate.IncidentTimelineEvent {
 	return predicate.IncidentTimelineEvent(func(s *sql.Selector) {
-		step := newTopologyContextStep()
+		step := newSystemContextStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentTimelineEventTopologyContext
-		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
+		step.To.Schema = schemaConfig.IncidentTimelineEventSystemContext
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventSystemContext
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
@@ -31,20 +30,6 @@ type SystemAnalysisUpdate struct {
 // Where appends a list predicates to the SystemAnalysisUpdate builder.
 func (_u *SystemAnalysisUpdate) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisUpdate {
 	_u.mutation.Where(ps...)
-	return _u
-}
-
-// SetKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field.
-func (_u *SystemAnalysisUpdate) SetKnowledgeGraphSnapshotID(v uuid.UUID) *SystemAnalysisUpdate {
-	_u.mutation.SetKnowledgeGraphSnapshotID(v)
-	return _u
-}
-
-// SetNillableKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field if the given value is not nil.
-func (_u *SystemAnalysisUpdate) SetNillableKnowledgeGraphSnapshotID(v *uuid.UUID) *SystemAnalysisUpdate {
-	if v != nil {
-		_u.SetKnowledgeGraphSnapshotID(*v)
-	}
 	return _u
 }
 
@@ -66,11 +51,6 @@ func (_u *SystemAnalysisUpdate) SetNillableCreatedAt(v *time.Time) *SystemAnalys
 func (_u *SystemAnalysisUpdate) SetUpdatedAt(v time.Time) *SystemAnalysisUpdate {
 	_u.mutation.SetUpdatedAt(v)
 	return _u
-}
-
-// SetKnowledgeGraphSnapshot sets the "knowledge_graph_snapshot" edge to the KnowledgeGraphSnapshot entity.
-func (_u *SystemAnalysisUpdate) SetKnowledgeGraphSnapshot(v *KnowledgeGraphSnapshot) *SystemAnalysisUpdate {
-	return _u.SetKnowledgeGraphSnapshotID(v.ID)
 }
 
 // AddAnalysisNodeIDs adds the "analysis_nodes" edge to the SystemAnalysisTopologyNode entity by IDs.
@@ -106,12 +86,6 @@ func (_u *SystemAnalysisUpdate) AddAnalysisEdges(v ...*SystemAnalysisTopologyEdg
 // Mutation returns the SystemAnalysisMutation object of the builder.
 func (_u *SystemAnalysisUpdate) Mutation() *SystemAnalysisMutation {
 	return _u.mutation
-}
-
-// ClearKnowledgeGraphSnapshot clears the "knowledge_graph_snapshot" edge to the KnowledgeGraphSnapshot entity.
-func (_u *SystemAnalysisUpdate) ClearKnowledgeGraphSnapshot() *SystemAnalysisUpdate {
-	_u.mutation.ClearKnowledgeGraphSnapshot()
-	return _u
 }
 
 // ClearAnalysisNodes clears all "analysis_nodes" edges to the SystemAnalysisTopologyNode entity.
@@ -203,9 +177,6 @@ func (_u *SystemAnalysisUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.tenant"`)
 	}
-	if _u.mutation.KnowledgeGraphSnapshotCleared() && len(_u.mutation.KnowledgeGraphSnapshotIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.knowledge_graph_snapshot"`)
-	}
 	return nil
 }
 
@@ -232,37 +203,6 @@ func (_u *SystemAnalysisUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if _u.mutation.KnowledgeGraphSnapshotCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysis.KnowledgeGraphSnapshotTable,
-			Columns: []string{systemanalysis.KnowledgeGraphSnapshotColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshot.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysis
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeGraphSnapshotIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysis.KnowledgeGraphSnapshotTable,
-			Columns: []string{systemanalysis.KnowledgeGraphSnapshotColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshot.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysis
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.AnalysisNodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -384,20 +324,6 @@ type SystemAnalysisUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field.
-func (_u *SystemAnalysisUpdateOne) SetKnowledgeGraphSnapshotID(v uuid.UUID) *SystemAnalysisUpdateOne {
-	_u.mutation.SetKnowledgeGraphSnapshotID(v)
-	return _u
-}
-
-// SetNillableKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field if the given value is not nil.
-func (_u *SystemAnalysisUpdateOne) SetNillableKnowledgeGraphSnapshotID(v *uuid.UUID) *SystemAnalysisUpdateOne {
-	if v != nil {
-		_u.SetKnowledgeGraphSnapshotID(*v)
-	}
-	return _u
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (_u *SystemAnalysisUpdateOne) SetCreatedAt(v time.Time) *SystemAnalysisUpdateOne {
 	_u.mutation.SetCreatedAt(v)
@@ -416,11 +342,6 @@ func (_u *SystemAnalysisUpdateOne) SetNillableCreatedAt(v *time.Time) *SystemAna
 func (_u *SystemAnalysisUpdateOne) SetUpdatedAt(v time.Time) *SystemAnalysisUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
 	return _u
-}
-
-// SetKnowledgeGraphSnapshot sets the "knowledge_graph_snapshot" edge to the KnowledgeGraphSnapshot entity.
-func (_u *SystemAnalysisUpdateOne) SetKnowledgeGraphSnapshot(v *KnowledgeGraphSnapshot) *SystemAnalysisUpdateOne {
-	return _u.SetKnowledgeGraphSnapshotID(v.ID)
 }
 
 // AddAnalysisNodeIDs adds the "analysis_nodes" edge to the SystemAnalysisTopologyNode entity by IDs.
@@ -456,12 +377,6 @@ func (_u *SystemAnalysisUpdateOne) AddAnalysisEdges(v ...*SystemAnalysisTopology
 // Mutation returns the SystemAnalysisMutation object of the builder.
 func (_u *SystemAnalysisUpdateOne) Mutation() *SystemAnalysisMutation {
 	return _u.mutation
-}
-
-// ClearKnowledgeGraphSnapshot clears the "knowledge_graph_snapshot" edge to the KnowledgeGraphSnapshot entity.
-func (_u *SystemAnalysisUpdateOne) ClearKnowledgeGraphSnapshot() *SystemAnalysisUpdateOne {
-	_u.mutation.ClearKnowledgeGraphSnapshot()
-	return _u
 }
 
 // ClearAnalysisNodes clears all "analysis_nodes" edges to the SystemAnalysisTopologyNode entity.
@@ -566,9 +481,6 @@ func (_u *SystemAnalysisUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.tenant"`)
 	}
-	if _u.mutation.KnowledgeGraphSnapshotCleared() && len(_u.mutation.KnowledgeGraphSnapshotIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.knowledge_graph_snapshot"`)
-	}
 	return nil
 }
 
@@ -612,37 +524,6 @@ func (_u *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *SystemAn
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if _u.mutation.KnowledgeGraphSnapshotCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysis.KnowledgeGraphSnapshotTable,
-			Columns: []string{systemanalysis.KnowledgeGraphSnapshotColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshot.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysis
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeGraphSnapshotIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysis.KnowledgeGraphSnapshotTable,
-			Columns: []string{systemanalysis.KnowledgeGraphSnapshotColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshot.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysis
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.AnalysisNodesCleared() {
 		edge := &sqlgraph.EdgeSpec{

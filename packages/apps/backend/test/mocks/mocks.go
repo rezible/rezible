@@ -1261,8 +1261,8 @@ func (_m *MockAiService) EXPECT() *MockAiService_Expecter {
 }
 
 // InvokeAgentTurn provides a mock function for the type MockAiService
-func (_mock *MockAiService) InvokeAgentTurn(context1 context.Context, agentSession *ent.AgentSession, agentTurn *ent.AgentTurn, bytes []byte, agentTurnInput *rez.AgentTurnInput) (*rez.AgentInvocationResult, error) {
-	ret := _mock.Called(context1, agentSession, agentTurn, bytes, agentTurnInput)
+func (_mock *MockAiService) InvokeAgentTurn(context1 context.Context, invokeAgentTurnParams rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error) {
+	ret := _mock.Called(context1, invokeAgentTurnParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for InvokeAgentTurn")
@@ -1270,18 +1270,18 @@ func (_mock *MockAiService) InvokeAgentTurn(context1 context.Context, agentSessi
 
 	var r0 *rez.AgentInvocationResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.AgentSession, *ent.AgentTurn, []byte, *rez.AgentTurnInput) (*rez.AgentInvocationResult, error)); ok {
-		return returnFunc(context1, agentSession, agentTurn, bytes, agentTurnInput)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error)); ok {
+		return returnFunc(context1, invokeAgentTurnParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.AgentSession, *ent.AgentTurn, []byte, *rez.AgentTurnInput) *rez.AgentInvocationResult); ok {
-		r0 = returnFunc(context1, agentSession, agentTurn, bytes, agentTurnInput)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvokeAgentTurnParams) *rez.AgentInvocationResult); ok {
+		r0 = returnFunc(context1, invokeAgentTurnParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*rez.AgentInvocationResult)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.AgentSession, *ent.AgentTurn, []byte, *rez.AgentTurnInput) error); ok {
-		r1 = returnFunc(context1, agentSession, agentTurn, bytes, agentTurnInput)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.InvokeAgentTurnParams) error); ok {
+		r1 = returnFunc(context1, invokeAgentTurnParams)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1295,53 +1295,35 @@ type MockAiService_InvokeAgentTurn_Call struct {
 
 // InvokeAgentTurn is a helper method to define mock.On call
 //   - context1 context.Context
-//   - agentSession *ent.AgentSession
-//   - agentTurn *ent.AgentTurn
-//   - bytes []byte
-//   - agentTurnInput *rez.AgentTurnInput
-func (_e *MockAiService_Expecter) InvokeAgentTurn(context1 interface{}, agentSession interface{}, agentTurn interface{}, bytes interface{}, agentTurnInput interface{}) *MockAiService_InvokeAgentTurn_Call {
-	return &MockAiService_InvokeAgentTurn_Call{Call: _e.mock.On("InvokeAgentTurn", context1, agentSession, agentTurn, bytes, agentTurnInput)}
+//   - invokeAgentTurnParams rez.InvokeAgentTurnParams
+func (_e *MockAiService_Expecter) InvokeAgentTurn(context1 interface{}, invokeAgentTurnParams interface{}) *MockAiService_InvokeAgentTurn_Call {
+	return &MockAiService_InvokeAgentTurn_Call{Call: _e.mock.On("InvokeAgentTurn", context1, invokeAgentTurnParams)}
 }
 
-func (_c *MockAiService_InvokeAgentTurn_Call) Run(run func(context1 context.Context, agentSession *ent.AgentSession, agentTurn *ent.AgentTurn, bytes []byte, agentTurnInput *rez.AgentTurnInput)) *MockAiService_InvokeAgentTurn_Call {
+func (_c *MockAiService_InvokeAgentTurn_Call) Run(run func(context1 context.Context, invokeAgentTurnParams rez.InvokeAgentTurnParams)) *MockAiService_InvokeAgentTurn_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *ent.AgentSession
+		var arg1 rez.InvokeAgentTurnParams
 		if args[1] != nil {
-			arg1 = args[1].(*ent.AgentSession)
-		}
-		var arg2 *ent.AgentTurn
-		if args[2] != nil {
-			arg2 = args[2].(*ent.AgentTurn)
-		}
-		var arg3 []byte
-		if args[3] != nil {
-			arg3 = args[3].([]byte)
-		}
-		var arg4 *rez.AgentTurnInput
-		if args[4] != nil {
-			arg4 = args[4].(*rez.AgentTurnInput)
+			arg1 = args[1].(rez.InvokeAgentTurnParams)
 		}
 		run(
 			arg0,
 			arg1,
-			arg2,
-			arg3,
-			arg4,
 		)
 	})
 	return _c
 }
 
-func (_c *MockAiService_InvokeAgentTurn_Call) Return(agentTurnResult *rez.AgentInvocationResult, err error) *MockAiService_InvokeAgentTurn_Call {
-	_c.Call.Return(agentTurnResult, err)
+func (_c *MockAiService_InvokeAgentTurn_Call) Return(agentInvocationResult *rez.AgentInvocationResult, err error) *MockAiService_InvokeAgentTurn_Call {
+	_c.Call.Return(agentInvocationResult, err)
 	return _c
 }
 
-func (_c *MockAiService_InvokeAgentTurn_Call) RunAndReturn(run func(context1 context.Context, agentSession *ent.AgentSession, agentTurn *ent.AgentTurn, bytes []byte, agentTurnInput *rez.AgentTurnInput) (*rez.AgentInvocationResult, error)) *MockAiService_InvokeAgentTurn_Call {
+func (_c *MockAiService_InvokeAgentTurn_Call) RunAndReturn(run func(context1 context.Context, invokeAgentTurnParams rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error)) *MockAiService_InvokeAgentTurn_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1445,74 +1427,6 @@ type MockAlertService_Expecter struct {
 
 func (_m *MockAlertService) EXPECT() *MockAlertService_Expecter {
 	return &MockAlertService_Expecter{mock: &_m.Mock}
-}
-
-// GetActiveAlertsForComponents provides a mock function for the type MockAlertService
-func (_mock *MockAlertService) GetActiveAlertsForComponents(context1 context.Context, uUIDs []uuid.UUID) ([]*ent.Alert, error) {
-	ret := _mock.Called(context1, uUIDs)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetActiveAlertsForComponents")
-	}
-
-	var r0 []*ent.Alert
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) ([]*ent.Alert, error)); ok {
-		return returnFunc(context1, uUIDs)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) []*ent.Alert); ok {
-		r0 = returnFunc(context1, uUIDs)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*ent.Alert)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID) error); ok {
-		r1 = returnFunc(context1, uUIDs)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockAlertService_GetActiveAlertsForComponents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetActiveAlertsForComponents'
-type MockAlertService_GetActiveAlertsForComponents_Call struct {
-	*mock.Call
-}
-
-// GetActiveAlertsForComponents is a helper method to define mock.On call
-//   - context1 context.Context
-//   - uUIDs []uuid.UUID
-func (_e *MockAlertService_Expecter) GetActiveAlertsForComponents(context1 interface{}, uUIDs interface{}) *MockAlertService_GetActiveAlertsForComponents_Call {
-	return &MockAlertService_GetActiveAlertsForComponents_Call{Call: _e.mock.On("GetActiveAlertsForComponents", context1, uUIDs)}
-}
-
-func (_c *MockAlertService_GetActiveAlertsForComponents_Call) Run(run func(context1 context.Context, uUIDs []uuid.UUID)) *MockAlertService_GetActiveAlertsForComponents_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 []uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].([]uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockAlertService_GetActiveAlertsForComponents_Call) Return(alerts []*ent.Alert, err error) *MockAlertService_GetActiveAlertsForComponents_Call {
-	_c.Call.Return(alerts, err)
-	return _c
-}
-
-func (_c *MockAlertService_GetActiveAlertsForComponents_Call) RunAndReturn(run func(context1 context.Context, uUIDs []uuid.UUID) ([]*ent.Alert, error)) *MockAlertService_GetActiveAlertsForComponents_Call {
-	_c.Call.Return(run)
-	return _c
 }
 
 // GetAlert provides a mock function for the type MockAlertService

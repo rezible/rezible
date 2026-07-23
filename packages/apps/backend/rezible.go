@@ -147,8 +147,10 @@ type (
 		Id   uuid.UUID
 	}
 
-	NormalizedEventProjector interface {
-		HandleEventProjection(context.Context, *ent.NormalizedEvent) ([]ProjectedEntityRef, error)
+	EventProjectorFunc func(context.Context, *ent.NormalizedEvent) ([]ProjectedEntityRef, error)
+
+	EventProjectionService interface {
+		GetEventProjectorFunc(string) (EventProjectorFunc, bool)
 	}
 
 	ProviderEventSyncResult struct {
@@ -162,13 +164,6 @@ type (
 	ProviderEventPipelineService interface {
 		Ingest(context.Context, ProviderEvent) error
 		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventQuerySourceCursors) ProviderEventSyncResult
-	}
-)
-
-type (
-	KnowledgeIngestionService interface {
-		IngestProjectedEvidence(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) error
-		IngestDomainEntityEvidence(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (uuid.UUID, error)
 	}
 )
 
@@ -261,15 +256,13 @@ type (
 	ListEventsParams struct {
 		ent.ListParams
 		Predicates           []predicate.NormalizedEvent
-		WithProjections      bool
-		ProjectionPredicates []predicate.NormalizedEventProjection
+		WithProjection       bool
 		WithAnnotations      bool
 		AnnotationPredicates []predicate.EventAnnotation
 	}
 
 	GetEventParams struct {
-		WithProjections      bool
-		ProjectionPredicates []predicate.NormalizedEventProjection
+		WithProjection bool
 	}
 
 	EventsService interface {
@@ -333,18 +326,6 @@ type (
 		Predicates []predicate.KnowledgeRelationship
 	}
 
-	CreateKnowledgeGraphSnapshotParams struct {
-		Name              string
-		AsOf              time.Time
-		Scope             string
-		ScopeProperties   map[string]any
-		EntityIDs         []uuid.UUID
-		RootEntityIDs     []uuid.UUID
-		Depth             int
-		EntityKinds       []string
-		RelationshipKinds []string
-	}
-
 	GetKnowledgeGraphViewParams struct {
 		Depth             int
 		RelationshipKinds []string
@@ -353,16 +334,24 @@ type (
 	KnowledgeGraphView struct {
 		Entities      ent.KnowledgeEntities
 		Relationships ent.KnowledgeRelationships
+		Evidence      ent.KnowledgeEvidences
+		Truncated     bool
+		Warnings      []string
+	}
+
+	KnowledgeCitation struct {
+		EvidenceID uuid.UUID
+		Summary    string
 	}
 
 	KnowledgeGraphService interface {
 		ListEntities(context.Context, ListKnowledgeGraphEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
 		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
+		GetEntityAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeEntity, error)
+		GetRelationshipAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeRelationship, error)
 		GetView(context.Context, uuid.UUID, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
 		ListRelationships(context.Context, ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
-
-		CreateSnapshot(context.Context, CreateKnowledgeGraphSnapshotParams) (*ent.KnowledgeGraphSnapshot, error)
-		GetSnapshot(context.Context, uuid.UUID) (*ent.KnowledgeGraphSnapshot, error)
+		RecordTurnKnowledgeCitations(context.Context, uuid.UUID, []KnowledgeCitation) error
 	}
 )
 
@@ -431,7 +420,7 @@ type (
 
 	AiService interface {
 		MakeInitialAgentTurnInput(context.Context, string, any) (*AgentTurnInput, error)
-		InvokeAgentTurn(context.Context, *ent.AgentSession, *ent.AgentTurn, []byte, *AgentTurnInput) (*AgentInvocationResult, error)
+		InvokeAgentTurn(context.Context, InvokeAgentTurnParams) (*AgentInvocationResult, error)
 	}
 
 	CreateAgentSessionParams struct {
@@ -490,7 +479,6 @@ type (
 		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
 		GetAlertInstance(context.Context, uuid.UUID) (*ent.AlertInstance, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
-		GetActiveAlertsForComponents(context.Context, []uuid.UUID) ([]*ent.Alert, error)
 	}
 )
 

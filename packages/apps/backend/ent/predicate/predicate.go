@@ -93,8 +93,8 @@ type IncidentTimelineEventContributingFactor func(*sql.Selector)
 // IncidentTimelineEventEvidence is the predicate function for incidenttimelineeventevidence builders.
 type IncidentTimelineEventEvidence func(*sql.Selector)
 
-// IncidentTimelineEventTopologyContext is the predicate function for incidenttimelineeventtopologycontext builders.
-type IncidentTimelineEventTopologyContext func(*sql.Selector)
+// IncidentTimelineEventSystemContext is the predicate function for incidenttimelineeventsystemcontext builders.
+type IncidentTimelineEventSystemContext func(*sql.Selector)
 
 // IncidentType is the predicate function for incidenttype builders.
 type IncidentType func(*sql.Selector)
@@ -116,15 +116,6 @@ type KnowledgeEntity func(*sql.Selector)
 
 // KnowledgeEvidence is the predicate function for knowledgeevidence builders.
 type KnowledgeEvidence func(*sql.Selector)
-
-// KnowledgeGraphSnapshot is the predicate function for knowledgegraphsnapshot builders.
-type KnowledgeGraphSnapshot func(*sql.Selector)
-
-// KnowledgeGraphSnapshotEntity is the predicate function for knowledgegraphsnapshotentity builders.
-type KnowledgeGraphSnapshotEntity func(*sql.Selector)
-
-// KnowledgeGraphSnapshotRelationship is the predicate function for knowledgegraphsnapshotrelationship builders.
-type KnowledgeGraphSnapshotRelationship func(*sql.Selector)
 
 // KnowledgeRelationship is the predicate function for knowledgerelationship builders.
 type KnowledgeRelationship func(*sql.Selector)

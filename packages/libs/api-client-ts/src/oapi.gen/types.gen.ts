@@ -26,7 +26,8 @@ export type AddIncidentDebriefUserMessageResponseBody = {
 
 export type AddSystemAnalysisEdgeAttributes = {
     description: string;
-    snapshotRelationshipId: string;
+    knowledgeRelationshipId: string;
+    referencedAt?: string;
 };
 
 export type AddSystemAnalysisEdgeRequestBody = {
@@ -47,9 +48,9 @@ export type AddSystemAnalysisEdgeResponseBody = {
 
 export type AddSystemAnalysisNodeAttributes = {
     description: string;
-    knowledgeEntityId?: string;
+    knowledgeEntityId: string;
     position: SystemAnalysisDiagramPosition;
-    snapshotEntityId?: string;
+    referencedAt?: string;
 };
 
 export type AddSystemAnalysisNodeRequestBody = {
@@ -398,6 +399,7 @@ export type CreateIncidentTagResponseBody = {
 export type CreateIncidentTimelineEventAttributes = {
     isKey?: boolean;
     kind: 'observation' | 'action' | 'decision' | 'context';
+    systemContext?: Array<SetIncidentTimelineEventSystemContextAttributes>;
     timestamp: string;
     title: string;
 };
@@ -436,39 +438,6 @@ export type CreateIncidentTypeResponseBody = {
      */
     readonly $schema?: string;
     data: IncidentType;
-};
-
-export type CreateKnowledgeGraphSnapshotRequestAttributes = {
-    asOf?: string;
-    depth: number;
-    entityIds: Array<string>;
-    entityKinds: Array<string>;
-    includeAlerts: boolean;
-    includeChanges: boolean;
-    includeIncidents: boolean;
-    name: string;
-    relationshipKinds: Array<string>;
-    rootEntityIds: Array<string>;
-    scope: 'explicit_entities' | 'root_entities' | 'incident' | 'retrospective' | 'search' | 'analysis';
-    scopeProperties: {
-        [key: string]: unknown;
-    };
-};
-
-export type CreateKnowledgeGraphSnapshotRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateKnowledgeGraphSnapshotRequestAttributes;
-};
-
-export type CreateKnowledgeGraphSnapshotResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: KnowledgeGraphSnapshot;
 };
 
 export type CreateMeetingScheduleAttributes = {
@@ -750,7 +719,7 @@ export type EventAttributes = {
     attributes: string;
     kind: string;
     occurredAt: string;
-    projections: Array<EventProjection>;
+    projection?: EventProjection;
     provider: string;
     providerSource: string;
     providerSubjectRef: string;
@@ -764,11 +733,8 @@ export type EventProjection = {
 };
 
 export type EventProjectionAttributes = {
+    completedAt: string;
     entities: Array<EventProjectionEntity>;
-    error?: string;
-    projector: string;
-    startedAt: string;
-    status: 'pending' | 'succeeded' | 'failed';
 };
 
 export type EventProjectionEntity = {
@@ -970,12 +936,12 @@ export type GetKnowledgeGraphEntityResponseBody = {
     data: KnowledgeGraphEntity;
 };
 
-export type GetKnowledgeGraphSnapshotResponseBody = {
+export type GetKnowledgeGraphViewResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: KnowledgeGraphSnapshot;
+    data: KnowledgeGraphView;
 };
 
 export type GetMeetingScheduleResponseBody = {
@@ -1362,7 +1328,7 @@ export type IncidentTimelineEventAttributes = {
     isKey: boolean;
     kind: 'observation' | 'action' | 'decision' | 'context';
     sequence: number;
-    systemContext: Array<IncidentTimelineEventTopologyContext>;
+    systemContext: Array<IncidentTimelineEventSystemContext>;
     timestamp: string;
     title: string;
 };
@@ -1423,15 +1389,14 @@ export type IncidentTimelineEventMetadata = {
     contributingFactorCategories: Array<IncidentTimelineEventContributingFactorCategory>;
 };
 
-export type IncidentTimelineEventTopologyContext = {
-    attributes: IncidentTimelineEventTopologyContextAttributes;
+export type IncidentTimelineEventSystemContext = {
+    attributes: IncidentTimelineEventSystemContextAttributes;
     id: string;
 };
 
-export type IncidentTimelineEventTopologyContextAttributes = {
-    knowledgeEntityId?: string;
-    relationship: string;
-    snapshotEntityId?: string;
+export type IncidentTimelineEventSystemContextAttributes = {
+    relationship: 'primary' | 'affected' | 'contributing';
+    systemAnalysisNodeId: string;
 };
 
 export type IncidentType = {
@@ -1559,6 +1524,25 @@ export type KnowledgeGraphEntityAttributes = {
     updatedAt: string;
 };
 
+export type KnowledgeGraphEvidence = {
+    attributes: KnowledgeGraphEvidenceAttributes;
+    id: string;
+};
+
+export type KnowledgeGraphEvidenceAttributes = {
+    assertion: string;
+    effectiveAt: string;
+    entityId?: string;
+    eventId: string;
+    evidenceKind: string;
+    properties: {
+        [key: string]: unknown;
+    };
+    provider: string;
+    providerSource: string;
+    relationshipId?: string;
+};
+
 export type KnowledgeGraphRelationship = {
     attributes: KnowledgeGraphRelationshipAttributes;
     id: string;
@@ -1579,64 +1563,24 @@ export type KnowledgeGraphRelationshipAttributes = {
     updatedAt: string;
 };
 
-export type KnowledgeGraphSnapshot = {
-    attributes: KnowledgeGraphSnapshotAttributes;
-    id: string;
-};
-
-export type KnowledgeGraphSnapshotAttributes = {
-    asOf: string;
-    createdAt: string;
-    entities: Array<KnowledgeGraphSnapshotEntity>;
-    relationships: Array<KnowledgeGraphSnapshotRelationship>;
-    scope: string;
-    scopeProperties: {
-        [key: string]: unknown;
-    };
-};
-
-export type KnowledgeGraphSnapshotEntity = {
-    attributes: KnowledgeGraphSnapshotEntityAttributes;
-    id: string;
-};
-
-export type KnowledgeGraphSnapshotEntityAttributes = {
-    description: string;
-    displayName: string;
-    entityId?: string;
-    kind: string;
-    properties: {
-        [key: string]: unknown;
-    };
-};
-
-export type KnowledgeGraphSnapshotRelationship = {
-    attributes: KnowledgeGraphSnapshotRelationshipAttributes;
-    id: string;
-};
-
-export type KnowledgeGraphSnapshotRelationshipAttributes = {
-    description: string;
-    displayName: string;
-    kind: string;
-    properties: {
-        [key: string]: unknown;
-    };
-    relationshipId?: string;
-    sourceSnapshotEntityId: string;
-    targetSnapshotEntityId: string;
-};
-
 export type KnowledgeGraphSubjectAlias = {
     attributes: KnowledgeGraphSubjectAliasAttributes;
     id: string;
 };
 
 export type KnowledgeGraphSubjectAliasAttributes = {
-    displayName: string;
+    description: string;
     kind: 'entity' | 'relationship';
     provider: string;
     providerSubjectRef: string;
+};
+
+export type KnowledgeGraphView = {
+    entities: Array<KnowledgeGraphEntity>;
+    evidence: Array<KnowledgeGraphEvidence>;
+    relationships: Array<KnowledgeGraphRelationship>;
+    truncated: boolean;
+    warnings: Array<string>;
 };
 
 export type ListAgentSessionsResponseBody = {
@@ -2267,7 +2211,7 @@ export type RetrospectiveAttributes = {
     documentId: string;
     reportSections: Array<RetrospectiveReportSection>;
     state: 'draft' | 'in_review' | 'meeting_scheduled' | 'completed';
-    systemAnalysisId?: string;
+    systemAnalysisId: string;
     type: 'simple' | 'full';
 };
 
@@ -2357,6 +2301,11 @@ export type SetIncidentImpactsResponseBody = {
     pagination: ResponsePagination;
 };
 
+export type SetIncidentTimelineEventSystemContextAttributes = {
+    relationship: 'primary' | 'affected' | 'contributing';
+    systemAnalysisNodeId: string;
+};
+
 export type StartIntegrationOAuthFlowResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2372,7 +2321,6 @@ export type SystemAnalysis = {
 
 export type SystemAnalysisAttributes = {
     edges: Array<SystemAnalysisEdge>;
-    knowledgeGraphSnapshot?: KnowledgeGraphSnapshot;
     nodes: Array<SystemAnalysisNode>;
 };
 
@@ -2383,8 +2331,14 @@ export type SystemAnalysisDiagramPosition = {
 };
 
 export type SystemAnalysisEdge = {
-    attributes: SystemAnalysisTopologyEdgeAttributes;
+    attributes: SystemAnalysisEdgeAttributes;
     id: string;
+};
+
+export type SystemAnalysisEdgeAttributes = {
+    description: string;
+    knowledgeRelationship: KnowledgeGraphRelationship;
+    referencedAt: string;
 };
 
 export type SystemAnalysisNode = {
@@ -2394,13 +2348,9 @@ export type SystemAnalysisNode = {
 
 export type SystemAnalysisNodeAttributes = {
     description: string;
+    knowledgeEntity: KnowledgeGraphEntity;
     position: SystemAnalysisDiagramPosition;
-    snapshotEntity: KnowledgeGraphSnapshotEntity;
-};
-
-export type SystemAnalysisTopologyEdgeAttributes = {
-    description: string;
-    snapshotRelationship: KnowledgeGraphSnapshotRelationship;
+    referencedAt: string;
 };
 
 export type Task = {
@@ -2656,6 +2606,7 @@ export type UpdateIncidentTagResponseBody = {
 
 export type UpdateIncidentTimelineEventAttributes = {
     kind?: 'observation' | 'action' | 'decision' | 'context';
+    systemContext?: Array<SetIncidentTimelineEventSystemContextAttributes>;
     timestamp?: string;
     title?: string;
 };
@@ -4193,7 +4144,7 @@ export type ListEventsData = {
         archived?: boolean;
         from?: string;
         to?: string;
-        withProjections?: boolean;
+        withProjection?: boolean;
     };
     url: '/events';
 };
@@ -4242,7 +4193,7 @@ export type GetEventData = {
         id: string;
     };
     query?: {
-        withProjections?: boolean;
+        withProjection?: boolean;
     };
     url: '/events/{id}';
 };
@@ -7181,6 +7132,56 @@ export type ListKnowledgeGraphEntitiesResponses = {
 
 export type ListKnowledgeGraphEntitiesResponse = ListKnowledgeGraphEntitiesResponses[keyof ListKnowledgeGraphEntitiesResponses];
 
+export type GetKnowledgeGraphViewData = {
+    body?: never;
+    path: {
+        entityId: string;
+    };
+    query?: {
+        depth?: number;
+        relationshipKind?: Array<string>;
+    };
+    url: '/knowledge_graph/entities/{entityId}/view';
+};
+
+export type GetKnowledgeGraphViewErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetKnowledgeGraphViewError = GetKnowledgeGraphViewErrors[keyof GetKnowledgeGraphViewErrors];
+
+export type GetKnowledgeGraphViewResponses = {
+    /**
+     * OK
+     */
+    200: GetKnowledgeGraphViewResponseBody;
+};
+
+export type GetKnowledgeGraphViewResponse = GetKnowledgeGraphViewResponses[keyof GetKnowledgeGraphViewResponses];
+
 export type GetKnowledgeGraphEntityData = {
     body?: never;
     path: {
@@ -7281,98 +7282,6 @@ export type ListKnowledgeGraphRelationshipsResponses = {
 };
 
 export type ListKnowledgeGraphRelationshipsResponse = ListKnowledgeGraphRelationshipsResponses[keyof ListKnowledgeGraphRelationshipsResponses];
-
-export type CreateKnowledgeGraphSnapshotData = {
-    body: CreateKnowledgeGraphSnapshotRequestBody;
-    path?: never;
-    query?: never;
-    url: '/knowledge_graph/snapshots';
-};
-
-export type CreateKnowledgeGraphSnapshotErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateKnowledgeGraphSnapshotError = CreateKnowledgeGraphSnapshotErrors[keyof CreateKnowledgeGraphSnapshotErrors];
-
-export type CreateKnowledgeGraphSnapshotResponses = {
-    /**
-     * OK
-     */
-    200: CreateKnowledgeGraphSnapshotResponseBody;
-};
-
-export type CreateKnowledgeGraphSnapshotResponse = CreateKnowledgeGraphSnapshotResponses[keyof CreateKnowledgeGraphSnapshotResponses];
-
-export type GetKnowledgeGraphSnapshotData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/knowledge_graph/snapshots/{id}';
-};
-
-export type GetKnowledgeGraphSnapshotErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetKnowledgeGraphSnapshotError = GetKnowledgeGraphSnapshotErrors[keyof GetKnowledgeGraphSnapshotErrors];
-
-export type GetKnowledgeGraphSnapshotResponses = {
-    /**
-     * OK
-     */
-    200: GetKnowledgeGraphSnapshotResponseBody;
-};
-
-export type GetKnowledgeGraphSnapshotResponse = GetKnowledgeGraphSnapshotResponses[keyof GetKnowledgeGraphSnapshotResponses];
 
 export type ListMeetingSchedulesData = {
     body?: never;

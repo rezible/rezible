@@ -116,11 +116,12 @@ type (
 
 	// AlertInstanceSubjectAttributes are the provider-neutral attributes persisted for alert observations.
 	AlertInstanceSubjectAttributes struct {
-		Title           string             `json:"title" validate:"required"`
-		Description     string             `json:"description"`
-		Definition      string             `json:"definition"`
-		ExternalRef     string             `json:"external_ref" validate:"required"`
-		RelatedEntities []RelatedEntityRef `json:"related_entities"`
+		Title               string             `json:"title" validate:"required"`
+		Description         string             `json:"description"`
+		Definition          string             `json:"definition"`
+		ExternalRef         string             `json:"external_ref" validate:"required"`
+		InstanceExternalRef string             `json:"instance_external_ref"`
+		RelatedEntities     []RelatedEntityRef `json:"related_entities"`
 	}
 )
 

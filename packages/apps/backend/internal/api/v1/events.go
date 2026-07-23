@@ -23,7 +23,7 @@ func (h *eventsHandler) GetEvent(ctx context.Context, req *oapi.GetEventRequest)
 	var resp oapi.GetEventResponse
 
 	params := rez.GetEventParams{
-		WithProjections: req.WithProjections,
+		WithProjection: req.WithProjection,
 	}
 	event, eventErr := h.events.GetEvent(ctx, req.Id, params)
 	if eventErr != nil {
@@ -38,8 +38,8 @@ func (h *eventsHandler) ListEvents(ctx context.Context, req *oapi.ListEventsRequ
 	var resp oapi.ListEventsResponse
 
 	params := rez.ListEventsParams{
-		ListParams:      req.ListParams(),
-		WithProjections: req.WithProjections,
+		ListParams:     req.ListParams(),
+		WithProjection: req.WithProjection,
 	}
 	if !req.From.IsZero() {
 		params.Predicates = append(params.Predicates, ne.OccurredAtGTE(req.From))

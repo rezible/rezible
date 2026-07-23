@@ -37,7 +37,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontext"
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenttimelineeventevidence"
-	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
+	"github.com/rezible/rezible/ent/incidenttimelineeventsystemcontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/integrationeventsynccursor"
@@ -45,9 +45,6 @@ import (
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -923,31 +920,31 @@ func (f TraverseIncidentTimelineEventEvidence) Traverse(ctx context.Context, q e
 	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventEvidenceQuery", q)
 }
 
-// The IncidentTimelineEventTopologyContextFunc type is an adapter to allow the use of ordinary function as a Querier.
-type IncidentTimelineEventTopologyContextFunc func(context.Context, *ent.IncidentTimelineEventTopologyContextQuery) (ent.Value, error)
+// The IncidentTimelineEventSystemContextFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IncidentTimelineEventSystemContextFunc func(context.Context, *ent.IncidentTimelineEventSystemContextQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f IncidentTimelineEventTopologyContextFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.IncidentTimelineEventTopologyContextQuery); ok {
+func (f IncidentTimelineEventSystemContextFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IncidentTimelineEventSystemContextQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventTopologyContextQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventSystemContextQuery", q)
 }
 
-// The TraverseIncidentTimelineEventTopologyContext type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseIncidentTimelineEventTopologyContext func(context.Context, *ent.IncidentTimelineEventTopologyContextQuery) error
+// The TraverseIncidentTimelineEventSystemContext type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIncidentTimelineEventSystemContext func(context.Context, *ent.IncidentTimelineEventSystemContextQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseIncidentTimelineEventTopologyContext) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseIncidentTimelineEventSystemContext) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseIncidentTimelineEventTopologyContext) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentTimelineEventTopologyContextQuery); ok {
+func (f TraverseIncidentTimelineEventSystemContext) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IncidentTimelineEventSystemContextQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventTopologyContextQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventSystemContextQuery", q)
 }
 
 // The IncidentTypeFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1137,87 +1134,6 @@ func (f TraverseKnowledgeEvidence) Traverse(ctx context.Context, q ent.Query) er
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEvidenceQuery", q)
-}
-
-// The KnowledgeGraphSnapshotFunc type is an adapter to allow the use of ordinary function as a Querier.
-type KnowledgeGraphSnapshotFunc func(context.Context, *ent.KnowledgeGraphSnapshotQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f KnowledgeGraphSnapshotFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.KnowledgeGraphSnapshotQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeGraphSnapshotQuery", q)
-}
-
-// The TraverseKnowledgeGraphSnapshot type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseKnowledgeGraphSnapshot func(context.Context, *ent.KnowledgeGraphSnapshotQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseKnowledgeGraphSnapshot) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseKnowledgeGraphSnapshot) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeGraphSnapshotQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeGraphSnapshotQuery", q)
-}
-
-// The KnowledgeGraphSnapshotEntityFunc type is an adapter to allow the use of ordinary function as a Querier.
-type KnowledgeGraphSnapshotEntityFunc func(context.Context, *ent.KnowledgeGraphSnapshotEntityQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f KnowledgeGraphSnapshotEntityFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.KnowledgeGraphSnapshotEntityQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeGraphSnapshotEntityQuery", q)
-}
-
-// The TraverseKnowledgeGraphSnapshotEntity type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseKnowledgeGraphSnapshotEntity func(context.Context, *ent.KnowledgeGraphSnapshotEntityQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseKnowledgeGraphSnapshotEntity) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseKnowledgeGraphSnapshotEntity) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeGraphSnapshotEntityQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeGraphSnapshotEntityQuery", q)
-}
-
-// The KnowledgeGraphSnapshotRelationshipFunc type is an adapter to allow the use of ordinary function as a Querier.
-type KnowledgeGraphSnapshotRelationshipFunc func(context.Context, *ent.KnowledgeGraphSnapshotRelationshipQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f KnowledgeGraphSnapshotRelationshipFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.KnowledgeGraphSnapshotRelationshipQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeGraphSnapshotRelationshipQuery", q)
-}
-
-// The TraverseKnowledgeGraphSnapshotRelationship type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseKnowledgeGraphSnapshotRelationship func(context.Context, *ent.KnowledgeGraphSnapshotRelationshipQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseKnowledgeGraphSnapshotRelationship) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseKnowledgeGraphSnapshotRelationship) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeGraphSnapshotRelationshipQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeGraphSnapshotRelationshipQuery", q)
 }
 
 // The KnowledgeRelationshipFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2172,8 +2088,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IncidentTimelineEventContributingFactorQuery, predicate.IncidentTimelineEventContributingFactor, incidenttimelineeventcontributingfactor.OrderOption]{typ: ent.TypeIncidentTimelineEventContributingFactor, tq: q}, nil
 	case *ent.IncidentTimelineEventEvidenceQuery:
 		return &query[*ent.IncidentTimelineEventEvidenceQuery, predicate.IncidentTimelineEventEvidence, incidenttimelineeventevidence.OrderOption]{typ: ent.TypeIncidentTimelineEventEvidence, tq: q}, nil
-	case *ent.IncidentTimelineEventTopologyContextQuery:
-		return &query[*ent.IncidentTimelineEventTopologyContextQuery, predicate.IncidentTimelineEventTopologyContext, incidenttimelineeventtopologycontext.OrderOption]{typ: ent.TypeIncidentTimelineEventTopologyContext, tq: q}, nil
+	case *ent.IncidentTimelineEventSystemContextQuery:
+		return &query[*ent.IncidentTimelineEventSystemContextQuery, predicate.IncidentTimelineEventSystemContext, incidenttimelineeventsystemcontext.OrderOption]{typ: ent.TypeIncidentTimelineEventSystemContext, tq: q}, nil
 	case *ent.IncidentTypeQuery:
 		return &query[*ent.IncidentTypeQuery, predicate.IncidentType, incidenttype.OrderOption]{typ: ent.TypeIncidentType, tq: q}, nil
 	case *ent.IntegrationQuery:
@@ -2188,12 +2104,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.KnowledgeEntityQuery, predicate.KnowledgeEntity, knowledgeentity.OrderOption]{typ: ent.TypeKnowledgeEntity, tq: q}, nil
 	case *ent.KnowledgeEvidenceQuery:
 		return &query[*ent.KnowledgeEvidenceQuery, predicate.KnowledgeEvidence, knowledgeevidence.OrderOption]{typ: ent.TypeKnowledgeEvidence, tq: q}, nil
-	case *ent.KnowledgeGraphSnapshotQuery:
-		return &query[*ent.KnowledgeGraphSnapshotQuery, predicate.KnowledgeGraphSnapshot, knowledgegraphsnapshot.OrderOption]{typ: ent.TypeKnowledgeGraphSnapshot, tq: q}, nil
-	case *ent.KnowledgeGraphSnapshotEntityQuery:
-		return &query[*ent.KnowledgeGraphSnapshotEntityQuery, predicate.KnowledgeGraphSnapshotEntity, knowledgegraphsnapshotentity.OrderOption]{typ: ent.TypeKnowledgeGraphSnapshotEntity, tq: q}, nil
-	case *ent.KnowledgeGraphSnapshotRelationshipQuery:
-		return &query[*ent.KnowledgeGraphSnapshotRelationshipQuery, predicate.KnowledgeGraphSnapshotRelationship, knowledgegraphsnapshotrelationship.OrderOption]{typ: ent.TypeKnowledgeGraphSnapshotRelationship, tq: q}, nil
 	case *ent.KnowledgeRelationshipQuery:
 		return &query[*ent.KnowledgeRelationshipQuery, predicate.KnowledgeRelationship, knowledgerelationship.OrderOption]{typ: ent.TypeKnowledgeRelationship, tq: q}, nil
 	case *ent.KnowledgeSubjectAliasQuery:

@@ -5,7 +5,7 @@
 	import { resolve } from "$app/paths";
 	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
 	import RiArrowRightSLine from "remixicon-svelte/icons/arrow-right-s-line";
-	import EventProjectionList from "./EventProjectionList.svelte";
+	import EventProjectionDetails from "./EventProjectionDetails.svelte";
 
 	type Props = {
 		event: Event;
@@ -17,7 +17,7 @@
 	const attrs = $derived(event.attributes);
 	const occurredAtLabel = $derived(formatDateTime(attrs.occurredAt));
 	const providerLabel = $derived([attrs.provider, attrs.providerSource].filter(Boolean).join(" / "));
-	const projectionCount = $derived(attrs.projections?.length ?? 0);
+	const projected = $derived(Boolean(attrs.projection));
 
 	function formatDateTime(value: string | undefined) {
 		if (!value) return "No timestamp";
@@ -53,8 +53,8 @@
 				{#if attrs.subjectKind}
 					<Badge variant="outline" class="capitalize">{attrs.subjectKind}</Badge>
 				{/if}
-				{#if projectionCount > 0}
-					<Badge variant="outline">{projectionCount} projection{projectionCount === 1 ? "" : "s"}</Badge>
+				{#if projected}
+					<Badge variant="outline">Projected</Badge>
 				{/if}
 			</span>
 
@@ -84,7 +84,7 @@
 				</div>
 			</div>
 
-			<EventProjectionList projections={attrs.projections ?? []} />
+			<EventProjectionDetails projection={attrs.projection} />
 
 			<div class="mt-4 rounded-md border border-dashed p-3 text-xs text-muted-foreground">
 				Event annotations are not shown yet. Correct annotation display requires the annotations API to

@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -32,151 +31,23 @@ func (_u *NormalizedEventUpdate) Where(ps ...predicate.NormalizedEvent) *Normali
 	return _u
 }
 
-// SetKind sets the "kind" field.
-func (_u *NormalizedEventUpdate) SetKind(v normalizedevent.Kind) *NormalizedEventUpdate {
-	_u.mutation.SetKind(v)
+// SetProjectionID sets the "projection" edge to the NormalizedEventProjection entity by ID.
+func (_u *NormalizedEventUpdate) SetProjectionID(id uuid.UUID) *NormalizedEventUpdate {
+	_u.mutation.SetProjectionID(id)
 	return _u
 }
 
-// SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableKind(v *normalizedevent.Kind) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetKind(*v)
+// SetNillableProjectionID sets the "projection" edge to the NormalizedEventProjection entity by ID if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableProjectionID(id *uuid.UUID) *NormalizedEventUpdate {
+	if id != nil {
+		_u = _u.SetProjectionID(*id)
 	}
 	return _u
 }
 
-// SetProvider sets the "provider" field.
-func (_u *NormalizedEventUpdate) SetProvider(v string) *NormalizedEventUpdate {
-	_u.mutation.SetProvider(v)
-	return _u
-}
-
-// SetNillableProvider sets the "provider" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableProvider(v *string) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetProvider(*v)
-	}
-	return _u
-}
-
-// SetProviderSource sets the "provider_source" field.
-func (_u *NormalizedEventUpdate) SetProviderSource(v string) *NormalizedEventUpdate {
-	_u.mutation.SetProviderSource(v)
-	return _u
-}
-
-// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableProviderSource(v *string) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetProviderSource(*v)
-	}
-	return _u
-}
-
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (_u *NormalizedEventUpdate) SetProviderEventRef(v string) *NormalizedEventUpdate {
-	_u.mutation.SetProviderEventRef(v)
-	return _u
-}
-
-// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableProviderEventRef(v *string) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetProviderEventRef(*v)
-	}
-	return _u
-}
-
-// SetProviderSubjectRef sets the "provider_subject_ref" field.
-func (_u *NormalizedEventUpdate) SetProviderSubjectRef(v string) *NormalizedEventUpdate {
-	_u.mutation.SetProviderSubjectRef(v)
-	return _u
-}
-
-// SetNillableProviderSubjectRef sets the "provider_subject_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableProviderSubjectRef(v *string) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetProviderSubjectRef(*v)
-	}
-	return _u
-}
-
-// SetSubjectKind sets the "subject_kind" field.
-func (_u *NormalizedEventUpdate) SetSubjectKind(v string) *NormalizedEventUpdate {
-	_u.mutation.SetSubjectKind(v)
-	return _u
-}
-
-// SetNillableSubjectKind sets the "subject_kind" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableSubjectKind(v *string) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetSubjectKind(*v)
-	}
-	return _u
-}
-
-// SetAttributes sets the "attributes" field.
-func (_u *NormalizedEventUpdate) SetAttributes(v []byte) *NormalizedEventUpdate {
-	_u.mutation.SetAttributes(v)
-	return _u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_u *NormalizedEventUpdate) SetCreatedAt(v time.Time) *NormalizedEventUpdate {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableCreatedAt(v *time.Time) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (_u *NormalizedEventUpdate) SetOccurredAt(v time.Time) *NormalizedEventUpdate {
-	_u.mutation.SetOccurredAt(v)
-	return _u
-}
-
-// SetNillableOccurredAt sets the "occurred_at" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableOccurredAt(v *time.Time) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetOccurredAt(*v)
-	}
-	return _u
-}
-
-// SetReceivedAt sets the "received_at" field.
-func (_u *NormalizedEventUpdate) SetReceivedAt(v time.Time) *NormalizedEventUpdate {
-	_u.mutation.SetReceivedAt(v)
-	return _u
-}
-
-// SetNillableReceivedAt sets the "received_at" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableReceivedAt(v *time.Time) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetReceivedAt(*v)
-	}
-	return _u
-}
-
-// AddProjectionIDs adds the "projections" edge to the NormalizedEventProjection entity by IDs.
-func (_u *NormalizedEventUpdate) AddProjectionIDs(ids ...uuid.UUID) *NormalizedEventUpdate {
-	_u.mutation.AddProjectionIDs(ids...)
-	return _u
-}
-
-// AddProjections adds the "projections" edges to the NormalizedEventProjection entity.
-func (_u *NormalizedEventUpdate) AddProjections(v ...*NormalizedEventProjection) *NormalizedEventUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddProjectionIDs(ids...)
+// SetProjection sets the "projection" edge to the NormalizedEventProjection entity.
+func (_u *NormalizedEventUpdate) SetProjection(v *NormalizedEventProjection) *NormalizedEventUpdate {
+	return _u.SetProjectionID(v.ID)
 }
 
 // Mutation returns the NormalizedEventMutation object of the builder.
@@ -184,25 +55,10 @@ func (_u *NormalizedEventUpdate) Mutation() *NormalizedEventMutation {
 	return _u.mutation
 }
 
-// ClearProjections clears all "projections" edges to the NormalizedEventProjection entity.
-func (_u *NormalizedEventUpdate) ClearProjections() *NormalizedEventUpdate {
-	_u.mutation.ClearProjections()
+// ClearProjection clears the "projection" edge to the NormalizedEventProjection entity.
+func (_u *NormalizedEventUpdate) ClearProjection() *NormalizedEventUpdate {
+	_u.mutation.ClearProjection()
 	return _u
-}
-
-// RemoveProjectionIDs removes the "projections" edge to NormalizedEventProjection entities by IDs.
-func (_u *NormalizedEventUpdate) RemoveProjectionIDs(ids ...uuid.UUID) *NormalizedEventUpdate {
-	_u.mutation.RemoveProjectionIDs(ids...)
-	return _u
-}
-
-// RemoveProjections removes "projections" edges to NormalizedEventProjection entities.
-func (_u *NormalizedEventUpdate) RemoveProjections(v ...*NormalizedEventProjection) *NormalizedEventUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveProjectionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -234,31 +90,6 @@ func (_u *NormalizedEventUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *NormalizedEventUpdate) check() error {
-	if v, ok := _u.mutation.Kind(); ok {
-		if err := normalizedevent.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.Provider(); ok {
-		if err := normalizedevent.ProviderValidator(v); err != nil {
-			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ProviderSource(); ok {
-		if err := normalizedevent.ProviderSourceValidator(v); err != nil {
-			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_source": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ProviderEventRef(); ok {
-		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
-			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ProviderSubjectRef(); ok {
-		if err := normalizedevent.ProviderSubjectRefValidator(v); err != nil {
-			return &ValidationError{Name: "provider_subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_subject_ref": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "NormalizedEvent.tenant"`)
 	}
@@ -283,79 +114,32 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 			}
 		}
 	}
-	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.Provider(); ok {
-		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderSource(); ok {
-		_spec.SetField(normalizedevent.FieldProviderSource, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderEventRef(); ok {
-		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderSubjectRef(); ok {
-		_spec.SetField(normalizedevent.FieldProviderSubjectRef, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.SubjectKind(); ok {
-		_spec.SetField(normalizedevent.FieldSubjectKind, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Attributes(); ok {
-		_spec.SetField(normalizedevent.FieldAttributes, field.TypeBytes, value)
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(normalizedevent.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.OccurredAt(); ok {
-		_spec.SetField(normalizedevent.FieldOccurredAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.ReceivedAt(); ok {
-		_spec.SetField(normalizedevent.FieldReceivedAt, field.TypeTime, value)
-	}
-	if _u.mutation.ProjectionsCleared() {
+	if _u.mutation.ProjectionCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   normalizedevent.ProjectionsTable,
-			Columns: []string{normalizedevent.ProjectionsColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   normalizedevent.ProjectionTable,
+			Columns: []string{normalizedevent.ProjectionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.NormalizedEventProjection
+		edge.Schema = _u.schemaConfig.NormalizedEvent
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedProjectionsIDs(); len(nodes) > 0 && !_u.mutation.ProjectionsCleared() {
+	if nodes := _u.mutation.ProjectionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   normalizedevent.ProjectionsTable,
-			Columns: []string{normalizedevent.ProjectionsColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   normalizedevent.ProjectionTable,
+			Columns: []string{normalizedevent.ProjectionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.NormalizedEventProjection
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ProjectionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   normalizedevent.ProjectionsTable,
-			Columns: []string{normalizedevent.ProjectionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.NormalizedEventProjection
+		edge.Schema = _u.schemaConfig.NormalizedEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -385,151 +169,23 @@ type NormalizedEventUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetKind sets the "kind" field.
-func (_u *NormalizedEventUpdateOne) SetKind(v normalizedevent.Kind) *NormalizedEventUpdateOne {
-	_u.mutation.SetKind(v)
+// SetProjectionID sets the "projection" edge to the NormalizedEventProjection entity by ID.
+func (_u *NormalizedEventUpdateOne) SetProjectionID(id uuid.UUID) *NormalizedEventUpdateOne {
+	_u.mutation.SetProjectionID(id)
 	return _u
 }
 
-// SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableKind(v *normalizedevent.Kind) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetKind(*v)
+// SetNillableProjectionID sets the "projection" edge to the NormalizedEventProjection entity by ID if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableProjectionID(id *uuid.UUID) *NormalizedEventUpdateOne {
+	if id != nil {
+		_u = _u.SetProjectionID(*id)
 	}
 	return _u
 }
 
-// SetProvider sets the "provider" field.
-func (_u *NormalizedEventUpdateOne) SetProvider(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetProvider(v)
-	return _u
-}
-
-// SetNillableProvider sets the "provider" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableProvider(v *string) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetProvider(*v)
-	}
-	return _u
-}
-
-// SetProviderSource sets the "provider_source" field.
-func (_u *NormalizedEventUpdateOne) SetProviderSource(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetProviderSource(v)
-	return _u
-}
-
-// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableProviderSource(v *string) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetProviderSource(*v)
-	}
-	return _u
-}
-
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (_u *NormalizedEventUpdateOne) SetProviderEventRef(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetProviderEventRef(v)
-	return _u
-}
-
-// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableProviderEventRef(v *string) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetProviderEventRef(*v)
-	}
-	return _u
-}
-
-// SetProviderSubjectRef sets the "provider_subject_ref" field.
-func (_u *NormalizedEventUpdateOne) SetProviderSubjectRef(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetProviderSubjectRef(v)
-	return _u
-}
-
-// SetNillableProviderSubjectRef sets the "provider_subject_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableProviderSubjectRef(v *string) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetProviderSubjectRef(*v)
-	}
-	return _u
-}
-
-// SetSubjectKind sets the "subject_kind" field.
-func (_u *NormalizedEventUpdateOne) SetSubjectKind(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetSubjectKind(v)
-	return _u
-}
-
-// SetNillableSubjectKind sets the "subject_kind" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableSubjectKind(v *string) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetSubjectKind(*v)
-	}
-	return _u
-}
-
-// SetAttributes sets the "attributes" field.
-func (_u *NormalizedEventUpdateOne) SetAttributes(v []byte) *NormalizedEventUpdateOne {
-	_u.mutation.SetAttributes(v)
-	return _u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_u *NormalizedEventUpdateOne) SetCreatedAt(v time.Time) *NormalizedEventUpdateOne {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableCreatedAt(v *time.Time) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (_u *NormalizedEventUpdateOne) SetOccurredAt(v time.Time) *NormalizedEventUpdateOne {
-	_u.mutation.SetOccurredAt(v)
-	return _u
-}
-
-// SetNillableOccurredAt sets the "occurred_at" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableOccurredAt(v *time.Time) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetOccurredAt(*v)
-	}
-	return _u
-}
-
-// SetReceivedAt sets the "received_at" field.
-func (_u *NormalizedEventUpdateOne) SetReceivedAt(v time.Time) *NormalizedEventUpdateOne {
-	_u.mutation.SetReceivedAt(v)
-	return _u
-}
-
-// SetNillableReceivedAt sets the "received_at" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableReceivedAt(v *time.Time) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetReceivedAt(*v)
-	}
-	return _u
-}
-
-// AddProjectionIDs adds the "projections" edge to the NormalizedEventProjection entity by IDs.
-func (_u *NormalizedEventUpdateOne) AddProjectionIDs(ids ...uuid.UUID) *NormalizedEventUpdateOne {
-	_u.mutation.AddProjectionIDs(ids...)
-	return _u
-}
-
-// AddProjections adds the "projections" edges to the NormalizedEventProjection entity.
-func (_u *NormalizedEventUpdateOne) AddProjections(v ...*NormalizedEventProjection) *NormalizedEventUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddProjectionIDs(ids...)
+// SetProjection sets the "projection" edge to the NormalizedEventProjection entity.
+func (_u *NormalizedEventUpdateOne) SetProjection(v *NormalizedEventProjection) *NormalizedEventUpdateOne {
+	return _u.SetProjectionID(v.ID)
 }
 
 // Mutation returns the NormalizedEventMutation object of the builder.
@@ -537,25 +193,10 @@ func (_u *NormalizedEventUpdateOne) Mutation() *NormalizedEventMutation {
 	return _u.mutation
 }
 
-// ClearProjections clears all "projections" edges to the NormalizedEventProjection entity.
-func (_u *NormalizedEventUpdateOne) ClearProjections() *NormalizedEventUpdateOne {
-	_u.mutation.ClearProjections()
+// ClearProjection clears the "projection" edge to the NormalizedEventProjection entity.
+func (_u *NormalizedEventUpdateOne) ClearProjection() *NormalizedEventUpdateOne {
+	_u.mutation.ClearProjection()
 	return _u
-}
-
-// RemoveProjectionIDs removes the "projections" edge to NormalizedEventProjection entities by IDs.
-func (_u *NormalizedEventUpdateOne) RemoveProjectionIDs(ids ...uuid.UUID) *NormalizedEventUpdateOne {
-	_u.mutation.RemoveProjectionIDs(ids...)
-	return _u
-}
-
-// RemoveProjections removes "projections" edges to NormalizedEventProjection entities.
-func (_u *NormalizedEventUpdateOne) RemoveProjections(v ...*NormalizedEventProjection) *NormalizedEventUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveProjectionIDs(ids...)
 }
 
 // Where appends a list predicates to the NormalizedEventUpdate builder.
@@ -600,31 +241,6 @@ func (_u *NormalizedEventUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *NormalizedEventUpdateOne) check() error {
-	if v, ok := _u.mutation.Kind(); ok {
-		if err := normalizedevent.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.Provider(); ok {
-		if err := normalizedevent.ProviderValidator(v); err != nil {
-			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ProviderSource(); ok {
-		if err := normalizedevent.ProviderSourceValidator(v); err != nil {
-			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_source": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ProviderEventRef(); ok {
-		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
-			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ProviderSubjectRef(); ok {
-		if err := normalizedevent.ProviderSubjectRefValidator(v); err != nil {
-			return &ValidationError{Name: "provider_subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_subject_ref": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "NormalizedEvent.tenant"`)
 	}
@@ -666,79 +282,32 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 			}
 		}
 	}
-	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.Provider(); ok {
-		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderSource(); ok {
-		_spec.SetField(normalizedevent.FieldProviderSource, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderEventRef(); ok {
-		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderSubjectRef(); ok {
-		_spec.SetField(normalizedevent.FieldProviderSubjectRef, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.SubjectKind(); ok {
-		_spec.SetField(normalizedevent.FieldSubjectKind, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Attributes(); ok {
-		_spec.SetField(normalizedevent.FieldAttributes, field.TypeBytes, value)
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(normalizedevent.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.OccurredAt(); ok {
-		_spec.SetField(normalizedevent.FieldOccurredAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.ReceivedAt(); ok {
-		_spec.SetField(normalizedevent.FieldReceivedAt, field.TypeTime, value)
-	}
-	if _u.mutation.ProjectionsCleared() {
+	if _u.mutation.ProjectionCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   normalizedevent.ProjectionsTable,
-			Columns: []string{normalizedevent.ProjectionsColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   normalizedevent.ProjectionTable,
+			Columns: []string{normalizedevent.ProjectionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.NormalizedEventProjection
+		edge.Schema = _u.schemaConfig.NormalizedEvent
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedProjectionsIDs(); len(nodes) > 0 && !_u.mutation.ProjectionsCleared() {
+	if nodes := _u.mutation.ProjectionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   normalizedevent.ProjectionsTable,
-			Columns: []string{normalizedevent.ProjectionsColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   normalizedevent.ProjectionTable,
+			Columns: []string{normalizedevent.ProjectionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.NormalizedEventProjection
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ProjectionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   normalizedevent.ProjectionsTable,
-			Columns: []string{normalizedevent.ProjectionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.NormalizedEventProjection
+		edge.Schema = _u.schemaConfig.NormalizedEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -60,6 +60,7 @@ type KnowledgeEntityRef struct {
 	Reference   string
 	DisplayName string
 	Description string
+	Properties  map[string]any
 }
 
 func (r *KnowledgeEntityRef) Predicate() predicate.KnowledgeEntity {
@@ -69,6 +70,7 @@ func (r *KnowledgeEntityRef) Predicate() predicate.KnowledgeEntity {
 type KnowledgeRelationshipRef struct {
 	Kind        string
 	Description string
+	Properties  map[string]any
 	EntityRefs  [2]KnowledgeEntityRef
 }
 

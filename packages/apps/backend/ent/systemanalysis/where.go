@@ -62,11 +62,6 @@ func TenantID(v int) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldTenantID, v))
 }
 
-// KnowledgeGraphSnapshotID applies equality check predicate on the "knowledge_graph_snapshot_id" field. It's identical to KnowledgeGraphSnapshotIDEQ.
-func KnowledgeGraphSnapshotID(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldEQ(FieldKnowledgeGraphSnapshotID, v))
-}
-
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldCreatedAt, v))
@@ -95,26 +90,6 @@ func TenantIDIn(vs ...int) predicate.SystemAnalysis {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldNotIn(FieldTenantID, vs...))
-}
-
-// KnowledgeGraphSnapshotIDEQ applies the EQ predicate on the "knowledge_graph_snapshot_id" field.
-func KnowledgeGraphSnapshotIDEQ(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldEQ(FieldKnowledgeGraphSnapshotID, v))
-}
-
-// KnowledgeGraphSnapshotIDNEQ applies the NEQ predicate on the "knowledge_graph_snapshot_id" field.
-func KnowledgeGraphSnapshotIDNEQ(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldNEQ(FieldKnowledgeGraphSnapshotID, v))
-}
-
-// KnowledgeGraphSnapshotIDIn applies the In predicate on the "knowledge_graph_snapshot_id" field.
-func KnowledgeGraphSnapshotIDIn(vs ...uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldIn(FieldKnowledgeGraphSnapshotID, vs...))
-}
-
-// KnowledgeGraphSnapshotIDNotIn applies the NotIn predicate on the "knowledge_graph_snapshot_id" field.
-func KnowledgeGraphSnapshotIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldNotIn(FieldKnowledgeGraphSnapshotID, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -217,35 +192,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.SystemAnalysis {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemAnalysis
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasKnowledgeGraphSnapshot applies the HasEdge predicate on the "knowledge_graph_snapshot" edge.
-func HasKnowledgeGraphSnapshot() predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeGraphSnapshotTable, KnowledgeGraphSnapshotColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeGraphSnapshot
-		step.Edge.Schema = schemaConfig.SystemAnalysis
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasKnowledgeGraphSnapshotWith applies the HasEdge predicate on the "knowledge_graph_snapshot" edge with a given conditions (other predicates).
-func HasKnowledgeGraphSnapshotWith(preds ...predicate.KnowledgeGraphSnapshot) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(func(s *sql.Selector) {
-		step := newKnowledgeGraphSnapshotStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeGraphSnapshot
 		step.Edge.Schema = schemaConfig.SystemAnalysis
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -45,7 +45,7 @@ type SchemaConfig struct {
 	IncidentTimelineEventContext              string // IncidentTimelineEventContext table.
 	IncidentTimelineEventContributingFactor   string // IncidentTimelineEventContributingFactor table.
 	IncidentTimelineEventEvidence             string // IncidentTimelineEventEvidence table.
-	IncidentTimelineEventTopologyContext      string // IncidentTimelineEventTopologyContext table.
+	IncidentTimelineEventSystemContext        string // IncidentTimelineEventSystemContext table.
 	IncidentType                              string // IncidentType table.
 	Integration                               string // Integration table.
 	IntegrationEventSyncCursor                string // IntegrationEventSyncCursor table.
@@ -53,9 +53,6 @@ type SchemaConfig struct {
 	IntegrationUserInstallState               string // IntegrationUserInstallState table.
 	KnowledgeEntity                           string // KnowledgeEntity table.
 	KnowledgeEvidence                         string // KnowledgeEvidence table.
-	KnowledgeGraphSnapshot                    string // KnowledgeGraphSnapshot table.
-	KnowledgeGraphSnapshotEntity              string // KnowledgeGraphSnapshotEntity table.
-	KnowledgeGraphSnapshotRelationship        string // KnowledgeGraphSnapshotRelationship table.
 	KnowledgeRelationship                     string // KnowledgeRelationship table.
 	KnowledgeSubjectAlias                     string // KnowledgeSubjectAlias table.
 	MeetingSchedule                           string // MeetingSchedule table.

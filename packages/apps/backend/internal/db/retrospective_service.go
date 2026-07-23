@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/pkg/jobs"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -125,40 +123,17 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 			SetDocument(createdDoc).
 			SetKind(kind).
 			SetState(retrospective.StateDraft)
-
-		var snapshotId uuid.UUID
-		if kind == retrospective.KindFull {
-			createSnapshot := tx.KnowledgeGraphSnapshot.Create().
-				SetScopeKind("incident").
-				SetScopeProperties(map[string]any{
-					"incident_id": inc.ID,
-				})
-			snapshot, createSnapshotErr := createSnapshot.Save(txCtx)
-			if createSnapshotErr != nil {
-				return fmt.Errorf("create knowledge graph snapshot: %w", createSnapshotErr)
-			}
-			snapshotId = snapshot.ID
-
-			createAnalysis := tx.SystemAnalysis.Create().
-				SetKnowledgeGraphSnapshot(snapshot)
-			createdAnalysis, createAnalysisErr := createAnalysis.Save(txCtx)
-			if createAnalysisErr != nil {
-				return fmt.Errorf("create analysis: %w", createAnalysisErr)
-			}
-			createRetro.SetSystemAnalysisID(createdAnalysis.ID)
+		analysis, createAnalysisErr := tx.SystemAnalysis.Create().Save(txCtx)
+		if createAnalysisErr != nil {
+			return fmt.Errorf("create system analysis: %w", createAnalysisErr)
 		}
+		createRetro.SetSystemAnalysis(analysis)
 
 		created, createRetroErr := createRetro.Save(txCtx)
 		if createRetroErr != nil {
 			return fmt.Errorf("create retrospective: %w", createRetroErr)
 		}
 		retro = created.Unwrap()
-
-		if snapshotId != uuid.Nil {
-			args := jobs.PopulateKnowledgeGraphSnapshot{SnapshotId: snapshotId}
-			// TODO: queue job
-			slog.Debug("TODO: populate knowledge graph snapshot job", "args", args)
-		}
 		return nil
 	}
 	return retro, s.db.WithTx(ctx, createTxFn)

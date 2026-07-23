@@ -145,7 +145,7 @@ type alertObservedPayload struct {
 }
 
 func (p alertObservedPayload) subjectRef() string {
-	return "demo:alert:" + p.ExternalRef
+	return "demo:alert_instance:" + p.InstanceRef
 }
 
 var demoAlertEvents = []alertObservedPayload{

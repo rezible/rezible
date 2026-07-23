@@ -36,7 +36,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontext"
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenttimelineeventevidence"
-	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
+	"github.com/rezible/rezible/ent/incidenttimelineeventsystemcontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/integrationeventsynccursor"
@@ -44,9 +44,6 @@ import (
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -729,26 +726,26 @@ func init() {
 	incidenttimelineeventevidenceDescID := incidenttimelineeventevidenceFields[0].Descriptor()
 	// incidenttimelineeventevidence.DefaultID holds the default value on creation for the id field.
 	incidenttimelineeventevidence.DefaultID = incidenttimelineeventevidenceDescID.Default.(func() uuid.UUID)
-	incidenttimelineeventtopologycontextMixin := schema.IncidentTimelineEventTopologyContext{}.Mixin()
-	incidenttimelineeventtopologycontext.Policy = privacy.NewPolicies(incidenttimelineeventtopologycontextMixin[0], incidenttimelineeventtopologycontextMixin[1], schema.IncidentTimelineEventTopologyContext{})
-	incidenttimelineeventtopologycontext.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	incidenttimelineeventsystemcontextMixin := schema.IncidentTimelineEventSystemContext{}.Mixin()
+	incidenttimelineeventsystemcontext.Policy = privacy.NewPolicies(incidenttimelineeventsystemcontextMixin[0], incidenttimelineeventsystemcontextMixin[1], schema.IncidentTimelineEventSystemContext{})
+	incidenttimelineeventsystemcontext.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := incidenttimelineeventtopologycontext.Policy.EvalMutation(ctx, m); err != nil {
+			if err := incidenttimelineeventsystemcontext.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	incidenttimelineeventtopologycontextFields := schema.IncidentTimelineEventTopologyContext{}.Fields()
-	_ = incidenttimelineeventtopologycontextFields
-	// incidenttimelineeventtopologycontextDescCreatedAt is the schema descriptor for created_at field.
-	incidenttimelineeventtopologycontextDescCreatedAt := incidenttimelineeventtopologycontextFields[4].Descriptor()
-	// incidenttimelineeventtopologycontext.DefaultCreatedAt holds the default value on creation for the created_at field.
-	incidenttimelineeventtopologycontext.DefaultCreatedAt = incidenttimelineeventtopologycontextDescCreatedAt.Default.(func() time.Time)
-	// incidenttimelineeventtopologycontextDescID is the schema descriptor for id field.
-	incidenttimelineeventtopologycontextDescID := incidenttimelineeventtopologycontextFields[0].Descriptor()
-	// incidenttimelineeventtopologycontext.DefaultID holds the default value on creation for the id field.
-	incidenttimelineeventtopologycontext.DefaultID = incidenttimelineeventtopologycontextDescID.Default.(func() uuid.UUID)
+	incidenttimelineeventsystemcontextFields := schema.IncidentTimelineEventSystemContext{}.Fields()
+	_ = incidenttimelineeventsystemcontextFields
+	// incidenttimelineeventsystemcontextDescCreatedAt is the schema descriptor for created_at field.
+	incidenttimelineeventsystemcontextDescCreatedAt := incidenttimelineeventsystemcontextFields[4].Descriptor()
+	// incidenttimelineeventsystemcontext.DefaultCreatedAt holds the default value on creation for the created_at field.
+	incidenttimelineeventsystemcontext.DefaultCreatedAt = incidenttimelineeventsystemcontextDescCreatedAt.Default.(func() time.Time)
+	// incidenttimelineeventsystemcontextDescID is the schema descriptor for id field.
+	incidenttimelineeventsystemcontextDescID := incidenttimelineeventsystemcontextFields[0].Descriptor()
+	// incidenttimelineeventsystemcontext.DefaultID holds the default value on creation for the id field.
+	incidenttimelineeventsystemcontext.DefaultID = incidenttimelineeventsystemcontextDescID.Default.(func() uuid.UUID)
 	incidenttypeMixin := schema.IncidentType{}.Mixin()
 	incidenttype.Policy = privacy.NewPolicies(incidenttypeMixin[0], incidenttypeMixin[1], schema.IncidentType{})
 	incidenttype.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -966,82 +963,6 @@ func init() {
 	knowledgeevidenceDescID := knowledgeevidenceFields[0].Descriptor()
 	// knowledgeevidence.DefaultID holds the default value on creation for the id field.
 	knowledgeevidence.DefaultID = knowledgeevidenceDescID.Default.(func() uuid.UUID)
-	knowledgegraphsnapshotMixin := schema.KnowledgeGraphSnapshot{}.Mixin()
-	knowledgegraphsnapshot.Policy = privacy.NewPolicies(knowledgegraphsnapshotMixin[0], knowledgegraphsnapshotMixin[1], schema.KnowledgeGraphSnapshot{})
-	knowledgegraphsnapshot.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := knowledgegraphsnapshot.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	knowledgegraphsnapshotFields := schema.KnowledgeGraphSnapshot{}.Fields()
-	_ = knowledgegraphsnapshotFields
-	// knowledgegraphsnapshotDescAsOf is the schema descriptor for as_of field.
-	knowledgegraphsnapshotDescAsOf := knowledgegraphsnapshotFields[1].Descriptor()
-	// knowledgegraphsnapshot.DefaultAsOf holds the default value on creation for the as_of field.
-	knowledgegraphsnapshot.DefaultAsOf = knowledgegraphsnapshotDescAsOf.Default.(func() time.Time)
-	// knowledgegraphsnapshotDescCreatedAt is the schema descriptor for created_at field.
-	knowledgegraphsnapshotDescCreatedAt := knowledgegraphsnapshotFields[2].Descriptor()
-	// knowledgegraphsnapshot.DefaultCreatedAt holds the default value on creation for the created_at field.
-	knowledgegraphsnapshot.DefaultCreatedAt = knowledgegraphsnapshotDescCreatedAt.Default.(func() time.Time)
-	// knowledgegraphsnapshotDescID is the schema descriptor for id field.
-	knowledgegraphsnapshotDescID := knowledgegraphsnapshotFields[0].Descriptor()
-	// knowledgegraphsnapshot.DefaultID holds the default value on creation for the id field.
-	knowledgegraphsnapshot.DefaultID = knowledgegraphsnapshotDescID.Default.(func() uuid.UUID)
-	knowledgegraphsnapshotentityMixin := schema.KnowledgeGraphSnapshotEntity{}.Mixin()
-	knowledgegraphsnapshotentity.Policy = privacy.NewPolicies(knowledgegraphsnapshotentityMixin[0], knowledgegraphsnapshotentityMixin[1], schema.KnowledgeGraphSnapshotEntity{})
-	knowledgegraphsnapshotentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := knowledgegraphsnapshotentity.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	knowledgegraphsnapshotentityFields := schema.KnowledgeGraphSnapshotEntity{}.Fields()
-	_ = knowledgegraphsnapshotentityFields
-	// knowledgegraphsnapshotentityDescEntityKind is the schema descriptor for entity_kind field.
-	knowledgegraphsnapshotentityDescEntityKind := knowledgegraphsnapshotentityFields[3].Descriptor()
-	// knowledgegraphsnapshotentity.EntityKindValidator is a validator for the "entity_kind" field. It is called by the builders before save.
-	knowledgegraphsnapshotentity.EntityKindValidator = knowledgegraphsnapshotentityDescEntityKind.Validators[0].(func(string) error)
-	// knowledgegraphsnapshotentityDescDisplayName is the schema descriptor for display_name field.
-	knowledgegraphsnapshotentityDescDisplayName := knowledgegraphsnapshotentityFields[4].Descriptor()
-	// knowledgegraphsnapshotentity.DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
-	knowledgegraphsnapshotentity.DisplayNameValidator = knowledgegraphsnapshotentityDescDisplayName.Validators[0].(func(string) error)
-	// knowledgegraphsnapshotentityDescCreatedAt is the schema descriptor for created_at field.
-	knowledgegraphsnapshotentityDescCreatedAt := knowledgegraphsnapshotentityFields[8].Descriptor()
-	// knowledgegraphsnapshotentity.DefaultCreatedAt holds the default value on creation for the created_at field.
-	knowledgegraphsnapshotentity.DefaultCreatedAt = knowledgegraphsnapshotentityDescCreatedAt.Default.(func() time.Time)
-	// knowledgegraphsnapshotentityDescID is the schema descriptor for id field.
-	knowledgegraphsnapshotentityDescID := knowledgegraphsnapshotentityFields[0].Descriptor()
-	// knowledgegraphsnapshotentity.DefaultID holds the default value on creation for the id field.
-	knowledgegraphsnapshotentity.DefaultID = knowledgegraphsnapshotentityDescID.Default.(func() uuid.UUID)
-	knowledgegraphsnapshotrelationshipMixin := schema.KnowledgeGraphSnapshotRelationship{}.Mixin()
-	knowledgegraphsnapshotrelationship.Policy = privacy.NewPolicies(knowledgegraphsnapshotrelationshipMixin[0], knowledgegraphsnapshotrelationshipMixin[1], schema.KnowledgeGraphSnapshotRelationship{})
-	knowledgegraphsnapshotrelationship.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := knowledgegraphsnapshotrelationship.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	knowledgegraphsnapshotrelationshipFields := schema.KnowledgeGraphSnapshotRelationship{}.Fields()
-	_ = knowledgegraphsnapshotrelationshipFields
-	// knowledgegraphsnapshotrelationshipDescRelationshipKind is the schema descriptor for relationship_kind field.
-	knowledgegraphsnapshotrelationshipDescRelationshipKind := knowledgegraphsnapshotrelationshipFields[5].Descriptor()
-	// knowledgegraphsnapshotrelationship.RelationshipKindValidator is a validator for the "relationship_kind" field. It is called by the builders before save.
-	knowledgegraphsnapshotrelationship.RelationshipKindValidator = knowledgegraphsnapshotrelationshipDescRelationshipKind.Validators[0].(func(string) error)
-	// knowledgegraphsnapshotrelationshipDescCreatedAt is the schema descriptor for created_at field.
-	knowledgegraphsnapshotrelationshipDescCreatedAt := knowledgegraphsnapshotrelationshipFields[9].Descriptor()
-	// knowledgegraphsnapshotrelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
-	knowledgegraphsnapshotrelationship.DefaultCreatedAt = knowledgegraphsnapshotrelationshipDescCreatedAt.Default.(func() time.Time)
-	// knowledgegraphsnapshotrelationshipDescID is the schema descriptor for id field.
-	knowledgegraphsnapshotrelationshipDescID := knowledgegraphsnapshotrelationshipFields[0].Descriptor()
-	// knowledgegraphsnapshotrelationship.DefaultID holds the default value on creation for the id field.
-	knowledgegraphsnapshotrelationship.DefaultID = knowledgegraphsnapshotrelationshipDescID.Default.(func() uuid.UUID)
 	knowledgerelationshipMixin := schema.KnowledgeRelationship{}.Mixin()
 	knowledgerelationship.Policy = privacy.NewPolicies(knowledgerelationshipMixin[0], knowledgerelationshipMixin[1], schema.KnowledgeRelationship{})
 	knowledgerelationship.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1102,8 +1023,6 @@ func init() {
 	knowledgesubjectaliasDescLastObservedAt := knowledgesubjectaliasFields[8].Descriptor()
 	// knowledgesubjectalias.DefaultLastObservedAt holds the default value on creation for the last_observed_at field.
 	knowledgesubjectalias.DefaultLastObservedAt = knowledgesubjectaliasDescLastObservedAt.Default.(func() time.Time)
-	// knowledgesubjectalias.UpdateDefaultLastObservedAt holds the default value on update for the last_observed_at field.
-	knowledgesubjectalias.UpdateDefaultLastObservedAt = knowledgesubjectaliasDescLastObservedAt.UpdateDefault.(func() time.Time)
 	// knowledgesubjectaliasDescID is the schema descriptor for id field.
 	knowledgesubjectaliasDescID := knowledgesubjectaliasFields[0].Descriptor()
 	// knowledgesubjectalias.DefaultID holds the default value on creation for the id field.
@@ -1205,10 +1124,10 @@ func init() {
 	}
 	normalizedeventprojectionFields := schema.NormalizedEventProjection{}.Fields()
 	_ = normalizedeventprojectionFields
-	// normalizedeventprojectionDescProjector is the schema descriptor for projector field.
-	normalizedeventprojectionDescProjector := normalizedeventprojectionFields[2].Descriptor()
-	// normalizedeventprojection.ProjectorValidator is a validator for the "projector" field. It is called by the builders before save.
-	normalizedeventprojection.ProjectorValidator = normalizedeventprojectionDescProjector.Validators[0].(func(string) error)
+	// normalizedeventprojectionDescCompletedAt is the schema descriptor for completed_at field.
+	normalizedeventprojectionDescCompletedAt := normalizedeventprojectionFields[2].Descriptor()
+	// normalizedeventprojection.DefaultCompletedAt holds the default value on creation for the completed_at field.
+	normalizedeventprojection.DefaultCompletedAt = normalizedeventprojectionDescCompletedAt.Default.(func() time.Time)
 	// normalizedeventprojectionDescID is the schema descriptor for id field.
 	normalizedeventprojectionDescID := normalizedeventprojectionFields[0].Descriptor()
 	// normalizedeventprojection.DefaultID holds the default value on creation for the id field.
@@ -1517,14 +1436,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	systemanalysisMixinFields2 := systemanalysisMixin[2].Fields()
+	_ = systemanalysisMixinFields2
 	systemanalysisFields := schema.SystemAnalysis{}.Fields()
 	_ = systemanalysisFields
 	// systemanalysisDescCreatedAt is the schema descriptor for created_at field.
-	systemanalysisDescCreatedAt := systemanalysisFields[2].Descriptor()
+	systemanalysisDescCreatedAt := systemanalysisMixinFields2[0].Descriptor()
 	// systemanalysis.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemanalysis.DefaultCreatedAt = systemanalysisDescCreatedAt.Default.(func() time.Time)
 	// systemanalysisDescUpdatedAt is the schema descriptor for updated_at field.
-	systemanalysisDescUpdatedAt := systemanalysisFields[3].Descriptor()
+	systemanalysisDescUpdatedAt := systemanalysisMixinFields2[1].Descriptor()
 	// systemanalysis.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	systemanalysis.DefaultUpdatedAt = systemanalysisDescUpdatedAt.Default.(func() time.Time)
 	// systemanalysis.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -1557,6 +1478,10 @@ func init() {
 	systemanalysistopologyedge.DefaultUpdatedAt = systemanalysistopologyedgeDescUpdatedAt.Default.(func() time.Time)
 	// systemanalysistopologyedge.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysistopologyedge.UpdateDefaultUpdatedAt = systemanalysistopologyedgeDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// systemanalysistopologyedgeDescReferencedAt is the schema descriptor for referenced_at field.
+	systemanalysistopologyedgeDescReferencedAt := systemanalysistopologyedgeFields[3].Descriptor()
+	// systemanalysistopologyedge.DefaultReferencedAt holds the default value on creation for the referenced_at field.
+	systemanalysistopologyedge.DefaultReferencedAt = systemanalysistopologyedgeDescReferencedAt.Default.(func() time.Time)
 	// systemanalysistopologyedgeDescID is the schema descriptor for id field.
 	systemanalysistopologyedgeDescID := systemanalysistopologyedgeFields[0].Descriptor()
 	// systemanalysistopologyedge.DefaultID holds the default value on creation for the id field.
@@ -1585,12 +1510,16 @@ func init() {
 	systemanalysistopologynode.DefaultUpdatedAt = systemanalysistopologynodeDescUpdatedAt.Default.(func() time.Time)
 	// systemanalysistopologynode.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysistopologynode.UpdateDefaultUpdatedAt = systemanalysistopologynodeDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// systemanalysistopologynodeDescReferencedAt is the schema descriptor for referenced_at field.
+	systemanalysistopologynodeDescReferencedAt := systemanalysistopologynodeFields[3].Descriptor()
+	// systemanalysistopologynode.DefaultReferencedAt holds the default value on creation for the referenced_at field.
+	systemanalysistopologynode.DefaultReferencedAt = systemanalysistopologynodeDescReferencedAt.Default.(func() time.Time)
 	// systemanalysistopologynodeDescPosX is the schema descriptor for pos_x field.
-	systemanalysistopologynodeDescPosX := systemanalysistopologynodeFields[4].Descriptor()
+	systemanalysistopologynodeDescPosX := systemanalysistopologynodeFields[5].Descriptor()
 	// systemanalysistopologynode.DefaultPosX holds the default value on creation for the pos_x field.
 	systemanalysistopologynode.DefaultPosX = systemanalysistopologynodeDescPosX.Default.(float64)
 	// systemanalysistopologynodeDescPosY is the schema descriptor for pos_y field.
-	systemanalysistopologynodeDescPosY := systemanalysistopologynodeFields[5].Descriptor()
+	systemanalysistopologynodeDescPosY := systemanalysistopologynodeFields[6].Descriptor()
 	// systemanalysistopologynode.DefaultPosY holds the default value on creation for the pos_y field.
 	systemanalysistopologynode.DefaultPosY = systemanalysistopologynodeDescPosY.Default.(float64)
 	// systemanalysistopologynodeDescID is the schema descriptor for id field.

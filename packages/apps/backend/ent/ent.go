@@ -41,7 +41,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontext"
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenttimelineeventevidence"
-	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
+	"github.com/rezible/rezible/ent/incidenttimelineeventsystemcontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/integrationeventsynccursor"
@@ -49,9 +49,6 @@ import (
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -174,7 +171,7 @@ func checkColumn(t, c string) error {
 			incidenttimelineeventcontext.Table:            incidenttimelineeventcontext.ValidColumn,
 			incidenttimelineeventcontributingfactor.Table: incidenttimelineeventcontributingfactor.ValidColumn,
 			incidenttimelineeventevidence.Table:           incidenttimelineeventevidence.ValidColumn,
-			incidenttimelineeventtopologycontext.Table:    incidenttimelineeventtopologycontext.ValidColumn,
+			incidenttimelineeventsystemcontext.Table:      incidenttimelineeventsystemcontext.ValidColumn,
 			incidenttype.Table:                            incidenttype.ValidColumn,
 			integration.Table:                             integration.ValidColumn,
 			integrationeventsynccursor.Table:              integrationeventsynccursor.ValidColumn,
@@ -182,9 +179,6 @@ func checkColumn(t, c string) error {
 			integrationuserinstallstate.Table:             integrationuserinstallstate.ValidColumn,
 			knowledgeentity.Table:                         knowledgeentity.ValidColumn,
 			knowledgeevidence.Table:                       knowledgeevidence.ValidColumn,
-			knowledgegraphsnapshot.Table:                  knowledgegraphsnapshot.ValidColumn,
-			knowledgegraphsnapshotentity.Table:            knowledgegraphsnapshotentity.ValidColumn,
-			knowledgegraphsnapshotrelationship.Table:      knowledgegraphsnapshotrelationship.ValidColumn,
 			knowledgerelationship.Table:                   knowledgerelationship.ValidColumn,
 			knowledgesubjectalias.Table:                   knowledgesubjectalias.ValidColumn,
 			meetingschedule.Table:                         meetingschedule.ValidColumn,

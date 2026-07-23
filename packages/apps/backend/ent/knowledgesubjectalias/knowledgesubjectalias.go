@@ -118,8 +118,6 @@ var (
 	DefaultFirstObservedAt func() time.Time
 	// DefaultLastObservedAt holds the default value on creation for the "last_observed_at" field.
 	DefaultLastObservedAt func() time.Time
-	// UpdateDefaultLastObservedAt holds the default value on update for the "last_observed_at" field.
-	UpdateDefaultLastObservedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

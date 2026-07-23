@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	"github.com/rezible/rezible/ent/tenant"
@@ -29,8 +29,10 @@ type SystemAnalysisTopologyEdge struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AnalysisID holds the value of the "analysis_id" field.
 	AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
-	// SnapshotRelationshipID holds the value of the "snapshot_relationship_id" field.
-	SnapshotRelationshipID uuid.UUID `json:"snapshot_relationship_id,omitempty"`
+	// KnowledgeRelationshipID holds the value of the "knowledge_relationship_id" field.
+	KnowledgeRelationshipID uuid.UUID `json:"knowledge_relationship_id,omitempty"`
+	// ReferencedAt holds the value of the "referenced_at" field.
+	ReferencedAt time.Time `json:"referenced_at,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -45,8 +47,8 @@ type SystemAnalysisTopologyEdgeEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Analysis holds the value of the analysis edge.
 	Analysis *SystemAnalysis `json:"analysis,omitempty"`
-	// SnapshotRelationship holds the value of the snapshot_relationship edge.
-	SnapshotRelationship *KnowledgeGraphSnapshotRelationship `json:"snapshot_relationship,omitempty"`
+	// KnowledgeRelationship holds the value of the knowledge_relationship edge.
+	KnowledgeRelationship *KnowledgeRelationship `json:"knowledge_relationship,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -74,15 +76,15 @@ func (e SystemAnalysisTopologyEdgeEdges) AnalysisOrErr() (*SystemAnalysis, error
 	return nil, &NotLoadedError{edge: "analysis"}
 }
 
-// SnapshotRelationshipOrErr returns the SnapshotRelationship value or an error if the edge
+// KnowledgeRelationshipOrErr returns the KnowledgeRelationship value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemAnalysisTopologyEdgeEdges) SnapshotRelationshipOrErr() (*KnowledgeGraphSnapshotRelationship, error) {
-	if e.SnapshotRelationship != nil {
-		return e.SnapshotRelationship, nil
+func (e SystemAnalysisTopologyEdgeEdges) KnowledgeRelationshipOrErr() (*KnowledgeRelationship, error) {
+	if e.KnowledgeRelationship != nil {
+		return e.KnowledgeRelationship, nil
 	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: knowledgegraphsnapshotrelationship.Label}
+		return nil, &NotFoundError{label: knowledgerelationship.Label}
 	}
-	return nil, &NotLoadedError{edge: "snapshot_relationship"}
+	return nil, &NotLoadedError{edge: "knowledge_relationship"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -94,9 +96,9 @@ func (*SystemAnalysisTopologyEdge) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case systemanalysistopologyedge.FieldDescription:
 			values[i] = new(sql.NullString)
-		case systemanalysistopologyedge.FieldCreatedAt, systemanalysistopologyedge.FieldUpdatedAt:
+		case systemanalysistopologyedge.FieldCreatedAt, systemanalysistopologyedge.FieldUpdatedAt, systemanalysistopologyedge.FieldReferencedAt:
 			values[i] = new(sql.NullTime)
-		case systemanalysistopologyedge.FieldID, systemanalysistopologyedge.FieldAnalysisID, systemanalysistopologyedge.FieldSnapshotRelationshipID:
+		case systemanalysistopologyedge.FieldID, systemanalysistopologyedge.FieldAnalysisID, systemanalysistopologyedge.FieldKnowledgeRelationshipID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -143,11 +145,17 @@ func (_m *SystemAnalysisTopologyEdge) assignValues(columns []string, values []an
 			} else if value != nil {
 				_m.AnalysisID = *value
 			}
-		case systemanalysistopologyedge.FieldSnapshotRelationshipID:
+		case systemanalysistopologyedge.FieldKnowledgeRelationshipID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field snapshot_relationship_id", values[i])
+				return fmt.Errorf("unexpected type %T for field knowledge_relationship_id", values[i])
 			} else if value != nil {
-				_m.SnapshotRelationshipID = *value
+				_m.KnowledgeRelationshipID = *value
+			}
+		case systemanalysistopologyedge.FieldReferencedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field referenced_at", values[i])
+			} else if value.Valid {
+				_m.ReferencedAt = value.Time
 			}
 		case systemanalysistopologyedge.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -178,9 +186,9 @@ func (_m *SystemAnalysisTopologyEdge) QueryAnalysis() *SystemAnalysisQuery {
 	return NewSystemAnalysisTopologyEdgeClient(_m.config).QueryAnalysis(_m)
 }
 
-// QuerySnapshotRelationship queries the "snapshot_relationship" edge of the SystemAnalysisTopologyEdge entity.
-func (_m *SystemAnalysisTopologyEdge) QuerySnapshotRelationship() *KnowledgeGraphSnapshotRelationshipQuery {
-	return NewSystemAnalysisTopologyEdgeClient(_m.config).QuerySnapshotRelationship(_m)
+// QueryKnowledgeRelationship queries the "knowledge_relationship" edge of the SystemAnalysisTopologyEdge entity.
+func (_m *SystemAnalysisTopologyEdge) QueryKnowledgeRelationship() *KnowledgeRelationshipQuery {
+	return NewSystemAnalysisTopologyEdgeClient(_m.config).QueryKnowledgeRelationship(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysisTopologyEdge.
@@ -218,8 +226,11 @@ func (_m *SystemAnalysisTopologyEdge) String() string {
 	builder.WriteString("analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AnalysisID))
 	builder.WriteString(", ")
-	builder.WriteString("snapshot_relationship_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.SnapshotRelationshipID))
+	builder.WriteString("knowledge_relationship_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.KnowledgeRelationshipID))
+	builder.WriteString(", ")
+	builder.WriteString("referenced_at=")
+	builder.WriteString(_m.ReferencedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)

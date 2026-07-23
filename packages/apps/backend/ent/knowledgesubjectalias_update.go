@@ -46,9 +46,37 @@ func (_u *KnowledgeSubjectAliasUpdate) SetNillableDescription(v *string) *Knowle
 	return _u
 }
 
+// SetFirstObservedAt sets the "first_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetFirstObservedAt(v time.Time) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetFirstObservedAt(v)
+	return _u
+}
+
+// SetNillableFirstObservedAt sets the "first_observed_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableFirstObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdate {
+	if v != nil {
+		_u.SetFirstObservedAt(*v)
+	}
+	return _u
+}
+
+// ClearFirstObservedAt clears the value of the "first_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) ClearFirstObservedAt() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearFirstObservedAt()
+	return _u
+}
+
 // SetLastObservedAt sets the "last_observed_at" field.
 func (_u *KnowledgeSubjectAliasUpdate) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasUpdate {
 	_u.mutation.SetLastObservedAt(v)
+	return _u
+}
+
+// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableLastObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdate {
+	if v != nil {
+		_u.SetLastObservedAt(*v)
+	}
 	return _u
 }
 
@@ -121,9 +149,6 @@ func (_u *KnowledgeSubjectAliasUpdate) RemoveEvidence(v ...*KnowledgeEvidence) *
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *KnowledgeSubjectAliasUpdate) Save(ctx context.Context) (int, error) {
-	if err := _u.defaults(); err != nil {
-		return 0, err
-	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -147,18 +172,6 @@ func (_u *KnowledgeSubjectAliasUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// defaults sets the default values of the builder before save.
-func (_u *KnowledgeSubjectAliasUpdate) defaults() error {
-	if _, ok := _u.mutation.LastObservedAt(); !ok && !_u.mutation.LastObservedAtCleared() {
-		if knowledgesubjectalias.UpdateDefaultLastObservedAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgesubjectalias.UpdateDefaultLastObservedAt (forgotten import ent/runtime?)")
-		}
-		v := knowledgesubjectalias.UpdateDefaultLastObservedAt()
-		_u.mutation.SetLastObservedAt(v)
-	}
-	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -189,6 +202,9 @@ func (_u *KnowledgeSubjectAliasUpdate) sqlSave(ctx context.Context) (_node int, 
 	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(knowledgesubjectalias.FieldDescription, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.FirstObservedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime, value)
 	}
 	if _u.mutation.FirstObservedAtCleared() {
 		_spec.ClearField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime)
@@ -291,9 +307,37 @@ func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableDescription(v *string) *Kno
 	return _u
 }
 
+// SetFirstObservedAt sets the "first_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetFirstObservedAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetFirstObservedAt(v)
+	return _u
+}
+
+// SetNillableFirstObservedAt sets the "first_observed_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableFirstObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdateOne {
+	if v != nil {
+		_u.SetFirstObservedAt(*v)
+	}
+	return _u
+}
+
+// ClearFirstObservedAt clears the value of the "first_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearFirstObservedAt() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearFirstObservedAt()
+	return _u
+}
+
 // SetLastObservedAt sets the "last_observed_at" field.
 func (_u *KnowledgeSubjectAliasUpdateOne) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
 	_u.mutation.SetLastObservedAt(v)
+	return _u
+}
+
+// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableLastObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdateOne {
+	if v != nil {
+		_u.SetLastObservedAt(*v)
+	}
 	return _u
 }
 
@@ -379,9 +423,6 @@ func (_u *KnowledgeSubjectAliasUpdateOne) Select(field string, fields ...string)
 
 // Save executes the query and returns the updated KnowledgeSubjectAlias entity.
 func (_u *KnowledgeSubjectAliasUpdateOne) Save(ctx context.Context) (*KnowledgeSubjectAlias, error) {
-	if err := _u.defaults(); err != nil {
-		return nil, err
-	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -405,18 +446,6 @@ func (_u *KnowledgeSubjectAliasUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// defaults sets the default values of the builder before save.
-func (_u *KnowledgeSubjectAliasUpdateOne) defaults() error {
-	if _, ok := _u.mutation.LastObservedAt(); !ok && !_u.mutation.LastObservedAtCleared() {
-		if knowledgesubjectalias.UpdateDefaultLastObservedAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgesubjectalias.UpdateDefaultLastObservedAt (forgotten import ent/runtime?)")
-		}
-		v := knowledgesubjectalias.UpdateDefaultLastObservedAt()
-		_u.mutation.SetLastObservedAt(v)
-	}
-	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -464,6 +493,9 @@ func (_u *KnowledgeSubjectAliasUpdateOne) sqlSave(ctx context.Context) (_node *K
 	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(knowledgesubjectalias.FieldDescription, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.FirstObservedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime, value)
 	}
 	if _u.mutation.FirstObservedAtCleared() {
 		_spec.ClearField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime)

@@ -24,19 +24,14 @@ func NewEventService(db rez.Database) (*EventService, error) {
 	return s, nil
 }
 
-func (s *EventService) addEventProjectionsQuery(q *ent.NormalizedEventQuery, predicates []predicate.NormalizedEventProjection) {
-	q.WithProjections(func(pq *ent.NormalizedEventProjectionQuery) {
-		pq.Where(predicates...)
-		pq.WithProjectionEntities()
-	})
-}
-
 func (s *EventService) GetEvent(ctx context.Context, id uuid.UUID, params rez.GetEventParams) (*ent.NormalizedEvent, error) {
 	query := s.db.Client(ctx).NormalizedEvent.Query().
 		Where(ne.ID(id))
 
-	if params.WithProjections {
-		s.addEventProjectionsQuery(query, params.ProjectionPredicates)
+	if params.WithProjection {
+		query.WithProjection(func(pq *ent.NormalizedEventProjectionQuery) {
+			pq.WithProjectionEntities()
+		})
 	}
 
 	return query.Only(ctx)
@@ -55,8 +50,10 @@ func (s *EventService) ListEvents(ctx context.Context, params rez.ListEventsPara
 		//	}
 		//})
 	}
-	if params.WithProjections {
-		s.addEventProjectionsQuery(query, params.ProjectionPredicates)
+	if params.WithProjection {
+		query.WithProjection(func(pq *ent.NormalizedEventProjectionQuery) {
+			pq.WithProjectionEntities()
+		})
 	}
 
 	return ent.DoListQuery[ent.NormalizedEvent, *ent.NormalizedEventQuery](ctx, query, params.ListParams)

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/pkg/projections"
 	"github.com/riverqueue/river"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -19,27 +19,27 @@ import (
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	nep "github.com/rezible/rezible/ent/normalizedeventprojection"
 	nepe "github.com/rezible/rezible/ent/normalizedeventprojectionentity"
-	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
-	"github.com/rezible/rezible/pkg/projections"
 )
 
 type ProviderEventPipelineService struct {
-	logger     *slog.Logger
 	db         rez.Database
-	reg        *projections.PipelineRegistry
-	jobService rez.JobService
+	jobs       rez.JobService
+	logger     *slog.Logger
 	telemetry  *providerEventTelemetry
+	processors map[string]rez.ProviderEventProcessor
+	projection rez.EventProjectionService
 }
 
-func NewProviderEventPipelineService(ts rez.TelemetryService, db rez.Database, jobSvc rez.JobService, reg *projections.PipelineRegistry) (*ProviderEventPipelineService, error) {
+func NewProviderEventPipelineService(ts rez.TelemetryService, db rez.Database, jobSvc rez.JobService, processors map[string]rez.ProviderEventProcessor, projection rez.EventProjectionService) (*ProviderEventPipelineService, error) {
 	logger := ts.NewLogger(rez.NewLoggerOptions{PackageName: "provider_events"})
 	pe := &ProviderEventPipelineService{
-		logger:     logger,
 		db:         db,
-		jobService: jobSvc,
-		reg:        reg,
+		jobs:       jobSvc,
+		logger:     logger,
 		telemetry:  newProviderEventTelemetry(ts, logger),
+		processors: processors,
+		projection: projection,
 	}
 	jobs.RegisterWorkerFunc(pe.HandleProcessEventJob)
 	jobs.RegisterWorkerFunc(pe.HandleEventProjectionJob)
@@ -47,12 +47,12 @@ func NewProviderEventPipelineService(ts rez.TelemetryService, db rez.Database, j
 }
 
 func (s *ProviderEventPipelineService) Ingest(ctx context.Context, ev rez.ProviderEvent) error {
-	duplicate, ingestErr := s.ingest(ctx, ev)
+	duplicate, ingestErr := s.queueIngest(ctx, ev)
 	s.telemetry.recordIngested(ctx, ev, duplicate, ingestErr)
 	return ingestErr
 }
 
-func (s *ProviderEventPipelineService) ingest(ctx context.Context, ev rez.ProviderEvent) (bool, error) {
+func (s *ProviderEventPipelineService) queueIngest(ctx context.Context, ev rez.ProviderEvent) (bool, error) {
 	if ev.Provider == "" {
 		return false, fmt.Errorf("event provider is required")
 	} else if ev.ProviderSource == "" {
@@ -66,12 +66,12 @@ func (s *ProviderEventPipelineService) ingest(ctx context.Context, ev rez.Provid
 	}
 
 	args := processProviderEventArgs{Event: ev}
-	insertOpts := &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
-	insertRes, insertErr := s.jobService.Insert(ctx, args, insertOpts)
+	insertOpts := args.InsertOpts()
+	jobRes, insertErr := s.jobs.Insert(ctx, args, &insertOpts)
 	if insertErr != nil {
 		return false, fmt.Errorf("could not insert provider event job: %w", insertErr)
 	}
-	return insertRes.UniqueSkippedAsDuplicate, nil
+	return jobRes.UniqueSkippedAsDuplicate, nil
 }
 
 type processProviderEventArgs struct {
@@ -80,6 +80,10 @@ type processProviderEventArgs struct {
 
 func (processProviderEventArgs) Kind() string {
 	return "process-provider-event"
+}
+
+func (processProviderEventArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
 }
 
 func (s *ProviderEventPipelineService) HandleProcessEventJob(ctx context.Context, args processProviderEventArgs) error {
@@ -94,20 +98,23 @@ func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Cont
 		return fmt.Errorf("query event: %w", queryErr)
 	}
 
-	res, resErr := s.projectNormalizedEvent(ctx, ev)
-	if resErr != nil {
-		return fmt.Errorf("project event: %w", resErr)
-	}
+	projectionErr := s.projectNormalizedEvent(ctx, ev)
 
-	retryableErrors, fatalErrors := res.errors()
-	for projName, err := range fatalErrors {
+	if projectionErr != nil {
+		if s.db.IsTransientError(projectionErr) {
+			return projections.Retryable(projectionErr)
+		}
+		if projectionErr == nil || projections.IsRetryable(projectionErr) {
+			return projectionErr
+		}
 		s.logger.ErrorContext(ctx, "fatal event projection error",
-			"error", err.Error(),
-			"name", projName,
+			"error", projectionErr.Error(),
 			"ref", ev.ProviderEventRef,
 		)
+		return river.JobCancel(projectionErr)
 	}
-	return errors.Join(retryableErrors...)
+
+	return nil
 }
 
 func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier rez.ProviderEventQuerier, sourceCursors rez.ProviderEventQuerySourceCursors) rez.ProviderEventSyncResult {
@@ -131,7 +138,7 @@ func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier r
 				InsertOpts: &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}},
 			}
 		}
-		results, insertErr := s.jobService.InsertMany(ctx, params)
+		results, insertErr := s.jobs.InsertMany(ctx, params)
 		if insertErr != nil {
 			res.SyncErrors = append(res.SyncErrors, fmt.Errorf("inserting process provider event jobs: %w", insertErr))
 			return false
@@ -179,271 +186,174 @@ func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier r
 type processProviderEventResult struct {
 	error error
 
-	processTime                time.Duration
-	processSuccess             bool
-	normalizeCount             int
-	insertProjectionDuplicates int
+	processTime    time.Duration
+	processSuccess bool
+	normalizeCount int
 }
 
 func (s *ProviderEventPipelineService) processProviderEvent(ctx context.Context, prov rez.ProviderEvent) processProviderEventResult {
 	var res processProviderEventResult
-	if _, tenantOk := execution.GetContext(ctx).TenantID(); !tenantOk {
-		res.error = fmt.Errorf("tenant not found in context")
-		return res
-	}
 
-	processStart := time.Now()
-	proc, ok := s.reg.GetProviderEventProcessor(prov.Provider)
+	proc, ok := s.processors[prov.Provider]
 	if !ok {
 		res.error = fmt.Errorf("no event processors registered for provider '%s'", prov.Provider)
 		return res
 	}
 
-	normalizedEvents, procErr := proc.ProcessProviderEvent(ctx, prov)
-
+	processStart := time.Now()
+	procEvents, procErr := proc.ProcessProviderEvent(ctx, prov)
 	res.processTime = time.Since(processStart)
-	res.normalizeCount = len(normalizedEvents)
+	res.normalizeCount = len(procEvents)
+	res.processSuccess = procErr == nil
+
 	if procErr != nil {
 		res.error = fmt.Errorf("processing event: %w", procErr)
 		return res
 	}
-	res.processSuccess = true
 
-	mapCreateEventFn := func(c *ent.NormalizedEventCreate, i int) {
-		ev := normalizedEvents[i]
-		c.SetProvider(ev.Provider).
-			SetProviderSource(ev.ProviderSource).
-			SetProviderEventRef(ev.ProviderEventRef).
-			SetKind(ev.Kind).
-			SetSubjectKind(ev.SubjectKind).
-			SetProviderSubjectRef(ev.ProviderSubjectRef).
-			SetOccurredAt(ev.OccurredAt).
-			SetReceivedAt(ev.ReceivedAt).
-			SetAttributes(ev.Attributes)
-	}
-	upsertConflictColumns := sql.ConflictColumns(
-		ne.FieldTenantID,
-		ne.FieldProvider,
-		ne.FieldProviderSource,
-		ne.FieldProviderEventRef,
-		ne.FieldProviderSubjectRef,
-	)
-	eventRefs := mapset.NewSet[string]()
-	for _, ev := range normalizedEvents {
-		eventRefs.Add(ev.ProviderEventRef)
+	if saveErr := s.saveNormalizedEvents(ctx, procEvents); saveErr != nil {
+		res.error = fmt.Errorf("saving normalized events: %w", saveErr)
 	}
 
-	saveNormalizedEventsFn := func(txCtx context.Context, tx *ent.Client) error {
-		upsertBulk := tx.NormalizedEvent.MapCreateBulk(normalizedEvents, mapCreateEventFn).
-			OnConflict(upsertConflictColumns).
-			UpdateNewValues()
-		if upsertErr := upsertBulk.Exec(txCtx); upsertErr != nil {
-			return fmt.Errorf("upsert normalized events: %w", upsertErr)
-		}
-
-		queryEvents := tx.NormalizedEvent.Query().
-			Where(ne.ProviderEventRefIn(eventRefs.ToSlice()...))
-		evs, evsErr := queryEvents.All(txCtx)
-		if evsErr != nil {
-			return fmt.Errorf("query normalized events: %w", evsErr)
-		}
-
-		params := make([]river.InsertManyParams, len(evs))
-		for i, ev := range evs {
-			params[i] = river.InsertManyParams{
-				Args: jobs.ProjectNormalizedEvent{
-					EventId: ev.ID,
-				},
-				InsertOpts: &river.InsertOpts{
-					UniqueOpts: river.UniqueOpts{
-						ByArgs:  true,
-						ByState: jobs.UniqueStateNonCompleted,
-					},
-				},
-			}
-		}
-		insertRes, jobErr := s.jobService.InsertMany(txCtx, params)
-		if jobErr != nil {
-			return fmt.Errorf("inserting project events: %w", jobErr)
-		}
-		for _, r := range insertRes {
-			if r.UniqueSkippedAsDuplicate {
-				res.insertProjectionDuplicates++
-			}
-		}
-		return nil
-	}
-
-	if len(normalizedEvents) > 0 {
-		if saveErr := s.db.WithTx(ctx, saveNormalizedEventsFn); saveErr != nil {
-			res.error = fmt.Errorf("saving normalized events: %w", saveErr)
-		}
-	}
 	return res
 }
 
-func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) (*eventProjectionResult, error) {
-	res := eventProjectionResult{handlerErrors: make(map[string][]error)}
+var normalizedEventUniqueColumns = sql.ConflictColumns(
+	ne.FieldTenantID,
+	ne.FieldProvider,
+	ne.FieldProviderSource,
+	ne.FieldProviderEventRef,
+	ne.FieldProviderSubjectRef,
+)
 
-	projStatuses, projStatusErr := s.getEventProjectionStatuses(ctx, ev.ID)
-	if projStatusErr != nil {
-		return nil, fmt.Errorf("query status: %w", projStatusErr)
-	}
-
-	for name, projector := range s.reg.GetEventProjectorsForKind(projections.SubjectKind(ev.SubjectKind)) {
-		var projectionId uuid.UUID
-		if currStatus, statusExists := projStatuses[name]; statusExists {
-			if currStatus.state == nep.StatusSucceeded {
-				continue
-			}
-			projectionId = currStatus.id
-		}
-
-		proj, setPendingErr := s.setEventProjectionPending(ctx, projectionId, name, ev.ID)
-		if setPendingErr != nil {
-			res.addHandlerError(name, fmt.Errorf("set status pending: %w", setPendingErr))
-		}
-
-		projRefs, projErr := s.runEventProjector(ctx, ev, projector)
-		if projErr != nil {
-			res.addHandlerError(name, projErr)
-		}
-
-		if resErr := s.setEventProjectionResult(ctx, proj.ID, projRefs, projErr); resErr != nil {
-			res.addHandlerError(name, fmt.Errorf("set projection result status: %w", setPendingErr))
-		}
-	}
-
-	return &res, nil
-}
-
-func (s *ProviderEventPipelineService) runEventProjector(ctx context.Context, ev *ent.NormalizedEvent, p rez.NormalizedEventProjector) ([]rez.ProjectedEntityRef, error) {
-	var projRefs []rez.ProjectedEntityRef
-	projErr := s.db.WithTx(ctx, func(ctx context.Context, _ *ent.Client) (err error) {
-		defer func() {
-			if v := recover(); v != nil {
-				//slog.WarnContext(ctx, "event projection panic",
-				//	"error", fmt.Sprintf("%+v", v),
-				//	"stack", string(debug.Stack()),
-				//	"event", ev.ID.String())
-				err = fmt.Errorf("projector panic: %v", v)
-			}
-		}()
-		projRefs, err = p.HandleEventProjection(ctx, ev)
-		return err
-	})
-	if s.db.IsTransientError(projErr) {
-		projErr = projections.Retryable(projErr)
-	}
-	return projRefs, projErr
-}
-
-type eventProjectionResult struct {
-	handlerErrors map[string][]error
-}
-
-func (r eventProjectionResult) addHandlerError(name string, err error) {
-	r.handlerErrors[name] = append(r.handlerErrors[name], err)
-}
-
-func (r eventProjectionResult) errors() ([]error, map[string]error) {
-	retryable := make([]error, 0, len(r.handlerErrors))
-	fatal := make(map[string]error)
-	for name, handlerErrs := range r.handlerErrors {
-		for _, handlerErr := range handlerErrs {
-			if projections.IsRetryable(handlerErr) {
-				retryable = append(retryable, fmt.Errorf("%s: %w", name, handlerErr))
-			} else {
-				fatal[name] = errors.Join(fatal[name], handlerErr)
-			}
-		}
-	}
-	return retryable, fatal
-}
-
-type eventProjectionStatus struct {
-	id    uuid.UUID
-	state nep.Status
-}
-
-func (s *ProviderEventPipelineService) getEventProjectionStatuses(ctx context.Context, eventId uuid.UUID) (map[string]eventProjectionStatus, error) {
-	queryStatuses := s.db.Client(ctx).NormalizedEventProjection.Query().
-		Where(nep.EventID(eventId))
-	statuses, queryStatusErr := queryStatuses.All(ctx)
-	if queryStatusErr != nil {
-		return nil, fmt.Errorf("query status: %w", queryStatusErr)
-	}
-	projStatuses := map[string]eventProjectionStatus{}
-	for _, status := range statuses {
-		projStatuses[status.Projector] = eventProjectionStatus{id: status.ID, state: status.Status}
-	}
-	return projStatuses, nil
-}
-
-func (s *ProviderEventPipelineService) setEventProjection(ctx context.Context, id uuid.UUID, setFn func(*ent.NormalizedEventProjectionMutation)) (*ent.NormalizedEventProjection, error) {
-	var mutator ent.EntityMutator[*ent.NormalizedEventProjection, *ent.NormalizedEventProjectionMutation]
-	if id != uuid.Nil {
-		mutator = s.db.Client(ctx).NormalizedEventProjection.UpdateOneID(id)
-	} else {
-		mutator = s.db.Client(ctx).NormalizedEventProjection.Create()
-	}
-	setFn(mutator.Mutation())
-	return mutator.Save(ctx)
-}
-
-func (s *ProviderEventPipelineService) setEventProjectionPending(ctx context.Context, statusId uuid.UUID, projName string, evId uuid.UUID) (*ent.NormalizedEventProjection, error) {
-	return s.setEventProjection(ctx, statusId, func(m *ent.NormalizedEventProjectionMutation) {
-		m.ClearFinishedAt()
-		m.ClearError()
-		m.SetEventID(evId)
-		m.SetProjector(projName)
-		m.SetStatus(nep.StatusPending)
-		m.SetStartedAt(time.Now().UTC())
-	})
-}
-
-func (s *ProviderEventPipelineService) setEventProjectionResult(ctx context.Context, projId uuid.UUID, projRefs []rez.ProjectedEntityRef, projErr error) error {
-	setProjFn := func(m *ent.NormalizedEventProjectionMutation) {
-		if projErr == nil {
-			m.ClearError()
-			m.SetStatus(nep.StatusSucceeded)
-		} else {
-			m.SetStatus(nep.StatusFailed)
-			m.SetError(projErr.Error())
-		}
-		m.SetFinishedAt(time.Now().UTC())
+func (s *ProviderEventPipelineService) saveNormalizedEvents(ctx context.Context, evts ent.NormalizedEvents) error {
+	if len(evts) == 0 {
+		return nil
 	}
 
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		proj, setProjErr := s.setEventProjection(ctx, projId, setProjFn)
-		if setProjErr != nil {
-			return fmt.Errorf("set projection: %w", setProjErr)
+		ids := make([]uuid.UUID, len(evts))
+		for i, ev := range evts {
+			ids[i] = ev.ID
+			if ids[i] == uuid.Nil {
+				ids[i] = uuid.New()
+			}
 		}
-		if len(projRefs) > 0 {
-			mapCreateRefsFn := func(c *ent.NormalizedEventProjectionEntityCreate, i int) {
-				c.SetProjectionID(proj.ID)
-				ref := projRefs[i]
-				c.SetDomainEntityKind(ref.Kind)
-				c.SetDomainEntityID(ref.Id)
+
+		insertBulk := tx.NormalizedEvent.MapCreateBulk(evts, func(c *ent.NormalizedEventCreate, i int) {
+			ev := evts[i]
+			c.SetID(ids[i]).
+				SetProvider(ev.Provider).
+				SetProviderSource(ev.ProviderSource).
+				SetProviderEventRef(ev.ProviderEventRef).
+				SetKind(ev.Kind).
+				SetSubjectKind(ev.SubjectKind).
+				SetProviderSubjectRef(ev.ProviderSubjectRef).
+				SetOccurredAt(ev.OccurredAt).
+				SetReceivedAt(ev.ReceivedAt).
+				SetAttributes(ev.Attributes)
+		})
+
+		insertBulk.OnConflict(normalizedEventUniqueColumns).
+			DoNothing()
+
+		if insertErr := insertBulk.Exec(ctx); insertErr != nil {
+			return fmt.Errorf("insert normalized events: %w", insertErr)
+		}
+
+		if len(ids) > 0 {
+			params := make([]river.InsertManyParams, len(ids))
+			for i, id := range ids {
+				params[i] = river.InsertManyParams{
+					Args: jobs.ProjectNormalizedEvent{EventId: id},
+				}
 			}
-			createRefs := tx.NormalizedEventProjectionEntity.MapCreateBulk(projRefs, mapCreateRefsFn).
-				OnConflictColumns(nepe.FieldTenantID, nepe.FieldDomainEntityID).
-				DoNothing()
-			if refsErr := createRefs.Exec(ctx); refsErr != nil {
-				return fmt.Errorf("create projection entities: %w", refsErr)
+			res, jobErr := s.jobs.InsertMany(ctx, params)
+			if jobErr != nil {
+				return fmt.Errorf("inserting project events: %w", jobErr)
 			}
+			dups := 0
+			for _, r := range res {
+				if r.UniqueSkippedAsDuplicate {
+					dups++
+				}
+			}
+			slog.Debug("inserted projection jobs", "duplicates", dups, "new", len(ids)-dups)
+		}
+		return nil
+	})
+}
+
+func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) error {
+	projectorFunc, ok := s.projection.GetEventProjectorFunc(ev.SubjectKind)
+	if !ok {
+		return nil
+	}
+
+	projectEventFn := func(ctx context.Context, ev *ent.NormalizedEvent) (projectedEntities []rez.ProjectedEntityRef, err error) {
+		defer func() {
+			if v := recover(); v != nil {
+				err = fmt.Errorf("projector panic: %v", v)
+			}
+		}()
+		projectedEntities, err = projectorFunc(ctx, ev)
+		return projectedEntities, err
+	}
+
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.db.AcquireTxLocks(ctx, "normalized_event_projection", ev.ID.String()); lockErr != nil {
+			return fmt.Errorf("lock normalized event projection: %w", lockErr)
+		}
+
+		queryProjection := tx.NormalizedEventProjection.Query().
+			Where(nep.EventID(ev.ID))
+		projected, queryErr := queryProjection.Exist(ctx)
+		if queryErr != nil {
+			return fmt.Errorf("query projection receipt: %w", queryErr)
+		} else if projected {
+			return nil
+		}
+
+		projectedEntities, projectorErr := projectEventFn(ctx, ev)
+		if projectorErr != nil {
+			return projectorErr
+		}
+
+		createProjection := tx.NormalizedEventProjection.Create().
+			SetEventID(ev.ID)
+		proj, saveProjErr := createProjection.Save(ctx)
+		if saveProjErr != nil {
+			return fmt.Errorf("create projection receipt: %w", saveProjErr)
+		}
+
+		if len(projectedEntities) == 0 {
+			return nil
+		}
+
+		createRefs := tx.NormalizedEventProjectionEntity.
+			MapCreateBulk(projectedEntities, func(c *ent.NormalizedEventProjectionEntityCreate, i int) {
+				ref := projectedEntities[i]
+				c.SetProjectionID(proj.ID).
+					SetDomainEntityKind(ref.Kind).
+					SetDomainEntityID(ref.Id)
+			})
+
+		upsertRefs := createRefs.
+			OnConflictColumns(nepe.FieldTenantID, nepe.FieldProjectionID, nepe.FieldDomainEntityID).
+			DoNothing()
+		if refsErr := upsertRefs.Exec(ctx); refsErr != nil {
+			return fmt.Errorf("create projection entities: %w", refsErr)
 		}
 		return nil
 	})
 }
 
 type providerEventTelemetry struct {
-	logger            *slog.Logger
-	ingested          metric.Int64Counter
-	processed         metric.Int64Counter
-	processSeconds    metric.Float64Histogram
-	projectionSeconds metric.Float64Histogram
-	normalizedEvents  metric.Int64Counter
+	logger           *slog.Logger
+	ingested         metric.Int64Counter
+	processed        metric.Int64Counter
+	processSeconds   metric.Float64Histogram
+	normalizedEvents metric.Int64Counter
 }
 
 func newProviderEventTelemetry(ts rez.TelemetryService, logger *slog.Logger) *providerEventTelemetry {
@@ -452,18 +362,16 @@ func newProviderEventTelemetry(ts rez.TelemetryService, logger *slog.Logger) *pr
 	ingested, ingestedErr := meter.Int64Counter("rezible.backend.provider_events.ingested", metric.WithDescription("Provider events ingested"))
 	processed, processedErr := meter.Int64Counter("rezible.backend.provider_events.processed", metric.WithDescription("Provider events processed"))
 	normalizedEvents, normalizedEventsErr := meter.Int64Counter("rezible.backend.provider_events.normalized_events", metric.WithDescription("Normalized provider events saved"))
-	projectionSeconds, projectionSecondsErr := meter.Float64Histogram("rezible.backend.provider_events.projection_duration", metric.WithDescription("Normalized event projection duration"), metric.WithUnit("s"))
-	telErr := errors.Join(processSecondsErr, ingestedErr, processedErr, normalizedEventsErr, projectionSecondsErr)
+	telErr := errors.Join(processSecondsErr, ingestedErr, processedErr, normalizedEventsErr)
 	if telErr != nil {
 		panic("telemetry instruments err: " + telErr.Error())
 	}
 	return &providerEventTelemetry{
-		logger:            logger,
-		ingested:          ingested,
-		processed:         processed,
-		processSeconds:    processSeconds,
-		normalizedEvents:  normalizedEvents,
-		projectionSeconds: projectionSeconds,
+		logger:           logger,
+		ingested:         ingested,
+		processed:        processed,
+		processSeconds:   processSeconds,
+		normalizedEvents: normalizedEvents,
 	}
 }
 
@@ -505,9 +413,7 @@ func (m *providerEventTelemetry) recordProcessed(ctx context.Context, ev rez.Pro
 		slog.Any("error", res.error),
 	}
 	if res.error == nil {
-		logAttrs = append(logAttrs,
-			slog.Any("normalized_count", res.normalizeCount),
-			slog.Any("insert_projection_duplicates", res.insertProjectionDuplicates))
+		logAttrs = append(logAttrs, slog.Any("normalized_count", res.normalizeCount))
 		m.processSeconds.Record(ctx, res.processTime.Seconds(), metric.WithAttributes(attrs...))
 		if res.normalizeCount > 0 {
 			m.normalizedEvents.Add(ctx, int64(res.normalizeCount), metric.WithAttributes(attrs...))

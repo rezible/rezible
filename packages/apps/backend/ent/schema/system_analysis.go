@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -17,6 +18,7 @@ func (SystemAnalysis) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		TimestampsMixin{},
 	}
 }
 
@@ -24,21 +26,11 @@ func (SystemAnalysis) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
-		field.UUID("knowledge_graph_snapshot_id", uuid.UUID{}),
-		field.Time("created_at").
-			Default(time.Now),
-		field.Time("updated_at").
-			Default(time.Now).
-			UpdateDefault(time.Now),
 	}
 }
 
 func (SystemAnalysis) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("knowledge_graph_snapshot", KnowledgeGraphSnapshot.Type).
-			Unique().
-			Required().
-			Field("knowledge_graph_snapshot_id"),
 		edge.From("analysis_nodes", SystemAnalysisTopologyNode.Type).
 			Ref("analysis"),
 		edge.From("analysis_edges", SystemAnalysisTopologyEdge.Type).
@@ -62,7 +54,8 @@ func (SystemAnalysisTopologyNode) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}),
-		field.UUID("snapshot_entity_id", uuid.UUID{}),
+		field.UUID("knowledge_entity_id", uuid.UUID{}),
+		field.Time("referenced_at").Default(time.Now),
 		field.Text("description").Optional(),
 		field.Float("pos_x").Default(0),
 		field.Float("pos_y").Default(0),
@@ -75,10 +68,16 @@ func (SystemAnalysisTopologyNode) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("analysis_id"),
-		edge.To("snapshot_entity", KnowledgeGraphSnapshotEntity.Type).
+		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Required().
 			Unique().
-			Field("snapshot_entity_id"),
+			Field("knowledge_entity_id"),
+	}
+}
+
+func (SystemAnalysisTopologyNode) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "analysis_id", "knowledge_entity_id").Unique(),
 	}
 }
 
@@ -98,7 +97,8 @@ func (SystemAnalysisTopologyEdge) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}),
-		field.UUID("snapshot_relationship_id", uuid.UUID{}),
+		field.UUID("knowledge_relationship_id", uuid.UUID{}),
+		field.Time("referenced_at").Default(time.Now),
 		field.Text("description").Optional(),
 	}
 }
@@ -109,9 +109,15 @@ func (SystemAnalysisTopologyEdge) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("analysis_id"),
-		edge.To("snapshot_relationship", KnowledgeGraphSnapshotRelationship.Type).
+		edge.To("knowledge_relationship", KnowledgeRelationship.Type).
 			Required().
 			Unique().
-			Field("snapshot_relationship_id"),
+			Field("knowledge_relationship_id"),
+	}
+}
+
+func (SystemAnalysisTopologyEdge) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "analysis_id", "knowledge_relationship_id").Unique(),
 	}
 }

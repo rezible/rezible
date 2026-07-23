@@ -97,6 +97,12 @@ func (_c *KnowledgeEvidenceCreate) SetProperties(v map[string]interface{}) *Know
 	return _c
 }
 
+// SetSubjectState sets the "subject_state" field.
+func (_c *KnowledgeEvidenceCreate) SetSubjectState(v map[string]interface{}) *KnowledgeEvidenceCreate {
+	_c.mutation.SetSubjectState(v)
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *KnowledgeEvidenceCreate) SetID(v uuid.UUID) *KnowledgeEvidenceCreate {
 	_c.mutation.SetID(v)
@@ -226,6 +232,9 @@ func (_c *KnowledgeEvidenceCreate) check() error {
 	if _, ok := _c.mutation.Properties(); !ok {
 		return &ValidationError{Name: "properties", err: errors.New(`ent: missing required field "KnowledgeEvidence.properties"`)}
 	}
+	if _, ok := _c.mutation.SubjectState(); !ok {
+		return &ValidationError{Name: "subject_state", err: errors.New(`ent: missing required field "KnowledgeEvidence.subject_state"`)}
+	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeEvidence.tenant"`)}
 	}
@@ -295,6 +304,10 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 	if value, ok := _c.mutation.Properties(); ok {
 		_spec.SetField(knowledgeevidence.FieldProperties, field.TypeJSON, value)
 		_node.Properties = value
+	}
+	if value, ok := _c.mutation.SubjectState(); ok {
+		_spec.SetField(knowledgeevidence.FieldSubjectState, field.TypeJSON, value)
+		_node.SubjectState = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -463,6 +476,9 @@ func (u *KnowledgeEvidenceUpsertOne) UpdateNewValues() *KnowledgeEvidenceUpsertO
 		}
 		if _, exists := u.create.mutation.Properties(); exists {
 			s.SetIgnore(knowledgeevidence.FieldProperties)
+		}
+		if _, exists := u.create.mutation.SubjectState(); exists {
+			s.SetIgnore(knowledgeevidence.FieldSubjectState)
 		}
 	}))
 	return u
@@ -726,6 +742,9 @@ func (u *KnowledgeEvidenceUpsertBulk) UpdateNewValues() *KnowledgeEvidenceUpsert
 			}
 			if _, exists := b.mutation.Properties(); exists {
 				s.SetIgnore(knowledgeevidence.FieldProperties)
+			}
+			if _, exists := b.mutation.SubjectState(); exists {
+				s.SetIgnore(knowledgeevidence.FieldSubjectState)
 			}
 		}
 	}))

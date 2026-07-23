@@ -64,6 +64,7 @@ export class IncidentEventDialogController {
 			timestamp: attrs.timestamp,
 			isKey: attrs.isKey,
 			title: attrs.title,
+			systemContext: attrs.systemContext.map((context) => context.attributes),
 		};
 		this.createEventMut.mutate({ path, body: { attributes } });
 	}
@@ -76,6 +77,7 @@ export class IncidentEventDialogController {
 			kind: attrs.kind,
 			timestamp: attrs.timestamp,
 			title: attrs.title,
+			systemContext: attrs.systemContext.map((context) => context.attributes),
 		};
 		this.updateEventMut.mutate({ path, body: { attributes } });
 	}

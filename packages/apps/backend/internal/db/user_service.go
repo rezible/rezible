@@ -13,16 +13,14 @@ import (
 )
 
 type UserService struct {
-	db        rez.Database
-	orgs      rez.OrganizationService
-	knowledge rez.KnowledgeIngestionService
+	db   rez.Database
+	orgs rez.OrganizationService
 }
 
-func NewUserService(db rez.Database, orgs rez.OrganizationService, knowledge rez.KnowledgeIngestionService) (*UserService, error) {
+func NewUserService(db rez.Database, orgs rez.OrganizationService) (*UserService, error) {
 	s := &UserService{
-		db:        db,
-		orgs:      orgs,
-		knowledge: knowledge,
+		db:   db,
+		orgs: orgs,
 	}
 
 	return s, nil

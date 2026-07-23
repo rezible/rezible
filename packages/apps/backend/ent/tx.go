@@ -70,8 +70,8 @@ type Tx struct {
 	IncidentTimelineEventContributingFactor *IncidentTimelineEventContributingFactorClient
 	// IncidentTimelineEventEvidence is the client for interacting with the IncidentTimelineEventEvidence builders.
 	IncidentTimelineEventEvidence *IncidentTimelineEventEvidenceClient
-	// IncidentTimelineEventTopologyContext is the client for interacting with the IncidentTimelineEventTopologyContext builders.
-	IncidentTimelineEventTopologyContext *IncidentTimelineEventTopologyContextClient
+	// IncidentTimelineEventSystemContext is the client for interacting with the IncidentTimelineEventSystemContext builders.
+	IncidentTimelineEventSystemContext *IncidentTimelineEventSystemContextClient
 	// IncidentType is the client for interacting with the IncidentType builders.
 	IncidentType *IncidentTypeClient
 	// Integration is the client for interacting with the Integration builders.
@@ -86,12 +86,6 @@ type Tx struct {
 	KnowledgeEntity *KnowledgeEntityClient
 	// KnowledgeEvidence is the client for interacting with the KnowledgeEvidence builders.
 	KnowledgeEvidence *KnowledgeEvidenceClient
-	// KnowledgeGraphSnapshot is the client for interacting with the KnowledgeGraphSnapshot builders.
-	KnowledgeGraphSnapshot *KnowledgeGraphSnapshotClient
-	// KnowledgeGraphSnapshotEntity is the client for interacting with the KnowledgeGraphSnapshotEntity builders.
-	KnowledgeGraphSnapshotEntity *KnowledgeGraphSnapshotEntityClient
-	// KnowledgeGraphSnapshotRelationship is the client for interacting with the KnowledgeGraphSnapshotRelationship builders.
-	KnowledgeGraphSnapshotRelationship *KnowledgeGraphSnapshotRelationshipClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
 	KnowledgeRelationship *KnowledgeRelationshipClient
 	// KnowledgeSubjectAlias is the client for interacting with the KnowledgeSubjectAlias builders.
@@ -318,7 +312,7 @@ func (tx *Tx) init() {
 	tx.IncidentTimelineEventContext = NewIncidentTimelineEventContextClient(tx.config)
 	tx.IncidentTimelineEventContributingFactor = NewIncidentTimelineEventContributingFactorClient(tx.config)
 	tx.IncidentTimelineEventEvidence = NewIncidentTimelineEventEvidenceClient(tx.config)
-	tx.IncidentTimelineEventTopologyContext = NewIncidentTimelineEventTopologyContextClient(tx.config)
+	tx.IncidentTimelineEventSystemContext = NewIncidentTimelineEventSystemContextClient(tx.config)
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
 	tx.Integration = NewIntegrationClient(tx.config)
 	tx.IntegrationEventSyncCursor = NewIntegrationEventSyncCursorClient(tx.config)
@@ -326,9 +320,6 @@ func (tx *Tx) init() {
 	tx.IntegrationUserInstallState = NewIntegrationUserInstallStateClient(tx.config)
 	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
 	tx.KnowledgeEvidence = NewKnowledgeEvidenceClient(tx.config)
-	tx.KnowledgeGraphSnapshot = NewKnowledgeGraphSnapshotClient(tx.config)
-	tx.KnowledgeGraphSnapshotEntity = NewKnowledgeGraphSnapshotEntityClient(tx.config)
-	tx.KnowledgeGraphSnapshotRelationship = NewKnowledgeGraphSnapshotRelationshipClient(tx.config)
 	tx.KnowledgeRelationship = NewKnowledgeRelationshipClient(tx.config)
 	tx.KnowledgeSubjectAlias = NewKnowledgeSubjectAliasClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)

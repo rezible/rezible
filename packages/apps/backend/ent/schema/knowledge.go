@@ -126,9 +126,9 @@ func (KnowledgeSubjectAlias) Fields() []ent.Field {
 		field.UUID("relationship_id", uuid.UUID{}).Optional().Immutable(),
 		field.String("description"),
 		field.Time("first_observed_at").Optional().
-			Default(time.Now).Immutable(),
+			Default(time.Now),
 		field.Time("last_observed_at").Optional().
-			Default(time.Now).UpdateDefault(time.Now),
+			Default(time.Now),
 		field.Time("deleted_at").Optional().Nillable().
 			Comment("Time observed explicit evidence that this subject no longer exists or applies."),
 	}
@@ -182,6 +182,10 @@ func (KnowledgeEvidence) Fields() []ent.Field {
 		field.Time("effective_at").Immutable().
 			Comment("Domain effective time (may differ from the event occurred_at)"),
 		field.JSON("properties", map[string]any{}).SchemaType(schemaTypeJsonB).Immutable(),
+		field.JSON("subject_state", map[string]any{}).
+			SchemaType(schemaTypeJsonB).
+			Immutable().
+			Comment("Projected subject state used for historical graph reconstruction."),
 	}
 }
 
@@ -198,7 +202,7 @@ func (KnowledgeEvidence) Edges() []ent.Edge {
 
 func (KnowledgeEvidence) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "event_id", "alias_id", "evidence_kind").Unique(),
+		index.Fields("tenant_id", "event_id", "alias_id", "evidence_kind", "assertion").Unique(),
 		index.Fields("tenant_id", "alias_id"),
 		index.Fields("tenant_id", "event_id"),
 		index.Fields("tenant_id", "effective_at"),

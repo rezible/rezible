@@ -71,7 +71,7 @@ func NewHandler(
 		organizationsHandler:      newOrganizationsHandler(orgs),
 		playbooksHandler:          newPlaybooksHandler(playbooks),
 		retrospectivesHandler:     newRetrospectivesHandler(users, incidents, retros, documents),
-		systemAnalysisHandler:     newSystemAnalysisHandler(db),
+		systemAnalysisHandler:     newSystemAnalysisHandler(db, knowledge),
 		knowledgeGraphHandler:     newKnowledgeGraphHandler(knowledge),
 		teamsHandler:              newTeamsHandler(db),
 		usersHandler:              newUsersHandler(users),

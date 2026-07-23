@@ -10,7 +10,6 @@ import (
 	"github.com/firebase/genkit/go/core"
 	genkitx "github.com/firebase/genkit/go/genkit/exp"
 	middlewarex "github.com/firebase/genkit/go/plugins/middleware/exp"
-	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -26,13 +25,17 @@ type (
 	}
 
 	customAgentRunner[I rezai.AgentInput, S rezai.SessionState] interface {
-		makeAgentFunc([]ai.Middleware, []ai.ToolRef) aix.AgentFunc[S]
+		makeAgentFunc([]ai.Middleware) aix.AgentFunc[S]
+	}
+
+	initialContextSeeder[I rezai.AgentInput] interface {
+		makeInitialContextSeed(context.Context, I) (string, error)
 	}
 
 	AgentWrapper interface {
 		ValidateAndEncodeInput(any) ([]byte, error)
 		MakeInitialTurnInput(context.Context, []byte) (*rez.AgentTurnInput, error)
-		Invoke(context.Context, *ent.AgentSession, *ent.AgentTurn, []byte, *rez.AgentTurnInput) (*rez.AgentInvocationResult, error)
+		Invoke(context.Context, rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error)
 	}
 )
 
@@ -48,28 +51,25 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 	if d.Model != "" {
 		modelOpt = ai.WithModelName(d.Model)
 	}
-	registeredTools, dynamicTools := svc.getRegisteredTools(d.RequiredTools)
-	agentMw, mwErr := newAgentRunnerMiddleware(runner, dynamicTools)
-	if mwErr != nil {
-		return nil, fmt.Errorf("agent runner middleware: %w", mwErr)
+
+	var middleware []ai.Middleware
+
+	if d.EnableKnowledgeGraph {
+		middleware = append(middleware, newKnowledgeGraphMiddleware(svc.knowledge, runner))
 	}
-	middleware := []ai.Middleware{
-		agentMw,
-		newKnowledgeGraphMiddleware[S](svc.knowledgeGraph),
-	}
+
 	if d.EnableArtifacts {
 		middleware = append(middleware, &middlewarex.Artifacts{})
 	}
 
 	var agent *aix.Agent[S]
 	if cr, ok := runner.(customAgentRunner[I, S]); ok {
-		agent = genkitx.DefineCustomAgent(svc.gk, d.Name, cr.makeAgentFunc(middleware, registeredTools), opts...)
+		agent = genkitx.DefineCustomAgent(svc.gk, d.Name, cr.makeAgentFunc(middleware), opts...)
 	} else {
 		prompt := aix.InlinePrompt{
 			modelOpt,
 			ai.WithSystem(d.SystemPrompt),
 			ai.WithUse(middleware...),
-			ai.WithTools(registeredTools...),
 		}
 		agent = genkitx.DefineAgent(svc.gk, d.Name, prompt, opts...)
 	}
@@ -121,37 +121,45 @@ func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, raw []byt
 	return w.normalizeTurnInput(turnInput)
 }
 
-func (w *agentWrapper[I, S]) Invoke(ctx context.Context, session *ent.AgentSession, turn *ent.AgentTurn, parentState []byte, input *rez.AgentTurnInput) (*rez.AgentInvocationResult, error) {
-	ctx = execution.NewAiAgentContext(ctx, session, turn)
+func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error) {
+	sess := params.Session
+	ctx = execution.NewAiAgentContext(ctx, sess, params.Turn)
 
-	var inputErr error
-	if input, inputErr = w.normalizeTurnInput(input); inputErr != nil {
+	input, inputErr := w.normalizeTurnInput(params.Input)
+	if inputErr != nil {
 		return nil, inputErr
 	}
 
-	state := &aix.SessionState[S]{SessionID: session.ID.String()}
-	if len(parentState) > 0 {
-		if unmarshalErr := json.Unmarshal(parentState, state); unmarshalErr != nil {
+	state := &aix.SessionState[S]{SessionID: sess.ID.String()}
+	if params.Parent != nil {
+		if unmarshalErr := json.Unmarshal(params.Parent.State, state); unmarshalErr != nil {
 			return nil, fmt.Errorf("decode parent state: %w", unmarshalErr)
 		}
-		if state.SessionID != session.ID.String() {
-			return nil, fmt.Errorf("parent state session ID %q does not match %q", state.SessionID, session.ID)
+		if state.SessionID != sess.ID.String() {
+			return nil, fmt.Errorf("parent state session ID %q does not match %q", state.SessionID, sess.ID)
 		}
 	}
 
-	var agentResume *aix.ToolResume
-	if input.Resume != nil {
-		agentResume = &aix.ToolResume{Respond: input.Resume.Respond, Restart: input.Resume.Restart}
+	agentInput := &aix.AgentInput{
+		Message: input.Message,
 	}
-	agentInput := &aix.AgentInput{Message: input.Message, Resume: agentResume}
+	if input.Resume != nil {
+		agentInput.Resume = &aix.ToolResume{
+			Respond: input.Resume.Respond,
+			Restart: input.Resume.Restart,
+		}
+	}
+
+	fmt.Printf("running: %+v\n", agentInput.Message.Text())
+
 	out, runErr := w.agent.Run(ctx, agentInput, aix.WithState(state))
 	if runErr != nil {
 		return nil, fmt.Errorf("run agent: %w", runErr)
 	}
-	return w.wrapAgentOutput(session.ID, out)
+	return w.wrapOutput(sess, out)
 }
 
-func (w *agentWrapper[I, S]) wrapAgentOutput(sessId uuid.UUID, out *aix.AgentOutput[S]) (*rez.AgentInvocationResult, error) {
+func (w *agentWrapper[I, S]) wrapOutput(sess *ent.AgentSession, out *aix.AgentOutput[S]) (*rez.AgentInvocationResult, error) {
 	if out == nil {
 		return nil, fmt.Errorf("agent returned nil output")
 	}
@@ -161,11 +169,11 @@ func (w *agentWrapper[I, S]) wrapAgentOutput(sessId uuid.UUID, out *aix.AgentOut
 	if out.SnapshotID != "" {
 		return nil, fmt.Errorf("client-managed agent returned snapshot ID %q", out.SnapshotID)
 	}
-	if out.SessionID != sessId.String() {
-		return nil, fmt.Errorf("output session ID %q does not match %q", out.SessionID, sessId)
+	if out.SessionID != sess.ID.String() {
+		return nil, fmt.Errorf("output session ID %q does not match %q", out.SessionID, sess.ID)
 	}
-	if out.State != nil && out.State.SessionID != sessId.String() {
-		return nil, fmt.Errorf("output state session ID %q does not match %q", out.State.SessionID, sessId)
+	if out.State != nil && out.State.SessionID != sess.ID.String() {
+		return nil, fmt.Errorf("output state session ID %q does not match %q", out.State.SessionID, sess.ID)
 	}
 
 	result := &rez.AgentInvocationResult{

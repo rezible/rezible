@@ -21,16 +21,14 @@ import (
 )
 
 type IncidentService struct {
-	db        rez.Database
-	msgs      rez.MessageService
-	knowledge rez.KnowledgeIngestionService
+	db   rez.Database
+	msgs rez.MessageService
 }
 
-func NewIncidentService(db rez.Database, msgs rez.MessageService, knowledge rez.KnowledgeIngestionService) (*IncidentService, error) {
+func NewIncidentService(db rez.Database, msgs rez.MessageService) (*IncidentService, error) {
 	svc := &IncidentService{
-		db:        db,
-		msgs:      msgs,
-		knowledge: knowledge,
+		db:   db,
+		msgs: msgs,
 	}
 
 	if msgsErr := svc.registerMessageHandlers(); msgsErr != nil {
@@ -162,8 +160,23 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		Created:    isCreate,
 		IncidentId: updated.ID,
 	}
-	if pubEvErr := s.msgs.PublishEvent(ctx, updatedEvent); pubEvErr != nil {
-		slog.Error("failed to publish incident update event message", "error", pubEvErr)
+	publish := func(publishCtx context.Context) {
+		if pubEvErr := s.msgs.PublishEvent(publishCtx, updatedEvent); pubEvErr != nil {
+			slog.Error("failed to publish incident update event message", "error", pubEvErr)
+		}
+	}
+	if tx := ent.TxFromContext(ctx); tx != nil {
+		tx.OnCommit(func(next ent.Committer) ent.Committer {
+			return ent.CommitFunc(func(commitCtx context.Context, tx *ent.Tx) error {
+				if err := next.Commit(commitCtx, tx); err != nil {
+					return err
+				}
+				publish(commitCtx)
+				return nil
+			})
+		})
+	} else {
+		publish(ctx)
 	}
 	return s.Get(ctx, incident.ID(updated.ID))
 }

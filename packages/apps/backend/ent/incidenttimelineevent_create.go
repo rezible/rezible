@@ -18,7 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontext"
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenttimelineeventevidence"
-	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
+	"github.com/rezible/rezible/ent/incidenttimelineeventsystemcontext"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -223,19 +223,19 @@ func (_c *IncidentTimelineEventCreate) AddEvidence(v ...*IncidentTimelineEventEv
 	return _c.AddEvidenceIDs(ids...)
 }
 
-// AddTopologyContextIDs adds the "topology_context" edge to the IncidentTimelineEventTopologyContext entity by IDs.
-func (_c *IncidentTimelineEventCreate) AddTopologyContextIDs(ids ...uuid.UUID) *IncidentTimelineEventCreate {
-	_c.mutation.AddTopologyContextIDs(ids...)
+// AddSystemContextIDs adds the "system_context" edge to the IncidentTimelineEventSystemContext entity by IDs.
+func (_c *IncidentTimelineEventCreate) AddSystemContextIDs(ids ...uuid.UUID) *IncidentTimelineEventCreate {
+	_c.mutation.AddSystemContextIDs(ids...)
 	return _c
 }
 
-// AddTopologyContext adds the "topology_context" edges to the IncidentTimelineEventTopologyContext entity.
-func (_c *IncidentTimelineEventCreate) AddTopologyContext(v ...*IncidentTimelineEventTopologyContext) *IncidentTimelineEventCreate {
+// AddSystemContext adds the "system_context" edges to the IncidentTimelineEventSystemContext entity.
+func (_c *IncidentTimelineEventCreate) AddSystemContext(v ...*IncidentTimelineEventSystemContext) *IncidentTimelineEventCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddTopologyContextIDs(ids...)
+	return _c.AddSystemContextIDs(ids...)
 }
 
 // Mutation returns the IncidentTimelineEventMutation object of the builder.
@@ -526,18 +526,18 @@ func (_c *IncidentTimelineEventCreate) createSpec() (*IncidentTimelineEvent, *sq
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.TopologyContextIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SystemContextIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   incidenttimelineevent.TopologyContextTable,
-			Columns: []string{incidenttimelineevent.TopologyContextColumn},
+			Table:   incidenttimelineevent.SystemContextTable,
+			Columns: []string{incidenttimelineevent.SystemContextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineeventtopologycontext.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineeventsystemcontext.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.IncidentTimelineEventTopologyContext
+		edge.Schema = _c.schemaConfig.IncidentTimelineEventSystemContext
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

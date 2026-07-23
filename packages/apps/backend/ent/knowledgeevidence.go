@@ -40,6 +40,8 @@ type KnowledgeEvidence struct {
 	EffectiveAt time.Time `json:"effective_at,omitempty"`
 	// Properties holds the value of the "properties" field.
 	Properties map[string]interface{} `json:"properties,omitempty"`
+	// Projected subject state used for historical graph reconstruction.
+	SubjectState map[string]interface{} `json:"subject_state,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEvidenceQuery when eager-loading is set.
 	Edges        KnowledgeEvidenceEdges `json:"edges"`
@@ -97,7 +99,7 @@ func (*KnowledgeEvidence) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case knowledgeevidence.FieldProperties:
+		case knowledgeevidence.FieldProperties, knowledgeevidence.FieldSubjectState:
 			values[i] = new([]byte)
 		case knowledgeevidence.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -184,6 +186,14 @@ func (_m *KnowledgeEvidence) assignValues(columns []string, values []any) error 
 					return fmt.Errorf("unmarshal field properties: %w", err)
 				}
 			}
+		case knowledgeevidence.FieldSubjectState:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field subject_state", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.SubjectState); err != nil {
+					return fmt.Errorf("unmarshal field subject_state: %w", err)
+				}
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -261,6 +271,9 @@ func (_m *KnowledgeEvidence) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("properties=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Properties))
+	builder.WriteString(", ")
+	builder.WriteString("subject_state=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SubjectState))
 	builder.WriteByte(')')
 	return builder.String()
 }

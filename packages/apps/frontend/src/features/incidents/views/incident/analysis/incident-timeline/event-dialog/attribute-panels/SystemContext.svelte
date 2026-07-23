@@ -2,8 +2,8 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import {
 		listSystemAnalysisNodesOptions,
-		type IncidentTimelineEventTopologyContext,
-		type IncidentTimelineEventTopologyContextAttributes,
+		type IncidentTimelineEventSystemContext,
+		type IncidentTimelineEventSystemContextAttributes,
 		type SystemAnalysisNode,
 	} from "$lib/api";
 	import { v4 as uuidv4 } from "uuid";
@@ -26,32 +26,32 @@
 	}));
 	const analysisNodes = $derived(analysisNodesQuery.data?.data ?? []);
 	const analysisNodeMap = $derived(
-		new SvelteMap(analysisNodes.map((node) => [node.attributes.snapshotEntity.id, node]))
+		new SvelteMap(analysisNodes.map((node) => [node.id, node]))
 	);
 
-	let relationship = $state("affected");
+	let relationship = $state<IncidentTimelineEventSystemContextAttributes["relationship"]>("affected");
 
-	const getAttributes = (node: SystemAnalysisNode): IncidentTimelineEventTopologyContextAttributes => ({
-		snapshotEntityId: $state.snapshot(node.attributes.snapshotEntity.id),
+	const getAttributes = (node: SystemAnalysisNode): IncidentTimelineEventSystemContextAttributes => ({
+		systemAnalysisNodeId: node.id,
 		relationship: $state.snapshot(relationship),
 	});
 
 	let selecting = $state(false);
 	let selectedNode = $state<SystemAnalysisNode>();
-	let editing = $state<IncidentTimelineEventTopologyContext>();
+	let editing = $state<IncidentTimelineEventSystemContext>();
 	const editNode = $derived(
-		editing?.attributes.snapshotEntityId ? analysisNodeMap.get(editing.attributes.snapshotEntityId) : undefined
+		editing?.attributes.systemAnalysisNodeId ? analysisNodeMap.get(editing.attributes.systemAnalysisNodeId) : undefined
 	);
 
-	const setEditing = (cx: IncidentTimelineEventTopologyContext) => {
+	const setEditing = (cx: IncidentTimelineEventSystemContext) => {
 		editing = $state.snapshot(cx);
 		relationship = $state.snapshot(cx.attributes.relationship);
 	};
 
-	const confirmDelete = (cx: IncidentTimelineEventTopologyContext) => {
-		const node = cx.attributes.snapshotEntityId ? analysisNodeMap.get(cx.attributes.snapshotEntityId) : undefined;
+	const confirmDelete = (cx: IncidentTimelineEventSystemContext) => {
+		const node = analysisNodeMap.get(cx.attributes.systemAnalysisNodeId);
 		editing = undefined;
-		if (!node || !confirm(`Are you sure you want to remove ${node.attributes.snapshotEntity.attributes.displayName}?`)) return;
+		if (!node || !confirm(`Are you sure you want to remove ${node.attributes.knowledgeEntity.attributes.displayName}?`)) return;
 		const idx = attributes.systemContext.findIndex((c) => c.id === cx.id);
 		if (idx >= 0) attributes.systemContext.splice(idx, 1);
 	};
@@ -87,8 +87,8 @@
 </script>
 
 <div class="flex flex-col gap-1 bg-surface-100">
-	{#snippet topologyContextEditor(node: SystemAnalysisNode)}
-		{@const attrs = node.attributes.snapshotEntity.attributes}
+	{#snippet systemContextEditor(node: SystemAnalysisNode)}
+		{@const attrs = node.attributes.knowledgeEntity.attributes}
 		<span class="text-lg">{attrs.displayName}</span>
 
 		<span>relationship select</span>
@@ -108,8 +108,8 @@
 
 	{#snippet topologyNodeSelector()}
 		{#each analysisNodes as node (node.id)}
-			{@const attr = node.attributes.snapshotEntity.attributes}
-			<span>entity list item: {attr.displayName}</span>
+			{@const attr = node.attributes.knowledgeEntity.attributes}
+			<button type="button" class="text-left" onclick={() => (selectedNode = node)}>{attr.displayName}</button>
 		{/each}
 
 		{#if analysisNodes.length === 0 && analysisNodesQuery.isFetched}
@@ -121,7 +121,7 @@
 		<div class="border rounded flex flex-col gap-2 p-2">
 			{#if selecting}
 				{#if selectedNode}
-					{@render topologyContextEditor(selectedNode)}
+					{@render systemContextEditor(selectedNode)}
 				{:else}
 					{@render topologyNodeSelector()}
 				{/if}
@@ -129,7 +129,7 @@
 				{@render confirmButtons()}
 			{:else if editing}
 				{#if editNode}
-					{@render topologyContextEditor(editNode)}
+					{@render systemContextEditor(editNode)}
 				{/if}
 
 				{@render confirmButtons()}
@@ -137,8 +137,10 @@
 		</div>
 	{:else}
 		{#each attributes.systemContext as cx (cx.id)}
-			{@const node = cx.attributes.snapshotEntityId ? analysisNodeMap.get(cx.attributes.snapshotEntityId) : undefined}
-			<span>entity list item: {node?.attributes.snapshotEntity.attributes.displayName ?? "Unknown Entity"}</span>
+			{@const node = analysisNodeMap.get(cx.attributes.systemAnalysisNodeId)}
+			<button type="button" class="text-left" onclick={() => setEditing(cx)}>
+				{node?.attributes.knowledgeEntity.attributes.displayName ?? "Unknown Entity"}
+			</button>
 		{/each}
 
 		<Button

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -43,16 +44,17 @@ type NormalizedEvent struct {
 	ReceivedAt time.Time `json:"received_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NormalizedEventQuery when eager-loading is set.
-	Edges        NormalizedEventEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges                       NormalizedEventEdges `json:"edges"`
+	normalized_event_projection *uuid.UUID
+	selectValues                sql.SelectValues
 }
 
 // NormalizedEventEdges holds the relations/edges for other nodes in the graph.
 type NormalizedEventEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// Projections holds the value of the projections edge.
-	Projections []*NormalizedEventProjection `json:"projections,omitempty"`
+	// Projection holds the value of the projection edge.
+	Projection *NormalizedEventProjection `json:"projection,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -69,13 +71,15 @@ func (e NormalizedEventEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// ProjectionsOrErr returns the Projections value or an error if the edge
-// was not loaded in eager-loading.
-func (e NormalizedEventEdges) ProjectionsOrErr() ([]*NormalizedEventProjection, error) {
-	if e.loadedTypes[1] {
-		return e.Projections, nil
+// ProjectionOrErr returns the Projection value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e NormalizedEventEdges) ProjectionOrErr() (*NormalizedEventProjection, error) {
+	if e.Projection != nil {
+		return e.Projection, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: normalizedeventprojection.Label}
 	}
-	return nil, &NotLoadedError{edge: "projections"}
+	return nil, &NotLoadedError{edge: "projection"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -93,6 +97,8 @@ func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case normalizedevent.FieldID:
 			values[i] = new(uuid.UUID)
+		case normalizedevent.ForeignKeys[0]: // normalized_event_projection
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -180,6 +186,13 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ReceivedAt = value.Time
 			}
+		case normalizedevent.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field normalized_event_projection", values[i])
+			} else if value.Valid {
+				_m.normalized_event_projection = new(uuid.UUID)
+				*_m.normalized_event_projection = *value.S.(*uuid.UUID)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -198,9 +211,9 @@ func (_m *NormalizedEvent) QueryTenant() *TenantQuery {
 	return NewNormalizedEventClient(_m.config).QueryTenant(_m)
 }
 
-// QueryProjections queries the "projections" edge of the NormalizedEvent entity.
-func (_m *NormalizedEvent) QueryProjections() *NormalizedEventProjectionQuery {
-	return NewNormalizedEventClient(_m.config).QueryProjections(_m)
+// QueryProjection queries the "projection" edge of the NormalizedEvent entity.
+func (_m *NormalizedEvent) QueryProjection() *NormalizedEventProjectionQuery {
+	return NewNormalizedEventClient(_m.config).QueryProjection(_m)
 }
 
 // Update returns a builder for updating this NormalizedEvent.

@@ -51,8 +51,8 @@ const (
 	EdgeFactors = "factors"
 	// EdgeEvidence holds the string denoting the evidence edge name in mutations.
 	EdgeEvidence = "evidence"
-	// EdgeTopologyContext holds the string denoting the topology_context edge name in mutations.
-	EdgeTopologyContext = "topology_context"
+	// EdgeSystemContext holds the string denoting the system_context edge name in mutations.
+	EdgeSystemContext = "system_context"
 	// Table holds the table name of the incidenttimelineevent in the database.
 	Table = "incident_timeline_events"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -97,13 +97,13 @@ const (
 	EvidenceInverseTable = "incident_timeline_event_evidences"
 	// EvidenceColumn is the table column denoting the evidence relation/edge.
 	EvidenceColumn = "incident_timeline_event_evidence"
-	// TopologyContextTable is the table that holds the topology_context relation/edge.
-	TopologyContextTable = "incident_timeline_event_topology_contexts"
-	// TopologyContextInverseTable is the table name for the IncidentTimelineEventTopologyContext entity.
-	// It exists in this package in order to avoid circular dependency with the "incidenttimelineeventtopologycontext" package.
-	TopologyContextInverseTable = "incident_timeline_event_topology_contexts"
-	// TopologyContextColumn is the table column denoting the topology_context relation/edge.
-	TopologyContextColumn = "incident_event_id"
+	// SystemContextTable is the table that holds the system_context relation/edge.
+	SystemContextTable = "incident_timeline_event_system_contexts"
+	// SystemContextInverseTable is the table name for the IncidentTimelineEventSystemContext entity.
+	// It exists in this package in order to avoid circular dependency with the "incidenttimelineeventsystemcontext" package.
+	SystemContextInverseTable = "incident_timeline_event_system_contexts"
+	// SystemContextColumn is the table column denoting the system_context relation/edge.
+	SystemContextColumn = "incident_event_id"
 )
 
 // Columns holds all SQL columns for incidenttimelineevent fields.
@@ -300,17 +300,17 @@ func ByEvidence(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByTopologyContextCount orders the results by topology_context count.
-func ByTopologyContextCount(opts ...sql.OrderTermOption) OrderOption {
+// BySystemContextCount orders the results by system_context count.
+func BySystemContextCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newTopologyContextStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newSystemContextStep(), opts...)
 	}
 }
 
-// ByTopologyContext orders the results by topology_context terms.
-func ByTopologyContext(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// BySystemContext orders the results by system_context terms.
+func BySystemContext(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTopologyContextStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newSystemContextStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -355,10 +355,10 @@ func newEvidenceStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, EvidenceTable, EvidenceColumn),
 	)
 }
-func newTopologyContextStep() *sqlgraph.Step {
+func newSystemContextStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(TopologyContextInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, TopologyContextTable, TopologyContextColumn),
+		sqlgraph.To(SystemContextInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SystemContextTable, SystemContextColumn),
 	)
 }

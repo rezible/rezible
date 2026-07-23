@@ -35,6 +35,8 @@ const (
 	FieldEffectiveAt = "effective_at"
 	// FieldProperties holds the string denoting the properties field in the database.
 	FieldProperties = "properties"
+	// FieldSubjectState holds the string denoting the subject_state field in the database.
+	FieldSubjectState = "subject_state"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
@@ -78,6 +80,7 @@ var Columns = []string{
 	FieldAliasID,
 	FieldEffectiveAt,
 	FieldProperties,
+	FieldSubjectState,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

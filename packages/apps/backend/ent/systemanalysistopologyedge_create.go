@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	"github.com/rezible/rezible/ent/tenant"
@@ -67,9 +67,23 @@ func (_c *SystemAnalysisTopologyEdgeCreate) SetAnalysisID(v uuid.UUID) *SystemAn
 	return _c
 }
 
-// SetSnapshotRelationshipID sets the "snapshot_relationship_id" field.
-func (_c *SystemAnalysisTopologyEdgeCreate) SetSnapshotRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeCreate {
-	_c.mutation.SetSnapshotRelationshipID(v)
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (_c *SystemAnalysisTopologyEdgeCreate) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeCreate {
+	_c.mutation.SetKnowledgeRelationshipID(v)
+	return _c
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (_c *SystemAnalysisTopologyEdgeCreate) SetReferencedAt(v time.Time) *SystemAnalysisTopologyEdgeCreate {
+	_c.mutation.SetReferencedAt(v)
+	return _c
+}
+
+// SetNillableReferencedAt sets the "referenced_at" field if the given value is not nil.
+func (_c *SystemAnalysisTopologyEdgeCreate) SetNillableReferencedAt(v *time.Time) *SystemAnalysisTopologyEdgeCreate {
+	if v != nil {
+		_c.SetReferencedAt(*v)
+	}
 	return _c
 }
 
@@ -111,9 +125,9 @@ func (_c *SystemAnalysisTopologyEdgeCreate) SetAnalysis(v *SystemAnalysis) *Syst
 	return _c.SetAnalysisID(v.ID)
 }
 
-// SetSnapshotRelationship sets the "snapshot_relationship" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (_c *SystemAnalysisTopologyEdgeCreate) SetSnapshotRelationship(v *KnowledgeGraphSnapshotRelationship) *SystemAnalysisTopologyEdgeCreate {
-	return _c.SetSnapshotRelationshipID(v.ID)
+// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (_c *SystemAnalysisTopologyEdgeCreate) SetKnowledgeRelationship(v *KnowledgeRelationship) *SystemAnalysisTopologyEdgeCreate {
+	return _c.SetKnowledgeRelationshipID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisTopologyEdgeMutation object of the builder.
@@ -167,6 +181,13 @@ func (_c *SystemAnalysisTopologyEdgeCreate) defaults() error {
 		v := systemanalysistopologyedge.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.ReferencedAt(); !ok {
+		if systemanalysistopologyedge.DefaultReferencedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemanalysistopologyedge.DefaultReferencedAt (forgotten import ent/runtime?)")
+		}
+		v := systemanalysistopologyedge.DefaultReferencedAt()
+		_c.mutation.SetReferencedAt(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if systemanalysistopologyedge.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized systemanalysistopologyedge.DefaultID (forgotten import ent/runtime?)")
@@ -191,8 +212,11 @@ func (_c *SystemAnalysisTopologyEdgeCreate) check() error {
 	if _, ok := _c.mutation.AnalysisID(); !ok {
 		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "SystemAnalysisTopologyEdge.analysis_id"`)}
 	}
-	if _, ok := _c.mutation.SnapshotRelationshipID(); !ok {
-		return &ValidationError{Name: "snapshot_relationship_id", err: errors.New(`ent: missing required field "SystemAnalysisTopologyEdge.snapshot_relationship_id"`)}
+	if _, ok := _c.mutation.KnowledgeRelationshipID(); !ok {
+		return &ValidationError{Name: "knowledge_relationship_id", err: errors.New(`ent: missing required field "SystemAnalysisTopologyEdge.knowledge_relationship_id"`)}
+	}
+	if _, ok := _c.mutation.ReferencedAt(); !ok {
+		return &ValidationError{Name: "referenced_at", err: errors.New(`ent: missing required field "SystemAnalysisTopologyEdge.referenced_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemAnalysisTopologyEdge.tenant"`)}
@@ -200,8 +224,8 @@ func (_c *SystemAnalysisTopologyEdgeCreate) check() error {
 	if len(_c.mutation.AnalysisIDs()) == 0 {
 		return &ValidationError{Name: "analysis", err: errors.New(`ent: missing required edge "SystemAnalysisTopologyEdge.analysis"`)}
 	}
-	if len(_c.mutation.SnapshotRelationshipIDs()) == 0 {
-		return &ValidationError{Name: "snapshot_relationship", err: errors.New(`ent: missing required edge "SystemAnalysisTopologyEdge.snapshot_relationship"`)}
+	if len(_c.mutation.KnowledgeRelationshipIDs()) == 0 {
+		return &ValidationError{Name: "knowledge_relationship", err: errors.New(`ent: missing required edge "SystemAnalysisTopologyEdge.knowledge_relationship"`)}
 	}
 	return nil
 }
@@ -248,6 +272,10 @@ func (_c *SystemAnalysisTopologyEdgeCreate) createSpec() (*SystemAnalysisTopolog
 		_spec.SetField(systemanalysistopologyedge.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if value, ok := _c.mutation.ReferencedAt(); ok {
+		_spec.SetField(systemanalysistopologyedge.FieldReferencedAt, field.TypeTime, value)
+		_node.ReferencedAt = value
+	}
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemanalysistopologyedge.FieldDescription, field.TypeString, value)
 		_node.Description = value
@@ -288,22 +316,22 @@ func (_c *SystemAnalysisTopologyEdgeCreate) createSpec() (*SystemAnalysisTopolog
 		_node.AnalysisID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SnapshotRelationshipIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysistopologyedge.SnapshotRelationshipTable,
-			Columns: []string{systemanalysistopologyedge.SnapshotRelationshipColumn},
+			Table:   systemanalysistopologyedge.KnowledgeRelationshipTable,
+			Columns: []string{systemanalysistopologyedge.KnowledgeRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.SystemAnalysisTopologyEdge
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.SnapshotRelationshipID = nodes[0]
+		_node.KnowledgeRelationshipID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -394,15 +422,27 @@ func (u *SystemAnalysisTopologyEdgeUpsert) UpdateAnalysisID() *SystemAnalysisTop
 	return u
 }
 
-// SetSnapshotRelationshipID sets the "snapshot_relationship_id" field.
-func (u *SystemAnalysisTopologyEdgeUpsert) SetSnapshotRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeUpsert {
-	u.Set(systemanalysistopologyedge.FieldSnapshotRelationshipID, v)
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (u *SystemAnalysisTopologyEdgeUpsert) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeUpsert {
+	u.Set(systemanalysistopologyedge.FieldKnowledgeRelationshipID, v)
 	return u
 }
 
-// UpdateSnapshotRelationshipID sets the "snapshot_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisTopologyEdgeUpsert) UpdateSnapshotRelationshipID() *SystemAnalysisTopologyEdgeUpsert {
-	u.SetExcluded(systemanalysistopologyedge.FieldSnapshotRelationshipID)
+// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyEdgeUpsert) UpdateKnowledgeRelationshipID() *SystemAnalysisTopologyEdgeUpsert {
+	u.SetExcluded(systemanalysistopologyedge.FieldKnowledgeRelationshipID)
+	return u
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (u *SystemAnalysisTopologyEdgeUpsert) SetReferencedAt(v time.Time) *SystemAnalysisTopologyEdgeUpsert {
+	u.Set(systemanalysistopologyedge.FieldReferencedAt, v)
+	return u
+}
+
+// UpdateReferencedAt sets the "referenced_at" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyEdgeUpsert) UpdateReferencedAt() *SystemAnalysisTopologyEdgeUpsert {
+	u.SetExcluded(systemanalysistopologyedge.FieldReferencedAt)
 	return u
 }
 
@@ -517,17 +557,31 @@ func (u *SystemAnalysisTopologyEdgeUpsertOne) UpdateAnalysisID() *SystemAnalysis
 	})
 }
 
-// SetSnapshotRelationshipID sets the "snapshot_relationship_id" field.
-func (u *SystemAnalysisTopologyEdgeUpsertOne) SetSnapshotRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeUpsertOne {
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (u *SystemAnalysisTopologyEdgeUpsertOne) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeUpsertOne {
 	return u.Update(func(s *SystemAnalysisTopologyEdgeUpsert) {
-		s.SetSnapshotRelationshipID(v)
+		s.SetKnowledgeRelationshipID(v)
 	})
 }
 
-// UpdateSnapshotRelationshipID sets the "snapshot_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisTopologyEdgeUpsertOne) UpdateSnapshotRelationshipID() *SystemAnalysisTopologyEdgeUpsertOne {
+// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyEdgeUpsertOne) UpdateKnowledgeRelationshipID() *SystemAnalysisTopologyEdgeUpsertOne {
 	return u.Update(func(s *SystemAnalysisTopologyEdgeUpsert) {
-		s.UpdateSnapshotRelationshipID()
+		s.UpdateKnowledgeRelationshipID()
+	})
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (u *SystemAnalysisTopologyEdgeUpsertOne) SetReferencedAt(v time.Time) *SystemAnalysisTopologyEdgeUpsertOne {
+	return u.Update(func(s *SystemAnalysisTopologyEdgeUpsert) {
+		s.SetReferencedAt(v)
+	})
+}
+
+// UpdateReferencedAt sets the "referenced_at" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyEdgeUpsertOne) UpdateReferencedAt() *SystemAnalysisTopologyEdgeUpsertOne {
+	return u.Update(func(s *SystemAnalysisTopologyEdgeUpsert) {
+		s.UpdateReferencedAt()
 	})
 }
 
@@ -812,17 +866,31 @@ func (u *SystemAnalysisTopologyEdgeUpsertBulk) UpdateAnalysisID() *SystemAnalysi
 	})
 }
 
-// SetSnapshotRelationshipID sets the "snapshot_relationship_id" field.
-func (u *SystemAnalysisTopologyEdgeUpsertBulk) SetSnapshotRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeUpsertBulk {
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (u *SystemAnalysisTopologyEdgeUpsertBulk) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeUpsertBulk {
 	return u.Update(func(s *SystemAnalysisTopologyEdgeUpsert) {
-		s.SetSnapshotRelationshipID(v)
+		s.SetKnowledgeRelationshipID(v)
 	})
 }
 
-// UpdateSnapshotRelationshipID sets the "snapshot_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisTopologyEdgeUpsertBulk) UpdateSnapshotRelationshipID() *SystemAnalysisTopologyEdgeUpsertBulk {
+// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyEdgeUpsertBulk) UpdateKnowledgeRelationshipID() *SystemAnalysisTopologyEdgeUpsertBulk {
 	return u.Update(func(s *SystemAnalysisTopologyEdgeUpsert) {
-		s.UpdateSnapshotRelationshipID()
+		s.UpdateKnowledgeRelationshipID()
+	})
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (u *SystemAnalysisTopologyEdgeUpsertBulk) SetReferencedAt(v time.Time) *SystemAnalysisTopologyEdgeUpsertBulk {
+	return u.Update(func(s *SystemAnalysisTopologyEdgeUpsert) {
+		s.SetReferencedAt(v)
+	})
+}
+
+// UpdateReferencedAt sets the "referenced_at" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyEdgeUpsertBulk) UpdateReferencedAt() *SystemAnalysisTopologyEdgeUpsertBulk {
+	return u.Update(func(s *SystemAnalysisTopologyEdgeUpsert) {
+		s.UpdateReferencedAt()
 	})
 }
 

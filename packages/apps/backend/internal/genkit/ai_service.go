@@ -11,15 +11,13 @@ import (
 	"github.com/firebase/genkit/go/genkit"
 	"github.com/firebase/genkit/go/plugins/googlegenai"
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"google.golang.org/genai"
 )
 
 type AiService struct {
-	cfg rez.AiConfig
-
-	knowledgeGraph rez.KnowledgeGraphService
+	cfg       rez.AiConfig
+	knowledge rez.KnowledgeGraphService
 
 	toolRefs []ai.ToolRef
 	gk       *genkit.Genkit
@@ -27,12 +25,12 @@ type AiService struct {
 	agentWrappers map[string]AgentWrapper
 }
 
-func NewAiService(cfg rez.Config, kg rez.KnowledgeGraphService) *AiService {
+func NewAiService(cfg rez.Config, knowledge rez.KnowledgeGraphService) *AiService {
 	return &AiService{
-		cfg:            cfg.AI,
-		knowledgeGraph: kg,
-		toolRefs:       make([]ai.ToolRef, 0),
-		agentWrappers:  make(map[string]AgentWrapper),
+		cfg:           cfg.AI,
+		knowledge:     knowledge,
+		toolRefs:      make([]ai.ToolRef, 0),
+		agentWrappers: make(map[string]AgentWrapper),
 	}
 }
 
@@ -105,15 +103,15 @@ func (s *AiService) MakeInitialAgentTurnInput(ctx context.Context, name string, 
 	return wrapper.MakeInitialTurnInput(ctx, enc)
 }
 
-func (s *AiService) InvokeAgentTurn(ctx context.Context, sess *ent.AgentSession, turn *ent.AgentTurn, state []byte, input *rez.AgentTurnInput) (*rez.AgentInvocationResult, error) {
-	if sess == nil {
+func (s *AiService) InvokeAgentTurn(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error) {
+	if params.Session == nil {
 		return nil, fmt.Errorf("agent session is required")
 	}
-	wrapper, wrapperErr := s.getAgentWrapper(sess.AgentName)
+	wrapper, wrapperErr := s.getAgentWrapper(params.Session.AgentName)
 	if wrapperErr != nil {
 		return nil, wrapperErr
 	}
-	return wrapper.Invoke(ctx, sess, turn, state, input)
+	return wrapper.Invoke(ctx, params)
 }
 
 func (s *AiService) getRegisteredTools(refs []ai.ToolRef) ([]ai.ToolRef, []ai.ToolRef) {
@@ -134,7 +132,7 @@ func (s *AiService) getRegisteredTools(refs []ai.ToolRef) ([]ai.ToolRef, []ai.To
 }
 
 var flashModel = googlegenai.ModelRef("googleai/gemini-flash-latest", &genai.GenerateContentConfig{
-	ThinkingConfig: &genai.ThinkingConfig{ThinkingBudget: new(int32(0))},
+	ThinkingConfig: &genai.ThinkingConfig{ThinkingLevel: genai.ThinkingLevelMinimal},
 })
 
 func (s *AiService) getModel(name string) ai.ModelRef { return flashModel }

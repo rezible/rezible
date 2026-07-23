@@ -67,24 +67,9 @@ func EventID(v uuid.UUID) predicate.NormalizedEventProjection {
 	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldEventID, v))
 }
 
-// Projector applies equality check predicate on the "projector" field. It's identical to ProjectorEQ.
-func Projector(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldProjector, v))
-}
-
-// StartedAt applies equality check predicate on the "started_at" field. It's identical to StartedAtEQ.
-func StartedAt(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldStartedAt, v))
-}
-
-// FinishedAt applies equality check predicate on the "finished_at" field. It's identical to FinishedAtEQ.
-func FinishedAt(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldFinishedAt, v))
-}
-
-// Error applies equality check predicate on the "error" field. It's identical to ErrorEQ.
-func Error(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldError, v))
+// CompletedAt applies equality check predicate on the "completed_at" field. It's identical to CompletedAtEQ.
+func CompletedAt(v time.Time) predicate.NormalizedEventProjection {
+	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldCompletedAt, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -127,254 +112,44 @@ func EventIDNotIn(vs ...uuid.UUID) predicate.NormalizedEventProjection {
 	return predicate.NormalizedEventProjection(sql.FieldNotIn(FieldEventID, vs...))
 }
 
-// ProjectorEQ applies the EQ predicate on the "projector" field.
-func ProjectorEQ(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldProjector, v))
+// CompletedAtEQ applies the EQ predicate on the "completed_at" field.
+func CompletedAtEQ(v time.Time) predicate.NormalizedEventProjection {
+	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldCompletedAt, v))
 }
 
-// ProjectorNEQ applies the NEQ predicate on the "projector" field.
-func ProjectorNEQ(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNEQ(FieldProjector, v))
+// CompletedAtNEQ applies the NEQ predicate on the "completed_at" field.
+func CompletedAtNEQ(v time.Time) predicate.NormalizedEventProjection {
+	return predicate.NormalizedEventProjection(sql.FieldNEQ(FieldCompletedAt, v))
 }
 
-// ProjectorIn applies the In predicate on the "projector" field.
-func ProjectorIn(vs ...string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldIn(FieldProjector, vs...))
+// CompletedAtIn applies the In predicate on the "completed_at" field.
+func CompletedAtIn(vs ...time.Time) predicate.NormalizedEventProjection {
+	return predicate.NormalizedEventProjection(sql.FieldIn(FieldCompletedAt, vs...))
 }
 
-// ProjectorNotIn applies the NotIn predicate on the "projector" field.
-func ProjectorNotIn(vs ...string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNotIn(FieldProjector, vs...))
+// CompletedAtNotIn applies the NotIn predicate on the "completed_at" field.
+func CompletedAtNotIn(vs ...time.Time) predicate.NormalizedEventProjection {
+	return predicate.NormalizedEventProjection(sql.FieldNotIn(FieldCompletedAt, vs...))
 }
 
-// ProjectorGT applies the GT predicate on the "projector" field.
-func ProjectorGT(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldGT(FieldProjector, v))
+// CompletedAtGT applies the GT predicate on the "completed_at" field.
+func CompletedAtGT(v time.Time) predicate.NormalizedEventProjection {
+	return predicate.NormalizedEventProjection(sql.FieldGT(FieldCompletedAt, v))
 }
 
-// ProjectorGTE applies the GTE predicate on the "projector" field.
-func ProjectorGTE(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldGTE(FieldProjector, v))
+// CompletedAtGTE applies the GTE predicate on the "completed_at" field.
+func CompletedAtGTE(v time.Time) predicate.NormalizedEventProjection {
+	return predicate.NormalizedEventProjection(sql.FieldGTE(FieldCompletedAt, v))
 }
 
-// ProjectorLT applies the LT predicate on the "projector" field.
-func ProjectorLT(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldLT(FieldProjector, v))
+// CompletedAtLT applies the LT predicate on the "completed_at" field.
+func CompletedAtLT(v time.Time) predicate.NormalizedEventProjection {
+	return predicate.NormalizedEventProjection(sql.FieldLT(FieldCompletedAt, v))
 }
 
-// ProjectorLTE applies the LTE predicate on the "projector" field.
-func ProjectorLTE(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldLTE(FieldProjector, v))
-}
-
-// ProjectorContains applies the Contains predicate on the "projector" field.
-func ProjectorContains(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldContains(FieldProjector, v))
-}
-
-// ProjectorHasPrefix applies the HasPrefix predicate on the "projector" field.
-func ProjectorHasPrefix(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldHasPrefix(FieldProjector, v))
-}
-
-// ProjectorHasSuffix applies the HasSuffix predicate on the "projector" field.
-func ProjectorHasSuffix(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldHasSuffix(FieldProjector, v))
-}
-
-// ProjectorEqualFold applies the EqualFold predicate on the "projector" field.
-func ProjectorEqualFold(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldEqualFold(FieldProjector, v))
-}
-
-// ProjectorContainsFold applies the ContainsFold predicate on the "projector" field.
-func ProjectorContainsFold(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldContainsFold(FieldProjector, v))
-}
-
-// StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v Status) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldStatus, v))
-}
-
-// StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v Status) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNEQ(FieldStatus, v))
-}
-
-// StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...Status) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldIn(FieldStatus, vs...))
-}
-
-// StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...Status) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNotIn(FieldStatus, vs...))
-}
-
-// StartedAtEQ applies the EQ predicate on the "started_at" field.
-func StartedAtEQ(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldStartedAt, v))
-}
-
-// StartedAtNEQ applies the NEQ predicate on the "started_at" field.
-func StartedAtNEQ(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNEQ(FieldStartedAt, v))
-}
-
-// StartedAtIn applies the In predicate on the "started_at" field.
-func StartedAtIn(vs ...time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldIn(FieldStartedAt, vs...))
-}
-
-// StartedAtNotIn applies the NotIn predicate on the "started_at" field.
-func StartedAtNotIn(vs ...time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNotIn(FieldStartedAt, vs...))
-}
-
-// StartedAtGT applies the GT predicate on the "started_at" field.
-func StartedAtGT(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldGT(FieldStartedAt, v))
-}
-
-// StartedAtGTE applies the GTE predicate on the "started_at" field.
-func StartedAtGTE(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldGTE(FieldStartedAt, v))
-}
-
-// StartedAtLT applies the LT predicate on the "started_at" field.
-func StartedAtLT(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldLT(FieldStartedAt, v))
-}
-
-// StartedAtLTE applies the LTE predicate on the "started_at" field.
-func StartedAtLTE(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldLTE(FieldStartedAt, v))
-}
-
-// FinishedAtEQ applies the EQ predicate on the "finished_at" field.
-func FinishedAtEQ(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldFinishedAt, v))
-}
-
-// FinishedAtNEQ applies the NEQ predicate on the "finished_at" field.
-func FinishedAtNEQ(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNEQ(FieldFinishedAt, v))
-}
-
-// FinishedAtIn applies the In predicate on the "finished_at" field.
-func FinishedAtIn(vs ...time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldIn(FieldFinishedAt, vs...))
-}
-
-// FinishedAtNotIn applies the NotIn predicate on the "finished_at" field.
-func FinishedAtNotIn(vs ...time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNotIn(FieldFinishedAt, vs...))
-}
-
-// FinishedAtGT applies the GT predicate on the "finished_at" field.
-func FinishedAtGT(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldGT(FieldFinishedAt, v))
-}
-
-// FinishedAtGTE applies the GTE predicate on the "finished_at" field.
-func FinishedAtGTE(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldGTE(FieldFinishedAt, v))
-}
-
-// FinishedAtLT applies the LT predicate on the "finished_at" field.
-func FinishedAtLT(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldLT(FieldFinishedAt, v))
-}
-
-// FinishedAtLTE applies the LTE predicate on the "finished_at" field.
-func FinishedAtLTE(v time.Time) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldLTE(FieldFinishedAt, v))
-}
-
-// FinishedAtIsNil applies the IsNil predicate on the "finished_at" field.
-func FinishedAtIsNil() predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldIsNull(FieldFinishedAt))
-}
-
-// FinishedAtNotNil applies the NotNil predicate on the "finished_at" field.
-func FinishedAtNotNil() predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNotNull(FieldFinishedAt))
-}
-
-// ErrorEQ applies the EQ predicate on the "error" field.
-func ErrorEQ(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldEQ(FieldError, v))
-}
-
-// ErrorNEQ applies the NEQ predicate on the "error" field.
-func ErrorNEQ(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNEQ(FieldError, v))
-}
-
-// ErrorIn applies the In predicate on the "error" field.
-func ErrorIn(vs ...string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldIn(FieldError, vs...))
-}
-
-// ErrorNotIn applies the NotIn predicate on the "error" field.
-func ErrorNotIn(vs ...string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNotIn(FieldError, vs...))
-}
-
-// ErrorGT applies the GT predicate on the "error" field.
-func ErrorGT(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldGT(FieldError, v))
-}
-
-// ErrorGTE applies the GTE predicate on the "error" field.
-func ErrorGTE(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldGTE(FieldError, v))
-}
-
-// ErrorLT applies the LT predicate on the "error" field.
-func ErrorLT(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldLT(FieldError, v))
-}
-
-// ErrorLTE applies the LTE predicate on the "error" field.
-func ErrorLTE(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldLTE(FieldError, v))
-}
-
-// ErrorContains applies the Contains predicate on the "error" field.
-func ErrorContains(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldContains(FieldError, v))
-}
-
-// ErrorHasPrefix applies the HasPrefix predicate on the "error" field.
-func ErrorHasPrefix(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldHasPrefix(FieldError, v))
-}
-
-// ErrorHasSuffix applies the HasSuffix predicate on the "error" field.
-func ErrorHasSuffix(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldHasSuffix(FieldError, v))
-}
-
-// ErrorIsNil applies the IsNil predicate on the "error" field.
-func ErrorIsNil() predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldIsNull(FieldError))
-}
-
-// ErrorNotNil applies the NotNil predicate on the "error" field.
-func ErrorNotNil() predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldNotNull(FieldError))
-}
-
-// ErrorEqualFold applies the EqualFold predicate on the "error" field.
-func ErrorEqualFold(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldEqualFold(FieldError, v))
-}
-
-// ErrorContainsFold applies the ContainsFold predicate on the "error" field.
-func ErrorContainsFold(v string) predicate.NormalizedEventProjection {
-	return predicate.NormalizedEventProjection(sql.FieldContainsFold(FieldError, v))
+// CompletedAtLTE applies the LTE predicate on the "completed_at" field.
+func CompletedAtLTE(v time.Time) predicate.NormalizedEventProjection {
+	return predicate.NormalizedEventProjection(sql.FieldLTE(FieldCompletedAt, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

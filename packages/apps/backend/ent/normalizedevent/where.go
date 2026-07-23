@@ -661,27 +661,27 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.NormalizedEvent {
 	})
 }
 
-// HasProjections applies the HasEdge predicate on the "projections" edge.
-func HasProjections() predicate.NormalizedEvent {
+// HasProjection applies the HasEdge predicate on the "projection" edge.
+func HasProjection() predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ProjectionsTable, ProjectionsColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProjectionTable, ProjectionColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.NormalizedEventProjection
-		step.Edge.Schema = schemaConfig.NormalizedEventProjection
+		step.Edge.Schema = schemaConfig.NormalizedEvent
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasProjectionsWith applies the HasEdge predicate on the "projections" edge with a given conditions (other predicates).
-func HasProjectionsWith(preds ...predicate.NormalizedEventProjection) predicate.NormalizedEvent {
+// HasProjectionWith applies the HasEdge predicate on the "projection" edge with a given conditions (other predicates).
+func HasProjectionWith(preds ...predicate.NormalizedEventProjection) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(func(s *sql.Selector) {
-		step := newProjectionsStep()
+		step := newProjectionStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.NormalizedEventProjection
-		step.Edge.Schema = schemaConfig.NormalizedEventProjection
+		step.Edge.Schema = schemaConfig.NormalizedEvent
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

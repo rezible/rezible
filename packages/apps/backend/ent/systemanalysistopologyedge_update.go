@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
@@ -67,16 +67,30 @@ func (_u *SystemAnalysisTopologyEdgeUpdate) SetNillableAnalysisID(v *uuid.UUID) 
 	return _u
 }
 
-// SetSnapshotRelationshipID sets the "snapshot_relationship_id" field.
-func (_u *SystemAnalysisTopologyEdgeUpdate) SetSnapshotRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeUpdate {
-	_u.mutation.SetSnapshotRelationshipID(v)
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (_u *SystemAnalysisTopologyEdgeUpdate) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeUpdate {
+	_u.mutation.SetKnowledgeRelationshipID(v)
 	return _u
 }
 
-// SetNillableSnapshotRelationshipID sets the "snapshot_relationship_id" field if the given value is not nil.
-func (_u *SystemAnalysisTopologyEdgeUpdate) SetNillableSnapshotRelationshipID(v *uuid.UUID) *SystemAnalysisTopologyEdgeUpdate {
+// SetNillableKnowledgeRelationshipID sets the "knowledge_relationship_id" field if the given value is not nil.
+func (_u *SystemAnalysisTopologyEdgeUpdate) SetNillableKnowledgeRelationshipID(v *uuid.UUID) *SystemAnalysisTopologyEdgeUpdate {
 	if v != nil {
-		_u.SetSnapshotRelationshipID(*v)
+		_u.SetKnowledgeRelationshipID(*v)
+	}
+	return _u
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (_u *SystemAnalysisTopologyEdgeUpdate) SetReferencedAt(v time.Time) *SystemAnalysisTopologyEdgeUpdate {
+	_u.mutation.SetReferencedAt(v)
+	return _u
+}
+
+// SetNillableReferencedAt sets the "referenced_at" field if the given value is not nil.
+func (_u *SystemAnalysisTopologyEdgeUpdate) SetNillableReferencedAt(v *time.Time) *SystemAnalysisTopologyEdgeUpdate {
+	if v != nil {
+		_u.SetReferencedAt(*v)
 	}
 	return _u
 }
@@ -106,9 +120,9 @@ func (_u *SystemAnalysisTopologyEdgeUpdate) SetAnalysis(v *SystemAnalysis) *Syst
 	return _u.SetAnalysisID(v.ID)
 }
 
-// SetSnapshotRelationship sets the "snapshot_relationship" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (_u *SystemAnalysisTopologyEdgeUpdate) SetSnapshotRelationship(v *KnowledgeGraphSnapshotRelationship) *SystemAnalysisTopologyEdgeUpdate {
-	return _u.SetSnapshotRelationshipID(v.ID)
+// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (_u *SystemAnalysisTopologyEdgeUpdate) SetKnowledgeRelationship(v *KnowledgeRelationship) *SystemAnalysisTopologyEdgeUpdate {
+	return _u.SetKnowledgeRelationshipID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisTopologyEdgeMutation object of the builder.
@@ -122,9 +136,9 @@ func (_u *SystemAnalysisTopologyEdgeUpdate) ClearAnalysis() *SystemAnalysisTopol
 	return _u
 }
 
-// ClearSnapshotRelationship clears the "snapshot_relationship" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (_u *SystemAnalysisTopologyEdgeUpdate) ClearSnapshotRelationship() *SystemAnalysisTopologyEdgeUpdate {
-	_u.mutation.ClearSnapshotRelationship()
+// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (_u *SystemAnalysisTopologyEdgeUpdate) ClearKnowledgeRelationship() *SystemAnalysisTopologyEdgeUpdate {
+	_u.mutation.ClearKnowledgeRelationship()
 	return _u
 }
 
@@ -178,8 +192,8 @@ func (_u *SystemAnalysisTopologyEdgeUpdate) check() error {
 	if _u.mutation.AnalysisCleared() && len(_u.mutation.AnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisTopologyEdge.analysis"`)
 	}
-	if _u.mutation.SnapshotRelationshipCleared() && len(_u.mutation.SnapshotRelationshipIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisTopologyEdge.snapshot_relationship"`)
+	if _u.mutation.KnowledgeRelationshipCleared() && len(_u.mutation.KnowledgeRelationshipIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysisTopologyEdge.knowledge_relationship"`)
 	}
 	return nil
 }
@@ -207,6 +221,9 @@ func (_u *SystemAnalysisTopologyEdgeUpdate) sqlSave(ctx context.Context) (_node 
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysistopologyedge.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.ReferencedAt(); ok {
+		_spec.SetField(systemanalysistopologyedge.FieldReferencedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemanalysistopologyedge.FieldDescription, field.TypeString, value)
@@ -245,29 +262,29 @@ func (_u *SystemAnalysisTopologyEdgeUpdate) sqlSave(ctx context.Context) (_node 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.SnapshotRelationshipCleared() {
+	if _u.mutation.KnowledgeRelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysistopologyedge.SnapshotRelationshipTable,
-			Columns: []string{systemanalysistopologyedge.SnapshotRelationshipColumn},
+			Table:   systemanalysistopologyedge.KnowledgeRelationshipTable,
+			Columns: []string{systemanalysistopologyedge.KnowledgeRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.SnapshotRelationshipIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysistopologyedge.SnapshotRelationshipTable,
-			Columns: []string{systemanalysistopologyedge.SnapshotRelationshipColumn},
+			Table:   systemanalysistopologyedge.KnowledgeRelationshipTable,
+			Columns: []string{systemanalysistopologyedge.KnowledgeRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
@@ -334,16 +351,30 @@ func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetNillableAnalysisID(v *uuid.UUI
 	return _u
 }
 
-// SetSnapshotRelationshipID sets the "snapshot_relationship_id" field.
-func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetSnapshotRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeUpdateOne {
-	_u.mutation.SetSnapshotRelationshipID(v)
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisTopologyEdgeUpdateOne {
+	_u.mutation.SetKnowledgeRelationshipID(v)
 	return _u
 }
 
-// SetNillableSnapshotRelationshipID sets the "snapshot_relationship_id" field if the given value is not nil.
-func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetNillableSnapshotRelationshipID(v *uuid.UUID) *SystemAnalysisTopologyEdgeUpdateOne {
+// SetNillableKnowledgeRelationshipID sets the "knowledge_relationship_id" field if the given value is not nil.
+func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetNillableKnowledgeRelationshipID(v *uuid.UUID) *SystemAnalysisTopologyEdgeUpdateOne {
 	if v != nil {
-		_u.SetSnapshotRelationshipID(*v)
+		_u.SetKnowledgeRelationshipID(*v)
+	}
+	return _u
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetReferencedAt(v time.Time) *SystemAnalysisTopologyEdgeUpdateOne {
+	_u.mutation.SetReferencedAt(v)
+	return _u
+}
+
+// SetNillableReferencedAt sets the "referenced_at" field if the given value is not nil.
+func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetNillableReferencedAt(v *time.Time) *SystemAnalysisTopologyEdgeUpdateOne {
+	if v != nil {
+		_u.SetReferencedAt(*v)
 	}
 	return _u
 }
@@ -373,9 +404,9 @@ func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetAnalysis(v *SystemAnalysis) *S
 	return _u.SetAnalysisID(v.ID)
 }
 
-// SetSnapshotRelationship sets the "snapshot_relationship" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetSnapshotRelationship(v *KnowledgeGraphSnapshotRelationship) *SystemAnalysisTopologyEdgeUpdateOne {
-	return _u.SetSnapshotRelationshipID(v.ID)
+// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (_u *SystemAnalysisTopologyEdgeUpdateOne) SetKnowledgeRelationship(v *KnowledgeRelationship) *SystemAnalysisTopologyEdgeUpdateOne {
+	return _u.SetKnowledgeRelationshipID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisTopologyEdgeMutation object of the builder.
@@ -389,9 +420,9 @@ func (_u *SystemAnalysisTopologyEdgeUpdateOne) ClearAnalysis() *SystemAnalysisTo
 	return _u
 }
 
-// ClearSnapshotRelationship clears the "snapshot_relationship" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (_u *SystemAnalysisTopologyEdgeUpdateOne) ClearSnapshotRelationship() *SystemAnalysisTopologyEdgeUpdateOne {
-	_u.mutation.ClearSnapshotRelationship()
+// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (_u *SystemAnalysisTopologyEdgeUpdateOne) ClearKnowledgeRelationship() *SystemAnalysisTopologyEdgeUpdateOne {
+	_u.mutation.ClearKnowledgeRelationship()
 	return _u
 }
 
@@ -458,8 +489,8 @@ func (_u *SystemAnalysisTopologyEdgeUpdateOne) check() error {
 	if _u.mutation.AnalysisCleared() && len(_u.mutation.AnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisTopologyEdge.analysis"`)
 	}
-	if _u.mutation.SnapshotRelationshipCleared() && len(_u.mutation.SnapshotRelationshipIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisTopologyEdge.snapshot_relationship"`)
+	if _u.mutation.KnowledgeRelationshipCleared() && len(_u.mutation.KnowledgeRelationshipIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysisTopologyEdge.knowledge_relationship"`)
 	}
 	return nil
 }
@@ -505,6 +536,9 @@ func (_u *SystemAnalysisTopologyEdgeUpdateOne) sqlSave(ctx context.Context) (_no
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysistopologyedge.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := _u.mutation.ReferencedAt(); ok {
+		_spec.SetField(systemanalysistopologyedge.FieldReferencedAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemanalysistopologyedge.FieldDescription, field.TypeString, value)
 	}
@@ -542,29 +576,29 @@ func (_u *SystemAnalysisTopologyEdgeUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.SnapshotRelationshipCleared() {
+	if _u.mutation.KnowledgeRelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysistopologyedge.SnapshotRelationshipTable,
-			Columns: []string{systemanalysistopologyedge.SnapshotRelationshipColumn},
+			Table:   systemanalysistopologyedge.KnowledgeRelationshipTable,
+			Columns: []string{systemanalysistopologyedge.KnowledgeRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.SnapshotRelationshipIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysistopologyedge.SnapshotRelationshipTable,
-			Columns: []string{systemanalysistopologyedge.SnapshotRelationshipColumn},
+			Table:   systemanalysistopologyedge.KnowledgeRelationshipTable,
+			Columns: []string{systemanalysistopologyedge.KnowledgeRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge

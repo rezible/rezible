@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
 	"github.com/rezible/rezible/ent/tenant"
@@ -29,8 +29,10 @@ type SystemAnalysisTopologyNode struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AnalysisID holds the value of the "analysis_id" field.
 	AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
-	// SnapshotEntityID holds the value of the "snapshot_entity_id" field.
-	SnapshotEntityID uuid.UUID `json:"snapshot_entity_id,omitempty"`
+	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
+	KnowledgeEntityID uuid.UUID `json:"knowledge_entity_id,omitempty"`
+	// ReferencedAt holds the value of the "referenced_at" field.
+	ReferencedAt time.Time `json:"referenced_at,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// PosX holds the value of the "pos_x" field.
@@ -49,8 +51,8 @@ type SystemAnalysisTopologyNodeEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Analysis holds the value of the analysis edge.
 	Analysis *SystemAnalysis `json:"analysis,omitempty"`
-	// SnapshotEntity holds the value of the snapshot_entity edge.
-	SnapshotEntity *KnowledgeGraphSnapshotEntity `json:"snapshot_entity,omitempty"`
+	// KnowledgeEntity holds the value of the knowledge_entity edge.
+	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -78,15 +80,15 @@ func (e SystemAnalysisTopologyNodeEdges) AnalysisOrErr() (*SystemAnalysis, error
 	return nil, &NotLoadedError{edge: "analysis"}
 }
 
-// SnapshotEntityOrErr returns the SnapshotEntity value or an error if the edge
+// KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemAnalysisTopologyNodeEdges) SnapshotEntityOrErr() (*KnowledgeGraphSnapshotEntity, error) {
-	if e.SnapshotEntity != nil {
-		return e.SnapshotEntity, nil
+func (e SystemAnalysisTopologyNodeEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
+	if e.KnowledgeEntity != nil {
+		return e.KnowledgeEntity, nil
 	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: knowledgegraphsnapshotentity.Label}
+		return nil, &NotFoundError{label: knowledgeentity.Label}
 	}
-	return nil, &NotLoadedError{edge: "snapshot_entity"}
+	return nil, &NotLoadedError{edge: "knowledge_entity"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -100,9 +102,9 @@ func (*SystemAnalysisTopologyNode) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case systemanalysistopologynode.FieldDescription:
 			values[i] = new(sql.NullString)
-		case systemanalysistopologynode.FieldCreatedAt, systemanalysistopologynode.FieldUpdatedAt:
+		case systemanalysistopologynode.FieldCreatedAt, systemanalysistopologynode.FieldUpdatedAt, systemanalysistopologynode.FieldReferencedAt:
 			values[i] = new(sql.NullTime)
-		case systemanalysistopologynode.FieldID, systemanalysistopologynode.FieldAnalysisID, systemanalysistopologynode.FieldSnapshotEntityID:
+		case systemanalysistopologynode.FieldID, systemanalysistopologynode.FieldAnalysisID, systemanalysistopologynode.FieldKnowledgeEntityID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -149,11 +151,17 @@ func (_m *SystemAnalysisTopologyNode) assignValues(columns []string, values []an
 			} else if value != nil {
 				_m.AnalysisID = *value
 			}
-		case systemanalysistopologynode.FieldSnapshotEntityID:
+		case systemanalysistopologynode.FieldKnowledgeEntityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field snapshot_entity_id", values[i])
+				return fmt.Errorf("unexpected type %T for field knowledge_entity_id", values[i])
 			} else if value != nil {
-				_m.SnapshotEntityID = *value
+				_m.KnowledgeEntityID = *value
+			}
+		case systemanalysistopologynode.FieldReferencedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field referenced_at", values[i])
+			} else if value.Valid {
+				_m.ReferencedAt = value.Time
 			}
 		case systemanalysistopologynode.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -196,9 +204,9 @@ func (_m *SystemAnalysisTopologyNode) QueryAnalysis() *SystemAnalysisQuery {
 	return NewSystemAnalysisTopologyNodeClient(_m.config).QueryAnalysis(_m)
 }
 
-// QuerySnapshotEntity queries the "snapshot_entity" edge of the SystemAnalysisTopologyNode entity.
-func (_m *SystemAnalysisTopologyNode) QuerySnapshotEntity() *KnowledgeGraphSnapshotEntityQuery {
-	return NewSystemAnalysisTopologyNodeClient(_m.config).QuerySnapshotEntity(_m)
+// QueryKnowledgeEntity queries the "knowledge_entity" edge of the SystemAnalysisTopologyNode entity.
+func (_m *SystemAnalysisTopologyNode) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	return NewSystemAnalysisTopologyNodeClient(_m.config).QueryKnowledgeEntity(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysisTopologyNode.
@@ -236,8 +244,11 @@ func (_m *SystemAnalysisTopologyNode) String() string {
 	builder.WriteString("analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AnalysisID))
 	builder.WriteString(", ")
-	builder.WriteString("snapshot_entity_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.SnapshotEntityID))
+	builder.WriteString("knowledge_entity_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.KnowledgeEntityID))
+	builder.WriteString(", ")
+	builder.WriteString("referenced_at=")
+	builder.WriteString(_m.ReferencedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)

@@ -24,16 +24,8 @@ type NormalizedEventProjection struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// EventID holds the value of the "event_id" field.
 	EventID uuid.UUID `json:"event_id,omitempty"`
-	// Projector holds the value of the "projector" field.
-	Projector string `json:"projector,omitempty"`
-	// Status holds the value of the "status" field.
-	Status normalizedeventprojection.Status `json:"status,omitempty"`
-	// StartedAt holds the value of the "started_at" field.
-	StartedAt time.Time `json:"started_at,omitempty"`
-	// FinishedAt holds the value of the "finished_at" field.
-	FinishedAt time.Time `json:"finished_at,omitempty"`
-	// Error holds the value of the "error" field.
-	Error string `json:"error,omitempty"`
+	// CompletedAt holds the value of the "completed_at" field.
+	CompletedAt time.Time `json:"completed_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NormalizedEventProjectionQuery when eager-loading is set.
 	Edges        NormalizedEventProjectionEdges `json:"edges"`
@@ -91,9 +83,7 @@ func (*NormalizedEventProjection) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case normalizedeventprojection.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case normalizedeventprojection.FieldProjector, normalizedeventprojection.FieldStatus, normalizedeventprojection.FieldError:
-			values[i] = new(sql.NullString)
-		case normalizedeventprojection.FieldStartedAt, normalizedeventprojection.FieldFinishedAt:
+		case normalizedeventprojection.FieldCompletedAt:
 			values[i] = new(sql.NullTime)
 		case normalizedeventprojection.FieldID, normalizedeventprojection.FieldEventID:
 			values[i] = new(uuid.UUID)
@@ -130,35 +120,11 @@ func (_m *NormalizedEventProjection) assignValues(columns []string, values []any
 			} else if value != nil {
 				_m.EventID = *value
 			}
-		case normalizedeventprojection.FieldProjector:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field projector", values[i])
-			} else if value.Valid {
-				_m.Projector = value.String
-			}
-		case normalizedeventprojection.FieldStatus:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field status", values[i])
-			} else if value.Valid {
-				_m.Status = normalizedeventprojection.Status(value.String)
-			}
-		case normalizedeventprojection.FieldStartedAt:
+		case normalizedeventprojection.FieldCompletedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field started_at", values[i])
+				return fmt.Errorf("unexpected type %T for field completed_at", values[i])
 			} else if value.Valid {
-				_m.StartedAt = value.Time
-			}
-		case normalizedeventprojection.FieldFinishedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field finished_at", values[i])
-			} else if value.Valid {
-				_m.FinishedAt = value.Time
-			}
-		case normalizedeventprojection.FieldError:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field error", values[i])
-			} else if value.Valid {
-				_m.Error = value.String
+				_m.CompletedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -217,20 +183,8 @@ func (_m *NormalizedEventProjection) String() string {
 	builder.WriteString("event_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EventID))
 	builder.WriteString(", ")
-	builder.WriteString("projector=")
-	builder.WriteString(_m.Projector)
-	builder.WriteString(", ")
-	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Status))
-	builder.WriteString(", ")
-	builder.WriteString("started_at=")
-	builder.WriteString(_m.StartedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("finished_at=")
-	builder.WriteString(_m.FinishedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("error=")
-	builder.WriteString(_m.Error)
+	builder.WriteString("completed_at=")
+	builder.WriteString(_m.CompletedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

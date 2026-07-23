@@ -7,8 +7,10 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 
 	itle "github.com/rezible/rezible/ent/incidenttimelineevent"
+	isc "github.com/rezible/rezible/ent/incidenttimelineeventsystemcontext"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -25,7 +27,7 @@ func (h *incidentTimelineHandler) ListIncidentTimelineEvents(ctx context.Context
 
 	query := h.db.Client(ctx).IncidentTimelineEvent.Query().
 		Where(itle.IncidentID(request.Id)).
-		WithTopologyContext()
+		WithSystemContext()
 	events, eventsErr := query.All(ctx)
 	if eventsErr != nil {
 		return nil, oapi.Error(ctx, "failed to list incident events", eventsErr)
@@ -49,6 +51,29 @@ func (h *incidentTimelineHandler) getEventSequence(ctx context.Context, incident
 	return num + 1, nil
 }
 
+func setTimelineEventSystemContext(ctx context.Context, client *ent.Client, eventID uuid.UUID, attributes []oapi.SetIncidentTimelineEventSystemContextAttributes) error {
+	if _, deleteErr := client.IncidentTimelineEventSystemContext.Delete().
+		Where(isc.IncidentEventID(eventID)).
+		Exec(ctx); deleteErr != nil {
+		return deleteErr
+	}
+	if len(attributes) == 0 {
+		return nil
+	}
+	creates := make([]*ent.IncidentTimelineEventSystemContextCreate, len(attributes))
+	for i, attribute := range attributes {
+		relationship := isc.Relationship(attribute.Relationship)
+		if validateErr := isc.RelationshipValidator(relationship); validateErr != nil {
+			return validateErr
+		}
+		creates[i] = client.IncidentTimelineEventSystemContext.Create().
+			SetIncidentEventID(eventID).
+			SetSystemAnalysisNodeID(attribute.SystemAnalysisNodeId).
+			SetRelationship(relationship)
+	}
+	return client.IncidentTimelineEventSystemContext.CreateBulk(creates...).Exec(ctx)
+}
+
 func (h *incidentTimelineHandler) CreateIncidentTimelineEvent(ctx context.Context, request *oapi.CreateIncidentTimelineEventRequest) (*oapi.CreateIncidentTimelineEventResponse, error) {
 	var resp oapi.CreateIncidentTimelineEventResponse
 
@@ -66,18 +91,32 @@ func (h *incidentTimelineHandler) CreateIncidentTimelineEvent(ctx context.Contex
 		return nil, oapi.Error(ctx, "failed to get sequence for incident event", seqErr)
 	}
 
-	create := h.db.Client(ctx).IncidentTimelineEvent.Create().
-		SetIncidentID(request.Id).
-		SetTitle(attr.Title).
-		SetKind(kind).
-		SetIsKey(attr.IsKey).
-		SetTimestamp(attr.Timestamp).
-		SetSequence(sequence)
-
-	created, createErr := create.Save(ctx)
+	var createdID uuid.UUID
+	createErr := h.db.WithTx(ctx, func(txCtx context.Context, tx *ent.Client) error {
+		created, saveErr := tx.IncidentTimelineEvent.Create().
+			SetIncidentID(request.Id).
+			SetTitle(attr.Title).
+			SetKind(kind).
+			SetIsKey(attr.IsKey).
+			SetTimestamp(attr.Timestamp).
+			SetSequence(sequence).
+			Save(txCtx)
+		if saveErr != nil {
+			return saveErr
+		}
+		createdID = created.ID
+		return setTimelineEventSystemContext(txCtx, tx, created.ID, attr.SystemContext)
+	})
 	if createErr != nil {
 		slog.Error("failed to create", "error", createErr)
 		return nil, oapi.Error(ctx, "failed to create incident event", createErr)
+	}
+	created, getErr := h.db.Client(ctx).IncidentTimelineEvent.Query().
+		Where(itle.ID(createdID)).
+		WithSystemContext().
+		Only(ctx)
+	if getErr != nil {
+		return nil, oapi.Error(ctx, "failed to load incident event", getErr)
 	}
 	resp.Body.Data = oapi.IncidentTimelineEventFromEnt(created)
 
@@ -89,21 +128,35 @@ func (h *incidentTimelineHandler) UpdateIncidentTimelineEvent(ctx context.Contex
 
 	attr := request.Body.Attributes
 
-	update := h.db.Client(ctx).IncidentTimelineEvent.UpdateOneID(request.Id).
-		SetNillableTitle(attr.Title).
-		SetNillableTimestamp(attr.Timestamp)
+	updateErr := h.db.WithTx(ctx, func(txCtx context.Context, tx *ent.Client) error {
+		update := tx.IncidentTimelineEvent.UpdateOneID(request.Id).
+			SetNillableTitle(attr.Title).
+			SetNillableTimestamp(attr.Timestamp)
 
-	if attr.Kind != nil {
-		kind := itle.Kind(*attr.Kind)
-		if kindErr := itle.KindValidator(kind); kindErr != nil {
-			return nil, oapi.Error(ctx, "invalid kind", kindErr)
+		if attr.Kind != nil {
+			kind := itle.Kind(*attr.Kind)
+			if kindErr := itle.KindValidator(kind); kindErr != nil {
+				return kindErr
+			}
+			update.SetKind(kind)
 		}
-		update.SetKind(kind)
-	}
-
-	updated, updateErr := update.Save(ctx)
+		if _, saveErr := update.Save(txCtx); saveErr != nil {
+			return saveErr
+		}
+		if attr.SystemContext != nil {
+			return setTimelineEventSystemContext(txCtx, tx, request.Id, *attr.SystemContext)
+		}
+		return nil
+	})
 	if updateErr != nil {
 		return nil, oapi.Error(ctx, "failed to update incident event", updateErr)
+	}
+	updated, getErr := h.db.Client(ctx).IncidentTimelineEvent.Query().
+		Where(itle.ID(request.Id)).
+		WithSystemContext().
+		Only(ctx)
+	if getErr != nil {
+		return nil, oapi.Error(ctx, "failed to load incident event", getErr)
 	}
 	resp.Body.Data = oapi.IncidentTimelineEventFromEnt(updated)
 
@@ -113,7 +166,15 @@ func (h *incidentTimelineHandler) UpdateIncidentTimelineEvent(ctx context.Contex
 func (h *incidentTimelineHandler) DeleteIncidentTimelineEvent(ctx context.Context, request *oapi.DeleteIncidentTimelineEventRequest) (*oapi.DeleteIncidentTimelineEventResponse, error) {
 	var resp oapi.DeleteIncidentTimelineEventResponse
 
-	if deleteErr := h.db.Client(ctx).IncidentTimelineEvent.DeleteOneID(request.Id).Exec(ctx); deleteErr != nil {
+	deleteErr := h.db.WithTx(ctx, func(txCtx context.Context, tx *ent.Client) error {
+		if _, contextErr := tx.IncidentTimelineEventSystemContext.Delete().
+			Where(isc.IncidentEventID(request.Id)).
+			Exec(txCtx); contextErr != nil {
+			return contextErr
+		}
+		return tx.IncidentTimelineEvent.DeleteOneID(request.Id).Exec(txCtx)
+	})
+	if deleteErr != nil {
 		return nil, oapi.Error(ctx, "failed to delete incident event", deleteErr)
 	}
 

@@ -45,7 +45,7 @@ type (
 		DecisionContext     *IncidentTimelineEventDecisionContext     `json:"decisionContext,omitempty"`
 		ContributingFactors []IncidentTimelineEventContributingFactor `json:"contributingFactors"`
 		Evidence            []IncidentTimelineEventEvidence           `json:"evidence"`
-		SystemContext       []IncidentTimelineEventTopologyContext    `json:"systemContext"`
+		SystemContext       []IncidentTimelineEventSystemContext      `json:"systemContext"`
 	}
 
 	IncidentTimelineEventDecisionContext struct {
@@ -76,15 +76,14 @@ type (
 		Properties *map[string]string `json:"properties,omitempty"`
 	}
 
-	IncidentTimelineEventTopologyContext struct {
-		Id         uuid.UUID                                      `json:"id"`
-		Attributes IncidentTimelineEventTopologyContextAttributes `json:"attributes"`
+	IncidentTimelineEventSystemContext struct {
+		Id         uuid.UUID                                    `json:"id"`
+		Attributes IncidentTimelineEventSystemContextAttributes `json:"attributes"`
 	}
 
-	IncidentTimelineEventTopologyContextAttributes struct {
-		KnowledgeEntityId *uuid.UUID `json:"knowledgeEntityId,omitempty"`
-		SnapshotEntityId  *uuid.UUID `json:"snapshotEntityId,omitempty"`
-		Relationship      string     `json:"relationship"`
+	IncidentTimelineEventSystemContextAttributes struct {
+		SystemAnalysisNodeId uuid.UUID `json:"systemAnalysisNodeId"`
+		Relationship         string    `json:"relationship" enum:"primary,affected,contributing"`
 	}
 
 	IncidentTimelineEventMetadata struct {
@@ -138,13 +137,22 @@ func IncidentTimelineEventFromEnt(e *ent.IncidentTimelineEvent) IncidentTimeline
 	for i, evi := range e.Edges.Evidence {
 		attr.Evidence[i] = IncidentTimelineEventEvidenceFromEnt(evi)
 	}
-
-	attr.SystemContext = make([]IncidentTimelineEventTopologyContext, len(e.Edges.TopologyContext))
-	for i, c := range e.Edges.TopologyContext {
-		attr.SystemContext[i] = IncidentTimelineEventTopologyContextFromEnt(c)
+	attr.SystemContext = make([]IncidentTimelineEventSystemContext, len(e.Edges.SystemContext))
+	for i, systemContext := range e.Edges.SystemContext {
+		attr.SystemContext[i] = IncidentTimelineEventSystemContextFromEnt(systemContext)
 	}
 
 	return IncidentTimelineEvent{Id: e.ID, Attributes: attr}
+}
+
+func IncidentTimelineEventSystemContextFromEnt(context *ent.IncidentTimelineEventSystemContext) IncidentTimelineEventSystemContext {
+	return IncidentTimelineEventSystemContext{
+		Id: context.ID,
+		Attributes: IncidentTimelineEventSystemContextAttributes{
+			SystemAnalysisNodeId: context.SystemAnalysisNodeID,
+			Relationship:         context.Relationship.String(),
+		},
+	}
 }
 
 func IncidentTimelineEventDecisionContextFromEnt(c *ent.IncidentTimelineEventContext) IncidentTimelineEventDecisionContext {
@@ -177,16 +185,6 @@ func IncidentTimelineEventEvidenceFromEnt(evi *ent.IncidentTimelineEventEvidence
 	}
 }
 
-func IncidentTimelineEventTopologyContextFromEnt(c *ent.IncidentTimelineEventTopologyContext) IncidentTimelineEventTopologyContext {
-	return IncidentTimelineEventTopologyContext{
-		Id: c.ID,
-		Attributes: IncidentTimelineEventTopologyContextAttributes{
-			SnapshotEntityId: c.SnapshotEntityID,
-			Relationship:     c.Relationship.String(),
-		},
-	}
-}
-
 var incidentTimelineTags = []string{"Incident Timeline"}
 
 // ops
@@ -213,10 +211,11 @@ var CreateIncidentTimelineEvent = huma.Operation{
 }
 
 type CreateIncidentTimelineEventAttributes struct {
-	Title     string    `json:"title"`
-	Kind      string    `json:"kind" enum:"observation,action,decision,context"`
-	IsKey     bool      `json:"isKey" required:"false"`
-	Timestamp time.Time `json:"timestamp"`
+	Title         string                                            `json:"title"`
+	Kind          string                                            `json:"kind" enum:"observation,action,decision,context"`
+	IsKey         bool                                              `json:"isKey" required:"false"`
+	Timestamp     time.Time                                         `json:"timestamp"`
+	SystemContext []SetIncidentTimelineEventSystemContextAttributes `json:"systemContext,omitempty"`
 }
 type CreateIncidentTimelineEventRequest IdRequestWithBody[CreateIncidentTimelineEventAttributes]
 type CreateIncidentTimelineEventResponse ItemResponse[IncidentTimelineEvent]
@@ -231,9 +230,15 @@ var UpdateIncidentTimelineEvent = huma.Operation{
 }
 
 type UpdateIncidentTimelineEventAttributes struct {
-	Title     *string    `json:"title,omitempty"`
-	Kind      *string    `json:"kind,omitempty" enum:"observation,action,decision,context"`
-	Timestamp *time.Time `json:"timestamp,omitempty"`
+	Title         *string                                            `json:"title,omitempty"`
+	Kind          *string                                            `json:"kind,omitempty" enum:"observation,action,decision,context"`
+	Timestamp     *time.Time                                         `json:"timestamp,omitempty"`
+	SystemContext *[]SetIncidentTimelineEventSystemContextAttributes `json:"systemContext,omitempty"`
+}
+
+type SetIncidentTimelineEventSystemContextAttributes struct {
+	SystemAnalysisNodeId uuid.UUID `json:"systemAnalysisNodeId"`
+	Relationship         string    `json:"relationship" enum:"primary,affected,contributing"`
 }
 type UpdateIncidentTimelineEventRequest IdRequestWithBody[UpdateIncidentTimelineEventAttributes]
 type UpdateIncidentTimelineEventResponse ItemResponse[IncidentTimelineEvent]

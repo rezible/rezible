@@ -41,7 +41,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontext"
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenttimelineeventevidence"
-	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
+	"github.com/rezible/rezible/ent/incidenttimelineeventsystemcontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/integrationeventsynccursor"
@@ -49,9 +49,6 @@ import (
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshot"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotrelationship"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -125,7 +122,7 @@ const (
 	TypeIncidentTimelineEventContext            = "IncidentTimelineEventContext"
 	TypeIncidentTimelineEventContributingFactor = "IncidentTimelineEventContributingFactor"
 	TypeIncidentTimelineEventEvidence           = "IncidentTimelineEventEvidence"
-	TypeIncidentTimelineEventTopologyContext    = "IncidentTimelineEventTopologyContext"
+	TypeIncidentTimelineEventSystemContext      = "IncidentTimelineEventSystemContext"
 	TypeIncidentType                            = "IncidentType"
 	TypeIntegration                             = "Integration"
 	TypeIntegrationEventSyncCursor              = "IntegrationEventSyncCursor"
@@ -133,9 +130,6 @@ const (
 	TypeIntegrationUserInstallState             = "IntegrationUserInstallState"
 	TypeKnowledgeEntity                         = "KnowledgeEntity"
 	TypeKnowledgeEvidence                       = "KnowledgeEvidence"
-	TypeKnowledgeGraphSnapshot                  = "KnowledgeGraphSnapshot"
-	TypeKnowledgeGraphSnapshotEntity            = "KnowledgeGraphSnapshotEntity"
-	TypeKnowledgeGraphSnapshotRelationship      = "KnowledgeGraphSnapshotRelationship"
 	TypeKnowledgeRelationship                   = "KnowledgeRelationship"
 	TypeKnowledgeSubjectAlias                   = "KnowledgeSubjectAlias"
 	TypeMeetingSchedule                         = "MeetingSchedule"
@@ -21621,39 +21615,39 @@ func (m *IncidentTagMutation) ResetEdge(name string) error {
 // IncidentTimelineEventMutation represents an operation that mutates the IncidentTimelineEvent nodes in the graph.
 type IncidentTimelineEventMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	timestamp               *time.Time
-	kind                    *incidenttimelineevent.Kind
-	title                   *string
-	description             *string
-	is_key                  *bool
-	sequence                *int
-	addsequence             *int
-	created_at              *time.Time
-	updated_at              *time.Time
-	clearedFields           map[string]struct{}
-	tenant                  *int
-	clearedtenant           bool
-	incident                *uuid.UUID
-	clearedincident         bool
-	event                   *uuid.UUID
-	clearedevent            bool
-	context                 *uuid.UUID
-	clearedcontext          bool
-	factors                 map[uuid.UUID]struct{}
-	removedfactors          map[uuid.UUID]struct{}
-	clearedfactors          bool
-	evidence                map[uuid.UUID]struct{}
-	removedevidence         map[uuid.UUID]struct{}
-	clearedevidence         bool
-	topology_context        map[uuid.UUID]struct{}
-	removedtopology_context map[uuid.UUID]struct{}
-	clearedtopology_context bool
-	done                    bool
-	oldValue                func(context.Context) (*IncidentTimelineEvent, error)
-	predicates              []predicate.IncidentTimelineEvent
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	timestamp             *time.Time
+	kind                  *incidenttimelineevent.Kind
+	title                 *string
+	description           *string
+	is_key                *bool
+	sequence              *int
+	addsequence           *int
+	created_at            *time.Time
+	updated_at            *time.Time
+	clearedFields         map[string]struct{}
+	tenant                *int
+	clearedtenant         bool
+	incident              *uuid.UUID
+	clearedincident       bool
+	event                 *uuid.UUID
+	clearedevent          bool
+	context               *uuid.UUID
+	clearedcontext        bool
+	factors               map[uuid.UUID]struct{}
+	removedfactors        map[uuid.UUID]struct{}
+	clearedfactors        bool
+	evidence              map[uuid.UUID]struct{}
+	removedevidence       map[uuid.UUID]struct{}
+	clearedevidence       bool
+	system_context        map[uuid.UUID]struct{}
+	removedsystem_context map[uuid.UUID]struct{}
+	clearedsystem_context bool
+	done                  bool
+	oldValue              func(context.Context) (*IncidentTimelineEvent, error)
+	predicates            []predicate.IncidentTimelineEvent
 }
 
 var _ ent.Mutation = (*IncidentTimelineEventMutation)(nil)
@@ -22430,58 +22424,58 @@ func (m *IncidentTimelineEventMutation) ResetEvidence() {
 	m.removedevidence = nil
 }
 
-// AddTopologyContextIDs adds the "topology_context" edge to the IncidentTimelineEventTopologyContext entity by ids.
-func (m *IncidentTimelineEventMutation) AddTopologyContextIDs(ids ...uuid.UUID) {
-	if m.topology_context == nil {
-		m.topology_context = make(map[uuid.UUID]struct{})
+// AddSystemContextIDs adds the "system_context" edge to the IncidentTimelineEventSystemContext entity by ids.
+func (m *IncidentTimelineEventMutation) AddSystemContextIDs(ids ...uuid.UUID) {
+	if m.system_context == nil {
+		m.system_context = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.topology_context[ids[i]] = struct{}{}
+		m.system_context[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTopologyContext clears the "topology_context" edge to the IncidentTimelineEventTopologyContext entity.
-func (m *IncidentTimelineEventMutation) ClearTopologyContext() {
-	m.clearedtopology_context = true
+// ClearSystemContext clears the "system_context" edge to the IncidentTimelineEventSystemContext entity.
+func (m *IncidentTimelineEventMutation) ClearSystemContext() {
+	m.clearedsystem_context = true
 }
 
-// TopologyContextCleared reports if the "topology_context" edge to the IncidentTimelineEventTopologyContext entity was cleared.
-func (m *IncidentTimelineEventMutation) TopologyContextCleared() bool {
-	return m.clearedtopology_context
+// SystemContextCleared reports if the "system_context" edge to the IncidentTimelineEventSystemContext entity was cleared.
+func (m *IncidentTimelineEventMutation) SystemContextCleared() bool {
+	return m.clearedsystem_context
 }
 
-// RemoveTopologyContextIDs removes the "topology_context" edge to the IncidentTimelineEventTopologyContext entity by IDs.
-func (m *IncidentTimelineEventMutation) RemoveTopologyContextIDs(ids ...uuid.UUID) {
-	if m.removedtopology_context == nil {
-		m.removedtopology_context = make(map[uuid.UUID]struct{})
+// RemoveSystemContextIDs removes the "system_context" edge to the IncidentTimelineEventSystemContext entity by IDs.
+func (m *IncidentTimelineEventMutation) RemoveSystemContextIDs(ids ...uuid.UUID) {
+	if m.removedsystem_context == nil {
+		m.removedsystem_context = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.topology_context, ids[i])
-		m.removedtopology_context[ids[i]] = struct{}{}
+		delete(m.system_context, ids[i])
+		m.removedsystem_context[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTopologyContext returns the removed IDs of the "topology_context" edge to the IncidentTimelineEventTopologyContext entity.
-func (m *IncidentTimelineEventMutation) RemovedTopologyContextIDs() (ids []uuid.UUID) {
-	for id := range m.removedtopology_context {
+// RemovedSystemContext returns the removed IDs of the "system_context" edge to the IncidentTimelineEventSystemContext entity.
+func (m *IncidentTimelineEventMutation) RemovedSystemContextIDs() (ids []uuid.UUID) {
+	for id := range m.removedsystem_context {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TopologyContextIDs returns the "topology_context" edge IDs in the mutation.
-func (m *IncidentTimelineEventMutation) TopologyContextIDs() (ids []uuid.UUID) {
-	for id := range m.topology_context {
+// SystemContextIDs returns the "system_context" edge IDs in the mutation.
+func (m *IncidentTimelineEventMutation) SystemContextIDs() (ids []uuid.UUID) {
+	for id := range m.system_context {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTopologyContext resets all changes to the "topology_context" edge.
-func (m *IncidentTimelineEventMutation) ResetTopologyContext() {
-	m.topology_context = nil
-	m.clearedtopology_context = false
-	m.removedtopology_context = nil
+// ResetSystemContext resets all changes to the "system_context" edge.
+func (m *IncidentTimelineEventMutation) ResetSystemContext() {
+	m.system_context = nil
+	m.clearedsystem_context = false
+	m.removedsystem_context = nil
 }
 
 // Where appends a list predicates to the IncidentTimelineEventMutation builder.
@@ -22836,8 +22830,8 @@ func (m *IncidentTimelineEventMutation) AddedEdges() []string {
 	if m.evidence != nil {
 		edges = append(edges, incidenttimelineevent.EdgeEvidence)
 	}
-	if m.topology_context != nil {
-		edges = append(edges, incidenttimelineevent.EdgeTopologyContext)
+	if m.system_context != nil {
+		edges = append(edges, incidenttimelineevent.EdgeSystemContext)
 	}
 	return edges
 }
@@ -22874,9 +22868,9 @@ func (m *IncidentTimelineEventMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case incidenttimelineevent.EdgeTopologyContext:
-		ids := make([]ent.Value, 0, len(m.topology_context))
-		for id := range m.topology_context {
+	case incidenttimelineevent.EdgeSystemContext:
+		ids := make([]ent.Value, 0, len(m.system_context))
+		for id := range m.system_context {
 			ids = append(ids, id)
 		}
 		return ids
@@ -22893,8 +22887,8 @@ func (m *IncidentTimelineEventMutation) RemovedEdges() []string {
 	if m.removedevidence != nil {
 		edges = append(edges, incidenttimelineevent.EdgeEvidence)
 	}
-	if m.removedtopology_context != nil {
-		edges = append(edges, incidenttimelineevent.EdgeTopologyContext)
+	if m.removedsystem_context != nil {
+		edges = append(edges, incidenttimelineevent.EdgeSystemContext)
 	}
 	return edges
 }
@@ -22915,9 +22909,9 @@ func (m *IncidentTimelineEventMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case incidenttimelineevent.EdgeTopologyContext:
-		ids := make([]ent.Value, 0, len(m.removedtopology_context))
-		for id := range m.removedtopology_context {
+	case incidenttimelineevent.EdgeSystemContext:
+		ids := make([]ent.Value, 0, len(m.removedsystem_context))
+		for id := range m.removedsystem_context {
 			ids = append(ids, id)
 		}
 		return ids
@@ -22946,8 +22940,8 @@ func (m *IncidentTimelineEventMutation) ClearedEdges() []string {
 	if m.clearedevidence {
 		edges = append(edges, incidenttimelineevent.EdgeEvidence)
 	}
-	if m.clearedtopology_context {
-		edges = append(edges, incidenttimelineevent.EdgeTopologyContext)
+	if m.clearedsystem_context {
+		edges = append(edges, incidenttimelineevent.EdgeSystemContext)
 	}
 	return edges
 }
@@ -22968,8 +22962,8 @@ func (m *IncidentTimelineEventMutation) EdgeCleared(name string) bool {
 		return m.clearedfactors
 	case incidenttimelineevent.EdgeEvidence:
 		return m.clearedevidence
-	case incidenttimelineevent.EdgeTopologyContext:
-		return m.clearedtopology_context
+	case incidenttimelineevent.EdgeSystemContext:
+		return m.clearedsystem_context
 	}
 	return false
 }
@@ -23016,8 +23010,8 @@ func (m *IncidentTimelineEventMutation) ResetEdge(name string) error {
 	case incidenttimelineevent.EdgeEvidence:
 		m.ResetEvidence()
 		return nil
-	case incidenttimelineevent.EdgeTopologyContext:
-		m.ResetTopologyContext()
+	case incidenttimelineevent.EdgeSystemContext:
+		m.ResetSystemContext()
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentTimelineEvent edge %s", name)
@@ -25226,37 +25220,37 @@ func (m *IncidentTimelineEventEvidenceMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown IncidentTimelineEventEvidence edge %s", name)
 }
 
-// IncidentTimelineEventTopologyContextMutation represents an operation that mutates the IncidentTimelineEventTopologyContext nodes in the graph.
-type IncidentTimelineEventTopologyContextMutation struct {
+// IncidentTimelineEventSystemContextMutation represents an operation that mutates the IncidentTimelineEventSystemContext nodes in the graph.
+type IncidentTimelineEventSystemContextMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *uuid.UUID
-	relationship           *incidenttimelineeventtopologycontext.Relationship
-	created_at             *time.Time
-	clearedFields          map[string]struct{}
-	tenant                 *int
-	clearedtenant          bool
-	event                  *uuid.UUID
-	clearedevent           bool
-	snapshot_entity        *uuid.UUID
-	clearedsnapshot_entity bool
-	done                   bool
-	oldValue               func(context.Context) (*IncidentTimelineEventTopologyContext, error)
-	predicates             []predicate.IncidentTimelineEventTopologyContext
+	op                          Op
+	typ                         string
+	id                          *uuid.UUID
+	relationship                *incidenttimelineeventsystemcontext.Relationship
+	created_at                  *time.Time
+	clearedFields               map[string]struct{}
+	tenant                      *int
+	clearedtenant               bool
+	event                       *uuid.UUID
+	clearedevent                bool
+	system_analysis_node        *uuid.UUID
+	clearedsystem_analysis_node bool
+	done                        bool
+	oldValue                    func(context.Context) (*IncidentTimelineEventSystemContext, error)
+	predicates                  []predicate.IncidentTimelineEventSystemContext
 }
 
-var _ ent.Mutation = (*IncidentTimelineEventTopologyContextMutation)(nil)
+var _ ent.Mutation = (*IncidentTimelineEventSystemContextMutation)(nil)
 
-// incidenttimelineeventtopologycontextOption allows management of the mutation configuration using functional options.
-type incidenttimelineeventtopologycontextOption func(*IncidentTimelineEventTopologyContextMutation)
+// incidenttimelineeventsystemcontextOption allows management of the mutation configuration using functional options.
+type incidenttimelineeventsystemcontextOption func(*IncidentTimelineEventSystemContextMutation)
 
-// newIncidentTimelineEventTopologyContextMutation creates new mutation for the IncidentTimelineEventTopologyContext entity.
-func newIncidentTimelineEventTopologyContextMutation(c config, op Op, opts ...incidenttimelineeventtopologycontextOption) *IncidentTimelineEventTopologyContextMutation {
-	m := &IncidentTimelineEventTopologyContextMutation{
+// newIncidentTimelineEventSystemContextMutation creates new mutation for the IncidentTimelineEventSystemContext entity.
+func newIncidentTimelineEventSystemContextMutation(c config, op Op, opts ...incidenttimelineeventsystemcontextOption) *IncidentTimelineEventSystemContextMutation {
+	m := &IncidentTimelineEventSystemContextMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeIncidentTimelineEventTopologyContext,
+		typ:           TypeIncidentTimelineEventSystemContext,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -25265,20 +25259,20 @@ func newIncidentTimelineEventTopologyContextMutation(c config, op Op, opts ...in
 	return m
 }
 
-// withIncidentTimelineEventTopologyContextID sets the ID field of the mutation.
-func withIncidentTimelineEventTopologyContextID(id uuid.UUID) incidenttimelineeventtopologycontextOption {
-	return func(m *IncidentTimelineEventTopologyContextMutation) {
+// withIncidentTimelineEventSystemContextID sets the ID field of the mutation.
+func withIncidentTimelineEventSystemContextID(id uuid.UUID) incidenttimelineeventsystemcontextOption {
+	return func(m *IncidentTimelineEventSystemContextMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *IncidentTimelineEventTopologyContext
+			value *IncidentTimelineEventSystemContext
 		)
-		m.oldValue = func(ctx context.Context) (*IncidentTimelineEventTopologyContext, error) {
+		m.oldValue = func(ctx context.Context) (*IncidentTimelineEventSystemContext, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().IncidentTimelineEventTopologyContext.Get(ctx, id)
+					value, err = m.Client().IncidentTimelineEventSystemContext.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -25287,10 +25281,10 @@ func withIncidentTimelineEventTopologyContextID(id uuid.UUID) incidenttimelineev
 	}
 }
 
-// withIncidentTimelineEventTopologyContext sets the old IncidentTimelineEventTopologyContext of the mutation.
-func withIncidentTimelineEventTopologyContext(node *IncidentTimelineEventTopologyContext) incidenttimelineeventtopologycontextOption {
-	return func(m *IncidentTimelineEventTopologyContextMutation) {
-		m.oldValue = func(context.Context) (*IncidentTimelineEventTopologyContext, error) {
+// withIncidentTimelineEventSystemContext sets the old IncidentTimelineEventSystemContext of the mutation.
+func withIncidentTimelineEventSystemContext(node *IncidentTimelineEventSystemContext) incidenttimelineeventsystemcontextOption {
+	return func(m *IncidentTimelineEventSystemContextMutation) {
+		m.oldValue = func(context.Context) (*IncidentTimelineEventSystemContext, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -25299,7 +25293,7 @@ func withIncidentTimelineEventTopologyContext(node *IncidentTimelineEventTopolog
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m IncidentTimelineEventTopologyContextMutation) Client() *Client {
+func (m IncidentTimelineEventSystemContextMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -25307,7 +25301,7 @@ func (m IncidentTimelineEventTopologyContextMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m IncidentTimelineEventTopologyContextMutation) Tx() (*Tx, error) {
+func (m IncidentTimelineEventSystemContextMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -25317,14 +25311,14 @@ func (m IncidentTimelineEventTopologyContextMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of IncidentTimelineEventTopologyContext entities.
-func (m *IncidentTimelineEventTopologyContextMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of IncidentTimelineEventSystemContext entities.
+func (m *IncidentTimelineEventSystemContextMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *IncidentTimelineEventTopologyContextMutation) ID() (id uuid.UUID, exists bool) {
+func (m *IncidentTimelineEventSystemContextMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -25335,7 +25329,7 @@ func (m *IncidentTimelineEventTopologyContextMutation) ID() (id uuid.UUID, exist
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *IncidentTimelineEventSystemContextMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -25344,19 +25338,19 @@ func (m *IncidentTimelineEventTopologyContextMutation) IDs(ctx context.Context) 
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().IncidentTimelineEventTopologyContext.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().IncidentTimelineEventSystemContext.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (m *IncidentTimelineEventTopologyContextMutation) SetTenantID(i int) {
+func (m *IncidentTimelineEventSystemContextMutation) SetTenantID(i int) {
 	m.tenant = &i
 }
 
 // TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) TenantID() (r int, exists bool) {
+func (m *IncidentTimelineEventSystemContextMutation) TenantID() (r int, exists bool) {
 	v := m.tenant
 	if v == nil {
 		return
@@ -25364,10 +25358,10 @@ func (m *IncidentTimelineEventTopologyContextMutation) TenantID() (r int, exists
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the IncidentTimelineEventTopologyContext entity.
-// If the IncidentTimelineEventTopologyContext object wasn't provided to the builder, the object is fetched from the database.
+// OldTenantID returns the old "tenant_id" field's value of the IncidentTimelineEventSystemContext entity.
+// If the IncidentTimelineEventSystemContext object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentTimelineEventTopologyContextMutation) OldTenantID(ctx context.Context) (v int, err error) {
+func (m *IncidentTimelineEventSystemContextMutation) OldTenantID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
 	}
@@ -25382,17 +25376,17 @@ func (m *IncidentTimelineEventTopologyContextMutation) OldTenantID(ctx context.C
 }
 
 // ResetTenantID resets all changes to the "tenant_id" field.
-func (m *IncidentTimelineEventTopologyContextMutation) ResetTenantID() {
+func (m *IncidentTimelineEventSystemContextMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
 // SetIncidentEventID sets the "incident_event_id" field.
-func (m *IncidentTimelineEventTopologyContextMutation) SetIncidentEventID(u uuid.UUID) {
+func (m *IncidentTimelineEventSystemContextMutation) SetIncidentEventID(u uuid.UUID) {
 	m.event = &u
 }
 
 // IncidentEventID returns the value of the "incident_event_id" field in the mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) IncidentEventID() (r uuid.UUID, exists bool) {
+func (m *IncidentTimelineEventSystemContextMutation) IncidentEventID() (r uuid.UUID, exists bool) {
 	v := m.event
 	if v == nil {
 		return
@@ -25400,10 +25394,10 @@ func (m *IncidentTimelineEventTopologyContextMutation) IncidentEventID() (r uuid
 	return *v, true
 }
 
-// OldIncidentEventID returns the old "incident_event_id" field's value of the IncidentTimelineEventTopologyContext entity.
-// If the IncidentTimelineEventTopologyContext object wasn't provided to the builder, the object is fetched from the database.
+// OldIncidentEventID returns the old "incident_event_id" field's value of the IncidentTimelineEventSystemContext entity.
+// If the IncidentTimelineEventSystemContext object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentTimelineEventTopologyContextMutation) OldIncidentEventID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *IncidentTimelineEventSystemContextMutation) OldIncidentEventID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldIncidentEventID is only allowed on UpdateOne operations")
 	}
@@ -25418,66 +25412,53 @@ func (m *IncidentTimelineEventTopologyContextMutation) OldIncidentEventID(ctx co
 }
 
 // ResetIncidentEventID resets all changes to the "incident_event_id" field.
-func (m *IncidentTimelineEventTopologyContextMutation) ResetIncidentEventID() {
+func (m *IncidentTimelineEventSystemContextMutation) ResetIncidentEventID() {
 	m.event = nil
 }
 
-// SetSnapshotEntityID sets the "snapshot_entity_id" field.
-func (m *IncidentTimelineEventTopologyContextMutation) SetSnapshotEntityID(u uuid.UUID) {
-	m.snapshot_entity = &u
+// SetSystemAnalysisNodeID sets the "system_analysis_node_id" field.
+func (m *IncidentTimelineEventSystemContextMutation) SetSystemAnalysisNodeID(u uuid.UUID) {
+	m.system_analysis_node = &u
 }
 
-// SnapshotEntityID returns the value of the "snapshot_entity_id" field in the mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) SnapshotEntityID() (r uuid.UUID, exists bool) {
-	v := m.snapshot_entity
+// SystemAnalysisNodeID returns the value of the "system_analysis_node_id" field in the mutation.
+func (m *IncidentTimelineEventSystemContextMutation) SystemAnalysisNodeID() (r uuid.UUID, exists bool) {
+	v := m.system_analysis_node
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSnapshotEntityID returns the old "snapshot_entity_id" field's value of the IncidentTimelineEventTopologyContext entity.
-// If the IncidentTimelineEventTopologyContext object wasn't provided to the builder, the object is fetched from the database.
+// OldSystemAnalysisNodeID returns the old "system_analysis_node_id" field's value of the IncidentTimelineEventSystemContext entity.
+// If the IncidentTimelineEventSystemContext object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentTimelineEventTopologyContextMutation) OldSnapshotEntityID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *IncidentTimelineEventSystemContextMutation) OldSystemAnalysisNodeID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSnapshotEntityID is only allowed on UpdateOne operations")
+		return v, errors.New("OldSystemAnalysisNodeID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSnapshotEntityID requires an ID field in the mutation")
+		return v, errors.New("OldSystemAnalysisNodeID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSnapshotEntityID: %w", err)
+		return v, fmt.Errorf("querying old value for OldSystemAnalysisNodeID: %w", err)
 	}
-	return oldValue.SnapshotEntityID, nil
+	return oldValue.SystemAnalysisNodeID, nil
 }
 
-// ClearSnapshotEntityID clears the value of the "snapshot_entity_id" field.
-func (m *IncidentTimelineEventTopologyContextMutation) ClearSnapshotEntityID() {
-	m.snapshot_entity = nil
-	m.clearedFields[incidenttimelineeventtopologycontext.FieldSnapshotEntityID] = struct{}{}
-}
-
-// SnapshotEntityIDCleared returns if the "snapshot_entity_id" field was cleared in this mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) SnapshotEntityIDCleared() bool {
-	_, ok := m.clearedFields[incidenttimelineeventtopologycontext.FieldSnapshotEntityID]
-	return ok
-}
-
-// ResetSnapshotEntityID resets all changes to the "snapshot_entity_id" field.
-func (m *IncidentTimelineEventTopologyContextMutation) ResetSnapshotEntityID() {
-	m.snapshot_entity = nil
-	delete(m.clearedFields, incidenttimelineeventtopologycontext.FieldSnapshotEntityID)
+// ResetSystemAnalysisNodeID resets all changes to the "system_analysis_node_id" field.
+func (m *IncidentTimelineEventSystemContextMutation) ResetSystemAnalysisNodeID() {
+	m.system_analysis_node = nil
 }
 
 // SetRelationship sets the "relationship" field.
-func (m *IncidentTimelineEventTopologyContextMutation) SetRelationship(i incidenttimelineeventtopologycontext.Relationship) {
+func (m *IncidentTimelineEventSystemContextMutation) SetRelationship(i incidenttimelineeventsystemcontext.Relationship) {
 	m.relationship = &i
 }
 
 // Relationship returns the value of the "relationship" field in the mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) Relationship() (r incidenttimelineeventtopologycontext.Relationship, exists bool) {
+func (m *IncidentTimelineEventSystemContextMutation) Relationship() (r incidenttimelineeventsystemcontext.Relationship, exists bool) {
 	v := m.relationship
 	if v == nil {
 		return
@@ -25485,10 +25466,10 @@ func (m *IncidentTimelineEventTopologyContextMutation) Relationship() (r inciden
 	return *v, true
 }
 
-// OldRelationship returns the old "relationship" field's value of the IncidentTimelineEventTopologyContext entity.
-// If the IncidentTimelineEventTopologyContext object wasn't provided to the builder, the object is fetched from the database.
+// OldRelationship returns the old "relationship" field's value of the IncidentTimelineEventSystemContext entity.
+// If the IncidentTimelineEventSystemContext object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentTimelineEventTopologyContextMutation) OldRelationship(ctx context.Context) (v incidenttimelineeventtopologycontext.Relationship, err error) {
+func (m *IncidentTimelineEventSystemContextMutation) OldRelationship(ctx context.Context) (v incidenttimelineeventsystemcontext.Relationship, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRelationship is only allowed on UpdateOne operations")
 	}
@@ -25503,17 +25484,17 @@ func (m *IncidentTimelineEventTopologyContextMutation) OldRelationship(ctx conte
 }
 
 // ResetRelationship resets all changes to the "relationship" field.
-func (m *IncidentTimelineEventTopologyContextMutation) ResetRelationship() {
+func (m *IncidentTimelineEventSystemContextMutation) ResetRelationship() {
 	m.relationship = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *IncidentTimelineEventTopologyContextMutation) SetCreatedAt(t time.Time) {
+func (m *IncidentTimelineEventSystemContextMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) CreatedAt() (r time.Time, exists bool) {
+func (m *IncidentTimelineEventSystemContextMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -25521,10 +25502,10 @@ func (m *IncidentTimelineEventTopologyContextMutation) CreatedAt() (r time.Time,
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the IncidentTimelineEventTopologyContext entity.
-// If the IncidentTimelineEventTopologyContext object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the IncidentTimelineEventSystemContext entity.
+// If the IncidentTimelineEventSystemContext object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentTimelineEventTopologyContextMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *IncidentTimelineEventSystemContextMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -25539,25 +25520,25 @@ func (m *IncidentTimelineEventTopologyContextMutation) OldCreatedAt(ctx context.
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *IncidentTimelineEventTopologyContextMutation) ResetCreatedAt() {
+func (m *IncidentTimelineEventSystemContextMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *IncidentTimelineEventTopologyContextMutation) ClearTenant() {
+func (m *IncidentTimelineEventSystemContextMutation) ClearTenant() {
 	m.clearedtenant = true
-	m.clearedFields[incidenttimelineeventtopologycontext.FieldTenantID] = struct{}{}
+	m.clearedFields[incidenttimelineeventsystemcontext.FieldTenantID] = struct{}{}
 }
 
 // TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *IncidentTimelineEventTopologyContextMutation) TenantCleared() bool {
+func (m *IncidentTimelineEventSystemContextMutation) TenantCleared() bool {
 	return m.clearedtenant
 }
 
 // TenantIDs returns the "tenant" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TenantID instead. It exists only for internal usage by the builders.
-func (m *IncidentTimelineEventTopologyContextMutation) TenantIDs() (ids []int) {
+func (m *IncidentTimelineEventSystemContextMutation) TenantIDs() (ids []int) {
 	if id := m.tenant; id != nil {
 		ids = append(ids, *id)
 	}
@@ -25565,29 +25546,29 @@ func (m *IncidentTimelineEventTopologyContextMutation) TenantIDs() (ids []int) {
 }
 
 // ResetTenant resets all changes to the "tenant" edge.
-func (m *IncidentTimelineEventTopologyContextMutation) ResetTenant() {
+func (m *IncidentTimelineEventSystemContextMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
 }
 
 // SetEventID sets the "event" edge to the IncidentTimelineEvent entity by id.
-func (m *IncidentTimelineEventTopologyContextMutation) SetEventID(id uuid.UUID) {
+func (m *IncidentTimelineEventSystemContextMutation) SetEventID(id uuid.UUID) {
 	m.event = &id
 }
 
 // ClearEvent clears the "event" edge to the IncidentTimelineEvent entity.
-func (m *IncidentTimelineEventTopologyContextMutation) ClearEvent() {
+func (m *IncidentTimelineEventSystemContextMutation) ClearEvent() {
 	m.clearedevent = true
-	m.clearedFields[incidenttimelineeventtopologycontext.FieldIncidentEventID] = struct{}{}
+	m.clearedFields[incidenttimelineeventsystemcontext.FieldIncidentEventID] = struct{}{}
 }
 
 // EventCleared reports if the "event" edge to the IncidentTimelineEvent entity was cleared.
-func (m *IncidentTimelineEventTopologyContextMutation) EventCleared() bool {
+func (m *IncidentTimelineEventSystemContextMutation) EventCleared() bool {
 	return m.clearedevent
 }
 
 // EventID returns the "event" edge ID in the mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) EventID() (id uuid.UUID, exists bool) {
+func (m *IncidentTimelineEventSystemContextMutation) EventID() (id uuid.UUID, exists bool) {
 	if m.event != nil {
 		return *m.event, true
 	}
@@ -25597,7 +25578,7 @@ func (m *IncidentTimelineEventTopologyContextMutation) EventID() (id uuid.UUID, 
 // EventIDs returns the "event" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // EventID instead. It exists only for internal usage by the builders.
-func (m *IncidentTimelineEventTopologyContextMutation) EventIDs() (ids []uuid.UUID) {
+func (m *IncidentTimelineEventSystemContextMutation) EventIDs() (ids []uuid.UUID) {
 	if id := m.event; id != nil {
 		ids = append(ids, *id)
 	}
@@ -25605,47 +25586,47 @@ func (m *IncidentTimelineEventTopologyContextMutation) EventIDs() (ids []uuid.UU
 }
 
 // ResetEvent resets all changes to the "event" edge.
-func (m *IncidentTimelineEventTopologyContextMutation) ResetEvent() {
+func (m *IncidentTimelineEventSystemContextMutation) ResetEvent() {
 	m.event = nil
 	m.clearedevent = false
 }
 
-// ClearSnapshotEntity clears the "snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity.
-func (m *IncidentTimelineEventTopologyContextMutation) ClearSnapshotEntity() {
-	m.clearedsnapshot_entity = true
-	m.clearedFields[incidenttimelineeventtopologycontext.FieldSnapshotEntityID] = struct{}{}
+// ClearSystemAnalysisNode clears the "system_analysis_node" edge to the SystemAnalysisTopologyNode entity.
+func (m *IncidentTimelineEventSystemContextMutation) ClearSystemAnalysisNode() {
+	m.clearedsystem_analysis_node = true
+	m.clearedFields[incidenttimelineeventsystemcontext.FieldSystemAnalysisNodeID] = struct{}{}
 }
 
-// SnapshotEntityCleared reports if the "snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity was cleared.
-func (m *IncidentTimelineEventTopologyContextMutation) SnapshotEntityCleared() bool {
-	return m.SnapshotEntityIDCleared() || m.clearedsnapshot_entity
+// SystemAnalysisNodeCleared reports if the "system_analysis_node" edge to the SystemAnalysisTopologyNode entity was cleared.
+func (m *IncidentTimelineEventSystemContextMutation) SystemAnalysisNodeCleared() bool {
+	return m.clearedsystem_analysis_node
 }
 
-// SnapshotEntityIDs returns the "snapshot_entity" edge IDs in the mutation.
+// SystemAnalysisNodeIDs returns the "system_analysis_node" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SnapshotEntityID instead. It exists only for internal usage by the builders.
-func (m *IncidentTimelineEventTopologyContextMutation) SnapshotEntityIDs() (ids []uuid.UUID) {
-	if id := m.snapshot_entity; id != nil {
+// SystemAnalysisNodeID instead. It exists only for internal usage by the builders.
+func (m *IncidentTimelineEventSystemContextMutation) SystemAnalysisNodeIDs() (ids []uuid.UUID) {
+	if id := m.system_analysis_node; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetSnapshotEntity resets all changes to the "snapshot_entity" edge.
-func (m *IncidentTimelineEventTopologyContextMutation) ResetSnapshotEntity() {
-	m.snapshot_entity = nil
-	m.clearedsnapshot_entity = false
+// ResetSystemAnalysisNode resets all changes to the "system_analysis_node" edge.
+func (m *IncidentTimelineEventSystemContextMutation) ResetSystemAnalysisNode() {
+	m.system_analysis_node = nil
+	m.clearedsystem_analysis_node = false
 }
 
-// Where appends a list predicates to the IncidentTimelineEventTopologyContextMutation builder.
-func (m *IncidentTimelineEventTopologyContextMutation) Where(ps ...predicate.IncidentTimelineEventTopologyContext) {
+// Where appends a list predicates to the IncidentTimelineEventSystemContextMutation builder.
+func (m *IncidentTimelineEventSystemContextMutation) Where(ps ...predicate.IncidentTimelineEventSystemContext) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the IncidentTimelineEventTopologyContextMutation builder. Using this method,
+// WhereP appends storage-level predicates to the IncidentTimelineEventSystemContextMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *IncidentTimelineEventTopologyContextMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.IncidentTimelineEventTopologyContext, len(ps))
+func (m *IncidentTimelineEventSystemContextMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.IncidentTimelineEventSystemContext, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -25653,39 +25634,39 @@ func (m *IncidentTimelineEventTopologyContextMutation) WhereP(ps ...func(*sql.Se
 }
 
 // Op returns the operation name.
-func (m *IncidentTimelineEventTopologyContextMutation) Op() Op {
+func (m *IncidentTimelineEventSystemContextMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *IncidentTimelineEventTopologyContextMutation) SetOp(op Op) {
+func (m *IncidentTimelineEventSystemContextMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (IncidentTimelineEventTopologyContext).
-func (m *IncidentTimelineEventTopologyContextMutation) Type() string {
+// Type returns the node type of this mutation (IncidentTimelineEventSystemContext).
+func (m *IncidentTimelineEventSystemContextMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *IncidentTimelineEventTopologyContextMutation) Fields() []string {
+func (m *IncidentTimelineEventSystemContextMutation) Fields() []string {
 	fields := make([]string, 0, 5)
 	if m.tenant != nil {
-		fields = append(fields, incidenttimelineeventtopologycontext.FieldTenantID)
+		fields = append(fields, incidenttimelineeventsystemcontext.FieldTenantID)
 	}
 	if m.event != nil {
-		fields = append(fields, incidenttimelineeventtopologycontext.FieldIncidentEventID)
+		fields = append(fields, incidenttimelineeventsystemcontext.FieldIncidentEventID)
 	}
-	if m.snapshot_entity != nil {
-		fields = append(fields, incidenttimelineeventtopologycontext.FieldSnapshotEntityID)
+	if m.system_analysis_node != nil {
+		fields = append(fields, incidenttimelineeventsystemcontext.FieldSystemAnalysisNodeID)
 	}
 	if m.relationship != nil {
-		fields = append(fields, incidenttimelineeventtopologycontext.FieldRelationship)
+		fields = append(fields, incidenttimelineeventsystemcontext.FieldRelationship)
 	}
 	if m.created_at != nil {
-		fields = append(fields, incidenttimelineeventtopologycontext.FieldCreatedAt)
+		fields = append(fields, incidenttimelineeventsystemcontext.FieldCreatedAt)
 	}
 	return fields
 }
@@ -25693,17 +25674,17 @@ func (m *IncidentTimelineEventTopologyContextMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *IncidentTimelineEventTopologyContextMutation) Field(name string) (ent.Value, bool) {
+func (m *IncidentTimelineEventSystemContextMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case incidenttimelineeventtopologycontext.FieldTenantID:
+	case incidenttimelineeventsystemcontext.FieldTenantID:
 		return m.TenantID()
-	case incidenttimelineeventtopologycontext.FieldIncidentEventID:
+	case incidenttimelineeventsystemcontext.FieldIncidentEventID:
 		return m.IncidentEventID()
-	case incidenttimelineeventtopologycontext.FieldSnapshotEntityID:
-		return m.SnapshotEntityID()
-	case incidenttimelineeventtopologycontext.FieldRelationship:
+	case incidenttimelineeventsystemcontext.FieldSystemAnalysisNodeID:
+		return m.SystemAnalysisNodeID()
+	case incidenttimelineeventsystemcontext.FieldRelationship:
 		return m.Relationship()
-	case incidenttimelineeventtopologycontext.FieldCreatedAt:
+	case incidenttimelineeventsystemcontext.FieldCreatedAt:
 		return m.CreatedAt()
 	}
 	return nil, false
@@ -25712,56 +25693,56 @@ func (m *IncidentTimelineEventTopologyContextMutation) Field(name string) (ent.V
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *IncidentTimelineEventTopologyContextMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *IncidentTimelineEventSystemContextMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case incidenttimelineeventtopologycontext.FieldTenantID:
+	case incidenttimelineeventsystemcontext.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case incidenttimelineeventtopologycontext.FieldIncidentEventID:
+	case incidenttimelineeventsystemcontext.FieldIncidentEventID:
 		return m.OldIncidentEventID(ctx)
-	case incidenttimelineeventtopologycontext.FieldSnapshotEntityID:
-		return m.OldSnapshotEntityID(ctx)
-	case incidenttimelineeventtopologycontext.FieldRelationship:
+	case incidenttimelineeventsystemcontext.FieldSystemAnalysisNodeID:
+		return m.OldSystemAnalysisNodeID(ctx)
+	case incidenttimelineeventsystemcontext.FieldRelationship:
 		return m.OldRelationship(ctx)
-	case incidenttimelineeventtopologycontext.FieldCreatedAt:
+	case incidenttimelineeventsystemcontext.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
-	return nil, fmt.Errorf("unknown IncidentTimelineEventTopologyContext field %s", name)
+	return nil, fmt.Errorf("unknown IncidentTimelineEventSystemContext field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *IncidentTimelineEventTopologyContextMutation) SetField(name string, value ent.Value) error {
+func (m *IncidentTimelineEventSystemContextMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case incidenttimelineeventtopologycontext.FieldTenantID:
+	case incidenttimelineeventsystemcontext.FieldTenantID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
 		return nil
-	case incidenttimelineeventtopologycontext.FieldIncidentEventID:
+	case incidenttimelineeventsystemcontext.FieldIncidentEventID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIncidentEventID(v)
 		return nil
-	case incidenttimelineeventtopologycontext.FieldSnapshotEntityID:
+	case incidenttimelineeventsystemcontext.FieldSystemAnalysisNodeID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSnapshotEntityID(v)
+		m.SetSystemAnalysisNodeID(v)
 		return nil
-	case incidenttimelineeventtopologycontext.FieldRelationship:
-		v, ok := value.(incidenttimelineeventtopologycontext.Relationship)
+	case incidenttimelineeventsystemcontext.FieldRelationship:
+		v, ok := value.(incidenttimelineeventsystemcontext.Relationship)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRelationship(v)
 		return nil
-	case incidenttimelineeventtopologycontext.FieldCreatedAt:
+	case incidenttimelineeventsystemcontext.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -25769,12 +25750,12 @@ func (m *IncidentTimelineEventTopologyContextMutation) SetField(name string, val
 		m.SetCreatedAt(v)
 		return nil
 	}
-	return fmt.Errorf("unknown IncidentTimelineEventTopologyContext field %s", name)
+	return fmt.Errorf("unknown IncidentTimelineEventSystemContext field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) AddedFields() []string {
+func (m *IncidentTimelineEventSystemContextMutation) AddedFields() []string {
 	var fields []string
 	return fields
 }
@@ -25782,7 +25763,7 @@ func (m *IncidentTimelineEventTopologyContextMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *IncidentTimelineEventTopologyContextMutation) AddedField(name string) (ent.Value, bool) {
+func (m *IncidentTimelineEventSystemContextMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	}
 	return nil, false
@@ -25791,92 +25772,83 @@ func (m *IncidentTimelineEventTopologyContextMutation) AddedField(name string) (
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *IncidentTimelineEventTopologyContextMutation) AddField(name string, value ent.Value) error {
+func (m *IncidentTimelineEventSystemContextMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown IncidentTimelineEventTopologyContext numeric field %s", name)
+	return fmt.Errorf("unknown IncidentTimelineEventSystemContext numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(incidenttimelineeventtopologycontext.FieldSnapshotEntityID) {
-		fields = append(fields, incidenttimelineeventtopologycontext.FieldSnapshotEntityID)
-	}
-	return fields
+func (m *IncidentTimelineEventSystemContextMutation) ClearedFields() []string {
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) FieldCleared(name string) bool {
+func (m *IncidentTimelineEventSystemContextMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *IncidentTimelineEventTopologyContextMutation) ClearField(name string) error {
-	switch name {
-	case incidenttimelineeventtopologycontext.FieldSnapshotEntityID:
-		m.ClearSnapshotEntityID()
-		return nil
-	}
-	return fmt.Errorf("unknown IncidentTimelineEventTopologyContext nullable field %s", name)
+func (m *IncidentTimelineEventSystemContextMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown IncidentTimelineEventSystemContext nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *IncidentTimelineEventTopologyContextMutation) ResetField(name string) error {
+func (m *IncidentTimelineEventSystemContextMutation) ResetField(name string) error {
 	switch name {
-	case incidenttimelineeventtopologycontext.FieldTenantID:
+	case incidenttimelineeventsystemcontext.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case incidenttimelineeventtopologycontext.FieldIncidentEventID:
+	case incidenttimelineeventsystemcontext.FieldIncidentEventID:
 		m.ResetIncidentEventID()
 		return nil
-	case incidenttimelineeventtopologycontext.FieldSnapshotEntityID:
-		m.ResetSnapshotEntityID()
+	case incidenttimelineeventsystemcontext.FieldSystemAnalysisNodeID:
+		m.ResetSystemAnalysisNodeID()
 		return nil
-	case incidenttimelineeventtopologycontext.FieldRelationship:
+	case incidenttimelineeventsystemcontext.FieldRelationship:
 		m.ResetRelationship()
 		return nil
-	case incidenttimelineeventtopologycontext.FieldCreatedAt:
+	case incidenttimelineeventsystemcontext.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
 	}
-	return fmt.Errorf("unknown IncidentTimelineEventTopologyContext field %s", name)
+	return fmt.Errorf("unknown IncidentTimelineEventSystemContext field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) AddedEdges() []string {
+func (m *IncidentTimelineEventSystemContextMutation) AddedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.tenant != nil {
-		edges = append(edges, incidenttimelineeventtopologycontext.EdgeTenant)
+		edges = append(edges, incidenttimelineeventsystemcontext.EdgeTenant)
 	}
 	if m.event != nil {
-		edges = append(edges, incidenttimelineeventtopologycontext.EdgeEvent)
+		edges = append(edges, incidenttimelineeventsystemcontext.EdgeEvent)
 	}
-	if m.snapshot_entity != nil {
-		edges = append(edges, incidenttimelineeventtopologycontext.EdgeSnapshotEntity)
+	if m.system_analysis_node != nil {
+		edges = append(edges, incidenttimelineeventsystemcontext.EdgeSystemAnalysisNode)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) AddedIDs(name string) []ent.Value {
+func (m *IncidentTimelineEventSystemContextMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case incidenttimelineeventtopologycontext.EdgeTenant:
+	case incidenttimelineeventsystemcontext.EdgeTenant:
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case incidenttimelineeventtopologycontext.EdgeEvent:
+	case incidenttimelineeventsystemcontext.EdgeEvent:
 		if id := m.event; id != nil {
 			return []ent.Value{*id}
 		}
-	case incidenttimelineeventtopologycontext.EdgeSnapshotEntity:
-		if id := m.snapshot_entity; id != nil {
+	case incidenttimelineeventsystemcontext.EdgeSystemAnalysisNode:
+		if id := m.system_analysis_node; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -25884,78 +25856,78 @@ func (m *IncidentTimelineEventTopologyContextMutation) AddedIDs(name string) []e
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) RemovedEdges() []string {
+func (m *IncidentTimelineEventSystemContextMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) RemovedIDs(name string) []ent.Value {
+func (m *IncidentTimelineEventSystemContextMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) ClearedEdges() []string {
+func (m *IncidentTimelineEventSystemContextMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.clearedtenant {
-		edges = append(edges, incidenttimelineeventtopologycontext.EdgeTenant)
+		edges = append(edges, incidenttimelineeventsystemcontext.EdgeTenant)
 	}
 	if m.clearedevent {
-		edges = append(edges, incidenttimelineeventtopologycontext.EdgeEvent)
+		edges = append(edges, incidenttimelineeventsystemcontext.EdgeEvent)
 	}
-	if m.clearedsnapshot_entity {
-		edges = append(edges, incidenttimelineeventtopologycontext.EdgeSnapshotEntity)
+	if m.clearedsystem_analysis_node {
+		edges = append(edges, incidenttimelineeventsystemcontext.EdgeSystemAnalysisNode)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *IncidentTimelineEventTopologyContextMutation) EdgeCleared(name string) bool {
+func (m *IncidentTimelineEventSystemContextMutation) EdgeCleared(name string) bool {
 	switch name {
-	case incidenttimelineeventtopologycontext.EdgeTenant:
+	case incidenttimelineeventsystemcontext.EdgeTenant:
 		return m.clearedtenant
-	case incidenttimelineeventtopologycontext.EdgeEvent:
+	case incidenttimelineeventsystemcontext.EdgeEvent:
 		return m.clearedevent
-	case incidenttimelineeventtopologycontext.EdgeSnapshotEntity:
-		return m.clearedsnapshot_entity
+	case incidenttimelineeventsystemcontext.EdgeSystemAnalysisNode:
+		return m.clearedsystem_analysis_node
 	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *IncidentTimelineEventTopologyContextMutation) ClearEdge(name string) error {
+func (m *IncidentTimelineEventSystemContextMutation) ClearEdge(name string) error {
 	switch name {
-	case incidenttimelineeventtopologycontext.EdgeTenant:
+	case incidenttimelineeventsystemcontext.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case incidenttimelineeventtopologycontext.EdgeEvent:
+	case incidenttimelineeventsystemcontext.EdgeEvent:
 		m.ClearEvent()
 		return nil
-	case incidenttimelineeventtopologycontext.EdgeSnapshotEntity:
-		m.ClearSnapshotEntity()
+	case incidenttimelineeventsystemcontext.EdgeSystemAnalysisNode:
+		m.ClearSystemAnalysisNode()
 		return nil
 	}
-	return fmt.Errorf("unknown IncidentTimelineEventTopologyContext unique edge %s", name)
+	return fmt.Errorf("unknown IncidentTimelineEventSystemContext unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *IncidentTimelineEventTopologyContextMutation) ResetEdge(name string) error {
+func (m *IncidentTimelineEventSystemContextMutation) ResetEdge(name string) error {
 	switch name {
-	case incidenttimelineeventtopologycontext.EdgeTenant:
+	case incidenttimelineeventsystemcontext.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case incidenttimelineeventtopologycontext.EdgeEvent:
+	case incidenttimelineeventsystemcontext.EdgeEvent:
 		m.ResetEvent()
 		return nil
-	case incidenttimelineeventtopologycontext.EdgeSnapshotEntity:
-		m.ResetSnapshotEntity()
+	case incidenttimelineeventsystemcontext.EdgeSystemAnalysisNode:
+		m.ResetSystemAnalysisNode()
 		return nil
 	}
-	return fmt.Errorf("unknown IncidentTimelineEventTopologyContext edge %s", name)
+	return fmt.Errorf("unknown IncidentTimelineEventSystemContext edge %s", name)
 }
 
 // IncidentTypeMutation represents an operation that mutates the IncidentType nodes in the graph.
@@ -31255,6 +31227,7 @@ type KnowledgeEvidenceMutation struct {
 	evidence_kind *knowledgeevidence.EvidenceKind
 	effective_at  *time.Time
 	properties    *map[string]interface{}
+	subject_state *map[string]interface{}
 	clearedFields map[string]struct{}
 	tenant        *int
 	clearedtenant bool
@@ -31695,6 +31668,42 @@ func (m *KnowledgeEvidenceMutation) ResetProperties() {
 	m.properties = nil
 }
 
+// SetSubjectState sets the "subject_state" field.
+func (m *KnowledgeEvidenceMutation) SetSubjectState(value map[string]interface{}) {
+	m.subject_state = &value
+}
+
+// SubjectState returns the value of the "subject_state" field in the mutation.
+func (m *KnowledgeEvidenceMutation) SubjectState() (r map[string]interface{}, exists bool) {
+	v := m.subject_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSubjectState returns the old "subject_state" field's value of the KnowledgeEvidence entity.
+// If the KnowledgeEvidence object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEvidenceMutation) OldSubjectState(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSubjectState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSubjectState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSubjectState: %w", err)
+	}
+	return oldValue.SubjectState, nil
+}
+
+// ResetSubjectState resets all changes to the "subject_state" field.
+func (m *KnowledgeEvidenceMutation) ResetSubjectState() {
+	m.subject_state = nil
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *KnowledgeEvidenceMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -31810,7 +31819,7 @@ func (m *KnowledgeEvidenceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeEvidenceMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.tenant != nil {
 		fields = append(fields, knowledgeevidence.FieldTenantID)
 	}
@@ -31838,6 +31847,9 @@ func (m *KnowledgeEvidenceMutation) Fields() []string {
 	if m.properties != nil {
 		fields = append(fields, knowledgeevidence.FieldProperties)
 	}
+	if m.subject_state != nil {
+		fields = append(fields, knowledgeevidence.FieldSubjectState)
+	}
 	return fields
 }
 
@@ -31864,6 +31876,8 @@ func (m *KnowledgeEvidenceMutation) Field(name string) (ent.Value, bool) {
 		return m.EffectiveAt()
 	case knowledgeevidence.FieldProperties:
 		return m.Properties()
+	case knowledgeevidence.FieldSubjectState:
+		return m.SubjectState()
 	}
 	return nil, false
 }
@@ -31891,6 +31905,8 @@ func (m *KnowledgeEvidenceMutation) OldField(ctx context.Context, name string) (
 		return m.OldEffectiveAt(ctx)
 	case knowledgeevidence.FieldProperties:
 		return m.OldProperties(ctx)
+	case knowledgeevidence.FieldSubjectState:
+		return m.OldSubjectState(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeEvidence field %s", name)
 }
@@ -31962,6 +31978,13 @@ func (m *KnowledgeEvidenceMutation) SetField(name string, value ent.Value) error
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProperties(v)
+		return nil
+	case knowledgeevidence.FieldSubjectState:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSubjectState(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEvidence field %s", name)
@@ -32041,6 +32064,9 @@ func (m *KnowledgeEvidenceMutation) ResetField(name string) error {
 		return nil
 	case knowledgeevidence.FieldProperties:
 		m.ResetProperties()
+		return nil
+	case knowledgeevidence.FieldSubjectState:
+		m.ResetSubjectState()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEvidence field %s", name)
@@ -32154,3262 +32180,6 @@ func (m *KnowledgeEvidenceMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEvidence edge %s", name)
-}
-
-// KnowledgeGraphSnapshotMutation represents an operation that mutates the KnowledgeGraphSnapshot nodes in the graph.
-type KnowledgeGraphSnapshotMutation struct {
-	config
-	op                     Op
-	typ                    string
-	id                     *uuid.UUID
-	as_of                  *time.Time
-	created_at             *time.Time
-	scope_kind             *string
-	scope_properties       *map[string]interface{}
-	clearedFields          map[string]struct{}
-	tenant                 *int
-	clearedtenant          bool
-	entities               map[uuid.UUID]struct{}
-	removedentities        map[uuid.UUID]struct{}
-	clearedentities        bool
-	relationships          map[uuid.UUID]struct{}
-	removedrelationships   map[uuid.UUID]struct{}
-	clearedrelationships   bool
-	system_analyses        map[uuid.UUID]struct{}
-	removedsystem_analyses map[uuid.UUID]struct{}
-	clearedsystem_analyses bool
-	done                   bool
-	oldValue               func(context.Context) (*KnowledgeGraphSnapshot, error)
-	predicates             []predicate.KnowledgeGraphSnapshot
-}
-
-var _ ent.Mutation = (*KnowledgeGraphSnapshotMutation)(nil)
-
-// knowledgegraphsnapshotOption allows management of the mutation configuration using functional options.
-type knowledgegraphsnapshotOption func(*KnowledgeGraphSnapshotMutation)
-
-// newKnowledgeGraphSnapshotMutation creates new mutation for the KnowledgeGraphSnapshot entity.
-func newKnowledgeGraphSnapshotMutation(c config, op Op, opts ...knowledgegraphsnapshotOption) *KnowledgeGraphSnapshotMutation {
-	m := &KnowledgeGraphSnapshotMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeKnowledgeGraphSnapshot,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withKnowledgeGraphSnapshotID sets the ID field of the mutation.
-func withKnowledgeGraphSnapshotID(id uuid.UUID) knowledgegraphsnapshotOption {
-	return func(m *KnowledgeGraphSnapshotMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *KnowledgeGraphSnapshot
-		)
-		m.oldValue = func(ctx context.Context) (*KnowledgeGraphSnapshot, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().KnowledgeGraphSnapshot.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withKnowledgeGraphSnapshot sets the old KnowledgeGraphSnapshot of the mutation.
-func withKnowledgeGraphSnapshot(node *KnowledgeGraphSnapshot) knowledgegraphsnapshotOption {
-	return func(m *KnowledgeGraphSnapshotMutation) {
-		m.oldValue = func(context.Context) (*KnowledgeGraphSnapshot, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m KnowledgeGraphSnapshotMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m KnowledgeGraphSnapshotMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of KnowledgeGraphSnapshot entities.
-func (m *KnowledgeGraphSnapshotMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *KnowledgeGraphSnapshotMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *KnowledgeGraphSnapshotMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().KnowledgeGraphSnapshot.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *KnowledgeGraphSnapshotMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *KnowledgeGraphSnapshotMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the KnowledgeGraphSnapshot entity.
-// If the KnowledgeGraphSnapshot object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *KnowledgeGraphSnapshotMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetAsOf sets the "as_of" field.
-func (m *KnowledgeGraphSnapshotMutation) SetAsOf(t time.Time) {
-	m.as_of = &t
-}
-
-// AsOf returns the value of the "as_of" field in the mutation.
-func (m *KnowledgeGraphSnapshotMutation) AsOf() (r time.Time, exists bool) {
-	v := m.as_of
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAsOf returns the old "as_of" field's value of the KnowledgeGraphSnapshot entity.
-// If the KnowledgeGraphSnapshot object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotMutation) OldAsOf(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAsOf is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAsOf requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAsOf: %w", err)
-	}
-	return oldValue.AsOf, nil
-}
-
-// ResetAsOf resets all changes to the "as_of" field.
-func (m *KnowledgeGraphSnapshotMutation) ResetAsOf() {
-	m.as_of = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *KnowledgeGraphSnapshotMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *KnowledgeGraphSnapshotMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the KnowledgeGraphSnapshot entity.
-// If the KnowledgeGraphSnapshot object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *KnowledgeGraphSnapshotMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetScopeKind sets the "scope_kind" field.
-func (m *KnowledgeGraphSnapshotMutation) SetScopeKind(s string) {
-	m.scope_kind = &s
-}
-
-// ScopeKind returns the value of the "scope_kind" field in the mutation.
-func (m *KnowledgeGraphSnapshotMutation) ScopeKind() (r string, exists bool) {
-	v := m.scope_kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldScopeKind returns the old "scope_kind" field's value of the KnowledgeGraphSnapshot entity.
-// If the KnowledgeGraphSnapshot object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotMutation) OldScopeKind(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldScopeKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldScopeKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldScopeKind: %w", err)
-	}
-	return oldValue.ScopeKind, nil
-}
-
-// ResetScopeKind resets all changes to the "scope_kind" field.
-func (m *KnowledgeGraphSnapshotMutation) ResetScopeKind() {
-	m.scope_kind = nil
-}
-
-// SetScopeProperties sets the "scope_properties" field.
-func (m *KnowledgeGraphSnapshotMutation) SetScopeProperties(value map[string]interface{}) {
-	m.scope_properties = &value
-}
-
-// ScopeProperties returns the value of the "scope_properties" field in the mutation.
-func (m *KnowledgeGraphSnapshotMutation) ScopeProperties() (r map[string]interface{}, exists bool) {
-	v := m.scope_properties
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldScopeProperties returns the old "scope_properties" field's value of the KnowledgeGraphSnapshot entity.
-// If the KnowledgeGraphSnapshot object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotMutation) OldScopeProperties(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldScopeProperties is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldScopeProperties requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldScopeProperties: %w", err)
-	}
-	return oldValue.ScopeProperties, nil
-}
-
-// ResetScopeProperties resets all changes to the "scope_properties" field.
-func (m *KnowledgeGraphSnapshotMutation) ResetScopeProperties() {
-	m.scope_properties = nil
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *KnowledgeGraphSnapshotMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[knowledgegraphsnapshot.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *KnowledgeGraphSnapshotMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeGraphSnapshotMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *KnowledgeGraphSnapshotMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// AddEntityIDs adds the "entities" edge to the KnowledgeGraphSnapshotEntity entity by ids.
-func (m *KnowledgeGraphSnapshotMutation) AddEntityIDs(ids ...uuid.UUID) {
-	if m.entities == nil {
-		m.entities = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.entities[ids[i]] = struct{}{}
-	}
-}
-
-// ClearEntities clears the "entities" edge to the KnowledgeGraphSnapshotEntity entity.
-func (m *KnowledgeGraphSnapshotMutation) ClearEntities() {
-	m.clearedentities = true
-}
-
-// EntitiesCleared reports if the "entities" edge to the KnowledgeGraphSnapshotEntity entity was cleared.
-func (m *KnowledgeGraphSnapshotMutation) EntitiesCleared() bool {
-	return m.clearedentities
-}
-
-// RemoveEntityIDs removes the "entities" edge to the KnowledgeGraphSnapshotEntity entity by IDs.
-func (m *KnowledgeGraphSnapshotMutation) RemoveEntityIDs(ids ...uuid.UUID) {
-	if m.removedentities == nil {
-		m.removedentities = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.entities, ids[i])
-		m.removedentities[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedEntities returns the removed IDs of the "entities" edge to the KnowledgeGraphSnapshotEntity entity.
-func (m *KnowledgeGraphSnapshotMutation) RemovedEntitiesIDs() (ids []uuid.UUID) {
-	for id := range m.removedentities {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// EntitiesIDs returns the "entities" edge IDs in the mutation.
-func (m *KnowledgeGraphSnapshotMutation) EntitiesIDs() (ids []uuid.UUID) {
-	for id := range m.entities {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetEntities resets all changes to the "entities" edge.
-func (m *KnowledgeGraphSnapshotMutation) ResetEntities() {
-	m.entities = nil
-	m.clearedentities = false
-	m.removedentities = nil
-}
-
-// AddRelationshipIDs adds the "relationships" edge to the KnowledgeGraphSnapshotRelationship entity by ids.
-func (m *KnowledgeGraphSnapshotMutation) AddRelationshipIDs(ids ...uuid.UUID) {
-	if m.relationships == nil {
-		m.relationships = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.relationships[ids[i]] = struct{}{}
-	}
-}
-
-// ClearRelationships clears the "relationships" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (m *KnowledgeGraphSnapshotMutation) ClearRelationships() {
-	m.clearedrelationships = true
-}
-
-// RelationshipsCleared reports if the "relationships" edge to the KnowledgeGraphSnapshotRelationship entity was cleared.
-func (m *KnowledgeGraphSnapshotMutation) RelationshipsCleared() bool {
-	return m.clearedrelationships
-}
-
-// RemoveRelationshipIDs removes the "relationships" edge to the KnowledgeGraphSnapshotRelationship entity by IDs.
-func (m *KnowledgeGraphSnapshotMutation) RemoveRelationshipIDs(ids ...uuid.UUID) {
-	if m.removedrelationships == nil {
-		m.removedrelationships = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.relationships, ids[i])
-		m.removedrelationships[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRelationships returns the removed IDs of the "relationships" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (m *KnowledgeGraphSnapshotMutation) RemovedRelationshipsIDs() (ids []uuid.UUID) {
-	for id := range m.removedrelationships {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// RelationshipsIDs returns the "relationships" edge IDs in the mutation.
-func (m *KnowledgeGraphSnapshotMutation) RelationshipsIDs() (ids []uuid.UUID) {
-	for id := range m.relationships {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetRelationships resets all changes to the "relationships" edge.
-func (m *KnowledgeGraphSnapshotMutation) ResetRelationships() {
-	m.relationships = nil
-	m.clearedrelationships = false
-	m.removedrelationships = nil
-}
-
-// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysis entity by ids.
-func (m *KnowledgeGraphSnapshotMutation) AddSystemAnalysisIDs(ids ...uuid.UUID) {
-	if m.system_analyses == nil {
-		m.system_analyses = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.system_analyses[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSystemAnalyses clears the "system_analyses" edge to the SystemAnalysis entity.
-func (m *KnowledgeGraphSnapshotMutation) ClearSystemAnalyses() {
-	m.clearedsystem_analyses = true
-}
-
-// SystemAnalysesCleared reports if the "system_analyses" edge to the SystemAnalysis entity was cleared.
-func (m *KnowledgeGraphSnapshotMutation) SystemAnalysesCleared() bool {
-	return m.clearedsystem_analyses
-}
-
-// RemoveSystemAnalysisIDs removes the "system_analyses" edge to the SystemAnalysis entity by IDs.
-func (m *KnowledgeGraphSnapshotMutation) RemoveSystemAnalysisIDs(ids ...uuid.UUID) {
-	if m.removedsystem_analyses == nil {
-		m.removedsystem_analyses = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.system_analyses, ids[i])
-		m.removedsystem_analyses[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSystemAnalyses returns the removed IDs of the "system_analyses" edge to the SystemAnalysis entity.
-func (m *KnowledgeGraphSnapshotMutation) RemovedSystemAnalysesIDs() (ids []uuid.UUID) {
-	for id := range m.removedsystem_analyses {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SystemAnalysesIDs returns the "system_analyses" edge IDs in the mutation.
-func (m *KnowledgeGraphSnapshotMutation) SystemAnalysesIDs() (ids []uuid.UUID) {
-	for id := range m.system_analyses {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSystemAnalyses resets all changes to the "system_analyses" edge.
-func (m *KnowledgeGraphSnapshotMutation) ResetSystemAnalyses() {
-	m.system_analyses = nil
-	m.clearedsystem_analyses = false
-	m.removedsystem_analyses = nil
-}
-
-// Where appends a list predicates to the KnowledgeGraphSnapshotMutation builder.
-func (m *KnowledgeGraphSnapshotMutation) Where(ps ...predicate.KnowledgeGraphSnapshot) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the KnowledgeGraphSnapshotMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *KnowledgeGraphSnapshotMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.KnowledgeGraphSnapshot, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *KnowledgeGraphSnapshotMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *KnowledgeGraphSnapshotMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (KnowledgeGraphSnapshot).
-func (m *KnowledgeGraphSnapshotMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *KnowledgeGraphSnapshotMutation) Fields() []string {
-	fields := make([]string, 0, 5)
-	if m.tenant != nil {
-		fields = append(fields, knowledgegraphsnapshot.FieldTenantID)
-	}
-	if m.as_of != nil {
-		fields = append(fields, knowledgegraphsnapshot.FieldAsOf)
-	}
-	if m.created_at != nil {
-		fields = append(fields, knowledgegraphsnapshot.FieldCreatedAt)
-	}
-	if m.scope_kind != nil {
-		fields = append(fields, knowledgegraphsnapshot.FieldScopeKind)
-	}
-	if m.scope_properties != nil {
-		fields = append(fields, knowledgegraphsnapshot.FieldScopeProperties)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *KnowledgeGraphSnapshotMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case knowledgegraphsnapshot.FieldTenantID:
-		return m.TenantID()
-	case knowledgegraphsnapshot.FieldAsOf:
-		return m.AsOf()
-	case knowledgegraphsnapshot.FieldCreatedAt:
-		return m.CreatedAt()
-	case knowledgegraphsnapshot.FieldScopeKind:
-		return m.ScopeKind()
-	case knowledgegraphsnapshot.FieldScopeProperties:
-		return m.ScopeProperties()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *KnowledgeGraphSnapshotMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case knowledgegraphsnapshot.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case knowledgegraphsnapshot.FieldAsOf:
-		return m.OldAsOf(ctx)
-	case knowledgegraphsnapshot.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case knowledgegraphsnapshot.FieldScopeKind:
-		return m.OldScopeKind(ctx)
-	case knowledgegraphsnapshot.FieldScopeProperties:
-		return m.OldScopeProperties(ctx)
-	}
-	return nil, fmt.Errorf("unknown KnowledgeGraphSnapshot field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *KnowledgeGraphSnapshotMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case knowledgegraphsnapshot.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case knowledgegraphsnapshot.FieldAsOf:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAsOf(v)
-		return nil
-	case knowledgegraphsnapshot.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case knowledgegraphsnapshot.FieldScopeKind:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetScopeKind(v)
-		return nil
-	case knowledgegraphsnapshot.FieldScopeProperties:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetScopeProperties(v)
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshot field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *KnowledgeGraphSnapshotMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *KnowledgeGraphSnapshotMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *KnowledgeGraphSnapshotMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshot numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *KnowledgeGraphSnapshotMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *KnowledgeGraphSnapshotMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *KnowledgeGraphSnapshotMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown KnowledgeGraphSnapshot nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *KnowledgeGraphSnapshotMutation) ResetField(name string) error {
-	switch name {
-	case knowledgegraphsnapshot.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case knowledgegraphsnapshot.FieldAsOf:
-		m.ResetAsOf()
-		return nil
-	case knowledgegraphsnapshot.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case knowledgegraphsnapshot.FieldScopeKind:
-		m.ResetScopeKind()
-		return nil
-	case knowledgegraphsnapshot.FieldScopeProperties:
-		m.ResetScopeProperties()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshot field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *KnowledgeGraphSnapshotMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.tenant != nil {
-		edges = append(edges, knowledgegraphsnapshot.EdgeTenant)
-	}
-	if m.entities != nil {
-		edges = append(edges, knowledgegraphsnapshot.EdgeEntities)
-	}
-	if m.relationships != nil {
-		edges = append(edges, knowledgegraphsnapshot.EdgeRelationships)
-	}
-	if m.system_analyses != nil {
-		edges = append(edges, knowledgegraphsnapshot.EdgeSystemAnalyses)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *KnowledgeGraphSnapshotMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case knowledgegraphsnapshot.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgegraphsnapshot.EdgeEntities:
-		ids := make([]ent.Value, 0, len(m.entities))
-		for id := range m.entities {
-			ids = append(ids, id)
-		}
-		return ids
-	case knowledgegraphsnapshot.EdgeRelationships:
-		ids := make([]ent.Value, 0, len(m.relationships))
-		for id := range m.relationships {
-			ids = append(ids, id)
-		}
-		return ids
-	case knowledgegraphsnapshot.EdgeSystemAnalyses:
-		ids := make([]ent.Value, 0, len(m.system_analyses))
-		for id := range m.system_analyses {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *KnowledgeGraphSnapshotMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.removedentities != nil {
-		edges = append(edges, knowledgegraphsnapshot.EdgeEntities)
-	}
-	if m.removedrelationships != nil {
-		edges = append(edges, knowledgegraphsnapshot.EdgeRelationships)
-	}
-	if m.removedsystem_analyses != nil {
-		edges = append(edges, knowledgegraphsnapshot.EdgeSystemAnalyses)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *KnowledgeGraphSnapshotMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case knowledgegraphsnapshot.EdgeEntities:
-		ids := make([]ent.Value, 0, len(m.removedentities))
-		for id := range m.removedentities {
-			ids = append(ids, id)
-		}
-		return ids
-	case knowledgegraphsnapshot.EdgeRelationships:
-		ids := make([]ent.Value, 0, len(m.removedrelationships))
-		for id := range m.removedrelationships {
-			ids = append(ids, id)
-		}
-		return ids
-	case knowledgegraphsnapshot.EdgeSystemAnalyses:
-		ids := make([]ent.Value, 0, len(m.removedsystem_analyses))
-		for id := range m.removedsystem_analyses {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *KnowledgeGraphSnapshotMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.clearedtenant {
-		edges = append(edges, knowledgegraphsnapshot.EdgeTenant)
-	}
-	if m.clearedentities {
-		edges = append(edges, knowledgegraphsnapshot.EdgeEntities)
-	}
-	if m.clearedrelationships {
-		edges = append(edges, knowledgegraphsnapshot.EdgeRelationships)
-	}
-	if m.clearedsystem_analyses {
-		edges = append(edges, knowledgegraphsnapshot.EdgeSystemAnalyses)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *KnowledgeGraphSnapshotMutation) EdgeCleared(name string) bool {
-	switch name {
-	case knowledgegraphsnapshot.EdgeTenant:
-		return m.clearedtenant
-	case knowledgegraphsnapshot.EdgeEntities:
-		return m.clearedentities
-	case knowledgegraphsnapshot.EdgeRelationships:
-		return m.clearedrelationships
-	case knowledgegraphsnapshot.EdgeSystemAnalyses:
-		return m.clearedsystem_analyses
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *KnowledgeGraphSnapshotMutation) ClearEdge(name string) error {
-	switch name {
-	case knowledgegraphsnapshot.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshot unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *KnowledgeGraphSnapshotMutation) ResetEdge(name string) error {
-	switch name {
-	case knowledgegraphsnapshot.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	case knowledgegraphsnapshot.EdgeEntities:
-		m.ResetEntities()
-		return nil
-	case knowledgegraphsnapshot.EdgeRelationships:
-		m.ResetRelationships()
-		return nil
-	case knowledgegraphsnapshot.EdgeSystemAnalyses:
-		m.ResetSystemAnalyses()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshot edge %s", name)
-}
-
-// KnowledgeGraphSnapshotEntityMutation represents an operation that mutates the KnowledgeGraphSnapshotEntity nodes in the graph.
-type KnowledgeGraphSnapshotEntityMutation struct {
-	config
-	op                          Op
-	typ                         string
-	id                          *uuid.UUID
-	entity_kind                 *string
-	display_name                *string
-	description                 *string
-	properties                  *map[string]interface{}
-	aliases                     *[]map[string]interface{}
-	appendaliases               []map[string]interface{}
-	created_at                  *time.Time
-	clearedFields               map[string]struct{}
-	tenant                      *int
-	clearedtenant               bool
-	snapshot                    *uuid.UUID
-	clearedsnapshot             bool
-	knowledge_entity            *uuid.UUID
-	clearedknowledge_entity     bool
-	source_relationships        map[uuid.UUID]struct{}
-	removedsource_relationships map[uuid.UUID]struct{}
-	clearedsource_relationships bool
-	target_relationships        map[uuid.UUID]struct{}
-	removedtarget_relationships map[uuid.UUID]struct{}
-	clearedtarget_relationships bool
-	done                        bool
-	oldValue                    func(context.Context) (*KnowledgeGraphSnapshotEntity, error)
-	predicates                  []predicate.KnowledgeGraphSnapshotEntity
-}
-
-var _ ent.Mutation = (*KnowledgeGraphSnapshotEntityMutation)(nil)
-
-// knowledgegraphsnapshotentityOption allows management of the mutation configuration using functional options.
-type knowledgegraphsnapshotentityOption func(*KnowledgeGraphSnapshotEntityMutation)
-
-// newKnowledgeGraphSnapshotEntityMutation creates new mutation for the KnowledgeGraphSnapshotEntity entity.
-func newKnowledgeGraphSnapshotEntityMutation(c config, op Op, opts ...knowledgegraphsnapshotentityOption) *KnowledgeGraphSnapshotEntityMutation {
-	m := &KnowledgeGraphSnapshotEntityMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeKnowledgeGraphSnapshotEntity,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withKnowledgeGraphSnapshotEntityID sets the ID field of the mutation.
-func withKnowledgeGraphSnapshotEntityID(id uuid.UUID) knowledgegraphsnapshotentityOption {
-	return func(m *KnowledgeGraphSnapshotEntityMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *KnowledgeGraphSnapshotEntity
-		)
-		m.oldValue = func(ctx context.Context) (*KnowledgeGraphSnapshotEntity, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().KnowledgeGraphSnapshotEntity.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withKnowledgeGraphSnapshotEntity sets the old KnowledgeGraphSnapshotEntity of the mutation.
-func withKnowledgeGraphSnapshotEntity(node *KnowledgeGraphSnapshotEntity) knowledgegraphsnapshotentityOption {
-	return func(m *KnowledgeGraphSnapshotEntityMutation) {
-		m.oldValue = func(context.Context) (*KnowledgeGraphSnapshotEntity, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m KnowledgeGraphSnapshotEntityMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m KnowledgeGraphSnapshotEntityMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of KnowledgeGraphSnapshotEntity entities.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *KnowledgeGraphSnapshotEntityMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().KnowledgeGraphSnapshotEntity.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the KnowledgeGraphSnapshotEntity entity.
-// If the KnowledgeGraphSnapshotEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotEntityMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetSnapshotID sets the "snapshot_id" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetSnapshotID(u uuid.UUID) {
-	m.snapshot = &u
-}
-
-// SnapshotID returns the value of the "snapshot_id" field in the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) SnapshotID() (r uuid.UUID, exists bool) {
-	v := m.snapshot
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSnapshotID returns the old "snapshot_id" field's value of the KnowledgeGraphSnapshotEntity entity.
-// If the KnowledgeGraphSnapshotEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotEntityMutation) OldSnapshotID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSnapshotID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSnapshotID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSnapshotID: %w", err)
-	}
-	return oldValue.SnapshotID, nil
-}
-
-// ResetSnapshotID resets all changes to the "snapshot_id" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetSnapshotID() {
-	m.snapshot = nil
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetKnowledgeEntityID(u uuid.UUID) {
-	m.knowledge_entity = &u
-}
-
-// KnowledgeEntityID returns the value of the "knowledge_entity_id" field in the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) KnowledgeEntityID() (r uuid.UUID, exists bool) {
-	v := m.knowledge_entity
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeEntityID returns the old "knowledge_entity_id" field's value of the KnowledgeGraphSnapshotEntity entity.
-// If the KnowledgeGraphSnapshotEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotEntityMutation) OldKnowledgeEntityID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeEntityID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeEntityID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeEntityID: %w", err)
-	}
-	return oldValue.KnowledgeEntityID, nil
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearKnowledgeEntityID() {
-	m.knowledge_entity = nil
-	m.clearedFields[knowledgegraphsnapshotentity.FieldKnowledgeEntityID] = struct{}{}
-}
-
-// KnowledgeEntityIDCleared returns if the "knowledge_entity_id" field was cleared in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) KnowledgeEntityIDCleared() bool {
-	_, ok := m.clearedFields[knowledgegraphsnapshotentity.FieldKnowledgeEntityID]
-	return ok
-}
-
-// ResetKnowledgeEntityID resets all changes to the "knowledge_entity_id" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetKnowledgeEntityID() {
-	m.knowledge_entity = nil
-	delete(m.clearedFields, knowledgegraphsnapshotentity.FieldKnowledgeEntityID)
-}
-
-// SetEntityKind sets the "entity_kind" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetEntityKind(s string) {
-	m.entity_kind = &s
-}
-
-// EntityKind returns the value of the "entity_kind" field in the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) EntityKind() (r string, exists bool) {
-	v := m.entity_kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldEntityKind returns the old "entity_kind" field's value of the KnowledgeGraphSnapshotEntity entity.
-// If the KnowledgeGraphSnapshotEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotEntityMutation) OldEntityKind(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEntityKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEntityKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEntityKind: %w", err)
-	}
-	return oldValue.EntityKind, nil
-}
-
-// ResetEntityKind resets all changes to the "entity_kind" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetEntityKind() {
-	m.entity_kind = nil
-}
-
-// SetDisplayName sets the "display_name" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetDisplayName(s string) {
-	m.display_name = &s
-}
-
-// DisplayName returns the value of the "display_name" field in the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) DisplayName() (r string, exists bool) {
-	v := m.display_name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDisplayName returns the old "display_name" field's value of the KnowledgeGraphSnapshotEntity entity.
-// If the KnowledgeGraphSnapshotEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotEntityMutation) OldDisplayName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDisplayName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDisplayName: %w", err)
-	}
-	return oldValue.DisplayName, nil
-}
-
-// ResetDisplayName resets all changes to the "display_name" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetDisplayName() {
-	m.display_name = nil
-}
-
-// SetDescription sets the "description" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the KnowledgeGraphSnapshotEntity entity.
-// If the KnowledgeGraphSnapshotEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotEntityMutation) OldDescription(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[knowledgegraphsnapshotentity.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[knowledgegraphsnapshotentity.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, knowledgegraphsnapshotentity.FieldDescription)
-}
-
-// SetProperties sets the "properties" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetProperties(value map[string]interface{}) {
-	m.properties = &value
-}
-
-// Properties returns the value of the "properties" field in the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) Properties() (r map[string]interface{}, exists bool) {
-	v := m.properties
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProperties returns the old "properties" field's value of the KnowledgeGraphSnapshotEntity entity.
-// If the KnowledgeGraphSnapshotEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotEntityMutation) OldProperties(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProperties is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProperties requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProperties: %w", err)
-	}
-	return oldValue.Properties, nil
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearProperties() {
-	m.properties = nil
-	m.clearedFields[knowledgegraphsnapshotentity.FieldProperties] = struct{}{}
-}
-
-// PropertiesCleared returns if the "properties" field was cleared in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) PropertiesCleared() bool {
-	_, ok := m.clearedFields[knowledgegraphsnapshotentity.FieldProperties]
-	return ok
-}
-
-// ResetProperties resets all changes to the "properties" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetProperties() {
-	m.properties = nil
-	delete(m.clearedFields, knowledgegraphsnapshotentity.FieldProperties)
-}
-
-// SetAliases sets the "aliases" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetAliases(value []map[string]interface{}) {
-	m.aliases = &value
-	m.appendaliases = nil
-}
-
-// Aliases returns the value of the "aliases" field in the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) Aliases() (r []map[string]interface{}, exists bool) {
-	v := m.aliases
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAliases returns the old "aliases" field's value of the KnowledgeGraphSnapshotEntity entity.
-// If the KnowledgeGraphSnapshotEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotEntityMutation) OldAliases(ctx context.Context) (v []map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAliases is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAliases requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAliases: %w", err)
-	}
-	return oldValue.Aliases, nil
-}
-
-// AppendAliases adds value to the "aliases" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) AppendAliases(value []map[string]interface{}) {
-	m.appendaliases = append(m.appendaliases, value...)
-}
-
-// AppendedAliases returns the list of values that were appended to the "aliases" field in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) AppendedAliases() ([]map[string]interface{}, bool) {
-	if len(m.appendaliases) == 0 {
-		return nil, false
-	}
-	return m.appendaliases, true
-}
-
-// ClearAliases clears the value of the "aliases" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearAliases() {
-	m.aliases = nil
-	m.appendaliases = nil
-	m.clearedFields[knowledgegraphsnapshotentity.FieldAliases] = struct{}{}
-}
-
-// AliasesCleared returns if the "aliases" field was cleared in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) AliasesCleared() bool {
-	_, ok := m.clearedFields[knowledgegraphsnapshotentity.FieldAliases]
-	return ok
-}
-
-// ResetAliases resets all changes to the "aliases" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetAliases() {
-	m.aliases = nil
-	m.appendaliases = nil
-	delete(m.clearedFields, knowledgegraphsnapshotentity.FieldAliases)
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the KnowledgeGraphSnapshotEntity entity.
-// If the KnowledgeGraphSnapshotEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotEntityMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[knowledgegraphsnapshotentity.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *KnowledgeGraphSnapshotEntityMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeGraphSnapshotEntityMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// ClearSnapshot clears the "snapshot" edge to the KnowledgeGraphSnapshot entity.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearSnapshot() {
-	m.clearedsnapshot = true
-	m.clearedFields[knowledgegraphsnapshotentity.FieldSnapshotID] = struct{}{}
-}
-
-// SnapshotCleared reports if the "snapshot" edge to the KnowledgeGraphSnapshot entity was cleared.
-func (m *KnowledgeGraphSnapshotEntityMutation) SnapshotCleared() bool {
-	return m.clearedsnapshot
-}
-
-// SnapshotIDs returns the "snapshot" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SnapshotID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeGraphSnapshotEntityMutation) SnapshotIDs() (ids []uuid.UUID) {
-	if id := m.snapshot; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetSnapshot resets all changes to the "snapshot" edge.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetSnapshot() {
-	m.snapshot = nil
-	m.clearedsnapshot = false
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearKnowledgeEntity() {
-	m.clearedknowledge_entity = true
-	m.clearedFields[knowledgegraphsnapshotentity.FieldKnowledgeEntityID] = struct{}{}
-}
-
-// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
-func (m *KnowledgeGraphSnapshotEntityMutation) KnowledgeEntityCleared() bool {
-	return m.KnowledgeEntityIDCleared() || m.clearedknowledge_entity
-}
-
-// KnowledgeEntityIDs returns the "knowledge_entity" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// KnowledgeEntityID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeGraphSnapshotEntityMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
-	if id := m.knowledge_entity; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetKnowledgeEntity resets all changes to the "knowledge_entity" edge.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetKnowledgeEntity() {
-	m.knowledge_entity = nil
-	m.clearedknowledge_entity = false
-}
-
-// AddSourceRelationshipIDs adds the "source_relationships" edge to the KnowledgeGraphSnapshotRelationship entity by ids.
-func (m *KnowledgeGraphSnapshotEntityMutation) AddSourceRelationshipIDs(ids ...uuid.UUID) {
-	if m.source_relationships == nil {
-		m.source_relationships = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.source_relationships[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSourceRelationships clears the "source_relationships" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearSourceRelationships() {
-	m.clearedsource_relationships = true
-}
-
-// SourceRelationshipsCleared reports if the "source_relationships" edge to the KnowledgeGraphSnapshotRelationship entity was cleared.
-func (m *KnowledgeGraphSnapshotEntityMutation) SourceRelationshipsCleared() bool {
-	return m.clearedsource_relationships
-}
-
-// RemoveSourceRelationshipIDs removes the "source_relationships" edge to the KnowledgeGraphSnapshotRelationship entity by IDs.
-func (m *KnowledgeGraphSnapshotEntityMutation) RemoveSourceRelationshipIDs(ids ...uuid.UUID) {
-	if m.removedsource_relationships == nil {
-		m.removedsource_relationships = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.source_relationships, ids[i])
-		m.removedsource_relationships[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSourceRelationships returns the removed IDs of the "source_relationships" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (m *KnowledgeGraphSnapshotEntityMutation) RemovedSourceRelationshipsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsource_relationships {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SourceRelationshipsIDs returns the "source_relationships" edge IDs in the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) SourceRelationshipsIDs() (ids []uuid.UUID) {
-	for id := range m.source_relationships {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSourceRelationships resets all changes to the "source_relationships" edge.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetSourceRelationships() {
-	m.source_relationships = nil
-	m.clearedsource_relationships = false
-	m.removedsource_relationships = nil
-}
-
-// AddTargetRelationshipIDs adds the "target_relationships" edge to the KnowledgeGraphSnapshotRelationship entity by ids.
-func (m *KnowledgeGraphSnapshotEntityMutation) AddTargetRelationshipIDs(ids ...uuid.UUID) {
-	if m.target_relationships == nil {
-		m.target_relationships = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.target_relationships[ids[i]] = struct{}{}
-	}
-}
-
-// ClearTargetRelationships clears the "target_relationships" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearTargetRelationships() {
-	m.clearedtarget_relationships = true
-}
-
-// TargetRelationshipsCleared reports if the "target_relationships" edge to the KnowledgeGraphSnapshotRelationship entity was cleared.
-func (m *KnowledgeGraphSnapshotEntityMutation) TargetRelationshipsCleared() bool {
-	return m.clearedtarget_relationships
-}
-
-// RemoveTargetRelationshipIDs removes the "target_relationships" edge to the KnowledgeGraphSnapshotRelationship entity by IDs.
-func (m *KnowledgeGraphSnapshotEntityMutation) RemoveTargetRelationshipIDs(ids ...uuid.UUID) {
-	if m.removedtarget_relationships == nil {
-		m.removedtarget_relationships = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.target_relationships, ids[i])
-		m.removedtarget_relationships[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTargetRelationships returns the removed IDs of the "target_relationships" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (m *KnowledgeGraphSnapshotEntityMutation) RemovedTargetRelationshipsIDs() (ids []uuid.UUID) {
-	for id := range m.removedtarget_relationships {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TargetRelationshipsIDs returns the "target_relationships" edge IDs in the mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) TargetRelationshipsIDs() (ids []uuid.UUID) {
-	for id := range m.target_relationships {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTargetRelationships resets all changes to the "target_relationships" edge.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetTargetRelationships() {
-	m.target_relationships = nil
-	m.clearedtarget_relationships = false
-	m.removedtarget_relationships = nil
-}
-
-// Where appends a list predicates to the KnowledgeGraphSnapshotEntityMutation builder.
-func (m *KnowledgeGraphSnapshotEntityMutation) Where(ps ...predicate.KnowledgeGraphSnapshotEntity) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the KnowledgeGraphSnapshotEntityMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *KnowledgeGraphSnapshotEntityMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.KnowledgeGraphSnapshotEntity, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *KnowledgeGraphSnapshotEntityMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (KnowledgeGraphSnapshotEntity).
-func (m *KnowledgeGraphSnapshotEntityMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *KnowledgeGraphSnapshotEntityMutation) Fields() []string {
-	fields := make([]string, 0, 9)
-	if m.tenant != nil {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldTenantID)
-	}
-	if m.snapshot != nil {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldSnapshotID)
-	}
-	if m.knowledge_entity != nil {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldKnowledgeEntityID)
-	}
-	if m.entity_kind != nil {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldEntityKind)
-	}
-	if m.display_name != nil {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldDisplayName)
-	}
-	if m.description != nil {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldDescription)
-	}
-	if m.properties != nil {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldProperties)
-	}
-	if m.aliases != nil {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldAliases)
-	}
-	if m.created_at != nil {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldCreatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *KnowledgeGraphSnapshotEntityMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case knowledgegraphsnapshotentity.FieldTenantID:
-		return m.TenantID()
-	case knowledgegraphsnapshotentity.FieldSnapshotID:
-		return m.SnapshotID()
-	case knowledgegraphsnapshotentity.FieldKnowledgeEntityID:
-		return m.KnowledgeEntityID()
-	case knowledgegraphsnapshotentity.FieldEntityKind:
-		return m.EntityKind()
-	case knowledgegraphsnapshotentity.FieldDisplayName:
-		return m.DisplayName()
-	case knowledgegraphsnapshotentity.FieldDescription:
-		return m.Description()
-	case knowledgegraphsnapshotentity.FieldProperties:
-		return m.Properties()
-	case knowledgegraphsnapshotentity.FieldAliases:
-		return m.Aliases()
-	case knowledgegraphsnapshotentity.FieldCreatedAt:
-		return m.CreatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *KnowledgeGraphSnapshotEntityMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case knowledgegraphsnapshotentity.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case knowledgegraphsnapshotentity.FieldSnapshotID:
-		return m.OldSnapshotID(ctx)
-	case knowledgegraphsnapshotentity.FieldKnowledgeEntityID:
-		return m.OldKnowledgeEntityID(ctx)
-	case knowledgegraphsnapshotentity.FieldEntityKind:
-		return m.OldEntityKind(ctx)
-	case knowledgegraphsnapshotentity.FieldDisplayName:
-		return m.OldDisplayName(ctx)
-	case knowledgegraphsnapshotentity.FieldDescription:
-		return m.OldDescription(ctx)
-	case knowledgegraphsnapshotentity.FieldProperties:
-		return m.OldProperties(ctx)
-	case knowledgegraphsnapshotentity.FieldAliases:
-		return m.OldAliases(ctx)
-	case knowledgegraphsnapshotentity.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown KnowledgeGraphSnapshotEntity field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *KnowledgeGraphSnapshotEntityMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case knowledgegraphsnapshotentity.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case knowledgegraphsnapshotentity.FieldSnapshotID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSnapshotID(v)
-		return nil
-	case knowledgegraphsnapshotentity.FieldKnowledgeEntityID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeEntityID(v)
-		return nil
-	case knowledgegraphsnapshotentity.FieldEntityKind:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEntityKind(v)
-		return nil
-	case knowledgegraphsnapshotentity.FieldDisplayName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDisplayName(v)
-		return nil
-	case knowledgegraphsnapshotentity.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case knowledgegraphsnapshotentity.FieldProperties:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProperties(v)
-		return nil
-	case knowledgegraphsnapshotentity.FieldAliases:
-		v, ok := value.([]map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAliases(v)
-		return nil
-	case knowledgegraphsnapshotentity.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotEntity field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *KnowledgeGraphSnapshotEntityMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *KnowledgeGraphSnapshotEntityMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotEntity numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(knowledgegraphsnapshotentity.FieldKnowledgeEntityID) {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldKnowledgeEntityID)
-	}
-	if m.FieldCleared(knowledgegraphsnapshotentity.FieldDescription) {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldDescription)
-	}
-	if m.FieldCleared(knowledgegraphsnapshotentity.FieldProperties) {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldProperties)
-	}
-	if m.FieldCleared(knowledgegraphsnapshotentity.FieldAliases) {
-		fields = append(fields, knowledgegraphsnapshotentity.FieldAliases)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearField(name string) error {
-	switch name {
-	case knowledgegraphsnapshotentity.FieldKnowledgeEntityID:
-		m.ClearKnowledgeEntityID()
-		return nil
-	case knowledgegraphsnapshotentity.FieldDescription:
-		m.ClearDescription()
-		return nil
-	case knowledgegraphsnapshotentity.FieldProperties:
-		m.ClearProperties()
-		return nil
-	case knowledgegraphsnapshotentity.FieldAliases:
-		m.ClearAliases()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotEntity nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetField(name string) error {
-	switch name {
-	case knowledgegraphsnapshotentity.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case knowledgegraphsnapshotentity.FieldSnapshotID:
-		m.ResetSnapshotID()
-		return nil
-	case knowledgegraphsnapshotentity.FieldKnowledgeEntityID:
-		m.ResetKnowledgeEntityID()
-		return nil
-	case knowledgegraphsnapshotentity.FieldEntityKind:
-		m.ResetEntityKind()
-		return nil
-	case knowledgegraphsnapshotentity.FieldDisplayName:
-		m.ResetDisplayName()
-		return nil
-	case knowledgegraphsnapshotentity.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case knowledgegraphsnapshotentity.FieldProperties:
-		m.ResetProperties()
-		return nil
-	case knowledgegraphsnapshotentity.FieldAliases:
-		m.ResetAliases()
-		return nil
-	case knowledgegraphsnapshotentity.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotEntity field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.tenant != nil {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeTenant)
-	}
-	if m.snapshot != nil {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeSnapshot)
-	}
-	if m.knowledge_entity != nil {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeKnowledgeEntity)
-	}
-	if m.source_relationships != nil {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeSourceRelationships)
-	}
-	if m.target_relationships != nil {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeTargetRelationships)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case knowledgegraphsnapshotentity.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgegraphsnapshotentity.EdgeSnapshot:
-		if id := m.snapshot; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgegraphsnapshotentity.EdgeKnowledgeEntity:
-		if id := m.knowledge_entity; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgegraphsnapshotentity.EdgeSourceRelationships:
-		ids := make([]ent.Value, 0, len(m.source_relationships))
-		for id := range m.source_relationships {
-			ids = append(ids, id)
-		}
-		return ids
-	case knowledgegraphsnapshotentity.EdgeTargetRelationships:
-		ids := make([]ent.Value, 0, len(m.target_relationships))
-		for id := range m.target_relationships {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.removedsource_relationships != nil {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeSourceRelationships)
-	}
-	if m.removedtarget_relationships != nil {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeTargetRelationships)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case knowledgegraphsnapshotentity.EdgeSourceRelationships:
-		ids := make([]ent.Value, 0, len(m.removedsource_relationships))
-		for id := range m.removedsource_relationships {
-			ids = append(ids, id)
-		}
-		return ids
-	case knowledgegraphsnapshotentity.EdgeTargetRelationships:
-		ids := make([]ent.Value, 0, len(m.removedtarget_relationships))
-		for id := range m.removedtarget_relationships {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
-	if m.clearedtenant {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeTenant)
-	}
-	if m.clearedsnapshot {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeSnapshot)
-	}
-	if m.clearedknowledge_entity {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeKnowledgeEntity)
-	}
-	if m.clearedsource_relationships {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeSourceRelationships)
-	}
-	if m.clearedtarget_relationships {
-		edges = append(edges, knowledgegraphsnapshotentity.EdgeTargetRelationships)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *KnowledgeGraphSnapshotEntityMutation) EdgeCleared(name string) bool {
-	switch name {
-	case knowledgegraphsnapshotentity.EdgeTenant:
-		return m.clearedtenant
-	case knowledgegraphsnapshotentity.EdgeSnapshot:
-		return m.clearedsnapshot
-	case knowledgegraphsnapshotentity.EdgeKnowledgeEntity:
-		return m.clearedknowledge_entity
-	case knowledgegraphsnapshotentity.EdgeSourceRelationships:
-		return m.clearedsource_relationships
-	case knowledgegraphsnapshotentity.EdgeTargetRelationships:
-		return m.clearedtarget_relationships
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *KnowledgeGraphSnapshotEntityMutation) ClearEdge(name string) error {
-	switch name {
-	case knowledgegraphsnapshotentity.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	case knowledgegraphsnapshotentity.EdgeSnapshot:
-		m.ClearSnapshot()
-		return nil
-	case knowledgegraphsnapshotentity.EdgeKnowledgeEntity:
-		m.ClearKnowledgeEntity()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotEntity unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *KnowledgeGraphSnapshotEntityMutation) ResetEdge(name string) error {
-	switch name {
-	case knowledgegraphsnapshotentity.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	case knowledgegraphsnapshotentity.EdgeSnapshot:
-		m.ResetSnapshot()
-		return nil
-	case knowledgegraphsnapshotentity.EdgeKnowledgeEntity:
-		m.ResetKnowledgeEntity()
-		return nil
-	case knowledgegraphsnapshotentity.EdgeSourceRelationships:
-		m.ResetSourceRelationships()
-		return nil
-	case knowledgegraphsnapshotentity.EdgeTargetRelationships:
-		m.ResetTargetRelationships()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotEntity edge %s", name)
-}
-
-// KnowledgeGraphSnapshotRelationshipMutation represents an operation that mutates the KnowledgeGraphSnapshotRelationship nodes in the graph.
-type KnowledgeGraphSnapshotRelationshipMutation struct {
-	config
-	op                            Op
-	typ                           string
-	id                            *uuid.UUID
-	relationship_kind             *string
-	display_name                  *string
-	description                   *string
-	properties                    *map[string]interface{}
-	created_at                    *time.Time
-	clearedFields                 map[string]struct{}
-	tenant                        *int
-	clearedtenant                 bool
-	knowledge_relationship        *uuid.UUID
-	clearedknowledge_relationship bool
-	snapshot                      *uuid.UUID
-	clearedsnapshot               bool
-	source_snapshot_entity        *uuid.UUID
-	clearedsource_snapshot_entity bool
-	target_snapshot_entity        *uuid.UUID
-	clearedtarget_snapshot_entity bool
-	analysis_edges                map[uuid.UUID]struct{}
-	removedanalysis_edges         map[uuid.UUID]struct{}
-	clearedanalysis_edges         bool
-	done                          bool
-	oldValue                      func(context.Context) (*KnowledgeGraphSnapshotRelationship, error)
-	predicates                    []predicate.KnowledgeGraphSnapshotRelationship
-}
-
-var _ ent.Mutation = (*KnowledgeGraphSnapshotRelationshipMutation)(nil)
-
-// knowledgegraphsnapshotrelationshipOption allows management of the mutation configuration using functional options.
-type knowledgegraphsnapshotrelationshipOption func(*KnowledgeGraphSnapshotRelationshipMutation)
-
-// newKnowledgeGraphSnapshotRelationshipMutation creates new mutation for the KnowledgeGraphSnapshotRelationship entity.
-func newKnowledgeGraphSnapshotRelationshipMutation(c config, op Op, opts ...knowledgegraphsnapshotrelationshipOption) *KnowledgeGraphSnapshotRelationshipMutation {
-	m := &KnowledgeGraphSnapshotRelationshipMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeKnowledgeGraphSnapshotRelationship,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withKnowledgeGraphSnapshotRelationshipID sets the ID field of the mutation.
-func withKnowledgeGraphSnapshotRelationshipID(id uuid.UUID) knowledgegraphsnapshotrelationshipOption {
-	return func(m *KnowledgeGraphSnapshotRelationshipMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *KnowledgeGraphSnapshotRelationship
-		)
-		m.oldValue = func(ctx context.Context) (*KnowledgeGraphSnapshotRelationship, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().KnowledgeGraphSnapshotRelationship.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withKnowledgeGraphSnapshotRelationship sets the old KnowledgeGraphSnapshotRelationship of the mutation.
-func withKnowledgeGraphSnapshotRelationship(node *KnowledgeGraphSnapshotRelationship) knowledgegraphsnapshotrelationshipOption {
-	return func(m *KnowledgeGraphSnapshotRelationshipMutation) {
-		m.oldValue = func(context.Context) (*KnowledgeGraphSnapshotRelationship, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m KnowledgeGraphSnapshotRelationshipMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m KnowledgeGraphSnapshotRelationshipMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of KnowledgeGraphSnapshotRelationship entities.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().KnowledgeGraphSnapshotRelationship.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the KnowledgeGraphSnapshotRelationship entity.
-// If the KnowledgeGraphSnapshotRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetSnapshotID sets the "snapshot_id" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetSnapshotID(u uuid.UUID) {
-	m.snapshot = &u
-}
-
-// SnapshotID returns the value of the "snapshot_id" field in the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SnapshotID() (r uuid.UUID, exists bool) {
-	v := m.snapshot
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSnapshotID returns the old "snapshot_id" field's value of the KnowledgeGraphSnapshotRelationship entity.
-// If the KnowledgeGraphSnapshotRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) OldSnapshotID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSnapshotID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSnapshotID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSnapshotID: %w", err)
-	}
-	return oldValue.SnapshotID, nil
-}
-
-// ResetSnapshotID resets all changes to the "snapshot_id" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetSnapshotID() {
-	m.snapshot = nil
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetKnowledgeRelationshipID(u uuid.UUID) {
-	m.knowledge_relationship = &u
-}
-
-// KnowledgeRelationshipID returns the value of the "knowledge_relationship_id" field in the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) KnowledgeRelationshipID() (r uuid.UUID, exists bool) {
-	v := m.knowledge_relationship
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeRelationshipID returns the old "knowledge_relationship_id" field's value of the KnowledgeGraphSnapshotRelationship entity.
-// If the KnowledgeGraphSnapshotRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) OldKnowledgeRelationshipID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeRelationshipID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeRelationshipID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeRelationshipID: %w", err)
-	}
-	return oldValue.KnowledgeRelationshipID, nil
-}
-
-// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearKnowledgeRelationshipID() {
-	m.knowledge_relationship = nil
-	m.clearedFields[knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID] = struct{}{}
-}
-
-// KnowledgeRelationshipIDCleared returns if the "knowledge_relationship_id" field was cleared in this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) KnowledgeRelationshipIDCleared() bool {
-	_, ok := m.clearedFields[knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID]
-	return ok
-}
-
-// ResetKnowledgeRelationshipID resets all changes to the "knowledge_relationship_id" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetKnowledgeRelationshipID() {
-	m.knowledge_relationship = nil
-	delete(m.clearedFields, knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID)
-}
-
-// SetSourceSnapshotEntityID sets the "source_snapshot_entity_id" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetSourceSnapshotEntityID(u uuid.UUID) {
-	m.source_snapshot_entity = &u
-}
-
-// SourceSnapshotEntityID returns the value of the "source_snapshot_entity_id" field in the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SourceSnapshotEntityID() (r uuid.UUID, exists bool) {
-	v := m.source_snapshot_entity
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSourceSnapshotEntityID returns the old "source_snapshot_entity_id" field's value of the KnowledgeGraphSnapshotRelationship entity.
-// If the KnowledgeGraphSnapshotRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) OldSourceSnapshotEntityID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceSnapshotEntityID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceSnapshotEntityID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceSnapshotEntityID: %w", err)
-	}
-	return oldValue.SourceSnapshotEntityID, nil
-}
-
-// ResetSourceSnapshotEntityID resets all changes to the "source_snapshot_entity_id" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetSourceSnapshotEntityID() {
-	m.source_snapshot_entity = nil
-}
-
-// SetTargetSnapshotEntityID sets the "target_snapshot_entity_id" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetTargetSnapshotEntityID(u uuid.UUID) {
-	m.target_snapshot_entity = &u
-}
-
-// TargetSnapshotEntityID returns the value of the "target_snapshot_entity_id" field in the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) TargetSnapshotEntityID() (r uuid.UUID, exists bool) {
-	v := m.target_snapshot_entity
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTargetSnapshotEntityID returns the old "target_snapshot_entity_id" field's value of the KnowledgeGraphSnapshotRelationship entity.
-// If the KnowledgeGraphSnapshotRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) OldTargetSnapshotEntityID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTargetSnapshotEntityID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTargetSnapshotEntityID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTargetSnapshotEntityID: %w", err)
-	}
-	return oldValue.TargetSnapshotEntityID, nil
-}
-
-// ResetTargetSnapshotEntityID resets all changes to the "target_snapshot_entity_id" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetTargetSnapshotEntityID() {
-	m.target_snapshot_entity = nil
-}
-
-// SetRelationshipKind sets the "relationship_kind" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetRelationshipKind(s string) {
-	m.relationship_kind = &s
-}
-
-// RelationshipKind returns the value of the "relationship_kind" field in the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) RelationshipKind() (r string, exists bool) {
-	v := m.relationship_kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRelationshipKind returns the old "relationship_kind" field's value of the KnowledgeGraphSnapshotRelationship entity.
-// If the KnowledgeGraphSnapshotRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) OldRelationshipKind(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRelationshipKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRelationshipKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRelationshipKind: %w", err)
-	}
-	return oldValue.RelationshipKind, nil
-}
-
-// ResetRelationshipKind resets all changes to the "relationship_kind" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetRelationshipKind() {
-	m.relationship_kind = nil
-}
-
-// SetDisplayName sets the "display_name" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetDisplayName(s string) {
-	m.display_name = &s
-}
-
-// DisplayName returns the value of the "display_name" field in the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) DisplayName() (r string, exists bool) {
-	v := m.display_name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDisplayName returns the old "display_name" field's value of the KnowledgeGraphSnapshotRelationship entity.
-// If the KnowledgeGraphSnapshotRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) OldDisplayName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDisplayName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDisplayName: %w", err)
-	}
-	return oldValue.DisplayName, nil
-}
-
-// ClearDisplayName clears the value of the "display_name" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearDisplayName() {
-	m.display_name = nil
-	m.clearedFields[knowledgegraphsnapshotrelationship.FieldDisplayName] = struct{}{}
-}
-
-// DisplayNameCleared returns if the "display_name" field was cleared in this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) DisplayNameCleared() bool {
-	_, ok := m.clearedFields[knowledgegraphsnapshotrelationship.FieldDisplayName]
-	return ok
-}
-
-// ResetDisplayName resets all changes to the "display_name" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetDisplayName() {
-	m.display_name = nil
-	delete(m.clearedFields, knowledgegraphsnapshotrelationship.FieldDisplayName)
-}
-
-// SetDescription sets the "description" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the KnowledgeGraphSnapshotRelationship entity.
-// If the KnowledgeGraphSnapshotRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) OldDescription(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[knowledgegraphsnapshotrelationship.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[knowledgegraphsnapshotrelationship.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, knowledgegraphsnapshotrelationship.FieldDescription)
-}
-
-// SetProperties sets the "properties" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetProperties(value map[string]interface{}) {
-	m.properties = &value
-}
-
-// Properties returns the value of the "properties" field in the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) Properties() (r map[string]interface{}, exists bool) {
-	v := m.properties
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProperties returns the old "properties" field's value of the KnowledgeGraphSnapshotRelationship entity.
-// If the KnowledgeGraphSnapshotRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) OldProperties(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProperties is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProperties requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProperties: %w", err)
-	}
-	return oldValue.Properties, nil
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearProperties() {
-	m.properties = nil
-	m.clearedFields[knowledgegraphsnapshotrelationship.FieldProperties] = struct{}{}
-}
-
-// PropertiesCleared returns if the "properties" field was cleared in this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) PropertiesCleared() bool {
-	_, ok := m.clearedFields[knowledgegraphsnapshotrelationship.FieldProperties]
-	return ok
-}
-
-// ResetProperties resets all changes to the "properties" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetProperties() {
-	m.properties = nil
-	delete(m.clearedFields, knowledgegraphsnapshotrelationship.FieldProperties)
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the KnowledgeGraphSnapshotRelationship entity.
-// If the KnowledgeGraphSnapshotRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[knowledgegraphsnapshotrelationship.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearKnowledgeRelationship() {
-	m.clearedknowledge_relationship = true
-	m.clearedFields[knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID] = struct{}{}
-}
-
-// KnowledgeRelationshipCleared reports if the "knowledge_relationship" edge to the KnowledgeRelationship entity was cleared.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) KnowledgeRelationshipCleared() bool {
-	return m.KnowledgeRelationshipIDCleared() || m.clearedknowledge_relationship
-}
-
-// KnowledgeRelationshipIDs returns the "knowledge_relationship" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// KnowledgeRelationshipID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) KnowledgeRelationshipIDs() (ids []uuid.UUID) {
-	if id := m.knowledge_relationship; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetKnowledgeRelationship resets all changes to the "knowledge_relationship" edge.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetKnowledgeRelationship() {
-	m.knowledge_relationship = nil
-	m.clearedknowledge_relationship = false
-}
-
-// ClearSnapshot clears the "snapshot" edge to the KnowledgeGraphSnapshot entity.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearSnapshot() {
-	m.clearedsnapshot = true
-	m.clearedFields[knowledgegraphsnapshotrelationship.FieldSnapshotID] = struct{}{}
-}
-
-// SnapshotCleared reports if the "snapshot" edge to the KnowledgeGraphSnapshot entity was cleared.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SnapshotCleared() bool {
-	return m.clearedsnapshot
-}
-
-// SnapshotIDs returns the "snapshot" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SnapshotID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SnapshotIDs() (ids []uuid.UUID) {
-	if id := m.snapshot; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetSnapshot resets all changes to the "snapshot" edge.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetSnapshot() {
-	m.snapshot = nil
-	m.clearedsnapshot = false
-}
-
-// ClearSourceSnapshotEntity clears the "source_snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearSourceSnapshotEntity() {
-	m.clearedsource_snapshot_entity = true
-	m.clearedFields[knowledgegraphsnapshotrelationship.FieldSourceSnapshotEntityID] = struct{}{}
-}
-
-// SourceSnapshotEntityCleared reports if the "source_snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity was cleared.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SourceSnapshotEntityCleared() bool {
-	return m.clearedsource_snapshot_entity
-}
-
-// SourceSnapshotEntityIDs returns the "source_snapshot_entity" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SourceSnapshotEntityID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SourceSnapshotEntityIDs() (ids []uuid.UUID) {
-	if id := m.source_snapshot_entity; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetSourceSnapshotEntity resets all changes to the "source_snapshot_entity" edge.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetSourceSnapshotEntity() {
-	m.source_snapshot_entity = nil
-	m.clearedsource_snapshot_entity = false
-}
-
-// ClearTargetSnapshotEntity clears the "target_snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearTargetSnapshotEntity() {
-	m.clearedtarget_snapshot_entity = true
-	m.clearedFields[knowledgegraphsnapshotrelationship.FieldTargetSnapshotEntityID] = struct{}{}
-}
-
-// TargetSnapshotEntityCleared reports if the "target_snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity was cleared.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) TargetSnapshotEntityCleared() bool {
-	return m.clearedtarget_snapshot_entity
-}
-
-// TargetSnapshotEntityIDs returns the "target_snapshot_entity" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TargetSnapshotEntityID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) TargetSnapshotEntityIDs() (ids []uuid.UUID) {
-	if id := m.target_snapshot_entity; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTargetSnapshotEntity resets all changes to the "target_snapshot_entity" edge.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetTargetSnapshotEntity() {
-	m.target_snapshot_entity = nil
-	m.clearedtarget_snapshot_entity = false
-}
-
-// AddAnalysisEdgeIDs adds the "analysis_edges" edge to the SystemAnalysisTopologyEdge entity by ids.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) AddAnalysisEdgeIDs(ids ...uuid.UUID) {
-	if m.analysis_edges == nil {
-		m.analysis_edges = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.analysis_edges[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAnalysisEdges clears the "analysis_edges" edge to the SystemAnalysisTopologyEdge entity.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearAnalysisEdges() {
-	m.clearedanalysis_edges = true
-}
-
-// AnalysisEdgesCleared reports if the "analysis_edges" edge to the SystemAnalysisTopologyEdge entity was cleared.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) AnalysisEdgesCleared() bool {
-	return m.clearedanalysis_edges
-}
-
-// RemoveAnalysisEdgeIDs removes the "analysis_edges" edge to the SystemAnalysisTopologyEdge entity by IDs.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) RemoveAnalysisEdgeIDs(ids ...uuid.UUID) {
-	if m.removedanalysis_edges == nil {
-		m.removedanalysis_edges = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.analysis_edges, ids[i])
-		m.removedanalysis_edges[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAnalysisEdges returns the removed IDs of the "analysis_edges" edge to the SystemAnalysisTopologyEdge entity.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) RemovedAnalysisEdgesIDs() (ids []uuid.UUID) {
-	for id := range m.removedanalysis_edges {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AnalysisEdgesIDs returns the "analysis_edges" edge IDs in the mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) AnalysisEdgesIDs() (ids []uuid.UUID) {
-	for id := range m.analysis_edges {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAnalysisEdges resets all changes to the "analysis_edges" edge.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetAnalysisEdges() {
-	m.analysis_edges = nil
-	m.clearedanalysis_edges = false
-	m.removedanalysis_edges = nil
-}
-
-// Where appends a list predicates to the KnowledgeGraphSnapshotRelationshipMutation builder.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) Where(ps ...predicate.KnowledgeGraphSnapshotRelationship) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the KnowledgeGraphSnapshotRelationshipMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.KnowledgeGraphSnapshotRelationship, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (KnowledgeGraphSnapshotRelationship).
-func (m *KnowledgeGraphSnapshotRelationshipMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *KnowledgeGraphSnapshotRelationshipMutation) Fields() []string {
-	fields := make([]string, 0, 10)
-	if m.tenant != nil {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldTenantID)
-	}
-	if m.snapshot != nil {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldSnapshotID)
-	}
-	if m.knowledge_relationship != nil {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID)
-	}
-	if m.source_snapshot_entity != nil {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldSourceSnapshotEntityID)
-	}
-	if m.target_snapshot_entity != nil {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldTargetSnapshotEntityID)
-	}
-	if m.relationship_kind != nil {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldRelationshipKind)
-	}
-	if m.display_name != nil {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldDisplayName)
-	}
-	if m.description != nil {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldDescription)
-	}
-	if m.properties != nil {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldProperties)
-	}
-	if m.created_at != nil {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldCreatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case knowledgegraphsnapshotrelationship.FieldTenantID:
-		return m.TenantID()
-	case knowledgegraphsnapshotrelationship.FieldSnapshotID:
-		return m.SnapshotID()
-	case knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID:
-		return m.KnowledgeRelationshipID()
-	case knowledgegraphsnapshotrelationship.FieldSourceSnapshotEntityID:
-		return m.SourceSnapshotEntityID()
-	case knowledgegraphsnapshotrelationship.FieldTargetSnapshotEntityID:
-		return m.TargetSnapshotEntityID()
-	case knowledgegraphsnapshotrelationship.FieldRelationshipKind:
-		return m.RelationshipKind()
-	case knowledgegraphsnapshotrelationship.FieldDisplayName:
-		return m.DisplayName()
-	case knowledgegraphsnapshotrelationship.FieldDescription:
-		return m.Description()
-	case knowledgegraphsnapshotrelationship.FieldProperties:
-		return m.Properties()
-	case knowledgegraphsnapshotrelationship.FieldCreatedAt:
-		return m.CreatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case knowledgegraphsnapshotrelationship.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case knowledgegraphsnapshotrelationship.FieldSnapshotID:
-		return m.OldSnapshotID(ctx)
-	case knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID:
-		return m.OldKnowledgeRelationshipID(ctx)
-	case knowledgegraphsnapshotrelationship.FieldSourceSnapshotEntityID:
-		return m.OldSourceSnapshotEntityID(ctx)
-	case knowledgegraphsnapshotrelationship.FieldTargetSnapshotEntityID:
-		return m.OldTargetSnapshotEntityID(ctx)
-	case knowledgegraphsnapshotrelationship.FieldRelationshipKind:
-		return m.OldRelationshipKind(ctx)
-	case knowledgegraphsnapshotrelationship.FieldDisplayName:
-		return m.OldDisplayName(ctx)
-	case knowledgegraphsnapshotrelationship.FieldDescription:
-		return m.OldDescription(ctx)
-	case knowledgegraphsnapshotrelationship.FieldProperties:
-		return m.OldProperties(ctx)
-	case knowledgegraphsnapshotrelationship.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown KnowledgeGraphSnapshotRelationship field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case knowledgegraphsnapshotrelationship.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldSnapshotID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSnapshotID(v)
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeRelationshipID(v)
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldSourceSnapshotEntityID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSourceSnapshotEntityID(v)
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldTargetSnapshotEntityID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTargetSnapshotEntityID(v)
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldRelationshipKind:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRelationshipKind(v)
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldDisplayName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDisplayName(v)
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldProperties:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProperties(v)
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotRelationship field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotRelationship numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID) {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID)
-	}
-	if m.FieldCleared(knowledgegraphsnapshotrelationship.FieldDisplayName) {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldDisplayName)
-	}
-	if m.FieldCleared(knowledgegraphsnapshotrelationship.FieldDescription) {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldDescription)
-	}
-	if m.FieldCleared(knowledgegraphsnapshotrelationship.FieldProperties) {
-		fields = append(fields, knowledgegraphsnapshotrelationship.FieldProperties)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearField(name string) error {
-	switch name {
-	case knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID:
-		m.ClearKnowledgeRelationshipID()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldDisplayName:
-		m.ClearDisplayName()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldDescription:
-		m.ClearDescription()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldProperties:
-		m.ClearProperties()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotRelationship nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetField(name string) error {
-	switch name {
-	case knowledgegraphsnapshotrelationship.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldSnapshotID:
-		m.ResetSnapshotID()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldKnowledgeRelationshipID:
-		m.ResetKnowledgeRelationshipID()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldSourceSnapshotEntityID:
-		m.ResetSourceSnapshotEntityID()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldTargetSnapshotEntityID:
-		m.ResetTargetSnapshotEntityID()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldRelationshipKind:
-		m.ResetRelationshipKind()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldDisplayName:
-		m.ResetDisplayName()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldProperties:
-		m.ResetProperties()
-		return nil
-	case knowledgegraphsnapshotrelationship.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotRelationship field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.tenant != nil {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeTenant)
-	}
-	if m.knowledge_relationship != nil {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeKnowledgeRelationship)
-	}
-	if m.snapshot != nil {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeSnapshot)
-	}
-	if m.source_snapshot_entity != nil {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeSourceSnapshotEntity)
-	}
-	if m.target_snapshot_entity != nil {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeTargetSnapshotEntity)
-	}
-	if m.analysis_edges != nil {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeAnalysisEdges)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case knowledgegraphsnapshotrelationship.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgegraphsnapshotrelationship.EdgeKnowledgeRelationship:
-		if id := m.knowledge_relationship; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgegraphsnapshotrelationship.EdgeSnapshot:
-		if id := m.snapshot; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgegraphsnapshotrelationship.EdgeSourceSnapshotEntity:
-		if id := m.source_snapshot_entity; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgegraphsnapshotrelationship.EdgeTargetSnapshotEntity:
-		if id := m.target_snapshot_entity; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgegraphsnapshotrelationship.EdgeAnalysisEdges:
-		ids := make([]ent.Value, 0, len(m.analysis_edges))
-		for id := range m.analysis_edges {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.removedanalysis_edges != nil {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeAnalysisEdges)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case knowledgegraphsnapshotrelationship.EdgeAnalysisEdges:
-		ids := make([]ent.Value, 0, len(m.removedanalysis_edges))
-		for id := range m.removedanalysis_edges {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
-	if m.clearedtenant {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeTenant)
-	}
-	if m.clearedknowledge_relationship {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeKnowledgeRelationship)
-	}
-	if m.clearedsnapshot {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeSnapshot)
-	}
-	if m.clearedsource_snapshot_entity {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeSourceSnapshotEntity)
-	}
-	if m.clearedtarget_snapshot_entity {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeTargetSnapshotEntity)
-	}
-	if m.clearedanalysis_edges {
-		edges = append(edges, knowledgegraphsnapshotrelationship.EdgeAnalysisEdges)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) EdgeCleared(name string) bool {
-	switch name {
-	case knowledgegraphsnapshotrelationship.EdgeTenant:
-		return m.clearedtenant
-	case knowledgegraphsnapshotrelationship.EdgeKnowledgeRelationship:
-		return m.clearedknowledge_relationship
-	case knowledgegraphsnapshotrelationship.EdgeSnapshot:
-		return m.clearedsnapshot
-	case knowledgegraphsnapshotrelationship.EdgeSourceSnapshotEntity:
-		return m.clearedsource_snapshot_entity
-	case knowledgegraphsnapshotrelationship.EdgeTargetSnapshotEntity:
-		return m.clearedtarget_snapshot_entity
-	case knowledgegraphsnapshotrelationship.EdgeAnalysisEdges:
-		return m.clearedanalysis_edges
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ClearEdge(name string) error {
-	switch name {
-	case knowledgegraphsnapshotrelationship.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	case knowledgegraphsnapshotrelationship.EdgeKnowledgeRelationship:
-		m.ClearKnowledgeRelationship()
-		return nil
-	case knowledgegraphsnapshotrelationship.EdgeSnapshot:
-		m.ClearSnapshot()
-		return nil
-	case knowledgegraphsnapshotrelationship.EdgeSourceSnapshotEntity:
-		m.ClearSourceSnapshotEntity()
-		return nil
-	case knowledgegraphsnapshotrelationship.EdgeTargetSnapshotEntity:
-		m.ClearTargetSnapshotEntity()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotRelationship unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *KnowledgeGraphSnapshotRelationshipMutation) ResetEdge(name string) error {
-	switch name {
-	case knowledgegraphsnapshotrelationship.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	case knowledgegraphsnapshotrelationship.EdgeKnowledgeRelationship:
-		m.ResetKnowledgeRelationship()
-		return nil
-	case knowledgegraphsnapshotrelationship.EdgeSnapshot:
-		m.ResetSnapshot()
-		return nil
-	case knowledgegraphsnapshotrelationship.EdgeSourceSnapshotEntity:
-		m.ResetSourceSnapshotEntity()
-		return nil
-	case knowledgegraphsnapshotrelationship.EdgeTargetSnapshotEntity:
-		m.ResetTargetSnapshotEntity()
-		return nil
-	case knowledgegraphsnapshotrelationship.EdgeAnalysisEdges:
-		m.ResetAnalysisEdges()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeGraphSnapshotRelationship edge %s", name)
 }
 
 // KnowledgeRelationshipMutation represents an operation that mutates the KnowledgeRelationship nodes in the graph.
@@ -39868,9 +36638,8 @@ type NormalizedEventMutation struct {
 	clearedFields        map[string]struct{}
 	tenant               *int
 	clearedtenant        bool
-	projections          map[uuid.UUID]struct{}
-	removedprojections   map[uuid.UUID]struct{}
-	clearedprojections   bool
+	projection           *uuid.UUID
+	clearedprojection    bool
 	done                 bool
 	oldValue             func(context.Context) (*NormalizedEvent, error)
 	predicates           []predicate.NormalizedEvent
@@ -40403,58 +37172,43 @@ func (m *NormalizedEventMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// AddProjectionIDs adds the "projections" edge to the NormalizedEventProjection entity by ids.
-func (m *NormalizedEventMutation) AddProjectionIDs(ids ...uuid.UUID) {
-	if m.projections == nil {
-		m.projections = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.projections[ids[i]] = struct{}{}
-	}
+// SetProjectionID sets the "projection" edge to the NormalizedEventProjection entity by id.
+func (m *NormalizedEventMutation) SetProjectionID(id uuid.UUID) {
+	m.projection = &id
 }
 
-// ClearProjections clears the "projections" edge to the NormalizedEventProjection entity.
-func (m *NormalizedEventMutation) ClearProjections() {
-	m.clearedprojections = true
+// ClearProjection clears the "projection" edge to the NormalizedEventProjection entity.
+func (m *NormalizedEventMutation) ClearProjection() {
+	m.clearedprojection = true
 }
 
-// ProjectionsCleared reports if the "projections" edge to the NormalizedEventProjection entity was cleared.
-func (m *NormalizedEventMutation) ProjectionsCleared() bool {
-	return m.clearedprojections
+// ProjectionCleared reports if the "projection" edge to the NormalizedEventProjection entity was cleared.
+func (m *NormalizedEventMutation) ProjectionCleared() bool {
+	return m.clearedprojection
 }
 
-// RemoveProjectionIDs removes the "projections" edge to the NormalizedEventProjection entity by IDs.
-func (m *NormalizedEventMutation) RemoveProjectionIDs(ids ...uuid.UUID) {
-	if m.removedprojections == nil {
-		m.removedprojections = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.projections, ids[i])
-		m.removedprojections[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProjections returns the removed IDs of the "projections" edge to the NormalizedEventProjection entity.
-func (m *NormalizedEventMutation) RemovedProjectionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedprojections {
-		ids = append(ids, id)
+// ProjectionID returns the "projection" edge ID in the mutation.
+func (m *NormalizedEventMutation) ProjectionID() (id uuid.UUID, exists bool) {
+	if m.projection != nil {
+		return *m.projection, true
 	}
 	return
 }
 
-// ProjectionsIDs returns the "projections" edge IDs in the mutation.
-func (m *NormalizedEventMutation) ProjectionsIDs() (ids []uuid.UUID) {
-	for id := range m.projections {
-		ids = append(ids, id)
+// ProjectionIDs returns the "projection" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProjectionID instead. It exists only for internal usage by the builders.
+func (m *NormalizedEventMutation) ProjectionIDs() (ids []uuid.UUID) {
+	if id := m.projection; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetProjections resets all changes to the "projections" edge.
-func (m *NormalizedEventMutation) ResetProjections() {
-	m.projections = nil
-	m.clearedprojections = false
-	m.removedprojections = nil
+// ResetProjection resets all changes to the "projection" edge.
+func (m *NormalizedEventMutation) ResetProjection() {
+	m.projection = nil
+	m.clearedprojection = false
 }
 
 // Where appends a list predicates to the NormalizedEventMutation builder.
@@ -40767,8 +37521,8 @@ func (m *NormalizedEventMutation) AddedEdges() []string {
 	if m.tenant != nil {
 		edges = append(edges, normalizedevent.EdgeTenant)
 	}
-	if m.projections != nil {
-		edges = append(edges, normalizedevent.EdgeProjections)
+	if m.projection != nil {
+		edges = append(edges, normalizedevent.EdgeProjection)
 	}
 	return edges
 }
@@ -40781,12 +37535,10 @@ func (m *NormalizedEventMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case normalizedevent.EdgeProjections:
-		ids := make([]ent.Value, 0, len(m.projections))
-		for id := range m.projections {
-			ids = append(ids, id)
+	case normalizedevent.EdgeProjection:
+		if id := m.projection; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -40794,23 +37546,12 @@ func (m *NormalizedEventMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NormalizedEventMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removedprojections != nil {
-		edges = append(edges, normalizedevent.EdgeProjections)
-	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *NormalizedEventMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case normalizedevent.EdgeProjections:
-		ids := make([]ent.Value, 0, len(m.removedprojections))
-		for id := range m.removedprojections {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
@@ -40820,8 +37561,8 @@ func (m *NormalizedEventMutation) ClearedEdges() []string {
 	if m.clearedtenant {
 		edges = append(edges, normalizedevent.EdgeTenant)
 	}
-	if m.clearedprojections {
-		edges = append(edges, normalizedevent.EdgeProjections)
+	if m.clearedprojection {
+		edges = append(edges, normalizedevent.EdgeProjection)
 	}
 	return edges
 }
@@ -40832,8 +37573,8 @@ func (m *NormalizedEventMutation) EdgeCleared(name string) bool {
 	switch name {
 	case normalizedevent.EdgeTenant:
 		return m.clearedtenant
-	case normalizedevent.EdgeProjections:
-		return m.clearedprojections
+	case normalizedevent.EdgeProjection:
+		return m.clearedprojection
 	}
 	return false
 }
@@ -40844,6 +37585,9 @@ func (m *NormalizedEventMutation) ClearEdge(name string) error {
 	switch name {
 	case normalizedevent.EdgeTenant:
 		m.ClearTenant()
+		return nil
+	case normalizedevent.EdgeProjection:
+		m.ClearProjection()
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEvent unique edge %s", name)
@@ -40856,8 +37600,8 @@ func (m *NormalizedEventMutation) ResetEdge(name string) error {
 	case normalizedevent.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case normalizedevent.EdgeProjections:
-		m.ResetProjections()
+	case normalizedevent.EdgeProjection:
+		m.ResetProjection()
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEvent edge %s", name)
@@ -40869,11 +37613,7 @@ type NormalizedEventProjectionMutation struct {
 	op                         Op
 	typ                        string
 	id                         *uuid.UUID
-	projector                  *string
-	status                     *normalizedeventprojection.Status
-	started_at                 *time.Time
-	finished_at                *time.Time
-	error                      *string
+	completed_at               *time.Time
 	clearedFields              map[string]struct{}
 	tenant                     *int
 	clearedtenant              bool
@@ -41063,210 +37803,40 @@ func (m *NormalizedEventProjectionMutation) ResetEventID() {
 	m.event = nil
 }
 
-// SetProjector sets the "projector" field.
-func (m *NormalizedEventProjectionMutation) SetProjector(s string) {
-	m.projector = &s
+// SetCompletedAt sets the "completed_at" field.
+func (m *NormalizedEventProjectionMutation) SetCompletedAt(t time.Time) {
+	m.completed_at = &t
 }
 
-// Projector returns the value of the "projector" field in the mutation.
-func (m *NormalizedEventProjectionMutation) Projector() (r string, exists bool) {
-	v := m.projector
+// CompletedAt returns the value of the "completed_at" field in the mutation.
+func (m *NormalizedEventProjectionMutation) CompletedAt() (r time.Time, exists bool) {
+	v := m.completed_at
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProjector returns the old "projector" field's value of the NormalizedEventProjection entity.
+// OldCompletedAt returns the old "completed_at" field's value of the NormalizedEventProjection entity.
 // If the NormalizedEventProjection object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventProjectionMutation) OldProjector(ctx context.Context) (v string, err error) {
+func (m *NormalizedEventProjectionMutation) OldCompletedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProjector is only allowed on UpdateOne operations")
+		return v, errors.New("OldCompletedAt is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProjector requires an ID field in the mutation")
+		return v, errors.New("OldCompletedAt requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProjector: %w", err)
+		return v, fmt.Errorf("querying old value for OldCompletedAt: %w", err)
 	}
-	return oldValue.Projector, nil
+	return oldValue.CompletedAt, nil
 }
 
-// ResetProjector resets all changes to the "projector" field.
-func (m *NormalizedEventProjectionMutation) ResetProjector() {
-	m.projector = nil
-}
-
-// SetStatus sets the "status" field.
-func (m *NormalizedEventProjectionMutation) SetStatus(n normalizedeventprojection.Status) {
-	m.status = &n
-}
-
-// Status returns the value of the "status" field in the mutation.
-func (m *NormalizedEventProjectionMutation) Status() (r normalizedeventprojection.Status, exists bool) {
-	v := m.status
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStatus returns the old "status" field's value of the NormalizedEventProjection entity.
-// If the NormalizedEventProjection object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventProjectionMutation) OldStatus(ctx context.Context) (v normalizedeventprojection.Status, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
-	}
-	return oldValue.Status, nil
-}
-
-// ResetStatus resets all changes to the "status" field.
-func (m *NormalizedEventProjectionMutation) ResetStatus() {
-	m.status = nil
-}
-
-// SetStartedAt sets the "started_at" field.
-func (m *NormalizedEventProjectionMutation) SetStartedAt(t time.Time) {
-	m.started_at = &t
-}
-
-// StartedAt returns the value of the "started_at" field in the mutation.
-func (m *NormalizedEventProjectionMutation) StartedAt() (r time.Time, exists bool) {
-	v := m.started_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStartedAt returns the old "started_at" field's value of the NormalizedEventProjection entity.
-// If the NormalizedEventProjection object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventProjectionMutation) OldStartedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStartedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStartedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStartedAt: %w", err)
-	}
-	return oldValue.StartedAt, nil
-}
-
-// ResetStartedAt resets all changes to the "started_at" field.
-func (m *NormalizedEventProjectionMutation) ResetStartedAt() {
-	m.started_at = nil
-}
-
-// SetFinishedAt sets the "finished_at" field.
-func (m *NormalizedEventProjectionMutation) SetFinishedAt(t time.Time) {
-	m.finished_at = &t
-}
-
-// FinishedAt returns the value of the "finished_at" field in the mutation.
-func (m *NormalizedEventProjectionMutation) FinishedAt() (r time.Time, exists bool) {
-	v := m.finished_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldFinishedAt returns the old "finished_at" field's value of the NormalizedEventProjection entity.
-// If the NormalizedEventProjection object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventProjectionMutation) OldFinishedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFinishedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFinishedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFinishedAt: %w", err)
-	}
-	return oldValue.FinishedAt, nil
-}
-
-// ClearFinishedAt clears the value of the "finished_at" field.
-func (m *NormalizedEventProjectionMutation) ClearFinishedAt() {
-	m.finished_at = nil
-	m.clearedFields[normalizedeventprojection.FieldFinishedAt] = struct{}{}
-}
-
-// FinishedAtCleared returns if the "finished_at" field was cleared in this mutation.
-func (m *NormalizedEventProjectionMutation) FinishedAtCleared() bool {
-	_, ok := m.clearedFields[normalizedeventprojection.FieldFinishedAt]
-	return ok
-}
-
-// ResetFinishedAt resets all changes to the "finished_at" field.
-func (m *NormalizedEventProjectionMutation) ResetFinishedAt() {
-	m.finished_at = nil
-	delete(m.clearedFields, normalizedeventprojection.FieldFinishedAt)
-}
-
-// SetError sets the "error" field.
-func (m *NormalizedEventProjectionMutation) SetError(s string) {
-	m.error = &s
-}
-
-// Error returns the value of the "error" field in the mutation.
-func (m *NormalizedEventProjectionMutation) Error() (r string, exists bool) {
-	v := m.error
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldError returns the old "error" field's value of the NormalizedEventProjection entity.
-// If the NormalizedEventProjection object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventProjectionMutation) OldError(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldError is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldError requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldError: %w", err)
-	}
-	return oldValue.Error, nil
-}
-
-// ClearError clears the value of the "error" field.
-func (m *NormalizedEventProjectionMutation) ClearError() {
-	m.error = nil
-	m.clearedFields[normalizedeventprojection.FieldError] = struct{}{}
-}
-
-// ErrorCleared returns if the "error" field was cleared in this mutation.
-func (m *NormalizedEventProjectionMutation) ErrorCleared() bool {
-	_, ok := m.clearedFields[normalizedeventprojection.FieldError]
-	return ok
-}
-
-// ResetError resets all changes to the "error" field.
-func (m *NormalizedEventProjectionMutation) ResetError() {
-	m.error = nil
-	delete(m.clearedFields, normalizedeventprojection.FieldError)
+// ResetCompletedAt resets all changes to the "completed_at" field.
+func (m *NormalizedEventProjectionMutation) ResetCompletedAt() {
+	m.completed_at = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -41411,27 +37981,15 @@ func (m *NormalizedEventProjectionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NormalizedEventProjectionMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 3)
 	if m.tenant != nil {
 		fields = append(fields, normalizedeventprojection.FieldTenantID)
 	}
 	if m.event != nil {
 		fields = append(fields, normalizedeventprojection.FieldEventID)
 	}
-	if m.projector != nil {
-		fields = append(fields, normalizedeventprojection.FieldProjector)
-	}
-	if m.status != nil {
-		fields = append(fields, normalizedeventprojection.FieldStatus)
-	}
-	if m.started_at != nil {
-		fields = append(fields, normalizedeventprojection.FieldStartedAt)
-	}
-	if m.finished_at != nil {
-		fields = append(fields, normalizedeventprojection.FieldFinishedAt)
-	}
-	if m.error != nil {
-		fields = append(fields, normalizedeventprojection.FieldError)
+	if m.completed_at != nil {
+		fields = append(fields, normalizedeventprojection.FieldCompletedAt)
 	}
 	return fields
 }
@@ -41445,16 +38003,8 @@ func (m *NormalizedEventProjectionMutation) Field(name string) (ent.Value, bool)
 		return m.TenantID()
 	case normalizedeventprojection.FieldEventID:
 		return m.EventID()
-	case normalizedeventprojection.FieldProjector:
-		return m.Projector()
-	case normalizedeventprojection.FieldStatus:
-		return m.Status()
-	case normalizedeventprojection.FieldStartedAt:
-		return m.StartedAt()
-	case normalizedeventprojection.FieldFinishedAt:
-		return m.FinishedAt()
-	case normalizedeventprojection.FieldError:
-		return m.Error()
+	case normalizedeventprojection.FieldCompletedAt:
+		return m.CompletedAt()
 	}
 	return nil, false
 }
@@ -41468,16 +38018,8 @@ func (m *NormalizedEventProjectionMutation) OldField(ctx context.Context, name s
 		return m.OldTenantID(ctx)
 	case normalizedeventprojection.FieldEventID:
 		return m.OldEventID(ctx)
-	case normalizedeventprojection.FieldProjector:
-		return m.OldProjector(ctx)
-	case normalizedeventprojection.FieldStatus:
-		return m.OldStatus(ctx)
-	case normalizedeventprojection.FieldStartedAt:
-		return m.OldStartedAt(ctx)
-	case normalizedeventprojection.FieldFinishedAt:
-		return m.OldFinishedAt(ctx)
-	case normalizedeventprojection.FieldError:
-		return m.OldError(ctx)
+	case normalizedeventprojection.FieldCompletedAt:
+		return m.OldCompletedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown NormalizedEventProjection field %s", name)
 }
@@ -41501,40 +38043,12 @@ func (m *NormalizedEventProjectionMutation) SetField(name string, value ent.Valu
 		}
 		m.SetEventID(v)
 		return nil
-	case normalizedeventprojection.FieldProjector:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProjector(v)
-		return nil
-	case normalizedeventprojection.FieldStatus:
-		v, ok := value.(normalizedeventprojection.Status)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStatus(v)
-		return nil
-	case normalizedeventprojection.FieldStartedAt:
+	case normalizedeventprojection.FieldCompletedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetStartedAt(v)
-		return nil
-	case normalizedeventprojection.FieldFinishedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetFinishedAt(v)
-		return nil
-	case normalizedeventprojection.FieldError:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetError(v)
+		m.SetCompletedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEventProjection field %s", name)
@@ -41568,14 +38082,7 @@ func (m *NormalizedEventProjectionMutation) AddField(name string, value ent.Valu
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *NormalizedEventProjectionMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(normalizedeventprojection.FieldFinishedAt) {
-		fields = append(fields, normalizedeventprojection.FieldFinishedAt)
-	}
-	if m.FieldCleared(normalizedeventprojection.FieldError) {
-		fields = append(fields, normalizedeventprojection.FieldError)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -41588,14 +38095,6 @@ func (m *NormalizedEventProjectionMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *NormalizedEventProjectionMutation) ClearField(name string) error {
-	switch name {
-	case normalizedeventprojection.FieldFinishedAt:
-		m.ClearFinishedAt()
-		return nil
-	case normalizedeventprojection.FieldError:
-		m.ClearError()
-		return nil
-	}
 	return fmt.Errorf("unknown NormalizedEventProjection nullable field %s", name)
 }
 
@@ -41609,20 +38108,8 @@ func (m *NormalizedEventProjectionMutation) ResetField(name string) error {
 	case normalizedeventprojection.FieldEventID:
 		m.ResetEventID()
 		return nil
-	case normalizedeventprojection.FieldProjector:
-		m.ResetProjector()
-		return nil
-	case normalizedeventprojection.FieldStatus:
-		m.ResetStatus()
-		return nil
-	case normalizedeventprojection.FieldStartedAt:
-		m.ResetStartedAt()
-		return nil
-	case normalizedeventprojection.FieldFinishedAt:
-		m.ResetFinishedAt()
-		return nil
-	case normalizedeventprojection.FieldError:
-		m.ResetError()
+	case normalizedeventprojection.FieldCompletedAt:
+		m.ResetCompletedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEventProjection field %s", name)
@@ -55063,25 +51550,23 @@ func (m *RetrospectiveReviewMutation) ResetEdge(name string) error {
 // SystemAnalysisMutation represents an operation that mutates the SystemAnalysis nodes in the graph.
 type SystemAnalysisMutation struct {
 	config
-	op                              Op
-	typ                             string
-	id                              *uuid.UUID
-	created_at                      *time.Time
-	updated_at                      *time.Time
-	clearedFields                   map[string]struct{}
-	tenant                          *int
-	clearedtenant                   bool
-	knowledge_graph_snapshot        *uuid.UUID
-	clearedknowledge_graph_snapshot bool
-	analysis_nodes                  map[uuid.UUID]struct{}
-	removedanalysis_nodes           map[uuid.UUID]struct{}
-	clearedanalysis_nodes           bool
-	analysis_edges                  map[uuid.UUID]struct{}
-	removedanalysis_edges           map[uuid.UUID]struct{}
-	clearedanalysis_edges           bool
-	done                            bool
-	oldValue                        func(context.Context) (*SystemAnalysis, error)
-	predicates                      []predicate.SystemAnalysis
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	created_at            *time.Time
+	updated_at            *time.Time
+	clearedFields         map[string]struct{}
+	tenant                *int
+	clearedtenant         bool
+	analysis_nodes        map[uuid.UUID]struct{}
+	removedanalysis_nodes map[uuid.UUID]struct{}
+	clearedanalysis_nodes bool
+	analysis_edges        map[uuid.UUID]struct{}
+	removedanalysis_edges map[uuid.UUID]struct{}
+	clearedanalysis_edges bool
+	done                  bool
+	oldValue              func(context.Context) (*SystemAnalysis, error)
+	predicates            []predicate.SystemAnalysis
 }
 
 var _ ent.Mutation = (*SystemAnalysisMutation)(nil)
@@ -55224,42 +51709,6 @@ func (m *SystemAnalysisMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetKnowledgeGraphSnapshotID sets the "knowledge_graph_snapshot_id" field.
-func (m *SystemAnalysisMutation) SetKnowledgeGraphSnapshotID(u uuid.UUID) {
-	m.knowledge_graph_snapshot = &u
-}
-
-// KnowledgeGraphSnapshotID returns the value of the "knowledge_graph_snapshot_id" field in the mutation.
-func (m *SystemAnalysisMutation) KnowledgeGraphSnapshotID() (r uuid.UUID, exists bool) {
-	v := m.knowledge_graph_snapshot
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeGraphSnapshotID returns the old "knowledge_graph_snapshot_id" field's value of the SystemAnalysis entity.
-// If the SystemAnalysis object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisMutation) OldKnowledgeGraphSnapshotID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeGraphSnapshotID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeGraphSnapshotID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeGraphSnapshotID: %w", err)
-	}
-	return oldValue.KnowledgeGraphSnapshotID, nil
-}
-
-// ResetKnowledgeGraphSnapshotID resets all changes to the "knowledge_graph_snapshot_id" field.
-func (m *SystemAnalysisMutation) ResetKnowledgeGraphSnapshotID() {
-	m.knowledge_graph_snapshot = nil
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (m *SystemAnalysisMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -55357,33 +51806,6 @@ func (m *SystemAnalysisMutation) TenantIDs() (ids []int) {
 func (m *SystemAnalysisMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
-}
-
-// ClearKnowledgeGraphSnapshot clears the "knowledge_graph_snapshot" edge to the KnowledgeGraphSnapshot entity.
-func (m *SystemAnalysisMutation) ClearKnowledgeGraphSnapshot() {
-	m.clearedknowledge_graph_snapshot = true
-	m.clearedFields[systemanalysis.FieldKnowledgeGraphSnapshotID] = struct{}{}
-}
-
-// KnowledgeGraphSnapshotCleared reports if the "knowledge_graph_snapshot" edge to the KnowledgeGraphSnapshot entity was cleared.
-func (m *SystemAnalysisMutation) KnowledgeGraphSnapshotCleared() bool {
-	return m.clearedknowledge_graph_snapshot
-}
-
-// KnowledgeGraphSnapshotIDs returns the "knowledge_graph_snapshot" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// KnowledgeGraphSnapshotID instead. It exists only for internal usage by the builders.
-func (m *SystemAnalysisMutation) KnowledgeGraphSnapshotIDs() (ids []uuid.UUID) {
-	if id := m.knowledge_graph_snapshot; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetKnowledgeGraphSnapshot resets all changes to the "knowledge_graph_snapshot" edge.
-func (m *SystemAnalysisMutation) ResetKnowledgeGraphSnapshot() {
-	m.knowledge_graph_snapshot = nil
-	m.clearedknowledge_graph_snapshot = false
 }
 
 // AddAnalysisNodeIDs adds the "analysis_nodes" edge to the SystemAnalysisTopologyNode entity by ids.
@@ -55528,12 +51950,9 @@ func (m *SystemAnalysisMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemAnalysisMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 3)
 	if m.tenant != nil {
 		fields = append(fields, systemanalysis.FieldTenantID)
-	}
-	if m.knowledge_graph_snapshot != nil {
-		fields = append(fields, systemanalysis.FieldKnowledgeGraphSnapshotID)
 	}
 	if m.created_at != nil {
 		fields = append(fields, systemanalysis.FieldCreatedAt)
@@ -55551,8 +51970,6 @@ func (m *SystemAnalysisMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case systemanalysis.FieldTenantID:
 		return m.TenantID()
-	case systemanalysis.FieldKnowledgeGraphSnapshotID:
-		return m.KnowledgeGraphSnapshotID()
 	case systemanalysis.FieldCreatedAt:
 		return m.CreatedAt()
 	case systemanalysis.FieldUpdatedAt:
@@ -55568,8 +51985,6 @@ func (m *SystemAnalysisMutation) OldField(ctx context.Context, name string) (ent
 	switch name {
 	case systemanalysis.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case systemanalysis.FieldKnowledgeGraphSnapshotID:
-		return m.OldKnowledgeGraphSnapshotID(ctx)
 	case systemanalysis.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case systemanalysis.FieldUpdatedAt:
@@ -55589,13 +52004,6 @@ func (m *SystemAnalysisMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
-		return nil
-	case systemanalysis.FieldKnowledgeGraphSnapshotID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeGraphSnapshotID(v)
 		return nil
 	case systemanalysis.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -55666,9 +52074,6 @@ func (m *SystemAnalysisMutation) ResetField(name string) error {
 	case systemanalysis.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case systemanalysis.FieldKnowledgeGraphSnapshotID:
-		m.ResetKnowledgeGraphSnapshotID()
-		return nil
 	case systemanalysis.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
@@ -55681,12 +52086,9 @@ func (m *SystemAnalysisMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemAnalysisMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, systemanalysis.EdgeTenant)
-	}
-	if m.knowledge_graph_snapshot != nil {
-		edges = append(edges, systemanalysis.EdgeKnowledgeGraphSnapshot)
 	}
 	if m.analysis_nodes != nil {
 		edges = append(edges, systemanalysis.EdgeAnalysisNodes)
@@ -55703,10 +52105,6 @@ func (m *SystemAnalysisMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case systemanalysis.EdgeTenant:
 		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case systemanalysis.EdgeKnowledgeGraphSnapshot:
-		if id := m.knowledge_graph_snapshot; id != nil {
 			return []ent.Value{*id}
 		}
 	case systemanalysis.EdgeAnalysisNodes:
@@ -55727,7 +52125,7 @@ func (m *SystemAnalysisMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemAnalysisMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.removedanalysis_nodes != nil {
 		edges = append(edges, systemanalysis.EdgeAnalysisNodes)
 	}
@@ -55759,12 +52157,9 @@ func (m *SystemAnalysisMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemAnalysisMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, systemanalysis.EdgeTenant)
-	}
-	if m.clearedknowledge_graph_snapshot {
-		edges = append(edges, systemanalysis.EdgeKnowledgeGraphSnapshot)
 	}
 	if m.clearedanalysis_nodes {
 		edges = append(edges, systemanalysis.EdgeAnalysisNodes)
@@ -55781,8 +52176,6 @@ func (m *SystemAnalysisMutation) EdgeCleared(name string) bool {
 	switch name {
 	case systemanalysis.EdgeTenant:
 		return m.clearedtenant
-	case systemanalysis.EdgeKnowledgeGraphSnapshot:
-		return m.clearedknowledge_graph_snapshot
 	case systemanalysis.EdgeAnalysisNodes:
 		return m.clearedanalysis_nodes
 	case systemanalysis.EdgeAnalysisEdges:
@@ -55798,9 +52191,6 @@ func (m *SystemAnalysisMutation) ClearEdge(name string) error {
 	case systemanalysis.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case systemanalysis.EdgeKnowledgeGraphSnapshot:
-		m.ClearKnowledgeGraphSnapshot()
-		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysis unique edge %s", name)
 }
@@ -55811,9 +52201,6 @@ func (m *SystemAnalysisMutation) ResetEdge(name string) error {
 	switch name {
 	case systemanalysis.EdgeTenant:
 		m.ResetTenant()
-		return nil
-	case systemanalysis.EdgeKnowledgeGraphSnapshot:
-		m.ResetKnowledgeGraphSnapshot()
 		return nil
 	case systemanalysis.EdgeAnalysisNodes:
 		m.ResetAnalysisNodes()
@@ -55828,22 +52215,23 @@ func (m *SystemAnalysisMutation) ResetEdge(name string) error {
 // SystemAnalysisTopologyEdgeMutation represents an operation that mutates the SystemAnalysisTopologyEdge nodes in the graph.
 type SystemAnalysisTopologyEdgeMutation struct {
 	config
-	op                           Op
-	typ                          string
-	id                           *uuid.UUID
-	created_at                   *time.Time
-	updated_at                   *time.Time
-	description                  *string
-	clearedFields                map[string]struct{}
-	tenant                       *int
-	clearedtenant                bool
-	analysis                     *uuid.UUID
-	clearedanalysis              bool
-	snapshot_relationship        *uuid.UUID
-	clearedsnapshot_relationship bool
-	done                         bool
-	oldValue                     func(context.Context) (*SystemAnalysisTopologyEdge, error)
-	predicates                   []predicate.SystemAnalysisTopologyEdge
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	created_at                    *time.Time
+	updated_at                    *time.Time
+	referenced_at                 *time.Time
+	description                   *string
+	clearedFields                 map[string]struct{}
+	tenant                        *int
+	clearedtenant                 bool
+	analysis                      *uuid.UUID
+	clearedanalysis               bool
+	knowledge_relationship        *uuid.UUID
+	clearedknowledge_relationship bool
+	done                          bool
+	oldValue                      func(context.Context) (*SystemAnalysisTopologyEdge, error)
+	predicates                    []predicate.SystemAnalysisTopologyEdge
 }
 
 var _ ent.Mutation = (*SystemAnalysisTopologyEdgeMutation)(nil)
@@ -56094,40 +52482,76 @@ func (m *SystemAnalysisTopologyEdgeMutation) ResetAnalysisID() {
 	m.analysis = nil
 }
 
-// SetSnapshotRelationshipID sets the "snapshot_relationship_id" field.
-func (m *SystemAnalysisTopologyEdgeMutation) SetSnapshotRelationshipID(u uuid.UUID) {
-	m.snapshot_relationship = &u
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (m *SystemAnalysisTopologyEdgeMutation) SetKnowledgeRelationshipID(u uuid.UUID) {
+	m.knowledge_relationship = &u
 }
 
-// SnapshotRelationshipID returns the value of the "snapshot_relationship_id" field in the mutation.
-func (m *SystemAnalysisTopologyEdgeMutation) SnapshotRelationshipID() (r uuid.UUID, exists bool) {
-	v := m.snapshot_relationship
+// KnowledgeRelationshipID returns the value of the "knowledge_relationship_id" field in the mutation.
+func (m *SystemAnalysisTopologyEdgeMutation) KnowledgeRelationshipID() (r uuid.UUID, exists bool) {
+	v := m.knowledge_relationship
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSnapshotRelationshipID returns the old "snapshot_relationship_id" field's value of the SystemAnalysisTopologyEdge entity.
+// OldKnowledgeRelationshipID returns the old "knowledge_relationship_id" field's value of the SystemAnalysisTopologyEdge entity.
 // If the SystemAnalysisTopologyEdge object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisTopologyEdgeMutation) OldSnapshotRelationshipID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *SystemAnalysisTopologyEdgeMutation) OldKnowledgeRelationshipID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSnapshotRelationshipID is only allowed on UpdateOne operations")
+		return v, errors.New("OldKnowledgeRelationshipID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSnapshotRelationshipID requires an ID field in the mutation")
+		return v, errors.New("OldKnowledgeRelationshipID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSnapshotRelationshipID: %w", err)
+		return v, fmt.Errorf("querying old value for OldKnowledgeRelationshipID: %w", err)
 	}
-	return oldValue.SnapshotRelationshipID, nil
+	return oldValue.KnowledgeRelationshipID, nil
 }
 
-// ResetSnapshotRelationshipID resets all changes to the "snapshot_relationship_id" field.
-func (m *SystemAnalysisTopologyEdgeMutation) ResetSnapshotRelationshipID() {
-	m.snapshot_relationship = nil
+// ResetKnowledgeRelationshipID resets all changes to the "knowledge_relationship_id" field.
+func (m *SystemAnalysisTopologyEdgeMutation) ResetKnowledgeRelationshipID() {
+	m.knowledge_relationship = nil
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (m *SystemAnalysisTopologyEdgeMutation) SetReferencedAt(t time.Time) {
+	m.referenced_at = &t
+}
+
+// ReferencedAt returns the value of the "referenced_at" field in the mutation.
+func (m *SystemAnalysisTopologyEdgeMutation) ReferencedAt() (r time.Time, exists bool) {
+	v := m.referenced_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReferencedAt returns the old "referenced_at" field's value of the SystemAnalysisTopologyEdge entity.
+// If the SystemAnalysisTopologyEdge object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisTopologyEdgeMutation) OldReferencedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReferencedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReferencedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReferencedAt: %w", err)
+	}
+	return oldValue.ReferencedAt, nil
+}
+
+// ResetReferencedAt resets all changes to the "referenced_at" field.
+func (m *SystemAnalysisTopologyEdgeMutation) ResetReferencedAt() {
+	m.referenced_at = nil
 }
 
 // SetDescription sets the "description" field.
@@ -56233,31 +52657,31 @@ func (m *SystemAnalysisTopologyEdgeMutation) ResetAnalysis() {
 	m.clearedanalysis = false
 }
 
-// ClearSnapshotRelationship clears the "snapshot_relationship" edge to the KnowledgeGraphSnapshotRelationship entity.
-func (m *SystemAnalysisTopologyEdgeMutation) ClearSnapshotRelationship() {
-	m.clearedsnapshot_relationship = true
-	m.clearedFields[systemanalysistopologyedge.FieldSnapshotRelationshipID] = struct{}{}
+// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (m *SystemAnalysisTopologyEdgeMutation) ClearKnowledgeRelationship() {
+	m.clearedknowledge_relationship = true
+	m.clearedFields[systemanalysistopologyedge.FieldKnowledgeRelationshipID] = struct{}{}
 }
 
-// SnapshotRelationshipCleared reports if the "snapshot_relationship" edge to the KnowledgeGraphSnapshotRelationship entity was cleared.
-func (m *SystemAnalysisTopologyEdgeMutation) SnapshotRelationshipCleared() bool {
-	return m.clearedsnapshot_relationship
+// KnowledgeRelationshipCleared reports if the "knowledge_relationship" edge to the KnowledgeRelationship entity was cleared.
+func (m *SystemAnalysisTopologyEdgeMutation) KnowledgeRelationshipCleared() bool {
+	return m.clearedknowledge_relationship
 }
 
-// SnapshotRelationshipIDs returns the "snapshot_relationship" edge IDs in the mutation.
+// KnowledgeRelationshipIDs returns the "knowledge_relationship" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SnapshotRelationshipID instead. It exists only for internal usage by the builders.
-func (m *SystemAnalysisTopologyEdgeMutation) SnapshotRelationshipIDs() (ids []uuid.UUID) {
-	if id := m.snapshot_relationship; id != nil {
+// KnowledgeRelationshipID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisTopologyEdgeMutation) KnowledgeRelationshipIDs() (ids []uuid.UUID) {
+	if id := m.knowledge_relationship; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetSnapshotRelationship resets all changes to the "snapshot_relationship" edge.
-func (m *SystemAnalysisTopologyEdgeMutation) ResetSnapshotRelationship() {
-	m.snapshot_relationship = nil
-	m.clearedsnapshot_relationship = false
+// ResetKnowledgeRelationship resets all changes to the "knowledge_relationship" edge.
+func (m *SystemAnalysisTopologyEdgeMutation) ResetKnowledgeRelationship() {
+	m.knowledge_relationship = nil
+	m.clearedknowledge_relationship = false
 }
 
 // Where appends a list predicates to the SystemAnalysisTopologyEdgeMutation builder.
@@ -56294,7 +52718,7 @@ func (m *SystemAnalysisTopologyEdgeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemAnalysisTopologyEdgeMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, systemanalysistopologyedge.FieldTenantID)
 	}
@@ -56307,8 +52731,11 @@ func (m *SystemAnalysisTopologyEdgeMutation) Fields() []string {
 	if m.analysis != nil {
 		fields = append(fields, systemanalysistopologyedge.FieldAnalysisID)
 	}
-	if m.snapshot_relationship != nil {
-		fields = append(fields, systemanalysistopologyedge.FieldSnapshotRelationshipID)
+	if m.knowledge_relationship != nil {
+		fields = append(fields, systemanalysistopologyedge.FieldKnowledgeRelationshipID)
+	}
+	if m.referenced_at != nil {
+		fields = append(fields, systemanalysistopologyedge.FieldReferencedAt)
 	}
 	if m.description != nil {
 		fields = append(fields, systemanalysistopologyedge.FieldDescription)
@@ -56329,8 +52756,10 @@ func (m *SystemAnalysisTopologyEdgeMutation) Field(name string) (ent.Value, bool
 		return m.UpdatedAt()
 	case systemanalysistopologyedge.FieldAnalysisID:
 		return m.AnalysisID()
-	case systemanalysistopologyedge.FieldSnapshotRelationshipID:
-		return m.SnapshotRelationshipID()
+	case systemanalysistopologyedge.FieldKnowledgeRelationshipID:
+		return m.KnowledgeRelationshipID()
+	case systemanalysistopologyedge.FieldReferencedAt:
+		return m.ReferencedAt()
 	case systemanalysistopologyedge.FieldDescription:
 		return m.Description()
 	}
@@ -56350,8 +52779,10 @@ func (m *SystemAnalysisTopologyEdgeMutation) OldField(ctx context.Context, name 
 		return m.OldUpdatedAt(ctx)
 	case systemanalysistopologyedge.FieldAnalysisID:
 		return m.OldAnalysisID(ctx)
-	case systemanalysistopologyedge.FieldSnapshotRelationshipID:
-		return m.OldSnapshotRelationshipID(ctx)
+	case systemanalysistopologyedge.FieldKnowledgeRelationshipID:
+		return m.OldKnowledgeRelationshipID(ctx)
+	case systemanalysistopologyedge.FieldReferencedAt:
+		return m.OldReferencedAt(ctx)
 	case systemanalysistopologyedge.FieldDescription:
 		return m.OldDescription(ctx)
 	}
@@ -56391,12 +52822,19 @@ func (m *SystemAnalysisTopologyEdgeMutation) SetField(name string, value ent.Val
 		}
 		m.SetAnalysisID(v)
 		return nil
-	case systemanalysistopologyedge.FieldSnapshotRelationshipID:
+	case systemanalysistopologyedge.FieldKnowledgeRelationshipID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSnapshotRelationshipID(v)
+		m.SetKnowledgeRelationshipID(v)
+		return nil
+	case systemanalysistopologyedge.FieldReferencedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReferencedAt(v)
 		return nil
 	case systemanalysistopologyedge.FieldDescription:
 		v, ok := value.(string)
@@ -56478,8 +52916,11 @@ func (m *SystemAnalysisTopologyEdgeMutation) ResetField(name string) error {
 	case systemanalysistopologyedge.FieldAnalysisID:
 		m.ResetAnalysisID()
 		return nil
-	case systemanalysistopologyedge.FieldSnapshotRelationshipID:
-		m.ResetSnapshotRelationshipID()
+	case systemanalysistopologyedge.FieldKnowledgeRelationshipID:
+		m.ResetKnowledgeRelationshipID()
+		return nil
+	case systemanalysistopologyedge.FieldReferencedAt:
+		m.ResetReferencedAt()
 		return nil
 	case systemanalysistopologyedge.FieldDescription:
 		m.ResetDescription()
@@ -56497,8 +52938,8 @@ func (m *SystemAnalysisTopologyEdgeMutation) AddedEdges() []string {
 	if m.analysis != nil {
 		edges = append(edges, systemanalysistopologyedge.EdgeAnalysis)
 	}
-	if m.snapshot_relationship != nil {
-		edges = append(edges, systemanalysistopologyedge.EdgeSnapshotRelationship)
+	if m.knowledge_relationship != nil {
+		edges = append(edges, systemanalysistopologyedge.EdgeKnowledgeRelationship)
 	}
 	return edges
 }
@@ -56515,8 +52956,8 @@ func (m *SystemAnalysisTopologyEdgeMutation) AddedIDs(name string) []ent.Value {
 		if id := m.analysis; id != nil {
 			return []ent.Value{*id}
 		}
-	case systemanalysistopologyedge.EdgeSnapshotRelationship:
-		if id := m.snapshot_relationship; id != nil {
+	case systemanalysistopologyedge.EdgeKnowledgeRelationship:
+		if id := m.knowledge_relationship; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -56544,8 +52985,8 @@ func (m *SystemAnalysisTopologyEdgeMutation) ClearedEdges() []string {
 	if m.clearedanalysis {
 		edges = append(edges, systemanalysistopologyedge.EdgeAnalysis)
 	}
-	if m.clearedsnapshot_relationship {
-		edges = append(edges, systemanalysistopologyedge.EdgeSnapshotRelationship)
+	if m.clearedknowledge_relationship {
+		edges = append(edges, systemanalysistopologyedge.EdgeKnowledgeRelationship)
 	}
 	return edges
 }
@@ -56558,8 +52999,8 @@ func (m *SystemAnalysisTopologyEdgeMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case systemanalysistopologyedge.EdgeAnalysis:
 		return m.clearedanalysis
-	case systemanalysistopologyedge.EdgeSnapshotRelationship:
-		return m.clearedsnapshot_relationship
+	case systemanalysistopologyedge.EdgeKnowledgeRelationship:
+		return m.clearedknowledge_relationship
 	}
 	return false
 }
@@ -56574,8 +53015,8 @@ func (m *SystemAnalysisTopologyEdgeMutation) ClearEdge(name string) error {
 	case systemanalysistopologyedge.EdgeAnalysis:
 		m.ClearAnalysis()
 		return nil
-	case systemanalysistopologyedge.EdgeSnapshotRelationship:
-		m.ClearSnapshotRelationship()
+	case systemanalysistopologyedge.EdgeKnowledgeRelationship:
+		m.ClearKnowledgeRelationship()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisTopologyEdge unique edge %s", name)
@@ -56591,8 +53032,8 @@ func (m *SystemAnalysisTopologyEdgeMutation) ResetEdge(name string) error {
 	case systemanalysistopologyedge.EdgeAnalysis:
 		m.ResetAnalysis()
 		return nil
-	case systemanalysistopologyedge.EdgeSnapshotRelationship:
-		m.ResetSnapshotRelationship()
+	case systemanalysistopologyedge.EdgeKnowledgeRelationship:
+		m.ResetKnowledgeRelationship()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisTopologyEdge edge %s", name)
@@ -56601,26 +53042,27 @@ func (m *SystemAnalysisTopologyEdgeMutation) ResetEdge(name string) error {
 // SystemAnalysisTopologyNodeMutation represents an operation that mutates the SystemAnalysisTopologyNode nodes in the graph.
 type SystemAnalysisTopologyNodeMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *uuid.UUID
-	created_at             *time.Time
-	updated_at             *time.Time
-	description            *string
-	pos_x                  *float64
-	addpos_x               *float64
-	pos_y                  *float64
-	addpos_y               *float64
-	clearedFields          map[string]struct{}
-	tenant                 *int
-	clearedtenant          bool
-	analysis               *uuid.UUID
-	clearedanalysis        bool
-	snapshot_entity        *uuid.UUID
-	clearedsnapshot_entity bool
-	done                   bool
-	oldValue               func(context.Context) (*SystemAnalysisTopologyNode, error)
-	predicates             []predicate.SystemAnalysisTopologyNode
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	created_at              *time.Time
+	updated_at              *time.Time
+	referenced_at           *time.Time
+	description             *string
+	pos_x                   *float64
+	addpos_x                *float64
+	pos_y                   *float64
+	addpos_y                *float64
+	clearedFields           map[string]struct{}
+	tenant                  *int
+	clearedtenant           bool
+	analysis                *uuid.UUID
+	clearedanalysis         bool
+	knowledge_entity        *uuid.UUID
+	clearedknowledge_entity bool
+	done                    bool
+	oldValue                func(context.Context) (*SystemAnalysisTopologyNode, error)
+	predicates              []predicate.SystemAnalysisTopologyNode
 }
 
 var _ ent.Mutation = (*SystemAnalysisTopologyNodeMutation)(nil)
@@ -56871,40 +53313,76 @@ func (m *SystemAnalysisTopologyNodeMutation) ResetAnalysisID() {
 	m.analysis = nil
 }
 
-// SetSnapshotEntityID sets the "snapshot_entity_id" field.
-func (m *SystemAnalysisTopologyNodeMutation) SetSnapshotEntityID(u uuid.UUID) {
-	m.snapshot_entity = &u
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (m *SystemAnalysisTopologyNodeMutation) SetKnowledgeEntityID(u uuid.UUID) {
+	m.knowledge_entity = &u
 }
 
-// SnapshotEntityID returns the value of the "snapshot_entity_id" field in the mutation.
-func (m *SystemAnalysisTopologyNodeMutation) SnapshotEntityID() (r uuid.UUID, exists bool) {
-	v := m.snapshot_entity
+// KnowledgeEntityID returns the value of the "knowledge_entity_id" field in the mutation.
+func (m *SystemAnalysisTopologyNodeMutation) KnowledgeEntityID() (r uuid.UUID, exists bool) {
+	v := m.knowledge_entity
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSnapshotEntityID returns the old "snapshot_entity_id" field's value of the SystemAnalysisTopologyNode entity.
+// OldKnowledgeEntityID returns the old "knowledge_entity_id" field's value of the SystemAnalysisTopologyNode entity.
 // If the SystemAnalysisTopologyNode object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisTopologyNodeMutation) OldSnapshotEntityID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *SystemAnalysisTopologyNodeMutation) OldKnowledgeEntityID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSnapshotEntityID is only allowed on UpdateOne operations")
+		return v, errors.New("OldKnowledgeEntityID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSnapshotEntityID requires an ID field in the mutation")
+		return v, errors.New("OldKnowledgeEntityID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSnapshotEntityID: %w", err)
+		return v, fmt.Errorf("querying old value for OldKnowledgeEntityID: %w", err)
 	}
-	return oldValue.SnapshotEntityID, nil
+	return oldValue.KnowledgeEntityID, nil
 }
 
-// ResetSnapshotEntityID resets all changes to the "snapshot_entity_id" field.
-func (m *SystemAnalysisTopologyNodeMutation) ResetSnapshotEntityID() {
-	m.snapshot_entity = nil
+// ResetKnowledgeEntityID resets all changes to the "knowledge_entity_id" field.
+func (m *SystemAnalysisTopologyNodeMutation) ResetKnowledgeEntityID() {
+	m.knowledge_entity = nil
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (m *SystemAnalysisTopologyNodeMutation) SetReferencedAt(t time.Time) {
+	m.referenced_at = &t
+}
+
+// ReferencedAt returns the value of the "referenced_at" field in the mutation.
+func (m *SystemAnalysisTopologyNodeMutation) ReferencedAt() (r time.Time, exists bool) {
+	v := m.referenced_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReferencedAt returns the old "referenced_at" field's value of the SystemAnalysisTopologyNode entity.
+// If the SystemAnalysisTopologyNode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisTopologyNodeMutation) OldReferencedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReferencedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReferencedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReferencedAt: %w", err)
+	}
+	return oldValue.ReferencedAt, nil
+}
+
+// ResetReferencedAt resets all changes to the "referenced_at" field.
+func (m *SystemAnalysisTopologyNodeMutation) ResetReferencedAt() {
+	m.referenced_at = nil
 }
 
 // SetDescription sets the "description" field.
@@ -57122,31 +53600,31 @@ func (m *SystemAnalysisTopologyNodeMutation) ResetAnalysis() {
 	m.clearedanalysis = false
 }
 
-// ClearSnapshotEntity clears the "snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity.
-func (m *SystemAnalysisTopologyNodeMutation) ClearSnapshotEntity() {
-	m.clearedsnapshot_entity = true
-	m.clearedFields[systemanalysistopologynode.FieldSnapshotEntityID] = struct{}{}
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (m *SystemAnalysisTopologyNodeMutation) ClearKnowledgeEntity() {
+	m.clearedknowledge_entity = true
+	m.clearedFields[systemanalysistopologynode.FieldKnowledgeEntityID] = struct{}{}
 }
 
-// SnapshotEntityCleared reports if the "snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity was cleared.
-func (m *SystemAnalysisTopologyNodeMutation) SnapshotEntityCleared() bool {
-	return m.clearedsnapshot_entity
+// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
+func (m *SystemAnalysisTopologyNodeMutation) KnowledgeEntityCleared() bool {
+	return m.clearedknowledge_entity
 }
 
-// SnapshotEntityIDs returns the "snapshot_entity" edge IDs in the mutation.
+// KnowledgeEntityIDs returns the "knowledge_entity" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SnapshotEntityID instead. It exists only for internal usage by the builders.
-func (m *SystemAnalysisTopologyNodeMutation) SnapshotEntityIDs() (ids []uuid.UUID) {
-	if id := m.snapshot_entity; id != nil {
+// KnowledgeEntityID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisTopologyNodeMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
+	if id := m.knowledge_entity; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetSnapshotEntity resets all changes to the "snapshot_entity" edge.
-func (m *SystemAnalysisTopologyNodeMutation) ResetSnapshotEntity() {
-	m.snapshot_entity = nil
-	m.clearedsnapshot_entity = false
+// ResetKnowledgeEntity resets all changes to the "knowledge_entity" edge.
+func (m *SystemAnalysisTopologyNodeMutation) ResetKnowledgeEntity() {
+	m.knowledge_entity = nil
+	m.clearedknowledge_entity = false
 }
 
 // Where appends a list predicates to the SystemAnalysisTopologyNodeMutation builder.
@@ -57183,7 +53661,7 @@ func (m *SystemAnalysisTopologyNodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemAnalysisTopologyNodeMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.tenant != nil {
 		fields = append(fields, systemanalysistopologynode.FieldTenantID)
 	}
@@ -57196,8 +53674,11 @@ func (m *SystemAnalysisTopologyNodeMutation) Fields() []string {
 	if m.analysis != nil {
 		fields = append(fields, systemanalysistopologynode.FieldAnalysisID)
 	}
-	if m.snapshot_entity != nil {
-		fields = append(fields, systemanalysistopologynode.FieldSnapshotEntityID)
+	if m.knowledge_entity != nil {
+		fields = append(fields, systemanalysistopologynode.FieldKnowledgeEntityID)
+	}
+	if m.referenced_at != nil {
+		fields = append(fields, systemanalysistopologynode.FieldReferencedAt)
 	}
 	if m.description != nil {
 		fields = append(fields, systemanalysistopologynode.FieldDescription)
@@ -57224,8 +53705,10 @@ func (m *SystemAnalysisTopologyNodeMutation) Field(name string) (ent.Value, bool
 		return m.UpdatedAt()
 	case systemanalysistopologynode.FieldAnalysisID:
 		return m.AnalysisID()
-	case systemanalysistopologynode.FieldSnapshotEntityID:
-		return m.SnapshotEntityID()
+	case systemanalysistopologynode.FieldKnowledgeEntityID:
+		return m.KnowledgeEntityID()
+	case systemanalysistopologynode.FieldReferencedAt:
+		return m.ReferencedAt()
 	case systemanalysistopologynode.FieldDescription:
 		return m.Description()
 	case systemanalysistopologynode.FieldPosX:
@@ -57249,8 +53732,10 @@ func (m *SystemAnalysisTopologyNodeMutation) OldField(ctx context.Context, name 
 		return m.OldUpdatedAt(ctx)
 	case systemanalysistopologynode.FieldAnalysisID:
 		return m.OldAnalysisID(ctx)
-	case systemanalysistopologynode.FieldSnapshotEntityID:
-		return m.OldSnapshotEntityID(ctx)
+	case systemanalysistopologynode.FieldKnowledgeEntityID:
+		return m.OldKnowledgeEntityID(ctx)
+	case systemanalysistopologynode.FieldReferencedAt:
+		return m.OldReferencedAt(ctx)
 	case systemanalysistopologynode.FieldDescription:
 		return m.OldDescription(ctx)
 	case systemanalysistopologynode.FieldPosX:
@@ -57294,12 +53779,19 @@ func (m *SystemAnalysisTopologyNodeMutation) SetField(name string, value ent.Val
 		}
 		m.SetAnalysisID(v)
 		return nil
-	case systemanalysistopologynode.FieldSnapshotEntityID:
+	case systemanalysistopologynode.FieldKnowledgeEntityID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSnapshotEntityID(v)
+		m.SetKnowledgeEntityID(v)
+		return nil
+	case systemanalysistopologynode.FieldReferencedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReferencedAt(v)
 		return nil
 	case systemanalysistopologynode.FieldDescription:
 		v, ok := value.(string)
@@ -57419,8 +53911,11 @@ func (m *SystemAnalysisTopologyNodeMutation) ResetField(name string) error {
 	case systemanalysistopologynode.FieldAnalysisID:
 		m.ResetAnalysisID()
 		return nil
-	case systemanalysistopologynode.FieldSnapshotEntityID:
-		m.ResetSnapshotEntityID()
+	case systemanalysistopologynode.FieldKnowledgeEntityID:
+		m.ResetKnowledgeEntityID()
+		return nil
+	case systemanalysistopologynode.FieldReferencedAt:
+		m.ResetReferencedAt()
 		return nil
 	case systemanalysistopologynode.FieldDescription:
 		m.ResetDescription()
@@ -57444,8 +53939,8 @@ func (m *SystemAnalysisTopologyNodeMutation) AddedEdges() []string {
 	if m.analysis != nil {
 		edges = append(edges, systemanalysistopologynode.EdgeAnalysis)
 	}
-	if m.snapshot_entity != nil {
-		edges = append(edges, systemanalysistopologynode.EdgeSnapshotEntity)
+	if m.knowledge_entity != nil {
+		edges = append(edges, systemanalysistopologynode.EdgeKnowledgeEntity)
 	}
 	return edges
 }
@@ -57462,8 +53957,8 @@ func (m *SystemAnalysisTopologyNodeMutation) AddedIDs(name string) []ent.Value {
 		if id := m.analysis; id != nil {
 			return []ent.Value{*id}
 		}
-	case systemanalysistopologynode.EdgeSnapshotEntity:
-		if id := m.snapshot_entity; id != nil {
+	case systemanalysistopologynode.EdgeKnowledgeEntity:
+		if id := m.knowledge_entity; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -57491,8 +53986,8 @@ func (m *SystemAnalysisTopologyNodeMutation) ClearedEdges() []string {
 	if m.clearedanalysis {
 		edges = append(edges, systemanalysistopologynode.EdgeAnalysis)
 	}
-	if m.clearedsnapshot_entity {
-		edges = append(edges, systemanalysistopologynode.EdgeSnapshotEntity)
+	if m.clearedknowledge_entity {
+		edges = append(edges, systemanalysistopologynode.EdgeKnowledgeEntity)
 	}
 	return edges
 }
@@ -57505,8 +54000,8 @@ func (m *SystemAnalysisTopologyNodeMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case systemanalysistopologynode.EdgeAnalysis:
 		return m.clearedanalysis
-	case systemanalysistopologynode.EdgeSnapshotEntity:
-		return m.clearedsnapshot_entity
+	case systemanalysistopologynode.EdgeKnowledgeEntity:
+		return m.clearedknowledge_entity
 	}
 	return false
 }
@@ -57521,8 +54016,8 @@ func (m *SystemAnalysisTopologyNodeMutation) ClearEdge(name string) error {
 	case systemanalysistopologynode.EdgeAnalysis:
 		m.ClearAnalysis()
 		return nil
-	case systemanalysistopologynode.EdgeSnapshotEntity:
-		m.ClearSnapshotEntity()
+	case systemanalysistopologynode.EdgeKnowledgeEntity:
+		m.ClearKnowledgeEntity()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisTopologyNode unique edge %s", name)
@@ -57538,8 +54033,8 @@ func (m *SystemAnalysisTopologyNodeMutation) ResetEdge(name string) error {
 	case systemanalysistopologynode.EdgeAnalysis:
 		m.ResetAnalysis()
 		return nil
-	case systemanalysistopologynode.EdgeSnapshotEntity:
-		m.ResetSnapshotEntity()
+	case systemanalysistopologynode.EdgeKnowledgeEntity:
+		m.ResetKnowledgeEntity()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisTopologyNode edge %s", name)

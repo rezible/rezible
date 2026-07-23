@@ -30,13 +30,7 @@ func (h *retrospectivesHandler) ListRetrospectives(ctx context.Context, input *o
 func (h *retrospectivesHandler) UpdateRetrospective(ctx context.Context, req *oapi.UpdateRetrospectiveRequest) (*oapi.UpdateRetrospectiveResponse, error) {
 	var resp oapi.UpdateRetrospectiveResponse
 
-	//attrs := req.Body.Attributes
-	setFn := func(m *ent.RetrospectiveMutation) {
-		//kind := retrospective.KindSimple
-		//if attrs.SystemAnalysis {
-		//	kind = retrospective.TypeFull
-		//}
-	}
+	setFn := func(m *ent.RetrospectiveMutation) {}
 	retro, updateErr := h.retros.Set(ctx, req.Id, setFn)
 	if updateErr != nil {
 		return nil, oapi.Error(ctx, "update retrospective", updateErr)

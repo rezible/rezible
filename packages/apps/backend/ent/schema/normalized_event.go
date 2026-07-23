@@ -24,29 +24,30 @@ func (NormalizedEvent) Mixin() []ent.Mixin {
 func (NormalizedEvent) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.Enum("kind").Values("received", "observed", "deleted").
+		field.Enum("kind").Immutable().
+			Values("received", "observed", "deleted").
 			Comment("Kind of activity represented by the event."),
-		field.String("provider").NotEmpty().
+		field.String("provider").Immutable().NotEmpty().
 			Comment("Integration provider that produced the event, such as slack or github."),
-		field.String("provider_source").NotEmpty().
+		field.String("provider_source").Immutable().NotEmpty().
 			Comment("Provider-specific event stream or webhook source the event came from."),
-		field.String("provider_event_ref").NotEmpty().
+		field.String("provider_event_ref").Immutable().NotEmpty().
 			Comment("Stable provider reference for the source event, used with the provider fields for idempotency."),
-		field.String("provider_subject_ref").NotEmpty().
+		field.String("provider_subject_ref").Immutable().NotEmpty().
 			Comment("Stable provider reference for the primary subject this event is about."),
-		field.String("subject_kind").
+		field.String("subject_kind").Immutable().
 			Comment("Provider-neutral type of the primary subject this event is about."),
-		field.Bytes("attributes").
+		field.Bytes("attributes").Immutable().
 			Comment("Normalized JSON attributes for this event kind."),
-		field.Time("created_at").Default(time.Now),
-		field.Time("occurred_at"),
-		field.Time("received_at"),
+		field.Time("created_at").Immutable().Default(time.Now),
+		field.Time("occurred_at").Immutable(),
+		field.Time("received_at").Immutable(),
 	}
 }
 
 func (NormalizedEvent) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("projections", NormalizedEventProjection.Type).Ref("event"),
+		edge.To("projection", NormalizedEventProjection.Type).Unique(),
 	}
 }
 
@@ -72,30 +73,20 @@ func (NormalizedEventProjection) Mixin() []ent.Mixin {
 func (NormalizedEventProjection) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("event_id", uuid.UUID{}),
-		field.String("projector").NotEmpty(),
-		field.Enum("status").Values("pending", "succeeded", "failed"),
-		field.Time("started_at"),
-		field.Time("finished_at").Optional(),
-		field.String("error").Optional(),
+		field.UUID("event_id", uuid.UUID{}).Immutable(),
+		field.Time("completed_at").Default(time.Now).Immutable(),
 	}
 }
 
 func (NormalizedEventProjection) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("event", NormalizedEvent.Type).
+			Immutable().
 			Required().
 			Unique().
 			Field("event_id"),
 		edge.From("projection_entities", NormalizedEventProjectionEntity.Type).
 			Ref("projection"),
-	}
-}
-
-func (NormalizedEventProjection) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "event_id", "projector").Unique(),
-		index.Fields("tenant_id", "status", "started_at"),
 	}
 }
 
@@ -130,7 +121,7 @@ func (NormalizedEventProjectionEntity) Edges() []ent.Edge {
 
 func (NormalizedEventProjectionEntity) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "domain_entity_id").Unique(),
+		index.Fields("tenant_id", "projection_id", "domain_entity_id").Unique(),
 		index.Fields("tenant_id", "domain_entity_kind"),
 	}
 }

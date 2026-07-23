@@ -345,16 +345,16 @@ func (f IncidentTimelineEventEvidenceFunc) Mutate(ctx context.Context, m ent.Mut
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventEvidenceMutation", m)
 }
 
-// The IncidentTimelineEventTopologyContextFunc type is an adapter to allow the use of ordinary
-// function as IncidentTimelineEventTopologyContext mutator.
-type IncidentTimelineEventTopologyContextFunc func(context.Context, *ent.IncidentTimelineEventTopologyContextMutation) (ent.Value, error)
+// The IncidentTimelineEventSystemContextFunc type is an adapter to allow the use of ordinary
+// function as IncidentTimelineEventSystemContext mutator.
+type IncidentTimelineEventSystemContextFunc func(context.Context, *ent.IncidentTimelineEventSystemContextMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f IncidentTimelineEventTopologyContextFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentTimelineEventTopologyContextMutation); ok {
+func (f IncidentTimelineEventSystemContextFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentTimelineEventSystemContextMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventTopologyContextMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventSystemContextMutation", m)
 }
 
 // The IncidentTypeFunc type is an adapter to allow the use of ordinary
@@ -439,42 +439,6 @@ func (f KnowledgeEvidenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEvidenceMutation", m)
-}
-
-// The KnowledgeGraphSnapshotFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeGraphSnapshot mutator.
-type KnowledgeGraphSnapshotFunc func(context.Context, *ent.KnowledgeGraphSnapshotMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f KnowledgeGraphSnapshotFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeGraphSnapshotMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeGraphSnapshotMutation", m)
-}
-
-// The KnowledgeGraphSnapshotEntityFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeGraphSnapshotEntity mutator.
-type KnowledgeGraphSnapshotEntityFunc func(context.Context, *ent.KnowledgeGraphSnapshotEntityMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f KnowledgeGraphSnapshotEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeGraphSnapshotEntityMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeGraphSnapshotEntityMutation", m)
-}
-
-// The KnowledgeGraphSnapshotRelationshipFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeGraphSnapshotRelationship mutator.
-type KnowledgeGraphSnapshotRelationshipFunc func(context.Context, *ent.KnowledgeGraphSnapshotRelationshipMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f KnowledgeGraphSnapshotRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeGraphSnapshotRelationshipMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeGraphSnapshotRelationshipMutation", m)
 }
 
 // The KnowledgeRelationshipFunc type is an adapter to allow the use of ordinary

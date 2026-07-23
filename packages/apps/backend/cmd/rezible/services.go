@@ -16,6 +16,7 @@ import (
 	rez "github.com/rezible/rezible"
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
+	"github.com/rezible/rezible/internal/db/eventprojection"
 	"github.com/rezible/rezible/internal/http"
 	demoprovider "github.com/rezible/rezible/internal/integrations/demo"
 	"github.com/rezible/rezible/internal/integrations/github"
@@ -28,7 +29,6 @@ import (
 	"github.com/rezible/rezible/internal/watermill"
 	"github.com/rezible/rezible/pkg/integrations"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
-	"github.com/rezible/rezible/pkg/projections"
 )
 
 type startable interface {
@@ -106,7 +106,7 @@ func shutdownServices(baseCtx context.Context, i do.Injector) error {
 
 func doRegistrations(i do.Injector) error {
 	intgReg := do.MustInvoke[*integrations.PackageRegistry](i)
-	pipelineReg := do.MustInvoke[*projections.PipelineRegistry](i)
+	eventProcessors := do.MustInvoke[map[string]rez.ProviderEventProcessor](i)
 
 	for _, desc := range i.ListProvidedServices() {
 		svc := desc.Service
@@ -116,32 +116,18 @@ func doRegistrations(i do.Injector) error {
 					return fmt.Errorf("failed to register integration package: %w", regErr)
 				}
 				if procPkg, isEventProcessor := pkg.(rez.ProviderEventProcessor); isEventProcessor {
-					pipelineReg.RegisterProviderEventProcessors(procPkg, pkg.Name())
+					eventProcessors[pkg.Name()] = procPkg
 				}
 			}
 		}
 	}
 
-	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.KnowledgeIngestionService](i),
-		projections.SubjectKindChatMessage,
-		projections.SubjectKindCodeForge,
-		projections.SubjectKindCodeChange,
-		projections.SubjectKindSystemComponent,
-		projections.SubjectKindSystemRelationship,
-	)
-	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.UserService](i), projections.SubjectKindUser)
-	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.IncidentService](i),
-		projections.SubjectKindIncident,
-		projections.SubjectKindIncidentImpact,
-	)
-	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.AlertService](i), projections.SubjectKindAlertInstance)
-
 	return nil
 }
 
 func declareServices(ctx context.Context, i do.Injector) {
-	do.Provide(i, func(i do.Injector) (*projections.PipelineRegistry, error) {
-		return projections.NewPipelineRegistry(), nil
+	do.Provide(i, func(i do.Injector) (map[string]rez.ProviderEventProcessor, error) {
+		return make(map[string]rez.ProviderEventProcessor), nil
 	})
 
 	do.Provide(i, func(i do.Injector) (*integrations.PackageRegistry, error) {
@@ -190,7 +176,6 @@ func declareServices(ctx context.Context, i do.Injector) {
 			do.MustInvoke[rez.KnowledgeGraphService](i),
 		)
 		return s, s.Init(ctx,
-			//genkit.WithTool(genkit.NewKnowledgeGraphTool(do.MustInvoke[rez.KnowledgeGraphService](i))),
 			genkit.WithAgent(genkit.NewChatAgent()),
 			genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i))),
 		)
@@ -309,15 +294,11 @@ var provideServices = do.Package(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[*projections.PipelineRegistry](i),
+			do.MustInvoke[map[string]rez.ProviderEventProcessor](i),
+			do.MustInvoke[rez.EventProjectionService](i),
 		)
 	}),
 	do.Bind[*db.ProviderEventPipelineService, rez.ProviderEventPipelineService](),
-
-	do.Lazy(func(i do.Injector) (*db.KnowledgeIngestionService, error) {
-		return db.NewKnowledgeIngestionService(do.MustInvoke[rez.Database](i)), nil
-	}),
-	do.Bind[*db.KnowledgeIngestionService, rez.KnowledgeIngestionService](),
 
 	do.Lazy(func(i do.Injector) (*db.IntegrationsService, error) {
 		return db.NewIntegrationsService(
@@ -342,7 +323,6 @@ var provideServices = do.Package(
 		return db.NewUserService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.OrganizationService](i),
-			do.MustInvoke[rez.KnowledgeIngestionService](i),
 		)
 	}),
 	do.Bind[*db.UserService, rez.UserService](),
@@ -372,7 +352,6 @@ var provideServices = do.Package(
 		return db.NewIncidentService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.KnowledgeIngestionService](i),
 		)
 	}),
 	do.Bind[*db.IncidentService, rez.IncidentService](),
@@ -403,9 +382,7 @@ var provideServices = do.Package(
 	do.Bind[*db.OncallMetricsService, rez.OncallMetricsService](),
 
 	do.Lazy(func(i do.Injector) (*db.KnowledgeGraphService, error) {
-		return db.NewKnowledgeGraphService(
-			do.MustInvoke[rez.Database](i),
-		)
+		return db.NewKnowledgeGraphService(do.MustInvoke[rez.Database](i))
 	}),
 	do.Bind[*db.KnowledgeGraphService, rez.KnowledgeGraphService](),
 
@@ -427,12 +404,18 @@ var provideServices = do.Package(
 	do.Bind[*db.RetrospectiveService, rez.RetrospectiveService](),
 
 	do.Lazy(func(i do.Injector) (*db.AlertService, error) {
-		return db.NewAlertService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.KnowledgeIngestionService](i),
-		)
+		return db.NewAlertService(do.MustInvoke[rez.Database](i))
 	}),
 	do.Bind[*db.AlertService, rez.AlertService](),
+
+	do.Lazy(func(i do.Injector) (*eventprojection.ProjectionService, error) {
+		return eventprojection.NewProjectionService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.UserService](i),
+			do.MustInvoke[rez.IncidentService](i),
+		)
+	}),
+	do.Bind[*eventprojection.ProjectionService, rez.EventProjectionService](),
 
 	do.Lazy(func(i do.Injector) (*db.PlaybookService, error) {
 		return db.NewPlaybookService(do.MustInvoke[rez.Database](i))

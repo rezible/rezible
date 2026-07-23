@@ -1,4 +1,4 @@
-import type { IncidentTimelineEventDecisionContext, IncidentTimelineEventAttributes, IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence, IncidentTimelineEventTopologyContext, Incident } from "$lib/api";
+import type { IncidentTimelineEventDecisionContext, IncidentTimelineEventAttributes, IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence, IncidentTimelineEventSystemContext, Incident } from "$lib/api";
 import { createMentionEditor } from "$src/components/tiptap-editor/editors";
 import type { Content } from "@tiptap/core";
 import {now, getLocalTimeZone, type ZonedDateTime, parseAbsoluteToLocal} from '@internationalized/date';
@@ -28,7 +28,7 @@ export class TimelineEventDialogAttributes {
 	decisionContext = $state<IncidentTimelineEventDecisionContext>(makeDefaultDecisionContext());
 	contributingFactors = $state<IncidentTimelineEventContributingFactor[]>([]);
 	evidence = $state<IncidentTimelineEventEvidence[]>([]);
-	systemContext = $state<IncidentTimelineEventTopologyContext[]>([]);
+	systemContext = $state<IncidentTimelineEventSystemContext[]>([]);
 
 	init(inc?: Incident, e?: Partial<IncidentTimelineEventAttributes>) {
 		this.kind = $state.snapshot(e?.kind) ?? "observation";

@@ -1,12 +1,7 @@
 <script lang="ts">
-	import { type EdgeProps, EdgeLabel, getSmoothStepPath } from "@xyflow/svelte";
-	import type { SystemRelationshipEdgeData } from "./controller.svelte";
+	import { type EdgeProps, getSmoothStepPath } from "@xyflow/svelte";
 
 	const props: EdgeProps = $props();
-	const data = $derived(props.data as SystemRelationshipEdgeData);
-
-	const centerX = $derived((props.sourceX + props.targetX) / 2);
-	const centerY = $derived((props.sourceY + props.targetY) / 2);
 
 	const offset = 5;
 	const sourceX = $derived(props.sourceX - offset);
@@ -47,10 +42,6 @@
 	const pathStrokeProps = $derived(animated ? animatedPathProps : {});
 
 	const interactionWidth = 40;
-
-	const labelTransformStyle = $derived(
-		`transform: translate(-50%, -50%) translate(${centerX}px, ${centerY}px);`
-	);
 </script>
 
 {#snippet edgePath(d: string, dir: "out" | "in")}
@@ -84,17 +75,3 @@
 
 {@render edgePath(pathOut, "out")}
 {@render edgePath(pathIn, "in")}
-
-<EdgeLabel>
-	<!--div class="nodrag nopan relationship-label flex flex-col gap-2" style={labelTransformStyle}>
-		<span class="">{data.edge.attributes.description}relationship</span>
-	</div-->
-</EdgeLabel>
-
-<style lang="postcss">
-	@reference("$src/app.css");
-
-	.relationship-label {
-		/* @apply absolute p-2 rounded-lg border text-sm; */
-	}
-</style>

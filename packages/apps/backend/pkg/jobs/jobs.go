@@ -13,6 +13,15 @@ func (ProjectNormalizedEvent) Kind() string {
 	return "project-normalized-event"
 }
 
+func (ProjectNormalizedEvent) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: UniqueStateNonCompleted,
+		},
+	}
+}
+
 type SyncIntegrationEventsArgs struct {
 	IntegrationId uuid.UUID `json:"integration_id"`
 	Sources       []string  `json:"sources"`
@@ -45,14 +54,6 @@ type GenerateIncidentDebriefSuggestions struct {
 
 func (GenerateIncidentDebriefSuggestions) Kind() string {
 	return "generate-incident-debrief-suggestions"
-}
-
-type PopulateKnowledgeGraphSnapshot struct {
-	SnapshotId uuid.UUID `json:"snapshot_id"`
-}
-
-func (PopulateKnowledgeGraphSnapshot) Kind() string {
-	return "create-knowledge-graph-snapshot"
 }
 
 type ScanOncallShifts struct{}

@@ -370,7 +370,7 @@ func (s *AgentSessionServiceSuite) TestClaimAgentTurnUsesFIFOAndSuccessfulLeafSt
 	claim, claimErr = h.worker.claimAgentTurn(ctx, makeAgentTurnJob(older, 1))
 	s.Require().NoError(claimErr)
 	s.Require().NotNil(claim)
-	s.Equal(rootState, claim.parentState)
+	s.Equal(rootState, claim.parent.State)
 	s.Require().NotNil(claim.turn.ParentID)
 	s.Equal(root.ID, *claim.turn.ParentID)
 	s.Equal(at.StatusRunning, claim.turn.Status)
@@ -403,7 +403,7 @@ func (s *AgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublishe
 	}
 
 	h.ai.EXPECT().
-		InvokeAgentTurn(mock.Anything, mock.Anything, mock.Anything, rootState, mock.Anything).
+		InvokeAgentTurn(mock.Anything, mock.Anything).
 		Return(result, nil).
 		Once()
 	h.messages.EXPECT().
@@ -489,7 +489,7 @@ func (s *AgentSessionServiceSuite) TestWorkerPersistsFailedResultWithLastGoodSta
 	}
 
 	h.ai.EXPECT().
-		InvokeAgentTurn(mock.Anything, mock.Anything, mock.Anything, rootState, mock.Anything).
+		InvokeAgentTurn(mock.Anything, mock.Anything).
 		Return(result, nil).
 		Once()
 	h.messages.EXPECT().

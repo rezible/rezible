@@ -43,10 +43,13 @@ components:
       properties:
         description:
           type: string
-        snapshotRelationshipId:
+        knowledgeRelationshipId:
+          type: string
+        referencedAt:
+          format: date-time
           type: string
       required:
-        - snapshotRelationshipId
+        - knowledgeRelationshipId
         - description
       type: object
     AddSystemAnalysisEdgeRequestBody:
@@ -88,9 +91,11 @@ components:
           type: string
         position:
           $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
-        snapshotEntityId:
+        referencedAt:
+          format: date-time
           type: string
       required:
+        - knowledgeEntityId
         - position
         - description
       type: object
@@ -843,6 +848,10 @@ components:
             - decision
             - context
           type: string
+        systemContext:
+          items:
+            $ref: "#/components/schemas/SetIncidentTimelineEventSystemContextAttributes"
+          type: array
         timestamp:
           format: date-time
           type: string
@@ -918,94 +927,6 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/IncidentType"
-      required:
-        - data
-      type: object
-    CreateKnowledgeGraphSnapshotRequestAttributes:
-      additionalProperties: false
-      properties:
-        asOf:
-          format: date-time
-          type: string
-        depth:
-          format: int64
-          type: integer
-        entityIds:
-          items:
-            type: string
-          type: array
-        entityKinds:
-          items:
-            type: string
-          type: array
-        includeAlerts:
-          type: boolean
-        includeChanges:
-          type: boolean
-        includeIncidents:
-          type: boolean
-        name:
-          type: string
-        relationshipKinds:
-          items:
-            type: string
-          type: array
-        rootEntityIds:
-          items:
-            type: string
-          type: array
-        scope:
-          enum:
-            - explicit_entities
-            - root_entities
-            - incident
-            - retrospective
-            - search
-            - analysis
-          type: string
-        scopeProperties:
-          additionalProperties: {}
-          type: object
-      required:
-        - name
-        - scope
-        - scopeProperties
-        - entityIds
-        - rootEntityIds
-        - depth
-        - entityKinds
-        - relationshipKinds
-        - includeIncidents
-        - includeChanges
-        - includeAlerts
-      type: object
-    CreateKnowledgeGraphSnapshotRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateKnowledgeGraphSnapshotRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/CreateKnowledgeGraphSnapshotRequestAttributes"
-      required:
-        - attributes
-      type: object
-    CreateKnowledgeGraphSnapshotResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateKnowledgeGraphSnapshotResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/KnowledgeGraphSnapshot"
       required:
         - data
       type: object
@@ -1561,10 +1482,8 @@ components:
         occurredAt:
           format: date-time
           type: string
-        projections:
-          items:
-            $ref: "#/components/schemas/EventProjection"
-          type: array
+        projection:
+          $ref: "#/components/schemas/EventProjection"
         provider:
           type: string
         providerSource:
@@ -1585,7 +1504,6 @@ components:
         - providerSubjectRef
         - subjectKind
         - attributes
-        - projections
       type: object
     EventProjection:
       additionalProperties: false
@@ -1601,27 +1519,15 @@ components:
     EventProjectionAttributes:
       additionalProperties: false
       properties:
+        completedAt:
+          format: date-time
+          type: string
         entities:
           items:
             $ref: "#/components/schemas/EventProjectionEntity"
           type: array
-        error:
-          type: string
-        projector:
-          type: string
-        startedAt:
-          format: date-time
-          type: string
-        status:
-          enum:
-            - pending
-            - succeeded
-            - failed
-          type: string
       required:
-        - projector
-        - status
-        - startedAt
+        - completedAt
         - entities
       type: object
     EventProjectionEntity:
@@ -2005,18 +1911,18 @@ components:
       required:
         - data
       type: object
-    GetKnowledgeGraphSnapshotResponseBody:
+    GetKnowledgeGraphViewResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/GetKnowledgeGraphSnapshotResponseBody.json
+            - /v1/schemas/GetKnowledgeGraphViewResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/KnowledgeGraphSnapshot"
+          $ref: "#/components/schemas/KnowledgeGraphView"
       required:
         - data
       type: object
@@ -2912,7 +2818,7 @@ components:
           type: integer
         systemContext:
           items:
-            $ref: "#/components/schemas/IncidentTimelineEventTopologyContext"
+            $ref: "#/components/schemas/IncidentTimelineEventSystemContext"
           type: array
         timestamp:
           format: date-time
@@ -3065,27 +2971,30 @@ components:
       required:
         - contributingFactorCategories
       type: object
-    IncidentTimelineEventTopologyContext:
+    IncidentTimelineEventSystemContext:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/IncidentTimelineEventTopologyContextAttributes"
+          $ref: "#/components/schemas/IncidentTimelineEventSystemContextAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    IncidentTimelineEventTopologyContextAttributes:
+    IncidentTimelineEventSystemContextAttributes:
       additionalProperties: false
       properties:
-        knowledgeEntityId:
-          type: string
         relationship:
+          enum:
+            - primary
+            - affected
+            - contributing
           type: string
-        snapshotEntityId:
+        systemAnalysisNodeId:
           type: string
       required:
+        - systemAnalysisNodeId
         - relationship
       type: object
     IncidentType:
@@ -3370,6 +3279,49 @@ components:
         - createdAt
         - updatedAt
       type: object
+    KnowledgeGraphEvidence:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeGraphEvidenceAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    KnowledgeGraphEvidenceAttributes:
+      additionalProperties: false
+      properties:
+        assertion:
+          type: string
+        effectiveAt:
+          format: date-time
+          type: string
+        entityId:
+          type: string
+        eventId:
+          type: string
+        evidenceKind:
+          type: string
+        properties:
+          additionalProperties: {}
+          type: object
+        provider:
+          type: string
+        providerSource:
+          type: string
+        relationshipId:
+          type: string
+      required:
+        - eventId
+        - provider
+        - providerSource
+        - assertion
+        - evidenceKind
+        - effectiveAt
+        - properties
+      type: object
     KnowledgeGraphRelationship:
       additionalProperties: false
       properties:
@@ -3421,115 +3373,6 @@ components:
         - createdAt
         - updatedAt
       type: object
-    KnowledgeGraphSnapshot:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/KnowledgeGraphSnapshotAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    KnowledgeGraphSnapshotAttributes:
-      additionalProperties: false
-      properties:
-        asOf:
-          format: date-time
-          type: string
-        createdAt:
-          format: date-time
-          type: string
-        entities:
-          items:
-            $ref: "#/components/schemas/KnowledgeGraphSnapshotEntity"
-          type: array
-        relationships:
-          items:
-            $ref: "#/components/schemas/KnowledgeGraphSnapshotRelationship"
-          type: array
-        scope:
-          type: string
-        scopeProperties:
-          additionalProperties: {}
-          type: object
-      required:
-        - asOf
-        - createdAt
-        - scope
-        - scopeProperties
-        - entities
-        - relationships
-      type: object
-    KnowledgeGraphSnapshotEntity:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/KnowledgeGraphSnapshotEntityAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    KnowledgeGraphSnapshotEntityAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        displayName:
-          type: string
-        entityId:
-          type: string
-        kind:
-          type: string
-        properties:
-          additionalProperties: {}
-          type: object
-      required:
-        - kind
-        - displayName
-        - description
-        - properties
-      type: object
-    KnowledgeGraphSnapshotRelationship:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/KnowledgeGraphSnapshotRelationshipAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    KnowledgeGraphSnapshotRelationshipAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        displayName:
-          type: string
-        kind:
-          type: string
-        properties:
-          additionalProperties: {}
-          type: object
-        relationshipId:
-          type: string
-        sourceSnapshotEntityId:
-          type: string
-        targetSnapshotEntityId:
-          type: string
-      required:
-        - sourceSnapshotEntityId
-        - targetSnapshotEntityId
-        - kind
-        - displayName
-        - description
-        - properties
-      type: object
     KnowledgeGraphSubjectAlias:
       additionalProperties: false
       properties:
@@ -3544,7 +3387,7 @@ components:
     KnowledgeGraphSubjectAliasAttributes:
       additionalProperties: false
       properties:
-        displayName:
+        description:
           type: string
         kind:
           enum:
@@ -3559,7 +3402,35 @@ components:
         - kind
         - provider
         - providerSubjectRef
-        - displayName
+        - description
+      type: object
+    KnowledgeGraphView:
+      additionalProperties: false
+      properties:
+        entities:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphEntity"
+          type: array
+        evidence:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphEvidence"
+          type: array
+        relationships:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphRelationship"
+          type: array
+        truncated:
+          type: boolean
+        warnings:
+          items:
+            type: string
+          type: array
+      required:
+        - entities
+        - relationships
+        - evidence
+        - truncated
+        - warnings
       type: object
     ListAgentSessionsResponseBody:
       additionalProperties: false
@@ -5014,6 +4885,7 @@ components:
           type: string
       required:
         - documentId
+        - systemAnalysisId
         - type
         - state
         - reportSections
@@ -5198,6 +5070,21 @@ components:
         - data
         - pagination
       type: object
+    SetIncidentTimelineEventSystemContextAttributes:
+      additionalProperties: false
+      properties:
+        relationship:
+          enum:
+            - primary
+            - affected
+            - contributing
+          type: string
+        systemAnalysisNodeId:
+          type: string
+      required:
+        - systemAnalysisNodeId
+        - relationship
+      type: object
     StartIntegrationOAuthFlowResponseBody:
       additionalProperties: false
       properties:
@@ -5231,8 +5118,6 @@ components:
           items:
             $ref: "#/components/schemas/SystemAnalysisEdge"
           type: array
-        knowledgeGraphSnapshot:
-          $ref: "#/components/schemas/KnowledgeGraphSnapshot"
         nodes:
           items:
             $ref: "#/components/schemas/SystemAnalysisNode"
@@ -5261,12 +5146,27 @@ components:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/SystemAnalysisTopologyEdgeAttributes"
+          $ref: "#/components/schemas/SystemAnalysisEdgeAttributes"
         id:
           type: string
       required:
         - id
         - attributes
+      type: object
+    SystemAnalysisEdgeAttributes:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        knowledgeRelationship:
+          $ref: "#/components/schemas/KnowledgeGraphRelationship"
+        referencedAt:
+          format: date-time
+          type: string
+      required:
+        - knowledgeRelationship
+        - referencedAt
+        - description
       type: object
     SystemAnalysisNode:
       additionalProperties: false
@@ -5284,24 +5184,17 @@ components:
       properties:
         description:
           type: string
+        knowledgeEntity:
+          $ref: "#/components/schemas/KnowledgeGraphEntity"
         position:
           $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
-        snapshotEntity:
-          $ref: "#/components/schemas/KnowledgeGraphSnapshotEntity"
-      required:
-        - snapshotEntity
-        - position
-        - description
-      type: object
-    SystemAnalysisTopologyEdgeAttributes:
-      additionalProperties: false
-      properties:
-        description:
+        referencedAt:
+          format: date-time
           type: string
-        snapshotRelationship:
-          $ref: "#/components/schemas/KnowledgeGraphSnapshotRelationship"
       required:
-        - snapshotRelationship
+        - knowledgeEntity
+        - referencedAt
+        - position
         - description
       type: object
     Task:
@@ -5809,6 +5702,10 @@ components:
             - decision
             - context
           type: string
+        systemContext:
+          items:
+            $ref: "#/components/schemas/SetIncidentTimelineEventSystemContextAttributes"
+          type: array
         timestamp:
           format: date-time
           type: string
@@ -8151,7 +8048,7 @@ paths:
             type: string
         - explode: false
           in: query
-          name: withProjections
+          name: withProjection
           schema:
             type: boolean
       responses:
@@ -8211,7 +8108,7 @@ paths:
             type: string
         - explode: false
           in: query
-          name: withProjections
+          name: withProjection
           schema:
             type: boolean
       responses:
@@ -11958,6 +11855,77 @@ paths:
       summary: List Knowledge Graph Entities
       tags:
         - Knowledge Graph
+  /knowledge_graph/entities/{entityId}/view:
+    get:
+      operationId: get-knowledge-graph-view
+      parameters:
+        - in: path
+          name: entityId
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: depth
+          schema:
+            default: 1
+            format: int64
+            maximum: 4
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: relationshipKind
+          schema:
+            items:
+              type: string
+            type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetKnowledgeGraphViewResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Knowledge Graph View
+      tags:
+        - Knowledge Graph
   /knowledge_graph/entities/{id}:
     get:
       operationId: get-knowledge-graph-entity
@@ -12111,116 +12079,6 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: List Knowledge Graph Relationships
-      tags:
-        - Knowledge Graph
-  /knowledge_graph/snapshots:
-    post:
-      operationId: create-knowledge-graph-snapshot
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateKnowledgeGraphSnapshotRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateKnowledgeGraphSnapshotResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Create Knowledge Graph Snapshot
-      tags:
-        - Knowledge Graph
-  /knowledge_graph/snapshots/{id}:
-    get:
-      operationId: get-knowledge-graph-snapshot
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetKnowledgeGraphSnapshotResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get Knowledge Graph Snapshot
       tags:
         - Knowledge Graph
   /meeting_schedules:
@@ -15518,7 +15376,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Delete an edge from a system analysis
+      summary: Delete a system analysis edge
       tags:
         - System Analysis
     get:
@@ -15572,7 +15430,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get an edge in a system analysis
+      summary: Get a system analysis edge
       tags:
         - System Analysis
     patch:
@@ -15683,7 +15541,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Delete a node from a system analysis
+      summary: Delete a system analysis node
       tags:
         - System Analysis
     get:
@@ -15737,7 +15595,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get a node in a system analysis
+      summary: Get a system analysis node
       tags:
         - System Analysis
     patch:

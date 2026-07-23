@@ -25,22 +25,32 @@ func (a *AlertsAgent) agentDefinition() rezai.AlertsAgentDefinition {
 }
 
 func (a *AlertsAgent) makeInitialTurnInput(ctx context.Context, input rezai.AlertAgentInput) (*rez.AgentTurnInput, error) {
+	return &rez.AgentTurnInput{
+		Message: ai.NewUserTextMessage(fmt.Sprintf("Investigate alert instance %s.", input.AlertID)),
+	}, nil
+}
+
+func (a *AlertsAgent) makeInitialContextSeed(ctx context.Context, input rezai.AlertAgentInput) (string, error) {
 	inst, instErr := a.alerts.GetAlertInstance(ctx, input.AlertID)
 	if instErr != nil {
-		return nil, fmt.Errorf("get alert instance: %w", instErr)
+		return "", fmt.Errorf("get alert instance: %w", instErr)
 	}
 
 	alrt, alrtErr := inst.Edges.AlertOrErr()
 	if alrtErr != nil {
-		return nil, fmt.Errorf("get alert: %w", alrtErr)
+		return "", fmt.Errorf("get alert: %w", alrtErr)
 	}
 
-	msgText := fmt.Sprintf(`You are an ai agent built to help software engineering teams investigate & triage alerts.
+	seed := fmt.Sprintf(`Alert instance ID: %s
 Title: %s
 Description: %s
-Definition: %s`, alrt.Title, alrt.Description, alrt.Definition)
-
-	return &rez.AgentTurnInput{Message: ai.NewUserTextMessage(msgText)}, nil
+Definition: %s`, input.AlertID, alrt.Title, alrt.Description, alrt.Definition)
+	if inst.KnowledgeEntityID != nil {
+		seed += fmt.Sprintf("\nKnowledge graph entity ID: %s", *inst.KnowledgeEntityID)
+	} else if alrt.KnowledgeEntityID != nil {
+		seed += fmt.Sprintf("\nKnowledge graph entity ID: %s", *alrt.KnowledgeEntityID)
+	}
+	return seed, nil
 }
 
 func (a *AlertsAgent) transformState(ctx context.Context, state *aix.SessionState[rezai.AlertAgentState]) (*aix.SessionState[rezai.AlertAgentState], error) {

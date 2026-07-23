@@ -34,7 +34,7 @@ export class EventsListFiltersState {
 	queryData = $derived<ListEventsData["query"]>({
 		// from: this.dateRange.from?.toISOString(),
 		// to: this.dateRange.to?.toISOString(),
-		withProjections: true,
+		withProjection: true,
 	});
 	queryEnabled = $derived(true);
 };

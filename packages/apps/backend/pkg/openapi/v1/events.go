@@ -27,15 +27,15 @@ type (
 	}
 
 	EventAttributes struct {
-		Kind               string            `json:"kind"`
-		OccurredAt         time.Time         `json:"occurredAt"`
-		ReceivedAt         time.Time         `json:"receivedAt"`
-		Provider           string            `json:"provider"`
-		ProviderSource     string            `json:"providerSource"`
-		ProviderSubjectRef string            `json:"providerSubjectRef"`
-		SubjectKind        string            `json:"subjectKind"`
-		Attributes         []byte            `json:"attributes"`
-		Projections        []EventProjection `json:"projections"`
+		Kind               string           `json:"kind"`
+		OccurredAt         time.Time        `json:"occurredAt"`
+		ReceivedAt         time.Time        `json:"receivedAt"`
+		Provider           string           `json:"provider"`
+		ProviderSource     string           `json:"providerSource"`
+		ProviderSubjectRef string           `json:"providerSubjectRef"`
+		SubjectKind        string           `json:"subjectKind"`
+		Attributes         []byte           `json:"attributes"`
+		Projection         *EventProjection `json:"projection,omitempty"`
 	}
 
 	EventProjection struct {
@@ -44,11 +44,8 @@ type (
 	}
 
 	EventProjectionAttributes struct {
-		Projector string                  `json:"projector"`
-		Status    string                  `json:"status" enum:"pending,succeeded,failed"`
-		StartedAt time.Time               `json:"startedAt"`
-		Error     *string                 `json:"error,omitempty"`
-		Entities  []EventProjectionEntity `json:"entities"`
+		CompletedAt time.Time               `json:"completedAt"`
+		Entities    []EventProjectionEntity `json:"entities"`
 	}
 
 	EventProjectionEntity struct {
@@ -67,11 +64,10 @@ func EventFromEnt(e *ent.NormalizedEvent) Event {
 		ProviderSubjectRef: e.ProviderSubjectRef,
 		SubjectKind:        e.SubjectKind,
 		Attributes:         e.Attributes,
-		Projections:        make([]EventProjection, len(e.Edges.Projections)),
 	}
-
-	for i, proj := range e.Edges.Projections {
-		attr.Projections[i] = EventProjectionFromEnt(proj)
+	if e.Edges.Projection != nil {
+		projection := EventProjectionFromEnt(e.Edges.Projection)
+		attr.Projection = &projection
 	}
 
 	return Event{Id: e.ID, Attributes: attr}
@@ -79,13 +75,8 @@ func EventFromEnt(e *ent.NormalizedEvent) Event {
 
 func EventProjectionFromEnt(p *ent.NormalizedEventProjection) EventProjection {
 	attr := EventProjectionAttributes{
-		Projector: p.Projector,
-		Status:    p.Status.String(),
-		StartedAt: p.StartedAt,
-		Entities:  make([]EventProjectionEntity, len(p.Edges.ProjectionEntities)),
-	}
-	if p.Error != "" {
-		attr.Error = &p.Error
+		CompletedAt: p.CompletedAt,
+		Entities:    make([]EventProjectionEntity, len(p.Edges.ProjectionEntities)),
 	}
 
 	for i, e := range p.Edges.ProjectionEntities {
@@ -117,9 +108,9 @@ var ListEvents = huma.Operation{
 
 type ListEventsRequest struct {
 	ListRequest
-	From            time.Time `query:"from"`
-	To              time.Time `query:"to"`
-	WithProjections bool      `query:"withProjections"`
+	From           time.Time `query:"from"`
+	To             time.Time `query:"to"`
+	WithProjection bool      `query:"withProjection"`
 }
 type ListEventsResponse ListResponse[Event]
 
@@ -134,6 +125,6 @@ var GetEvent = huma.Operation{
 
 type GetEventRequest struct {
 	IdRequest
-	WithProjections bool `query:"withProjections"`
+	WithProjection bool `query:"withProjection"`
 }
 type GetEventResponse ItemResponse[Event]

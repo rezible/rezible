@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgegraphsnapshotentity"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
 	"github.com/rezible/rezible/ent/tenant"
@@ -67,9 +67,23 @@ func (_c *SystemAnalysisTopologyNodeCreate) SetAnalysisID(v uuid.UUID) *SystemAn
 	return _c
 }
 
-// SetSnapshotEntityID sets the "snapshot_entity_id" field.
-func (_c *SystemAnalysisTopologyNodeCreate) SetSnapshotEntityID(v uuid.UUID) *SystemAnalysisTopologyNodeCreate {
-	_c.mutation.SetSnapshotEntityID(v)
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_c *SystemAnalysisTopologyNodeCreate) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisTopologyNodeCreate {
+	_c.mutation.SetKnowledgeEntityID(v)
+	return _c
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (_c *SystemAnalysisTopologyNodeCreate) SetReferencedAt(v time.Time) *SystemAnalysisTopologyNodeCreate {
+	_c.mutation.SetReferencedAt(v)
+	return _c
+}
+
+// SetNillableReferencedAt sets the "referenced_at" field if the given value is not nil.
+func (_c *SystemAnalysisTopologyNodeCreate) SetNillableReferencedAt(v *time.Time) *SystemAnalysisTopologyNodeCreate {
+	if v != nil {
+		_c.SetReferencedAt(*v)
+	}
 	return _c
 }
 
@@ -139,9 +153,9 @@ func (_c *SystemAnalysisTopologyNodeCreate) SetAnalysis(v *SystemAnalysis) *Syst
 	return _c.SetAnalysisID(v.ID)
 }
 
-// SetSnapshotEntity sets the "snapshot_entity" edge to the KnowledgeGraphSnapshotEntity entity.
-func (_c *SystemAnalysisTopologyNodeCreate) SetSnapshotEntity(v *KnowledgeGraphSnapshotEntity) *SystemAnalysisTopologyNodeCreate {
-	return _c.SetSnapshotEntityID(v.ID)
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_c *SystemAnalysisTopologyNodeCreate) SetKnowledgeEntity(v *KnowledgeEntity) *SystemAnalysisTopologyNodeCreate {
+	return _c.SetKnowledgeEntityID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisTopologyNodeMutation object of the builder.
@@ -195,6 +209,13 @@ func (_c *SystemAnalysisTopologyNodeCreate) defaults() error {
 		v := systemanalysistopologynode.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.ReferencedAt(); !ok {
+		if systemanalysistopologynode.DefaultReferencedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemanalysistopologynode.DefaultReferencedAt (forgotten import ent/runtime?)")
+		}
+		v := systemanalysistopologynode.DefaultReferencedAt()
+		_c.mutation.SetReferencedAt(v)
+	}
 	if _, ok := _c.mutation.PosX(); !ok {
 		v := systemanalysistopologynode.DefaultPosX
 		_c.mutation.SetPosX(v)
@@ -227,8 +248,11 @@ func (_c *SystemAnalysisTopologyNodeCreate) check() error {
 	if _, ok := _c.mutation.AnalysisID(); !ok {
 		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "SystemAnalysisTopologyNode.analysis_id"`)}
 	}
-	if _, ok := _c.mutation.SnapshotEntityID(); !ok {
-		return &ValidationError{Name: "snapshot_entity_id", err: errors.New(`ent: missing required field "SystemAnalysisTopologyNode.snapshot_entity_id"`)}
+	if _, ok := _c.mutation.KnowledgeEntityID(); !ok {
+		return &ValidationError{Name: "knowledge_entity_id", err: errors.New(`ent: missing required field "SystemAnalysisTopologyNode.knowledge_entity_id"`)}
+	}
+	if _, ok := _c.mutation.ReferencedAt(); !ok {
+		return &ValidationError{Name: "referenced_at", err: errors.New(`ent: missing required field "SystemAnalysisTopologyNode.referenced_at"`)}
 	}
 	if _, ok := _c.mutation.PosX(); !ok {
 		return &ValidationError{Name: "pos_x", err: errors.New(`ent: missing required field "SystemAnalysisTopologyNode.pos_x"`)}
@@ -242,8 +266,8 @@ func (_c *SystemAnalysisTopologyNodeCreate) check() error {
 	if len(_c.mutation.AnalysisIDs()) == 0 {
 		return &ValidationError{Name: "analysis", err: errors.New(`ent: missing required edge "SystemAnalysisTopologyNode.analysis"`)}
 	}
-	if len(_c.mutation.SnapshotEntityIDs()) == 0 {
-		return &ValidationError{Name: "snapshot_entity", err: errors.New(`ent: missing required edge "SystemAnalysisTopologyNode.snapshot_entity"`)}
+	if len(_c.mutation.KnowledgeEntityIDs()) == 0 {
+		return &ValidationError{Name: "knowledge_entity", err: errors.New(`ent: missing required edge "SystemAnalysisTopologyNode.knowledge_entity"`)}
 	}
 	return nil
 }
@@ -289,6 +313,10 @@ func (_c *SystemAnalysisTopologyNodeCreate) createSpec() (*SystemAnalysisTopolog
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysistopologynode.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := _c.mutation.ReferencedAt(); ok {
+		_spec.SetField(systemanalysistopologynode.FieldReferencedAt, field.TypeTime, value)
+		_node.ReferencedAt = value
 	}
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemanalysistopologynode.FieldDescription, field.TypeString, value)
@@ -338,22 +366,22 @@ func (_c *SystemAnalysisTopologyNodeCreate) createSpec() (*SystemAnalysisTopolog
 		_node.AnalysisID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SnapshotEntityIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysistopologynode.SnapshotEntityTable,
-			Columns: []string{systemanalysistopologynode.SnapshotEntityColumn},
+			Table:   systemanalysistopologynode.KnowledgeEntityTable,
+			Columns: []string{systemanalysistopologynode.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgegraphsnapshotentity.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.SystemAnalysisTopologyNode
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.SnapshotEntityID = nodes[0]
+		_node.KnowledgeEntityID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -444,15 +472,27 @@ func (u *SystemAnalysisTopologyNodeUpsert) UpdateAnalysisID() *SystemAnalysisTop
 	return u
 }
 
-// SetSnapshotEntityID sets the "snapshot_entity_id" field.
-func (u *SystemAnalysisTopologyNodeUpsert) SetSnapshotEntityID(v uuid.UUID) *SystemAnalysisTopologyNodeUpsert {
-	u.Set(systemanalysistopologynode.FieldSnapshotEntityID, v)
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SystemAnalysisTopologyNodeUpsert) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisTopologyNodeUpsert {
+	u.Set(systemanalysistopologynode.FieldKnowledgeEntityID, v)
 	return u
 }
 
-// UpdateSnapshotEntityID sets the "snapshot_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisTopologyNodeUpsert) UpdateSnapshotEntityID() *SystemAnalysisTopologyNodeUpsert {
-	u.SetExcluded(systemanalysistopologynode.FieldSnapshotEntityID)
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyNodeUpsert) UpdateKnowledgeEntityID() *SystemAnalysisTopologyNodeUpsert {
+	u.SetExcluded(systemanalysistopologynode.FieldKnowledgeEntityID)
+	return u
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (u *SystemAnalysisTopologyNodeUpsert) SetReferencedAt(v time.Time) *SystemAnalysisTopologyNodeUpsert {
+	u.Set(systemanalysistopologynode.FieldReferencedAt, v)
+	return u
+}
+
+// UpdateReferencedAt sets the "referenced_at" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyNodeUpsert) UpdateReferencedAt() *SystemAnalysisTopologyNodeUpsert {
+	u.SetExcluded(systemanalysistopologynode.FieldReferencedAt)
 	return u
 }
 
@@ -603,17 +643,31 @@ func (u *SystemAnalysisTopologyNodeUpsertOne) UpdateAnalysisID() *SystemAnalysis
 	})
 }
 
-// SetSnapshotEntityID sets the "snapshot_entity_id" field.
-func (u *SystemAnalysisTopologyNodeUpsertOne) SetSnapshotEntityID(v uuid.UUID) *SystemAnalysisTopologyNodeUpsertOne {
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SystemAnalysisTopologyNodeUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisTopologyNodeUpsertOne {
 	return u.Update(func(s *SystemAnalysisTopologyNodeUpsert) {
-		s.SetSnapshotEntityID(v)
+		s.SetKnowledgeEntityID(v)
 	})
 }
 
-// UpdateSnapshotEntityID sets the "snapshot_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisTopologyNodeUpsertOne) UpdateSnapshotEntityID() *SystemAnalysisTopologyNodeUpsertOne {
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyNodeUpsertOne) UpdateKnowledgeEntityID() *SystemAnalysisTopologyNodeUpsertOne {
 	return u.Update(func(s *SystemAnalysisTopologyNodeUpsert) {
-		s.UpdateSnapshotEntityID()
+		s.UpdateKnowledgeEntityID()
+	})
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (u *SystemAnalysisTopologyNodeUpsertOne) SetReferencedAt(v time.Time) *SystemAnalysisTopologyNodeUpsertOne {
+	return u.Update(func(s *SystemAnalysisTopologyNodeUpsert) {
+		s.SetReferencedAt(v)
+	})
+}
+
+// UpdateReferencedAt sets the "referenced_at" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyNodeUpsertOne) UpdateReferencedAt() *SystemAnalysisTopologyNodeUpsertOne {
+	return u.Update(func(s *SystemAnalysisTopologyNodeUpsert) {
+		s.UpdateReferencedAt()
 	})
 }
 
@@ -940,17 +994,31 @@ func (u *SystemAnalysisTopologyNodeUpsertBulk) UpdateAnalysisID() *SystemAnalysi
 	})
 }
 
-// SetSnapshotEntityID sets the "snapshot_entity_id" field.
-func (u *SystemAnalysisTopologyNodeUpsertBulk) SetSnapshotEntityID(v uuid.UUID) *SystemAnalysisTopologyNodeUpsertBulk {
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SystemAnalysisTopologyNodeUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisTopologyNodeUpsertBulk {
 	return u.Update(func(s *SystemAnalysisTopologyNodeUpsert) {
-		s.SetSnapshotEntityID(v)
+		s.SetKnowledgeEntityID(v)
 	})
 }
 
-// UpdateSnapshotEntityID sets the "snapshot_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisTopologyNodeUpsertBulk) UpdateSnapshotEntityID() *SystemAnalysisTopologyNodeUpsertBulk {
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyNodeUpsertBulk) UpdateKnowledgeEntityID() *SystemAnalysisTopologyNodeUpsertBulk {
 	return u.Update(func(s *SystemAnalysisTopologyNodeUpsert) {
-		s.UpdateSnapshotEntityID()
+		s.UpdateKnowledgeEntityID()
+	})
+}
+
+// SetReferencedAt sets the "referenced_at" field.
+func (u *SystemAnalysisTopologyNodeUpsertBulk) SetReferencedAt(v time.Time) *SystemAnalysisTopologyNodeUpsertBulk {
+	return u.Update(func(s *SystemAnalysisTopologyNodeUpsert) {
+		s.SetReferencedAt(v)
+	})
+}
+
+// UpdateReferencedAt sets the "referenced_at" field to the value that was provided on create.
+func (u *SystemAnalysisTopologyNodeUpsertBulk) UpdateReferencedAt() *SystemAnalysisTopologyNodeUpsertBulk {
+	return u.Update(func(s *SystemAnalysisTopologyNodeUpsert) {
+		s.UpdateReferencedAt()
 	})
 }
 

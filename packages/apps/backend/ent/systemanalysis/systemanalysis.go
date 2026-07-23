@@ -18,16 +18,12 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldKnowledgeGraphSnapshotID holds the string denoting the knowledge_graph_snapshot_id field in the database.
-	FieldKnowledgeGraphSnapshotID = "knowledge_graph_snapshot_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeKnowledgeGraphSnapshot holds the string denoting the knowledge_graph_snapshot edge name in mutations.
-	EdgeKnowledgeGraphSnapshot = "knowledge_graph_snapshot"
 	// EdgeAnalysisNodes holds the string denoting the analysis_nodes edge name in mutations.
 	EdgeAnalysisNodes = "analysis_nodes"
 	// EdgeAnalysisEdges holds the string denoting the analysis_edges edge name in mutations.
@@ -41,13 +37,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// KnowledgeGraphSnapshotTable is the table that holds the knowledge_graph_snapshot relation/edge.
-	KnowledgeGraphSnapshotTable = "system_analyses"
-	// KnowledgeGraphSnapshotInverseTable is the table name for the KnowledgeGraphSnapshot entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgegraphsnapshot" package.
-	KnowledgeGraphSnapshotInverseTable = "knowledge_graph_snapshots"
-	// KnowledgeGraphSnapshotColumn is the table column denoting the knowledge_graph_snapshot relation/edge.
-	KnowledgeGraphSnapshotColumn = "knowledge_graph_snapshot_id"
 	// AnalysisNodesTable is the table that holds the analysis_nodes relation/edge.
 	AnalysisNodesTable = "system_analysis_topology_nodes"
 	// AnalysisNodesInverseTable is the table name for the SystemAnalysisTopologyNode entity.
@@ -68,7 +57,6 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldKnowledgeGraphSnapshotID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -114,11 +102,6 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByKnowledgeGraphSnapshotID orders the results by the knowledge_graph_snapshot_id field.
-func ByKnowledgeGraphSnapshotID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKnowledgeGraphSnapshotID, opts...).ToFunc()
-}
-
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
@@ -133,13 +116,6 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByKnowledgeGraphSnapshotField orders the results by knowledge_graph_snapshot field.
-func ByKnowledgeGraphSnapshotField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newKnowledgeGraphSnapshotStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -175,13 +151,6 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newKnowledgeGraphSnapshotStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(KnowledgeGraphSnapshotInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeGraphSnapshotTable, KnowledgeGraphSnapshotColumn),
 	)
 }
 func newAnalysisNodesStep() *sqlgraph.Step {

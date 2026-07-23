@@ -161,6 +161,7 @@ func (AgentTurnKnowledgeCitation) Edges() []ent.Edge {
 
 func (AgentTurnKnowledgeCitation) Indexes() []ent.Index {
 	return []ent.Index{
+		index.Fields("tenant_id", "agent_turn_id", "knowledge_evidence_id").Unique(),
 		index.Fields("tenant_id", "knowledge_entity_id"),
 		index.Fields("tenant_id", "knowledge_relationship_id"),
 		index.Fields("tenant_id", "knowledge_evidence_id"),

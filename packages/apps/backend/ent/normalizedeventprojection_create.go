@@ -39,48 +39,16 @@ func (_c *NormalizedEventProjectionCreate) SetEventID(v uuid.UUID) *NormalizedEv
 	return _c
 }
 
-// SetProjector sets the "projector" field.
-func (_c *NormalizedEventProjectionCreate) SetProjector(v string) *NormalizedEventProjectionCreate {
-	_c.mutation.SetProjector(v)
+// SetCompletedAt sets the "completed_at" field.
+func (_c *NormalizedEventProjectionCreate) SetCompletedAt(v time.Time) *NormalizedEventProjectionCreate {
+	_c.mutation.SetCompletedAt(v)
 	return _c
 }
 
-// SetStatus sets the "status" field.
-func (_c *NormalizedEventProjectionCreate) SetStatus(v normalizedeventprojection.Status) *NormalizedEventProjectionCreate {
-	_c.mutation.SetStatus(v)
-	return _c
-}
-
-// SetStartedAt sets the "started_at" field.
-func (_c *NormalizedEventProjectionCreate) SetStartedAt(v time.Time) *NormalizedEventProjectionCreate {
-	_c.mutation.SetStartedAt(v)
-	return _c
-}
-
-// SetFinishedAt sets the "finished_at" field.
-func (_c *NormalizedEventProjectionCreate) SetFinishedAt(v time.Time) *NormalizedEventProjectionCreate {
-	_c.mutation.SetFinishedAt(v)
-	return _c
-}
-
-// SetNillableFinishedAt sets the "finished_at" field if the given value is not nil.
-func (_c *NormalizedEventProjectionCreate) SetNillableFinishedAt(v *time.Time) *NormalizedEventProjectionCreate {
+// SetNillableCompletedAt sets the "completed_at" field if the given value is not nil.
+func (_c *NormalizedEventProjectionCreate) SetNillableCompletedAt(v *time.Time) *NormalizedEventProjectionCreate {
 	if v != nil {
-		_c.SetFinishedAt(*v)
-	}
-	return _c
-}
-
-// SetError sets the "error" field.
-func (_c *NormalizedEventProjectionCreate) SetError(v string) *NormalizedEventProjectionCreate {
-	_c.mutation.SetError(v)
-	return _c
-}
-
-// SetNillableError sets the "error" field if the given value is not nil.
-func (_c *NormalizedEventProjectionCreate) SetNillableError(v *string) *NormalizedEventProjectionCreate {
-	if v != nil {
-		_c.SetError(*v)
+		_c.SetCompletedAt(*v)
 	}
 	return _c
 }
@@ -161,6 +129,13 @@ func (_c *NormalizedEventProjectionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *NormalizedEventProjectionCreate) defaults() error {
+	if _, ok := _c.mutation.CompletedAt(); !ok {
+		if normalizedeventprojection.DefaultCompletedAt == nil {
+			return fmt.Errorf("ent: uninitialized normalizedeventprojection.DefaultCompletedAt (forgotten import ent/runtime?)")
+		}
+		v := normalizedeventprojection.DefaultCompletedAt()
+		_c.mutation.SetCompletedAt(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if normalizedeventprojection.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized normalizedeventprojection.DefaultID (forgotten import ent/runtime?)")
@@ -179,24 +154,8 @@ func (_c *NormalizedEventProjectionCreate) check() error {
 	if _, ok := _c.mutation.EventID(); !ok {
 		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "NormalizedEventProjection.event_id"`)}
 	}
-	if _, ok := _c.mutation.Projector(); !ok {
-		return &ValidationError{Name: "projector", err: errors.New(`ent: missing required field "NormalizedEventProjection.projector"`)}
-	}
-	if v, ok := _c.mutation.Projector(); ok {
-		if err := normalizedeventprojection.ProjectorValidator(v); err != nil {
-			return &ValidationError{Name: "projector", err: fmt.Errorf(`ent: validator failed for field "NormalizedEventProjection.projector": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "NormalizedEventProjection.status"`)}
-	}
-	if v, ok := _c.mutation.Status(); ok {
-		if err := normalizedeventprojection.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "NormalizedEventProjection.status": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.StartedAt(); !ok {
-		return &ValidationError{Name: "started_at", err: errors.New(`ent: missing required field "NormalizedEventProjection.started_at"`)}
+	if _, ok := _c.mutation.CompletedAt(); !ok {
+		return &ValidationError{Name: "completed_at", err: errors.New(`ent: missing required field "NormalizedEventProjection.completed_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "NormalizedEventProjection.tenant"`)}
@@ -241,25 +200,9 @@ func (_c *NormalizedEventProjectionCreate) createSpec() (*NormalizedEventProject
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.Projector(); ok {
-		_spec.SetField(normalizedeventprojection.FieldProjector, field.TypeString, value)
-		_node.Projector = value
-	}
-	if value, ok := _c.mutation.Status(); ok {
-		_spec.SetField(normalizedeventprojection.FieldStatus, field.TypeEnum, value)
-		_node.Status = value
-	}
-	if value, ok := _c.mutation.StartedAt(); ok {
-		_spec.SetField(normalizedeventprojection.FieldStartedAt, field.TypeTime, value)
-		_node.StartedAt = value
-	}
-	if value, ok := _c.mutation.FinishedAt(); ok {
-		_spec.SetField(normalizedeventprojection.FieldFinishedAt, field.TypeTime, value)
-		_node.FinishedAt = value
-	}
-	if value, ok := _c.mutation.Error(); ok {
-		_spec.SetField(normalizedeventprojection.FieldError, field.TypeString, value)
-		_node.Error = value
+	if value, ok := _c.mutation.CompletedAt(); ok {
+		_spec.SetField(normalizedeventprojection.FieldCompletedAt, field.TypeTime, value)
+		_node.CompletedAt = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -366,90 +309,6 @@ type (
 	}
 )
 
-// SetEventID sets the "event_id" field.
-func (u *NormalizedEventProjectionUpsert) SetEventID(v uuid.UUID) *NormalizedEventProjectionUpsert {
-	u.Set(normalizedeventprojection.FieldEventID, v)
-	return u
-}
-
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsert) UpdateEventID() *NormalizedEventProjectionUpsert {
-	u.SetExcluded(normalizedeventprojection.FieldEventID)
-	return u
-}
-
-// SetProjector sets the "projector" field.
-func (u *NormalizedEventProjectionUpsert) SetProjector(v string) *NormalizedEventProjectionUpsert {
-	u.Set(normalizedeventprojection.FieldProjector, v)
-	return u
-}
-
-// UpdateProjector sets the "projector" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsert) UpdateProjector() *NormalizedEventProjectionUpsert {
-	u.SetExcluded(normalizedeventprojection.FieldProjector)
-	return u
-}
-
-// SetStatus sets the "status" field.
-func (u *NormalizedEventProjectionUpsert) SetStatus(v normalizedeventprojection.Status) *NormalizedEventProjectionUpsert {
-	u.Set(normalizedeventprojection.FieldStatus, v)
-	return u
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsert) UpdateStatus() *NormalizedEventProjectionUpsert {
-	u.SetExcluded(normalizedeventprojection.FieldStatus)
-	return u
-}
-
-// SetStartedAt sets the "started_at" field.
-func (u *NormalizedEventProjectionUpsert) SetStartedAt(v time.Time) *NormalizedEventProjectionUpsert {
-	u.Set(normalizedeventprojection.FieldStartedAt, v)
-	return u
-}
-
-// UpdateStartedAt sets the "started_at" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsert) UpdateStartedAt() *NormalizedEventProjectionUpsert {
-	u.SetExcluded(normalizedeventprojection.FieldStartedAt)
-	return u
-}
-
-// SetFinishedAt sets the "finished_at" field.
-func (u *NormalizedEventProjectionUpsert) SetFinishedAt(v time.Time) *NormalizedEventProjectionUpsert {
-	u.Set(normalizedeventprojection.FieldFinishedAt, v)
-	return u
-}
-
-// UpdateFinishedAt sets the "finished_at" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsert) UpdateFinishedAt() *NormalizedEventProjectionUpsert {
-	u.SetExcluded(normalizedeventprojection.FieldFinishedAt)
-	return u
-}
-
-// ClearFinishedAt clears the value of the "finished_at" field.
-func (u *NormalizedEventProjectionUpsert) ClearFinishedAt() *NormalizedEventProjectionUpsert {
-	u.SetNull(normalizedeventprojection.FieldFinishedAt)
-	return u
-}
-
-// SetError sets the "error" field.
-func (u *NormalizedEventProjectionUpsert) SetError(v string) *NormalizedEventProjectionUpsert {
-	u.Set(normalizedeventprojection.FieldError, v)
-	return u
-}
-
-// UpdateError sets the "error" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsert) UpdateError() *NormalizedEventProjectionUpsert {
-	u.SetExcluded(normalizedeventprojection.FieldError)
-	return u
-}
-
-// ClearError clears the value of the "error" field.
-func (u *NormalizedEventProjectionUpsert) ClearError() *NormalizedEventProjectionUpsert {
-	u.SetNull(normalizedeventprojection.FieldError)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -469,6 +328,12 @@ func (u *NormalizedEventProjectionUpsertOne) UpdateNewValues() *NormalizedEventP
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(normalizedeventprojection.FieldTenantID)
+		}
+		if _, exists := u.create.mutation.EventID(); exists {
+			s.SetIgnore(normalizedeventprojection.FieldEventID)
+		}
+		if _, exists := u.create.mutation.CompletedAt(); exists {
+			s.SetIgnore(normalizedeventprojection.FieldCompletedAt)
 		}
 	}))
 	return u
@@ -499,104 +364,6 @@ func (u *NormalizedEventProjectionUpsertOne) Update(set func(*NormalizedEventPro
 		set(&NormalizedEventProjectionUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetEventID sets the "event_id" field.
-func (u *NormalizedEventProjectionUpsertOne) SetEventID(v uuid.UUID) *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetEventID(v)
-	})
-}
-
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertOne) UpdateEventID() *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateEventID()
-	})
-}
-
-// SetProjector sets the "projector" field.
-func (u *NormalizedEventProjectionUpsertOne) SetProjector(v string) *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetProjector(v)
-	})
-}
-
-// UpdateProjector sets the "projector" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertOne) UpdateProjector() *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateProjector()
-	})
-}
-
-// SetStatus sets the "status" field.
-func (u *NormalizedEventProjectionUpsertOne) SetStatus(v normalizedeventprojection.Status) *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertOne) UpdateStatus() *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateStatus()
-	})
-}
-
-// SetStartedAt sets the "started_at" field.
-func (u *NormalizedEventProjectionUpsertOne) SetStartedAt(v time.Time) *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetStartedAt(v)
-	})
-}
-
-// UpdateStartedAt sets the "started_at" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertOne) UpdateStartedAt() *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateStartedAt()
-	})
-}
-
-// SetFinishedAt sets the "finished_at" field.
-func (u *NormalizedEventProjectionUpsertOne) SetFinishedAt(v time.Time) *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetFinishedAt(v)
-	})
-}
-
-// UpdateFinishedAt sets the "finished_at" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertOne) UpdateFinishedAt() *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateFinishedAt()
-	})
-}
-
-// ClearFinishedAt clears the value of the "finished_at" field.
-func (u *NormalizedEventProjectionUpsertOne) ClearFinishedAt() *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.ClearFinishedAt()
-	})
-}
-
-// SetError sets the "error" field.
-func (u *NormalizedEventProjectionUpsertOne) SetError(v string) *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetError(v)
-	})
-}
-
-// UpdateError sets the "error" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertOne) UpdateError() *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateError()
-	})
-}
-
-// ClearError clears the value of the "error" field.
-func (u *NormalizedEventProjectionUpsertOne) ClearError() *NormalizedEventProjectionUpsertOne {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.ClearError()
-	})
 }
 
 // Exec executes the query.
@@ -785,6 +552,12 @@ func (u *NormalizedEventProjectionUpsertBulk) UpdateNewValues() *NormalizedEvent
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(normalizedeventprojection.FieldTenantID)
 			}
+			if _, exists := b.mutation.EventID(); exists {
+				s.SetIgnore(normalizedeventprojection.FieldEventID)
+			}
+			if _, exists := b.mutation.CompletedAt(); exists {
+				s.SetIgnore(normalizedeventprojection.FieldCompletedAt)
+			}
 		}
 	}))
 	return u
@@ -815,104 +588,6 @@ func (u *NormalizedEventProjectionUpsertBulk) Update(set func(*NormalizedEventPr
 		set(&NormalizedEventProjectionUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetEventID sets the "event_id" field.
-func (u *NormalizedEventProjectionUpsertBulk) SetEventID(v uuid.UUID) *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetEventID(v)
-	})
-}
-
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertBulk) UpdateEventID() *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateEventID()
-	})
-}
-
-// SetProjector sets the "projector" field.
-func (u *NormalizedEventProjectionUpsertBulk) SetProjector(v string) *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetProjector(v)
-	})
-}
-
-// UpdateProjector sets the "projector" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertBulk) UpdateProjector() *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateProjector()
-	})
-}
-
-// SetStatus sets the "status" field.
-func (u *NormalizedEventProjectionUpsertBulk) SetStatus(v normalizedeventprojection.Status) *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertBulk) UpdateStatus() *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateStatus()
-	})
-}
-
-// SetStartedAt sets the "started_at" field.
-func (u *NormalizedEventProjectionUpsertBulk) SetStartedAt(v time.Time) *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetStartedAt(v)
-	})
-}
-
-// UpdateStartedAt sets the "started_at" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertBulk) UpdateStartedAt() *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateStartedAt()
-	})
-}
-
-// SetFinishedAt sets the "finished_at" field.
-func (u *NormalizedEventProjectionUpsertBulk) SetFinishedAt(v time.Time) *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetFinishedAt(v)
-	})
-}
-
-// UpdateFinishedAt sets the "finished_at" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertBulk) UpdateFinishedAt() *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateFinishedAt()
-	})
-}
-
-// ClearFinishedAt clears the value of the "finished_at" field.
-func (u *NormalizedEventProjectionUpsertBulk) ClearFinishedAt() *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.ClearFinishedAt()
-	})
-}
-
-// SetError sets the "error" field.
-func (u *NormalizedEventProjectionUpsertBulk) SetError(v string) *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.SetError(v)
-	})
-}
-
-// UpdateError sets the "error" field to the value that was provided on create.
-func (u *NormalizedEventProjectionUpsertBulk) UpdateError() *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.UpdateError()
-	})
-}
-
-// ClearError clears the value of the "error" field.
-func (u *NormalizedEventProjectionUpsertBulk) ClearError() *NormalizedEventProjectionUpsertBulk {
-	return u.Update(func(s *NormalizedEventProjectionUpsert) {
-		s.ClearError()
-	})
 }
 
 // Exec executes the query.

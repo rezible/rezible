@@ -1,4 +1,5 @@
 import { Context, watch } from "runed";
+import { SvelteMap } from "svelte/reactivity";
 
 import {
 	useSvelteFlow,
@@ -13,7 +14,7 @@ import {
 	type SystemAnalysis,
 	type SystemAnalysisNode,
 	type SystemAnalysisEdge,
-	type KnowledgeGraphSnapshotEntity,
+	type KnowledgeGraphEntity,
 } from "$lib/api";
 
 import { useIncidentAnalysis } from "../controller.svelte";
@@ -28,10 +29,12 @@ export type SystemRelationshipEdgeData = {
 
 const translateSystemAnalysis = (an: SystemAnalysis) => {
 	let nodes: Node[] = [];
+	const nodeIdsByEntityId = new SvelteMap<string, string>();
 	an.attributes.nodes.forEach(analysisNode => {
-		const { position, snapshotEntity } = analysisNode.attributes;
+		const { position, knowledgeEntity } = analysisNode.attributes;
+		nodeIdsByEntityId.set(knowledgeEntity.id, analysisNode.id);
 		nodes.push({
-			id: snapshotEntity.id,
+			id: analysisNode.id,
 			type: "component",
 			position,
 			data: { analysisNode } as SystemTopologyNodeData,
@@ -41,12 +44,15 @@ const translateSystemAnalysis = (an: SystemAnalysis) => {
 	let edges: Edge[] = [];
 	an.attributes.edges.forEach(sr => {
 		const { id, attributes } = sr;
-		const relattr = attributes.snapshotRelationship.attributes;
+		const relattr = attributes.knowledgeRelationship.attributes;
+		const source = nodeIdsByEntityId.get(relattr.source.id);
+		const target = nodeIdsByEntityId.get(relattr.target.id);
+		if (!source || !target) return;
 		edges.push({
 			id,
 			type: "relationship",
-			source: relattr.sourceSnapshotEntityId,
-			target: relattr.targetSnapshotEntityId,
+			source,
+			target,
 			data: { edge: sr } as SystemRelationshipEdgeData,
 		});
 	});
@@ -63,7 +69,7 @@ export class SystemDiagramState {
 	selectedLivePosition = $state<XYPosition>();
 
 	containerEl = $state.raw<HTMLElement>(null!);
-	addingEntityGhost = $state.raw<KnowledgeGraphSnapshotEntity>();
+	addingEntityGhost = $state.raw<KnowledgeGraphEntity>();
 
 	constructor(containerElFn: () => HTMLElement) {
 		watch(containerElFn, ref => { this.containerEl = ref });
@@ -135,7 +141,7 @@ export class SystemDiagramState {
 		});
 	};
 
-	setAddingEntityGhost(e?: KnowledgeGraphSnapshotEntity) {
+	setAddingEntityGhost(e?: KnowledgeGraphEntity) {
 		this.addingEntityGhost = e;
 	};
 
@@ -150,7 +156,7 @@ export class SystemDiagramState {
 			const { x, y } = this.containerEl.getBoundingClientRect();
 
 			const position = { x: event.pageX - x, y: event.pageY - y };
-			const knowledgeEntityId = $state.snapshot(this.addingEntityGhost.id);
+			const knowledgeEntityId = this.addingEntityGhost.id;
 			this.analysis.addNode({knowledgeEntityId, position, description: ""});
 			// TODO: check if success? show pending state?
 			this.setAddingEntityGhost();

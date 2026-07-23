@@ -4,22 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/core"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent"
-)
-
-type (
-	AgentState[S SessionState] aix.SessionState[S]
-
-	AgentInput interface {
-		Validate() error
-	}
-
-	SessionState interface {
-	}
 )
 
 var (
@@ -27,14 +14,23 @@ var (
 )
 
 type (
+	AgentInput interface {
+		Validate() error
+	}
+
+	SessionState interface {
+	}
+
+	AgentState[S SessionState] aix.SessionState[S]
+
 	AgentDefinition[I AgentInput, S SessionState] struct {
-		Name            string
-		Description     string
-		SystemPrompt    string
-		EnableArtifacts bool
-		Model           string
-		RequiredTools   []ai.ToolRef
-		inputValidator  func(I) error
+		Name                 string
+		Description          string
+		Model                string
+		SystemPrompt         string
+		EnableArtifacts      bool
+		EnableKnowledgeGraph bool
+		inputValidator       func(I) error
 	}
 )
 
@@ -53,26 +49,6 @@ func (d AgentDefinition[I, S]) ValidateInput(raw []byte) (*I, error) {
 		}
 	}
 	return &input, validationErr
-}
-
-func (d AgentDefinition[I, S]) ParseTurn(turn *ent.AgentTurn) (*AgentState[S], error) {
-	var state AgentState[S]
-	if turn.State == nil {
-		return nil, fmt.Errorf("state is nil")
-	}
-	return &state, json.Unmarshal(turn.State, &state)
-}
-
-func (s *AgentState[S]) GetModelTextMessages() []string {
-	var messages []string
-	for _, msg := range s.Messages {
-		if msg.Role == ai.RoleModel {
-			if msgText := msg.Text(); msgText != "" {
-				messages = append(messages, msgText)
-			}
-		}
-	}
-	return messages
 }
 
 type (
@@ -103,9 +79,10 @@ func (i AlertAgentInput) Validate() error {
 }
 
 var AlertsAgent = AlertsAgentDefinition{
-	Name:            "alerts",
-	Description:     "",
-	EnableArtifacts: true,
+	Name:                 "alerts",
+	Description:          "",
+	EnableArtifacts:      true,
+	EnableKnowledgeGraph: true,
 	SystemPrompt: `You are Rezible's alerts agent. You help software engineering teams quickly understand an alert, identify likely causes, assess impact, and decide the next action.
 
 Work like an experienced on-call engineer:
@@ -115,6 +92,7 @@ Work like an experienced on-call engineer:
 - Call out uncertainty and missing context clearly.
 - Do not claim to have checked logs, metrics, traces, deployments, incidents, code, runbooks, or ownership data unless that evidence is present in the conversation or returned by an available tool.
 - Do not recommend risky remediation unless the evidence supports it and the operator has enough context to execute it safely.
+- Knowledge graph query results are candidate context, not citations. Before the final response, use record_knowledge_citations for only the evidence that directly supports claims you actually make. Include a concise summary of how each selected item supports the response. Do not record every returned item.
 
 Investigation flow:
 1. Establish the alert scope: title, description, definition/query, severity, service, environment, tenant/customer impact, firing time, current state, labels, annotations, and raw payload.
@@ -162,9 +140,9 @@ func (i ChatAgentInput) Validate() error {
 }
 
 var ChatAgent = ChatAgentDefinition{
-	Name:          "chat",
-	Description:   "a chat presence agent that can respond to messages",
-	RequiredTools: []ai.ToolRef{},
+	Name:                 "chat",
+	Description:          "a chat presence agent that can respond to messages",
+	EnableKnowledgeGraph: true,
 	SystemPrompt: `You are an AI agent responsible for generating responses to user chat messages. 
 You help answer any operational questions that software engineering teams.
 Create replies to user messages to the best of your capability - be concise and keep the tone professional.

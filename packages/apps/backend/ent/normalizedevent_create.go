@@ -119,19 +119,23 @@ func (_c *NormalizedEventCreate) SetTenant(v *Tenant) *NormalizedEventCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// AddProjectionIDs adds the "projections" edge to the NormalizedEventProjection entity by IDs.
-func (_c *NormalizedEventCreate) AddProjectionIDs(ids ...uuid.UUID) *NormalizedEventCreate {
-	_c.mutation.AddProjectionIDs(ids...)
+// SetProjectionID sets the "projection" edge to the NormalizedEventProjection entity by ID.
+func (_c *NormalizedEventCreate) SetProjectionID(id uuid.UUID) *NormalizedEventCreate {
+	_c.mutation.SetProjectionID(id)
 	return _c
 }
 
-// AddProjections adds the "projections" edges to the NormalizedEventProjection entity.
-func (_c *NormalizedEventCreate) AddProjections(v ...*NormalizedEventProjection) *NormalizedEventCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
+// SetNillableProjectionID sets the "projection" edge to the NormalizedEventProjection entity by ID if the given value is not nil.
+func (_c *NormalizedEventCreate) SetNillableProjectionID(id *uuid.UUID) *NormalizedEventCreate {
+	if id != nil {
+		_c = _c.SetProjectionID(*id)
 	}
-	return _c.AddProjectionIDs(ids...)
+	return _c
+}
+
+// SetProjection sets the "projection" edge to the NormalizedEventProjection entity.
+func (_c *NormalizedEventCreate) SetProjection(v *NormalizedEventProjection) *NormalizedEventCreate {
+	return _c.SetProjectionID(v.ID)
 }
 
 // Mutation returns the NormalizedEventMutation object of the builder.
@@ -346,21 +350,22 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ProjectionsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ProjectionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   normalizedevent.ProjectionsTable,
-			Columns: []string{normalizedevent.ProjectionsColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   normalizedevent.ProjectionTable,
+			Columns: []string{normalizedevent.ProjectionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.NormalizedEventProjection
+		edge.Schema = _c.schemaConfig.NormalizedEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.normalized_event_projection = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -415,126 +420,6 @@ type (
 	}
 )
 
-// SetKind sets the "kind" field.
-func (u *NormalizedEventUpsert) SetKind(v normalizedevent.Kind) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldKind, v)
-	return u
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateKind() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldKind)
-	return u
-}
-
-// SetProvider sets the "provider" field.
-func (u *NormalizedEventUpsert) SetProvider(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldProvider, v)
-	return u
-}
-
-// UpdateProvider sets the "provider" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateProvider() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldProvider)
-	return u
-}
-
-// SetProviderSource sets the "provider_source" field.
-func (u *NormalizedEventUpsert) SetProviderSource(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldProviderSource, v)
-	return u
-}
-
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateProviderSource() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldProviderSource)
-	return u
-}
-
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (u *NormalizedEventUpsert) SetProviderEventRef(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldProviderEventRef, v)
-	return u
-}
-
-// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateProviderEventRef() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldProviderEventRef)
-	return u
-}
-
-// SetProviderSubjectRef sets the "provider_subject_ref" field.
-func (u *NormalizedEventUpsert) SetProviderSubjectRef(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldProviderSubjectRef, v)
-	return u
-}
-
-// UpdateProviderSubjectRef sets the "provider_subject_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateProviderSubjectRef() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldProviderSubjectRef)
-	return u
-}
-
-// SetSubjectKind sets the "subject_kind" field.
-func (u *NormalizedEventUpsert) SetSubjectKind(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldSubjectKind, v)
-	return u
-}
-
-// UpdateSubjectKind sets the "subject_kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateSubjectKind() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldSubjectKind)
-	return u
-}
-
-// SetAttributes sets the "attributes" field.
-func (u *NormalizedEventUpsert) SetAttributes(v []byte) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldAttributes, v)
-	return u
-}
-
-// UpdateAttributes sets the "attributes" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateAttributes() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldAttributes)
-	return u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *NormalizedEventUpsert) SetCreatedAt(v time.Time) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldCreatedAt, v)
-	return u
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateCreatedAt() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldCreatedAt)
-	return u
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (u *NormalizedEventUpsert) SetOccurredAt(v time.Time) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldOccurredAt, v)
-	return u
-}
-
-// UpdateOccurredAt sets the "occurred_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateOccurredAt() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldOccurredAt)
-	return u
-}
-
-// SetReceivedAt sets the "received_at" field.
-func (u *NormalizedEventUpsert) SetReceivedAt(v time.Time) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldReceivedAt, v)
-	return u
-}
-
-// UpdateReceivedAt sets the "received_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateReceivedAt() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldReceivedAt)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -554,6 +439,36 @@ func (u *NormalizedEventUpsertOne) UpdateNewValues() *NormalizedEventUpsertOne {
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(normalizedevent.FieldTenantID)
+		}
+		if _, exists := u.create.mutation.Kind(); exists {
+			s.SetIgnore(normalizedevent.FieldKind)
+		}
+		if _, exists := u.create.mutation.Provider(); exists {
+			s.SetIgnore(normalizedevent.FieldProvider)
+		}
+		if _, exists := u.create.mutation.ProviderSource(); exists {
+			s.SetIgnore(normalizedevent.FieldProviderSource)
+		}
+		if _, exists := u.create.mutation.ProviderEventRef(); exists {
+			s.SetIgnore(normalizedevent.FieldProviderEventRef)
+		}
+		if _, exists := u.create.mutation.ProviderSubjectRef(); exists {
+			s.SetIgnore(normalizedevent.FieldProviderSubjectRef)
+		}
+		if _, exists := u.create.mutation.SubjectKind(); exists {
+			s.SetIgnore(normalizedevent.FieldSubjectKind)
+		}
+		if _, exists := u.create.mutation.Attributes(); exists {
+			s.SetIgnore(normalizedevent.FieldAttributes)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(normalizedevent.FieldCreatedAt)
+		}
+		if _, exists := u.create.mutation.OccurredAt(); exists {
+			s.SetIgnore(normalizedevent.FieldOccurredAt)
+		}
+		if _, exists := u.create.mutation.ReceivedAt(); exists {
+			s.SetIgnore(normalizedevent.FieldReceivedAt)
 		}
 	}))
 	return u
@@ -584,146 +499,6 @@ func (u *NormalizedEventUpsertOne) Update(set func(*NormalizedEventUpsert)) *Nor
 		set(&NormalizedEventUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetKind sets the "kind" field.
-func (u *NormalizedEventUpsertOne) SetKind(v normalizedevent.Kind) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetKind(v)
-	})
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateKind() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateKind()
-	})
-}
-
-// SetProvider sets the "provider" field.
-func (u *NormalizedEventUpsertOne) SetProvider(v string) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProvider(v)
-	})
-}
-
-// UpdateProvider sets the "provider" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateProvider() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProvider()
-	})
-}
-
-// SetProviderSource sets the "provider_source" field.
-func (u *NormalizedEventUpsertOne) SetProviderSource(v string) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProviderSource(v)
-	})
-}
-
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateProviderSource() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProviderSource()
-	})
-}
-
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (u *NormalizedEventUpsertOne) SetProviderEventRef(v string) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProviderEventRef(v)
-	})
-}
-
-// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateProviderEventRef() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProviderEventRef()
-	})
-}
-
-// SetProviderSubjectRef sets the "provider_subject_ref" field.
-func (u *NormalizedEventUpsertOne) SetProviderSubjectRef(v string) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProviderSubjectRef(v)
-	})
-}
-
-// UpdateProviderSubjectRef sets the "provider_subject_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateProviderSubjectRef() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProviderSubjectRef()
-	})
-}
-
-// SetSubjectKind sets the "subject_kind" field.
-func (u *NormalizedEventUpsertOne) SetSubjectKind(v string) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetSubjectKind(v)
-	})
-}
-
-// UpdateSubjectKind sets the "subject_kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateSubjectKind() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateSubjectKind()
-	})
-}
-
-// SetAttributes sets the "attributes" field.
-func (u *NormalizedEventUpsertOne) SetAttributes(v []byte) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetAttributes(v)
-	})
-}
-
-// UpdateAttributes sets the "attributes" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateAttributes() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateAttributes()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *NormalizedEventUpsertOne) SetCreatedAt(v time.Time) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateCreatedAt() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (u *NormalizedEventUpsertOne) SetOccurredAt(v time.Time) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetOccurredAt(v)
-	})
-}
-
-// UpdateOccurredAt sets the "occurred_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateOccurredAt() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateOccurredAt()
-	})
-}
-
-// SetReceivedAt sets the "received_at" field.
-func (u *NormalizedEventUpsertOne) SetReceivedAt(v time.Time) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetReceivedAt(v)
-	})
-}
-
-// UpdateReceivedAt sets the "received_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateReceivedAt() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateReceivedAt()
-	})
 }
 
 // Exec executes the query.
@@ -912,6 +687,36 @@ func (u *NormalizedEventUpsertBulk) UpdateNewValues() *NormalizedEventUpsertBulk
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(normalizedevent.FieldTenantID)
 			}
+			if _, exists := b.mutation.Kind(); exists {
+				s.SetIgnore(normalizedevent.FieldKind)
+			}
+			if _, exists := b.mutation.Provider(); exists {
+				s.SetIgnore(normalizedevent.FieldProvider)
+			}
+			if _, exists := b.mutation.ProviderSource(); exists {
+				s.SetIgnore(normalizedevent.FieldProviderSource)
+			}
+			if _, exists := b.mutation.ProviderEventRef(); exists {
+				s.SetIgnore(normalizedevent.FieldProviderEventRef)
+			}
+			if _, exists := b.mutation.ProviderSubjectRef(); exists {
+				s.SetIgnore(normalizedevent.FieldProviderSubjectRef)
+			}
+			if _, exists := b.mutation.SubjectKind(); exists {
+				s.SetIgnore(normalizedevent.FieldSubjectKind)
+			}
+			if _, exists := b.mutation.Attributes(); exists {
+				s.SetIgnore(normalizedevent.FieldAttributes)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(normalizedevent.FieldCreatedAt)
+			}
+			if _, exists := b.mutation.OccurredAt(); exists {
+				s.SetIgnore(normalizedevent.FieldOccurredAt)
+			}
+			if _, exists := b.mutation.ReceivedAt(); exists {
+				s.SetIgnore(normalizedevent.FieldReceivedAt)
+			}
 		}
 	}))
 	return u
@@ -942,146 +747,6 @@ func (u *NormalizedEventUpsertBulk) Update(set func(*NormalizedEventUpsert)) *No
 		set(&NormalizedEventUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetKind sets the "kind" field.
-func (u *NormalizedEventUpsertBulk) SetKind(v normalizedevent.Kind) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetKind(v)
-	})
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateKind() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateKind()
-	})
-}
-
-// SetProvider sets the "provider" field.
-func (u *NormalizedEventUpsertBulk) SetProvider(v string) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProvider(v)
-	})
-}
-
-// UpdateProvider sets the "provider" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateProvider() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProvider()
-	})
-}
-
-// SetProviderSource sets the "provider_source" field.
-func (u *NormalizedEventUpsertBulk) SetProviderSource(v string) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProviderSource(v)
-	})
-}
-
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateProviderSource() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProviderSource()
-	})
-}
-
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (u *NormalizedEventUpsertBulk) SetProviderEventRef(v string) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProviderEventRef(v)
-	})
-}
-
-// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateProviderEventRef() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProviderEventRef()
-	})
-}
-
-// SetProviderSubjectRef sets the "provider_subject_ref" field.
-func (u *NormalizedEventUpsertBulk) SetProviderSubjectRef(v string) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProviderSubjectRef(v)
-	})
-}
-
-// UpdateProviderSubjectRef sets the "provider_subject_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateProviderSubjectRef() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProviderSubjectRef()
-	})
-}
-
-// SetSubjectKind sets the "subject_kind" field.
-func (u *NormalizedEventUpsertBulk) SetSubjectKind(v string) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetSubjectKind(v)
-	})
-}
-
-// UpdateSubjectKind sets the "subject_kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateSubjectKind() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateSubjectKind()
-	})
-}
-
-// SetAttributes sets the "attributes" field.
-func (u *NormalizedEventUpsertBulk) SetAttributes(v []byte) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetAttributes(v)
-	})
-}
-
-// UpdateAttributes sets the "attributes" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateAttributes() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateAttributes()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *NormalizedEventUpsertBulk) SetCreatedAt(v time.Time) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateCreatedAt() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (u *NormalizedEventUpsertBulk) SetOccurredAt(v time.Time) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetOccurredAt(v)
-	})
-}
-
-// UpdateOccurredAt sets the "occurred_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateOccurredAt() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateOccurredAt()
-	})
-}
-
-// SetReceivedAt sets the "received_at" field.
-func (u *NormalizedEventUpsertBulk) SetReceivedAt(v time.Time) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetReceivedAt(v)
-	})
-}
-
-// UpdateReceivedAt sets the "received_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateReceivedAt() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateReceivedAt()
-	})
 }
 
 // Exec executes the query.

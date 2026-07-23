@@ -3,15 +3,11 @@ package db
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	ifo "github.com/rezible/rezible/ent/incidentfieldoption"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
 	"github.com/stretchr/testify/mock"
@@ -31,46 +27,9 @@ func (s *IncidentServiceSuite) newService() *IncidentService {
 	msgs.EXPECT().AddEventHandlers(mock.Anything).Return(nil)
 	msgs.EXPECT().PublishEvent(mock.Anything, mock.Anything).Return(nil).Maybe()
 
-	svc, err := NewIncidentService(s.Database(), msgs, nil)
+	svc, err := NewIncidentService(s.Database(), msgs)
 	s.Require().NoError(err)
 	return svc
-}
-
-func (s *IncidentServiceSuite) newServiceCapturingEvents(events *[]rez.EventOnIncidentUpdated) *IncidentService {
-	msgs := mocks.NewMockMessageService(s.T())
-	msgs.EXPECT().AddEventHandlers(mock.Anything).Return(nil)
-	msgs.EXPECT().
-		PublishEvent(mock.Anything, mock.Anything).
-		Run(func(_ context.Context, event any) {
-			if updated, ok := event.(rez.EventOnIncidentUpdated); ok {
-				*events = append(*events, updated)
-			}
-		}).
-		Return(nil).
-		Maybe()
-
-	svc, err := NewIncidentService(s.Database(), msgs, NewKnowledgeIngestionService(s.Database()))
-	s.Require().NoError(err)
-	return svc
-}
-
-func (s *IncidentServiceSuite) createIncidentProjectionEvent(subjectRef string, occurredAt time.Time, attrs projections.IncidentSubjectAttributes) *ent.NormalizedEvent {
-	ctx := s.SeedTenantContext()
-	encoded, err := projections.EncodeAttributes(attrs)
-	s.Require().NoError(err)
-	ev, err := s.Client(ctx).NormalizedEvent.Create().
-		SetProvider("test").
-		SetProviderSource("incidents").
-		SetProviderEventRef("incident-event-" + uuid.NewString()).
-		SetProviderSubjectRef(subjectRef).
-		SetKind(ne.KindObserved).
-		SetSubjectKind(projections.SubjectKindIncident.String()).
-		SetOccurredAt(occurredAt).
-		SetReceivedAt(occurredAt).
-		SetAttributes(encoded).
-		Save(ctx)
-	s.Require().NoError(err)
-	return ev
 }
 
 func (s *IncidentServiceSuite) createBasicIncident(ctx context.Context, svc *IncidentService, title string) *ent.Incident {

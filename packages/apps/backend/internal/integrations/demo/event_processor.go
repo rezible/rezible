@@ -63,11 +63,12 @@ func (p *eventProcessor) processAlert() (ent.NormalizedEvents, error) {
 	}
 
 	attrs := projections.AlertInstanceSubjectAttributes{
-		Title:           payload.Title,
-		Description:     payload.Description,
-		Definition:      payload.Definition,
-		ExternalRef:     payload.ExternalRef,
-		RelatedEntities: payload.RelatedEntities,
+		Title:               payload.Title,
+		Description:         payload.Description,
+		Definition:          payload.Definition,
+		ExternalRef:         payload.ExternalRef,
+		InstanceExternalRef: payload.InstanceRef,
+		RelatedEntities:     payload.RelatedEntities,
 	}
 	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
 	if encodeErr != nil {

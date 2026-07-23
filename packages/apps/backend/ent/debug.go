@@ -236,12 +236,12 @@ func (c *IncidentTimelineEventEvidenceClient) Debug() *IncidentTimelineEventEvid
 	return &IncidentTimelineEventEvidenceClient{config: cfg}
 }
 
-func (c *IncidentTimelineEventTopologyContextClient) Debug() *IncidentTimelineEventTopologyContextClient {
+func (c *IncidentTimelineEventSystemContextClient) Debug() *IncidentTimelineEventSystemContextClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &IncidentTimelineEventTopologyContextClient{config: cfg}
+	return &IncidentTimelineEventSystemContextClient{config: cfg}
 }
 
 func (c *IncidentTypeClient) Debug() *IncidentTypeClient {
@@ -298,30 +298,6 @@ func (c *KnowledgeEvidenceClient) Debug() *KnowledgeEvidenceClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &KnowledgeEvidenceClient{config: cfg}
-}
-
-func (c *KnowledgeGraphSnapshotClient) Debug() *KnowledgeGraphSnapshotClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &KnowledgeGraphSnapshotClient{config: cfg}
-}
-
-func (c *KnowledgeGraphSnapshotEntityClient) Debug() *KnowledgeGraphSnapshotEntityClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &KnowledgeGraphSnapshotEntityClient{config: cfg}
-}
-
-func (c *KnowledgeGraphSnapshotRelationshipClient) Debug() *KnowledgeGraphSnapshotRelationshipClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &KnowledgeGraphSnapshotRelationshipClient{config: cfg}
 }
 
 func (c *KnowledgeRelationshipClient) Debug() *KnowledgeRelationshipClient {

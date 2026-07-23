@@ -3,7 +3,7 @@
 package normalizedeventprojection
 
 import (
-	"fmt"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -20,16 +20,8 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldEventID holds the string denoting the event_id field in the database.
 	FieldEventID = "event_id"
-	// FieldProjector holds the string denoting the projector field in the database.
-	FieldProjector = "projector"
-	// FieldStatus holds the string denoting the status field in the database.
-	FieldStatus = "status"
-	// FieldStartedAt holds the string denoting the started_at field in the database.
-	FieldStartedAt = "started_at"
-	// FieldFinishedAt holds the string denoting the finished_at field in the database.
-	FieldFinishedAt = "finished_at"
-	// FieldError holds the string denoting the error field in the database.
-	FieldError = "error"
+	// FieldCompletedAt holds the string denoting the completed_at field in the database.
+	FieldCompletedAt = "completed_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
@@ -66,11 +58,7 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldEventID,
-	FieldProjector,
-	FieldStatus,
-	FieldStartedAt,
-	FieldFinishedAt,
-	FieldError,
+	FieldCompletedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -91,35 +79,11 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// ProjectorValidator is a validator for the "projector" field. It is called by the builders before save.
-	ProjectorValidator func(string) error
+	// DefaultCompletedAt holds the default value on creation for the "completed_at" field.
+	DefaultCompletedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// Status defines the type for the "status" enum field.
-type Status string
-
-// Status values.
-const (
-	StatusPending   Status = "pending"
-	StatusSucceeded Status = "succeeded"
-	StatusFailed    Status = "failed"
-)
-
-func (s Status) String() string {
-	return string(s)
-}
-
-// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
-func StatusValidator(s Status) error {
-	switch s {
-	case StatusPending, StatusSucceeded, StatusFailed:
-		return nil
-	default:
-		return fmt.Errorf("normalizedeventprojection: invalid enum value for status field: %q", s)
-	}
-}
 
 // OrderOption defines the ordering options for the NormalizedEventProjection queries.
 type OrderOption func(*sql.Selector)
@@ -139,29 +103,9 @@ func ByEventID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEventID, opts...).ToFunc()
 }
 
-// ByProjector orders the results by the projector field.
-func ByProjector(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProjector, opts...).ToFunc()
-}
-
-// ByStatus orders the results by the status field.
-func ByStatus(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStatus, opts...).ToFunc()
-}
-
-// ByStartedAt orders the results by the started_at field.
-func ByStartedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStartedAt, opts...).ToFunc()
-}
-
-// ByFinishedAt orders the results by the finished_at field.
-func ByFinishedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldFinishedAt, opts...).ToFunc()
-}
-
-// ByError orders the results by the error field.
-func ByError(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldError, opts...).ToFunc()
+// ByCompletedAt orders the results by the completed_at field.
+func ByCompletedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCompletedAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

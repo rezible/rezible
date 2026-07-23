@@ -41,8 +41,8 @@ const (
 	FieldReceivedAt = "received_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeProjections holds the string denoting the projections edge name in mutations.
-	EdgeProjections = "projections"
+	// EdgeProjection holds the string denoting the projection edge name in mutations.
+	EdgeProjection = "projection"
 	// Table holds the table name of the normalizedevent in the database.
 	Table = "normalized_events"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -52,13 +52,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// ProjectionsTable is the table that holds the projections relation/edge.
-	ProjectionsTable = "normalized_event_projections"
-	// ProjectionsInverseTable is the table name for the NormalizedEventProjection entity.
+	// ProjectionTable is the table that holds the projection relation/edge.
+	ProjectionTable = "normalized_events"
+	// ProjectionInverseTable is the table name for the NormalizedEventProjection entity.
 	// It exists in this package in order to avoid circular dependency with the "normalizedeventprojection" package.
-	ProjectionsInverseTable = "normalized_event_projections"
-	// ProjectionsColumn is the table column denoting the projections relation/edge.
-	ProjectionsColumn = "event_id"
+	ProjectionInverseTable = "normalized_event_projections"
+	// ProjectionColumn is the table column denoting the projection relation/edge.
+	ProjectionColumn = "normalized_event_projection"
 )
 
 // Columns holds all SQL columns for normalizedevent fields.
@@ -77,10 +77,21 @@ var Columns = []string{
 	FieldReceivedAt,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "normalized_events"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"normalized_event_projection",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -198,17 +209,10 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByProjectionsCount orders the results by projections count.
-func ByProjectionsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByProjectionField orders the results by projection field.
+func ByProjectionField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newProjectionsStep(), opts...)
-	}
-}
-
-// ByProjections orders the results by projections terms.
-func ByProjections(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newProjectionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newProjectionStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -218,10 +222,10 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newProjectionsStep() *sqlgraph.Step {
+func newProjectionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ProjectionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ProjectionsTable, ProjectionsColumn),
+		sqlgraph.To(ProjectionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ProjectionTable, ProjectionColumn),
 	)
 }

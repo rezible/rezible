@@ -78,20 +78,6 @@ func (s *AgentSessionService) ListAgentSessions(ctx context.Context, params rez.
 	return ent.DoListQuery[ent.AgentSession, *ent.AgentSessionQuery](ctx, query, params.ListParams)
 }
 
-func (s *AgentSessionService) insertInvokeAgentTurnJob(ctx context.Context, sessId uuid.UUID, turnId uuid.UUID) (int64, error) {
-	result, insertErr := s.jobs.Insert(ctx, jobs.InvokeAgentTurn{AgentSessionID: sessId, AgentTurnID: turnId}, nil)
-	if insertErr != nil {
-		return 0, fmt.Errorf("insert turn job: %w", insertErr)
-	}
-	if result == nil || result.Job == nil {
-		return 0, fmt.Errorf("no inserted job returned")
-	}
-	if result.UniqueSkippedAsDuplicate {
-		return 0, fmt.Errorf("%w: river skipped duplicate agent turn job", rez.ErrConflict)
-	}
-	return result.Job.ID, nil
-}
-
 func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez.CreateAgentSessionParams) (*ent.AgentSession, error) {
 	name := strings.TrimSpace(params.AgentName)
 	if name == "" {
@@ -124,7 +110,7 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 		}
 
 		turnParams := &rez.RequestAgentTurnParams{Input: initialInput}
-		createdTurn, turnErr := s.createAndRequestTurn(ctx, createdSession.ID, turnParams)
+		createdTurn, turnErr := s.createAgentTurn(ctx, createdSession.ID, turnParams)
 		if turnErr != nil {
 			return fmt.Errorf("create turn: %w", turnErr)
 		}
@@ -135,42 +121,10 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 	})
 }
 
-func (s *AgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
-	q := s.db.Client(ctx).AgentTurn.Query()
-	if userID, isUserContext := execution.GetContext(ctx).UserID(); isUserContext {
-		q.Where(at.HasAgentSessionWith(as.OwnerUserID(userID)))
-	}
-	return q
-}
-
-func (s *AgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAgentTurnParams) (*ent.AgentTurn, error) {
-	var turn *ent.AgentTurn
-	return turn, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		queryInitialTurn := s.queryAgentTurns(ctx).
-			Where(at.AgentSessionID(sessionID), at.ParentIDIsNil(), at.StatusEQ(at.StatusCompleted))
-
-		initialTurnExists, queryInitialTurnErr := queryInitialTurn.Exist(ctx)
-		if queryInitialTurnErr != nil {
-			return fmt.Errorf("query completed initial turn: %w", queryInitialTurnErr)
-		}
-		if !initialTurnExists {
-			return fmt.Errorf("%w: the initial turn must complete before requesting another turn", rez.ErrConflict)
-		}
-
-		createdTurn, turnErr := s.createAndRequestTurn(ctx, sessionID, params)
-		if turnErr != nil {
-			return fmt.Errorf("create turn: %w", turnErr)
-		}
-		turn = createdTurn.Unwrap()
-		return nil
-	})
-}
-
-func (s *AgentSessionService) createAndRequestTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAgentTurnParams) (*ent.AgentTurn, error) {
+func (s *AgentSessionService) createAgentTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAgentTurnParams) (*ent.AgentTurn, error) {
 	if params == nil || params.Input == nil {
 		return nil, fmt.Errorf("%w: turn input nil", rez.ErrInvalidInput)
 	}
-
 	normalized := *params.Input
 	if normalized.Resume != nil &&
 		len(normalized.Resume.Respond)+len(normalized.Resume.Restart) == 0 {
@@ -199,8 +153,56 @@ func (s *AgentSessionService) createAndRequestTurn(ctx context.Context, sessionI
 		SetRiverJobID(jobID).
 		SetInput(encodedInput).
 		SetStatus(at.StatusQueued)
+	turn, createErr := createTurn.Save(ctx)
+	if createErr != nil {
+		return nil, fmt.Errorf("create turn: %w", createErr)
+	}
 
-	return createTurn.Save(ctx)
+	return turn, nil
+}
+
+func (s *AgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
+	q := s.db.Client(ctx).AgentTurn.Query()
+	if userID, isUserContext := execution.GetContext(ctx).UserID(); isUserContext {
+		q.Where(at.HasAgentSessionWith(as.OwnerUserID(userID)))
+	}
+	return q
+}
+
+func (s *AgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAgentTurnParams) (*ent.AgentTurn, error) {
+	var turn *ent.AgentTurn
+	return turn, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		queryInitialTurn := s.queryAgentTurns(ctx).
+			Where(at.AgentSessionID(sessionID), at.ParentIDIsNil(), at.StatusEQ(at.StatusCompleted))
+		initialTurnComplete, queryInitialTurnErr := queryInitialTurn.Exist(ctx)
+		if queryInitialTurnErr != nil {
+			return fmt.Errorf("query completed initial turn: %w", queryInitialTurnErr)
+		}
+		if !initialTurnComplete {
+			return fmt.Errorf("%w: the initial turn must complete before requesting another turn", rez.ErrConflict)
+		}
+
+		createdTurn, turnErr := s.createAgentTurn(ctx, sessionID, params)
+		if turnErr != nil {
+			return fmt.Errorf("create turn: %w", turnErr)
+		}
+		turn = createdTurn.Unwrap()
+		return nil
+	})
+}
+
+func (s *AgentSessionService) insertInvokeAgentTurnJob(ctx context.Context, sessId uuid.UUID, turnId uuid.UUID) (int64, error) {
+	result, insertErr := s.jobs.Insert(ctx, jobs.InvokeAgentTurn{AgentSessionID: sessId, AgentTurnID: turnId}, nil)
+	if insertErr != nil {
+		return 0, fmt.Errorf("insert turn job: %w", insertErr)
+	}
+	if result == nil || result.Job == nil {
+		return 0, fmt.Errorf("no inserted job returned")
+	}
+	if result.UniqueSkippedAsDuplicate {
+		return 0, fmt.Errorf("%w: river skipped duplicate agent turn job", rez.ErrConflict)
+	}
+	return result.Job.ID, nil
 }
 
 func (s *AgentSessionService) GetAgentTurn(ctx context.Context, id uuid.UUID) (*ent.AgentTurn, error) {
@@ -233,7 +235,7 @@ func (s *AgentSessionService) GetLastSuccessfulAgentTurn(ctx context.Context, se
 }
 
 func acquireAgentSessionTurnLock(ctx context.Context, db rez.Database, sessionId uuid.UUID) error {
-	return db.AcquireTxLocks(ctx, "agent_session_turn", sessionId.String())
+	return db.AcquireTxLocks(ctx, "agent_session", sessionId.String())
 }
 
 func (s *AgentSessionService) lookupAgentTurnSessionAndAcquireLock(ctx context.Context, turnID uuid.UUID) (*ent.AgentSession, error) {
@@ -390,13 +392,18 @@ func (w *agentTurnWorker) invokeClaimedTurn(ctx context.Context, claim *claimedA
 	if decodeErr := json.Unmarshal(claim.turn.Input, &input); decodeErr != nil {
 		return nil, fmt.Errorf("decode stored turn input: %w", decodeErr)
 	}
-	return w.ai.InvokeAgentTurn(ctx, claim.session, claim.turn, claim.parentState, &input)
+	return w.ai.InvokeAgentTurn(ctx, rez.InvokeAgentTurnParams{
+		Session: claim.session,
+		Parent:  claim.parent,
+		Turn:    claim.turn,
+		Input:   &input,
+	})
 }
 
 type claimedAgentTurn struct {
-	session     *ent.AgentSession
-	turn        *ent.AgentTurn
-	parentState []byte
+	session *ent.AgentSession
+	parent  *ent.AgentTurn
+	turn    *ent.AgentTurn
 }
 
 func (w *agentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) (*claimedAgentTurn, error) {
@@ -452,39 +459,34 @@ func (w *agentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[job
 		othersExist, queryOthersErr := queryOthers.Exist(ctx)
 		if queryOthersErr != nil {
 			return fmt.Errorf("query running agent turn: %w", queryOthersErr)
-		}
-		if othersExist {
+		} else if othersExist {
 			return river.JobSnooze(time.Second * 5)
 		}
 
-		queryParent := sess.QueryTurns().
+		queryLatestTurn := sess.QueryTurns().
 			Where(at.StatusEQ(at.StatusCompleted), at.Not(at.HasChildrenWith(at.StatusEQ(at.StatusCompleted))))
+
 		// TODO: handle allowing explicit parents
 		//if turn.ParentID != nil {
 		//	queryParent.Where(at.ID(*turn.ParentID))
 		//}
-		parent, queryParentErr := queryParent.Only(ctx)
+
+		parent, queryParentErr := queryLatestTurn.Only(ctx)
 		if queryParentErr != nil && !ent.IsNotFound(queryParentErr) {
-			return fmt.Errorf("query successful agent turn: %w", queryParentErr)
+			return fmt.Errorf("query parent agent turn: %w", queryParentErr)
 		}
 
 		var parentId *uuid.UUID
-		var parentState []byte
 		if parent != nil {
 			parentId = &parent.ID
-			if parent.State == nil || len(parent.State) == 0 {
-				return fmt.Errorf("successful parent turn has no state")
-			}
-			parentState = append(parentState, parent.State...)
+			parent = parent.Unwrap()
 		} else {
-			queryByYoungest := sess.QueryTurns().
-				Order(at.ByCreatedAt(sql.OrderAsc()), at.ByID(sql.OrderAsc()))
-			initialTurn, queryInitialTurnErr := queryByYoungest.First(ctx)
-			if queryInitialTurnErr != nil {
-				return fmt.Errorf("query initial agent turn: %w", queryInitialTurnErr)
+			numTurns, queryTurnsErr := sess.QueryTurns().Count(ctx)
+			if queryTurnsErr != nil {
+				return fmt.Errorf("count session turns: %w", queryTurnsErr)
 			}
-			if initialTurn.ID != turn.ID {
-				return fmt.Errorf("session has no successful root turn")
+			if numTurns != 1 {
+				return fmt.Errorf("invalid agent root turn")
 			}
 		}
 
@@ -503,9 +505,9 @@ func (w *agentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[job
 		}
 
 		claim = &claimedAgentTurn{
-			session:     sess.Unwrap(),
-			turn:        started.Unwrap(),
-			parentState: parentState,
+			session: sess.Unwrap(),
+			turn:    started.Unwrap(),
+			parent:  parent,
 		}
 		return nil
 	})

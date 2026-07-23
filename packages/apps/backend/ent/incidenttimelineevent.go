@@ -64,8 +64,8 @@ type IncidentTimelineEventEdges struct {
 	Factors []*IncidentTimelineEventContributingFactor `json:"factors,omitempty"`
 	// Evidence holds the value of the evidence edge.
 	Evidence []*IncidentTimelineEventEvidence `json:"evidence,omitempty"`
-	// TopologyContext holds the value of the topology_context edge.
-	TopologyContext []*IncidentTimelineEventTopologyContext `json:"topology_context,omitempty"`
+	// SystemContext holds the value of the system_context edge.
+	SystemContext []*IncidentTimelineEventSystemContext `json:"system_context,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [7]bool
@@ -133,13 +133,13 @@ func (e IncidentTimelineEventEdges) EvidenceOrErr() ([]*IncidentTimelineEventEvi
 	return nil, &NotLoadedError{edge: "evidence"}
 }
 
-// TopologyContextOrErr returns the TopologyContext value or an error if the edge
+// SystemContextOrErr returns the SystemContext value or an error if the edge
 // was not loaded in eager-loading.
-func (e IncidentTimelineEventEdges) TopologyContextOrErr() ([]*IncidentTimelineEventTopologyContext, error) {
+func (e IncidentTimelineEventEdges) SystemContextOrErr() ([]*IncidentTimelineEventSystemContext, error) {
 	if e.loadedTypes[6] {
-		return e.TopologyContext, nil
+		return e.SystemContext, nil
 	}
-	return nil, &NotLoadedError{edge: "topology_context"}
+	return nil, &NotLoadedError{edge: "system_context"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -287,9 +287,9 @@ func (_m *IncidentTimelineEvent) QueryEvidence() *IncidentTimelineEventEvidenceQ
 	return NewIncidentTimelineEventClient(_m.config).QueryEvidence(_m)
 }
 
-// QueryTopologyContext queries the "topology_context" edge of the IncidentTimelineEvent entity.
-func (_m *IncidentTimelineEvent) QueryTopologyContext() *IncidentTimelineEventTopologyContextQuery {
-	return NewIncidentTimelineEventClient(_m.config).QueryTopologyContext(_m)
+// QuerySystemContext queries the "system_context" edge of the IncidentTimelineEvent entity.
+func (_m *IncidentTimelineEvent) QuerySystemContext() *IncidentTimelineEventSystemContextQuery {
+	return NewIncidentTimelineEventClient(_m.config).QuerySystemContext(_m)
 }
 
 // Update returns a builder for updating this IncidentTimelineEvent.

@@ -77,9 +77,14 @@ func AnalysisID(v uuid.UUID) predicate.SystemAnalysisTopologyNode {
 	return predicate.SystemAnalysisTopologyNode(sql.FieldEQ(FieldAnalysisID, v))
 }
 
-// SnapshotEntityID applies equality check predicate on the "snapshot_entity_id" field. It's identical to SnapshotEntityIDEQ.
-func SnapshotEntityID(v uuid.UUID) predicate.SystemAnalysisTopologyNode {
-	return predicate.SystemAnalysisTopologyNode(sql.FieldEQ(FieldSnapshotEntityID, v))
+// KnowledgeEntityID applies equality check predicate on the "knowledge_entity_id" field. It's identical to KnowledgeEntityIDEQ.
+func KnowledgeEntityID(v uuid.UUID) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldEQ(FieldKnowledgeEntityID, v))
+}
+
+// ReferencedAt applies equality check predicate on the "referenced_at" field. It's identical to ReferencedAtEQ.
+func ReferencedAt(v time.Time) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldEQ(FieldReferencedAt, v))
 }
 
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
@@ -217,24 +222,64 @@ func AnalysisIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisTopologyNode {
 	return predicate.SystemAnalysisTopologyNode(sql.FieldNotIn(FieldAnalysisID, vs...))
 }
 
-// SnapshotEntityIDEQ applies the EQ predicate on the "snapshot_entity_id" field.
-func SnapshotEntityIDEQ(v uuid.UUID) predicate.SystemAnalysisTopologyNode {
-	return predicate.SystemAnalysisTopologyNode(sql.FieldEQ(FieldSnapshotEntityID, v))
+// KnowledgeEntityIDEQ applies the EQ predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDEQ(v uuid.UUID) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldEQ(FieldKnowledgeEntityID, v))
 }
 
-// SnapshotEntityIDNEQ applies the NEQ predicate on the "snapshot_entity_id" field.
-func SnapshotEntityIDNEQ(v uuid.UUID) predicate.SystemAnalysisTopologyNode {
-	return predicate.SystemAnalysisTopologyNode(sql.FieldNEQ(FieldSnapshotEntityID, v))
+// KnowledgeEntityIDNEQ applies the NEQ predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDNEQ(v uuid.UUID) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldNEQ(FieldKnowledgeEntityID, v))
 }
 
-// SnapshotEntityIDIn applies the In predicate on the "snapshot_entity_id" field.
-func SnapshotEntityIDIn(vs ...uuid.UUID) predicate.SystemAnalysisTopologyNode {
-	return predicate.SystemAnalysisTopologyNode(sql.FieldIn(FieldSnapshotEntityID, vs...))
+// KnowledgeEntityIDIn applies the In predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDIn(vs ...uuid.UUID) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldIn(FieldKnowledgeEntityID, vs...))
 }
 
-// SnapshotEntityIDNotIn applies the NotIn predicate on the "snapshot_entity_id" field.
-func SnapshotEntityIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisTopologyNode {
-	return predicate.SystemAnalysisTopologyNode(sql.FieldNotIn(FieldSnapshotEntityID, vs...))
+// KnowledgeEntityIDNotIn applies the NotIn predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldNotIn(FieldKnowledgeEntityID, vs...))
+}
+
+// ReferencedAtEQ applies the EQ predicate on the "referenced_at" field.
+func ReferencedAtEQ(v time.Time) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldEQ(FieldReferencedAt, v))
+}
+
+// ReferencedAtNEQ applies the NEQ predicate on the "referenced_at" field.
+func ReferencedAtNEQ(v time.Time) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldNEQ(FieldReferencedAt, v))
+}
+
+// ReferencedAtIn applies the In predicate on the "referenced_at" field.
+func ReferencedAtIn(vs ...time.Time) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldIn(FieldReferencedAt, vs...))
+}
+
+// ReferencedAtNotIn applies the NotIn predicate on the "referenced_at" field.
+func ReferencedAtNotIn(vs ...time.Time) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldNotIn(FieldReferencedAt, vs...))
+}
+
+// ReferencedAtGT applies the GT predicate on the "referenced_at" field.
+func ReferencedAtGT(v time.Time) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldGT(FieldReferencedAt, v))
+}
+
+// ReferencedAtGTE applies the GTE predicate on the "referenced_at" field.
+func ReferencedAtGTE(v time.Time) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldGTE(FieldReferencedAt, v))
+}
+
+// ReferencedAtLT applies the LT predicate on the "referenced_at" field.
+func ReferencedAtLT(v time.Time) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldLT(FieldReferencedAt, v))
+}
+
+// ReferencedAtLTE applies the LTE predicate on the "referenced_at" field.
+func ReferencedAtLTE(v time.Time) predicate.SystemAnalysisTopologyNode {
+	return predicate.SystemAnalysisTopologyNode(sql.FieldLTE(FieldReferencedAt, v))
 }
 
 // DescriptionEQ applies the EQ predicate on the "description" field.
@@ -450,26 +495,26 @@ func HasAnalysisWith(preds ...predicate.SystemAnalysis) predicate.SystemAnalysis
 	})
 }
 
-// HasSnapshotEntity applies the HasEdge predicate on the "snapshot_entity" edge.
-func HasSnapshotEntity() predicate.SystemAnalysisTopologyNode {
+// HasKnowledgeEntity applies the HasEdge predicate on the "knowledge_entity" edge.
+func HasKnowledgeEntity() predicate.SystemAnalysisTopologyNode {
 	return predicate.SystemAnalysisTopologyNode(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, SnapshotEntityTable, SnapshotEntityColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSnapshotEntityWith applies the HasEdge predicate on the "snapshot_entity" edge with a given conditions (other predicates).
-func HasSnapshotEntityWith(preds ...predicate.KnowledgeGraphSnapshotEntity) predicate.SystemAnalysisTopologyNode {
+// HasKnowledgeEntityWith applies the HasEdge predicate on the "knowledge_entity" edge with a given conditions (other predicates).
+func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.SystemAnalysisTopologyNode {
 	return predicate.SystemAnalysisTopologyNode(func(s *sql.Selector) {
-		step := newSnapshotEntityStep()
+		step := newKnowledgeEntityStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeGraphSnapshotEntity
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

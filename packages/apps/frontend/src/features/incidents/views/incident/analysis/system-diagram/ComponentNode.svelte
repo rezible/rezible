@@ -5,7 +5,7 @@
 
 	const { selected, data: arbitraryData }: NodeProps = $props();
 	const data = $derived(arbitraryData as SystemTopologyNodeData);
-	const entity = $derived(data.analysisNode.attributes.snapshotEntity);
+	const entity = $derived(data.analysisNode.attributes.knowledgeEntity);
 
 	const { nodesConnectable } = useStore();
 </script>

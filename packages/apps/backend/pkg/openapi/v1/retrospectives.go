@@ -50,7 +50,7 @@ type (
 
 	RetrospectiveAttributes struct {
 		DocumentId       uuid.UUID                    `json:"documentId"`
-		SystemAnalysisId *uuid.UUID                   `json:"systemAnalysisId,omitempty"`
+		SystemAnalysisId uuid.UUID                    `json:"systemAnalysisId"`
 		Kind             string                       `json:"type" enum:"simple,full"`
 		State            string                       `json:"state" enum:"draft,in_review,meeting_scheduled,completed"`
 		ReportSections   []RetrospectiveReportSection `json:"reportSections"`
@@ -88,14 +88,11 @@ type (
 
 func RetrospectiveFromEnt(r *ent.Retrospective) Retrospective {
 	attr := RetrospectiveAttributes{
-		DocumentId: r.DocumentID,
-		Kind:       r.Kind.String(),
-		State:      r.State.String(),
+		DocumentId:       r.DocumentID,
+		SystemAnalysisId: r.SystemAnalysisID,
+		Kind:             r.Kind.String(),
+		State:            r.State.String(),
 	}
-	if r.SystemAnalysisID != uuid.Nil {
-		attr.SystemAnalysisId = &r.SystemAnalysisID
-	}
-
 	// TODO: fetch this
 	attr.ReportSections = []RetrospectiveReportSection{
 		{

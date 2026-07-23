@@ -8,33 +8,49 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
 type KnowledgeGraphHandler interface {
 	ListKnowledgeGraphEntities(context.Context, *ListKnowledgeGraphEntitiesRequest) (*ListKnowledgeGraphEntitiesResponse, error)
 	GetKnowledgeGraphEntity(context.Context, *GetKnowledgeGraphEntityRequest) (*GetKnowledgeGraphEntityResponse, error)
+	GetKnowledgeGraphView(context.Context, *GetKnowledgeGraphViewRequest) (*GetKnowledgeGraphViewResponse, error)
 
 	ListKnowledgeGraphRelationships(context.Context, *ListKnowledgeGraphRelationshipsRequest) (*ListKnowledgeGraphRelationshipsResponse, error)
-
-	CreateKnowledgeGraphSnapshot(context.Context, *CreateKnowledgeGraphSnapshotRequest) (*CreateKnowledgeGraphSnapshotResponse, error)
-	GetKnowledgeGraphSnapshot(context.Context, *GetKnowledgeGraphSnapshotRequest) (*GetKnowledgeGraphSnapshotResponse, error)
 }
 
 func (o operations) RegisterKnowledgeGraph(api huma.API) {
 	huma.Register(api, ListKnowledgeGraphEntities, o.ListKnowledgeGraphEntities)
 	huma.Register(api, GetKnowledgeGraphEntity, o.GetKnowledgeGraphEntity)
+	huma.Register(api, GetKnowledgeGraphView, o.GetKnowledgeGraphView)
 
 	huma.Register(api, ListKnowledgeGraphRelationships, o.ListKnowledgeGraphRelationships)
-
-	huma.Register(api, CreateKnowledgeGraphSnapshot, o.CreateKnowledgeGraphSnapshot)
-	huma.Register(api, GetKnowledgeGraphSnapshot, o.GetKnowledgeGraphSnapshot)
 }
 
 type (
 	KnowledgeGraphView struct {
 		Entities      []KnowledgeGraphEntity       `json:"entities"`
 		Relationships []KnowledgeGraphRelationship `json:"relationships"`
+		Evidence      []KnowledgeGraphEvidence     `json:"evidence"`
+		Truncated     bool                         `json:"truncated"`
+		Warnings      []string                     `json:"warnings"`
+	}
+
+	KnowledgeGraphEvidence struct {
+		Id         uuid.UUID                        `json:"id"`
+		Attributes KnowledgeGraphEvidenceAttributes `json:"attributes"`
+	}
+	KnowledgeGraphEvidenceAttributes struct {
+		EventId        uuid.UUID      `json:"eventId"`
+		Provider       string         `json:"provider"`
+		ProviderSource string         `json:"providerSource"`
+		Assertion      string         `json:"assertion"`
+		EvidenceKind   string         `json:"evidenceKind"`
+		EffectiveAt    time.Time      `json:"effectiveAt"`
+		Properties     map[string]any `json:"properties"`
+		EntityId       *uuid.UUID     `json:"entityId,omitempty"`
+		RelationshipId *uuid.UUID     `json:"relationshipId,omitempty"`
 	}
 
 	KnowledgeGraphEntity struct {
@@ -77,44 +93,7 @@ type (
 		Kind               string `json:"kind" enum:"entity,relationship"`
 		Provider           string `json:"provider"`
 		ProviderSubjectRef string `json:"providerSubjectRef"`
-		Description        string `json:"displayName"`
-	}
-
-	KnowledgeGraphSnapshot struct {
-		Id         uuid.UUID                        `json:"id"`
-		Attributes KnowledgeGraphSnapshotAttributes `json:"attributes"`
-	}
-	KnowledgeGraphSnapshotAttributes struct {
-		AsOf            time.Time                            `json:"asOf"`
-		CreatedAt       time.Time                            `json:"createdAt"`
-		Scope           string                               `json:"scope"`
-		ScopeProperties map[string]any                       `json:"scopeProperties"`
-		Entities        []KnowledgeGraphSnapshotEntity       `json:"entities"`
-		Relationships   []KnowledgeGraphSnapshotRelationship `json:"relationships"`
-	}
-	KnowledgeGraphSnapshotEntity struct {
-		Id         uuid.UUID                              `json:"id"`
-		Attributes KnowledgeGraphSnapshotEntityAttributes `json:"attributes"`
-	}
-	KnowledgeGraphSnapshotEntityAttributes struct {
-		EntityId    *uuid.UUID     `json:"entityId,omitempty"`
-		Kind        string         `json:"kind"`
-		DisplayName string         `json:"displayName"`
-		Description string         `json:"description"`
-		Properties  map[string]any `json:"properties"`
-	}
-	KnowledgeGraphSnapshotRelationship struct {
-		Id         uuid.UUID                                    `json:"id"`
-		Attributes KnowledgeGraphSnapshotRelationshipAttributes `json:"attributes"`
-	}
-	KnowledgeGraphSnapshotRelationshipAttributes struct {
-		RelationshipId         *uuid.UUID     `json:"relationshipId,omitempty"`
-		SourceSnapshotEntityId uuid.UUID      `json:"sourceSnapshotEntityId"`
-		TargetSnapshotEntityId uuid.UUID      `json:"targetSnapshotEntityId"`
-		Kind                   string         `json:"kind"`
-		DisplayName            string         `json:"displayName"`
-		Description            string         `json:"description"`
-		Properties             map[string]any `json:"properties"`
+		Description        string `json:"description"`
 	}
 )
 
@@ -138,6 +117,7 @@ func KnowledgeGraphEntityFromEnt(entity *ent.KnowledgeEntity) KnowledgeGraphEnti
 
 func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) KnowledgeGraphSubjectAlias {
 	attrs := KnowledgeGraphSubjectAliasAttributes{
+		Kind:               alias.SubjectKind.String(),
 		Description:        alias.Description,
 		Provider:           alias.Provider,
 		ProviderSubjectRef: alias.ProviderSubjectRef,
@@ -148,12 +128,25 @@ func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) Knowled
 func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) KnowledgeGraphRelationship {
 	attr := KnowledgeGraphRelationshipAttributes{
 		Kind:        rel.Kind,
+		DisplayName: rel.Kind,
 		Description: rel.Description,
 		Properties:  rel.Properties,
 		CreatedAt:   rel.CreatedAt,
 		UpdatedAt:   rel.UpdatedAt,
 		Source:      Expandable[KnowledgeGraphEntityAttributes]{Id: rel.SourceEntityID},
 		Target:      Expandable[KnowledgeGraphEntityAttributes]{Id: rel.TargetEntityID},
+	}
+	for i, alias := range rel.Edges.Aliases {
+		if i == 0 || alias.FirstObservedAt.Before(attr.FirstSeenAt) {
+			attr.FirstSeenAt = alias.FirstObservedAt
+		}
+		if alias.LastObservedAt.After(attr.LastSeenAt) {
+			attr.LastSeenAt = alias.LastObservedAt
+		}
+	}
+	if attr.FirstSeenAt.IsZero() {
+		attr.FirstSeenAt = rel.CreatedAt
+		attr.LastSeenAt = rel.UpdatedAt
 	}
 	if source, err := rel.Edges.SourceEntityOrErr(); err == nil {
 		s := KnowledgeGraphEntityFromEnt(source)
@@ -166,46 +159,44 @@ func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) Knowledge
 	return KnowledgeGraphRelationship{Id: rel.ID, Attributes: attr}
 }
 
-func KnowledgeGraphSnapshotFromEnt(snapshot *ent.KnowledgeGraphSnapshot) KnowledgeGraphSnapshot {
-	attr := KnowledgeGraphSnapshotAttributes{
-		Scope:           snapshot.ScopeKind,
-		ScopeProperties: snapshot.ScopeProperties,
-		AsOf:            snapshot.AsOf,
-		CreatedAt:       snapshot.CreatedAt,
+func KnowledgeGraphViewFromRez(view *rez.KnowledgeGraphView) KnowledgeGraphView {
+	result := KnowledgeGraphView{Truncated: view.Truncated, Warnings: view.Warnings}
+	result.Entities = make([]KnowledgeGraphEntity, len(view.Entities))
+	for i, entity := range view.Entities {
+		result.Entities[i] = KnowledgeGraphEntityFromEnt(entity)
 	}
-	attr.Entities = make([]KnowledgeGraphSnapshotEntity, len(snapshot.Edges.Entities))
-	for i, entity := range snapshot.Edges.Entities {
-		attr.Entities[i] = KnowledgeGraphSnapshotEntityFromEnt(entity)
+	result.Relationships = make([]KnowledgeGraphRelationship, len(view.Relationships))
+	for i, relationship := range view.Relationships {
+		result.Relationships[i] = KnowledgeGraphRelationshipFromEnt(relationship)
 	}
-	attr.Relationships = make([]KnowledgeGraphSnapshotRelationship, len(snapshot.Edges.Relationships))
-	for i, rel := range snapshot.Edges.Relationships {
-		attr.Relationships[i] = KnowledgeGraphSnapshotRelationshipFromEnt(rel)
+	result.Evidence = make([]KnowledgeGraphEvidence, len(view.Evidence))
+	for i, evidence := range view.Evidence {
+		result.Evidence[i] = KnowledgeGraphEvidenceFromEnt(evidence)
 	}
-	return KnowledgeGraphSnapshot{Id: snapshot.ID, Attributes: attr}
+	return result
 }
 
-func KnowledgeGraphSnapshotEntityFromEnt(entity *ent.KnowledgeGraphSnapshotEntity) KnowledgeGraphSnapshotEntity {
-	attrs := KnowledgeGraphSnapshotEntityAttributes{
-		EntityId:    entity.KnowledgeEntityID,
-		Kind:        entity.EntityKind,
-		DisplayName: entity.DisplayName,
-		Description: entity.Description,
-		Properties:  entity.Properties,
+func KnowledgeGraphEvidenceFromEnt(evidence *ent.KnowledgeEvidence) KnowledgeGraphEvidence {
+	attributes := KnowledgeGraphEvidenceAttributes{
+		EventId: evidence.EventID, Assertion: evidence.Assertion,
+		EvidenceKind: evidence.EvidenceKind.String(), EffectiveAt: evidence.EffectiveAt,
+		Properties: evidence.Properties,
 	}
-	return KnowledgeGraphSnapshotEntity{Id: entity.ID, Attributes: attrs}
-}
-
-func KnowledgeGraphSnapshotRelationshipFromEnt(rel *ent.KnowledgeGraphSnapshotRelationship) KnowledgeGraphSnapshotRelationship {
-	attrs := KnowledgeGraphSnapshotRelationshipAttributes{
-		RelationshipId:         rel.KnowledgeRelationshipID,
-		SourceSnapshotEntityId: rel.SourceSnapshotEntityID,
-		TargetSnapshotEntityId: rel.TargetSnapshotEntityID,
-		Kind:                   rel.RelationshipKind,
-		DisplayName:            rel.DisplayName,
-		Description:            rel.Description,
-		Properties:             rel.Properties,
+	if event, err := evidence.Edges.EventOrErr(); err == nil {
+		attributes.Provider = event.Provider
+		attributes.ProviderSource = event.ProviderSource
 	}
-	return KnowledgeGraphSnapshotRelationship{Id: rel.ID, Attributes: attrs}
+	if alias, err := evidence.Edges.AliasOrErr(); err == nil {
+		if alias.EntityID != uuid.Nil {
+			id := alias.EntityID
+			attributes.EntityId = &id
+		}
+		if alias.RelationshipID != uuid.Nil {
+			id := alias.RelationshipID
+			attributes.RelationshipId = &id
+		}
+	}
+	return KnowledgeGraphEvidence{Id: evidence.ID, Attributes: attributes}
 }
 
 var knowledgeGraphTags = []string{"Knowledge Graph"}
@@ -243,7 +234,7 @@ type GetKnowledgeGraphEntityResponse ItemResponse[KnowledgeGraphEntity]
 var GetKnowledgeGraphView = huma.Operation{
 	OperationID: "get-knowledge-graph-view",
 	Method:      http.MethodGet,
-	Path:        "/knowledge_graph/view",
+	Path:        "/knowledge_graph/entities/{entityId}/view",
 	Summary:     "Get Knowledge Graph View",
 	Tags:        knowledgeGraphTags,
 	Errors:      ErrorCodes(),
@@ -273,41 +264,3 @@ type ListKnowledgeGraphRelationshipsRequest struct {
 	TargetEntityId uuid.UUID `query:"targetEntityId" required:"false"`
 }
 type ListKnowledgeGraphRelationshipsResponse ListResponse[KnowledgeGraphRelationship]
-
-var CreateKnowledgeGraphSnapshot = huma.Operation{
-	OperationID: "create-knowledge-graph-snapshot",
-	Method:      http.MethodPost,
-	Path:        "/knowledge_graph/snapshots",
-	Summary:     "Create Knowledge Graph Snapshot",
-	Tags:        knowledgeGraphTags,
-	Errors:      ErrorCodes(),
-}
-
-type CreateKnowledgeGraphSnapshotRequestAttributes struct {
-	Name              string         `json:"name"`
-	AsOf              *time.Time     `json:"asOf,omitempty"`
-	Scope             string         `json:"scope" enum:"explicit_entities,root_entities,incident,retrospective,search,analysis"`
-	ScopeProperties   map[string]any `json:"scopeProperties"`
-	EntityIds         []uuid.UUID    `json:"entityIds"`
-	RootEntityIds     []uuid.UUID    `json:"rootEntityIds"`
-	Depth             int            `json:"depth"`
-	EntityKinds       []string       `json:"entityKinds"`
-	RelationshipKinds []string       `json:"relationshipKinds"`
-	IncludeIncidents  bool           `json:"includeIncidents"`
-	IncludeChanges    bool           `json:"includeChanges"`
-	IncludeAlerts     bool           `json:"includeAlerts"`
-}
-type CreateKnowledgeGraphSnapshotRequest RequestWithBodyAttributes[CreateKnowledgeGraphSnapshotRequestAttributes]
-type CreateKnowledgeGraphSnapshotResponse ItemResponse[KnowledgeGraphSnapshot]
-
-var GetKnowledgeGraphSnapshot = huma.Operation{
-	OperationID: "get-knowledge-graph-snapshot",
-	Method:      http.MethodGet,
-	Path:        "/knowledge_graph/snapshots/{id}",
-	Summary:     "Get Knowledge Graph Snapshot",
-	Tags:        knowledgeGraphTags,
-	Errors:      ErrorCodes(),
-}
-
-type GetKnowledgeGraphSnapshotRequest IdRequest
-type GetKnowledgeGraphSnapshotResponse ItemResponse[KnowledgeGraphSnapshot]

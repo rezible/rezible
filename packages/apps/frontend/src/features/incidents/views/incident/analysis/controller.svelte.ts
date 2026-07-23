@@ -1,6 +1,6 @@
 import type { ComponentProps } from "svelte";
 import { Context } from "runed";
-import { createMutation, createQuery, QueryClient, useQueryClient } from "@tanstack/svelte-query";
+import { createMutation, createQuery } from "@tanstack/svelte-query";
 import {
 	addSystemAnalysisEdgeMutation,
 	addSystemAnalysisNodeMutation,
@@ -27,12 +27,6 @@ type ContextMenuProps = {
 export class IncidentAnalysisController {
 	view = useIncidentView();
 	analysisId = $derived(this.view.systemAnalysisId || "");
-
-	queryClient = $state.raw<QueryClient>();
-
-	constructor() {
-		this.queryClient = useQueryClient();
-	}
 
 	private analysisQueryOptions = $derived(getSystemAnalysisOptions({ path: { id: this.analysisId } }));
 	private analysisQuery = createQuery(() => ({

@@ -24,8 +24,10 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldAnalysisID holds the string denoting the analysis_id field in the database.
 	FieldAnalysisID = "analysis_id"
-	// FieldSnapshotEntityID holds the string denoting the snapshot_entity_id field in the database.
-	FieldSnapshotEntityID = "snapshot_entity_id"
+	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
+	FieldKnowledgeEntityID = "knowledge_entity_id"
+	// FieldReferencedAt holds the string denoting the referenced_at field in the database.
+	FieldReferencedAt = "referenced_at"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldPosX holds the string denoting the pos_x field in the database.
@@ -36,8 +38,8 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeAnalysis holds the string denoting the analysis edge name in mutations.
 	EdgeAnalysis = "analysis"
-	// EdgeSnapshotEntity holds the string denoting the snapshot_entity edge name in mutations.
-	EdgeSnapshotEntity = "snapshot_entity"
+	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
+	EdgeKnowledgeEntity = "knowledge_entity"
 	// Table holds the table name of the systemanalysistopologynode in the database.
 	Table = "system_analysis_topology_nodes"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -54,13 +56,13 @@ const (
 	AnalysisInverseTable = "system_analyses"
 	// AnalysisColumn is the table column denoting the analysis relation/edge.
 	AnalysisColumn = "analysis_id"
-	// SnapshotEntityTable is the table that holds the snapshot_entity relation/edge.
-	SnapshotEntityTable = "system_analysis_topology_nodes"
-	// SnapshotEntityInverseTable is the table name for the KnowledgeGraphSnapshotEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgegraphsnapshotentity" package.
-	SnapshotEntityInverseTable = "knowledge_graph_snapshot_entities"
-	// SnapshotEntityColumn is the table column denoting the snapshot_entity relation/edge.
-	SnapshotEntityColumn = "snapshot_entity_id"
+	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
+	KnowledgeEntityTable = "system_analysis_topology_nodes"
+	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
+	KnowledgeEntityInverseTable = "knowledge_entities"
+	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
+	KnowledgeEntityColumn = "knowledge_entity_id"
 )
 
 // Columns holds all SQL columns for systemanalysistopologynode fields.
@@ -70,7 +72,8 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldAnalysisID,
-	FieldSnapshotEntityID,
+	FieldKnowledgeEntityID,
+	FieldReferencedAt,
 	FieldDescription,
 	FieldPosX,
 	FieldPosY,
@@ -100,6 +103,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultReferencedAt holds the default value on creation for the "referenced_at" field.
+	DefaultReferencedAt func() time.Time
 	// DefaultPosX holds the default value on creation for the "pos_x" field.
 	DefaultPosX float64
 	// DefaultPosY holds the default value on creation for the "pos_y" field.
@@ -136,9 +141,14 @@ func ByAnalysisID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAnalysisID, opts...).ToFunc()
 }
 
-// BySnapshotEntityID orders the results by the snapshot_entity_id field.
-func BySnapshotEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSnapshotEntityID, opts...).ToFunc()
+// ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
+func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKnowledgeEntityID, opts...).ToFunc()
+}
+
+// ByReferencedAt orders the results by the referenced_at field.
+func ByReferencedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReferencedAt, opts...).ToFunc()
 }
 
 // ByDescription orders the results by the description field.
@@ -170,10 +180,10 @@ func ByAnalysisField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// BySnapshotEntityField orders the results by snapshot_entity field.
-func BySnapshotEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByKnowledgeEntityField orders the results by knowledge_entity field.
+func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSnapshotEntityStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -190,10 +200,10 @@ func newAnalysisStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, AnalysisTable, AnalysisColumn),
 	)
 }
-func newSnapshotEntityStep() *sqlgraph.Step {
+func newKnowledgeEntityStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SnapshotEntityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, SnapshotEntityTable, SnapshotEntityColumn),
+		sqlgraph.To(KnowledgeEntityInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 	)
 }

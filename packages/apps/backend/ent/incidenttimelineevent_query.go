@@ -19,7 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontext"
 	"github.com/rezible/rezible/ent/incidenttimelineeventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenttimelineeventevidence"
-	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
+	"github.com/rezible/rezible/ent/incidenttimelineeventsystemcontext"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
@@ -29,18 +29,18 @@ import (
 // IncidentTimelineEventQuery is the builder for querying IncidentTimelineEvent entities.
 type IncidentTimelineEventQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []incidenttimelineevent.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.IncidentTimelineEvent
-	withTenant          *TenantQuery
-	withIncident        *IncidentQuery
-	withEvent           *NormalizedEventQuery
-	withContext         *IncidentTimelineEventContextQuery
-	withFactors         *IncidentTimelineEventContributingFactorQuery
-	withEvidence        *IncidentTimelineEventEvidenceQuery
-	withTopologyContext *IncidentTimelineEventTopologyContextQuery
-	modifiers           []func(*sql.Selector)
+	ctx               *QueryContext
+	order             []incidenttimelineevent.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.IncidentTimelineEvent
+	withTenant        *TenantQuery
+	withIncident      *IncidentQuery
+	withEvent         *NormalizedEventQuery
+	withContext       *IncidentTimelineEventContextQuery
+	withFactors       *IncidentTimelineEventContributingFactorQuery
+	withEvidence      *IncidentTimelineEventEvidenceQuery
+	withSystemContext *IncidentTimelineEventSystemContextQuery
+	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -227,9 +227,9 @@ func (_q *IncidentTimelineEventQuery) QueryEvidence() *IncidentTimelineEventEvid
 	return query
 }
 
-// QueryTopologyContext chains the current query on the "topology_context" edge.
-func (_q *IncidentTimelineEventQuery) QueryTopologyContext() *IncidentTimelineEventTopologyContextQuery {
-	query := (&IncidentTimelineEventTopologyContextClient{config: _q.config}).Query()
+// QuerySystemContext chains the current query on the "system_context" edge.
+func (_q *IncidentTimelineEventQuery) QuerySystemContext() *IncidentTimelineEventSystemContextQuery {
+	query := (&IncidentTimelineEventSystemContextClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -240,12 +240,12 @@ func (_q *IncidentTimelineEventQuery) QueryTopologyContext() *IncidentTimelineEv
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incidenttimelineevent.Table, incidenttimelineevent.FieldID, selector),
-			sqlgraph.To(incidenttimelineeventtopologycontext.Table, incidenttimelineeventtopologycontext.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incidenttimelineevent.TopologyContextTable, incidenttimelineevent.TopologyContextColumn),
+			sqlgraph.To(incidenttimelineeventsystemcontext.Table, incidenttimelineeventsystemcontext.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incidenttimelineevent.SystemContextTable, incidenttimelineevent.SystemContextColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.IncidentTimelineEventTopologyContext
-		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
+		step.To.Schema = schemaConfig.IncidentTimelineEventSystemContext
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventSystemContext
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -439,18 +439,18 @@ func (_q *IncidentTimelineEventQuery) Clone() *IncidentTimelineEventQuery {
 		return nil
 	}
 	return &IncidentTimelineEventQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]incidenttimelineevent.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.IncidentTimelineEvent{}, _q.predicates...),
-		withTenant:          _q.withTenant.Clone(),
-		withIncident:        _q.withIncident.Clone(),
-		withEvent:           _q.withEvent.Clone(),
-		withContext:         _q.withContext.Clone(),
-		withFactors:         _q.withFactors.Clone(),
-		withEvidence:        _q.withEvidence.Clone(),
-		withTopologyContext: _q.withTopologyContext.Clone(),
+		config:            _q.config,
+		ctx:               _q.ctx.Clone(),
+		order:             append([]incidenttimelineevent.OrderOption{}, _q.order...),
+		inters:            append([]Interceptor{}, _q.inters...),
+		predicates:        append([]predicate.IncidentTimelineEvent{}, _q.predicates...),
+		withTenant:        _q.withTenant.Clone(),
+		withIncident:      _q.withIncident.Clone(),
+		withEvent:         _q.withEvent.Clone(),
+		withContext:       _q.withContext.Clone(),
+		withFactors:       _q.withFactors.Clone(),
+		withEvidence:      _q.withEvidence.Clone(),
+		withSystemContext: _q.withSystemContext.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -524,14 +524,14 @@ func (_q *IncidentTimelineEventQuery) WithEvidence(opts ...func(*IncidentTimelin
 	return _q
 }
 
-// WithTopologyContext tells the query-builder to eager-load the nodes that are connected to
-// the "topology_context" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentTimelineEventQuery) WithTopologyContext(opts ...func(*IncidentTimelineEventTopologyContextQuery)) *IncidentTimelineEventQuery {
-	query := (&IncidentTimelineEventTopologyContextClient{config: _q.config}).Query()
+// WithSystemContext tells the query-builder to eager-load the nodes that are connected to
+// the "system_context" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *IncidentTimelineEventQuery) WithSystemContext(opts ...func(*IncidentTimelineEventSystemContextQuery)) *IncidentTimelineEventQuery {
+	query := (&IncidentTimelineEventSystemContextClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withTopologyContext = query
+	_q.withSystemContext = query
 	return _q
 }
 
@@ -626,7 +626,7 @@ func (_q *IncidentTimelineEventQuery) sqlAll(ctx context.Context, hooks ...query
 			_q.withContext != nil,
 			_q.withFactors != nil,
 			_q.withEvidence != nil,
-			_q.withTopologyContext != nil,
+			_q.withSystemContext != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -694,11 +694,11 @@ func (_q *IncidentTimelineEventQuery) sqlAll(ctx context.Context, hooks ...query
 			return nil, err
 		}
 	}
-	if query := _q.withTopologyContext; query != nil {
-		if err := _q.loadTopologyContext(ctx, query, nodes,
-			func(n *IncidentTimelineEvent) { n.Edges.TopologyContext = []*IncidentTimelineEventTopologyContext{} },
-			func(n *IncidentTimelineEvent, e *IncidentTimelineEventTopologyContext) {
-				n.Edges.TopologyContext = append(n.Edges.TopologyContext, e)
+	if query := _q.withSystemContext; query != nil {
+		if err := _q.loadSystemContext(ctx, query, nodes,
+			func(n *IncidentTimelineEvent) { n.Edges.SystemContext = []*IncidentTimelineEventSystemContext{} },
+			func(n *IncidentTimelineEvent, e *IncidentTimelineEventSystemContext) {
+				n.Edges.SystemContext = append(n.Edges.SystemContext, e)
 			}); err != nil {
 			return nil, err
 		}
@@ -883,7 +883,7 @@ func (_q *IncidentTimelineEventQuery) loadEvidence(ctx context.Context, query *I
 	}
 	return nil
 }
-func (_q *IncidentTimelineEventQuery) loadTopologyContext(ctx context.Context, query *IncidentTimelineEventTopologyContextQuery, nodes []*IncidentTimelineEvent, init func(*IncidentTimelineEvent), assign func(*IncidentTimelineEvent, *IncidentTimelineEventTopologyContext)) error {
+func (_q *IncidentTimelineEventQuery) loadSystemContext(ctx context.Context, query *IncidentTimelineEventSystemContextQuery, nodes []*IncidentTimelineEvent, init func(*IncidentTimelineEvent), assign func(*IncidentTimelineEvent, *IncidentTimelineEventSystemContext)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*IncidentTimelineEvent)
 	for i := range nodes {
@@ -894,10 +894,10 @@ func (_q *IncidentTimelineEventQuery) loadTopologyContext(ctx context.Context, q
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidenttimelineeventtopologycontext.FieldIncidentEventID)
+		query.ctx.AppendFieldOnce(incidenttimelineeventsystemcontext.FieldIncidentEventID)
 	}
-	query.Where(predicate.IncidentTimelineEventTopologyContext(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incidenttimelineevent.TopologyContextColumn), fks...))
+	query.Where(predicate.IncidentTimelineEventSystemContext(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incidenttimelineevent.SystemContextColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
