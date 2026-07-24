@@ -8144,15 +8144,15 @@ func (c *KnowledgeEvidenceClient) QueryEvent(_m *KnowledgeEvidence) *NormalizedE
 	return query
 }
 
-// QueryAlias queries the alias edge of a KnowledgeEvidence.
-func (c *KnowledgeEvidenceClient) QueryAlias(_m *KnowledgeEvidence) *KnowledgeSubjectAliasQuery {
+// QuerySubjectAlias queries the subject_alias edge of a KnowledgeEvidence.
+func (c *KnowledgeEvidenceClient) QuerySubjectAlias(_m *KnowledgeEvidence) *KnowledgeSubjectAliasQuery {
 	query := (&KnowledgeSubjectAliasClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(knowledgeevidence.Table, knowledgeevidence.FieldID, id),
 			sqlgraph.To(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeevidence.AliasTable, knowledgeevidence.AliasColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeevidence.SubjectAliasTable, knowledgeevidence.SubjectAliasColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
@@ -8526,25 +8526,6 @@ func (c *KnowledgeSubjectAliasClient) QueryTenant(_m *KnowledgeSubjectAlias) *Te
 	return query
 }
 
-// QueryEvidence queries the evidence edge of a KnowledgeSubjectAlias.
-func (c *KnowledgeSubjectAliasClient) QueryEvidence(_m *KnowledgeSubjectAlias) *KnowledgeEvidenceQuery {
-	query := (&KnowledgeEvidenceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID, id),
-			sqlgraph.To(knowledgeevidence.Table, knowledgeevidence.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, knowledgesubjectalias.EvidenceTable, knowledgesubjectalias.EvidenceColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEvidence
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryEntity queries the entity edge of a KnowledgeSubjectAlias.
 func (c *KnowledgeSubjectAliasClient) QueryEntity(_m *KnowledgeSubjectAlias) *KnowledgeEntityQuery {
 	query := (&KnowledgeEntityClient{config: c.config}).Query()
@@ -8577,6 +8558,25 @@ func (c *KnowledgeSubjectAliasClient) QueryRelationship(_m *KnowledgeSubjectAlia
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvidence queries the evidence edge of a KnowledgeSubjectAlias.
+func (c *KnowledgeSubjectAliasClient) QueryEvidence(_m *KnowledgeSubjectAlias) *KnowledgeEvidenceQuery {
+	query := (&KnowledgeEvidenceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID, id),
+			sqlgraph.To(knowledgeevidence.Table, knowledgeevidence.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgesubjectalias.EvidenceTable, knowledgesubjectalias.EvidenceColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.KnowledgeEvidence
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}

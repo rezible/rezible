@@ -67,72 +67,6 @@ func (_u *KnowledgeEntityUpdate) SetNillableKind(v *string) *KnowledgeEntityUpda
 	return _u
 }
 
-// SetReference sets the "reference" field.
-func (_u *KnowledgeEntityUpdate) SetReference(v string) *KnowledgeEntityUpdate {
-	_u.mutation.SetReference(v)
-	return _u
-}
-
-// SetNillableReference sets the "reference" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdate) SetNillableReference(v *string) *KnowledgeEntityUpdate {
-	if v != nil {
-		_u.SetReference(*v)
-	}
-	return _u
-}
-
-// SetDisplayName sets the "display_name" field.
-func (_u *KnowledgeEntityUpdate) SetDisplayName(v string) *KnowledgeEntityUpdate {
-	_u.mutation.SetDisplayName(v)
-	return _u
-}
-
-// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdate) SetNillableDisplayName(v *string) *KnowledgeEntityUpdate {
-	if v != nil {
-		_u.SetDisplayName(*v)
-	}
-	return _u
-}
-
-// ClearDisplayName clears the value of the "display_name" field.
-func (_u *KnowledgeEntityUpdate) ClearDisplayName() *KnowledgeEntityUpdate {
-	_u.mutation.ClearDisplayName()
-	return _u
-}
-
-// SetDescription sets the "description" field.
-func (_u *KnowledgeEntityUpdate) SetDescription(v string) *KnowledgeEntityUpdate {
-	_u.mutation.SetDescription(v)
-	return _u
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdate) SetNillableDescription(v *string) *KnowledgeEntityUpdate {
-	if v != nil {
-		_u.SetDescription(*v)
-	}
-	return _u
-}
-
-// ClearDescription clears the value of the "description" field.
-func (_u *KnowledgeEntityUpdate) ClearDescription() *KnowledgeEntityUpdate {
-	_u.mutation.ClearDescription()
-	return _u
-}
-
-// SetLiveProperties sets the "live_properties" field.
-func (_u *KnowledgeEntityUpdate) SetLiveProperties(v map[string]interface{}) *KnowledgeEntityUpdate {
-	_u.mutation.SetLiveProperties(v)
-	return _u
-}
-
-// ClearLiveProperties clears the value of the "live_properties" field.
-func (_u *KnowledgeEntityUpdate) ClearLiveProperties() *KnowledgeEntityUpdate {
-	_u.mutation.ClearLiveProperties()
-	return _u
-}
-
 // AddAliasIDs adds the "aliases" edge to the KnowledgeSubjectAlias entity by IDs.
 func (_u *KnowledgeEntityUpdate) AddAliasIDs(ids ...uuid.UUID) *KnowledgeEntityUpdate {
 	_u.mutation.AddAliasIDs(ids...)
@@ -295,11 +229,6 @@ func (_u *KnowledgeEntityUpdate) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.kind": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Reference(); ok {
-		if err := knowledgeentity.ReferenceValidator(v); err != nil {
-			return &ValidationError{Name: "reference", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.reference": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "KnowledgeEntity.tenant"`)
 	}
@@ -332,27 +261,6 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Reference(); ok {
-		_spec.SetField(knowledgeentity.FieldReference, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.DisplayName(); ok {
-		_spec.SetField(knowledgeentity.FieldDisplayName, field.TypeString, value)
-	}
-	if _u.mutation.DisplayNameCleared() {
-		_spec.ClearField(knowledgeentity.FieldDisplayName, field.TypeString)
-	}
-	if value, ok := _u.mutation.Description(); ok {
-		_spec.SetField(knowledgeentity.FieldDescription, field.TypeString, value)
-	}
-	if _u.mutation.DescriptionCleared() {
-		_spec.ClearField(knowledgeentity.FieldDescription, field.TypeString)
-	}
-	if value, ok := _u.mutation.LiveProperties(); ok {
-		_spec.SetField(knowledgeentity.FieldLiveProperties, field.TypeJSON, value)
-	}
-	if _u.mutation.LivePropertiesCleared() {
-		_spec.ClearField(knowledgeentity.FieldLiveProperties, field.TypeJSON)
 	}
 	if _u.mutation.AliasesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -556,72 +464,6 @@ func (_u *KnowledgeEntityUpdateOne) SetNillableKind(v *string) *KnowledgeEntityU
 	return _u
 }
 
-// SetReference sets the "reference" field.
-func (_u *KnowledgeEntityUpdateOne) SetReference(v string) *KnowledgeEntityUpdateOne {
-	_u.mutation.SetReference(v)
-	return _u
-}
-
-// SetNillableReference sets the "reference" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdateOne) SetNillableReference(v *string) *KnowledgeEntityUpdateOne {
-	if v != nil {
-		_u.SetReference(*v)
-	}
-	return _u
-}
-
-// SetDisplayName sets the "display_name" field.
-func (_u *KnowledgeEntityUpdateOne) SetDisplayName(v string) *KnowledgeEntityUpdateOne {
-	_u.mutation.SetDisplayName(v)
-	return _u
-}
-
-// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdateOne) SetNillableDisplayName(v *string) *KnowledgeEntityUpdateOne {
-	if v != nil {
-		_u.SetDisplayName(*v)
-	}
-	return _u
-}
-
-// ClearDisplayName clears the value of the "display_name" field.
-func (_u *KnowledgeEntityUpdateOne) ClearDisplayName() *KnowledgeEntityUpdateOne {
-	_u.mutation.ClearDisplayName()
-	return _u
-}
-
-// SetDescription sets the "description" field.
-func (_u *KnowledgeEntityUpdateOne) SetDescription(v string) *KnowledgeEntityUpdateOne {
-	_u.mutation.SetDescription(v)
-	return _u
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdateOne) SetNillableDescription(v *string) *KnowledgeEntityUpdateOne {
-	if v != nil {
-		_u.SetDescription(*v)
-	}
-	return _u
-}
-
-// ClearDescription clears the value of the "description" field.
-func (_u *KnowledgeEntityUpdateOne) ClearDescription() *KnowledgeEntityUpdateOne {
-	_u.mutation.ClearDescription()
-	return _u
-}
-
-// SetLiveProperties sets the "live_properties" field.
-func (_u *KnowledgeEntityUpdateOne) SetLiveProperties(v map[string]interface{}) *KnowledgeEntityUpdateOne {
-	_u.mutation.SetLiveProperties(v)
-	return _u
-}
-
-// ClearLiveProperties clears the value of the "live_properties" field.
-func (_u *KnowledgeEntityUpdateOne) ClearLiveProperties() *KnowledgeEntityUpdateOne {
-	_u.mutation.ClearLiveProperties()
-	return _u
-}
-
 // AddAliasIDs adds the "aliases" edge to the KnowledgeSubjectAlias entity by IDs.
 func (_u *KnowledgeEntityUpdateOne) AddAliasIDs(ids ...uuid.UUID) *KnowledgeEntityUpdateOne {
 	_u.mutation.AddAliasIDs(ids...)
@@ -797,11 +639,6 @@ func (_u *KnowledgeEntityUpdateOne) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.kind": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Reference(); ok {
-		if err := knowledgeentity.ReferenceValidator(v); err != nil {
-			return &ValidationError{Name: "reference", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.reference": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "KnowledgeEntity.tenant"`)
 	}
@@ -851,27 +688,6 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 	}
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Reference(); ok {
-		_spec.SetField(knowledgeentity.FieldReference, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.DisplayName(); ok {
-		_spec.SetField(knowledgeentity.FieldDisplayName, field.TypeString, value)
-	}
-	if _u.mutation.DisplayNameCleared() {
-		_spec.ClearField(knowledgeentity.FieldDisplayName, field.TypeString)
-	}
-	if value, ok := _u.mutation.Description(); ok {
-		_spec.SetField(knowledgeentity.FieldDescription, field.TypeString, value)
-	}
-	if _u.mutation.DescriptionCleared() {
-		_spec.ClearField(knowledgeentity.FieldDescription, field.TypeString)
-	}
-	if value, ok := _u.mutation.LiveProperties(); ok {
-		_spec.SetField(knowledgeentity.FieldLiveProperties, field.TypeJSON, value)
-	}
-	if _u.mutation.LivePropertiesCleared() {
-		_spec.ClearField(knowledgeentity.FieldLiveProperties, field.TypeJSON)
 	}
 	if _u.mutation.AliasesCleared() {
 		edge := &sqlgraph.EdgeSpec{

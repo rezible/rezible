@@ -1,13 +1,13 @@
 package ent
 
 import (
+	"fmt"
 	"time"
 
-	ke "github.com/rezible/rezible/ent/knowledgeentity"
 	kev "github.com/rezible/rezible/ent/knowledgeevidence"
-	kr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	vc "github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -55,64 +55,56 @@ func (ie IncidentEdges) GetPrimaryVideoConference() *VideoConference {
 	return VideoConferences(conferences).GetPrimary()
 }
 
-type KnowledgeEntityRef struct {
-	Kind        string
-	Reference   string
-	DisplayName string
-	Description string
-	Properties  map[string]any
-}
-
-func (r *KnowledgeEntityRef) Predicate() predicate.KnowledgeEntity {
-	return ke.And(ke.Kind(r.Kind), ke.Reference(r.Reference))
-}
-
-type KnowledgeRelationshipRef struct {
-	Kind        string
-	Description string
-	Properties  map[string]any
-	EntityRefs  [2]KnowledgeEntityRef
-}
-
-func (r *KnowledgeRelationshipRef) Predicate() predicate.KnowledgeRelationship {
-	return kr.And(
-		kr.Kind(r.Kind),
-		kr.HasSourceEntityWith(r.EntityRefs[0].Predicate()),
-		kr.HasTargetEntityWith(r.EntityRefs[1].Predicate()))
-}
-
-type KnowledgeSubjectAliasRef struct {
-	Kind                   ksa.SubjectKind
-	Provider               string
-	ProviderSubjectRef     string
-	Description            string
-	SubjectEntityRef       *KnowledgeEntityRef
-	SubjectRelationshipRef *KnowledgeRelationshipRef
-}
-
-func (r *KnowledgeSubjectAliasRef) Predicate() predicate.KnowledgeSubjectAlias {
-	return ksa.And(
-		ksa.SubjectKindEQ(r.Kind),
-		ksa.Provider(r.Provider),
-		ksa.ProviderSubjectRef(r.ProviderSubjectRef))
-}
-
-func (ev *NormalizedEvent) MakeSubjectAliasRef(kind ksa.SubjectKind, desc string) KnowledgeSubjectAliasRef {
-	return KnowledgeSubjectAliasRef{
-		Kind:               kind,
+func (ev *NormalizedEvent) KnowledgeAliasRef() KnowledgeAliasRef {
+	return KnowledgeAliasRef{
 		Provider:           ev.Provider,
+		ProviderSource:     ev.ProviderSource,
 		ProviderSubjectRef: ev.ProviderSubjectRef,
-		Description:        desc,
 	}
 }
 
-type KnowledgeEvidenceRef struct {
-	Kind            kev.EvidenceKind
-	Assertion       string
-	EffectiveAt     time.Time
-	Properties      map[string]any
-	SubjectAliasRef KnowledgeSubjectAliasRef
+type (
+	KnowledgeAliasRef struct {
+		Provider           string
+		ProviderSource     string
+		ProviderSubjectRef string
+	}
+)
+
+func (a KnowledgeAliasRef) SubjectPredicate(kind ksa.SubjectKind) predicate.KnowledgeSubjectAlias {
+	return ksa.And(
+		ksa.SubjectKindEQ(kind),
+		ksa.Provider(a.Provider),
+		ksa.ProviderSource(a.ProviderSource),
+		ksa.ProviderSubjectRef(a.ProviderSubjectRef))
 }
+
+func (a KnowledgeAliasRef) LockKey(kind ksa.SubjectKind) string {
+	return fmt.Sprintf("%s:%s:%s:%s", kind, a.Provider, a.ProviderSource, a.ProviderSubjectRef)
+}
+
+type (
+	KnowledgeEntityRef struct {
+		Kind  string
+		Alias KnowledgeAliasRef
+	}
+
+	KnowledgeRelationshipRef struct {
+		Kind   string
+		Alias  KnowledgeAliasRef
+		Source KnowledgeEntityRef
+		Target KnowledgeEntityRef
+	}
+
+	KnowledgeEvidenceRef struct {
+		Kind                kev.Kind
+		Assertion           string
+		EffectiveAt         time.Time
+		SubjectState        schematypes.KnowledgeEvidenceSubjectState
+		SubjectEntity       *KnowledgeEntityRef
+		SubjectRelationship *KnowledgeRelationshipRef
+	}
+)
 
 func (u *AgentTurnUpdateOne) ClearStateFields() *AgentTurnUpdateOne {
 	return u.SetFinishReason("").

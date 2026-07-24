@@ -70,48 +70,50 @@ func (m *knowledgeGraphMiddleware[I, S]) query(ctx context.Context, input rezai.
 		Evidence:      make([]rezai.KnowledgeGraphToolEvidence, len(view.Evidence)),
 	}
 
-	for _, entity := range view.Entities {
-		output.Entities = append(output.Entities, rezai.KnowledgeGraphToolEntity{
-			ID:          entity.ID.String(),
-			Kind:        entity.Kind,
-			DisplayName: entity.DisplayName,
-			Description: entity.Description,
-			Properties:  entity.LiveProperties,
-		})
-	}
-	for _, relationship := range view.Relationships {
-		output.Relationships = append(output.Relationships, rezai.KnowledgeGraphToolRelationship{
-			ID:          relationship.ID.String(),
-			Kind:        relationship.Kind,
-			SourceID:    relationship.SourceEntityID.String(),
-			TargetID:    relationship.TargetEntityID.String(),
-			Description: relationship.Description,
-			Properties:  relationship.Properties,
-		})
-	}
+	/*
+		for _, entity := range view.Entities {
+			output.Entities = append(output.Entities, rezai.KnowledgeGraphToolEntity{
+				ID:          entity.ID.String(),
+				Kind:        entity.Kind,
+				DisplayName: entity.DisplayName,
+				Description: entity.Description,
+				Properties:  entity.LiveProperties,
+			})
+		}
+		for _, relationship := range view.Relationships {
+			output.Relationships = append(output.Relationships, rezai.KnowledgeGraphToolRelationship{
+				ID:          relationship.ID.String(),
+				Kind:        relationship.Kind,
+				SourceID:    relationship.SourceEntityID.String(),
+				TargetID:    relationship.TargetEntityID.String(),
+				Description: relationship.Description,
+				Properties:  relationship.Properties,
+			})
+		}
 
-	for i, evidence := range view.Evidence {
-		item := rezai.KnowledgeGraphToolEvidence{
-			ID:           evidence.ID.String(),
-			EventID:      evidence.EventID.String(),
-			Assertion:    evidence.Assertion,
-			EvidenceKind: evidence.EvidenceKind.String(),
-			EffectiveAt:  evidence.EffectiveAt,
-			Properties:   evidence.Properties,
-		}
-		if event, edgeErr := evidence.Edges.EventOrErr(); edgeErr == nil {
-			item.Provider = event.Provider
-			item.ProviderSource = event.ProviderSource
-		}
-		if alias, edgeErr := evidence.Edges.AliasOrErr(); edgeErr == nil {
-			if alias.EntityID != uuid.Nil {
-				item.EntityID = alias.EntityID.String()
+		for i, evidence := range view.Evidence {
+			item := rezai.KnowledgeGraphToolEvidence{
+				ID:           evidence.ID.String(),
+				EventID:      evidence.EventID.String(),
+				Assertion:    evidence.Assertion,
+				EvidenceKind: evidence.EvidenceKind.String(),
+				EffectiveAt:  evidence.EffectiveAt,
+				Properties:   evidence.Properties,
 			}
-			if alias.RelationshipID != uuid.Nil {
-				item.RelationshipID = alias.RelationshipID.String()
+			if event, edgeErr := evidence.Edges.EventOrErr(); edgeErr == nil {
+				item.Provider = event.Provider
+				item.ProviderSource = event.ProviderSource
 			}
+			if alias, edgeErr := evidence.Edges.AliasOrErr(); edgeErr == nil {
+				if alias.EntityID != uuid.Nil {
+					item.EntityID = alias.EntityID.String()
+				}
+				if alias.RelationshipID != uuid.Nil {
+					item.RelationshipID = alias.RelationshipID.String()
+				}
+			}
+			output.Evidence[i] = item
 		}
-		output.Evidence[i] = item
-	}
+	*/
 	return output, nil
 }

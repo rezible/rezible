@@ -7,7 +7,6 @@ import (
 
 	"github.com/rezible/rezible/ent"
 	entalert "github.com/rezible/rezible/ent/alert"
-	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/pkg/projections"
 )
@@ -69,36 +68,4 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 	evidenceCount, err := s.Client(ctx).KnowledgeEvidence.Query().Count(ctx)
 	s.Require().NoError(err)
 	s.Equal(2, evidenceCount)
-}
-
-func (s *ProjectionServiceSuite) TestAlertProjectionLinksRelatedEntities() {
-	ctx := s.SeedTenantContext()
-	service := s.projectionService()
-	attrs := projections.AlertInstanceSubjectAttributes{
-		Title:       "Search latency high",
-		Description: "p95 latency above threshold",
-		Definition:  "latency > 2000",
-		ExternalRef: "external-ref-" + uuid.NewString(),
-		RelatedEntities: []projections.RelatedEntityRef{
-			{
-				ExternalRef: "demo:component:search_api",
-				Kind:        "service",
-				DisplayName: "Search API",
-			},
-		},
-	}
-	event := s.createAlertProjectionEvent("demo:alert:search-api-latency", attrs)
-
-	_, projectErr := runProjection(ctx, service, event)
-	s.Require().NoError(projectErr)
-
-	relationships, err := s.Client(ctx).KnowledgeRelationship.Query().
-		Where(knr.Kind("alert_related_to")).
-		WithSourceEntity().
-		WithTargetEntity().
-		All(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(relationships, 1)
-	s.Equal("alert", relationships[0].Edges.SourceEntity.Kind)
-	s.Equal("Search API", relationships[0].Edges.TargetEntity.DisplayName)
 }

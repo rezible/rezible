@@ -6,14 +6,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -32,78 +33,54 @@ func (_u *KnowledgeSubjectAliasUpdate) Where(ps ...predicate.KnowledgeSubjectAli
 	return _u
 }
 
-// SetDescription sets the "description" field.
-func (_u *KnowledgeSubjectAliasUpdate) SetDescription(v string) *KnowledgeSubjectAliasUpdate {
-	_u.mutation.SetDescription(v)
+// SetEntityID sets the "entity_id" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetEntityID(v uuid.UUID) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetEntityID(v)
 	return _u
 }
 
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (_u *KnowledgeSubjectAliasUpdate) SetNillableDescription(v *string) *KnowledgeSubjectAliasUpdate {
+// SetNillableEntityID sets the "entity_id" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableEntityID(v *uuid.UUID) *KnowledgeSubjectAliasUpdate {
 	if v != nil {
-		_u.SetDescription(*v)
+		_u.SetEntityID(*v)
 	}
 	return _u
 }
 
-// SetFirstObservedAt sets the "first_observed_at" field.
-func (_u *KnowledgeSubjectAliasUpdate) SetFirstObservedAt(v time.Time) *KnowledgeSubjectAliasUpdate {
-	_u.mutation.SetFirstObservedAt(v)
+// ClearEntityID clears the value of the "entity_id" field.
+func (_u *KnowledgeSubjectAliasUpdate) ClearEntityID() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearEntityID()
 	return _u
 }
 
-// SetNillableFirstObservedAt sets the "first_observed_at" field if the given value is not nil.
-func (_u *KnowledgeSubjectAliasUpdate) SetNillableFirstObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdate {
+// SetRelationshipID sets the "relationship_id" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetRelationshipID(v uuid.UUID) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetRelationshipID(v)
+	return _u
+}
+
+// SetNillableRelationshipID sets the "relationship_id" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableRelationshipID(v *uuid.UUID) *KnowledgeSubjectAliasUpdate {
 	if v != nil {
-		_u.SetFirstObservedAt(*v)
+		_u.SetRelationshipID(*v)
 	}
 	return _u
 }
 
-// ClearFirstObservedAt clears the value of the "first_observed_at" field.
-func (_u *KnowledgeSubjectAliasUpdate) ClearFirstObservedAt() *KnowledgeSubjectAliasUpdate {
-	_u.mutation.ClearFirstObservedAt()
+// ClearRelationshipID clears the value of the "relationship_id" field.
+func (_u *KnowledgeSubjectAliasUpdate) ClearRelationshipID() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearRelationshipID()
 	return _u
 }
 
-// SetLastObservedAt sets the "last_observed_at" field.
-func (_u *KnowledgeSubjectAliasUpdate) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasUpdate {
-	_u.mutation.SetLastObservedAt(v)
-	return _u
+// SetEntity sets the "entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeSubjectAliasUpdate) SetEntity(v *KnowledgeEntity) *KnowledgeSubjectAliasUpdate {
+	return _u.SetEntityID(v.ID)
 }
 
-// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
-func (_u *KnowledgeSubjectAliasUpdate) SetNillableLastObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdate {
-	if v != nil {
-		_u.SetLastObservedAt(*v)
-	}
-	return _u
-}
-
-// ClearLastObservedAt clears the value of the "last_observed_at" field.
-func (_u *KnowledgeSubjectAliasUpdate) ClearLastObservedAt() *KnowledgeSubjectAliasUpdate {
-	_u.mutation.ClearLastObservedAt()
-	return _u
-}
-
-// SetDeletedAt sets the "deleted_at" field.
-func (_u *KnowledgeSubjectAliasUpdate) SetDeletedAt(v time.Time) *KnowledgeSubjectAliasUpdate {
-	_u.mutation.SetDeletedAt(v)
-	return _u
-}
-
-// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
-func (_u *KnowledgeSubjectAliasUpdate) SetNillableDeletedAt(v *time.Time) *KnowledgeSubjectAliasUpdate {
-	if v != nil {
-		_u.SetDeletedAt(*v)
-	}
-	return _u
-}
-
-// ClearDeletedAt clears the value of the "deleted_at" field.
-func (_u *KnowledgeSubjectAliasUpdate) ClearDeletedAt() *KnowledgeSubjectAliasUpdate {
-	_u.mutation.ClearDeletedAt()
-	return _u
+// SetRelationship sets the "relationship" edge to the KnowledgeRelationship entity.
+func (_u *KnowledgeSubjectAliasUpdate) SetRelationship(v *KnowledgeRelationship) *KnowledgeSubjectAliasUpdate {
+	return _u.SetRelationshipID(v.ID)
 }
 
 // AddEvidenceIDs adds the "evidence" edge to the KnowledgeEvidence entity by IDs.
@@ -124,6 +101,18 @@ func (_u *KnowledgeSubjectAliasUpdate) AddEvidence(v ...*KnowledgeEvidence) *Kno
 // Mutation returns the KnowledgeSubjectAliasMutation object of the builder.
 func (_u *KnowledgeSubjectAliasUpdate) Mutation() *KnowledgeSubjectAliasMutation {
 	return _u.mutation
+}
+
+// ClearEntity clears the "entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeSubjectAliasUpdate) ClearEntity() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearEntity()
+	return _u
+}
+
+// ClearRelationship clears the "relationship" edge to the KnowledgeRelationship entity.
+func (_u *KnowledgeSubjectAliasUpdate) ClearRelationship() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearRelationship()
+	return _u
 }
 
 // ClearEvidence clears all "evidence" edges to the KnowledgeEvidence entity.
@@ -200,26 +189,67 @@ func (_u *KnowledgeSubjectAliasUpdate) sqlSave(ctx context.Context) (_node int, 
 			}
 		}
 	}
-	if value, ok := _u.mutation.Description(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldDescription, field.TypeString, value)
+	if _u.mutation.EntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.EntityTable,
+			Columns: []string{knowledgesubjectalias.EntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.FirstObservedAt(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime, value)
+	if nodes := _u.mutation.EntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.EntityTable,
+			Columns: []string{knowledgesubjectalias.EntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.FirstObservedAtCleared() {
-		_spec.ClearField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime)
+	if _u.mutation.RelationshipCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.RelationshipTable,
+			Columns: []string{knowledgesubjectalias.RelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.LastObservedAt(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime, value)
-	}
-	if _u.mutation.LastObservedAtCleared() {
-		_spec.ClearField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.DeletedAt(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldDeletedAt, field.TypeTime, value)
-	}
-	if _u.mutation.DeletedAtCleared() {
-		_spec.ClearField(knowledgesubjectalias.FieldDeletedAt, field.TypeTime)
+	if nodes := _u.mutation.RelationshipIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.RelationshipTable,
+			Columns: []string{knowledgesubjectalias.RelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.EvidenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -293,78 +323,54 @@ type KnowledgeSubjectAliasUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetDescription sets the "description" field.
-func (_u *KnowledgeSubjectAliasUpdateOne) SetDescription(v string) *KnowledgeSubjectAliasUpdateOne {
-	_u.mutation.SetDescription(v)
+// SetEntityID sets the "entity_id" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetEntityID(v uuid.UUID) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetEntityID(v)
 	return _u
 }
 
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableDescription(v *string) *KnowledgeSubjectAliasUpdateOne {
+// SetNillableEntityID sets the "entity_id" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableEntityID(v *uuid.UUID) *KnowledgeSubjectAliasUpdateOne {
 	if v != nil {
-		_u.SetDescription(*v)
+		_u.SetEntityID(*v)
 	}
 	return _u
 }
 
-// SetFirstObservedAt sets the "first_observed_at" field.
-func (_u *KnowledgeSubjectAliasUpdateOne) SetFirstObservedAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
-	_u.mutation.SetFirstObservedAt(v)
+// ClearEntityID clears the value of the "entity_id" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearEntityID() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearEntityID()
 	return _u
 }
 
-// SetNillableFirstObservedAt sets the "first_observed_at" field if the given value is not nil.
-func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableFirstObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdateOne {
+// SetRelationshipID sets the "relationship_id" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetRelationshipID(v uuid.UUID) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetRelationshipID(v)
+	return _u
+}
+
+// SetNillableRelationshipID sets the "relationship_id" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableRelationshipID(v *uuid.UUID) *KnowledgeSubjectAliasUpdateOne {
 	if v != nil {
-		_u.SetFirstObservedAt(*v)
+		_u.SetRelationshipID(*v)
 	}
 	return _u
 }
 
-// ClearFirstObservedAt clears the value of the "first_observed_at" field.
-func (_u *KnowledgeSubjectAliasUpdateOne) ClearFirstObservedAt() *KnowledgeSubjectAliasUpdateOne {
-	_u.mutation.ClearFirstObservedAt()
+// ClearRelationshipID clears the value of the "relationship_id" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearRelationshipID() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearRelationshipID()
 	return _u
 }
 
-// SetLastObservedAt sets the "last_observed_at" field.
-func (_u *KnowledgeSubjectAliasUpdateOne) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
-	_u.mutation.SetLastObservedAt(v)
-	return _u
+// SetEntity sets the "entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetEntity(v *KnowledgeEntity) *KnowledgeSubjectAliasUpdateOne {
+	return _u.SetEntityID(v.ID)
 }
 
-// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
-func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableLastObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdateOne {
-	if v != nil {
-		_u.SetLastObservedAt(*v)
-	}
-	return _u
-}
-
-// ClearLastObservedAt clears the value of the "last_observed_at" field.
-func (_u *KnowledgeSubjectAliasUpdateOne) ClearLastObservedAt() *KnowledgeSubjectAliasUpdateOne {
-	_u.mutation.ClearLastObservedAt()
-	return _u
-}
-
-// SetDeletedAt sets the "deleted_at" field.
-func (_u *KnowledgeSubjectAliasUpdateOne) SetDeletedAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
-	_u.mutation.SetDeletedAt(v)
-	return _u
-}
-
-// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
-func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableDeletedAt(v *time.Time) *KnowledgeSubjectAliasUpdateOne {
-	if v != nil {
-		_u.SetDeletedAt(*v)
-	}
-	return _u
-}
-
-// ClearDeletedAt clears the value of the "deleted_at" field.
-func (_u *KnowledgeSubjectAliasUpdateOne) ClearDeletedAt() *KnowledgeSubjectAliasUpdateOne {
-	_u.mutation.ClearDeletedAt()
-	return _u
+// SetRelationship sets the "relationship" edge to the KnowledgeRelationship entity.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetRelationship(v *KnowledgeRelationship) *KnowledgeSubjectAliasUpdateOne {
+	return _u.SetRelationshipID(v.ID)
 }
 
 // AddEvidenceIDs adds the "evidence" edge to the KnowledgeEvidence entity by IDs.
@@ -385,6 +391,18 @@ func (_u *KnowledgeSubjectAliasUpdateOne) AddEvidence(v ...*KnowledgeEvidence) *
 // Mutation returns the KnowledgeSubjectAliasMutation object of the builder.
 func (_u *KnowledgeSubjectAliasUpdateOne) Mutation() *KnowledgeSubjectAliasMutation {
 	return _u.mutation
+}
+
+// ClearEntity clears the "entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearEntity() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearEntity()
+	return _u
+}
+
+// ClearRelationship clears the "relationship" edge to the KnowledgeRelationship entity.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearRelationship() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearRelationship()
+	return _u
 }
 
 // ClearEvidence clears all "evidence" edges to the KnowledgeEvidence entity.
@@ -491,26 +509,67 @@ func (_u *KnowledgeSubjectAliasUpdateOne) sqlSave(ctx context.Context) (_node *K
 			}
 		}
 	}
-	if value, ok := _u.mutation.Description(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldDescription, field.TypeString, value)
+	if _u.mutation.EntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.EntityTable,
+			Columns: []string{knowledgesubjectalias.EntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.FirstObservedAt(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime, value)
+	if nodes := _u.mutation.EntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.EntityTable,
+			Columns: []string{knowledgesubjectalias.EntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.FirstObservedAtCleared() {
-		_spec.ClearField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime)
+	if _u.mutation.RelationshipCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.RelationshipTable,
+			Columns: []string{knowledgesubjectalias.RelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.LastObservedAt(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime, value)
-	}
-	if _u.mutation.LastObservedAtCleared() {
-		_spec.ClearField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.DeletedAt(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldDeletedAt, field.TypeTime, value)
-	}
-	if _u.mutation.DeletedAtCleared() {
-		_spec.ClearField(knowledgesubjectalias.FieldDeletedAt, field.TypeTime)
+	if nodes := _u.mutation.RelationshipIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.RelationshipTable,
+			Columns: []string{knowledgesubjectalias.RelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.EvidenceCleared() {
 		edge := &sqlgraph.EdgeSpec{

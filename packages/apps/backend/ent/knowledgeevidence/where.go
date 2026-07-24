@@ -62,19 +62,14 @@ func TenantID(v int) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldTenantID, v))
 }
 
-// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldCreatedAt, v))
-}
-
-// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
-func UpdatedAt(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
 // EventID applies equality check predicate on the "event_id" field. It's identical to EventIDEQ.
 func EventID(v uuid.UUID) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEventID, v))
+}
+
+// SubjectAliasID applies equality check predicate on the "subject_alias_id" field. It's identical to SubjectAliasIDEQ.
+func SubjectAliasID(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldSubjectAliasID, v))
 }
 
 // Assertion applies equality check predicate on the "assertion" field. It's identical to AssertionEQ.
@@ -82,9 +77,9 @@ func Assertion(v string) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAssertion, v))
 }
 
-// AliasID applies equality check predicate on the "alias_id" field. It's identical to AliasIDEQ.
-func AliasID(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAliasID, v))
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldCreatedAt, v))
 }
 
 // EffectiveAt applies equality check predicate on the "effective_at" field. It's identical to EffectiveAtEQ.
@@ -112,86 +107,6 @@ func TenantIDNotIn(vs ...int) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
-// CreatedAtEQ applies the EQ predicate on the "created_at" field.
-func CreatedAtEQ(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
-func CreatedAtNEQ(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtIn applies the In predicate on the "created_at" field.
-func CreatedAtIn(vs ...time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtGT applies the GT predicate on the "created_at" field.
-func CreatedAtGT(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldGT(FieldCreatedAt, v))
-}
-
-// CreatedAtGTE applies the GTE predicate on the "created_at" field.
-func CreatedAtGTE(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldGTE(FieldCreatedAt, v))
-}
-
-// CreatedAtLT applies the LT predicate on the "created_at" field.
-func CreatedAtLT(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldLT(FieldCreatedAt, v))
-}
-
-// CreatedAtLTE applies the LTE predicate on the "created_at" field.
-func CreatedAtLTE(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldCreatedAt, v))
-}
-
-// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
-func UpdatedAtEQ(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
-// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
-func UpdatedAtNEQ(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldUpdatedAt, v))
-}
-
-// UpdatedAtIn applies the In predicate on the "updated_at" field.
-func UpdatedAtIn(vs ...time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldUpdatedAt, vs...))
-}
-
-// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
-func UpdatedAtNotIn(vs ...time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldUpdatedAt, vs...))
-}
-
-// UpdatedAtGT applies the GT predicate on the "updated_at" field.
-func UpdatedAtGT(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldGT(FieldUpdatedAt, v))
-}
-
-// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
-func UpdatedAtGTE(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldGTE(FieldUpdatedAt, v))
-}
-
-// UpdatedAtLT applies the LT predicate on the "updated_at" field.
-func UpdatedAtLT(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldLT(FieldUpdatedAt, v))
-}
-
-// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
-func UpdatedAtLTE(v time.Time) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldUpdatedAt, v))
-}
-
 // EventIDEQ applies the EQ predicate on the "event_id" field.
 func EventIDEQ(v uuid.UUID) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEventID, v))
@@ -210,6 +125,46 @@ func EventIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
 // EventIDNotIn applies the NotIn predicate on the "event_id" field.
 func EventIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldEventID, vs...))
+}
+
+// SubjectAliasIDEQ applies the EQ predicate on the "subject_alias_id" field.
+func SubjectAliasIDEQ(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldSubjectAliasID, v))
+}
+
+// SubjectAliasIDNEQ applies the NEQ predicate on the "subject_alias_id" field.
+func SubjectAliasIDNEQ(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldSubjectAliasID, v))
+}
+
+// SubjectAliasIDIn applies the In predicate on the "subject_alias_id" field.
+func SubjectAliasIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIn(FieldSubjectAliasID, vs...))
+}
+
+// SubjectAliasIDNotIn applies the NotIn predicate on the "subject_alias_id" field.
+func SubjectAliasIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldSubjectAliasID, vs...))
+}
+
+// KindEQ applies the EQ predicate on the "kind" field.
+func KindEQ(v Kind) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldKind, v))
+}
+
+// KindNEQ applies the NEQ predicate on the "kind" field.
+func KindNEQ(v Kind) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldKind, v))
+}
+
+// KindIn applies the In predicate on the "kind" field.
+func KindIn(vs ...Kind) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIn(FieldKind, vs...))
+}
+
+// KindNotIn applies the NotIn predicate on the "kind" field.
+func KindNotIn(vs ...Kind) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldKind, vs...))
 }
 
 // AssertionEQ applies the EQ predicate on the "assertion" field.
@@ -277,44 +232,44 @@ func AssertionContainsFold(v string) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldContainsFold(FieldAssertion, v))
 }
 
-// EvidenceKindEQ applies the EQ predicate on the "evidence_kind" field.
-func EvidenceKindEQ(v EvidenceKind) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEvidenceKind, v))
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldCreatedAt, v))
 }
 
-// EvidenceKindNEQ applies the NEQ predicate on the "evidence_kind" field.
-func EvidenceKindNEQ(v EvidenceKind) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldEvidenceKind, v))
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldCreatedAt, v))
 }
 
-// EvidenceKindIn applies the In predicate on the "evidence_kind" field.
-func EvidenceKindIn(vs ...EvidenceKind) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldEvidenceKind, vs...))
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIn(FieldCreatedAt, vs...))
 }
 
-// EvidenceKindNotIn applies the NotIn predicate on the "evidence_kind" field.
-func EvidenceKindNotIn(vs ...EvidenceKind) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldEvidenceKind, vs...))
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldCreatedAt, vs...))
 }
 
-// AliasIDEQ applies the EQ predicate on the "alias_id" field.
-func AliasIDEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAliasID, v))
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldGT(FieldCreatedAt, v))
 }
 
-// AliasIDNEQ applies the NEQ predicate on the "alias_id" field.
-func AliasIDNEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldAliasID, v))
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldGTE(FieldCreatedAt, v))
 }
 
-// AliasIDIn applies the In predicate on the "alias_id" field.
-func AliasIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldAliasID, vs...))
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldLT(FieldCreatedAt, v))
 }
 
-// AliasIDNotIn applies the NotIn predicate on the "alias_id" field.
-func AliasIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldAliasID, vs...))
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldCreatedAt, v))
 }
 
 // EffectiveAtEQ applies the EQ predicate on the "effective_at" field.
@@ -415,12 +370,12 @@ func HasEventWith(preds ...predicate.NormalizedEvent) predicate.KnowledgeEvidenc
 	})
 }
 
-// HasAlias applies the HasEdge predicate on the "alias" edge.
-func HasAlias() predicate.KnowledgeEvidence {
+// HasSubjectAlias applies the HasEdge predicate on the "subject_alias" edge.
+func HasSubjectAlias() predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AliasTable, AliasColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, SubjectAliasTable, SubjectAliasColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
@@ -429,10 +384,10 @@ func HasAlias() predicate.KnowledgeEvidence {
 	})
 }
 
-// HasAliasWith applies the HasEdge predicate on the "alias" edge with a given conditions (other predicates).
-func HasAliasWith(preds ...predicate.KnowledgeSubjectAlias) predicate.KnowledgeEvidence {
+// HasSubjectAliasWith applies the HasEdge predicate on the "subject_alias" edge with a given conditions (other predicates).
+func HasSubjectAliasWith(preds ...predicate.KnowledgeSubjectAlias) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
-		step := newAliasStep()
+		step := newSubjectAliasStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
 		step.Edge.Schema = schemaConfig.KnowledgeEvidence

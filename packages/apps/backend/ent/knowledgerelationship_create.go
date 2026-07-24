@@ -79,26 +79,6 @@ func (_c *KnowledgeRelationshipCreate) SetTargetEntityID(v uuid.UUID) *Knowledge
 	return _c
 }
 
-// SetDescription sets the "description" field.
-func (_c *KnowledgeRelationshipCreate) SetDescription(v string) *KnowledgeRelationshipCreate {
-	_c.mutation.SetDescription(v)
-	return _c
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (_c *KnowledgeRelationshipCreate) SetNillableDescription(v *string) *KnowledgeRelationshipCreate {
-	if v != nil {
-		_c.SetDescription(*v)
-	}
-	return _c
-}
-
-// SetProperties sets the "properties" field.
-func (_c *KnowledgeRelationshipCreate) SetProperties(v map[string]interface{}) *KnowledgeRelationshipCreate {
-	_c.mutation.SetProperties(v)
-	return _c
-}
-
 // SetID sets the "id" field.
 func (_c *KnowledgeRelationshipCreate) SetID(v uuid.UUID) *KnowledgeRelationshipCreate {
 	_c.mutation.SetID(v)
@@ -287,14 +267,6 @@ func (_c *KnowledgeRelationshipCreate) createSpec() (*KnowledgeRelationship, *sq
 		_spec.SetField(knowledgerelationship.FieldKind, field.TypeString, value)
 		_node.Kind = value
 	}
-	if value, ok := _c.mutation.Description(); ok {
-		_spec.SetField(knowledgerelationship.FieldDescription, field.TypeString, value)
-		_node.Description = value
-	}
-	if value, ok := _c.mutation.Properties(); ok {
-		_spec.SetField(knowledgerelationship.FieldProperties, field.TypeJSON, value)
-		_node.Properties = value
-	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -442,78 +414,6 @@ func (u *KnowledgeRelationshipUpsert) UpdateUpdatedAt() *KnowledgeRelationshipUp
 	return u
 }
 
-// SetKind sets the "kind" field.
-func (u *KnowledgeRelationshipUpsert) SetKind(v string) *KnowledgeRelationshipUpsert {
-	u.Set(knowledgerelationship.FieldKind, v)
-	return u
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsert) UpdateKind() *KnowledgeRelationshipUpsert {
-	u.SetExcluded(knowledgerelationship.FieldKind)
-	return u
-}
-
-// SetSourceEntityID sets the "source_entity_id" field.
-func (u *KnowledgeRelationshipUpsert) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsert {
-	u.Set(knowledgerelationship.FieldSourceEntityID, v)
-	return u
-}
-
-// UpdateSourceEntityID sets the "source_entity_id" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsert) UpdateSourceEntityID() *KnowledgeRelationshipUpsert {
-	u.SetExcluded(knowledgerelationship.FieldSourceEntityID)
-	return u
-}
-
-// SetTargetEntityID sets the "target_entity_id" field.
-func (u *KnowledgeRelationshipUpsert) SetTargetEntityID(v uuid.UUID) *KnowledgeRelationshipUpsert {
-	u.Set(knowledgerelationship.FieldTargetEntityID, v)
-	return u
-}
-
-// UpdateTargetEntityID sets the "target_entity_id" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsert) UpdateTargetEntityID() *KnowledgeRelationshipUpsert {
-	u.SetExcluded(knowledgerelationship.FieldTargetEntityID)
-	return u
-}
-
-// SetDescription sets the "description" field.
-func (u *KnowledgeRelationshipUpsert) SetDescription(v string) *KnowledgeRelationshipUpsert {
-	u.Set(knowledgerelationship.FieldDescription, v)
-	return u
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsert) UpdateDescription() *KnowledgeRelationshipUpsert {
-	u.SetExcluded(knowledgerelationship.FieldDescription)
-	return u
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *KnowledgeRelationshipUpsert) ClearDescription() *KnowledgeRelationshipUpsert {
-	u.SetNull(knowledgerelationship.FieldDescription)
-	return u
-}
-
-// SetProperties sets the "properties" field.
-func (u *KnowledgeRelationshipUpsert) SetProperties(v map[string]interface{}) *KnowledgeRelationshipUpsert {
-	u.Set(knowledgerelationship.FieldProperties, v)
-	return u
-}
-
-// UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsert) UpdateProperties() *KnowledgeRelationshipUpsert {
-	u.SetExcluded(knowledgerelationship.FieldProperties)
-	return u
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeRelationshipUpsert) ClearProperties() *KnowledgeRelationshipUpsert {
-	u.SetNull(knowledgerelationship.FieldProperties)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -533,6 +433,15 @@ func (u *KnowledgeRelationshipUpsertOne) UpdateNewValues() *KnowledgeRelationshi
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(knowledgerelationship.FieldTenantID)
+		}
+		if _, exists := u.create.mutation.Kind(); exists {
+			s.SetIgnore(knowledgerelationship.FieldKind)
+		}
+		if _, exists := u.create.mutation.SourceEntityID(); exists {
+			s.SetIgnore(knowledgerelationship.FieldSourceEntityID)
+		}
+		if _, exists := u.create.mutation.TargetEntityID(); exists {
+			s.SetIgnore(knowledgerelationship.FieldTargetEntityID)
 		}
 	}))
 	return u
@@ -590,90 +499,6 @@ func (u *KnowledgeRelationshipUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeRel
 func (u *KnowledgeRelationshipUpsertOne) UpdateUpdatedAt() *KnowledgeRelationshipUpsertOne {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetKind sets the "kind" field.
-func (u *KnowledgeRelationshipUpsertOne) SetKind(v string) *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetKind(v)
-	})
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertOne) UpdateKind() *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateKind()
-	})
-}
-
-// SetSourceEntityID sets the "source_entity_id" field.
-func (u *KnowledgeRelationshipUpsertOne) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetSourceEntityID(v)
-	})
-}
-
-// UpdateSourceEntityID sets the "source_entity_id" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertOne) UpdateSourceEntityID() *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateSourceEntityID()
-	})
-}
-
-// SetTargetEntityID sets the "target_entity_id" field.
-func (u *KnowledgeRelationshipUpsertOne) SetTargetEntityID(v uuid.UUID) *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetTargetEntityID(v)
-	})
-}
-
-// UpdateTargetEntityID sets the "target_entity_id" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertOne) UpdateTargetEntityID() *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateTargetEntityID()
-	})
-}
-
-// SetDescription sets the "description" field.
-func (u *KnowledgeRelationshipUpsertOne) SetDescription(v string) *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetDescription(v)
-	})
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertOne) UpdateDescription() *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateDescription()
-	})
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *KnowledgeRelationshipUpsertOne) ClearDescription() *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.ClearDescription()
-	})
-}
-
-// SetProperties sets the "properties" field.
-func (u *KnowledgeRelationshipUpsertOne) SetProperties(v map[string]interface{}) *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetProperties(v)
-	})
-}
-
-// UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertOne) UpdateProperties() *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateProperties()
-	})
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeRelationshipUpsertOne) ClearProperties() *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.ClearProperties()
 	})
 }
 
@@ -863,6 +688,15 @@ func (u *KnowledgeRelationshipUpsertBulk) UpdateNewValues() *KnowledgeRelationsh
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(knowledgerelationship.FieldTenantID)
 			}
+			if _, exists := b.mutation.Kind(); exists {
+				s.SetIgnore(knowledgerelationship.FieldKind)
+			}
+			if _, exists := b.mutation.SourceEntityID(); exists {
+				s.SetIgnore(knowledgerelationship.FieldSourceEntityID)
+			}
+			if _, exists := b.mutation.TargetEntityID(); exists {
+				s.SetIgnore(knowledgerelationship.FieldTargetEntityID)
+			}
 		}
 	}))
 	return u
@@ -920,90 +754,6 @@ func (u *KnowledgeRelationshipUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeRe
 func (u *KnowledgeRelationshipUpsertBulk) UpdateUpdatedAt() *KnowledgeRelationshipUpsertBulk {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetKind sets the "kind" field.
-func (u *KnowledgeRelationshipUpsertBulk) SetKind(v string) *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetKind(v)
-	})
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertBulk) UpdateKind() *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateKind()
-	})
-}
-
-// SetSourceEntityID sets the "source_entity_id" field.
-func (u *KnowledgeRelationshipUpsertBulk) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetSourceEntityID(v)
-	})
-}
-
-// UpdateSourceEntityID sets the "source_entity_id" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertBulk) UpdateSourceEntityID() *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateSourceEntityID()
-	})
-}
-
-// SetTargetEntityID sets the "target_entity_id" field.
-func (u *KnowledgeRelationshipUpsertBulk) SetTargetEntityID(v uuid.UUID) *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetTargetEntityID(v)
-	})
-}
-
-// UpdateTargetEntityID sets the "target_entity_id" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertBulk) UpdateTargetEntityID() *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateTargetEntityID()
-	})
-}
-
-// SetDescription sets the "description" field.
-func (u *KnowledgeRelationshipUpsertBulk) SetDescription(v string) *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetDescription(v)
-	})
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertBulk) UpdateDescription() *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateDescription()
-	})
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *KnowledgeRelationshipUpsertBulk) ClearDescription() *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.ClearDescription()
-	})
-}
-
-// SetProperties sets the "properties" field.
-func (u *KnowledgeRelationshipUpsertBulk) SetProperties(v map[string]interface{}) *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetProperties(v)
-	})
-}
-
-// UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertBulk) UpdateProperties() *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateProperties()
-	})
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeRelationshipUpsertBulk) ClearProperties() *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.ClearProperties()
 	})
 }
 

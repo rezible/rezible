@@ -919,14 +919,6 @@ func init() {
 	knowledgeentityDescKind := knowledgeentityFields[1].Descriptor()
 	// knowledgeentity.KindValidator is a validator for the "kind" field. It is called by the builders before save.
 	knowledgeentity.KindValidator = knowledgeentityDescKind.Validators[0].(func(string) error)
-	// knowledgeentityDescReference is the schema descriptor for reference field.
-	knowledgeentityDescReference := knowledgeentityFields[2].Descriptor()
-	// knowledgeentity.ReferenceValidator is a validator for the "reference" field. It is called by the builders before save.
-	knowledgeentity.ReferenceValidator = knowledgeentityDescReference.Validators[0].(func(string) error)
-	// knowledgeentityDescLiveProperties is the schema descriptor for live_properties field.
-	knowledgeentityDescLiveProperties := knowledgeentityFields[5].Descriptor()
-	// knowledgeentity.DefaultLiveProperties holds the default value on creation for the live_properties field.
-	knowledgeentity.DefaultLiveProperties = knowledgeentityDescLiveProperties.Default.(map[string]interface{})
 	// knowledgeentityDescID is the schema descriptor for id field.
 	knowledgeentityDescID := knowledgeentityFields[0].Descriptor()
 	// knowledgeentity.DefaultID holds the default value on creation for the id field.
@@ -941,24 +933,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	knowledgeevidenceMixinFields2 := knowledgeevidenceMixin[2].Fields()
-	_ = knowledgeevidenceMixinFields2
 	knowledgeevidenceFields := schema.KnowledgeEvidence{}.Fields()
 	_ = knowledgeevidenceFields
-	// knowledgeevidenceDescCreatedAt is the schema descriptor for created_at field.
-	knowledgeevidenceDescCreatedAt := knowledgeevidenceMixinFields2[0].Descriptor()
-	// knowledgeevidence.DefaultCreatedAt holds the default value on creation for the created_at field.
-	knowledgeevidence.DefaultCreatedAt = knowledgeevidenceDescCreatedAt.Default.(func() time.Time)
-	// knowledgeevidenceDescUpdatedAt is the schema descriptor for updated_at field.
-	knowledgeevidenceDescUpdatedAt := knowledgeevidenceMixinFields2[1].Descriptor()
-	// knowledgeevidence.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	knowledgeevidence.DefaultUpdatedAt = knowledgeevidenceDescUpdatedAt.Default.(func() time.Time)
-	// knowledgeevidence.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	knowledgeevidence.UpdateDefaultUpdatedAt = knowledgeevidenceDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// knowledgeevidenceDescAssertion is the schema descriptor for assertion field.
-	knowledgeevidenceDescAssertion := knowledgeevidenceFields[2].Descriptor()
+	knowledgeevidenceDescAssertion := knowledgeevidenceFields[4].Descriptor()
 	// knowledgeevidence.AssertionValidator is a validator for the "assertion" field. It is called by the builders before save.
 	knowledgeevidence.AssertionValidator = knowledgeevidenceDescAssertion.Validators[0].(func(string) error)
+	// knowledgeevidenceDescCreatedAt is the schema descriptor for created_at field.
+	knowledgeevidenceDescCreatedAt := knowledgeevidenceFields[5].Descriptor()
+	// knowledgeevidence.DefaultCreatedAt holds the default value on creation for the created_at field.
+	knowledgeevidence.DefaultCreatedAt = knowledgeevidenceDescCreatedAt.Default.(func() time.Time)
 	// knowledgeevidenceDescID is the schema descriptor for id field.
 	knowledgeevidenceDescID := knowledgeevidenceFields[0].Descriptor()
 	// knowledgeevidence.DefaultID holds the default value on creation for the id field.
@@ -1011,18 +995,14 @@ func init() {
 	knowledgesubjectaliasDescProvider := knowledgesubjectaliasFields[2].Descriptor()
 	// knowledgesubjectalias.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	knowledgesubjectalias.ProviderValidator = knowledgesubjectaliasDescProvider.Validators[0].(func(string) error)
+	// knowledgesubjectaliasDescProviderSource is the schema descriptor for provider_source field.
+	knowledgesubjectaliasDescProviderSource := knowledgesubjectaliasFields[3].Descriptor()
+	// knowledgesubjectalias.ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
+	knowledgesubjectalias.ProviderSourceValidator = knowledgesubjectaliasDescProviderSource.Validators[0].(func(string) error)
 	// knowledgesubjectaliasDescProviderSubjectRef is the schema descriptor for provider_subject_ref field.
-	knowledgesubjectaliasDescProviderSubjectRef := knowledgesubjectaliasFields[3].Descriptor()
+	knowledgesubjectaliasDescProviderSubjectRef := knowledgesubjectaliasFields[4].Descriptor()
 	// knowledgesubjectalias.ProviderSubjectRefValidator is a validator for the "provider_subject_ref" field. It is called by the builders before save.
 	knowledgesubjectalias.ProviderSubjectRefValidator = knowledgesubjectaliasDescProviderSubjectRef.Validators[0].(func(string) error)
-	// knowledgesubjectaliasDescFirstObservedAt is the schema descriptor for first_observed_at field.
-	knowledgesubjectaliasDescFirstObservedAt := knowledgesubjectaliasFields[7].Descriptor()
-	// knowledgesubjectalias.DefaultFirstObservedAt holds the default value on creation for the first_observed_at field.
-	knowledgesubjectalias.DefaultFirstObservedAt = knowledgesubjectaliasDescFirstObservedAt.Default.(func() time.Time)
-	// knowledgesubjectaliasDescLastObservedAt is the schema descriptor for last_observed_at field.
-	knowledgesubjectaliasDescLastObservedAt := knowledgesubjectaliasFields[8].Descriptor()
-	// knowledgesubjectalias.DefaultLastObservedAt holds the default value on creation for the last_observed_at field.
-	knowledgesubjectalias.DefaultLastObservedAt = knowledgesubjectaliasDescLastObservedAt.Default.(func() time.Time)
 	// knowledgesubjectaliasDescID is the schema descriptor for id field.
 	knowledgesubjectaliasDescID := knowledgesubjectaliasFields[0].Descriptor()
 	// knowledgesubjectalias.DefaultID holds the default value on creation for the id field.

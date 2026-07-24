@@ -28,10 +28,6 @@ const (
 	FieldSourceEntityID = "source_entity_id"
 	// FieldTargetEntityID holds the string denoting the target_entity_id field in the database.
 	FieldTargetEntityID = "target_entity_id"
-	// FieldDescription holds the string denoting the description field in the database.
-	FieldDescription = "description"
-	// FieldProperties holds the string denoting the properties field in the database.
-	FieldProperties = "properties"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeSourceEntity holds the string denoting the source_entity edge name in mutations.
@@ -81,8 +77,6 @@ var Columns = []string{
 	FieldKind,
 	FieldSourceEntityID,
 	FieldTargetEntityID,
-	FieldDescription,
-	FieldProperties,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -151,11 +145,6 @@ func BySourceEntityID(opts ...sql.OrderTermOption) OrderOption {
 // ByTargetEntityID orders the results by the target_entity_id field.
 func ByTargetEntityID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTargetEntityID, opts...).ToFunc()
-}
-
-// ByDescription orders the results by the description field.
-func ByDescription(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

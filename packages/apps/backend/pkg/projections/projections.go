@@ -118,3 +118,12 @@ func SortRelatedEntityRefs(refs []RelatedEntityRef) []RelatedEntityRef {
 	})
 	return sortedRefs
 }
+
+//func KnowledgeAliasFromEvent(ev *ent.NormalizedEvent) rez.KnowledgeAliasRef {
+//	return rez.KnowledgeAliasRef{
+//		Provider:            ev.Provider,
+//		ProviderSource:      ev.ProviderSource,
+//		ProviderSubjectKind: ev.SubjectKind,
+//		ProviderSubjectRef:  ev.ProviderSubjectRef,
+//	}
+//}

@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/pkg/projections"
 )
@@ -20,28 +20,30 @@ const (
 func (s *ProjectionService) handleUserEvent(ctx context.Context, event *projections.UserEvent) ([]rez.ProjectedEntityRef, error) {
 	attributes := event.Attributes
 
-	userSubjectRef := event.Event.MakeSubjectAliasRef(ksa.SubjectKindEntity, "User")
-	userSubjectRef.SubjectEntityRef = &ent.KnowledgeEntityRef{
-		Kind:        knowledgeEntityKindUser,
-		Reference:   attributes.Email,
-		DisplayName: attributes.Name,
-	}
 	userObservedEvidence := ent.KnowledgeEvidenceRef{
-		Kind:            projectionEvidenceKind(event.Event),
-		Assertion:       knowledgeAssertionUserProfileObserved,
-		EffectiveAt:     event.Event.OccurredAt,
-		SubjectAliasRef: userSubjectRef,
+		Kind:        projectionEvidenceKind(event.Event),
+		Assertion:   knowledgeAssertionUserProfileObserved,
+		EffectiveAt: event.Event.OccurredAt,
+		SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+			DisplayName: attributes.Name,
+			Description: "",
+			Properties:  nil,
+		},
+		SubjectEntity: &ent.KnowledgeEntityRef{
+			Kind:  knowledgeEntityKindUser,
+			Alias: event.Event.KnowledgeAliasRef(),
+		},
 	}
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		knSubj, knowledgeErr := s.knowledge.IngestDomainEntityEvidence(ctx, event.Event, userObservedEvidence)
+		knSubj, knowledgeErr := s.knowledge.IngestEntityEvidence(ctx, event.Event, userObservedEvidence)
 		if knowledgeErr != nil {
 			return fmt.Errorf("resolve user knowledge entity: %w", knowledgeErr)
 		}
 
 		queryLinked := tx.User.Query().
-			Where(user.Or(user.KnowledgeEntityID(knSubj.EntityID), user.Email(attributes.Email)))
+			Where(user.Or(user.KnowledgeEntityID(knSubj.ID), user.Email(attributes.Email)))
 		linked, linkedErr := queryLinked.Only(ctx)
 		if linkedErr != nil && !ent.IsNotFound(linkedErr) {
 			return fmt.Errorf("query linked user: %w", linkedErr)
@@ -53,7 +55,7 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, event *projecti
 		}
 
 		usr, setErr := s.users.Set(ctx, userID, func(m *ent.UserMutation) {
-			m.SetKnowledgeEntityID(knSubj.EntityID)
+			m.SetKnowledgeEntityID(knSubj.ID)
 			m.SetName(attributes.Name)
 			m.SetEmail(attributes.Email)
 			m.SetChatID(attributes.ChatId)

@@ -3,8 +3,6 @@
 package knowledgesubjectalias
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -67,6 +65,11 @@ func Provider(v string) predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldProvider, v))
 }
 
+// ProviderSource applies equality check predicate on the "provider_source" field. It's identical to ProviderSourceEQ.
+func ProviderSource(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldProviderSource, v))
+}
+
 // ProviderSubjectRef applies equality check predicate on the "provider_subject_ref" field. It's identical to ProviderSubjectRefEQ.
 func ProviderSubjectRef(v string) predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldProviderSubjectRef, v))
@@ -80,26 +83,6 @@ func EntityID(v uuid.UUID) predicate.KnowledgeSubjectAlias {
 // RelationshipID applies equality check predicate on the "relationship_id" field. It's identical to RelationshipIDEQ.
 func RelationshipID(v uuid.UUID) predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldRelationshipID, v))
-}
-
-// Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
-func Description(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldDescription, v))
-}
-
-// FirstObservedAt applies equality check predicate on the "first_observed_at" field. It's identical to FirstObservedAtEQ.
-func FirstObservedAt(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldFirstObservedAt, v))
-}
-
-// LastObservedAt applies equality check predicate on the "last_observed_at" field. It's identical to LastObservedAtEQ.
-func LastObservedAt(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldLastObservedAt, v))
-}
-
-// DeletedAt applies equality check predicate on the "deleted_at" field. It's identical to DeletedAtEQ.
-func DeletedAt(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldDeletedAt, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -205,6 +188,71 @@ func ProviderEqualFold(v string) predicate.KnowledgeSubjectAlias {
 // ProviderContainsFold applies the ContainsFold predicate on the "provider" field.
 func ProviderContainsFold(v string) predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldContainsFold(FieldProvider, v))
+}
+
+// ProviderSourceEQ applies the EQ predicate on the "provider_source" field.
+func ProviderSourceEQ(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldProviderSource, v))
+}
+
+// ProviderSourceNEQ applies the NEQ predicate on the "provider_source" field.
+func ProviderSourceNEQ(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldProviderSource, v))
+}
+
+// ProviderSourceIn applies the In predicate on the "provider_source" field.
+func ProviderSourceIn(vs ...string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldProviderSource, vs...))
+}
+
+// ProviderSourceNotIn applies the NotIn predicate on the "provider_source" field.
+func ProviderSourceNotIn(vs ...string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldProviderSource, vs...))
+}
+
+// ProviderSourceGT applies the GT predicate on the "provider_source" field.
+func ProviderSourceGT(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGT(FieldProviderSource, v))
+}
+
+// ProviderSourceGTE applies the GTE predicate on the "provider_source" field.
+func ProviderSourceGTE(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGTE(FieldProviderSource, v))
+}
+
+// ProviderSourceLT applies the LT predicate on the "provider_source" field.
+func ProviderSourceLT(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLT(FieldProviderSource, v))
+}
+
+// ProviderSourceLTE applies the LTE predicate on the "provider_source" field.
+func ProviderSourceLTE(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldProviderSource, v))
+}
+
+// ProviderSourceContains applies the Contains predicate on the "provider_source" field.
+func ProviderSourceContains(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldContains(FieldProviderSource, v))
+}
+
+// ProviderSourceHasPrefix applies the HasPrefix predicate on the "provider_source" field.
+func ProviderSourceHasPrefix(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldHasPrefix(FieldProviderSource, v))
+}
+
+// ProviderSourceHasSuffix applies the HasSuffix predicate on the "provider_source" field.
+func ProviderSourceHasSuffix(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldHasSuffix(FieldProviderSource, v))
+}
+
+// ProviderSourceEqualFold applies the EqualFold predicate on the "provider_source" field.
+func ProviderSourceEqualFold(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEqualFold(FieldProviderSource, v))
+}
+
+// ProviderSourceContainsFold applies the ContainsFold predicate on the "provider_source" field.
+func ProviderSourceContainsFold(v string) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldContainsFold(FieldProviderSource, v))
 }
 
 // ProviderSubjectRefEQ applies the EQ predicate on the "provider_subject_ref" field.
@@ -332,221 +380,6 @@ func RelationshipIDNotNil() predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldRelationshipID))
 }
 
-// DescriptionEQ applies the EQ predicate on the "description" field.
-func DescriptionEQ(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldDescription, v))
-}
-
-// DescriptionNEQ applies the NEQ predicate on the "description" field.
-func DescriptionNEQ(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldDescription, v))
-}
-
-// DescriptionIn applies the In predicate on the "description" field.
-func DescriptionIn(vs ...string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldDescription, vs...))
-}
-
-// DescriptionNotIn applies the NotIn predicate on the "description" field.
-func DescriptionNotIn(vs ...string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldDescription, vs...))
-}
-
-// DescriptionGT applies the GT predicate on the "description" field.
-func DescriptionGT(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldGT(FieldDescription, v))
-}
-
-// DescriptionGTE applies the GTE predicate on the "description" field.
-func DescriptionGTE(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldGTE(FieldDescription, v))
-}
-
-// DescriptionLT applies the LT predicate on the "description" field.
-func DescriptionLT(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldLT(FieldDescription, v))
-}
-
-// DescriptionLTE applies the LTE predicate on the "description" field.
-func DescriptionLTE(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldDescription, v))
-}
-
-// DescriptionContains applies the Contains predicate on the "description" field.
-func DescriptionContains(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldContains(FieldDescription, v))
-}
-
-// DescriptionHasPrefix applies the HasPrefix predicate on the "description" field.
-func DescriptionHasPrefix(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldHasPrefix(FieldDescription, v))
-}
-
-// DescriptionHasSuffix applies the HasSuffix predicate on the "description" field.
-func DescriptionHasSuffix(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldHasSuffix(FieldDescription, v))
-}
-
-// DescriptionEqualFold applies the EqualFold predicate on the "description" field.
-func DescriptionEqualFold(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldEqualFold(FieldDescription, v))
-}
-
-// DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
-func DescriptionContainsFold(v string) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldContainsFold(FieldDescription, v))
-}
-
-// FirstObservedAtEQ applies the EQ predicate on the "first_observed_at" field.
-func FirstObservedAtEQ(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtNEQ applies the NEQ predicate on the "first_observed_at" field.
-func FirstObservedAtNEQ(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtIn applies the In predicate on the "first_observed_at" field.
-func FirstObservedAtIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldFirstObservedAt, vs...))
-}
-
-// FirstObservedAtNotIn applies the NotIn predicate on the "first_observed_at" field.
-func FirstObservedAtNotIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldFirstObservedAt, vs...))
-}
-
-// FirstObservedAtGT applies the GT predicate on the "first_observed_at" field.
-func FirstObservedAtGT(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldGT(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtGTE applies the GTE predicate on the "first_observed_at" field.
-func FirstObservedAtGTE(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldGTE(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtLT applies the LT predicate on the "first_observed_at" field.
-func FirstObservedAtLT(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldLT(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtLTE applies the LTE predicate on the "first_observed_at" field.
-func FirstObservedAtLTE(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldFirstObservedAt, v))
-}
-
-// FirstObservedAtIsNil applies the IsNil predicate on the "first_observed_at" field.
-func FirstObservedAtIsNil() predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldIsNull(FieldFirstObservedAt))
-}
-
-// FirstObservedAtNotNil applies the NotNil predicate on the "first_observed_at" field.
-func FirstObservedAtNotNil() predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldFirstObservedAt))
-}
-
-// LastObservedAtEQ applies the EQ predicate on the "last_observed_at" field.
-func LastObservedAtEQ(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldLastObservedAt, v))
-}
-
-// LastObservedAtNEQ applies the NEQ predicate on the "last_observed_at" field.
-func LastObservedAtNEQ(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldLastObservedAt, v))
-}
-
-// LastObservedAtIn applies the In predicate on the "last_observed_at" field.
-func LastObservedAtIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldLastObservedAt, vs...))
-}
-
-// LastObservedAtNotIn applies the NotIn predicate on the "last_observed_at" field.
-func LastObservedAtNotIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldLastObservedAt, vs...))
-}
-
-// LastObservedAtGT applies the GT predicate on the "last_observed_at" field.
-func LastObservedAtGT(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldGT(FieldLastObservedAt, v))
-}
-
-// LastObservedAtGTE applies the GTE predicate on the "last_observed_at" field.
-func LastObservedAtGTE(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldGTE(FieldLastObservedAt, v))
-}
-
-// LastObservedAtLT applies the LT predicate on the "last_observed_at" field.
-func LastObservedAtLT(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldLT(FieldLastObservedAt, v))
-}
-
-// LastObservedAtLTE applies the LTE predicate on the "last_observed_at" field.
-func LastObservedAtLTE(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldLastObservedAt, v))
-}
-
-// LastObservedAtIsNil applies the IsNil predicate on the "last_observed_at" field.
-func LastObservedAtIsNil() predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldIsNull(FieldLastObservedAt))
-}
-
-// LastObservedAtNotNil applies the NotNil predicate on the "last_observed_at" field.
-func LastObservedAtNotNil() predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldLastObservedAt))
-}
-
-// DeletedAtEQ applies the EQ predicate on the "deleted_at" field.
-func DeletedAtEQ(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldDeletedAt, v))
-}
-
-// DeletedAtNEQ applies the NEQ predicate on the "deleted_at" field.
-func DeletedAtNEQ(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldDeletedAt, v))
-}
-
-// DeletedAtIn applies the In predicate on the "deleted_at" field.
-func DeletedAtIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldDeletedAt, vs...))
-}
-
-// DeletedAtNotIn applies the NotIn predicate on the "deleted_at" field.
-func DeletedAtNotIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldDeletedAt, vs...))
-}
-
-// DeletedAtGT applies the GT predicate on the "deleted_at" field.
-func DeletedAtGT(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldGT(FieldDeletedAt, v))
-}
-
-// DeletedAtGTE applies the GTE predicate on the "deleted_at" field.
-func DeletedAtGTE(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldGTE(FieldDeletedAt, v))
-}
-
-// DeletedAtLT applies the LT predicate on the "deleted_at" field.
-func DeletedAtLT(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldLT(FieldDeletedAt, v))
-}
-
-// DeletedAtLTE applies the LTE predicate on the "deleted_at" field.
-func DeletedAtLTE(v time.Time) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldDeletedAt, v))
-}
-
-// DeletedAtIsNil applies the IsNil predicate on the "deleted_at" field.
-func DeletedAtIsNil() predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldIsNull(FieldDeletedAt))
-}
-
-// DeletedAtNotNil applies the NotNil predicate on the "deleted_at" field.
-func DeletedAtNotNil() predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldDeletedAt))
-}
-
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(func(s *sql.Selector) {
@@ -568,35 +401,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.KnowledgeSubjectAlias {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
 		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasEvidence applies the HasEdge predicate on the "evidence" edge.
-func HasEvidence() predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, EvidenceTable, EvidenceColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEvidence
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasEvidenceWith applies the HasEdge predicate on the "evidence" edge with a given conditions (other predicates).
-func HasEvidenceWith(preds ...predicate.KnowledgeEvidence) predicate.KnowledgeSubjectAlias {
-	return predicate.KnowledgeSubjectAlias(func(s *sql.Selector) {
-		step := newEvidenceStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEvidence
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -655,6 +459,35 @@ func HasRelationshipWith(preds ...predicate.KnowledgeRelationship) predicate.Kno
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasEvidence applies the HasEdge predicate on the "evidence" edge.
+func HasEvidence() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, EvidenceTable, EvidenceColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.KnowledgeEvidence
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEvidenceWith applies the HasEdge predicate on the "evidence" edge with a given conditions (other predicates).
+func HasEvidenceWith(preds ...predicate.KnowledgeEvidence) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(func(s *sql.Selector) {
+		step := newEvidenceStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.KnowledgeEvidence
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

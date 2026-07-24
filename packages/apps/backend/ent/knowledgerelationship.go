@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -33,10 +32,6 @@ type KnowledgeRelationship struct {
 	SourceEntityID uuid.UUID `json:"source_entity_id,omitempty"`
 	// TargetEntityID holds the value of the "target_entity_id" field.
 	TargetEntityID uuid.UUID `json:"target_entity_id,omitempty"`
-	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
-	// Properties holds the value of the "properties" field.
-	Properties map[string]interface{} `json:"properties,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeRelationshipQuery when eager-loading is set.
 	Edges        KnowledgeRelationshipEdges `json:"edges"`
@@ -105,11 +100,9 @@ func (*KnowledgeRelationship) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case knowledgerelationship.FieldProperties:
-			values[i] = new([]byte)
 		case knowledgerelationship.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgerelationship.FieldKind, knowledgerelationship.FieldDescription:
+		case knowledgerelationship.FieldKind:
 			values[i] = new(sql.NullString)
 		case knowledgerelationship.FieldCreatedAt, knowledgerelationship.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -171,20 +164,6 @@ func (_m *KnowledgeRelationship) assignValues(columns []string, values []any) er
 				return fmt.Errorf("unexpected type %T for field target_entity_id", values[i])
 			} else if value != nil {
 				_m.TargetEntityID = *value
-			}
-		case knowledgerelationship.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				_m.Description = value.String
-			}
-		case knowledgerelationship.FieldProperties:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field properties", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Properties); err != nil {
-					return fmt.Errorf("unmarshal field properties: %w", err)
-				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -259,12 +238,6 @@ func (_m *KnowledgeRelationship) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("target_entity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TargetEntityID))
-	builder.WriteString(", ")
-	builder.WriteString("description=")
-	builder.WriteString(_m.Description)
-	builder.WriteString(", ")
-	builder.WriteString("properties=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Properties))
 	builder.WriteByte(')')
 	return builder.String()
 }

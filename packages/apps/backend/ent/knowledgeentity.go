@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -28,14 +27,6 @@ type KnowledgeEntity struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Kind holds the value of the "kind" field.
 	Kind string `json:"kind,omitempty"`
-	// Reference holds the value of the "reference" field.
-	Reference string `json:"reference,omitempty"`
-	// DisplayName holds the value of the "display_name" field.
-	DisplayName string `json:"display_name,omitempty"`
-	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
-	// LiveProperties holds the value of the "live_properties" field.
-	LiveProperties map[string]interface{} `json:"live_properties,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEntityQuery when eager-loading is set.
 	Edges        KnowledgeEntityEdges `json:"edges"`
@@ -100,11 +91,9 @@ func (*KnowledgeEntity) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case knowledgeentity.FieldLiveProperties:
-			values[i] = new([]byte)
 		case knowledgeentity.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgeentity.FieldKind, knowledgeentity.FieldReference, knowledgeentity.FieldDisplayName, knowledgeentity.FieldDescription:
+		case knowledgeentity.FieldKind:
 			values[i] = new(sql.NullString)
 		case knowledgeentity.FieldCreatedAt, knowledgeentity.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -154,32 +143,6 @@ func (_m *KnowledgeEntity) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
 				_m.Kind = value.String
-			}
-		case knowledgeentity.FieldReference:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field reference", values[i])
-			} else if value.Valid {
-				_m.Reference = value.String
-			}
-		case knowledgeentity.FieldDisplayName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field display_name", values[i])
-			} else if value.Valid {
-				_m.DisplayName = value.String
-			}
-		case knowledgeentity.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				_m.Description = value.String
-			}
-		case knowledgeentity.FieldLiveProperties:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field live_properties", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.LiveProperties); err != nil {
-					return fmt.Errorf("unmarshal field live_properties: %w", err)
-				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -248,18 +211,6 @@ func (_m *KnowledgeEntity) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(_m.Kind)
-	builder.WriteString(", ")
-	builder.WriteString("reference=")
-	builder.WriteString(_m.Reference)
-	builder.WriteString(", ")
-	builder.WriteString("display_name=")
-	builder.WriteString(_m.DisplayName)
-	builder.WriteString(", ")
-	builder.WriteString("description=")
-	builder.WriteString(_m.Description)
-	builder.WriteString(", ")
-	builder.WriteString("live_properties=")
-	builder.WriteString(fmt.Sprintf("%v", _m.LiveProperties))
 	builder.WriteByte(')')
 	return builder.String()
 }

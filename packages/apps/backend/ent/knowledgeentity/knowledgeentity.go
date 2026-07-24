@@ -24,14 +24,6 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
-	// FieldReference holds the string denoting the reference field in the database.
-	FieldReference = "reference"
-	// FieldDisplayName holds the string denoting the display_name field in the database.
-	FieldDisplayName = "display_name"
-	// FieldDescription holds the string denoting the description field in the database.
-	FieldDescription = "description"
-	// FieldLiveProperties holds the string denoting the live_properties field in the database.
-	FieldLiveProperties = "live_properties"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAliases holds the string denoting the aliases edge name in mutations.
@@ -79,10 +71,6 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldKind,
-	FieldReference,
-	FieldDisplayName,
-	FieldDescription,
-	FieldLiveProperties,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -111,10 +99,6 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// KindValidator is a validator for the "kind" field. It is called by the builders before save.
 	KindValidator func(string) error
-	// ReferenceValidator is a validator for the "reference" field. It is called by the builders before save.
-	ReferenceValidator func(string) error
-	// DefaultLiveProperties holds the default value on creation for the "live_properties" field.
-	DefaultLiveProperties map[string]interface{}
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -145,21 +129,6 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByKind orders the results by the kind field.
 func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
-}
-
-// ByReference orders the results by the reference field.
-func ByReference(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldReference, opts...).ToFunc()
-}
-
-// ByDisplayName orders the results by the display_name field.
-func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDisplayName, opts...).ToFunc()
-}
-
-// ByDescription orders the results by the description field.
-func ByDescription(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

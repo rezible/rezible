@@ -116,11 +116,51 @@ type (
 )
 
 type (
+	ListKnowledgeGraphEntitiesParams struct {
+		ent.ListParams
+		Predicates []predicate.KnowledgeEntity
+	}
+
+	ListKnowledgeGraphRelationshipsParams struct {
+		ent.ListParams
+		Predicates []predicate.KnowledgeRelationship
+	}
+
+	GetKnowledgeGraphViewParams struct {
+		Depth             int
+		RelationshipKinds []string
+	}
+
+	KnowledgeGraphView struct {
+		Entities      ent.KnowledgeEntities
+		Relationships ent.KnowledgeRelationships
+		Evidence      ent.KnowledgeEvidences
+		Truncated     bool
+		Warnings      []string
+	}
+
+	KnowledgeGraphService interface {
+		ListEntities(context.Context, ListKnowledgeGraphEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
+		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
+
+		ListRelationships(context.Context, ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
+		GetRelationship(context.Context, uuid.UUID) (*ent.KnowledgeRelationship, error)
+
+		GetView(context.Context, uuid.UUID, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
+		GetEntityAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeEntity, error)
+		GetRelationshipAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeRelationship, error)
+
+		IngestEntityEvidence(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (*ent.KnowledgeEntity, error)
+		IngestEvidenceBulk(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) (ent.KnowledgeSubjectAliasSlice, error)
+	}
+)
+
+type (
 	ProviderEvent struct {
 		Provider           string
 		ProviderSource     string
-		ProviderEventRef   string
 		ProviderSubjectRef string
+		ProviderEventRef   string
 		ReceivedAt         time.Time
 		Payload            []byte
 		ContentType        string
@@ -316,51 +356,6 @@ type (
 		CreateForToken(context.Context, string) (*ent.UserAuthSession, error)
 		LookupSession(context.Context, uuid.UUID) (*ent.UserAuthSession, error)
 		DeleteSession(context.Context, uuid.UUID) error
-	}
-)
-
-type (
-	ListKnowledgeGraphEntitiesParams struct {
-		ent.ListParams
-		Predicates []predicate.KnowledgeEntity
-	}
-
-	ListKnowledgeGraphRelationshipsParams struct {
-		ent.ListParams
-		Predicates []predicate.KnowledgeRelationship
-	}
-
-	GetKnowledgeGraphViewParams struct {
-		Depth             int
-		RelationshipKinds []string
-	}
-
-	KnowledgeGraphView struct {
-		Entities      ent.KnowledgeEntities
-		Relationships ent.KnowledgeRelationships
-		Evidence      ent.KnowledgeEvidences
-		Truncated     bool
-		Warnings      []string
-	}
-
-	KnowledgeCitation struct {
-		EvidenceID uuid.UUID
-		Summary    string
-	}
-
-	KnowledgeGraphService interface {
-		ListEntities(context.Context, ListKnowledgeGraphEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
-		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
-
-		ListRelationships(context.Context, ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
-		GetRelationship(context.Context, uuid.UUID) (*ent.KnowledgeRelationship, error)
-
-		GetView(context.Context, uuid.UUID, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
-		GetEntityAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeEntity, error)
-		GetRelationshipAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeRelationship, error)
-
-		IngestEvidence(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) error
-		IngestDomainEntityEvidence(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error)
 	}
 )
 

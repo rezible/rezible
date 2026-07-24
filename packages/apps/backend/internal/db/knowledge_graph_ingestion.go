@@ -6,364 +6,205 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 )
 
 var (
-	knowledgeEntityUniqueColumns       = sql.ConflictColumns(kne.FieldTenantID, kne.FieldKind, kne.FieldReference)
 	knowledgeRelationshipUniqueColumns = sql.ConflictColumns(knr.FieldTenantID, knr.FieldKind, knr.FieldSourceEntityID, knr.FieldTargetEntityID)
-	knowledgeSubjectAliasUniqueColumns = sql.ConflictColumns(ksa.FieldTenantID, ksa.FieldSubjectKind, ksa.FieldProvider, ksa.FieldProviderSubjectRef)
-	knowledgeEvidenceUniqueColumns     = sql.ConflictColumns(ke.FieldTenantID, ke.FieldEventID, ke.FieldAliasID, ke.FieldEvidenceKind, ke.FieldAssertion)
+	knowledgeSubjectAliasUniqueColumns = sql.ConflictColumns(ksa.FieldTenantID, ksa.FieldSubjectKind, ksa.FieldProvider, ksa.FieldProviderSource, ksa.FieldProviderSubjectRef)
+	knowledgeEvidenceUniqueColumns     = sql.ConflictColumns(ke.FieldTenantID, ke.FieldEventID, ke.FieldSubjectAliasID)
 )
 
-func cloneMap(values map[string]any) map[string]any {
-	cloned := make(map[string]any, len(values))
-	for key, value := range values {
-		cloned[key] = value
-	}
-	return cloned
+func (s *KnowledgeGraphService) createSubjectAlias(ctx context.Context, ref ent.KnowledgeAliasRef) *ent.KnowledgeSubjectAliasCreate {
+	return s.db.Client(ctx).KnowledgeSubjectAlias.Create().
+		SetProvider(ref.Provider).
+		SetProviderSource(ref.ProviderSource).
+		SetProviderSubjectRef(ref.ProviderSubjectRef)
 }
 
-func (s *KnowledgeGraphService) setEntityFromRef(ctx context.Context, entityRef *ent.KnowledgeEntityRef, applyState bool) (uuid.UUID, error) {
-	if entityRef == nil {
-		return uuid.Nil, fmt.Errorf("entity reference is required")
-	}
-
-	queryEntity := s.db.Client(ctx).KnowledgeEntity.Query().
-		Where(kne.Kind(entityRef.Kind), kne.Reference(entityRef.Reference))
-	existing, queryErr := queryEntity.Only(ctx)
-	if queryErr == nil {
-		if !applyState {
-			return existing.ID, nil
-		}
-		updateEntity := s.db.Client(ctx).KnowledgeEntity.UpdateOne(existing)
-		if entityRef.DisplayName != "" {
-			updateEntity.SetDisplayName(entityRef.DisplayName)
-		}
-		if entityRef.Description != "" {
-			updateEntity.SetDescription(entityRef.Description)
-		}
-		if entityRef.Properties != nil {
-			properties := cloneMap(existing.LiveProperties)
-			for key, value := range entityRef.Properties {
-				properties[key] = value
-			}
-			updateEntity.SetLiveProperties(properties)
-		}
-		updated, updateErr := updateEntity.Save(ctx)
-		if updateErr != nil {
-			return uuid.Nil, fmt.Errorf("update entity: %w", updateErr)
-		}
-		return updated.ID, nil
-	}
-	if !ent.IsNotFound(queryErr) {
-		return uuid.Nil, fmt.Errorf("query entity: %w", queryErr)
-	}
-
-	displayName := entityRef.DisplayName
-	if displayName == "" {
-		displayName = entityRef.Reference
-	}
-	createEntity := s.db.Client(ctx).KnowledgeEntity.Create().
-		SetKind(entityRef.Kind).
-		SetReference(entityRef.Reference).
-		SetDisplayName(displayName).
-		SetDescription(entityRef.Description)
-	if entityRef.Properties != nil {
-		createEntity.SetLiveProperties(entityRef.Properties)
-	}
-	upsertEntity := createEntity.OnConflict(knowledgeEntityUniqueColumns).
-		Update(func(update *ent.KnowledgeEntityUpsert) {
-			if entityRef.DisplayName != "" {
-				update.SetDisplayName(entityRef.DisplayName)
-			}
-			if entityRef.Description != "" {
-				update.SetDescription(entityRef.Description)
-			}
-			if entityRef.Properties != nil {
-				update.SetLiveProperties(entityRef.Properties)
-			}
-			update.SetUpdatedAt(time.Now())
-		})
-	entityID, createErr := upsertEntity.ID(ctx)
-	if createErr != nil {
-		return uuid.Nil, fmt.Errorf("create entity: %w", createErr)
-	}
-	return entityID, nil
-}
-
-func (s *KnowledgeGraphService) setRelationshipFromRef(ctx context.Context, relationshipRef *ent.KnowledgeRelationshipRef, applyState bool) (uuid.UUID, error) {
-	if relationshipRef == nil {
-		return uuid.Nil, fmt.Errorf("relationship reference is required")
-	}
-
-	sourceID, sourceErr := s.setEntityFromRef(ctx, &relationshipRef.EntityRefs[0], applyState)
-	if sourceErr != nil {
-		return uuid.Nil, fmt.Errorf("resolve source entity: %w", sourceErr)
-	}
-	targetID, targetErr := s.setEntityFromRef(ctx, &relationshipRef.EntityRefs[1], applyState)
-	if targetErr != nil {
-		return uuid.Nil, fmt.Errorf("resolve target entity: %w", targetErr)
-	}
-
-	queryRelationship := s.db.Client(ctx).KnowledgeRelationship.Query().Where(
-		knr.Kind(relationshipRef.Kind),
-		knr.SourceEntityID(sourceID),
-		knr.TargetEntityID(targetID),
-	)
-	existing, queryErr := queryRelationship.Only(ctx)
-	if queryErr == nil {
-		if !applyState {
-			return existing.ID, nil
-		}
-		updateRelationship := s.db.Client(ctx).KnowledgeRelationship.UpdateOne(existing)
-		if relationshipRef.Description != "" {
-			updateRelationship.SetDescription(relationshipRef.Description)
-		}
-		if relationshipRef.Properties != nil {
-			properties := cloneMap(existing.Properties)
-			for key, value := range relationshipRef.Properties {
-				properties[key] = value
-			}
-			updateRelationship.SetProperties(properties)
-		}
-		updated, updateErr := updateRelationship.Save(ctx)
-		if updateErr != nil {
-			return uuid.Nil, fmt.Errorf("update relationship: %w", updateErr)
-		}
-		return updated.ID, nil
-	}
-	if !ent.IsNotFound(queryErr) {
-		return uuid.Nil, fmt.Errorf("query relationship: %w", queryErr)
-	}
-
-	createRelationship := s.db.Client(ctx).KnowledgeRelationship.Create().
-		SetKind(relationshipRef.Kind).
-		SetSourceEntityID(sourceID).
-		SetTargetEntityID(targetID).
-		SetDescription(relationshipRef.Description)
-	if relationshipRef.Properties != nil {
-		createRelationship.SetProperties(relationshipRef.Properties)
-	}
-	upsertRelationship := createRelationship.OnConflict(knowledgeRelationshipUniqueColumns).
-		Update(func(update *ent.KnowledgeRelationshipUpsert) {
-			if relationshipRef.Description != "" {
-				update.SetDescription(relationshipRef.Description)
-			}
-			if relationshipRef.Properties != nil {
-				update.SetProperties(relationshipRef.Properties)
-			}
-			update.SetUpdatedAt(time.Now())
-		})
-	relationshipID, createErr := upsertRelationship.ID(ctx)
-	if createErr != nil {
-		return uuid.Nil, fmt.Errorf("create relationship: %w", createErr)
-	}
-	return relationshipID, nil
-}
-
-func (s *KnowledgeGraphService) setSubjectAliasFromProjection(ctx context.Context, aliasRef ent.KnowledgeSubjectAliasRef, evidenceKind ke.EvidenceKind, observedAt time.Time) (uuid.UUID, error) {
-	queryAlias := s.db.Client(ctx).KnowledgeSubjectAlias.Query().Where(
-		ksa.SubjectKindEQ(aliasRef.Kind),
-		ksa.Provider(aliasRef.Provider),
-		ksa.ProviderSubjectRef(aliasRef.ProviderSubjectRef),
-	)
+func (s *KnowledgeGraphService) setEntityFromRef(ctx context.Context, ref ent.KnowledgeEntityRef) (*ent.KnowledgeSubjectAlias, error) {
+	queryAlias := s.db.Client(ctx).KnowledgeSubjectAlias.Query().
+		Where(ref.Alias.SubjectPredicate(ksa.SubjectKindEntity)).
+		WithEntity()
 	alias, queryErr := queryAlias.Only(ctx)
 	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return uuid.Nil, fmt.Errorf("query subject alias: %w", queryErr)
-	}
-	isLatest := alias == nil || !observedAt.Before(alias.LastObservedAt)
-	applyState := isLatest && evidenceKind != ke.EvidenceKindDeleted
-
-	var entityID, relationshipID uuid.UUID
-	switch aliasRef.Kind {
-	case ksa.SubjectKindEntity:
-		var entityErr error
-		entityID, entityErr = s.setEntityFromRef(ctx, aliasRef.SubjectEntityRef, applyState)
+		return nil, fmt.Errorf("query entity alias: %w", queryErr)
+	} else if alias != nil {
+		entity, entityErr := alias.Edges.EntityOrErr()
 		if entityErr != nil {
-			return uuid.Nil, fmt.Errorf("resolve alias entity: %w", entityErr)
+			return nil, fmt.Errorf("load alias entity: %w", entityErr)
 		}
-	case ksa.SubjectKindRelationship:
-		var relationshipErr error
-		relationshipID, relationshipErr = s.setRelationshipFromRef(ctx, aliasRef.SubjectRelationshipRef, applyState)
-		if relationshipErr != nil {
-			return uuid.Nil, fmt.Errorf("resolve alias relationship: %w", relationshipErr)
+		if entity.Kind != ref.Kind {
+			return nil, fmt.Errorf("%w: alias identifies %q, evidence expects %q", rez.ErrConflict, entity.Kind, ref.Kind)
 		}
+		return alias, nil
+	}
+
+	createEntity := s.db.Client(ctx).KnowledgeEntity.Create().
+		SetKind(ref.Kind)
+	createdEntity, createEntityErr := createEntity.Save(ctx)
+	if createEntityErr != nil {
+		return nil, fmt.Errorf("create knowledge entity: %w", createEntityErr)
+	}
+
+	createAlias := s.createSubjectAlias(ctx, ref.Alias).
+		SetSubjectKind(ksa.SubjectKindEntity).
+		SetEntityID(createdEntity.ID)
+	createdAlias, createAliasErr := createAlias.Save(ctx)
+	if createAliasErr != nil {
+		return nil, fmt.Errorf("create entity alias: %w", createAliasErr)
+	}
+	return createdAlias, nil
+}
+
+func (s *KnowledgeGraphService) setRelationshipFromRef(ctx context.Context, ref ent.KnowledgeRelationshipRef) (*ent.KnowledgeSubjectAlias, error) {
+	sourceAlias, sourceErr := s.setEntityFromRef(ctx, ref.Source)
+	if sourceErr != nil {
+		return nil, fmt.Errorf("resolve source entity: %w", sourceErr)
+	} else if sourceAlias.EntityID == nil {
+		return nil, fmt.Errorf("nil source alias entity id")
+	}
+	sourceId := *sourceAlias.EntityID
+
+	targetAlias, targetErr := s.setEntityFromRef(ctx, ref.Target)
+	if targetErr != nil {
+		return nil, fmt.Errorf("resolve target entity: %w", targetErr)
+	} else if targetAlias.EntityID == nil {
+		return nil, fmt.Errorf("nil target alias entity id")
+	}
+	targetId := *targetAlias.EntityID
+
+	queryExisting := s.db.Client(ctx).KnowledgeSubjectAlias.Query().
+		Where(ref.Alias.SubjectPredicate(ksa.SubjectKindRelationship)).
+		WithRelationship()
+	existingAlias, queryExistingErr := queryExisting.Only(ctx)
+	if queryExistingErr != nil && !ent.IsNotFound(queryExistingErr) {
+		return nil, fmt.Errorf("query existing relationship alias: %w", queryExistingErr)
+	} else if existingAlias != nil {
+		rel, edgeErr := existingAlias.Edges.RelationshipOrErr()
+		if edgeErr != nil {
+			return nil, fmt.Errorf("load aliased relationship: %w", edgeErr)
+		}
+		if rel.Kind != ref.Kind || rel.SourceEntityID != sourceId || rel.TargetEntityID != targetId {
+			return nil, fmt.Errorf("%w: relationship alias identifies different topology", rez.ErrConflict)
+		}
+		return existingAlias, nil
+	}
+
+	upsertRel := s.db.Client(ctx).KnowledgeRelationship.Create().
+		SetKind(ref.Kind).
+		SetSourceEntityID(sourceId).
+		SetTargetEntityID(targetId).
+		OnConflict(knowledgeRelationshipUniqueColumns).
+		SetUpdatedAt(time.Now().UTC())
+	relId, upsertRelErr := upsertRel.ID(ctx)
+	if upsertRelErr != nil {
+		return nil, fmt.Errorf("upsert relationship: %w", upsertRelErr)
+	}
+	createAlias := s.createSubjectAlias(ctx, ref.Alias).
+		SetSubjectKind(ksa.SubjectKindRelationship).
+		SetRelationshipID(relId)
+	createdAlias, createAliasErr := createAlias.Save(ctx)
+	if createAliasErr != nil {
+		return nil, fmt.Errorf("create alias: %w", createAliasErr)
+	}
+	return createdAlias, nil
+}
+
+func (s *KnowledgeGraphService) setEvidenceSubjectAlias(ctx context.Context, ref ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error) {
+	switch {
+	case ref.SubjectEntity != nil && ref.SubjectRelationship == nil:
+		return s.setEntityFromRef(ctx, *ref.SubjectEntity)
+	case ref.SubjectRelationship != nil && ref.SubjectEntity == nil:
+		return s.setRelationshipFromRef(ctx, *ref.SubjectRelationship)
 	default:
-		return uuid.Nil, fmt.Errorf("invalid alias subject kind %q", aliasRef.Kind)
+		return nil, fmt.Errorf("evidence must contain exactly one entity or relationship")
 	}
-
-	if alias == nil {
-		createAlias := s.db.Client(ctx).KnowledgeSubjectAlias.Create().
-			SetProvider(aliasRef.Provider).
-			SetProviderSubjectRef(aliasRef.ProviderSubjectRef).
-			SetSubjectKind(aliasRef.Kind).
-			SetDescription(aliasRef.Description).
-			SetFirstObservedAt(observedAt).
-			SetLastObservedAt(observedAt)
-		if evidenceKind == ke.EvidenceKindDeleted {
-			createAlias.SetDeletedAt(observedAt)
-		}
-		if entityID != uuid.Nil {
-			createAlias.SetEntityID(entityID)
-		}
-		if relationshipID != uuid.Nil {
-			createAlias.SetRelationshipID(relationshipID)
-		}
-		createErr := createAlias.OnConflict(knowledgeSubjectAliasUniqueColumns).DoNothing().Exec(ctx)
-		if createErr != nil {
-			return uuid.Nil, fmt.Errorf("create subject alias: %w", createErr)
-		}
-		alias, queryErr = queryAlias.Only(ctx)
-		if queryErr != nil {
-			return uuid.Nil, fmt.Errorf("query created subject alias: %w", queryErr)
-		}
-	}
-
-	if alias.EntityID != entityID || alias.RelationshipID != relationshipID {
-		return uuid.Nil, fmt.Errorf(
-			"%w: provider subject %q is already linked to another knowledge subject",
-			rez.ErrConflict,
-			aliasRef.ProviderSubjectRef,
-		)
-	}
-	if observedAt.Before(alias.FirstObservedAt) {
-		if _, updateErr := s.db.Client(ctx).KnowledgeSubjectAlias.Update().
-			Where(ksa.ID(alias.ID), ksa.FirstObservedAtGT(observedAt)).
-			SetFirstObservedAt(observedAt).
-			Save(ctx); updateErr != nil {
-			return uuid.Nil, fmt.Errorf("update alias first observation: %w", updateErr)
-		}
-	}
-	if observedAt.After(alias.LastObservedAt) {
-		if _, updateErr := s.db.Client(ctx).KnowledgeSubjectAlias.Update().
-			Where(ksa.ID(alias.ID), ksa.LastObservedAtLT(observedAt)).
-			SetLastObservedAt(observedAt).
-			Save(ctx); updateErr != nil {
-			return uuid.Nil, fmt.Errorf("update alias last observation: %w", updateErr)
-		}
-	}
-	if isLatest {
-		updateAlias := s.db.Client(ctx).KnowledgeSubjectAlias.UpdateOneID(alias.ID)
-		updateRequired := false
-		if aliasRef.Description != "" && alias.Description != aliasRef.Description {
-			updateAlias.SetDescription(aliasRef.Description)
-			updateRequired = true
-		}
-		if evidenceKind == ke.EvidenceKindDeleted {
-			updateAlias.SetDeletedAt(observedAt)
-			updateRequired = true
-		} else if alias.DeletedAt != nil {
-			updateAlias.ClearDeletedAt()
-			updateRequired = true
-		}
-		if updateRequired {
-			if _, updateErr := updateAlias.Save(ctx); updateErr != nil {
-				return uuid.Nil, fmt.Errorf("update subject alias: %w", updateErr)
-			}
-		}
-	}
-	return alias.ID, nil
 }
 
-func (s *KnowledgeGraphService) makeEvidenceCreate(ctx context.Context, ev *ent.NormalizedEvent, ref ent.KnowledgeEvidenceRef) (*ent.KnowledgeEvidenceCreate, error) {
-	aliasID, aliasErr := s.setSubjectAliasFromProjection(ctx, ref.SubjectAliasRef, ref.Kind, ref.EffectiveAt)
-	if aliasErr != nil {
-		return nil, fmt.Errorf("set subject alias: %w", aliasErr)
+func (s *KnowledgeGraphService) getRefTransactionLocks(refs []ent.KnowledgeEvidenceRef) ([]string, error) {
+	locks := make([]string, len(refs))
+	for i, ref := range refs {
+		if ref.SubjectEntity != nil && ref.SubjectRelationship == nil {
+			locks[i] = ref.SubjectEntity.Alias.LockKey(ksa.SubjectKindEntity)
+		} else if ref.SubjectRelationship != nil && ref.SubjectEntity == nil {
+			locks[i] = ref.SubjectRelationship.Alias.LockKey(ksa.SubjectKindRelationship)
+		} else {
+			return nil, fmt.Errorf("evidence must contain exactly one entity or relationship")
+		}
 	}
-	createEvidence := s.db.Client(ctx).KnowledgeEvidence.Create().
-		SetEventID(ev.ID).
-		SetAliasID(aliasID).
-		SetEvidenceKind(ref.Kind).
-		SetAssertion(ref.Assertion).
-		SetEffectiveAt(ref.EffectiveAt).
-		SetProperties(ref.Properties).
-		SetSubjectState(knowledgeEvidenceSubjectState(ref))
-	return createEvidence, nil
+	return locks, nil
 }
 
-func (s *KnowledgeGraphService) IngestEvidence(ctx context.Context, event *ent.NormalizedEvent, refs ...ent.KnowledgeEvidenceRef) error {
-	if len(refs) == 0 {
+func (s *KnowledgeGraphService) IngestEntityEvidence(ctx context.Context, event *ent.NormalizedEvent, ref ent.KnowledgeEvidenceRef) (*ent.KnowledgeEntity, error) {
+	locks, locksErr := s.getRefTransactionLocks([]ent.KnowledgeEvidenceRef{ref})
+	if locksErr != nil {
+		return nil, fmt.Errorf("make transaction locks: %w", locksErr)
+	}
+	var entity *ent.KnowledgeEntity
+	return entity, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.db.AcquireTxLocks(ctx, "knowledge_subject_alias", locks...); lockErr != nil {
+			return fmt.Errorf("failed to acquire tx locks: %w", lockErr)
+		}
+		subjAlias, aliasErr := s.setEvidenceSubjectAlias(ctx, ref)
+		if aliasErr != nil {
+			return fmt.Errorf("set subject alias: %w", aliasErr)
+		}
+		entity = subjAlias.Edges.Entity
+		create := tx.KnowledgeEvidence.Create().
+			SetEventID(event.ID).
+			SetSubjectAliasID(subjAlias.ID).
+			SetKind(ref.Kind).
+			SetAssertion(ref.Assertion).
+			SetEffectiveAt(ref.EffectiveAt).
+			SetSubjectState(ref.SubjectState).
+			OnConflict(knowledgeEvidenceUniqueColumns).
+			Ignore()
+		if createErr := create.Exec(ctx); createErr != nil {
+			return fmt.Errorf("create knowledge evidence: %w", createErr)
+		}
 		return nil
+	})
+}
+
+func (s *KnowledgeGraphService) IngestEvidenceBulk(ctx context.Context, event *ent.NormalizedEvent, refs ...ent.KnowledgeEvidenceRef) (ent.KnowledgeSubjectAliasSlice, error) {
+	if len(refs) == 0 {
+		return nil, nil
 	}
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		builders := make([]*ent.KnowledgeEvidenceCreate, len(refs))
+	locks, locksErr := s.getRefTransactionLocks(refs)
+	if locksErr != nil {
+		return nil, fmt.Errorf("make transaction locks: %w", locksErr)
+	}
+	aliases := make(ent.KnowledgeSubjectAliasSlice, len(refs))
+	builders := make([]*ent.KnowledgeEvidenceCreate, len(refs))
+	return aliases, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.db.AcquireTxLocks(ctx, "knowledge_subject_alias", locks...); lockErr != nil {
+			return fmt.Errorf("failed to acquire tx locks: %w", lockErr)
+		}
 		for i, ref := range refs {
-			aliasID, aliasErr := s.setSubjectAliasFromProjection(ctx, ref.SubjectAliasRef, ref.Kind, ref.EffectiveAt)
+			alias, aliasErr := s.setEvidenceSubjectAlias(ctx, ref)
 			if aliasErr != nil {
 				return fmt.Errorf("set subject alias: %w", aliasErr)
 			}
+			aliases[i] = alias.Unwrap()
 			builders[i] = tx.KnowledgeEvidence.Create().
 				SetEventID(event.ID).
-				SetAliasID(aliasID).
-				SetEvidenceKind(ref.Kind).
+				SetSubjectAliasID(alias.ID).
+				SetKind(ref.Kind).
 				SetAssertion(ref.Assertion).
 				SetEffectiveAt(ref.EffectiveAt).
-				SetProperties(ref.Properties).
-				SetSubjectState(knowledgeEvidenceSubjectState(ref))
+				SetSubjectState(ref.SubjectState)
 		}
 		createEvidence := tx.KnowledgeEvidence.CreateBulk(builders...).
 			OnConflict(knowledgeEvidenceUniqueColumns).
-			UpdateUpdatedAt()
+			Ignore()
 		if createErr := createEvidence.Exec(ctx); createErr != nil {
 			return fmt.Errorf("create knowledge evidence: %w", createErr)
 		}
 		return nil
 	})
-}
-
-func (s *KnowledgeGraphService) IngestDomainEntityEvidence(ctx context.Context, event *ent.NormalizedEvent, ref ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error) {
-	if ref.SubjectAliasRef.SubjectEntityRef == nil {
-		return nil, fmt.Errorf("evidence subject entity is required")
-	}
-
-	var alias *ent.KnowledgeSubjectAlias
-	return alias, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		createEvidence, createErr := s.makeEvidenceCreate(ctx, event, ref)
-		if createErr != nil {
-			return fmt.Errorf("create knowledge evidence: %w", createErr)
-		}
-
-		aliasId, hasAlias := createEvidence.Mutation().AliasID()
-		if !hasAlias {
-			return fmt.Errorf("no alias set")
-		}
-
-		insertEvidence := createEvidence.OnConflict(knowledgeEvidenceUniqueColumns).
-			Ignore()
-		if saveErr := insertEvidence.Exec(ctx); saveErr != nil {
-			return fmt.Errorf("exec create: %w", saveErr)
-		}
-
-		txAlias, getErr := tx.KnowledgeSubjectAlias.Get(ctx, aliasId)
-		if getErr != nil {
-			return fmt.Errorf("get subject alias: %w", getErr)
-		}
-		alias = txAlias.Unwrap()
-		return nil
-	})
-}
-
-func knowledgeEvidenceSubjectState(evidenceRef ent.KnowledgeEvidenceRef) map[string]any {
-	aliasRef := evidenceRef.SubjectAliasRef
-	if aliasRef.SubjectEntityRef != nil {
-		return map[string]any{
-			"subject_kind": "entity",
-			"entity":       aliasRef.SubjectEntityRef,
-		}
-	}
-	if aliasRef.SubjectRelationshipRef != nil {
-		return map[string]any{
-			"subject_kind": "relationship",
-			"relationship": aliasRef.SubjectRelationshipRef,
-		}
-	}
-	return map[string]any{}
 }

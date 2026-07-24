@@ -24,14 +24,14 @@ import (
 // KnowledgeEvidenceQuery is the builder for querying KnowledgeEvidence entities.
 type KnowledgeEvidenceQuery struct {
 	config
-	ctx        *QueryContext
-	order      []knowledgeevidence.OrderOption
-	inters     []Interceptor
-	predicates []predicate.KnowledgeEvidence
-	withTenant *TenantQuery
-	withEvent  *NormalizedEventQuery
-	withAlias  *KnowledgeSubjectAliasQuery
-	modifiers  []func(*sql.Selector)
+	ctx              *QueryContext
+	order            []knowledgeevidence.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.KnowledgeEvidence
+	withTenant       *TenantQuery
+	withEvent        *NormalizedEventQuery
+	withSubjectAlias *KnowledgeSubjectAliasQuery
+	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -118,8 +118,8 @@ func (_q *KnowledgeEvidenceQuery) QueryEvent() *NormalizedEventQuery {
 	return query
 }
 
-// QueryAlias chains the current query on the "alias" edge.
-func (_q *KnowledgeEvidenceQuery) QueryAlias() *KnowledgeSubjectAliasQuery {
+// QuerySubjectAlias chains the current query on the "subject_alias" edge.
+func (_q *KnowledgeEvidenceQuery) QuerySubjectAlias() *KnowledgeSubjectAliasQuery {
 	query := (&KnowledgeSubjectAliasClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -132,7 +132,7 @@ func (_q *KnowledgeEvidenceQuery) QueryAlias() *KnowledgeSubjectAliasQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(knowledgeevidence.Table, knowledgeevidence.FieldID, selector),
 			sqlgraph.To(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeevidence.AliasTable, knowledgeevidence.AliasColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeevidence.SubjectAliasTable, knowledgeevidence.SubjectAliasColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
@@ -330,14 +330,14 @@ func (_q *KnowledgeEvidenceQuery) Clone() *KnowledgeEvidenceQuery {
 		return nil
 	}
 	return &KnowledgeEvidenceQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]knowledgeevidence.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.KnowledgeEvidence{}, _q.predicates...),
-		withTenant: _q.withTenant.Clone(),
-		withEvent:  _q.withEvent.Clone(),
-		withAlias:  _q.withAlias.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]knowledgeevidence.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.KnowledgeEvidence{}, _q.predicates...),
+		withTenant:       _q.withTenant.Clone(),
+		withEvent:        _q.withEvent.Clone(),
+		withSubjectAlias: _q.withSubjectAlias.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -367,14 +367,14 @@ func (_q *KnowledgeEvidenceQuery) WithEvent(opts ...func(*NormalizedEventQuery))
 	return _q
 }
 
-// WithAlias tells the query-builder to eager-load the nodes that are connected to
-// the "alias" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeEvidenceQuery) WithAlias(opts ...func(*KnowledgeSubjectAliasQuery)) *KnowledgeEvidenceQuery {
+// WithSubjectAlias tells the query-builder to eager-load the nodes that are connected to
+// the "subject_alias" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeEvidenceQuery) WithSubjectAlias(opts ...func(*KnowledgeSubjectAliasQuery)) *KnowledgeEvidenceQuery {
 	query := (&KnowledgeSubjectAliasClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withAlias = query
+	_q.withSubjectAlias = query
 	return _q
 }
 
@@ -465,7 +465,7 @@ func (_q *KnowledgeEvidenceQuery) sqlAll(ctx context.Context, hooks ...queryHook
 		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withEvent != nil,
-			_q.withAlias != nil,
+			_q.withSubjectAlias != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -503,9 +503,9 @@ func (_q *KnowledgeEvidenceQuery) sqlAll(ctx context.Context, hooks ...queryHook
 			return nil, err
 		}
 	}
-	if query := _q.withAlias; query != nil {
-		if err := _q.loadAlias(ctx, query, nodes, nil,
-			func(n *KnowledgeEvidence, e *KnowledgeSubjectAlias) { n.Edges.Alias = e }); err != nil {
+	if query := _q.withSubjectAlias; query != nil {
+		if err := _q.loadSubjectAlias(ctx, query, nodes, nil,
+			func(n *KnowledgeEvidence, e *KnowledgeSubjectAlias) { n.Edges.SubjectAlias = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -570,11 +570,11 @@ func (_q *KnowledgeEvidenceQuery) loadEvent(ctx context.Context, query *Normaliz
 	}
 	return nil
 }
-func (_q *KnowledgeEvidenceQuery) loadAlias(ctx context.Context, query *KnowledgeSubjectAliasQuery, nodes []*KnowledgeEvidence, init func(*KnowledgeEvidence), assign func(*KnowledgeEvidence, *KnowledgeSubjectAlias)) error {
+func (_q *KnowledgeEvidenceQuery) loadSubjectAlias(ctx context.Context, query *KnowledgeSubjectAliasQuery, nodes []*KnowledgeEvidence, init func(*KnowledgeEvidence), assign func(*KnowledgeEvidence, *KnowledgeSubjectAlias)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*KnowledgeEvidence)
 	for i := range nodes {
-		fk := nodes[i].AliasID
+		fk := nodes[i].SubjectAliasID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -591,7 +591,7 @@ func (_q *KnowledgeEvidenceQuery) loadAlias(ctx context.Context, query *Knowledg
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "alias_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "subject_alias_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -636,8 +636,8 @@ func (_q *KnowledgeEvidenceQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withEvent != nil {
 			_spec.Node.AddColumnOnce(knowledgeevidence.FieldEventID)
 		}
-		if _q.withAlias != nil {
-			_spec.Node.AddColumnOnce(knowledgeevidence.FieldAliasID)
+		if _q.withSubjectAlias != nil {
+			_spec.Node.AddColumnOnce(knowledgeevidence.FieldSubjectAliasID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

@@ -4,7 +4,6 @@ package knowledgesubjectalias
 
 import (
 	"fmt"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -23,28 +22,22 @@ const (
 	FieldSubjectKind = "subject_kind"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
+	// FieldProviderSource holds the string denoting the provider_source field in the database.
+	FieldProviderSource = "provider_source"
 	// FieldProviderSubjectRef holds the string denoting the provider_subject_ref field in the database.
 	FieldProviderSubjectRef = "provider_subject_ref"
 	// FieldEntityID holds the string denoting the entity_id field in the database.
 	FieldEntityID = "entity_id"
 	// FieldRelationshipID holds the string denoting the relationship_id field in the database.
 	FieldRelationshipID = "relationship_id"
-	// FieldDescription holds the string denoting the description field in the database.
-	FieldDescription = "description"
-	// FieldFirstObservedAt holds the string denoting the first_observed_at field in the database.
-	FieldFirstObservedAt = "first_observed_at"
-	// FieldLastObservedAt holds the string denoting the last_observed_at field in the database.
-	FieldLastObservedAt = "last_observed_at"
-	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
-	FieldDeletedAt = "deleted_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeEvidence holds the string denoting the evidence edge name in mutations.
-	EdgeEvidence = "evidence"
 	// EdgeEntity holds the string denoting the entity edge name in mutations.
 	EdgeEntity = "entity"
 	// EdgeRelationship holds the string denoting the relationship edge name in mutations.
 	EdgeRelationship = "relationship"
+	// EdgeEvidence holds the string denoting the evidence edge name in mutations.
+	EdgeEvidence = "evidence"
 	// Table holds the table name of the knowledgesubjectalias in the database.
 	Table = "knowledge_subject_alias"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -54,13 +47,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// EvidenceTable is the table that holds the evidence relation/edge.
-	EvidenceTable = "knowledge_evidences"
-	// EvidenceInverseTable is the table name for the KnowledgeEvidence entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeevidence" package.
-	EvidenceInverseTable = "knowledge_evidences"
-	// EvidenceColumn is the table column denoting the evidence relation/edge.
-	EvidenceColumn = "alias_id"
 	// EntityTable is the table that holds the entity relation/edge.
 	EntityTable = "knowledge_subject_alias"
 	// EntityInverseTable is the table name for the KnowledgeEntity entity.
@@ -75,6 +61,13 @@ const (
 	RelationshipInverseTable = "knowledge_relationships"
 	// RelationshipColumn is the table column denoting the relationship relation/edge.
 	RelationshipColumn = "relationship_id"
+	// EvidenceTable is the table that holds the evidence relation/edge.
+	EvidenceTable = "knowledge_evidences"
+	// EvidenceInverseTable is the table name for the KnowledgeEvidence entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeevidence" package.
+	EvidenceInverseTable = "knowledge_evidences"
+	// EvidenceColumn is the table column denoting the evidence relation/edge.
+	EvidenceColumn = "subject_alias_id"
 )
 
 // Columns holds all SQL columns for knowledgesubjectalias fields.
@@ -83,13 +76,10 @@ var Columns = []string{
 	FieldTenantID,
 	FieldSubjectKind,
 	FieldProvider,
+	FieldProviderSource,
 	FieldProviderSubjectRef,
 	FieldEntityID,
 	FieldRelationshipID,
-	FieldDescription,
-	FieldFirstObservedAt,
-	FieldLastObservedAt,
-	FieldDeletedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -112,12 +102,10 @@ var (
 	Policy ent.Policy
 	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	ProviderValidator func(string) error
+	// ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
+	ProviderSourceValidator func(string) error
 	// ProviderSubjectRefValidator is a validator for the "provider_subject_ref" field. It is called by the builders before save.
 	ProviderSubjectRefValidator func(string) error
-	// DefaultFirstObservedAt holds the default value on creation for the "first_observed_at" field.
-	DefaultFirstObservedAt func() time.Time
-	// DefaultLastObservedAt holds the default value on creation for the "last_observed_at" field.
-	DefaultLastObservedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -168,6 +156,11 @@ func ByProvider(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProvider, opts...).ToFunc()
 }
 
+// ByProviderSource orders the results by the provider_source field.
+func ByProviderSource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderSource, opts...).ToFunc()
+}
+
 // ByProviderSubjectRef orders the results by the provider_subject_ref field.
 func ByProviderSubjectRef(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderSubjectRef, opts...).ToFunc()
@@ -183,44 +176,10 @@ func ByRelationshipID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRelationshipID, opts...).ToFunc()
 }
 
-// ByDescription orders the results by the description field.
-func ByDescription(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDescription, opts...).ToFunc()
-}
-
-// ByFirstObservedAt orders the results by the first_observed_at field.
-func ByFirstObservedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldFirstObservedAt, opts...).ToFunc()
-}
-
-// ByLastObservedAt orders the results by the last_observed_at field.
-func ByLastObservedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLastObservedAt, opts...).ToFunc()
-}
-
-// ByDeletedAt orders the results by the deleted_at field.
-func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDeletedAt, opts...).ToFunc()
-}
-
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByEvidenceCount orders the results by evidence count.
-func ByEvidenceCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newEvidenceStep(), opts...)
-	}
-}
-
-// ByEvidence orders the results by evidence terms.
-func ByEvidence(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEvidenceStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -237,18 +196,25 @@ func ByRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption 
 		sqlgraph.OrderByNeighborTerms(s, newRelationshipStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByEvidenceCount orders the results by evidence count.
+func ByEvidenceCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEvidenceStep(), opts...)
+	}
+}
+
+// ByEvidence orders the results by evidence terms.
+func ByEvidence(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEvidenceStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newEvidenceStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EvidenceInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, EvidenceTable, EvidenceColumn),
 	)
 }
 func newEntityStep() *sqlgraph.Step {
@@ -263,5 +229,12 @@ func newRelationshipStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RelationshipInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, RelationshipTable, RelationshipColumn),
+	)
+}
+func newEvidenceStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EvidenceInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, EvidenceTable, EvidenceColumn),
 	)
 }

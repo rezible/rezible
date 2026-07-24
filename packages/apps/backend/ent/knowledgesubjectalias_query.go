@@ -31,9 +31,9 @@ type KnowledgeSubjectAliasQuery struct {
 	inters           []Interceptor
 	predicates       []predicate.KnowledgeSubjectAlias
 	withTenant       *TenantQuery
-	withEvidence     *KnowledgeEvidenceQuery
 	withEntity       *KnowledgeEntityQuery
 	withRelationship *KnowledgeRelationshipQuery
+	withEvidence     *KnowledgeEvidenceQuery
 	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -96,31 +96,6 @@ func (_q *KnowledgeSubjectAliasQuery) QueryTenant() *TenantQuery {
 	return query
 }
 
-// QueryEvidence chains the current query on the "evidence" edge.
-func (_q *KnowledgeSubjectAliasQuery) QueryEvidence() *KnowledgeEvidenceQuery {
-	query := (&KnowledgeEvidenceClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID, selector),
-			sqlgraph.To(knowledgeevidence.Table, knowledgeevidence.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, knowledgesubjectalias.EvidenceTable, knowledgesubjectalias.EvidenceColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEvidence
-		step.Edge.Schema = schemaConfig.KnowledgeEvidence
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryEntity chains the current query on the "entity" edge.
 func (_q *KnowledgeSubjectAliasQuery) QueryEntity() *KnowledgeEntityQuery {
 	query := (&KnowledgeEntityClient{config: _q.config}).Query()
@@ -165,6 +140,31 @@ func (_q *KnowledgeSubjectAliasQuery) QueryRelationship() *KnowledgeRelationship
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEvidence chains the current query on the "evidence" edge.
+func (_q *KnowledgeSubjectAliasQuery) QueryEvidence() *KnowledgeEvidenceQuery {
+	query := (&KnowledgeEvidenceClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID, selector),
+			sqlgraph.To(knowledgeevidence.Table, knowledgeevidence.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgesubjectalias.EvidenceTable, knowledgesubjectalias.EvidenceColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.KnowledgeEvidence
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -364,9 +364,9 @@ func (_q *KnowledgeSubjectAliasQuery) Clone() *KnowledgeSubjectAliasQuery {
 		inters:           append([]Interceptor{}, _q.inters...),
 		predicates:       append([]predicate.KnowledgeSubjectAlias{}, _q.predicates...),
 		withTenant:       _q.withTenant.Clone(),
-		withEvidence:     _q.withEvidence.Clone(),
 		withEntity:       _q.withEntity.Clone(),
 		withRelationship: _q.withRelationship.Clone(),
+		withEvidence:     _q.withEvidence.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -382,17 +382,6 @@ func (_q *KnowledgeSubjectAliasQuery) WithTenant(opts ...func(*TenantQuery)) *Kn
 		opt(query)
 	}
 	_q.withTenant = query
-	return _q
-}
-
-// WithEvidence tells the query-builder to eager-load the nodes that are connected to
-// the "evidence" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeSubjectAliasQuery) WithEvidence(opts ...func(*KnowledgeEvidenceQuery)) *KnowledgeSubjectAliasQuery {
-	query := (&KnowledgeEvidenceClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withEvidence = query
 	return _q
 }
 
@@ -415,6 +404,17 @@ func (_q *KnowledgeSubjectAliasQuery) WithRelationship(opts ...func(*KnowledgeRe
 		opt(query)
 	}
 	_q.withRelationship = query
+	return _q
+}
+
+// WithEvidence tells the query-builder to eager-load the nodes that are connected to
+// the "evidence" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeSubjectAliasQuery) WithEvidence(opts ...func(*KnowledgeEvidenceQuery)) *KnowledgeSubjectAliasQuery {
+	query := (&KnowledgeEvidenceClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withEvidence = query
 	return _q
 }
 
@@ -504,9 +504,9 @@ func (_q *KnowledgeSubjectAliasQuery) sqlAll(ctx context.Context, hooks ...query
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
 			_q.withTenant != nil,
-			_q.withEvidence != nil,
 			_q.withEntity != nil,
 			_q.withRelationship != nil,
+			_q.withEvidence != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -538,13 +538,6 @@ func (_q *KnowledgeSubjectAliasQuery) sqlAll(ctx context.Context, hooks ...query
 			return nil, err
 		}
 	}
-	if query := _q.withEvidence; query != nil {
-		if err := _q.loadEvidence(ctx, query, nodes,
-			func(n *KnowledgeSubjectAlias) { n.Edges.Evidence = []*KnowledgeEvidence{} },
-			func(n *KnowledgeSubjectAlias, e *KnowledgeEvidence) { n.Edges.Evidence = append(n.Edges.Evidence, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withEntity; query != nil {
 		if err := _q.loadEntity(ctx, query, nodes, nil,
 			func(n *KnowledgeSubjectAlias, e *KnowledgeEntity) { n.Edges.Entity = e }); err != nil {
@@ -554,6 +547,13 @@ func (_q *KnowledgeSubjectAliasQuery) sqlAll(ctx context.Context, hooks ...query
 	if query := _q.withRelationship; query != nil {
 		if err := _q.loadRelationship(ctx, query, nodes, nil,
 			func(n *KnowledgeSubjectAlias, e *KnowledgeRelationship) { n.Edges.Relationship = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withEvidence; query != nil {
+		if err := _q.loadEvidence(ctx, query, nodes,
+			func(n *KnowledgeSubjectAlias) { n.Edges.Evidence = []*KnowledgeEvidence{} },
+			func(n *KnowledgeSubjectAlias, e *KnowledgeEvidence) { n.Edges.Evidence = append(n.Edges.Evidence, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -589,41 +589,14 @@ func (_q *KnowledgeSubjectAliasQuery) loadTenant(ctx context.Context, query *Ten
 	}
 	return nil
 }
-func (_q *KnowledgeSubjectAliasQuery) loadEvidence(ctx context.Context, query *KnowledgeEvidenceQuery, nodes []*KnowledgeSubjectAlias, init func(*KnowledgeSubjectAlias), assign func(*KnowledgeSubjectAlias, *KnowledgeEvidence)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*KnowledgeSubjectAlias)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(knowledgeevidence.FieldAliasID)
-	}
-	query.Where(predicate.KnowledgeEvidence(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(knowledgesubjectalias.EvidenceColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.AliasID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "alias_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (_q *KnowledgeSubjectAliasQuery) loadEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*KnowledgeSubjectAlias, init func(*KnowledgeSubjectAlias), assign func(*KnowledgeSubjectAlias, *KnowledgeEntity)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*KnowledgeSubjectAlias)
 	for i := range nodes {
-		fk := nodes[i].EntityID
+		if nodes[i].EntityID == nil {
+			continue
+		}
+		fk := *nodes[i].EntityID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -652,7 +625,10 @@ func (_q *KnowledgeSubjectAliasQuery) loadRelationship(ctx context.Context, quer
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*KnowledgeSubjectAlias)
 	for i := range nodes {
-		fk := nodes[i].RelationshipID
+		if nodes[i].RelationshipID == nil {
+			continue
+		}
+		fk := *nodes[i].RelationshipID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -674,6 +650,36 @@ func (_q *KnowledgeSubjectAliasQuery) loadRelationship(ctx context.Context, quer
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *KnowledgeSubjectAliasQuery) loadEvidence(ctx context.Context, query *KnowledgeEvidenceQuery, nodes []*KnowledgeSubjectAlias, init func(*KnowledgeSubjectAlias), assign func(*KnowledgeSubjectAlias, *KnowledgeEvidence)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*KnowledgeSubjectAlias)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(knowledgeevidence.FieldSubjectAliasID)
+	}
+	query.Where(predicate.KnowledgeEvidence(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(knowledgesubjectalias.EvidenceColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.SubjectAliasID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "subject_alias_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

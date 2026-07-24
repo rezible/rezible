@@ -67,46 +67,6 @@ func (_c *KnowledgeEntityCreate) SetKind(v string) *KnowledgeEntityCreate {
 	return _c
 }
 
-// SetReference sets the "reference" field.
-func (_c *KnowledgeEntityCreate) SetReference(v string) *KnowledgeEntityCreate {
-	_c.mutation.SetReference(v)
-	return _c
-}
-
-// SetDisplayName sets the "display_name" field.
-func (_c *KnowledgeEntityCreate) SetDisplayName(v string) *KnowledgeEntityCreate {
-	_c.mutation.SetDisplayName(v)
-	return _c
-}
-
-// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableDisplayName(v *string) *KnowledgeEntityCreate {
-	if v != nil {
-		_c.SetDisplayName(*v)
-	}
-	return _c
-}
-
-// SetDescription sets the "description" field.
-func (_c *KnowledgeEntityCreate) SetDescription(v string) *KnowledgeEntityCreate {
-	_c.mutation.SetDescription(v)
-	return _c
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableDescription(v *string) *KnowledgeEntityCreate {
-	if v != nil {
-		_c.SetDescription(*v)
-	}
-	return _c
-}
-
-// SetLiveProperties sets the "live_properties" field.
-func (_c *KnowledgeEntityCreate) SetLiveProperties(v map[string]interface{}) *KnowledgeEntityCreate {
-	_c.mutation.SetLiveProperties(v)
-	return _c
-}
-
 // SetID sets the "id" field.
 func (_c *KnowledgeEntityCreate) SetID(v uuid.UUID) *KnowledgeEntityCreate {
 	_c.mutation.SetID(v)
@@ -222,10 +182,6 @@ func (_c *KnowledgeEntityCreate) defaults() error {
 		v := knowledgeentity.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := _c.mutation.LiveProperties(); !ok {
-		v := knowledgeentity.DefaultLiveProperties
-		_c.mutation.SetLiveProperties(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if knowledgeentity.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized knowledgeentity.DefaultID (forgotten import ent/runtime?)")
@@ -253,14 +209,6 @@ func (_c *KnowledgeEntityCreate) check() error {
 	if v, ok := _c.mutation.Kind(); ok {
 		if err := knowledgeentity.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.kind": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.Reference(); !ok {
-		return &ValidationError{Name: "reference", err: errors.New(`ent: missing required field "KnowledgeEntity.reference"`)}
-	}
-	if v, ok := _c.mutation.Reference(); ok {
-		if err := knowledgeentity.ReferenceValidator(v); err != nil {
-			return &ValidationError{Name: "reference", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.reference": %w`, err)}
 		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
@@ -314,22 +262,6 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
 		_node.Kind = value
-	}
-	if value, ok := _c.mutation.Reference(); ok {
-		_spec.SetField(knowledgeentity.FieldReference, field.TypeString, value)
-		_node.Reference = value
-	}
-	if value, ok := _c.mutation.DisplayName(); ok {
-		_spec.SetField(knowledgeentity.FieldDisplayName, field.TypeString, value)
-		_node.DisplayName = value
-	}
-	if value, ok := _c.mutation.Description(); ok {
-		_spec.SetField(knowledgeentity.FieldDescription, field.TypeString, value)
-		_node.Description = value
-	}
-	if value, ok := _c.mutation.LiveProperties(); ok {
-		_spec.SetField(knowledgeentity.FieldLiveProperties, field.TypeJSON, value)
-		_node.LiveProperties = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -488,72 +420,6 @@ func (u *KnowledgeEntityUpsert) UpdateKind() *KnowledgeEntityUpsert {
 	return u
 }
 
-// SetReference sets the "reference" field.
-func (u *KnowledgeEntityUpsert) SetReference(v string) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldReference, v)
-	return u
-}
-
-// UpdateReference sets the "reference" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateReference() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldReference)
-	return u
-}
-
-// SetDisplayName sets the "display_name" field.
-func (u *KnowledgeEntityUpsert) SetDisplayName(v string) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldDisplayName, v)
-	return u
-}
-
-// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateDisplayName() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldDisplayName)
-	return u
-}
-
-// ClearDisplayName clears the value of the "display_name" field.
-func (u *KnowledgeEntityUpsert) ClearDisplayName() *KnowledgeEntityUpsert {
-	u.SetNull(knowledgeentity.FieldDisplayName)
-	return u
-}
-
-// SetDescription sets the "description" field.
-func (u *KnowledgeEntityUpsert) SetDescription(v string) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldDescription, v)
-	return u
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateDescription() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldDescription)
-	return u
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *KnowledgeEntityUpsert) ClearDescription() *KnowledgeEntityUpsert {
-	u.SetNull(knowledgeentity.FieldDescription)
-	return u
-}
-
-// SetLiveProperties sets the "live_properties" field.
-func (u *KnowledgeEntityUpsert) SetLiveProperties(v map[string]interface{}) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldLiveProperties, v)
-	return u
-}
-
-// UpdateLiveProperties sets the "live_properties" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateLiveProperties() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldLiveProperties)
-	return u
-}
-
-// ClearLiveProperties clears the value of the "live_properties" field.
-func (u *KnowledgeEntityUpsert) ClearLiveProperties() *KnowledgeEntityUpsert {
-	u.SetNull(knowledgeentity.FieldLiveProperties)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -644,83 +510,6 @@ func (u *KnowledgeEntityUpsertOne) SetKind(v string) *KnowledgeEntityUpsertOne {
 func (u *KnowledgeEntityUpsertOne) UpdateKind() *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.UpdateKind()
-	})
-}
-
-// SetReference sets the "reference" field.
-func (u *KnowledgeEntityUpsertOne) SetReference(v string) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetReference(v)
-	})
-}
-
-// UpdateReference sets the "reference" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateReference() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateReference()
-	})
-}
-
-// SetDisplayName sets the "display_name" field.
-func (u *KnowledgeEntityUpsertOne) SetDisplayName(v string) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetDisplayName(v)
-	})
-}
-
-// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateDisplayName() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateDisplayName()
-	})
-}
-
-// ClearDisplayName clears the value of the "display_name" field.
-func (u *KnowledgeEntityUpsertOne) ClearDisplayName() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearDisplayName()
-	})
-}
-
-// SetDescription sets the "description" field.
-func (u *KnowledgeEntityUpsertOne) SetDescription(v string) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetDescription(v)
-	})
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateDescription() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateDescription()
-	})
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *KnowledgeEntityUpsertOne) ClearDescription() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearDescription()
-	})
-}
-
-// SetLiveProperties sets the "live_properties" field.
-func (u *KnowledgeEntityUpsertOne) SetLiveProperties(v map[string]interface{}) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetLiveProperties(v)
-	})
-}
-
-// UpdateLiveProperties sets the "live_properties" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateLiveProperties() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateLiveProperties()
-	})
-}
-
-// ClearLiveProperties clears the value of the "live_properties" field.
-func (u *KnowledgeEntityUpsertOne) ClearLiveProperties() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearLiveProperties()
 	})
 }
 
@@ -981,83 +770,6 @@ func (u *KnowledgeEntityUpsertBulk) SetKind(v string) *KnowledgeEntityUpsertBulk
 func (u *KnowledgeEntityUpsertBulk) UpdateKind() *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.UpdateKind()
-	})
-}
-
-// SetReference sets the "reference" field.
-func (u *KnowledgeEntityUpsertBulk) SetReference(v string) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetReference(v)
-	})
-}
-
-// UpdateReference sets the "reference" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateReference() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateReference()
-	})
-}
-
-// SetDisplayName sets the "display_name" field.
-func (u *KnowledgeEntityUpsertBulk) SetDisplayName(v string) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetDisplayName(v)
-	})
-}
-
-// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateDisplayName() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateDisplayName()
-	})
-}
-
-// ClearDisplayName clears the value of the "display_name" field.
-func (u *KnowledgeEntityUpsertBulk) ClearDisplayName() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearDisplayName()
-	})
-}
-
-// SetDescription sets the "description" field.
-func (u *KnowledgeEntityUpsertBulk) SetDescription(v string) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetDescription(v)
-	})
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateDescription() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateDescription()
-	})
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *KnowledgeEntityUpsertBulk) ClearDescription() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearDescription()
-	})
-}
-
-// SetLiveProperties sets the "live_properties" field.
-func (u *KnowledgeEntityUpsertBulk) SetLiveProperties(v map[string]interface{}) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetLiveProperties(v)
-	})
-}
-
-// UpdateLiveProperties sets the "live_properties" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateLiveProperties() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateLiveProperties()
-	})
-}
-
-// ClearLiveProperties clears the value of the "live_properties" field.
-func (u *KnowledgeEntityUpsertBulk) ClearLiveProperties() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearLiveProperties()
 	})
 }
 

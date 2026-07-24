@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -30,26 +29,6 @@ func (_u *KnowledgeEvidenceUpdate) Where(ps ...predicate.KnowledgeEvidence) *Kno
 	return _u
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (_u *KnowledgeEvidenceUpdate) SetCreatedAt(v time.Time) *KnowledgeEvidenceUpdate {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *KnowledgeEvidenceUpdate) SetNillableCreatedAt(v *time.Time) *KnowledgeEvidenceUpdate {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *KnowledgeEvidenceUpdate) SetUpdatedAt(v time.Time) *KnowledgeEvidenceUpdate {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
 // Mutation returns the KnowledgeEvidenceMutation object of the builder.
 func (_u *KnowledgeEvidenceUpdate) Mutation() *KnowledgeEvidenceMutation {
 	return _u.mutation
@@ -57,9 +36,6 @@ func (_u *KnowledgeEvidenceUpdate) Mutation() *KnowledgeEvidenceMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *KnowledgeEvidenceUpdate) Save(ctx context.Context) (int, error) {
-	if err := _u.defaults(); err != nil {
-		return 0, err
-	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -85,18 +61,6 @@ func (_u *KnowledgeEvidenceUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (_u *KnowledgeEvidenceUpdate) defaults() error {
-	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		if knowledgeevidence.UpdateDefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgeevidence.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
-		}
-		v := knowledgeevidence.UpdateDefaultUpdatedAt()
-		_u.mutation.SetUpdatedAt(v)
-	}
-	return nil
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (_u *KnowledgeEvidenceUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -105,8 +69,8 @@ func (_u *KnowledgeEvidenceUpdate) check() error {
 	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.event"`)
 	}
-	if _u.mutation.AliasCleared() && len(_u.mutation.AliasIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.alias"`)
+	if _u.mutation.SubjectAliasCleared() && len(_u.mutation.SubjectAliasIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.subject_alias"`)
 	}
 	return nil
 }
@@ -128,12 +92,6 @@ func (_u *KnowledgeEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err 
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgeevidence.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgeevidence.FieldUpdatedAt, field.TypeTime, value)
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeEvidence
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
@@ -159,26 +117,6 @@ type KnowledgeEvidenceUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (_u *KnowledgeEvidenceUpdateOne) SetCreatedAt(v time.Time) *KnowledgeEvidenceUpdateOne {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *KnowledgeEvidenceUpdateOne) SetNillableCreatedAt(v *time.Time) *KnowledgeEvidenceUpdateOne {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *KnowledgeEvidenceUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeEvidenceUpdateOne {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
 // Mutation returns the KnowledgeEvidenceMutation object of the builder.
 func (_u *KnowledgeEvidenceUpdateOne) Mutation() *KnowledgeEvidenceMutation {
 	return _u.mutation
@@ -199,9 +137,6 @@ func (_u *KnowledgeEvidenceUpdateOne) Select(field string, fields ...string) *Kn
 
 // Save executes the query and returns the updated KnowledgeEvidence entity.
 func (_u *KnowledgeEvidenceUpdateOne) Save(ctx context.Context) (*KnowledgeEvidence, error) {
-	if err := _u.defaults(); err != nil {
-		return nil, err
-	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -227,18 +162,6 @@ func (_u *KnowledgeEvidenceUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (_u *KnowledgeEvidenceUpdateOne) defaults() error {
-	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		if knowledgeevidence.UpdateDefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgeevidence.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
-		}
-		v := knowledgeevidence.UpdateDefaultUpdatedAt()
-		_u.mutation.SetUpdatedAt(v)
-	}
-	return nil
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (_u *KnowledgeEvidenceUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -247,8 +170,8 @@ func (_u *KnowledgeEvidenceUpdateOne) check() error {
 	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.event"`)
 	}
-	if _u.mutation.AliasCleared() && len(_u.mutation.AliasIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.alias"`)
+	if _u.mutation.SubjectAliasCleared() && len(_u.mutation.SubjectAliasIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.subject_alias"`)
 	}
 	return nil
 }
@@ -287,12 +210,6 @@ func (_u *KnowledgeEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *Knowl
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgeevidence.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgeevidence.FieldUpdatedAt, field.TypeTime, value)
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeEvidence
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

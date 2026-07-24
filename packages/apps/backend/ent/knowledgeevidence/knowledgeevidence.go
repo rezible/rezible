@@ -19,30 +19,26 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
-	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
-	FieldUpdatedAt = "updated_at"
 	// FieldEventID holds the string denoting the event_id field in the database.
 	FieldEventID = "event_id"
+	// FieldSubjectAliasID holds the string denoting the subject_alias_id field in the database.
+	FieldSubjectAliasID = "subject_alias_id"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
 	// FieldAssertion holds the string denoting the assertion field in the database.
 	FieldAssertion = "assertion"
-	// FieldEvidenceKind holds the string denoting the evidence_kind field in the database.
-	FieldEvidenceKind = "evidence_kind"
-	// FieldAliasID holds the string denoting the alias_id field in the database.
-	FieldAliasID = "alias_id"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
 	// FieldEffectiveAt holds the string denoting the effective_at field in the database.
 	FieldEffectiveAt = "effective_at"
-	// FieldProperties holds the string denoting the properties field in the database.
-	FieldProperties = "properties"
 	// FieldSubjectState holds the string denoting the subject_state field in the database.
 	FieldSubjectState = "subject_state"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
 	EdgeEvent = "event"
-	// EdgeAlias holds the string denoting the alias edge name in mutations.
-	EdgeAlias = "alias"
+	// EdgeSubjectAlias holds the string denoting the subject_alias edge name in mutations.
+	EdgeSubjectAlias = "subject_alias"
 	// Table holds the table name of the knowledgeevidence in the database.
 	Table = "knowledge_evidences"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -59,27 +55,25 @@ const (
 	EventInverseTable = "normalized_events"
 	// EventColumn is the table column denoting the event relation/edge.
 	EventColumn = "event_id"
-	// AliasTable is the table that holds the alias relation/edge.
-	AliasTable = "knowledge_evidences"
-	// AliasInverseTable is the table name for the KnowledgeSubjectAlias entity.
+	// SubjectAliasTable is the table that holds the subject_alias relation/edge.
+	SubjectAliasTable = "knowledge_evidences"
+	// SubjectAliasInverseTable is the table name for the KnowledgeSubjectAlias entity.
 	// It exists in this package in order to avoid circular dependency with the "knowledgesubjectalias" package.
-	AliasInverseTable = "knowledge_subject_alias"
-	// AliasColumn is the table column denoting the alias relation/edge.
-	AliasColumn = "alias_id"
+	SubjectAliasInverseTable = "knowledge_subject_alias"
+	// SubjectAliasColumn is the table column denoting the subject_alias relation/edge.
+	SubjectAliasColumn = "subject_alias_id"
 )
 
 // Columns holds all SQL columns for knowledgeevidence fields.
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldCreatedAt,
-	FieldUpdatedAt,
 	FieldEventID,
+	FieldSubjectAliasID,
+	FieldKind,
 	FieldAssertion,
-	FieldEvidenceKind,
-	FieldAliasID,
+	FieldCreatedAt,
 	FieldEffectiveAt,
-	FieldProperties,
 	FieldSubjectState,
 }
 
@@ -101,39 +95,34 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
-	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
-	DefaultUpdatedAt func() time.Time
-	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
-	UpdateDefaultUpdatedAt func() time.Time
 	// AssertionValidator is a validator for the "assertion" field. It is called by the builders before save.
 	AssertionValidator func(string) error
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
 
-// EvidenceKind defines the type for the "evidence_kind" enum field.
-type EvidenceKind string
+// Kind defines the type for the "kind" enum field.
+type Kind string
 
-// EvidenceKind values.
+// Kind values.
 const (
-	EvidenceKindObserved EvidenceKind = "observed"
-	EvidenceKindChanged  EvidenceKind = "changed"
-	EvidenceKindDeleted  EvidenceKind = "deleted"
+	KindObserved Kind = "observed"
+	KindDeleted  Kind = "deleted"
 )
 
-func (ek EvidenceKind) String() string {
-	return string(ek)
+func (k Kind) String() string {
+	return string(k)
 }
 
-// EvidenceKindValidator is a validator for the "evidence_kind" field enum values. It is called by the builders before save.
-func EvidenceKindValidator(ek EvidenceKind) error {
-	switch ek {
-	case EvidenceKindObserved, EvidenceKindChanged, EvidenceKindDeleted:
+// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
+func KindValidator(k Kind) error {
+	switch k {
+	case KindObserved, KindDeleted:
 		return nil
 	default:
-		return fmt.Errorf("knowledgeevidence: invalid enum value for evidence_kind field: %q", ek)
+		return fmt.Errorf("knowledgeevidence: invalid enum value for kind field: %q", k)
 	}
 }
 
@@ -150,19 +139,19 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
-}
-
-// ByUpdatedAt orders the results by the updated_at field.
-func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
-}
-
 // ByEventID orders the results by the event_id field.
 func ByEventID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEventID, opts...).ToFunc()
+}
+
+// BySubjectAliasID orders the results by the subject_alias_id field.
+func BySubjectAliasID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubjectAliasID, opts...).ToFunc()
+}
+
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
 // ByAssertion orders the results by the assertion field.
@@ -170,14 +159,9 @@ func ByAssertion(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAssertion, opts...).ToFunc()
 }
 
-// ByEvidenceKind orders the results by the evidence_kind field.
-func ByEvidenceKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEvidenceKind, opts...).ToFunc()
-}
-
-// ByAliasID orders the results by the alias_id field.
-func ByAliasID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAliasID, opts...).ToFunc()
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByEffectiveAt orders the results by the effective_at field.
@@ -199,10 +183,10 @@ func ByEventField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByAliasField orders the results by alias field.
-func ByAliasField(field string, opts ...sql.OrderTermOption) OrderOption {
+// BySubjectAliasField orders the results by subject_alias field.
+func BySubjectAliasField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAliasStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newSubjectAliasStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -219,10 +203,10 @@ func newEventStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
 	)
 }
-func newAliasStep() *sqlgraph.Step {
+func newSubjectAliasStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AliasInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AliasTable, AliasColumn),
+		sqlgraph.To(SubjectAliasInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, SubjectAliasTable, SubjectAliasColumn),
 	)
 }

@@ -87,11 +87,6 @@ func TargetEntityID(v uuid.UUID) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldTargetEntityID, v))
 }
 
-// Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
-func Description(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldDescription, v))
-}
-
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldTenantID, v))
@@ -295,91 +290,6 @@ func TargetEntityIDIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
 // TargetEntityIDNotIn applies the NotIn predicate on the "target_entity_id" field.
 func TargetEntityIDNotIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldTargetEntityID, vs...))
-}
-
-// DescriptionEQ applies the EQ predicate on the "description" field.
-func DescriptionEQ(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldDescription, v))
-}
-
-// DescriptionNEQ applies the NEQ predicate on the "description" field.
-func DescriptionNEQ(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldDescription, v))
-}
-
-// DescriptionIn applies the In predicate on the "description" field.
-func DescriptionIn(vs ...string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIn(FieldDescription, vs...))
-}
-
-// DescriptionNotIn applies the NotIn predicate on the "description" field.
-func DescriptionNotIn(vs ...string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldDescription, vs...))
-}
-
-// DescriptionGT applies the GT predicate on the "description" field.
-func DescriptionGT(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGT(FieldDescription, v))
-}
-
-// DescriptionGTE applies the GTE predicate on the "description" field.
-func DescriptionGTE(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGTE(FieldDescription, v))
-}
-
-// DescriptionLT applies the LT predicate on the "description" field.
-func DescriptionLT(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLT(FieldDescription, v))
-}
-
-// DescriptionLTE applies the LTE predicate on the "description" field.
-func DescriptionLTE(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldDescription, v))
-}
-
-// DescriptionContains applies the Contains predicate on the "description" field.
-func DescriptionContains(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldContains(FieldDescription, v))
-}
-
-// DescriptionHasPrefix applies the HasPrefix predicate on the "description" field.
-func DescriptionHasPrefix(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldHasPrefix(FieldDescription, v))
-}
-
-// DescriptionHasSuffix applies the HasSuffix predicate on the "description" field.
-func DescriptionHasSuffix(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldHasSuffix(FieldDescription, v))
-}
-
-// DescriptionIsNil applies the IsNil predicate on the "description" field.
-func DescriptionIsNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldDescription))
-}
-
-// DescriptionNotNil applies the NotNil predicate on the "description" field.
-func DescriptionNotNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldDescription))
-}
-
-// DescriptionEqualFold applies the EqualFold predicate on the "description" field.
-func DescriptionEqualFold(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEqualFold(FieldDescription, v))
-}
-
-// DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
-func DescriptionContainsFold(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldContainsFold(FieldDescription, v))
-}
-
-// PropertiesIsNil applies the IsNil predicate on the "properties" field.
-func PropertiesIsNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldProperties))
-}
-
-// PropertiesNotNil applies the NotNil predicate on the "properties" field.
-func PropertiesNotNil() predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldProperties))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

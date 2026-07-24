@@ -5,7 +5,6 @@ package ent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -27,20 +26,14 @@ type KnowledgeSubjectAlias struct {
 	SubjectKind knowledgesubjectalias.SubjectKind `json:"subject_kind,omitempty"`
 	// Provider holds the value of the "provider" field.
 	Provider string `json:"provider,omitempty"`
+	// ProviderSource holds the value of the "provider_source" field.
+	ProviderSource string `json:"provider_source,omitempty"`
 	// ProviderSubjectRef holds the value of the "provider_subject_ref" field.
 	ProviderSubjectRef string `json:"provider_subject_ref,omitempty"`
 	// EntityID holds the value of the "entity_id" field.
-	EntityID uuid.UUID `json:"entity_id,omitempty"`
+	EntityID *uuid.UUID `json:"entity_id,omitempty"`
 	// RelationshipID holds the value of the "relationship_id" field.
-	RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
-	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
-	// FirstObservedAt holds the value of the "first_observed_at" field.
-	FirstObservedAt time.Time `json:"first_observed_at,omitempty"`
-	// LastObservedAt holds the value of the "last_observed_at" field.
-	LastObservedAt time.Time `json:"last_observed_at,omitempty"`
-	// Time observed explicit evidence that this subject no longer exists or applies.
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	RelationshipID *uuid.UUID `json:"relationship_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeSubjectAliasQuery when eager-loading is set.
 	Edges        KnowledgeSubjectAliasEdges `json:"edges"`
@@ -51,12 +44,12 @@ type KnowledgeSubjectAlias struct {
 type KnowledgeSubjectAliasEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// Evidence holds the value of the evidence edge.
-	Evidence []*KnowledgeEvidence `json:"evidence,omitempty"`
 	// Entity holds the value of the entity edge.
 	Entity *KnowledgeEntity `json:"entity,omitempty"`
 	// Relationship holds the value of the relationship edge.
 	Relationship *KnowledgeRelationship `json:"relationship,omitempty"`
+	// Evidence holds the value of the evidence edge.
+	Evidence []*KnowledgeEvidence `json:"evidence,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -73,21 +66,12 @@ func (e KnowledgeSubjectAliasEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// EvidenceOrErr returns the Evidence value or an error if the edge
-// was not loaded in eager-loading.
-func (e KnowledgeSubjectAliasEdges) EvidenceOrErr() ([]*KnowledgeEvidence, error) {
-	if e.loadedTypes[1] {
-		return e.Evidence, nil
-	}
-	return nil, &NotLoadedError{edge: "evidence"}
-}
-
 // EntityOrErr returns the Entity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e KnowledgeSubjectAliasEdges) EntityOrErr() (*KnowledgeEntity, error) {
 	if e.Entity != nil {
 		return e.Entity, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: knowledgeentity.Label}
 	}
 	return nil, &NotLoadedError{edge: "entity"}
@@ -98,10 +82,19 @@ func (e KnowledgeSubjectAliasEdges) EntityOrErr() (*KnowledgeEntity, error) {
 func (e KnowledgeSubjectAliasEdges) RelationshipOrErr() (*KnowledgeRelationship, error) {
 	if e.Relationship != nil {
 		return e.Relationship, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: knowledgerelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "relationship"}
+}
+
+// EvidenceOrErr returns the Evidence value or an error if the edge
+// was not loaded in eager-loading.
+func (e KnowledgeSubjectAliasEdges) EvidenceOrErr() ([]*KnowledgeEvidence, error) {
+	if e.loadedTypes[3] {
+		return e.Evidence, nil
+	}
+	return nil, &NotLoadedError{edge: "evidence"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -109,13 +102,13 @@ func (*KnowledgeSubjectAlias) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case knowledgesubjectalias.FieldEntityID, knowledgesubjectalias.FieldRelationshipID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case knowledgesubjectalias.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgesubjectalias.FieldSubjectKind, knowledgesubjectalias.FieldProvider, knowledgesubjectalias.FieldProviderSubjectRef, knowledgesubjectalias.FieldDescription:
+		case knowledgesubjectalias.FieldSubjectKind, knowledgesubjectalias.FieldProvider, knowledgesubjectalias.FieldProviderSource, knowledgesubjectalias.FieldProviderSubjectRef:
 			values[i] = new(sql.NullString)
-		case knowledgesubjectalias.FieldFirstObservedAt, knowledgesubjectalias.FieldLastObservedAt, knowledgesubjectalias.FieldDeletedAt:
-			values[i] = new(sql.NullTime)
-		case knowledgesubjectalias.FieldID, knowledgesubjectalias.FieldEntityID, knowledgesubjectalias.FieldRelationshipID:
+		case knowledgesubjectalias.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -156,6 +149,12 @@ func (_m *KnowledgeSubjectAlias) assignValues(columns []string, values []any) er
 			} else if value.Valid {
 				_m.Provider = value.String
 			}
+		case knowledgesubjectalias.FieldProviderSource:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_source", values[i])
+			} else if value.Valid {
+				_m.ProviderSource = value.String
+			}
 		case knowledgesubjectalias.FieldProviderSubjectRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_subject_ref", values[i])
@@ -163,41 +162,18 @@ func (_m *KnowledgeSubjectAlias) assignValues(columns []string, values []any) er
 				_m.ProviderSubjectRef = value.String
 			}
 		case knowledgesubjectalias.FieldEntityID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field entity_id", values[i])
-			} else if value != nil {
-				_m.EntityID = *value
+			} else if value.Valid {
+				_m.EntityID = new(uuid.UUID)
+				*_m.EntityID = *value.S.(*uuid.UUID)
 			}
 		case knowledgesubjectalias.FieldRelationshipID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field relationship_id", values[i])
-			} else if value != nil {
-				_m.RelationshipID = *value
-			}
-		case knowledgesubjectalias.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				_m.Description = value.String
-			}
-		case knowledgesubjectalias.FieldFirstObservedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field first_observed_at", values[i])
-			} else if value.Valid {
-				_m.FirstObservedAt = value.Time
-			}
-		case knowledgesubjectalias.FieldLastObservedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field last_observed_at", values[i])
-			} else if value.Valid {
-				_m.LastObservedAt = value.Time
-			}
-		case knowledgesubjectalias.FieldDeletedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
-			} else if value.Valid {
-				_m.DeletedAt = new(time.Time)
-				*_m.DeletedAt = value.Time
+				_m.RelationshipID = new(uuid.UUID)
+				*_m.RelationshipID = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -217,11 +193,6 @@ func (_m *KnowledgeSubjectAlias) QueryTenant() *TenantQuery {
 	return NewKnowledgeSubjectAliasClient(_m.config).QueryTenant(_m)
 }
 
-// QueryEvidence queries the "evidence" edge of the KnowledgeSubjectAlias entity.
-func (_m *KnowledgeSubjectAlias) QueryEvidence() *KnowledgeEvidenceQuery {
-	return NewKnowledgeSubjectAliasClient(_m.config).QueryEvidence(_m)
-}
-
 // QueryEntity queries the "entity" edge of the KnowledgeSubjectAlias entity.
 func (_m *KnowledgeSubjectAlias) QueryEntity() *KnowledgeEntityQuery {
 	return NewKnowledgeSubjectAliasClient(_m.config).QueryEntity(_m)
@@ -230,6 +201,11 @@ func (_m *KnowledgeSubjectAlias) QueryEntity() *KnowledgeEntityQuery {
 // QueryRelationship queries the "relationship" edge of the KnowledgeSubjectAlias entity.
 func (_m *KnowledgeSubjectAlias) QueryRelationship() *KnowledgeRelationshipQuery {
 	return NewKnowledgeSubjectAliasClient(_m.config).QueryRelationship(_m)
+}
+
+// QueryEvidence queries the "evidence" edge of the KnowledgeSubjectAlias entity.
+func (_m *KnowledgeSubjectAlias) QueryEvidence() *KnowledgeEvidenceQuery {
+	return NewKnowledgeSubjectAliasClient(_m.config).QueryEvidence(_m)
 }
 
 // Update returns a builder for updating this KnowledgeSubjectAlias.
@@ -264,27 +240,20 @@ func (_m *KnowledgeSubjectAlias) String() string {
 	builder.WriteString("provider=")
 	builder.WriteString(_m.Provider)
 	builder.WriteString(", ")
+	builder.WriteString("provider_source=")
+	builder.WriteString(_m.ProviderSource)
+	builder.WriteString(", ")
 	builder.WriteString("provider_subject_ref=")
 	builder.WriteString(_m.ProviderSubjectRef)
 	builder.WriteString(", ")
-	builder.WriteString("entity_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.EntityID))
+	if v := _m.EntityID; v != nil {
+		builder.WriteString("entity_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("relationship_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.RelationshipID))
-	builder.WriteString(", ")
-	builder.WriteString("description=")
-	builder.WriteString(_m.Description)
-	builder.WriteString(", ")
-	builder.WriteString("first_observed_at=")
-	builder.WriteString(_m.FirstObservedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("last_observed_at=")
-	builder.WriteString(_m.LastObservedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	if v := _m.DeletedAt; v != nil {
-		builder.WriteString("deleted_at=")
-		builder.WriteString(v.Format(time.ANSIC))
+	if v := _m.RelationshipID; v != nil {
+		builder.WriteString("relationship_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteByte(')')
 	return builder.String()

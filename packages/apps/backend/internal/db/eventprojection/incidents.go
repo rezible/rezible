@@ -10,7 +10,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
-	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -28,23 +28,23 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 		openedAt = event.Event.OccurredAt
 	}
 
-	incidentSubject := event.Event.MakeSubjectAliasRef(ksa.SubjectKindEntity, "Incident")
-	incidentSubject.SubjectEntityRef = &ent.KnowledgeEntityRef{
-		Kind:        knowledgeEntityKindIncident,
-		Reference:   attributes.ExternalRef,
-		DisplayName: attributes.Title,
-		Description: attributes.Summary,
-	}
 	incidentObservedEvidence := ent.KnowledgeEvidenceRef{
-		Kind:            projectionEvidenceKind(event.Event),
-		Assertion:       knowledgeAssertionIncidentObserved,
-		EffectiveAt:     openedAt,
-		SubjectAliasRef: incidentSubject,
+		Kind:        projectionEvidenceKind(event.Event),
+		Assertion:   knowledgeAssertionIncidentObserved,
+		EffectiveAt: openedAt,
+		SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+			DisplayName: attributes.Title,
+			Description: attributes.Summary,
+		},
+		SubjectEntity: &ent.KnowledgeEntityRef{
+			Kind:  knowledgeEntityKindIncident,
+			Alias: event.Event.KnowledgeAliasRef(),
+		},
 	}
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		ks, evidenceErr := s.knowledge.IngestDomainEntityEvidence(ctx, event.Event, incidentObservedEvidence)
+		incidentKe, evidenceErr := s.knowledge.IngestEntityEvidence(ctx, event.Event, incidentObservedEvidence)
 		if evidenceErr != nil {
 			return fmt.Errorf("resolve incident knowledge entity: %w", evidenceErr)
 		}
@@ -60,7 +60,7 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 		}
 
 		queryExisting := tx.Incident.Query().
-			Where(incident.KnowledgeEntityID(ks.EntityID))
+			Where(incident.KnowledgeEntityID(incidentKe.ID))
 		existing, existingErr := queryExisting.Only(ctx)
 		if existingErr != nil && !ent.IsNotFound(existingErr) {
 			return fmt.Errorf("query existing incident: %w", existingErr)
@@ -78,7 +78,7 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 		}
 
 		setFn := func(m *ent.IncidentMutation) {
-			m.SetKnowledgeEntityID(ks.EntityID)
+			m.SetKnowledgeEntityID(incidentKe.ID)
 			m.SetTitle(attributes.Title)
 			m.SetSummary(attributes.Summary)
 			m.SetSeverityID(severityID)

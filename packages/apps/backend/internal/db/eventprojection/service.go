@@ -54,9 +54,9 @@ func (s *ProjectionService) GetEventProjectorFunc(ev *ent.NormalizedEvent) (rez.
 	return fn, ok
 }
 
-func projectionEvidenceKind(event *ent.NormalizedEvent) ke.EvidenceKind {
+func projectionEvidenceKind(event *ent.NormalizedEvent) ke.Kind {
 	if event.Kind == ne.KindDeleted {
-		return ke.EvidenceKindDeleted
+		return ke.KindDeleted
 	}
-	return ke.EvidenceKindObserved
+	return ke.KindObserved
 }

@@ -1497,12 +1497,8 @@ export type KnowledgeGraphEntity = {
 export type KnowledgeGraphEntityAttributes = {
     aliases: Array<KnowledgeGraphSubjectAlias>;
     createdAt: string;
-    description: string;
-    displayName: string;
     kind: string;
-    properties: {
-        [key: string]: unknown;
-    };
+    state: KnowledgeGraphSubjectState;
     updatedAt: string;
 };
 
@@ -1517,12 +1513,9 @@ export type KnowledgeGraphEvidenceAttributes = {
     entityId?: string;
     eventId: string;
     evidenceKind: string;
-    properties: {
-        [key: string]: unknown;
-    };
-    provider: string;
-    providerSource: string;
     relationshipId?: string;
+    subjectAlias: KnowledgeGraphSubjectAlias;
+    subjectState: KnowledgeGraphSubjectState;
 };
 
 export type KnowledgeGraphRelationship = {
@@ -1531,16 +1524,11 @@ export type KnowledgeGraphRelationship = {
 };
 
 export type KnowledgeGraphRelationshipAttributes = {
+    aliases: Array<KnowledgeGraphSubjectAlias>;
     createdAt: string;
-    description: string;
-    displayName: string;
-    firstSeenAt: string;
     kind: string;
-    lastSeenAt: string;
-    properties: {
-        [key: string]: unknown;
-    };
     source: ExpandableKnowledgeGraphEntityAttributes;
+    state: KnowledgeGraphSubjectState;
     target: ExpandableKnowledgeGraphEntityAttributes;
     updatedAt: string;
 };
@@ -1551,10 +1539,18 @@ export type KnowledgeGraphSubjectAlias = {
 };
 
 export type KnowledgeGraphSubjectAliasAttributes = {
-    description: string;
     kind: 'entity' | 'relationship';
     provider: string;
+    providerSource: string;
     providerSubjectRef: string;
+};
+
+export type KnowledgeGraphSubjectState = {
+    description: string;
+    displayName: string;
+    properties: {
+        [key: string]: unknown;
+    };
 };
 
 export type KnowledgeGraphView = {

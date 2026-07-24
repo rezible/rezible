@@ -3219,23 +3219,16 @@ components:
         createdAt:
           format: date-time
           type: string
-        description:
-          type: string
-        displayName:
-          type: string
         kind:
           type: string
-        properties:
-          additionalProperties: {}
-          type: object
+        state:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
         updatedAt:
           format: date-time
           type: string
       required:
         - kind
-        - displayName
-        - description
-        - properties
+        - state
         - aliases
         - createdAt
         - updatedAt
@@ -3265,23 +3258,19 @@ components:
           type: string
         evidenceKind:
           type: string
-        properties:
-          additionalProperties: {}
-          type: object
-        provider:
-          type: string
-        providerSource:
-          type: string
         relationshipId:
           type: string
+        subjectAlias:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectAlias"
+        subjectState:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
       required:
         - eventId
-        - provider
-        - providerSource
-        - assertion
         - evidenceKind
         - effectiveAt
-        - properties
+        - assertion
+        - subjectState
+        - subjectAlias
       type: object
     KnowledgeGraphRelationship:
       additionalProperties: false
@@ -3297,40 +3286,30 @@ components:
     KnowledgeGraphRelationshipAttributes:
       additionalProperties: false
       properties:
+        aliases:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphSubjectAlias"
+          type: array
         createdAt:
-          format: date-time
-          type: string
-        description:
-          type: string
-        displayName:
-          type: string
-        firstSeenAt:
           format: date-time
           type: string
         kind:
           type: string
-        lastSeenAt:
-          format: date-time
-          type: string
-        properties:
-          additionalProperties: {}
-          type: object
         source:
           $ref: "#/components/schemas/ExpandableKnowledgeGraphEntityAttributes"
+        state:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
         target:
           $ref: "#/components/schemas/ExpandableKnowledgeGraphEntityAttributes"
         updatedAt:
           format: date-time
           type: string
       required:
+        - kind
         - source
         - target
-        - kind
-        - displayName
-        - description
-        - properties
-        - firstSeenAt
-        - lastSeenAt
+        - state
+        - aliases
         - createdAt
         - updatedAt
       type: object
@@ -3348,8 +3327,6 @@ components:
     KnowledgeGraphSubjectAliasAttributes:
       additionalProperties: false
       properties:
-        description:
-          type: string
         kind:
           enum:
             - entity
@@ -3357,13 +3334,30 @@ components:
           type: string
         provider:
           type: string
+        providerSource:
+          type: string
         providerSubjectRef:
           type: string
       required:
         - kind
         - provider
+        - providerSource
         - providerSubjectRef
+      type: object
+    KnowledgeGraphSubjectState:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        displayName:
+          type: string
+        properties:
+          additionalProperties: {}
+          type: object
+      required:
+        - displayName
         - description
+        - properties
       type: object
     KnowledgeGraphView:
       additionalProperties: false
