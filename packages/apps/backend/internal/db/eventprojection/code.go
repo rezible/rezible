@@ -49,6 +49,93 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 }
 
 func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *projections.CodeChangeEvent) ([]rez.ProjectedEntityRef, error) {
-	// TODO
+	attributes := event.Attributes
+
+	evidenceKind := projectionEvidenceKind(event.Event)
+
+	changeRef := ent.KnowledgeEntityRef{
+		Kind:  knowledgeEntityKindCodeChange,
+		Alias: event.Event.KnowledgeAliasRef(),
+	}
+	codeChangeEvidence := ent.KnowledgeEvidenceRef{
+		Kind:        evidenceKind,
+		Assertion:   knowledgeAssertionCodeChangeObserved,
+		EffectiveAt: event.Event.OccurredAt,
+		SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+			DisplayName: attributes.DisplayName,
+		},
+		SubjectEntity: &changeRef,
+	}
+
+	repoAlias := event.Event.KnowledgeAliasRef()
+	repoAlias.ProviderSubjectRef = attributes.RepositoryExternalRef
+	repositoryRef := ent.KnowledgeEntityRef{
+		Kind:  knowledgeEntityKindCodeRepository,
+		Alias: repoAlias,
+	}
+	repoEntityEvidence := ent.KnowledgeEvidenceRef{
+		Kind:        evidenceKind,
+		Assertion:   knowledgeAssertionCodeRepositoryObserved,
+		EffectiveAt: event.Event.OccurredAt,
+		SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+			DisplayName: attributes.RepositoryExternalRef,
+		},
+		SubjectEntity: &repositoryRef,
+	}
+
+	codeChangeRepoEvidence := ent.KnowledgeEvidenceRef{
+		Kind:        evidenceKind,
+		Assertion:   knowledgeAssertionCodeChangeRepository,
+		EffectiveAt: event.Event.OccurredAt,
+		SubjectRelationship: &ent.KnowledgeRelationshipRef{
+			Kind: knowledgeRelationshipKindTouchedRepository,
+			Alias: ent.KnowledgeAliasRef{
+				Provider:           event.Event.Provider,
+				ProviderSource:     event.Event.ProviderSource,
+				ProviderSubjectRef: fmt.Sprintf("change:%s:%s", event.Event.ProviderSubjectRef, attributes.RepositoryExternalRef),
+			},
+			Source: changeRef,
+			Target: repositoryRef,
+		},
+	}
+
+	evidence := []ent.KnowledgeEvidenceRef{
+		codeChangeEvidence,
+		repoEntityEvidence,
+		codeChangeRepoEvidence,
+	}
+
+	for _, related := range projections.SortRelatedEntityRefs(attributes.RelatedEntities) {
+		evidence = append(evidence, ent.KnowledgeEvidenceRef{
+			Kind:        evidenceKind,
+			Assertion:   knowledgeAssertionCodeChangeImpact,
+			EffectiveAt: event.Event.OccurredAt,
+			SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+				DisplayName: related.DisplayName,
+				Properties:  map[string]any{"component_kind": related.Kind},
+			},
+			SubjectRelationship: &ent.KnowledgeRelationshipRef{
+				Kind: knowledgeRelationshipKindChangeImpacted,
+				Alias: ent.KnowledgeAliasRef{
+					Provider:           event.Event.Provider,
+					ProviderSource:     event.Event.ProviderSource,
+					ProviderSubjectRef: fmt.Sprintf("impacted:%s:%s", event.Event.ProviderSubjectRef, related.ExternalRef),
+				},
+				Source: changeRef,
+				Target: ent.KnowledgeEntityRef{
+					Kind: knowledgeEntityKindSystemComponent,
+					Alias: ent.KnowledgeAliasRef{
+						Provider:           event.Event.Provider,
+						ProviderSource:     event.Event.ProviderSource,
+						ProviderSubjectRef: related.ExternalRef,
+					},
+				},
+			},
+		})
+	}
+
+	if _, ingestErr := s.knowledge.IngestEvidenceBulk(ctx, event.Event, evidence...); ingestErr != nil {
+		return nil, fmt.Errorf("ingest code change evidence: %w", ingestErr)
+	}
 	return nil, nil
 }

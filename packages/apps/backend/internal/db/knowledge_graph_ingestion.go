@@ -145,28 +145,33 @@ func (s *KnowledgeGraphService) IngestEntityEvidence(ctx context.Context, event 
 	if locksErr != nil {
 		return nil, fmt.Errorf("make transaction locks: %w", locksErr)
 	}
+
 	var entity *ent.KnowledgeEntity
 	return entity, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if lockErr := s.db.AcquireTxLocks(ctx, "knowledge_subject_alias", locks...); lockErr != nil {
 			return fmt.Errorf("failed to acquire tx locks: %w", lockErr)
 		}
-		subjAlias, aliasErr := s.setEvidenceSubjectAlias(ctx, ref)
+		alias, aliasErr := s.setEvidenceSubjectAlias(ctx, ref)
 		if aliasErr != nil {
 			return fmt.Errorf("set subject alias: %w", aliasErr)
 		}
-		entity = subjAlias.Edges.Entity
-		create := tx.KnowledgeEvidence.Create().
+		createEvidence := tx.KnowledgeEvidence.Create().
 			SetEventID(event.ID).
-			SetSubjectAliasID(subjAlias.ID).
+			SetSubjectAliasID(alias.ID).
 			SetKind(ref.Kind).
 			SetAssertion(ref.Assertion).
 			SetEffectiveAt(ref.EffectiveAt).
 			SetSubjectState(ref.SubjectState).
 			OnConflict(knowledgeEvidenceUniqueColumns).
 			Ignore()
-		if createErr := create.Exec(ctx); createErr != nil {
+		if createErr := createEvidence.Exec(ctx); createErr != nil {
 			return fmt.Errorf("create knowledge evidence: %w", createErr)
 		}
+		aliasEntity, aliasEntityErr := alias.QueryEntity().Only(ctx)
+		if aliasEntityErr != nil {
+			return fmt.Errorf("load alias entity: %w", aliasEntityErr)
+		}
+		entity = aliasEntity.Unwrap()
 		return nil
 	})
 }

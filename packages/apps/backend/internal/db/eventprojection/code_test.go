@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/rezible/rezible/ent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
@@ -29,7 +30,8 @@ func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsId
 	_, projectErr = runProjection(ctx, service, event)
 	s.Require().NoError(projectErr)
 
-	queryEntities := s.Client(ctx).KnowledgeEntity.Query()
+	queryEntities := s.Client(ctx).KnowledgeEntity.Query().
+		Where(kne.KindIn(knowledgeEntityKindCodeChange, knowledgeEntityKindCodeRepository))
 	entityCount, entityErr := queryEntities.Count(ctx)
 	s.Require().NoError(entityErr)
 	s.Equal(2, entityCount)
