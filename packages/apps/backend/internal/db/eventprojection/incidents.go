@@ -32,7 +32,7 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 		Kind:        projectionEvidenceKind(event.Event),
 		Assertion:   knowledgeAssertionIncidentObserved,
 		EffectiveAt: openedAt,
-		SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attributes.Title,
 			Description: attributes.Summary,
 		},

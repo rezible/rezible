@@ -63,13 +63,11 @@ func (ev *NormalizedEvent) KnowledgeAliasRef() KnowledgeAliasRef {
 	}
 }
 
-type (
-	KnowledgeAliasRef struct {
-		Provider           string
-		ProviderSource     string
-		ProviderSubjectRef string
-	}
-)
+type KnowledgeAliasRef struct {
+	Provider           string
+	ProviderSource     string
+	ProviderSubjectRef string
+}
 
 func (a KnowledgeAliasRef) SubjectPredicate(kind ksa.SubjectKind) predicate.KnowledgeSubjectAlias {
 	return ksa.And(
@@ -100,16 +98,28 @@ type (
 		Kind                kev.Kind
 		Assertion           string
 		EffectiveAt         time.Time
-		SubjectState        schematypes.KnowledgeEvidenceSubjectState
+		SubjectState        schematypes.KnowledgeGraphSubjectState
 		SubjectEntity       *KnowledgeEntityRef
 		SubjectRelationship *KnowledgeRelationshipRef
 	}
 )
 
-func (u *AgentTurnUpdateOne) ClearStateFields() *AgentTurnUpdateOne {
-	return u.SetFinishReason("").
-		ClearStartedAt().
-		ClearFinishedAt().
-		ClearState().
-		ClearError()
+func (aliases KnowledgeSubjectAliasSlice) LatestEvidence() *KnowledgeEvidence {
+	var latest *KnowledgeEvidence
+	for _, alias := range aliases {
+		for _, ev := range alias.Edges.Evidence {
+			if latest == nil || ev.EffectiveAt.Before(latest.EffectiveAt) {
+				latest = ev
+			}
+		}
+	}
+	return latest
+}
+
+func (e *KnowledgeEntity) LatestEvidence() *KnowledgeEvidence {
+	return KnowledgeSubjectAliasSlice(e.Edges.Aliases).LatestEvidence()
+}
+
+func (r *KnowledgeRelationship) LatestEvidence() *KnowledgeEvidence {
+	return KnowledgeSubjectAliasSlice(r.Edges.Aliases).LatestEvidence()
 }

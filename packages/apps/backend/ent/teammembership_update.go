@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -29,6 +30,26 @@ type TeamMembershipUpdate struct {
 // Where appends a list predicates to the TeamMembershipUpdate builder.
 func (_u *TeamMembershipUpdate) Where(ps ...predicate.TeamMembership) *TeamMembershipUpdate {
 	_u.mutation.Where(ps...)
+	return _u
+}
+
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (_u *TeamMembershipUpdate) SetKnowledgeRelationshipID(v uuid.UUID) *TeamMembershipUpdate {
+	_u.mutation.SetKnowledgeRelationshipID(v)
+	return _u
+}
+
+// SetNillableKnowledgeRelationshipID sets the "knowledge_relationship_id" field if the given value is not nil.
+func (_u *TeamMembershipUpdate) SetNillableKnowledgeRelationshipID(v *uuid.UUID) *TeamMembershipUpdate {
+	if v != nil {
+		_u.SetKnowledgeRelationshipID(*v)
+	}
+	return _u
+}
+
+// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
+func (_u *TeamMembershipUpdate) ClearKnowledgeRelationshipID() *TeamMembershipUpdate {
+	_u.mutation.ClearKnowledgeRelationshipID()
 	return _u
 }
 
@@ -74,6 +95,11 @@ func (_u *TeamMembershipUpdate) SetNillableRole(v *teammembership.Role) *TeamMem
 	return _u
 }
 
+// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (_u *TeamMembershipUpdate) SetKnowledgeRelationship(v *KnowledgeRelationship) *TeamMembershipUpdate {
+	return _u.SetKnowledgeRelationshipID(v.ID)
+}
+
 // SetTeam sets the "team" edge to the Team entity.
 func (_u *TeamMembershipUpdate) SetTeam(v *Team) *TeamMembershipUpdate {
 	return _u.SetTeamID(v.ID)
@@ -87,6 +113,12 @@ func (_u *TeamMembershipUpdate) SetUser(v *User) *TeamMembershipUpdate {
 // Mutation returns the TeamMembershipMutation object of the builder.
 func (_u *TeamMembershipUpdate) Mutation() *TeamMembershipMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (_u *TeamMembershipUpdate) ClearKnowledgeRelationship() *TeamMembershipUpdate {
+	_u.mutation.ClearKnowledgeRelationship()
+	return _u
 }
 
 // ClearTeam clears the "team" edge to the Team entity.
@@ -167,6 +199,37 @@ func (_u *TeamMembershipUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(teammembership.FieldRole, field.TypeEnum, value)
+	}
+	if _u.mutation.KnowledgeRelationshipCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   teammembership.KnowledgeRelationshipTable,
+			Columns: []string{teammembership.KnowledgeRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.TeamMembership
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   teammembership.KnowledgeRelationshipTable,
+			Columns: []string{teammembership.KnowledgeRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.TeamMembership
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.TeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -254,6 +317,26 @@ type TeamMembershipUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (_u *TeamMembershipUpdateOne) SetKnowledgeRelationshipID(v uuid.UUID) *TeamMembershipUpdateOne {
+	_u.mutation.SetKnowledgeRelationshipID(v)
+	return _u
+}
+
+// SetNillableKnowledgeRelationshipID sets the "knowledge_relationship_id" field if the given value is not nil.
+func (_u *TeamMembershipUpdateOne) SetNillableKnowledgeRelationshipID(v *uuid.UUID) *TeamMembershipUpdateOne {
+	if v != nil {
+		_u.SetKnowledgeRelationshipID(*v)
+	}
+	return _u
+}
+
+// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
+func (_u *TeamMembershipUpdateOne) ClearKnowledgeRelationshipID() *TeamMembershipUpdateOne {
+	_u.mutation.ClearKnowledgeRelationshipID()
+	return _u
+}
+
 // SetTeamID sets the "team_id" field.
 func (_u *TeamMembershipUpdateOne) SetTeamID(v uuid.UUID) *TeamMembershipUpdateOne {
 	_u.mutation.SetTeamID(v)
@@ -296,6 +379,11 @@ func (_u *TeamMembershipUpdateOne) SetNillableRole(v *teammembership.Role) *Team
 	return _u
 }
 
+// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (_u *TeamMembershipUpdateOne) SetKnowledgeRelationship(v *KnowledgeRelationship) *TeamMembershipUpdateOne {
+	return _u.SetKnowledgeRelationshipID(v.ID)
+}
+
 // SetTeam sets the "team" edge to the Team entity.
 func (_u *TeamMembershipUpdateOne) SetTeam(v *Team) *TeamMembershipUpdateOne {
 	return _u.SetTeamID(v.ID)
@@ -309,6 +397,12 @@ func (_u *TeamMembershipUpdateOne) SetUser(v *User) *TeamMembershipUpdateOne {
 // Mutation returns the TeamMembershipMutation object of the builder.
 func (_u *TeamMembershipUpdateOne) Mutation() *TeamMembershipMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (_u *TeamMembershipUpdateOne) ClearKnowledgeRelationship() *TeamMembershipUpdateOne {
+	_u.mutation.ClearKnowledgeRelationship()
+	return _u
 }
 
 // ClearTeam clears the "team" edge to the Team entity.
@@ -419,6 +513,37 @@ func (_u *TeamMembershipUpdateOne) sqlSave(ctx context.Context) (_node *TeamMemb
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(teammembership.FieldRole, field.TypeEnum, value)
+	}
+	if _u.mutation.KnowledgeRelationshipCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   teammembership.KnowledgeRelationshipTable,
+			Columns: []string{teammembership.KnowledgeRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.TeamMembership
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   teammembership.KnowledgeRelationshipTable,
+			Columns: []string{teammembership.KnowledgeRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.TeamMembership
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.TeamCleared() {
 		edge := &sqlgraph.EdgeSpec{

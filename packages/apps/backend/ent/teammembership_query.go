@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -24,14 +25,15 @@ import (
 // TeamMembershipQuery is the builder for querying TeamMembership entities.
 type TeamMembershipQuery struct {
 	config
-	ctx        *QueryContext
-	order      []teammembership.OrderOption
-	inters     []Interceptor
-	predicates []predicate.TeamMembership
-	withTenant *TenantQuery
-	withTeam   *TeamQuery
-	withUser   *UserQuery
-	modifiers  []func(*sql.Selector)
+	ctx                       *QueryContext
+	order                     []teammembership.OrderOption
+	inters                    []Interceptor
+	predicates                []predicate.TeamMembership
+	withTenant                *TenantQuery
+	withKnowledgeRelationship *KnowledgeRelationshipQuery
+	withTeam                  *TeamQuery
+	withUser                  *UserQuery
+	modifiers                 []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -86,6 +88,31 @@ func (_q *TeamMembershipQuery) QueryTenant() *TenantQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.TeamMembership
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryKnowledgeRelationship chains the current query on the "knowledge_relationship" edge.
+func (_q *TeamMembershipQuery) QueryKnowledgeRelationship() *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(teammembership.Table, teammembership.FieldID, selector),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, teammembership.KnowledgeRelationshipTable, teammembership.KnowledgeRelationshipColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.TeamMembership
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -330,14 +357,15 @@ func (_q *TeamMembershipQuery) Clone() *TeamMembershipQuery {
 		return nil
 	}
 	return &TeamMembershipQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]teammembership.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.TeamMembership{}, _q.predicates...),
-		withTenant: _q.withTenant.Clone(),
-		withTeam:   _q.withTeam.Clone(),
-		withUser:   _q.withUser.Clone(),
+		config:                    _q.config,
+		ctx:                       _q.ctx.Clone(),
+		order:                     append([]teammembership.OrderOption{}, _q.order...),
+		inters:                    append([]Interceptor{}, _q.inters...),
+		predicates:                append([]predicate.TeamMembership{}, _q.predicates...),
+		withTenant:                _q.withTenant.Clone(),
+		withKnowledgeRelationship: _q.withKnowledgeRelationship.Clone(),
+		withTeam:                  _q.withTeam.Clone(),
+		withUser:                  _q.withUser.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -353,6 +381,17 @@ func (_q *TeamMembershipQuery) WithTenant(opts ...func(*TenantQuery)) *TeamMembe
 		opt(query)
 	}
 	_q.withTenant = query
+	return _q
+}
+
+// WithKnowledgeRelationship tells the query-builder to eager-load the nodes that are connected to
+// the "knowledge_relationship" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *TeamMembershipQuery) WithKnowledgeRelationship(opts ...func(*KnowledgeRelationshipQuery)) *TeamMembershipQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withKnowledgeRelationship = query
 	return _q
 }
 
@@ -462,8 +501,9 @@ func (_q *TeamMembershipQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	var (
 		nodes       = []*TeamMembership{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
+			_q.withKnowledgeRelationship != nil,
 			_q.withTeam != nil,
 			_q.withUser != nil,
 		}
@@ -494,6 +534,12 @@ func (_q *TeamMembershipQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *TeamMembership, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withKnowledgeRelationship; query != nil {
+		if err := _q.loadKnowledgeRelationship(ctx, query, nodes, nil,
+			func(n *TeamMembership, e *KnowledgeRelationship) { n.Edges.KnowledgeRelationship = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -534,6 +580,38 @@ func (_q *TeamMembershipQuery) loadTenant(ctx context.Context, query *TenantQuer
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *TeamMembershipQuery) loadKnowledgeRelationship(ctx context.Context, query *KnowledgeRelationshipQuery, nodes []*TeamMembership, init func(*TeamMembership), assign func(*TeamMembership, *KnowledgeRelationship)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*TeamMembership)
+	for i := range nodes {
+		if nodes[i].KnowledgeRelationshipID == nil {
+			continue
+		}
+		fk := *nodes[i].KnowledgeRelationshipID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgerelationship.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "knowledge_relationship_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -632,6 +710,9 @@ func (_q *TeamMembershipQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(teammembership.FieldTenantID)
+		}
+		if _q.withKnowledgeRelationship != nil {
+			_spec.Node.AddColumnOnce(teammembership.FieldKnowledgeRelationshipID)
 		}
 		if _q.withTeam != nil {
 			_spec.Node.AddColumnOnce(teammembership.FieldTeamID)

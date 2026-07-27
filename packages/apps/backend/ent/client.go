@@ -13513,6 +13513,25 @@ func (c *TeamClient) QueryTenant(_m *Team) *TenantQuery {
 	return query
 }
 
+// QueryKnowledgeEntity queries the knowledge_entity edge of a Team.
+func (c *TeamClient) QueryKnowledgeEntity(_m *Team) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, team.KnowledgeEntityTable, team.KnowledgeEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.Team
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryUsers queries the users edge of a Team.
 func (c *TeamClient) QueryUsers(_m *Team) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
@@ -13616,7 +13635,8 @@ func (c *TeamClient) Hooks() []Hook {
 
 // Interceptors returns the client interceptors.
 func (c *TeamClient) Interceptors() []Interceptor {
-	return c.inters.Team
+	inters := c.inters.Team
+	return append(inters[:len(inters):len(inters)], team.Interceptors[:]...)
 }
 
 func (c *TeamClient) mutate(ctx context.Context, m *TeamMutation) (Value, error) {
@@ -13754,6 +13774,25 @@ func (c *TeamMembershipClient) QueryTenant(_m *TeamMembership) *TenantQuery {
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.TeamMembership
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeRelationship queries the knowledge_relationship edge of a TeamMembership.
+func (c *TeamMembershipClient) QueryKnowledgeRelationship(_m *TeamMembership) *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(teammembership.Table, teammembership.FieldID, id),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, teammembership.KnowledgeRelationshipTable, teammembership.KnowledgeRelationshipColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.TeamMembership
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

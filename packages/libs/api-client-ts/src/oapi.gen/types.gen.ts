@@ -747,11 +747,6 @@ export type ExpandableEventAttributes = {
     id: string;
 };
 
-export type ExpandableKnowledgeGraphEntityAttributes = {
-    attributes?: KnowledgeGraphEntityAttributes;
-    id: string;
-};
-
 export type ExpandableOncallRosterAttributes = {
     attributes?: OncallRosterAttributes;
     id: string;
@@ -1498,7 +1493,7 @@ export type KnowledgeGraphEntityAttributes = {
     aliases: Array<KnowledgeGraphSubjectAlias>;
     createdAt: string;
     kind: string;
-    state: KnowledgeGraphSubjectState;
+    latestEvidence?: KnowledgeGraphEvidence;
     updatedAt: string;
 };
 
@@ -1508,13 +1503,8 @@ export type KnowledgeGraphEvidence = {
 };
 
 export type KnowledgeGraphEvidenceAttributes = {
-    assertion: string;
     effectiveAt: string;
-    entityId?: string;
-    eventId: string;
-    evidenceKind: string;
-    relationshipId?: string;
-    subjectAlias: KnowledgeGraphSubjectAlias;
+    kind: 'observed' | 'deleted';
     subjectState: KnowledgeGraphSubjectState;
 };
 
@@ -1527,9 +1517,9 @@ export type KnowledgeGraphRelationshipAttributes = {
     aliases: Array<KnowledgeGraphSubjectAlias>;
     createdAt: string;
     kind: string;
-    source: ExpandableKnowledgeGraphEntityAttributes;
-    state: KnowledgeGraphSubjectState;
-    target: ExpandableKnowledgeGraphEntityAttributes;
+    latestEvidence?: KnowledgeGraphEvidence;
+    sourceEntityId: string;
+    targetEntityId: string;
     updatedAt: string;
 };
 
@@ -1555,10 +1545,9 @@ export type KnowledgeGraphSubjectState = {
 
 export type KnowledgeGraphView = {
     entities: Array<KnowledgeGraphEntity>;
-    evidence: Array<KnowledgeGraphEvidence>;
     relationships: Array<KnowledgeGraphRelationship>;
+    rootId: string;
     truncated: boolean;
-    warnings: Array<string>;
 };
 
 export type ListAgentSessionsResponseBody = {
@@ -6977,56 +6966,6 @@ export type ListKnowledgeGraphEntitiesResponses = {
 
 export type ListKnowledgeGraphEntitiesResponse = ListKnowledgeGraphEntitiesResponses[keyof ListKnowledgeGraphEntitiesResponses];
 
-export type GetKnowledgeGraphViewData = {
-    body?: never;
-    path: {
-        entityId: string;
-    };
-    query?: {
-        depth?: number;
-        relationshipKind?: Array<string>;
-    };
-    url: '/knowledge_graph/entities/{entityId}/view';
-};
-
-export type GetKnowledgeGraphViewErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetKnowledgeGraphViewError = GetKnowledgeGraphViewErrors[keyof GetKnowledgeGraphViewErrors];
-
-export type GetKnowledgeGraphViewResponses = {
-    /**
-     * OK
-     */
-    200: GetKnowledgeGraphViewResponseBody;
-};
-
-export type GetKnowledgeGraphViewResponse = GetKnowledgeGraphViewResponses[keyof GetKnowledgeGraphViewResponses];
-
 export type GetKnowledgeGraphEntityData = {
     body?: never;
     path: {
@@ -7127,6 +7066,55 @@ export type ListKnowledgeGraphRelationshipsResponses = {
 };
 
 export type ListKnowledgeGraphRelationshipsResponse = ListKnowledgeGraphRelationshipsResponses[keyof ListKnowledgeGraphRelationshipsResponses];
+
+export type GetKnowledgeGraphViewData = {
+    body?: never;
+    path?: never;
+    query?: {
+        entityId?: string;
+        depth?: number;
+        relationshipKind?: Array<string>;
+    };
+    url: '/knowledge_graph/view';
+};
+
+export type GetKnowledgeGraphViewErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetKnowledgeGraphViewError = GetKnowledgeGraphViewErrors[keyof GetKnowledgeGraphViewErrors];
+
+export type GetKnowledgeGraphViewResponses = {
+    /**
+     * OK
+     */
+    200: GetKnowledgeGraphViewResponseBody;
+};
+
+export type GetKnowledgeGraphViewResponse = GetKnowledgeGraphViewResponses[keyof GetKnowledgeGraphViewResponses];
 
 export type ListMeetingSchedulesData = {
     body?: never;

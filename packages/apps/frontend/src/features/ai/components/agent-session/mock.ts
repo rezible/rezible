@@ -38,7 +38,6 @@ export const mockAgentSession: AgentSession = {
 		ownerUserId: "8c8c1b3d-6d54-4f31-8875-c8913f7e4ad7",
 		permissionScopes: ["incidents:read", "events:read", "topology:read"],
 		createdAt: isoMinutesAgo(12),
-		startedAt: isoMinutesAgo(11),
 		latestTurn: mockAgentTurns[0],
 	},
 };

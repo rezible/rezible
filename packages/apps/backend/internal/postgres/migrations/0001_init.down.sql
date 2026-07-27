@@ -35,9 +35,9 @@ ALTER TABLE "users" DROP CONSTRAINT "users_knowledge_entities_knowledge_entity",
 -- reverse: modify "tickets" table
 ALTER TABLE "tickets" DROP CONSTRAINT "tickets_tenants_tenant";
 -- reverse: modify "team_memberships" table
-ALTER TABLE "team_memberships" DROP CONSTRAINT "team_memberships_users_user", DROP CONSTRAINT "team_memberships_teams_team", DROP CONSTRAINT "team_memberships_tenants_tenant";
+ALTER TABLE "team_memberships" DROP CONSTRAINT "team_memberships_users_user", DROP CONSTRAINT "team_memberships_teams_team", DROP CONSTRAINT "team_memberships_knowledge_relationships_knowledge_relationship", DROP CONSTRAINT "team_memberships_tenants_tenant";
 -- reverse: modify "teams" table
-ALTER TABLE "teams" DROP CONSTRAINT "teams_tenants_tenant";
+ALTER TABLE "teams" DROP CONSTRAINT "teams_knowledge_entities_knowledge_entity", DROP CONSTRAINT "teams_tenants_tenant";
 -- reverse: modify "tasks" table
 ALTER TABLE "tasks" DROP CONSTRAINT "tasks_users_created_tasks", DROP CONSTRAINT "tasks_users_assigned_tasks", DROP CONSTRAINT "tasks_tenants_tenant", DROP CONSTRAINT "tasks_incidents_tasks";
 -- reverse: modify "system_analysis_topology_nodes" table
@@ -222,10 +222,14 @@ DROP TABLE "tickets";
 DROP TABLE "tenants";
 -- reverse: create index "teammembership_team_id_user_id" to table: "team_memberships"
 DROP INDEX "teammembership_team_id_user_id";
+-- reverse: create index "teammembership_tenant_id_knowledge_relationship_id" to table: "team_memberships"
+DROP INDEX "teammembership_tenant_id_knowledge_relationship_id";
 -- reverse: create index "teammembership_tenant_id" to table: "team_memberships"
 DROP INDEX "teammembership_tenant_id";
 -- reverse: create "team_memberships" table
 DROP TABLE "team_memberships";
+-- reverse: create index "team_tenant_id_knowledge_entity_id" to table: "teams"
+DROP INDEX "team_tenant_id_knowledge_entity_id";
 -- reverse: create index "team_tenant_id" to table: "teams"
 DROP INDEX "team_tenant_id";
 -- reverse: create index "teams_slug_key" to table: "teams"

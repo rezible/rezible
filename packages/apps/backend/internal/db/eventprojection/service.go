@@ -39,6 +39,8 @@ func NewProjectionService(db rez.Database, users rez.UserService, incidents rez.
 	}
 	s.projectorFuncs = map[projections.SubjectKind]rez.EventProjectorFunc{
 		projections.SubjectKindUser:               makeProjector(projections.DecodeUserEvent, s.handleUserEvent),
+		projections.SubjectKindTeam:               makeProjector(projections.DecodeTeamEvent, s.handleTeamEvent),
+		projections.SubjectKindTeamMembership:     makeProjector(projections.DecodeTeamMembershipEvent, s.handleTeamMembershipEvent),
 		projections.SubjectKindSystemComponent:    makeProjector(projections.DecodeSystemComponentEvent, s.handleSystemComponentEvent),
 		projections.SubjectKindSystemRelationship: makeProjector(projections.DecodeSystemRelationshipEvent, s.handleSystemRelationshipEvent),
 		projections.SubjectKindCodeForge:          makeProjector(projections.DecodeCodeForgeEvent, s.handleCodeForgeEvent),

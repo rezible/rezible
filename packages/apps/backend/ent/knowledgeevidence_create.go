@@ -79,7 +79,7 @@ func (_c *KnowledgeEvidenceCreate) SetEffectiveAt(v time.Time) *KnowledgeEvidenc
 }
 
 // SetSubjectState sets the "subject_state" field.
-func (_c *KnowledgeEvidenceCreate) SetSubjectState(v schematypes.KnowledgeEvidenceSubjectState) *KnowledgeEvidenceCreate {
+func (_c *KnowledgeEvidenceCreate) SetSubjectState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeEvidenceCreate {
 	_c.mutation.SetSubjectState(v)
 	return _c
 }

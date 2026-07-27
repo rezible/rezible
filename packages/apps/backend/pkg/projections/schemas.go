@@ -70,6 +70,41 @@ func DecodeUserEvent(ev *ent.NormalizedEvent) (*UserEvent, error) {
 }
 
 type (
+	TeamEvent = Event[TeamSubjectAttributes]
+
+	TeamSubjectAttributes struct {
+		ExternalRef        string   `json:"external_ref" validate:"required"`
+		Name               string   `json:"name" validate:"required"`
+		Slug               string   `json:"slug" validate:"required"`
+		ChatChannelId      string   `json:"chat_channel_id"`
+		MemberExternalRefs []string `json:"member_external_refs"`
+	}
+)
+
+const SubjectKindTeam SubjectKind = "team"
+
+func DecodeTeamEvent(ev *ent.NormalizedEvent) (*TeamEvent, error) {
+	return DecodeSubjectAttributes[TeamSubjectAttributes](ev)
+}
+
+type (
+	TeamMembershipEvent = Event[TeamMembershipSubjectAttributes]
+
+	TeamMembershipSubjectAttributes struct {
+		Team            TeamSubjectAttributes `json:"team" validate:"required"`
+		User            UserSubjectAttributes `json:"user" validate:"required"`
+		UserExternalRef string                `json:"user_external_ref" validate:"required"`
+		Role            string                `json:"role" validate:"oneof=admin member"`
+	}
+)
+
+const SubjectKindTeamMembership SubjectKind = "team_membership"
+
+func DecodeTeamMembershipEvent(ev *ent.NormalizedEvent) (*TeamMembershipEvent, error) {
+	return DecodeSubjectAttributes[TeamMembershipSubjectAttributes](ev)
+}
+
+type (
 	// IncidentEvent is a normalized incident observation from an incident provider.
 	IncidentEvent = Event[IncidentSubjectAttributes]
 

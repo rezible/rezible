@@ -1532,6 +1532,11 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	teamMixinHooks2 := teamMixin[2].Hooks()
+
+	team.Hooks[1] = teamMixinHooks2[0]
+	teamMixinInters2 := teamMixin[2].Interceptors()
+	team.Interceptors[0] = teamMixinInters2[0]
 	teamFields := schema.Team{}.Fields()
 	_ = teamFields
 	// teamDescID is the schema descriptor for id field.

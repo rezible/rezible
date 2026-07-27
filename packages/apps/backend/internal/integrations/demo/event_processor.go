@@ -251,5 +251,48 @@ func (p *eventProcessor) processIncident() (ent.NormalizedEvents, error) {
 }
 
 func (p *eventProcessor) processTopology() (ent.NormalizedEvents, error) {
-	return ent.NormalizedEvents{}, nil
+	var envelope struct {
+		Source topologyRelationshipObservedPayloadComponent `json:"source"`
+	}
+	if jsonErr := json.Unmarshal(p.event.Payload, &envelope); jsonErr != nil {
+		return nil, fmt.Errorf("inspect topology payload: %w", jsonErr)
+	}
+
+	var subjectKind projections.SubjectKind
+	var attributes any
+	if envelope.Source.ExternalRef != "" {
+		var payload topologyRelationshipObservedPayload
+		if jsonErr := json.Unmarshal(p.event.Payload, &payload); jsonErr != nil {
+			return nil, fmt.Errorf("unmarshal topology relationship payload: %w", jsonErr)
+		}
+		subjectKind = projections.SubjectKindSystemRelationship
+		attributes = payload.getAttributes()
+	} else {
+		var payload topologyComponentObservedPayload
+		if jsonErr := json.Unmarshal(p.event.Payload, &payload); jsonErr != nil {
+			return nil, fmt.Errorf("unmarshal topology component payload: %w", jsonErr)
+		}
+		subjectKind = projections.SubjectKindSystemComponent
+		attributes = payload.getAttributes()
+	}
+
+	encodedAttributes, encodeErr := projections.EncodeAttributes(attributes)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode topology attributes: %w", encodeErr)
+	}
+	occurredAt := p.event.ReceivedAt
+	if occurredAt.IsZero() {
+		occurredAt = time.Now().UTC()
+	}
+	return ent.NormalizedEvents{{
+		Provider:           integrationName,
+		ProviderSource:     sourceTopology,
+		ProviderEventRef:   p.event.ProviderEventRef,
+		ProviderSubjectRef: p.event.ProviderSubjectRef,
+		Kind:               ne.KindObserved,
+		SubjectKind:        subjectKind.String(),
+		OccurredAt:         occurredAt,
+		ReceivedAt:         occurredAt,
+		Attributes:         encodedAttributes,
+	}}, nil
 }

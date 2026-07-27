@@ -1560,24 +1560,6 @@ export const listKnowledgeGraphEntities = <ThrowOnError extends boolean = false>
 });
 
 /**
- * Get Knowledge Graph View
- */
-export const getKnowledgeGraphView = <ThrowOnError extends boolean = false>(options: Options<GetKnowledgeGraphViewData, ThrowOnError>): RequestResult<GetKnowledgeGraphViewResponses, GetKnowledgeGraphViewErrors, ThrowOnError> => (options.client ?? client).get<GetKnowledgeGraphViewResponses, GetKnowledgeGraphViewErrors, ThrowOnError>({
-    querySerializer: { parameters: { relationshipKind: { array: { explode: false } } } },
-    security: [{
-            key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
-        }],
-    url: '/knowledge_graph/entities/{entityId}/view',
-    ...options
-});
-
-/**
  * Get Knowledge Graph Entity
  */
 export const getKnowledgeGraphEntity = <ThrowOnError extends boolean = false>(options: Options<GetKnowledgeGraphEntityData, ThrowOnError>): RequestResult<GetKnowledgeGraphEntityResponses, GetKnowledgeGraphEntityErrors, ThrowOnError> => (options.client ?? client).get<GetKnowledgeGraphEntityResponses, GetKnowledgeGraphEntityErrors, ThrowOnError>({
@@ -1609,6 +1591,24 @@ export const listKnowledgeGraphRelationships = <ThrowOnError extends boolean = f
             type: 'http'
         }],
     url: '/knowledge_graph/relationships',
+    ...options
+});
+
+/**
+ * Get Knowledge Graph View
+ */
+export const getKnowledgeGraphView = <ThrowOnError extends boolean = false>(options?: Options<GetKnowledgeGraphViewData, ThrowOnError>): RequestResult<GetKnowledgeGraphViewResponses, GetKnowledgeGraphViewErrors, ThrowOnError> => (options?.client ?? client).get<GetKnowledgeGraphViewResponses, GetKnowledgeGraphViewErrors, ThrowOnError>({
+    querySerializer: { parameters: { relationshipKind: { array: { explode: false } } } },
+    security: [{
+            key: 'app-cookie',
+            scheme: 'bearer',
+            type: 'http'
+        }, {
+            key: 'api-token',
+            scheme: 'bearer',
+            type: 'http'
+        }],
+    url: '/knowledge_graph/view',
     ...options
 });
 

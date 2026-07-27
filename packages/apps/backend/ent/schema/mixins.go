@@ -184,3 +184,29 @@ func (i KnowledgeEntityLinkMixin) Indexes() []ent.Index {
 		index.Fields("tenant_id", "knowledge_entity_id").Unique(),
 	}
 }
+
+type KnowledgeRelationshipLinkMixin struct {
+	mixin.Schema
+}
+
+func (i KnowledgeRelationshipLinkMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("knowledge_relationship_id", uuid.UUID{}).
+			Optional().
+			Nillable(),
+	}
+}
+
+func (i KnowledgeRelationshipLinkMixin) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("knowledge_relationship", KnowledgeRelationship.Type).
+			Unique().
+			Field("knowledge_relationship_id"),
+	}
+}
+
+func (i KnowledgeRelationshipLinkMixin) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "knowledge_relationship_id").Unique(),
+	}
+}

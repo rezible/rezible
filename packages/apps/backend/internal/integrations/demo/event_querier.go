@@ -24,8 +24,8 @@ func newEventQuerier(ci *InstalledIntegration) *eventQuerier {
 }
 
 func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.ProviderEventQuerySourceCursors) iter.Seq2[*rez.ProviderEventQueryResult, error] {
-	//demoComponents := makeDemoTopologyComponents()
-	//demoRelationships := makeDemoTopologyRelationships(demoComponents)
+	demoComponents := makeDemoTopologyComponents()
+	demoRelationships := makeDemoTopologyRelationships(demoComponents)
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		pullFuncs := []func() bool{
 			makeEventPuller(cursors, yield, sourceUsers, demoUserEvents),
@@ -33,7 +33,8 @@ func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.Prov
 			makeEventPuller(cursors, yield, sourceCodeChanges, demoCodeChangeEvents),
 			makeEventPuller(cursors, yield, sourceAlerts, demoAlertEvents),
 			makeEventPuller(cursors, yield, sourceIncidents, demoIncidentEvents),
-			//makeEventPuller(cursors, yield, sourceTopology, demoTopologyEvents),
+			makeEventPuller(cursors, yield, sourceTopology, demoComponents),
+			makeEventPuller(cursors, yield, sourceTopology, demoRelationships),
 		}
 		for _, pullFunc := range pullFuncs {
 			if !pullFunc() {

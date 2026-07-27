@@ -17,6 +17,8 @@ func (Team) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		ArchiveMixin{},
+		KnowledgeEntityLinkMixin{},
 	}
 }
 
@@ -53,6 +55,7 @@ func (TeamMembership) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		KnowledgeRelationshipLinkMixin{},
 	}
 }
 

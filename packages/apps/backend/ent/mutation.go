@@ -30828,7 +30828,7 @@ type KnowledgeEvidenceMutation struct {
 	assertion            *string
 	created_at           *time.Time
 	effective_at         *time.Time
-	subject_state        *schematypes.KnowledgeEvidenceSubjectState
+	subject_state        *schematypes.KnowledgeGraphSubjectState
 	clearedFields        map[string]struct{}
 	tenant               *int
 	clearedtenant        bool
@@ -31198,12 +31198,12 @@ func (m *KnowledgeEvidenceMutation) ResetEffectiveAt() {
 }
 
 // SetSubjectState sets the "subject_state" field.
-func (m *KnowledgeEvidenceMutation) SetSubjectState(sess schematypes.KnowledgeEvidenceSubjectState) {
-	m.subject_state = &sess
+func (m *KnowledgeEvidenceMutation) SetSubjectState(sgss schematypes.KnowledgeGraphSubjectState) {
+	m.subject_state = &sgss
 }
 
 // SubjectState returns the value of the "subject_state" field in the mutation.
-func (m *KnowledgeEvidenceMutation) SubjectState() (r schematypes.KnowledgeEvidenceSubjectState, exists bool) {
+func (m *KnowledgeEvidenceMutation) SubjectState() (r schematypes.KnowledgeGraphSubjectState, exists bool) {
 	v := m.subject_state
 	if v == nil {
 		return
@@ -31214,7 +31214,7 @@ func (m *KnowledgeEvidenceMutation) SubjectState() (r schematypes.KnowledgeEvide
 // OldSubjectState returns the old "subject_state" field's value of the KnowledgeEvidence entity.
 // If the KnowledgeEvidence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEvidenceMutation) OldSubjectState(ctx context.Context) (v schematypes.KnowledgeEvidenceSubjectState, err error) {
+func (m *KnowledgeEvidenceMutation) OldSubjectState(ctx context.Context) (v schematypes.KnowledgeGraphSubjectState, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSubjectState is only allowed on UpdateOne operations")
 	}
@@ -31481,7 +31481,7 @@ func (m *KnowledgeEvidenceMutation) SetField(name string, value ent.Value) error
 		m.SetEffectiveAt(v)
 		return nil
 	case knowledgeevidence.FieldSubjectState:
-		v, ok := value.(schematypes.KnowledgeEvidenceSubjectState)
+		v, ok := value.(schematypes.KnowledgeGraphSubjectState)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -54115,6 +54115,7 @@ type TeamMutation struct {
 	op                        Op
 	typ                       string
 	id                        *uuid.UUID
+	archive_time              *time.Time
 	slug                      *string
 	name                      *string
 	chat_channel_id           *string
@@ -54122,6 +54123,8 @@ type TeamMutation struct {
 	clearedFields             map[string]struct{}
 	tenant                    *int
 	clearedtenant             bool
+	knowledge_entity          *uuid.UUID
+	clearedknowledge_entity   bool
 	users                     map[uuid.UUID]struct{}
 	removedusers              map[uuid.UUID]struct{}
 	clearedusers              bool
@@ -54280,6 +54283,104 @@ func (m *TeamMutation) OldTenantID(ctx context.Context) (v int, err error) {
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *TeamMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (m *TeamMutation) SetArchiveTime(t time.Time) {
+	m.archive_time = &t
+}
+
+// ArchiveTime returns the value of the "archive_time" field in the mutation.
+func (m *TeamMutation) ArchiveTime() (r time.Time, exists bool) {
+	v := m.archive_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArchiveTime returns the old "archive_time" field's value of the Team entity.
+// If the Team object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldArchiveTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArchiveTime: %w", err)
+	}
+	return oldValue.ArchiveTime, nil
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (m *TeamMutation) ClearArchiveTime() {
+	m.archive_time = nil
+	m.clearedFields[team.FieldArchiveTime] = struct{}{}
+}
+
+// ArchiveTimeCleared returns if the "archive_time" field was cleared in this mutation.
+func (m *TeamMutation) ArchiveTimeCleared() bool {
+	_, ok := m.clearedFields[team.FieldArchiveTime]
+	return ok
+}
+
+// ResetArchiveTime resets all changes to the "archive_time" field.
+func (m *TeamMutation) ResetArchiveTime() {
+	m.archive_time = nil
+	delete(m.clearedFields, team.FieldArchiveTime)
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (m *TeamMutation) SetKnowledgeEntityID(u uuid.UUID) {
+	m.knowledge_entity = &u
+}
+
+// KnowledgeEntityID returns the value of the "knowledge_entity_id" field in the mutation.
+func (m *TeamMutation) KnowledgeEntityID() (r uuid.UUID, exists bool) {
+	v := m.knowledge_entity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKnowledgeEntityID returns the old "knowledge_entity_id" field's value of the Team entity.
+// If the Team object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMutation) OldKnowledgeEntityID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKnowledgeEntityID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKnowledgeEntityID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKnowledgeEntityID: %w", err)
+	}
+	return oldValue.KnowledgeEntityID, nil
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (m *TeamMutation) ClearKnowledgeEntityID() {
+	m.knowledge_entity = nil
+	m.clearedFields[team.FieldKnowledgeEntityID] = struct{}{}
+}
+
+// KnowledgeEntityIDCleared returns if the "knowledge_entity_id" field was cleared in this mutation.
+func (m *TeamMutation) KnowledgeEntityIDCleared() bool {
+	_, ok := m.clearedFields[team.FieldKnowledgeEntityID]
+	return ok
+}
+
+// ResetKnowledgeEntityID resets all changes to the "knowledge_entity_id" field.
+func (m *TeamMutation) ResetKnowledgeEntityID() {
+	m.knowledge_entity = nil
+	delete(m.clearedFields, team.FieldKnowledgeEntityID)
 }
 
 // SetSlug sets the "slug" field.
@@ -54477,6 +54578,33 @@ func (m *TeamMutation) TenantIDs() (ids []int) {
 func (m *TeamMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (m *TeamMutation) ClearKnowledgeEntity() {
+	m.clearedknowledge_entity = true
+	m.clearedFields[team.FieldKnowledgeEntityID] = struct{}{}
+}
+
+// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
+func (m *TeamMutation) KnowledgeEntityCleared() bool {
+	return m.KnowledgeEntityIDCleared() || m.clearedknowledge_entity
+}
+
+// KnowledgeEntityIDs returns the "knowledge_entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// KnowledgeEntityID instead. It exists only for internal usage by the builders.
+func (m *TeamMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
+	if id := m.knowledge_entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetKnowledgeEntity resets all changes to the "knowledge_entity" edge.
+func (m *TeamMutation) ResetKnowledgeEntity() {
+	m.knowledge_entity = nil
+	m.clearedknowledge_entity = false
 }
 
 // AddUserIDs adds the "users" edge to the User entity by ids.
@@ -54783,9 +54911,15 @@ func (m *TeamMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TeamMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, team.FieldTenantID)
+	}
+	if m.archive_time != nil {
+		fields = append(fields, team.FieldArchiveTime)
+	}
+	if m.knowledge_entity != nil {
+		fields = append(fields, team.FieldKnowledgeEntityID)
 	}
 	if m.slug != nil {
 		fields = append(fields, team.FieldSlug)
@@ -54809,6 +54943,10 @@ func (m *TeamMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case team.FieldTenantID:
 		return m.TenantID()
+	case team.FieldArchiveTime:
+		return m.ArchiveTime()
+	case team.FieldKnowledgeEntityID:
+		return m.KnowledgeEntityID()
 	case team.FieldSlug:
 		return m.Slug()
 	case team.FieldName:
@@ -54828,6 +54966,10 @@ func (m *TeamMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case team.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case team.FieldArchiveTime:
+		return m.OldArchiveTime(ctx)
+	case team.FieldKnowledgeEntityID:
+		return m.OldKnowledgeEntityID(ctx)
 	case team.FieldSlug:
 		return m.OldSlug(ctx)
 	case team.FieldName:
@@ -54851,6 +54993,20 @@ func (m *TeamMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case team.FieldArchiveTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArchiveTime(v)
+		return nil
+	case team.FieldKnowledgeEntityID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKnowledgeEntityID(v)
 		return nil
 	case team.FieldSlug:
 		v, ok := value.(string)
@@ -54913,6 +55069,12 @@ func (m *TeamMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TeamMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(team.FieldArchiveTime) {
+		fields = append(fields, team.FieldArchiveTime)
+	}
+	if m.FieldCleared(team.FieldKnowledgeEntityID) {
+		fields = append(fields, team.FieldKnowledgeEntityID)
+	}
 	if m.FieldCleared(team.FieldChatChannelID) {
 		fields = append(fields, team.FieldChatChannelID)
 	}
@@ -54933,6 +55095,12 @@ func (m *TeamMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TeamMutation) ClearField(name string) error {
 	switch name {
+	case team.FieldArchiveTime:
+		m.ClearArchiveTime()
+		return nil
+	case team.FieldKnowledgeEntityID:
+		m.ClearKnowledgeEntityID()
+		return nil
 	case team.FieldChatChannelID:
 		m.ClearChatChannelID()
 		return nil
@@ -54949,6 +55117,12 @@ func (m *TeamMutation) ResetField(name string) error {
 	switch name {
 	case team.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case team.FieldArchiveTime:
+		m.ResetArchiveTime()
+		return nil
+	case team.FieldKnowledgeEntityID:
+		m.ResetKnowledgeEntityID()
 		return nil
 	case team.FieldSlug:
 		m.ResetSlug()
@@ -54968,9 +55142,12 @@ func (m *TeamMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TeamMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.tenant != nil {
 		edges = append(edges, team.EdgeTenant)
+	}
+	if m.knowledge_entity != nil {
+		edges = append(edges, team.EdgeKnowledgeEntity)
 	}
 	if m.users != nil {
 		edges = append(edges, team.EdgeUsers)
@@ -54996,6 +55173,10 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case team.EdgeTenant:
 		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case team.EdgeKnowledgeEntity:
+		if id := m.knowledge_entity; id != nil {
 			return []ent.Value{*id}
 		}
 	case team.EdgeUsers:
@@ -55034,7 +55215,7 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TeamMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.removedusers != nil {
 		edges = append(edges, team.EdgeUsers)
 	}
@@ -55093,9 +55274,12 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TeamMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.clearedtenant {
 		edges = append(edges, team.EdgeTenant)
+	}
+	if m.clearedknowledge_entity {
+		edges = append(edges, team.EdgeKnowledgeEntity)
 	}
 	if m.clearedusers {
 		edges = append(edges, team.EdgeUsers)
@@ -55121,6 +55305,8 @@ func (m *TeamMutation) EdgeCleared(name string) bool {
 	switch name {
 	case team.EdgeTenant:
 		return m.clearedtenant
+	case team.EdgeKnowledgeEntity:
+		return m.clearedknowledge_entity
 	case team.EdgeUsers:
 		return m.clearedusers
 	case team.EdgeOncallRosters:
@@ -55142,6 +55328,9 @@ func (m *TeamMutation) ClearEdge(name string) error {
 	case team.EdgeTenant:
 		m.ClearTenant()
 		return nil
+	case team.EdgeKnowledgeEntity:
+		m.ClearKnowledgeEntity()
+		return nil
 	}
 	return fmt.Errorf("unknown Team unique edge %s", name)
 }
@@ -55152,6 +55341,9 @@ func (m *TeamMutation) ResetEdge(name string) error {
 	switch name {
 	case team.EdgeTenant:
 		m.ResetTenant()
+		return nil
+	case team.EdgeKnowledgeEntity:
+		m.ResetKnowledgeEntity()
 		return nil
 	case team.EdgeUsers:
 		m.ResetUsers()
@@ -55175,20 +55367,22 @@ func (m *TeamMutation) ResetEdge(name string) error {
 // TeamMembershipMutation represents an operation that mutates the TeamMembership nodes in the graph.
 type TeamMembershipMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	role          *teammembership.Role
-	clearedFields map[string]struct{}
-	tenant        *int
-	clearedtenant bool
-	team          *uuid.UUID
-	clearedteam   bool
-	user          *uuid.UUID
-	cleareduser   bool
-	done          bool
-	oldValue      func(context.Context) (*TeamMembership, error)
-	predicates    []predicate.TeamMembership
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	role                          *teammembership.Role
+	clearedFields                 map[string]struct{}
+	tenant                        *int
+	clearedtenant                 bool
+	knowledge_relationship        *uuid.UUID
+	clearedknowledge_relationship bool
+	team                          *uuid.UUID
+	clearedteam                   bool
+	user                          *uuid.UUID
+	cleareduser                   bool
+	done                          bool
+	oldValue                      func(context.Context) (*TeamMembership, error)
+	predicates                    []predicate.TeamMembership
 }
 
 var _ ent.Mutation = (*TeamMembershipMutation)(nil)
@@ -55331,6 +55525,55 @@ func (m *TeamMembershipMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (m *TeamMembershipMutation) SetKnowledgeRelationshipID(u uuid.UUID) {
+	m.knowledge_relationship = &u
+}
+
+// KnowledgeRelationshipID returns the value of the "knowledge_relationship_id" field in the mutation.
+func (m *TeamMembershipMutation) KnowledgeRelationshipID() (r uuid.UUID, exists bool) {
+	v := m.knowledge_relationship
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKnowledgeRelationshipID returns the old "knowledge_relationship_id" field's value of the TeamMembership entity.
+// If the TeamMembership object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMembershipMutation) OldKnowledgeRelationshipID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKnowledgeRelationshipID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKnowledgeRelationshipID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKnowledgeRelationshipID: %w", err)
+	}
+	return oldValue.KnowledgeRelationshipID, nil
+}
+
+// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
+func (m *TeamMembershipMutation) ClearKnowledgeRelationshipID() {
+	m.knowledge_relationship = nil
+	m.clearedFields[teammembership.FieldKnowledgeRelationshipID] = struct{}{}
+}
+
+// KnowledgeRelationshipIDCleared returns if the "knowledge_relationship_id" field was cleared in this mutation.
+func (m *TeamMembershipMutation) KnowledgeRelationshipIDCleared() bool {
+	_, ok := m.clearedFields[teammembership.FieldKnowledgeRelationshipID]
+	return ok
+}
+
+// ResetKnowledgeRelationshipID resets all changes to the "knowledge_relationship_id" field.
+func (m *TeamMembershipMutation) ResetKnowledgeRelationshipID() {
+	m.knowledge_relationship = nil
+	delete(m.clearedFields, teammembership.FieldKnowledgeRelationshipID)
+}
+
 // SetTeamID sets the "team_id" field.
 func (m *TeamMembershipMutation) SetTeamID(u uuid.UUID) {
 	m.team = &u
@@ -55466,6 +55709,33 @@ func (m *TeamMembershipMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
+// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (m *TeamMembershipMutation) ClearKnowledgeRelationship() {
+	m.clearedknowledge_relationship = true
+	m.clearedFields[teammembership.FieldKnowledgeRelationshipID] = struct{}{}
+}
+
+// KnowledgeRelationshipCleared reports if the "knowledge_relationship" edge to the KnowledgeRelationship entity was cleared.
+func (m *TeamMembershipMutation) KnowledgeRelationshipCleared() bool {
+	return m.KnowledgeRelationshipIDCleared() || m.clearedknowledge_relationship
+}
+
+// KnowledgeRelationshipIDs returns the "knowledge_relationship" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// KnowledgeRelationshipID instead. It exists only for internal usage by the builders.
+func (m *TeamMembershipMutation) KnowledgeRelationshipIDs() (ids []uuid.UUID) {
+	if id := m.knowledge_relationship; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetKnowledgeRelationship resets all changes to the "knowledge_relationship" edge.
+func (m *TeamMembershipMutation) ResetKnowledgeRelationship() {
+	m.knowledge_relationship = nil
+	m.clearedknowledge_relationship = false
+}
+
 // ClearTeam clears the "team" edge to the Team entity.
 func (m *TeamMembershipMutation) ClearTeam() {
 	m.clearedteam = true
@@ -55554,9 +55824,12 @@ func (m *TeamMembershipMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TeamMembershipMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, teammembership.FieldTenantID)
+	}
+	if m.knowledge_relationship != nil {
+		fields = append(fields, teammembership.FieldKnowledgeRelationshipID)
 	}
 	if m.team != nil {
 		fields = append(fields, teammembership.FieldTeamID)
@@ -55577,6 +55850,8 @@ func (m *TeamMembershipMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case teammembership.FieldTenantID:
 		return m.TenantID()
+	case teammembership.FieldKnowledgeRelationshipID:
+		return m.KnowledgeRelationshipID()
 	case teammembership.FieldTeamID:
 		return m.TeamID()
 	case teammembership.FieldUserID:
@@ -55594,6 +55869,8 @@ func (m *TeamMembershipMutation) OldField(ctx context.Context, name string) (ent
 	switch name {
 	case teammembership.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case teammembership.FieldKnowledgeRelationshipID:
+		return m.OldKnowledgeRelationshipID(ctx)
 	case teammembership.FieldTeamID:
 		return m.OldTeamID(ctx)
 	case teammembership.FieldUserID:
@@ -55615,6 +55892,13 @@ func (m *TeamMembershipMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case teammembership.FieldKnowledgeRelationshipID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKnowledgeRelationshipID(v)
 		return nil
 	case teammembership.FieldTeamID:
 		v, ok := value.(uuid.UUID)
@@ -55669,7 +55953,11 @@ func (m *TeamMembershipMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *TeamMembershipMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(teammembership.FieldKnowledgeRelationshipID) {
+		fields = append(fields, teammembership.FieldKnowledgeRelationshipID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -55682,6 +55970,11 @@ func (m *TeamMembershipMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *TeamMembershipMutation) ClearField(name string) error {
+	switch name {
+	case teammembership.FieldKnowledgeRelationshipID:
+		m.ClearKnowledgeRelationshipID()
+		return nil
+	}
 	return fmt.Errorf("unknown TeamMembership nullable field %s", name)
 }
 
@@ -55691,6 +55984,9 @@ func (m *TeamMembershipMutation) ResetField(name string) error {
 	switch name {
 	case teammembership.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case teammembership.FieldKnowledgeRelationshipID:
+		m.ResetKnowledgeRelationshipID()
 		return nil
 	case teammembership.FieldTeamID:
 		m.ResetTeamID()
@@ -55707,9 +56003,12 @@ func (m *TeamMembershipMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TeamMembershipMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.tenant != nil {
 		edges = append(edges, teammembership.EdgeTenant)
+	}
+	if m.knowledge_relationship != nil {
+		edges = append(edges, teammembership.EdgeKnowledgeRelationship)
 	}
 	if m.team != nil {
 		edges = append(edges, teammembership.EdgeTeam)
@@ -55728,6 +56027,10 @@ func (m *TeamMembershipMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
+	case teammembership.EdgeKnowledgeRelationship:
+		if id := m.knowledge_relationship; id != nil {
+			return []ent.Value{*id}
+		}
 	case teammembership.EdgeTeam:
 		if id := m.team; id != nil {
 			return []ent.Value{*id}
@@ -55742,7 +56045,7 @@ func (m *TeamMembershipMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TeamMembershipMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	return edges
 }
 
@@ -55754,9 +56057,12 @@ func (m *TeamMembershipMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TeamMembershipMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedtenant {
 		edges = append(edges, teammembership.EdgeTenant)
+	}
+	if m.clearedknowledge_relationship {
+		edges = append(edges, teammembership.EdgeKnowledgeRelationship)
 	}
 	if m.clearedteam {
 		edges = append(edges, teammembership.EdgeTeam)
@@ -55773,6 +56079,8 @@ func (m *TeamMembershipMutation) EdgeCleared(name string) bool {
 	switch name {
 	case teammembership.EdgeTenant:
 		return m.clearedtenant
+	case teammembership.EdgeKnowledgeRelationship:
+		return m.clearedknowledge_relationship
 	case teammembership.EdgeTeam:
 		return m.clearedteam
 	case teammembership.EdgeUser:
@@ -55787,6 +56095,9 @@ func (m *TeamMembershipMutation) ClearEdge(name string) error {
 	switch name {
 	case teammembership.EdgeTenant:
 		m.ClearTenant()
+		return nil
+	case teammembership.EdgeKnowledgeRelationship:
+		m.ClearKnowledgeRelationship()
 		return nil
 	case teammembership.EdgeTeam:
 		m.ClearTeam()
@@ -55804,6 +56115,9 @@ func (m *TeamMembershipMutation) ResetEdge(name string) error {
 	switch name {
 	case teammembership.EdgeTenant:
 		m.ResetTenant()
+		return nil
+	case teammembership.EdgeKnowledgeRelationship:
+		m.ResetKnowledgeRelationship()
 		return nil
 	case teammembership.EdgeTeam:
 		m.ResetTeam()

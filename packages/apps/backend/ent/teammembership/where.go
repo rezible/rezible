@@ -60,6 +60,11 @@ func TenantID(v int) predicate.TeamMembership {
 	return predicate.TeamMembership(sql.FieldEQ(FieldTenantID, v))
 }
 
+// KnowledgeRelationshipID applies equality check predicate on the "knowledge_relationship_id" field. It's identical to KnowledgeRelationshipIDEQ.
+func KnowledgeRelationshipID(v uuid.UUID) predicate.TeamMembership {
+	return predicate.TeamMembership(sql.FieldEQ(FieldKnowledgeRelationshipID, v))
+}
+
 // TeamID applies equality check predicate on the "team_id" field. It's identical to TeamIDEQ.
 func TeamID(v uuid.UUID) predicate.TeamMembership {
 	return predicate.TeamMembership(sql.FieldEQ(FieldTeamID, v))
@@ -88,6 +93,36 @@ func TenantIDIn(vs ...int) predicate.TeamMembership {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.TeamMembership {
 	return predicate.TeamMembership(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// KnowledgeRelationshipIDEQ applies the EQ predicate on the "knowledge_relationship_id" field.
+func KnowledgeRelationshipIDEQ(v uuid.UUID) predicate.TeamMembership {
+	return predicate.TeamMembership(sql.FieldEQ(FieldKnowledgeRelationshipID, v))
+}
+
+// KnowledgeRelationshipIDNEQ applies the NEQ predicate on the "knowledge_relationship_id" field.
+func KnowledgeRelationshipIDNEQ(v uuid.UUID) predicate.TeamMembership {
+	return predicate.TeamMembership(sql.FieldNEQ(FieldKnowledgeRelationshipID, v))
+}
+
+// KnowledgeRelationshipIDIn applies the In predicate on the "knowledge_relationship_id" field.
+func KnowledgeRelationshipIDIn(vs ...uuid.UUID) predicate.TeamMembership {
+	return predicate.TeamMembership(sql.FieldIn(FieldKnowledgeRelationshipID, vs...))
+}
+
+// KnowledgeRelationshipIDNotIn applies the NotIn predicate on the "knowledge_relationship_id" field.
+func KnowledgeRelationshipIDNotIn(vs ...uuid.UUID) predicate.TeamMembership {
+	return predicate.TeamMembership(sql.FieldNotIn(FieldKnowledgeRelationshipID, vs...))
+}
+
+// KnowledgeRelationshipIDIsNil applies the IsNil predicate on the "knowledge_relationship_id" field.
+func KnowledgeRelationshipIDIsNil() predicate.TeamMembership {
+	return predicate.TeamMembership(sql.FieldIsNull(FieldKnowledgeRelationshipID))
+}
+
+// KnowledgeRelationshipIDNotNil applies the NotNil predicate on the "knowledge_relationship_id" field.
+func KnowledgeRelationshipIDNotNil() predicate.TeamMembership {
+	return predicate.TeamMembership(sql.FieldNotNull(FieldKnowledgeRelationshipID))
 }
 
 // TeamIDEQ applies the EQ predicate on the "team_id" field.
@@ -170,6 +205,35 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.TeamMembership {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.TeamMembership
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasKnowledgeRelationship applies the HasEdge predicate on the "knowledge_relationship" edge.
+func HasKnowledgeRelationship() predicate.TeamMembership {
+	return predicate.TeamMembership(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeRelationshipTable, KnowledgeRelationshipColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.TeamMembership
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasKnowledgeRelationshipWith applies the HasEdge predicate on the "knowledge_relationship" edge with a given conditions (other predicates).
+func HasKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) predicate.TeamMembership {
+	return predicate.TeamMembership(func(s *sql.Selector) {
+		step := newKnowledgeRelationshipStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.TeamMembership
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -56,10 +56,11 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphEntities(ctx context.Context, 
 
 func (h *knowledgeGraphHandler) GetKnowledgeGraphView(ctx context.Context, request *oapi.GetKnowledgeGraphViewRequest) (*oapi.GetKnowledgeGraphViewResponse, error) {
 	params := rez.GetKnowledgeGraphViewParams{
+		EntityID:          request.EntityId,
 		Depth:             request.Depth,
 		RelationshipKinds: request.RelationshipKind,
 	}
-	view, viewErr := h.knowledge.GetView(ctx, request.EntityId, params)
+	view, viewErr := h.knowledge.GetView(ctx, params)
 	if viewErr != nil {
 		return nil, oapi.Error(ctx, "failed to get knowledge graph view", viewErr)
 	}

@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
@@ -22,6 +23,8 @@ type TeamMembership struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// KnowledgeRelationshipID holds the value of the "knowledge_relationship_id" field.
+	KnowledgeRelationshipID *uuid.UUID `json:"knowledge_relationship_id,omitempty"`
 	// TeamID holds the value of the "team_id" field.
 	TeamID uuid.UUID `json:"team_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
@@ -38,13 +41,15 @@ type TeamMembership struct {
 type TeamMembershipEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// KnowledgeRelationship holds the value of the knowledge_relationship edge.
+	KnowledgeRelationship *KnowledgeRelationship `json:"knowledge_relationship,omitempty"`
 	// Team holds the value of the team edge.
 	Team *Team `json:"team,omitempty"`
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -58,12 +63,23 @@ func (e TeamMembershipEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// KnowledgeRelationshipOrErr returns the KnowledgeRelationship value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TeamMembershipEdges) KnowledgeRelationshipOrErr() (*KnowledgeRelationship, error) {
+	if e.KnowledgeRelationship != nil {
+		return e.KnowledgeRelationship, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: knowledgerelationship.Label}
+	}
+	return nil, &NotLoadedError{edge: "knowledge_relationship"}
+}
+
 // TeamOrErr returns the Team value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e TeamMembershipEdges) TeamOrErr() (*Team, error) {
 	if e.Team != nil {
 		return e.Team, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: team.Label}
 	}
 	return nil, &NotLoadedError{edge: "team"}
@@ -74,7 +90,7 @@ func (e TeamMembershipEdges) TeamOrErr() (*Team, error) {
 func (e TeamMembershipEdges) UserOrErr() (*User, error) {
 	if e.User != nil {
 		return e.User, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "user"}
@@ -85,6 +101,8 @@ func (*TeamMembership) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case teammembership.FieldKnowledgeRelationshipID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case teammembership.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case teammembership.FieldRole:
@@ -117,6 +135,13 @@ func (_m *TeamMembership) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
+			}
+		case teammembership.FieldKnowledgeRelationshipID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field knowledge_relationship_id", values[i])
+			} else if value.Valid {
+				_m.KnowledgeRelationshipID = new(uuid.UUID)
+				*_m.KnowledgeRelationshipID = *value.S.(*uuid.UUID)
 			}
 		case teammembership.FieldTeamID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -154,6 +179,11 @@ func (_m *TeamMembership) QueryTenant() *TenantQuery {
 	return NewTeamMembershipClient(_m.config).QueryTenant(_m)
 }
 
+// QueryKnowledgeRelationship queries the "knowledge_relationship" edge of the TeamMembership entity.
+func (_m *TeamMembership) QueryKnowledgeRelationship() *KnowledgeRelationshipQuery {
+	return NewTeamMembershipClient(_m.config).QueryKnowledgeRelationship(_m)
+}
+
 // QueryTeam queries the "team" edge of the TeamMembership entity.
 func (_m *TeamMembership) QueryTeam() *TeamQuery {
 	return NewTeamMembershipClient(_m.config).QueryTeam(_m)
@@ -189,6 +219,11 @@ func (_m *TeamMembership) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
+	builder.WriteString(", ")
+	if v := _m.KnowledgeRelationshipID; v != nil {
+		builder.WriteString("knowledge_relationship_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("team_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TeamID))

@@ -26,15 +26,13 @@ func (s *systemAnalysisHandler) nodeFromEnt(ctx context.Context, node *ent.Syste
 	if entityErr != nil {
 		return oapi.SystemAnalysisNode{}, entityErr
 	}
-	return oapi.SystemAnalysisNode{
-		Id: node.ID,
-		Attributes: oapi.SystemAnalysisNodeAttributes{
-			KnowledgeEntity: oapi.KnowledgeGraphEntityFromEnt(entity),
-			ReferencedAt:    node.ReferencedAt,
-			Position:        oapi.SystemAnalysisDiagramPosition{X: node.PosX, Y: node.PosY},
-			Description:     node.Description,
-		},
-	}, nil
+	attrs := oapi.SystemAnalysisNodeAttributes{
+		KnowledgeEntity: oapi.KnowledgeGraphEntityFromEnt(entity),
+		ReferencedAt:    node.ReferencedAt,
+		Position:        oapi.SystemAnalysisDiagramPosition{X: node.PosX, Y: node.PosY},
+		Description:     node.Description,
+	}
+	return oapi.SystemAnalysisNode{Id: node.ID, Attributes: attrs}, nil
 }
 
 func (s *systemAnalysisHandler) edgeFromEnt(ctx context.Context, edge *ent.SystemAnalysisTopologyEdge) (oapi.SystemAnalysisEdge, error) {

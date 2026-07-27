@@ -919,8 +919,8 @@ func (_c *MockKnowledgeGraphService_GetRelationshipAt_Call) RunAndReturn(run fun
 }
 
 // GetView provides a mock function for the type MockKnowledgeGraphService
-func (_mock *MockKnowledgeGraphService) GetView(context1 context.Context, uUID uuid.UUID, getKnowledgeGraphViewParams rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error) {
-	ret := _mock.Called(context1, uUID, getKnowledgeGraphViewParams)
+func (_mock *MockKnowledgeGraphService) GetView(context1 context.Context, getKnowledgeGraphViewParams rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error) {
+	ret := _mock.Called(context1, getKnowledgeGraphViewParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetView")
@@ -928,18 +928,18 @@ func (_mock *MockKnowledgeGraphService) GetView(context1 context.Context, uUID u
 
 	var r0 *rez.KnowledgeGraphView
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error)); ok {
-		return returnFunc(context1, uUID, getKnowledgeGraphViewParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error)); ok {
+		return returnFunc(context1, getKnowledgeGraphViewParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, rez.GetKnowledgeGraphViewParams) *rez.KnowledgeGraphView); ok {
-		r0 = returnFunc(context1, uUID, getKnowledgeGraphViewParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.GetKnowledgeGraphViewParams) *rez.KnowledgeGraphView); ok {
+		r0 = returnFunc(context1, getKnowledgeGraphViewParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*rez.KnowledgeGraphView)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, rez.GetKnowledgeGraphViewParams) error); ok {
-		r1 = returnFunc(context1, uUID, getKnowledgeGraphViewParams)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.GetKnowledgeGraphViewParams) error); ok {
+		r1 = returnFunc(context1, getKnowledgeGraphViewParams)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -953,30 +953,24 @@ type MockKnowledgeGraphService_GetView_Call struct {
 
 // GetView is a helper method to define mock.On call
 //   - context1 context.Context
-//   - uUID uuid.UUID
 //   - getKnowledgeGraphViewParams rez.GetKnowledgeGraphViewParams
-func (_e *MockKnowledgeGraphService_Expecter) GetView(context1 interface{}, uUID interface{}, getKnowledgeGraphViewParams interface{}) *MockKnowledgeGraphService_GetView_Call {
-	return &MockKnowledgeGraphService_GetView_Call{Call: _e.mock.On("GetView", context1, uUID, getKnowledgeGraphViewParams)}
+func (_e *MockKnowledgeGraphService_Expecter) GetView(context1 interface{}, getKnowledgeGraphViewParams interface{}) *MockKnowledgeGraphService_GetView_Call {
+	return &MockKnowledgeGraphService_GetView_Call{Call: _e.mock.On("GetView", context1, getKnowledgeGraphViewParams)}
 }
 
-func (_c *MockKnowledgeGraphService_GetView_Call) Run(run func(context1 context.Context, uUID uuid.UUID, getKnowledgeGraphViewParams rez.GetKnowledgeGraphViewParams)) *MockKnowledgeGraphService_GetView_Call {
+func (_c *MockKnowledgeGraphService_GetView_Call) Run(run func(context1 context.Context, getKnowledgeGraphViewParams rez.GetKnowledgeGraphViewParams)) *MockKnowledgeGraphService_GetView_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 rez.GetKnowledgeGraphViewParams
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		var arg2 rez.GetKnowledgeGraphViewParams
-		if args[2] != nil {
-			arg2 = args[2].(rez.GetKnowledgeGraphViewParams)
+			arg1 = args[1].(rez.GetKnowledgeGraphViewParams)
 		}
 		run(
 			arg0,
 			arg1,
-			arg2,
 		)
 	})
 	return _c
@@ -987,7 +981,7 @@ func (_c *MockKnowledgeGraphService_GetView_Call) Return(knowledgeGraphView *rez
 	return _c
 }
 
-func (_c *MockKnowledgeGraphService_GetView_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, getKnowledgeGraphViewParams rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error)) *MockKnowledgeGraphService_GetView_Call {
+func (_c *MockKnowledgeGraphService_GetView_Call) RunAndReturn(run func(context1 context.Context, getKnowledgeGraphViewParams rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error)) *MockKnowledgeGraphService_GetView_Call {
 	_c.Call.Return(run)
 	return _c
 }

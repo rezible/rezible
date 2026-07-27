@@ -29,7 +29,7 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, even
 		Kind:        projectionEvidenceKind(event.Event),
 		Assertion:   knowledgeAssertionSystemComponentExists,
 		EffectiveAt: event.Event.OccurredAt,
-		SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attributes.DisplayName,
 			Description: attributes.Description,
 			Properties:  properties,
@@ -47,6 +47,39 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, even
 }
 
 func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, event *projections.SystemRelationshipEvent) ([]rez.ProjectedEntityRef, error) {
-	// TODO
+	attributes := event.Attributes
+	evidence := ent.KnowledgeEvidenceRef{
+		Kind:        projectionEvidenceKind(event.Event),
+		Assertion:   knowledgeAssertionSystemRelationshipExists,
+		EffectiveAt: event.Event.OccurredAt,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
+			DisplayName: attributes.DisplayName,
+			Description: attributes.Description,
+			Properties:  attributes.Properties,
+		},
+		SubjectRelationship: &ent.KnowledgeRelationshipRef{
+			Kind:  attributes.Kind,
+			Alias: event.Event.KnowledgeAliasRef(),
+			Source: ent.KnowledgeEntityRef{
+				Kind: knowledgeEntityKindSystemComponent,
+				Alias: ent.KnowledgeAliasRef{
+					Provider:           event.Event.Provider,
+					ProviderSource:     event.Event.ProviderSource,
+					ProviderSubjectRef: attributes.SourceExternalRef,
+				},
+			},
+			Target: ent.KnowledgeEntityRef{
+				Kind: knowledgeEntityKindSystemComponent,
+				Alias: ent.KnowledgeAliasRef{
+					Provider:           event.Event.Provider,
+					ProviderSource:     event.Event.ProviderSource,
+					ProviderSubjectRef: attributes.TargetExternalRef,
+				},
+			},
+		},
+	}
+	if _, ingestErr := s.knowledge.IngestEvidenceBulk(ctx, event.Event, evidence); ingestErr != nil {
+		return nil, fmt.Errorf("ingest system relationship evidence: %w", ingestErr)
+	}
 	return nil, nil
 }

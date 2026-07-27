@@ -199,7 +199,7 @@ func (KnowledgeEvidence) Fields() []ent.Field {
 		field.Time("effective_at").Immutable().
 			Comment("Domain effective time (may differ from the event occurred_at)"),
 
-		field.JSON("subject_state", schematypes.KnowledgeEvidenceSubjectState{}).
+		field.JSON("subject_state", schematypes.KnowledgeGraphSubjectState{}).
 			SchemaType(schemaTypeJsonB).
 			Immutable(),
 	}

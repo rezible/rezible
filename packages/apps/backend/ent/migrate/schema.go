@@ -2706,11 +2706,13 @@ var (
 	// TeamsColumns holds the columns for the "teams" table.
 	TeamsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
 		{Name: "slug", Type: field.TypeString, Unique: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// TeamsTable holds the schema information for the "teams" table.
 	TeamsTable = &schema.Table{
@@ -2720,16 +2722,27 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "teams_tenants_tenant",
-				Columns:    []*schema.Column{TeamsColumns[5]},
+				Columns:    []*schema.Column{TeamsColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "teams_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{TeamsColumns[7]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "team_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{TeamsColumns[5]},
+				Columns: []*schema.Column{TeamsColumns[6]},
+			},
+			{
+				Name:    "team_tenant_id_knowledge_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{TeamsColumns[6], TeamsColumns[7]},
 			},
 		},
 	}
@@ -2738,6 +2751,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "member"}, Default: "member"},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "knowledge_relationship_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "team_id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
@@ -2754,14 +2768,20 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "team_memberships_teams_team",
+				Symbol:     "team_memberships_knowledge_relationships_knowledge_relationship",
 				Columns:    []*schema.Column{TeamMembershipsColumns[3]},
+				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "team_memberships_teams_team",
+				Columns:    []*schema.Column{TeamMembershipsColumns[4]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "team_memberships_users_user",
-				Columns:    []*schema.Column{TeamMembershipsColumns[4]},
+				Columns:    []*schema.Column{TeamMembershipsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -2773,9 +2793,14 @@ var (
 				Columns: []*schema.Column{TeamMembershipsColumns[2]},
 			},
 			{
+				Name:    "teammembership_tenant_id_knowledge_relationship_id",
+				Unique:  true,
+				Columns: []*schema.Column{TeamMembershipsColumns[2], TeamMembershipsColumns[3]},
+			},
+			{
 				Name:    "teammembership_team_id_user_id",
 				Unique:  true,
-				Columns: []*schema.Column{TeamMembershipsColumns[3], TeamMembershipsColumns[4]},
+				Columns: []*schema.Column{TeamMembershipsColumns[4], TeamMembershipsColumns[5]},
 			},
 		},
 	}
@@ -3560,9 +3585,11 @@ func init() {
 	TasksTable.ForeignKeys[2].RefTable = UsersTable
 	TasksTable.ForeignKeys[3].RefTable = UsersTable
 	TeamsTable.ForeignKeys[0].RefTable = TenantsTable
+	TeamsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	TeamMembershipsTable.ForeignKeys[0].RefTable = TenantsTable
-	TeamMembershipsTable.ForeignKeys[1].RefTable = TeamsTable
-	TeamMembershipsTable.ForeignKeys[2].RefTable = UsersTable
+	TeamMembershipsTable.ForeignKeys[1].RefTable = KnowledgeRelationshipsTable
+	TeamMembershipsTable.ForeignKeys[2].RefTable = TeamsTable
+	TeamMembershipsTable.ForeignKeys[3].RefTable = UsersTable
 	TicketsTable.ForeignKeys[0].RefTable = TenantsTable
 	UsersTable.ForeignKeys[0].RefTable = TenantsTable
 	UsersTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable

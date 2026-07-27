@@ -127,16 +127,17 @@ type (
 	}
 
 	GetKnowledgeGraphViewParams struct {
+		EntityID          uuid.UUID
+		RelationshipID    uuid.UUID
 		Depth             int
 		RelationshipKinds []string
 	}
 
 	KnowledgeGraphView struct {
+		RootID        uuid.UUID
 		Entities      ent.KnowledgeEntities
 		Relationships ent.KnowledgeRelationships
-		Evidence      ent.KnowledgeEvidences
 		Truncated     bool
-		Warnings      []string
 	}
 
 	KnowledgeGraphService interface {
@@ -146,7 +147,7 @@ type (
 		ListRelationships(context.Context, ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
 		GetRelationship(context.Context, uuid.UUID) (*ent.KnowledgeRelationship, error)
 
-		GetView(context.Context, uuid.UUID, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
+		GetView(context.Context, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
 		GetEntityAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeEntity, error)
 		GetRelationshipAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeRelationship, error)
 

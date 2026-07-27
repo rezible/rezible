@@ -52,7 +52,9 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 		modelOpt = ai.WithModelName(d.Model)
 	}
 
-	var middleware []ai.Middleware
+	middleware := []ai.Middleware{
+		&toolCallDisplayLabelMiddleware{},
+	}
 
 	if d.EnableKnowledgeGraph {
 		middleware = append(middleware, newKnowledgeGraphMiddleware(svc.knowledge, runner))

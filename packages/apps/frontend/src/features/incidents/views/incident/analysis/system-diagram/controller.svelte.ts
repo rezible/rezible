@@ -30,7 +30,7 @@ export type SystemRelationshipEdgeData = {
 const translateSystemAnalysis = (an: SystemAnalysis) => {
 	let nodes: Node[] = [];
 	const nodeIdsByEntityId = new SvelteMap<string, string>();
-	an.attributes.nodes.forEach(analysisNode => {
+	an.attributes.nodes.forEach((analysisNode) => {
 		const { position, knowledgeEntity } = analysisNode.attributes;
 		nodeIdsByEntityId.set(knowledgeEntity.id, analysisNode.id);
 		nodes.push({
@@ -42,11 +42,11 @@ const translateSystemAnalysis = (an: SystemAnalysis) => {
 	});
 
 	let edges: Edge[] = [];
-	an.attributes.edges.forEach(sr => {
+	an.attributes.edges.forEach((sr) => {
 		const { id, attributes } = sr;
 		const relattr = attributes.knowledgeRelationship.attributes;
-		const source = nodeIdsByEntityId.get(relattr.source.id);
-		const target = nodeIdsByEntityId.get(relattr.target.id);
+		const source = nodeIdsByEntityId.get(relattr.sourceEntityId);
+		const target = nodeIdsByEntityId.get(relattr.targetEntityId);
 		if (!source || !target) return;
 		edges.push({
 			id,
@@ -72,8 +72,15 @@ export class SystemDiagramState {
 	addingEntityGhost = $state.raw<KnowledgeGraphEntity>();
 
 	constructor(containerElFn: () => HTMLElement) {
-		watch(containerElFn, ref => { this.containerEl = ref });
-		watch(() => this.analysis.analysisData, data => { this.onAnalysisDataUpdate(data) });
+		watch(containerElFn, (ref) => {
+			this.containerEl = ref;
+		});
+		watch(
+			() => this.analysis.analysisData,
+			(data) => {
+				this.onAnalysisDataUpdate(data);
+			}
+		);
 	}
 
 	nodes = $state.raw<Node[]>([]);
@@ -93,13 +100,13 @@ export class SystemDiagramState {
 		const flow = useSvelteFlow();
 		this.getNodesBounds = flow.getNodesBounds;
 		this.flowStore = useSvelteFlowStore();
-	};
+	}
 
 	interactionLocked() {
 		return this.flowStore && !this.flowStore.elementsSelectable;
 	}
 
-	updateSelectedPosition({ node, edge }: { node?: Node, edge?: Edge }) {
+	updateSelectedPosition({ node, edge }: { node?: Node; edge?: Edge }) {
 		if (edge) {
 			this.selectedLivePosition = this.getNodesBounds?.([edge.source, edge.target]);
 		} else if (node) {
@@ -113,23 +120,23 @@ export class SystemDiagramState {
 		this.analysis.contextMenu = {};
 		this.selected = state;
 		this.updateSelectedPosition(state);
-	};
+	}
 
-	handleNodeClicked(e: { node: Node, event: MouseEvent | TouchEvent }) {
+	handleNodeClicked(e: { node: Node; event: MouseEvent | TouchEvent }) {
 		if (this.interactionLocked()) return;
 		this.setSelected({ node: e.node });
-	};
+	}
 
 	handleNodeDragStart(e: { targetNode?: Node | null }) {
 		const node = !!e.targetNode ? e.targetNode : undefined;
 		this.setSelected({ node });
-	};
+	}
 
 	handleNodeDrag(e: { targetNode?: Node | null }) {
 		if (this.selected.node?.id === e.targetNode?.id && e.targetNode) {
 			this.updateSelectedPosition({ node: e.targetNode });
 		}
-	};
+	}
 
 	handleNodeDragStop(e: { targetNode?: Node | null }) {
 		if (!e.targetNode) return;
@@ -139,11 +146,11 @@ export class SystemDiagramState {
 		this.analysis.updateNode(analysisNode.id, {
 			position: e.targetNode.position,
 		});
-	};
+	}
 
 	setAddingEntityGhost(e?: KnowledgeGraphEntity) {
 		this.addingEntityGhost = e;
-	};
+	}
 
 	handlePaneClicked({ event }: { event: MouseEvent }) {
 		this.setSelected({});
@@ -157,18 +164,18 @@ export class SystemDiagramState {
 
 			const position = { x: event.pageX - x, y: event.pageY - y };
 			const knowledgeEntityId = this.addingEntityGhost.id;
-			this.analysis.addNode({knowledgeEntityId, position, description: ""});
+			this.analysis.addNode({ knowledgeEntityId, position, description: "" });
 			// TODO: check if success? show pending state?
 			this.setAddingEntityGhost();
 		}
-	};
+	}
 
 	handleEdgeClicked({ edge }: { edge: Edge }) {
 		if (this.interactionLocked()) return;
 		this.setSelected({ edge });
-	};
+	}
 
-	handleContextMenuEvent(e: { event: MouseEvent, node?: Node, edge?: Edge, nodes?: Node[] }) {
+	handleContextMenuEvent(e: { event: MouseEvent; node?: Node; edge?: Edge; nodes?: Node[] }) {
 		if (this.interactionLocked()) return;
 		if (!this.containerEl) return;
 
@@ -184,9 +191,9 @@ export class SystemDiagramState {
 				edgeId: e.edge?.id,
 				clickPos: { x: e.event.pageX, y: e.event.pageY },
 				containerRect,
-			}
-		}
-	};
+			},
+		};
+	}
 
 	closeContextMenu() {
 		this.analysis.contextMenu = {};
@@ -194,9 +201,9 @@ export class SystemDiagramState {
 
 	onEdgeConnect({ source, target }: Connection) {
 		// undo auto-created edge, need to confirm via dialog
-		this.edges = this.edges.filter(e => (!(e.source === source && e.target === target)));
+		this.edges = this.edges.filter((e) => !(e.source === source && e.target === target));
 	}
-};
+}
 
 const diagramCtx = new Context<SystemDiagramState>("systemDiagramState");
 export const setSystemDiagram = (s: SystemDiagramState) => diagramCtx.set(s);

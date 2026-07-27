@@ -1299,11 +1299,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Team",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			team.FieldTenantID:      {Type: field.TypeInt, Column: team.FieldTenantID},
-			team.FieldSlug:          {Type: field.TypeString, Column: team.FieldSlug},
-			team.FieldName:          {Type: field.TypeString, Column: team.FieldName},
-			team.FieldChatChannelID: {Type: field.TypeString, Column: team.FieldChatChannelID},
-			team.FieldTimezone:      {Type: field.TypeString, Column: team.FieldTimezone},
+			team.FieldTenantID:          {Type: field.TypeInt, Column: team.FieldTenantID},
+			team.FieldArchiveTime:       {Type: field.TypeTime, Column: team.FieldArchiveTime},
+			team.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: team.FieldKnowledgeEntityID},
+			team.FieldSlug:              {Type: field.TypeString, Column: team.FieldSlug},
+			team.FieldName:              {Type: field.TypeString, Column: team.FieldName},
+			team.FieldChatChannelID:     {Type: field.TypeString, Column: team.FieldChatChannelID},
+			team.FieldTimezone:          {Type: field.TypeString, Column: team.FieldTimezone},
 		},
 	}
 	graph.Nodes[64] = &sqlgraph.Node{
@@ -1317,10 +1319,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "TeamMembership",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			teammembership.FieldTenantID: {Type: field.TypeInt, Column: teammembership.FieldTenantID},
-			teammembership.FieldTeamID:   {Type: field.TypeUUID, Column: teammembership.FieldTeamID},
-			teammembership.FieldUserID:   {Type: field.TypeUUID, Column: teammembership.FieldUserID},
-			teammembership.FieldRole:     {Type: field.TypeEnum, Column: teammembership.FieldRole},
+			teammembership.FieldTenantID:                {Type: field.TypeInt, Column: teammembership.FieldTenantID},
+			teammembership.FieldKnowledgeRelationshipID: {Type: field.TypeUUID, Column: teammembership.FieldKnowledgeRelationshipID},
+			teammembership.FieldTeamID:                  {Type: field.TypeUUID, Column: teammembership.FieldTeamID},
+			teammembership.FieldUserID:                  {Type: field.TypeUUID, Column: teammembership.FieldUserID},
+			teammembership.FieldRole:                    {Type: field.TypeEnum, Column: teammembership.FieldRole},
 		},
 	}
 	graph.Nodes[65] = &sqlgraph.Node{
@@ -4104,6 +4107,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Tenant",
 	)
 	graph.MustAddE(
+		"knowledge_entity",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   team.KnowledgeEntityTable,
+			Columns: []string{team.KnowledgeEntityColumn},
+			Bidi:    false,
+		},
+		"Team",
+		"KnowledgeEntity",
+	)
+	graph.MustAddE(
 		"users",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -4174,6 +4189,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"TeamMembership",
 		"Tenant",
+	)
+	graph.MustAddE(
+		"knowledge_relationship",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   teammembership.KnowledgeRelationshipTable,
+			Columns: []string{teammembership.KnowledgeRelationshipColumn},
+			Bidi:    false,
+		},
+		"TeamMembership",
+		"KnowledgeRelationship",
 	)
 	graph.MustAddE(
 		"team",
@@ -12156,6 +12183,16 @@ func (f *TeamFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(team.FieldTenantID))
 }
 
+// WhereArchiveTime applies the entql time.Time predicate on the archive_time field.
+func (f *TeamFilter) WhereArchiveTime(p entql.TimeP) {
+	f.Where(p.Field(team.FieldArchiveTime))
+}
+
+// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
+func (f *TeamFilter) WhereKnowledgeEntityID(p entql.ValueP) {
+	f.Where(p.Field(team.FieldKnowledgeEntityID))
+}
+
 // WhereSlug applies the entql string predicate on the slug field.
 func (f *TeamFilter) WhereSlug(p entql.StringP) {
 	f.Where(p.Field(team.FieldSlug))
@@ -12184,6 +12221,20 @@ func (f *TeamFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *TeamFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
+func (f *TeamFilter) WhereHasKnowledgeEntity() {
+	f.Where(entql.HasEdge("knowledge_entity"))
+}
+
+// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
+func (f *TeamFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -12305,6 +12356,11 @@ func (f *TeamMembershipFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(teammembership.FieldTenantID))
 }
 
+// WhereKnowledgeRelationshipID applies the entql [16]byte predicate on the knowledge_relationship_id field.
+func (f *TeamMembershipFilter) WhereKnowledgeRelationshipID(p entql.ValueP) {
+	f.Where(p.Field(teammembership.FieldKnowledgeRelationshipID))
+}
+
 // WhereTeamID applies the entql [16]byte predicate on the team_id field.
 func (f *TeamMembershipFilter) WhereTeamID(p entql.ValueP) {
 	f.Where(p.Field(teammembership.FieldTeamID))
@@ -12328,6 +12384,20 @@ func (f *TeamMembershipFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *TeamMembershipFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasKnowledgeRelationship applies a predicate to check if query has an edge knowledge_relationship.
+func (f *TeamMembershipFilter) WhereHasKnowledgeRelationship() {
+	f.Where(entql.HasEdge("knowledge_relationship"))
+}
+
+// WhereHasKnowledgeRelationshipWith applies a predicate to check if query has an edge knowledge_relationship with a given conditions (other predicates).
+func (f *TeamMembershipFilter) WhereHasKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) {
+	f.Where(entql.HasEdgeWith("knowledge_relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

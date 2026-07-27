@@ -2136,24 +2136,6 @@ export const listKnowledgeGraphEntitiesInfiniteOptions = (options?: Options<List
     return opts as Omit<typeof opts, 'initialData'>;
 };
 
-export const getKnowledgeGraphViewQueryKey = (options: Options<GetKnowledgeGraphViewData>) => createQueryKey('getKnowledgeGraphView', options);
-
-/**
- * Get Knowledge Graph View
- */
-export const getKnowledgeGraphViewOptions = (options: Options<GetKnowledgeGraphViewData>) => queryOptions<GetKnowledgeGraphViewResponse, GetKnowledgeGraphViewError, GetKnowledgeGraphViewResponse, ReturnType<typeof getKnowledgeGraphViewQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getKnowledgeGraphView({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getKnowledgeGraphViewQueryKey(options)
-});
-
 export const getKnowledgeGraphEntityQueryKey = (options: Options<GetKnowledgeGraphEntityData>) => createQueryKey('getKnowledgeGraphEntity', options);
 
 /**
@@ -2219,6 +2201,24 @@ export const listKnowledgeGraphRelationshipsInfiniteOptions = (options?: Options
     });
     return opts as Omit<typeof opts, 'initialData'>;
 };
+
+export const getKnowledgeGraphViewQueryKey = (options?: Options<GetKnowledgeGraphViewData>) => createQueryKey('getKnowledgeGraphView', options);
+
+/**
+ * Get Knowledge Graph View
+ */
+export const getKnowledgeGraphViewOptions = (options?: Options<GetKnowledgeGraphViewData>) => queryOptions<GetKnowledgeGraphViewResponse, GetKnowledgeGraphViewError, GetKnowledgeGraphViewResponse, ReturnType<typeof getKnowledgeGraphViewQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getKnowledgeGraphView({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getKnowledgeGraphViewQueryKey(options)
+});
 
 export const listMeetingSchedulesQueryKey = (options?: Options<ListMeetingSchedulesData>) => createQueryKey('listMeetingSchedules', options);
 

@@ -28,7 +28,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 		Kind:        projectionEvidenceKind(event.Event),
 		Assertion:   knowledgeAssertionAlertDefinitionObserved,
 		EffectiveAt: event.Event.OccurredAt,
-		SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attributes.Title,
 			Description: attributes.Description,
 			Properties: map[string]any{

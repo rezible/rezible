@@ -12,6 +12,21 @@ import (
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
+type toolCallDisplayLabelMiddleware struct{}
+
+func (m *toolCallDisplayLabelMiddleware) Name() string {
+	return "toolcall_display_label"
+}
+
+func (m *toolCallDisplayLabelMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
+	return &ai.Hooks{
+		WrapTool: func(ctx context.Context, params *ai.ToolParams, next ai.ToolNext) (*ai.MultipartToolResponse, error) {
+			// TODO: wrap tool call with user-facing display text
+			return next(ctx, params)
+		},
+	}, nil
+}
+
 type knowledgeGraphMiddleware[I rezai.AgentInput, S rezai.SessionState] struct {
 	runner    agentRunner[I, S]
 	knowledge rez.KnowledgeGraphService
@@ -56,7 +71,8 @@ func (m *knowledgeGraphMiddleware[I, S]) query(ctx context.Context, input rezai.
 	if parseErr != nil {
 		return rezai.QueryKnowledgeGraphOutput{}, fmt.Errorf("invalid knowledge graph entity ID %q: %w", input.EntityID, parseErr)
 	}
-	view, viewErr := m.knowledge.GetView(ctx, entityID, rez.GetKnowledgeGraphViewParams{Depth: input.Depth})
+	viewParams := rez.GetKnowledgeGraphViewParams{EntityID: entityID, Depth: input.Depth}
+	view, viewErr := m.knowledge.GetView(ctx, viewParams)
 	if viewErr != nil {
 		return rezai.QueryKnowledgeGraphOutput{}, fmt.Errorf("get knowledge graph view: %w", viewErr)
 	}
@@ -64,56 +80,35 @@ func (m *knowledgeGraphMiddleware[I, S]) query(ctx context.Context, input rezai.
 	output := rezai.QueryKnowledgeGraphOutput{
 		RootEntityID:  entityID.String(),
 		Truncated:     view.Truncated,
-		Warnings:      view.Warnings,
 		Entities:      make([]rezai.KnowledgeGraphToolEntity, 0, len(view.Entities)),
 		Relationships: make([]rezai.KnowledgeGraphToolRelationship, 0, len(view.Relationships)),
-		Evidence:      make([]rezai.KnowledgeGraphToolEvidence, len(view.Evidence)),
+		Evidence:      []rezai.KnowledgeGraphToolEvidence{},
 	}
 
-	/*
-		for _, entity := range view.Entities {
-			output.Entities = append(output.Entities, rezai.KnowledgeGraphToolEntity{
-				ID:          entity.ID.String(),
-				Kind:        entity.Kind,
-				DisplayName: entity.DisplayName,
-				Description: entity.Description,
-				Properties:  entity.LiveProperties,
-			})
+	for _, entity := range view.Entities {
+		outputEntity := rezai.KnowledgeGraphToolEntity{
+			ID:   entity.ID.String(),
+			Kind: entity.Kind,
 		}
-		for _, relationship := range view.Relationships {
-			output.Relationships = append(output.Relationships, rezai.KnowledgeGraphToolRelationship{
-				ID:          relationship.ID.String(),
-				Kind:        relationship.Kind,
-				SourceID:    relationship.SourceEntityID.String(),
-				TargetID:    relationship.TargetEntityID.String(),
-				Description: relationship.Description,
-				Properties:  relationship.Properties,
-			})
+		if currEv := entity.LatestEvidence(); currEv != nil {
+			outputEntity.DisplayName = currEv.SubjectState.DisplayName
+			outputEntity.Description = currEv.SubjectState.Description
+			outputEntity.Properties = currEv.SubjectState.Properties
 		}
-
-		for i, evidence := range view.Evidence {
-			item := rezai.KnowledgeGraphToolEvidence{
-				ID:           evidence.ID.String(),
-				EventID:      evidence.EventID.String(),
-				Assertion:    evidence.Assertion,
-				EvidenceKind: evidence.EvidenceKind.String(),
-				EffectiveAt:  evidence.EffectiveAt,
-				Properties:   evidence.Properties,
-			}
-			if event, edgeErr := evidence.Edges.EventOrErr(); edgeErr == nil {
-				item.Provider = event.Provider
-				item.ProviderSource = event.ProviderSource
-			}
-			if alias, edgeErr := evidence.Edges.AliasOrErr(); edgeErr == nil {
-				if alias.EntityID != uuid.Nil {
-					item.EntityID = alias.EntityID.String()
-				}
-				if alias.RelationshipID != uuid.Nil {
-					item.RelationshipID = alias.RelationshipID.String()
-				}
-			}
-			output.Evidence[i] = item
+		output.Entities = append(output.Entities, outputEntity)
+	}
+	for _, relationship := range view.Relationships {
+		outputRelationship := rezai.KnowledgeGraphToolRelationship{
+			ID:       relationship.ID.String(),
+			Kind:     relationship.Kind,
+			SourceID: relationship.SourceEntityID.String(),
+			TargetID: relationship.TargetEntityID.String(),
 		}
-	*/
+		if currEv := relationship.LatestEvidence(); currEv != nil {
+			outputRelationship.Description = currEv.SubjectState.Description
+			outputRelationship.Properties = currEv.SubjectState.Properties
+		}
+		output.Relationships = append(output.Relationships, outputRelationship)
+	}
 	return output, nil
 }

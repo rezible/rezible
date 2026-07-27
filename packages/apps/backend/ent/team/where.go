@@ -3,6 +3,8 @@
 package team
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -60,6 +62,16 @@ func TenantID(v int) predicate.Team {
 	return predicate.Team(sql.FieldEQ(FieldTenantID, v))
 }
 
+// ArchiveTime applies equality check predicate on the "archive_time" field. It's identical to ArchiveTimeEQ.
+func ArchiveTime(v time.Time) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldArchiveTime, v))
+}
+
+// KnowledgeEntityID applies equality check predicate on the "knowledge_entity_id" field. It's identical to KnowledgeEntityIDEQ.
+func KnowledgeEntityID(v uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldKnowledgeEntityID, v))
+}
+
 // Slug applies equality check predicate on the "slug" field. It's identical to SlugEQ.
 func Slug(v string) predicate.Team {
 	return predicate.Team(sql.FieldEQ(FieldSlug, v))
@@ -98,6 +110,86 @@ func TenantIDIn(vs ...int) predicate.Team {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Team {
 	return predicate.Team(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// ArchiveTimeEQ applies the EQ predicate on the "archive_time" field.
+func ArchiveTimeEQ(v time.Time) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldArchiveTime, v))
+}
+
+// ArchiveTimeNEQ applies the NEQ predicate on the "archive_time" field.
+func ArchiveTimeNEQ(v time.Time) predicate.Team {
+	return predicate.Team(sql.FieldNEQ(FieldArchiveTime, v))
+}
+
+// ArchiveTimeIn applies the In predicate on the "archive_time" field.
+func ArchiveTimeIn(vs ...time.Time) predicate.Team {
+	return predicate.Team(sql.FieldIn(FieldArchiveTime, vs...))
+}
+
+// ArchiveTimeNotIn applies the NotIn predicate on the "archive_time" field.
+func ArchiveTimeNotIn(vs ...time.Time) predicate.Team {
+	return predicate.Team(sql.FieldNotIn(FieldArchiveTime, vs...))
+}
+
+// ArchiveTimeGT applies the GT predicate on the "archive_time" field.
+func ArchiveTimeGT(v time.Time) predicate.Team {
+	return predicate.Team(sql.FieldGT(FieldArchiveTime, v))
+}
+
+// ArchiveTimeGTE applies the GTE predicate on the "archive_time" field.
+func ArchiveTimeGTE(v time.Time) predicate.Team {
+	return predicate.Team(sql.FieldGTE(FieldArchiveTime, v))
+}
+
+// ArchiveTimeLT applies the LT predicate on the "archive_time" field.
+func ArchiveTimeLT(v time.Time) predicate.Team {
+	return predicate.Team(sql.FieldLT(FieldArchiveTime, v))
+}
+
+// ArchiveTimeLTE applies the LTE predicate on the "archive_time" field.
+func ArchiveTimeLTE(v time.Time) predicate.Team {
+	return predicate.Team(sql.FieldLTE(FieldArchiveTime, v))
+}
+
+// ArchiveTimeIsNil applies the IsNil predicate on the "archive_time" field.
+func ArchiveTimeIsNil() predicate.Team {
+	return predicate.Team(sql.FieldIsNull(FieldArchiveTime))
+}
+
+// ArchiveTimeNotNil applies the NotNil predicate on the "archive_time" field.
+func ArchiveTimeNotNil() predicate.Team {
+	return predicate.Team(sql.FieldNotNull(FieldArchiveTime))
+}
+
+// KnowledgeEntityIDEQ applies the EQ predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDEQ(v uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldKnowledgeEntityID, v))
+}
+
+// KnowledgeEntityIDNEQ applies the NEQ predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDNEQ(v uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldNEQ(FieldKnowledgeEntityID, v))
+}
+
+// KnowledgeEntityIDIn applies the In predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDIn(vs ...uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldIn(FieldKnowledgeEntityID, vs...))
+}
+
+// KnowledgeEntityIDNotIn applies the NotIn predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDNotIn(vs ...uuid.UUID) predicate.Team {
+	return predicate.Team(sql.FieldNotIn(FieldKnowledgeEntityID, vs...))
+}
+
+// KnowledgeEntityIDIsNil applies the IsNil predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDIsNil() predicate.Team {
+	return predicate.Team(sql.FieldIsNull(FieldKnowledgeEntityID))
+}
+
+// KnowledgeEntityIDNotNil applies the NotNil predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDNotNil() predicate.Team {
+	return predicate.Team(sql.FieldNotNull(FieldKnowledgeEntityID))
 }
 
 // SlugEQ applies the EQ predicate on the "slug" field.
@@ -400,6 +492,35 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.Team {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Team
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasKnowledgeEntity applies the HasEdge predicate on the "knowledge_entity" edge.
+func HasKnowledgeEntity() predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.Team
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasKnowledgeEntityWith applies the HasEdge predicate on the "knowledge_entity" edge with a given conditions (other predicates).
+func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := newKnowledgeEntityStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.Team
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

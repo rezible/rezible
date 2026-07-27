@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
@@ -29,6 +30,20 @@ type TeamMembershipCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (_c *TeamMembershipCreate) SetTenantID(v int) *TeamMembershipCreate {
 	_c.mutation.SetTenantID(v)
+	return _c
+}
+
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (_c *TeamMembershipCreate) SetKnowledgeRelationshipID(v uuid.UUID) *TeamMembershipCreate {
+	_c.mutation.SetKnowledgeRelationshipID(v)
+	return _c
+}
+
+// SetNillableKnowledgeRelationshipID sets the "knowledge_relationship_id" field if the given value is not nil.
+func (_c *TeamMembershipCreate) SetNillableKnowledgeRelationshipID(v *uuid.UUID) *TeamMembershipCreate {
+	if v != nil {
+		_c.SetKnowledgeRelationshipID(*v)
+	}
 	return _c
 }
 
@@ -75,6 +90,11 @@ func (_c *TeamMembershipCreate) SetNillableID(v *uuid.UUID) *TeamMembershipCreat
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *TeamMembershipCreate) SetTenant(v *Tenant) *TeamMembershipCreate {
 	return _c.SetTenantID(v.ID)
+}
+
+// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (_c *TeamMembershipCreate) SetKnowledgeRelationship(v *KnowledgeRelationship) *TeamMembershipCreate {
+	return _c.SetKnowledgeRelationshipID(v.ID)
 }
 
 // SetTeam sets the "team" edge to the Team entity.
@@ -225,6 +245,24 @@ func (_c *TeamMembershipCreate) createSpec() (*TeamMembership, *sqlgraph.CreateS
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   teammembership.KnowledgeRelationshipTable,
+			Columns: []string{teammembership.KnowledgeRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.TeamMembership
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.KnowledgeRelationshipID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.TeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -313,6 +351,24 @@ type (
 	}
 )
 
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (u *TeamMembershipUpsert) SetKnowledgeRelationshipID(v uuid.UUID) *TeamMembershipUpsert {
+	u.Set(teammembership.FieldKnowledgeRelationshipID, v)
+	return u
+}
+
+// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
+func (u *TeamMembershipUpsert) UpdateKnowledgeRelationshipID() *TeamMembershipUpsert {
+	u.SetExcluded(teammembership.FieldKnowledgeRelationshipID)
+	return u
+}
+
+// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
+func (u *TeamMembershipUpsert) ClearKnowledgeRelationshipID() *TeamMembershipUpsert {
+	u.SetNull(teammembership.FieldKnowledgeRelationshipID)
+	return u
+}
+
 // SetTeamID sets the "team_id" field.
 func (u *TeamMembershipUpsert) SetTeamID(v uuid.UUID) *TeamMembershipUpsert {
 	u.Set(teammembership.FieldTeamID, v)
@@ -398,6 +454,27 @@ func (u *TeamMembershipUpsertOne) Update(set func(*TeamMembershipUpsert)) *TeamM
 		set(&TeamMembershipUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (u *TeamMembershipUpsertOne) SetKnowledgeRelationshipID(v uuid.UUID) *TeamMembershipUpsertOne {
+	return u.Update(func(s *TeamMembershipUpsert) {
+		s.SetKnowledgeRelationshipID(v)
+	})
+}
+
+// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
+func (u *TeamMembershipUpsertOne) UpdateKnowledgeRelationshipID() *TeamMembershipUpsertOne {
+	return u.Update(func(s *TeamMembershipUpsert) {
+		s.UpdateKnowledgeRelationshipID()
+	})
+}
+
+// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
+func (u *TeamMembershipUpsertOne) ClearKnowledgeRelationshipID() *TeamMembershipUpsertOne {
+	return u.Update(func(s *TeamMembershipUpsert) {
+		s.ClearKnowledgeRelationshipID()
+	})
 }
 
 // SetTeamID sets the "team_id" field.
@@ -658,6 +735,27 @@ func (u *TeamMembershipUpsertBulk) Update(set func(*TeamMembershipUpsert)) *Team
 		set(&TeamMembershipUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (u *TeamMembershipUpsertBulk) SetKnowledgeRelationshipID(v uuid.UUID) *TeamMembershipUpsertBulk {
+	return u.Update(func(s *TeamMembershipUpsert) {
+		s.SetKnowledgeRelationshipID(v)
+	})
+}
+
+// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
+func (u *TeamMembershipUpsertBulk) UpdateKnowledgeRelationshipID() *TeamMembershipUpsertBulk {
+	return u.Update(func(s *TeamMembershipUpsert) {
+		s.UpdateKnowledgeRelationshipID()
+	})
+}
+
+// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
+func (u *TeamMembershipUpsertBulk) ClearKnowledgeRelationshipID() *TeamMembershipUpsertBulk {
+	return u.Update(func(s *TeamMembershipUpsert) {
+		s.ClearKnowledgeRelationshipID()
+	})
 }
 
 // SetTeamID sets the "team_id" field.

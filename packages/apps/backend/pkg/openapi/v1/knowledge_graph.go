@@ -7,6 +7,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -29,25 +30,21 @@ func (o operations) RegisterKnowledgeGraph(api huma.API) {
 }
 
 type (
-	KnowledgeGraphSubjectState struct {
-		DisplayName string         `json:"displayName"`
-		Description string         `json:"description"`
-		Properties  map[string]any `json:"properties"`
-	}
-
 	KnowledgeGraphEvidence struct {
 		Id         uuid.UUID                        `json:"id"`
 		Attributes KnowledgeGraphEvidenceAttributes `json:"attributes"`
 	}
+
 	KnowledgeGraphEvidenceAttributes struct {
-		EventId        uuid.UUID                  `json:"eventId"`
-		EvidenceKind   string                     `json:"evidenceKind"`
-		EffectiveAt    time.Time                  `json:"effectiveAt"`
-		Assertion      string                     `json:"assertion"`
-		SubjectState   KnowledgeGraphSubjectState `json:"subjectState"`
-		SubjectAlias   KnowledgeGraphSubjectAlias `json:"subjectAlias"`
-		EntityId       *uuid.UUID                 `json:"entityId,omitempty"`
-		RelationshipId *uuid.UUID                 `json:"relationshipId,omitempty"`
+		Kind         string                     `json:"kind" enum:"observed,deleted"`
+		EffectiveAt  time.Time                  `json:"effectiveAt"`
+		SubjectState KnowledgeGraphSubjectState `json:"subjectState"`
+	}
+
+	KnowledgeGraphSubjectState struct {
+		DisplayName string         `json:"displayName"`
+		Description string         `json:"description"`
+		Properties  map[string]any `json:"properties"`
 	}
 
 	KnowledgeGraphEntity struct {
@@ -55,11 +52,11 @@ type (
 		Attributes KnowledgeGraphEntityAttributes `json:"attributes"`
 	}
 	KnowledgeGraphEntityAttributes struct {
-		Kind      string                       `json:"kind"`
-		State     KnowledgeGraphSubjectState   `json:"state"`
-		Aliases   []KnowledgeGraphSubjectAlias `json:"aliases"`
-		CreatedAt time.Time                    `json:"createdAt"`
-		UpdatedAt time.Time                    `json:"updatedAt"`
+		Kind           string                       `json:"kind"`
+		LatestEvidence *KnowledgeGraphEvidence      `json:"latestEvidence,omitempty"`
+		Aliases        []KnowledgeGraphSubjectAlias `json:"aliases"`
+		CreatedAt      time.Time                    `json:"createdAt"`
+		UpdatedAt      time.Time                    `json:"updatedAt"`
 	}
 
 	KnowledgeGraphRelationship struct {
@@ -67,13 +64,13 @@ type (
 		Attributes KnowledgeGraphRelationshipAttributes `json:"attributes"`
 	}
 	KnowledgeGraphRelationshipAttributes struct {
-		Kind      string                                     `json:"kind"`
-		Source    Expandable[KnowledgeGraphEntityAttributes] `json:"source"`
-		Target    Expandable[KnowledgeGraphEntityAttributes] `json:"target"`
-		State     KnowledgeGraphSubjectState                 `json:"state"`
-		Aliases   []KnowledgeGraphSubjectAlias               `json:"aliases"`
-		CreatedAt time.Time                                  `json:"createdAt"`
-		UpdatedAt time.Time                                  `json:"updatedAt"`
+		Kind           string                       `json:"kind"`
+		SourceEntityId uuid.UUID                    `json:"sourceEntityId"`
+		TargetEntityId uuid.UUID                    `json:"targetEntityId"`
+		LatestEvidence *KnowledgeGraphEvidence      `json:"latestEvidence,omitempty"`
+		Aliases        []KnowledgeGraphSubjectAlias `json:"aliases"`
+		CreatedAt      time.Time                    `json:"createdAt"`
+		UpdatedAt      time.Time                    `json:"updatedAt"`
 	}
 
 	KnowledgeGraphSubjectAlias struct {
@@ -89,29 +86,50 @@ type (
 	}
 
 	KnowledgeGraphView struct {
+		RootId        uuid.UUID                    `json:"rootId"`
 		Entities      []KnowledgeGraphEntity       `json:"entities"`
 		Relationships []KnowledgeGraphRelationship `json:"relationships"`
-		Evidence      []KnowledgeGraphEvidence     `json:"evidence"`
 		Truncated     bool                         `json:"truncated"`
-		Warnings      []string                     `json:"warnings"`
 	}
 )
 
-func KnowledgeGraphEntityFromEnt(entity *ent.KnowledgeEntity) KnowledgeGraphEntity {
+func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
 	attr := KnowledgeGraphEntityAttributes{
-		Kind:      entity.Kind,
-		State:     KnowledgeGraphSubjectState{},
+		Kind:      e.Kind,
 		Aliases:   nil,
-		CreatedAt: entity.CreatedAt,
-		UpdatedAt: entity.UpdatedAt,
+		CreatedAt: e.CreatedAt,
+		UpdatedAt: e.UpdatedAt,
+	}
+	if latestEv := e.LatestEvidence(); latestEv != nil {
+		attr.LatestEvidence = KnowledgeGraphEvidenceFromEnt(latestEv)
 	}
 
-	attr.Aliases = make([]KnowledgeGraphSubjectAlias, len(entity.Edges.Aliases))
-	for i, alias := range entity.Edges.Aliases {
+	attr.Aliases = make([]KnowledgeGraphSubjectAlias, len(e.Edges.Aliases))
+	for i, alias := range e.Edges.Aliases {
 		attr.Aliases[i] = KnowledgeGraphSubjectAliasFromEnt(alias)
 	}
 
-	return KnowledgeGraphEntity{Id: entity.ID, Attributes: attr}
+	return KnowledgeGraphEntity{Id: e.ID, Attributes: attr}
+}
+
+func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) KnowledgeGraphRelationship {
+	attr := KnowledgeGraphRelationshipAttributes{
+		Kind:           rel.Kind,
+		SourceEntityId: rel.SourceEntityID,
+		TargetEntityId: rel.TargetEntityID,
+		CreatedAt:      rel.CreatedAt,
+		UpdatedAt:      rel.UpdatedAt,
+		Aliases:        nil,
+	}
+	if latestEv := rel.LatestEvidence(); latestEv != nil {
+		attr.LatestEvidence = KnowledgeGraphEvidenceFromEnt(latestEv)
+	}
+
+	attr.Aliases = make([]KnowledgeGraphSubjectAlias, len(rel.Edges.Aliases))
+	for i, alias := range rel.Edges.Aliases {
+		attr.Aliases[i] = KnowledgeGraphSubjectAliasFromEnt(alias)
+	}
+	return KnowledgeGraphRelationship{Id: rel.ID, Attributes: attr}
 }
 
 func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) KnowledgeGraphSubjectAlias {
@@ -124,56 +142,37 @@ func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) Knowled
 	return KnowledgeGraphSubjectAlias{Id: alias.ID, Attributes: attrs}
 }
 
-func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) KnowledgeGraphRelationship {
-	attr := KnowledgeGraphRelationshipAttributes{
-		Kind:      rel.Kind,
-		Source:    Expandable[KnowledgeGraphEntityAttributes]{Id: rel.SourceEntityID},
-		Target:    Expandable[KnowledgeGraphEntityAttributes]{Id: rel.TargetEntityID},
-		State:     KnowledgeGraphSubjectState{},
-		Aliases:   nil,
-		CreatedAt: rel.CreatedAt,
-		UpdatedAt: rel.UpdatedAt,
+func KnowledgeGraphEvidenceFromEnt(ev *ent.KnowledgeEvidence) *KnowledgeGraphEvidence {
+	if ev == nil {
+		return nil
 	}
-	if source, err := rel.Edges.SourceEntityOrErr(); err == nil {
-		s := KnowledgeGraphEntityFromEnt(source)
-		attr.Source.Attributes = &s.Attributes
+	attrs := KnowledgeGraphEvidenceAttributes{
+		Kind:         ev.Kind.String(),
+		EffectiveAt:  ev.EffectiveAt,
+		SubjectState: KnowledgeGraphSubjectStateFromEnt(ev.SubjectState),
 	}
-	if target, err := rel.Edges.TargetEntityOrErr(); err == nil {
-		t := KnowledgeGraphEntityFromEnt(target)
-		attr.Target.Attributes = &t.Attributes
+	return &KnowledgeGraphEvidence{Id: ev.ID, Attributes: attrs}
+}
+
+func KnowledgeGraphSubjectStateFromEnt(s schematypes.KnowledgeGraphSubjectState) KnowledgeGraphSubjectState {
+	return KnowledgeGraphSubjectState{
+		DisplayName: s.DisplayName,
+		Description: s.Description,
+		Properties:  s.Properties,
 	}
-	return KnowledgeGraphRelationship{Id: rel.ID, Attributes: attr}
 }
 
 func KnowledgeGraphViewFromRez(view *rez.KnowledgeGraphView) KnowledgeGraphView {
-	result := KnowledgeGraphView{Truncated: view.Truncated, Warnings: view.Warnings}
+	result := KnowledgeGraphView{RootId: view.RootID, Truncated: view.Truncated}
 	result.Entities = make([]KnowledgeGraphEntity, len(view.Entities))
 	for i, entity := range view.Entities {
 		result.Entities[i] = KnowledgeGraphEntityFromEnt(entity)
 	}
 	result.Relationships = make([]KnowledgeGraphRelationship, len(view.Relationships))
-	for i, relationship := range view.Relationships {
-		result.Relationships[i] = KnowledgeGraphRelationshipFromEnt(relationship)
-	}
-	result.Evidence = make([]KnowledgeGraphEvidence, len(view.Evidence))
-	for i, evidence := range view.Evidence {
-		result.Evidence[i] = KnowledgeGraphEvidenceFromEnt(evidence)
+	for i, rel := range view.Relationships {
+		result.Relationships[i] = KnowledgeGraphRelationshipFromEnt(rel)
 	}
 	return result
-}
-
-func KnowledgeGraphEvidenceFromEnt(evidence *ent.KnowledgeEvidence) KnowledgeGraphEvidence {
-	attributes := KnowledgeGraphEvidenceAttributes{
-		EventId:        evidence.EventID,
-		EvidenceKind:   evidence.Kind.String(),
-		EffectiveAt:    evidence.EffectiveAt,
-		Assertion:      evidence.Assertion,
-		SubjectState:   KnowledgeGraphSubjectState{},
-		SubjectAlias:   KnowledgeGraphSubjectAlias{},
-		EntityId:       nil,
-		RelationshipId: nil,
-	}
-	return KnowledgeGraphEvidence{Id: evidence.ID, Attributes: attributes}
 }
 
 var knowledgeGraphTags = []string{"Knowledge Graph"}
@@ -211,14 +210,14 @@ type GetKnowledgeGraphEntityResponse ItemResponse[KnowledgeGraphEntity]
 var GetKnowledgeGraphView = huma.Operation{
 	OperationID: "get-knowledge-graph-view",
 	Method:      http.MethodGet,
-	Path:        "/knowledge_graph/entities/{entityId}/view",
+	Path:        "/knowledge_graph/view",
 	Summary:     "Get Knowledge Graph View",
 	Tags:        knowledgeGraphTags,
 	Errors:      ErrorCodes(),
 }
 
 type GetKnowledgeGraphViewRequest struct {
-	EntityId         uuid.UUID `path:"entityId"`
+	EntityId         uuid.UUID `query:"entityId" required:"false"`
 	Depth            int       `query:"depth" default:"1" minimum:"1" maximum:"4" required:"false"`
 	RelationshipKind []string  `query:"relationshipKind" required:"false"`
 }

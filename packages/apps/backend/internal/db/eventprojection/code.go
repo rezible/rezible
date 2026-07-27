@@ -32,7 +32,7 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 		Kind:        projectionEvidenceKind(event.Event),
 		Assertion:   knowledgeAssertionCodeRepositoryObserved,
 		EffectiveAt: event.Event.OccurredAt,
-		SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: event.Attributes.DisplayName,
 			Properties:  properties,
 		},
@@ -61,7 +61,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionCodeChangeObserved,
 		EffectiveAt: event.Event.OccurredAt,
-		SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attributes.DisplayName,
 		},
 		SubjectEntity: &changeRef,
@@ -77,7 +77,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionCodeRepositoryObserved,
 		EffectiveAt: event.Event.OccurredAt,
-		SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attributes.RepositoryExternalRef,
 		},
 		SubjectEntity: &repositoryRef,
@@ -110,7 +110,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 			Kind:        evidenceKind,
 			Assertion:   knowledgeAssertionCodeChangeImpact,
 			EffectiveAt: event.Event.OccurredAt,
-			SubjectState: schematypes.KnowledgeEvidenceSubjectState{
+			SubjectState: schematypes.KnowledgeGraphSubjectState{
 				DisplayName: related.DisplayName,
 				Properties:  map[string]any{"component_kind": related.Kind},
 			},

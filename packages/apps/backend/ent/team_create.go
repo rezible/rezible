@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -13,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/documentaccess"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/team"
@@ -32,6 +34,34 @@ type TeamCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (_c *TeamCreate) SetTenantID(v int) *TeamCreate {
 	_c.mutation.SetTenantID(v)
+	return _c
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (_c *TeamCreate) SetArchiveTime(v time.Time) *TeamCreate {
+	_c.mutation.SetArchiveTime(v)
+	return _c
+}
+
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (_c *TeamCreate) SetNillableArchiveTime(v *time.Time) *TeamCreate {
+	if v != nil {
+		_c.SetArchiveTime(*v)
+	}
+	return _c
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_c *TeamCreate) SetKnowledgeEntityID(v uuid.UUID) *TeamCreate {
+	_c.mutation.SetKnowledgeEntityID(v)
+	return _c
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_c *TeamCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *TeamCreate {
+	if v != nil {
+		_c.SetKnowledgeEntityID(*v)
+	}
 	return _c
 }
 
@@ -92,6 +122,11 @@ func (_c *TeamCreate) SetNillableID(v *uuid.UUID) *TeamCreate {
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *TeamCreate) SetTenant(v *Tenant) *TeamCreate {
 	return _c.SetTenantID(v.ID)
+}
+
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_c *TeamCreate) SetKnowledgeEntity(v *KnowledgeEntity) *TeamCreate {
+	return _c.SetKnowledgeEntityID(v.ID)
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
@@ -267,6 +302,10 @@ func (_c *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.ArchiveTime(); ok {
+		_spec.SetField(team.FieldArchiveTime, field.TypeTime, value)
+		_node.ArchiveTime = value
+	}
 	if value, ok := _c.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
 		_node.Slug = value
@@ -299,6 +338,24 @@ func (_c *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   team.KnowledgeEntityTable,
+			Columns: []string{team.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Team
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.KnowledgeEntityID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UsersIDs(); len(nodes) > 0 {
@@ -445,6 +502,42 @@ type (
 	}
 )
 
+// SetArchiveTime sets the "archive_time" field.
+func (u *TeamUpsert) SetArchiveTime(v time.Time) *TeamUpsert {
+	u.Set(team.FieldArchiveTime, v)
+	return u
+}
+
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *TeamUpsert) UpdateArchiveTime() *TeamUpsert {
+	u.SetExcluded(team.FieldArchiveTime)
+	return u
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *TeamUpsert) ClearArchiveTime() *TeamUpsert {
+	u.SetNull(team.FieldArchiveTime)
+	return u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *TeamUpsert) SetKnowledgeEntityID(v uuid.UUID) *TeamUpsert {
+	u.Set(team.FieldKnowledgeEntityID, v)
+	return u
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *TeamUpsert) UpdateKnowledgeEntityID() *TeamUpsert {
+	u.SetExcluded(team.FieldKnowledgeEntityID)
+	return u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *TeamUpsert) ClearKnowledgeEntityID() *TeamUpsert {
+	u.SetNull(team.FieldKnowledgeEntityID)
+	return u
+}
+
 // SetSlug sets the "slug" field.
 func (u *TeamUpsert) SetSlug(v string) *TeamUpsert {
 	u.Set(team.FieldSlug, v)
@@ -554,6 +647,48 @@ func (u *TeamUpsertOne) Update(set func(*TeamUpsert)) *TeamUpsertOne {
 		set(&TeamUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (u *TeamUpsertOne) SetArchiveTime(v time.Time) *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.SetArchiveTime(v)
+	})
+}
+
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *TeamUpsertOne) UpdateArchiveTime() *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.UpdateArchiveTime()
+	})
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *TeamUpsertOne) ClearArchiveTime() *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.ClearArchiveTime()
+	})
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *TeamUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *TeamUpsertOne) UpdateKnowledgeEntityID() *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.UpdateKnowledgeEntityID()
+	})
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *TeamUpsertOne) ClearKnowledgeEntityID() *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.ClearKnowledgeEntityID()
+	})
 }
 
 // SetSlug sets the "slug" field.
@@ -842,6 +977,48 @@ func (u *TeamUpsertBulk) Update(set func(*TeamUpsert)) *TeamUpsertBulk {
 		set(&TeamUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (u *TeamUpsertBulk) SetArchiveTime(v time.Time) *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.SetArchiveTime(v)
+	})
+}
+
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *TeamUpsertBulk) UpdateArchiveTime() *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.UpdateArchiveTime()
+	})
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *TeamUpsertBulk) ClearArchiveTime() *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.ClearArchiveTime()
+	})
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *TeamUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *TeamUpsertBulk) UpdateKnowledgeEntityID() *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.UpdateKnowledgeEntityID()
+	})
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *TeamUpsertBulk) ClearKnowledgeEntityID() *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.ClearKnowledgeEntityID()
+	})
 }
 
 // SetSlug sets the "slug" field.

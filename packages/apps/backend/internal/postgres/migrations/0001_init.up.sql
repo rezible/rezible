@@ -361,15 +361,19 @@ CREATE TABLE "tasks" ("id" uuid NOT NULL, "type" character varying NOT NULL, "ti
 -- create index "task_tenant_id" to table: "tasks"
 CREATE INDEX "task_tenant_id" ON "tasks" ("tenant_id");
 -- create "teams" table
-CREATE TABLE "teams" ("id" uuid NOT NULL, "slug" character varying NOT NULL, "name" character varying NOT NULL, "chat_channel_id" character varying NULL, "timezone" character varying NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "teams" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "slug" character varying NOT NULL, "name" character varying NOT NULL, "chat_channel_id" character varying NULL, "timezone" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "teams_slug_key" to table: "teams"
 CREATE UNIQUE INDEX "teams_slug_key" ON "teams" ("slug");
 -- create index "team_tenant_id" to table: "teams"
 CREATE INDEX "team_tenant_id" ON "teams" ("tenant_id");
+-- create index "team_tenant_id_knowledge_entity_id" to table: "teams"
+CREATE UNIQUE INDEX "team_tenant_id_knowledge_entity_id" ON "teams" ("tenant_id", "knowledge_entity_id");
 -- create "team_memberships" table
-CREATE TABLE "team_memberships" ("id" uuid NOT NULL, "role" character varying NOT NULL DEFAULT 'member', "tenant_id" bigint NOT NULL, "team_id" uuid NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "team_memberships" ("id" uuid NOT NULL, "role" character varying NOT NULL DEFAULT 'member', "tenant_id" bigint NOT NULL, "knowledge_relationship_id" uuid NULL, "team_id" uuid NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "teammembership_tenant_id" to table: "team_memberships"
 CREATE INDEX "teammembership_tenant_id" ON "team_memberships" ("tenant_id");
+-- create index "teammembership_tenant_id_knowledge_relationship_id" to table: "team_memberships"
+CREATE UNIQUE INDEX "teammembership_tenant_id_knowledge_relationship_id" ON "team_memberships" ("tenant_id", "knowledge_relationship_id");
 -- create index "teammembership_team_id_user_id" to table: "team_memberships"
 CREATE UNIQUE INDEX "teammembership_team_id_user_id" ON "team_memberships" ("team_id", "user_id");
 -- create "tenants" table
@@ -555,9 +559,9 @@ ALTER TABLE "system_analysis_topology_nodes" ADD CONSTRAINT "system_analysis_top
 -- modify "tasks" table
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_incidents_tasks" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE SET NULL, ADD CONSTRAINT "tasks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "tasks_users_assigned_tasks" FOREIGN KEY ("assignee_id") REFERENCES "users" ("id") ON DELETE SET NULL, ADD CONSTRAINT "tasks_users_created_tasks" FOREIGN KEY ("creator_id") REFERENCES "users" ("id") ON DELETE SET NULL;
 -- modify "teams" table
-ALTER TABLE "teams" ADD CONSTRAINT "teams_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+ALTER TABLE "teams" ADD CONSTRAINT "teams_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "teams_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
 -- modify "team_memberships" table
-ALTER TABLE "team_memberships" ADD CONSTRAINT "team_memberships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "team_memberships_teams_team" FOREIGN KEY ("team_id") REFERENCES "teams" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "team_memberships_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
+ALTER TABLE "team_memberships" ADD CONSTRAINT "team_memberships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "team_memberships_knowledge_relationships_knowledge_relationship" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "team_memberships_teams_team" FOREIGN KEY ("team_id") REFERENCES "teams" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "team_memberships_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "tickets" table
 ALTER TABLE "tickets" ADD CONSTRAINT "tickets_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "users" table

@@ -13,6 +13,8 @@ import (
 
 const (
 	sourceUsers             = "users"
+	sourceTeams             = "teams"
+	sourceTeamMemberships   = "team_memberships"
 	sourceEventsApiCallback = "events_api/callback"
 )
 
@@ -20,11 +22,87 @@ func (i *Integration) ProcessProviderEvent(ctx context.Context, prov rez.Provide
 	switch prov.ProviderSource {
 	case sourceUsers:
 		return i.processUserObservedEvent(prov)
+	case sourceTeams:
+		return i.processTeamObservedEvent(prov)
+	case sourceTeamMemberships:
+		return i.processTeamMembershipObservedEvent(prov)
 	case sourceEventsApiCallback:
 		return i.processEventsApiCallbackEvent(prov)
 	default:
 		return nil, fmt.Errorf("unknown provider source: %s", prov.ProviderSource)
 	}
+}
+
+func (i *Integration) processTeamObservedEvent(ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
+	var payload teamObservedPayload
+	if jsonErr := json.Unmarshal(ev.Payload, &payload); jsonErr != nil {
+		return nil, fmt.Errorf("unmarshal teamObservedPayload: %w", jsonErr)
+	}
+	attrs := projections.TeamSubjectAttributes{
+		ExternalRef:        payload.ExternalRef,
+		Name:               payload.Name,
+		Slug:               payload.Slug,
+		ChatChannelId:      payload.ChatChannelID,
+		MemberExternalRefs: payload.MemberExternalRefs,
+	}
+	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode team observed attributes: %w", encodeErr)
+	}
+	kind := ne.KindObserved
+	if payload.Deleted {
+		kind = ne.KindDeleted
+	}
+	return ent.NormalizedEvents{{
+		Provider:           integrationName,
+		ProviderSource:     sourceTeams,
+		Kind:               kind,
+		SubjectKind:        projections.SubjectKindTeam.String(),
+		ProviderSubjectRef: ev.ProviderSubjectRef,
+		ProviderEventRef:   ev.ProviderEventRef,
+		ReceivedAt:         ev.ReceivedAt,
+		OccurredAt:         payload.UpdatedAt.Time(),
+		Attributes:         encodedAttrs,
+	}}, nil
+}
+
+func (i *Integration) processTeamMembershipObservedEvent(ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
+	var payload teamMembershipObservedPayload
+	if jsonErr := json.Unmarshal(ev.Payload, &payload); jsonErr != nil {
+		return nil, fmt.Errorf("unmarshal teamMembershipObservedPayload: %w", jsonErr)
+	}
+	attrs := projections.TeamMembershipSubjectAttributes{
+		Team: projections.TeamSubjectAttributes{
+			ExternalRef:        payload.Team.ExternalRef,
+			Name:               payload.Team.Name,
+			Slug:               payload.Team.Slug,
+			ChatChannelId:      payload.Team.ChatChannelID,
+			MemberExternalRefs: payload.Team.MemberExternalRefs,
+		},
+		User: projections.UserSubjectAttributes{
+			Name:     payload.User.Name,
+			Email:    payload.User.Email,
+			ChatId:   payload.User.SlackID,
+			Timezone: payload.User.Timezone,
+		},
+		UserExternalRef: fmt.Sprintf("slack:%s", payload.User.SlackID),
+		Role:            "member",
+	}
+	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode team membership attributes: %w", encodeErr)
+	}
+	return ent.NormalizedEvents{{
+		Provider:           integrationName,
+		ProviderSource:     sourceTeamMemberships,
+		Kind:               ne.KindObserved,
+		SubjectKind:        projections.SubjectKindTeamMembership.String(),
+		ProviderSubjectRef: ev.ProviderSubjectRef,
+		ProviderEventRef:   ev.ProviderEventRef,
+		ReceivedAt:         ev.ReceivedAt,
+		OccurredAt:         payload.Team.UpdatedAt.Time(),
+		Attributes:         encodedAttrs,
+	}}, nil
 }
 
 func (i *Integration) processUserObservedEvent(ev rez.ProviderEvent) (ent.NormalizedEvents, error) {

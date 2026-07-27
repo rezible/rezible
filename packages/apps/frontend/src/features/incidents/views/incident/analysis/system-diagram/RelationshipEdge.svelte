@@ -6,6 +6,7 @@
 	const offset = 5;
 	const sourceX = $derived(props.sourceX - offset);
 	const targetX = $derived(props.targetX + offset);
+	const centerX = $derived((sourceX + targetX) / 2);
 
 	const centerXOffset = $derived(props.sourceY > props.targetY ? offset : offset * -1);
 

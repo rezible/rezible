@@ -1551,16 +1551,6 @@ components:
       required:
         - id
       type: object
-    ExpandableKnowledgeGraphEntityAttributes:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/KnowledgeGraphEntityAttributes"
-        id:
-          type: string
-      required:
-        - id
-      type: object
     ExpandableOncallRosterAttributes:
       additionalProperties: false
       properties:
@@ -3221,14 +3211,13 @@ components:
           type: string
         kind:
           type: string
-        state:
-          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
+        latestEvidence:
+          $ref: "#/components/schemas/KnowledgeGraphEvidence"
         updatedAt:
           format: date-time
           type: string
       required:
         - kind
-        - state
         - aliases
         - createdAt
         - updatedAt
@@ -3247,30 +3236,20 @@ components:
     KnowledgeGraphEvidenceAttributes:
       additionalProperties: false
       properties:
-        assertion:
-          type: string
         effectiveAt:
           format: date-time
           type: string
-        entityId:
+        kind:
+          enum:
+            - observed
+            - deleted
           type: string
-        eventId:
-          type: string
-        evidenceKind:
-          type: string
-        relationshipId:
-          type: string
-        subjectAlias:
-          $ref: "#/components/schemas/KnowledgeGraphSubjectAlias"
         subjectState:
           $ref: "#/components/schemas/KnowledgeGraphSubjectState"
       required:
-        - eventId
-        - evidenceKind
+        - kind
         - effectiveAt
-        - assertion
         - subjectState
-        - subjectAlias
       type: object
     KnowledgeGraphRelationship:
       additionalProperties: false
@@ -3295,20 +3274,19 @@ components:
           type: string
         kind:
           type: string
-        source:
-          $ref: "#/components/schemas/ExpandableKnowledgeGraphEntityAttributes"
-        state:
-          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
-        target:
-          $ref: "#/components/schemas/ExpandableKnowledgeGraphEntityAttributes"
+        latestEvidence:
+          $ref: "#/components/schemas/KnowledgeGraphEvidence"
+        sourceEntityId:
+          type: string
+        targetEntityId:
+          type: string
         updatedAt:
           format: date-time
           type: string
       required:
         - kind
-        - source
-        - target
-        - state
+        - sourceEntityId
+        - targetEntityId
         - aliases
         - createdAt
         - updatedAt
@@ -3366,26 +3344,19 @@ components:
           items:
             $ref: "#/components/schemas/KnowledgeGraphEntity"
           type: array
-        evidence:
-          items:
-            $ref: "#/components/schemas/KnowledgeGraphEvidence"
-          type: array
         relationships:
           items:
             $ref: "#/components/schemas/KnowledgeGraphRelationship"
           type: array
+        rootId:
+          type: string
         truncated:
           type: boolean
-        warnings:
-          items:
-            type: string
-          type: array
       required:
+        - rootId
         - entities
         - relationships
-        - evidence
         - truncated
-        - warnings
       type: object
     ListAgentSessionsResponseBody:
       additionalProperties: false
@@ -11614,77 +11585,6 @@ paths:
       summary: List Knowledge Graph Entities
       tags:
         - Knowledge Graph
-  /knowledge_graph/entities/{entityId}/view:
-    get:
-      operationId: get-knowledge-graph-view
-      parameters:
-        - in: path
-          name: entityId
-          required: true
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: depth
-          schema:
-            default: 1
-            format: int64
-            maximum: 4
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: relationshipKind
-          schema:
-            items:
-              type: string
-            type: array
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetKnowledgeGraphViewResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get Knowledge Graph View
-      tags:
-        - Knowledge Graph
   /knowledge_graph/entities/{id}:
     get:
       operationId: get-knowledge-graph-entity
@@ -11838,6 +11738,77 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: List Knowledge Graph Relationships
+      tags:
+        - Knowledge Graph
+  /knowledge_graph/view:
+    get:
+      operationId: get-knowledge-graph-view
+      parameters:
+        - explode: false
+          in: query
+          name: entityId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: depth
+          schema:
+            default: 1
+            format: int64
+            maximum: 4
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: relationshipKind
+          schema:
+            items:
+              type: string
+            type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetKnowledgeGraphViewResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Knowledge Graph View
       tags:
         - Knowledge Graph
   /meeting_schedules:

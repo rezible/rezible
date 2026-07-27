@@ -31,7 +31,6 @@ type (
 		Relationships []KnowledgeGraphToolRelationship `json:"relationships"`
 		Evidence      []KnowledgeGraphToolEvidence     `json:"evidence"`
 		Truncated     bool                             `json:"truncated"`
-		Warnings      []string                         `json:"warnings"`
 	}
 
 	KnowledgeGraphToolEntity struct {

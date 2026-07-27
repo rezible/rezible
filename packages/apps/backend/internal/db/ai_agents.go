@@ -314,7 +314,12 @@ func (s *AgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.UU
 			return fmt.Errorf("enqueue agent turn retry: %w", jobErr)
 		}
 
-		updateTurn := turn.Update().ClearStateFields().
+		updateTurn := turn.Update().
+			ClearState().
+			ClearError().
+			SetFinishReason("").
+			ClearStartedAt().
+			ClearFinishedAt().
 			SetRiverJobID(jobID).
 			SetStatus(at.StatusQueued)
 

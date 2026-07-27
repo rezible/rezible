@@ -38,7 +38,7 @@ type KnowledgeEvidence struct {
 	// Domain effective time (may differ from the event occurred_at)
 	EffectiveAt time.Time `json:"effective_at,omitempty"`
 	// SubjectState holds the value of the "subject_state" field.
-	SubjectState schematypes.KnowledgeEvidenceSubjectState `json:"subject_state,omitempty"`
+	SubjectState schematypes.KnowledgeGraphSubjectState `json:"subject_state,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEvidenceQuery when eager-loading is set.
 	Edges        KnowledgeEvidenceEdges `json:"edges"`

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -13,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
@@ -32,6 +34,46 @@ type TeamUpdate struct {
 // Where appends a list predicates to the TeamUpdate builder.
 func (_u *TeamUpdate) Where(ps ...predicate.Team) *TeamUpdate {
 	_u.mutation.Where(ps...)
+	return _u
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (_u *TeamUpdate) SetArchiveTime(v time.Time) *TeamUpdate {
+	_u.mutation.SetArchiveTime(v)
+	return _u
+}
+
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (_u *TeamUpdate) SetNillableArchiveTime(v *time.Time) *TeamUpdate {
+	if v != nil {
+		_u.SetArchiveTime(*v)
+	}
+	return _u
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (_u *TeamUpdate) ClearArchiveTime() *TeamUpdate {
+	_u.mutation.ClearArchiveTime()
+	return _u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *TeamUpdate) SetKnowledgeEntityID(v uuid.UUID) *TeamUpdate {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *TeamUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *TeamUpdate {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
+	}
+	return _u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (_u *TeamUpdate) ClearKnowledgeEntityID() *TeamUpdate {
+	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
@@ -101,6 +143,11 @@ func (_u *TeamUpdate) SetNillableTimezone(v *string) *TeamUpdate {
 func (_u *TeamUpdate) ClearTimezone() *TeamUpdate {
 	_u.mutation.ClearTimezone()
 	return _u
+}
+
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *TeamUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *TeamUpdate {
+	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
@@ -181,6 +228,12 @@ func (_u *TeamUpdate) AddTeamMemberships(v ...*TeamMembership) *TeamUpdate {
 // Mutation returns the TeamMutation object of the builder.
 func (_u *TeamUpdate) Mutation() *TeamMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *TeamUpdate) ClearKnowledgeEntity() *TeamUpdate {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
 }
 
 // ClearUsers clears all "users" edges to the User entity.
@@ -341,6 +394,12 @@ func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.ArchiveTime(); ok {
+		_spec.SetField(team.FieldArchiveTime, field.TypeTime, value)
+	}
+	if _u.mutation.ArchiveTimeCleared() {
+		_spec.ClearField(team.FieldArchiveTime, field.TypeTime)
+	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
 	}
@@ -358,6 +417,37 @@ func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(team.FieldTimezone, field.TypeString)
+	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   team.KnowledgeEntityTable,
+			Columns: []string{team.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Team
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   team.KnowledgeEntityTable,
+			Columns: []string{team.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Team
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -644,6 +734,46 @@ type TeamUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetArchiveTime sets the "archive_time" field.
+func (_u *TeamUpdateOne) SetArchiveTime(v time.Time) *TeamUpdateOne {
+	_u.mutation.SetArchiveTime(v)
+	return _u
+}
+
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (_u *TeamUpdateOne) SetNillableArchiveTime(v *time.Time) *TeamUpdateOne {
+	if v != nil {
+		_u.SetArchiveTime(*v)
+	}
+	return _u
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (_u *TeamUpdateOne) ClearArchiveTime() *TeamUpdateOne {
+	_u.mutation.ClearArchiveTime()
+	return _u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *TeamUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *TeamUpdateOne {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *TeamUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *TeamUpdateOne {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
+	}
+	return _u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (_u *TeamUpdateOne) ClearKnowledgeEntityID() *TeamUpdateOne {
+	_u.mutation.ClearKnowledgeEntityID()
+	return _u
+}
+
 // SetSlug sets the "slug" field.
 func (_u *TeamUpdateOne) SetSlug(v string) *TeamUpdateOne {
 	_u.mutation.SetSlug(v)
@@ -710,6 +840,11 @@ func (_u *TeamUpdateOne) SetNillableTimezone(v *string) *TeamUpdateOne {
 func (_u *TeamUpdateOne) ClearTimezone() *TeamUpdateOne {
 	_u.mutation.ClearTimezone()
 	return _u
+}
+
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *TeamUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *TeamUpdateOne {
+	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
@@ -790,6 +925,12 @@ func (_u *TeamUpdateOne) AddTeamMemberships(v ...*TeamMembership) *TeamUpdateOne
 // Mutation returns the TeamMutation object of the builder.
 func (_u *TeamUpdateOne) Mutation() *TeamMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *TeamUpdateOne) ClearKnowledgeEntity() *TeamUpdateOne {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
 }
 
 // ClearUsers clears all "users" edges to the User entity.
@@ -980,6 +1121,12 @@ func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.ArchiveTime(); ok {
+		_spec.SetField(team.FieldArchiveTime, field.TypeTime, value)
+	}
+	if _u.mutation.ArchiveTimeCleared() {
+		_spec.ClearField(team.FieldArchiveTime, field.TypeTime)
+	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
 	}
@@ -997,6 +1144,37 @@ func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
 	}
 	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(team.FieldTimezone, field.TypeString)
+	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   team.KnowledgeEntityTable,
+			Columns: []string{team.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Team
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   team.KnowledgeEntityTable,
+			Columns: []string{team.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Team
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{

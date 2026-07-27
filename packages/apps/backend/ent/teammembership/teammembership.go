@@ -18,6 +18,8 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldKnowledgeRelationshipID holds the string denoting the knowledge_relationship_id field in the database.
+	FieldKnowledgeRelationshipID = "knowledge_relationship_id"
 	// FieldTeamID holds the string denoting the team_id field in the database.
 	FieldTeamID = "team_id"
 	// FieldUserID holds the string denoting the user_id field in the database.
@@ -26,6 +28,8 @@ const (
 	FieldRole = "role"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeKnowledgeRelationship holds the string denoting the knowledge_relationship edge name in mutations.
+	EdgeKnowledgeRelationship = "knowledge_relationship"
 	// EdgeTeam holds the string denoting the team edge name in mutations.
 	EdgeTeam = "team"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -39,6 +43,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// KnowledgeRelationshipTable is the table that holds the knowledge_relationship relation/edge.
+	KnowledgeRelationshipTable = "team_memberships"
+	// KnowledgeRelationshipInverseTable is the table name for the KnowledgeRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgerelationship" package.
+	KnowledgeRelationshipInverseTable = "knowledge_relationships"
+	// KnowledgeRelationshipColumn is the table column denoting the knowledge_relationship relation/edge.
+	KnowledgeRelationshipColumn = "knowledge_relationship_id"
 	// TeamTable is the table that holds the team relation/edge.
 	TeamTable = "team_memberships"
 	// TeamInverseTable is the table name for the Team entity.
@@ -59,6 +70,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldKnowledgeRelationshipID,
 	FieldTeamID,
 	FieldUserID,
 	FieldRole,
@@ -125,6 +137,11 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByKnowledgeRelationshipID orders the results by the knowledge_relationship_id field.
+func ByKnowledgeRelationshipID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKnowledgeRelationshipID, opts...).ToFunc()
+}
+
 // ByTeamID orders the results by the team_id field.
 func ByTeamID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTeamID, opts...).ToFunc()
@@ -147,6 +164,13 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByKnowledgeRelationshipField orders the results by knowledge_relationship field.
+func ByKnowledgeRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newKnowledgeRelationshipStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByTeamField orders the results by team field.
 func ByTeamField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -165,6 +189,13 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newKnowledgeRelationshipStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(KnowledgeRelationshipInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeRelationshipTable, KnowledgeRelationshipColumn),
 	)
 }
 func newTeamStep() *sqlgraph.Step {
