@@ -83,10 +83,11 @@ type (
 		}
 	}
 	ListResponse[T any] struct {
-		Body struct {
-			Data       []T                `json:"data" nullable:"false"`
-			Pagination ResponsePagination `json:"pagination"`
-		}
+		Body ListResponseBody[T]
+	}
+	ListResponseBody[T any] struct {
+		Data       []T                `json:"data" nullable:"false"`
+		Pagination ResponsePagination `json:"pagination"`
 	}
 	ResponsePagination struct {
 		Next     *string `json:"next,omitempty"`
@@ -95,18 +96,17 @@ type (
 	}
 )
 
-func ConvertListResult[T any, R any](result ent.ListResult[R], fn func(*R) T) ListResponse[T] {
-	var resp ListResponse[T]
-	resp.Body.Data = make([]T, len(result.Data))
+func ConvertListResultBody[T any, R any](result *ent.ListResult[R], fn func(*R) T) ListResponseBody[T] {
+	data := make([]T, len(result.Data))
 	for i, r := range result.Data {
-		resp.Body.Data[i] = fn(r)
+		data[i] = fn(r)
 	}
-	resp.Body.Pagination = ResponsePagination{
+	pagination := ResponsePagination{
 		Next:     nil,
 		Previous: nil,
 		Total:    result.Count,
 	}
-	return resp
+	return ListResponseBody[T]{Data: data, Pagination: pagination}
 }
 
 type CalendarDate string

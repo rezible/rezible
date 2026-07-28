@@ -129,26 +129,6 @@ components:
       required:
         - data
       type: object
-    AddWatchedOncallRosterResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/AddWatchedOncallRosterResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/OncallRoster"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
     AgentSession:
       additionalProperties: false
       properties:
@@ -1901,6 +1881,21 @@ components:
       required:
         - data
       type: object
+    GetKnowledgeGraphRelationshipResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetKnowledgeGraphRelationshipResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/KnowledgeGraphRelationship"
+      required:
+        - data
+      type: object
     GetKnowledgeGraphViewResponseBody:
       additionalProperties: false
       properties:
@@ -2998,26 +2993,6 @@ components:
       required:
         - attributes
       type: object
-    InstallIntegrationFromTargetsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/InstallIntegrationFromTargetsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IntegrationInstallation"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
     InstallIntegrationRequestAttributes:
       additionalProperties: false
       properties:
@@ -3358,13 +3333,13 @@ components:
         - relationships
         - truncated
       type: object
-    ListAgentSessionsResponseBody:
+    ListResponseBodyAgentSession:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListAgentSessionsResponseBody.json
+            - /v1/schemas/ListResponseBodyAgentSession.json
           format: uri
           readOnly: true
           type: string
@@ -3378,13 +3353,13 @@ components:
         - data
         - pagination
       type: object
-    ListAgentTurnsResponseBody:
+    ListResponseBodyAgentTurn:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListAgentTurnsResponseBody.json
+            - /v1/schemas/ListResponseBodyAgentTurn.json
           format: uri
           readOnly: true
           type: string
@@ -3398,33 +3373,13 @@ components:
         - data
         - pagination
       type: object
-    ListAlertIncidentLinksResponseBody:
+    ListResponseBodyAlert:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListAlertIncidentLinksResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/AlertIncidentLink"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListAlertsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListAlertsResponseBody.json
+            - /v1/schemas/ListResponseBodyAlert.json
           format: uri
           readOnly: true
           type: string
@@ -3438,19 +3393,19 @@ components:
         - data
         - pagination
       type: object
-    ListEventAnnotationsResponseBody:
+    ListResponseBodyAlertIncidentLink:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListEventAnnotationsResponseBody.json
+            - /v1/schemas/ListResponseBodyAlertIncidentLink.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/EventAnnotation"
+            $ref: "#/components/schemas/AlertIncidentLink"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -3458,13 +3413,13 @@ components:
         - data
         - pagination
       type: object
-    ListEventsResponseBody:
+    ListResponseBodyEvent:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListEventsResponseBody.json
+            - /v1/schemas/ListResponseBodyEvent.json
           format: uri
           readOnly: true
           type: string
@@ -3478,19 +3433,19 @@ components:
         - data
         - pagination
       type: object
-    ListIncidentDebriefMessagesResponseBody:
+    ListResponseBodyEventAnnotation:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListIncidentDebriefMessagesResponseBody.json
+            - /v1/schemas/ListResponseBodyEventAnnotation.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/IncidentDebriefMessage"
+            $ref: "#/components/schemas/EventAnnotation"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -3498,193 +3453,13 @@ components:
         - data
         - pagination
       type: object
-    ListIncidentDebriefQuestionsResponseBody:
+    ListResponseBodyIncident:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListIncidentDebriefQuestionsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentDebriefQuestion"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListIncidentDebriefSuggestionsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListIncidentDebriefSuggestionsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentDebriefSuggestion"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListIncidentFieldsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListIncidentFieldsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentField"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListIncidentMilestonesResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListIncidentMilestonesResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentMilestone"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListIncidentRolesResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListIncidentRolesResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentRole"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListIncidentSeveritiesResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListIncidentSeveritiesResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentSeverity"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListIncidentTagsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListIncidentTagsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentTag"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListIncidentTimelineEventsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListIncidentTimelineEventsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentTimelineEvent"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListIncidentTypesResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListIncidentTypesResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentType"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListIncidentsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListIncidentsResponseBody.json
+            - /v1/schemas/ListResponseBodyIncident.json
           format: uri
           readOnly: true
           type: string
@@ -3698,13 +3473,213 @@ components:
         - data
         - pagination
       type: object
-    ListIntegrationEventSyncRunResponseBody:
+    ListResponseBodyIncidentDebriefMessage:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListIntegrationEventSyncRunResponseBody.json
+            - /v1/schemas/ListResponseBodyIncidentDebriefMessage.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentDebriefMessage"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyIncidentDebriefQuestion:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyIncidentDebriefQuestion.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentDebriefQuestion"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyIncidentDebriefSuggestion:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyIncidentDebriefSuggestion.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentDebriefSuggestion"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyIncidentField:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyIncidentField.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentField"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyIncidentMilestone:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyIncidentMilestone.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentMilestone"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyIncidentRole:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyIncidentRole.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentRole"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyIncidentSeverity:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyIncidentSeverity.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentSeverity"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyIncidentTag:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyIncidentTag.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentTag"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyIncidentTimelineEvent:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyIncidentTimelineEvent.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentTimelineEvent"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyIncidentType:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyIncidentType.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentType"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyIntegrationEventSyncRun:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyIntegrationEventSyncRun.json
           format: uri
           readOnly: true
           type: string
@@ -3718,13 +3693,13 @@ components:
         - data
         - pagination
       type: object
-    ListIntegrationInstallTargetsResponseBody:
+    ListResponseBodyIntegrationInstallTarget:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListIntegrationInstallTargetsResponseBody.json
+            - /v1/schemas/ListResponseBodyIntegrationInstallTarget.json
           format: uri
           readOnly: true
           type: string
@@ -3738,13 +3713,13 @@ components:
         - data
         - pagination
       type: object
-    ListIntegrationInstallationsResponseBody:
+    ListResponseBodyIntegrationInstallation:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListIntegrationInstallationsResponseBody.json
+            - /v1/schemas/ListResponseBodyIntegrationInstallation.json
           format: uri
           readOnly: true
           type: string
@@ -3758,13 +3733,13 @@ components:
         - data
         - pagination
       type: object
-    ListKnowledgeGraphEntitiesResponseBody:
+    ListResponseBodyKnowledgeGraphEntity:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListKnowledgeGraphEntitiesResponseBody.json
+            - /v1/schemas/ListResponseBodyKnowledgeGraphEntity.json
           format: uri
           readOnly: true
           type: string
@@ -3778,13 +3753,13 @@ components:
         - data
         - pagination
       type: object
-    ListKnowledgeGraphRelationshipsResponseBody:
+    ListResponseBodyKnowledgeGraphRelationship:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListKnowledgeGraphRelationshipsResponseBody.json
+            - /v1/schemas/ListResponseBodyKnowledgeGraphRelationship.json
           format: uri
           readOnly: true
           type: string
@@ -3798,13 +3773,13 @@ components:
         - data
         - pagination
       type: object
-    ListMeetingSchedulesResponseBody:
+    ListResponseBodyMeetingSchedule:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListMeetingSchedulesResponseBody.json
+            - /v1/schemas/ListResponseBodyMeetingSchedule.json
           format: uri
           readOnly: true
           type: string
@@ -3818,13 +3793,13 @@ components:
         - data
         - pagination
       type: object
-    ListMeetingSessionsResponseBody:
+    ListResponseBodyMeetingSession:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListMeetingSessionsResponseBody.json
+            - /v1/schemas/ListResponseBodyMeetingSession.json
           format: uri
           readOnly: true
           type: string
@@ -3838,33 +3813,13 @@ components:
         - data
         - pagination
       type: object
-    ListNotificationsResponseBody:
+    ListResponseBodyOncallRoster:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListNotificationsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/UserNotification"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListOncallRostersResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListOncallRostersResponseBody.json
+            - /v1/schemas/ListResponseBodyOncallRoster.json
           format: uri
           readOnly: true
           type: string
@@ -3878,13 +3833,13 @@ components:
         - data
         - pagination
       type: object
-    ListOncallShiftsResponseBody:
+    ListResponseBodyOncallShift:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListOncallShiftsResponseBody.json
+            - /v1/schemas/ListResponseBodyOncallShift.json
           format: uri
           readOnly: true
           type: string
@@ -3898,13 +3853,13 @@ components:
         - data
         - pagination
       type: object
-    ListPlaybooksResponseBody:
+    ListResponseBodyPlaybook:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListPlaybooksResponseBody.json
+            - /v1/schemas/ListResponseBodyPlaybook.json
           format: uri
           readOnly: true
           type: string
@@ -3918,53 +3873,13 @@ components:
         - data
         - pagination
       type: object
-    ListRetrospectiveCommentsResponseBody:
+    ListResponseBodyRetrospective:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListRetrospectiveCommentsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/RetrospectiveComment"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListRetrospectiveReviewsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListRetrospectiveReviewsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/RetrospectiveReview"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListRetrospectivesResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListRetrospectivesResponseBody.json
+            - /v1/schemas/ListResponseBodyRetrospective.json
           format: uri
           readOnly: true
           type: string
@@ -3978,13 +3893,53 @@ components:
         - data
         - pagination
       type: object
-    ListSystemAnalysisEdgesResponseBody:
+    ListResponseBodyRetrospectiveComment:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListSystemAnalysisEdgesResponseBody.json
+            - /v1/schemas/ListResponseBodyRetrospectiveComment.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/RetrospectiveComment"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyRetrospectiveReview:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyRetrospectiveReview.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/RetrospectiveReview"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodySystemAnalysisEdge:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodySystemAnalysisEdge.json
           format: uri
           readOnly: true
           type: string
@@ -3998,13 +3953,13 @@ components:
         - data
         - pagination
       type: object
-    ListSystemAnalysisNodesResponseBody:
+    ListResponseBodySystemAnalysisNode:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListSystemAnalysisNodesResponseBody.json
+            - /v1/schemas/ListResponseBodySystemAnalysisNode.json
           format: uri
           readOnly: true
           type: string
@@ -4018,13 +3973,13 @@ components:
         - data
         - pagination
       type: object
-    ListTasksResponseBody:
+    ListResponseBodyTask:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListTasksResponseBody.json
+            - /v1/schemas/ListResponseBodyTask.json
           format: uri
           readOnly: true
           type: string
@@ -4038,33 +3993,13 @@ components:
         - data
         - pagination
       type: object
-    ListTeamMembershipsResponseBody:
+    ListResponseBodyTeam:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListTeamMembershipsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/TeamMembership"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListTeamsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListTeamsResponseBody.json
+            - /v1/schemas/ListResponseBodyTeam.json
           format: uri
           readOnly: true
           type: string
@@ -4078,13 +4013,33 @@ components:
         - data
         - pagination
       type: object
-    ListUsersResponseBody:
+    ListResponseBodyTeamMembership:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListUsersResponseBody.json
+            - /v1/schemas/ListResponseBodyTeamMembership.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/TeamMembership"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyUser:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyUser.json
           format: uri
           readOnly: true
           type: string
@@ -4098,19 +4053,19 @@ components:
         - data
         - pagination
       type: object
-    ListWatchedOncallRostersResponseBody:
+    ListResponseBodyUserNotification:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListWatchedOncallRostersResponseBody.json
+            - /v1/schemas/ListResponseBodyUserNotification.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/OncallRoster"
+            $ref: "#/components/schemas/UserNotification"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -4639,26 +4594,6 @@ components:
       required:
         - title
         - content
-      type: object
-    RemoveWatchedOncallRosterResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/RemoveWatchedOncallRosterResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/OncallRoster"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
       type: object
     RequestAgentTurnRequestAttributes:
       additionalProperties: false
@@ -6367,7 +6302,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListAgentSessionsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyAgentSession"
           description: OK
         "400":
           content:
@@ -6565,7 +6500,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListAgentTurnsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyAgentTurn"
           description: OK
         "400":
           content:
@@ -6836,7 +6771,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListAlertsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyAlert"
           description: OK
         "400":
           content:
@@ -6974,7 +6909,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListAlertIncidentLinksResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyAlertIncidentLink"
           description: OK
         "400":
           content:
@@ -7126,7 +7061,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListNotificationsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyUserNotification"
           description: OK
         "400":
           content:
@@ -7204,7 +7139,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIncidentDebriefQuestionsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIncidentDebriefQuestion"
           description: OK
         "400":
           content:
@@ -7641,7 +7576,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListEventAnnotationsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyEventAnnotation"
           description: OK
         "400":
           content:
@@ -7901,7 +7836,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListEventsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyEvent"
           description: OK
         "400":
           content:
@@ -8159,7 +8094,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIncidentDebriefMessagesResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIncidentDebriefMessage"
           description: OK
         "400":
           content:
@@ -8302,7 +8237,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIncidentDebriefSuggestionsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIncidentDebriefSuggestion"
           description: OK
         "400":
           content:
@@ -8429,7 +8364,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIncidentFieldsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIncidentField"
           description: OK
         "400":
           content:
@@ -8726,7 +8661,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIncidentRolesResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIncidentRole"
           description: OK
         "400":
           content:
@@ -9023,7 +8958,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIncidentSeveritiesResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIncidentSeverity"
           description: OK
         "400":
           content:
@@ -9320,7 +9255,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIncidentTagsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIncidentTag"
           description: OK
         "400":
           content:
@@ -9617,7 +9552,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIncidentTypesResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIncidentType"
           description: OK
         "400":
           content:
@@ -10190,7 +10125,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIncidentsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIncident"
           description: OK
         "400":
           content:
@@ -10519,7 +10454,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIncidentMilestonesResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIncidentMilestone"
           description: OK
         "400":
           content:
@@ -10663,7 +10598,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIncidentTimelineEventsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIncidentTimelineEvent"
           description: OK
         "400":
           content:
@@ -11040,7 +10975,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/InstallIntegrationFromTargetsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIntegrationInstallation"
           description: OK
         "400":
           content:
@@ -11089,7 +11024,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIntegrationInstallTargetsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIntegrationInstallTarget"
           description: OK
         "400":
           content:
@@ -11167,7 +11102,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIntegrationInstallationsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIntegrationInstallation"
           description: OK
         "400":
           content:
@@ -11387,7 +11322,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListIntegrationEventSyncRunResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyIntegrationEventSyncRun"
           description: OK
         "400":
           content:
@@ -11544,7 +11479,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListKnowledgeGraphEntitiesResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyKnowledgeGraphEntity"
           description: OK
         "400":
           content:
@@ -11699,7 +11634,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListKnowledgeGraphRelationshipsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyKnowledgeGraphRelationship"
           description: OK
         "400":
           content:
@@ -11738,6 +11673,61 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: List Knowledge Graph Relationships
+      tags:
+        - Knowledge Graph
+  /knowledge_graph/relationships/{id}:
+    get:
+      operationId: get-knowledge-graph-relationship
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetKnowledgeGraphRelationshipResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Knowledge Graph Relationship
       tags:
         - Knowledge Graph
   /knowledge_graph/view:
@@ -11848,7 +11838,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListMeetingSchedulesResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyMeetingSchedule"
           description: OK
         "400":
           content:
@@ -12170,7 +12160,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListMeetingSessionsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyMeetingSession"
           description: OK
         "400":
           content:
@@ -12824,7 +12814,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListOncallRostersResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyOncallRoster"
           description: OK
         "400":
           content:
@@ -12967,7 +12957,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListOncallShiftsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyOncallShift"
           description: OK
         "400":
           content:
@@ -13257,7 +13247,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListWatchedOncallRostersResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyOncallRoster"
           description: OK
         "400":
           content:
@@ -13312,7 +13302,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RemoveWatchedOncallRosterResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyOncallRoster"
           description: OK
         "400":
           content:
@@ -13366,7 +13356,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AddWatchedOncallRosterResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyOncallRoster"
           description: OK
         "400":
           content:
@@ -13729,7 +13719,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListPlaybooksResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyPlaybook"
           description: OK
         "400":
           content:
@@ -14280,7 +14270,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListRetrospectivesResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyRetrospective"
           description: OK
         "400":
           content:
@@ -14478,7 +14468,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListRetrospectiveCommentsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyRetrospectiveComment"
           description: OK
         "400":
           content:
@@ -14616,7 +14606,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListRetrospectiveReviewsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyRetrospectiveReview"
           description: OK
         "400":
           content:
@@ -14814,7 +14804,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListSystemAnalysisEdgesResponseBody"
+                $ref: "#/components/schemas/ListResponseBodySystemAnalysisEdge"
           description: OK
         "400":
           content:
@@ -14957,7 +14947,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListSystemAnalysisNodesResponseBody"
+                $ref: "#/components/schemas/ListResponseBodySystemAnalysisNode"
           description: OK
         "400":
           content:
@@ -15430,7 +15420,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListTasksResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyTask"
           description: OK
         "400":
           content:
@@ -15737,7 +15727,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListTeamMembershipsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyTeamMembership"
           description: OK
         "400":
           content:
@@ -15980,7 +15970,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListTeamsResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyTeam"
           description: OK
         "400":
           content:
@@ -16382,7 +16372,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListUsersResponseBody"
+                $ref: "#/components/schemas/ListResponseBodyUser"
           description: OK
         "400":
           content:

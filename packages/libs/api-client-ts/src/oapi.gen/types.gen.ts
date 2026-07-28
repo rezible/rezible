@@ -69,15 +69,6 @@ export type AddSystemAnalysisNodeResponseBody = {
     data: SystemAnalysisNode;
 };
 
-export type AddWatchedOncallRosterResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<OncallRoster>;
-    pagination: ResponsePagination;
-};
-
 export type AgentSession = {
     attributes: AgentSessionAttributes;
     id: string;
@@ -931,6 +922,14 @@ export type GetKnowledgeGraphEntityResponseBody = {
     data: KnowledgeGraphEntity;
 };
 
+export type GetKnowledgeGraphRelationshipResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeGraphRelationship;
+};
+
 export type GetKnowledgeGraphViewResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1399,15 +1398,6 @@ export type InstallIntegrationFromTargetsRequestBody = {
     attributes: InstallIntegrationFromTargetsRequestAttributes;
 };
 
-export type InstallIntegrationFromTargetsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IntegrationInstallation>;
-    pagination: ResponsePagination;
-};
-
 export type InstallIntegrationRequestAttributes = {
     config: {
         [key: string]: unknown;
@@ -1550,7 +1540,7 @@ export type KnowledgeGraphView = {
     truncated: boolean;
 };
 
-export type ListAgentSessionsResponseBody = {
+export type ListResponseBodyAgentSession = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1559,7 +1549,7 @@ export type ListAgentSessionsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListAgentTurnsResponseBody = {
+export type ListResponseBodyAgentTurn = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1568,16 +1558,7 @@ export type ListAgentTurnsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListAlertIncidentLinksResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<AlertIncidentLink>;
-    pagination: ResponsePagination;
-};
-
-export type ListAlertsResponseBody = {
+export type ListResponseBodyAlert = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1586,16 +1567,16 @@ export type ListAlertsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListEventAnnotationsResponseBody = {
+export type ListResponseBodyAlertIncidentLink = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<EventAnnotation>;
+    data: Array<AlertIncidentLink>;
     pagination: ResponsePagination;
 };
 
-export type ListEventsResponseBody = {
+export type ListResponseBodyEvent = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1604,97 +1585,16 @@ export type ListEventsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListIncidentDebriefMessagesResponseBody = {
+export type ListResponseBodyEventAnnotation = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentDebriefMessage>;
+    data: Array<EventAnnotation>;
     pagination: ResponsePagination;
 };
 
-export type ListIncidentDebriefQuestionsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentDebriefQuestion>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentDebriefSuggestionsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentDebriefSuggestion>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentFieldsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentField>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentMilestonesResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentMilestone>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentRolesResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentRole>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentSeveritiesResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentSeverity>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentTagsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentTag>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentTimelineEventsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentTimelineEvent>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentTypesResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentType>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentsResponseBody = {
+export type ListResponseBodyIncident = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1703,7 +1603,97 @@ export type ListIncidentsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListIntegrationEventSyncRunResponseBody = {
+export type ListResponseBodyIncidentDebriefMessage = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentDebriefMessage>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyIncidentDebriefQuestion = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentDebriefQuestion>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyIncidentDebriefSuggestion = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentDebriefSuggestion>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyIncidentField = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentField>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyIncidentMilestone = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentMilestone>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyIncidentRole = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentRole>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyIncidentSeverity = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentSeverity>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyIncidentTag = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentTag>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyIncidentTimelineEvent = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentTimelineEvent>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyIncidentType = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentType>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyIntegrationEventSyncRun = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1712,7 +1702,7 @@ export type ListIntegrationEventSyncRunResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListIntegrationInstallTargetsResponseBody = {
+export type ListResponseBodyIntegrationInstallTarget = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1721,7 +1711,7 @@ export type ListIntegrationInstallTargetsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListIntegrationInstallationsResponseBody = {
+export type ListResponseBodyIntegrationInstallation = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1730,7 +1720,7 @@ export type ListIntegrationInstallationsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListKnowledgeGraphEntitiesResponseBody = {
+export type ListResponseBodyKnowledgeGraphEntity = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1739,7 +1729,7 @@ export type ListKnowledgeGraphEntitiesResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListKnowledgeGraphRelationshipsResponseBody = {
+export type ListResponseBodyKnowledgeGraphRelationship = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1748,7 +1738,7 @@ export type ListKnowledgeGraphRelationshipsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListMeetingSchedulesResponseBody = {
+export type ListResponseBodyMeetingSchedule = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1757,7 +1747,7 @@ export type ListMeetingSchedulesResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListMeetingSessionsResponseBody = {
+export type ListResponseBodyMeetingSession = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1766,16 +1756,7 @@ export type ListMeetingSessionsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListNotificationsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<UserNotification>;
-    pagination: ResponsePagination;
-};
-
-export type ListOncallRostersResponseBody = {
+export type ListResponseBodyOncallRoster = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1784,7 +1765,7 @@ export type ListOncallRostersResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListOncallShiftsResponseBody = {
+export type ListResponseBodyOncallShift = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1793,7 +1774,7 @@ export type ListOncallShiftsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListPlaybooksResponseBody = {
+export type ListResponseBodyPlaybook = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1802,25 +1783,7 @@ export type ListPlaybooksResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListRetrospectiveCommentsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<RetrospectiveComment>;
-    pagination: ResponsePagination;
-};
-
-export type ListRetrospectiveReviewsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<RetrospectiveReview>;
-    pagination: ResponsePagination;
-};
-
-export type ListRetrospectivesResponseBody = {
+export type ListResponseBodyRetrospective = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1829,7 +1792,25 @@ export type ListRetrospectivesResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListSystemAnalysisEdgesResponseBody = {
+export type ListResponseBodyRetrospectiveComment = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<RetrospectiveComment>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyRetrospectiveReview = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<RetrospectiveReview>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodySystemAnalysisEdge = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1838,7 +1819,7 @@ export type ListSystemAnalysisEdgesResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListSystemAnalysisNodesResponseBody = {
+export type ListResponseBodySystemAnalysisNode = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1847,7 +1828,7 @@ export type ListSystemAnalysisNodesResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListTasksResponseBody = {
+export type ListResponseBodyTask = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1856,16 +1837,7 @@ export type ListTasksResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListTeamMembershipsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<TeamMembership>;
-    pagination: ResponsePagination;
-};
-
-export type ListTeamsResponseBody = {
+export type ListResponseBodyTeam = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1874,7 +1846,16 @@ export type ListTeamsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListUsersResponseBody = {
+export type ListResponseBodyTeamMembership = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<TeamMembership>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyUser = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -1883,12 +1864,12 @@ export type ListUsersResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListWatchedOncallRostersResponseBody = {
+export type ListResponseBodyUserNotification = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallRoster>;
+    data: Array<UserNotification>;
     pagination: ResponsePagination;
 };
 
@@ -2098,15 +2079,6 @@ export type Playbook = {
 export type PlaybookAttributes = {
     content: string;
     title: string;
-};
-
-export type RemoveWatchedOncallRosterResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<OncallRoster>;
-    pagination: ResponsePagination;
 };
 
 export type RequestAgentTurnRequestAttributes = {
@@ -2981,7 +2953,7 @@ export type ListAgentSessionsResponses = {
     /**
      * OK
      */
-    200: ListAgentSessionsResponseBody;
+    200: ListResponseBodyAgentSession;
 };
 
 export type ListAgentSessionsResponse = ListAgentSessionsResponses[keyof ListAgentSessionsResponses];
@@ -3129,7 +3101,7 @@ export type ListAgentTurnsResponses = {
     /**
      * OK
      */
-    200: ListAgentTurnsResponseBody;
+    200: ListResponseBodyAgentTurn;
 };
 
 export type ListAgentTurnsResponse = ListAgentTurnsResponses[keyof ListAgentTurnsResponses];
@@ -3333,7 +3305,7 @@ export type ListAlertsResponses = {
     /**
      * OK
      */
-    200: ListAlertsResponseBody;
+    200: ListResponseBodyAlert;
 };
 
 export type ListAlertsResponse = ListAlertsResponses[keyof ListAlertsResponses];
@@ -3432,7 +3404,7 @@ export type ListAlertIncidentLinksResponses = {
     /**
      * OK
      */
-    200: ListAlertIncidentLinksResponseBody;
+    200: ListResponseBodyAlertIncidentLink;
 };
 
 export type ListAlertIncidentLinksResponse = ListAlertIncidentLinksResponses[keyof ListAlertIncidentLinksResponses];
@@ -3533,7 +3505,7 @@ export type ListUserNotificationsResponses = {
     /**
      * OK
      */
-    200: ListNotificationsResponseBody;
+    200: ListResponseBodyUserNotification;
 };
 
 export type ListUserNotificationsResponse = ListUserNotificationsResponses[keyof ListUserNotificationsResponses];
@@ -3583,7 +3555,7 @@ export type ListDebriefQuestionsResponses = {
     /**
      * OK
      */
-    200: ListIncidentDebriefQuestionsResponseBody;
+    200: ListResponseBodyIncidentDebriefQuestion;
 };
 
 export type ListDebriefQuestionsResponse = ListDebriefQuestionsResponses[keyof ListDebriefQuestionsResponses];
@@ -3918,7 +3890,7 @@ export type ListEventAnnotationsResponses = {
     /**
      * OK
      */
-    200: ListEventAnnotationsResponseBody;
+    200: ListResponseBodyEventAnnotation;
 };
 
 export type ListEventAnnotationsResponse = ListEventAnnotationsResponses[keyof ListEventAnnotationsResponses];
@@ -4110,7 +4082,7 @@ export type ListEventsResponses = {
     /**
      * OK
      */
-    200: ListEventsResponseBody;
+    200: ListResponseBodyEvent;
 };
 
 export type ListEventsResponse = ListEventsResponses[keyof ListEventsResponses];
@@ -4305,7 +4277,7 @@ export type ListDebriefMessagesResponses = {
     /**
      * OK
      */
-    200: ListIncidentDebriefMessagesResponseBody;
+    200: ListResponseBodyIncidentDebriefMessage;
 };
 
 export type ListDebriefMessagesResponse = ListDebriefMessagesResponses[keyof ListDebriefMessagesResponses];
@@ -4404,7 +4376,7 @@ export type ListDebriefSuggestionsResponses = {
     /**
      * OK
      */
-    200: ListIncidentDebriefSuggestionsResponseBody;
+    200: ListResponseBodyIncidentDebriefSuggestion;
 };
 
 export type ListDebriefSuggestionsResponse = ListDebriefSuggestionsResponses[keyof ListDebriefSuggestionsResponses];
@@ -4499,7 +4471,7 @@ export type ListIncidentFieldsResponses = {
     /**
      * OK
      */
-    200: ListIncidentFieldsResponseBody;
+    200: ListResponseBodyIncidentField;
 };
 
 export type ListIncidentFieldsResponse = ListIncidentFieldsResponses[keyof ListIncidentFieldsResponses];
@@ -4735,7 +4707,7 @@ export type ListIncidentRolesResponses = {
     /**
      * OK
      */
-    200: ListIncidentRolesResponseBody;
+    200: ListResponseBodyIncidentRole;
 };
 
 export type ListIncidentRolesResponse = ListIncidentRolesResponses[keyof ListIncidentRolesResponses];
@@ -4971,7 +4943,7 @@ export type ListIncidentSeveritiesResponses = {
     /**
      * OK
      */
-    200: ListIncidentSeveritiesResponseBody;
+    200: ListResponseBodyIncidentSeverity;
 };
 
 export type ListIncidentSeveritiesResponse = ListIncidentSeveritiesResponses[keyof ListIncidentSeveritiesResponses];
@@ -5207,7 +5179,7 @@ export type ListIncidentTagsResponses = {
     /**
      * OK
      */
-    200: ListIncidentTagsResponseBody;
+    200: ListResponseBodyIncidentTag;
 };
 
 export type ListIncidentTagsResponse = ListIncidentTagsResponses[keyof ListIncidentTagsResponses];
@@ -5443,7 +5415,7 @@ export type ListIncidentTypesResponses = {
     /**
      * OK
      */
-    200: ListIncidentTypesResponseBody;
+    200: ListResponseBodyIncidentType;
 };
 
 export type ListIncidentTypesResponse = ListIncidentTypesResponses[keyof ListIncidentTypesResponses];
@@ -5913,7 +5885,7 @@ export type ListIncidentsResponses = {
     /**
      * OK
      */
-    200: ListIncidentsResponseBody;
+    200: ListResponseBodyIncident;
 };
 
 export type ListIncidentsResponse = ListIncidentsResponses[keyof ListIncidentsResponses];
@@ -6193,7 +6165,7 @@ export type ListIncidentMilestonesResponses = {
     /**
      * OK
      */
-    200: ListIncidentMilestonesResponseBody;
+    200: ListResponseBodyIncidentMilestone;
 };
 
 export type ListIncidentMilestonesResponse = ListIncidentMilestonesResponses[keyof ListIncidentMilestonesResponses];
@@ -6292,7 +6264,7 @@ export type ListIncidentTimelineEventsResponses = {
     /**
      * OK
      */
-    200: ListIncidentTimelineEventsResponseBody;
+    200: ListResponseBodyIncidentTimelineEvent;
 };
 
 export type ListIncidentTimelineEventsResponse = ListIncidentTimelineEventsResponses[keyof ListIncidentTimelineEventsResponses];
@@ -6577,7 +6549,7 @@ export type InstallIntegrationFromTargetsResponses = {
     /**
      * OK
      */
-    200: InstallIntegrationFromTargetsResponseBody;
+    200: ListResponseBodyIntegrationInstallation;
 };
 
 export type InstallIntegrationFromTargetsResponse = InstallIntegrationFromTargetsResponses[keyof InstallIntegrationFromTargetsResponses];
@@ -6622,7 +6594,7 @@ export type ListIntegrationInstallTargetsResponses = {
     /**
      * OK
      */
-    200: ListIntegrationInstallTargetsResponseBody;
+    200: ListResponseBodyIntegrationInstallTarget;
 };
 
 export type ListIntegrationInstallTargetsResponse = ListIntegrationInstallTargetsResponses[keyof ListIntegrationInstallTargetsResponses];
@@ -6672,7 +6644,7 @@ export type ListIntegrationInstallationsResponses = {
     /**
      * OK
      */
-    200: ListIntegrationInstallationsResponseBody;
+    200: ListResponseBodyIntegrationInstallation;
 };
 
 export type ListIntegrationInstallationsResponse = ListIntegrationInstallationsResponses[keyof ListIntegrationInstallationsResponses];
@@ -6860,7 +6832,7 @@ export type ListIntegrationEventSyncRunsResponses = {
     /**
      * OK
      */
-    200: ListIntegrationEventSyncRunResponseBody;
+    200: ListResponseBodyIntegrationEventSyncRun;
 };
 
 export type ListIntegrationEventSyncRunsResponse = ListIntegrationEventSyncRunsResponses[keyof ListIntegrationEventSyncRunsResponses];
@@ -6961,7 +6933,7 @@ export type ListKnowledgeGraphEntitiesResponses = {
     /**
      * OK
      */
-    200: ListKnowledgeGraphEntitiesResponseBody;
+    200: ListResponseBodyKnowledgeGraphEntity;
 };
 
 export type ListKnowledgeGraphEntitiesResponse = ListKnowledgeGraphEntitiesResponses[keyof ListKnowledgeGraphEntitiesResponses];
@@ -7062,10 +7034,57 @@ export type ListKnowledgeGraphRelationshipsResponses = {
     /**
      * OK
      */
-    200: ListKnowledgeGraphRelationshipsResponseBody;
+    200: ListResponseBodyKnowledgeGraphRelationship;
 };
 
 export type ListKnowledgeGraphRelationshipsResponse = ListKnowledgeGraphRelationshipsResponses[keyof ListKnowledgeGraphRelationshipsResponses];
+
+export type GetKnowledgeGraphRelationshipData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/knowledge_graph/relationships/{id}';
+};
+
+export type GetKnowledgeGraphRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetKnowledgeGraphRelationshipError = GetKnowledgeGraphRelationshipErrors[keyof GetKnowledgeGraphRelationshipErrors];
+
+export type GetKnowledgeGraphRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: GetKnowledgeGraphRelationshipResponseBody;
+};
+
+export type GetKnowledgeGraphRelationshipResponse = GetKnowledgeGraphRelationshipResponses[keyof GetKnowledgeGraphRelationshipResponses];
 
 export type GetKnowledgeGraphViewData = {
     body?: never;
@@ -7161,7 +7180,7 @@ export type ListMeetingSchedulesResponses = {
     /**
      * OK
      */
-    200: ListMeetingSchedulesResponseBody;
+    200: ListResponseBodyMeetingSchedule;
 };
 
 export type ListMeetingSchedulesResponse = ListMeetingSchedulesResponses[keyof ListMeetingSchedulesResponses];
@@ -7402,7 +7421,7 @@ export type ListMeetingSessionsResponses = {
     /**
      * OK
      */
-    200: ListMeetingSessionsResponseBody;
+    200: ListResponseBodyMeetingSession;
 };
 
 export type ListMeetingSessionsResponse = ListMeetingSessionsResponses[keyof ListMeetingSessionsResponses];
@@ -7921,7 +7940,7 @@ export type ListOncallRostersResponses = {
     /**
      * OK
      */
-    200: ListOncallRostersResponseBody;
+    200: ListResponseBodyOncallRoster;
 };
 
 export type ListOncallRostersResponse = ListOncallRostersResponses[keyof ListOncallRostersResponses];
@@ -8020,7 +8039,7 @@ export type ListOncallShiftsResponses = {
     /**
      * OK
      */
-    200: ListOncallShiftsResponseBody;
+    200: ListResponseBodyOncallShift;
 };
 
 export type ListOncallShiftsResponse = ListOncallShiftsResponses[keyof ListOncallShiftsResponses];
@@ -8256,7 +8275,7 @@ export type ListWatchedOncallRostersResponses = {
     /**
      * OK
      */
-    200: ListWatchedOncallRostersResponseBody;
+    200: ListResponseBodyOncallRoster;
 };
 
 export type ListWatchedOncallRostersResponse = ListWatchedOncallRostersResponses[keyof ListWatchedOncallRostersResponses];
@@ -8303,7 +8322,7 @@ export type RemoveWatchedOncallRosterResponses = {
     /**
      * OK
      */
-    200: RemoveWatchedOncallRosterResponseBody;
+    200: ListResponseBodyOncallRoster;
 };
 
 export type RemoveWatchedOncallRosterResponse = RemoveWatchedOncallRosterResponses[keyof RemoveWatchedOncallRosterResponses];
@@ -8350,7 +8369,7 @@ export type AddWatchedOncallRosterResponses = {
     /**
      * OK
      */
-    200: AddWatchedOncallRosterResponseBody;
+    200: ListResponseBodyOncallRoster;
 };
 
 export type AddWatchedOncallRosterResponse = AddWatchedOncallRosterResponses[keyof AddWatchedOncallRosterResponses];
@@ -8635,7 +8654,7 @@ export type ListPlaybooksResponses = {
     /**
      * OK
      */
-    200: ListPlaybooksResponseBody;
+    200: ListResponseBodyPlaybook;
 };
 
 export type ListPlaybooksResponse = ListPlaybooksResponses[keyof ListPlaybooksResponses];
@@ -9064,7 +9083,7 @@ export type ListRetrospectivesResponses = {
     /**
      * OK
      */
-    200: ListRetrospectivesResponseBody;
+    200: ListResponseBodyRetrospective;
 };
 
 export type ListRetrospectivesResponse = ListRetrospectivesResponses[keyof ListRetrospectivesResponses];
@@ -9210,7 +9229,7 @@ export type ListRetrospectiveCommentsResponses = {
     /**
      * OK
      */
-    200: ListRetrospectiveCommentsResponseBody;
+    200: ListResponseBodyRetrospectiveComment;
 };
 
 export type ListRetrospectiveCommentsResponse = ListRetrospectiveCommentsResponses[keyof ListRetrospectiveCommentsResponses];
@@ -9307,7 +9326,7 @@ export type ListRetrospectiveReviewsResponses = {
     /**
      * OK
      */
-    200: ListRetrospectiveReviewsResponseBody;
+    200: ListResponseBodyRetrospectiveReview;
 };
 
 export type ListRetrospectiveReviewsResponse = ListRetrospectiveReviewsResponses[keyof ListRetrospectiveReviewsResponses];
@@ -9453,7 +9472,7 @@ export type ListSystemAnalysisEdgesResponses = {
     /**
      * OK
      */
-    200: ListSystemAnalysisEdgesResponseBody;
+    200: ListResponseBodySystemAnalysisEdge;
 };
 
 export type ListSystemAnalysisEdgesResponse = ListSystemAnalysisEdgesResponses[keyof ListSystemAnalysisEdgesResponses];
@@ -9552,7 +9571,7 @@ export type ListSystemAnalysisNodesResponses = {
     /**
      * OK
      */
-    200: ListSystemAnalysisNodesResponseBody;
+    200: ListResponseBodySystemAnalysisNode;
 };
 
 export type ListSystemAnalysisNodesResponse = ListSystemAnalysisNodesResponses[keyof ListSystemAnalysisNodesResponses];
@@ -9932,7 +9951,7 @@ export type ListTasksResponses = {
     /**
      * OK
      */
-    200: ListTasksResponseBody;
+    200: ListResponseBodyTask;
 };
 
 export type ListTasksResponse = ListTasksResponses[keyof ListTasksResponses];
@@ -10170,7 +10189,7 @@ export type ListTeamMembershipsResponses = {
     /**
      * OK
      */
-    200: ListTeamMembershipsResponseBody;
+    200: ListResponseBodyTeamMembership;
 };
 
 export type ListTeamMembershipsResponse = ListTeamMembershipsResponses[keyof ListTeamMembershipsResponses];
@@ -10359,7 +10378,7 @@ export type ListTeamsResponses = {
     /**
      * OK
      */
-    200: ListTeamsResponseBody;
+    200: ListResponseBodyTeam;
 };
 
 export type ListTeamsResponse = ListTeamsResponses[keyof ListTeamsResponses];
@@ -10688,7 +10707,7 @@ export type ListUsersResponses = {
     /**
      * OK
      */
-    200: ListUsersResponseBody;
+    200: ListResponseBodyUser;
 };
 
 export type ListUsersResponse = ListUsersResponses[keyof ListUsersResponses];

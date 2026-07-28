@@ -16,17 +16,21 @@ import (
 type KnowledgeGraphHandler interface {
 	ListKnowledgeGraphEntities(context.Context, *ListKnowledgeGraphEntitiesRequest) (*ListKnowledgeGraphEntitiesResponse, error)
 	GetKnowledgeGraphEntity(context.Context, *GetKnowledgeGraphEntityRequest) (*GetKnowledgeGraphEntityResponse, error)
-	GetKnowledgeGraphView(context.Context, *GetKnowledgeGraphViewRequest) (*GetKnowledgeGraphViewResponse, error)
 
 	ListKnowledgeGraphRelationships(context.Context, *ListKnowledgeGraphRelationshipsRequest) (*ListKnowledgeGraphRelationshipsResponse, error)
+	GetKnowledgeGraphRelationship(context.Context, *GetKnowledgeGraphRelationshipRequest) (*GetKnowledgeGraphRelationshipResponse, error)
+
+	GetKnowledgeGraphView(context.Context, *GetKnowledgeGraphViewRequest) (*GetKnowledgeGraphViewResponse, error)
 }
 
 func (o operations) RegisterKnowledgeGraph(api huma.API) {
 	huma.Register(api, ListKnowledgeGraphEntities, o.ListKnowledgeGraphEntities)
 	huma.Register(api, GetKnowledgeGraphEntity, o.GetKnowledgeGraphEntity)
-	huma.Register(api, GetKnowledgeGraphView, o.GetKnowledgeGraphView)
 
 	huma.Register(api, ListKnowledgeGraphRelationships, o.ListKnowledgeGraphRelationships)
+	huma.Register(api, GetKnowledgeGraphRelationship, o.GetKnowledgeGraphRelationship)
+
+	huma.Register(api, GetKnowledgeGraphView, o.GetKnowledgeGraphView)
 }
 
 type (
@@ -207,22 +211,6 @@ var GetKnowledgeGraphEntity = huma.Operation{
 type GetKnowledgeGraphEntityRequest IdRequest
 type GetKnowledgeGraphEntityResponse ItemResponse[KnowledgeGraphEntity]
 
-var GetKnowledgeGraphView = huma.Operation{
-	OperationID: "get-knowledge-graph-view",
-	Method:      http.MethodGet,
-	Path:        "/knowledge_graph/view",
-	Summary:     "Get Knowledge Graph View",
-	Tags:        knowledgeGraphTags,
-	Errors:      ErrorCodes(),
-}
-
-type GetKnowledgeGraphViewRequest struct {
-	EntityId         uuid.UUID `query:"entityId" required:"false"`
-	Depth            int       `query:"depth" default:"1" minimum:"1" maximum:"4" required:"false"`
-	RelationshipKind []string  `query:"relationshipKind" required:"false"`
-}
-type GetKnowledgeGraphViewResponse ItemResponse[KnowledgeGraphView]
-
 var ListKnowledgeGraphRelationships = huma.Operation{
 	OperationID: "list-knowledge-graph-relationships",
 	Method:      http.MethodGet,
@@ -240,3 +228,31 @@ type ListKnowledgeGraphRelationshipsRequest struct {
 	TargetEntityId uuid.UUID `query:"targetEntityId" required:"false"`
 }
 type ListKnowledgeGraphRelationshipsResponse ListResponse[KnowledgeGraphRelationship]
+
+var GetKnowledgeGraphRelationship = huma.Operation{
+	OperationID: "get-knowledge-graph-relationship",
+	Method:      http.MethodGet,
+	Path:        "/knowledge_graph/relationships/{id}",
+	Summary:     "Get Knowledge Graph Relationship",
+	Tags:        knowledgeGraphTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetKnowledgeGraphRelationshipRequest IdRequest
+type GetKnowledgeGraphRelationshipResponse ItemResponse[KnowledgeGraphRelationship]
+
+var GetKnowledgeGraphView = huma.Operation{
+	OperationID: "get-knowledge-graph-view",
+	Method:      http.MethodGet,
+	Path:        "/knowledge_graph/view",
+	Summary:     "Get Knowledge Graph View",
+	Tags:        knowledgeGraphTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetKnowledgeGraphViewRequest struct {
+	EntityId         uuid.UUID `query:"entityId" required:"false"`
+	Depth            int       `query:"depth" default:"1" minimum:"1" maximum:"4" required:"false"`
+	RelationshipKind []string  `query:"relationshipKind" required:"false"`
+}
+type GetKnowledgeGraphViewResponse ItemResponse[KnowledgeGraphView]

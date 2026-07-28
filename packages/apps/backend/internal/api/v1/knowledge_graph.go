@@ -42,38 +42,19 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphEntities(ctx context.Context, 
 		ListParams: request.ListParams(),
 		Predicates: preds,
 	}
-	result, queryErr := h.knowledge.ListEntities(ctx, params)
-	if queryErr != nil {
-		return nil, oapi.Error(ctx, "failed to list knowledge graph entities", queryErr)
+	result, listErr := h.knowledge.ListEntities(ctx, params)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "failed to list knowledge graph entities", listErr)
 	}
-	response.Body.Data = make([]oapi.KnowledgeGraphEntity, len(result.Data))
-	for i, entity := range result.Data {
-		response.Body.Data[i] = oapi.KnowledgeGraphEntityFromEnt(entity)
-	}
-	response.Body.Pagination = oapi.ResponsePagination{Total: result.Count}
-	return &response, nil
-}
-
-func (h *knowledgeGraphHandler) GetKnowledgeGraphView(ctx context.Context, request *oapi.GetKnowledgeGraphViewRequest) (*oapi.GetKnowledgeGraphViewResponse, error) {
-	params := rez.GetKnowledgeGraphViewParams{
-		EntityID:          request.EntityId,
-		Depth:             request.Depth,
-		RelationshipKinds: request.RelationshipKind,
-	}
-	view, viewErr := h.knowledge.GetView(ctx, params)
-	if viewErr != nil {
-		return nil, oapi.Error(ctx, "failed to get knowledge graph view", viewErr)
-	}
-	var response oapi.GetKnowledgeGraphViewResponse
-	response.Body.Data = oapi.KnowledgeGraphViewFromRez(view)
+	response.Body = oapi.ConvertListResultBody(result, oapi.KnowledgeGraphEntityFromEnt)
 	return &response, nil
 }
 
 func (h *knowledgeGraphHandler) GetKnowledgeGraphEntity(ctx context.Context, request *oapi.GetKnowledgeGraphEntityRequest) (*oapi.GetKnowledgeGraphEntityResponse, error) {
 	var response oapi.GetKnowledgeGraphEntityResponse
-	entity, queryErr := h.knowledge.GetEntity(ctx, request.Id)
-	if queryErr != nil {
-		return nil, oapi.Error(ctx, "failed to get knowledge graph entity", queryErr)
+	entity, entityErr := h.knowledge.GetEntity(ctx, request.Id)
+	if entityErr != nil {
+		return nil, oapi.Error(ctx, "failed to get knowledge graph entity", entityErr)
 	}
 	response.Body.Data = oapi.KnowledgeGraphEntityFromEnt(entity)
 	return &response, nil
@@ -102,10 +83,31 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphRelationships(ctx context.Cont
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to list knowledge graph relationships", queryErr)
 	}
-	response.Body.Data = make([]oapi.KnowledgeGraphRelationship, len(result.Data))
-	for i, rel := range result.Data {
-		response.Body.Data[i] = oapi.KnowledgeGraphRelationshipFromEnt(rel)
+	response.Body = oapi.ConvertListResultBody(result, oapi.KnowledgeGraphRelationshipFromEnt)
+	return &response, nil
+}
+
+func (h *knowledgeGraphHandler) GetKnowledgeGraphRelationship(ctx context.Context, request *oapi.GetKnowledgeGraphRelationshipRequest) (*oapi.GetKnowledgeGraphRelationshipResponse, error) {
+	var response oapi.GetKnowledgeGraphRelationshipResponse
+	rel, relErr := h.knowledge.GetRelationship(ctx, request.Id)
+	if relErr != nil {
+		return nil, oapi.Error(ctx, "failed to get knowledge graph relationship", relErr)
 	}
-	response.Body.Pagination = oapi.ResponsePagination{Total: result.Count}
+	response.Body.Data = oapi.KnowledgeGraphRelationshipFromEnt(rel)
+	return &response, nil
+}
+
+func (h *knowledgeGraphHandler) GetKnowledgeGraphView(ctx context.Context, request *oapi.GetKnowledgeGraphViewRequest) (*oapi.GetKnowledgeGraphViewResponse, error) {
+	params := rez.GetKnowledgeGraphViewParams{
+		EntityID:          request.EntityId,
+		Depth:             request.Depth,
+		RelationshipKinds: request.RelationshipKind,
+	}
+	view, viewErr := h.knowledge.GetView(ctx, params)
+	if viewErr != nil {
+		return nil, oapi.Error(ctx, "failed to get knowledge graph view", viewErr)
+	}
+	var response oapi.GetKnowledgeGraphViewResponse
+	response.Body.Data = oapi.KnowledgeGraphViewFromRez(view)
 	return &response, nil
 }
