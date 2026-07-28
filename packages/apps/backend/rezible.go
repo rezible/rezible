@@ -43,10 +43,6 @@ type (
 		Shutdown() error
 	}
 
-	DatabaseNotificationService interface {
-		Listen(ctx context.Context, channel string, onConnect func(context.Context) error, onNotify func(context.Context, []byte) error) error
-	}
-
 	MigrationService interface {
 		GetCurrentStatus(context.Context) (*MigrationStatus, error)
 		CreateSchemaMigration(ctx context.Context, name string) error
