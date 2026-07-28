@@ -377,7 +377,7 @@ func (w *agentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.InvokeAg
 			FinishReason:         result.FinishReason,
 			Response:             result.Response,
 		}
-		if eventErr := w.msgs.PublishEvent(ctx, &turnFinishedEvent); eventErr != nil {
+		if eventErr := w.msgs.Publish(ctx, &turnFinishedEvent); eventErr != nil {
 			w.logger.Warn("failed to publish event", "error", eventErr)
 		}
 	}
@@ -397,11 +397,22 @@ func (w *agentTurnWorker) invokeClaimedTurn(ctx context.Context, claim *claimedA
 	if decodeErr := json.Unmarshal(claim.turn.Input, &input); decodeErr != nil {
 		return nil, fmt.Errorf("decode stored turn input: %w", decodeErr)
 	}
+	chunkFn := func(chunk rez.AgentTurnChunk) {
+		msgErr := w.msgs.Publish(ctx, rezai.EventOnAgentTurnChunk{
+			AgentSessionId: claim.session.ID,
+			AgentTurnId:    claim.turn.ID,
+			Chunk:          chunk,
+		})
+		if msgErr != nil {
+			w.logger.WarnContext(ctx, "failed to publish agent turn chunk", "error", msgErr)
+		}
+	}
 	return w.ai.InvokeAgentTurn(ctx, rez.InvokeAgentTurnParams{
 		Session: claim.session,
 		Parent:  claim.parent,
 		Turn:    claim.turn,
 		Input:   &input,
+		OnChunk: chunkFn,
 	})
 }
 

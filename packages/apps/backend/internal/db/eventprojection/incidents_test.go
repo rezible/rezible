@@ -21,9 +21,9 @@ import (
 
 func (s *ProjectionServiceSuite) incidentService(events *[]rez.EventOnIncidentUpdated) rez.IncidentService {
 	messageService := mocks.NewMockMessageService(s.T())
-	messageService.EXPECT().AddEventHandlers(mock.Anything).Return(nil).Once()
+	messageService.EXPECT().AddHandlers(mock.Anything).Return(nil).Once()
 	messageService.EXPECT().
-		PublishEvent(mock.Anything, mock.Anything).
+		Publish(mock.Anything, mock.Anything).
 		Run(func(_ context.Context, event any) {
 			if updated, ok := event.(rez.EventOnIncidentUpdated); ok {
 				*events = append(*events, updated)

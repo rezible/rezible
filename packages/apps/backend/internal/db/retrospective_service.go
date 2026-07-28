@@ -2,14 +2,13 @@ package db
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/pkg/messages"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -40,39 +39,13 @@ func NewRetrospectiveService(
 }
 
 func (s *RetrospectiveService) registerMessageHandlers() error {
-	return errors.Join(
-		s.msgs.AddEventHandlers(
-			rez.NewEventHandler("retrospectives.on_incident_updated", s.onIncidentUpdated),
-		),
-		s.msgs.AddCommandHandlers(
-			rez.NewCommandHandler("retrospectives.update_for_incident", s.handleUpdateForIncident),
-		),
+	return s.msgs.AddHandlers(
+		messages.NewEventHandler("retrospectives.on_incident_updated", s.onIncidentUpdated),
 	)
 }
 
 func (s *RetrospectiveService) onIncidentUpdated(ctx context.Context, evt *rez.EventOnIncidentUpdated) error {
-	if cmdErr := s.msgs.SendCommand(ctx, cmdUpdateIncidentRetrospective{IncidentId: evt.IncidentId}); cmdErr != nil {
-		return fmt.Errorf("send cmdCreateRetrospectiveForIncident: %w", cmdErr)
-	}
-	return nil
-}
-
-type cmdUpdateIncidentRetrospective struct {
-	IncidentId uuid.UUID
-}
-
-func (s *RetrospectiveService) handleUpdateForIncident(ctx context.Context, cmd *cmdUpdateIncidentRetrospective) error {
-	_, retroErr := s.Get(ctx, retrospective.IncidentID(cmd.IncidentId))
-	if retroErr != nil && !ent.IsNotFound(retroErr) {
-		return fmt.Errorf("query retrospective by incident id %q: %w", cmd.IncidentId, retroErr)
-	}
-	inc, incErr := s.incidents.Get(ctx, incident.ID(cmd.IncidentId))
-	if incErr != nil {
-		return fmt.Errorf("get incident: %w", incErr)
-	}
-	if _, setErr := s.createForIncident(ctx, inc); setErr != nil {
-		return fmt.Errorf("create retrospective: %w", setErr)
-	}
+	// TODO: update retrospective
 	return nil
 }
 

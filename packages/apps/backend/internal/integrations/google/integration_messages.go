@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/pkg/messages"
 )
 
 type eventHandler struct {
@@ -23,15 +23,10 @@ func (i *Integration) registerMessageHandlers() error {
 		messages:     i.messages,
 		incidents:    i.incidents,
 	}
-	eventsErr := i.messages.AddEventHandlers(
-		rez.NewEventHandler("Google.OnIncidentUpdate", mh.onIncidentUpdate))
+	eventsErr := i.messages.AddHandlers(
+		messages.NewEventHandler("Google.OnIncidentUpdate", mh.onIncidentUpdate))
 	if eventsErr != nil {
 		return fmt.Errorf("events: %w", eventsErr)
-	}
-	cmdsErr := i.messages.AddCommandHandlers(
-		rez.NewCommandHandler("Google.CreateIncidentVideoConference", mh.createIncidentVideoConference))
-	if cmdsErr != nil {
-		return fmt.Errorf("commands: %w", cmdsErr)
 	}
 	return nil
 }
@@ -63,25 +58,10 @@ func (h *eventHandler) onIncidentUpdate(ctx context.Context, ev *rez.EventOnInci
 	if ev.Created {
 		return h.withInstallation(ctx, func(ii *InstalledIntegration) error {
 			if !ii.isVideoConferenceEnabled() {
-				return nil
+				// TODO: create video conference?
 			}
-			return h.messages.SendCommand(ctx, &cmdCreateIncidentVideoConference{IncidentId: ev.IncidentId})
+			return nil
 		})
 	}
-	return nil
-}
-
-type cmdCreateIncidentVideoConference struct {
-	IncidentId uuid.UUID `json:"incident_id"`
-}
-
-func (h *eventHandler) createIncidentVideoConference(ctx context.Context, cmd *cmdCreateIncidentVideoConference) error {
-	//return h.withInstallation(ctx, func(ii *InstalledIntegration) error {
-	//	inc, incErr := h.incidents.Get(ctx, incident.ID(cmd.IncidentId))
-	//	if incErr != nil {
-	//		return fmt.Errorf("get incident: %w", incErr)
-	//	}
-	//	return newMeetService(ii).CreateIncidentVideoConference(ctx, inc)
-	//})
 	return nil
 }

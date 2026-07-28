@@ -3,6 +3,17 @@ package jobs
 import (
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
+)
+
+var (
+	UniqueStateNonCompleted = []rivertype.JobState{
+		rivertype.JobStatePending,
+		rivertype.JobStateAvailable,
+		rivertype.JobStateScheduled,
+		rivertype.JobStateRunning,
+		rivertype.JobStateRetryable,
+	}
 )
 
 type ProjectNormalizedEvent struct {

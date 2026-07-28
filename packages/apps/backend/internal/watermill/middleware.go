@@ -70,7 +70,12 @@ func (ms *MessageService) addPublisherDecorations(base message.Publisher) (messa
 	return pub, nil
 }
 
-func (ms *MessageService) setupPoisonQueue(router *message.Router, pub message.Publisher, sub message.Subscriber) (message.HandlerMiddleware, error) {
+func (ms *MessageService) makePoisonQueue() (message.HandlerMiddleware, error) {
+	poisonSub, poisonSubErr := ms.transport.Subscriber("poison")
+	if poisonSubErr != nil {
+		return nil, fmt.Errorf("poison subscriber: %w", poisonSubErr)
+	}
+
 	numPoisonedMetric, metricErr := ms.telemetry.DefaultMeter().Int64Counter("backend.messages.poisoned",
 		metric.WithDescription("Watermill messages sent to the poison queue"))
 	if metricErr != nil {
@@ -81,14 +86,15 @@ func (ms *MessageService) setupPoisonQueue(router *message.Router, pub message.P
 		return true
 	}
 
-	poisonQueueTopic := "poison.queue"
-	poison, poisonErr := middleware.PoisonQueueWithFilter(pub, poisonQueueTopic, poisonFilter)
+	topic := "poison.queue"
+	poison, poisonErr := middleware.PoisonQueueWithFilter(ms.publisher, topic, poisonFilter)
 	if poisonErr != nil {
 		return nil, fmt.Errorf("failed initializing poison queue: %w", poisonErr)
 	}
-	router.AddConsumerHandler("PoisonQueueLogger", poisonQueueTopic, sub, func(msg *message.Message) error {
+
+	ms.router.AddConsumerHandler("PoisonQueueLogger", topic, poisonSub, func(msg *message.Message) error {
 		numPoisonedMetric.Add(msg.Context(), 1)
-		router.Logger().Info("message sent to poison queue", watermill.LogFields{"uuid": msg.UUID})
+		ms.router.Logger().Info("message sent to poison queue", watermill.LogFields{"uuid": msg.UUID})
 		return nil
 	})
 
@@ -104,18 +110,26 @@ func (ms *MessageService) setMessageExecutionContext(msg *message.Message) {
 	msg.Metadata.Set(messageMetadataKeyExecutionContext, string(encodedExec))
 }
 
+func (ms *MessageService) restoreMessageContext(msg *message.Message) error {
+	encodedExec := msg.Metadata.Get(messageMetadataKeyExecutionContext)
+	if encodedExec == "" {
+		return nil
+	}
+
+	exec, decodeErr := execution.DecodeContext([]byte(encodedExec))
+	if decodeErr != nil {
+		return fmt.Errorf("restoring execution context: %w", decodeErr)
+	}
+
+	msg.SetContext(execution.SetContext(msg.Context(), exec))
+	return nil
+}
+
 func (ms *MessageService) restoreMessageAccessScope(fn message.HandlerFunc) message.HandlerFunc {
 	return func(msg *message.Message) ([]*message.Message, error) {
-		encodedExec := msg.Metadata.Get(messageMetadataKeyExecutionContext)
-		if encodedExec == "" {
-			return fn(msg)
+		if err := ms.restoreMessageContext(msg); err != nil {
+			return nil, err
 		}
-
-		exec, decodeErr := execution.DecodeContext([]byte(encodedExec))
-		if decodeErr != nil {
-			return nil, fmt.Errorf("restoring execution context: %w", decodeErr)
-		}
-		msg.SetContext(execution.SetContext(msg.Context(), exec))
 		return fn(msg)
 	}
 }

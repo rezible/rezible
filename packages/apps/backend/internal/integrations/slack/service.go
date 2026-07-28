@@ -12,6 +12,7 @@ import (
 	in "github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/messages"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"golang.org/x/oauth2"
@@ -109,10 +110,10 @@ func (s *AppService[A]) App() A {
 
 func (s *AppService[A]) registerMessageHandlers() error {
 	return errors.Join(
-		s.msgs.AddEventHandlers(
-			rez.NewEventHandler(s.integrationName+".slash_command", s.handleSlashCommand),
-			rez.NewEventHandler(s.integrationName+".interaction_callback", s.handleInteractionCallback),
-			rez.NewEventHandler(s.integrationName+".events_api_callback", s.handleEventsApiCallbackEvent),
+		s.msgs.AddHandlers(
+			messages.NewEventHandler(s.integrationName+".slash_command", s.handleSlashCommand),
+			messages.NewEventHandler(s.integrationName+".interaction_callback", s.handleInteractionCallback),
+			messages.NewEventHandler(s.integrationName+".events_api_callback", s.handleEventsApiCallbackEvent),
 		),
 	)
 }

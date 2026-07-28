@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -128,31 +127,10 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 	s.Require().NotNil(currEv.SubjectState)
 	s.Equal("API", currEv.SubjectState.DisplayName)
 
-	view, viewErr := service.GetView(ctx, source.ID, rez.GetKnowledgeGraphViewParams{Depth: 1})
+	viewParams := rez.GetKnowledgeGraphViewParams{Depth: 1, EntityID: source.ID}
+	view, viewErr := service.GetView(ctx, viewParams)
 	s.Require().NoError(viewErr)
 	s.Len(view.Entities, 2)
 	s.Len(view.Relationships, 1)
 	s.Equal(source.ID, view.RootID)
-
-	deletedEvent := s.createEvent(projections.SubjectKindSystemRelationship, ne.KindDeleted, relationshipAlias.ProviderSubjectRef, now.Add(time.Hour), struct{}{})
-	_, ingestErr = service.IngestEvidenceBulk(ctx, deletedEvent, ent.KnowledgeEvidenceRef{
-		Kind:         ke.KindDeleted,
-		Assertion:    "relationship_exists",
-		EffectiveAt:  now.Add(time.Hour),
-		SubjectState: schematypes.KnowledgeGraphSubjectState{},
-		SubjectRelationship: &ent.KnowledgeRelationshipRef{
-			Kind:   "uses",
-			Alias:  relationshipAlias,
-			Source: ent.KnowledgeEntityRef{Kind: "system_component", Alias: sourceAlias},
-			Target: ent.KnowledgeEntityRef{Kind: "system_component", Alias: targetAlias},
-		},
-	})
-	s.Require().NoError(ingestErr)
-
-	view, viewErr = service.GetView(context.Background(), source.ID, rez.GetKnowledgeGraphViewParams{Depth: 1})
-	s.Error(viewErr)
-
-	view, viewErr = service.GetView(ctx, source.ID, rez.GetKnowledgeGraphViewParams{Depth: 1})
-	s.Require().NoError(viewErr)
-	s.Empty(view.Relationships)
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 )
 
 type EventOnAgentTurnFinished struct {
@@ -12,4 +13,14 @@ type EventOnAgentTurnFinished struct {
 	AgentTurnId          uuid.UUID
 	FinishReason         aix.AgentFinishReason
 	Response             *ai.Message
+}
+
+type EventOnAgentTurnChunk struct {
+	AgentSessionId uuid.UUID
+	AgentTurnId    uuid.UUID
+	Chunk          rez.AgentTurnChunk
+}
+
+func (e EventOnAgentTurnChunk) MessageScopes() []string {
+	return []string{"agent_session:" + e.AgentSessionId.String(), "agent_turn:" + e.AgentTurnId.String()}
 }

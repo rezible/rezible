@@ -2,7 +2,6 @@ package slackincidents
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -10,6 +9,9 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/rezible/rezible/pkg/messages"
+	"github.com/riverqueue/river"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
@@ -18,32 +20,30 @@ type App struct {
 	cfg       rez.Config
 	db        rez.Database
 	messages  rez.MessageService
+	jobs      rez.JobService
 	incidents rez.IncidentService
 }
 
-func MakeApp(cfg rez.Config, db rez.Database, msgs rez.MessageService, incidents rez.IncidentService) (*App, error) {
+func MakeApp(cfg rez.Config, db rez.Database, msgs rez.MessageService, js rez.JobService, incidents rez.IncidentService) (*App, error) {
 	h := &App{
 		cfg:       cfg,
 		db:        db,
 		messages:  msgs,
+		jobs:      js,
 		incidents: incidents,
 	}
-	if msgsErr := h.registerHandlers(); msgsErr != nil {
+	jobs.RegisterWorkerFunc(h.handleCreateIncidentChannelJob)
+	jobs.RegisterWorkerFunc(h.handleSendIncidentMilestoneMessageJob)
+	if msgsErr := h.registerMessageHandlers(); msgsErr != nil {
 		return nil, fmt.Errorf("message handlers: %w", msgsErr)
 	}
 	return h, nil
 }
 
-func (a *App) registerHandlers() error {
-	return errors.Join(
-		a.messages.AddEventHandlers(
-			rez.NewEventHandler("slack.incidents.updated", a.onIncidentUpdated),
-			rez.NewEventHandler("slack.incidents.milestone_updated", a.onIncidentMilestoneUpdated),
-		),
-		a.messages.AddCommandHandlers(
-			rez.NewCommandHandler("slack.create_incident_channel", a.createIncidentChannel),
-			rez.NewCommandHandler("slack.send_incident_milestone_message", a.sendIncidentMilestoneMessage),
-		),
+func (a *App) registerMessageHandlers() error {
+	return a.messages.AddHandlers(
+		messages.NewEventHandler("slack.incidents.updated", a.onIncidentUpdated),
+		messages.NewEventHandler("slack.incidents.milestone_updated", a.onIncidentMilestoneUpdated),
 	)
 }
 
@@ -146,23 +146,51 @@ func (a *App) onIncidentMilestoneUpdated(ctx context.Context, ev *rez.EventOnInc
 	})
 }
 
-type cmdCreateIncidentChannel struct {
+type createIncidentChannelJobArgs struct {
 	IncidentId uuid.UUID
 }
 
-func (a *App) createIncidentChannel(ctx context.Context, ev *cmdCreateIncidentChannel) error {
-	return a.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
+func (a createIncidentChannelJobArgs) Kind() string {
+	return "slackincidents-create-incident-channel"
+}
+
+func (createIncidentChannelJobArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{
+		MaxAttempts: 2,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: jobs.UniqueStateNonCompleted,
+		},
+	}
+}
+
+func (a *App) handleCreateIncidentChannelJob(ctx context.Context, args createIncidentChannelJobArgs) error {
+	return a.withIncidentUpdateProcessor(ctx, args.IncidentId, func(p *incidentUpdateProcessor) error {
 		return p.createIncidentChannel(ctx)
 	})
 }
 
-type cmdSendIncidentMilestoneMessage struct {
+type sendMilestoneMessageJobArgs struct {
 	IncidentId  uuid.UUID
 	MilestoneId uuid.UUID
 }
 
-func (a *App) sendIncidentMilestoneMessage(ctx context.Context, ev *cmdSendIncidentMilestoneMessage) error {
-	return a.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
-		return p.sendIncidentMilestoneMessage(ctx, ev.MilestoneId)
+func (a sendMilestoneMessageJobArgs) Kind() string {
+	return "slackincidents-send-milestone-message"
+}
+
+func (sendMilestoneMessageJobArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{
+		MaxAttempts: 2,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: jobs.UniqueStateNonCompleted,
+		},
+	}
+}
+
+func (a *App) handleSendIncidentMilestoneMessageJob(ctx context.Context, args sendMilestoneMessageJobArgs) error {
+	return a.withIncidentUpdateProcessor(ctx, args.IncidentId, func(p *incidentUpdateProcessor) error {
+		return p.sendIncidentMilestoneMessage(ctx, args.MilestoneId)
 	})
 }

@@ -39,7 +39,7 @@ type slashCommandEvent struct {
 }
 
 func (h *appEventHandler) OnSlashCommand(ctx context.Context, sc slack.SlashCommand) error {
-	return h.messages.PublishEvent(ctx, &slashCommandEvent{
+	return h.messages.Publish(ctx, &slashCommandEvent{
 		IntegrationName: h.integrationName,
 		Command:         sc,
 	})
@@ -51,7 +51,7 @@ type interactionCallbackEvent struct {
 }
 
 func (h *appEventHandler) OnInteractionCallback(ctx context.Context, data []byte) error {
-	return h.messages.PublishEvent(ctx, &interactionCallbackEvent{
+	return h.messages.Publish(ctx, &interactionCallbackEvent{
 		IntegrationName: h.integrationName,
 		Data:            data,
 	})
@@ -73,7 +73,7 @@ func (h *appEventHandler) OnEventsApiCallback(ctx context.Context, ev *slackeven
 	innerType := slackevents.EventsAPIType(inner.Type)
 	if h.respondEventTypes.Contains(innerType) {
 		fmt.Printf("handle callback event: %s\n", inner.Type)
-		publishErr := h.messages.PublishEvent(ctx, &handleEventsApiCallbackEvent{
+		publishErr := h.messages.Publish(ctx, &handleEventsApiCallbackEvent{
 			IntegrationName: h.integrationName,
 			Data:            data,
 		})

@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
@@ -18,6 +19,7 @@ import (
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/pkg/messages"
 )
 
 type IncidentService struct {
@@ -39,8 +41,8 @@ func NewIncidentService(db rez.Database, msgs rez.MessageService) (*IncidentServ
 }
 
 func (s *IncidentService) registerMessageHandlers() error {
-	eventsErr := s.msgs.AddEventHandlers(
-		rez.NewEventHandler("db.IncidentService.OnIncidentUpdate", s.onIncidentUpdate))
+	eventsErr := s.msgs.AddHandlers(
+		messages.NewEventHandler("db.IncidentService.OnIncidentUpdate", s.onIncidentUpdate))
 	return errors.Join(eventsErr)
 }
 
@@ -161,7 +163,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		IncidentId: updated.ID,
 	}
 	publish := func(publishCtx context.Context) {
-		if pubEvErr := s.msgs.PublishEvent(publishCtx, updatedEvent); pubEvErr != nil {
+		if pubEvErr := s.msgs.Publish(publishCtx, updatedEvent); pubEvErr != nil {
 			slog.Error("failed to publish incident update event message", "error", pubEvErr)
 		}
 	}
@@ -201,7 +203,7 @@ func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID
 		MilestoneId: updated.ID,
 		Created:     id == uuid.Nil,
 	}
-	if pubEvErr := s.msgs.PublishEvent(ctx, updatedEvent); pubEvErr != nil {
+	if pubEvErr := s.msgs.Publish(ctx, updatedEvent); pubEvErr != nil {
 		slog.Error("failed to publish incident milestone update event message", "error", pubEvErr)
 	}
 	return updated, nil

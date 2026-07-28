@@ -25,6 +25,7 @@ type incidentUpdateProcessor struct {
 	db        rez.Database
 	incidents rez.IncidentService
 	messages  rez.MessageService
+	jobs      rez.JobService
 
 	inc         *ent.Incident
 	incidentUrl *url.URL
@@ -49,6 +50,7 @@ func (a *App) newUpdateProcessor(ctx context.Context, client *slackintegration.C
 		db:          a.db,
 		incidents:   a.incidents,
 		messages:    a.messages,
+		jobs:        a.jobs,
 		client:      client,
 		prefs:       prefs,
 	}, nil
@@ -56,14 +58,21 @@ func (a *App) newUpdateProcessor(ctx context.Context, client *slackintegration.C
 
 func (p *incidentUpdateProcessor) processIncidentUpdate(ctx context.Context) error {
 	if p.inc.ChatChannelID == "" {
-		return p.messages.SendCommand(ctx, &cmdCreateIncidentChannel{IncidentId: p.inc.ID})
+		args := createIncidentChannelJobArgs{IncidentId: p.inc.ID}
+		if _, jobErr := p.jobs.Insert(ctx, args, nil); jobErr != nil {
+			return fmt.Errorf("create incident job: %w", jobErr)
+		}
 	}
 	return p.updateIncidentChannel(ctx)
 }
 
 func (p *incidentUpdateProcessor) processIncidentMilestoneUpdate(ctx context.Context, msId uuid.UUID) error {
 	// TODO: check if we care about this milestone kind
-	return p.messages.SendCommand(ctx, &cmdSendIncidentMilestoneMessage{IncidentId: p.inc.ID, MilestoneId: msId})
+	args := sendMilestoneMessageJobArgs{IncidentId: p.inc.ID, MilestoneId: msId}
+	if _, jobErr := p.jobs.Insert(ctx, args, nil); jobErr != nil {
+		return fmt.Errorf("send milestone message job: %w", jobErr)
+	}
+	return nil
 }
 
 func (p *incidentUpdateProcessor) sendIncidentMilestoneMessage(ctx context.Context, milestoneId uuid.UUID) error {

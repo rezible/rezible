@@ -36,7 +36,7 @@ func (s *ProjectionServiceSuite) projectionService() *ProjectionService {
 	users, _ := db.NewUserService(s.Database(), mocks.NewMockOrganizationService(s.T()))
 
 	messageService := mocks.NewMockMessageService(s.T())
-	messageService.EXPECT().AddEventHandlers(mock.Anything).Return(nil).Once()
+	messageService.EXPECT().AddHandlers(mock.Anything).Return(nil).Once()
 
 	incidents, _ := db.NewIncidentService(s.Database(), messageService)
 

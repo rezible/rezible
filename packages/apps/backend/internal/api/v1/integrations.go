@@ -129,7 +129,7 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 	if attr.State == nil && attr.ClientVerifier == nil {
 		return nil, oapi.Error(ctx, "invalid params", fmt.Errorf("missing state or client_verifier"))
 	}
-	params := rez.CompleteIntegrationOAuth2Params{
+	params := rez.CompleteIntegrationOAuth2FlowParams{
 		Code:           attr.Code,
 		State:          attr.State,
 		ClientVerifier: attr.ClientVerifier,

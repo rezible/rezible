@@ -361,7 +361,7 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, integrationNa
 	return cfg.AuthCodeURL(state), nil
 }
 
-func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, integrationName string, params rez.CompleteIntegrationOAuth2Params) (*rez.CompleteIntegrationOAuth2FlowResult, error) {
+func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, integrationName string, params rez.CompleteIntegrationOAuth2FlowParams) (*rez.CompleteIntegrationOAuth2FlowResult, error) {
 	if params.State == nil && params.ClientVerifier == nil {
 		return nil, fmt.Errorf("invalid params: missing state or client_verifier")
 	}

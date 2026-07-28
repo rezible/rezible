@@ -2,12 +2,12 @@ package slackagent
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/pkg/messages"
 	"github.com/riverqueue/river"
 
 	"github.com/slack-go/slack"
@@ -108,9 +108,8 @@ func (a *App) GetIntegrationClientWrapper(ctx context.Context, preds ...predicat
 }
 
 func (a *App) registerMessageHandlers() error {
-	return errors.Join(
-		a.messages.AddEventHandlers(rez.NewEventHandler("slackagent.OnAiAgentTurnFinished", a.onAiAgentTurnFinished)),
-		a.messages.AddCommandHandlers(rez.NewCommandHandler("slackagent.SendMessage", a.handleSendMessageCommand)))
+	return a.messages.AddHandlers(
+		messages.NewEventHandler("slackagent.OnAiAgentTurnFinished", a.onAiAgentTurnFinished))
 }
 
 func (a *App) onAiAgentTurnFinished(ctx context.Context, ev *rezai.EventOnAgentTurnFinished) error {
@@ -178,23 +177,6 @@ func (a *App) handleSendMessageJob(ctx context.Context, args SendMessageJobArgs)
 	_, _, msgErr := cw.Client().PostMessageContext(ctx, args.Channel,
 		slack.MsgOptionMarkdownText(args.Message),
 		slack.MsgOptionTS(args.ReplyTs))
-	if msgErr != nil {
-		return fmt.Errorf("post message: %w", msgErr)
-	}
-
-	return nil
-}
-
-func (a *App) handleSendMessageCommand(ctx context.Context, cmd *SendMessageJobArgs) error {
-	cw, wrapperErr := a.GetIntegrationClientWrapper(ctx, in.ExternalRef(cmd.IntegrationRef))
-	if wrapperErr != nil {
-		slog.Warn("failed to get slack integration client wrapper", "err", wrapperErr)
-		return fmt.Errorf("get integration client wrapper: %w", wrapperErr)
-	}
-
-	_, _, msgErr := cw.Client().PostMessageContext(ctx, cmd.Channel,
-		slack.MsgOptionMarkdownText(cmd.Message),
-		slack.MsgOptionTS(cmd.ReplyTs))
 	if msgErr != nil {
 		return fmt.Errorf("post message: %w", msgErr)
 	}

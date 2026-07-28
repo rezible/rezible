@@ -167,7 +167,7 @@ func declareServices(ctx context.Context, i do.Injector) {
 	})
 
 	do.Provide(i, func(i do.Injector) (rez.MessageService, error) {
-		return watermill.NewMessageService(do.MustInvoke[rez.TelemetryService](i))
+		return watermill.NewMessageService(do.MustInvoke[rez.TelemetryService](i), nil)
 	})
 
 	do.Provide(i, func(i do.Injector) (rez.AiService, error) {
@@ -271,6 +271,7 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.IncidentService](i),
 		)
 		if appErr != nil {

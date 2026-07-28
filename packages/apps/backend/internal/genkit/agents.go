@@ -3,7 +3,9 @@ package genkit
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
@@ -154,10 +156,40 @@ func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentT
 
 	fmt.Printf("running: %+v\n", agentInput.Message.Text())
 
-	out, runErr := w.agent.Run(ctx, agentInput, aix.WithState(state))
-	if runErr != nil {
-		return nil, fmt.Errorf("run agent: %w", runErr)
+	conn, connErr := w.agent.Connect(ctx, aix.WithState(state))
+	if connErr != nil {
+		return nil, fmt.Errorf("connect: %w", connErr)
 	}
+	if sendErr := conn.Send(agentInput); sendErr != nil && !errors.Is(sendErr, core.ErrActionCompleted) {
+		return nil, sendErr
+	}
+
+	if closeErr := conn.Close(); closeErr != nil {
+		slog.Warn("error closing input connection", "error", closeErr.Error())
+	}
+
+	for chunk, receiveErr := range conn.Receive() {
+		if receiveErr != nil {
+			slog.Warn("error receiving chunk", "error", receiveErr.Error())
+		}
+		if chunk != nil && params.OnChunk != nil {
+			var finishReason *aix.AgentFinishReason
+			if chunk.TurnEnd != nil {
+				finishReason = &chunk.TurnEnd.FinishReason
+			}
+			params.OnChunk(rez.AgentTurnChunk{
+				Artifact:            chunk.Artifact,
+				ModelChunk:          chunk.ModelChunk,
+				TurnEndFinishReason: finishReason,
+			})
+		}
+	}
+
+	out, outputErr := conn.Output()
+	if outputErr != nil {
+		return nil, fmt.Errorf("output: %w", outputErr)
+	}
+
 	return w.wrapOutput(sess, out)
 }
 

@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/core"
@@ -34,10 +33,6 @@ var (
 	ErrConflict             = fmt.Errorf("conflict")
 	ErrInvalidInput         = fmt.Errorf("invalid input")
 )
-
-type ConfigLoader interface {
-	LoadConfig(ctx context.Context) (*Config, []error)
-}
 
 type (
 	Database interface {
@@ -90,25 +85,30 @@ type (
 )
 
 type (
-	MessageService interface {
-		AddCommandHandlers(handlers ...cqrs.CommandHandler) error
-		SendCommand(ctx context.Context, cmd any) error
+	MessageEventHandler interface {
+		HandlerName() string
+		NewEvent() any
+		Handle(context.Context, any) error
+	}
 
-		AddEventHandlers(handlers ...cqrs.EventHandler) error
-		PublishEvent(ctx context.Context, event any) error
+	MessageEventWithScopes interface {
+		MessageScopes() []string
+	}
+
+	MessageEventSubscriptionOpts struct {
+		Scopes []string
+	}
+
+	MessageService interface {
+		AddHandlers(...MessageEventHandler) error
+		Publish(context.Context, any) error
+		Subscribe(context.Context, MessageEventHandler, *MessageEventSubscriptionOpts) error
 	}
 )
 
-func NewCommandHandler[T any](name string, handleFn func(context.Context, *T) error) cqrs.CommandHandler {
-	return cqrs.NewCommandHandler[T](name, handleFn)
-}
-
-func NewEventHandler[T any](name string, handleFn func(context.Context, *T) error) cqrs.EventHandler {
-	return cqrs.NewEventHandler[T](name, handleFn)
-}
-
 type (
 	JobService interface {
+		RegisterPeriodicJob(*river.PeriodicJob)
 		Insert(context.Context, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
 		InsertMany(context.Context, []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
 		Cancel(context.Context, int64) error
@@ -176,7 +176,7 @@ type (
 	ProviderEventQuerySourceCursors map[string]string
 
 	ProviderEventQuerier interface {
-		QueryProviderEvents(ctx context.Context, sourceCursors ProviderEventQuerySourceCursors) iter.Seq2[*ProviderEventQueryResult, error]
+		QueryProviderEvents(context.Context, ProviderEventQuerySourceCursors) iter.Seq2[*ProviderEventQueryResult, error]
 	}
 
 	ProviderEventProcessor interface {
@@ -241,6 +241,12 @@ type (
 		Predicates []predicate.Integration
 	}
 
+	CompleteIntegrationOAuth2FlowParams struct {
+		Code           string
+		State          *string
+		ClientVerifier *string
+	}
+
 	CompleteIntegrationOAuth2FlowResult struct {
 		InstallationTargetSelectionRequired bool
 		Installed                           []InstalledIntegration
@@ -251,12 +257,6 @@ type (
 		IntegrationName string
 		DisplayName     string
 		Config          IntegrationInstallationConfig
-	}
-
-	CompleteIntegrationOAuth2Params struct {
-		Code           string
-		State          *string
-		ClientVerifier *string
 	}
 
 	IntegrationService interface {
@@ -274,7 +274,7 @@ type (
 		AsInstalledIntegration(i *ent.Integration) (InstalledIntegration, error)
 
 		StartOAuth2Flow(ctx context.Context, integrationName string) (string, error)
-		CompleteOAuth2Flow(ctx context.Context, integrationName string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2FlowResult, error)
+		CompleteOAuth2Flow(ctx context.Context, integrationName string, params CompleteIntegrationOAuth2FlowParams) (*CompleteIntegrationOAuth2FlowResult, error)
 
 		RequestIntegrationEventSync(ctx context.Context, id uuid.UUID, sources []string) error
 		ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error)
@@ -328,7 +328,7 @@ type (
 	OrganizationService interface {
 		Get(context.Context, predicate.Organization) (*ent.Organization, error)
 		Set(context.Context, uuid.UUID, func(*ent.OrganizationMutation)) (*ent.Organization, error)
-		SetPreferences(ctx context.Context, orgId uuid.UUID, setFn func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error)
+		SetPreferences(context.Context, uuid.UUID, func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error)
 	}
 )
 
@@ -409,11 +409,18 @@ type (
 		Resume  *ai.GenerateActionResume `json:"resume,omitempty"`
 	}
 
+	AgentTurnChunk struct {
+		Artifact            *aix.Artifact          `json:"artifact,omitempty"`
+		ModelChunk          *ai.ModelResponseChunk `json:"model_chunk,omitempty"`
+		TurnEndFinishReason *aix.AgentFinishReason `json:"finish_reason,omitempty"`
+	}
+
 	InvokeAgentTurnParams struct {
 		Session *ent.AgentSession
 		Parent  *ent.AgentTurn
 		Turn    *ent.AgentTurn
 		Input   *AgentTurnInput
+		OnChunk func(AgentTurnChunk)
 	}
 
 	AgentInvocationResult struct {

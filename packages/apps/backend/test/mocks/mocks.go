@@ -8,7 +8,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -141,49 +140,49 @@ func (_m *MockMessageService) EXPECT() *MockMessageService_Expecter {
 	return &MockMessageService_Expecter{mock: &_m.Mock}
 }
 
-// AddCommandHandlers provides a mock function for the type MockMessageService
-func (_mock *MockMessageService) AddCommandHandlers(handlers ...cqrs.CommandHandler) error {
-	// cqrs.CommandHandler
-	_va := make([]interface{}, len(handlers))
-	for _i := range handlers {
-		_va[_i] = handlers[_i]
+// AddHandlers provides a mock function for the type MockMessageService
+func (_mock *MockMessageService) AddHandlers(messageEventHandlers ...rez.MessageEventHandler) error {
+	// rez.MessageEventHandler
+	_va := make([]interface{}, len(messageEventHandlers))
+	for _i := range messageEventHandlers {
+		_va[_i] = messageEventHandlers[_i]
 	}
 	var _ca []interface{}
 	_ca = append(_ca, _va...)
 	ret := _mock.Called(_ca...)
 
 	if len(ret) == 0 {
-		panic("no return value specified for AddCommandHandlers")
+		panic("no return value specified for AddHandlers")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(...cqrs.CommandHandler) error); ok {
-		r0 = returnFunc(handlers...)
+	if returnFunc, ok := ret.Get(0).(func(...rez.MessageEventHandler) error); ok {
+		r0 = returnFunc(messageEventHandlers...)
 	} else {
 		r0 = ret.Error(0)
 	}
 	return r0
 }
 
-// MockMessageService_AddCommandHandlers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddCommandHandlers'
-type MockMessageService_AddCommandHandlers_Call struct {
+// MockMessageService_AddHandlers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddHandlers'
+type MockMessageService_AddHandlers_Call struct {
 	*mock.Call
 }
 
-// AddCommandHandlers is a helper method to define mock.On call
-//   - handlers ...cqrs.CommandHandler
-func (_e *MockMessageService_Expecter) AddCommandHandlers(handlers ...interface{}) *MockMessageService_AddCommandHandlers_Call {
-	return &MockMessageService_AddCommandHandlers_Call{Call: _e.mock.On("AddCommandHandlers",
-		append([]interface{}{}, handlers...)...)}
+// AddHandlers is a helper method to define mock.On call
+//   - messageEventHandlers ...rez.MessageEventHandler
+func (_e *MockMessageService_Expecter) AddHandlers(messageEventHandlers ...interface{}) *MockMessageService_AddHandlers_Call {
+	return &MockMessageService_AddHandlers_Call{Call: _e.mock.On("AddHandlers",
+		append([]interface{}{}, messageEventHandlers...)...)}
 }
 
-func (_c *MockMessageService_AddCommandHandlers_Call) Run(run func(handlers ...cqrs.CommandHandler)) *MockMessageService_AddCommandHandlers_Call {
+func (_c *MockMessageService_AddHandlers_Call) Run(run func(messageEventHandlers ...rez.MessageEventHandler)) *MockMessageService_AddHandlers_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 []cqrs.CommandHandler
-		variadicArgs := make([]cqrs.CommandHandler, len(args)-0)
+		var arg0 []rez.MessageEventHandler
+		variadicArgs := make([]rez.MessageEventHandler, len(args)-0)
 		for i, a := range args[0:] {
 			if a != nil {
-				variadicArgs[i] = a.(cqrs.CommandHandler)
+				variadicArgs[i] = a.(rez.MessageEventHandler)
 			}
 		}
 		arg0 = variadicArgs
@@ -194,109 +193,46 @@ func (_c *MockMessageService_AddCommandHandlers_Call) Run(run func(handlers ...c
 	return _c
 }
 
-func (_c *MockMessageService_AddCommandHandlers_Call) Return(err error) *MockMessageService_AddCommandHandlers_Call {
+func (_c *MockMessageService_AddHandlers_Call) Return(err error) *MockMessageService_AddHandlers_Call {
 	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockMessageService_AddCommandHandlers_Call) RunAndReturn(run func(handlers ...cqrs.CommandHandler) error) *MockMessageService_AddCommandHandlers_Call {
+func (_c *MockMessageService_AddHandlers_Call) RunAndReturn(run func(messageEventHandlers ...rez.MessageEventHandler) error) *MockMessageService_AddHandlers_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// AddEventHandlers provides a mock function for the type MockMessageService
-func (_mock *MockMessageService) AddEventHandlers(handlers ...cqrs.EventHandler) error {
-	// cqrs.EventHandler
-	_va := make([]interface{}, len(handlers))
-	for _i := range handlers {
-		_va[_i] = handlers[_i]
-	}
-	var _ca []interface{}
-	_ca = append(_ca, _va...)
-	ret := _mock.Called(_ca...)
+// Publish provides a mock function for the type MockMessageService
+func (_mock *MockMessageService) Publish(context1 context.Context, v any) error {
+	ret := _mock.Called(context1, v)
 
 	if len(ret) == 0 {
-		panic("no return value specified for AddEventHandlers")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(...cqrs.EventHandler) error); ok {
-		r0 = returnFunc(handlers...)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
-}
-
-// MockMessageService_AddEventHandlers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddEventHandlers'
-type MockMessageService_AddEventHandlers_Call struct {
-	*mock.Call
-}
-
-// AddEventHandlers is a helper method to define mock.On call
-//   - handlers ...cqrs.EventHandler
-func (_e *MockMessageService_Expecter) AddEventHandlers(handlers ...interface{}) *MockMessageService_AddEventHandlers_Call {
-	return &MockMessageService_AddEventHandlers_Call{Call: _e.mock.On("AddEventHandlers",
-		append([]interface{}{}, handlers...)...)}
-}
-
-func (_c *MockMessageService_AddEventHandlers_Call) Run(run func(handlers ...cqrs.EventHandler)) *MockMessageService_AddEventHandlers_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 []cqrs.EventHandler
-		variadicArgs := make([]cqrs.EventHandler, len(args)-0)
-		for i, a := range args[0:] {
-			if a != nil {
-				variadicArgs[i] = a.(cqrs.EventHandler)
-			}
-		}
-		arg0 = variadicArgs
-		run(
-			arg0...,
-		)
-	})
-	return _c
-}
-
-func (_c *MockMessageService_AddEventHandlers_Call) Return(err error) *MockMessageService_AddEventHandlers_Call {
-	_c.Call.Return(err)
-	return _c
-}
-
-func (_c *MockMessageService_AddEventHandlers_Call) RunAndReturn(run func(handlers ...cqrs.EventHandler) error) *MockMessageService_AddEventHandlers_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// PublishEvent provides a mock function for the type MockMessageService
-func (_mock *MockMessageService) PublishEvent(ctx context.Context, event any) error {
-	ret := _mock.Called(ctx, event)
-
-	if len(ret) == 0 {
-		panic("no return value specified for PublishEvent")
+		panic("no return value specified for Publish")
 	}
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, any) error); ok {
-		r0 = returnFunc(ctx, event)
+		r0 = returnFunc(context1, v)
 	} else {
 		r0 = ret.Error(0)
 	}
 	return r0
 }
 
-// MockMessageService_PublishEvent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PublishEvent'
-type MockMessageService_PublishEvent_Call struct {
+// MockMessageService_Publish_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Publish'
+type MockMessageService_Publish_Call struct {
 	*mock.Call
 }
 
-// PublishEvent is a helper method to define mock.On call
-//   - ctx context.Context
-//   - event any
-func (_e *MockMessageService_Expecter) PublishEvent(ctx interface{}, event interface{}) *MockMessageService_PublishEvent_Call {
-	return &MockMessageService_PublishEvent_Call{Call: _e.mock.On("PublishEvent", ctx, event)}
+// Publish is a helper method to define mock.On call
+//   - context1 context.Context
+//   - v any
+func (_e *MockMessageService_Expecter) Publish(context1 interface{}, v interface{}) *MockMessageService_Publish_Call {
+	return &MockMessageService_Publish_Call{Call: _e.mock.On("Publish", context1, v)}
 }
 
-func (_c *MockMessageService_PublishEvent_Call) Run(run func(ctx context.Context, event any)) *MockMessageService_PublishEvent_Call {
+func (_c *MockMessageService_Publish_Call) Run(run func(context1 context.Context, v any)) *MockMessageService_Publish_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -314,69 +250,75 @@ func (_c *MockMessageService_PublishEvent_Call) Run(run func(ctx context.Context
 	return _c
 }
 
-func (_c *MockMessageService_PublishEvent_Call) Return(err error) *MockMessageService_PublishEvent_Call {
+func (_c *MockMessageService_Publish_Call) Return(err error) *MockMessageService_Publish_Call {
 	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockMessageService_PublishEvent_Call) RunAndReturn(run func(ctx context.Context, event any) error) *MockMessageService_PublishEvent_Call {
+func (_c *MockMessageService_Publish_Call) RunAndReturn(run func(context1 context.Context, v any) error) *MockMessageService_Publish_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// SendCommand provides a mock function for the type MockMessageService
-func (_mock *MockMessageService) SendCommand(ctx context.Context, cmd any) error {
-	ret := _mock.Called(ctx, cmd)
+// Subscribe provides a mock function for the type MockMessageService
+func (_mock *MockMessageService) Subscribe(context1 context.Context, messageEventHandler rez.MessageEventHandler, messageEventSubscriptionOpts *rez.MessageEventSubscriptionOpts) error {
+	ret := _mock.Called(context1, messageEventHandler, messageEventSubscriptionOpts)
 
 	if len(ret) == 0 {
-		panic("no return value specified for SendCommand")
+		panic("no return value specified for Subscribe")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, any) error); ok {
-		r0 = returnFunc(ctx, cmd)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.MessageEventHandler, *rez.MessageEventSubscriptionOpts) error); ok {
+		r0 = returnFunc(context1, messageEventHandler, messageEventSubscriptionOpts)
 	} else {
 		r0 = ret.Error(0)
 	}
 	return r0
 }
 
-// MockMessageService_SendCommand_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendCommand'
-type MockMessageService_SendCommand_Call struct {
+// MockMessageService_Subscribe_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Subscribe'
+type MockMessageService_Subscribe_Call struct {
 	*mock.Call
 }
 
-// SendCommand is a helper method to define mock.On call
-//   - ctx context.Context
-//   - cmd any
-func (_e *MockMessageService_Expecter) SendCommand(ctx interface{}, cmd interface{}) *MockMessageService_SendCommand_Call {
-	return &MockMessageService_SendCommand_Call{Call: _e.mock.On("SendCommand", ctx, cmd)}
+// Subscribe is a helper method to define mock.On call
+//   - context1 context.Context
+//   - messageEventHandler rez.MessageEventHandler
+//   - messageEventSubscriptionOpts *rez.MessageEventSubscriptionOpts
+func (_e *MockMessageService_Expecter) Subscribe(context1 interface{}, messageEventHandler interface{}, messageEventSubscriptionOpts interface{}) *MockMessageService_Subscribe_Call {
+	return &MockMessageService_Subscribe_Call{Call: _e.mock.On("Subscribe", context1, messageEventHandler, messageEventSubscriptionOpts)}
 }
 
-func (_c *MockMessageService_SendCommand_Call) Run(run func(ctx context.Context, cmd any)) *MockMessageService_SendCommand_Call {
+func (_c *MockMessageService_Subscribe_Call) Run(run func(context1 context.Context, messageEventHandler rez.MessageEventHandler, messageEventSubscriptionOpts *rez.MessageEventSubscriptionOpts)) *MockMessageService_Subscribe_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 any
+		var arg1 rez.MessageEventHandler
 		if args[1] != nil {
-			arg1 = args[1].(any)
+			arg1 = args[1].(rez.MessageEventHandler)
+		}
+		var arg2 *rez.MessageEventSubscriptionOpts
+		if args[2] != nil {
+			arg2 = args[2].(*rez.MessageEventSubscriptionOpts)
 		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
 }
 
-func (_c *MockMessageService_SendCommand_Call) Return(err error) *MockMessageService_SendCommand_Call {
+func (_c *MockMessageService_Subscribe_Call) Return(err error) *MockMessageService_Subscribe_Call {
 	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockMessageService_SendCommand_Call) RunAndReturn(run func(ctx context.Context, cmd any) error) *MockMessageService_SendCommand_Call {
+func (_c *MockMessageService_Subscribe_Call) RunAndReturn(run func(context1 context.Context, messageEventHandler rez.MessageEventHandler, messageEventSubscriptionOpts *rez.MessageEventSubscriptionOpts) error) *MockMessageService_Subscribe_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -604,6 +546,46 @@ func (_c *MockJobService_InsertMany_Call) Return(jobInsertResults []*rivertype.J
 
 func (_c *MockJobService_InsertMany_Call) RunAndReturn(run func(context1 context.Context, insertManyParamss []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)) *MockJobService_InsertMany_Call {
 	_c.Call.Return(run)
+	return _c
+}
+
+// RegisterPeriodicJob provides a mock function for the type MockJobService
+func (_mock *MockJobService) RegisterPeriodicJob(periodicJob *river.PeriodicJob) {
+	_mock.Called(periodicJob)
+	return
+}
+
+// MockJobService_RegisterPeriodicJob_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegisterPeriodicJob'
+type MockJobService_RegisterPeriodicJob_Call struct {
+	*mock.Call
+}
+
+// RegisterPeriodicJob is a helper method to define mock.On call
+//   - periodicJob *river.PeriodicJob
+func (_e *MockJobService_Expecter) RegisterPeriodicJob(periodicJob interface{}) *MockJobService_RegisterPeriodicJob_Call {
+	return &MockJobService_RegisterPeriodicJob_Call{Call: _e.mock.On("RegisterPeriodicJob", periodicJob)}
+}
+
+func (_c *MockJobService_RegisterPeriodicJob_Call) Run(run func(periodicJob *river.PeriodicJob)) *MockJobService_RegisterPeriodicJob_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 *river.PeriodicJob
+		if args[0] != nil {
+			arg0 = args[0].(*river.PeriodicJob)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockJobService_RegisterPeriodicJob_Call) Return() *MockJobService_RegisterPeriodicJob_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockJobService_RegisterPeriodicJob_Call) RunAndReturn(run func(periodicJob *river.PeriodicJob)) *MockJobService_RegisterPeriodicJob_Call {
+	_c.Run(run)
 	return _c
 }
 
@@ -1600,8 +1582,8 @@ func (_c *MockOrganizationService_Set_Call) RunAndReturn(run func(context1 conte
 }
 
 // SetPreferences provides a mock function for the type MockOrganizationService
-func (_mock *MockOrganizationService) SetPreferences(ctx context.Context, orgId uuid.UUID, setFn func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error) {
-	ret := _mock.Called(ctx, orgId, setFn)
+func (_mock *MockOrganizationService) SetPreferences(context1 context.Context, uUID uuid.UUID, fn func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error) {
+	ret := _mock.Called(context1, uUID, fn)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SetPreferences")
@@ -1610,17 +1592,17 @@ func (_mock *MockOrganizationService) SetPreferences(ctx context.Context, orgId 
 	var r0 *ent.OrganizationPreferences
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error)); ok {
-		return returnFunc(ctx, orgId, setFn)
+		return returnFunc(context1, uUID, fn)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, func(*ent.OrganizationPreferencesMutation)) *ent.OrganizationPreferences); ok {
-		r0 = returnFunc(ctx, orgId, setFn)
+		r0 = returnFunc(context1, uUID, fn)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.OrganizationPreferences)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, func(*ent.OrganizationPreferencesMutation)) error); ok {
-		r1 = returnFunc(ctx, orgId, setFn)
+		r1 = returnFunc(context1, uUID, fn)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1633,14 +1615,14 @@ type MockOrganizationService_SetPreferences_Call struct {
 }
 
 // SetPreferences is a helper method to define mock.On call
-//   - ctx context.Context
-//   - orgId uuid.UUID
-//   - setFn func(*ent.OrganizationPreferencesMutation)
-func (_e *MockOrganizationService_Expecter) SetPreferences(ctx interface{}, orgId interface{}, setFn interface{}) *MockOrganizationService_SetPreferences_Call {
-	return &MockOrganizationService_SetPreferences_Call{Call: _e.mock.On("SetPreferences", ctx, orgId, setFn)}
+//   - context1 context.Context
+//   - uUID uuid.UUID
+//   - fn func(*ent.OrganizationPreferencesMutation)
+func (_e *MockOrganizationService_Expecter) SetPreferences(context1 interface{}, uUID interface{}, fn interface{}) *MockOrganizationService_SetPreferences_Call {
+	return &MockOrganizationService_SetPreferences_Call{Call: _e.mock.On("SetPreferences", context1, uUID, fn)}
 }
 
-func (_c *MockOrganizationService_SetPreferences_Call) Run(run func(ctx context.Context, orgId uuid.UUID, setFn func(*ent.OrganizationPreferencesMutation))) *MockOrganizationService_SetPreferences_Call {
+func (_c *MockOrganizationService_SetPreferences_Call) Run(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.OrganizationPreferencesMutation))) *MockOrganizationService_SetPreferences_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -1668,7 +1650,7 @@ func (_c *MockOrganizationService_SetPreferences_Call) Return(organizationPrefer
 	return _c
 }
 
-func (_c *MockOrganizationService_SetPreferences_Call) RunAndReturn(run func(ctx context.Context, orgId uuid.UUID, setFn func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error)) *MockOrganizationService_SetPreferences_Call {
+func (_c *MockOrganizationService_SetPreferences_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error)) *MockOrganizationService_SetPreferences_Call {
 	_c.Call.Return(run)
 	return _c
 }

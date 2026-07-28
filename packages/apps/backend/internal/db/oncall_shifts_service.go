@@ -44,15 +44,14 @@ func (s *OncallShiftsService) registerJobs() {
 	jobs.RegisterWorkerFunc(s.ensureShiftHandoverReminderSent)
 	jobs.RegisterWorkerFunc(s.ensureShiftHandoverSent)
 
-	periodicScanShiftsJobs := river.NewPeriodicJob(
+	jobs.RegisterWorkerFunc(s.periodicScanShifts)
+	s.jobs.RegisterPeriodicJob(river.NewPeriodicJob(
 		river.PeriodicInterval(time.Hour),
 		func() (river.JobArgs, *river.InsertOpts) {
 			return &jobs.ScanOncallShifts{}, nil
 		},
 		&river.PeriodicJobOpts{RunOnStart: true},
-	)
-	jobs.RegisterPeriodicJob(periodicScanShiftsJobs)
-	jobs.RegisterWorkerFunc(s.periodicScanShifts)
+	))
 }
 
 func (s *OncallShiftsService) periodicScanShifts(ctx context.Context, _ jobs.ScanOncallShifts) error {

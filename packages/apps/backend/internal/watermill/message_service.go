@@ -2,16 +2,16 @@ package watermill
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
-	"github.com/ThreeDotsLabs/watermill/pubsub/gochannel"
-
 	wotelfloss "github.com/dentech-floss/watermill-opentelemetry-go-extra/pkg/opentelemetry"
 	wotel "github.com/voi-oss/watermill-opentelemetry/pkg/opentelemetry"
 
@@ -22,32 +22,34 @@ type MessageService struct {
 	telemetry rez.TelemetryService
 	logger    watermill.LoggerAdapter
 
+	transport  Transport
+	publisher  message.Publisher
 	router     *message.Router
 	marshaller cqrs.CommandEventMarshaler
-
-	cmdBus  *cqrs.CommandBus
-	cmdProc *cqrs.CommandProcessor
 
 	eventBus  *cqrs.EventBus
 	eventProc *cqrs.EventProcessor
 }
 
-func NewMessageService(ts rez.TelemetryService) (*MessageService, error) {
-	loggerOpts := rez.NewLoggerOptions{
-		PackageName: "watermill",
-		Level:       slog.LevelWarn,
-	}
-	logger := ts.NewLogger(loggerOpts)
+func NewMessageService(ts rez.TelemetryService, transport Transport) (*MessageService, error) {
 	ms := MessageService{
-		telemetry:  ts,
-		logger:     watermill.NewSlogLogger(logger),
+		telemetry: ts,
+		transport: transport,
+		logger: watermill.NewSlogLogger(ts.NewLogger(rez.NewLoggerOptions{
+			PackageName: "watermill",
+			Level:       slog.LevelWarn,
+		})),
 		marshaller: cqrs.JSONMarshaler{GenerateName: cqrs.FullyQualifiedStructName},
 	}
-
-	pub, sub, pubSubErr := ms.makePubSub("pubsub")
-	if pubSubErr != nil {
-		return nil, fmt.Errorf("failed initializing message pubsub: %w", pubSubErr)
+	if ms.transport == nil {
+		ms.transport = newGoChannelTransport(ms.logger)
 	}
+
+	pub, pubErr := ms.addPublisherDecorations(ms.transport.Publisher())
+	if pubErr != nil {
+		return nil, fmt.Errorf("decorate publisher: %w", pubErr)
+	}
+	ms.publisher = pub
 
 	router, routerErr := message.NewRouter(message.RouterConfig{CloseTimeout: time.Second * 5}, ms.logger)
 	if routerErr != nil {
@@ -55,7 +57,7 @@ func NewMessageService(ts rez.TelemetryService) (*MessageService, error) {
 	}
 	ms.router = router
 
-	poison, poisonErr := ms.setupPoisonQueue(router, pub, sub)
+	poison, poisonErr := ms.makePoisonQueue()
 	if poisonErr != nil {
 		return nil, fmt.Errorf("failed to setup poison queue: %w", poisonErr)
 	}
@@ -67,23 +69,16 @@ func NewMessageService(ts rez.TelemetryService) (*MessageService, error) {
 	}
 
 	ms.router.AddMiddleware(
-		middleware.CorrelationID,
 		middleware.NewThrottle(10, time.Second).Middleware,
 		ms.restoreMessageAccessScope,
 		wotelfloss.ExtractRemoteParentSpanContext(),
 		wotel.Trace(),
-		// send errors to different queue
-		poison,
-		// catch errors & retry up to 1 time, then bubble up
-		retry.Middleware,
-		// catch panics and return as error
-		middleware.Recoverer,
+		poison,               // send caught errors to a dedicated queue
+		retry.Middleware,     // catch errors & retry up to 1 time, then bubble up
+		middleware.Recoverer, // catch panics and return as error
 	)
 
-	if cmdsErr := ms.setupCommandProcessor(pub, sub); cmdsErr != nil {
-		return nil, fmt.Errorf("command processor: %w", cmdsErr)
-	}
-	if eventsErr := ms.setupEventProcessor(pub, sub); eventsErr != nil {
+	if eventsErr := ms.setupEventProcessor(); eventsErr != nil {
 		return nil, fmt.Errorf("event processor: %w", eventsErr)
 	}
 
@@ -94,51 +89,31 @@ func (ms *MessageService) Start(ctx context.Context) error {
 	return ms.router.Run(ctx)
 }
 
-func (ms *MessageService) Shutdown(ctx context.Context) error {
-	return ms.router.Close()
+func (ms *MessageService) Shutdown() error {
+	return errors.Join(ms.router.Close(), ms.transport.Close())
 }
 
-func (ms *MessageService) makePubSub(name string) (message.Publisher, message.Subscriber, error) {
-	var pub message.Publisher
-	var sub message.Subscriber
-
-	// TODO: use a real implementation
-	gcCfg := gochannel.Config{
-		PreserveContext: false,
-	}
-	gcPubSub := gochannel.NewGoChannel(gcCfg, ms.logger)
-
-	pub = gcPubSub
-	sub = gcPubSub
-
-	var pubDecorationErr error
-	pub, pubDecorationErr = ms.addPublisherDecorations(pub)
-	if pubDecorationErr != nil {
-		if closeErr := gcPubSub.Close(); closeErr != nil {
-			ms.logger.Error("failed to close pubsub", closeErr, watermill.LogFields{})
-		}
-		return nil, nil, fmt.Errorf("failed to decorate publisher: %w", pubDecorationErr)
-	}
-
-	return pub, sub, nil
+func (ms *MessageService) eventTopic(eventName string) string {
+	return "events." + eventName
 }
 
-func (ms *MessageService) setupEventProcessor(pub message.Publisher, sub message.Subscriber) error {
-	generateTopic := func(eventName string) string {
-		return "events." + eventName
-	}
+const msgMetadataScopesKey = "scopes"
 
+func (ms *MessageService) setupEventProcessor() error {
 	eventBusCfg := cqrs.EventBusConfig{
 		GeneratePublishTopic: func(params cqrs.GenerateEventPublishTopicParams) (string, error) {
-			return generateTopic(params.EventName), nil
+			return ms.eventTopic(params.EventName), nil
 		},
 		OnPublish: func(params cqrs.OnEventSendParams) error {
+			if ev, hasScopes := params.Event.(rez.MessageEventWithScopes); hasScopes {
+				params.Message.Metadata.Set(msgMetadataScopesKey, strings.Join(ev.MessageScopes(), ","))
+			}
 			return nil
 		},
 		Marshaler: ms.marshaller,
 		Logger:    ms.logger,
 	}
-	eventBus, eventBusErr := cqrs.NewEventBusWithConfig(pub, eventBusCfg)
+	eventBus, eventBusErr := cqrs.NewEventBusWithConfig(ms.publisher, eventBusCfg)
 	if eventBusErr != nil {
 		return fmt.Errorf("failed creating event bus: %w", eventBusErr)
 	}
@@ -146,15 +121,14 @@ func (ms *MessageService) setupEventProcessor(pub message.Publisher, sub message
 
 	eventProcCfg := cqrs.EventProcessorConfig{
 		SubscriberConstructor: func(params cqrs.EventProcessorSubscriberConstructorParams) (message.Subscriber, error) {
-			return sub, nil
+			return ms.transport.Subscriber(params.HandlerName)
 		},
 		GenerateSubscribeTopic: func(params cqrs.EventProcessorGenerateSubscribeTopicParams) (string, error) {
-			return generateTopic(params.EventName), nil
+			return ms.eventTopic(params.EventName), nil
 		},
 		Marshaler: ms.marshaller,
 		Logger:    ms.logger,
 	}
-
 	eventProc, eventProcErr := cqrs.NewEventProcessorWithConfig(ms.router, eventProcCfg)
 	if eventProcErr != nil {
 		return fmt.Errorf("failed creating event processor: %w", eventProcErr)
@@ -164,61 +138,102 @@ func (ms *MessageService) setupEventProcessor(pub message.Publisher, sub message
 	return nil
 }
 
-func (ms *MessageService) setupCommandProcessor(pub message.Publisher, sub message.Subscriber) error {
-	generateTopic := func(eventName string) string {
-		return "commands." + eventName
+func (ms *MessageService) AddHandlers(handlers ...rez.MessageEventHandler) error {
+	for _, h := range handlers {
+		if _, hErr := ms.eventProc.AddHandler(h); hErr != nil {
+			return fmt.Errorf("failed adding handler: %w", hErr)
+		}
 	}
-
-	cmdBusCfg := cqrs.CommandBusConfig{
-		GeneratePublishTopic: func(params cqrs.CommandBusGeneratePublishTopicParams) (string, error) {
-			return generateTopic(params.CommandName), nil
-		},
-		OnSend: func(params cqrs.CommandBusOnSendParams) error {
-			return nil
-		},
-		Marshaler: ms.marshaller,
-		Logger:    ms.logger,
-	}
-
-	cmdProcessorCfg := cqrs.CommandProcessorConfig{
-		SubscriberConstructor: func(params cqrs.CommandProcessorSubscriberConstructorParams) (message.Subscriber, error) {
-			// we can reuse subscriber, because all commands have separated topics
-			return sub, nil
-		},
-		GenerateSubscribeTopic: func(params cqrs.CommandProcessorGenerateSubscribeTopicParams) (string, error) {
-			return generateTopic(params.CommandName), nil
-		},
-		Marshaler: ms.marshaller,
-		Logger:    ms.logger,
-	}
-
-	cmdBus, cmdBusErr := cqrs.NewCommandBusWithConfig(pub, cmdBusCfg)
-	if cmdBusErr != nil {
-		return fmt.Errorf("failed creating command bus: %w", cmdBusErr)
-	}
-	ms.cmdBus = cmdBus
-
-	cmdProc, cmdProcErr := cqrs.NewCommandProcessorWithConfig(ms.router, cmdProcessorCfg)
-	if cmdProcErr != nil {
-		return fmt.Errorf("failed creating command processor: %w", cmdProcErr)
-	}
-	ms.cmdProc = cmdProc
-
 	return nil
 }
 
-func (ms *MessageService) AddCommandHandlers(handlers ...cqrs.CommandHandler) error {
-	return ms.cmdProc.AddHandlers(handlers...)
-}
-
-func (ms *MessageService) SendCommand(ctx context.Context, cmd any) error {
-	return ms.cmdBus.Send(ctx, cmd)
-}
-
-func (ms *MessageService) AddEventHandlers(handlers ...cqrs.EventHandler) error {
-	return ms.eventProc.AddHandlers(handlers...)
-}
-
-func (ms *MessageService) PublishEvent(ctx context.Context, ev any) error {
+func (ms *MessageService) Publish(ctx context.Context, ev any) error {
 	return ms.eventBus.Publish(ctx, ev)
+}
+
+func (ms *MessageService) matchesScopes(msg *message.Message, scopes []string) bool {
+	if len(scopes) == 0 {
+		return true
+	}
+
+	if msgScopes := msg.Metadata.Get(msgMetadataScopesKey); msgScopes != "" {
+		for _, want := range scopes {
+			for scope := range strings.SplitSeq(msgScopes, ",") {
+				if scope == want {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
+}
+
+func (ms *MessageService) Subscribe(ctx context.Context, handler rez.MessageEventHandler, opts *rez.MessageEventSubscriptionOpts) error {
+	eventName := ms.marshaller.Name(handler.NewEvent())
+	topic := ms.eventTopic(eventName)
+
+	sub, subErr := ms.transport.AdhocSubscriber(handler.HandlerName())
+	if subErr != nil {
+		return fmt.Errorf("subscriber %q: %w", handler.HandlerName(), subErr)
+	}
+	defer func() {
+		if sub != nil {
+			if closeErr := sub.Close(); closeErr != nil {
+				slog.Warn("failed to close adhoc subscriber", "err", closeErr)
+			}
+		}
+	}()
+
+	msgs, subscribeErr := sub.Subscribe(ctx, topic)
+	if subscribeErr != nil {
+		return fmt.Errorf("subscribe topic %q: %w", topic, subscribeErr)
+	}
+
+	var scopes []string
+	if opts != nil {
+		scopes = opts.Scopes
+	}
+
+	handleMsg := func(msg *message.Message) (err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				err = fmt.Errorf("subscriber handler panic: %v", r)
+			}
+		}()
+
+		event := handler.NewEvent()
+		if jsonErr := ms.marshaller.Unmarshal(msg, event); jsonErr != nil {
+			return fmt.Errorf("unmarshal %s: %w", eventName, jsonErr)
+		}
+
+		if ctxErr := ms.restoreMessageContext(msg); ctxErr != nil {
+			return fmt.Errorf("message context: %w", ctxErr)
+		}
+
+		if !ms.matchesScopes(msg, scopes) {
+			return nil
+		}
+
+		return handler.Handle(msg.Context(), event)
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+
+		case msg, ok := <-msgs:
+			if !ok {
+				return nil
+			}
+			handlerErr := handleMsg(msg)
+
+			// subscribe is live delivery - do not retry failed messages
+			msg.Ack()
+			if handlerErr != nil {
+				return fmt.Errorf("subscribe handler: %w", handlerErr)
+			}
+		}
+	}
 }

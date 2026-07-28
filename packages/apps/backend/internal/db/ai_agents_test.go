@@ -407,7 +407,7 @@ func (s *AgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublishe
 		Return(result, nil).
 		Once()
 	h.messages.EXPECT().
-		PublishEvent(mock.Anything, mock.Anything).
+		Publish(mock.Anything, mock.Anything).
 		Return(nil).
 		Once()
 
@@ -493,7 +493,7 @@ func (s *AgentSessionServiceSuite) TestWorkerPersistsFailedResultWithLastGoodSta
 		Return(result, nil).
 		Once()
 	h.messages.EXPECT().
-		PublishEvent(mock.Anything, mock.Anything).
+		Publish(mock.Anything, mock.Anything).
 		Return(nil).
 		Once()
 

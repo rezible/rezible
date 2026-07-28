@@ -67,13 +67,12 @@ func NewJobService(cfg rez.Config, pool *pgxpool.Pool, tel rez.TelemetryService)
 	return s, nil
 }
 
+func (s *JobService) RegisterPeriodicJob(job *river.PeriodicJob) {
+	s.client.PeriodicJobs().Add(job)
+}
+
 func (s *JobService) Start(ctx context.Context) error {
-	_, pjErr := s.client.PeriodicJobs().AddManySafely(jobs.GetPeriodicJobs())
-	if pjErr != nil {
-		return fmt.Errorf("failed to add periodic jobs: %w", pjErr)
-	}
-	ctx = execution.NewRootContext(ctx, execution.KindSystem, execution.SourceJob)
-	return s.client.Start(ctx)
+	return s.client.Start(execution.NewRootContext(ctx, execution.KindSystem, execution.SourceJob))
 }
 
 func (s *JobService) Shutdown(ctx context.Context) error {
