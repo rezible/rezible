@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -32,6 +33,8 @@ type User struct {
 	ChatID string `json:"chat_id,omitempty"`
 	// Timezone holds the value of the "timezone" field.
 	Timezone string `json:"timezone,omitempty"`
+	// NotificationPreferences holds the value of the "notification_preferences" field.
+	NotificationPreferences map[string]bool `json:"notification_preferences,omitempty"`
 	// AuthProviderID holds the value of the "auth_provider_id" field.
 	AuthProviderID string `json:"auth_provider_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -280,6 +283,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldKnowledgeEntityID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case user.FieldNotificationPreferences:
+			values[i] = new([]byte)
 		case user.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case user.FieldEmail, user.FieldName, user.FieldChatID, user.FieldTimezone, user.FieldAuthProviderID:
@@ -343,6 +348,14 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field timezone", values[i])
 			} else if value.Valid {
 				_m.Timezone = value.String
+			}
+		case user.FieldNotificationPreferences:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field notification_preferences", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.NotificationPreferences); err != nil {
+					return fmt.Errorf("unmarshal field notification_preferences: %w", err)
+				}
 			}
 		case user.FieldAuthProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -505,6 +518,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("timezone=")
 	builder.WriteString(_m.Timezone)
+	builder.WriteString(", ")
+	builder.WriteString("notification_preferences=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NotificationPreferences))
 	builder.WriteString(", ")
 	builder.WriteString("auth_provider_id=")
 	builder.WriteString(_m.AuthProviderID)

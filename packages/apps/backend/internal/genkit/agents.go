@@ -35,6 +35,7 @@ type (
 	}
 
 	AgentWrapper interface {
+		AgentConfig() rez.AiAgentConfig
 		ValidateAndEncodeInput(any) ([]byte, error)
 		MakeInitialTurnInput(context.Context, []byte) (*rez.AgentTurnInput, error)
 		Invoke(context.Context, rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error)
@@ -83,6 +84,15 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 type agentWrapper[I rezai.AgentInput, S rezai.SessionState] struct {
 	agent  *aix.Agent[S]
 	runner agentRunner[I, S]
+}
+
+func (w *agentWrapper[I, S]) AgentConfig() rez.AiAgentConfig {
+	d := w.runner.agentDefinition()
+	return rez.AiAgentConfig{
+		Name:        d.Name,
+		DisplayName: "",
+		Model:       "",
+	}
 }
 
 func (w *agentWrapper[I, S]) ValidateAndEncodeInput(input any) ([]byte, error) {

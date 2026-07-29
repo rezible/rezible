@@ -63,6 +63,10 @@ func (i *Integration) Provider() string {
 	return providerName
 }
 
+func (i *Integration) Capabilities() []string {
+	return []string{"video_conferencing"}
+}
+
 func (i *Integration) MaxInstalls() *int {
 	return new(1)
 }
@@ -86,8 +90,8 @@ func (i *Integration) decodeValidateInstallationConfig(m []byte) (*InstallationC
 }
 
 func (i *Integration) ValidateUserSettings(m map[string]any) error {
-	//TODO implement me
-	panic("implement me")
+	var settings UserSettings
+	return mapstructure.Decode(m, &settings)
 }
 
 func (i *Integration) GetInstalledIntegration(intg *ent.Integration) (rez.InstalledIntegration, error) {
@@ -125,11 +129,15 @@ func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
 	return ii.config
 }
 
+func (ii *InstalledIntegration) Capabilities() []string {
+	return []string{"video_conferencing"}
+}
+
 func (ii *InstalledIntegration) isVideoConferenceEnabled() bool {
 	if ii.config.ServiceAccountCredentials == nil {
 		return false
 	}
-	if ii.settings.EnableVideoConference {
+	if ii.settings == nil || !ii.settings.EnableVideoConference {
 		return false
 	}
 	return true

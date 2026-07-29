@@ -4,6 +4,7 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -40,6 +41,13 @@ func (h *usersHandler) GetUser(ctx context.Context, input *oapi.GetUserRequest) 
 	u, getErr := h.users.Get(ctx, user.ID(input.Id))
 	if getErr != nil {
 		return nil, oapi.Error(ctx, "Failed to get user", getErr)
+	}
+	role, roleErr := u.QueryOrganizationRole().Only(ctx)
+	if roleErr != nil && !ent.IsNotFound(roleErr) {
+		return nil, oapi.Error(ctx, "Failed to get user role", roleErr)
+	}
+	if roleErr == nil {
+		u.Edges.OrganizationRole = role
 	}
 	resp.Body.Data = oapi.UserFromEnt(u)
 

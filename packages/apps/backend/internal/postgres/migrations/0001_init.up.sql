@@ -383,7 +383,7 @@ CREATE TABLE "tickets" ("id" uuid NOT NULL, "title" character varying NOT NULL, 
 -- create index "ticket_tenant_id" to table: "tickets"
 CREATE INDEX "ticket_tenant_id" ON "tickets" ("tenant_id");
 -- create "users" table
-CREATE TABLE "users" ("id" uuid NOT NULL, "email" character varying NOT NULL, "name" character varying NOT NULL DEFAULT '', "chat_id" character varying NULL, "timezone" character varying NULL, "auth_provider_id" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "users" ("id" uuid NOT NULL, "email" character varying NOT NULL, "name" character varying NOT NULL DEFAULT '', "chat_id" character varying NULL, "timezone" character varying NULL, "notification_preferences" jsonb NULL, "auth_provider_id" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "user_tenant_id" to table: "users"
 CREATE INDEX "user_tenant_id" ON "users" ("tenant_id");
 -- create index "user_tenant_id_knowledge_entity_id" to table: "users"

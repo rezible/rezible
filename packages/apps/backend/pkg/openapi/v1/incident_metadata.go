@@ -257,7 +257,9 @@ var GetIncidentMetadata = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentMetadataRequest EmptyRequest
+type GetIncidentMetadataRequest struct {
+	IncludeArchived bool `query:"archived" required:"false" nullable:"false" default:"false"`
+}
 type GetIncidentMetadataResponse ItemResponse[IncidentMetadata]
 
 // Incident Severities
@@ -297,8 +299,10 @@ var CreateIncidentSeverity = huma.Operation{
 }
 
 type CreateIncidentSeverityAttributes struct {
-	Name string `json:"title"`
-	Rank int    `json:"rank"`
+	Name        string `json:"name"`
+	Rank        int    `json:"rank"`
+	Color       string `json:"color"`
+	Description string `json:"description"`
 }
 type CreateIncidentSeverityRequest RequestWithBodyAttributes[CreateIncidentSeverityAttributes]
 type CreateIncidentSeverityResponse ItemResponse[IncidentSeverity]
@@ -313,9 +317,11 @@ var UpdateIncidentSeverity = huma.Operation{
 }
 
 type UpdateIncidentSeverityAttributes struct {
-	Name     *string `json:"name,omitempty"`
-	Rank     *int    `json:"rank,omitempty"`
-	Archived *bool   `json:"archived,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	Rank        *int    `json:"rank,omitempty"`
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Archived    *bool   `json:"archived,omitempty"`
 }
 type UpdateIncidentSeverityRequest IdRequestWithBody[UpdateIncidentSeverityAttributes]
 type UpdateIncidentSeverityResponse ItemResponse[IncidentSeverity]

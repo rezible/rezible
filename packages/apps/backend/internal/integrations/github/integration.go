@@ -48,6 +48,10 @@ func (i *Integration) Provider() string {
 	return providerName
 }
 
+func (i *Integration) Capabilities() []string {
+	return []string{"event_sync", "code_changes", "repositories"}
+}
+
 func (i *Integration) MaxInstalls() *int {
 	return nil
 }
@@ -103,9 +107,6 @@ func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
 	return ii.config
 }
 
-func (ii *InstalledIntegration) GetCapabilities() map[string]bool {
-	return map[string]bool{
-		"repositories":  true,
-		"change_events": true,
-	}
+func (ii *InstalledIntegration) Capabilities() []string {
+	return []string{"event_sync", "code_changes", "repositories"}
 }

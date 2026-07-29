@@ -420,6 +420,16 @@ func TimezoneContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldTimezone, v))
 }
 
+// NotificationPreferencesIsNil applies the IsNil predicate on the "notification_preferences" field.
+func NotificationPreferencesIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldNotificationPreferences))
+}
+
+// NotificationPreferencesNotNil applies the NotNil predicate on the "notification_preferences" field.
+func NotificationPreferencesNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldNotificationPreferences))
+}
+
 // AuthProviderIDEQ applies the EQ predicate on the "auth_provider_id" field.
 func AuthProviderIDEQ(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAuthProviderID, v))

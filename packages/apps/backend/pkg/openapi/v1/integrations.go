@@ -53,12 +53,13 @@ func (o operations) RegisterIntegrations(api huma.API) {
 
 type (
 	InstallableIntegration struct {
-		Name         string `json:"name"`
-		DisplayName  string `json:"displayName"`
-		Description  string `json:"description"`
-		Provider     string `json:"provider"`
-		MaxInstalls  *int   `json:"maxInstalls,omitempty"`
-		OAuthInstall bool   `json:"oauthInstall"`
+		Name         string   `json:"name"`
+		DisplayName  string   `json:"displayName"`
+		Description  string   `json:"description"`
+		Provider     string   `json:"provider"`
+		MaxInstalls  *int     `json:"maxInstalls,omitempty"`
+		OAuthInstall bool     `json:"oauthInstall"`
+		Capabilities []string `json:"capabilities"`
 	}
 
 	IntegrationInstallation struct {
@@ -73,6 +74,7 @@ type (
 		ExternalRef     string         `json:"externalRef"`
 		SanitizedConfig map[string]any `json:"sanitizedConfig"`
 		UserSettings    map[string]any `json:"userSettings"`
+		Capabilities    []string       `json:"capabilities"`
 	}
 
 	IntegrationOAuthInstallResult struct {
@@ -111,6 +113,7 @@ func InstallableIntegrationFromPackage(p rez.IntegrationPackage) InstallableInte
 		Provider:     p.Provider(),
 		OAuthInstall: p.OAuthInstallRequired(),
 		MaxInstalls:  p.MaxInstalls(),
+		Capabilities: p.Capabilities(),
 	}
 }
 
@@ -126,6 +129,7 @@ func IntegrationInstallationFromRez(ii rez.InstalledIntegration) IntegrationInst
 		DisplayName:     intg.DisplayName,
 		ExternalRef:     intg.ExternalRef,
 		UserSettings:    intg.UserSettings,
+		Capabilities:    ii.Capabilities(),
 		//SanitizedConfig: cfg,
 	}
 	return IntegrationInstallation{Id: intg.ID, Attributes: attrs}

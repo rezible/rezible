@@ -11,6 +11,7 @@ import {
 	installIntegrationFromTargetsMutation,
 	updateIntegrationInstallationMutation,
 	type UpdateIntegrationInstallationRequestAttributes,
+	deleteIntegrationInstallationMutation,
 } from "$lib/api";
 
 import { useUserSessionState } from "$lib/user-session.svelte";
@@ -22,22 +23,22 @@ import { Context } from "runed";
 export type IntegrationProviderDisplayInfo = {
 	displayName: string;
 	description: string;
-}
+};
 
 export type IntegrationProvider = IntegrationProviderDisplayInfo & {
 	name: string;
 	integrations: InstallableIntegration[];
-}
+};
 
 export const providerDisplays = new Map<string, IntegrationProviderDisplayInfo>([
-	["demo", {displayName: "Demo", description: "Demo Data"}],
-	["slack", {displayName: "Slack", description: "Slack Integration"}],
-	["google", {displayName: "Google", description: "Google Integration"}],
-	["github", {displayName: "Github", description: "Github Integration"}],
+	["demo", { displayName: "Demo", description: "Demo Data" }],
+	["slack", { displayName: "Slack", description: "Slack Integration" }],
+	["google", { displayName: "Google", description: "Google Integration" }],
+	["github", { displayName: "Github", description: "Github Integration" }],
 ]);
 
 const makeIntegrationProviderDisplay = (intg: InstallableIntegration): IntegrationProviderDisplayInfo => ({
-	displayName: intg.displayName, 
+	displayName: intg.displayName,
 	description: intg.description,
 });
 
@@ -45,8 +46,10 @@ export class IntegrationsController {
 	session = useUserSessionState();
 
 	private listAvailableQuery = createQuery(() => getInstallableIntegrationsOptions());
-	available = $derived(this.listAvailableQuery.data?.data.toSorted((a, b) => a.name.localeCompare(b.name)) || []);
-	availableByName = $derived(new Map(this.available.map(a => [a.name, a])));
+	available = $derived(
+		this.listAvailableQuery.data?.data.toSorted((a, b) => a.name.localeCompare(b.name)) || []
+	);
+	availableByName = $derived(new Map(this.available.map((a) => [a.name, a])));
 	availableByProvider = $derived.by(() => {
 		const grouped = new SvelteMap<string, InstallableIntegration[]>();
 		for (const intg of this.available) {
@@ -59,7 +62,7 @@ export class IntegrationsController {
 	providers = $derived.by<IntegrationProvider[]>(() => {
 		if (!this.available || this.available.length === 0) return [];
 		const nameMap = new Map<string, Set<InstallableIntegration>>();
-		this.available.forEach(inst => {
+		this.available.forEach((inst) => {
 			const instSet = nameMap.get(inst.provider) || new Set<InstallableIntegration>();
 			instSet.add(inst);
 			nameMap.set(inst.provider, instSet);
@@ -68,7 +71,7 @@ export class IntegrationsController {
 			const knownDisp = providerDisplays.get(name);
 			const integrations = intgs.values().toArray();
 			const displayInfos = !!knownDisp ? [knownDisp] : integrations.map(makeIntegrationProviderDisplay);
-			return displayInfos.map(disp => ({name, integrations, ...disp}));
+			return displayInfos.map((disp) => ({ name, integrations, ...disp }));
 		});
 		return provs.toArray();
 	});
@@ -87,7 +90,7 @@ export class IntegrationsController {
 	installationsByProvider = $derived.by(() => {
 		const grouped = new Map<string, IntegrationInstallation[]>();
 		for (const intg of this.installed) {
-			const curr = grouped.get(intg.attributes.integrationName) ?? [];
+			const curr = grouped.get(intg.attributes.providerName) ?? [];
 			grouped.set(intg.attributes.providerName, [...curr, intg]);
 		}
 		return grouped;
@@ -98,21 +101,32 @@ export class IntegrationsController {
 		this.installingName = undefined;
 	}
 
+	refetchInstallTargets() {
+		this.listInstallTargetsQuery.refetch();
+	}
+
 	private onInstallationsMutated(installation?: IntegrationInstallation) {
 		this.refetchInstalled();
 	}
 
 	private installMut = createMutation(() => ({
 		...installIntegrationMutation({}),
-		onSuccess: ({data}) => {
+		onSuccess: ({ data }) => {
 			this.onInstallationsMutated(data);
 		},
 	}));
 
 	private updateInstalledMut = createMutation(() => ({
 		...updateIntegrationInstallationMutation({}),
-		onSuccess: ({data}) => {
+		onSuccess: ({ data }) => {
 			this.onInstallationsMutated(data);
+		},
+	}));
+
+	private deleteInstalledMut = createMutation(() => ({
+		...deleteIntegrationInstallationMutation({}),
+		onSuccess: () => {
+			this.refetchInstalled();
 		},
 	}));
 
@@ -120,37 +134,45 @@ export class IntegrationsController {
 	private installationTargets = $derived(this.listInstallTargetsQuery.data?.data || []);
 	installationTargetsByName = $derived.by(() => {
 		const nameTargets = new Map<string, IntegrationInstallTarget[]>();
-		this.installationTargets.forEach(t => {
+		this.installationTargets.forEach((t) => {
 			const curr = nameTargets.get(t.integrationName) || [];
 			nameTargets.set(t.integrationName, [...curr, t]);
 		});
 		return nameTargets;
 	});
 
-    private selectIntegrationInstallTargetMut = createMutation(() => ({
-        ...installIntegrationFromTargetsMutation({}),
-        onSuccess: () => {
-            this.refetchInstalled();
+	private selectIntegrationInstallTargetMut = createMutation(() => ({
+		...installIntegrationFromTargetsMutation({}),
+		onSuccess: () => {
+			this.refetchInstalled();
 			this.listInstallTargetsQuery.refetch();
-        },
-    }));
+		},
+	}));
 
-	installationPending = $derived(this.installMut.isPending || this.selectIntegrationInstallTargetMut.isPending);
-	installingName = $derived(this.installMut.variables?.path?.name || this.selectIntegrationInstallTargetMut.variables?.path.name);
+	installationPending = $derived(
+		this.installMut.isPending || this.selectIntegrationInstallTargetMut.isPending
+	);
+	installingName = $derived(
+		this.installMut.variables?.path?.name || this.selectIntegrationInstallTargetMut.variables?.path.name
+	);
 	installationErr = $derived(this.installMut.error || this.selectIntegrationInstallTargetMut.error);
 
 	async installNew(name: string, attributes: InstallIntegrationRequestAttributes) {
-		await this.installMut.mutateAsync({path: { name }, body: { attributes }});
+		await this.installMut.mutateAsync({ path: { name }, body: { attributes } });
 	}
 
 	async updateInstallation(id: string, attributes: UpdateIntegrationInstallationRequestAttributes) {
-		await this.updateInstalledMut.mutateAsync({path: { id }, body: { attributes }});
+		await this.updateInstalledMut.mutateAsync({ path: { id }, body: { attributes } });
+	}
+
+	async deleteInstallation(id: string) {
+		await this.deleteInstalledMut.mutateAsync({ path: { id } });
 	}
 
 	async installFromTargets(name: string, externalRefs: string[]) {
 		if (this.installationPending || externalRefs.length === 0) return;
 		try {
-			const attributes = { externalRefs }
+			const attributes = { externalRefs };
 			await this.selectIntegrationInstallTargetMut.mutateAsync({
 				path: { name },
 				body: { attributes },
@@ -160,8 +182,16 @@ export class IntegrationsController {
 		}
 	}
 
-	loading = $derived(this.listAvailableQuery.isPending || this.listInstalledQuery.isPending || this.listInstallTargetsQuery.isPending);
-	error = $derived((this.listAvailableQuery.error ?? this.listInstalledQuery.error ?? this.listInstallTargetsQuery.error) as ErrorModel | null);
+	loading = $derived(
+		this.listAvailableQuery.isPending ||
+			this.listInstalledQuery.isPending ||
+			this.listInstallTargetsQuery.isPending
+	);
+	error = $derived(
+		(this.listAvailableQuery.error ??
+			this.listInstalledQuery.error ??
+			this.listInstallTargetsQuery.error) as ErrorModel | null
+	);
 }
 
 const ctx = new Context<IntegrationsController>("IntegrationsController");

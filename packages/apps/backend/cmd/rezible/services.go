@@ -183,6 +183,7 @@ func declareServices(ctx context.Context, i do.Injector) {
 	do.Provide(i, func(i do.Injector) (oapiv1.Handler, error) {
 		return apiv1.NewHandler(
 			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.AiService](i),
 			do.MustInvoke[rez.AgentSessionService](i),
 			do.MustInvoke[rez.AlertService](i),
 			do.MustInvoke[rez.OrganizationService](i),

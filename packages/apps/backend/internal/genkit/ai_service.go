@@ -3,7 +3,6 @@ package genkit
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"slices"
 
 	"github.com/firebase/genkit/go/ai"
@@ -57,7 +56,6 @@ func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
 		return 1
 	})
 	for _, o := range opts {
-		slog.Debug("ai init opt", "kind", o.kind)
 		if optErr := o.optFn(s); optErr != nil {
 			return fmt.Errorf("service init option: %w", optErr)
 		}
@@ -82,6 +80,14 @@ func WithAgent[I rezai.AgentInput, S rezai.SessionState](r agentRunner[I, S]) Ai
 			return nil
 		},
 	}
+}
+
+func (s *AiService) GetAgents() []rez.AiAgentConfig {
+	var agents []rez.AiAgentConfig
+	for _, wrapper := range s.agentWrappers {
+		agents = append(agents, wrapper.AgentConfig())
+	}
+	return agents
 }
 
 func (s *AiService) getAgentWrapper(name string) (AgentWrapper, error) {

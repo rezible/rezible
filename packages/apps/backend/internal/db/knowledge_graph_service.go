@@ -111,19 +111,21 @@ func (s *KnowledgeGraphService) GetRelationshipAt(ctx context.Context, id uuid.U
 func (s *KnowledgeGraphService) GetView(ctx context.Context, params rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error) {
 	depth := min(maxKnowledgeViewDepth, max(1, params.Depth))
 
-	rootID := params.EntityID
-	if rootID == uuid.Nil {
+	view := &rez.KnowledgeGraphView{RootID: params.EntityID}
+
+	if view.RootID == uuid.Nil {
 		// TODO: find entity with the most relationships
 		queryPopular := s.db.Client(ctx).KnowledgeRelationship.Query().
 			Where()
 		rel, relErr := queryPopular.First(ctx)
 		if relErr != nil {
+			if ent.IsNotFound(relErr) {
+				return view, nil
+			}
 			return nil, fmt.Errorf("query graph relationship: %w", relErr)
 		}
-		rootID = rel.SourceEntityID
+		view.RootID = rel.SourceEntityID
 	}
-
-	view := &rez.KnowledgeGraphView{RootID: rootID}
 
 	entityIDs := mapset.NewSet[uuid.UUID]()
 	relationshipIDs := mapset.NewSet[uuid.UUID]()
@@ -181,7 +183,7 @@ func (s *KnowledgeGraphService) GetView(ctx context.Context, params rez.GetKnowl
 		return nextIDs, nil
 	}
 
-	frontierIDs := []uuid.UUID{rootID}
+	frontierIDs := []uuid.UUID{view.RootID}
 	for level := 0; level <= depth && len(frontierIDs) > 0; level++ {
 		nextIDs, queryFrontierErr := queryFrontier(frontierIDs)
 		if queryFrontierErr != nil {

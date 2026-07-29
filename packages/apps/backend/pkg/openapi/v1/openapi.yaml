@@ -243,6 +243,20 @@ components:
             $ref: "#/components/schemas/Part"
           type: array
       type: object
+    AiAgentConfig:
+      additionalProperties: false
+      properties:
+        displayName:
+          type: string
+        model:
+          type: string
+        name:
+          type: string
+      required:
+        - name
+        - displayName
+        - model
+      type: object
     Alert:
       additionalProperties: false
       properties:
@@ -739,14 +753,20 @@ components:
     CreateIncidentSeverityAttributes:
       additionalProperties: false
       properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
         rank:
           format: int64
           type: integer
-        title:
-          type: string
       required:
-        - title
+        - name
         - rank
+        - color
+        - description
       type: object
     CreateIncidentSeverityRequestBody:
       additionalProperties: false
@@ -2211,6 +2231,21 @@ components:
       required:
         - data
       type: object
+    GetUserSessionPreferencesResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetUserSessionPreferencesResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/UserSessionPreferences"
+      required:
+        - data
+      type: object
     GetUserSessionResponseBody:
       additionalProperties: false
       properties:
@@ -3035,6 +3070,10 @@ components:
     InstallableIntegration:
       additionalProperties: false
       properties:
+        capabilities:
+          items:
+            type: string
+          type: array
         description:
           type: string
         displayName:
@@ -3054,6 +3093,7 @@ components:
         - description
         - provider
         - oauthInstall
+        - capabilities
       type: object
     IntegrationEventSyncRun:
       additionalProperties: false
@@ -3117,6 +3157,10 @@ components:
     IntegrationInstallationAttributes:
       additionalProperties: false
       properties:
+        capabilities:
+          items:
+            type: string
+          type: array
         displayName:
           type: string
         externalRef:
@@ -3138,6 +3182,7 @@ components:
         - externalRef
         - sanitizedConfig
         - userSettings
+        - capabilities
       type: object
     IntegrationOAuthFlow:
       additionalProperties: false
@@ -3337,6 +3382,26 @@ components:
         data:
           items:
             $ref: "#/components/schemas/AgentTurn"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodyAiAgentConfig:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodyAiAgentConfig.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/AiAgentConfig"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -5369,6 +5434,10 @@ components:
       properties:
         archived:
           type: boolean
+        color:
+          type: string
+        description:
+          type: string
         name:
           type: string
         rank:
@@ -6087,6 +6156,52 @@ components:
       required:
         - data
       type: object
+    UpdateUserSessionPreferencesAttributes:
+      additionalProperties: false
+      properties:
+        agentRunResults:
+          type: boolean
+        incidentRoleAssignments:
+          type: boolean
+        incidentUpdates:
+          type: boolean
+        integrationSyncFailures:
+          type: boolean
+        name:
+          type: string
+        timezone:
+          type: string
+      type: object
+    UpdateUserSessionPreferencesRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateUserSessionPreferencesRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdateUserSessionPreferencesAttributes"
+      required:
+        - attributes
+      type: object
+    UpdateUserSessionPreferencesResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateUserSessionPreferencesResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/UserSessionPreferences"
+      required:
+        - data
+      type: object
     User:
       additionalProperties: false
       properties:
@@ -6105,9 +6220,15 @@ components:
           type: string
         name:
           type: string
+        organizationRole:
+          enum:
+            - admin
+            - member
+          type: string
       required:
         - name
         - email
+        - organizationRole
       type: object
     UserNotification:
       additionalProperties: false
@@ -6178,6 +6299,48 @@ components:
         - organization
         - organizationRole
         - expiresAt
+      type: object
+    UserSessionNotificationPreferences:
+      additionalProperties: false
+      properties:
+        agentRunResults:
+          type: boolean
+        incidentRoleAssignments:
+          type: boolean
+        incidentUpdates:
+          type: boolean
+        integrationSyncFailures:
+          type: boolean
+      required:
+        - incidentUpdates
+        - incidentRoleAssignments
+        - agentRunResults
+        - integrationSyncFailures
+      type: object
+    UserSessionPreferences:
+      additionalProperties: false
+      properties:
+        notifications:
+          $ref: "#/components/schemas/UserSessionNotificationPreferences"
+        profile:
+          $ref: "#/components/schemas/UserSessionPreferencesProfile"
+      required:
+        - profile
+        - notifications
+      type: object
+    UserSessionPreferencesProfile:
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        timezone:
+          type: string
+      required:
+        - name
+        - email
+        - timezone
       type: object
     VideoConference:
       additionalProperties: false
@@ -6698,6 +6861,55 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Retry Agent Turn
+      tags:
+        - AI
+  /ai/agents:
+    get:
+      operationId: list-ai-agents
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponseBodyAiAgentConfig"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List AI Agents
       tags:
         - AI
   /alerts:
@@ -8252,6 +8464,13 @@ paths:
   /incident_metadata:
     get:
       operationId: get-incident-metadata
+      parameters:
+        - explode: false
+          in: query
+          name: archived
+          schema:
+            default: false
+            type: boolean
       responses:
         "200":
           content:
@@ -16299,6 +16518,109 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Delete a Notification for the Current User
+      tags:
+        - User Session
+  /user_session/preferences:
+    get:
+      operationId: get-user-session-preferences
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserSessionPreferencesResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get current user preferences
+      tags:
+        - User Session
+    patch:
+      operationId: update-user-session-preferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserSessionPreferencesRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateUserSessionPreferencesResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Update current user preferences
       tags:
         - User Session
   /users:

@@ -26,6 +26,8 @@ const (
 	FieldChatID = "chat_id"
 	// FieldTimezone holds the string denoting the timezone field in the database.
 	FieldTimezone = "timezone"
+	// FieldNotificationPreferences holds the string denoting the notification_preferences field in the database.
+	FieldNotificationPreferences = "notification_preferences"
 	// FieldAuthProviderID holds the string denoting the auth_provider_id field in the database.
 	FieldAuthProviderID = "auth_provider_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -215,6 +217,7 @@ var Columns = []string{
 	FieldName,
 	FieldChatID,
 	FieldTimezone,
+	FieldNotificationPreferences,
 	FieldAuthProviderID,
 }
 

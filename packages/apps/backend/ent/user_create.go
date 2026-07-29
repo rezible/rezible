@@ -109,6 +109,12 @@ func (_c *UserCreate) SetNillableTimezone(v *string) *UserCreate {
 	return _c
 }
 
+// SetNotificationPreferences sets the "notification_preferences" field.
+func (_c *UserCreate) SetNotificationPreferences(v map[string]bool) *UserCreate {
+	_c.mutation.SetNotificationPreferences(v)
+	return _c
+}
+
 // SetAuthProviderID sets the "auth_provider_id" field.
 func (_c *UserCreate) SetAuthProviderID(v string) *UserCreate {
 	_c.mutation.SetAuthProviderID(v)
@@ -538,6 +544,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Timezone(); ok {
 		_spec.SetField(user.FieldTimezone, field.TypeString, value)
 		_node.Timezone = value
+	}
+	if value, ok := _c.mutation.NotificationPreferences(); ok {
+		_spec.SetField(user.FieldNotificationPreferences, field.TypeJSON, value)
+		_node.NotificationPreferences = value
 	}
 	if value, ok := _c.mutation.AuthProviderID(); ok {
 		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
@@ -1029,6 +1039,24 @@ func (u *UserUpsert) ClearTimezone() *UserUpsert {
 	return u
 }
 
+// SetNotificationPreferences sets the "notification_preferences" field.
+func (u *UserUpsert) SetNotificationPreferences(v map[string]bool) *UserUpsert {
+	u.Set(user.FieldNotificationPreferences, v)
+	return u
+}
+
+// UpdateNotificationPreferences sets the "notification_preferences" field to the value that was provided on create.
+func (u *UserUpsert) UpdateNotificationPreferences() *UserUpsert {
+	u.SetExcluded(user.FieldNotificationPreferences)
+	return u
+}
+
+// ClearNotificationPreferences clears the value of the "notification_preferences" field.
+func (u *UserUpsert) ClearNotificationPreferences() *UserUpsert {
+	u.SetNull(user.FieldNotificationPreferences)
+	return u
+}
+
 // SetAuthProviderID sets the "auth_provider_id" field.
 func (u *UserUpsert) SetAuthProviderID(v string) *UserUpsert {
 	u.Set(user.FieldAuthProviderID, v)
@@ -1186,6 +1214,27 @@ func (u *UserUpsertOne) UpdateTimezone() *UserUpsertOne {
 func (u *UserUpsertOne) ClearTimezone() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearTimezone()
+	})
+}
+
+// SetNotificationPreferences sets the "notification_preferences" field.
+func (u *UserUpsertOne) SetNotificationPreferences(v map[string]bool) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetNotificationPreferences(v)
+	})
+}
+
+// UpdateNotificationPreferences sets the "notification_preferences" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateNotificationPreferences() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateNotificationPreferences()
+	})
+}
+
+// ClearNotificationPreferences clears the value of the "notification_preferences" field.
+func (u *UserUpsertOne) ClearNotificationPreferences() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearNotificationPreferences()
 	})
 }
 
@@ -1516,6 +1565,27 @@ func (u *UserUpsertBulk) UpdateTimezone() *UserUpsertBulk {
 func (u *UserUpsertBulk) ClearTimezone() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearTimezone()
+	})
+}
+
+// SetNotificationPreferences sets the "notification_preferences" field.
+func (u *UserUpsertBulk) SetNotificationPreferences(v map[string]bool) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetNotificationPreferences(v)
+	})
+}
+
+// UpdateNotificationPreferences sets the "notification_preferences" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateNotificationPreferences() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateNotificationPreferences()
+	})
+}
+
+// ClearNotificationPreferences clears the value of the "notification_preferences" field.
+func (u *UserUpsertBulk) ClearNotificationPreferences() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearNotificationPreferences()
 	})
 }
 

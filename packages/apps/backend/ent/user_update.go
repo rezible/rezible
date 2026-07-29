@@ -135,6 +135,18 @@ func (_u *UserUpdate) ClearTimezone() *UserUpdate {
 	return _u
 }
 
+// SetNotificationPreferences sets the "notification_preferences" field.
+func (_u *UserUpdate) SetNotificationPreferences(v map[string]bool) *UserUpdate {
+	_u.mutation.SetNotificationPreferences(v)
+	return _u
+}
+
+// ClearNotificationPreferences clears the value of the "notification_preferences" field.
+func (_u *UserUpdate) ClearNotificationPreferences() *UserUpdate {
+	_u.mutation.ClearNotificationPreferences()
+	return _u
+}
+
 // SetAuthProviderID sets the "auth_provider_id" field.
 func (_u *UserUpdate) SetAuthProviderID(v string) *UserUpdate {
 	_u.mutation.SetAuthProviderID(v)
@@ -878,6 +890,12 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(user.FieldTimezone, field.TypeString)
+	}
+	if value, ok := _u.mutation.NotificationPreferences(); ok {
+		_spec.SetField(user.FieldNotificationPreferences, field.TypeJSON, value)
+	}
+	if _u.mutation.NotificationPreferencesCleared() {
+		_spec.ClearField(user.FieldNotificationPreferences, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.AuthProviderID(); ok {
 		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
@@ -1917,6 +1935,18 @@ func (_u *UserUpdateOne) ClearTimezone() *UserUpdateOne {
 	return _u
 }
 
+// SetNotificationPreferences sets the "notification_preferences" field.
+func (_u *UserUpdateOne) SetNotificationPreferences(v map[string]bool) *UserUpdateOne {
+	_u.mutation.SetNotificationPreferences(v)
+	return _u
+}
+
+// ClearNotificationPreferences clears the value of the "notification_preferences" field.
+func (_u *UserUpdateOne) ClearNotificationPreferences() *UserUpdateOne {
+	_u.mutation.ClearNotificationPreferences()
+	return _u
+}
+
 // SetAuthProviderID sets the "auth_provider_id" field.
 func (_u *UserUpdateOne) SetAuthProviderID(v string) *UserUpdateOne {
 	_u.mutation.SetAuthProviderID(v)
@@ -2690,6 +2720,12 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(user.FieldTimezone, field.TypeString)
+	}
+	if value, ok := _u.mutation.NotificationPreferences(); ok {
+		_spec.SetField(user.FieldNotificationPreferences, field.TypeJSON, value)
+	}
+	if _u.mutation.NotificationPreferencesCleared() {
+		_spec.ClearField(user.FieldNotificationPreferences, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.AuthProviderID(); ok {
 		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)

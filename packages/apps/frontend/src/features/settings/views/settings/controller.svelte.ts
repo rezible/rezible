@@ -8,53 +8,64 @@ import { onDestroy } from "svelte";
 import RiPlugLine from "remixicon-svelte/icons/plug-line";
 import RiBuilding2Line from "remixicon-svelte/icons/building-2-line";
 import RiUserSettingsLine from "remixicon-svelte/icons/user-settings-line";
+import RiFireLine from "remixicon-svelte/icons/fire-line";
+import RiRobot2Line from "remixicon-svelte/icons/robot-2-line";
+import RiTeamLine from "remixicon-svelte/icons/team-line";
 
-const sidebarAdminGroups: AppSidebarGroup[] = [{
-    label: "Administration",
-    items: [
-        { label: "Organization", href: "/settings/organization", icon: RiBuilding2Line },
-    ],
-}];
+const sidebarAdminGroups: AppSidebarGroup[] = [
+	{
+		label: "Administration",
+		items: [
+			{ label: "Organization", href: "/settings/organization", icon: RiBuilding2Line },
+			{ label: "Members", href: "/settings/organization/members", icon: RiTeamLine },
+		],
+	},
+];
 
 const makeSettingsSidebar = (isAdmin: boolean): AppSidebarModel => ({
-    search: { placeholder: "Search settings" },
-    groups: [
-        {
-            label: "User",
-            items: [
-
-                { label: "Preferences", href: "/settings/user/preferences", icon: RiUserSettingsLine },
-            ]
-        },
-        {
-            label: "App",
-            items: [
-                { label: "Integrations", href: "/settings/integrations", icon: RiPlugLine },
-            ],
-        },
-        ...(isAdmin ? sidebarAdminGroups : []),
-    ],
+	search: { placeholder: "Search settings" },
+	groups: [
+		{
+			label: "User",
+			items: [{ label: "User", href: "/settings/user", icon: RiUserSettingsLine }],
+		},
+		...(isAdmin ? sidebarAdminGroups : []),
+		{
+			label: "Operations",
+			items: [{ label: "Incidents", href: "/settings/incidents", icon: RiFireLine }],
+		},
+		{
+			label: "App",
+			items: [
+				{ label: "Integrations", href: "/settings/integrations", icon: RiPlugLine },
+				...(isAdmin ? [{ label: "Agents", href: "/settings/agents", icon: RiRobot2Line }] : []),
+			],
+		},
+	],
 });
 
 export class SettingsViewController {
-    shell = useAppShell();
-    session = useUserSessionState();
+	shell = useAppShell();
+	session = useUserSessionState();
 
-    integrations = initIntegrationsController();
+	integrations = initIntegrationsController();
 
-    showInitialSetup = $derived(!this.session.isSetup);
-    provider = $derived(page.params.provider);
+	showInitialSetup = $derived(!this.session.isSetup);
+	provider = $derived(page.params.provider);
 
-    sidebar = $derived(makeSettingsSidebar(this.session.isAuthenticated))
+	sidebar = $derived(makeSettingsSidebar(this.session.isAdmin));
 
-    constructor() {
-        watch(() => this.sidebar, sb => {
-            this.shell.setChildSidebar(sb);
-        });
-        onDestroy(() => {
-            this.shell.clearChildSidebar();
-        });
-    }
+	constructor() {
+		watch(
+			() => this.sidebar,
+			(sb) => {
+				this.shell.setChildSidebar(sb);
+			}
+		);
+		onDestroy(() => {
+			this.shell.clearChildSidebar();
+		});
+	}
 }
 
 const ctx = new Context<SettingsViewController>("SettingsViewController");

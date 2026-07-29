@@ -19,7 +19,7 @@ export enum ApiAuthErrorCategory {
 	SessionInvalid = "auth_session_invalid",
 	ServerError = "server_error",
 	Unknown = "unknown",
-};
+}
 const authErrCategories = Object.values(ApiAuthErrorCategory);
 
 const parseUserSessionResponseError = (err: ErrorModel): ApiAuthErrorCategory => {
@@ -36,10 +36,13 @@ const parseUserSessionResponseError = (err: ErrorModel): ApiAuthErrorCategory =>
 
 type AuthSessionQueryResult = CreateQueryResult<GetUserSessionResponseBody, ErrorModel>;
 type ParsedAuthSessionQueryResult = {
-	session?: Omit<UserSession, "expiresAt"> & { expiresAt: ZonedDateTime },
-	error?: ApiAuthErrorCategory,
+	session?: Omit<UserSession, "expiresAt"> & { expiresAt: ZonedDateTime };
+	error?: ApiAuthErrorCategory;
 };
-const parseUserSessionQueryResponse = ({data: body, error}: AuthSessionQueryResult): ParsedAuthSessionQueryResult => {
+const parseUserSessionQueryResponse = ({
+	data: body,
+	error,
+}: AuthSessionQueryResult): ParsedAuthSessionQueryResult => {
 	let res: ParsedAuthSessionQueryResult = {};
 	if (!!error) {
 		res.error = parseUserSessionResponseError(error);
@@ -69,14 +72,14 @@ const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSe
 	if (isSetup && isInitialSetupRoute) return "/settings";
 
 	return isLoginRoute ? "/" : null;
-}
+};
 
 export class UserSessionState {
 	private query = createQuery(() => getUserSessionOptions());
 	private loaded = $derived(this.query.isFetched);
 
 	private parsedResponse = $derived(parseUserSessionQueryResponse(this.query));
-	
+
 	error = $derived(this.parsedResponse.error);
 
 	private session = $derived(this.parsedResponse.session);
@@ -85,6 +88,7 @@ export class UserSessionState {
 	org = $derived(this.session?.organization);
 	orgPreferences = $derived(this.org?.attributes.preferences);
 	organizationRole = $derived(this.session?.organizationRole);
+	isAdmin = $derived(this.organizationRole === "admin");
 
 	isAuthenticated = $derived(!!this.session && !this.error);
 	isSetup = $derived(this.isAuthenticated && !this.org?.attributes.setupRequired);
@@ -92,17 +96,22 @@ export class UserSessionState {
 	constructor() {
 		this.startSessionExpiryCheck();
 		this.addNavigationGuards();
-	};
+	}
 
-	private redirectTo = $derived(this.loaded ? getAuthRedirect(page.route.id, this.isAuthenticated, this.isSetup) : undefined);
+	private redirectTo = $derived(
+		this.loaded ? getAuthRedirect(page.route.id, this.isAuthenticated, this.isSetup) : undefined
+	);
 
 	private addNavigationGuards() {
-		watch(() => this.redirectTo, route => {
-			if (!!route && route !== navigating.to?.route.id) {
-				goto(route);
+		watch(
+			() => this.redirectTo,
+			(route) => {
+				if (!!route && route !== navigating.to?.route.id) {
+					goto(route);
+				}
 			}
-		});
-		beforeNavigate(async nav => {
+		);
+		beforeNavigate(async (nav) => {
 			if (nav.willUnload || !nav.to) return;
 			const wouldRedirectTo = getAuthRedirect(nav.to.route.id, this.isAuthenticated, this.isSetup);
 			if (!!wouldRedirectTo && nav.to.route.id !== wouldRedirectTo) {
@@ -118,7 +127,7 @@ export class UserSessionState {
 	signingOut = $state(false);
 	async logout() {
 		this.signingOut = true;
-		await tick()
+		await tick();
 		await goto("/api/auth/logout");
 		this.signingOut = false;
 	}
@@ -139,13 +148,13 @@ export class UserSessionState {
 				console.log("auth session expiring soon", timeLeft);
 				// this.refreshSessionMut.mutate({});
 			}
-		}
+		};
 		onMount(() => {
 			const i = setInterval(checkExpiry, CheckIntervalMs);
 			return () => clearInterval(i);
 		});
-	};
-};
+	}
+}
 
 const ctx = new Context<UserSessionState>("UserSessionState");
 export const initUserSessionState = () => ctx.set(new UserSessionState());

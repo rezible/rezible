@@ -29,7 +29,7 @@ const syncStatusDisplays: Record<string, SyncStatusDisplay> = {
 const formatSyncStatus = (status?: string): SyncStatusDisplay | undefined => {
 	if (!status) return undefined;
 	return syncStatusDisplays[status] ?? { label: status, variant: "outline" };
-}
+};
 
 const pollAfterRequestMs = 10_000;
 const pollIntervalMs = 3_000;
@@ -46,6 +46,11 @@ export class IntegrationDataSyncController {
 		if (!open) this.installation = undefined;
 	}
 
+	openFor(installation: IntegrationInstallation) {
+		this.installation = installation;
+		this.refetchSyncStatus();
+	}
+
 	private syncRequestPolling = $state(false);
 	private syncPollTimeout: ReturnType<typeof setTimeout> | undefined;
 	private syncRequestError = $state<ErrorModel>();
@@ -54,6 +59,7 @@ export class IntegrationDataSyncController {
 		...requestIntegrationEventSyncMutation(),
 		onSuccess: async () => {
 			this.syncRequestError = undefined;
+			this.startSyncStatusPolling();
 		},
 		onError: (err) => {
 			this.syncRequestError = err;
@@ -67,10 +73,10 @@ export class IntegrationDataSyncController {
 			path: { id },
 			body: { attributes: {} },
 		});
-	};
+	}
 
-    disabled = $derived(this.requestDataSyncMutation.isPending);
-    
+	disabled = $derived(this.requestDataSyncMutation.isPending);
+
 	private syncStatusQueryOptions = $derived(
 		listIntegrationEventSyncRunsOptions({
 			path: { id: this.id ?? "" },
@@ -83,14 +89,10 @@ export class IntegrationDataSyncController {
 	}));
 
 	syncRuns = $derived<IntegrationEventSyncRun[]>(this.syncStatusQuery.data?.data ?? []);
-	syncRunsError = $derived(
-		(this.syncRequestError ?? this.syncStatusQuery.error) as ErrorModel | undefined
-	);
+	syncRunsError = $derived((this.syncRequestError ?? this.syncStatusQuery.error) as ErrorModel | undefined);
 
 	latestSyncRun = $derived<string | undefined>(this.syncRuns[0]?.attributes.status);
-	latestSyncRunDisplay = $derived<SyncStatusDisplay | undefined>(
-		formatSyncStatus(this.latestSyncRun)
-	);
+	latestSyncRunDisplay = $derived<SyncStatusDisplay | undefined>(formatSyncStatus(this.latestSyncRun));
 
 	isLoading = $derived(this.requestDataSyncMutation.isPending || this.syncRequestPolling);
 	isSyncing = $derived(this.latestSyncRun === "syncing");

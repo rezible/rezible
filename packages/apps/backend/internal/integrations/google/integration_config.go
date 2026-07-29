@@ -5,7 +5,7 @@ import (
 )
 
 type InstallationConfig struct {
-	ServiceAccountCredentials []byte
+	ServiceAccountCredentials json.RawMessage
 }
 
 func (c *InstallationConfig) Encode() ([]byte, error) {

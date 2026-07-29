@@ -45,6 +45,10 @@ func (i *Integration) Provider() string {
 	return slackintegration.ProviderName
 }
 
+func (i *Integration) Capabilities() []string {
+	return []string{"incident_management"}
+}
+
 func (i *Integration) IsAvailable() (bool, error) {
 	return i.appSvc.App().Config().Enabled, nil
 }
@@ -105,6 +109,10 @@ func (ii *InstalledIntegration) Integration() *ent.Integration {
 
 func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
 	return ii.config
+}
+
+func (ii *InstalledIntegration) Capabilities() []string {
+	return []string{"incident_management"}
 }
 
 type UserSettings struct {

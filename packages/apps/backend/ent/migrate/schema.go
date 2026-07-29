@@ -2848,6 +2848,7 @@ var (
 		{Name: "name", Type: field.TypeString, Default: ""},
 		{Name: "chat_id", Type: field.TypeString, Nullable: true},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
+		{Name: "notification_preferences", Type: field.TypeJSON, Nullable: true},
 		{Name: "auth_provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
@@ -2860,13 +2861,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_tenants_tenant",
-				Columns:    []*schema.Column{UsersColumns[6]},
+				Columns:    []*schema.Column{UsersColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "users_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{UsersColumns[7]},
+				Columns:    []*schema.Column{UsersColumns[8]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -2875,22 +2876,22 @@ var (
 			{
 				Name:    "user_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[6]},
+				Columns: []*schema.Column{UsersColumns[7]},
 			},
 			{
 				Name:    "user_tenant_id_knowledge_entity_id",
 				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[6], UsersColumns[7]},
+				Columns: []*schema.Column{UsersColumns[7], UsersColumns[8]},
 			},
 			{
 				Name:    "user_auth_provider_id",
 				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[5]},
+				Columns: []*schema.Column{UsersColumns[6]},
 			},
 			{
 				Name:    "user_tenant_id_email",
 				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[6], UsersColumns[1]},
+				Columns: []*schema.Column{UsersColumns[7], UsersColumns[1]},
 			},
 		},
 	}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as Card from "$components/ui/card";
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import { initOrganizationSettingsViewController } from "./organizationSettingsController.svelte";
 
@@ -6,28 +7,18 @@
 
 	setPageBreadcrumbs(() => [
 		{ label: "Settings", path: "/settings" },
-		{ label: "Organization", path: "/settings" },
+		{ label: "Organization", path: "/settings/organization" },
 	]);
-
-	// const tabs: Tab<OrganizationSettingsViewParam>[] = [
-	// 	{ label: "Teams", view: undefined, component: OrganizationTeamsTab },
-	// 	{ label: "Users", view: "users", component: OrganizationUsersTab },
-	// ];
 </script>
 
-<div class="mb-2 rounded border p-3">
-	<div class="flex flex-wrap items-center justify-between gap-2">
-		<div>
-			<h2 class="text-lg font-semibold">{view.orgName || "Organization"}</h2>
-			<span class="text-sm text-surface-content/80">
-				{#if view.isOrgAdmin}
-					You are an organization admin.
-				{:else}
-					Read-only access. Organization admin is required for team and membership changes.
-				{/if}
-			</span>
+<Card.Root class="max-w-2xl">
+	<Card.Header>
+		<Card.Title>Organization</Card.Title>
+	</Card.Header>
+	<Card.Content>
+		<div class="grid gap-1">
+			<div class="text-sm font-medium text-muted-foreground">Name</div>
+			<div>{view.orgName || "Organization"}</div>
 		</div>
-	</div>
-</div>
-
-<!-- <TabbedViewContainer {tabs} path="/settings/organization" /> -->
+	</Card.Content>
+</Card.Root>

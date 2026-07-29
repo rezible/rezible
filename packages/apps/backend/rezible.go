@@ -211,9 +211,10 @@ type (
 type (
 	IntegrationPackage interface {
 		Name() string
+		Provider() string
 		DisplayName() string
 		Description() string
-		Provider() string
+		Capabilities() []string
 		IsAvailable() (bool, error)
 		MaxInstalls() *int
 		OAuthInstallRequired() bool
@@ -225,6 +226,7 @@ type (
 	InstalledIntegration interface {
 		Integration() *ent.Integration
 		Config() IntegrationInstallationConfig
+		Capabilities() []string
 	}
 
 	IntegrationInstallationConfig interface {
@@ -426,7 +428,14 @@ type (
 		Error        *core.GenkitError
 	}
 
+	AiAgentConfig struct {
+		Name        string `json:"name"`
+		DisplayName string `json:"displayName"`
+		Model       string `json:"model"`
+	}
+
 	AiService interface {
+		GetAgents() []AiAgentConfig
 		MakeInitialAgentTurnInput(context.Context, string, any) (*AgentTurnInput, error)
 		InvokeAgentTurn(context.Context, InvokeAgentTurnParams) (*AgentInvocationResult, error)
 	}

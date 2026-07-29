@@ -29,6 +29,7 @@ func (User) Fields() []ent.Field {
 		field.String("name").Default(""),
 		field.String("chat_id").Optional(),
 		field.String("timezone").Optional(),
+		field.JSON("notification_preferences", map[string]bool{}).Optional(),
 		field.String("auth_provider_id").Optional(),
 	}
 }

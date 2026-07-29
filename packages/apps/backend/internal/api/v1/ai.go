@@ -14,11 +14,18 @@ import (
 )
 
 type aiHandler struct {
+	ai     rez.AiService
 	agents rez.AgentSessionService
 }
 
-func newAiHandler(agents rez.AgentSessionService) *aiHandler {
-	return &aiHandler{agents: agents}
+func newAiHandler(ai rez.AiService, agents rez.AgentSessionService) *aiHandler {
+	return &aiHandler{ai: ai, agents: agents}
+}
+
+func (h *aiHandler) ListAiAgents(ctx context.Context, req *oapi.ListAiAgentsRequest) (*oapi.ListAiAgentsResponse, error) {
+	var resp oapi.ListAiAgentsResponse
+	resp.Body.Data = oapi.ConvertSlice(h.ai.GetAgents(), oapi.AiAgentConfigFromRez)
+	return &resp, nil
 }
 
 func (h *aiHandler) CreateAgentSession(ctx context.Context, req *oapi.CreateAgentSessionRequest) (*oapi.CreateAgentSessionResponse, error) {

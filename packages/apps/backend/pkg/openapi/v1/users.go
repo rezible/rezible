@@ -7,6 +7,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/organizationrole"
 )
 
 type UsersHandler interface {
@@ -26,15 +27,20 @@ type (
 	}
 
 	UserAttributes struct {
-		Name  string `json:"name"`
-		Email string `json:"email"`
+		Name             string `json:"name"`
+		Email            string `json:"email"`
+		OrganizationRole string `json:"organizationRole" enum:"admin,member"`
 	}
 )
 
 func UserFromEnt(user *ent.User) User {
 	attr := UserAttributes{
-		Name:  user.Name,
-		Email: user.Email,
+		Name:             user.Name,
+		Email:            user.Email,
+		OrganizationRole: organizationrole.RoleMember.String(),
+	}
+	if role := user.Edges.OrganizationRole; role != nil && role.Role == organizationrole.RoleAdmin {
+		attr.OrganizationRole = organizationrole.RoleAdmin.String()
 	}
 
 	return User{

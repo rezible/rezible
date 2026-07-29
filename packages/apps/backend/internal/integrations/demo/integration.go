@@ -43,6 +43,10 @@ func (i *Integration) Provider() string {
 	return providerName
 }
 
+func (i *Integration) Capabilities() []string {
+	return []string{"demo_data", "event_sync", "code_changes"}
+}
+
 func (i *Integration) MaxInstalls() *int {
 	return new(1)
 }
@@ -83,6 +87,10 @@ func (ii *InstalledIntegration) Integration() *ent.Integration {
 
 func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
 	return ii.config
+}
+
+func (ii *InstalledIntegration) Capabilities() []string {
+	return []string{"demo_data", "event_sync", "code_changes"}
 }
 
 type InstallationConfig struct{}

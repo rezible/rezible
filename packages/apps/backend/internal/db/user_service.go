@@ -54,6 +54,7 @@ func (s *UserService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.Use
 
 func (s *UserService) List(ctx context.Context, params rez.ListUsersParams) ([]*ent.User, error) {
 	query := s.db.Client(ctx).User.Query().
+		WithOrganizationRole().
 		Order(user.ByID()).
 		Limit(params.GetLimit()).
 		Offset(params.Offset)

@@ -44,6 +44,10 @@ func (i *Integration) Provider() string {
 	return slackintegration.ProviderName
 }
 
+func (i *Integration) Capabilities() []string {
+	return []string{"chat_context"}
+}
+
 func (i *Integration) MaxInstalls() *int {
 	return nil
 }
@@ -105,9 +109,6 @@ func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
 	return ii.config
 }
 
-func (ii *InstalledIntegration) GetCapabilities() map[string]bool {
-	return map[string]bool{
-		"chat":  true,
-		"users": true,
-	}
+func (ii *InstalledIntegration) Capabilities() []string {
+	return []string{"chat_context"}
 }

@@ -1364,13 +1364,14 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			user.FieldTenantID:          {Type: field.TypeInt, Column: user.FieldTenantID},
-			user.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: user.FieldKnowledgeEntityID},
-			user.FieldEmail:             {Type: field.TypeString, Column: user.FieldEmail},
-			user.FieldName:              {Type: field.TypeString, Column: user.FieldName},
-			user.FieldChatID:            {Type: field.TypeString, Column: user.FieldChatID},
-			user.FieldTimezone:          {Type: field.TypeString, Column: user.FieldTimezone},
-			user.FieldAuthProviderID:    {Type: field.TypeString, Column: user.FieldAuthProviderID},
+			user.FieldTenantID:                {Type: field.TypeInt, Column: user.FieldTenantID},
+			user.FieldKnowledgeEntityID:       {Type: field.TypeUUID, Column: user.FieldKnowledgeEntityID},
+			user.FieldEmail:                   {Type: field.TypeString, Column: user.FieldEmail},
+			user.FieldName:                    {Type: field.TypeString, Column: user.FieldName},
+			user.FieldChatID:                  {Type: field.TypeString, Column: user.FieldChatID},
+			user.FieldTimezone:                {Type: field.TypeString, Column: user.FieldTimezone},
+			user.FieldNotificationPreferences: {Type: field.TypeJSON, Column: user.FieldNotificationPreferences},
+			user.FieldAuthProviderID:          {Type: field.TypeString, Column: user.FieldAuthProviderID},
 		},
 	}
 	graph.Nodes[68] = &sqlgraph.Node{
@@ -12618,6 +12619,11 @@ func (f *UserFilter) WhereChatID(p entql.StringP) {
 // WhereTimezone applies the entql string predicate on the timezone field.
 func (f *UserFilter) WhereTimezone(p entql.StringP) {
 	f.Where(p.Field(user.FieldTimezone))
+}
+
+// WhereNotificationPreferences applies the entql json.RawMessage predicate on the notification_preferences field.
+func (f *UserFilter) WhereNotificationPreferences(p entql.BytesP) {
+	f.Where(p.Field(user.FieldNotificationPreferences))
 }
 
 // WhereAuthProviderID applies the entql string predicate on the auth_provider_id field.

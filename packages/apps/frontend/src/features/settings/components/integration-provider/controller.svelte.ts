@@ -3,10 +3,10 @@ import type { Component } from "svelte";
 
 import {
 	type ErrorModel,
-    type InstallIntegrationRequestAttributes,
-    type IntegrationInstallation,
-    type IntegrationOAuthInstallResult,
-    type UpdateIntegrationInstallationRequestAttributes,
+	type InstallIntegrationRequestAttributes,
+	type IntegrationInstallation,
+	type IntegrationOAuthInstallResult,
+	type UpdateIntegrationInstallationRequestAttributes,
 } from "$lib/api";
 
 import { IntegrationOAuthController } from "$features/settings/lib/integrationsOAuthController.svelte";
@@ -20,30 +20,38 @@ import DemoProvider from "./demo/DemoProvider.svelte";
 type ConfigMap = Record<string, unknown>;
 
 const providerComponents: Record<string, Component> = {
-	"slack": SlackProvider,
-	"google": GoogleProvider,
-	"github": GithubProvider,
-	"demo": DemoProvider,
+	slack: SlackProvider,
+	google: GoogleProvider,
+	github: GithubProvider,
+	demo: DemoProvider,
 };
 
 export class IntegrationProviderConfigController {
 	integrations = useIntegrationsController();
-    oauth = new IntegrationOAuthController(res => {this.onOAuthResult(res)});
+	oauth = new IntegrationOAuthController((res) => {
+		this.onOAuthResult(res);
+	});
 
 	private name = $state.raw<string>();
-    nameValid = $derived(!!this.name);
+	nameValid = $derived(!!this.name);
 
-    installations = $derived(!!this.name ? (this.integrations.installationsByProvider.get(this.name) || []) : []);
+	installations = $derived(
+		!!this.name ? this.integrations.installationsByProvider.get(this.name) || [] : []
+	);
+	availableIntegrations = $derived(
+		!!this.name ? this.integrations.availableByProvider.get(this.name) || [] : []
+	);
 
-	ProviderComponent = $derived(!!this.name && this.name in providerComponents ? providerComponents[this.name] : undefined);
+	ProviderComponent = $derived(
+		!!this.name && this.name in providerComponents ? providerComponents[this.name] : undefined
+	);
 
 	loading = $derived(this.oauth.inFlow || this.integrations.loading);
 
 	constructor(nameFn: Getter<string>) {
-		watch(
-			nameFn,
-			(name) => {this.name = name}
-		);
+		watch(nameFn, (name) => {
+			this.name = name;
+		});
 	}
 
 	async startOAuthFlow(integrationName: string) {
@@ -55,10 +63,10 @@ export class IntegrationProviderConfigController {
 		}
 	}
 
-    private onOAuthResult(res: IntegrationOAuthInstallResult) {
-        const name = res.installed?.at(0)?.attributes.integrationName || res.installTargetOptions?.at(0)?.integrationName;
-        this.integrations.refetchInstalled();
-    }
+	private onOAuthResult(res: IntegrationOAuthInstallResult) {
+		this.integrations.refetchInstalled();
+		this.integrations.refetchInstallTargets();
+	}
 
 	oauthError = $derived(this.oauth.inFlow ? this.oauth.error : undefined);
 
@@ -75,8 +83,8 @@ export class IntegrationProviderConfigController {
 		};
 	}
 
-    editingIntegrationName = $state<string>();
-    editingInstallation = $state.raw<IntegrationInstallation>();
+	editingIntegrationName = $state<string>();
+	editingInstallation = $state.raw<IntegrationInstallation>();
 
 	userSettings = $state.raw<ConfigMap>({});
 	userSettingsValid = $state(false);
@@ -84,21 +92,21 @@ export class IntegrationProviderConfigController {
 	installConfig = $state.raw<ConfigMap>({});
 	installConfigValid = $state(false);
 
-    setEditing(name: string, installation?: IntegrationInstallation) {
-        this.editingIntegrationName = name;
-        this.editingInstallation = installation;
-    }
+	setEditing(name: string, installation?: IntegrationInstallation) {
+		this.editingIntegrationName = name;
+		this.editingInstallation = installation;
+	}
 
 	clearEditing() {
-        this.editingIntegrationName = undefined;
-        this.editingInstallation = undefined;
+		this.editingIntegrationName = undefined;
+		this.editingInstallation = undefined;
 
 		this.userSettings = {};
 		this.userSettingsValid = false;
 
 		this.installConfig = {};
 		this.installConfigValid = false;
-		
+
 		this.setConfigError();
 	}
 
@@ -131,8 +139,34 @@ export class IntegrationProviderConfigController {
 			this.setConfigError(e);
 		}
 	}
+
+	availableIntegration(name: string) {
+		return this.integrations.availableByName.get(name);
+	}
+
+	installationsFor(name: string) {
+		return this.integrations.installationsByName.get(name) ?? [];
+	}
+
+	installTargetOptionsFor(name: string) {
+		return this.integrations.installationTargetsByName.get(name) ?? [];
+	}
+
+	isInstalled(name: string) {
+		return this.installationsFor(name).length > 0;
+	}
+
+	async disconnect(id: string) {
+		try {
+			await this.integrations.deleteInstallation(id);
+			this.setConfigError();
+		} catch (e) {
+			this.setConfigError(e);
+		}
+	}
 }
 
 const ctx = new Context<IntegrationProviderConfigController>("IntegrationProviderConfigController");
-export const initIntegrationProviderConfigController = (nameFn: Getter<string>) => ctx.set(new IntegrationProviderConfigController(nameFn));
+export const initIntegrationProviderConfigController = (nameFn: Getter<string>) =>
+	ctx.set(new IntegrationProviderConfigController(nameFn));
 export const useIntegrationProviderConfigController = () => ctx.get();

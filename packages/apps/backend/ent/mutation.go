@@ -56931,6 +56931,7 @@ type UserMutation struct {
 	name                                  *string
 	chat_id                               *string
 	timezone                              *string
+	notification_preferences              *map[string]bool
 	auth_provider_id                      *string
 	clearedFields                         map[string]struct{}
 	tenant                                *int
@@ -57352,6 +57353,55 @@ func (m *UserMutation) TimezoneCleared() bool {
 func (m *UserMutation) ResetTimezone() {
 	m.timezone = nil
 	delete(m.clearedFields, user.FieldTimezone)
+}
+
+// SetNotificationPreferences sets the "notification_preferences" field.
+func (m *UserMutation) SetNotificationPreferences(value map[string]bool) {
+	m.notification_preferences = &value
+}
+
+// NotificationPreferences returns the value of the "notification_preferences" field in the mutation.
+func (m *UserMutation) NotificationPreferences() (r map[string]bool, exists bool) {
+	v := m.notification_preferences
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotificationPreferences returns the old "notification_preferences" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldNotificationPreferences(ctx context.Context) (v map[string]bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotificationPreferences is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotificationPreferences requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotificationPreferences: %w", err)
+	}
+	return oldValue.NotificationPreferences, nil
+}
+
+// ClearNotificationPreferences clears the value of the "notification_preferences" field.
+func (m *UserMutation) ClearNotificationPreferences() {
+	m.notification_preferences = nil
+	m.clearedFields[user.FieldNotificationPreferences] = struct{}{}
+}
+
+// NotificationPreferencesCleared returns if the "notification_preferences" field was cleared in this mutation.
+func (m *UserMutation) NotificationPreferencesCleared() bool {
+	_, ok := m.clearedFields[user.FieldNotificationPreferences]
+	return ok
+}
+
+// ResetNotificationPreferences resets all changes to the "notification_preferences" field.
+func (m *UserMutation) ResetNotificationPreferences() {
+	m.notification_preferences = nil
+	delete(m.clearedFields, user.FieldNotificationPreferences)
 }
 
 // SetAuthProviderID sets the "auth_provider_id" field.
@@ -58448,7 +58498,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, user.FieldTenantID)
 	}
@@ -58466,6 +58516,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.timezone != nil {
 		fields = append(fields, user.FieldTimezone)
+	}
+	if m.notification_preferences != nil {
+		fields = append(fields, user.FieldNotificationPreferences)
 	}
 	if m.auth_provider_id != nil {
 		fields = append(fields, user.FieldAuthProviderID)
@@ -58490,6 +58543,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.ChatID()
 	case user.FieldTimezone:
 		return m.Timezone()
+	case user.FieldNotificationPreferences:
+		return m.NotificationPreferences()
 	case user.FieldAuthProviderID:
 		return m.AuthProviderID()
 	}
@@ -58513,6 +58568,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldChatID(ctx)
 	case user.FieldTimezone:
 		return m.OldTimezone(ctx)
+	case user.FieldNotificationPreferences:
+		return m.OldNotificationPreferences(ctx)
 	case user.FieldAuthProviderID:
 		return m.OldAuthProviderID(ctx)
 	}
@@ -58566,6 +58623,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTimezone(v)
 		return nil
+	case user.FieldNotificationPreferences:
+		v, ok := value.(map[string]bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotificationPreferences(v)
+		return nil
 	case user.FieldAuthProviderID:
 		v, ok := value.(string)
 		if !ok {
@@ -58615,6 +58679,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldTimezone) {
 		fields = append(fields, user.FieldTimezone)
 	}
+	if m.FieldCleared(user.FieldNotificationPreferences) {
+		fields = append(fields, user.FieldNotificationPreferences)
+	}
 	if m.FieldCleared(user.FieldAuthProviderID) {
 		fields = append(fields, user.FieldAuthProviderID)
 	}
@@ -58640,6 +58707,9 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldTimezone:
 		m.ClearTimezone()
+		return nil
+	case user.FieldNotificationPreferences:
+		m.ClearNotificationPreferences()
 		return nil
 	case user.FieldAuthProviderID:
 		m.ClearAuthProviderID()
@@ -58669,6 +58739,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldTimezone:
 		m.ResetTimezone()
+		return nil
+	case user.FieldNotificationPreferences:
+		m.ResetNotificationPreferences()
 		return nil
 	case user.FieldAuthProviderID:
 		m.ResetAuthProviderID()

@@ -11,11 +11,13 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/openapi"
 )
 
 type AiHandler interface {
+	ListAiAgents(context.Context, *ListAiAgentsRequest) (*ListAiAgentsResponse, error)
 	CreateAgentSession(context.Context, *CreateAgentSessionRequest) (*CreateAgentSessionResponse, error)
 	ListAgentSessions(context.Context, *ListAgentSessionsRequest) (*ListAgentSessionsResponse, error)
 	GetAgentSession(context.Context, *GetAgentSessionRequest) (*GetAgentSessionResponse, error)
@@ -26,6 +28,7 @@ type AiHandler interface {
 }
 
 func (o operations) RegisterAi(api huma.API) {
+	huma.Register(api, ListAiAgents, o.ListAiAgents)
 	huma.Register(api, CreateAgentSession, o.CreateAgentSession)
 	huma.Register(api, ListAgentSessions, o.ListAgentSessions)
 	huma.Register(api, GetAgentSession, o.GetAgentSession)
@@ -71,7 +74,21 @@ type (
 		Message string `json:"message"`
 		Code    string `json:"code"`
 	}
+
+	AiAgentConfig struct {
+		Name        string `json:"name"`
+		DisplayName string `json:"displayName"`
+		Model       string `json:"model"`
+	}
 )
+
+func AiAgentConfigFromRez(cfg rez.AiAgentConfig) AiAgentConfig {
+	return AiAgentConfig{
+		Name:        cfg.Name,
+		DisplayName: cfg.DisplayName,
+		Model:       cfg.Model,
+	}
+}
 
 func AgentSessionFromEnt(session *ent.AgentSession) AgentSession {
 	attrs := AgentSessionAttributes{
@@ -114,6 +131,18 @@ func AgentTurnFromEnt(turn *ent.AgentTurn) AgentTurn {
 }
 
 var aiTags = []string{"AI"}
+
+var ListAiAgents = openapi.Operation{
+	OperationID: "list-ai-agents",
+	Method:      http.MethodGet,
+	Path:        "/ai/agents",
+	Summary:     "List AI Agents",
+	Tags:        aiTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListAiAgentsRequest EmptyRequest
+type ListAiAgentsResponse ListResponse[AiAgentConfig]
 
 var CreateAgentSession = openapi.Operation{
 	OperationID:   "create-agent-session",

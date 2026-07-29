@@ -1823,6 +1823,52 @@ func (_m *MockAiService) EXPECT() *MockAiService_Expecter {
 	return &MockAiService_Expecter{mock: &_m.Mock}
 }
 
+// GetAgents provides a mock function for the type MockAiService
+func (_mock *MockAiService) GetAgents() []rez.AiAgentConfig {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAgents")
+	}
+
+	var r0 []rez.AiAgentConfig
+	if returnFunc, ok := ret.Get(0).(func() []rez.AiAgentConfig); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]rez.AiAgentConfig)
+		}
+	}
+	return r0
+}
+
+// MockAiService_GetAgents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAgents'
+type MockAiService_GetAgents_Call struct {
+	*mock.Call
+}
+
+// GetAgents is a helper method to define mock.On call
+func (_e *MockAiService_Expecter) GetAgents() *MockAiService_GetAgents_Call {
+	return &MockAiService_GetAgents_Call{Call: _e.mock.On("GetAgents")}
+}
+
+func (_c *MockAiService_GetAgents_Call) Run(run func()) *MockAiService_GetAgents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockAiService_GetAgents_Call) Return(aiAgentConfigs []rez.AiAgentConfig) *MockAiService_GetAgents_Call {
+	_c.Call.Return(aiAgentConfigs)
+	return _c
+}
+
+func (_c *MockAiService_GetAgents_Call) RunAndReturn(run func() []rez.AiAgentConfig) *MockAiService_GetAgents_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // InvokeAgentTurn provides a mock function for the type MockAiService
 func (_mock *MockAiService) InvokeAgentTurn(context1 context.Context, invokeAgentTurnParams rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error) {
 	ret := _mock.Called(context1, invokeAgentTurnParams)

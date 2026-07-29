@@ -118,6 +118,12 @@ export type AgentTurnResume = {
     restart?: Array<Part>;
 };
 
+export type AiAgentConfig = {
+    displayName: string;
+    model: string;
+    name: string;
+};
+
 export type Alert = {
     attributes: AlertAttributes;
     id: string;
@@ -347,8 +353,10 @@ export type CreateIncidentRoleResponseBody = {
 };
 
 export type CreateIncidentSeverityAttributes = {
+    color: string;
+    description: string;
+    name: string;
     rank: number;
-    title: string;
 };
 
 export type CreateIncidentSeverityRequestBody = {
@@ -1098,6 +1106,14 @@ export type GetUserResponseBody = {
     data: User;
 };
 
+export type GetUserSessionPreferencesResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: UserSessionPreferences;
+};
+
 export type GetUserSessionResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1421,6 +1437,7 @@ export type InstallIntegrationResponseBody = {
 };
 
 export type InstallableIntegration = {
+    capabilities: Array<string>;
     description: string;
     displayName: string;
     maxInstalls?: number;
@@ -1452,6 +1469,7 @@ export type IntegrationInstallation = {
 };
 
 export type IntegrationInstallationAttributes = {
+    capabilities: Array<string>;
     displayName: string;
     externalRef: string;
     integrationName: string;
@@ -1544,6 +1562,15 @@ export type ListResponseBodyAgentTurn = {
      */
     readonly $schema?: string;
     data: Array<AgentTurn>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyAiAgentConfig = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AiAgentConfig>;
     pagination: ResponsePagination;
 };
 
@@ -2452,6 +2479,8 @@ export type UpdateIncidentRoleResponseBody = {
 
 export type UpdateIncidentSeverityAttributes = {
     archived?: boolean;
+    color?: string;
+    description?: string;
     name?: string;
     rank?: number;
 };
@@ -2844,6 +2873,31 @@ export type UpdateTeamResponseBody = {
     data: Team;
 };
 
+export type UpdateUserSessionPreferencesAttributes = {
+    agentRunResults?: boolean;
+    incidentRoleAssignments?: boolean;
+    incidentUpdates?: boolean;
+    integrationSyncFailures?: boolean;
+    name?: string;
+    timezone?: string;
+};
+
+export type UpdateUserSessionPreferencesRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateUserSessionPreferencesAttributes;
+};
+
+export type UpdateUserSessionPreferencesResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: UserSessionPreferences;
+};
+
 export type User = {
     attributes: UserAttributes;
     id: string;
@@ -2852,6 +2906,7 @@ export type User = {
 export type UserAttributes = {
     email: string;
     name: string;
+    organizationRole: 'admin' | 'member';
 };
 
 export type UserNotification = {
@@ -2876,6 +2931,24 @@ export type UserSession = {
     organization: Organization;
     organizationRole: 'admin' | 'member';
     user: User;
+};
+
+export type UserSessionNotificationPreferences = {
+    agentRunResults: boolean;
+    incidentRoleAssignments: boolean;
+    incidentUpdates: boolean;
+    integrationSyncFailures: boolean;
+};
+
+export type UserSessionPreferences = {
+    notifications: UserSessionNotificationPreferences;
+    profile: UserSessionPreferencesProfile;
+};
+
+export type UserSessionPreferencesProfile = {
+    email: string;
+    name: string;
+    timezone: string;
 };
 
 export type VideoConference = {
@@ -3247,6 +3320,51 @@ export type RetryAgentTurnResponses = {
 };
 
 export type RetryAgentTurnResponse = RetryAgentTurnResponses[keyof RetryAgentTurnResponses];
+
+export type ListAiAgentsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/ai/agents';
+};
+
+export type ListAiAgentsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAiAgentsError = ListAiAgentsErrors[keyof ListAiAgentsErrors];
+
+export type ListAiAgentsResponses = {
+    /**
+     * OK
+     */
+    200: ListResponseBodyAiAgentConfig;
+};
+
+export type ListAiAgentsResponse = ListAiAgentsResponses[keyof ListAiAgentsResponses];
 
 export type ListAlertsData = {
     body?: never;
@@ -4373,7 +4491,9 @@ export type ListDebriefSuggestionsResponse = ListDebriefSuggestionsResponses[key
 export type GetIncidentMetadataData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        archived?: boolean;
+    };
     url: '/incident_metadata';
 };
 
@@ -10649,6 +10769,96 @@ export type DeleteUserNotificationResponses = {
 };
 
 export type DeleteUserNotificationResponse = DeleteUserNotificationResponses[keyof DeleteUserNotificationResponses];
+
+export type GetUserSessionPreferencesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/user_session/preferences';
+};
+
+export type GetUserSessionPreferencesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetUserSessionPreferencesError = GetUserSessionPreferencesErrors[keyof GetUserSessionPreferencesErrors];
+
+export type GetUserSessionPreferencesResponses = {
+    /**
+     * OK
+     */
+    200: GetUserSessionPreferencesResponseBody;
+};
+
+export type GetUserSessionPreferencesResponse = GetUserSessionPreferencesResponses[keyof GetUserSessionPreferencesResponses];
+
+export type UpdateUserSessionPreferencesData = {
+    body: UpdateUserSessionPreferencesRequestBody;
+    path?: never;
+    query?: never;
+    url: '/user_session/preferences';
+};
+
+export type UpdateUserSessionPreferencesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateUserSessionPreferencesError = UpdateUserSessionPreferencesErrors[keyof UpdateUserSessionPreferencesErrors];
+
+export type UpdateUserSessionPreferencesResponses = {
+    /**
+     * OK
+     */
+    200: UpdateUserSessionPreferencesResponseBody;
+};
+
+export type UpdateUserSessionPreferencesResponse = UpdateUserSessionPreferencesResponses[keyof UpdateUserSessionPreferencesResponses];
 
 export type ListUsersData = {
     body?: never;

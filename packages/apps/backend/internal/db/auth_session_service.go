@@ -10,6 +10,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/user"
 	uas "github.com/rezible/rezible/ent/userauthsession"
 	"github.com/rezible/rezible/pkg/execution"
@@ -30,7 +31,7 @@ func (s *AuthSessionService) CreateFromUserAuthResponse(ctx context.Context, ps 
 	return sess, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		ctx = execution.NewSystemContext(ctx)
 
-		org, orgErr := s.syncAuthProviderOrg(ctx, tx, &ps.Org)
+		org, isNewOrg, orgErr := s.syncAuthProviderOrg(ctx, tx, &ps.Org)
 		if orgErr != nil {
 			return fmt.Errorf("sync org: %w", orgErr)
 		}
@@ -39,6 +40,16 @@ func (s *AuthSessionService) CreateFromUserAuthResponse(ctx context.Context, ps 
 		usr, userErr := s.syncAuthProviderUser(ctx, &ps.User)
 		if userErr != nil {
 			return fmt.Errorf("sync user: %w", userErr)
+		}
+
+		if isNewOrg {
+			createAdminRole := tx.OrganizationRole.Create().
+				SetUserID(usr.ID).
+				SetOrganizationID(org.ID).
+				SetRole(organizationrole.RoleAdmin)
+			if roleErr := createAdminRole.Exec(ctx); roleErr != nil {
+				return fmt.Errorf("create admin role: %w", roleErr)
+			}
 		}
 
 		deleteExisting := tx.UserAuthSession.Delete().
@@ -65,10 +76,10 @@ func (s *AuthSessionService) CreateFromUserAuthResponse(ctx context.Context, ps 
 	})
 }
 
-func (s *AuthSessionService) syncAuthProviderOrg(ctx context.Context, c *ent.Client, po *ent.Organization) (*ent.Organization, error) {
+func (s *AuthSessionService) syncAuthProviderOrg(ctx context.Context, c *ent.Client, po *ent.Organization) (*ent.Organization, bool, error) {
 	existing, lookupErr := s.orgs.Get(ctx, organization.AuthProviderID(po.AuthProviderID))
 	if lookupErr != nil && !ent.IsNotFound(lookupErr) {
-		return nil, fmt.Errorf("lookup organization: %w", lookupErr)
+		return nil, false, fmt.Errorf("lookup organization: %w", lookupErr)
 	}
 
 	var orgId uuid.UUID
@@ -78,21 +89,22 @@ func (s *AuthSessionService) syncAuthProviderOrg(ctx context.Context, c *ent.Cli
 
 		isEqual := po.Name == existing.Name
 		if isEqual {
-			return existing, nil
+			return existing, false, nil
 		}
 	} else {
 		// TODO: new tenant for each org?
 		tnt, saveTntErr := c.Tenant.Create().Save(ctx)
 		if saveTntErr != nil {
-			return nil, fmt.Errorf("create tenant: %w", saveTntErr)
+			return nil, false, fmt.Errorf("create tenant: %w", saveTntErr)
 		}
 		ctx = execution.NewTenantContext(ctx, tnt.ID)
 	}
 
-	return s.orgs.Set(ctx, orgId, func(m *ent.OrganizationMutation) {
+	org, setErr := s.orgs.Set(ctx, orgId, func(m *ent.OrganizationMutation) {
 		m.SetAuthProviderID(po.AuthProviderID)
 		m.SetName(po.Name)
 	})
+	return org, existing == nil, setErr
 }
 
 func (s *AuthSessionService) syncAuthProviderUser(ctx context.Context, pu *ent.User) (*ent.User, error) {
@@ -110,11 +122,12 @@ func (s *AuthSessionService) syncAuthProviderUser(ctx context.Context, pu *ent.U
 		userId = existing.ID
 	}
 
-	return s.users.Set(ctx, userId, func(m *ent.UserMutation) {
+	setFn := func(m *ent.UserMutation) {
 		m.SetAuthProviderID(pu.AuthProviderID)
 		m.SetName(pu.Name)
 		m.SetEmail(pu.Email)
-	})
+	}
+	return s.users.Set(ctx, userId, setFn)
 }
 
 func (s *AuthSessionService) CreateForToken(ctx context.Context, token string) (*ent.UserAuthSession, error) {

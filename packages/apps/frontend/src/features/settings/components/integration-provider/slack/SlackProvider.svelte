@@ -1,38 +1,30 @@
 <script lang="ts">
-	import * as Alert from "$components/ui/alert";
 	import { Button } from "$components/ui/button";
+	import { useUserSessionState } from "$lib/user-session.svelte";
 
 	import { useIntegrationProviderConfigController } from "../controller.svelte";
+	import SlackIncidentManagement from "./SlackIncidentManagement.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
+	import SlackAgent from "./SlackAgent.svelte";
 
 	const ctrl = useIntegrationProviderConfigController();
+	const session = useUserSessionState();
 </script>
 
-{#if ctrl.installations.length > 0}
-	<Alert.Root>
-		<Alert.Title>Slack connected</Alert.Title>
-		<Alert.Description>Workspace access is configured via OAuth.</Alert.Description>
-	</Alert.Root>
-{:else}
-	<div class="flex flex-row gap-6">
-		<Alert.Root class="flex-1">
-			<Alert.Description>
-				Sign in with Slack to connect the workspace and grant chat/user data access.
-			</Alert.Description>
-		</Alert.Root>
-		<div class="place-self-center">
-			<Button
-				onclick={() => ctrl.startOAuthFlow("slack_agent")}
-				variant="ghost"
-				class="w-fit h-fit cursor-pointer p-0"
-			>
-				<img
-					alt="Add to Slack"
-					width="139px"
-					height="40px"
-					src="https://platform.slack-edge.com/img/add_to_slack.png"
-					srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"
-				/>
-			</Button>
-		</div>
+<div class="grid gap-4">
+	<div class="flex flex-col gap-2">
+		<Header title="Agents">
+			{#snippet actions()}
+				<Button onclick={() => ctrl.startOAuthFlow("slack_agent")} variant="outline">Install</Button>
+			{/snippet}
+		</Header>
+
+		{#each ctrl.installationsFor("slack_agent") as installation}
+			<SlackAgent {installation} />
+		{/each}
 	</div>
-{/if}
+
+	{#if !!session.orgPreferences?.enableIncidentManagement}
+		<SlackIncidentManagement />
+	{/if}
+</div>

@@ -34,6 +34,10 @@ func newIncidentMetadataHandler(db rez.Database, incidents rez.IncidentService) 
 func (h *incidentMetadataHandler) GetIncidentMetadata(ctx context.Context, request *oapi.GetIncidentMetadataRequest) (*oapi.GetIncidentMetadataResponse, error) {
 	var resp oapi.GetIncidentMetadataResponse
 
+	if request.IncludeArchived {
+		ctx = schema.IncludeArchived(ctx)
+	}
+
 	md, mdErr := h.incidents.GetIncidentMetadata(ctx)
 	if mdErr != nil {
 		return nil, oapi.Error(ctx, "get metadata", mdErr)
@@ -83,7 +87,10 @@ func (h *incidentMetadataHandler) CreateIncidentSeverity(ctx context.Context, re
 
 	attr := request.Body.Attributes
 	query := h.db.Client(ctx).IncidentSeverity.Create().
-		SetName(attr.Name)
+		SetName(attr.Name).
+		SetRank(attr.Rank).
+		SetColor(attr.Color).
+		SetDescription(attr.Description)
 
 	sev, createErr := query.Save(ctx)
 	if createErr != nil {
@@ -111,10 +118,17 @@ func (h *incidentMetadataHandler) UpdateIncidentSeverity(ctx context.Context, re
 
 	attr := request.Body.Attributes
 	query := h.db.Client(ctx).IncidentSeverity.UpdateOneID(request.Id).
-		SetNillableName(attr.Name)
+		SetNillableName(attr.Name).
+		SetNillableRank(attr.Rank).
+		SetNillableColor(attr.Color).
+		SetNillableDescription(attr.Description)
 
-	if attr.Archived != nil && (*attr.Archived == false) {
-		query.ClearArchiveTime()
+	if attr.Archived != nil {
+		if *attr.Archived {
+			query.SetArchiveTime(time.Now())
+		} else {
+			query.ClearArchiveTime()
+		}
 	}
 
 	sev, updateErr := query.Save(ctx)
@@ -205,8 +219,12 @@ func (h *incidentMetadataHandler) UpdateIncidentType(ctx context.Context, reques
 	query := h.db.Client(ctx).IncidentType.UpdateOneID(request.Id).
 		SetNillableName(attr.Name)
 
-	if attr.Archived != nil && (*attr.Archived == false) {
-		query.ClearArchiveTime()
+	if attr.Archived != nil {
+		if *attr.Archived {
+			query.SetArchiveTime(time.Now())
+		} else {
+			query.ClearArchiveTime()
+		}
 	}
 
 	t, updateErr := query.Save(ctx)
@@ -290,8 +308,12 @@ func (h *incidentMetadataHandler) UpdateIncidentRole(ctx context.Context, reques
 		SetNillableName(attr.Name).
 		SetNillableRequired(attr.Required)
 
-	if attr.Archived != nil && (*attr.Archived == false) {
-		query.ClearArchiveTime()
+	if attr.Archived != nil {
+		if *attr.Archived {
+			query.SetArchiveTime(time.Now())
+		} else {
+			query.ClearArchiveTime()
+		}
 	}
 
 	role, saveErr := query.Save(ctx)
@@ -353,7 +375,9 @@ func (h *incidentMetadataHandler) CreateIncidentTag(ctx context.Context, request
 	var resp oapi.CreateIncidentTagResponse
 
 	attr := request.Body.Attributes
-	query := h.db.Client(ctx).IncidentTag.Create().SetValue(attr.Value)
+	query := h.db.Client(ctx).IncidentTag.Create().
+		SetKey("tag").
+		SetValue(attr.Value)
 	tag, createErr := query.Save(ctx)
 	if createErr != nil {
 		return nil, oapi.Error(ctx, "Failed to create incident tag", createErr)
@@ -382,8 +406,12 @@ func (h *incidentMetadataHandler) UpdateIncidentTag(ctx context.Context, request
 	query := h.db.Client(ctx).IncidentTag.UpdateOneID(request.Id).
 		SetNillableValue(attr.Value)
 
-	if attr.Archived != nil && (*attr.Archived == false) {
-		query.ClearArchiveTime()
+	if attr.Archived != nil {
+		if *attr.Archived {
+			query.SetArchiveTime(time.Now())
+		} else {
+			query.ClearArchiveTime()
+		}
 	}
 
 	tag, updateErr := query.Save(ctx)
@@ -415,7 +443,9 @@ func (h *incidentMetadataHandler) ListIncidentFields(ctx context.Context, reques
 	}
 
 	query = query.WithOptions(func(q *ent.IncidentFieldOptionQuery) {
-		q.Where(incidentfieldoption.ArchiveTimeIsNil())
+		if !request.IncludeArchived {
+			q.Where(incidentfieldoption.ArchiveTimeIsNil())
+		}
 	})
 
 	res, queryErr := query.All(ctx)
@@ -597,6 +627,13 @@ func (h *incidentMetadataHandler) UpdateIncidentField(ctx context.Context, reque
 		field, saveErr := query.Save(ctx)
 		if saveErr != nil {
 			return oapi.Error(ctx, "Failed to update incident field", saveErr)
+		}
+		field, saveErr = tx.IncidentField.Query().
+			Where(incidentfield.ID(field.ID)).
+			WithOptions().
+			Only(ctx)
+		if saveErr != nil {
+			return oapi.Error(ctx, "Failed to query incident field", saveErr)
 		}
 
 		resp.Body.Data = oapi.IncidentFieldFromEnt(field)
