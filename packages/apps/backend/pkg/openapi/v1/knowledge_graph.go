@@ -56,11 +56,11 @@ type (
 		Attributes KnowledgeGraphEntityAttributes `json:"attributes"`
 	}
 	KnowledgeGraphEntityAttributes struct {
-		Kind           string                       `json:"kind"`
-		LatestEvidence *KnowledgeGraphEvidence      `json:"latestEvidence,omitempty"`
-		Aliases        []KnowledgeGraphSubjectAlias `json:"aliases"`
-		CreatedAt      time.Time                    `json:"createdAt"`
-		UpdatedAt      time.Time                    `json:"updatedAt"`
+		Kind        string                       `json:"kind"`
+		Aliases     []KnowledgeGraphSubjectAlias `json:"aliases"`
+		LatestState *KnowledgeGraphSubjectState  `json:"latestState,omitempty"`
+		CreatedAt   time.Time                    `json:"createdAt"`
+		UpdatedAt   time.Time                    `json:"updatedAt"`
 	}
 
 	KnowledgeGraphRelationship struct {
@@ -71,8 +71,8 @@ type (
 		Kind           string                       `json:"kind"`
 		SourceEntityId uuid.UUID                    `json:"sourceEntityId"`
 		TargetEntityId uuid.UUID                    `json:"targetEntityId"`
-		LatestEvidence *KnowledgeGraphEvidence      `json:"latestEvidence,omitempty"`
 		Aliases        []KnowledgeGraphSubjectAlias `json:"aliases"`
+		LatestState    *KnowledgeGraphSubjectState  `json:"latestState,omitempty"`
 		CreatedAt      time.Time                    `json:"createdAt"`
 		UpdatedAt      time.Time                    `json:"updatedAt"`
 	}
@@ -81,7 +81,6 @@ type (
 		Id         uuid.UUID                            `json:"id"`
 		Attributes KnowledgeGraphSubjectAliasAttributes `json:"attributes"`
 	}
-
 	KnowledgeGraphSubjectAliasAttributes struct {
 		Kind               string `json:"kind" enum:"entity,relationship"`
 		Provider           string `json:"provider"`
@@ -100,15 +99,14 @@ type (
 func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
 	attr := KnowledgeGraphEntityAttributes{
 		Kind:      e.Kind,
-		Aliases:   nil,
+		Aliases:   make([]KnowledgeGraphSubjectAlias, len(e.Edges.Aliases)),
 		CreatedAt: e.CreatedAt,
 		UpdatedAt: e.UpdatedAt,
 	}
 	if latestEv := e.LatestEvidence(); latestEv != nil {
-		attr.LatestEvidence = KnowledgeGraphEvidenceFromEnt(latestEv)
+		attr.LatestState = new(KnowledgeGraphSubjectStateFromEnt(latestEv.SubjectState))
 	}
 
-	attr.Aliases = make([]KnowledgeGraphSubjectAlias, len(e.Edges.Aliases))
 	for i, alias := range e.Edges.Aliases {
 		attr.Aliases[i] = KnowledgeGraphSubjectAliasFromEnt(alias)
 	}
@@ -123,13 +121,11 @@ func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) Knowledge
 		TargetEntityId: rel.TargetEntityID,
 		CreatedAt:      rel.CreatedAt,
 		UpdatedAt:      rel.UpdatedAt,
-		Aliases:        nil,
+		Aliases:        make([]KnowledgeGraphSubjectAlias, len(rel.Edges.Aliases)),
 	}
 	if latestEv := rel.LatestEvidence(); latestEv != nil {
-		attr.LatestEvidence = KnowledgeGraphEvidenceFromEnt(latestEv)
+		attr.LatestState = new(KnowledgeGraphSubjectStateFromEnt(latestEv.SubjectState))
 	}
-
-	attr.Aliases = make([]KnowledgeGraphSubjectAlias, len(rel.Edges.Aliases))
 	for i, alias := range rel.Edges.Aliases {
 		attr.Aliases[i] = KnowledgeGraphSubjectAliasFromEnt(alias)
 	}
@@ -147,9 +143,6 @@ func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) Knowled
 }
 
 func KnowledgeGraphEvidenceFromEnt(ev *ent.KnowledgeEvidence) *KnowledgeGraphEvidence {
-	if ev == nil {
-		return nil
-	}
 	attrs := KnowledgeGraphEvidenceAttributes{
 		Kind:         ev.Kind.String(),
 		EffectiveAt:  ev.EffectiveAt,
@@ -167,16 +160,12 @@ func KnowledgeGraphSubjectStateFromEnt(s schematypes.KnowledgeGraphSubjectState)
 }
 
 func KnowledgeGraphViewFromRez(view *rez.KnowledgeGraphView) KnowledgeGraphView {
-	result := KnowledgeGraphView{RootId: view.RootID, Truncated: view.Truncated}
-	result.Entities = make([]KnowledgeGraphEntity, len(view.Entities))
-	for i, entity := range view.Entities {
-		result.Entities[i] = KnowledgeGraphEntityFromEnt(entity)
+	return KnowledgeGraphView{
+		RootId:        view.RootID,
+		Truncated:     view.Truncated,
+		Entities:      ConvertSlice(view.Entities, KnowledgeGraphEntityFromEnt),
+		Relationships: ConvertSlice(view.Relationships, KnowledgeGraphRelationshipFromEnt),
 	}
-	result.Relationships = make([]KnowledgeGraphRelationship, len(view.Relationships))
-	for i, rel := range view.Relationships {
-		result.Relationships[i] = KnowledgeGraphRelationshipFromEnt(rel)
-	}
-	return result
 }
 
 var knowledgeGraphTags = []string{"Knowledge Graph"}

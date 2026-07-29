@@ -1483,19 +1483,8 @@ export type KnowledgeGraphEntityAttributes = {
     aliases: Array<KnowledgeGraphSubjectAlias>;
     createdAt: string;
     kind: string;
-    latestEvidence?: KnowledgeGraphEvidence;
+    latestState?: KnowledgeGraphSubjectState;
     updatedAt: string;
-};
-
-export type KnowledgeGraphEvidence = {
-    attributes: KnowledgeGraphEvidenceAttributes;
-    id: string;
-};
-
-export type KnowledgeGraphEvidenceAttributes = {
-    effectiveAt: string;
-    kind: 'observed' | 'deleted';
-    subjectState: KnowledgeGraphSubjectState;
 };
 
 export type KnowledgeGraphRelationship = {
@@ -1507,7 +1496,7 @@ export type KnowledgeGraphRelationshipAttributes = {
     aliases: Array<KnowledgeGraphSubjectAlias>;
     createdAt: string;
     kind: string;
-    latestEvidence?: KnowledgeGraphEvidence;
+    latestState?: KnowledgeGraphSubjectState;
     sourceEntityId: string;
     targetEntityId: string;
     updatedAt: string;

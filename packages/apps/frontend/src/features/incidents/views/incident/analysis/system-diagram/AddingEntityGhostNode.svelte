@@ -7,6 +7,7 @@
 	const { screenToFlowPosition } = useSvelteFlow();
 
 	const addingEntity = $derived(diagram.addingEntityGhost);
+	const entityState = $derived(addingEntity?.attributes.latestState);
 
 	let pos = $state<XYPosition>({ x: 0, y: 0 });
 	const onPointerMove = (e: PointerEvent) => {
@@ -23,7 +24,7 @@
 			class="absolute border rounded-lg bg-surface-100 p-1 z-10 opacity-75"
 			style="left: {pos.x}px; top: {pos.y}px"
 		>
-			<span>adding: {addingEntity.attributes.state?.displayName ?? "Unknown entity"}</span>
+			<span>adding: {entityState?.displayName ?? "Unknown entity"}</span>
 		</div>
 	{/if}
 </ViewportPortal>

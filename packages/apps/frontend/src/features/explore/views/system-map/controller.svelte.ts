@@ -188,7 +188,7 @@ export class SystemMapViewController {
 			source: relationship.attributes.sourceEntityId,
 			target: relationship.attributes.targetEntityId,
 			label:
-				relationship.attributes.latestEvidence?.attributes.subjectState.displayName ||
+				relationship.attributes.latestState?.displayName ||
 				relationship.attributes.kind.replaceAll("_", " "),
 			data: { relationship },
 			markerEnd: MarkerType.ArrowClosed,
@@ -208,7 +208,7 @@ export class SystemMapViewController {
 
 	private entityLabel(entity: KnowledgeGraphEntity) {
 		return (
-			entity.attributes.latestEvidence?.attributes.subjectState?.displayName ||
+			entity.attributes.latestState?.displayName ||
 			entity.attributes.aliases[0]?.attributes.providerSubjectRef ||
 			entity.attributes.kind
 		);

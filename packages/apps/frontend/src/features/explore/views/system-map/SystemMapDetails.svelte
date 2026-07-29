@@ -12,7 +12,7 @@
 		view.selected?.kind === "relationship" ? view.selected.relationship : undefined
 	);
 	const attributes = $derived(entity?.attributes ?? relationship?.attributes);
-	const state = $derived(attributes?.latestEvidence?.attributes.subjectState);
+	const state = $derived(attributes?.latestState);
 	const title = $derived(
 		state?.displayName ||
 			(entity?.attributes.aliases[0]?.attributes.providerSubjectRef ?? relationship?.attributes.kind) ||

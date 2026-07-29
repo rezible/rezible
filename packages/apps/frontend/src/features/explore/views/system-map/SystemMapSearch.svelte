@@ -33,7 +33,7 @@
 							<Command.Item value={entity.id} onclick={() => view.explore(entity)}>
 								<div class="min-w-0">
 									<div class="truncate text-sm font-medium">
-										{entity.attributes.latestEvidence?.attributes.subjectState.displayName ||
+										{entity.attributes.latestState?.displayName ||
 											entity.attributes.aliases[0]?.attributes.providerSubjectRef ||
 											"Unknown entity"}
 									</div>

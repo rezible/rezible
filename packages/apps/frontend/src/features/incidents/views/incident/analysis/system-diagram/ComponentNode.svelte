@@ -6,6 +6,7 @@
 	const { selected, data: arbitraryData }: NodeProps = $props();
 	const data = $derived(arbitraryData as SystemTopologyNodeData);
 	const entity = $derived(data.analysisNode.attributes.knowledgeEntity);
+	const entityState = $derived(entity?.attributes.latestState);
 
 	const { nodesConnectable } = useStore();
 </script>
@@ -14,7 +15,7 @@
 	data-is-selected={selected}
 	class="node border bg-surface-100 data-[is-selected=true]:bg-surface-200 rounded-lg p-3 group"
 >
-	<span>{entity.attributes.state?.displayName ?? "Unknown entity"}</span>
+	<span>{entityState?.displayName ?? "Unknown entity"}</span>
 	{#if nodesConnectable}
 		<Handle
 			type="target"

@@ -109,6 +109,14 @@ func ConvertListResultBody[T any, R any](result *ent.ListResult[R], fn func(*R) 
 	return ListResponseBody[T]{Data: data, Pagination: pagination}
 }
 
+func ConvertSlice[D any, O any](data []*D, fn func(*D) O) []O {
+	res := make([]O, len(data))
+	for i, d := range data {
+		res[i] = fn(d)
+	}
+	return res
+}
+
 type CalendarDate string
 
 func (r CalendarDate) Parse() (time.Time, error) {

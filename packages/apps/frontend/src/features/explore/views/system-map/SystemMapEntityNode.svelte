@@ -6,10 +6,10 @@
 	let { data }: NodeProps<Node<SystemMapNodeData>> = $props();
 	const view = useSystemMapViewController();
 
-	const state = $derived(data.entity.attributes.latestEvidence?.attributes.subjectState);
+	const entityState = $derived(data.entity.attributes.latestState);
 	const aliases = $derived(data.entity.attributes.aliases);
 	const label = $derived(
-		state?.displayName || aliases[0]?.attributes.providerSubjectRef || "Unknown entity"
+		entityState?.displayName || aliases[0]?.attributes.providerSubjectRef || "Unknown entity"
 	);
 </script>
 
@@ -23,9 +23,9 @@
 		{data.entity.attributes.kind.replaceAll("_", " ")}
 	</Badge>
 	<span class="w-full truncate text-sm font-medium">{label}</span>
-	{#if state?.description}
+	{#if entityState?.description}
 		<span class="text-muted-foreground line-clamp-2 text-xs">
-			{state.description}
+			{entityState.description}
 		</span>
 	{/if}
 </button>

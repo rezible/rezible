@@ -51,12 +51,8 @@
 	const confirmDelete = (cx: IncidentTimelineEventSystemContext) => {
 		const node = analysisNodeMap.get(cx.attributes.systemAnalysisNodeId);
 		editing = undefined;
-		if (
-			!node ||
-			!confirm(
-				`Are you sure you want to remove ${node.attributes.knowledgeEntity.attributes.state?.displayName ?? "this entity"}?`
-			)
-		)
+		const nodeName = node?.attributes.knowledgeEntity.attributes.latestState?.displayName ?? "this entity";
+		if (!node || !confirm(`Are you sure you want to remove ${nodeName}?`))
 			return;
 		const idx = attributes.systemContext.findIndex((c) => c.id === cx.id);
 		if (idx >= 0) attributes.systemContext.splice(idx, 1);
@@ -95,7 +91,7 @@
 <div class="flex flex-col gap-1 bg-surface-100">
 	{#snippet systemContextEditor(node: SystemAnalysisNode)}
 		{@const attrs = node.attributes.knowledgeEntity.attributes}
-		<span class="text-lg">{attrs.state?.displayName ?? "Unknown entity"}</span>
+		<span class="text-lg">{attrs.latestState?.displayName ?? "Unknown entity"}</span>
 
 		<span>relationship select</span>
 	{/snippet}
@@ -116,7 +112,7 @@
 		{#each analysisNodes as node (node.id)}
 			{@const attr = node.attributes.knowledgeEntity.attributes}
 			<button type="button" class="text-left" onclick={() => (selectedNode = node)}
-				>{attr.state?.displayName ?? "Unknown entity"}</button
+				>{attr.latestState?.displayName ?? "Unknown entity"}</button
 			>
 		{/each}
 
@@ -147,7 +143,7 @@
 		{#each attributes.systemContext as cx (cx.id)}
 			{@const node = analysisNodeMap.get(cx.attributes.systemAnalysisNodeId)}
 			<button type="button" class="text-left" onclick={() => setEditing(cx)}>
-				{node?.attributes.knowledgeEntity.attributes.state?.displayName ?? "Unknown Entity"}
+				{node?.attributes.knowledgeEntity.attributes.latestState?.displayName ?? "Unknown Entity"}
 			</button>
 		{/each}
 

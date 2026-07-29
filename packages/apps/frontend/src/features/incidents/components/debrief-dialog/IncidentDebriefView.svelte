@@ -5,7 +5,7 @@
 		type ErrorModel,
 		type IncidentDebrief,
 		type IncidentDebriefMessage,
-		type ListIncidentDebriefMessagesResponseBody,
+		type ListResponseBodyIncidentDebriefMessage,
 	} from "$lib/api";
 	import GetStarted from "./GetStarted.svelte";
 	import MessageEntryBox from "./MessageEntryBox.svelte";
@@ -42,7 +42,7 @@
 	const isUserMessage = (msg: IncidentDebriefMessage) => msg.attributes.type === "user";
 
 	const REFETCH_INTEVAL_MS = 1000;
-	const shouldQueryPoll = (state: QueryState<ListIncidentDebriefMessagesResponseBody, ErrorModel>) => {
+	const shouldQueryPoll = (state: QueryState<ListResponseBodyIncidentDebriefMessage, ErrorModel>) => {
 		if (state.error) return false;
 
 		const latestMessage = getLatestMessage(state.data?.data ?? []);

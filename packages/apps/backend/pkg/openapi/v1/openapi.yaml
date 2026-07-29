@@ -3186,8 +3186,8 @@ components:
           type: string
         kind:
           type: string
-        latestEvidence:
-          $ref: "#/components/schemas/KnowledgeGraphEvidence"
+        latestState:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
         updatedAt:
           format: date-time
           type: string
@@ -3196,35 +3196,6 @@ components:
         - aliases
         - createdAt
         - updatedAt
-      type: object
-    KnowledgeGraphEvidence:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/KnowledgeGraphEvidenceAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    KnowledgeGraphEvidenceAttributes:
-      additionalProperties: false
-      properties:
-        effectiveAt:
-          format: date-time
-          type: string
-        kind:
-          enum:
-            - observed
-            - deleted
-          type: string
-        subjectState:
-          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
-      required:
-        - kind
-        - effectiveAt
-        - subjectState
       type: object
     KnowledgeGraphRelationship:
       additionalProperties: false
@@ -3249,8 +3220,8 @@ components:
           type: string
         kind:
           type: string
-        latestEvidence:
-          $ref: "#/components/schemas/KnowledgeGraphEvidence"
+        latestState:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
         sourceEntityId:
           type: string
         targetEntityId:
