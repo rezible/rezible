@@ -73,6 +73,14 @@ func (_c *AgentSessionCreate) SetOwnerUserID(v uuid.UUID) *AgentSessionCreate {
 	return _c
 }
 
+// SetNillableOwnerUserID sets the "owner_user_id" field if the given value is not nil.
+func (_c *AgentSessionCreate) SetNillableOwnerUserID(v *uuid.UUID) *AgentSessionCreate {
+	if v != nil {
+		_c.SetOwnerUserID(*v)
+	}
+	return _c
+}
+
 // SetDefaultScopes sets the "default_scopes" field.
 func (_c *AgentSessionCreate) SetDefaultScopes(v []string) *AgentSessionCreate {
 	_c.mutation.SetDefaultScopes(v)
@@ -208,17 +216,11 @@ func (_c *AgentSessionCreate) check() error {
 			return &ValidationError{Name: "agent_name", err: fmt.Errorf(`ent: validator failed for field "AgentSession.agent_name": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.OwnerUserID(); !ok {
-		return &ValidationError{Name: "owner_user_id", err: errors.New(`ent: missing required field "AgentSession.owner_user_id"`)}
-	}
 	if _, ok := _c.mutation.DefaultScopes(); !ok {
 		return &ValidationError{Name: "default_scopes", err: errors.New(`ent: missing required field "AgentSession.default_scopes"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentSession.tenant"`)}
-	}
-	if len(_c.mutation.OwnerUserIDs()) == 0 {
-		return &ValidationError{Name: "owner_user", err: errors.New(`ent: missing required edge "AgentSession.owner_user"`)}
 	}
 	return nil
 }
@@ -310,7 +312,7 @@ func (_c *AgentSessionCreate) createSpec() (*AgentSession, *sqlgraph.CreateSpec)
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.OwnerUserID = nodes[0]
+		_node.OwnerUserID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.TurnsIDs(); len(nodes) > 0 {
@@ -427,6 +429,12 @@ func (u *AgentSessionUpsert) SetOwnerUserID(v uuid.UUID) *AgentSessionUpsert {
 // UpdateOwnerUserID sets the "owner_user_id" field to the value that was provided on create.
 func (u *AgentSessionUpsert) UpdateOwnerUserID() *AgentSessionUpsert {
 	u.SetExcluded(agentsession.FieldOwnerUserID)
+	return u
+}
+
+// ClearOwnerUserID clears the value of the "owner_user_id" field.
+func (u *AgentSessionUpsert) ClearOwnerUserID() *AgentSessionUpsert {
+	u.SetNull(agentsession.FieldOwnerUserID)
 	return u
 }
 
@@ -564,6 +572,13 @@ func (u *AgentSessionUpsertOne) SetOwnerUserID(v uuid.UUID) *AgentSessionUpsertO
 func (u *AgentSessionUpsertOne) UpdateOwnerUserID() *AgentSessionUpsertOne {
 	return u.Update(func(s *AgentSessionUpsert) {
 		s.UpdateOwnerUserID()
+	})
+}
+
+// ClearOwnerUserID clears the value of the "owner_user_id" field.
+func (u *AgentSessionUpsertOne) ClearOwnerUserID() *AgentSessionUpsertOne {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.ClearOwnerUserID()
 	})
 }
 
@@ -873,6 +888,13 @@ func (u *AgentSessionUpsertBulk) SetOwnerUserID(v uuid.UUID) *AgentSessionUpsert
 func (u *AgentSessionUpsertBulk) UpdateOwnerUserID() *AgentSessionUpsertBulk {
 	return u.Update(func(s *AgentSessionUpsert) {
 		s.UpdateOwnerUserID()
+	})
+}
+
+// ClearOwnerUserID clears the value of the "owner_user_id" field.
+func (u *AgentSessionUpsertBulk) ClearOwnerUserID() *AgentSessionUpsertBulk {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.ClearOwnerUserID()
 	})
 }
 

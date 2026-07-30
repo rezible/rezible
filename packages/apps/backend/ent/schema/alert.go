@@ -4,7 +4,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 type Alert struct {
@@ -57,7 +59,8 @@ func (AlertInstance) Fields() []ent.Field {
 func (AlertInstance) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("alert", Alert.Type).
-			Required().Unique().
+			Required().
+			Unique().
 			Field("alert_id").
 			Ref("instances"),
 		edge.From("feedback", AlertFeedback.Type).
@@ -73,6 +76,7 @@ func (AlertInvestigation) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		TimestampsMixin{},
 	}
 }
 
@@ -81,7 +85,9 @@ func (AlertInvestigation) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("alert_instance_id", uuid.UUID{}),
 		field.UUID("agent_session_id", uuid.UUID{}),
-		field.Bytes("output"),
+		field.JSON("report", schematypes.AlertInvestigationReport{}).
+			SchemaType(schemaTypeJsonB).
+			Optional(),
 	}
 }
 
@@ -95,6 +101,13 @@ func (AlertInvestigation) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Field("agent_session_id"),
+	}
+}
+
+func (AlertInvestigation) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "alert_instance_id", "created_at"),
+		index.Fields("tenant_id", "agent_session_id").Unique(),
 	}
 }
 

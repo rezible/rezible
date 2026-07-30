@@ -178,7 +178,7 @@ func NewAiAgentContext(ctx context.Context, sess *ent.AgentSession, turn *ent.Ag
 	c.ActorKind = KindAiAgent
 	c.Auth = Auth{
 		TenantID:       &sess.TenantID,
-		UserID:         &sess.OwnerUserID,
+		UserID:         sess.OwnerUserID,
 		AgentSessionID: &sess.ID,
 		AgentTurnID:    &turn.ID,
 		Scopes:         append(sess.DefaultScopes, turn.Scopes...), // TODO: scopes for turn
@@ -202,9 +202,6 @@ func (c Context) validate() error {
 	case KindAiAgent:
 		if c.Auth.TenantID == nil {
 			return fmt.Errorf("agent actor missing tenant id")
-		}
-		if c.Auth.UserID == nil {
-			return fmt.Errorf("agent actor missing user id")
 		}
 		if c.Auth.AgentSessionID == nil {
 			return fmt.Errorf("agent actor missing session id")

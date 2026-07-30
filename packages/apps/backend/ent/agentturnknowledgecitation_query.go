@@ -16,9 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -26,16 +24,14 @@ import (
 // AgentTurnKnowledgeCitationQuery is the builder for querying AgentTurnKnowledgeCitation entities.
 type AgentTurnKnowledgeCitationQuery struct {
 	config
-	ctx                       *QueryContext
-	order                     []agentturnknowledgecitation.OrderOption
-	inters                    []Interceptor
-	predicates                []predicate.AgentTurnKnowledgeCitation
-	withTenant                *TenantQuery
-	withAgentTurn             *AgentTurnQuery
-	withKnowledgeEntity       *KnowledgeEntityQuery
-	withKnowledgeRelationship *KnowledgeRelationshipQuery
-	withKnowledgeEvidence     *KnowledgeEvidenceQuery
-	modifiers                 []func(*sql.Selector)
+	ctx                   *QueryContext
+	order                 []agentturnknowledgecitation.OrderOption
+	inters                []Interceptor
+	predicates            []predicate.AgentTurnKnowledgeCitation
+	withTenant            *TenantQuery
+	withAgentTurn         *AgentTurnQuery
+	withKnowledgeEvidence *KnowledgeEvidenceQuery
+	modifiers             []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -115,56 +111,6 @@ func (_q *AgentTurnKnowledgeCitationQuery) QueryAgentTurn() *AgentTurnQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentTurn
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryKnowledgeEntity chains the current query on the "knowledge_entity" edge.
-func (_q *AgentTurnKnowledgeCitationQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentturnknowledgecitation.Table, agentturnknowledgecitation.FieldID, selector),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentturnknowledgecitation.KnowledgeEntityTable, agentturnknowledgecitation.KnowledgeEntityColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryKnowledgeRelationship chains the current query on the "knowledge_relationship" edge.
-func (_q *AgentTurnKnowledgeCitationQuery) QueryKnowledgeRelationship() *KnowledgeRelationshipQuery {
-	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentturnknowledgecitation.Table, agentturnknowledgecitation.FieldID, selector),
-			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentturnknowledgecitation.KnowledgeRelationshipTable, agentturnknowledgecitation.KnowledgeRelationshipColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -384,16 +330,14 @@ func (_q *AgentTurnKnowledgeCitationQuery) Clone() *AgentTurnKnowledgeCitationQu
 		return nil
 	}
 	return &AgentTurnKnowledgeCitationQuery{
-		config:                    _q.config,
-		ctx:                       _q.ctx.Clone(),
-		order:                     append([]agentturnknowledgecitation.OrderOption{}, _q.order...),
-		inters:                    append([]Interceptor{}, _q.inters...),
-		predicates:                append([]predicate.AgentTurnKnowledgeCitation{}, _q.predicates...),
-		withTenant:                _q.withTenant.Clone(),
-		withAgentTurn:             _q.withAgentTurn.Clone(),
-		withKnowledgeEntity:       _q.withKnowledgeEntity.Clone(),
-		withKnowledgeRelationship: _q.withKnowledgeRelationship.Clone(),
-		withKnowledgeEvidence:     _q.withKnowledgeEvidence.Clone(),
+		config:                _q.config,
+		ctx:                   _q.ctx.Clone(),
+		order:                 append([]agentturnknowledgecitation.OrderOption{}, _q.order...),
+		inters:                append([]Interceptor{}, _q.inters...),
+		predicates:            append([]predicate.AgentTurnKnowledgeCitation{}, _q.predicates...),
+		withTenant:            _q.withTenant.Clone(),
+		withAgentTurn:         _q.withAgentTurn.Clone(),
+		withKnowledgeEvidence: _q.withKnowledgeEvidence.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -420,28 +364,6 @@ func (_q *AgentTurnKnowledgeCitationQuery) WithAgentTurn(opts ...func(*AgentTurn
 		opt(query)
 	}
 	_q.withAgentTurn = query
-	return _q
-}
-
-// WithKnowledgeEntity tells the query-builder to eager-load the nodes that are connected to
-// the "knowledge_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentTurnKnowledgeCitationQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *AgentTurnKnowledgeCitationQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withKnowledgeEntity = query
-	return _q
-}
-
-// WithKnowledgeRelationship tells the query-builder to eager-load the nodes that are connected to
-// the "knowledge_relationship" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentTurnKnowledgeCitationQuery) WithKnowledgeRelationship(opts ...func(*KnowledgeRelationshipQuery)) *AgentTurnKnowledgeCitationQuery {
-	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withKnowledgeRelationship = query
 	return _q
 }
 
@@ -540,11 +462,9 @@ func (_q *AgentTurnKnowledgeCitationQuery) sqlAll(ctx context.Context, hooks ...
 	var (
 		nodes       = []*AgentTurnKnowledgeCitation{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withAgentTurn != nil,
-			_q.withKnowledgeEntity != nil,
-			_q.withKnowledgeRelationship != nil,
 			_q.withKnowledgeEvidence != nil,
 		}
 	)
@@ -580,18 +500,6 @@ func (_q *AgentTurnKnowledgeCitationQuery) sqlAll(ctx context.Context, hooks ...
 	if query := _q.withAgentTurn; query != nil {
 		if err := _q.loadAgentTurn(ctx, query, nodes, nil,
 			func(n *AgentTurnKnowledgeCitation, e *AgentTurn) { n.Edges.AgentTurn = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withKnowledgeEntity; query != nil {
-		if err := _q.loadKnowledgeEntity(ctx, query, nodes, nil,
-			func(n *AgentTurnKnowledgeCitation, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withKnowledgeRelationship; query != nil {
-		if err := _q.loadKnowledgeRelationship(ctx, query, nodes, nil,
-			func(n *AgentTurnKnowledgeCitation, e *KnowledgeRelationship) { n.Edges.KnowledgeRelationship = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -662,78 +570,11 @@ func (_q *AgentTurnKnowledgeCitationQuery) loadAgentTurn(ctx context.Context, qu
 	}
 	return nil
 }
-func (_q *AgentTurnKnowledgeCitationQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*AgentTurnKnowledgeCitation, init func(*AgentTurnKnowledgeCitation), assign func(*AgentTurnKnowledgeCitation, *KnowledgeEntity)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*AgentTurnKnowledgeCitation)
-	for i := range nodes {
-		if nodes[i].KnowledgeEntityID == nil {
-			continue
-		}
-		fk := *nodes[i].KnowledgeEntityID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(knowledgeentity.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "knowledge_entity_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *AgentTurnKnowledgeCitationQuery) loadKnowledgeRelationship(ctx context.Context, query *KnowledgeRelationshipQuery, nodes []*AgentTurnKnowledgeCitation, init func(*AgentTurnKnowledgeCitation), assign func(*AgentTurnKnowledgeCitation, *KnowledgeRelationship)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*AgentTurnKnowledgeCitation)
-	for i := range nodes {
-		if nodes[i].KnowledgeRelationshipID == nil {
-			continue
-		}
-		fk := *nodes[i].KnowledgeRelationshipID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(knowledgerelationship.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "knowledge_relationship_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 func (_q *AgentTurnKnowledgeCitationQuery) loadKnowledgeEvidence(ctx context.Context, query *KnowledgeEvidenceQuery, nodes []*AgentTurnKnowledgeCitation, init func(*AgentTurnKnowledgeCitation), assign func(*AgentTurnKnowledgeCitation, *KnowledgeEvidence)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AgentTurnKnowledgeCitation)
 	for i := range nodes {
-		if nodes[i].KnowledgeEvidenceID == nil {
-			continue
-		}
-		fk := *nodes[i].KnowledgeEvidenceID
+		fk := nodes[i].KnowledgeEvidenceID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -794,12 +635,6 @@ func (_q *AgentTurnKnowledgeCitationQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withAgentTurn != nil {
 			_spec.Node.AddColumnOnce(agentturnknowledgecitation.FieldAgentTurnID)
-		}
-		if _q.withKnowledgeEntity != nil {
-			_spec.Node.AddColumnOnce(agentturnknowledgecitation.FieldKnowledgeEntityID)
-		}
-		if _q.withKnowledgeRelationship != nil {
-			_spec.Node.AddColumnOnce(agentturnknowledgecitation.FieldKnowledgeRelationshipID)
 		}
 		if _q.withKnowledgeEvidence != nil {
 			_spec.Node.AddColumnOnce(agentturnknowledgecitation.FieldKnowledgeEvidenceID)

@@ -53,27 +53,19 @@ func (d AgentDefinition[I, S]) ValidateInput(raw []byte) (*I, error) {
 
 type (
 	AlertAgentInput struct {
-		AlertID uuid.UUID `json:"alert_id"`
+		AlertInstanceID uuid.UUID `json:"alert_instance_id"`
 	}
 
 	AlertAgentState struct {
 		ReportReady bool `json:"report_ready"`
 	}
 
-	AlertInvestigationReport struct {
-		Limitations        []string `json:"limitations"`
-		LikelyCause        string   `json:"likelyCause"`
-		RecommendedActions []string `json:"recommendedActions"`
-		SuggestedChecks    []string `json:"suggestedChecks"`
-		BestNextStep       string   `json:"bestNextStep"`
-	}
-
 	AlertsAgentDefinition = AgentDefinition[AlertAgentInput, AlertAgentState]
 )
 
 func (i AlertAgentInput) Validate() error {
-	if i.AlertID == uuid.Nil {
-		return fmt.Errorf("invalid alert id %s", i.AlertID)
+	if i.AlertInstanceID == uuid.Nil {
+		return fmt.Errorf("invalid alert instance id %s", i.AlertInstanceID)
 	}
 	return nil
 }
@@ -115,12 +107,7 @@ When responding during investigation, use this structure when it fits:
 - Missing context: specific questions or needed tool outputs.
 - Recommended next actions: ordered, actionable checks or mitigations.
 
-When the investigation is ready for a final report, produce these fields in plain language:
-- limitations: important caveats or missing evidence.
-- likelyCause: the most likely cause, or "unknown" if not enough evidence exists.
-- recommendedActions: prioritized actions for the operator.
-- suggestedChecks: concrete checks that would confirm or disprove the conclusion.
-- bestNextStep: the single best next step to take.`,
+When the investigation is ready for a final report, call save_alert_investigation_report. The report text must be concise enough to fit in a Slack message.`,
 }
 
 type (

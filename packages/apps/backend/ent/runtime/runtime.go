@@ -176,7 +176,7 @@ func init() {
 	// agentturnknowledgecitation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentturnknowledgecitation.UpdateDefaultUpdatedAt = agentturnknowledgecitationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// agentturnknowledgecitationDescSummary is the schema descriptor for summary field.
-	agentturnknowledgecitationDescSummary := agentturnknowledgecitationFields[5].Descriptor()
+	agentturnknowledgecitationDescSummary := agentturnknowledgecitationFields[3].Descriptor()
 	// agentturnknowledgecitation.SummaryValidator is a validator for the "summary" field. It is called by the builders before save.
 	agentturnknowledgecitation.SummaryValidator = agentturnknowledgecitationDescSummary.Validators[0].(func(string) error)
 	// agentturnknowledgecitationDescID is the schema descriptor for id field.
@@ -241,8 +241,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	alertinvestigationMixinFields2 := alertinvestigationMixin[2].Fields()
+	_ = alertinvestigationMixinFields2
 	alertinvestigationFields := schema.AlertInvestigation{}.Fields()
 	_ = alertinvestigationFields
+	// alertinvestigationDescCreatedAt is the schema descriptor for created_at field.
+	alertinvestigationDescCreatedAt := alertinvestigationMixinFields2[0].Descriptor()
+	// alertinvestigation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	alertinvestigation.DefaultCreatedAt = alertinvestigationDescCreatedAt.Default.(func() time.Time)
+	// alertinvestigationDescUpdatedAt is the schema descriptor for updated_at field.
+	alertinvestigationDescUpdatedAt := alertinvestigationMixinFields2[1].Descriptor()
+	// alertinvestigation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	alertinvestigation.DefaultUpdatedAt = alertinvestigationDescUpdatedAt.Default.(func() time.Time)
+	// alertinvestigation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	alertinvestigation.UpdateDefaultUpdatedAt = alertinvestigationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// alertinvestigationDescID is the schema descriptor for id field.
 	alertinvestigationDescID := alertinvestigationFields[0].Descriptor()
 	// alertinvestigation.DefaultID holds the default value on creation for the id field.

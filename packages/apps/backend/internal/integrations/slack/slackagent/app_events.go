@@ -90,7 +90,7 @@ func (a *App) startOrContinueAgentThreadReply(ctx context.Context, userId uuid.U
 	}
 	createSessionParams := rez.CreateAgentSessionParams{
 		AgentName:   rezai.ChatAgent.Name,
-		OwnerUserID: userId,
+		OwnerUserID: &userId,
 		Input:       rezai.ChatAgentInput{UserId: userId, Message: msg},
 		Metadata:    md,
 	}

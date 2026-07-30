@@ -46,7 +46,7 @@ type (
 
 	AgentSessionAttributes struct {
 		AgentName        string     `json:"agentName"`
-		OwnerUserId      uuid.UUID  `json:"ownerUserId"`
+		OwnerUserId      *uuid.UUID `json:"ownerUserId,omitempty"`
 		PermissionScopes []string   `json:"permissionScopes"`
 		CreatedAt        time.Time  `json:"createdAt"`
 		InitialTurn      *AgentTurn `json:"initialTurn,omitempty"`
@@ -59,15 +59,27 @@ type (
 	}
 
 	AgentTurnAttributes struct {
-		ParentTurnId *uuid.UUID                         `json:"parentTurnId,omitempty"`
-		Status       string                             `json:"status"`
-		CreatedAt    time.Time                          `json:"createdAt"`
-		UpdatedAt    time.Time                          `json:"updatedAt"`
-		StartedAt    *time.Time                         `json:"startedAt,omitempty"`
-		FinishedAt   *time.Time                         `json:"finishedAt,omitempty"`
-		FinishReason string                             `json:"finishReason,omitempty"`
-		Error        *AgentTurnError                    `json:"error,omitempty"`
-		State        *aix.SessionState[json.RawMessage] `json:"state,omitempty"`
+		ParentTurnId       *uuid.UUID                         `json:"parentTurnId,omitempty"`
+		Status             string                             `json:"status"`
+		CreatedAt          time.Time                          `json:"createdAt"`
+		UpdatedAt          time.Time                          `json:"updatedAt"`
+		StartedAt          *time.Time                         `json:"startedAt,omitempty"`
+		FinishedAt         *time.Time                         `json:"finishedAt,omitempty"`
+		FinishReason       string                             `json:"finishReason,omitempty"`
+		Error              *AgentTurnError                    `json:"error,omitempty"`
+		State              *aix.SessionState[json.RawMessage] `json:"state,omitempty"`
+		KnowledgeCitations []AgentTurnKnowledgeCitation       `json:"knowledgeCitations,omitempty"`
+	}
+
+	AgentTurnKnowledgeCitation struct {
+		Id         uuid.UUID                            `json:"id"`
+		Attributes AgentTurnKnowledgeCitationAttributes `json:"attributes"`
+	}
+
+	AgentTurnKnowledgeCitationAttributes struct {
+		KnowledgeEvidenceId uuid.UUID `json:"knowledgeEvidenceId"`
+		Summary             string    `json:"summary"`
+		CreatedAt           time.Time `json:"createdAt"`
 	}
 
 	AgentTurnError struct {
@@ -127,7 +139,17 @@ func AgentTurnFromEnt(turn *ent.AgentTurn) AgentTurn {
 			slog.Error("failed to unmarshal state")
 		}
 	}
+	attrs.KnowledgeCitations = ConvertSlice(turn.Edges.KnowledgeCitations, AgentTurnKnowledgeCitationFromEnt)
 	return AgentTurn{Id: turn.ID, Attributes: attrs}
+}
+
+func AgentTurnKnowledgeCitationFromEnt(citation *ent.AgentTurnKnowledgeCitation) AgentTurnKnowledgeCitation {
+	attrs := AgentTurnKnowledgeCitationAttributes{
+		KnowledgeEvidenceId: citation.KnowledgeEvidenceID,
+		Summary:             citation.Summary,
+		CreatedAt:           citation.CreatedAt,
+	}
+	return AgentTurnKnowledgeCitation{Id: citation.ID, Attributes: attrs}
 }
 
 var aiTags = []string{"AI"}

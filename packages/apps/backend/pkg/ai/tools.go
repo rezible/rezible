@@ -1,6 +1,10 @@
 package ai
 
-import "time"
+import (
+	"time"
+
+	"github.com/rezible/rezible/ent/schema/schematypes"
+)
 
 type ToolDefinition[I any, O any] struct {
 	name        string
@@ -34,27 +38,21 @@ type (
 	}
 
 	KnowledgeGraphToolEntity struct {
-		ID          string         `json:"id"`
-		Kind        string         `json:"kind"`
-		DisplayName string         `json:"display_name"`
-		Description string         `json:"description"`
-		Properties  map[string]any `json:"properties"`
+		ID    string                                 `json:"id"`
+		Kind  string                                 `json:"kind"`
+		State schematypes.KnowledgeGraphSubjectState `json:"state"`
 	}
 
 	KnowledgeGraphToolRelationship struct {
-		ID          string         `json:"id"`
-		Kind        string         `json:"kind"`
-		SourceID    string         `json:"source_id"`
-		TargetID    string         `json:"target_id"`
-		Description string         `json:"description"`
-		Properties  map[string]any `json:"properties"`
+		ID       string                                 `json:"id"`
+		Kind     string                                 `json:"kind"`
+		SourceID string                                 `json:"source_id"`
+		TargetID string                                 `json:"target_id"`
+		State    schematypes.KnowledgeGraphSubjectState `json:"state"`
 	}
 
 	KnowledgeGraphToolEvidence struct {
 		ID             string         `json:"id"`
-		EventID        string         `json:"event_id"`
-		Provider       string         `json:"provider"`
-		ProviderSource string         `json:"provider_source"`
 		Assertion      string         `json:"assertion"`
 		EvidenceKind   string         `json:"evidence_kind"`
 		EffectiveAt    time.Time      `json:"effective_at"`
@@ -87,4 +85,19 @@ type (
 var RecordKnowledgeCitationsTool = defineTool[ToolDefinition[RecordKnowledgeCitationsInput, RecordKnowledgeCitationsOutput]](
 	"record_knowledge_citations",
 	"Record only the retrieved evidence that directly supports claims in the response.",
+)
+
+type (
+	SaveAlertInvestigationReportInput struct {
+		Report schematypes.AlertInvestigationReport `json:"report"`
+	}
+
+	SaveAlertInvestigationReportOutput struct {
+		Saved bool `json:"saved"`
+	}
+)
+
+var SaveAlertInvestigationReportTool = defineTool[ToolDefinition[SaveAlertInvestigationReportInput, SaveAlertInvestigationReportOutput]](
+	"save_alert_investigation_report",
+	"Save the alert investigation report for this agent session.",
 )

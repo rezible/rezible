@@ -160,7 +160,6 @@ components:
           type: array
       required:
         - agentName
-        - ownerUserId
         - permissionScopes
         - createdAt
       type: object
@@ -203,6 +202,10 @@ components:
         finishedAt:
           format: date-time
           type: string
+        knowledgeCitations:
+          items:
+            $ref: "#/components/schemas/AgentTurnKnowledgeCitation"
+          type: array
         parentTurnId:
           type: string
         startedAt:
@@ -230,6 +233,35 @@ components:
       required:
         - message
         - code
+      type: object
+    AgentTurnKnowledgeCitation:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/AgentTurnKnowledgeCitationAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    AgentTurnKnowledgeCitationAttributes:
+      additionalProperties: false
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        knowledgeEntityId:
+          type: string
+        knowledgeEvidenceId:
+          type: string
+        knowledgeRelationshipId:
+          type: string
+        summary:
+          type: string
+      required:
+        - summary
+        - createdAt
       type: object
     AgentTurnResume:
       additionalProperties: false

@@ -142,6 +142,7 @@ type (
 
 		ListRelationships(context.Context, ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
 		GetRelationship(context.Context, uuid.UUID) (*ent.KnowledgeRelationship, error)
+		GetEvidence(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)
 
 		GetView(context.Context, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
 		GetEntityAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeEntity, error)
@@ -422,10 +423,16 @@ type (
 	}
 
 	AgentInvocationResult struct {
-		State        []byte
-		Response     *ai.Message
-		FinishReason aix.AgentFinishReason
-		Error        *core.GenkitError
+		State              []byte
+		Response           *ai.Message
+		FinishReason       aix.AgentFinishReason
+		Error              *core.GenkitError
+		KnowledgeCitations []AgentKnowledgeCitation
+	}
+
+	AgentKnowledgeCitation struct {
+		EvidenceID uuid.UUID `json:"evidence_id"`
+		Summary    string    `json:"summary"`
 	}
 
 	AiAgentConfig struct {
@@ -442,7 +449,7 @@ type (
 
 	CreateAgentSessionParams struct {
 		AgentName        string
-		OwnerUserID      uuid.UUID
+		OwnerUserID      *uuid.UUID
 		PermissionScopes []string
 		Input            any
 		Metadata         map[string]any
@@ -496,6 +503,12 @@ type (
 		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
 		GetAlertInstance(context.Context, uuid.UUID) (*ent.AlertInstance, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
+	}
+)
+
+type (
+	InvestigationService interface {
+		CreateAlertInvestigation(ctx context.Context, instanceId uuid.UUID) (*ent.AlertInvestigation, error)
 	}
 )
 

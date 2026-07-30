@@ -25,7 +25,9 @@ func (AgentSession) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("agent_name").NotEmpty(),
-		field.UUID("owner_user_id", uuid.UUID{}),
+		field.UUID("owner_user_id", uuid.UUID{}).
+			Optional().
+			Nillable(),
 		field.Strings("default_scopes").Default([]string{}),
 		field.JSON("metadata", map[string]any{}).
 			SchemaType(schemaTypeJsonB).
@@ -36,7 +38,6 @@ func (AgentSession) Fields() []ent.Field {
 func (AgentSession) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("owner_user", User.Type).
-			Required().
 			Unique().
 			Field("owner_user_id"),
 		edge.To("turns", AgentTurn.Type),
@@ -132,9 +133,7 @@ func (AgentTurnKnowledgeCitation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("agent_turn_id", uuid.UUID{}),
-		field.UUID("knowledge_entity_id", uuid.UUID{}).Optional().Nillable(),
-		field.UUID("knowledge_relationship_id", uuid.UUID{}).Optional().Nillable(),
-		field.UUID("knowledge_evidence_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("knowledge_evidence_id", uuid.UUID{}),
 		field.Text("summary").NotEmpty(),
 	}
 }
@@ -147,14 +146,9 @@ func (AgentTurnKnowledgeCitation) Edges() []ent.Edge {
 			Required().
 			Field("agent_turn_id"),
 
-		edge.To("knowledge_entity", KnowledgeEntity.Type).
-			Unique().
-			Field("knowledge_entity_id"),
-		edge.To("knowledge_relationship", KnowledgeRelationship.Type).
-			Unique().
-			Field("knowledge_relationship_id"),
 		edge.To("knowledge_evidence", KnowledgeEvidence.Type).
 			Unique().
+			Required().
 			Field("knowledge_evidence_id"),
 	}
 }
@@ -162,8 +156,6 @@ func (AgentTurnKnowledgeCitation) Edges() []ent.Edge {
 func (AgentTurnKnowledgeCitation) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "agent_turn_id", "knowledge_evidence_id").Unique(),
-		index.Fields("tenant_id", "knowledge_entity_id"),
-		index.Fields("tenant_id", "knowledge_relationship_id"),
 		index.Fields("tenant_id", "knowledge_evidence_id"),
 	}
 }

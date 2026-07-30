@@ -662,6 +662,74 @@ func (_c *MockKnowledgeGraphService_GetEntityAt_Call) RunAndReturn(run func(cont
 	return _c
 }
 
+// GetEvidence provides a mock function for the type MockKnowledgeGraphService
+func (_mock *MockKnowledgeGraphService) GetEvidence(context1 context.Context, uUID uuid.UUID) (*ent.KnowledgeEvidence, error) {
+	ret := _mock.Called(context1, uUID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetEvidence")
+	}
+
+	var r0 *ent.KnowledgeEvidence
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)); ok {
+		return returnFunc(context1, uUID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.KnowledgeEvidence); ok {
+		r0 = returnFunc(context1, uUID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.KnowledgeEvidence)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(context1, uUID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockKnowledgeGraphService_GetEvidence_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetEvidence'
+type MockKnowledgeGraphService_GetEvidence_Call struct {
+	*mock.Call
+}
+
+// GetEvidence is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+func (_e *MockKnowledgeGraphService_Expecter) GetEvidence(context1 interface{}, uUID interface{}) *MockKnowledgeGraphService_GetEvidence_Call {
+	return &MockKnowledgeGraphService_GetEvidence_Call{Call: _e.mock.On("GetEvidence", context1, uUID)}
+}
+
+func (_c *MockKnowledgeGraphService_GetEvidence_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockKnowledgeGraphService_GetEvidence_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockKnowledgeGraphService_GetEvidence_Call) Return(knowledgeEvidence *ent.KnowledgeEvidence, err error) *MockKnowledgeGraphService_GetEvidence_Call {
+	_c.Call.Return(knowledgeEvidence, err)
+	return _c
+}
+
+func (_c *MockKnowledgeGraphService_GetEvidence_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.KnowledgeEvidence, error)) *MockKnowledgeGraphService_GetEvidence_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetRelationship provides a mock function for the type MockKnowledgeGraphService
 func (_mock *MockKnowledgeGraphService) GetRelationship(context1 context.Context, uUID uuid.UUID) (*ent.KnowledgeRelationship, error) {
 	ret := _mock.Called(context1, uUID)

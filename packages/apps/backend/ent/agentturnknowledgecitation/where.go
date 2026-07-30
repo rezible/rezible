@@ -77,16 +77,6 @@ func AgentTurnID(v uuid.UUID) predicate.AgentTurnKnowledgeCitation {
 	return predicate.AgentTurnKnowledgeCitation(sql.FieldEQ(FieldAgentTurnID, v))
 }
 
-// KnowledgeEntityID applies equality check predicate on the "knowledge_entity_id" field. It's identical to KnowledgeEntityIDEQ.
-func KnowledgeEntityID(v uuid.UUID) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldEQ(FieldKnowledgeEntityID, v))
-}
-
-// KnowledgeRelationshipID applies equality check predicate on the "knowledge_relationship_id" field. It's identical to KnowledgeRelationshipIDEQ.
-func KnowledgeRelationshipID(v uuid.UUID) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldEQ(FieldKnowledgeRelationshipID, v))
-}
-
 // KnowledgeEvidenceID applies equality check predicate on the "knowledge_evidence_id" field. It's identical to KnowledgeEvidenceIDEQ.
 func KnowledgeEvidenceID(v uuid.UUID) predicate.AgentTurnKnowledgeCitation {
 	return predicate.AgentTurnKnowledgeCitation(sql.FieldEQ(FieldKnowledgeEvidenceID, v))
@@ -217,66 +207,6 @@ func AgentTurnIDNotIn(vs ...uuid.UUID) predicate.AgentTurnKnowledgeCitation {
 	return predicate.AgentTurnKnowledgeCitation(sql.FieldNotIn(FieldAgentTurnID, vs...))
 }
 
-// KnowledgeEntityIDEQ applies the EQ predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDEQ(v uuid.UUID) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldEQ(FieldKnowledgeEntityID, v))
-}
-
-// KnowledgeEntityIDNEQ applies the NEQ predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDNEQ(v uuid.UUID) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldNEQ(FieldKnowledgeEntityID, v))
-}
-
-// KnowledgeEntityIDIn applies the In predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDIn(vs ...uuid.UUID) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldIn(FieldKnowledgeEntityID, vs...))
-}
-
-// KnowledgeEntityIDNotIn applies the NotIn predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDNotIn(vs ...uuid.UUID) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldNotIn(FieldKnowledgeEntityID, vs...))
-}
-
-// KnowledgeEntityIDIsNil applies the IsNil predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDIsNil() predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldIsNull(FieldKnowledgeEntityID))
-}
-
-// KnowledgeEntityIDNotNil applies the NotNil predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDNotNil() predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldNotNull(FieldKnowledgeEntityID))
-}
-
-// KnowledgeRelationshipIDEQ applies the EQ predicate on the "knowledge_relationship_id" field.
-func KnowledgeRelationshipIDEQ(v uuid.UUID) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldEQ(FieldKnowledgeRelationshipID, v))
-}
-
-// KnowledgeRelationshipIDNEQ applies the NEQ predicate on the "knowledge_relationship_id" field.
-func KnowledgeRelationshipIDNEQ(v uuid.UUID) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldNEQ(FieldKnowledgeRelationshipID, v))
-}
-
-// KnowledgeRelationshipIDIn applies the In predicate on the "knowledge_relationship_id" field.
-func KnowledgeRelationshipIDIn(vs ...uuid.UUID) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldIn(FieldKnowledgeRelationshipID, vs...))
-}
-
-// KnowledgeRelationshipIDNotIn applies the NotIn predicate on the "knowledge_relationship_id" field.
-func KnowledgeRelationshipIDNotIn(vs ...uuid.UUID) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldNotIn(FieldKnowledgeRelationshipID, vs...))
-}
-
-// KnowledgeRelationshipIDIsNil applies the IsNil predicate on the "knowledge_relationship_id" field.
-func KnowledgeRelationshipIDIsNil() predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldIsNull(FieldKnowledgeRelationshipID))
-}
-
-// KnowledgeRelationshipIDNotNil applies the NotNil predicate on the "knowledge_relationship_id" field.
-func KnowledgeRelationshipIDNotNil() predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldNotNull(FieldKnowledgeRelationshipID))
-}
-
 // KnowledgeEvidenceIDEQ applies the EQ predicate on the "knowledge_evidence_id" field.
 func KnowledgeEvidenceIDEQ(v uuid.UUID) predicate.AgentTurnKnowledgeCitation {
 	return predicate.AgentTurnKnowledgeCitation(sql.FieldEQ(FieldKnowledgeEvidenceID, v))
@@ -295,16 +225,6 @@ func KnowledgeEvidenceIDIn(vs ...uuid.UUID) predicate.AgentTurnKnowledgeCitation
 // KnowledgeEvidenceIDNotIn applies the NotIn predicate on the "knowledge_evidence_id" field.
 func KnowledgeEvidenceIDNotIn(vs ...uuid.UUID) predicate.AgentTurnKnowledgeCitation {
 	return predicate.AgentTurnKnowledgeCitation(sql.FieldNotIn(FieldKnowledgeEvidenceID, vs...))
-}
-
-// KnowledgeEvidenceIDIsNil applies the IsNil predicate on the "knowledge_evidence_id" field.
-func KnowledgeEvidenceIDIsNil() predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldIsNull(FieldKnowledgeEvidenceID))
-}
-
-// KnowledgeEvidenceIDNotNil applies the NotNil predicate on the "knowledge_evidence_id" field.
-func KnowledgeEvidenceIDNotNil() predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(sql.FieldNotNull(FieldKnowledgeEvidenceID))
 }
 
 // SummaryEQ applies the EQ predicate on the "summary" field.
@@ -421,64 +341,6 @@ func HasAgentTurnWith(preds ...predicate.AgentTurn) predicate.AgentTurnKnowledge
 		step := newAgentTurnStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentTurn
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasKnowledgeEntity applies the HasEdge predicate on the "knowledge_entity" edge.
-func HasKnowledgeEntity() predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasKnowledgeEntityWith applies the HasEdge predicate on the "knowledge_entity" edge with a given conditions (other predicates).
-func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(func(s *sql.Selector) {
-		step := newKnowledgeEntityStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasKnowledgeRelationship applies the HasEdge predicate on the "knowledge_relationship" edge.
-func HasKnowledgeRelationship() predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeRelationshipTable, KnowledgeRelationshipColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeRelationship
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasKnowledgeRelationshipWith applies the HasEdge predicate on the "knowledge_relationship" edge with a given conditions (other predicates).
-func HasKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) predicate.AgentTurnKnowledgeCitation {
-	return predicate.AgentTurnKnowledgeCitation(func(s *sql.Selector) {
-		step := newKnowledgeRelationshipStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

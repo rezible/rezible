@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -15,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinvestigation"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -32,6 +34,34 @@ func (_c *AlertInvestigationCreate) SetTenantID(v int) *AlertInvestigationCreate
 	return _c
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_c *AlertInvestigationCreate) SetCreatedAt(v time.Time) *AlertInvestigationCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_c *AlertInvestigationCreate) SetNillableCreatedAt(v *time.Time) *AlertInvestigationCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_c *AlertInvestigationCreate) SetUpdatedAt(v time.Time) *AlertInvestigationCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_c *AlertInvestigationCreate) SetNillableUpdatedAt(v *time.Time) *AlertInvestigationCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
 // SetAlertInstanceID sets the "alert_instance_id" field.
 func (_c *AlertInvestigationCreate) SetAlertInstanceID(v uuid.UUID) *AlertInvestigationCreate {
 	_c.mutation.SetAlertInstanceID(v)
@@ -44,9 +74,17 @@ func (_c *AlertInvestigationCreate) SetAgentSessionID(v uuid.UUID) *AlertInvesti
 	return _c
 }
 
-// SetOutput sets the "output" field.
-func (_c *AlertInvestigationCreate) SetOutput(v []byte) *AlertInvestigationCreate {
-	_c.mutation.SetOutput(v)
+// SetReport sets the "report" field.
+func (_c *AlertInvestigationCreate) SetReport(v schematypes.AlertInvestigationReport) *AlertInvestigationCreate {
+	_c.mutation.SetReport(v)
+	return _c
+}
+
+// SetNillableReport sets the "report" field if the given value is not nil.
+func (_c *AlertInvestigationCreate) SetNillableReport(v *schematypes.AlertInvestigationReport) *AlertInvestigationCreate {
+	if v != nil {
+		_c.SetReport(*v)
+	}
 	return _c
 }
 
@@ -116,6 +154,20 @@ func (_c *AlertInvestigationCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *AlertInvestigationCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		if alertinvestigation.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized alertinvestigation.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
+		v := alertinvestigation.DefaultCreatedAt()
+		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		if alertinvestigation.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized alertinvestigation.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := alertinvestigation.DefaultUpdatedAt()
+		_c.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if alertinvestigation.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized alertinvestigation.DefaultID (forgotten import ent/runtime?)")
@@ -131,14 +183,17 @@ func (_c *AlertInvestigationCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "AlertInvestigation.tenant_id"`)}
 	}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "AlertInvestigation.created_at"`)}
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "AlertInvestigation.updated_at"`)}
+	}
 	if _, ok := _c.mutation.AlertInstanceID(); !ok {
 		return &ValidationError{Name: "alert_instance_id", err: errors.New(`ent: missing required field "AlertInvestigation.alert_instance_id"`)}
 	}
 	if _, ok := _c.mutation.AgentSessionID(); !ok {
 		return &ValidationError{Name: "agent_session_id", err: errors.New(`ent: missing required field "AlertInvestigation.agent_session_id"`)}
-	}
-	if _, ok := _c.mutation.Output(); !ok {
-		return &ValidationError{Name: "output", err: errors.New(`ent: missing required field "AlertInvestigation.output"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertInvestigation.tenant"`)}
@@ -186,9 +241,17 @@ func (_c *AlertInvestigationCreate) createSpec() (*AlertInvestigation, *sqlgraph
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.Output(); ok {
-		_spec.SetField(alertinvestigation.FieldOutput, field.TypeBytes, value)
-		_node.Output = value
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(alertinvestigation.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(alertinvestigation.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
+	if value, ok := _c.mutation.Report(); ok {
+		_spec.SetField(alertinvestigation.FieldReport, field.TypeJSON, value)
+		_node.Report = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -296,6 +359,30 @@ type (
 	}
 )
 
+// SetCreatedAt sets the "created_at" field.
+func (u *AlertInvestigationUpsert) SetCreatedAt(v time.Time) *AlertInvestigationUpsert {
+	u.Set(alertinvestigation.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *AlertInvestigationUpsert) UpdateCreatedAt() *AlertInvestigationUpsert {
+	u.SetExcluded(alertinvestigation.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *AlertInvestigationUpsert) SetUpdatedAt(v time.Time) *AlertInvestigationUpsert {
+	u.Set(alertinvestigation.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *AlertInvestigationUpsert) UpdateUpdatedAt() *AlertInvestigationUpsert {
+	u.SetExcluded(alertinvestigation.FieldUpdatedAt)
+	return u
+}
+
 // SetAlertInstanceID sets the "alert_instance_id" field.
 func (u *AlertInvestigationUpsert) SetAlertInstanceID(v uuid.UUID) *AlertInvestigationUpsert {
 	u.Set(alertinvestigation.FieldAlertInstanceID, v)
@@ -320,15 +407,21 @@ func (u *AlertInvestigationUpsert) UpdateAgentSessionID() *AlertInvestigationUps
 	return u
 }
 
-// SetOutput sets the "output" field.
-func (u *AlertInvestigationUpsert) SetOutput(v []byte) *AlertInvestigationUpsert {
-	u.Set(alertinvestigation.FieldOutput, v)
+// SetReport sets the "report" field.
+func (u *AlertInvestigationUpsert) SetReport(v schematypes.AlertInvestigationReport) *AlertInvestigationUpsert {
+	u.Set(alertinvestigation.FieldReport, v)
 	return u
 }
 
-// UpdateOutput sets the "output" field to the value that was provided on create.
-func (u *AlertInvestigationUpsert) UpdateOutput() *AlertInvestigationUpsert {
-	u.SetExcluded(alertinvestigation.FieldOutput)
+// UpdateReport sets the "report" field to the value that was provided on create.
+func (u *AlertInvestigationUpsert) UpdateReport() *AlertInvestigationUpsert {
+	u.SetExcluded(alertinvestigation.FieldReport)
+	return u
+}
+
+// ClearReport clears the value of the "report" field.
+func (u *AlertInvestigationUpsert) ClearReport() *AlertInvestigationUpsert {
+	u.SetNull(alertinvestigation.FieldReport)
 	return u
 }
 
@@ -383,6 +476,34 @@ func (u *AlertInvestigationUpsertOne) Update(set func(*AlertInvestigationUpsert)
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *AlertInvestigationUpsertOne) SetCreatedAt(v time.Time) *AlertInvestigationUpsertOne {
+	return u.Update(func(s *AlertInvestigationUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *AlertInvestigationUpsertOne) UpdateCreatedAt() *AlertInvestigationUpsertOne {
+	return u.Update(func(s *AlertInvestigationUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *AlertInvestigationUpsertOne) SetUpdatedAt(v time.Time) *AlertInvestigationUpsertOne {
+	return u.Update(func(s *AlertInvestigationUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *AlertInvestigationUpsertOne) UpdateUpdatedAt() *AlertInvestigationUpsertOne {
+	return u.Update(func(s *AlertInvestigationUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetAlertInstanceID sets the "alert_instance_id" field.
 func (u *AlertInvestigationUpsertOne) SetAlertInstanceID(v uuid.UUID) *AlertInvestigationUpsertOne {
 	return u.Update(func(s *AlertInvestigationUpsert) {
@@ -411,17 +532,24 @@ func (u *AlertInvestigationUpsertOne) UpdateAgentSessionID() *AlertInvestigation
 	})
 }
 
-// SetOutput sets the "output" field.
-func (u *AlertInvestigationUpsertOne) SetOutput(v []byte) *AlertInvestigationUpsertOne {
+// SetReport sets the "report" field.
+func (u *AlertInvestigationUpsertOne) SetReport(v schematypes.AlertInvestigationReport) *AlertInvestigationUpsertOne {
 	return u.Update(func(s *AlertInvestigationUpsert) {
-		s.SetOutput(v)
+		s.SetReport(v)
 	})
 }
 
-// UpdateOutput sets the "output" field to the value that was provided on create.
-func (u *AlertInvestigationUpsertOne) UpdateOutput() *AlertInvestigationUpsertOne {
+// UpdateReport sets the "report" field to the value that was provided on create.
+func (u *AlertInvestigationUpsertOne) UpdateReport() *AlertInvestigationUpsertOne {
 	return u.Update(func(s *AlertInvestigationUpsert) {
-		s.UpdateOutput()
+		s.UpdateReport()
+	})
+}
+
+// ClearReport clears the value of the "report" field.
+func (u *AlertInvestigationUpsertOne) ClearReport() *AlertInvestigationUpsertOne {
+	return u.Update(func(s *AlertInvestigationUpsert) {
+		s.ClearReport()
 	})
 }
 
@@ -643,6 +771,34 @@ func (u *AlertInvestigationUpsertBulk) Update(set func(*AlertInvestigationUpsert
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *AlertInvestigationUpsertBulk) SetCreatedAt(v time.Time) *AlertInvestigationUpsertBulk {
+	return u.Update(func(s *AlertInvestigationUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *AlertInvestigationUpsertBulk) UpdateCreatedAt() *AlertInvestigationUpsertBulk {
+	return u.Update(func(s *AlertInvestigationUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *AlertInvestigationUpsertBulk) SetUpdatedAt(v time.Time) *AlertInvestigationUpsertBulk {
+	return u.Update(func(s *AlertInvestigationUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *AlertInvestigationUpsertBulk) UpdateUpdatedAt() *AlertInvestigationUpsertBulk {
+	return u.Update(func(s *AlertInvestigationUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetAlertInstanceID sets the "alert_instance_id" field.
 func (u *AlertInvestigationUpsertBulk) SetAlertInstanceID(v uuid.UUID) *AlertInvestigationUpsertBulk {
 	return u.Update(func(s *AlertInvestigationUpsert) {
@@ -671,17 +827,24 @@ func (u *AlertInvestigationUpsertBulk) UpdateAgentSessionID() *AlertInvestigatio
 	})
 }
 
-// SetOutput sets the "output" field.
-func (u *AlertInvestigationUpsertBulk) SetOutput(v []byte) *AlertInvestigationUpsertBulk {
+// SetReport sets the "report" field.
+func (u *AlertInvestigationUpsertBulk) SetReport(v schematypes.AlertInvestigationReport) *AlertInvestigationUpsertBulk {
 	return u.Update(func(s *AlertInvestigationUpsert) {
-		s.SetOutput(v)
+		s.SetReport(v)
 	})
 }
 
-// UpdateOutput sets the "output" field to the value that was provided on create.
-func (u *AlertInvestigationUpsertBulk) UpdateOutput() *AlertInvestigationUpsertBulk {
+// UpdateReport sets the "report" field to the value that was provided on create.
+func (u *AlertInvestigationUpsertBulk) UpdateReport() *AlertInvestigationUpsertBulk {
 	return u.Update(func(s *AlertInvestigationUpsert) {
-		s.UpdateOutput()
+		s.UpdateReport()
+	})
+}
+
+// ClearReport clears the value of the "report" field.
+func (u *AlertInvestigationUpsertBulk) ClearReport() *AlertInvestigationUpsertBulk {
+	return u.Update(func(s *AlertInvestigationUpsert) {
+		s.ClearReport()
 	})
 }
 

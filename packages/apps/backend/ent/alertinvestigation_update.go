@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -16,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/alertinvestigation"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // AlertInvestigationUpdate is the builder for updating AlertInvestigation entities.
@@ -29,6 +31,26 @@ type AlertInvestigationUpdate struct {
 // Where appends a list predicates to the AlertInvestigationUpdate builder.
 func (_u *AlertInvestigationUpdate) Where(ps ...predicate.AlertInvestigation) *AlertInvestigationUpdate {
 	_u.mutation.Where(ps...)
+	return _u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (_u *AlertInvestigationUpdate) SetCreatedAt(v time.Time) *AlertInvestigationUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *AlertInvestigationUpdate) SetNillableCreatedAt(v *time.Time) *AlertInvestigationUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *AlertInvestigationUpdate) SetUpdatedAt(v time.Time) *AlertInvestigationUpdate {
+	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -60,9 +82,23 @@ func (_u *AlertInvestigationUpdate) SetNillableAgentSessionID(v *uuid.UUID) *Ale
 	return _u
 }
 
-// SetOutput sets the "output" field.
-func (_u *AlertInvestigationUpdate) SetOutput(v []byte) *AlertInvestigationUpdate {
-	_u.mutation.SetOutput(v)
+// SetReport sets the "report" field.
+func (_u *AlertInvestigationUpdate) SetReport(v schematypes.AlertInvestigationReport) *AlertInvestigationUpdate {
+	_u.mutation.SetReport(v)
+	return _u
+}
+
+// SetNillableReport sets the "report" field if the given value is not nil.
+func (_u *AlertInvestigationUpdate) SetNillableReport(v *schematypes.AlertInvestigationReport) *AlertInvestigationUpdate {
+	if v != nil {
+		_u.SetReport(*v)
+	}
+	return _u
+}
+
+// ClearReport clears the value of the "report" field.
+func (_u *AlertInvestigationUpdate) ClearReport() *AlertInvestigationUpdate {
+	_u.mutation.ClearReport()
 	return _u
 }
 
@@ -95,6 +131,9 @@ func (_u *AlertInvestigationUpdate) ClearAgentSession() *AlertInvestigationUpdat
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *AlertInvestigationUpdate) Save(ctx context.Context) (int, error) {
+	if err := _u.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -118,6 +157,18 @@ func (_u *AlertInvestigationUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (_u *AlertInvestigationUpdate) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
+		if alertinvestigation.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized alertinvestigation.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := alertinvestigation.UpdateDefaultUpdatedAt()
+		_u.mutation.SetUpdatedAt(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -152,8 +203,17 @@ func (_u *AlertInvestigationUpdate) sqlSave(ctx context.Context) (_node int, err
 			}
 		}
 	}
-	if value, ok := _u.mutation.Output(); ok {
-		_spec.SetField(alertinvestigation.FieldOutput, field.TypeBytes, value)
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(alertinvestigation.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(alertinvestigation.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.Report(); ok {
+		_spec.SetField(alertinvestigation.FieldReport, field.TypeJSON, value)
+	}
+	if _u.mutation.ReportCleared() {
+		_spec.ClearField(alertinvestigation.FieldReport, field.TypeJSON)
 	}
 	if _u.mutation.AlertInstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -241,6 +301,26 @@ type AlertInvestigationUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *AlertInvestigationUpdateOne) SetCreatedAt(v time.Time) *AlertInvestigationUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *AlertInvestigationUpdateOne) SetNillableCreatedAt(v *time.Time) *AlertInvestigationUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *AlertInvestigationUpdateOne) SetUpdatedAt(v time.Time) *AlertInvestigationUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetAlertInstanceID sets the "alert_instance_id" field.
 func (_u *AlertInvestigationUpdateOne) SetAlertInstanceID(v uuid.UUID) *AlertInvestigationUpdateOne {
 	_u.mutation.SetAlertInstanceID(v)
@@ -269,9 +349,23 @@ func (_u *AlertInvestigationUpdateOne) SetNillableAgentSessionID(v *uuid.UUID) *
 	return _u
 }
 
-// SetOutput sets the "output" field.
-func (_u *AlertInvestigationUpdateOne) SetOutput(v []byte) *AlertInvestigationUpdateOne {
-	_u.mutation.SetOutput(v)
+// SetReport sets the "report" field.
+func (_u *AlertInvestigationUpdateOne) SetReport(v schematypes.AlertInvestigationReport) *AlertInvestigationUpdateOne {
+	_u.mutation.SetReport(v)
+	return _u
+}
+
+// SetNillableReport sets the "report" field if the given value is not nil.
+func (_u *AlertInvestigationUpdateOne) SetNillableReport(v *schematypes.AlertInvestigationReport) *AlertInvestigationUpdateOne {
+	if v != nil {
+		_u.SetReport(*v)
+	}
+	return _u
+}
+
+// ClearReport clears the value of the "report" field.
+func (_u *AlertInvestigationUpdateOne) ClearReport() *AlertInvestigationUpdateOne {
+	_u.mutation.ClearReport()
 	return _u
 }
 
@@ -317,6 +411,9 @@ func (_u *AlertInvestigationUpdateOne) Select(field string, fields ...string) *A
 
 // Save executes the query and returns the updated AlertInvestigation entity.
 func (_u *AlertInvestigationUpdateOne) Save(ctx context.Context) (*AlertInvestigation, error) {
+	if err := _u.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -340,6 +437,18 @@ func (_u *AlertInvestigationUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (_u *AlertInvestigationUpdateOne) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
+		if alertinvestigation.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized alertinvestigation.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := alertinvestigation.UpdateDefaultUpdatedAt()
+		_u.mutation.SetUpdatedAt(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -391,8 +500,17 @@ func (_u *AlertInvestigationUpdateOne) sqlSave(ctx context.Context) (_node *Aler
 			}
 		}
 	}
-	if value, ok := _u.mutation.Output(); ok {
-		_spec.SetField(alertinvestigation.FieldOutput, field.TypeBytes, value)
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(alertinvestigation.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(alertinvestigation.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.Report(); ok {
+		_spec.SetField(alertinvestigation.FieldReport, field.TypeJSON, value)
+	}
+	if _u.mutation.ReportCleared() {
+		_spec.ClearField(alertinvestigation.FieldReport, field.TypeJSON)
 	}
 	if _u.mutation.AlertInstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{

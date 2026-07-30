@@ -175,7 +175,7 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionCreatesQueuedRootAtomic
 
 	params := rez.CreateAgentSessionParams{
 		AgentName:        "  test-agent  ",
-		OwnerUserID:      s.SeedUser.ID,
+		OwnerUserID:      &s.SeedUser.ID,
 		PermissionScopes: []string{"alerts:read"},
 		Input:            definitionInput,
 		Metadata:         map[string]any{"channel": "C123"},
@@ -184,7 +184,8 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionCreatesQueuedRootAtomic
 	s.Require().NoError(createErr)
 	s.Require().NotNil(session)
 	s.Equal("test-agent", session.AgentName)
-	s.Equal(s.SeedUser.ID, session.OwnerUserID)
+	s.Require().NotNil(session.OwnerUserID)
+	s.Equal(s.SeedUser.ID, *session.OwnerUserID)
 	s.Equal([]string{"alerts:read"}, session.DefaultScopes)
 	s.Equal("C123", session.Metadata["channel"])
 	s.Require().Len(session.Edges.Turns, 1)
@@ -231,7 +232,7 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionRollsBackWhenJobInsertF
 
 	params := rez.CreateAgentSessionParams{
 		AgentName:   "test-agent",
-		OwnerUserID: s.SeedUser.ID,
+		OwnerUserID: &s.SeedUser.ID,
 	}
 	session, createErr := h.service.CreateAgentSession(ctx, params)
 	s.Nil(session)

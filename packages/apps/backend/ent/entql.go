@@ -142,14 +142,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "AgentTurnKnowledgeCitation",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			agentturnknowledgecitation.FieldTenantID:                {Type: field.TypeInt, Column: agentturnknowledgecitation.FieldTenantID},
-			agentturnknowledgecitation.FieldCreatedAt:               {Type: field.TypeTime, Column: agentturnknowledgecitation.FieldCreatedAt},
-			agentturnknowledgecitation.FieldUpdatedAt:               {Type: field.TypeTime, Column: agentturnknowledgecitation.FieldUpdatedAt},
-			agentturnknowledgecitation.FieldAgentTurnID:             {Type: field.TypeUUID, Column: agentturnknowledgecitation.FieldAgentTurnID},
-			agentturnknowledgecitation.FieldKnowledgeEntityID:       {Type: field.TypeUUID, Column: agentturnknowledgecitation.FieldKnowledgeEntityID},
-			agentturnknowledgecitation.FieldKnowledgeRelationshipID: {Type: field.TypeUUID, Column: agentturnknowledgecitation.FieldKnowledgeRelationshipID},
-			agentturnknowledgecitation.FieldKnowledgeEvidenceID:     {Type: field.TypeUUID, Column: agentturnknowledgecitation.FieldKnowledgeEvidenceID},
-			agentturnknowledgecitation.FieldSummary:                 {Type: field.TypeString, Column: agentturnknowledgecitation.FieldSummary},
+			agentturnknowledgecitation.FieldTenantID:            {Type: field.TypeInt, Column: agentturnknowledgecitation.FieldTenantID},
+			agentturnknowledgecitation.FieldCreatedAt:           {Type: field.TypeTime, Column: agentturnknowledgecitation.FieldCreatedAt},
+			agentturnknowledgecitation.FieldUpdatedAt:           {Type: field.TypeTime, Column: agentturnknowledgecitation.FieldUpdatedAt},
+			agentturnknowledgecitation.FieldAgentTurnID:         {Type: field.TypeUUID, Column: agentturnknowledgecitation.FieldAgentTurnID},
+			agentturnknowledgecitation.FieldKnowledgeEvidenceID: {Type: field.TypeUUID, Column: agentturnknowledgecitation.FieldKnowledgeEvidenceID},
+			agentturnknowledgecitation.FieldSummary:             {Type: field.TypeString, Column: agentturnknowledgecitation.FieldSummary},
 		},
 	}
 	graph.Nodes[3] = &sqlgraph.Node{
@@ -216,9 +214,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "AlertInvestigation",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			alertinvestigation.FieldTenantID:        {Type: field.TypeInt, Column: alertinvestigation.FieldTenantID},
+			alertinvestigation.FieldCreatedAt:       {Type: field.TypeTime, Column: alertinvestigation.FieldCreatedAt},
+			alertinvestigation.FieldUpdatedAt:       {Type: field.TypeTime, Column: alertinvestigation.FieldUpdatedAt},
 			alertinvestigation.FieldAlertInstanceID: {Type: field.TypeUUID, Column: alertinvestigation.FieldAlertInstanceID},
 			alertinvestigation.FieldAgentSessionID:  {Type: field.TypeUUID, Column: alertinvestigation.FieldAgentSessionID},
-			alertinvestigation.FieldOutput:          {Type: field.TypeBytes, Column: alertinvestigation.FieldOutput},
+			alertinvestigation.FieldReport:          {Type: field.TypeJSON, Column: alertinvestigation.FieldReport},
 		},
 	}
 	graph.Nodes[7] = &sqlgraph.Node{
@@ -1538,30 +1538,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"AgentTurnKnowledgeCitation",
 		"AgentTurn",
-	)
-	graph.MustAddE(
-		"knowledge_entity",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentturnknowledgecitation.KnowledgeEntityTable,
-			Columns: []string{agentturnknowledgecitation.KnowledgeEntityColumn},
-			Bidi:    false,
-		},
-		"AgentTurnKnowledgeCitation",
-		"KnowledgeEntity",
-	)
-	graph.MustAddE(
-		"knowledge_relationship",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentturnknowledgecitation.KnowledgeRelationshipTable,
-			Columns: []string{agentturnknowledgecitation.KnowledgeRelationshipColumn},
-			Bidi:    false,
-		},
-		"AgentTurnKnowledgeCitation",
-		"KnowledgeRelationship",
 	)
 	graph.MustAddE(
 		"knowledge_evidence",
@@ -4929,16 +4905,6 @@ func (f *AgentTurnKnowledgeCitationFilter) WhereAgentTurnID(p entql.ValueP) {
 	f.Where(p.Field(agentturnknowledgecitation.FieldAgentTurnID))
 }
 
-// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
-func (f *AgentTurnKnowledgeCitationFilter) WhereKnowledgeEntityID(p entql.ValueP) {
-	f.Where(p.Field(agentturnknowledgecitation.FieldKnowledgeEntityID))
-}
-
-// WhereKnowledgeRelationshipID applies the entql [16]byte predicate on the knowledge_relationship_id field.
-func (f *AgentTurnKnowledgeCitationFilter) WhereKnowledgeRelationshipID(p entql.ValueP) {
-	f.Where(p.Field(agentturnknowledgecitation.FieldKnowledgeRelationshipID))
-}
-
 // WhereKnowledgeEvidenceID applies the entql [16]byte predicate on the knowledge_evidence_id field.
 func (f *AgentTurnKnowledgeCitationFilter) WhereKnowledgeEvidenceID(p entql.ValueP) {
 	f.Where(p.Field(agentturnknowledgecitation.FieldKnowledgeEvidenceID))
@@ -4971,34 +4937,6 @@ func (f *AgentTurnKnowledgeCitationFilter) WhereHasAgentTurn() {
 // WhereHasAgentTurnWith applies a predicate to check if query has an edge agent_turn with a given conditions (other predicates).
 func (f *AgentTurnKnowledgeCitationFilter) WhereHasAgentTurnWith(preds ...predicate.AgentTurn) {
 	f.Where(entql.HasEdgeWith("agent_turn", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
-func (f *AgentTurnKnowledgeCitationFilter) WhereHasKnowledgeEntity() {
-	f.Where(entql.HasEdge("knowledge_entity"))
-}
-
-// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
-func (f *AgentTurnKnowledgeCitationFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
-	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasKnowledgeRelationship applies a predicate to check if query has an edge knowledge_relationship.
-func (f *AgentTurnKnowledgeCitationFilter) WhereHasKnowledgeRelationship() {
-	f.Where(entql.HasEdge("knowledge_relationship"))
-}
-
-// WhereHasKnowledgeRelationshipWith applies a predicate to check if query has an edge knowledge_relationship with a given conditions (other predicates).
-func (f *AgentTurnKnowledgeCitationFilter) WhereHasKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) {
-	f.Where(entql.HasEdgeWith("knowledge_relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -5375,6 +5313,16 @@ func (f *AlertInvestigationFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(alertinvestigation.FieldTenantID))
 }
 
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *AlertInvestigationFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(alertinvestigation.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *AlertInvestigationFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(alertinvestigation.FieldUpdatedAt))
+}
+
 // WhereAlertInstanceID applies the entql [16]byte predicate on the alert_instance_id field.
 func (f *AlertInvestigationFilter) WhereAlertInstanceID(p entql.ValueP) {
 	f.Where(p.Field(alertinvestigation.FieldAlertInstanceID))
@@ -5385,9 +5333,9 @@ func (f *AlertInvestigationFilter) WhereAgentSessionID(p entql.ValueP) {
 	f.Where(p.Field(alertinvestigation.FieldAgentSessionID))
 }
 
-// WhereOutput applies the entql []byte predicate on the output field.
-func (f *AlertInvestigationFilter) WhereOutput(p entql.BytesP) {
-	f.Where(p.Field(alertinvestigation.FieldOutput))
+// WhereReport applies the entql json.RawMessage predicate on the report field.
+func (f *AlertInvestigationFilter) WhereReport(p entql.BytesP) {
+	f.Where(p.Field(alertinvestigation.FieldReport))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

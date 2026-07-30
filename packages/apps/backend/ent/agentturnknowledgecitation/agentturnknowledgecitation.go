@@ -24,10 +24,6 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldAgentTurnID holds the string denoting the agent_turn_id field in the database.
 	FieldAgentTurnID = "agent_turn_id"
-	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
-	FieldKnowledgeEntityID = "knowledge_entity_id"
-	// FieldKnowledgeRelationshipID holds the string denoting the knowledge_relationship_id field in the database.
-	FieldKnowledgeRelationshipID = "knowledge_relationship_id"
 	// FieldKnowledgeEvidenceID holds the string denoting the knowledge_evidence_id field in the database.
 	FieldKnowledgeEvidenceID = "knowledge_evidence_id"
 	// FieldSummary holds the string denoting the summary field in the database.
@@ -36,10 +32,6 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeAgentTurn holds the string denoting the agent_turn edge name in mutations.
 	EdgeAgentTurn = "agent_turn"
-	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
-	EdgeKnowledgeEntity = "knowledge_entity"
-	// EdgeKnowledgeRelationship holds the string denoting the knowledge_relationship edge name in mutations.
-	EdgeKnowledgeRelationship = "knowledge_relationship"
 	// EdgeKnowledgeEvidence holds the string denoting the knowledge_evidence edge name in mutations.
 	EdgeKnowledgeEvidence = "knowledge_evidence"
 	// Table holds the table name of the agentturnknowledgecitation in the database.
@@ -58,20 +50,6 @@ const (
 	AgentTurnInverseTable = "agent_turns"
 	// AgentTurnColumn is the table column denoting the agent_turn relation/edge.
 	AgentTurnColumn = "agent_turn_id"
-	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
-	KnowledgeEntityTable = "agent_turn_knowledge_citations"
-	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
-	KnowledgeEntityInverseTable = "knowledge_entities"
-	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
-	KnowledgeEntityColumn = "knowledge_entity_id"
-	// KnowledgeRelationshipTable is the table that holds the knowledge_relationship relation/edge.
-	KnowledgeRelationshipTable = "agent_turn_knowledge_citations"
-	// KnowledgeRelationshipInverseTable is the table name for the KnowledgeRelationship entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgerelationship" package.
-	KnowledgeRelationshipInverseTable = "knowledge_relationships"
-	// KnowledgeRelationshipColumn is the table column denoting the knowledge_relationship relation/edge.
-	KnowledgeRelationshipColumn = "knowledge_relationship_id"
 	// KnowledgeEvidenceTable is the table that holds the knowledge_evidence relation/edge.
 	KnowledgeEvidenceTable = "agent_turn_knowledge_citations"
 	// KnowledgeEvidenceInverseTable is the table name for the KnowledgeEvidence entity.
@@ -88,8 +66,6 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldAgentTurnID,
-	FieldKnowledgeEntityID,
-	FieldKnowledgeRelationshipID,
 	FieldKnowledgeEvidenceID,
 	FieldSummary,
 }
@@ -152,16 +128,6 @@ func ByAgentTurnID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentTurnID, opts...).ToFunc()
 }
 
-// ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
-func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKnowledgeEntityID, opts...).ToFunc()
-}
-
-// ByKnowledgeRelationshipID orders the results by the knowledge_relationship_id field.
-func ByKnowledgeRelationshipID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKnowledgeRelationshipID, opts...).ToFunc()
-}
-
 // ByKnowledgeEvidenceID orders the results by the knowledge_evidence_id field.
 func ByKnowledgeEvidenceID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKnowledgeEvidenceID, opts...).ToFunc()
@@ -186,20 +152,6 @@ func ByAgentTurnField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByKnowledgeEntityField orders the results by knowledge_entity field.
-func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByKnowledgeRelationshipField orders the results by knowledge_relationship field.
-func ByKnowledgeRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newKnowledgeRelationshipStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // ByKnowledgeEvidenceField orders the results by knowledge_evidence field.
 func ByKnowledgeEvidenceField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -218,20 +170,6 @@ func newAgentTurnStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AgentTurnInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, AgentTurnTable, AgentTurnColumn),
-	)
-}
-func newKnowledgeEntityStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(KnowledgeEntityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
-	)
-}
-func newKnowledgeRelationshipStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(KnowledgeRelationshipInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeRelationshipTable, KnowledgeRelationshipColumn),
 	)
 }
 func newKnowledgeEvidenceStep() *sqlgraph.Step {

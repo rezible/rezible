@@ -5,11 +5,10 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alertinstance"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertinstance"
 )
 
 type AlertService struct {

@@ -18,7 +18,7 @@ var (
 		{Name: "default_scopes", Type: field.TypeJSON},
 		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "owner_user_id", Type: field.TypeUUID},
+		{Name: "owner_user_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AgentSessionsTable holds the schema information for the "agent_sessions" table.
 	AgentSessionsTable = &schema.Table{
@@ -36,7 +36,7 @@ var (
 				Symbol:     "agent_sessions_users_owner_user",
 				Columns:    []*schema.Column{AgentSessionsColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
@@ -145,9 +145,7 @@ var (
 		{Name: "summary", Type: field.TypeString, Size: 2147483647},
 		{Name: "agent_turn_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "knowledge_relationship_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "knowledge_evidence_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "knowledge_evidence_id", Type: field.TypeUUID},
 	}
 	// AgentTurnKnowledgeCitationsTable holds the schema information for the "agent_turn_knowledge_citations" table.
 	AgentTurnKnowledgeCitationsTable = &schema.Table{
@@ -168,22 +166,10 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "agent_turn_knowledge_citations_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[6]},
-				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "agent_turn_knowledge_citations_knowledge_relationships_knowledge_relationship",
-				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[7]},
-				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "agent_turn_knowledge_citations_knowledge_evidences_knowledge_evidence",
-				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[8]},
+				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[6]},
 				RefColumns: []*schema.Column{KnowledgeEvidencesColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
@@ -195,22 +181,12 @@ var (
 			{
 				Name:    "agentturnknowledgecitation_tenant_id_agent_turn_id_knowledge_evidence_id",
 				Unique:  true,
-				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5], AgentTurnKnowledgeCitationsColumns[4], AgentTurnKnowledgeCitationsColumns[8]},
-			},
-			{
-				Name:    "agentturnknowledgecitation_tenant_id_knowledge_entity_id",
-				Unique:  false,
-				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5], AgentTurnKnowledgeCitationsColumns[6]},
-			},
-			{
-				Name:    "agentturnknowledgecitation_tenant_id_knowledge_relationship_id",
-				Unique:  false,
-				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5], AgentTurnKnowledgeCitationsColumns[7]},
+				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5], AgentTurnKnowledgeCitationsColumns[4], AgentTurnKnowledgeCitationsColumns[6]},
 			},
 			{
 				Name:    "agentturnknowledgecitation_tenant_id_knowledge_evidence_id",
 				Unique:  false,
-				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5], AgentTurnKnowledgeCitationsColumns[8]},
+				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5], AgentTurnKnowledgeCitationsColumns[6]},
 			},
 		},
 	}
@@ -328,7 +304,9 @@ var (
 	// AlertInvestigationsColumns holds the columns for the "alert_investigations" table.
 	AlertInvestigationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "output", Type: field.TypeBytes},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "report", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "alert_instance_id", Type: field.TypeUUID},
 		{Name: "agent_session_id", Type: field.TypeUUID},
@@ -341,19 +319,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "alert_investigations_tenants_tenant",
-				Columns:    []*schema.Column{AlertInvestigationsColumns[2]},
+				Columns:    []*schema.Column{AlertInvestigationsColumns[4]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "alert_investigations_alert_instances_alert_instance",
-				Columns:    []*schema.Column{AlertInvestigationsColumns[3]},
+				Columns:    []*schema.Column{AlertInvestigationsColumns[5]},
 				RefColumns: []*schema.Column{AlertInstancesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "alert_investigations_agent_sessions_agent_session",
-				Columns:    []*schema.Column{AlertInvestigationsColumns[4]},
+				Columns:    []*schema.Column{AlertInvestigationsColumns[6]},
 				RefColumns: []*schema.Column{AgentSessionsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -362,7 +340,17 @@ var (
 			{
 				Name:    "alertinvestigation_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AlertInvestigationsColumns[2]},
+				Columns: []*schema.Column{AlertInvestigationsColumns[4]},
+			},
+			{
+				Name:    "alertinvestigation_tenant_id_alert_instance_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{AlertInvestigationsColumns[4], AlertInvestigationsColumns[5], AlertInvestigationsColumns[1]},
+			},
+			{
+				Name:    "alertinvestigation_tenant_id_agent_session_id",
+				Unique:  true,
+				Columns: []*schema.Column{AlertInvestigationsColumns[4], AlertInvestigationsColumns[6]},
 			},
 		},
 	}
@@ -3444,9 +3432,7 @@ func init() {
 	AgentTurnsTable.ForeignKeys[2].RefTable = AgentTurnsTable
 	AgentTurnKnowledgeCitationsTable.ForeignKeys[0].RefTable = AgentTurnsTable
 	AgentTurnKnowledgeCitationsTable.ForeignKeys[1].RefTable = TenantsTable
-	AgentTurnKnowledgeCitationsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
-	AgentTurnKnowledgeCitationsTable.ForeignKeys[3].RefTable = KnowledgeRelationshipsTable
-	AgentTurnKnowledgeCitationsTable.ForeignKeys[4].RefTable = KnowledgeEvidencesTable
+	AgentTurnKnowledgeCitationsTable.ForeignKeys[2].RefTable = KnowledgeEvidencesTable
 	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable

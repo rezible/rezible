@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
@@ -13,7 +14,6 @@ import (
 	genkitx "github.com/firebase/genkit/go/genkit/exp"
 	middlewarex "github.com/firebase/genkit/go/plugins/middleware/exp"
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
 )
@@ -32,6 +32,10 @@ type (
 
 	initialContextSeeder[I rezai.AgentInput] interface {
 		makeInitialContextSeed(context.Context, I) (string, error)
+	}
+
+	runnerMiddlewareProvider interface {
+		makeMiddleware() []ai.Middleware
 	}
 
 	AgentWrapper interface {
@@ -61,6 +65,10 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 
 	if d.EnableKnowledgeGraph {
 		middleware = append(middleware, newKnowledgeGraphMiddleware(svc.knowledge, runner))
+	}
+
+	if mp, ok := runner.(runnerMiddlewareProvider); ok {
+		middleware = append(middleware, mp.makeMiddleware()...)
 	}
 
 	if d.EnableArtifacts {
@@ -131,8 +139,28 @@ func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, raw []byt
 	turnInput, turnErr := w.runner.makeInitialTurnInput(ctx, *input)
 	if turnErr != nil {
 		return nil, turnErr
+	} else if turnInput == nil {
+		return nil, rez.ErrInvalidInput
 	}
-	return w.normalizeTurnInput(turnInput)
+	if seeder, ok := w.runner.(initialContextSeeder[I]); ok {
+		seed, seedErr := seeder.makeInitialContextSeed(ctx, *input)
+		if seedErr != nil {
+			return nil, seedErr
+		}
+		if strings.TrimSpace(seed) != "" {
+			task := ""
+			if turnInput.Message != nil {
+				task = strings.TrimSpace(turnInput.Message.Text())
+			}
+			turnInput.Message = ai.NewUserTextMessage(strings.TrimSpace("Context:\n" + seed + "\n\nTask:\n" + task))
+		}
+	}
+	normalized, normalizeErr := w.normalizeTurnInput(turnInput)
+	if normalizeErr != nil {
+		return nil, fmt.Errorf("normalize initial input: %w", normalizeErr)
+	}
+
+	return normalized, nil
 }
 
 func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error) {
@@ -200,10 +228,18 @@ func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentT
 		return nil, fmt.Errorf("output: %w", outputErr)
 	}
 
-	return w.wrapOutput(sess, out)
+	if out.SessionID != sess.ID.String() {
+		return nil, fmt.Errorf("output session ID %q does not match %q", out.SessionID, sess.ID)
+	}
+
+	result, wrapErr := w.getOutputResult(out)
+	if wrapErr != nil {
+		return nil, wrapErr
+	}
+	return result, nil
 }
 
-func (w *agentWrapper[I, S]) wrapOutput(sess *ent.AgentSession, out *aix.AgentOutput[S]) (*rez.AgentInvocationResult, error) {
+func (w *agentWrapper[I, S]) getOutputResult(out *aix.AgentOutput[S]) (*rez.AgentInvocationResult, error) {
 	if out == nil {
 		return nil, fmt.Errorf("agent returned nil output")
 	}
@@ -213,17 +249,17 @@ func (w *agentWrapper[I, S]) wrapOutput(sess *ent.AgentSession, out *aix.AgentOu
 	if out.SnapshotID != "" {
 		return nil, fmt.Errorf("client-managed agent returned snapshot ID %q", out.SnapshotID)
 	}
-	if out.SessionID != sess.ID.String() {
-		return nil, fmt.Errorf("output session ID %q does not match %q", out.SessionID, sess.ID)
-	}
-	if out.State != nil && out.State.SessionID != sess.ID.String() {
-		return nil, fmt.Errorf("output state session ID %q does not match %q", out.State.SessionID, sess.ID)
+
+	citations, citationsErr := getAgentKnowledgeCitations(out.Artifacts)
+	if citationsErr != nil {
+		return nil, fmt.Errorf("unable to get agent knowledge citations: %w", citationsErr)
 	}
 
 	result := &rez.AgentInvocationResult{
-		Response:     out.Message,
-		FinishReason: out.FinishReason,
-		Error:        out.Error,
+		Response:           out.Message,
+		FinishReason:       out.FinishReason,
+		Error:              out.Error,
+		KnowledgeCitations: citations,
 	}
 	if out.Error != nil || result.FinishReason == aix.AgentFinishReasonFailed {
 		result.FinishReason = aix.AgentFinishReasonFailed

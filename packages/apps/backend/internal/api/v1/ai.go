@@ -37,7 +37,7 @@ func (h *aiHandler) CreateAgentSession(ctx context.Context, req *oapi.CreateAgen
 	attrs := req.Body.Attributes
 	params := rez.CreateAgentSessionParams{
 		AgentName:   attrs.AgentName,
-		OwnerUserID: ownerId,
+		OwnerUserID: &ownerId,
 		Input:       attrs.Input,
 	}
 	session, createErr := h.agents.CreateAgentSession(ctx, params)

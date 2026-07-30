@@ -40,6 +40,7 @@ func (s *KnowledgeGraphService) aliasWithEvidenceQuery(evP ...predicate.Knowledg
 		aq.WithEvidence(func(eq *ent.KnowledgeEvidenceQuery) {
 			eq.Where(evP...)
 			eq.Order(ent.Desc(ke.FieldEffectiveAt), ent.Desc(ke.FieldCreatedAt), ent.Desc(ke.FieldID))
+			eq.WithEvent()
 			eq.Limit(1)
 		})
 	}
@@ -88,7 +89,15 @@ func (s *KnowledgeGraphService) GetEntityAt(ctx context.Context, id uuid.UUID, r
 func (s *KnowledgeGraphService) relationshipQueryWithEvidence(ctx context.Context, id uuid.UUID, evP ...predicate.KnowledgeEvidence) *ent.KnowledgeRelationshipQuery {
 	return s.db.Client(ctx).KnowledgeRelationship.Query().
 		Where(knr.ID(id)).
-		WithAliases(s.aliasWithEvidenceQuery(append(evP, ke.HasSubjectAliasWith(ksa.HasEntityWith(kne.ID(id))))...))
+		WithAliases(s.aliasWithEvidenceQuery(append(evP, ke.HasSubjectAliasWith(ksa.HasRelationshipWith(knr.ID(id))))...))
+}
+
+func (s *KnowledgeGraphService) GetEvidence(ctx context.Context, id uuid.UUID) (*ent.KnowledgeEvidence, error) {
+	return s.db.Client(ctx).KnowledgeEvidence.Query().
+		Where(ke.ID(id)).
+		WithEvent().
+		WithSubjectAlias().
+		Only(ctx)
 }
 
 func (s *KnowledgeGraphService) ListRelationships(ctx context.Context, params rez.ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {

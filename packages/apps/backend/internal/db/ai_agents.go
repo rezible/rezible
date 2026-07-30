@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	as "github.com/rezible/rezible/ent/agentsession"
 	at "github.com/rezible/rezible/ent/agentturn"
+	atkc "github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
@@ -83,25 +84,28 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 	if name == "" {
 		return nil, fmt.Errorf("%w: agent name is required", rez.ErrInvalidInput)
 	}
-	if params.OwnerUserID == uuid.Nil {
-		return nil, fmt.Errorf("owner user ID is required")
+	initialInput, initErr := s.ai.MakeInitialAgentTurnInput(ctx, name, params.Input)
+	if initErr != nil {
+		return nil, fmt.Errorf("prepare agent session: %w", initErr)
 	}
-
-	initialInput, initialErr := s.ai.MakeInitialAgentTurnInput(ctx, name, params.Input)
-	if initialErr != nil {
-		return nil, fmt.Errorf("make initial turn input: %w", initialErr)
+	if initialInput == nil {
+		return nil, fmt.Errorf("prepare agent session: nil result")
+	}
+	metadata := make(map[string]any, len(params.Metadata))
+	for key, value := range params.Metadata {
+		metadata[key] = value
 	}
 
 	var session *ent.AgentSession
 	return session, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		createSession := tx.AgentSession.Create().
 			SetAgentName(name).
-			SetOwnerUserID(params.OwnerUserID)
+			SetNillableOwnerUserID(params.OwnerUserID)
 		if len(params.PermissionScopes) > 0 {
 			createSession.SetDefaultScopes(params.PermissionScopes)
 		}
-		if params.Metadata != nil {
-			createSession.SetMetadata(params.Metadata)
+		if len(metadata) > 0 {
+			createSession.SetMetadata(metadata)
 		}
 
 		createdSession, createErr := createSession.Save(ctx)
@@ -162,7 +166,10 @@ func (s *AgentSessionService) createAgentTurn(ctx context.Context, sessionID uui
 }
 
 func (s *AgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
-	q := s.db.Client(ctx).AgentTurn.Query()
+	q := s.db.Client(ctx).AgentTurn.Query().
+		WithKnowledgeCitations(func(cq *ent.AgentTurnKnowledgeCitationQuery) {
+			cq.Order(atkc.ByCreatedAt(sql.OrderAsc()), atkc.ByID(sql.OrderAsc()))
+		})
 	if userID, isUserContext := execution.GetContext(ctx).UserID(); isUserContext {
 		q.Where(at.HasAgentSessionWith(as.OwnerUserID(userID)))
 	}
@@ -586,6 +593,7 @@ func (w *agentTurnWorker) saveInvocationResult(ctx context.Context, job *river.J
 		}
 
 		u.SetFinishedAt(time.Now().UTC())
+		completed := resultErr == nil
 		if resultErr != nil {
 			encodedErr, jsonErr := json.Marshal(resultErr)
 			if jsonErr != nil {
@@ -598,6 +606,24 @@ func (w *agentTurnWorker) saveInvocationResult(ctx context.Context, job *river.J
 			u.SetStatus(at.StatusCompleted)
 			u.SetFinishReason(string(result.FinishReason))
 			u.ClearError()
+		}
+
+		if completed && len(result.KnowledgeCitations) > 0 {
+			upsertCitations := w.db.Client(ctx).AgentTurnKnowledgeCitation.
+				MapCreateBulk(result.KnowledgeCitations, func(cc *ent.AgentTurnKnowledgeCitationCreate, i int) {
+					cit := result.KnowledgeCitations[i]
+					cc.SetAgentTurnID(job.Args.AgentTurnID)
+					cc.SetSummary(cit.Summary)
+					cc.SetKnowledgeEvidenceID(cit.EvidenceID)
+				}).
+				OnConflictColumns(
+					atkc.FieldTenantID,
+					atkc.FieldAgentTurnID,
+					atkc.FieldKnowledgeEvidenceID,
+				).DoNothing()
+			if citationErr := upsertCitations.Exec(ctx); citationErr != nil {
+				return fmt.Errorf("record knowledge citations: %w", citationErr)
+			}
 		}
 
 		return nil

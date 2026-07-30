@@ -15,9 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -69,46 +67,6 @@ func (_u *AgentTurnKnowledgeCitationUpdate) SetNillableAgentTurnID(v *uuid.UUID)
 	return _u
 }
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *AgentTurnKnowledgeCitationUpdate) SetKnowledgeEntityID(v uuid.UUID) *AgentTurnKnowledgeCitationUpdate {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *AgentTurnKnowledgeCitationUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AgentTurnKnowledgeCitationUpdate {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *AgentTurnKnowledgeCitationUpdate) ClearKnowledgeEntityID() *AgentTurnKnowledgeCitationUpdate {
-	_u.mutation.ClearKnowledgeEntityID()
-	return _u
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (_u *AgentTurnKnowledgeCitationUpdate) SetKnowledgeRelationshipID(v uuid.UUID) *AgentTurnKnowledgeCitationUpdate {
-	_u.mutation.SetKnowledgeRelationshipID(v)
-	return _u
-}
-
-// SetNillableKnowledgeRelationshipID sets the "knowledge_relationship_id" field if the given value is not nil.
-func (_u *AgentTurnKnowledgeCitationUpdate) SetNillableKnowledgeRelationshipID(v *uuid.UUID) *AgentTurnKnowledgeCitationUpdate {
-	if v != nil {
-		_u.SetKnowledgeRelationshipID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
-func (_u *AgentTurnKnowledgeCitationUpdate) ClearKnowledgeRelationshipID() *AgentTurnKnowledgeCitationUpdate {
-	_u.mutation.ClearKnowledgeRelationshipID()
-	return _u
-}
-
 // SetKnowledgeEvidenceID sets the "knowledge_evidence_id" field.
 func (_u *AgentTurnKnowledgeCitationUpdate) SetKnowledgeEvidenceID(v uuid.UUID) *AgentTurnKnowledgeCitationUpdate {
 	_u.mutation.SetKnowledgeEvidenceID(v)
@@ -120,12 +78,6 @@ func (_u *AgentTurnKnowledgeCitationUpdate) SetNillableKnowledgeEvidenceID(v *uu
 	if v != nil {
 		_u.SetKnowledgeEvidenceID(*v)
 	}
-	return _u
-}
-
-// ClearKnowledgeEvidenceID clears the value of the "knowledge_evidence_id" field.
-func (_u *AgentTurnKnowledgeCitationUpdate) ClearKnowledgeEvidenceID() *AgentTurnKnowledgeCitationUpdate {
-	_u.mutation.ClearKnowledgeEvidenceID()
 	return _u
 }
 
@@ -148,16 +100,6 @@ func (_u *AgentTurnKnowledgeCitationUpdate) SetAgentTurn(v *AgentTurn) *AgentTur
 	return _u.SetAgentTurnID(v.ID)
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AgentTurnKnowledgeCitationUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *AgentTurnKnowledgeCitationUpdate {
-	return _u.SetKnowledgeEntityID(v.ID)
-}
-
-// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *AgentTurnKnowledgeCitationUpdate) SetKnowledgeRelationship(v *KnowledgeRelationship) *AgentTurnKnowledgeCitationUpdate {
-	return _u.SetKnowledgeRelationshipID(v.ID)
-}
-
 // SetKnowledgeEvidence sets the "knowledge_evidence" edge to the KnowledgeEvidence entity.
 func (_u *AgentTurnKnowledgeCitationUpdate) SetKnowledgeEvidence(v *KnowledgeEvidence) *AgentTurnKnowledgeCitationUpdate {
 	return _u.SetKnowledgeEvidenceID(v.ID)
@@ -171,18 +113,6 @@ func (_u *AgentTurnKnowledgeCitationUpdate) Mutation() *AgentTurnKnowledgeCitati
 // ClearAgentTurn clears the "agent_turn" edge to the AgentTurn entity.
 func (_u *AgentTurnKnowledgeCitationUpdate) ClearAgentTurn() *AgentTurnKnowledgeCitationUpdate {
 	_u.mutation.ClearAgentTurn()
-	return _u
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AgentTurnKnowledgeCitationUpdate) ClearKnowledgeEntity() *AgentTurnKnowledgeCitationUpdate {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
-}
-
-// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *AgentTurnKnowledgeCitationUpdate) ClearKnowledgeRelationship() *AgentTurnKnowledgeCitationUpdate {
-	_u.mutation.ClearKnowledgeRelationship()
 	return _u
 }
 
@@ -247,6 +177,9 @@ func (_u *AgentTurnKnowledgeCitationUpdate) check() error {
 	if _u.mutation.AgentTurnCleared() && len(_u.mutation.AgentTurnIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentTurnKnowledgeCitation.agent_turn"`)
 	}
+	if _u.mutation.KnowledgeEvidenceCleared() && len(_u.mutation.KnowledgeEvidenceIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AgentTurnKnowledgeCitation.knowledge_evidence"`)
+	}
 	return nil
 }
 
@@ -300,68 +233,6 @@ func (_u *AgentTurnKnowledgeCitationUpdate) sqlSave(ctx context.Context) (_node 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentturnknowledgecitation.KnowledgeEntityTable,
-			Columns: []string{agentturnknowledgecitation.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentturnknowledgecitation.KnowledgeEntityTable,
-			Columns: []string{agentturnknowledgecitation.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeRelationshipCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentturnknowledgecitation.KnowledgeRelationshipTable,
-			Columns: []string{agentturnknowledgecitation.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentturnknowledgecitation.KnowledgeRelationshipTable,
-			Columns: []string{agentturnknowledgecitation.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
@@ -459,46 +330,6 @@ func (_u *AgentTurnKnowledgeCitationUpdateOne) SetNillableAgentTurnID(v *uuid.UU
 	return _u
 }
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *AgentTurnKnowledgeCitationUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *AgentTurnKnowledgeCitationUpdateOne {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *AgentTurnKnowledgeCitationUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *AgentTurnKnowledgeCitationUpdateOne {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *AgentTurnKnowledgeCitationUpdateOne) ClearKnowledgeEntityID() *AgentTurnKnowledgeCitationUpdateOne {
-	_u.mutation.ClearKnowledgeEntityID()
-	return _u
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (_u *AgentTurnKnowledgeCitationUpdateOne) SetKnowledgeRelationshipID(v uuid.UUID) *AgentTurnKnowledgeCitationUpdateOne {
-	_u.mutation.SetKnowledgeRelationshipID(v)
-	return _u
-}
-
-// SetNillableKnowledgeRelationshipID sets the "knowledge_relationship_id" field if the given value is not nil.
-func (_u *AgentTurnKnowledgeCitationUpdateOne) SetNillableKnowledgeRelationshipID(v *uuid.UUID) *AgentTurnKnowledgeCitationUpdateOne {
-	if v != nil {
-		_u.SetKnowledgeRelationshipID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
-func (_u *AgentTurnKnowledgeCitationUpdateOne) ClearKnowledgeRelationshipID() *AgentTurnKnowledgeCitationUpdateOne {
-	_u.mutation.ClearKnowledgeRelationshipID()
-	return _u
-}
-
 // SetKnowledgeEvidenceID sets the "knowledge_evidence_id" field.
 func (_u *AgentTurnKnowledgeCitationUpdateOne) SetKnowledgeEvidenceID(v uuid.UUID) *AgentTurnKnowledgeCitationUpdateOne {
 	_u.mutation.SetKnowledgeEvidenceID(v)
@@ -510,12 +341,6 @@ func (_u *AgentTurnKnowledgeCitationUpdateOne) SetNillableKnowledgeEvidenceID(v 
 	if v != nil {
 		_u.SetKnowledgeEvidenceID(*v)
 	}
-	return _u
-}
-
-// ClearKnowledgeEvidenceID clears the value of the "knowledge_evidence_id" field.
-func (_u *AgentTurnKnowledgeCitationUpdateOne) ClearKnowledgeEvidenceID() *AgentTurnKnowledgeCitationUpdateOne {
-	_u.mutation.ClearKnowledgeEvidenceID()
 	return _u
 }
 
@@ -538,16 +363,6 @@ func (_u *AgentTurnKnowledgeCitationUpdateOne) SetAgentTurn(v *AgentTurn) *Agent
 	return _u.SetAgentTurnID(v.ID)
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AgentTurnKnowledgeCitationUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *AgentTurnKnowledgeCitationUpdateOne {
-	return _u.SetKnowledgeEntityID(v.ID)
-}
-
-// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *AgentTurnKnowledgeCitationUpdateOne) SetKnowledgeRelationship(v *KnowledgeRelationship) *AgentTurnKnowledgeCitationUpdateOne {
-	return _u.SetKnowledgeRelationshipID(v.ID)
-}
-
 // SetKnowledgeEvidence sets the "knowledge_evidence" edge to the KnowledgeEvidence entity.
 func (_u *AgentTurnKnowledgeCitationUpdateOne) SetKnowledgeEvidence(v *KnowledgeEvidence) *AgentTurnKnowledgeCitationUpdateOne {
 	return _u.SetKnowledgeEvidenceID(v.ID)
@@ -561,18 +376,6 @@ func (_u *AgentTurnKnowledgeCitationUpdateOne) Mutation() *AgentTurnKnowledgeCit
 // ClearAgentTurn clears the "agent_turn" edge to the AgentTurn entity.
 func (_u *AgentTurnKnowledgeCitationUpdateOne) ClearAgentTurn() *AgentTurnKnowledgeCitationUpdateOne {
 	_u.mutation.ClearAgentTurn()
-	return _u
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AgentTurnKnowledgeCitationUpdateOne) ClearKnowledgeEntity() *AgentTurnKnowledgeCitationUpdateOne {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
-}
-
-// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *AgentTurnKnowledgeCitationUpdateOne) ClearKnowledgeRelationship() *AgentTurnKnowledgeCitationUpdateOne {
-	_u.mutation.ClearKnowledgeRelationship()
 	return _u
 }
 
@@ -650,6 +453,9 @@ func (_u *AgentTurnKnowledgeCitationUpdateOne) check() error {
 	if _u.mutation.AgentTurnCleared() && len(_u.mutation.AgentTurnIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentTurnKnowledgeCitation.agent_turn"`)
 	}
+	if _u.mutation.KnowledgeEvidenceCleared() && len(_u.mutation.KnowledgeEvidenceIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AgentTurnKnowledgeCitation.knowledge_evidence"`)
+	}
 	return nil
 }
 
@@ -720,68 +526,6 @@ func (_u *AgentTurnKnowledgeCitationUpdateOne) sqlSave(ctx context.Context) (_no
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentturnknowledgecitation.KnowledgeEntityTable,
-			Columns: []string{agentturnknowledgecitation.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentturnknowledgecitation.KnowledgeEntityTable,
-			Columns: []string{agentturnknowledgecitation.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeRelationshipCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentturnknowledgecitation.KnowledgeRelationshipTable,
-			Columns: []string{agentturnknowledgecitation.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentturnknowledgecitation.KnowledgeRelationshipTable,
-			Columns: []string{agentturnknowledgecitation.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation

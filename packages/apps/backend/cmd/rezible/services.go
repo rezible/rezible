@@ -441,4 +441,15 @@ var provideServices = do.Package(
 		)
 	}),
 	do.Bind[*db.AgentSessionService, rez.AgentSessionService](),
+
+	do.Lazy(func(i do.Injector) (*db.InvestigationService, error) {
+		return db.NewInvestigationService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[rez.AlertService](i),
+			do.MustInvoke[rez.AgentSessionService](i),
+		)
+	}),
+	do.Bind[*db.InvestigationService, rez.InvestigationService](),
 )

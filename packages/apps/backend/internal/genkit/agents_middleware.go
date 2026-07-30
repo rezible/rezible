@@ -3,12 +3,14 @@ package genkit
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
@@ -44,9 +46,9 @@ func (m *knowledgeGraphMiddleware[I, S]) New(ctx context.Context) (*ai.Hooks, er
 	return &ai.Hooks{
 		Tools: []ai.Tool{
 			m.makeQueryTool(),
+			m.makeRecordCitationTool(),
 		},
 		WrapGenerate: func(ctx context.Context, params *ai.GenerateParams, next ai.GenerateNext) (*ai.ModelResponse, error) {
-
 			return next(ctx, params)
 		},
 	}, nil
@@ -91,9 +93,8 @@ func (m *knowledgeGraphMiddleware[I, S]) query(ctx context.Context, input rezai.
 			Kind: entity.Kind,
 		}
 		if currEv := entity.LatestEvidence(); currEv != nil {
-			outputEntity.DisplayName = currEv.SubjectState.DisplayName
-			outputEntity.Description = currEv.SubjectState.Description
-			outputEntity.Properties = currEv.SubjectState.Properties
+			outputEntity.State = currEv.SubjectState
+			output.Evidence = append(output.Evidence, knowledgeEvidenceToolOutput(currEv, entity.ID.String(), ""))
 		}
 		output.Entities = append(output.Entities, outputEntity)
 	}
@@ -105,10 +106,101 @@ func (m *knowledgeGraphMiddleware[I, S]) query(ctx context.Context, input rezai.
 			TargetID: relationship.TargetEntityID.String(),
 		}
 		if currEv := relationship.LatestEvidence(); currEv != nil {
-			outputRelationship.Description = currEv.SubjectState.Description
-			outputRelationship.Properties = currEv.SubjectState.Properties
+			outputRelationship.State = currEv.SubjectState
+			output.Evidence = append(output.Evidence, knowledgeEvidenceToolOutput(currEv, "", relationship.ID.String()))
 		}
 		output.Relationships = append(output.Relationships, outputRelationship)
 	}
 	return output, nil
+}
+
+func knowledgeEvidenceToolOutput(ev *ent.KnowledgeEvidence, entityID string, relationshipID string) rezai.KnowledgeGraphToolEvidence {
+	output := rezai.KnowledgeGraphToolEvidence{
+		ID:             ev.ID.String(),
+		Assertion:      ev.Assertion,
+		EvidenceKind:   ev.Kind.String(),
+		EffectiveAt:    ev.EffectiveAt,
+		Properties:     ev.SubjectState.Properties,
+		EntityID:       entityID,
+		RelationshipID: relationshipID,
+	}
+	return output
+}
+
+type evidenceCitationCustomArtifactPart map[string]any
+
+func (a evidenceCitationCustomArtifactPart) Citation() (*rez.AgentKnowledgeCitation, error) {
+	stringId, exists := a["evidence_id"]
+	if !exists {
+		return nil, fmt.Errorf("evidence ID not found in citation custom artifact")
+	}
+	id, idErr := uuid.Parse(stringId.(string))
+	if idErr != nil {
+		return nil, fmt.Errorf("evidence ID not found in citation custom artifact: %w", idErr)
+	}
+	summary, summaryExists := a["summary"].(string)
+	if !summaryExists {
+		return nil, fmt.Errorf("summary not found in citation custom artifact")
+	}
+	return &rez.AgentKnowledgeCitation{
+		EvidenceID: id,
+		Summary:    summary,
+	}, nil
+}
+
+func getAgentKnowledgeCitations(artifacts []*aix.Artifact) ([]rez.AgentKnowledgeCitation, error) {
+	var citations []rez.AgentKnowledgeCitation
+	for _, a := range artifacts {
+		if a.Name == "citations" {
+			for _, p := range a.Parts {
+				c, cErr := evidenceCitationCustomArtifactPart(p.Custom).Citation()
+				if cErr != nil {
+					return nil, cErr
+				}
+				citations = append(citations, *c)
+			}
+			break
+		}
+	}
+	return citations, nil
+}
+
+func (m *knowledgeGraphMiddleware[I, S]) makeRecordCitationTool() ai.Tool {
+	return aix.NewTool(
+		rezai.RecordKnowledgeCitationsTool.Name(),
+		rezai.RecordKnowledgeCitationsTool.Description(),
+		func(ctx context.Context, input rezai.RecordKnowledgeCitationsInput) (rezai.RecordKnowledgeCitationsOutput, error) {
+			as := aix.ArtifactStoreFromContext(ctx)
+
+			citationsArtifact := &aix.Artifact{Name: "citations"}
+			for _, a := range as.Artifacts() {
+				if a.Name == citationsArtifact.Name {
+					citationsArtifact = a
+					break
+				}
+			}
+			recorded := 0
+			for _, citation := range input.Citations {
+				evidenceID, parseErr := uuid.Parse(citation.EvidenceID)
+				if parseErr != nil {
+					return rezai.RecordKnowledgeCitationsOutput{}, fmt.Errorf("invalid evidence ID %q: %w", citation.EvidenceID, parseErr)
+				}
+				summary := strings.TrimSpace(citation.Summary)
+				if summary == "" {
+					return rezai.RecordKnowledgeCitationsOutput{}, fmt.Errorf("%w: citation summary is required", rez.ErrInvalidInput)
+				}
+				if _, evidenceErr := m.knowledge.GetEvidence(ctx, evidenceID); evidenceErr != nil {
+					return rezai.RecordKnowledgeCitationsOutput{}, fmt.Errorf("knowledge evidence %s: %w", evidenceID, evidenceErr)
+				}
+				part := evidenceCitationCustomArtifactPart{
+					"evidence_id": evidenceID,
+					"summary":     summary,
+				}
+				citationsArtifact.Parts = append(citationsArtifact.Parts, ai.NewCustomPart(part))
+				recorded++
+			}
+			as.AddArtifacts(citationsArtifact)
+			return rezai.RecordKnowledgeCitationsOutput{Recorded: recorded}, nil
+		},
+	)
 }

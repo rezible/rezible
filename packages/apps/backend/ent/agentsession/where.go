@@ -267,6 +267,16 @@ func OwnerUserIDNotIn(vs ...uuid.UUID) predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldNotIn(FieldOwnerUserID, vs...))
 }
 
+// OwnerUserIDIsNil applies the IsNil predicate on the "owner_user_id" field.
+func OwnerUserIDIsNil() predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldIsNull(FieldOwnerUserID))
+}
+
+// OwnerUserIDNotNil applies the NotNil predicate on the "owner_user_id" field.
+func OwnerUserIDNotNil() predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldNotNull(FieldOwnerUserID))
+}
+
 // MetadataIsNil applies the IsNil predicate on the "metadata" field.
 func MetadataIsNil() predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldIsNull(FieldMetadata))

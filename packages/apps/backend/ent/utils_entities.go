@@ -108,7 +108,7 @@ func (aliases KnowledgeSubjectAliasSlice) LatestEvidence() *KnowledgeEvidence {
 	var latest *KnowledgeEvidence
 	for _, alias := range aliases {
 		for _, ev := range alias.Edges.Evidence {
-			if latest == nil || ev.EffectiveAt.Before(latest.EffectiveAt) {
+			if latest == nil || ev.EffectiveAt.After(latest.EffectiveAt) {
 				latest = ev
 			}
 		}

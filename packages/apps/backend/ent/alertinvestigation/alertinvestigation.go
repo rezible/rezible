@@ -3,6 +3,8 @@
 package alertinvestigation
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -16,12 +18,16 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// FieldAlertInstanceID holds the string denoting the alert_instance_id field in the database.
 	FieldAlertInstanceID = "alert_instance_id"
 	// FieldAgentSessionID holds the string denoting the agent_session_id field in the database.
 	FieldAgentSessionID = "agent_session_id"
-	// FieldOutput holds the string denoting the output field in the database.
-	FieldOutput = "output"
+	// FieldReport holds the string denoting the report field in the database.
+	FieldReport = "report"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAlertInstance holds the string denoting the alert_instance edge name in mutations.
@@ -57,9 +63,11 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 	FieldAlertInstanceID,
 	FieldAgentSessionID,
-	FieldOutput,
+	FieldReport,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -80,6 +88,12 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -95,6 +109,16 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByTenantID orders the results by the tenant_id field.
 func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
 // ByAlertInstanceID orders the results by the alert_instance_id field.

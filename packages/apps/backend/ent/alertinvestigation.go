@@ -3,8 +3,10 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -12,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinvestigation"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -22,12 +25,16 @@ type AlertInvestigation struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AlertInstanceID holds the value of the "alert_instance_id" field.
 	AlertInstanceID uuid.UUID `json:"alert_instance_id,omitempty"`
 	// AgentSessionID holds the value of the "agent_session_id" field.
 	AgentSessionID uuid.UUID `json:"agent_session_id,omitempty"`
-	// Output holds the value of the "output" field.
-	Output []byte `json:"output,omitempty"`
+	// Report holds the value of the "report" field.
+	Report schematypes.AlertInvestigationReport `json:"report,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlertInvestigationQuery when eager-loading is set.
 	Edges        AlertInvestigationEdges `json:"edges"`
@@ -85,10 +92,12 @@ func (*AlertInvestigation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case alertinvestigation.FieldOutput:
+		case alertinvestigation.FieldReport:
 			values[i] = new([]byte)
 		case alertinvestigation.FieldTenantID:
 			values[i] = new(sql.NullInt64)
+		case alertinvestigation.FieldCreatedAt, alertinvestigation.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		case alertinvestigation.FieldID, alertinvestigation.FieldAlertInstanceID, alertinvestigation.FieldAgentSessionID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -118,6 +127,18 @@ func (_m *AlertInvestigation) assignValues(columns []string, values []any) error
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
+		case alertinvestigation.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				_m.CreatedAt = value.Time
+			}
+		case alertinvestigation.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				_m.UpdatedAt = value.Time
+			}
 		case alertinvestigation.FieldAlertInstanceID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field alert_instance_id", values[i])
@@ -130,11 +151,13 @@ func (_m *AlertInvestigation) assignValues(columns []string, values []any) error
 			} else if value != nil {
 				_m.AgentSessionID = *value
 			}
-		case alertinvestigation.FieldOutput:
+		case alertinvestigation.FieldReport:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field output", values[i])
-			} else if value != nil {
-				_m.Output = *value
+				return fmt.Errorf("unexpected type %T for field report", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Report); err != nil {
+					return fmt.Errorf("unmarshal field report: %w", err)
+				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -190,14 +213,20 @@ func (_m *AlertInvestigation) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("alert_instance_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AlertInstanceID))
 	builder.WriteString(", ")
 	builder.WriteString("agent_session_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentSessionID))
 	builder.WriteString(", ")
-	builder.WriteString("output=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Output))
+	builder.WriteString("report=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Report))
 	builder.WriteByte(')')
 	return builder.String()
 }

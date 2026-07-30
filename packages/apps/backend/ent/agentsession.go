@@ -30,7 +30,7 @@ type AgentSession struct {
 	// AgentName holds the value of the "agent_name" field.
 	AgentName string `json:"agent_name,omitempty"`
 	// OwnerUserID holds the value of the "owner_user_id" field.
-	OwnerUserID uuid.UUID `json:"owner_user_id,omitempty"`
+	OwnerUserID *uuid.UUID `json:"owner_user_id,omitempty"`
 	// DefaultScopes holds the value of the "default_scopes" field.
 	DefaultScopes []string `json:"default_scopes,omitempty"`
 	// Metadata holds the value of the "metadata" field.
@@ -90,6 +90,8 @@ func (*AgentSession) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case agentsession.FieldOwnerUserID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case agentsession.FieldDefaultScopes, agentsession.FieldMetadata:
 			values[i] = new([]byte)
 		case agentsession.FieldTenantID:
@@ -98,7 +100,7 @@ func (*AgentSession) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case agentsession.FieldCreatedAt, agentsession.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case agentsession.FieldID, agentsession.FieldOwnerUserID:
+		case agentsession.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -146,10 +148,11 @@ func (_m *AgentSession) assignValues(columns []string, values []any) error {
 				_m.AgentName = value.String
 			}
 		case agentsession.FieldOwnerUserID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field owner_user_id", values[i])
-			} else if value != nil {
-				_m.OwnerUserID = *value
+			} else if value.Valid {
+				_m.OwnerUserID = new(uuid.UUID)
+				*_m.OwnerUserID = *value.S.(*uuid.UUID)
 			}
 		case agentsession.FieldDefaultScopes:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -230,8 +233,10 @@ func (_m *AgentSession) String() string {
 	builder.WriteString("agent_name=")
 	builder.WriteString(_m.AgentName)
 	builder.WriteString(", ")
-	builder.WriteString("owner_user_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.OwnerUserID))
+	if v := _m.OwnerUserID; v != nil {
+		builder.WriteString("owner_user_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("default_scopes=")
 	builder.WriteString(fmt.Sprintf("%v", _m.DefaultScopes))

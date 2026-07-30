@@ -82,6 +82,12 @@ func (_u *AgentSessionUpdate) SetNillableOwnerUserID(v *uuid.UUID) *AgentSession
 	return _u
 }
 
+// ClearOwnerUserID clears the value of the "owner_user_id" field.
+func (_u *AgentSessionUpdate) ClearOwnerUserID() *AgentSessionUpdate {
+	_u.mutation.ClearOwnerUserID()
+	return _u
+}
+
 // SetDefaultScopes sets the "default_scopes" field.
 func (_u *AgentSessionUpdate) SetDefaultScopes(v []string) *AgentSessionUpdate {
 	_u.mutation.SetDefaultScopes(v)
@@ -209,9 +215,6 @@ func (_u *AgentSessionUpdate) check() error {
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentSession.tenant"`)
-	}
-	if _u.mutation.OwnerUserCleared() && len(_u.mutation.OwnerUserIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentSession.owner_user"`)
 	}
 	return nil
 }
@@ -408,6 +411,12 @@ func (_u *AgentSessionUpdateOne) SetNillableOwnerUserID(v *uuid.UUID) *AgentSess
 	return _u
 }
 
+// ClearOwnerUserID clears the value of the "owner_user_id" field.
+func (_u *AgentSessionUpdateOne) ClearOwnerUserID() *AgentSessionUpdateOne {
+	_u.mutation.ClearOwnerUserID()
+	return _u
+}
+
 // SetDefaultScopes sets the "default_scopes" field.
 func (_u *AgentSessionUpdateOne) SetDefaultScopes(v []string) *AgentSessionUpdateOne {
 	_u.mutation.SetDefaultScopes(v)
@@ -548,9 +557,6 @@ func (_u *AgentSessionUpdateOne) check() error {
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentSession.tenant"`)
-	}
-	if _u.mutation.OwnerUserCleared() && len(_u.mutation.OwnerUserIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentSession.owner_user"`)
 	}
 	return nil
 }

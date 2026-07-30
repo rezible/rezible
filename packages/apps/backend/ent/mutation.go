@@ -456,7 +456,7 @@ func (m *AgentSessionMutation) OwnerUserID() (r uuid.UUID, exists bool) {
 // OldOwnerUserID returns the old "owner_user_id" field's value of the AgentSession entity.
 // If the AgentSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentSessionMutation) OldOwnerUserID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *AgentSessionMutation) OldOwnerUserID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldOwnerUserID is only allowed on UpdateOne operations")
 	}
@@ -470,9 +470,22 @@ func (m *AgentSessionMutation) OldOwnerUserID(ctx context.Context) (v uuid.UUID,
 	return oldValue.OwnerUserID, nil
 }
 
+// ClearOwnerUserID clears the value of the "owner_user_id" field.
+func (m *AgentSessionMutation) ClearOwnerUserID() {
+	m.owner_user = nil
+	m.clearedFields[agentsession.FieldOwnerUserID] = struct{}{}
+}
+
+// OwnerUserIDCleared returns if the "owner_user_id" field was cleared in this mutation.
+func (m *AgentSessionMutation) OwnerUserIDCleared() bool {
+	_, ok := m.clearedFields[agentsession.FieldOwnerUserID]
+	return ok
+}
+
 // ResetOwnerUserID resets all changes to the "owner_user_id" field.
 func (m *AgentSessionMutation) ResetOwnerUserID() {
 	m.owner_user = nil
+	delete(m.clearedFields, agentsession.FieldOwnerUserID)
 }
 
 // SetDefaultScopes sets the "default_scopes" field.
@@ -610,7 +623,7 @@ func (m *AgentSessionMutation) ClearOwnerUser() {
 
 // OwnerUserCleared reports if the "owner_user" edge to the User entity was cleared.
 func (m *AgentSessionMutation) OwnerUserCleared() bool {
-	return m.clearedowner_user
+	return m.OwnerUserIDCleared() || m.clearedowner_user
 }
 
 // OwnerUserIDs returns the "owner_user" edge IDs in the mutation.
@@ -875,6 +888,9 @@ func (m *AgentSessionMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AgentSessionMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(agentsession.FieldOwnerUserID) {
+		fields = append(fields, agentsession.FieldOwnerUserID)
+	}
 	if m.FieldCleared(agentsession.FieldMetadata) {
 		fields = append(fields, agentsession.FieldMetadata)
 	}
@@ -892,6 +908,9 @@ func (m *AgentSessionMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AgentSessionMutation) ClearField(name string) error {
 	switch name {
+	case agentsession.FieldOwnerUserID:
+		m.ClearOwnerUserID()
+		return nil
 	case agentsession.FieldMetadata:
 		m.ClearMetadata()
 		return nil
@@ -2569,26 +2588,22 @@ func (m *AgentTurnMutation) ResetEdge(name string) error {
 // AgentTurnKnowledgeCitationMutation represents an operation that mutates the AgentTurnKnowledgeCitation nodes in the graph.
 type AgentTurnKnowledgeCitationMutation struct {
 	config
-	op                            Op
-	typ                           string
-	id                            *uuid.UUID
-	created_at                    *time.Time
-	updated_at                    *time.Time
-	summary                       *string
-	clearedFields                 map[string]struct{}
-	tenant                        *int
-	clearedtenant                 bool
-	agent_turn                    *uuid.UUID
-	clearedagent_turn             bool
-	knowledge_entity              *uuid.UUID
-	clearedknowledge_entity       bool
-	knowledge_relationship        *uuid.UUID
-	clearedknowledge_relationship bool
-	knowledge_evidence            *uuid.UUID
-	clearedknowledge_evidence     bool
-	done                          bool
-	oldValue                      func(context.Context) (*AgentTurnKnowledgeCitation, error)
-	predicates                    []predicate.AgentTurnKnowledgeCitation
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	created_at                *time.Time
+	updated_at                *time.Time
+	summary                   *string
+	clearedFields             map[string]struct{}
+	tenant                    *int
+	clearedtenant             bool
+	agent_turn                *uuid.UUID
+	clearedagent_turn         bool
+	knowledge_evidence        *uuid.UUID
+	clearedknowledge_evidence bool
+	done                      bool
+	oldValue                  func(context.Context) (*AgentTurnKnowledgeCitation, error)
+	predicates                []predicate.AgentTurnKnowledgeCitation
 }
 
 var _ ent.Mutation = (*AgentTurnKnowledgeCitationMutation)(nil)
@@ -2839,104 +2854,6 @@ func (m *AgentTurnKnowledgeCitationMutation) ResetAgentTurnID() {
 	m.agent_turn = nil
 }
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) SetKnowledgeEntityID(u uuid.UUID) {
-	m.knowledge_entity = &u
-}
-
-// KnowledgeEntityID returns the value of the "knowledge_entity_id" field in the mutation.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeEntityID() (r uuid.UUID, exists bool) {
-	v := m.knowledge_entity
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeEntityID returns the old "knowledge_entity_id" field's value of the AgentTurnKnowledgeCitation entity.
-// If the AgentTurnKnowledgeCitation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTurnKnowledgeCitationMutation) OldKnowledgeEntityID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeEntityID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeEntityID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeEntityID: %w", err)
-	}
-	return oldValue.KnowledgeEntityID, nil
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) ClearKnowledgeEntityID() {
-	m.knowledge_entity = nil
-	m.clearedFields[agentturnknowledgecitation.FieldKnowledgeEntityID] = struct{}{}
-}
-
-// KnowledgeEntityIDCleared returns if the "knowledge_entity_id" field was cleared in this mutation.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeEntityIDCleared() bool {
-	_, ok := m.clearedFields[agentturnknowledgecitation.FieldKnowledgeEntityID]
-	return ok
-}
-
-// ResetKnowledgeEntityID resets all changes to the "knowledge_entity_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) ResetKnowledgeEntityID() {
-	m.knowledge_entity = nil
-	delete(m.clearedFields, agentturnknowledgecitation.FieldKnowledgeEntityID)
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) SetKnowledgeRelationshipID(u uuid.UUID) {
-	m.knowledge_relationship = &u
-}
-
-// KnowledgeRelationshipID returns the value of the "knowledge_relationship_id" field in the mutation.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeRelationshipID() (r uuid.UUID, exists bool) {
-	v := m.knowledge_relationship
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeRelationshipID returns the old "knowledge_relationship_id" field's value of the AgentTurnKnowledgeCitation entity.
-// If the AgentTurnKnowledgeCitation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTurnKnowledgeCitationMutation) OldKnowledgeRelationshipID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeRelationshipID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeRelationshipID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeRelationshipID: %w", err)
-	}
-	return oldValue.KnowledgeRelationshipID, nil
-}
-
-// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) ClearKnowledgeRelationshipID() {
-	m.knowledge_relationship = nil
-	m.clearedFields[agentturnknowledgecitation.FieldKnowledgeRelationshipID] = struct{}{}
-}
-
-// KnowledgeRelationshipIDCleared returns if the "knowledge_relationship_id" field was cleared in this mutation.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeRelationshipIDCleared() bool {
-	_, ok := m.clearedFields[agentturnknowledgecitation.FieldKnowledgeRelationshipID]
-	return ok
-}
-
-// ResetKnowledgeRelationshipID resets all changes to the "knowledge_relationship_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) ResetKnowledgeRelationshipID() {
-	m.knowledge_relationship = nil
-	delete(m.clearedFields, agentturnknowledgecitation.FieldKnowledgeRelationshipID)
-}
-
 // SetKnowledgeEvidenceID sets the "knowledge_evidence_id" field.
 func (m *AgentTurnKnowledgeCitationMutation) SetKnowledgeEvidenceID(u uuid.UUID) {
 	m.knowledge_evidence = &u
@@ -2954,7 +2871,7 @@ func (m *AgentTurnKnowledgeCitationMutation) KnowledgeEvidenceID() (r uuid.UUID,
 // OldKnowledgeEvidenceID returns the old "knowledge_evidence_id" field's value of the AgentTurnKnowledgeCitation entity.
 // If the AgentTurnKnowledgeCitation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTurnKnowledgeCitationMutation) OldKnowledgeEvidenceID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *AgentTurnKnowledgeCitationMutation) OldKnowledgeEvidenceID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldKnowledgeEvidenceID is only allowed on UpdateOne operations")
 	}
@@ -2968,22 +2885,9 @@ func (m *AgentTurnKnowledgeCitationMutation) OldKnowledgeEvidenceID(ctx context.
 	return oldValue.KnowledgeEvidenceID, nil
 }
 
-// ClearKnowledgeEvidenceID clears the value of the "knowledge_evidence_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) ClearKnowledgeEvidenceID() {
-	m.knowledge_evidence = nil
-	m.clearedFields[agentturnknowledgecitation.FieldKnowledgeEvidenceID] = struct{}{}
-}
-
-// KnowledgeEvidenceIDCleared returns if the "knowledge_evidence_id" field was cleared in this mutation.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeEvidenceIDCleared() bool {
-	_, ok := m.clearedFields[agentturnknowledgecitation.FieldKnowledgeEvidenceID]
-	return ok
-}
-
 // ResetKnowledgeEvidenceID resets all changes to the "knowledge_evidence_id" field.
 func (m *AgentTurnKnowledgeCitationMutation) ResetKnowledgeEvidenceID() {
 	m.knowledge_evidence = nil
-	delete(m.clearedFields, agentturnknowledgecitation.FieldKnowledgeEvidenceID)
 }
 
 // SetSummary sets the "summary" field.
@@ -3076,60 +2980,6 @@ func (m *AgentTurnKnowledgeCitationMutation) ResetAgentTurn() {
 	m.clearedagent_turn = false
 }
 
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (m *AgentTurnKnowledgeCitationMutation) ClearKnowledgeEntity() {
-	m.clearedknowledge_entity = true
-	m.clearedFields[agentturnknowledgecitation.FieldKnowledgeEntityID] = struct{}{}
-}
-
-// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeEntityCleared() bool {
-	return m.KnowledgeEntityIDCleared() || m.clearedknowledge_entity
-}
-
-// KnowledgeEntityIDs returns the "knowledge_entity" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// KnowledgeEntityID instead. It exists only for internal usage by the builders.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
-	if id := m.knowledge_entity; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetKnowledgeEntity resets all changes to the "knowledge_entity" edge.
-func (m *AgentTurnKnowledgeCitationMutation) ResetKnowledgeEntity() {
-	m.knowledge_entity = nil
-	m.clearedknowledge_entity = false
-}
-
-// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (m *AgentTurnKnowledgeCitationMutation) ClearKnowledgeRelationship() {
-	m.clearedknowledge_relationship = true
-	m.clearedFields[agentturnknowledgecitation.FieldKnowledgeRelationshipID] = struct{}{}
-}
-
-// KnowledgeRelationshipCleared reports if the "knowledge_relationship" edge to the KnowledgeRelationship entity was cleared.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeRelationshipCleared() bool {
-	return m.KnowledgeRelationshipIDCleared() || m.clearedknowledge_relationship
-}
-
-// KnowledgeRelationshipIDs returns the "knowledge_relationship" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// KnowledgeRelationshipID instead. It exists only for internal usage by the builders.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeRelationshipIDs() (ids []uuid.UUID) {
-	if id := m.knowledge_relationship; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetKnowledgeRelationship resets all changes to the "knowledge_relationship" edge.
-func (m *AgentTurnKnowledgeCitationMutation) ResetKnowledgeRelationship() {
-	m.knowledge_relationship = nil
-	m.clearedknowledge_relationship = false
-}
-
 // ClearKnowledgeEvidence clears the "knowledge_evidence" edge to the KnowledgeEvidence entity.
 func (m *AgentTurnKnowledgeCitationMutation) ClearKnowledgeEvidence() {
 	m.clearedknowledge_evidence = true
@@ -3138,7 +2988,7 @@ func (m *AgentTurnKnowledgeCitationMutation) ClearKnowledgeEvidence() {
 
 // KnowledgeEvidenceCleared reports if the "knowledge_evidence" edge to the KnowledgeEvidence entity was cleared.
 func (m *AgentTurnKnowledgeCitationMutation) KnowledgeEvidenceCleared() bool {
-	return m.KnowledgeEvidenceIDCleared() || m.clearedknowledge_evidence
+	return m.clearedknowledge_evidence
 }
 
 // KnowledgeEvidenceIDs returns the "knowledge_evidence" edge IDs in the mutation.
@@ -3191,7 +3041,7 @@ func (m *AgentTurnKnowledgeCitationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentTurnKnowledgeCitationMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, agentturnknowledgecitation.FieldTenantID)
 	}
@@ -3203,12 +3053,6 @@ func (m *AgentTurnKnowledgeCitationMutation) Fields() []string {
 	}
 	if m.agent_turn != nil {
 		fields = append(fields, agentturnknowledgecitation.FieldAgentTurnID)
-	}
-	if m.knowledge_entity != nil {
-		fields = append(fields, agentturnknowledgecitation.FieldKnowledgeEntityID)
-	}
-	if m.knowledge_relationship != nil {
-		fields = append(fields, agentturnknowledgecitation.FieldKnowledgeRelationshipID)
 	}
 	if m.knowledge_evidence != nil {
 		fields = append(fields, agentturnknowledgecitation.FieldKnowledgeEvidenceID)
@@ -3232,10 +3076,6 @@ func (m *AgentTurnKnowledgeCitationMutation) Field(name string) (ent.Value, bool
 		return m.UpdatedAt()
 	case agentturnknowledgecitation.FieldAgentTurnID:
 		return m.AgentTurnID()
-	case agentturnknowledgecitation.FieldKnowledgeEntityID:
-		return m.KnowledgeEntityID()
-	case agentturnknowledgecitation.FieldKnowledgeRelationshipID:
-		return m.KnowledgeRelationshipID()
 	case agentturnknowledgecitation.FieldKnowledgeEvidenceID:
 		return m.KnowledgeEvidenceID()
 	case agentturnknowledgecitation.FieldSummary:
@@ -3257,10 +3097,6 @@ func (m *AgentTurnKnowledgeCitationMutation) OldField(ctx context.Context, name 
 		return m.OldUpdatedAt(ctx)
 	case agentturnknowledgecitation.FieldAgentTurnID:
 		return m.OldAgentTurnID(ctx)
-	case agentturnknowledgecitation.FieldKnowledgeEntityID:
-		return m.OldKnowledgeEntityID(ctx)
-	case agentturnknowledgecitation.FieldKnowledgeRelationshipID:
-		return m.OldKnowledgeRelationshipID(ctx)
 	case agentturnknowledgecitation.FieldKnowledgeEvidenceID:
 		return m.OldKnowledgeEvidenceID(ctx)
 	case agentturnknowledgecitation.FieldSummary:
@@ -3301,20 +3137,6 @@ func (m *AgentTurnKnowledgeCitationMutation) SetField(name string, value ent.Val
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAgentTurnID(v)
-		return nil
-	case agentturnknowledgecitation.FieldKnowledgeEntityID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeEntityID(v)
-		return nil
-	case agentturnknowledgecitation.FieldKnowledgeRelationshipID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeRelationshipID(v)
 		return nil
 	case agentturnknowledgecitation.FieldKnowledgeEvidenceID:
 		v, ok := value.(uuid.UUID)
@@ -3362,17 +3184,7 @@ func (m *AgentTurnKnowledgeCitationMutation) AddField(name string, value ent.Val
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AgentTurnKnowledgeCitationMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(agentturnknowledgecitation.FieldKnowledgeEntityID) {
-		fields = append(fields, agentturnknowledgecitation.FieldKnowledgeEntityID)
-	}
-	if m.FieldCleared(agentturnknowledgecitation.FieldKnowledgeRelationshipID) {
-		fields = append(fields, agentturnknowledgecitation.FieldKnowledgeRelationshipID)
-	}
-	if m.FieldCleared(agentturnknowledgecitation.FieldKnowledgeEvidenceID) {
-		fields = append(fields, agentturnknowledgecitation.FieldKnowledgeEvidenceID)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -3385,17 +3197,6 @@ func (m *AgentTurnKnowledgeCitationMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AgentTurnKnowledgeCitationMutation) ClearField(name string) error {
-	switch name {
-	case agentturnknowledgecitation.FieldKnowledgeEntityID:
-		m.ClearKnowledgeEntityID()
-		return nil
-	case agentturnknowledgecitation.FieldKnowledgeRelationshipID:
-		m.ClearKnowledgeRelationshipID()
-		return nil
-	case agentturnknowledgecitation.FieldKnowledgeEvidenceID:
-		m.ClearKnowledgeEvidenceID()
-		return nil
-	}
 	return fmt.Errorf("unknown AgentTurnKnowledgeCitation nullable field %s", name)
 }
 
@@ -3415,12 +3216,6 @@ func (m *AgentTurnKnowledgeCitationMutation) ResetField(name string) error {
 	case agentturnknowledgecitation.FieldAgentTurnID:
 		m.ResetAgentTurnID()
 		return nil
-	case agentturnknowledgecitation.FieldKnowledgeEntityID:
-		m.ResetKnowledgeEntityID()
-		return nil
-	case agentturnknowledgecitation.FieldKnowledgeRelationshipID:
-		m.ResetKnowledgeRelationshipID()
-		return nil
 	case agentturnknowledgecitation.FieldKnowledgeEvidenceID:
 		m.ResetKnowledgeEvidenceID()
 		return nil
@@ -3433,18 +3228,12 @@ func (m *AgentTurnKnowledgeCitationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentTurnKnowledgeCitationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, agentturnknowledgecitation.EdgeTenant)
 	}
 	if m.agent_turn != nil {
 		edges = append(edges, agentturnknowledgecitation.EdgeAgentTurn)
-	}
-	if m.knowledge_entity != nil {
-		edges = append(edges, agentturnknowledgecitation.EdgeKnowledgeEntity)
-	}
-	if m.knowledge_relationship != nil {
-		edges = append(edges, agentturnknowledgecitation.EdgeKnowledgeRelationship)
 	}
 	if m.knowledge_evidence != nil {
 		edges = append(edges, agentturnknowledgecitation.EdgeKnowledgeEvidence)
@@ -3464,14 +3253,6 @@ func (m *AgentTurnKnowledgeCitationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.agent_turn; id != nil {
 			return []ent.Value{*id}
 		}
-	case agentturnknowledgecitation.EdgeKnowledgeEntity:
-		if id := m.knowledge_entity; id != nil {
-			return []ent.Value{*id}
-		}
-	case agentturnknowledgecitation.EdgeKnowledgeRelationship:
-		if id := m.knowledge_relationship; id != nil {
-			return []ent.Value{*id}
-		}
 	case agentturnknowledgecitation.EdgeKnowledgeEvidence:
 		if id := m.knowledge_evidence; id != nil {
 			return []ent.Value{*id}
@@ -3482,7 +3263,7 @@ func (m *AgentTurnKnowledgeCitationMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentTurnKnowledgeCitationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 3)
 	return edges
 }
 
@@ -3494,18 +3275,12 @@ func (m *AgentTurnKnowledgeCitationMutation) RemovedIDs(name string) []ent.Value
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentTurnKnowledgeCitationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, agentturnknowledgecitation.EdgeTenant)
 	}
 	if m.clearedagent_turn {
 		edges = append(edges, agentturnknowledgecitation.EdgeAgentTurn)
-	}
-	if m.clearedknowledge_entity {
-		edges = append(edges, agentturnknowledgecitation.EdgeKnowledgeEntity)
-	}
-	if m.clearedknowledge_relationship {
-		edges = append(edges, agentturnknowledgecitation.EdgeKnowledgeRelationship)
 	}
 	if m.clearedknowledge_evidence {
 		edges = append(edges, agentturnknowledgecitation.EdgeKnowledgeEvidence)
@@ -3521,10 +3296,6 @@ func (m *AgentTurnKnowledgeCitationMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case agentturnknowledgecitation.EdgeAgentTurn:
 		return m.clearedagent_turn
-	case agentturnknowledgecitation.EdgeKnowledgeEntity:
-		return m.clearedknowledge_entity
-	case agentturnknowledgecitation.EdgeKnowledgeRelationship:
-		return m.clearedknowledge_relationship
 	case agentturnknowledgecitation.EdgeKnowledgeEvidence:
 		return m.clearedknowledge_evidence
 	}
@@ -3540,12 +3311,6 @@ func (m *AgentTurnKnowledgeCitationMutation) ClearEdge(name string) error {
 		return nil
 	case agentturnknowledgecitation.EdgeAgentTurn:
 		m.ClearAgentTurn()
-		return nil
-	case agentturnknowledgecitation.EdgeKnowledgeEntity:
-		m.ClearKnowledgeEntity()
-		return nil
-	case agentturnknowledgecitation.EdgeKnowledgeRelationship:
-		m.ClearKnowledgeRelationship()
 		return nil
 	case agentturnknowledgecitation.EdgeKnowledgeEvidence:
 		m.ClearKnowledgeEvidence()
@@ -3563,12 +3328,6 @@ func (m *AgentTurnKnowledgeCitationMutation) ResetEdge(name string) error {
 		return nil
 	case agentturnknowledgecitation.EdgeAgentTurn:
 		m.ResetAgentTurn()
-		return nil
-	case agentturnknowledgecitation.EdgeKnowledgeEntity:
-		m.ResetKnowledgeEntity()
-		return nil
-	case agentturnknowledgecitation.EdgeKnowledgeRelationship:
-		m.ResetKnowledgeRelationship()
 		return nil
 	case agentturnknowledgecitation.EdgeKnowledgeEvidence:
 		m.ResetKnowledgeEvidence()
@@ -5741,7 +5500,9 @@ type AlertInvestigationMutation struct {
 	op                    Op
 	typ                   string
 	id                    *uuid.UUID
-	output                *[]byte
+	created_at            *time.Time
+	updated_at            *time.Time
+	report                *schematypes.AlertInvestigationReport
 	clearedFields         map[string]struct{}
 	tenant                *int
 	clearedtenant         bool
@@ -5894,6 +5655,78 @@ func (m *AlertInvestigationMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *AlertInvestigationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *AlertInvestigationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the AlertInvestigation entity.
+// If the AlertInvestigation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlertInvestigationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *AlertInvestigationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *AlertInvestigationMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *AlertInvestigationMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the AlertInvestigation entity.
+// If the AlertInvestigation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlertInvestigationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *AlertInvestigationMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
 // SetAlertInstanceID sets the "alert_instance_id" field.
 func (m *AlertInvestigationMutation) SetAlertInstanceID(u uuid.UUID) {
 	m.alert_instance = &u
@@ -5966,40 +5799,53 @@ func (m *AlertInvestigationMutation) ResetAgentSessionID() {
 	m.agent_session = nil
 }
 
-// SetOutput sets the "output" field.
-func (m *AlertInvestigationMutation) SetOutput(b []byte) {
-	m.output = &b
+// SetReport sets the "report" field.
+func (m *AlertInvestigationMutation) SetReport(sir schematypes.AlertInvestigationReport) {
+	m.report = &sir
 }
 
-// Output returns the value of the "output" field in the mutation.
-func (m *AlertInvestigationMutation) Output() (r []byte, exists bool) {
-	v := m.output
+// Report returns the value of the "report" field in the mutation.
+func (m *AlertInvestigationMutation) Report() (r schematypes.AlertInvestigationReport, exists bool) {
+	v := m.report
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldOutput returns the old "output" field's value of the AlertInvestigation entity.
+// OldReport returns the old "report" field's value of the AlertInvestigation entity.
 // If the AlertInvestigation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AlertInvestigationMutation) OldOutput(ctx context.Context) (v []byte, err error) {
+func (m *AlertInvestigationMutation) OldReport(ctx context.Context) (v schematypes.AlertInvestigationReport, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldOutput is only allowed on UpdateOne operations")
+		return v, errors.New("OldReport is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldOutput requires an ID field in the mutation")
+		return v, errors.New("OldReport requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldOutput: %w", err)
+		return v, fmt.Errorf("querying old value for OldReport: %w", err)
 	}
-	return oldValue.Output, nil
+	return oldValue.Report, nil
 }
 
-// ResetOutput resets all changes to the "output" field.
-func (m *AlertInvestigationMutation) ResetOutput() {
-	m.output = nil
+// ClearReport clears the value of the "report" field.
+func (m *AlertInvestigationMutation) ClearReport() {
+	m.report = nil
+	m.clearedFields[alertinvestigation.FieldReport] = struct{}{}
+}
+
+// ReportCleared returns if the "report" field was cleared in this mutation.
+func (m *AlertInvestigationMutation) ReportCleared() bool {
+	_, ok := m.clearedFields[alertinvestigation.FieldReport]
+	return ok
+}
+
+// ResetReport resets all changes to the "report" field.
+func (m *AlertInvestigationMutation) ResetReport() {
+	m.report = nil
+	delete(m.clearedFields, alertinvestigation.FieldReport)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -6117,9 +5963,15 @@ func (m *AlertInvestigationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AlertInvestigationMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, alertinvestigation.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, alertinvestigation.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, alertinvestigation.FieldUpdatedAt)
 	}
 	if m.alert_instance != nil {
 		fields = append(fields, alertinvestigation.FieldAlertInstanceID)
@@ -6127,8 +5979,8 @@ func (m *AlertInvestigationMutation) Fields() []string {
 	if m.agent_session != nil {
 		fields = append(fields, alertinvestigation.FieldAgentSessionID)
 	}
-	if m.output != nil {
-		fields = append(fields, alertinvestigation.FieldOutput)
+	if m.report != nil {
+		fields = append(fields, alertinvestigation.FieldReport)
 	}
 	return fields
 }
@@ -6140,12 +5992,16 @@ func (m *AlertInvestigationMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case alertinvestigation.FieldTenantID:
 		return m.TenantID()
+	case alertinvestigation.FieldCreatedAt:
+		return m.CreatedAt()
+	case alertinvestigation.FieldUpdatedAt:
+		return m.UpdatedAt()
 	case alertinvestigation.FieldAlertInstanceID:
 		return m.AlertInstanceID()
 	case alertinvestigation.FieldAgentSessionID:
 		return m.AgentSessionID()
-	case alertinvestigation.FieldOutput:
-		return m.Output()
+	case alertinvestigation.FieldReport:
+		return m.Report()
 	}
 	return nil, false
 }
@@ -6157,12 +6013,16 @@ func (m *AlertInvestigationMutation) OldField(ctx context.Context, name string) 
 	switch name {
 	case alertinvestigation.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case alertinvestigation.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case alertinvestigation.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	case alertinvestigation.FieldAlertInstanceID:
 		return m.OldAlertInstanceID(ctx)
 	case alertinvestigation.FieldAgentSessionID:
 		return m.OldAgentSessionID(ctx)
-	case alertinvestigation.FieldOutput:
-		return m.OldOutput(ctx)
+	case alertinvestigation.FieldReport:
+		return m.OldReport(ctx)
 	}
 	return nil, fmt.Errorf("unknown AlertInvestigation field %s", name)
 }
@@ -6179,6 +6039,20 @@ func (m *AlertInvestigationMutation) SetField(name string, value ent.Value) erro
 		}
 		m.SetTenantID(v)
 		return nil
+	case alertinvestigation.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case alertinvestigation.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
 	case alertinvestigation.FieldAlertInstanceID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
@@ -6193,12 +6067,12 @@ func (m *AlertInvestigationMutation) SetField(name string, value ent.Value) erro
 		}
 		m.SetAgentSessionID(v)
 		return nil
-	case alertinvestigation.FieldOutput:
-		v, ok := value.([]byte)
+	case alertinvestigation.FieldReport:
+		v, ok := value.(schematypes.AlertInvestigationReport)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetOutput(v)
+		m.SetReport(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AlertInvestigation field %s", name)
@@ -6232,7 +6106,11 @@ func (m *AlertInvestigationMutation) AddField(name string, value ent.Value) erro
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AlertInvestigationMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(alertinvestigation.FieldReport) {
+		fields = append(fields, alertinvestigation.FieldReport)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -6245,6 +6123,11 @@ func (m *AlertInvestigationMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AlertInvestigationMutation) ClearField(name string) error {
+	switch name {
+	case alertinvestigation.FieldReport:
+		m.ClearReport()
+		return nil
+	}
 	return fmt.Errorf("unknown AlertInvestigation nullable field %s", name)
 }
 
@@ -6255,14 +6138,20 @@ func (m *AlertInvestigationMutation) ResetField(name string) error {
 	case alertinvestigation.FieldTenantID:
 		m.ResetTenantID()
 		return nil
+	case alertinvestigation.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case alertinvestigation.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	case alertinvestigation.FieldAlertInstanceID:
 		m.ResetAlertInstanceID()
 		return nil
 	case alertinvestigation.FieldAgentSessionID:
 		m.ResetAgentSessionID()
 		return nil
-	case alertinvestigation.FieldOutput:
-		m.ResetOutput()
+	case alertinvestigation.FieldReport:
+		m.ResetReport()
 		return nil
 	}
 	return fmt.Errorf("unknown AlertInvestigation field %s", name)

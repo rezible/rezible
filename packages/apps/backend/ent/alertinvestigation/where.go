@@ -3,6 +3,8 @@
 package alertinvestigation
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -60,6 +62,16 @@ func TenantID(v int) predicate.AlertInvestigation {
 	return predicate.AlertInvestigation(sql.FieldEQ(FieldTenantID, v))
 }
 
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
 // AlertInstanceID applies equality check predicate on the "alert_instance_id" field. It's identical to AlertInstanceIDEQ.
 func AlertInstanceID(v uuid.UUID) predicate.AlertInvestigation {
 	return predicate.AlertInvestigation(sql.FieldEQ(FieldAlertInstanceID, v))
@@ -68,11 +80,6 @@ func AlertInstanceID(v uuid.UUID) predicate.AlertInvestigation {
 // AgentSessionID applies equality check predicate on the "agent_session_id" field. It's identical to AgentSessionIDEQ.
 func AgentSessionID(v uuid.UUID) predicate.AlertInvestigation {
 	return predicate.AlertInvestigation(sql.FieldEQ(FieldAgentSessionID, v))
-}
-
-// Output applies equality check predicate on the "output" field. It's identical to OutputEQ.
-func Output(v []byte) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldEQ(FieldOutput, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -93,6 +100,86 @@ func TenantIDIn(vs ...int) predicate.AlertInvestigation {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.AlertInvestigation {
 	return predicate.AlertInvestigation(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // AlertInstanceIDEQ applies the EQ predicate on the "alert_instance_id" field.
@@ -135,44 +222,14 @@ func AgentSessionIDNotIn(vs ...uuid.UUID) predicate.AlertInvestigation {
 	return predicate.AlertInvestigation(sql.FieldNotIn(FieldAgentSessionID, vs...))
 }
 
-// OutputEQ applies the EQ predicate on the "output" field.
-func OutputEQ(v []byte) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldEQ(FieldOutput, v))
+// ReportIsNil applies the IsNil predicate on the "report" field.
+func ReportIsNil() predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldIsNull(FieldReport))
 }
 
-// OutputNEQ applies the NEQ predicate on the "output" field.
-func OutputNEQ(v []byte) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldNEQ(FieldOutput, v))
-}
-
-// OutputIn applies the In predicate on the "output" field.
-func OutputIn(vs ...[]byte) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldIn(FieldOutput, vs...))
-}
-
-// OutputNotIn applies the NotIn predicate on the "output" field.
-func OutputNotIn(vs ...[]byte) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldNotIn(FieldOutput, vs...))
-}
-
-// OutputGT applies the GT predicate on the "output" field.
-func OutputGT(v []byte) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldGT(FieldOutput, v))
-}
-
-// OutputGTE applies the GTE predicate on the "output" field.
-func OutputGTE(v []byte) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldGTE(FieldOutput, v))
-}
-
-// OutputLT applies the LT predicate on the "output" field.
-func OutputLT(v []byte) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldLT(FieldOutput, v))
-}
-
-// OutputLTE applies the LTE predicate on the "output" field.
-func OutputLTE(v []byte) predicate.AlertInvestigation {
-	return predicate.AlertInvestigation(sql.FieldLTE(FieldOutput, v))
+// ReportNotNil applies the NotNil predicate on the "report" field.
+func ReportNotNil() predicate.AlertInvestigation {
+	return predicate.AlertInvestigation(sql.FieldNotNull(FieldReport))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

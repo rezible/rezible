@@ -547,7 +547,10 @@ func (_q *AgentSessionQuery) loadOwnerUser(ctx context.Context, query *UserQuery
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AgentSession)
 	for i := range nodes {
-		fk := nodes[i].OwnerUserID
+		if nodes[i].OwnerUserID == nil {
+			continue
+		}
+		fk := *nodes[i].OwnerUserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}

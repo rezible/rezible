@@ -1368,44 +1368,6 @@ func (c *AgentTurnKnowledgeCitationClient) QueryAgentTurn(_m *AgentTurnKnowledge
 	return query
 }
 
-// QueryKnowledgeEntity queries the knowledge_entity edge of a AgentTurnKnowledgeCitation.
-func (c *AgentTurnKnowledgeCitationClient) QueryKnowledgeEntity(_m *AgentTurnKnowledgeCitation) *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentturnknowledgecitation.Table, agentturnknowledgecitation.FieldID, id),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentturnknowledgecitation.KnowledgeEntityTable, agentturnknowledgecitation.KnowledgeEntityColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryKnowledgeRelationship queries the knowledge_relationship edge of a AgentTurnKnowledgeCitation.
-func (c *AgentTurnKnowledgeCitationClient) QueryKnowledgeRelationship(_m *AgentTurnKnowledgeCitation) *KnowledgeRelationshipQuery {
-	query := (&KnowledgeRelationshipClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentturnknowledgecitation.Table, agentturnknowledgecitation.FieldID, id),
-			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentturnknowledgecitation.KnowledgeRelationshipTable, agentturnknowledgecitation.KnowledgeRelationshipColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeRelationship
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryKnowledgeEvidence queries the knowledge_evidence edge of a AgentTurnKnowledgeCitation.
 func (c *AgentTurnKnowledgeCitationClient) QueryKnowledgeEvidence(_m *AgentTurnKnowledgeCitation) *KnowledgeEvidenceQuery {
 	query := (&KnowledgeEvidenceClient{config: c.config}).Query()

@@ -81,6 +81,10 @@ func (p *testIntegration) Description() string {
 	return ""
 }
 
+func (p *testIntegration) Capabilities() []string {
+	return nil
+}
+
 func (p *testIntegration) Provider() string {
 	return "testing"
 }
@@ -128,6 +132,10 @@ func (i *testInstalledIntegration) Integration() *ent.Integration {
 
 func (i *testInstalledIntegration) Config() rez.IntegrationInstallationConfig {
 	return i.cfg
+}
+
+func (i *testInstalledIntegration) Capabilities() []string {
+	return nil
 }
 
 type testInstalledIntegrationConfig struct {
