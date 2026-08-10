@@ -80,7 +80,7 @@ func (a *App) startOrContinueAgentThreadReply(ctx context.Context, userId uuid.U
 		slog.Debug("continuing existing agent session in thread")
 		session := sessions.Data[0]
 		params := &rez.RequestAgentTurnParams{
-			Input:        &rez.AgentTurnInput{Message: ai.NewUserTextMessage(msg)},
+			Input:        &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(msg)},
 			ParentTurnID: nil,
 		}
 		if _, requestErr := a.agents.RequestAgentTurn(ctx, session.ID, params); requestErr != nil {

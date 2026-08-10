@@ -7,6 +7,7 @@ import (
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/core"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 )
 
 var (
@@ -14,9 +15,7 @@ var (
 )
 
 type (
-	AgentInput interface {
-		Validate() error
-	}
+	AgentInput = rez.AiAgentSessionInput
 
 	SessionState interface {
 	}

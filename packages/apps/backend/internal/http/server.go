@@ -22,14 +22,17 @@ import (
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
-type Server struct {
-	cfg        rez.HttpServerConfig
-	router     *chi.Mux
-	logger     *slog.Logger
-	httpServer *http.Server
-}
+type (
+	Server struct {
+		cfg        rez.HttpServerConfig
+		router     *chi.Mux
+		logger     *slog.Logger
+		httpServer *http.Server
+	}
+	WebhookHandlers map[string]http.Handler
+)
 
-func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) (*Server, error) {
+func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionService, oapiV1Handler oapiv1.Handler, wh WebhookHandlers) (*Server, error) {
 	s := &Server{
 		cfg:    cfg.HttpServer,
 		logger: slog.Default().WithGroup("http"),
@@ -53,7 +56,7 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionServ
 	handler.Get("/health", s.makeHealthCheckHandler())
 
 	webhooksHandler := chi.NewMux()
-	for prefix, wh := range webhookHandlers {
+	for prefix, wh := range wh {
 		route := ensureSlashPrefix(prefix)
 		slog.Debug("mounting webhook handler", "route", route)
 		webhooksHandler.Mount(route, wh)

@@ -251,15 +251,12 @@ components:
         createdAt:
           format: date-time
           type: string
-        knowledgeEntityId:
-          type: string
         knowledgeEvidenceId:
-          type: string
-        knowledgeRelationshipId:
           type: string
         summary:
           type: string
       required:
+        - knowledgeEvidenceId
         - summary
         - createdAt
       type: object
@@ -450,8 +447,8 @@ components:
           minLength: 1
           type: string
         input:
-          additionalProperties: {}
-          type: object
+          contentEncoding: base64
+          type: string
       required:
         - agentName
         - input

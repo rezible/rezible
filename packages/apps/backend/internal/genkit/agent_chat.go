@@ -19,8 +19,8 @@ func (a *ChatAgent) agentDefinition() rezai.ChatAgentDefinition {
 	return rezai.ChatAgent
 }
 
-func (a *ChatAgent) makeInitialTurnInput(ctx context.Context, input rezai.ChatAgentInput) (*rez.AgentTurnInput, error) {
-	return &rez.AgentTurnInput{Message: ai.NewUserTextMessage(input.Message)}, nil
+func (a *ChatAgent) makeInitialTurnInput(ctx context.Context, input rezai.ChatAgentInput) (*rez.AiAgentTurnInput, error) {
+	return &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(input.Message)}, nil
 }
 
 func (a *ChatAgent) transformState(ctx context.Context, state *aix.SessionState[rezai.ChatAgentState]) (*aix.SessionState[rezai.ChatAgentState], error) {

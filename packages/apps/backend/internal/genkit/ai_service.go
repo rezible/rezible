@@ -10,6 +10,7 @@ import (
 	"github.com/firebase/genkit/go/genkit"
 	"github.com/firebase/genkit/go/plugins/googlegenai"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"google.golang.org/genai"
 )
@@ -97,19 +98,23 @@ func (s *AiService) getAgentWrapper(name string) (AgentWrapper, error) {
 	return nil, fmt.Errorf("agent %q not found", name)
 }
 
-func (s *AiService) MakeInitialAgentTurnInput(ctx context.Context, name string, input any) (*rez.AgentTurnInput, error) {
+func (s *AiService) ValidateAgentSessionInput(name string, input []byte) (rez.AiAgentSessionInput, error) {
 	wrapper, wrapperErr := s.getAgentWrapper(name)
 	if wrapperErr != nil {
 		return nil, wrapperErr
 	}
-	enc, encErr := wrapper.ValidateAndEncodeInput(input)
-	if encErr != nil {
-		return nil, fmt.Errorf("validate input: %w", encErr)
-	}
-	return wrapper.MakeInitialTurnInput(ctx, enc)
+	return wrapper.ValidateInput(input)
 }
 
-func (s *AiService) InvokeAgentTurn(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error) {
+func (s *AiService) MakeInitialAgentTurnInput(ctx context.Context, sess *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
+	wrapper, wrapperErr := s.getAgentWrapper(sess.AgentName)
+	if wrapperErr != nil {
+		return nil, wrapperErr
+	}
+	return wrapper.MakeInitialTurnInput(ctx, sess.Input)
+}
+
+func (s *AiService) InvokeAgentTurn(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
 	if params.Session == nil {
 		return nil, fmt.Errorf("agent session is required")
 	}

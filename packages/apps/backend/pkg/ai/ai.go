@@ -18,7 +18,7 @@ type EventOnAgentTurnFinished struct {
 type EventOnAgentTurnChunk struct {
 	AgentSessionId uuid.UUID
 	AgentTurnId    uuid.UUID
-	Chunk          rez.AgentTurnChunk
+	Chunk          rez.AiAgentTurnChunk
 }
 
 func (e EventOnAgentTurnChunk) MessageScopes() []string {

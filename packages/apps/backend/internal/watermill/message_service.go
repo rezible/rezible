@@ -36,8 +36,8 @@ func NewMessageService(ts rez.TelemetryService, transport Transport) (*MessageSe
 		telemetry: ts,
 		transport: transport,
 		logger: watermill.NewSlogLogger(ts.NewLogger(rez.NewLoggerOptions{
-			PackageName: "watermill",
-			Level:       slog.LevelWarn,
+			Name:  "watermill",
+			Level: slog.LevelWarn,
 		})),
 		marshaller: cqrs.JSONMarshaler{GenerateName: cqrs.FullyQualifiedStructName},
 	}

@@ -51,8 +51,8 @@ func NewHandler(
 	playbooks rez.PlaybookService,
 	retros rez.RetrospectiveService,
 	knowledge rez.KnowledgeGraphService,
-) *Handler {
-	return &Handler{
+) (*Handler, error) {
+	h := &Handler{
 		alertsHandler:             newAlertsHandler(alerts),
 		aiHandler:                 newAiHandler(ai, agents),
 		userSessionsHandler:       newUserSessionsHandler(orgs, users),
@@ -77,4 +77,6 @@ func NewHandler(
 		teamsHandler:              newTeamsHandler(db),
 		usersHandler:              newUsersHandler(users),
 	}
+
+	return h, nil
 }

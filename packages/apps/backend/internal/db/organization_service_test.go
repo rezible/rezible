@@ -26,7 +26,7 @@ func (s *OrganizationsServiceSuite) TestCompleteSetupEnqueuesSyncJobAndSetsTimes
 	jobs := mocks.NewMockJobService(s.T())
 	jobs.On("Insert", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
 
-	orgs := NewOrganizationService(s.Database(), jobs)
+	orgs, _ := NewOrganizationService(s.Database(), jobs)
 
 	tenantCtx := s.SeedTenantContext()
 	prefs, setErr := orgs.SetPreferences(tenantCtx, s.SeedOrganization.ID, func(m *ent.OrganizationPreferencesMutation) {

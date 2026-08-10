@@ -8,66 +8,72 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rezible/rezible/internal/genkit"
-	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/samber/do/v2"
 	"github.com/sourcegraph/conc/pool"
 
 	rez "github.com/rezible/rezible"
-	apiv1 "github.com/rezible/rezible/internal/api/v1"
-	"github.com/rezible/rezible/internal/db"
-	"github.com/rezible/rezible/internal/db/eventprojection"
-	"github.com/rezible/rezible/internal/http"
-	demoprovider "github.com/rezible/rezible/internal/integrations/demo"
-	"github.com/rezible/rezible/internal/integrations/github"
-	"github.com/rezible/rezible/internal/integrations/google"
-	"github.com/rezible/rezible/internal/integrations/slack/slackagent"
-	"github.com/rezible/rezible/internal/integrations/slack/slackincidents"
-	"github.com/rezible/rezible/internal/opentelemetry"
-	"github.com/rezible/rezible/internal/postgres"
-	"github.com/rezible/rezible/internal/postgres/river"
-	"github.com/rezible/rezible/internal/watermill"
 	"github.com/rezible/rezible/pkg/integrations"
-	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
-type startable interface {
-	Start(context.Context) error
+func withMigrationService(i do.Injector, fn func(rez.MigrationService) error) error {
+	ms, msErr := do.Invoke[rez.MigrationService](i)
+	if msErr != nil {
+		return fmt.Errorf("invoke migration service: %w", msErr)
+	}
+	return fn(ms)
 }
 
-func runServicesFor[Entrypoint startable](ctx context.Context, i do.Injector) error {
-	if initErr := doRegistrations(i); initErr != nil {
-		return fmt.Errorf("failed to initialize services: %w", initErr)
+type (
+	startable interface {
+		Start(context.Context) error
+	}
+	ServerServices []startable
+)
+
+func getServerServices[Entrypoint startable](i do.Injector) (ServerServices, error) {
+	if regErr := registerServerPackages(i); regErr != nil {
+		return nil, fmt.Errorf("register packages: %w", regErr)
 	}
 
 	// invoke entrypoint service to load required service dependencies
-	es, srvErr := do.Invoke[Entrypoint](i)
+	entrySvc, srvErr := do.Invoke[Entrypoint](i)
 	if srvErr != nil {
-		return fmt.Errorf("failed to initialize %T: %v", es, srvErr)
+		return nil, fmt.Errorf("initialize entrypoint %T: %v", entrySvc, srvErr)
 	}
-	var services []startable
+
+	var services ServerServices
 	for _, desc := range i.ListInvokedServices() {
-		s, invErr := do.InvokeNamed[any](i, desc.Service)
+		svc, invErr := do.InvokeNamed[any](i, desc.Service)
 		if invErr != nil {
-			return fmt.Errorf("failed to invoke: %v", invErr)
+			return nil, fmt.Errorf("failed to invoke: %v", invErr)
 		}
-		if intgSvc, ok := s.(rez.IntegrationPackage); ok {
-			if available, _ := intgSvc.IsAvailable(); !available {
+		if intgSvc, isIntegration := svc.(rez.IntegrationPackage); isIntegration {
+			// skipping unavailable integration
+			available, intgErr := intgSvc.IsAvailable()
+			if !available {
+				if intgErr != nil {
+					slog.Warn("integration package unavailable", "err", intgErr)
+				}
 				continue
 			}
 		}
-		if svc, ok := s.(startable); ok {
-			services = append(services, svc)
+		if startableSvc, isStartable := svc.(startable); isStartable {
+			services = append(services, startableSvc)
 		}
 	}
 
+	return services, nil
+}
+
+func startServices(ctx context.Context, svcs ServerServices) error {
 	errChan := make(chan error)
 	go func() {
 		p := pool.New().
 			WithErrors().
 			WithContext(ctx).
 			WithFirstError()
-		for _, l := range services {
+		for _, l := range svcs {
 			slog.Info("Starting " + strings.TrimLeft(fmt.Sprintf("%T", l), "*"))
 			p.Go(l.Start)
 		}
@@ -90,7 +96,7 @@ func runServicesFor[Entrypoint startable](ctx context.Context, i do.Injector) er
 	return nil
 }
 
-func shutdownServices(baseCtx context.Context, i do.Injector) error {
+func shutdownServers(baseCtx context.Context, i do.Injector) error {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(baseCtx), 5*time.Second)
 	defer cancel()
 	shutdown := i.ShutdownWithContext(ctx)
@@ -104,20 +110,31 @@ func shutdownServices(baseCtx context.Context, i do.Injector) error {
 	return shutdownErr
 }
 
-func doRegistrations(i do.Injector) error {
+func registerServerPackages(i do.Injector) error {
+	if intgErr := registerIntegrationPackages(i); intgErr != nil {
+		return fmt.Errorf("failed to auto-register integration packages: %w", intgErr)
+	}
+	if jobsErr := registerJobWorkers(i); jobsErr != nil {
+		return fmt.Errorf("failed to register job workers: %w", jobsErr)
+	}
+	return nil
+}
+
+func registerIntegrationPackages(i do.Injector) error {
 	intgReg := do.MustInvoke[*integrations.PackageRegistry](i)
-	eventProcessors := do.MustInvoke[map[string]rez.ProviderEventProcessor](i)
+	eventProcessors := do.MustInvoke[rez.ProviderEventProcessorRegistry](i)
 
 	for _, desc := range i.ListProvidedServices() {
-		svc := desc.Service
-		if strings.Contains(svc, "internal/integrations") {
-			if pkg, ok := do.MustInvokeNamed[any](i, svc).(rez.IntegrationPackage); ok {
-				if regErr := intgReg.RegisterPackage(pkg); regErr != nil {
-					return fmt.Errorf("failed to register integration package: %w", regErr)
-				}
-				if procPkg, isEventProcessor := pkg.(rez.ProviderEventProcessor); isEventProcessor {
-					eventProcessors[pkg.Name()] = procPkg
-				}
+		if !strings.Contains(desc.Service, "internal/integrations") {
+			continue
+		}
+		svc := do.MustInvokeNamed[any](i, desc.Service)
+		if pkg, isIntgPkg := svc.(rez.IntegrationPackage); isIntgPkg {
+			if regErr := intgReg.RegisterPackage(pkg); regErr != nil {
+				return fmt.Errorf("failed to register integration package: %w", regErr)
+			}
+			if procPkg, isEventProcessor := pkg.(rez.ProviderEventProcessor); isEventProcessor {
+				eventProcessors[pkg.Name()] = procPkg
 			}
 		}
 	}
@@ -125,331 +142,9 @@ func doRegistrations(i do.Injector) error {
 	return nil
 }
 
-func declareServices(ctx context.Context, i do.Injector) {
-	do.Provide(i, func(i do.Injector) (map[string]rez.ProviderEventProcessor, error) {
-		return make(map[string]rez.ProviderEventProcessor), nil
-	})
+func registerJobWorkers(i do.Injector) error {
+	jobs.RegisterWorker(do.MustInvoke[jobs.Worker[jobs.StartAgentSession]](i))
+	jobs.RegisterWorker(do.MustInvoke[jobs.Worker[jobs.InvokeAgentTurn]](i))
 
-	do.Provide(i, func(i do.Injector) (*integrations.PackageRegistry, error) {
-		return integrations.NewPackageRegistry(), nil
-	})
-
-	do.Provide(i, func(i do.Injector) (rez.MigrationService, error) {
-		pgPool, poolErr := postgres.MakePgxPool(ctx, do.MustInvoke[rez.Config](i).Postgres, true)
-		if poolErr != nil {
-			return nil, fmt.Errorf("making admin pgx pool: %w", poolErr)
-		}
-		return postgres.NewMigrationService(pgPool)
-	})
-
-	do.Provide(i, func(i do.Injector) (*postgres.PgxPool, error) {
-		return postgres.MakePgxPool(ctx, do.MustInvoke[rez.Config](i).Postgres, false)
-	})
-
-	do.Provide(i, func(i do.Injector) (rez.Database, error) {
-		return postgres.NewPgxPoolDatabaseClient(do.MustInvoke[*postgres.PgxPool](i))
-	})
-
-	do.Provide(i, func(i do.Injector) (rez.TelemetryService, error) {
-		return opentelemetry.NewOpenTelemetryService(ctx, do.MustInvoke[rez.Config](i))
-	})
-
-	do.Provide(i, func(i do.Injector) (rez.JobService, error) {
-		return river.NewJobService(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[*postgres.PgxPool](i),
-			do.MustInvoke[rez.TelemetryService](i),
-		)
-	})
-
-	do.Provide(i, func(i do.Injector) (rez.MessageService, error) {
-		return watermill.NewMessageService(do.MustInvoke[rez.TelemetryService](i), nil)
-	})
-
-	do.Provide(i, func(i do.Injector) (rez.AiService, error) {
-		s := genkit.NewAiService(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.KnowledgeGraphService](i),
-		)
-		return s, s.Init(ctx,
-			genkit.WithAgent(genkit.NewChatAgent()),
-			genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i))),
-		)
-	})
-
-	provideServices(i)
-	provideIntegrations(i)
-
-	do.Provide(i, func(i do.Injector) (oapiv1.Handler, error) {
-		return apiv1.NewHandler(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.AiService](i),
-			do.MustInvoke[rez.AgentSessionService](i),
-			do.MustInvoke[rez.AlertService](i),
-			do.MustInvoke[rez.OrganizationService](i),
-			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.DocumentsService](i),
-			do.MustInvoke[rez.DebriefService](i),
-			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.EventsService](i),
-			do.MustInvoke[rez.OncallRostersService](i),
-			do.MustInvoke[rez.OncallShiftsService](i),
-			do.MustInvoke[rez.OncallMetricsService](i),
-			do.MustInvoke[rez.PlaybookService](i),
-			do.MustInvoke[rez.RetrospectiveService](i),
-			do.MustInvoke[rez.KnowledgeGraphService](i),
-		), nil
-	})
-
-	do.Provide(i, func(i do.Injector) (*http.Server, error) {
-		return http.NewServer(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.TelemetryService](i),
-			do.MustInvoke[rez.AuthSessionService](i),
-			do.MustInvoke[oapiv1.Handler](i),
-			do.MustInvoke[*integrations.PackageRegistry](i).GetWebhookHandlers(),
-		)
-	})
+	return nil
 }
-
-var provideIntegrations = do.Package(
-	do.Lazy(func(i do.Injector) (*demoprovider.Integration, error) {
-		return demoprovider.MakeIntegration(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i),
-		)
-	}),
-
-	do.Lazy(func(i do.Injector) (*github.Integration, error) {
-		return github.MakeIntegration(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i),
-		)
-	}),
-
-	do.Lazy(func(i do.Injector) (*google.Integration, error) {
-		return google.MakeIntegration(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.EventsService](i),
-		)
-	}),
-
-	do.Lazy(func(i do.Injector) (*slackagent.Integration, error) {
-		app, appErr := slackagent.MakeApp(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.AgentSessionService](i),
-			do.MustInvoke[rez.EventsService](i),
-		)
-		if appErr != nil {
-			return nil, fmt.Errorf("making slackagent app: %w", appErr)
-		}
-		svc, svcErr := slackintegration.NewAppService(app,
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i))
-		if svcErr != nil {
-			return nil, fmt.Errorf("making slackagent app service: %w", svcErr)
-		}
-		return slackagent.MakeIntegration(svc), nil
-	}),
-
-	do.Lazy(func(i do.Injector) (*slackincidents.Integration, error) {
-		app, appErr := slackincidents.MakeApp(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.IncidentService](i),
-		)
-		if appErr != nil {
-			return nil, fmt.Errorf("making slackincidents app: %w", appErr)
-		}
-		svc, svcErr := slackintegration.NewAppService(app,
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i))
-		if svcErr != nil {
-			return nil, fmt.Errorf("making slackincidents app service: %w", svcErr)
-		}
-		return slackincidents.MakeIntegration(svc), nil
-	}),
-)
-
-var provideServices = do.Package(
-	do.Lazy(func(i do.Injector) (*db.ProviderEventPipelineService, error) {
-		return db.NewProviderEventPipelineService(
-			do.MustInvoke[rez.TelemetryService](i),
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[map[string]rez.ProviderEventProcessor](i),
-			do.MustInvoke[rez.EventProjectionService](i),
-		)
-	}),
-	do.Bind[*db.ProviderEventPipelineService, rez.ProviderEventPipelineService](),
-
-	do.Lazy(func(i do.Injector) (*db.IntegrationsService, error) {
-		return db.NewIntegrationsService(
-			do.MustInvoke[rez.Config](i).App,
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[*integrations.PackageRegistry](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i),
-		)
-	}),
-	do.Bind[*db.IntegrationsService, rez.IntegrationService](),
-
-	do.Lazy(func(i do.Injector) (*db.OrganizationService, error) {
-		return db.NewOrganizationService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.JobService](i),
-		), nil
-	}),
-	do.Bind[*db.OrganizationService, rez.OrganizationService](),
-
-	do.Lazy(func(i do.Injector) (*db.UserService, error) {
-		return db.NewUserService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.OrganizationService](i),
-		)
-	}),
-	do.Bind[*db.UserService, rez.UserService](),
-
-	do.Lazy(func(i do.Injector) (*db.TeamService, error) {
-		return db.NewTeamService(do.MustInvoke[rez.Database](i))
-	}),
-	do.Bind[*db.TeamService, rez.TeamService](),
-
-	do.Lazy(func(i do.Injector) (*db.EventService, error) {
-		return db.NewEventService(
-			do.MustInvoke[rez.Database](i),
-		)
-	}),
-	do.Bind[*db.EventService, rez.EventsService](),
-
-	do.Lazy(func(i do.Injector) (*db.AuthSessionService, error) {
-		return db.NewAuthSessionService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.OrganizationService](i),
-			do.MustInvoke[rez.UserService](i),
-		), nil
-	}),
-	do.Bind[*db.AuthSessionService, rez.AuthSessionService](),
-
-	do.Lazy(func(i do.Injector) (*db.IncidentService, error) {
-		return db.NewIncidentService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.MessageService](i),
-		)
-	}),
-	do.Bind[*db.IncidentService, rez.IncidentService](),
-
-	do.Lazy(func(i do.Injector) (*db.OncallRostersService, error) {
-		return db.NewOncallRostersService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.JobService](i),
-		)
-	}),
-	do.Bind[*db.OncallRostersService, rez.OncallRostersService](),
-
-	do.Lazy(func(i do.Injector) (*db.OncallShiftsService, error) {
-		return db.NewOncallShiftsService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.IntegrationService](i),
-		)
-	}),
-	do.Bind[*db.OncallShiftsService, rez.OncallShiftsService](),
-
-	do.Lazy(func(i do.Injector) (*db.OncallMetricsService, error) {
-		return db.NewOncallMetricsService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.OncallShiftsService](i),
-		)
-	}),
-	do.Bind[*db.OncallMetricsService, rez.OncallMetricsService](),
-
-	do.Lazy(func(i do.Injector) (*db.KnowledgeGraphService, error) {
-		return db.NewKnowledgeGraphService(do.MustInvoke[rez.Database](i))
-	}),
-	do.Bind[*db.KnowledgeGraphService, rez.KnowledgeGraphService](),
-
-	do.Lazy(func(i do.Injector) (*db.DebriefService, error) {
-		return db.NewDebriefService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.JobService](i),
-		)
-	}),
-	do.Bind[*db.DebriefService, rez.DebriefService](),
-
-	do.Lazy(func(i do.Injector) (*db.RetrospectiveService, error) {
-		return db.NewRetrospectiveService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.IncidentService](i),
-		)
-	}),
-	do.Bind[*db.RetrospectiveService, rez.RetrospectiveService](),
-
-	do.Lazy(func(i do.Injector) (*db.AlertService, error) {
-		return db.NewAlertService(do.MustInvoke[rez.Database](i))
-	}),
-	do.Bind[*db.AlertService, rez.AlertService](),
-
-	do.Lazy(func(i do.Injector) (*eventprojection.ProjectionService, error) {
-		return eventprojection.NewProjectionService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.KnowledgeGraphService](i),
-		)
-	}),
-	do.Bind[*eventprojection.ProjectionService, rez.EventProjectionService](),
-
-	do.Lazy(func(i do.Injector) (*db.PlaybookService, error) {
-		return db.NewPlaybookService(do.MustInvoke[rez.Database](i))
-	}),
-	do.Bind[*db.PlaybookService, rez.PlaybookService](),
-
-	do.Lazy(func(i do.Injector) (*db.DocumentsService, error) {
-		return db.NewDocumentsService(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.TeamService](i),
-		)
-	}),
-	do.Bind[*db.DocumentsService, rez.DocumentsService](),
-
-	do.Lazy(func(i do.Injector) (*db.AgentSessionService, error) {
-		return db.NewAgentSessionService(
-			do.MustInvoke[rez.Config](i).AI,
-			do.MustInvoke[rez.TelemetryService](i),
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.AiService](i),
-		)
-	}),
-	do.Bind[*db.AgentSessionService, rez.AgentSessionService](),
-
-	do.Lazy(func(i do.Injector) (*db.InvestigationService, error) {
-		return db.NewInvestigationService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.AlertService](i),
-			do.MustInvoke[rez.AgentSessionService](i),
-		)
-	}),
-	do.Bind[*db.InvestigationService, rez.InvestigationService](),
-)

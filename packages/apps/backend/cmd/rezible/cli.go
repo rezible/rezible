@@ -8,56 +8,61 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/urfave/cli/v3"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/pkg/execution"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
-	"github.com/samber/do/v2"
-	"github.com/urfave/cli/v3"
 )
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
-	if runErr := makeCli().Run(ctx, os.Args); runErr != nil {
+	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
+	cfg, cfgErr := koanf.LoadConfig(ctx, koanf.Options{LoadEnvironment: true})
+	if cfgErr != nil {
+		log.Fatalf("load config: %v", cfgErr)
+	}
+
+	serverCli := makeServerCli(*cfg)
+
+	if runErr := serverCli.Run(ctx, os.Args); runErr != nil {
 		log.Fatalf("error: %v", runErr)
 	}
 }
 
-func makeCli() *cli.Command {
-	i := do.New()
+func makeServerCli(cfg rez.Config) *cli.Command {
+	i := makePackageInjector(cfg)
 
 	return &cli.Command{
 		Name:  "rezible",
 		Usage: "backend server control",
 		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-			ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
-			cfg, cfgErr := koanf.LoadConfig(ctx, koanf.Options{LoadEnvironment: true})
-			if cfgErr != nil {
-				return nil, fmt.Errorf("load config: %w", cfgErr)
-			}
-			do.ProvideValue(i, *cfg)
-			declareServices(ctx, i)
-			return ctx, nil
+			return createPackageContext(ctx, i)
 		},
 		After: func(ctx context.Context, command *cli.Command) error {
-			return shutdownServices(ctx, i)
+			return shutdownServers(ctx, i)
 		},
 		Commands: []*cli.Command{
 			{
 				Name:  "serve",
 				Usage: "Run rezible server",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return runServicesFor[*http.Server](ctx, i)
+					svcs, svcsErr := getServerServices[*http.Server](i)
+					if svcsErr != nil {
+						return svcsErr
+					}
+					return startServices(ctx, svcs)
 				},
 			},
 			{
 				Name:  "print-config",
 				Usage: "print loaded configuration",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					fmt.Printf("%+v\n", do.MustInvoke[rez.Config](i))
+					fmt.Printf("%+v\n", cfg)
 					return nil
 				},
 			},
@@ -92,8 +97,9 @@ func makeCli() *cli.Command {
 							Config:    cli.StringConfig{TrimSpace: true},
 						}},
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							direction := cmd.StringArg("direction")
-							return do.MustInvoke[rez.MigrationService](i).Run(ctx, direction)
+							return withMigrationService(i, func(ms rez.MigrationService) error {
+								return ms.Run(ctx, cmd.StringArg("direction"))
+							})
 						},
 					},
 					{
@@ -105,15 +111,18 @@ func makeCli() *cli.Command {
 							Config:    cli.StringConfig{TrimSpace: true},
 						}},
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							name := cmd.StringArg("name")
-							return do.MustInvoke[rez.MigrationService](i).CreateSchemaMigration(ctx, name)
+							return withMigrationService(i, func(ms rez.MigrationService) error {
+								return ms.CreateSchemaMigration(ctx, cmd.StringArg("name"))
+							})
 						},
 					},
 					{
 						Name:  "update-checksum",
 						Usage: "Update the database migrations checksum file",
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							return do.MustInvoke[rez.MigrationService](i).UpdateChecksum()
+							return withMigrationService(i, func(ms rez.MigrationService) error {
+								return ms.UpdateChecksum()
+							})
 						},
 					},
 				},

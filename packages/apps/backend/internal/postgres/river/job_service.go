@@ -31,8 +31,8 @@ type JobService struct {
 func NewJobService(cfg rez.Config, pool *pgxpool.Pool, tel rez.TelemetryService) (*JobService, error) {
 	s := &JobService{
 		logger: tel.NewLogger(rez.NewLoggerOptions{
-			PackageName: "river",
-			Level:       slog.LevelInfo,
+			Name:  "river",
+			Level: slog.LevelInfo,
 		}),
 	}
 

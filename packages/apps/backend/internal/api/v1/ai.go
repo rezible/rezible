@@ -35,10 +35,16 @@ func (h *aiHandler) CreateAgentSession(ctx context.Context, req *oapi.CreateAgen
 		return nil, oapi.ErrAuthSessionMissing
 	}
 	attrs := req.Body.Attributes
+
+	input, inputErr := h.ai.ValidateAgentSessionInput(attrs.AgentName, attrs.Input)
+	if inputErr != nil {
+		return nil, oapi.Error(ctx, "invalid input", inputErr)
+	}
+
 	params := rez.CreateAgentSessionParams{
 		AgentName:   attrs.AgentName,
 		OwnerUserID: &ownerId,
-		Input:       attrs.Input,
+		Input:       input,
 	}
 	session, createErr := h.agents.CreateAgentSession(ctx, params)
 	if createErr != nil {
@@ -98,7 +104,7 @@ func (h *aiHandler) ListAgentTurns(ctx context.Context, req *oapi.ListAgentTurns
 	return &resp, nil
 }
 
-func (h *aiHandler) makeTurnRequestInput(attrs oapi.RequestAgentTurnRequestAttributes) (*rez.AgentTurnInput, error) {
+func (h *aiHandler) makeTurnRequestInput(attrs oapi.RequestAgentTurnRequestAttributes) (*rez.AiAgentTurnInput, error) {
 	var message *ai.Message
 	if attrs.Message != nil {
 		trimmed := strings.TrimSpace(*attrs.Message)
@@ -111,7 +117,7 @@ func (h *aiHandler) makeTurnRequestInput(attrs oapi.RequestAgentTurnRequestAttri
 	if attrs.Resume != nil && len(attrs.Resume.Respond)+len(attrs.Resume.Restart) > 0 {
 		resume = &ai.GenerateActionResume{Respond: attrs.Resume.Respond, Restart: attrs.Resume.Restart}
 	}
-	return &rez.AgentTurnInput{Message: message, Resume: resume}, nil
+	return &rez.AiAgentTurnInput{Message: message, Resume: resume}, nil
 }
 
 func (h *aiHandler) RequestAgentTurn(ctx context.Context, req *oapi.RequestAgentTurnRequest) (*oapi.RequestAgentTurnResponse, error) {

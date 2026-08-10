@@ -32,7 +32,7 @@ type ProviderEventPipelineService struct {
 }
 
 func NewProviderEventPipelineService(ts rez.TelemetryService, db rez.Database, jobSvc rez.JobService, processors map[string]rez.ProviderEventProcessor, projection rez.EventProjectionService) (*ProviderEventPipelineService, error) {
-	logger := ts.NewLogger(rez.NewLoggerOptions{PackageName: "provider_events"})
+	logger := ts.NewLogger(rez.NewLoggerOptions{Name: "provider_events"})
 	pe := &ProviderEventPipelineService{
 		db:         db,
 		jobs:       jobSvc,

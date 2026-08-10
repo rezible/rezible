@@ -22,8 +22,8 @@ type AuthSessionService struct {
 	users rez.UserService
 }
 
-func NewAuthSessionService(db rez.Database, orgs rez.OrganizationService, users rez.UserService) *AuthSessionService {
-	return &AuthSessionService{db: db, orgs: orgs, users: users}
+func NewAuthSessionService(db rez.Database, orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
+	return &AuthSessionService{db: db, orgs: orgs, users: users}, nil
 }
 
 func (s *AuthSessionService) CreateFromUserAuthResponse(ctx context.Context, ps *rez.UserAuthProviderSession) (*ent.UserAuthSession, error) {

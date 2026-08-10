@@ -177,8 +177,8 @@ var CreateAgentSession = openapi.Operation{
 }
 
 type CreateAgentSessionAttributes struct {
-	AgentName string         `json:"agentName" minLength:"1"`
-	Input     map[string]any `json:"input"`
+	AgentName string `json:"agentName" minLength:"1"`
+	Input     []byte `json:"input"`
 }
 
 type CreateAgentSessionRequest RequestWithBodyAttributes[CreateAgentSessionAttributes]

@@ -20,4 +20,7 @@ func RegisterWorkerFunc[A river.JobArgs](work func(ctx context.Context, args A) 
 	RegisterWorker[A](river.WorkFunc(func(ctx context.Context, j *river.Job[A]) error {
 		return work(ctx, j.Args)
 	}))
+	//if err != nil {
+	//	slog.Warn("failed to register worker", "error", err.Error())
+	//}
 }

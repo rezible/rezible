@@ -6,6 +6,8 @@ import (
 	"github.com/riverqueue/river/rivertype"
 )
 
+type Worker[Args river.JobArgs] = river.Worker[Args]
+
 var (
 	UniqueStateNonCompleted = []rivertype.JobState{
 		rivertype.JobStatePending,
@@ -94,6 +96,25 @@ func (GenerateShiftMetrics) Kind() string {
 }
 
 const AgentTurnsQueue = "agent-turns"
+
+type StartAgentSession struct {
+	SessionID uuid.UUID `json:"agent_session_id" river:"unique"`
+}
+
+func (StartAgentSession) Kind() string {
+	return "start-agent-session"
+}
+
+func (StartAgentSession) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{
+		Queue:       AgentTurnsQueue,
+		MaxAttempts: 3,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: UniqueStateNonCompleted,
+		},
+	}
+}
 
 type InvokeAgentTurn struct {
 	AgentSessionID uuid.UUID `json:"agent_session_id"`

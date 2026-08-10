@@ -59,11 +59,11 @@ type (
 
 type (
 	NewLoggerOptions struct {
-		Parent      *slog.Logger
-		PackageName string
-		Level       slog.Leveler
-		Attrs       []slog.Attr
-		Groups      []string
+		Parent *slog.Logger
+		Name   string
+		Level  slog.Leveler
+		Attrs  []slog.Attr
+		Groups []string
 	}
 
 	TelemetryService interface {
@@ -179,6 +179,8 @@ type (
 	ProviderEventProcessor interface {
 		ProcessProviderEvent(context.Context, ProviderEvent) (ent.NormalizedEvents, error)
 	}
+
+	ProviderEventProcessorRegistry map[string]ProviderEventProcessor
 
 	NormalizedEventProjector interface {
 		ProjectEvent(context.Context, *ent.NormalizedEvent) ([]ProjectedEntityRef, error)
@@ -403,12 +405,12 @@ type (
 )
 
 type (
-	AgentTurnInput struct {
+	AiAgentTurnInput struct {
 		Message *ai.Message              `json:"message,omitempty"`
 		Resume  *ai.GenerateActionResume `json:"resume,omitempty"`
 	}
 
-	AgentTurnChunk struct {
+	AiAgentTurnChunk struct {
 		Artifact            *aix.Artifact          `json:"artifact,omitempty"`
 		ModelChunk          *ai.ModelResponseChunk `json:"model_chunk,omitempty"`
 		TurnEndFinishReason *aix.AgentFinishReason `json:"finish_reason,omitempty"`
@@ -418,19 +420,19 @@ type (
 		Session *ent.AgentSession
 		Parent  *ent.AgentTurn
 		Turn    *ent.AgentTurn
-		Input   *AgentTurnInput
-		OnChunk func(AgentTurnChunk)
+		Input   *AiAgentTurnInput
+		OnChunk func(AiAgentTurnChunk)
 	}
 
-	AgentInvocationResult struct {
+	AiAgentInvocationResult struct {
 		State              []byte
 		Response           *ai.Message
 		FinishReason       aix.AgentFinishReason
 		Error              *core.GenkitError
-		KnowledgeCitations []AgentKnowledgeCitation
+		KnowledgeCitations []AiAgentKnowledgeCitation
 	}
 
-	AgentKnowledgeCitation struct {
+	AiAgentKnowledgeCitation struct {
 		EvidenceID uuid.UUID `json:"evidence_id"`
 		Summary    string    `json:"summary"`
 	}
@@ -441,17 +443,22 @@ type (
 		Model       string `json:"model"`
 	}
 
+	AiAgentSessionInput interface {
+		Validate() error
+	}
+
 	AiService interface {
 		GetAgents() []AiAgentConfig
-		MakeInitialAgentTurnInput(context.Context, string, any) (*AgentTurnInput, error)
-		InvokeAgentTurn(context.Context, InvokeAgentTurnParams) (*AgentInvocationResult, error)
+		ValidateAgentSessionInput(string, []byte) (AiAgentSessionInput, error)
+		MakeInitialAgentTurnInput(context.Context, *ent.AgentSession) (*AiAgentTurnInput, error)
+		InvokeAgentTurn(context.Context, InvokeAgentTurnParams) (*AiAgentInvocationResult, error)
 	}
 
 	CreateAgentSessionParams struct {
 		AgentName        string
 		OwnerUserID      *uuid.UUID
 		PermissionScopes []string
-		Input            any
+		Input            AiAgentSessionInput
 		Metadata         map[string]any
 	}
 
@@ -462,7 +469,7 @@ type (
 	}
 
 	RequestAgentTurnParams struct {
-		Input        *AgentTurnInput
+		Input        *AiAgentTurnInput
 		ParentTurnID *uuid.UUID
 	}
 

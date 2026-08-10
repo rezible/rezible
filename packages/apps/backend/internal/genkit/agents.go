@@ -21,7 +21,7 @@ import (
 type (
 	agentRunner[I rezai.AgentInput, S rezai.SessionState] interface {
 		agentDefinition() rezai.AgentDefinition[I, S]
-		makeInitialTurnInput(context.Context, I) (*rez.AgentTurnInput, error)
+		makeInitialTurnInput(context.Context, I) (*rez.AiAgentTurnInput, error)
 		transformState(context.Context, *aix.SessionState[S]) (*aix.SessionState[S], error)
 		transformStreamChunk(context.Context, *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error)
 	}
@@ -40,9 +40,9 @@ type (
 
 	AgentWrapper interface {
 		AgentConfig() rez.AiAgentConfig
-		ValidateAndEncodeInput(any) ([]byte, error)
-		MakeInitialTurnInput(context.Context, []byte) (*rez.AgentTurnInput, error)
-		Invoke(context.Context, rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error)
+		ValidateInput([]byte) (rez.AiAgentSessionInput, error)
+		MakeInitialTurnInput(context.Context, []byte) (*rez.AiAgentTurnInput, error)
+		Invoke(context.Context, rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error)
 	}
 )
 
@@ -103,27 +103,22 @@ func (w *agentWrapper[I, S]) AgentConfig() rez.AiAgentConfig {
 	}
 }
 
-func (w *agentWrapper[I, S]) ValidateAndEncodeInput(input any) ([]byte, error) {
-	raw, rawOK := input.([]byte)
-	if !rawOK {
-		var marshalErr error
-		raw, marshalErr = json.Marshal(input)
-		if marshalErr != nil {
-			return nil, fmt.Errorf("marshal input: %w", marshalErr)
-		}
-	}
-	if _, validationErr := w.runner.agentDefinition().ValidateInput(raw); validationErr != nil {
+func (w *agentWrapper[I, S]) ValidateInput(raw []byte) (rez.AiAgentSessionInput, error) {
+	inp, validationErr := w.runner.agentDefinition().ValidateInput(raw)
+	if validationErr != nil {
 		return nil, validationErr
+	} else if inp == nil {
+		return nil, fmt.Errorf("nil input")
 	}
-	return raw, nil
+	return *inp, nil
 }
 
-func (w *agentWrapper[I, S]) normalizeTurnInput(input *rez.AgentTurnInput) (*rez.AgentTurnInput, error) {
+func (w *agentWrapper[I, S]) normalizeTurnInput(input *rez.AiAgentTurnInput) (*rez.AiAgentTurnInput, error) {
 	if input == nil {
 		return nil, rez.ErrInvalidInput
 	}
 	if input.Resume != nil && len(input.Resume.Respond)+len(input.Resume.Restart) == 0 {
-		return &rez.AgentTurnInput{Message: input.Message}, nil
+		return &rez.AiAgentTurnInput{Message: input.Message}, nil
 	}
 	if input.Message == nil && input.Resume == nil {
 		return nil, fmt.Errorf("%w: agent turn message or resume is required", rez.ErrInvalidInput)
@@ -131,7 +126,7 @@ func (w *agentWrapper[I, S]) normalizeTurnInput(input *rez.AgentTurnInput) (*rez
 	return input, nil
 }
 
-func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, raw []byte) (*rez.AgentTurnInput, error) {
+func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, raw []byte) (*rez.AiAgentTurnInput, error) {
 	input, inputErr := w.runner.agentDefinition().ValidateInput(raw)
 	if inputErr != nil || input == nil {
 		return nil, fmt.Errorf("input: %w", inputErr)
@@ -163,7 +158,7 @@ func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, raw []byt
 	return normalized, nil
 }
 
-func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error) {
+func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
 	sess := params.Session
 	ctx = execution.NewAiAgentContext(ctx, sess, params.Turn)
 
@@ -215,7 +210,7 @@ func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentT
 			if chunk.TurnEnd != nil {
 				finishReason = &chunk.TurnEnd.FinishReason
 			}
-			params.OnChunk(rez.AgentTurnChunk{
+			params.OnChunk(rez.AiAgentTurnChunk{
 				Artifact:            chunk.Artifact,
 				ModelChunk:          chunk.ModelChunk,
 				TurnEndFinishReason: finishReason,
@@ -239,7 +234,7 @@ func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentT
 	return result, nil
 }
 
-func (w *agentWrapper[I, S]) getOutputResult(out *aix.AgentOutput[S]) (*rez.AgentInvocationResult, error) {
+func (w *agentWrapper[I, S]) getOutputResult(out *aix.AgentOutput[S]) (*rez.AiAgentInvocationResult, error) {
 	if out == nil {
 		return nil, fmt.Errorf("agent returned nil output")
 	}
@@ -255,7 +250,7 @@ func (w *agentWrapper[I, S]) getOutputResult(out *aix.AgentOutput[S]) (*rez.Agen
 		return nil, fmt.Errorf("unable to get agent knowledge citations: %w", citationsErr)
 	}
 
-	result := &rez.AgentInvocationResult{
+	result := &rez.AiAgentInvocationResult{
 		Response:           out.Message,
 		FinishReason:       out.FinishReason,
 		Error:              out.Error,

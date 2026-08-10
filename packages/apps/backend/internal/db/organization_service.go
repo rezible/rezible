@@ -18,8 +18,8 @@ type OrganizationService struct {
 	jobs rez.JobService
 }
 
-func NewOrganizationService(db rez.Database, jobs rez.JobService) *OrganizationService {
-	return &OrganizationService{db: db, jobs: jobs}
+func NewOrganizationService(db rez.Database, jobs rez.JobService) (*OrganizationService, error) {
+	return &OrganizationService{db: db, jobs: jobs}, nil
 }
 
 func (s *OrganizationService) Get(ctx context.Context, p predicate.Organization) (*ent.Organization, error) {

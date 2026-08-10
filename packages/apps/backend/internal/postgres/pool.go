@@ -36,7 +36,9 @@ func makeConnectionString(cfg rez.PostgresConfig, admin bool) string {
 	return strings.Join(dsn, " ")
 }
 
-func MakePgxPool(ctx context.Context, cfg rez.PostgresConfig, admin bool) (*pgxpool.Pool, error) {
+type ConnectionPool = pgxpool.Pool
+
+func MakePgxPool(ctx context.Context, cfg rez.PostgresConfig, admin bool) (*ConnectionPool, error) {
 	parsedCfg, parseErr := pgxpool.ParseConfig(makeConnectionString(cfg, admin))
 	if parseErr != nil {
 		return nil, fmt.Errorf("parse: %w", parseErr)

@@ -17,7 +17,7 @@ type ProjectionService struct {
 	incidents rez.IncidentService
 	knowledge rez.KnowledgeGraphService
 
-	projectorFuncs map[projections.SubjectKind]rez.EventProjectorFunc
+	projFns map[projections.SubjectKind]rez.EventProjectorFunc
 }
 
 func makeProjector[E any](decodeFn func(*ent.NormalizedEvent) (E, error), projFn func(context.Context, E) ([]rez.ProjectedEntityRef, error)) rez.EventProjectorFunc {
@@ -36,8 +36,14 @@ func NewProjectionService(db rez.Database, users rez.UserService, incidents rez.
 		users:     users,
 		incidents: incidents,
 		knowledge: knowledge,
+		projFns:   map[projections.SubjectKind]rez.EventProjectorFunc{},
 	}
-	s.projectorFuncs = map[projections.SubjectKind]rez.EventProjectorFunc{
+	s.registerProjectorFuncs()
+	return s, nil
+}
+
+func (s *ProjectionService) registerProjectorFuncs() {
+	s.projFns = map[projections.SubjectKind]rez.EventProjectorFunc{
 		projections.SubjectKindUser:               makeProjector(projections.DecodeUserEvent, s.handleUserEvent),
 		projections.SubjectKindTeam:               makeProjector(projections.DecodeTeamEvent, s.handleTeamEvent),
 		projections.SubjectKindTeamMembership:     makeProjector(projections.DecodeTeamMembershipEvent, s.handleTeamMembershipEvent),
@@ -48,11 +54,10 @@ func NewProjectionService(db rez.Database, users rez.UserService, incidents rez.
 		projections.SubjectKindIncident:           makeProjector(projections.DecodeIncidentEvent, s.handleIncidentEvent),
 		projections.SubjectKindAlertInstance:      makeProjector(projections.DecodeAlertInstanceEvent, s.handleAlertInstanceEvent),
 	}
-	return s, nil
 }
 
 func (s *ProjectionService) GetEventProjectorFunc(ev *ent.NormalizedEvent) (rez.EventProjectorFunc, bool) {
-	fn, ok := s.projectorFuncs[projections.SubjectKind(ev.SubjectKind)]
+	fn, ok := s.projFns[projections.SubjectKind(ev.SubjectKind)]
 	return fn, ok
 }
 

@@ -129,7 +129,7 @@ func knowledgeEvidenceToolOutput(ev *ent.KnowledgeEvidence, entityID string, rel
 
 type evidenceCitationCustomArtifactPart map[string]any
 
-func (a evidenceCitationCustomArtifactPart) Citation() (*rez.AgentKnowledgeCitation, error) {
+func (a evidenceCitationCustomArtifactPart) Citation() (*rez.AiAgentKnowledgeCitation, error) {
 	stringId, exists := a["evidence_id"]
 	if !exists {
 		return nil, fmt.Errorf("evidence ID not found in citation custom artifact")
@@ -142,14 +142,14 @@ func (a evidenceCitationCustomArtifactPart) Citation() (*rez.AgentKnowledgeCitat
 	if !summaryExists {
 		return nil, fmt.Errorf("summary not found in citation custom artifact")
 	}
-	return &rez.AgentKnowledgeCitation{
+	return &rez.AiAgentKnowledgeCitation{
 		EvidenceID: id,
 		Summary:    summary,
 	}, nil
 }
 
-func getAgentKnowledgeCitations(artifacts []*aix.Artifact) ([]rez.AgentKnowledgeCitation, error) {
-	var citations []rez.AgentKnowledgeCitation
+func getAgentKnowledgeCitations(artifacts []*aix.Artifact) ([]rez.AiAgentKnowledgeCitation, error) {
+	var citations []rez.AiAgentKnowledgeCitation
 	for _, a := range artifacts {
 		if a.Name == "citations" {
 			for _, p := range a.Parts {

@@ -26,8 +26,8 @@ func (a *AlertsAgent) agentDefinition() rezai.AlertsAgentDefinition {
 	return rezai.AlertsAgent
 }
 
-func (a *AlertsAgent) makeInitialTurnInput(ctx context.Context, input rezai.AlertAgentInput) (*rez.AgentTurnInput, error) {
-	return &rez.AgentTurnInput{
+func (a *AlertsAgent) makeInitialTurnInput(ctx context.Context, input rezai.AlertAgentInput) (*rez.AiAgentTurnInput, error) {
+	return &rez.AiAgentTurnInput{
 		Message: ai.NewUserTextMessage(fmt.Sprintf("Investigate alert instance %s.", input.AlertInstanceID)),
 	}, nil
 }

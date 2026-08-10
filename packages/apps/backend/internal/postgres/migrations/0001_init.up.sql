@@ -1,5 +1,5 @@
 -- create "agent_sessions" table
-CREATE TABLE "agent_sessions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "agent_name" character varying NOT NULL, "default_scopes" jsonb NOT NULL, "metadata" jsonb NULL, "tenant_id" bigint NOT NULL, "owner_user_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "agent_sessions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "agent_name" character varying NOT NULL, "default_scopes" jsonb NOT NULL, "input" bytea NOT NULL, "metadata" jsonb NULL, "tenant_id" bigint NOT NULL, "owner_user_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "agentsession_tenant_id" to table: "agent_sessions"
 CREATE INDEX "agentsession_tenant_id" ON "agent_sessions" ("tenant_id");
 -- create index "agentsession_tenant_id_owner_user_id_created_at" to table: "agent_sessions"

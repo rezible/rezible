@@ -449,12 +449,12 @@ func (w *InvokeAgentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.In
 	return w.saveInvocationResult(ctx, job, result)
 }
 
-func (w *InvokeAgentTurnWorker) invokeClaimedTurn(ctx context.Context, claim *claimedAgentTurn) (*rez.AgentInvocationResult, error) {
-	var input rez.AgentTurnInput
+func (w *InvokeAgentTurnWorker) invokeClaimedTurn(ctx context.Context, claim *claimedAgentTurn) (*rez.AiAgentInvocationResult, error) {
+	var input rez.AiAgentTurnInput
 	if decodeErr := json.Unmarshal(claim.turn.Input, &input); decodeErr != nil {
 		return nil, fmt.Errorf("decode stored turn input: %w", decodeErr)
 	}
-	chunkFn := func(chunk rez.AgentTurnChunk) {
+	chunkFn := func(chunk rez.AiAgentTurnChunk) {
 		msgErr := w.msgs.Publish(ctx, rezai.EventOnAgentTurnChunk{
 			AgentSessionId: claim.session.ID,
 			AgentTurnId:    claim.turn.ID,
@@ -612,7 +612,7 @@ func (w *InvokeAgentTurnWorker) saveInvocationError(ctx context.Context, job *ri
 	})
 }
 
-func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], result *rez.AgentInvocationResult) error {
+func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], result *rez.AiAgentInvocationResult) error {
 	return w.updateClaimedTurn(ctx, job, func(currStatus at.Status, u *ent.AgentTurnUpdateOne) error {
 		if currStatus != at.StatusRunning {
 			switch currStatus {
