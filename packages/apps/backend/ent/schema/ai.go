@@ -29,6 +29,7 @@ func (AgentSession) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 		field.Strings("default_scopes").Default([]string{}),
+		field.Bytes("input"),
 		field.JSON("metadata", map[string]any{}).
 			SchemaType(schemaTypeJsonB).
 			Optional(),

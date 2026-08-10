@@ -1938,23 +1938,23 @@ func (_c *MockAiService_GetAgents_Call) RunAndReturn(run func() []rez.AiAgentCon
 }
 
 // InvokeAgentTurn provides a mock function for the type MockAiService
-func (_mock *MockAiService) InvokeAgentTurn(context1 context.Context, invokeAgentTurnParams rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error) {
+func (_mock *MockAiService) InvokeAgentTurn(context1 context.Context, invokeAgentTurnParams rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
 	ret := _mock.Called(context1, invokeAgentTurnParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for InvokeAgentTurn")
 	}
 
-	var r0 *rez.AgentInvocationResult
+	var r0 *rez.AiAgentInvocationResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error)); ok {
 		return returnFunc(context1, invokeAgentTurnParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvokeAgentTurnParams) *rez.AgentInvocationResult); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvokeAgentTurnParams) *rez.AiAgentInvocationResult); ok {
 		r0 = returnFunc(context1, invokeAgentTurnParams)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*rez.AgentInvocationResult)
+			r0 = ret.Get(0).(*rez.AiAgentInvocationResult)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.InvokeAgentTurnParams) error); ok {
@@ -1995,38 +1995,38 @@ func (_c *MockAiService_InvokeAgentTurn_Call) Run(run func(context1 context.Cont
 	return _c
 }
 
-func (_c *MockAiService_InvokeAgentTurn_Call) Return(agentInvocationResult *rez.AgentInvocationResult, err error) *MockAiService_InvokeAgentTurn_Call {
-	_c.Call.Return(agentInvocationResult, err)
+func (_c *MockAiService_InvokeAgentTurn_Call) Return(aiAgentInvocationResult *rez.AiAgentInvocationResult, err error) *MockAiService_InvokeAgentTurn_Call {
+	_c.Call.Return(aiAgentInvocationResult, err)
 	return _c
 }
 
-func (_c *MockAiService_InvokeAgentTurn_Call) RunAndReturn(run func(context1 context.Context, invokeAgentTurnParams rez.InvokeAgentTurnParams) (*rez.AgentInvocationResult, error)) *MockAiService_InvokeAgentTurn_Call {
+func (_c *MockAiService_InvokeAgentTurn_Call) RunAndReturn(run func(context1 context.Context, invokeAgentTurnParams rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error)) *MockAiService_InvokeAgentTurn_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // MakeInitialAgentTurnInput provides a mock function for the type MockAiService
-func (_mock *MockAiService) MakeInitialAgentTurnInput(context1 context.Context, s string, v any) (*rez.AgentTurnInput, error) {
-	ret := _mock.Called(context1, s, v)
+func (_mock *MockAiService) MakeInitialAgentTurnInput(context1 context.Context, agentSession *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
+	ret := _mock.Called(context1, agentSession)
 
 	if len(ret) == 0 {
 		panic("no return value specified for MakeInitialAgentTurnInput")
 	}
 
-	var r0 *rez.AgentTurnInput
+	var r0 *rez.AiAgentTurnInput
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, any) (*rez.AgentTurnInput, error)); ok {
-		return returnFunc(context1, s, v)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.AgentSession) (*rez.AiAgentTurnInput, error)); ok {
+		return returnFunc(context1, agentSession)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, any) *rez.AgentTurnInput); ok {
-		r0 = returnFunc(context1, s, v)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.AgentSession) *rez.AiAgentTurnInput); ok {
+		r0 = returnFunc(context1, agentSession)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*rez.AgentTurnInput)
+			r0 = ret.Get(0).(*rez.AiAgentTurnInput)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, any) error); ok {
-		r1 = returnFunc(context1, s, v)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.AgentSession) error); ok {
+		r1 = returnFunc(context1, agentSession)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -2040,41 +2040,103 @@ type MockAiService_MakeInitialAgentTurnInput_Call struct {
 
 // MakeInitialAgentTurnInput is a helper method to define mock.On call
 //   - context1 context.Context
-//   - s string
-//   - v any
-func (_e *MockAiService_Expecter) MakeInitialAgentTurnInput(context1 interface{}, s interface{}, v interface{}) *MockAiService_MakeInitialAgentTurnInput_Call {
-	return &MockAiService_MakeInitialAgentTurnInput_Call{Call: _e.mock.On("MakeInitialAgentTurnInput", context1, s, v)}
+//   - agentSession *ent.AgentSession
+func (_e *MockAiService_Expecter) MakeInitialAgentTurnInput(context1 interface{}, agentSession interface{}) *MockAiService_MakeInitialAgentTurnInput_Call {
+	return &MockAiService_MakeInitialAgentTurnInput_Call{Call: _e.mock.On("MakeInitialAgentTurnInput", context1, agentSession)}
 }
 
-func (_c *MockAiService_MakeInitialAgentTurnInput_Call) Run(run func(context1 context.Context, s string, v any)) *MockAiService_MakeInitialAgentTurnInput_Call {
+func (_c *MockAiService_MakeInitialAgentTurnInput_Call) Run(run func(context1 context.Context, agentSession *ent.AgentSession)) *MockAiService_MakeInitialAgentTurnInput_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 *ent.AgentSession
 		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 any
-		if args[2] != nil {
-			arg2 = args[2].(any)
+			arg1 = args[1].(*ent.AgentSession)
 		}
 		run(
 			arg0,
 			arg1,
-			arg2,
 		)
 	})
 	return _c
 }
 
-func (_c *MockAiService_MakeInitialAgentTurnInput_Call) Return(agentTurnInput *rez.AgentTurnInput, err error) *MockAiService_MakeInitialAgentTurnInput_Call {
-	_c.Call.Return(agentTurnInput, err)
+func (_c *MockAiService_MakeInitialAgentTurnInput_Call) Return(aiAgentTurnInput *rez.AiAgentTurnInput, err error) *MockAiService_MakeInitialAgentTurnInput_Call {
+	_c.Call.Return(aiAgentTurnInput, err)
 	return _c
 }
 
-func (_c *MockAiService_MakeInitialAgentTurnInput_Call) RunAndReturn(run func(context1 context.Context, s string, v any) (*rez.AgentTurnInput, error)) *MockAiService_MakeInitialAgentTurnInput_Call {
+func (_c *MockAiService_MakeInitialAgentTurnInput_Call) RunAndReturn(run func(context1 context.Context, agentSession *ent.AgentSession) (*rez.AiAgentTurnInput, error)) *MockAiService_MakeInitialAgentTurnInput_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ValidateAgentSessionInput provides a mock function for the type MockAiService
+func (_mock *MockAiService) ValidateAgentSessionInput(s string, bytes []byte) (rez.AiAgentSessionInput, error) {
+	ret := _mock.Called(s, bytes)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ValidateAgentSessionInput")
+	}
+
+	var r0 rez.AiAgentSessionInput
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string, []byte) (rez.AiAgentSessionInput, error)); ok {
+		return returnFunc(s, bytes)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string, []byte) rez.AiAgentSessionInput); ok {
+		r0 = returnFunc(s, bytes)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(rez.AiAgentSessionInput)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(string, []byte) error); ok {
+		r1 = returnFunc(s, bytes)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAiService_ValidateAgentSessionInput_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ValidateAgentSessionInput'
+type MockAiService_ValidateAgentSessionInput_Call struct {
+	*mock.Call
+}
+
+// ValidateAgentSessionInput is a helper method to define mock.On call
+//   - s string
+//   - bytes []byte
+func (_e *MockAiService_Expecter) ValidateAgentSessionInput(s interface{}, bytes interface{}) *MockAiService_ValidateAgentSessionInput_Call {
+	return &MockAiService_ValidateAgentSessionInput_Call{Call: _e.mock.On("ValidateAgentSessionInput", s, bytes)}
+}
+
+func (_c *MockAiService_ValidateAgentSessionInput_Call) Run(run func(s string, bytes []byte)) *MockAiService_ValidateAgentSessionInput_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		var arg1 []byte
+		if args[1] != nil {
+			arg1 = args[1].([]byte)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAiService_ValidateAgentSessionInput_Call) Return(aiAgentSessionInput rez.AiAgentSessionInput, err error) *MockAiService_ValidateAgentSessionInput_Call {
+	_c.Call.Return(aiAgentSessionInput, err)
+	return _c
+}
+
+func (_c *MockAiService_ValidateAgentSessionInput_Call) RunAndReturn(run func(s string, bytes []byte) (rez.AiAgentSessionInput, error)) *MockAiService_ValidateAgentSessionInput_Call {
 	_c.Call.Return(run)
 	return _c
 }

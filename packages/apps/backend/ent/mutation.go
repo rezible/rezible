@@ -177,6 +177,7 @@ type AgentSessionMutation struct {
 	agent_name           *string
 	default_scopes       *[]string
 	appenddefault_scopes []string
+	input                *[]byte
 	metadata             *map[string]interface{}
 	clearedFields        map[string]struct{}
 	tenant               *int
@@ -539,6 +540,42 @@ func (m *AgentSessionMutation) ResetDefaultScopes() {
 	m.appenddefault_scopes = nil
 }
 
+// SetInput sets the "input" field.
+func (m *AgentSessionMutation) SetInput(b []byte) {
+	m.input = &b
+}
+
+// Input returns the value of the "input" field in the mutation.
+func (m *AgentSessionMutation) Input() (r []byte, exists bool) {
+	v := m.input
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInput returns the old "input" field's value of the AgentSession entity.
+// If the AgentSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentSessionMutation) OldInput(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInput is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInput requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInput: %w", err)
+	}
+	return oldValue.Input, nil
+}
+
+// ResetInput resets all changes to the "input" field.
+func (m *AgentSessionMutation) ResetInput() {
+	m.input = nil
+}
+
 // SetMetadata sets the "metadata" field.
 func (m *AgentSessionMutation) SetMetadata(value map[string]interface{}) {
 	m.metadata = &value
@@ -730,7 +767,7 @@ func (m *AgentSessionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentSessionMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, agentsession.FieldTenantID)
 	}
@@ -748,6 +785,9 @@ func (m *AgentSessionMutation) Fields() []string {
 	}
 	if m.default_scopes != nil {
 		fields = append(fields, agentsession.FieldDefaultScopes)
+	}
+	if m.input != nil {
+		fields = append(fields, agentsession.FieldInput)
 	}
 	if m.metadata != nil {
 		fields = append(fields, agentsession.FieldMetadata)
@@ -772,6 +812,8 @@ func (m *AgentSessionMutation) Field(name string) (ent.Value, bool) {
 		return m.OwnerUserID()
 	case agentsession.FieldDefaultScopes:
 		return m.DefaultScopes()
+	case agentsession.FieldInput:
+		return m.Input()
 	case agentsession.FieldMetadata:
 		return m.Metadata()
 	}
@@ -795,6 +837,8 @@ func (m *AgentSessionMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldOwnerUserID(ctx)
 	case agentsession.FieldDefaultScopes:
 		return m.OldDefaultScopes(ctx)
+	case agentsession.FieldInput:
+		return m.OldInput(ctx)
 	case agentsession.FieldMetadata:
 		return m.OldMetadata(ctx)
 	}
@@ -847,6 +891,13 @@ func (m *AgentSessionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDefaultScopes(v)
+		return nil
+	case agentsession.FieldInput:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInput(v)
 		return nil
 	case agentsession.FieldMetadata:
 		v, ok := value.(map[string]interface{})
@@ -939,6 +990,9 @@ func (m *AgentSessionMutation) ResetField(name string) error {
 		return nil
 	case agentsession.FieldDefaultScopes:
 		m.ResetDefaultScopes()
+		return nil
+	case agentsession.FieldInput:
+		m.ResetInput()
 		return nil
 	case agentsession.FieldMetadata:
 		m.ResetMetadata()

@@ -101,6 +101,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			agentsession.FieldAgentName:     {Type: field.TypeString, Column: agentsession.FieldAgentName},
 			agentsession.FieldOwnerUserID:   {Type: field.TypeUUID, Column: agentsession.FieldOwnerUserID},
 			agentsession.FieldDefaultScopes: {Type: field.TypeJSON, Column: agentsession.FieldDefaultScopes},
+			agentsession.FieldInput:         {Type: field.TypeBytes, Column: agentsession.FieldInput},
 			agentsession.FieldMetadata:      {Type: field.TypeJSON, Column: agentsession.FieldMetadata},
 		},
 	}
@@ -4616,6 +4617,11 @@ func (f *AgentSessionFilter) WhereOwnerUserID(p entql.ValueP) {
 // WhereDefaultScopes applies the entql json.RawMessage predicate on the default_scopes field.
 func (f *AgentSessionFilter) WhereDefaultScopes(p entql.BytesP) {
 	f.Where(p.Field(agentsession.FieldDefaultScopes))
+}
+
+// WhereInput applies the entql []byte predicate on the input field.
+func (f *AgentSessionFilter) WhereInput(p entql.BytesP) {
+	f.Where(p.Field(agentsession.FieldInput))
 }
 
 // WhereMetadata applies the entql json.RawMessage predicate on the metadata field.

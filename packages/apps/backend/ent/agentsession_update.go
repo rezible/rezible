@@ -100,6 +100,12 @@ func (_u *AgentSessionUpdate) AppendDefaultScopes(v []string) *AgentSessionUpdat
 	return _u
 }
 
+// SetInput sets the "input" field.
+func (_u *AgentSessionUpdate) SetInput(v []byte) *AgentSessionUpdate {
+	_u.mutation.SetInput(v)
+	return _u
+}
+
 // SetMetadata sets the "metadata" field.
 func (_u *AgentSessionUpdate) SetMetadata(v map[string]interface{}) *AgentSessionUpdate {
 	_u.mutation.SetMetadata(v)
@@ -253,6 +259,9 @@ func (_u *AgentSessionUpdate) sqlSave(ctx context.Context) (_node int, err error
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, agentsession.FieldDefaultScopes, value)
 		})
+	}
+	if value, ok := _u.mutation.Input(); ok {
+		_spec.SetField(agentsession.FieldInput, field.TypeBytes, value)
 	}
 	if value, ok := _u.mutation.Metadata(); ok {
 		_spec.SetField(agentsession.FieldMetadata, field.TypeJSON, value)
@@ -426,6 +435,12 @@ func (_u *AgentSessionUpdateOne) SetDefaultScopes(v []string) *AgentSessionUpdat
 // AppendDefaultScopes appends value to the "default_scopes" field.
 func (_u *AgentSessionUpdateOne) AppendDefaultScopes(v []string) *AgentSessionUpdateOne {
 	_u.mutation.AppendDefaultScopes(v)
+	return _u
+}
+
+// SetInput sets the "input" field.
+func (_u *AgentSessionUpdateOne) SetInput(v []byte) *AgentSessionUpdateOne {
+	_u.mutation.SetInput(v)
 	return _u
 }
 
@@ -612,6 +627,9 @@ func (_u *AgentSessionUpdateOne) sqlSave(ctx context.Context) (_node *AgentSessi
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, agentsession.FieldDefaultScopes, value)
 		})
+	}
+	if value, ok := _u.mutation.Input(); ok {
+		_spec.SetField(agentsession.FieldInput, field.TypeBytes, value)
 	}
 	if value, ok := _u.mutation.Metadata(); ok {
 		_spec.SetField(agentsession.FieldMetadata, field.TypeJSON, value)

@@ -16,6 +16,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "agent_name", Type: field.TypeString},
 		{Name: "default_scopes", Type: field.TypeJSON},
+		{Name: "input", Type: field.TypeBytes},
 		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "owner_user_id", Type: field.TypeUUID, Nullable: true},
@@ -28,13 +29,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "agent_sessions_tenants_tenant",
-				Columns:    []*schema.Column{AgentSessionsColumns[6]},
+				Columns:    []*schema.Column{AgentSessionsColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "agent_sessions_users_owner_user",
-				Columns:    []*schema.Column{AgentSessionsColumns[7]},
+				Columns:    []*schema.Column{AgentSessionsColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -43,17 +44,17 @@ var (
 			{
 				Name:    "agentsession_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AgentSessionsColumns[6]},
+				Columns: []*schema.Column{AgentSessionsColumns[7]},
 			},
 			{
 				Name:    "agentsession_tenant_id_owner_user_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{AgentSessionsColumns[6], AgentSessionsColumns[7], AgentSessionsColumns[1]},
+				Columns: []*schema.Column{AgentSessionsColumns[7], AgentSessionsColumns[8], AgentSessionsColumns[1]},
 			},
 			{
 				Name:    "agentsession_tenant_id_agent_name_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{AgentSessionsColumns[6], AgentSessionsColumns[3], AgentSessionsColumns[1]},
+				Columns: []*schema.Column{AgentSessionsColumns[7], AgentSessionsColumns[3], AgentSessionsColumns[1]},
 			},
 		},
 	}

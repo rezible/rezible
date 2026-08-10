@@ -79,7 +79,7 @@ export type AgentSessionAttributes = {
     createdAt: string;
     initialTurn?: AgentTurn;
     latestTurn?: AgentTurn;
-    ownerUserId: string;
+    ownerUserId?: string;
     permissionScopes: Array<string>;
 };
 
@@ -101,6 +101,7 @@ export type AgentTurnAttributes = {
     error?: AgentTurnError;
     finishReason?: string;
     finishedAt?: string;
+    knowledgeCitations?: Array<AgentTurnKnowledgeCitation>;
     parentTurnId?: string;
     startedAt?: string;
     state?: SessionStateRawMessage;
@@ -111,6 +112,17 @@ export type AgentTurnAttributes = {
 export type AgentTurnError = {
     code: string;
     message: string;
+};
+
+export type AgentTurnKnowledgeCitation = {
+    attributes: AgentTurnKnowledgeCitationAttributes;
+    id: string;
+};
+
+export type AgentTurnKnowledgeCitationAttributes = {
+    createdAt: string;
+    knowledgeEvidenceId: string;
+    summary: string;
 };
 
 export type AgentTurnResume = {
@@ -192,9 +204,7 @@ export type CompleteIntegrationOAuthFlowResponseBody = {
 
 export type CreateAgentSessionAttributes = {
     agentName: string;
-    input: {
-        [key: string]: unknown;
-    };
+    input: string;
 };
 
 export type CreateAgentSessionRequestBody = {

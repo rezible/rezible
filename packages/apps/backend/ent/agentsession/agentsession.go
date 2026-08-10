@@ -28,6 +28,8 @@ const (
 	FieldOwnerUserID = "owner_user_id"
 	// FieldDefaultScopes holds the string denoting the default_scopes field in the database.
 	FieldDefaultScopes = "default_scopes"
+	// FieldInput holds the string denoting the input field in the database.
+	FieldInput = "input"
 	// FieldMetadata holds the string denoting the metadata field in the database.
 	FieldMetadata = "metadata"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -70,6 +72,7 @@ var Columns = []string{
 	FieldAgentName,
 	FieldOwnerUserID,
 	FieldDefaultScopes,
+	FieldInput,
 	FieldMetadata,
 }
 

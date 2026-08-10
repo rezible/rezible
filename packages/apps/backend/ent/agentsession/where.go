@@ -82,6 +82,11 @@ func OwnerUserID(v uuid.UUID) predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldEQ(FieldOwnerUserID, v))
 }
 
+// Input applies equality check predicate on the "input" field. It's identical to InputEQ.
+func Input(v []byte) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldEQ(FieldInput, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldEQ(FieldTenantID, v))
@@ -275,6 +280,46 @@ func OwnerUserIDIsNil() predicate.AgentSession {
 // OwnerUserIDNotNil applies the NotNil predicate on the "owner_user_id" field.
 func OwnerUserIDNotNil() predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldNotNull(FieldOwnerUserID))
+}
+
+// InputEQ applies the EQ predicate on the "input" field.
+func InputEQ(v []byte) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldEQ(FieldInput, v))
+}
+
+// InputNEQ applies the NEQ predicate on the "input" field.
+func InputNEQ(v []byte) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldNEQ(FieldInput, v))
+}
+
+// InputIn applies the In predicate on the "input" field.
+func InputIn(vs ...[]byte) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldIn(FieldInput, vs...))
+}
+
+// InputNotIn applies the NotIn predicate on the "input" field.
+func InputNotIn(vs ...[]byte) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldNotIn(FieldInput, vs...))
+}
+
+// InputGT applies the GT predicate on the "input" field.
+func InputGT(v []byte) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldGT(FieldInput, v))
+}
+
+// InputGTE applies the GTE predicate on the "input" field.
+func InputGTE(v []byte) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldGTE(FieldInput, v))
+}
+
+// InputLT applies the LT predicate on the "input" field.
+func InputLT(v []byte) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldLT(FieldInput, v))
+}
+
+// InputLTE applies the LTE predicate on the "input" field.
+func InputLTE(v []byte) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldLTE(FieldInput, v))
 }
 
 // MetadataIsNil applies the IsNil predicate on the "metadata" field.

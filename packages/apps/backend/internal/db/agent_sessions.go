@@ -29,25 +29,14 @@ type AgentSessionService struct {
 	logger *slog.Logger
 	db     rez.Database
 	jobs   rez.JobService
-	ai     rez.AiService
 }
 
-func NewAgentSessionService(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgs rez.MessageService, aiSvc rez.AiService) (*AgentSessionService, error) {
+func NewAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService) (*AgentSessionService, error) {
 	s := &AgentSessionService{
-		logger: tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_session_service"}),
+		logger: tel.NewLogger(rez.NewLoggerOptions{Name: "agent_session_service"}),
 		db:     db,
 		jobs:   jobSvc,
-		ai:     aiSvc,
 	}
-
-	turnWorker := &agentTurnWorker{
-		db:      db,
-		ai:      aiSvc,
-		msgs:    msgs,
-		logger:  tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_turn_worker"}),
-		timeout: cfg.Agents.WorkerTimeout,
-	}
-	jobs.RegisterWorker(turnWorker)
 
 	return s, nil
 }
@@ -84,12 +73,9 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 	if name == "" {
 		return nil, fmt.Errorf("%w: agent name is required", rez.ErrInvalidInput)
 	}
-	initialInput, initErr := s.ai.MakeInitialAgentTurnInput(ctx, name, params.Input)
-	if initErr != nil {
-		return nil, fmt.Errorf("prepare agent session: %w", initErr)
-	}
-	if initialInput == nil {
-		return nil, fmt.Errorf("prepare agent session: nil result")
+	initialInput, inputErr := json.Marshal(params.Input)
+	if inputErr != nil {
+		return nil, fmt.Errorf("marshalling session input: %w", inputErr)
 	}
 	metadata := make(map[string]any, len(params.Metadata))
 	for key, value := range params.Metadata {
@@ -100,6 +86,7 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 	return session, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		createSession := tx.AgentSession.Create().
 			SetAgentName(name).
+			SetInput(initialInput).
 			SetNillableOwnerUserID(params.OwnerUserID)
 		if len(params.PermissionScopes) > 0 {
 			createSession.SetDefaultScopes(params.PermissionScopes)
@@ -107,62 +94,22 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 		if len(metadata) > 0 {
 			createSession.SetMetadata(metadata)
 		}
-
 		createdSession, createErr := createSession.Save(ctx)
 		if createErr != nil {
 			return fmt.Errorf("create agent session: %w", createErr)
 		}
 
-		turnParams := &rez.RequestAgentTurnParams{Input: initialInput}
-		createdTurn, turnErr := s.createAgentTurn(ctx, createdSession.ID, turnParams)
-		if turnErr != nil {
-			return fmt.Errorf("create turn: %w", turnErr)
+		startJobArgs := jobs.StartAgentSession{
+			SessionID: createdSession.ID,
+		}
+		_, jobErr := s.jobs.Insert(ctx, startJobArgs, nil)
+		if jobErr != nil {
+			return fmt.Errorf("insert start session job: %w", jobErr)
 		}
 
 		session = createdSession.Unwrap()
-		session.Edges.Turns = ent.AgentTurns{createdTurn.Unwrap()}
 		return nil
 	})
-}
-
-func (s *AgentSessionService) createAgentTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAgentTurnParams) (*ent.AgentTurn, error) {
-	if params == nil || params.Input == nil {
-		return nil, fmt.Errorf("%w: turn input nil", rez.ErrInvalidInput)
-	}
-	normalized := *params.Input
-	if normalized.Resume != nil &&
-		len(normalized.Resume.Respond)+len(normalized.Resume.Restart) == 0 {
-		normalized.Resume = nil
-	}
-	if normalized.Message == nil && normalized.Resume == nil {
-		return nil, rez.ErrInvalidInput
-	}
-
-	encodedInput, encodeErr := json.Marshal(normalized)
-	if encodeErr != nil {
-		return nil, fmt.Errorf("encode turn input: %w", encodeErr)
-	}
-
-	turnID := uuid.New()
-
-	jobID, jobErr := s.insertInvokeAgentTurnJob(ctx, sessionID, turnID)
-	if jobErr != nil {
-		return nil, fmt.Errorf("enqueue agent turn job: %w", jobErr)
-	}
-
-	createTurn := s.db.Client(ctx).AgentTurn.Create().
-		SetID(turnID).
-		SetAgentSessionID(sessionID).
-		SetNillableParentID(params.ParentTurnID).
-		SetRiverJobID(jobID).
-		SetInput(encodedInput).
-		SetStatus(at.StatusQueued)
-	turn, createErr := createTurn.Save(ctx)
-	if createErr != nil {
-		return nil, fmt.Errorf("create turn: %w", createErr)
-	}
-
-	return turn, nil
 }
 
 func (s *AgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
@@ -177,6 +124,11 @@ func (s *AgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTur
 }
 
 func (s *AgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAgentTurnParams) (*ent.AgentTurn, error) {
+	encodedInput, inputErr := s.normalizeAgentTurnInput(params)
+	if inputErr != nil {
+		return nil, inputErr
+	}
+
 	var turn *ent.AgentTurn
 	return turn, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		queryInitialTurn := s.queryAgentTurns(ctx).
@@ -189,17 +141,54 @@ func (s *AgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uu
 			return fmt.Errorf("%w: the initial turn must complete before requesting another turn", rez.ErrConflict)
 		}
 
-		createdTurn, turnErr := s.createAgentTurn(ctx, sessionID, params)
-		if turnErr != nil {
-			return fmt.Errorf("create turn: %w", turnErr)
+		turnID := uuid.New()
+
+		jobID, jobErr := s.insertInvokeAgentTurnJob(ctx, sessionID, turnID)
+		if jobErr != nil {
+			return fmt.Errorf("enqueue agent turn job: %w", jobErr)
 		}
-		turn = createdTurn.Unwrap()
+
+		createTurn := s.db.Client(ctx).AgentTurn.Create().
+			SetID(turnID).
+			SetAgentSessionID(sessionID).
+			SetNillableParentID(params.ParentTurnID).
+			SetRiverJobID(jobID).
+			SetInput(encodedInput).
+			SetStatus(at.StatusQueued)
+		savedTurn, createErr := createTurn.Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("create turn: %w", createErr)
+		}
+		turn = savedTurn.Unwrap()
 		return nil
 	})
 }
 
+func (s *AgentSessionService) normalizeAgentTurnInput(params *rez.RequestAgentTurnParams) ([]byte, error) {
+	if params == nil {
+		return nil, fmt.Errorf("%w: turn input nil", rez.ErrInvalidInput)
+	}
+	normalized := *params.Input
+	if normalized.Resume != nil &&
+		len(normalized.Resume.Respond)+len(normalized.Resume.Restart) == 0 {
+		normalized.Resume = nil
+	}
+	if normalized.Message == nil && normalized.Resume == nil {
+		return nil, rez.ErrInvalidInput
+	}
+	encodedInput, encodeErr := json.Marshal(normalized)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode turn input: %w", encodeErr)
+	}
+	return encodedInput, nil
+}
+
 func (s *AgentSessionService) insertInvokeAgentTurnJob(ctx context.Context, sessId uuid.UUID, turnId uuid.UUID) (int64, error) {
-	result, insertErr := s.jobs.Insert(ctx, jobs.InvokeAgentTurn{AgentSessionID: sessId, AgentTurnID: turnId}, nil)
+	jobArgs := jobs.InvokeAgentTurn{
+		AgentSessionID: sessId,
+		AgentTurnID:    turnId,
+	}
+	result, insertErr := s.jobs.Insert(ctx, jobArgs, nil)
 	if insertErr != nil {
 		return 0, fmt.Errorf("insert turn job: %w", insertErr)
 	}
@@ -339,7 +328,57 @@ func (s *AgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.UU
 	})
 }
 
-type agentTurnWorker struct {
+type StartAgentSessionWorker struct {
+	river.WorkerDefaults[jobs.StartAgentSession]
+
+	db      rez.Database
+	ai      rez.AiService
+	aiSess  rez.AgentSessionService
+	logger  *slog.Logger
+	timeout time.Duration
+}
+
+func NewStartAgentSessionWorker(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, aiSvc rez.AiService) (*StartAgentSessionWorker, error) {
+	w := &StartAgentSessionWorker{
+		db:      db,
+		ai:      aiSvc,
+		logger:  tel.NewLogger(rez.NewLoggerOptions{Name: "start_agent_session_worker"}),
+		timeout: cfg.Agents.WorkerTimeout,
+	}
+	return w, nil
+}
+
+func (w *StartAgentSessionWorker) Timeout(job *river.Job[jobs.StartAgentSession]) time.Duration {
+	return w.timeout
+}
+
+func (w *StartAgentSessionWorker) Work(ctx context.Context, job *river.Job[jobs.StartAgentSession]) error {
+	logger := w.logger.With("session_id", job.Args.SessionID)
+	sess, sessErr := w.db.Client(ctx).AgentSession.Get(ctx, job.Args.SessionID)
+	if sessErr != nil {
+		if ent.IsNotFound(sessErr) {
+			return river.JobCancel(fmt.Errorf("agent turn no longer exists"))
+		}
+		return fmt.Errorf("get session: %w", sessErr)
+	}
+	logger.Info("making initial agent turn input")
+	initialInput, initErr := w.ai.MakeInitialAgentTurnInput(ctx, sess)
+	if initErr != nil {
+		return fmt.Errorf("prepare agent session: %w", initErr)
+	} else if initialInput == nil {
+		return fmt.Errorf("prepare agent session: nil result")
+	}
+	logger.Info("requesting initial agent turn")
+	params := &rez.RequestAgentTurnParams{Input: initialInput}
+	turn, turnErr := w.aiSess.RequestAgentTurn(ctx, sess.ID, params)
+	if turnErr != nil {
+		return fmt.Errorf("request agent turn: %w", turnErr)
+	}
+	logger.Info("requested initial agent turn", "turn_id", turn.ID)
+	return nil
+}
+
+type InvokeAgentTurnWorker struct {
 	river.WorkerDefaults[jobs.InvokeAgentTurn]
 
 	db      rez.Database
@@ -349,11 +388,22 @@ type agentTurnWorker struct {
 	timeout time.Duration
 }
 
-func (w *agentTurnWorker) Timeout(job *river.Job[jobs.InvokeAgentTurn]) time.Duration {
+func NewInvokeAgentTurnWorker(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, msgs rez.MessageService, aiSvc rez.AiService) (*InvokeAgentTurnWorker, error) {
+	w := &InvokeAgentTurnWorker{
+		db:      db,
+		ai:      aiSvc,
+		msgs:    msgs,
+		logger:  tel.NewLogger(rez.NewLoggerOptions{Name: "invoke_agent_turn_worker"}),
+		timeout: cfg.Agents.WorkerTimeout,
+	}
+	return w, nil
+}
+
+func (w *InvokeAgentTurnWorker) Timeout(job *river.Job[jobs.InvokeAgentTurn]) time.Duration {
 	return w.timeout
 }
 
-func (w *agentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) error {
+func (w *InvokeAgentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) error {
 	claim, claimErr := w.claimAgentTurn(ctx, job)
 	if claimErr != nil {
 		if ent.IsNotFound(claimErr) {
@@ -399,7 +449,7 @@ func (w *agentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.InvokeAg
 	return w.saveInvocationResult(ctx, job, result)
 }
 
-func (w *agentTurnWorker) invokeClaimedTurn(ctx context.Context, claim *claimedAgentTurn) (*rez.AgentInvocationResult, error) {
+func (w *InvokeAgentTurnWorker) invokeClaimedTurn(ctx context.Context, claim *claimedAgentTurn) (*rez.AgentInvocationResult, error) {
 	var input rez.AgentTurnInput
 	if decodeErr := json.Unmarshal(claim.turn.Input, &input); decodeErr != nil {
 		return nil, fmt.Errorf("decode stored turn input: %w", decodeErr)
@@ -429,7 +479,7 @@ type claimedAgentTurn struct {
 	turn    *ent.AgentTurn
 }
 
-func (w *agentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) (*claimedAgentTurn, error) {
+func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) (*claimedAgentTurn, error) {
 	var claim *claimedAgentTurn
 	return claim, w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if lockErr := acquireAgentSessionTurnLock(ctx, w.db, job.Args.AgentSessionID); lockErr != nil {
@@ -536,7 +586,7 @@ func (w *agentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[job
 	})
 }
 
-func (w *agentTurnWorker) saveInvocationError(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], err error) error {
+func (w *InvokeAgentTurnWorker) saveInvocationError(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], err error) error {
 	return w.updateClaimedTurn(ctx, job, func(currStatus at.Status, u *ent.AgentTurnUpdateOne) error {
 		if currStatus != at.StatusRunning && currStatus != at.StatusQueued {
 			switch currStatus {
@@ -562,7 +612,7 @@ func (w *agentTurnWorker) saveInvocationError(ctx context.Context, job *river.Jo
 	})
 }
 
-func (w *agentTurnWorker) saveInvocationResult(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], result *rez.AgentInvocationResult) error {
+func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], result *rez.AgentInvocationResult) error {
 	return w.updateClaimedTurn(ctx, job, func(currStatus at.Status, u *ent.AgentTurnUpdateOne) error {
 		if currStatus != at.StatusRunning {
 			switch currStatus {
@@ -630,7 +680,7 @@ func (w *agentTurnWorker) saveInvocationResult(ctx context.Context, job *river.J
 	})
 }
 
-func (w *agentTurnWorker) updateClaimedTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], setFn func(at.Status, *ent.AgentTurnUpdateOne) error) error {
+func (w *InvokeAgentTurnWorker) updateClaimedTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], setFn func(at.Status, *ent.AgentTurnUpdateOne) error) error {
 	cleanupCancel := func() {}
 	if ctx.Err() != nil {
 		ctx, cleanupCancel = context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)

@@ -39,7 +39,7 @@ func TestAgentSessionServiceSuite(t *testing.T) {
 
 type agentSessionTestHarness struct {
 	service  *AgentSessionService
-	worker   *agentTurnWorker
+	worker   *InvokeAgentTurnWorker
 	jobs     *mocks.MockJobService
 	ai       *mocks.MockAiService
 	messages *mocks.MockMessageService
@@ -72,7 +72,7 @@ func (s *AgentSessionServiceSuite) newAgentSessionTestHarness() *agentSessionTes
 			jobs:   jobService,
 			ai:     aiService,
 		},
-		worker: &agentTurnWorker{
+		worker: &InvokeAgentTurnWorker{
 			db:     s.Database(),
 			ai:     aiService,
 			msgs:   messageService,

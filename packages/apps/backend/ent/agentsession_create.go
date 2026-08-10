@@ -87,6 +87,12 @@ func (_c *AgentSessionCreate) SetDefaultScopes(v []string) *AgentSessionCreate {
 	return _c
 }
 
+// SetInput sets the "input" field.
+func (_c *AgentSessionCreate) SetInput(v []byte) *AgentSessionCreate {
+	_c.mutation.SetInput(v)
+	return _c
+}
+
 // SetMetadata sets the "metadata" field.
 func (_c *AgentSessionCreate) SetMetadata(v map[string]interface{}) *AgentSessionCreate {
 	_c.mutation.SetMetadata(v)
@@ -219,6 +225,9 @@ func (_c *AgentSessionCreate) check() error {
 	if _, ok := _c.mutation.DefaultScopes(); !ok {
 		return &ValidationError{Name: "default_scopes", err: errors.New(`ent: missing required field "AgentSession.default_scopes"`)}
 	}
+	if _, ok := _c.mutation.Input(); !ok {
+		return &ValidationError{Name: "input", err: errors.New(`ent: missing required field "AgentSession.input"`)}
+	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentSession.tenant"`)}
 	}
@@ -274,6 +283,10 @@ func (_c *AgentSessionCreate) createSpec() (*AgentSession, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.DefaultScopes(); ok {
 		_spec.SetField(agentsession.FieldDefaultScopes, field.TypeJSON, value)
 		_node.DefaultScopes = value
+	}
+	if value, ok := _c.mutation.Input(); ok {
+		_spec.SetField(agentsession.FieldInput, field.TypeBytes, value)
+		_node.Input = value
 	}
 	if value, ok := _c.mutation.Metadata(); ok {
 		_spec.SetField(agentsession.FieldMetadata, field.TypeJSON, value)
@@ -450,6 +463,18 @@ func (u *AgentSessionUpsert) UpdateDefaultScopes() *AgentSessionUpsert {
 	return u
 }
 
+// SetInput sets the "input" field.
+func (u *AgentSessionUpsert) SetInput(v []byte) *AgentSessionUpsert {
+	u.Set(agentsession.FieldInput, v)
+	return u
+}
+
+// UpdateInput sets the "input" field to the value that was provided on create.
+func (u *AgentSessionUpsert) UpdateInput() *AgentSessionUpsert {
+	u.SetExcluded(agentsession.FieldInput)
+	return u
+}
+
 // SetMetadata sets the "metadata" field.
 func (u *AgentSessionUpsert) SetMetadata(v map[string]interface{}) *AgentSessionUpsert {
 	u.Set(agentsession.FieldMetadata, v)
@@ -593,6 +618,20 @@ func (u *AgentSessionUpsertOne) SetDefaultScopes(v []string) *AgentSessionUpsert
 func (u *AgentSessionUpsertOne) UpdateDefaultScopes() *AgentSessionUpsertOne {
 	return u.Update(func(s *AgentSessionUpsert) {
 		s.UpdateDefaultScopes()
+	})
+}
+
+// SetInput sets the "input" field.
+func (u *AgentSessionUpsertOne) SetInput(v []byte) *AgentSessionUpsertOne {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.SetInput(v)
+	})
+}
+
+// UpdateInput sets the "input" field to the value that was provided on create.
+func (u *AgentSessionUpsertOne) UpdateInput() *AgentSessionUpsertOne {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.UpdateInput()
 	})
 }
 
@@ -909,6 +948,20 @@ func (u *AgentSessionUpsertBulk) SetDefaultScopes(v []string) *AgentSessionUpser
 func (u *AgentSessionUpsertBulk) UpdateDefaultScopes() *AgentSessionUpsertBulk {
 	return u.Update(func(s *AgentSessionUpsert) {
 		s.UpdateDefaultScopes()
+	})
+}
+
+// SetInput sets the "input" field.
+func (u *AgentSessionUpsertBulk) SetInput(v []byte) *AgentSessionUpsertBulk {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.SetInput(v)
+	})
+}
+
+// UpdateInput sets the "input" field to the value that was provided on create.
+func (u *AgentSessionUpsertBulk) UpdateInput() *AgentSessionUpsertBulk {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.UpdateInput()
 	})
 }
 

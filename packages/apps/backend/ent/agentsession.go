@@ -33,6 +33,8 @@ type AgentSession struct {
 	OwnerUserID *uuid.UUID `json:"owner_user_id,omitempty"`
 	// DefaultScopes holds the value of the "default_scopes" field.
 	DefaultScopes []string `json:"default_scopes,omitempty"`
+	// Input holds the value of the "input" field.
+	Input []byte `json:"input,omitempty"`
 	// Metadata holds the value of the "metadata" field.
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -92,7 +94,7 @@ func (*AgentSession) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case agentsession.FieldOwnerUserID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case agentsession.FieldDefaultScopes, agentsession.FieldMetadata:
+		case agentsession.FieldDefaultScopes, agentsession.FieldInput, agentsession.FieldMetadata:
 			values[i] = new([]byte)
 		case agentsession.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -161,6 +163,12 @@ func (_m *AgentSession) assignValues(columns []string, values []any) error {
 				if err := json.Unmarshal(*value, &_m.DefaultScopes); err != nil {
 					return fmt.Errorf("unmarshal field default_scopes: %w", err)
 				}
+			}
+		case agentsession.FieldInput:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field input", values[i])
+			} else if value != nil {
+				_m.Input = *value
 			}
 		case agentsession.FieldMetadata:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -240,6 +248,9 @@ func (_m *AgentSession) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("default_scopes=")
 	builder.WriteString(fmt.Sprintf("%v", _m.DefaultScopes))
+	builder.WriteString(", ")
+	builder.WriteString("input=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Input))
 	builder.WriteString(", ")
 	builder.WriteString("metadata=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Metadata))
