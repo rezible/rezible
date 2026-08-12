@@ -8,6 +8,8 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentartifact"
+	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
@@ -135,6 +137,60 @@ func (f TraverseFunc) Traverse(ctx context.Context, q ent.Query) error {
 		return err
 	}
 	return f(ctx, query)
+}
+
+// The AgentArtifactFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentArtifactFunc func(context.Context, *ent.AgentArtifactQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AgentArtifactFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentArtifactQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentArtifactQuery", q)
+}
+
+// The TraverseAgentArtifact type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentArtifact func(context.Context, *ent.AgentArtifactQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAgentArtifact) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAgentArtifact) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentArtifactQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentArtifactQuery", q)
+}
+
+// The AgentMessageFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentMessageFunc func(context.Context, *ent.AgentMessageQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AgentMessageFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentMessageQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentMessageQuery", q)
+}
+
+// The TraverseAgentMessage type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentMessage func(context.Context, *ent.AgentMessageQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAgentMessage) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAgentMessage) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentMessageQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentMessageQuery", q)
 }
 
 // The AgentSessionFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2030,6 +2086,10 @@ func (f TraverseVideoConference) Traverse(ctx context.Context, q ent.Query) erro
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
+	case *ent.AgentArtifactQuery:
+		return &query[*ent.AgentArtifactQuery, predicate.AgentArtifact, agentartifact.OrderOption]{typ: ent.TypeAgentArtifact, tq: q}, nil
+	case *ent.AgentMessageQuery:
+		return &query[*ent.AgentMessageQuery, predicate.AgentMessage, agentmessage.OrderOption]{typ: ent.TypeAgentMessage, tq: q}, nil
 	case *ent.AgentSessionQuery:
 		return &query[*ent.AgentSessionQuery, predicate.AgentSession, agentsession.OrderOption]{typ: ent.TypeAgentSession, tq: q}, nil
 	case *ent.AgentTurnQuery:

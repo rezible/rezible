@@ -14,6 +14,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentartifact"
+	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
@@ -31,8 +33,9 @@ type AgentTurnQuery struct {
 	predicates             []predicate.AgentTurn
 	withTenant             *TenantQuery
 	withAgentSession       *AgentSessionQuery
-	withParent             *AgentTurnQuery
-	withChildren           *AgentTurnQuery
+	withInputMessage       *AgentMessageQuery
+	withMessages           *AgentMessageQuery
+	withArtifacts          *AgentArtifactQuery
 	withKnowledgeCitations *AgentTurnKnowledgeCitationQuery
 	modifiers              []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -121,9 +124,9 @@ func (_q *AgentTurnQuery) QueryAgentSession() *AgentSessionQuery {
 	return query
 }
 
-// QueryParent chains the current query on the "parent" edge.
-func (_q *AgentTurnQuery) QueryParent() *AgentTurnQuery {
-	query := (&AgentTurnClient{config: _q.config}).Query()
+// QueryInputMessage chains the current query on the "input_message" edge.
+func (_q *AgentTurnQuery) QueryInputMessage() *AgentMessageQuery {
+	query := (&AgentMessageClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -134,11 +137,11 @@ func (_q *AgentTurnQuery) QueryParent() *AgentTurnQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentturn.Table, agentturn.FieldID, selector),
-			sqlgraph.To(agentturn.Table, agentturn.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentturn.ParentTable, agentturn.ParentColumn),
+			sqlgraph.To(agentmessage.Table, agentmessage.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentturn.InputMessageTable, agentturn.InputMessageColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AgentTurn
+		step.To.Schema = schemaConfig.AgentMessage
 		step.Edge.Schema = schemaConfig.AgentTurn
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -146,9 +149,9 @@ func (_q *AgentTurnQuery) QueryParent() *AgentTurnQuery {
 	return query
 }
 
-// QueryChildren chains the current query on the "children" edge.
-func (_q *AgentTurnQuery) QueryChildren() *AgentTurnQuery {
-	query := (&AgentTurnClient{config: _q.config}).Query()
+// QueryMessages chains the current query on the "messages" edge.
+func (_q *AgentTurnQuery) QueryMessages() *AgentMessageQuery {
+	query := (&AgentMessageClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -159,12 +162,37 @@ func (_q *AgentTurnQuery) QueryChildren() *AgentTurnQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentturn.Table, agentturn.FieldID, selector),
-			sqlgraph.To(agentturn.Table, agentturn.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, agentturn.ChildrenTable, agentturn.ChildrenColumn),
+			sqlgraph.To(agentmessage.Table, agentmessage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, agentturn.MessagesTable, agentturn.MessagesColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AgentTurn
-		step.Edge.Schema = schemaConfig.AgentTurn
+		step.To.Schema = schemaConfig.AgentMessage
+		step.Edge.Schema = schemaConfig.AgentMessage
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryArtifacts chains the current query on the "artifacts" edge.
+func (_q *AgentTurnQuery) QueryArtifacts() *AgentArtifactQuery {
+	query := (&AgentArtifactClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentturn.Table, agentturn.FieldID, selector),
+			sqlgraph.To(agentartifact.Table, agentartifact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, agentturn.ArtifactsTable, agentturn.ArtifactsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentArtifact
+		step.Edge.Schema = schemaConfig.AgentArtifact
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -390,8 +418,9 @@ func (_q *AgentTurnQuery) Clone() *AgentTurnQuery {
 		predicates:             append([]predicate.AgentTurn{}, _q.predicates...),
 		withTenant:             _q.withTenant.Clone(),
 		withAgentSession:       _q.withAgentSession.Clone(),
-		withParent:             _q.withParent.Clone(),
-		withChildren:           _q.withChildren.Clone(),
+		withInputMessage:       _q.withInputMessage.Clone(),
+		withMessages:           _q.withMessages.Clone(),
+		withArtifacts:          _q.withArtifacts.Clone(),
 		withKnowledgeCitations: _q.withKnowledgeCitations.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
@@ -422,25 +451,36 @@ func (_q *AgentTurnQuery) WithAgentSession(opts ...func(*AgentSessionQuery)) *Ag
 	return _q
 }
 
-// WithParent tells the query-builder to eager-load the nodes that are connected to
-// the "parent" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentTurnQuery) WithParent(opts ...func(*AgentTurnQuery)) *AgentTurnQuery {
-	query := (&AgentTurnClient{config: _q.config}).Query()
+// WithInputMessage tells the query-builder to eager-load the nodes that are connected to
+// the "input_message" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentTurnQuery) WithInputMessage(opts ...func(*AgentMessageQuery)) *AgentTurnQuery {
+	query := (&AgentMessageClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withParent = query
+	_q.withInputMessage = query
 	return _q
 }
 
-// WithChildren tells the query-builder to eager-load the nodes that are connected to
-// the "children" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentTurnQuery) WithChildren(opts ...func(*AgentTurnQuery)) *AgentTurnQuery {
-	query := (&AgentTurnClient{config: _q.config}).Query()
+// WithMessages tells the query-builder to eager-load the nodes that are connected to
+// the "messages" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentTurnQuery) WithMessages(opts ...func(*AgentMessageQuery)) *AgentTurnQuery {
+	query := (&AgentMessageClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withChildren = query
+	_q.withMessages = query
+	return _q
+}
+
+// WithArtifacts tells the query-builder to eager-load the nodes that are connected to
+// the "artifacts" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentTurnQuery) WithArtifacts(opts ...func(*AgentArtifactQuery)) *AgentTurnQuery {
+	query := (&AgentArtifactClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withArtifacts = query
 	return _q
 }
 
@@ -539,11 +579,12 @@ func (_q *AgentTurnQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ag
 	var (
 		nodes       = []*AgentTurn{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withAgentSession != nil,
-			_q.withParent != nil,
-			_q.withChildren != nil,
+			_q.withInputMessage != nil,
+			_q.withMessages != nil,
+			_q.withArtifacts != nil,
 			_q.withKnowledgeCitations != nil,
 		}
 	)
@@ -582,16 +623,23 @@ func (_q *AgentTurnQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ag
 			return nil, err
 		}
 	}
-	if query := _q.withParent; query != nil {
-		if err := _q.loadParent(ctx, query, nodes, nil,
-			func(n *AgentTurn, e *AgentTurn) { n.Edges.Parent = e }); err != nil {
+	if query := _q.withInputMessage; query != nil {
+		if err := _q.loadInputMessage(ctx, query, nodes, nil,
+			func(n *AgentTurn, e *AgentMessage) { n.Edges.InputMessage = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withChildren; query != nil {
-		if err := _q.loadChildren(ctx, query, nodes,
-			func(n *AgentTurn) { n.Edges.Children = []*AgentTurn{} },
-			func(n *AgentTurn, e *AgentTurn) { n.Edges.Children = append(n.Edges.Children, e) }); err != nil {
+	if query := _q.withMessages; query != nil {
+		if err := _q.loadMessages(ctx, query, nodes,
+			func(n *AgentTurn) { n.Edges.Messages = []*AgentMessage{} },
+			func(n *AgentTurn, e *AgentMessage) { n.Edges.Messages = append(n.Edges.Messages, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withArtifacts; query != nil {
+		if err := _q.loadArtifacts(ctx, query, nodes,
+			func(n *AgentTurn) { n.Edges.Artifacts = []*AgentArtifact{} },
+			func(n *AgentTurn, e *AgentArtifact) { n.Edges.Artifacts = append(n.Edges.Artifacts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -665,14 +713,14 @@ func (_q *AgentTurnQuery) loadAgentSession(ctx context.Context, query *AgentSess
 	}
 	return nil
 }
-func (_q *AgentTurnQuery) loadParent(ctx context.Context, query *AgentTurnQuery, nodes []*AgentTurn, init func(*AgentTurn), assign func(*AgentTurn, *AgentTurn)) error {
+func (_q *AgentTurnQuery) loadInputMessage(ctx context.Context, query *AgentMessageQuery, nodes []*AgentTurn, init func(*AgentTurn), assign func(*AgentTurn, *AgentMessage)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AgentTurn)
 	for i := range nodes {
-		if nodes[i].ParentID == nil {
+		if nodes[i].InputMessageID == nil {
 			continue
 		}
-		fk := *nodes[i].ParentID
+		fk := *nodes[i].InputMessageID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -681,7 +729,7 @@ func (_q *AgentTurnQuery) loadParent(ctx context.Context, query *AgentTurnQuery,
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(agentturn.IDIn(ids...))
+	query.Where(agentmessage.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -689,7 +737,7 @@ func (_q *AgentTurnQuery) loadParent(ctx context.Context, query *AgentTurnQuery,
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "parent_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "input_message_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -697,7 +745,7 @@ func (_q *AgentTurnQuery) loadParent(ctx context.Context, query *AgentTurnQuery,
 	}
 	return nil
 }
-func (_q *AgentTurnQuery) loadChildren(ctx context.Context, query *AgentTurnQuery, nodes []*AgentTurn, init func(*AgentTurn), assign func(*AgentTurn, *AgentTurn)) error {
+func (_q *AgentTurnQuery) loadMessages(ctx context.Context, query *AgentMessageQuery, nodes []*AgentTurn, init func(*AgentTurn), assign func(*AgentTurn, *AgentMessage)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*AgentTurn)
 	for i := range nodes {
@@ -708,23 +756,53 @@ func (_q *AgentTurnQuery) loadChildren(ctx context.Context, query *AgentTurnQuer
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(agentturn.FieldParentID)
+		query.ctx.AppendFieldOnce(agentmessage.FieldAgentTurnID)
 	}
-	query.Where(predicate.AgentTurn(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(agentturn.ChildrenColumn), fks...))
+	query.Where(predicate.AgentMessage(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(agentturn.MessagesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.ParentID
+		fk := n.AgentTurnID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "agent_turn_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *AgentTurnQuery) loadArtifacts(ctx context.Context, query *AgentArtifactQuery, nodes []*AgentTurn, init func(*AgentTurn), assign func(*AgentTurn, *AgentArtifact)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*AgentTurn)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(agentartifact.FieldLastAgentTurnID)
+	}
+	query.Where(predicate.AgentArtifact(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(agentturn.ArtifactsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.LastAgentTurnID
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "parent_id" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "last_agent_turn_id" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "parent_id" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "last_agent_turn_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -797,8 +875,8 @@ func (_q *AgentTurnQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withAgentSession != nil {
 			_spec.Node.AddColumnOnce(agentturn.FieldAgentSessionID)
 		}
-		if _q.withParent != nil {
-			_spec.Node.AddColumnOnce(agentturn.FieldParentID)
+		if _q.withInputMessage != nil {
+			_spec.Node.AddColumnOnce(agentturn.FieldInputMessageID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

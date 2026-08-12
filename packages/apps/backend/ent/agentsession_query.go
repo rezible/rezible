@@ -14,6 +14,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentartifact"
+	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
@@ -32,6 +34,8 @@ type AgentSessionQuery struct {
 	withTenant    *TenantQuery
 	withOwnerUser *UserQuery
 	withTurns     *AgentTurnQuery
+	withMessages  *AgentMessageQuery
+	withArtifacts *AgentArtifactQuery
 	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -138,6 +142,56 @@ func (_q *AgentSessionQuery) QueryTurns() *AgentTurnQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentTurn
 		step.Edge.Schema = schemaConfig.AgentTurn
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMessages chains the current query on the "messages" edge.
+func (_q *AgentSessionQuery) QueryMessages() *AgentMessageQuery {
+	query := (&AgentMessageClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentsession.Table, agentsession.FieldID, selector),
+			sqlgraph.To(agentmessage.Table, agentmessage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, agentsession.MessagesTable, agentsession.MessagesColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentMessage
+		step.Edge.Schema = schemaConfig.AgentMessage
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryArtifacts chains the current query on the "artifacts" edge.
+func (_q *AgentSessionQuery) QueryArtifacts() *AgentArtifactQuery {
+	query := (&AgentArtifactClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentsession.Table, agentsession.FieldID, selector),
+			sqlgraph.To(agentartifact.Table, agentartifact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, agentsession.ArtifactsTable, agentsession.ArtifactsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentArtifact
+		step.Edge.Schema = schemaConfig.AgentArtifact
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -339,6 +393,8 @@ func (_q *AgentSessionQuery) Clone() *AgentSessionQuery {
 		withTenant:    _q.withTenant.Clone(),
 		withOwnerUser: _q.withOwnerUser.Clone(),
 		withTurns:     _q.withTurns.Clone(),
+		withMessages:  _q.withMessages.Clone(),
+		withArtifacts: _q.withArtifacts.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -376,6 +432,28 @@ func (_q *AgentSessionQuery) WithTurns(opts ...func(*AgentTurnQuery)) *AgentSess
 		opt(query)
 	}
 	_q.withTurns = query
+	return _q
+}
+
+// WithMessages tells the query-builder to eager-load the nodes that are connected to
+// the "messages" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentSessionQuery) WithMessages(opts ...func(*AgentMessageQuery)) *AgentSessionQuery {
+	query := (&AgentMessageClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withMessages = query
+	return _q
+}
+
+// WithArtifacts tells the query-builder to eager-load the nodes that are connected to
+// the "artifacts" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentSessionQuery) WithArtifacts(opts ...func(*AgentArtifactQuery)) *AgentSessionQuery {
+	query := (&AgentArtifactClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withArtifacts = query
 	return _q
 }
 
@@ -463,10 +541,12 @@ func (_q *AgentSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*AgentSession{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withOwnerUser != nil,
 			_q.withTurns != nil,
+			_q.withMessages != nil,
+			_q.withArtifacts != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -508,6 +588,20 @@ func (_q *AgentSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		if err := _q.loadTurns(ctx, query, nodes,
 			func(n *AgentSession) { n.Edges.Turns = []*AgentTurn{} },
 			func(n *AgentSession, e *AgentTurn) { n.Edges.Turns = append(n.Edges.Turns, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withMessages; query != nil {
+		if err := _q.loadMessages(ctx, query, nodes,
+			func(n *AgentSession) { n.Edges.Messages = []*AgentMessage{} },
+			func(n *AgentSession, e *AgentMessage) { n.Edges.Messages = append(n.Edges.Messages, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withArtifacts; query != nil {
+		if err := _q.loadArtifacts(ctx, query, nodes,
+			func(n *AgentSession) { n.Edges.Artifacts = []*AgentArtifact{} },
+			func(n *AgentSession, e *AgentArtifact) { n.Edges.Artifacts = append(n.Edges.Artifacts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -590,6 +684,66 @@ func (_q *AgentSessionQuery) loadTurns(ctx context.Context, query *AgentTurnQuer
 	}
 	query.Where(predicate.AgentTurn(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(agentsession.TurnsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AgentSessionID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "agent_session_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *AgentSessionQuery) loadMessages(ctx context.Context, query *AgentMessageQuery, nodes []*AgentSession, init func(*AgentSession), assign func(*AgentSession, *AgentMessage)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*AgentSession)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(agentmessage.FieldAgentSessionID)
+	}
+	query.Where(predicate.AgentMessage(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(agentsession.MessagesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AgentSessionID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "agent_session_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *AgentSessionQuery) loadArtifacts(ctx context.Context, query *AgentArtifactQuery, nodes []*AgentSession, init func(*AgentSession), assign func(*AgentSession, *AgentArtifact)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*AgentSession)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(agentartifact.FieldAgentSessionID)
+	}
+	query.Where(predicate.AgentArtifact(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(agentsession.ArtifactsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

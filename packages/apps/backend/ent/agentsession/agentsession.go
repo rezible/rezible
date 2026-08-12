@@ -26,8 +26,8 @@ const (
 	FieldAgentName = "agent_name"
 	// FieldOwnerUserID holds the string denoting the owner_user_id field in the database.
 	FieldOwnerUserID = "owner_user_id"
-	// FieldDefaultScopes holds the string denoting the default_scopes field in the database.
-	FieldDefaultScopes = "default_scopes"
+	// FieldScopes holds the string denoting the scopes field in the database.
+	FieldScopes = "scopes"
 	// FieldInput holds the string denoting the input field in the database.
 	FieldInput = "input"
 	// FieldMetadata holds the string denoting the metadata field in the database.
@@ -38,6 +38,10 @@ const (
 	EdgeOwnerUser = "owner_user"
 	// EdgeTurns holds the string denoting the turns edge name in mutations.
 	EdgeTurns = "turns"
+	// EdgeMessages holds the string denoting the messages edge name in mutations.
+	EdgeMessages = "messages"
+	// EdgeArtifacts holds the string denoting the artifacts edge name in mutations.
+	EdgeArtifacts = "artifacts"
 	// Table holds the table name of the agentsession in the database.
 	Table = "agent_sessions"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -61,6 +65,20 @@ const (
 	TurnsInverseTable = "agent_turns"
 	// TurnsColumn is the table column denoting the turns relation/edge.
 	TurnsColumn = "agent_session_id"
+	// MessagesTable is the table that holds the messages relation/edge.
+	MessagesTable = "agent_messages"
+	// MessagesInverseTable is the table name for the AgentMessage entity.
+	// It exists in this package in order to avoid circular dependency with the "agentmessage" package.
+	MessagesInverseTable = "agent_messages"
+	// MessagesColumn is the table column denoting the messages relation/edge.
+	MessagesColumn = "agent_session_id"
+	// ArtifactsTable is the table that holds the artifacts relation/edge.
+	ArtifactsTable = "agent_artifacts"
+	// ArtifactsInverseTable is the table name for the AgentArtifact entity.
+	// It exists in this package in order to avoid circular dependency with the "agentartifact" package.
+	ArtifactsInverseTable = "agent_artifacts"
+	// ArtifactsColumn is the table column denoting the artifacts relation/edge.
+	ArtifactsColumn = "agent_session_id"
 )
 
 // Columns holds all SQL columns for agentsession fields.
@@ -71,7 +89,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldAgentName,
 	FieldOwnerUserID,
-	FieldDefaultScopes,
+	FieldScopes,
 	FieldInput,
 	FieldMetadata,
 }
@@ -102,8 +120,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// AgentNameValidator is a validator for the "agent_name" field. It is called by the builders before save.
 	AgentNameValidator func(string) error
-	// DefaultDefaultScopes holds the default value on creation for the "default_scopes" field.
-	DefaultDefaultScopes []string
+	// DefaultScopes holds the default value on creation for the "scopes" field.
+	DefaultScopes []string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -168,6 +186,34 @@ func ByTurns(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTurnsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByMessagesCount orders the results by messages count.
+func ByMessagesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMessagesStep(), opts...)
+	}
+}
+
+// ByMessages orders the results by messages terms.
+func ByMessages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMessagesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByArtifactsCount orders the results by artifacts count.
+func ByArtifactsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newArtifactsStep(), opts...)
+	}
+}
+
+// ByArtifacts orders the results by artifacts terms.
+func ByArtifacts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newArtifactsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -187,5 +233,19 @@ func newTurnsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TurnsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, TurnsTable, TurnsColumn),
+	)
+}
+func newMessagesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MessagesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MessagesTable, MessagesColumn),
+	)
+}
+func newArtifactsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ArtifactsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ArtifactsTable, ArtifactsColumn),
 	)
 }

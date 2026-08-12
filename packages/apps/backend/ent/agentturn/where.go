@@ -77,19 +77,19 @@ func AgentSessionID(v uuid.UUID) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldAgentSessionID, v))
 }
 
+// Sequence applies equality check predicate on the "sequence" field. It's identical to SequenceEQ.
+func Sequence(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldSequence, v))
+}
+
 // RiverJobID applies equality check predicate on the "river_job_id" field. It's identical to RiverJobIDEQ.
 func RiverJobID(v int64) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldRiverJobID, v))
 }
 
-// ParentID applies equality check predicate on the "parent_id" field. It's identical to ParentIDEQ.
-func ParentID(v uuid.UUID) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldEQ(FieldParentID, v))
-}
-
-// Input applies equality check predicate on the "input" field. It's identical to InputEQ.
-func Input(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldEQ(FieldInput, v))
+// InputMessageID applies equality check predicate on the "input_message_id" field. It's identical to InputMessageIDEQ.
+func InputMessageID(v uuid.UUID) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldInputMessageID, v))
 }
 
 // StartedAt applies equality check predicate on the "started_at" field. It's identical to StartedAtEQ.
@@ -107,13 +107,8 @@ func FinishReason(v string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldFinishReason, v))
 }
 
-// State applies equality check predicate on the "state" field. It's identical to StateEQ.
-func State(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldEQ(FieldState, v))
-}
-
 // Error applies equality check predicate on the "error" field. It's identical to ErrorEQ.
-func Error(v []byte) predicate.AgentTurn {
+func Error(v string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldError, v))
 }
 
@@ -237,6 +232,46 @@ func AgentSessionIDNotIn(vs ...uuid.UUID) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldNotIn(FieldAgentSessionID, vs...))
 }
 
+// SequenceEQ applies the EQ predicate on the "sequence" field.
+func SequenceEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldSequence, v))
+}
+
+// SequenceNEQ applies the NEQ predicate on the "sequence" field.
+func SequenceNEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNEQ(FieldSequence, v))
+}
+
+// SequenceIn applies the In predicate on the "sequence" field.
+func SequenceIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldIn(FieldSequence, vs...))
+}
+
+// SequenceNotIn applies the NotIn predicate on the "sequence" field.
+func SequenceNotIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNotIn(FieldSequence, vs...))
+}
+
+// SequenceGT applies the GT predicate on the "sequence" field.
+func SequenceGT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGT(FieldSequence, v))
+}
+
+// SequenceGTE applies the GTE predicate on the "sequence" field.
+func SequenceGTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGTE(FieldSequence, v))
+}
+
+// SequenceLT applies the LT predicate on the "sequence" field.
+func SequenceLT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLT(FieldSequence, v))
+}
+
+// SequenceLTE applies the LTE predicate on the "sequence" field.
+func SequenceLTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLTE(FieldSequence, v))
+}
+
 // RiverJobIDEQ applies the EQ predicate on the "river_job_id" field.
 func RiverJobIDEQ(v int64) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldRiverJobID, v))
@@ -277,84 +312,44 @@ func RiverJobIDLTE(v int64) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldLTE(FieldRiverJobID, v))
 }
 
-// ParentIDEQ applies the EQ predicate on the "parent_id" field.
-func ParentIDEQ(v uuid.UUID) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldEQ(FieldParentID, v))
+// InputToolResumeIsNil applies the IsNil predicate on the "input_tool_resume" field.
+func InputToolResumeIsNil() predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldIsNull(FieldInputToolResume))
 }
 
-// ParentIDNEQ applies the NEQ predicate on the "parent_id" field.
-func ParentIDNEQ(v uuid.UUID) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldNEQ(FieldParentID, v))
+// InputToolResumeNotNil applies the NotNil predicate on the "input_tool_resume" field.
+func InputToolResumeNotNil() predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNotNull(FieldInputToolResume))
 }
 
-// ParentIDIn applies the In predicate on the "parent_id" field.
-func ParentIDIn(vs ...uuid.UUID) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldIn(FieldParentID, vs...))
+// InputMessageIDEQ applies the EQ predicate on the "input_message_id" field.
+func InputMessageIDEQ(v uuid.UUID) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldInputMessageID, v))
 }
 
-// ParentIDNotIn applies the NotIn predicate on the "parent_id" field.
-func ParentIDNotIn(vs ...uuid.UUID) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldNotIn(FieldParentID, vs...))
+// InputMessageIDNEQ applies the NEQ predicate on the "input_message_id" field.
+func InputMessageIDNEQ(v uuid.UUID) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNEQ(FieldInputMessageID, v))
 }
 
-// ParentIDIsNil applies the IsNil predicate on the "parent_id" field.
-func ParentIDIsNil() predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldIsNull(FieldParentID))
+// InputMessageIDIn applies the In predicate on the "input_message_id" field.
+func InputMessageIDIn(vs ...uuid.UUID) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldIn(FieldInputMessageID, vs...))
 }
 
-// ParentIDNotNil applies the NotNil predicate on the "parent_id" field.
-func ParentIDNotNil() predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldNotNull(FieldParentID))
+// InputMessageIDNotIn applies the NotIn predicate on the "input_message_id" field.
+func InputMessageIDNotIn(vs ...uuid.UUID) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNotIn(FieldInputMessageID, vs...))
 }
 
-// ScopesIsNil applies the IsNil predicate on the "scopes" field.
-func ScopesIsNil() predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldIsNull(FieldScopes))
+// InputMessageIDIsNil applies the IsNil predicate on the "input_message_id" field.
+func InputMessageIDIsNil() predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldIsNull(FieldInputMessageID))
 }
 
-// ScopesNotNil applies the NotNil predicate on the "scopes" field.
-func ScopesNotNil() predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldNotNull(FieldScopes))
-}
-
-// InputEQ applies the EQ predicate on the "input" field.
-func InputEQ(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldEQ(FieldInput, v))
-}
-
-// InputNEQ applies the NEQ predicate on the "input" field.
-func InputNEQ(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldNEQ(FieldInput, v))
-}
-
-// InputIn applies the In predicate on the "input" field.
-func InputIn(vs ...[]byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldIn(FieldInput, vs...))
-}
-
-// InputNotIn applies the NotIn predicate on the "input" field.
-func InputNotIn(vs ...[]byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldNotIn(FieldInput, vs...))
-}
-
-// InputGT applies the GT predicate on the "input" field.
-func InputGT(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldGT(FieldInput, v))
-}
-
-// InputGTE applies the GTE predicate on the "input" field.
-func InputGTE(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldGTE(FieldInput, v))
-}
-
-// InputLT applies the LT predicate on the "input" field.
-func InputLT(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldLT(FieldInput, v))
-}
-
-// InputLTE applies the LTE predicate on the "input" field.
-func InputLTE(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldLTE(FieldInput, v))
+// InputMessageIDNotNil applies the NotNil predicate on the "input_message_id" field.
+func InputMessageIDNotNil() predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNotNull(FieldInputMessageID))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
@@ -542,94 +537,59 @@ func FinishReasonContainsFold(v string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldContainsFold(FieldFinishReason, v))
 }
 
-// StateEQ applies the EQ predicate on the "state" field.
-func StateEQ(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldEQ(FieldState, v))
-}
-
-// StateNEQ applies the NEQ predicate on the "state" field.
-func StateNEQ(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldNEQ(FieldState, v))
-}
-
-// StateIn applies the In predicate on the "state" field.
-func StateIn(vs ...[]byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldIn(FieldState, vs...))
-}
-
-// StateNotIn applies the NotIn predicate on the "state" field.
-func StateNotIn(vs ...[]byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldNotIn(FieldState, vs...))
-}
-
-// StateGT applies the GT predicate on the "state" field.
-func StateGT(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldGT(FieldState, v))
-}
-
-// StateGTE applies the GTE predicate on the "state" field.
-func StateGTE(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldGTE(FieldState, v))
-}
-
-// StateLT applies the LT predicate on the "state" field.
-func StateLT(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldLT(FieldState, v))
-}
-
-// StateLTE applies the LTE predicate on the "state" field.
-func StateLTE(v []byte) predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldLTE(FieldState, v))
-}
-
-// StateIsNil applies the IsNil predicate on the "state" field.
-func StateIsNil() predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldIsNull(FieldState))
-}
-
-// StateNotNil applies the NotNil predicate on the "state" field.
-func StateNotNil() predicate.AgentTurn {
-	return predicate.AgentTurn(sql.FieldNotNull(FieldState))
-}
-
 // ErrorEQ applies the EQ predicate on the "error" field.
-func ErrorEQ(v []byte) predicate.AgentTurn {
+func ErrorEQ(v string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldError, v))
 }
 
 // ErrorNEQ applies the NEQ predicate on the "error" field.
-func ErrorNEQ(v []byte) predicate.AgentTurn {
+func ErrorNEQ(v string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldNEQ(FieldError, v))
 }
 
 // ErrorIn applies the In predicate on the "error" field.
-func ErrorIn(vs ...[]byte) predicate.AgentTurn {
+func ErrorIn(vs ...string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldIn(FieldError, vs...))
 }
 
 // ErrorNotIn applies the NotIn predicate on the "error" field.
-func ErrorNotIn(vs ...[]byte) predicate.AgentTurn {
+func ErrorNotIn(vs ...string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldNotIn(FieldError, vs...))
 }
 
 // ErrorGT applies the GT predicate on the "error" field.
-func ErrorGT(v []byte) predicate.AgentTurn {
+func ErrorGT(v string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldGT(FieldError, v))
 }
 
 // ErrorGTE applies the GTE predicate on the "error" field.
-func ErrorGTE(v []byte) predicate.AgentTurn {
+func ErrorGTE(v string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldGTE(FieldError, v))
 }
 
 // ErrorLT applies the LT predicate on the "error" field.
-func ErrorLT(v []byte) predicate.AgentTurn {
+func ErrorLT(v string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldLT(FieldError, v))
 }
 
 // ErrorLTE applies the LTE predicate on the "error" field.
-func ErrorLTE(v []byte) predicate.AgentTurn {
+func ErrorLTE(v string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldLTE(FieldError, v))
+}
+
+// ErrorContains applies the Contains predicate on the "error" field.
+func ErrorContains(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldContains(FieldError, v))
+}
+
+// ErrorHasPrefix applies the HasPrefix predicate on the "error" field.
+func ErrorHasPrefix(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldHasPrefix(FieldError, v))
+}
+
+// ErrorHasSuffix applies the HasSuffix predicate on the "error" field.
+func ErrorHasSuffix(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldHasSuffix(FieldError, v))
 }
 
 // ErrorIsNil applies the IsNil predicate on the "error" field.
@@ -640,6 +600,16 @@ func ErrorIsNil() predicate.AgentTurn {
 // ErrorNotNil applies the NotNil predicate on the "error" field.
 func ErrorNotNil() predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldNotNull(FieldError))
+}
+
+// ErrorEqualFold applies the EqualFold predicate on the "error" field.
+func ErrorEqualFold(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEqualFold(FieldError, v))
+}
+
+// ErrorContainsFold applies the ContainsFold predicate on the "error" field.
+func ErrorContainsFold(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldContainsFold(FieldError, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -700,26 +670,26 @@ func HasAgentSessionWith(preds ...predicate.AgentSession) predicate.AgentTurn {
 	})
 }
 
-// HasParent applies the HasEdge predicate on the "parent" edge.
-func HasParent() predicate.AgentTurn {
+// HasInputMessage applies the HasEdge predicate on the "input_message" edge.
+func HasInputMessage() predicate.AgentTurn {
 	return predicate.AgentTurn(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, ParentTable, ParentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, InputMessageTable, InputMessageColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentTurn
+		step.To.Schema = schemaConfig.AgentMessage
 		step.Edge.Schema = schemaConfig.AgentTurn
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasParentWith applies the HasEdge predicate on the "parent" edge with a given conditions (other predicates).
-func HasParentWith(preds ...predicate.AgentTurn) predicate.AgentTurn {
+// HasInputMessageWith applies the HasEdge predicate on the "input_message" edge with a given conditions (other predicates).
+func HasInputMessageWith(preds ...predicate.AgentMessage) predicate.AgentTurn {
 	return predicate.AgentTurn(func(s *sql.Selector) {
-		step := newParentStep()
+		step := newInputMessageStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentTurn
+		step.To.Schema = schemaConfig.AgentMessage
 		step.Edge.Schema = schemaConfig.AgentTurn
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -729,27 +699,56 @@ func HasParentWith(preds ...predicate.AgentTurn) predicate.AgentTurn {
 	})
 }
 
-// HasChildren applies the HasEdge predicate on the "children" edge.
-func HasChildren() predicate.AgentTurn {
+// HasMessages applies the HasEdge predicate on the "messages" edge.
+func HasMessages() predicate.AgentTurn {
 	return predicate.AgentTurn(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ChildrenTable, ChildrenColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, MessagesTable, MessagesColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentTurn
-		step.Edge.Schema = schemaConfig.AgentTurn
+		step.To.Schema = schemaConfig.AgentMessage
+		step.Edge.Schema = schemaConfig.AgentMessage
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasChildrenWith applies the HasEdge predicate on the "children" edge with a given conditions (other predicates).
-func HasChildrenWith(preds ...predicate.AgentTurn) predicate.AgentTurn {
+// HasMessagesWith applies the HasEdge predicate on the "messages" edge with a given conditions (other predicates).
+func HasMessagesWith(preds ...predicate.AgentMessage) predicate.AgentTurn {
 	return predicate.AgentTurn(func(s *sql.Selector) {
-		step := newChildrenStep()
+		step := newMessagesStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentTurn
-		step.Edge.Schema = schemaConfig.AgentTurn
+		step.To.Schema = schemaConfig.AgentMessage
+		step.Edge.Schema = schemaConfig.AgentMessage
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasArtifacts applies the HasEdge predicate on the "artifacts" edge.
+func HasArtifacts() predicate.AgentTurn {
+	return predicate.AgentTurn(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ArtifactsTable, ArtifactsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentArtifact
+		step.Edge.Schema = schemaConfig.AgentArtifact
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasArtifactsWith applies the HasEdge predicate on the "artifacts" edge with a given conditions (other predicates).
+func HasArtifactsWith(preds ...predicate.AgentArtifact) predicate.AgentTurn {
+	return predicate.AgentTurn(func(s *sql.Selector) {
+		step := newArtifactsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentArtifact
+		step.Edge.Schema = schemaConfig.AgentArtifact
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

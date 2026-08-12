@@ -9,13 +9,135 @@ import (
 )
 
 var (
+	// AgentArtifactsColumns holds the columns for the "agent_artifacts" table.
+	AgentArtifactsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString},
+		{Name: "parts", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "metadata", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "agent_session_id", Type: field.TypeUUID},
+		{Name: "last_agent_turn_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// AgentArtifactsTable holds the schema information for the "agent_artifacts" table.
+	AgentArtifactsTable = &schema.Table{
+		Name:       "agent_artifacts",
+		Columns:    AgentArtifactsColumns,
+		PrimaryKey: []*schema.Column{AgentArtifactsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "agent_artifacts_tenants_tenant",
+				Columns:    []*schema.Column{AgentArtifactsColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_artifacts_agent_sessions_artifacts",
+				Columns:    []*schema.Column{AgentArtifactsColumns[7]},
+				RefColumns: []*schema.Column{AgentSessionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_artifacts_agent_turns_artifacts",
+				Columns:    []*schema.Column{AgentArtifactsColumns[8]},
+				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "agentartifact_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentArtifactsColumns[6]},
+			},
+			{
+				Name:    "agentartifact_agent_session_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{AgentArtifactsColumns[7], AgentArtifactsColumns[3]},
+			},
+			{
+				Name:    "agentartifact_tenant_id_agent_session_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{AgentArtifactsColumns[6], AgentArtifactsColumns[7], AgentArtifactsColumns[1]},
+			},
+			{
+				Name:    "agentartifact_tenant_id_last_agent_turn_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentArtifactsColumns[6], AgentArtifactsColumns[8]},
+			},
+		},
+	}
+	// AgentMessagesColumns holds the columns for the "agent_messages" table.
+	AgentMessagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "sequence", Type: field.TypeInt},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"user", "model", "tool", "system"}},
+		{Name: "content", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "metadata", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "visible", Type: field.TypeBool, Default: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "agent_session_id", Type: field.TypeUUID},
+		{Name: "agent_turn_id", Type: field.TypeUUID},
+	}
+	// AgentMessagesTable holds the schema information for the "agent_messages" table.
+	AgentMessagesTable = &schema.Table{
+		Name:       "agent_messages",
+		Columns:    AgentMessagesColumns,
+		PrimaryKey: []*schema.Column{AgentMessagesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "agent_messages_tenants_tenant",
+				Columns:    []*schema.Column{AgentMessagesColumns[8]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_messages_agent_sessions_messages",
+				Columns:    []*schema.Column{AgentMessagesColumns[9]},
+				RefColumns: []*schema.Column{AgentSessionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_messages_agent_turns_messages",
+				Columns:    []*schema.Column{AgentMessagesColumns[10]},
+				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "agentmessage_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentMessagesColumns[8]},
+			},
+			{
+				Name:    "agentmessage_agent_session_id_sequence",
+				Unique:  true,
+				Columns: []*schema.Column{AgentMessagesColumns[9], AgentMessagesColumns[3]},
+			},
+			{
+				Name:    "agentmessage_tenant_id_agent_session_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{AgentMessagesColumns[8], AgentMessagesColumns[9], AgentMessagesColumns[1]},
+			},
+			{
+				Name:    "agentmessage_tenant_id_agent_turn_id_sequence",
+				Unique:  false,
+				Columns: []*schema.Column{AgentMessagesColumns[8], AgentMessagesColumns[10], AgentMessagesColumns[3]},
+			},
+		},
+	}
 	// AgentSessionsColumns holds the columns for the "agent_sessions" table.
 	AgentSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "agent_name", Type: field.TypeString},
-		{Name: "default_scopes", Type: field.TypeJSON},
+		{Name: "scopes", Type: field.TypeJSON},
 		{Name: "input", Type: field.TypeBytes},
 		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -63,18 +185,17 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "sequence", Type: field.TypeInt},
 		{Name: "river_job_id", Type: field.TypeInt64},
-		{Name: "scopes", Type: field.TypeJSON, Nullable: true},
-		{Name: "input", Type: field.TypeBytes},
+		{Name: "input_tool_resume", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"queued", "running", "completed", "failed", "aborted"}},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
 		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
 		{Name: "finish_reason", Type: field.TypeString, Default: ""},
-		{Name: "state", Type: field.TypeBytes, Nullable: true},
-		{Name: "error", Type: field.TypeBytes, Nullable: true},
+		{Name: "error", Type: field.TypeString, Nullable: true},
 		{Name: "agent_session_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "input_message_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AgentTurnsTable holds the schema information for the "agent_turns" table.
 	AgentTurnsTable = &schema.Table{
@@ -84,20 +205,20 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "agent_turns_agent_sessions_turns",
-				Columns:    []*schema.Column{AgentTurnsColumns[12]},
+				Columns:    []*schema.Column{AgentTurnsColumns[11]},
 				RefColumns: []*schema.Column{AgentSessionsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "agent_turns_tenants_tenant",
-				Columns:    []*schema.Column{AgentTurnsColumns[13]},
+				Columns:    []*schema.Column{AgentTurnsColumns[12]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "agent_turns_agent_turns_parent",
-				Columns:    []*schema.Column{AgentTurnsColumns[14]},
-				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
+				Symbol:     "agent_turns_agent_messages_input_message",
+				Columns:    []*schema.Column{AgentTurnsColumns[13]},
+				RefColumns: []*schema.Column{AgentMessagesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -105,36 +226,33 @@ var (
 			{
 				Name:    "agentturn_tenant_id",
 				Unique:  false,
+				Columns: []*schema.Column{AgentTurnsColumns[12]},
+			},
+			{
+				Name:    "agentturn_agent_session_id_sequence",
+				Unique:  true,
+				Columns: []*schema.Column{AgentTurnsColumns[11], AgentTurnsColumns[3]},
+			},
+			{
+				Name:    "agent_turn_one_active_per_session",
+				Unique:  true,
+				Columns: []*schema.Column{AgentTurnsColumns[11]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "status IN ('queued', 'running')",
+				},
+			},
+			{
+				Name:    "agent_turn_input_message_unique",
+				Unique:  true,
 				Columns: []*schema.Column{AgentTurnsColumns[13]},
-			},
-			{
-				Name:    "agent_turn_one_running_per_session",
-				Unique:  true,
-				Columns: []*schema.Column{AgentTurnsColumns[12]},
 				Annotation: &entsql.IndexAnnotation{
-					Where: "status = 'running'",
-				},
-			},
-			{
-				Name:    "agent_turn_one_successful_child_per_parent",
-				Unique:  true,
-				Columns: []*schema.Column{AgentTurnsColumns[14]},
-				Annotation: &entsql.IndexAnnotation{
-					Where: "parent_id IS NOT NULL AND status IN ('running', 'completed')",
-				},
-			},
-			{
-				Name:    "agent_turn_one_successful_root_per_session",
-				Unique:  true,
-				Columns: []*schema.Column{AgentTurnsColumns[12]},
-				Annotation: &entsql.IndexAnnotation{
-					Where: "parent_id IS NULL AND status IN ('running', 'completed')",
+					Where: "input_message_id IS NOT NULL",
 				},
 			},
 			{
 				Name:    "agentturn_tenant_id_agent_session_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{AgentTurnsColumns[13], AgentTurnsColumns[12], AgentTurnsColumns[1]},
+				Columns: []*schema.Column{AgentTurnsColumns[12], AgentTurnsColumns[11], AgentTurnsColumns[1]},
 			},
 		},
 	}
@@ -3339,6 +3457,8 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AgentArtifactsTable,
+		AgentMessagesTable,
 		AgentSessionsTable,
 		AgentTurnsTable,
 		AgentTurnKnowledgeCitationsTable,
@@ -3426,11 +3546,17 @@ var (
 )
 
 func init() {
+	AgentArtifactsTable.ForeignKeys[0].RefTable = TenantsTable
+	AgentArtifactsTable.ForeignKeys[1].RefTable = AgentSessionsTable
+	AgentArtifactsTable.ForeignKeys[2].RefTable = AgentTurnsTable
+	AgentMessagesTable.ForeignKeys[0].RefTable = TenantsTable
+	AgentMessagesTable.ForeignKeys[1].RefTable = AgentSessionsTable
+	AgentMessagesTable.ForeignKeys[2].RefTable = AgentTurnsTable
 	AgentSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentSessionsTable.ForeignKeys[1].RefTable = UsersTable
 	AgentTurnsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	AgentTurnsTable.ForeignKeys[1].RefTable = TenantsTable
-	AgentTurnsTable.ForeignKeys[2].RefTable = AgentTurnsTable
+	AgentTurnsTable.ForeignKeys[2].RefTable = AgentMessagesTable
 	AgentTurnKnowledgeCitationsTable.ForeignKeys[0].RefTable = AgentTurnsTable
 	AgentTurnKnowledgeCitationsTable.ForeignKeys[1].RefTable = TenantsTable
 	AgentTurnKnowledgeCitationsTable.ForeignKeys[2].RefTable = KnowledgeEvidencesTable

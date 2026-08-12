@@ -419,6 +419,64 @@ func HasTurnsWith(preds ...predicate.AgentTurn) predicate.AgentSession {
 	})
 }
 
+// HasMessages applies the HasEdge predicate on the "messages" edge.
+func HasMessages() predicate.AgentSession {
+	return predicate.AgentSession(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MessagesTable, MessagesColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentMessage
+		step.Edge.Schema = schemaConfig.AgentMessage
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMessagesWith applies the HasEdge predicate on the "messages" edge with a given conditions (other predicates).
+func HasMessagesWith(preds ...predicate.AgentMessage) predicate.AgentSession {
+	return predicate.AgentSession(func(s *sql.Selector) {
+		step := newMessagesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentMessage
+		step.Edge.Schema = schemaConfig.AgentMessage
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasArtifacts applies the HasEdge predicate on the "artifacts" edge.
+func HasArtifacts() predicate.AgentSession {
+	return predicate.AgentSession(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ArtifactsTable, ArtifactsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentArtifact
+		step.Edge.Schema = schemaConfig.AgentArtifact
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasArtifactsWith applies the HasEdge predicate on the "artifacts" edge with a given conditions (other predicates).
+func HasArtifactsWith(preds ...predicate.AgentArtifact) predicate.AgentSession {
+	return predicate.AgentSession(func(s *sql.Selector) {
+		step := newArtifactsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentArtifact
+		step.Edge.Schema = schemaConfig.AgentArtifact
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.AgentSession) predicate.AgentSession {
 	return predicate.AgentSession(sql.AndPredicates(predicates...))

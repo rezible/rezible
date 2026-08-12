@@ -13,6 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentartifact"
+	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/tenant"
@@ -81,9 +83,9 @@ func (_c *AgentSessionCreate) SetNillableOwnerUserID(v *uuid.UUID) *AgentSession
 	return _c
 }
 
-// SetDefaultScopes sets the "default_scopes" field.
-func (_c *AgentSessionCreate) SetDefaultScopes(v []string) *AgentSessionCreate {
-	_c.mutation.SetDefaultScopes(v)
+// SetScopes sets the "scopes" field.
+func (_c *AgentSessionCreate) SetScopes(v []string) *AgentSessionCreate {
+	_c.mutation.SetScopes(v)
 	return _c
 }
 
@@ -138,6 +140,36 @@ func (_c *AgentSessionCreate) AddTurns(v ...*AgentTurn) *AgentSessionCreate {
 	return _c.AddTurnIDs(ids...)
 }
 
+// AddMessageIDs adds the "messages" edge to the AgentMessage entity by IDs.
+func (_c *AgentSessionCreate) AddMessageIDs(ids ...uuid.UUID) *AgentSessionCreate {
+	_c.mutation.AddMessageIDs(ids...)
+	return _c
+}
+
+// AddMessages adds the "messages" edges to the AgentMessage entity.
+func (_c *AgentSessionCreate) AddMessages(v ...*AgentMessage) *AgentSessionCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddMessageIDs(ids...)
+}
+
+// AddArtifactIDs adds the "artifacts" edge to the AgentArtifact entity by IDs.
+func (_c *AgentSessionCreate) AddArtifactIDs(ids ...uuid.UUID) *AgentSessionCreate {
+	_c.mutation.AddArtifactIDs(ids...)
+	return _c
+}
+
+// AddArtifacts adds the "artifacts" edges to the AgentArtifact entity.
+func (_c *AgentSessionCreate) AddArtifacts(v ...*AgentArtifact) *AgentSessionCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddArtifactIDs(ids...)
+}
+
 // Mutation returns the AgentSessionMutation object of the builder.
 func (_c *AgentSessionCreate) Mutation() *AgentSessionMutation {
 	return _c.mutation
@@ -189,9 +221,9 @@ func (_c *AgentSessionCreate) defaults() error {
 		v := agentsession.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := _c.mutation.DefaultScopes(); !ok {
-		v := agentsession.DefaultDefaultScopes
-		_c.mutation.SetDefaultScopes(v)
+	if _, ok := _c.mutation.Scopes(); !ok {
+		v := agentsession.DefaultScopes
+		_c.mutation.SetScopes(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if agentsession.DefaultID == nil {
@@ -222,8 +254,8 @@ func (_c *AgentSessionCreate) check() error {
 			return &ValidationError{Name: "agent_name", err: fmt.Errorf(`ent: validator failed for field "AgentSession.agent_name": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.DefaultScopes(); !ok {
-		return &ValidationError{Name: "default_scopes", err: errors.New(`ent: missing required field "AgentSession.default_scopes"`)}
+	if _, ok := _c.mutation.Scopes(); !ok {
+		return &ValidationError{Name: "scopes", err: errors.New(`ent: missing required field "AgentSession.scopes"`)}
 	}
 	if _, ok := _c.mutation.Input(); !ok {
 		return &ValidationError{Name: "input", err: errors.New(`ent: missing required field "AgentSession.input"`)}
@@ -280,9 +312,9 @@ func (_c *AgentSessionCreate) createSpec() (*AgentSession, *sqlgraph.CreateSpec)
 		_spec.SetField(agentsession.FieldAgentName, field.TypeString, value)
 		_node.AgentName = value
 	}
-	if value, ok := _c.mutation.DefaultScopes(); ok {
-		_spec.SetField(agentsession.FieldDefaultScopes, field.TypeJSON, value)
-		_node.DefaultScopes = value
+	if value, ok := _c.mutation.Scopes(); ok {
+		_spec.SetField(agentsession.FieldScopes, field.TypeJSON, value)
+		_node.Scopes = value
 	}
 	if value, ok := _c.mutation.Input(); ok {
 		_spec.SetField(agentsession.FieldInput, field.TypeBytes, value)
@@ -340,6 +372,40 @@ func (_c *AgentSessionCreate) createSpec() (*AgentSession, *sqlgraph.CreateSpec)
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentTurn
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.MessagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.MessagesTable,
+			Columns: []string{agentsession.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentMessage
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ArtifactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.ArtifactsTable,
+			Columns: []string{agentsession.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentArtifact
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -451,15 +517,15 @@ func (u *AgentSessionUpsert) ClearOwnerUserID() *AgentSessionUpsert {
 	return u
 }
 
-// SetDefaultScopes sets the "default_scopes" field.
-func (u *AgentSessionUpsert) SetDefaultScopes(v []string) *AgentSessionUpsert {
-	u.Set(agentsession.FieldDefaultScopes, v)
+// SetScopes sets the "scopes" field.
+func (u *AgentSessionUpsert) SetScopes(v []string) *AgentSessionUpsert {
+	u.Set(agentsession.FieldScopes, v)
 	return u
 }
 
-// UpdateDefaultScopes sets the "default_scopes" field to the value that was provided on create.
-func (u *AgentSessionUpsert) UpdateDefaultScopes() *AgentSessionUpsert {
-	u.SetExcluded(agentsession.FieldDefaultScopes)
+// UpdateScopes sets the "scopes" field to the value that was provided on create.
+func (u *AgentSessionUpsert) UpdateScopes() *AgentSessionUpsert {
+	u.SetExcluded(agentsession.FieldScopes)
 	return u
 }
 
@@ -607,17 +673,17 @@ func (u *AgentSessionUpsertOne) ClearOwnerUserID() *AgentSessionUpsertOne {
 	})
 }
 
-// SetDefaultScopes sets the "default_scopes" field.
-func (u *AgentSessionUpsertOne) SetDefaultScopes(v []string) *AgentSessionUpsertOne {
+// SetScopes sets the "scopes" field.
+func (u *AgentSessionUpsertOne) SetScopes(v []string) *AgentSessionUpsertOne {
 	return u.Update(func(s *AgentSessionUpsert) {
-		s.SetDefaultScopes(v)
+		s.SetScopes(v)
 	})
 }
 
-// UpdateDefaultScopes sets the "default_scopes" field to the value that was provided on create.
-func (u *AgentSessionUpsertOne) UpdateDefaultScopes() *AgentSessionUpsertOne {
+// UpdateScopes sets the "scopes" field to the value that was provided on create.
+func (u *AgentSessionUpsertOne) UpdateScopes() *AgentSessionUpsertOne {
 	return u.Update(func(s *AgentSessionUpsert) {
-		s.UpdateDefaultScopes()
+		s.UpdateScopes()
 	})
 }
 
@@ -937,17 +1003,17 @@ func (u *AgentSessionUpsertBulk) ClearOwnerUserID() *AgentSessionUpsertBulk {
 	})
 }
 
-// SetDefaultScopes sets the "default_scopes" field.
-func (u *AgentSessionUpsertBulk) SetDefaultScopes(v []string) *AgentSessionUpsertBulk {
+// SetScopes sets the "scopes" field.
+func (u *AgentSessionUpsertBulk) SetScopes(v []string) *AgentSessionUpsertBulk {
 	return u.Update(func(s *AgentSessionUpsert) {
-		s.SetDefaultScopes(v)
+		s.SetScopes(v)
 	})
 }
 
-// UpdateDefaultScopes sets the "default_scopes" field to the value that was provided on create.
-func (u *AgentSessionUpsertBulk) UpdateDefaultScopes() *AgentSessionUpsertBulk {
+// UpdateScopes sets the "scopes" field to the value that was provided on create.
+func (u *AgentSessionUpsertBulk) UpdateScopes() *AgentSessionUpsertBulk {
 	return u.Update(func(s *AgentSessionUpsert) {
-		s.UpdateDefaultScopes()
+		s.UpdateScopes()
 	})
 }
 

@@ -31,8 +31,8 @@ type AgentSession struct {
 	AgentName string `json:"agent_name,omitempty"`
 	// OwnerUserID holds the value of the "owner_user_id" field.
 	OwnerUserID *uuid.UUID `json:"owner_user_id,omitempty"`
-	// DefaultScopes holds the value of the "default_scopes" field.
-	DefaultScopes []string `json:"default_scopes,omitempty"`
+	// Scopes holds the value of the "scopes" field.
+	Scopes []string `json:"scopes,omitempty"`
 	// Input holds the value of the "input" field.
 	Input []byte `json:"input,omitempty"`
 	// Metadata holds the value of the "metadata" field.
@@ -51,9 +51,13 @@ type AgentSessionEdges struct {
 	OwnerUser *User `json:"owner_user,omitempty"`
 	// Turns holds the value of the turns edge.
 	Turns []*AgentTurn `json:"turns,omitempty"`
+	// Messages holds the value of the messages edge.
+	Messages []*AgentMessage `json:"messages,omitempty"`
+	// Artifacts holds the value of the artifacts edge.
+	Artifacts []*AgentArtifact `json:"artifacts,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -87,6 +91,24 @@ func (e AgentSessionEdges) TurnsOrErr() ([]*AgentTurn, error) {
 	return nil, &NotLoadedError{edge: "turns"}
 }
 
+// MessagesOrErr returns the Messages value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentSessionEdges) MessagesOrErr() ([]*AgentMessage, error) {
+	if e.loadedTypes[3] {
+		return e.Messages, nil
+	}
+	return nil, &NotLoadedError{edge: "messages"}
+}
+
+// ArtifactsOrErr returns the Artifacts value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentSessionEdges) ArtifactsOrErr() ([]*AgentArtifact, error) {
+	if e.loadedTypes[4] {
+		return e.Artifacts, nil
+	}
+	return nil, &NotLoadedError{edge: "artifacts"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*AgentSession) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -94,7 +116,7 @@ func (*AgentSession) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case agentsession.FieldOwnerUserID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case agentsession.FieldDefaultScopes, agentsession.FieldInput, agentsession.FieldMetadata:
+		case agentsession.FieldScopes, agentsession.FieldInput, agentsession.FieldMetadata:
 			values[i] = new([]byte)
 		case agentsession.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -156,12 +178,12 @@ func (_m *AgentSession) assignValues(columns []string, values []any) error {
 				_m.OwnerUserID = new(uuid.UUID)
 				*_m.OwnerUserID = *value.S.(*uuid.UUID)
 			}
-		case agentsession.FieldDefaultScopes:
+		case agentsession.FieldScopes:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field default_scopes", values[i])
+				return fmt.Errorf("unexpected type %T for field scopes", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.DefaultScopes); err != nil {
-					return fmt.Errorf("unmarshal field default_scopes: %w", err)
+				if err := json.Unmarshal(*value, &_m.Scopes); err != nil {
+					return fmt.Errorf("unmarshal field scopes: %w", err)
 				}
 			}
 		case agentsession.FieldInput:
@@ -206,6 +228,16 @@ func (_m *AgentSession) QueryTurns() *AgentTurnQuery {
 	return NewAgentSessionClient(_m.config).QueryTurns(_m)
 }
 
+// QueryMessages queries the "messages" edge of the AgentSession entity.
+func (_m *AgentSession) QueryMessages() *AgentMessageQuery {
+	return NewAgentSessionClient(_m.config).QueryMessages(_m)
+}
+
+// QueryArtifacts queries the "artifacts" edge of the AgentSession entity.
+func (_m *AgentSession) QueryArtifacts() *AgentArtifactQuery {
+	return NewAgentSessionClient(_m.config).QueryArtifacts(_m)
+}
+
 // Update returns a builder for updating this AgentSession.
 // Note that you need to call AgentSession.Unwrap() before calling this method if this AgentSession
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -246,8 +278,8 @@ func (_m *AgentSession) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("default_scopes=")
-	builder.WriteString(fmt.Sprintf("%v", _m.DefaultScopes))
+	builder.WriteString("scopes=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Scopes))
 	builder.WriteString(", ")
 	builder.WriteString("input=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Input))

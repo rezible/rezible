@@ -13,6 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentartifact"
+	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
@@ -88,15 +90,15 @@ func (_u *AgentSessionUpdate) ClearOwnerUserID() *AgentSessionUpdate {
 	return _u
 }
 
-// SetDefaultScopes sets the "default_scopes" field.
-func (_u *AgentSessionUpdate) SetDefaultScopes(v []string) *AgentSessionUpdate {
-	_u.mutation.SetDefaultScopes(v)
+// SetScopes sets the "scopes" field.
+func (_u *AgentSessionUpdate) SetScopes(v []string) *AgentSessionUpdate {
+	_u.mutation.SetScopes(v)
 	return _u
 }
 
-// AppendDefaultScopes appends value to the "default_scopes" field.
-func (_u *AgentSessionUpdate) AppendDefaultScopes(v []string) *AgentSessionUpdate {
-	_u.mutation.AppendDefaultScopes(v)
+// AppendScopes appends value to the "scopes" field.
+func (_u *AgentSessionUpdate) AppendScopes(v []string) *AgentSessionUpdate {
+	_u.mutation.AppendScopes(v)
 	return _u
 }
 
@@ -138,6 +140,36 @@ func (_u *AgentSessionUpdate) AddTurns(v ...*AgentTurn) *AgentSessionUpdate {
 	return _u.AddTurnIDs(ids...)
 }
 
+// AddMessageIDs adds the "messages" edge to the AgentMessage entity by IDs.
+func (_u *AgentSessionUpdate) AddMessageIDs(ids ...uuid.UUID) *AgentSessionUpdate {
+	_u.mutation.AddMessageIDs(ids...)
+	return _u
+}
+
+// AddMessages adds the "messages" edges to the AgentMessage entity.
+func (_u *AgentSessionUpdate) AddMessages(v ...*AgentMessage) *AgentSessionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddMessageIDs(ids...)
+}
+
+// AddArtifactIDs adds the "artifacts" edge to the AgentArtifact entity by IDs.
+func (_u *AgentSessionUpdate) AddArtifactIDs(ids ...uuid.UUID) *AgentSessionUpdate {
+	_u.mutation.AddArtifactIDs(ids...)
+	return _u
+}
+
+// AddArtifacts adds the "artifacts" edges to the AgentArtifact entity.
+func (_u *AgentSessionUpdate) AddArtifacts(v ...*AgentArtifact) *AgentSessionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddArtifactIDs(ids...)
+}
+
 // Mutation returns the AgentSessionMutation object of the builder.
 func (_u *AgentSessionUpdate) Mutation() *AgentSessionMutation {
 	return _u.mutation
@@ -168,6 +200,48 @@ func (_u *AgentSessionUpdate) RemoveTurns(v ...*AgentTurn) *AgentSessionUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTurnIDs(ids...)
+}
+
+// ClearMessages clears all "messages" edges to the AgentMessage entity.
+func (_u *AgentSessionUpdate) ClearMessages() *AgentSessionUpdate {
+	_u.mutation.ClearMessages()
+	return _u
+}
+
+// RemoveMessageIDs removes the "messages" edge to AgentMessage entities by IDs.
+func (_u *AgentSessionUpdate) RemoveMessageIDs(ids ...uuid.UUID) *AgentSessionUpdate {
+	_u.mutation.RemoveMessageIDs(ids...)
+	return _u
+}
+
+// RemoveMessages removes "messages" edges to AgentMessage entities.
+func (_u *AgentSessionUpdate) RemoveMessages(v ...*AgentMessage) *AgentSessionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveMessageIDs(ids...)
+}
+
+// ClearArtifacts clears all "artifacts" edges to the AgentArtifact entity.
+func (_u *AgentSessionUpdate) ClearArtifacts() *AgentSessionUpdate {
+	_u.mutation.ClearArtifacts()
+	return _u
+}
+
+// RemoveArtifactIDs removes the "artifacts" edge to AgentArtifact entities by IDs.
+func (_u *AgentSessionUpdate) RemoveArtifactIDs(ids ...uuid.UUID) *AgentSessionUpdate {
+	_u.mutation.RemoveArtifactIDs(ids...)
+	return _u
+}
+
+// RemoveArtifacts removes "artifacts" edges to AgentArtifact entities.
+func (_u *AgentSessionUpdate) RemoveArtifacts(v ...*AgentArtifact) *AgentSessionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveArtifactIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -252,12 +326,12 @@ func (_u *AgentSessionUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.AgentName(); ok {
 		_spec.SetField(agentsession.FieldAgentName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.DefaultScopes(); ok {
-		_spec.SetField(agentsession.FieldDefaultScopes, field.TypeJSON, value)
+	if value, ok := _u.mutation.Scopes(); ok {
+		_spec.SetField(agentsession.FieldScopes, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedDefaultScopes(); ok {
+	if value, ok := _u.mutation.AppendedScopes(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, agentsession.FieldDefaultScopes, value)
+			sqljson.Append(u, agentsession.FieldScopes, value)
 		})
 	}
 	if value, ok := _u.mutation.Input(); ok {
@@ -348,6 +422,102 @@ func (_u *AgentSessionUpdate) sqlSave(ctx context.Context) (_node int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.MessagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.MessagesTable,
+			Columns: []string{agentsession.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentMessage
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.MessagesTable,
+			Columns: []string{agentsession.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentMessage
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MessagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.MessagesTable,
+			Columns: []string{agentsession.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentMessage
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.ArtifactsTable,
+			Columns: []string{agentsession.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedArtifactsIDs(); len(nodes) > 0 && !_u.mutation.ArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.ArtifactsTable,
+			Columns: []string{agentsession.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ArtifactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.ArtifactsTable,
+			Columns: []string{agentsession.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.AgentSession
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -426,15 +596,15 @@ func (_u *AgentSessionUpdateOne) ClearOwnerUserID() *AgentSessionUpdateOne {
 	return _u
 }
 
-// SetDefaultScopes sets the "default_scopes" field.
-func (_u *AgentSessionUpdateOne) SetDefaultScopes(v []string) *AgentSessionUpdateOne {
-	_u.mutation.SetDefaultScopes(v)
+// SetScopes sets the "scopes" field.
+func (_u *AgentSessionUpdateOne) SetScopes(v []string) *AgentSessionUpdateOne {
+	_u.mutation.SetScopes(v)
 	return _u
 }
 
-// AppendDefaultScopes appends value to the "default_scopes" field.
-func (_u *AgentSessionUpdateOne) AppendDefaultScopes(v []string) *AgentSessionUpdateOne {
-	_u.mutation.AppendDefaultScopes(v)
+// AppendScopes appends value to the "scopes" field.
+func (_u *AgentSessionUpdateOne) AppendScopes(v []string) *AgentSessionUpdateOne {
+	_u.mutation.AppendScopes(v)
 	return _u
 }
 
@@ -476,6 +646,36 @@ func (_u *AgentSessionUpdateOne) AddTurns(v ...*AgentTurn) *AgentSessionUpdateOn
 	return _u.AddTurnIDs(ids...)
 }
 
+// AddMessageIDs adds the "messages" edge to the AgentMessage entity by IDs.
+func (_u *AgentSessionUpdateOne) AddMessageIDs(ids ...uuid.UUID) *AgentSessionUpdateOne {
+	_u.mutation.AddMessageIDs(ids...)
+	return _u
+}
+
+// AddMessages adds the "messages" edges to the AgentMessage entity.
+func (_u *AgentSessionUpdateOne) AddMessages(v ...*AgentMessage) *AgentSessionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddMessageIDs(ids...)
+}
+
+// AddArtifactIDs adds the "artifacts" edge to the AgentArtifact entity by IDs.
+func (_u *AgentSessionUpdateOne) AddArtifactIDs(ids ...uuid.UUID) *AgentSessionUpdateOne {
+	_u.mutation.AddArtifactIDs(ids...)
+	return _u
+}
+
+// AddArtifacts adds the "artifacts" edges to the AgentArtifact entity.
+func (_u *AgentSessionUpdateOne) AddArtifacts(v ...*AgentArtifact) *AgentSessionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddArtifactIDs(ids...)
+}
+
 // Mutation returns the AgentSessionMutation object of the builder.
 func (_u *AgentSessionUpdateOne) Mutation() *AgentSessionMutation {
 	return _u.mutation
@@ -506,6 +706,48 @@ func (_u *AgentSessionUpdateOne) RemoveTurns(v ...*AgentTurn) *AgentSessionUpdat
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTurnIDs(ids...)
+}
+
+// ClearMessages clears all "messages" edges to the AgentMessage entity.
+func (_u *AgentSessionUpdateOne) ClearMessages() *AgentSessionUpdateOne {
+	_u.mutation.ClearMessages()
+	return _u
+}
+
+// RemoveMessageIDs removes the "messages" edge to AgentMessage entities by IDs.
+func (_u *AgentSessionUpdateOne) RemoveMessageIDs(ids ...uuid.UUID) *AgentSessionUpdateOne {
+	_u.mutation.RemoveMessageIDs(ids...)
+	return _u
+}
+
+// RemoveMessages removes "messages" edges to AgentMessage entities.
+func (_u *AgentSessionUpdateOne) RemoveMessages(v ...*AgentMessage) *AgentSessionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveMessageIDs(ids...)
+}
+
+// ClearArtifacts clears all "artifacts" edges to the AgentArtifact entity.
+func (_u *AgentSessionUpdateOne) ClearArtifacts() *AgentSessionUpdateOne {
+	_u.mutation.ClearArtifacts()
+	return _u
+}
+
+// RemoveArtifactIDs removes the "artifacts" edge to AgentArtifact entities by IDs.
+func (_u *AgentSessionUpdateOne) RemoveArtifactIDs(ids ...uuid.UUID) *AgentSessionUpdateOne {
+	_u.mutation.RemoveArtifactIDs(ids...)
+	return _u
+}
+
+// RemoveArtifacts removes "artifacts" edges to AgentArtifact entities.
+func (_u *AgentSessionUpdateOne) RemoveArtifacts(v ...*AgentArtifact) *AgentSessionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveArtifactIDs(ids...)
 }
 
 // Where appends a list predicates to the AgentSessionUpdate builder.
@@ -620,12 +862,12 @@ func (_u *AgentSessionUpdateOne) sqlSave(ctx context.Context) (_node *AgentSessi
 	if value, ok := _u.mutation.AgentName(); ok {
 		_spec.SetField(agentsession.FieldAgentName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.DefaultScopes(); ok {
-		_spec.SetField(agentsession.FieldDefaultScopes, field.TypeJSON, value)
+	if value, ok := _u.mutation.Scopes(); ok {
+		_spec.SetField(agentsession.FieldScopes, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedDefaultScopes(); ok {
+	if value, ok := _u.mutation.AppendedScopes(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, agentsession.FieldDefaultScopes, value)
+			sqljson.Append(u, agentsession.FieldScopes, value)
 		})
 	}
 	if value, ok := _u.mutation.Input(); ok {
@@ -711,6 +953,102 @@ func (_u *AgentSessionUpdateOne) sqlSave(ctx context.Context) (_node *AgentSessi
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentTurn
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.MessagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.MessagesTable,
+			Columns: []string{agentsession.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentMessage
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.MessagesTable,
+			Columns: []string{agentsession.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentMessage
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MessagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.MessagesTable,
+			Columns: []string{agentsession.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentMessage
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.ArtifactsTable,
+			Columns: []string{agentsession.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedArtifactsIDs(); len(nodes) > 0 && !_u.mutation.ArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.ArtifactsTable,
+			Columns: []string{agentsession.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ArtifactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.ArtifactsTable,
+			Columns: []string{agentsession.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

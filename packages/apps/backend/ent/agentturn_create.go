@@ -12,7 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentartifact"
+	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
@@ -67,35 +70,35 @@ func (_c *AgentTurnCreate) SetAgentSessionID(v uuid.UUID) *AgentTurnCreate {
 	return _c
 }
 
+// SetSequence sets the "sequence" field.
+func (_c *AgentTurnCreate) SetSequence(v int) *AgentTurnCreate {
+	_c.mutation.SetSequence(v)
+	return _c
+}
+
 // SetRiverJobID sets the "river_job_id" field.
 func (_c *AgentTurnCreate) SetRiverJobID(v int64) *AgentTurnCreate {
 	_c.mutation.SetRiverJobID(v)
 	return _c
 }
 
-// SetParentID sets the "parent_id" field.
-func (_c *AgentTurnCreate) SetParentID(v uuid.UUID) *AgentTurnCreate {
-	_c.mutation.SetParentID(v)
+// SetInputToolResume sets the "input_tool_resume" field.
+func (_c *AgentTurnCreate) SetInputToolResume(v *exp.ToolResume) *AgentTurnCreate {
+	_c.mutation.SetInputToolResume(v)
 	return _c
 }
 
-// SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (_c *AgentTurnCreate) SetNillableParentID(v *uuid.UUID) *AgentTurnCreate {
+// SetInputMessageID sets the "input_message_id" field.
+func (_c *AgentTurnCreate) SetInputMessageID(v uuid.UUID) *AgentTurnCreate {
+	_c.mutation.SetInputMessageID(v)
+	return _c
+}
+
+// SetNillableInputMessageID sets the "input_message_id" field if the given value is not nil.
+func (_c *AgentTurnCreate) SetNillableInputMessageID(v *uuid.UUID) *AgentTurnCreate {
 	if v != nil {
-		_c.SetParentID(*v)
+		_c.SetInputMessageID(*v)
 	}
-	return _c
-}
-
-// SetScopes sets the "scopes" field.
-func (_c *AgentTurnCreate) SetScopes(v []string) *AgentTurnCreate {
-	_c.mutation.SetScopes(v)
-	return _c
-}
-
-// SetInput sets the "input" field.
-func (_c *AgentTurnCreate) SetInput(v []byte) *AgentTurnCreate {
-	_c.mutation.SetInput(v)
 	return _c
 }
 
@@ -147,15 +150,17 @@ func (_c *AgentTurnCreate) SetNillableFinishReason(v *string) *AgentTurnCreate {
 	return _c
 }
 
-// SetState sets the "state" field.
-func (_c *AgentTurnCreate) SetState(v []byte) *AgentTurnCreate {
-	_c.mutation.SetState(v)
+// SetError sets the "error" field.
+func (_c *AgentTurnCreate) SetError(v string) *AgentTurnCreate {
+	_c.mutation.SetError(v)
 	return _c
 }
 
-// SetError sets the "error" field.
-func (_c *AgentTurnCreate) SetError(v []byte) *AgentTurnCreate {
-	_c.mutation.SetError(v)
+// SetNillableError sets the "error" field if the given value is not nil.
+func (_c *AgentTurnCreate) SetNillableError(v *string) *AgentTurnCreate {
+	if v != nil {
+		_c.SetError(*v)
+	}
 	return _c
 }
 
@@ -175,24 +180,39 @@ func (_c *AgentTurnCreate) SetAgentSession(v *AgentSession) *AgentTurnCreate {
 	return _c.SetAgentSessionID(v.ID)
 }
 
-// SetParent sets the "parent" edge to the AgentTurn entity.
-func (_c *AgentTurnCreate) SetParent(v *AgentTurn) *AgentTurnCreate {
-	return _c.SetParentID(v.ID)
+// SetInputMessage sets the "input_message" edge to the AgentMessage entity.
+func (_c *AgentTurnCreate) SetInputMessage(v *AgentMessage) *AgentTurnCreate {
+	return _c.SetInputMessageID(v.ID)
 }
 
-// AddChildIDs adds the "children" edge to the AgentTurn entity by IDs.
-func (_c *AgentTurnCreate) AddChildIDs(ids ...uuid.UUID) *AgentTurnCreate {
-	_c.mutation.AddChildIDs(ids...)
+// AddMessageIDs adds the "messages" edge to the AgentMessage entity by IDs.
+func (_c *AgentTurnCreate) AddMessageIDs(ids ...uuid.UUID) *AgentTurnCreate {
+	_c.mutation.AddMessageIDs(ids...)
 	return _c
 }
 
-// AddChildren adds the "children" edges to the AgentTurn entity.
-func (_c *AgentTurnCreate) AddChildren(v ...*AgentTurn) *AgentTurnCreate {
+// AddMessages adds the "messages" edges to the AgentMessage entity.
+func (_c *AgentTurnCreate) AddMessages(v ...*AgentMessage) *AgentTurnCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddChildIDs(ids...)
+	return _c.AddMessageIDs(ids...)
+}
+
+// AddArtifactIDs adds the "artifacts" edge to the AgentArtifact entity by IDs.
+func (_c *AgentTurnCreate) AddArtifactIDs(ids ...uuid.UUID) *AgentTurnCreate {
+	_c.mutation.AddArtifactIDs(ids...)
+	return _c
+}
+
+// AddArtifacts adds the "artifacts" edges to the AgentArtifact entity.
+func (_c *AgentTurnCreate) AddArtifacts(v ...*AgentArtifact) *AgentTurnCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddArtifactIDs(ids...)
 }
 
 // AddKnowledgeCitationIDs adds the "knowledge_citations" edge to the AgentTurnKnowledgeCitation entity by IDs.
@@ -282,11 +302,16 @@ func (_c *AgentTurnCreate) check() error {
 	if _, ok := _c.mutation.AgentSessionID(); !ok {
 		return &ValidationError{Name: "agent_session_id", err: errors.New(`ent: missing required field "AgentTurn.agent_session_id"`)}
 	}
+	if _, ok := _c.mutation.Sequence(); !ok {
+		return &ValidationError{Name: "sequence", err: errors.New(`ent: missing required field "AgentTurn.sequence"`)}
+	}
+	if v, ok := _c.mutation.Sequence(); ok {
+		if err := agentturn.SequenceValidator(v); err != nil {
+			return &ValidationError{Name: "sequence", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.sequence": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.RiverJobID(); !ok {
 		return &ValidationError{Name: "river_job_id", err: errors.New(`ent: missing required field "AgentTurn.river_job_id"`)}
-	}
-	if _, ok := _c.mutation.Input(); !ok {
-		return &ValidationError{Name: "input", err: errors.New(`ent: missing required field "AgentTurn.input"`)}
 	}
 	if _, ok := _c.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "AgentTurn.status"`)}
@@ -350,17 +375,17 @@ func (_c *AgentTurnCreate) createSpec() (*AgentTurn, *sqlgraph.CreateSpec) {
 		_spec.SetField(agentturn.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if value, ok := _c.mutation.Sequence(); ok {
+		_spec.SetField(agentturn.FieldSequence, field.TypeInt, value)
+		_node.Sequence = value
+	}
 	if value, ok := _c.mutation.RiverJobID(); ok {
 		_spec.SetField(agentturn.FieldRiverJobID, field.TypeInt64, value)
 		_node.RiverJobID = value
 	}
-	if value, ok := _c.mutation.Scopes(); ok {
-		_spec.SetField(agentturn.FieldScopes, field.TypeJSON, value)
-		_node.Scopes = value
-	}
-	if value, ok := _c.mutation.Input(); ok {
-		_spec.SetField(agentturn.FieldInput, field.TypeBytes, value)
-		_node.Input = value
+	if value, ok := _c.mutation.InputToolResume(); ok {
+		_spec.SetField(agentturn.FieldInputToolResume, field.TypeJSON, value)
+		_node.InputToolResume = value
 	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(agentturn.FieldStatus, field.TypeEnum, value)
@@ -378,13 +403,9 @@ func (_c *AgentTurnCreate) createSpec() (*AgentTurn, *sqlgraph.CreateSpec) {
 		_spec.SetField(agentturn.FieldFinishReason, field.TypeString, value)
 		_node.FinishReason = value
 	}
-	if value, ok := _c.mutation.State(); ok {
-		_spec.SetField(agentturn.FieldState, field.TypeBytes, value)
-		_node.State = value
-	}
 	if value, ok := _c.mutation.Error(); ok {
-		_spec.SetField(agentturn.FieldError, field.TypeBytes, value)
-		_node.Error = value
+		_spec.SetField(agentturn.FieldError, field.TypeString, value)
+		_node.Error = &value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -422,36 +443,53 @@ func (_c *AgentTurnCreate) createSpec() (*AgentTurn, *sqlgraph.CreateSpec) {
 		_node.AgentSessionID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.InputMessageIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentturn.ParentTable,
-			Columns: []string{agentturn.ParentColumn},
-			Bidi:    true,
+			Table:   agentturn.InputMessageTable,
+			Columns: []string{agentturn.InputMessageColumn},
+			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentTurn
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.ParentID = &nodes[0]
+		_node.InputMessageID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ChildrenIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.MessagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentturn.ChildrenTable,
-			Columns: []string{agentturn.ChildrenColumn},
+			Inverse: false,
+			Table:   agentturn.MessagesTable,
+			Columns: []string{agentturn.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.AgentTurn
+		edge.Schema = _c.schemaConfig.AgentMessage
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ArtifactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ArtifactsTable,
+			Columns: []string{agentturn.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentArtifact
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -568,51 +606,39 @@ func (u *AgentTurnUpsert) AddRiverJobID(v int64) *AgentTurnUpsert {
 	return u
 }
 
-// SetParentID sets the "parent_id" field.
-func (u *AgentTurnUpsert) SetParentID(v uuid.UUID) *AgentTurnUpsert {
-	u.Set(agentturn.FieldParentID, v)
+// SetInputToolResume sets the "input_tool_resume" field.
+func (u *AgentTurnUpsert) SetInputToolResume(v *exp.ToolResume) *AgentTurnUpsert {
+	u.Set(agentturn.FieldInputToolResume, v)
 	return u
 }
 
-// UpdateParentID sets the "parent_id" field to the value that was provided on create.
-func (u *AgentTurnUpsert) UpdateParentID() *AgentTurnUpsert {
-	u.SetExcluded(agentturn.FieldParentID)
+// UpdateInputToolResume sets the "input_tool_resume" field to the value that was provided on create.
+func (u *AgentTurnUpsert) UpdateInputToolResume() *AgentTurnUpsert {
+	u.SetExcluded(agentturn.FieldInputToolResume)
 	return u
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (u *AgentTurnUpsert) ClearParentID() *AgentTurnUpsert {
-	u.SetNull(agentturn.FieldParentID)
+// ClearInputToolResume clears the value of the "input_tool_resume" field.
+func (u *AgentTurnUpsert) ClearInputToolResume() *AgentTurnUpsert {
+	u.SetNull(agentturn.FieldInputToolResume)
 	return u
 }
 
-// SetScopes sets the "scopes" field.
-func (u *AgentTurnUpsert) SetScopes(v []string) *AgentTurnUpsert {
-	u.Set(agentturn.FieldScopes, v)
+// SetInputMessageID sets the "input_message_id" field.
+func (u *AgentTurnUpsert) SetInputMessageID(v uuid.UUID) *AgentTurnUpsert {
+	u.Set(agentturn.FieldInputMessageID, v)
 	return u
 }
 
-// UpdateScopes sets the "scopes" field to the value that was provided on create.
-func (u *AgentTurnUpsert) UpdateScopes() *AgentTurnUpsert {
-	u.SetExcluded(agentturn.FieldScopes)
+// UpdateInputMessageID sets the "input_message_id" field to the value that was provided on create.
+func (u *AgentTurnUpsert) UpdateInputMessageID() *AgentTurnUpsert {
+	u.SetExcluded(agentturn.FieldInputMessageID)
 	return u
 }
 
-// ClearScopes clears the value of the "scopes" field.
-func (u *AgentTurnUpsert) ClearScopes() *AgentTurnUpsert {
-	u.SetNull(agentturn.FieldScopes)
-	return u
-}
-
-// SetInput sets the "input" field.
-func (u *AgentTurnUpsert) SetInput(v []byte) *AgentTurnUpsert {
-	u.Set(agentturn.FieldInput, v)
-	return u
-}
-
-// UpdateInput sets the "input" field to the value that was provided on create.
-func (u *AgentTurnUpsert) UpdateInput() *AgentTurnUpsert {
-	u.SetExcluded(agentturn.FieldInput)
+// ClearInputMessageID clears the value of the "input_message_id" field.
+func (u *AgentTurnUpsert) ClearInputMessageID() *AgentTurnUpsert {
+	u.SetNull(agentturn.FieldInputMessageID)
 	return u
 }
 
@@ -676,26 +702,8 @@ func (u *AgentTurnUpsert) UpdateFinishReason() *AgentTurnUpsert {
 	return u
 }
 
-// SetState sets the "state" field.
-func (u *AgentTurnUpsert) SetState(v []byte) *AgentTurnUpsert {
-	u.Set(agentturn.FieldState, v)
-	return u
-}
-
-// UpdateState sets the "state" field to the value that was provided on create.
-func (u *AgentTurnUpsert) UpdateState() *AgentTurnUpsert {
-	u.SetExcluded(agentturn.FieldState)
-	return u
-}
-
-// ClearState clears the value of the "state" field.
-func (u *AgentTurnUpsert) ClearState() *AgentTurnUpsert {
-	u.SetNull(agentturn.FieldState)
-	return u
-}
-
 // SetError sets the "error" field.
-func (u *AgentTurnUpsert) SetError(v []byte) *AgentTurnUpsert {
+func (u *AgentTurnUpsert) SetError(v string) *AgentTurnUpsert {
 	u.Set(agentturn.FieldError, v)
 	return u
 }
@@ -734,6 +742,9 @@ func (u *AgentTurnUpsertOne) UpdateNewValues() *AgentTurnUpsertOne {
 		}
 		if _, exists := u.create.mutation.AgentSessionID(); exists {
 			s.SetIgnore(agentturn.FieldAgentSessionID)
+		}
+		if _, exists := u.create.mutation.Sequence(); exists {
+			s.SetIgnore(agentturn.FieldSequence)
 		}
 	}))
 	return u
@@ -815,59 +826,45 @@ func (u *AgentTurnUpsertOne) UpdateRiverJobID() *AgentTurnUpsertOne {
 	})
 }
 
-// SetParentID sets the "parent_id" field.
-func (u *AgentTurnUpsertOne) SetParentID(v uuid.UUID) *AgentTurnUpsertOne {
+// SetInputToolResume sets the "input_tool_resume" field.
+func (u *AgentTurnUpsertOne) SetInputToolResume(v *exp.ToolResume) *AgentTurnUpsertOne {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.SetParentID(v)
+		s.SetInputToolResume(v)
 	})
 }
 
-// UpdateParentID sets the "parent_id" field to the value that was provided on create.
-func (u *AgentTurnUpsertOne) UpdateParentID() *AgentTurnUpsertOne {
+// UpdateInputToolResume sets the "input_tool_resume" field to the value that was provided on create.
+func (u *AgentTurnUpsertOne) UpdateInputToolResume() *AgentTurnUpsertOne {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.UpdateParentID()
+		s.UpdateInputToolResume()
 	})
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (u *AgentTurnUpsertOne) ClearParentID() *AgentTurnUpsertOne {
+// ClearInputToolResume clears the value of the "input_tool_resume" field.
+func (u *AgentTurnUpsertOne) ClearInputToolResume() *AgentTurnUpsertOne {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.ClearParentID()
+		s.ClearInputToolResume()
 	})
 }
 
-// SetScopes sets the "scopes" field.
-func (u *AgentTurnUpsertOne) SetScopes(v []string) *AgentTurnUpsertOne {
+// SetInputMessageID sets the "input_message_id" field.
+func (u *AgentTurnUpsertOne) SetInputMessageID(v uuid.UUID) *AgentTurnUpsertOne {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.SetScopes(v)
+		s.SetInputMessageID(v)
 	})
 }
 
-// UpdateScopes sets the "scopes" field to the value that was provided on create.
-func (u *AgentTurnUpsertOne) UpdateScopes() *AgentTurnUpsertOne {
+// UpdateInputMessageID sets the "input_message_id" field to the value that was provided on create.
+func (u *AgentTurnUpsertOne) UpdateInputMessageID() *AgentTurnUpsertOne {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.UpdateScopes()
+		s.UpdateInputMessageID()
 	})
 }
 
-// ClearScopes clears the value of the "scopes" field.
-func (u *AgentTurnUpsertOne) ClearScopes() *AgentTurnUpsertOne {
+// ClearInputMessageID clears the value of the "input_message_id" field.
+func (u *AgentTurnUpsertOne) ClearInputMessageID() *AgentTurnUpsertOne {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.ClearScopes()
-	})
-}
-
-// SetInput sets the "input" field.
-func (u *AgentTurnUpsertOne) SetInput(v []byte) *AgentTurnUpsertOne {
-	return u.Update(func(s *AgentTurnUpsert) {
-		s.SetInput(v)
-	})
-}
-
-// UpdateInput sets the "input" field to the value that was provided on create.
-func (u *AgentTurnUpsertOne) UpdateInput() *AgentTurnUpsertOne {
-	return u.Update(func(s *AgentTurnUpsert) {
-		s.UpdateInput()
+		s.ClearInputMessageID()
 	})
 }
 
@@ -941,29 +938,8 @@ func (u *AgentTurnUpsertOne) UpdateFinishReason() *AgentTurnUpsertOne {
 	})
 }
 
-// SetState sets the "state" field.
-func (u *AgentTurnUpsertOne) SetState(v []byte) *AgentTurnUpsertOne {
-	return u.Update(func(s *AgentTurnUpsert) {
-		s.SetState(v)
-	})
-}
-
-// UpdateState sets the "state" field to the value that was provided on create.
-func (u *AgentTurnUpsertOne) UpdateState() *AgentTurnUpsertOne {
-	return u.Update(func(s *AgentTurnUpsert) {
-		s.UpdateState()
-	})
-}
-
-// ClearState clears the value of the "state" field.
-func (u *AgentTurnUpsertOne) ClearState() *AgentTurnUpsertOne {
-	return u.Update(func(s *AgentTurnUpsert) {
-		s.ClearState()
-	})
-}
-
 // SetError sets the "error" field.
-func (u *AgentTurnUpsertOne) SetError(v []byte) *AgentTurnUpsertOne {
+func (u *AgentTurnUpsertOne) SetError(v string) *AgentTurnUpsertOne {
 	return u.Update(func(s *AgentTurnUpsert) {
 		s.SetError(v)
 	})
@@ -1172,6 +1148,9 @@ func (u *AgentTurnUpsertBulk) UpdateNewValues() *AgentTurnUpsertBulk {
 			if _, exists := b.mutation.AgentSessionID(); exists {
 				s.SetIgnore(agentturn.FieldAgentSessionID)
 			}
+			if _, exists := b.mutation.Sequence(); exists {
+				s.SetIgnore(agentturn.FieldSequence)
+			}
 		}
 	}))
 	return u
@@ -1253,59 +1232,45 @@ func (u *AgentTurnUpsertBulk) UpdateRiverJobID() *AgentTurnUpsertBulk {
 	})
 }
 
-// SetParentID sets the "parent_id" field.
-func (u *AgentTurnUpsertBulk) SetParentID(v uuid.UUID) *AgentTurnUpsertBulk {
+// SetInputToolResume sets the "input_tool_resume" field.
+func (u *AgentTurnUpsertBulk) SetInputToolResume(v *exp.ToolResume) *AgentTurnUpsertBulk {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.SetParentID(v)
+		s.SetInputToolResume(v)
 	})
 }
 
-// UpdateParentID sets the "parent_id" field to the value that was provided on create.
-func (u *AgentTurnUpsertBulk) UpdateParentID() *AgentTurnUpsertBulk {
+// UpdateInputToolResume sets the "input_tool_resume" field to the value that was provided on create.
+func (u *AgentTurnUpsertBulk) UpdateInputToolResume() *AgentTurnUpsertBulk {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.UpdateParentID()
+		s.UpdateInputToolResume()
 	})
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (u *AgentTurnUpsertBulk) ClearParentID() *AgentTurnUpsertBulk {
+// ClearInputToolResume clears the value of the "input_tool_resume" field.
+func (u *AgentTurnUpsertBulk) ClearInputToolResume() *AgentTurnUpsertBulk {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.ClearParentID()
+		s.ClearInputToolResume()
 	})
 }
 
-// SetScopes sets the "scopes" field.
-func (u *AgentTurnUpsertBulk) SetScopes(v []string) *AgentTurnUpsertBulk {
+// SetInputMessageID sets the "input_message_id" field.
+func (u *AgentTurnUpsertBulk) SetInputMessageID(v uuid.UUID) *AgentTurnUpsertBulk {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.SetScopes(v)
+		s.SetInputMessageID(v)
 	})
 }
 
-// UpdateScopes sets the "scopes" field to the value that was provided on create.
-func (u *AgentTurnUpsertBulk) UpdateScopes() *AgentTurnUpsertBulk {
+// UpdateInputMessageID sets the "input_message_id" field to the value that was provided on create.
+func (u *AgentTurnUpsertBulk) UpdateInputMessageID() *AgentTurnUpsertBulk {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.UpdateScopes()
+		s.UpdateInputMessageID()
 	})
 }
 
-// ClearScopes clears the value of the "scopes" field.
-func (u *AgentTurnUpsertBulk) ClearScopes() *AgentTurnUpsertBulk {
+// ClearInputMessageID clears the value of the "input_message_id" field.
+func (u *AgentTurnUpsertBulk) ClearInputMessageID() *AgentTurnUpsertBulk {
 	return u.Update(func(s *AgentTurnUpsert) {
-		s.ClearScopes()
-	})
-}
-
-// SetInput sets the "input" field.
-func (u *AgentTurnUpsertBulk) SetInput(v []byte) *AgentTurnUpsertBulk {
-	return u.Update(func(s *AgentTurnUpsert) {
-		s.SetInput(v)
-	})
-}
-
-// UpdateInput sets the "input" field to the value that was provided on create.
-func (u *AgentTurnUpsertBulk) UpdateInput() *AgentTurnUpsertBulk {
-	return u.Update(func(s *AgentTurnUpsert) {
-		s.UpdateInput()
+		s.ClearInputMessageID()
 	})
 }
 
@@ -1379,29 +1344,8 @@ func (u *AgentTurnUpsertBulk) UpdateFinishReason() *AgentTurnUpsertBulk {
 	})
 }
 
-// SetState sets the "state" field.
-func (u *AgentTurnUpsertBulk) SetState(v []byte) *AgentTurnUpsertBulk {
-	return u.Update(func(s *AgentTurnUpsert) {
-		s.SetState(v)
-	})
-}
-
-// UpdateState sets the "state" field to the value that was provided on create.
-func (u *AgentTurnUpsertBulk) UpdateState() *AgentTurnUpsertBulk {
-	return u.Update(func(s *AgentTurnUpsert) {
-		s.UpdateState()
-	})
-}
-
-// ClearState clears the value of the "state" field.
-func (u *AgentTurnUpsertBulk) ClearState() *AgentTurnUpsertBulk {
-	return u.Update(func(s *AgentTurnUpsert) {
-		s.ClearState()
-	})
-}
-
 // SetError sets the "error" field.
-func (u *AgentTurnUpsertBulk) SetError(v []byte) *AgentTurnUpsertBulk {
+func (u *AgentTurnUpsertBulk) SetError(v string) *AgentTurnUpsertBulk {
 	return u.Update(func(s *AgentTurnUpsert) {
 		s.SetError(v)
 	})

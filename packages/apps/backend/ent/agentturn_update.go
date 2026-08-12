@@ -10,9 +10,11 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
+	"github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentartifact"
+	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/internal"
@@ -74,47 +76,35 @@ func (_u *AgentTurnUpdate) AddRiverJobID(v int64) *AgentTurnUpdate {
 	return _u
 }
 
-// SetParentID sets the "parent_id" field.
-func (_u *AgentTurnUpdate) SetParentID(v uuid.UUID) *AgentTurnUpdate {
-	_u.mutation.SetParentID(v)
+// SetInputToolResume sets the "input_tool_resume" field.
+func (_u *AgentTurnUpdate) SetInputToolResume(v *exp.ToolResume) *AgentTurnUpdate {
+	_u.mutation.SetInputToolResume(v)
 	return _u
 }
 
-// SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (_u *AgentTurnUpdate) SetNillableParentID(v *uuid.UUID) *AgentTurnUpdate {
+// ClearInputToolResume clears the value of the "input_tool_resume" field.
+func (_u *AgentTurnUpdate) ClearInputToolResume() *AgentTurnUpdate {
+	_u.mutation.ClearInputToolResume()
+	return _u
+}
+
+// SetInputMessageID sets the "input_message_id" field.
+func (_u *AgentTurnUpdate) SetInputMessageID(v uuid.UUID) *AgentTurnUpdate {
+	_u.mutation.SetInputMessageID(v)
+	return _u
+}
+
+// SetNillableInputMessageID sets the "input_message_id" field if the given value is not nil.
+func (_u *AgentTurnUpdate) SetNillableInputMessageID(v *uuid.UUID) *AgentTurnUpdate {
 	if v != nil {
-		_u.SetParentID(*v)
+		_u.SetInputMessageID(*v)
 	}
 	return _u
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (_u *AgentTurnUpdate) ClearParentID() *AgentTurnUpdate {
-	_u.mutation.ClearParentID()
-	return _u
-}
-
-// SetScopes sets the "scopes" field.
-func (_u *AgentTurnUpdate) SetScopes(v []string) *AgentTurnUpdate {
-	_u.mutation.SetScopes(v)
-	return _u
-}
-
-// AppendScopes appends value to the "scopes" field.
-func (_u *AgentTurnUpdate) AppendScopes(v []string) *AgentTurnUpdate {
-	_u.mutation.AppendScopes(v)
-	return _u
-}
-
-// ClearScopes clears the value of the "scopes" field.
-func (_u *AgentTurnUpdate) ClearScopes() *AgentTurnUpdate {
-	_u.mutation.ClearScopes()
-	return _u
-}
-
-// SetInput sets the "input" field.
-func (_u *AgentTurnUpdate) SetInput(v []byte) *AgentTurnUpdate {
-	_u.mutation.SetInput(v)
+// ClearInputMessageID clears the value of the "input_message_id" field.
+func (_u *AgentTurnUpdate) ClearInputMessageID() *AgentTurnUpdate {
+	_u.mutation.ClearInputMessageID()
 	return _u
 }
 
@@ -186,21 +176,17 @@ func (_u *AgentTurnUpdate) SetNillableFinishReason(v *string) *AgentTurnUpdate {
 	return _u
 }
 
-// SetState sets the "state" field.
-func (_u *AgentTurnUpdate) SetState(v []byte) *AgentTurnUpdate {
-	_u.mutation.SetState(v)
-	return _u
-}
-
-// ClearState clears the value of the "state" field.
-func (_u *AgentTurnUpdate) ClearState() *AgentTurnUpdate {
-	_u.mutation.ClearState()
-	return _u
-}
-
 // SetError sets the "error" field.
-func (_u *AgentTurnUpdate) SetError(v []byte) *AgentTurnUpdate {
+func (_u *AgentTurnUpdate) SetError(v string) *AgentTurnUpdate {
 	_u.mutation.SetError(v)
+	return _u
+}
+
+// SetNillableError sets the "error" field if the given value is not nil.
+func (_u *AgentTurnUpdate) SetNillableError(v *string) *AgentTurnUpdate {
+	if v != nil {
+		_u.SetError(*v)
+	}
 	return _u
 }
 
@@ -210,24 +196,39 @@ func (_u *AgentTurnUpdate) ClearError() *AgentTurnUpdate {
 	return _u
 }
 
-// SetParent sets the "parent" edge to the AgentTurn entity.
-func (_u *AgentTurnUpdate) SetParent(v *AgentTurn) *AgentTurnUpdate {
-	return _u.SetParentID(v.ID)
+// SetInputMessage sets the "input_message" edge to the AgentMessage entity.
+func (_u *AgentTurnUpdate) SetInputMessage(v *AgentMessage) *AgentTurnUpdate {
+	return _u.SetInputMessageID(v.ID)
 }
 
-// AddChildIDs adds the "children" edge to the AgentTurn entity by IDs.
-func (_u *AgentTurnUpdate) AddChildIDs(ids ...uuid.UUID) *AgentTurnUpdate {
-	_u.mutation.AddChildIDs(ids...)
+// AddMessageIDs adds the "messages" edge to the AgentMessage entity by IDs.
+func (_u *AgentTurnUpdate) AddMessageIDs(ids ...uuid.UUID) *AgentTurnUpdate {
+	_u.mutation.AddMessageIDs(ids...)
 	return _u
 }
 
-// AddChildren adds the "children" edges to the AgentTurn entity.
-func (_u *AgentTurnUpdate) AddChildren(v ...*AgentTurn) *AgentTurnUpdate {
+// AddMessages adds the "messages" edges to the AgentMessage entity.
+func (_u *AgentTurnUpdate) AddMessages(v ...*AgentMessage) *AgentTurnUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddChildIDs(ids...)
+	return _u.AddMessageIDs(ids...)
+}
+
+// AddArtifactIDs adds the "artifacts" edge to the AgentArtifact entity by IDs.
+func (_u *AgentTurnUpdate) AddArtifactIDs(ids ...uuid.UUID) *AgentTurnUpdate {
+	_u.mutation.AddArtifactIDs(ids...)
+	return _u
+}
+
+// AddArtifacts adds the "artifacts" edges to the AgentArtifact entity.
+func (_u *AgentTurnUpdate) AddArtifacts(v ...*AgentArtifact) *AgentTurnUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddArtifactIDs(ids...)
 }
 
 // AddKnowledgeCitationIDs adds the "knowledge_citations" edge to the AgentTurnKnowledgeCitation entity by IDs.
@@ -250,31 +251,52 @@ func (_u *AgentTurnUpdate) Mutation() *AgentTurnMutation {
 	return _u.mutation
 }
 
-// ClearParent clears the "parent" edge to the AgentTurn entity.
-func (_u *AgentTurnUpdate) ClearParent() *AgentTurnUpdate {
-	_u.mutation.ClearParent()
+// ClearInputMessage clears the "input_message" edge to the AgentMessage entity.
+func (_u *AgentTurnUpdate) ClearInputMessage() *AgentTurnUpdate {
+	_u.mutation.ClearInputMessage()
 	return _u
 }
 
-// ClearChildren clears all "children" edges to the AgentTurn entity.
-func (_u *AgentTurnUpdate) ClearChildren() *AgentTurnUpdate {
-	_u.mutation.ClearChildren()
+// ClearMessages clears all "messages" edges to the AgentMessage entity.
+func (_u *AgentTurnUpdate) ClearMessages() *AgentTurnUpdate {
+	_u.mutation.ClearMessages()
 	return _u
 }
 
-// RemoveChildIDs removes the "children" edge to AgentTurn entities by IDs.
-func (_u *AgentTurnUpdate) RemoveChildIDs(ids ...uuid.UUID) *AgentTurnUpdate {
-	_u.mutation.RemoveChildIDs(ids...)
+// RemoveMessageIDs removes the "messages" edge to AgentMessage entities by IDs.
+func (_u *AgentTurnUpdate) RemoveMessageIDs(ids ...uuid.UUID) *AgentTurnUpdate {
+	_u.mutation.RemoveMessageIDs(ids...)
 	return _u
 }
 
-// RemoveChildren removes "children" edges to AgentTurn entities.
-func (_u *AgentTurnUpdate) RemoveChildren(v ...*AgentTurn) *AgentTurnUpdate {
+// RemoveMessages removes "messages" edges to AgentMessage entities.
+func (_u *AgentTurnUpdate) RemoveMessages(v ...*AgentMessage) *AgentTurnUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveChildIDs(ids...)
+	return _u.RemoveMessageIDs(ids...)
+}
+
+// ClearArtifacts clears all "artifacts" edges to the AgentArtifact entity.
+func (_u *AgentTurnUpdate) ClearArtifacts() *AgentTurnUpdate {
+	_u.mutation.ClearArtifacts()
+	return _u
+}
+
+// RemoveArtifactIDs removes the "artifacts" edge to AgentArtifact entities by IDs.
+func (_u *AgentTurnUpdate) RemoveArtifactIDs(ids ...uuid.UUID) *AgentTurnUpdate {
+	_u.mutation.RemoveArtifactIDs(ids...)
+	return _u
+}
+
+// RemoveArtifacts removes "artifacts" edges to AgentArtifact entities.
+func (_u *AgentTurnUpdate) RemoveArtifacts(v ...*AgentArtifact) *AgentTurnUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveArtifactIDs(ids...)
 }
 
 // ClearKnowledgeCitations clears all "knowledge_citations" edges to the AgentTurnKnowledgeCitation entity.
@@ -386,19 +408,11 @@ func (_u *AgentTurnUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.AddedRiverJobID(); ok {
 		_spec.AddField(agentturn.FieldRiverJobID, field.TypeInt64, value)
 	}
-	if value, ok := _u.mutation.Scopes(); ok {
-		_spec.SetField(agentturn.FieldScopes, field.TypeJSON, value)
+	if value, ok := _u.mutation.InputToolResume(); ok {
+		_spec.SetField(agentturn.FieldInputToolResume, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedScopes(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, agentturn.FieldScopes, value)
-		})
-	}
-	if _u.mutation.ScopesCleared() {
-		_spec.ClearField(agentturn.FieldScopes, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.Input(); ok {
-		_spec.SetField(agentturn.FieldInput, field.TypeBytes, value)
+	if _u.mutation.InputToolResumeCleared() {
+		_spec.ClearField(agentturn.FieldInputToolResume, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(agentturn.FieldStatus, field.TypeEnum, value)
@@ -418,41 +432,35 @@ func (_u *AgentTurnUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.FinishReason(); ok {
 		_spec.SetField(agentturn.FieldFinishReason, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.State(); ok {
-		_spec.SetField(agentturn.FieldState, field.TypeBytes, value)
-	}
-	if _u.mutation.StateCleared() {
-		_spec.ClearField(agentturn.FieldState, field.TypeBytes)
-	}
 	if value, ok := _u.mutation.Error(); ok {
-		_spec.SetField(agentturn.FieldError, field.TypeBytes, value)
+		_spec.SetField(agentturn.FieldError, field.TypeString, value)
 	}
 	if _u.mutation.ErrorCleared() {
-		_spec.ClearField(agentturn.FieldError, field.TypeBytes)
+		_spec.ClearField(agentturn.FieldError, field.TypeString)
 	}
-	if _u.mutation.ParentCleared() {
+	if _u.mutation.InputMessageCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentturn.ParentTable,
-			Columns: []string{agentturn.ParentColumn},
-			Bidi:    true,
+			Table:   agentturn.InputMessageTable,
+			Columns: []string{agentturn.InputMessageColumn},
+			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentTurn
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.InputMessageIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentturn.ParentTable,
-			Columns: []string{agentturn.ParentColumn},
-			Bidi:    true,
+			Table:   agentturn.InputMessageTable,
+			Columns: []string{agentturn.InputMessageColumn},
+			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentTurn
@@ -461,49 +469,97 @@ func (_u *AgentTurnUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ChildrenCleared() {
+	if _u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentturn.ChildrenTable,
-			Columns: []string{agentturn.ChildrenColumn},
+			Inverse: false,
+			Table:   agentturn.MessagesTable,
+			Columns: []string{agentturn.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentTurn
+		edge.Schema = _u.schemaConfig.AgentMessage
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !_u.mutation.ChildrenCleared() {
+	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentturn.ChildrenTable,
-			Columns: []string{agentturn.ChildrenColumn},
+			Inverse: false,
+			Table:   agentturn.MessagesTable,
+			Columns: []string{agentturn.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentTurn
+		edge.Schema = _u.schemaConfig.AgentMessage
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ChildrenIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MessagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentturn.ChildrenTable,
-			Columns: []string{agentturn.ChildrenColumn},
+			Inverse: false,
+			Table:   agentturn.MessagesTable,
+			Columns: []string{agentturn.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentTurn
+		edge.Schema = _u.schemaConfig.AgentMessage
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ArtifactsTable,
+			Columns: []string{agentturn.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedArtifactsIDs(); len(nodes) > 0 && !_u.mutation.ArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ArtifactsTable,
+			Columns: []string{agentturn.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ArtifactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ArtifactsTable,
+			Columns: []string{agentturn.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -622,47 +678,35 @@ func (_u *AgentTurnUpdateOne) AddRiverJobID(v int64) *AgentTurnUpdateOne {
 	return _u
 }
 
-// SetParentID sets the "parent_id" field.
-func (_u *AgentTurnUpdateOne) SetParentID(v uuid.UUID) *AgentTurnUpdateOne {
-	_u.mutation.SetParentID(v)
+// SetInputToolResume sets the "input_tool_resume" field.
+func (_u *AgentTurnUpdateOne) SetInputToolResume(v *exp.ToolResume) *AgentTurnUpdateOne {
+	_u.mutation.SetInputToolResume(v)
 	return _u
 }
 
-// SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (_u *AgentTurnUpdateOne) SetNillableParentID(v *uuid.UUID) *AgentTurnUpdateOne {
+// ClearInputToolResume clears the value of the "input_tool_resume" field.
+func (_u *AgentTurnUpdateOne) ClearInputToolResume() *AgentTurnUpdateOne {
+	_u.mutation.ClearInputToolResume()
+	return _u
+}
+
+// SetInputMessageID sets the "input_message_id" field.
+func (_u *AgentTurnUpdateOne) SetInputMessageID(v uuid.UUID) *AgentTurnUpdateOne {
+	_u.mutation.SetInputMessageID(v)
+	return _u
+}
+
+// SetNillableInputMessageID sets the "input_message_id" field if the given value is not nil.
+func (_u *AgentTurnUpdateOne) SetNillableInputMessageID(v *uuid.UUID) *AgentTurnUpdateOne {
 	if v != nil {
-		_u.SetParentID(*v)
+		_u.SetInputMessageID(*v)
 	}
 	return _u
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (_u *AgentTurnUpdateOne) ClearParentID() *AgentTurnUpdateOne {
-	_u.mutation.ClearParentID()
-	return _u
-}
-
-// SetScopes sets the "scopes" field.
-func (_u *AgentTurnUpdateOne) SetScopes(v []string) *AgentTurnUpdateOne {
-	_u.mutation.SetScopes(v)
-	return _u
-}
-
-// AppendScopes appends value to the "scopes" field.
-func (_u *AgentTurnUpdateOne) AppendScopes(v []string) *AgentTurnUpdateOne {
-	_u.mutation.AppendScopes(v)
-	return _u
-}
-
-// ClearScopes clears the value of the "scopes" field.
-func (_u *AgentTurnUpdateOne) ClearScopes() *AgentTurnUpdateOne {
-	_u.mutation.ClearScopes()
-	return _u
-}
-
-// SetInput sets the "input" field.
-func (_u *AgentTurnUpdateOne) SetInput(v []byte) *AgentTurnUpdateOne {
-	_u.mutation.SetInput(v)
+// ClearInputMessageID clears the value of the "input_message_id" field.
+func (_u *AgentTurnUpdateOne) ClearInputMessageID() *AgentTurnUpdateOne {
+	_u.mutation.ClearInputMessageID()
 	return _u
 }
 
@@ -734,21 +778,17 @@ func (_u *AgentTurnUpdateOne) SetNillableFinishReason(v *string) *AgentTurnUpdat
 	return _u
 }
 
-// SetState sets the "state" field.
-func (_u *AgentTurnUpdateOne) SetState(v []byte) *AgentTurnUpdateOne {
-	_u.mutation.SetState(v)
-	return _u
-}
-
-// ClearState clears the value of the "state" field.
-func (_u *AgentTurnUpdateOne) ClearState() *AgentTurnUpdateOne {
-	_u.mutation.ClearState()
-	return _u
-}
-
 // SetError sets the "error" field.
-func (_u *AgentTurnUpdateOne) SetError(v []byte) *AgentTurnUpdateOne {
+func (_u *AgentTurnUpdateOne) SetError(v string) *AgentTurnUpdateOne {
 	_u.mutation.SetError(v)
+	return _u
+}
+
+// SetNillableError sets the "error" field if the given value is not nil.
+func (_u *AgentTurnUpdateOne) SetNillableError(v *string) *AgentTurnUpdateOne {
+	if v != nil {
+		_u.SetError(*v)
+	}
 	return _u
 }
 
@@ -758,24 +798,39 @@ func (_u *AgentTurnUpdateOne) ClearError() *AgentTurnUpdateOne {
 	return _u
 }
 
-// SetParent sets the "parent" edge to the AgentTurn entity.
-func (_u *AgentTurnUpdateOne) SetParent(v *AgentTurn) *AgentTurnUpdateOne {
-	return _u.SetParentID(v.ID)
+// SetInputMessage sets the "input_message" edge to the AgentMessage entity.
+func (_u *AgentTurnUpdateOne) SetInputMessage(v *AgentMessage) *AgentTurnUpdateOne {
+	return _u.SetInputMessageID(v.ID)
 }
 
-// AddChildIDs adds the "children" edge to the AgentTurn entity by IDs.
-func (_u *AgentTurnUpdateOne) AddChildIDs(ids ...uuid.UUID) *AgentTurnUpdateOne {
-	_u.mutation.AddChildIDs(ids...)
+// AddMessageIDs adds the "messages" edge to the AgentMessage entity by IDs.
+func (_u *AgentTurnUpdateOne) AddMessageIDs(ids ...uuid.UUID) *AgentTurnUpdateOne {
+	_u.mutation.AddMessageIDs(ids...)
 	return _u
 }
 
-// AddChildren adds the "children" edges to the AgentTurn entity.
-func (_u *AgentTurnUpdateOne) AddChildren(v ...*AgentTurn) *AgentTurnUpdateOne {
+// AddMessages adds the "messages" edges to the AgentMessage entity.
+func (_u *AgentTurnUpdateOne) AddMessages(v ...*AgentMessage) *AgentTurnUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddChildIDs(ids...)
+	return _u.AddMessageIDs(ids...)
+}
+
+// AddArtifactIDs adds the "artifacts" edge to the AgentArtifact entity by IDs.
+func (_u *AgentTurnUpdateOne) AddArtifactIDs(ids ...uuid.UUID) *AgentTurnUpdateOne {
+	_u.mutation.AddArtifactIDs(ids...)
+	return _u
+}
+
+// AddArtifacts adds the "artifacts" edges to the AgentArtifact entity.
+func (_u *AgentTurnUpdateOne) AddArtifacts(v ...*AgentArtifact) *AgentTurnUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddArtifactIDs(ids...)
 }
 
 // AddKnowledgeCitationIDs adds the "knowledge_citations" edge to the AgentTurnKnowledgeCitation entity by IDs.
@@ -798,31 +853,52 @@ func (_u *AgentTurnUpdateOne) Mutation() *AgentTurnMutation {
 	return _u.mutation
 }
 
-// ClearParent clears the "parent" edge to the AgentTurn entity.
-func (_u *AgentTurnUpdateOne) ClearParent() *AgentTurnUpdateOne {
-	_u.mutation.ClearParent()
+// ClearInputMessage clears the "input_message" edge to the AgentMessage entity.
+func (_u *AgentTurnUpdateOne) ClearInputMessage() *AgentTurnUpdateOne {
+	_u.mutation.ClearInputMessage()
 	return _u
 }
 
-// ClearChildren clears all "children" edges to the AgentTurn entity.
-func (_u *AgentTurnUpdateOne) ClearChildren() *AgentTurnUpdateOne {
-	_u.mutation.ClearChildren()
+// ClearMessages clears all "messages" edges to the AgentMessage entity.
+func (_u *AgentTurnUpdateOne) ClearMessages() *AgentTurnUpdateOne {
+	_u.mutation.ClearMessages()
 	return _u
 }
 
-// RemoveChildIDs removes the "children" edge to AgentTurn entities by IDs.
-func (_u *AgentTurnUpdateOne) RemoveChildIDs(ids ...uuid.UUID) *AgentTurnUpdateOne {
-	_u.mutation.RemoveChildIDs(ids...)
+// RemoveMessageIDs removes the "messages" edge to AgentMessage entities by IDs.
+func (_u *AgentTurnUpdateOne) RemoveMessageIDs(ids ...uuid.UUID) *AgentTurnUpdateOne {
+	_u.mutation.RemoveMessageIDs(ids...)
 	return _u
 }
 
-// RemoveChildren removes "children" edges to AgentTurn entities.
-func (_u *AgentTurnUpdateOne) RemoveChildren(v ...*AgentTurn) *AgentTurnUpdateOne {
+// RemoveMessages removes "messages" edges to AgentMessage entities.
+func (_u *AgentTurnUpdateOne) RemoveMessages(v ...*AgentMessage) *AgentTurnUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveChildIDs(ids...)
+	return _u.RemoveMessageIDs(ids...)
+}
+
+// ClearArtifacts clears all "artifacts" edges to the AgentArtifact entity.
+func (_u *AgentTurnUpdateOne) ClearArtifacts() *AgentTurnUpdateOne {
+	_u.mutation.ClearArtifacts()
+	return _u
+}
+
+// RemoveArtifactIDs removes the "artifacts" edge to AgentArtifact entities by IDs.
+func (_u *AgentTurnUpdateOne) RemoveArtifactIDs(ids ...uuid.UUID) *AgentTurnUpdateOne {
+	_u.mutation.RemoveArtifactIDs(ids...)
+	return _u
+}
+
+// RemoveArtifacts removes "artifacts" edges to AgentArtifact entities.
+func (_u *AgentTurnUpdateOne) RemoveArtifacts(v ...*AgentArtifact) *AgentTurnUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveArtifactIDs(ids...)
 }
 
 // ClearKnowledgeCitations clears all "knowledge_citations" edges to the AgentTurnKnowledgeCitation entity.
@@ -964,19 +1040,11 @@ func (_u *AgentTurnUpdateOne) sqlSave(ctx context.Context) (_node *AgentTurn, er
 	if value, ok := _u.mutation.AddedRiverJobID(); ok {
 		_spec.AddField(agentturn.FieldRiverJobID, field.TypeInt64, value)
 	}
-	if value, ok := _u.mutation.Scopes(); ok {
-		_spec.SetField(agentturn.FieldScopes, field.TypeJSON, value)
+	if value, ok := _u.mutation.InputToolResume(); ok {
+		_spec.SetField(agentturn.FieldInputToolResume, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedScopes(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, agentturn.FieldScopes, value)
-		})
-	}
-	if _u.mutation.ScopesCleared() {
-		_spec.ClearField(agentturn.FieldScopes, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.Input(); ok {
-		_spec.SetField(agentturn.FieldInput, field.TypeBytes, value)
+	if _u.mutation.InputToolResumeCleared() {
+		_spec.ClearField(agentturn.FieldInputToolResume, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(agentturn.FieldStatus, field.TypeEnum, value)
@@ -996,41 +1064,35 @@ func (_u *AgentTurnUpdateOne) sqlSave(ctx context.Context) (_node *AgentTurn, er
 	if value, ok := _u.mutation.FinishReason(); ok {
 		_spec.SetField(agentturn.FieldFinishReason, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.State(); ok {
-		_spec.SetField(agentturn.FieldState, field.TypeBytes, value)
-	}
-	if _u.mutation.StateCleared() {
-		_spec.ClearField(agentturn.FieldState, field.TypeBytes)
-	}
 	if value, ok := _u.mutation.Error(); ok {
-		_spec.SetField(agentturn.FieldError, field.TypeBytes, value)
+		_spec.SetField(agentturn.FieldError, field.TypeString, value)
 	}
 	if _u.mutation.ErrorCleared() {
-		_spec.ClearField(agentturn.FieldError, field.TypeBytes)
+		_spec.ClearField(agentturn.FieldError, field.TypeString)
 	}
-	if _u.mutation.ParentCleared() {
+	if _u.mutation.InputMessageCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentturn.ParentTable,
-			Columns: []string{agentturn.ParentColumn},
-			Bidi:    true,
+			Table:   agentturn.InputMessageTable,
+			Columns: []string{agentturn.InputMessageColumn},
+			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentTurn
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.InputMessageIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentturn.ParentTable,
-			Columns: []string{agentturn.ParentColumn},
-			Bidi:    true,
+			Table:   agentturn.InputMessageTable,
+			Columns: []string{agentturn.InputMessageColumn},
+			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentTurn
@@ -1039,49 +1101,97 @@ func (_u *AgentTurnUpdateOne) sqlSave(ctx context.Context) (_node *AgentTurn, er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ChildrenCleared() {
+	if _u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentturn.ChildrenTable,
-			Columns: []string{agentturn.ChildrenColumn},
+			Inverse: false,
+			Table:   agentturn.MessagesTable,
+			Columns: []string{agentturn.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentTurn
+		edge.Schema = _u.schemaConfig.AgentMessage
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !_u.mutation.ChildrenCleared() {
+	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentturn.ChildrenTable,
-			Columns: []string{agentturn.ChildrenColumn},
+			Inverse: false,
+			Table:   agentturn.MessagesTable,
+			Columns: []string{agentturn.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentTurn
+		edge.Schema = _u.schemaConfig.AgentMessage
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ChildrenIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MessagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentturn.ChildrenTable,
-			Columns: []string{agentturn.ChildrenColumn},
+			Inverse: false,
+			Table:   agentturn.MessagesTable,
+			Columns: []string{agentturn.MessagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentmessage.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentTurn
+		edge.Schema = _u.schemaConfig.AgentMessage
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ArtifactsTable,
+			Columns: []string{agentturn.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedArtifactsIDs(); len(nodes) > 0 && !_u.mutation.ArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ArtifactsTable,
+			Columns: []string{agentturn.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ArtifactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ArtifactsTable,
+			Columns: []string{agentturn.ArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentArtifact
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

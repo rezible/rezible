@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentartifact"
+	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
@@ -87,6 +89,82 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	agentartifactMixin := schema.AgentArtifact{}.Mixin()
+	agentartifact.Policy = privacy.NewPolicies(agentartifactMixin[0], agentartifactMixin[1], schema.AgentArtifact{})
+	agentartifact.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := agentartifact.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	agentartifactMixinFields2 := agentartifactMixin[2].Fields()
+	_ = agentartifactMixinFields2
+	agentartifactFields := schema.AgentArtifact{}.Fields()
+	_ = agentartifactFields
+	// agentartifactDescCreatedAt is the schema descriptor for created_at field.
+	agentartifactDescCreatedAt := agentartifactMixinFields2[0].Descriptor()
+	// agentartifact.DefaultCreatedAt holds the default value on creation for the created_at field.
+	agentartifact.DefaultCreatedAt = agentartifactDescCreatedAt.Default.(func() time.Time)
+	// agentartifactDescUpdatedAt is the schema descriptor for updated_at field.
+	agentartifactDescUpdatedAt := agentartifactMixinFields2[1].Descriptor()
+	// agentartifact.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	agentartifact.DefaultUpdatedAt = agentartifactDescUpdatedAt.Default.(func() time.Time)
+	// agentartifact.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	agentartifact.UpdateDefaultUpdatedAt = agentartifactDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// agentartifactDescName is the schema descriptor for name field.
+	agentartifactDescName := agentartifactFields[3].Descriptor()
+	// agentartifact.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	agentartifact.NameValidator = agentartifactDescName.Validators[0].(func(string) error)
+	// agentartifactDescMetadata is the schema descriptor for metadata field.
+	agentartifactDescMetadata := agentartifactFields[5].Descriptor()
+	// agentartifact.DefaultMetadata holds the default value on creation for the metadata field.
+	agentartifact.DefaultMetadata = agentartifactDescMetadata.Default.(map[string]interface{})
+	// agentartifactDescID is the schema descriptor for id field.
+	agentartifactDescID := agentartifactFields[0].Descriptor()
+	// agentartifact.DefaultID holds the default value on creation for the id field.
+	agentartifact.DefaultID = agentartifactDescID.Default.(func() uuid.UUID)
+	agentmessageMixin := schema.AgentMessage{}.Mixin()
+	agentmessage.Policy = privacy.NewPolicies(agentmessageMixin[0], agentmessageMixin[1], schema.AgentMessage{})
+	agentmessage.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := agentmessage.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	agentmessageMixinFields2 := agentmessageMixin[2].Fields()
+	_ = agentmessageMixinFields2
+	agentmessageFields := schema.AgentMessage{}.Fields()
+	_ = agentmessageFields
+	// agentmessageDescCreatedAt is the schema descriptor for created_at field.
+	agentmessageDescCreatedAt := agentmessageMixinFields2[0].Descriptor()
+	// agentmessage.DefaultCreatedAt holds the default value on creation for the created_at field.
+	agentmessage.DefaultCreatedAt = agentmessageDescCreatedAt.Default.(func() time.Time)
+	// agentmessageDescUpdatedAt is the schema descriptor for updated_at field.
+	agentmessageDescUpdatedAt := agentmessageMixinFields2[1].Descriptor()
+	// agentmessage.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	agentmessage.DefaultUpdatedAt = agentmessageDescUpdatedAt.Default.(func() time.Time)
+	// agentmessage.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	agentmessage.UpdateDefaultUpdatedAt = agentmessageDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// agentmessageDescSequence is the schema descriptor for sequence field.
+	agentmessageDescSequence := agentmessageFields[3].Descriptor()
+	// agentmessage.SequenceValidator is a validator for the "sequence" field. It is called by the builders before save.
+	agentmessage.SequenceValidator = agentmessageDescSequence.Validators[0].(func(int) error)
+	// agentmessageDescMetadata is the schema descriptor for metadata field.
+	agentmessageDescMetadata := agentmessageFields[6].Descriptor()
+	// agentmessage.DefaultMetadata holds the default value on creation for the metadata field.
+	agentmessage.DefaultMetadata = agentmessageDescMetadata.Default.(map[string]interface{})
+	// agentmessageDescVisible is the schema descriptor for visible field.
+	agentmessageDescVisible := agentmessageFields[7].Descriptor()
+	// agentmessage.DefaultVisible holds the default value on creation for the visible field.
+	agentmessage.DefaultVisible = agentmessageDescVisible.Default.(bool)
+	// agentmessageDescID is the schema descriptor for id field.
+	agentmessageDescID := agentmessageFields[0].Descriptor()
+	// agentmessage.DefaultID holds the default value on creation for the id field.
+	agentmessage.DefaultID = agentmessageDescID.Default.(func() uuid.UUID)
 	agentsessionMixin := schema.AgentSession{}.Mixin()
 	agentsession.Policy = privacy.NewPolicies(agentsessionMixin[0], agentsessionMixin[1], schema.AgentSession{})
 	agentsession.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -115,10 +193,10 @@ func init() {
 	agentsessionDescAgentName := agentsessionFields[1].Descriptor()
 	// agentsession.AgentNameValidator is a validator for the "agent_name" field. It is called by the builders before save.
 	agentsession.AgentNameValidator = agentsessionDescAgentName.Validators[0].(func(string) error)
-	// agentsessionDescDefaultScopes is the schema descriptor for default_scopes field.
-	agentsessionDescDefaultScopes := agentsessionFields[3].Descriptor()
-	// agentsession.DefaultDefaultScopes holds the default value on creation for the default_scopes field.
-	agentsession.DefaultDefaultScopes = agentsessionDescDefaultScopes.Default.([]string)
+	// agentsessionDescScopes is the schema descriptor for scopes field.
+	agentsessionDescScopes := agentsessionFields[3].Descriptor()
+	// agentsession.DefaultScopes holds the default value on creation for the scopes field.
+	agentsession.DefaultScopes = agentsessionDescScopes.Default.([]string)
 	// agentsessionDescID is the schema descriptor for id field.
 	agentsessionDescID := agentsessionFields[0].Descriptor()
 	// agentsession.DefaultID holds the default value on creation for the id field.
@@ -147,6 +225,10 @@ func init() {
 	agentturn.DefaultUpdatedAt = agentturnDescUpdatedAt.Default.(func() time.Time)
 	// agentturn.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentturn.UpdateDefaultUpdatedAt = agentturnDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// agentturnDescSequence is the schema descriptor for sequence field.
+	agentturnDescSequence := agentturnFields[2].Descriptor()
+	// agentturn.SequenceValidator is a validator for the "sequence" field. It is called by the builders before save.
+	agentturn.SequenceValidator = agentturnDescSequence.Validators[0].(func(int) error)
 	// agentturnDescFinishReason is the schema descriptor for finish_reason field.
 	agentturnDescFinishReason := agentturnFields[9].Descriptor()
 	// agentturn.DefaultFinishReason holds the default value on creation for the finish_reason field.

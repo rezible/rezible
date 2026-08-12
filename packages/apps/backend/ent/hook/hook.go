@@ -9,6 +9,30 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
+// The AgentArtifactFunc type is an adapter to allow the use of ordinary
+// function as AgentArtifact mutator.
+type AgentArtifactFunc func(context.Context, *ent.AgentArtifactMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentArtifactFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentArtifactMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentArtifactMutation", m)
+}
+
+// The AgentMessageFunc type is an adapter to allow the use of ordinary
+// function as AgentMessage mutator.
+type AgentMessageFunc func(context.Context, *ent.AgentMessageMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentMessageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentMessageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentMessageMutation", m)
+}
+
 // The AgentSessionFunc type is an adapter to allow the use of ordinary
 // function as AgentSession mutator.
 type AgentSessionFunc func(context.Context, *ent.AgentSessionMutation) (ent.Value, error)

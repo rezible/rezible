@@ -4,6 +4,22 @@ package ent
 
 import "entgo.io/ent/dialect"
 
+func (c *AgentArtifactClient) Debug() *AgentArtifactClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentArtifactClient{config: cfg}
+}
+
+func (c *AgentMessageClient) Debug() *AgentMessageClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentMessageClient{config: cfg}
+}
+
 func (c *AgentSessionClient) Debug() *AgentSessionClient {
 	if c.debug {
 		return c

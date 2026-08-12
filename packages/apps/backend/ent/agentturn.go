@@ -10,7 +10,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/tenant"
@@ -29,14 +31,14 @@ type AgentTurn struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AgentSessionID holds the value of the "agent_session_id" field.
 	AgentSessionID uuid.UUID `json:"agent_session_id,omitempty"`
+	// Sequence holds the value of the "sequence" field.
+	Sequence int `json:"sequence,omitempty"`
 	// RiverJobID holds the value of the "river_job_id" field.
 	RiverJobID int64 `json:"river_job_id,omitempty"`
-	// ParentID holds the value of the "parent_id" field.
-	ParentID *uuid.UUID `json:"parent_id,omitempty"`
-	// Scopes holds the value of the "scopes" field.
-	Scopes []string `json:"scopes,omitempty"`
-	// Input holds the value of the "input" field.
-	Input []byte `json:"input,omitempty"`
+	// InputToolResume holds the value of the "input_tool_resume" field.
+	InputToolResume *exp.ToolResume `json:"input_tool_resume,omitempty"`
+	// InputMessageID holds the value of the "input_message_id" field.
+	InputMessageID *uuid.UUID `json:"input_message_id,omitempty"`
 	// Status holds the value of the "status" field.
 	Status agentturn.Status `json:"status,omitempty"`
 	// StartedAt holds the value of the "started_at" field.
@@ -45,10 +47,8 @@ type AgentTurn struct {
 	FinishedAt *time.Time `json:"finished_at,omitempty"`
 	// FinishReason holds the value of the "finish_reason" field.
 	FinishReason string `json:"finish_reason,omitempty"`
-	// State holds the value of the "state" field.
-	State []byte `json:"state,omitempty"`
 	// Error holds the value of the "error" field.
-	Error []byte `json:"error,omitempty"`
+	Error *string `json:"error,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentTurnQuery when eager-loading is set.
 	Edges        AgentTurnEdges `json:"edges"`
@@ -61,15 +61,17 @@ type AgentTurnEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// AgentSession holds the value of the agent_session edge.
 	AgentSession *AgentSession `json:"agent_session,omitempty"`
-	// Parent holds the value of the parent edge.
-	Parent *AgentTurn `json:"parent,omitempty"`
-	// Children holds the value of the children edge.
-	Children []*AgentTurn `json:"children,omitempty"`
+	// InputMessage holds the value of the input_message edge.
+	InputMessage *AgentMessage `json:"input_message,omitempty"`
+	// Messages holds the value of the messages edge.
+	Messages []*AgentMessage `json:"messages,omitempty"`
+	// Artifacts holds the value of the artifacts edge.
+	Artifacts []*AgentArtifact `json:"artifacts,omitempty"`
 	// KnowledgeCitations holds the value of the knowledge_citations edge.
 	KnowledgeCitations []*AgentTurnKnowledgeCitation `json:"knowledge_citations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -94,30 +96,39 @@ func (e AgentTurnEdges) AgentSessionOrErr() (*AgentSession, error) {
 	return nil, &NotLoadedError{edge: "agent_session"}
 }
 
-// ParentOrErr returns the Parent value or an error if the edge
+// InputMessageOrErr returns the InputMessage value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AgentTurnEdges) ParentOrErr() (*AgentTurn, error) {
-	if e.Parent != nil {
-		return e.Parent, nil
+func (e AgentTurnEdges) InputMessageOrErr() (*AgentMessage, error) {
+	if e.InputMessage != nil {
+		return e.InputMessage, nil
 	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: agentturn.Label}
+		return nil, &NotFoundError{label: agentmessage.Label}
 	}
-	return nil, &NotLoadedError{edge: "parent"}
+	return nil, &NotLoadedError{edge: "input_message"}
 }
 
-// ChildrenOrErr returns the Children value or an error if the edge
+// MessagesOrErr returns the Messages value or an error if the edge
 // was not loaded in eager-loading.
-func (e AgentTurnEdges) ChildrenOrErr() ([]*AgentTurn, error) {
+func (e AgentTurnEdges) MessagesOrErr() ([]*AgentMessage, error) {
 	if e.loadedTypes[3] {
-		return e.Children, nil
+		return e.Messages, nil
 	}
-	return nil, &NotLoadedError{edge: "children"}
+	return nil, &NotLoadedError{edge: "messages"}
+}
+
+// ArtifactsOrErr returns the Artifacts value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentTurnEdges) ArtifactsOrErr() ([]*AgentArtifact, error) {
+	if e.loadedTypes[4] {
+		return e.Artifacts, nil
+	}
+	return nil, &NotLoadedError{edge: "artifacts"}
 }
 
 // KnowledgeCitationsOrErr returns the KnowledgeCitations value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentTurnEdges) KnowledgeCitationsOrErr() ([]*AgentTurnKnowledgeCitation, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.KnowledgeCitations, nil
 	}
 	return nil, &NotLoadedError{edge: "knowledge_citations"}
@@ -128,13 +139,13 @@ func (*AgentTurn) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentturn.FieldParentID:
+		case agentturn.FieldInputMessageID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case agentturn.FieldScopes, agentturn.FieldInput, agentturn.FieldState, agentturn.FieldError:
+		case agentturn.FieldInputToolResume:
 			values[i] = new([]byte)
-		case agentturn.FieldTenantID, agentturn.FieldRiverJobID:
+		case agentturn.FieldTenantID, agentturn.FieldSequence, agentturn.FieldRiverJobID:
 			values[i] = new(sql.NullInt64)
-		case agentturn.FieldStatus, agentturn.FieldFinishReason:
+		case agentturn.FieldStatus, agentturn.FieldFinishReason, agentturn.FieldError:
 			values[i] = new(sql.NullString)
 		case agentturn.FieldCreatedAt, agentturn.FieldUpdatedAt, agentturn.FieldStartedAt, agentturn.FieldFinishedAt:
 			values[i] = new(sql.NullTime)
@@ -185,32 +196,32 @@ func (_m *AgentTurn) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.AgentSessionID = *value
 			}
+		case agentturn.FieldSequence:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field sequence", values[i])
+			} else if value.Valid {
+				_m.Sequence = int(value.Int64)
+			}
 		case agentturn.FieldRiverJobID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field river_job_id", values[i])
 			} else if value.Valid {
 				_m.RiverJobID = value.Int64
 			}
-		case agentturn.FieldParentID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
-			} else if value.Valid {
-				_m.ParentID = new(uuid.UUID)
-				*_m.ParentID = *value.S.(*uuid.UUID)
-			}
-		case agentturn.FieldScopes:
+		case agentturn.FieldInputToolResume:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field scopes", values[i])
+				return fmt.Errorf("unexpected type %T for field input_tool_resume", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Scopes); err != nil {
-					return fmt.Errorf("unmarshal field scopes: %w", err)
+				if err := json.Unmarshal(*value, &_m.InputToolResume); err != nil {
+					return fmt.Errorf("unmarshal field input_tool_resume: %w", err)
 				}
 			}
-		case agentturn.FieldInput:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field input", values[i])
-			} else if value != nil {
-				_m.Input = *value
+		case agentturn.FieldInputMessageID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field input_message_id", values[i])
+			} else if value.Valid {
+				_m.InputMessageID = new(uuid.UUID)
+				*_m.InputMessageID = *value.S.(*uuid.UUID)
 			}
 		case agentturn.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -238,17 +249,12 @@ func (_m *AgentTurn) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.FinishReason = value.String
 			}
-		case agentturn.FieldState:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field state", values[i])
-			} else if value != nil {
-				_m.State = *value
-			}
 		case agentturn.FieldError:
-			if value, ok := values[i].(*[]byte); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field error", values[i])
-			} else if value != nil {
-				_m.Error = *value
+			} else if value.Valid {
+				_m.Error = new(string)
+				*_m.Error = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -273,14 +279,19 @@ func (_m *AgentTurn) QueryAgentSession() *AgentSessionQuery {
 	return NewAgentTurnClient(_m.config).QueryAgentSession(_m)
 }
 
-// QueryParent queries the "parent" edge of the AgentTurn entity.
-func (_m *AgentTurn) QueryParent() *AgentTurnQuery {
-	return NewAgentTurnClient(_m.config).QueryParent(_m)
+// QueryInputMessage queries the "input_message" edge of the AgentTurn entity.
+func (_m *AgentTurn) QueryInputMessage() *AgentMessageQuery {
+	return NewAgentTurnClient(_m.config).QueryInputMessage(_m)
 }
 
-// QueryChildren queries the "children" edge of the AgentTurn entity.
-func (_m *AgentTurn) QueryChildren() *AgentTurnQuery {
-	return NewAgentTurnClient(_m.config).QueryChildren(_m)
+// QueryMessages queries the "messages" edge of the AgentTurn entity.
+func (_m *AgentTurn) QueryMessages() *AgentMessageQuery {
+	return NewAgentTurnClient(_m.config).QueryMessages(_m)
+}
+
+// QueryArtifacts queries the "artifacts" edge of the AgentTurn entity.
+func (_m *AgentTurn) QueryArtifacts() *AgentArtifactQuery {
+	return NewAgentTurnClient(_m.config).QueryArtifacts(_m)
 }
 
 // QueryKnowledgeCitations queries the "knowledge_citations" edge of the AgentTurn entity.
@@ -323,19 +334,19 @@ func (_m *AgentTurn) String() string {
 	builder.WriteString("agent_session_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentSessionID))
 	builder.WriteString(", ")
+	builder.WriteString("sequence=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Sequence))
+	builder.WriteString(", ")
 	builder.WriteString("river_job_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.RiverJobID))
 	builder.WriteString(", ")
-	if v := _m.ParentID; v != nil {
-		builder.WriteString("parent_id=")
+	builder.WriteString("input_tool_resume=")
+	builder.WriteString(fmt.Sprintf("%v", _m.InputToolResume))
+	builder.WriteString(", ")
+	if v := _m.InputMessageID; v != nil {
+		builder.WriteString("input_message_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
-	builder.WriteString(", ")
-	builder.WriteString("scopes=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Scopes))
-	builder.WriteString(", ")
-	builder.WriteString("input=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Input))
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
@@ -353,11 +364,10 @@ func (_m *AgentTurn) String() string {
 	builder.WriteString("finish_reason=")
 	builder.WriteString(_m.FinishReason)
 	builder.WriteString(", ")
-	builder.WriteString("state=")
-	builder.WriteString(fmt.Sprintf("%v", _m.State))
-	builder.WriteString(", ")
-	builder.WriteString("error=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Error))
+	if v := _m.Error; v != nil {
+		builder.WriteString("error=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

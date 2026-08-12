@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/rezible/rezible/ent/agentartifact"
+	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
@@ -142,6 +144,8 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			agentartifact.Table:                           agentartifact.ValidColumn,
+			agentmessage.Table:                            agentmessage.ValidColumn,
 			agentsession.Table:                            agentsession.ValidColumn,
 			agentturn.Table:                               agentturn.ValidColumn,
 			agentturnknowledgecitation.Table:              agentturnknowledgecitation.ValidColumn,

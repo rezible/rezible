@@ -24,14 +24,14 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldAgentSessionID holds the string denoting the agent_session_id field in the database.
 	FieldAgentSessionID = "agent_session_id"
+	// FieldSequence holds the string denoting the sequence field in the database.
+	FieldSequence = "sequence"
 	// FieldRiverJobID holds the string denoting the river_job_id field in the database.
 	FieldRiverJobID = "river_job_id"
-	// FieldParentID holds the string denoting the parent_id field in the database.
-	FieldParentID = "parent_id"
-	// FieldScopes holds the string denoting the scopes field in the database.
-	FieldScopes = "scopes"
-	// FieldInput holds the string denoting the input field in the database.
-	FieldInput = "input"
+	// FieldInputToolResume holds the string denoting the input_tool_resume field in the database.
+	FieldInputToolResume = "input_tool_resume"
+	// FieldInputMessageID holds the string denoting the input_message_id field in the database.
+	FieldInputMessageID = "input_message_id"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldStartedAt holds the string denoting the started_at field in the database.
@@ -40,18 +40,18 @@ const (
 	FieldFinishedAt = "finished_at"
 	// FieldFinishReason holds the string denoting the finish_reason field in the database.
 	FieldFinishReason = "finish_reason"
-	// FieldState holds the string denoting the state field in the database.
-	FieldState = "state"
 	// FieldError holds the string denoting the error field in the database.
 	FieldError = "error"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAgentSession holds the string denoting the agent_session edge name in mutations.
 	EdgeAgentSession = "agent_session"
-	// EdgeParent holds the string denoting the parent edge name in mutations.
-	EdgeParent = "parent"
-	// EdgeChildren holds the string denoting the children edge name in mutations.
-	EdgeChildren = "children"
+	// EdgeInputMessage holds the string denoting the input_message edge name in mutations.
+	EdgeInputMessage = "input_message"
+	// EdgeMessages holds the string denoting the messages edge name in mutations.
+	EdgeMessages = "messages"
+	// EdgeArtifacts holds the string denoting the artifacts edge name in mutations.
+	EdgeArtifacts = "artifacts"
 	// EdgeKnowledgeCitations holds the string denoting the knowledge_citations edge name in mutations.
 	EdgeKnowledgeCitations = "knowledge_citations"
 	// Table holds the table name of the agentturn in the database.
@@ -70,14 +70,27 @@ const (
 	AgentSessionInverseTable = "agent_sessions"
 	// AgentSessionColumn is the table column denoting the agent_session relation/edge.
 	AgentSessionColumn = "agent_session_id"
-	// ParentTable is the table that holds the parent relation/edge.
-	ParentTable = "agent_turns"
-	// ParentColumn is the table column denoting the parent relation/edge.
-	ParentColumn = "parent_id"
-	// ChildrenTable is the table that holds the children relation/edge.
-	ChildrenTable = "agent_turns"
-	// ChildrenColumn is the table column denoting the children relation/edge.
-	ChildrenColumn = "parent_id"
+	// InputMessageTable is the table that holds the input_message relation/edge.
+	InputMessageTable = "agent_turns"
+	// InputMessageInverseTable is the table name for the AgentMessage entity.
+	// It exists in this package in order to avoid circular dependency with the "agentmessage" package.
+	InputMessageInverseTable = "agent_messages"
+	// InputMessageColumn is the table column denoting the input_message relation/edge.
+	InputMessageColumn = "input_message_id"
+	// MessagesTable is the table that holds the messages relation/edge.
+	MessagesTable = "agent_messages"
+	// MessagesInverseTable is the table name for the AgentMessage entity.
+	// It exists in this package in order to avoid circular dependency with the "agentmessage" package.
+	MessagesInverseTable = "agent_messages"
+	// MessagesColumn is the table column denoting the messages relation/edge.
+	MessagesColumn = "agent_turn_id"
+	// ArtifactsTable is the table that holds the artifacts relation/edge.
+	ArtifactsTable = "agent_artifacts"
+	// ArtifactsInverseTable is the table name for the AgentArtifact entity.
+	// It exists in this package in order to avoid circular dependency with the "agentartifact" package.
+	ArtifactsInverseTable = "agent_artifacts"
+	// ArtifactsColumn is the table column denoting the artifacts relation/edge.
+	ArtifactsColumn = "last_agent_turn_id"
 	// KnowledgeCitationsTable is the table that holds the knowledge_citations relation/edge.
 	KnowledgeCitationsTable = "agent_turn_knowledge_citations"
 	// KnowledgeCitationsInverseTable is the table name for the AgentTurnKnowledgeCitation entity.
@@ -94,15 +107,14 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldAgentSessionID,
+	FieldSequence,
 	FieldRiverJobID,
-	FieldParentID,
-	FieldScopes,
-	FieldInput,
+	FieldInputToolResume,
+	FieldInputMessageID,
 	FieldStatus,
 	FieldStartedAt,
 	FieldFinishedAt,
 	FieldFinishReason,
-	FieldState,
 	FieldError,
 }
 
@@ -130,6 +142,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// SequenceValidator is a validator for the "sequence" field. It is called by the builders before save.
+	SequenceValidator func(int) error
 	// DefaultFinishReason holds the default value on creation for the "finish_reason" field.
 	DefaultFinishReason string
 )
@@ -188,14 +202,19 @@ func ByAgentSessionID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentSessionID, opts...).ToFunc()
 }
 
+// BySequence orders the results by the sequence field.
+func BySequence(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSequence, opts...).ToFunc()
+}
+
 // ByRiverJobID orders the results by the river_job_id field.
 func ByRiverJobID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRiverJobID, opts...).ToFunc()
 }
 
-// ByParentID orders the results by the parent_id field.
-func ByParentID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldParentID, opts...).ToFunc()
+// ByInputMessageID orders the results by the input_message_id field.
+func ByInputMessageID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInputMessageID, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.
@@ -218,6 +237,11 @@ func ByFinishReason(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFinishReason, opts...).ToFunc()
 }
 
+// ByError orders the results by the error field.
+func ByError(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldError, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -232,24 +256,38 @@ func ByAgentSessionField(field string, opts ...sql.OrderTermOption) OrderOption 
 	}
 }
 
-// ByParentField orders the results by parent field.
-func ByParentField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByInputMessageField orders the results by input_message field.
+func ByInputMessageField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newParentStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newInputMessageStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByChildrenCount orders the results by children count.
-func ByChildrenCount(opts ...sql.OrderTermOption) OrderOption {
+// ByMessagesCount orders the results by messages count.
+func ByMessagesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newChildrenStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newMessagesStep(), opts...)
 	}
 }
 
-// ByChildren orders the results by children terms.
-func ByChildren(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByMessages orders the results by messages terms.
+func ByMessages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newChildrenStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newMessagesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByArtifactsCount orders the results by artifacts count.
+func ByArtifactsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newArtifactsStep(), opts...)
+	}
+}
+
+// ByArtifacts orders the results by artifacts terms.
+func ByArtifacts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newArtifactsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -280,18 +318,25 @@ func newAgentSessionStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, AgentSessionTable, AgentSessionColumn),
 	)
 }
-func newParentStep() *sqlgraph.Step {
+func newInputMessageStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, ParentTable, ParentColumn),
+		sqlgraph.To(InputMessageInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, InputMessageTable, InputMessageColumn),
 	)
 }
-func newChildrenStep() *sqlgraph.Step {
+func newMessagesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ChildrenTable, ChildrenColumn),
+		sqlgraph.To(MessagesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MessagesTable, MessagesColumn),
+	)
+}
+func newArtifactsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ArtifactsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ArtifactsTable, ArtifactsColumn),
 	)
 }
 func newKnowledgeCitationsStep() *sqlgraph.Step {
