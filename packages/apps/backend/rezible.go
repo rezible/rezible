@@ -10,7 +10,6 @@ import (
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
-	"github.com/firebase/genkit/go/core"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
@@ -406,8 +405,8 @@ type (
 
 type (
 	AiAgentTurnInput struct {
-		Message *ai.Message              `json:"message,omitempty"`
-		Resume  *ai.GenerateActionResume `json:"resume,omitempty"`
+		Message *ai.Message     `json:"message,omitempty"`
+		Resume  *aix.ToolResume `json:"resume,omitempty"`
 	}
 
 	AiAgentTurnChunk struct {
@@ -416,19 +415,24 @@ type (
 		TurnEndFinishReason *aix.AgentFinishReason `json:"finish_reason,omitempty"`
 	}
 
+	AiAgentTurnState struct {
+		Messages  []*ai.Message
+		Artifacts []*aix.Artifact
+	}
+
 	InvokeAgentTurnParams struct {
 		Session *ent.AgentSession
-		Parent  *ent.AgentTurn
 		Turn    *ent.AgentTurn
+		State   AiAgentTurnState
 		Input   *AiAgentTurnInput
 		OnChunk func(AiAgentTurnChunk)
 	}
 
 	AiAgentInvocationResult struct {
-		State              []byte
+		State              AiAgentTurnState
 		Response           *ai.Message
 		FinishReason       aix.AgentFinishReason
-		Error              *core.GenkitError
+		Error              error
 		KnowledgeCitations []AiAgentKnowledgeCitation
 	}
 
@@ -469,8 +473,8 @@ type (
 	}
 
 	RequestAgentTurnParams struct {
-		Input        *AiAgentTurnInput
-		ParentTurnID *uuid.UUID
+		Input *AiAgentTurnInput
+		// BranchTurnID *uuid.UUID // no branching for now
 	}
 
 	ListAgentTurnsParams struct {
@@ -484,7 +488,6 @@ type (
 		GetAgentSession(context.Context, uuid.UUID) (*ent.AgentSession, error)
 
 		RequestAgentTurn(context.Context, uuid.UUID, *RequestAgentTurnParams) (*ent.AgentTurn, error)
-		//GetLastSuccessfulAgentTurnForSession(context.Context, uuid.UUID) (*ent.AgentTurn, error)
 
 		ListAgentTurns(context.Context, ListAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error)
 		GetAgentTurn(context.Context, uuid.UUID) (*ent.AgentTurn, error)

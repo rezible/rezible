@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/google/uuid"
+	"github.com/kr/pretty"
 	"github.com/rezible/rezible/pkg/messages"
 	"github.com/riverqueue/river"
 
@@ -113,20 +114,15 @@ func (a *App) registerMessageHandlers() error {
 }
 
 func (a *App) onAiAgentTurnFinished(ctx context.Context, ev *rezai.EventOnAgentTurnFinished) error {
-	session, sessionErr := a.agents.GetAgentSession(ctx, ev.AgentSessionId)
-	if sessionErr != nil {
-		return fmt.Errorf("get agent session: %w", sessionErr)
-	}
-	if session.AgentName != rezai.ChatAgent.Name {
-		return nil
-	}
-
 	var metadata aiChatAgentSessionMetadata
-	if mdErr := mapstructure.Decode(session.Metadata, &metadata); mdErr != nil {
+	if mdErr := mapstructure.Decode(ev.AgentSessionMetadata, &metadata); mdErr != nil {
 		return fmt.Errorf("decode metadata: %w", mdErr)
 	}
+
+	pretty.Println(ev)
+
 	if !metadata.IsSlack {
-		fmt.Printf("not a slack agent reply session?: %+v\n", session.Metadata)
+		fmt.Printf("not a slack agent reply session?: %+v\n", ev.AgentSessionMetadata)
 		return nil
 	}
 	if len(ev.Response.Text()) == 0 {

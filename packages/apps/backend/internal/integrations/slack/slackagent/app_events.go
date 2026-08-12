@@ -78,12 +78,10 @@ func (a *App) startOrContinueAgentThreadReply(ctx context.Context, userId uuid.U
 	}
 	if len(sessions.Data) == 1 {
 		slog.Debug("continuing existing agent session in thread")
-		session := sessions.Data[0]
 		params := &rez.RequestAgentTurnParams{
-			Input:        &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(msg)},
-			ParentTurnID: nil,
+			Input: &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(msg)},
 		}
-		if _, requestErr := a.agents.RequestAgentTurn(ctx, session.ID, params); requestErr != nil {
+		if _, requestErr := a.agents.RequestAgentTurn(ctx, sessions.Data[0].ID, params); requestErr != nil {
 			slog.Error("failed to request chat agent turn", "error", requestErr)
 		}
 		return nil

@@ -341,6 +341,7 @@ var provideJobWorkers = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.AiService](i),
+			do.MustInvoke[rez.AgentSessionService](i),
 		)
 	}),
 	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.StartAgentSession], error) {
@@ -349,6 +350,7 @@ var provideJobWorkers = do.Package(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.AiService](i),
+			do.MustInvoke[rez.AgentSessionService](i),
 		)
 	}),
 )

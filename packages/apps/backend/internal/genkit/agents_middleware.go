@@ -8,11 +8,26 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
+
+type agentDebugMiddleware struct{}
+
+func (m *agentDebugMiddleware) Name() string {
+	return "agent_debug"
+}
+
+func (m *agentDebugMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
+	return &ai.Hooks{
+		WrapGenerate: func(ctx context.Context, params *ai.GenerateParams, next ai.GenerateNext) (*ai.ModelResponse, error) {
+			resp, respErr := next(ctx, params)
+			//pretty.Println("model response", resp, "error", respErr)
+			return resp, respErr
+		},
+	}, nil
+}
 
 type toolCallDisplayLabelMiddleware struct{}
 

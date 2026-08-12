@@ -2,7 +2,6 @@ package genkit
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -14,6 +13,7 @@ import (
 	genkitx "github.com/firebase/genkit/go/genkit/exp"
 	middlewarex "github.com/firebase/genkit/go/plugins/middleware/exp"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
 )
@@ -22,6 +22,7 @@ type (
 	agentRunner[I rezai.AgentInput, S rezai.SessionState] interface {
 		agentDefinition() rezai.AgentDefinition[I, S]
 		makeInitialTurnInput(context.Context, I) (*rez.AiAgentTurnInput, error)
+		getCustomState(context.Context, *ent.AgentSession) (*S, error)
 		transformState(context.Context, *aix.SessionState[S]) (*aix.SessionState[S], error)
 		transformStreamChunk(context.Context, *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error)
 	}
@@ -60,11 +61,12 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 	}
 
 	middleware := []ai.Middleware{
+		&agentDebugMiddleware{},
 		&toolCallDisplayLabelMiddleware{},
 	}
 
 	if d.EnableKnowledgeGraph {
-		middleware = append(middleware, newKnowledgeGraphMiddleware(svc.knowledge, runner))
+		//middleware = append(middleware, newKnowledgeGraphMiddleware(svc.knowledge, runner))
 	}
 
 	if mp, ok := runner.(runnerMiddlewareProvider); ok {
@@ -113,17 +115,17 @@ func (w *agentWrapper[I, S]) ValidateInput(raw []byte) (rez.AiAgentSessionInput,
 	return *inp, nil
 }
 
-func (w *agentWrapper[I, S]) normalizeTurnInput(input *rez.AiAgentTurnInput) (*rez.AiAgentTurnInput, error) {
+func (w *agentWrapper[I, S]) normalizeTurnInput(input *rez.AiAgentTurnInput) (*aix.AgentInput, error) {
 	if input == nil {
 		return nil, rez.ErrInvalidInput
 	}
-	if input.Resume != nil && len(input.Resume.Respond)+len(input.Resume.Restart) == 0 {
-		return &rez.AiAgentTurnInput{Message: input.Message}, nil
+	if input.Message != nil {
+		return &aix.AgentInput{Message: input.Message}, nil
 	}
-	if input.Message == nil && input.Resume == nil {
-		return nil, fmt.Errorf("%w: agent turn message or resume is required", rez.ErrInvalidInput)
+	if input.Resume != nil && len(input.Resume.Respond)+len(input.Resume.Restart) > 0 {
+		return &aix.AgentInput{Resume: input.Resume}, nil
 	}
-	return input, nil
+	return nil, fmt.Errorf("%w: agent turn message or resume is required", rez.ErrInvalidInput)
 }
 
 func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, raw []byte) (*rez.AiAgentTurnInput, error) {
@@ -155,45 +157,53 @@ func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, raw []byt
 		return nil, fmt.Errorf("normalize initial input: %w", normalizeErr)
 	}
 
-	return normalized, nil
+	return &rez.AiAgentTurnInput{Message: normalized.Message, Resume: normalized.Resume}, nil
+}
+
+func (w *agentWrapper[I, S]) getTurnState(ctx context.Context, params rez.InvokeAgentTurnParams) (*aix.SessionState[S], error) {
+	state := &aix.SessionState[S]{
+		SessionID: params.Session.ID.String(),
+		Messages:  make([]*ai.Message, len(params.State.Messages)),
+		Artifacts: make([]*aix.Artifact, len(params.State.Artifacts)),
+	}
+
+	for i, m := range params.State.Messages {
+		state.Messages[i] = m.Clone()
+	}
+
+	for i, a := range params.State.Artifacts {
+		state.Artifacts[i] = &aix.Artifact{Name: a.Name, Metadata: a.Metadata, Parts: a.Parts}
+	}
+
+	custom, customErr := w.runner.getCustomState(ctx, params.Session)
+	if customErr != nil {
+		return nil, fmt.Errorf("custom state: %w", customErr)
+	} else if custom != nil {
+		state.Custom = *custom
+	}
+
+	return state, nil
 }
 
 func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
-	sess := params.Session
-	ctx = execution.NewAiAgentContext(ctx, sess, params.Turn)
+	ctx = execution.NewAiAgentContext(ctx, params.Session, params.Turn)
 
-	input, inputErr := w.normalizeTurnInput(params.Input)
+	turnInput, inputErr := w.normalizeTurnInput(params.Input)
 	if inputErr != nil {
-		return nil, inputErr
+		return nil, fmt.Errorf("turn input: %w", inputErr)
 	}
 
-	state := &aix.SessionState[S]{SessionID: sess.ID.String()}
-	if params.Parent != nil {
-		if unmarshalErr := json.Unmarshal(params.Parent.State, state); unmarshalErr != nil {
-			return nil, fmt.Errorf("decode parent state: %w", unmarshalErr)
-		}
-		if state.SessionID != sess.ID.String() {
-			return nil, fmt.Errorf("parent state session ID %q does not match %q", state.SessionID, sess.ID)
-		}
+	state, stateErr := w.getTurnState(ctx, params)
+	if stateErr != nil {
+		return nil, fmt.Errorf("turn state: %w", stateErr)
 	}
-
-	agentInput := &aix.AgentInput{
-		Message: input.Message,
-	}
-	if input.Resume != nil {
-		agentInput.Resume = &aix.ToolResume{
-			Respond: input.Resume.Respond,
-			Restart: input.Resume.Restart,
-		}
-	}
-
-	fmt.Printf("running: %+v\n", agentInput.Message.Text())
 
 	conn, connErr := w.agent.Connect(ctx, aix.WithState(state))
 	if connErr != nil {
 		return nil, fmt.Errorf("connect: %w", connErr)
 	}
-	if sendErr := conn.Send(agentInput); sendErr != nil && !errors.Is(sendErr, core.ErrActionCompleted) {
+
+	if sendErr := conn.Send(turnInput); sendErr != nil && !errors.Is(sendErr, core.ErrActionCompleted) {
 		return nil, sendErr
 	}
 
@@ -201,21 +211,8 @@ func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentT
 		slog.Warn("error closing input connection", "error", closeErr.Error())
 	}
 
-	for chunk, receiveErr := range conn.Receive() {
-		if receiveErr != nil {
-			slog.Warn("error receiving chunk", "error", receiveErr.Error())
-		}
-		if chunk != nil && params.OnChunk != nil {
-			var finishReason *aix.AgentFinishReason
-			if chunk.TurnEnd != nil {
-				finishReason = &chunk.TurnEnd.FinishReason
-			}
-			params.OnChunk(rez.AiAgentTurnChunk{
-				Artifact:            chunk.Artifact,
-				ModelChunk:          chunk.ModelChunk,
-				TurnEndFinishReason: finishReason,
-			})
-		}
+	if params.OnChunk != nil {
+		w.handleChunks(conn, params.OnChunk)
 	}
 
 	out, outputErr := conn.Output()
@@ -223,18 +220,33 @@ func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentT
 		return nil, fmt.Errorf("output: %w", outputErr)
 	}
 
-	if out.SessionID != sess.ID.String() {
-		return nil, fmt.Errorf("output session ID %q does not match %q", out.SessionID, sess.ID)
+	if out.SessionID != params.Session.ID.String() {
+		return nil, fmt.Errorf("output session ID %q does not match %q", out.SessionID, params.Session.ID)
 	}
 
-	result, wrapErr := w.getOutputResult(out)
-	if wrapErr != nil {
-		return nil, wrapErr
-	}
-	return result, nil
+	return w.wrapInvocationOutput(out)
 }
 
-func (w *agentWrapper[I, S]) getOutputResult(out *aix.AgentOutput[S]) (*rez.AiAgentInvocationResult, error) {
+func (w *agentWrapper[I, S]) handleChunks(conn *aix.AgentConnection[S], emitFn func(rez.AiAgentTurnChunk)) {
+	for chunk, receiveErr := range conn.Receive() {
+		if receiveErr != nil {
+			slog.Warn("error receiving chunk", "error", receiveErr.Error())
+		}
+		if emitFn == nil || chunk == nil {
+			continue
+		}
+		turnChunk := rez.AiAgentTurnChunk{
+			Artifact:   chunk.Artifact,
+			ModelChunk: chunk.ModelChunk,
+		}
+		if chunk.TurnEnd != nil {
+			turnChunk.TurnEndFinishReason = &chunk.TurnEnd.FinishReason
+		}
+		emitFn(turnChunk)
+	}
+}
+
+func (w *agentWrapper[I, S]) wrapInvocationOutput(out *aix.AgentOutput[S]) (*rez.AiAgentInvocationResult, error) {
 	if out == nil {
 		return nil, fmt.Errorf("agent returned nil output")
 	}
@@ -253,24 +265,24 @@ func (w *agentWrapper[I, S]) getOutputResult(out *aix.AgentOutput[S]) (*rez.AiAg
 	result := &rez.AiAgentInvocationResult{
 		Response:           out.Message,
 		FinishReason:       out.FinishReason,
-		Error:              out.Error,
 		KnowledgeCitations: citations,
 	}
 	if out.Error != nil || result.FinishReason == aix.AgentFinishReasonFailed {
 		result.FinishReason = aix.AgentFinishReasonFailed
-		if result.Error == nil {
-			result.Error = core.NewError(core.INTERNAL, "agent returned failed finish reason without an error")
+		if out.Error != nil {
+			result.Error = out.Error.Unwrap()
+		} else {
+			result.Error = fmt.Errorf("agent failed with no error")
 		}
 	} else if out.State == nil {
 		return nil, fmt.Errorf("successful agent output has nil state")
 	}
 
 	if out.State != nil {
-		stateJson, stateJsonErr := json.Marshal(out.State)
-		if stateJsonErr != nil {
-			return nil, fmt.Errorf("encode output state: %w", stateJsonErr)
+		result.State = rez.AiAgentTurnState{
+			Messages:  out.State.Messages,
+			Artifacts: out.State.Artifacts,
 		}
-		result.State = stateJson
 	}
 	return result, nil
 }

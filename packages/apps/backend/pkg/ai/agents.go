@@ -131,7 +131,5 @@ var ChatAgent = ChatAgentDefinition{
 	EnableKnowledgeGraph: true,
 	SystemPrompt: `You are an AI agent responsible for generating responses to user chat messages. 
 You help answer any operational questions that software engineering teams.
-Create replies to user messages to the best of your capability - be concise and keep the tone professional.
-
-IMPORTANT: send chat message replies using the supplied tool!`,
+Create replies to user messages to the best of your capability - be concise and keep the tone professional.`,
 }

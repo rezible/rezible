@@ -2,14 +2,11 @@ package v1
 
 import (
 	"context"
-	"encoding/json"
-	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/firebase/genkit/go/ai"
-	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -49,8 +46,6 @@ type (
 		OwnerUserId      *uuid.UUID `json:"ownerUserId,omitempty"`
 		PermissionScopes []string   `json:"permissionScopes"`
 		CreatedAt        time.Time  `json:"createdAt"`
-		InitialTurn      *AgentTurn `json:"initialTurn,omitempty"`
-		LatestTurn       *AgentTurn `json:"latestTurn,omitempty"`
 	}
 
 	AgentTurn struct {
@@ -59,16 +54,15 @@ type (
 	}
 
 	AgentTurnAttributes struct {
-		ParentTurnId       *uuid.UUID                         `json:"parentTurnId,omitempty"`
-		Status             string                             `json:"status"`
-		CreatedAt          time.Time                          `json:"createdAt"`
-		UpdatedAt          time.Time                          `json:"updatedAt"`
-		StartedAt          *time.Time                         `json:"startedAt,omitempty"`
-		FinishedAt         *time.Time                         `json:"finishedAt,omitempty"`
-		FinishReason       string                             `json:"finishReason,omitempty"`
-		Error              *AgentTurnError                    `json:"error,omitempty"`
-		State              *aix.SessionState[json.RawMessage] `json:"state,omitempty"`
-		KnowledgeCitations []AgentTurnKnowledgeCitation       `json:"knowledgeCitations,omitempty"`
+		Status             string                       `json:"status"`
+		Sequence           int                          `json:"sequence"`
+		CreatedAt          time.Time                    `json:"createdAt"`
+		UpdatedAt          time.Time                    `json:"updatedAt"`
+		StartedAt          *time.Time                   `json:"startedAt,omitempty"`
+		FinishedAt         *time.Time                   `json:"finishedAt,omitempty"`
+		FinishReason       string                       `json:"finishReason,omitempty"`
+		Error              *AgentTurnError              `json:"error,omitempty"`
+		KnowledgeCitations []AgentTurnKnowledgeCitation `json:"knowledgeCitations,omitempty"`
 	}
 
 	AgentTurnKnowledgeCitation struct {
@@ -106,22 +100,16 @@ func AgentSessionFromEnt(session *ent.AgentSession) AgentSession {
 	attrs := AgentSessionAttributes{
 		AgentName:        session.AgentName,
 		OwnerUserId:      session.OwnerUserID,
-		PermissionScopes: session.DefaultScopes,
+		PermissionScopes: session.Scopes,
 		CreatedAt:        session.CreatedAt,
-	}
-	if numTurns := len(session.Edges.Turns); numTurns > 0 {
-		attrs.InitialTurn = new(AgentTurnFromEnt(session.Edges.Turns[0]))
-		if numTurns > 1 {
-			attrs.LatestTurn = new(AgentTurnFromEnt(session.Edges.Turns[numTurns-1]))
-		}
 	}
 	return AgentSession{Id: session.ID, Attributes: attrs}
 }
 
 func AgentTurnFromEnt(turn *ent.AgentTurn) AgentTurn {
 	attrs := AgentTurnAttributes{
-		ParentTurnId: turn.ParentID,
 		Status:       turn.Status.String(),
+		Sequence:     turn.Sequence,
 		CreatedAt:    turn.CreatedAt,
 		UpdatedAt:    turn.UpdatedAt,
 		StartedAt:    turn.StartedAt,
@@ -130,16 +118,13 @@ func AgentTurnFromEnt(turn *ent.AgentTurn) AgentTurn {
 	}
 	if turn.Error != nil {
 		attrs.Error = &AgentTurnError{
-			Code:    "TODO",
-			Message: "error",
+			Code:    turn.Status.String(),
+			Message: *turn.Error,
 		}
 	}
-	if turn.State != nil {
-		if jsonErr := json.Unmarshal(turn.State, &attrs.State); jsonErr != nil {
-			slog.Error("failed to unmarshal state")
-		}
-	}
+
 	attrs.KnowledgeCitations = ConvertSlice(turn.Edges.KnowledgeCitations, AgentTurnKnowledgeCitationFromEnt)
+
 	return AgentTurn{Id: turn.ID, Attributes: attrs}
 }
 

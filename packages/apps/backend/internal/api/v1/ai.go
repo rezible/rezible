@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/firebase/genkit/go/ai"
+	aix "github.com/firebase/genkit/go/ai/exp"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/predicate"
@@ -113,11 +114,14 @@ func (h *aiHandler) makeTurnRequestInput(attrs oapi.RequestAgentTurnRequestAttri
 		}
 		message = ai.NewUserTextMessage(trimmed)
 	}
-	var resume *ai.GenerateActionResume
+	input := &rez.AiAgentTurnInput{Message: message}
 	if attrs.Resume != nil && len(attrs.Resume.Respond)+len(attrs.Resume.Restart) > 0 {
-		resume = &ai.GenerateActionResume{Respond: attrs.Resume.Respond, Restart: attrs.Resume.Restart}
+		input.Resume = &aix.ToolResume{Respond: attrs.Resume.Respond, Restart: attrs.Resume.Restart}
 	}
-	return &rez.AiAgentTurnInput{Message: message, Resume: resume}, nil
+	if (input.Message == nil && input.Resume == nil) || (input.Message != nil && input.Resume != nil) {
+		return nil, fmt.Errorf("%w: exactly one of message or resume is required", rez.ErrInvalidInput)
+	}
+	return input, nil
 }
 
 func (h *aiHandler) RequestAgentTurn(ctx context.Context, req *oapi.RequestAgentTurnRequest) (*oapi.RequestAgentTurnResponse, error) {
@@ -127,8 +131,7 @@ func (h *aiHandler) RequestAgentTurn(ctx context.Context, req *oapi.RequestAgent
 		return nil, oapi.Error(ctx, "invalid agent turn input", inputErr)
 	}
 	params := &rez.RequestAgentTurnParams{
-		Input:        input,
-		ParentTurnID: nil,
+		Input: input,
 	}
 	turn, requestErr := h.agents.RequestAgentTurn(ctx, req.Id, params)
 	if requestErr != nil {

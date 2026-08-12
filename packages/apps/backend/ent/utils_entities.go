@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/firebase/genkit/go/ai"
 	kev "github.com/rezible/rezible/ent/knowledgeevidence"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
@@ -122,4 +123,8 @@ func (e *KnowledgeEntity) LatestEvidence() *KnowledgeEvidence {
 
 func (r *KnowledgeRelationship) LatestEvidence() *KnowledgeEvidence {
 	return KnowledgeSubjectAliasSlice(r.Edges.Aliases).LatestEvidence()
+}
+
+func (am *AgentMessage) MakeGenkitMessage() *ai.Message {
+	return ai.NewMessage(ai.Role(am.Role), am.Metadata, am.Content...)
 }

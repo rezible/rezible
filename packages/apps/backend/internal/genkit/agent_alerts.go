@@ -9,6 +9,7 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
@@ -55,6 +56,10 @@ Definition: %s`, input.AlertInstanceID, alrt.Title, alrt.Description, alrt.Defin
 
 func (a *AlertsAgent) makeMiddleware() []ai.Middleware {
 	return []ai.Middleware{&alertInvestigationReportMiddleware{}}
+}
+
+func (a *AlertsAgent) getCustomState(context.Context, *ent.AgentSession) (*rezai.AlertAgentState, error) {
+	return &rezai.AlertAgentState{}, nil
 }
 
 func (a *AlertsAgent) transformState(ctx context.Context, state *aix.SessionState[rezai.AlertAgentState]) (*aix.SessionState[rezai.AlertAgentState], error) {

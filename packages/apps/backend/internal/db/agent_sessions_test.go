@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"testing"
@@ -11,10 +12,10 @@ import (
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
-	"github.com/firebase/genkit/go/core"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentmessage"
 	at "github.com/rezible/rezible/ent/agentturn"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
@@ -41,20 +42,6 @@ type agentSessionTestHarness struct {
 	service    *AgentSessionService
 	sessWorker *StartAgentSessionWorker
 	turnWorker *InvokeAgentTurnWorker
-}
-
-type agentTurnSeed struct {
-	id           uuid.UUID
-	riverJobID   int64
-	parentID     *uuid.UUID
-	input        *rez.AiAgentTurnInput
-	status       at.Status
-	state        []byte
-	error        []byte
-	finishReason string
-	createdAt    time.Time
-	startedAt    *time.Time
-	finishedAt   *time.Time
 }
 
 func (s *AgentSessionServiceSuite) newAgentSessionTestHarness() *agentSessionTestHarness {
@@ -104,6 +91,18 @@ func (s *AgentSessionServiceSuite) createAgentSession(ctx context.Context, input
 	return session
 }
 
+type agentTurnSeed struct {
+	id           uuid.UUID
+	riverJobID   int64
+	input        *rez.AiAgentTurnInput
+	status       at.Status
+	error        error
+	finishReason string
+	createdAt    time.Time
+	startedAt    *time.Time
+	finishedAt   *time.Time
+}
+
 func (s *AgentSessionServiceSuite) createAgentTurn(ctx context.Context, session *ent.AgentSession, seed agentTurnSeed) *ent.AgentTurn {
 	if seed.id == uuid.Nil {
 		seed.id = uuid.New()
@@ -112,34 +111,77 @@ func (s *AgentSessionServiceSuite) createAgentTurn(ctx context.Context, session 
 		seed.input = &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage("test")}
 	}
 
-	encodedInput, encodeErr := json.Marshal(seed.input)
-	s.Require().NoError(encodeErr)
+	input, inputErr := normalizeAgentTurnInput(seed.input)
+	s.Require().NoError(inputErr)
 
-	createTurn := s.Client(ctx).AgentTurn.Create().
-		SetID(seed.id).
-		SetAgentSessionID(session.ID).
-		SetRiverJobID(seed.riverJobID).
-		SetInput(encodedInput).
-		SetStatus(seed.status).
-		SetNillableParentID(seed.parentID).
-		SetNillableStartedAt(seed.startedAt).
-		SetNillableFinishedAt(seed.finishedAt)
-	if !seed.createdAt.IsZero() {
-		createTurn.SetCreatedAt(seed.createdAt)
-	}
-	if seed.state != nil {
-		createTurn.SetState(seed.state)
-	}
-	if seed.error != nil {
-		createTurn.SetError(seed.error)
-	}
-	if seed.finishReason != "" {
-		createTurn.SetFinishReason(seed.finishReason)
-	}
+	var turn *ent.AgentTurn
+	txErr := s.Database().WithTx(ctx, func(ctx context.Context, client *ent.Client) error {
+		sess := client.AgentSession.GetX(ctx, session.ID)
 
-	turn, createErr := createTurn.Save(ctx)
-	s.Require().NoError(createErr)
+		numTurns := sess.QueryTurns().CountX(ctx)
+		numMsgs := sess.QueryMessages().CountX(ctx)
+
+		createTurn := client.AgentTurn.Create().
+			SetID(seed.id).
+			SetAgentSessionID(session.ID).
+			SetRiverJobID(seed.riverJobID).
+			SetSequence(numTurns + 1).
+			SetStatus(seed.status).
+			SetNillableStartedAt(seed.startedAt).
+			SetNillableFinishedAt(seed.finishedAt)
+		if !seed.createdAt.IsZero() {
+			createTurn.SetCreatedAt(seed.createdAt)
+		}
+
+		if input.Resume != nil {
+			createTurn.SetInputToolResume(input.Resume)
+		}
+		if seed.error != nil {
+			createTurn.SetError(seed.error.Error())
+		}
+		if seed.finishReason != "" {
+			createTurn.SetFinishReason(seed.finishReason)
+		}
+		createdTurn := createTurn.SaveX(ctx)
+
+		if inputMsg := seed.input.Message; inputMsg != nil {
+			createMsg := client.AgentMessage.Create().
+				SetAgentSessionID(session.ID).
+				SetAgentTurnID(createdTurn.ID).
+				SetSequence(numMsgs + 1).
+				SetRole(agentmessage.Role(inputMsg.Role)).
+				SetContent(inputMsg.Content).
+				SetMetadata(inputMsg.Metadata)
+			createdMsg := createMsg.SaveX(ctx)
+
+			createdTurn = createdTurn.Update().SetInputMessageID(createdMsg.ID).SaveX(ctx)
+
+			createdTurn.Edges.Messages = append(createdTurn.Edges.Messages, createdMsg.Unwrap())
+		}
+
+		turn = createdTurn.Unwrap()
+
+		return nil
+	})
+	s.Require().NoError(txErr)
+
 	return turn
+}
+
+func (s *AgentSessionServiceSuite) createAgentMessage(ctx context.Context, session *ent.AgentSession, turn *ent.AgentTurn, msg *ai.Message) *ent.AgentMessage {
+	numMsgs, countErr := session.QueryMessages().Count(ctx)
+	s.Require().NoError(countErr)
+
+	createMsg := s.Client(ctx).AgentMessage.Create().
+		SetAgentSessionID(session.ID).
+		SetAgentTurnID(turn.ID).
+		SetSequence(numMsgs + 1).
+		SetRole(agentmessage.Role(msg.Role)).
+		SetContent(msg.Content).
+		SetMetadata(msg.Metadata)
+	createdMsg, createErr := createMsg.Save(ctx)
+	s.Require().NoError(createErr)
+	return createdMsg
 }
 
 func makeAgentTurnJob(turn *ent.AgentTurn, attempt int) *river.Job[jobs.InvokeAgentTurn] {
@@ -160,7 +202,9 @@ func makeJobInsertResult(id int64) *rivertype.JobInsertResult {
 	return &rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: id}}
 }
 
-type testAgentInput struct{}
+type testAgentInput struct {
+	Foo string
+}
 
 func (i testAgentInput) Validate() error {
 	return nil
@@ -176,43 +220,16 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionCreatesQueuedStartAtomi
 		Once()
 
 	params := rez.CreateAgentSessionParams{
-		AgentName:        "test-agent",
-		PermissionScopes: []string{"alerts:read"},
-		//Input:            map[string]any{"alertId": "alert-1"},
-		Metadata: map[string]any{"channel": "C123"},
+		AgentName: "test-agent",
+		Input:     testAgentInput{Foo: "bar"},
+		Metadata:  map[string]any{"baz": "123"},
 	}
 
 	session, createErr := h.service.CreateAgentSession(ctx, params)
 	s.Require().NoError(createErr)
 	s.Require().NotNil(session)
 	s.Equal("test-agent", session.AgentName)
-	s.Equal([]string{"alerts:read"}, session.DefaultScopes)
-	s.Equal("C123", session.Metadata["channel"])
-
-	/*
-		initialInput := &rez.AgentTurnInput{Message: ai.NewUserTextMessage("initial")}
-		h.ai.EXPECT().
-			MakeInitialAgentTurnInput(mock.Anything, session).
-			Return(initialInput, nil).
-			Once()
-
-		turn := session.Edges.Turns[0]
-		s.Equal(at.StatusQueued, turn.Status)
-		s.Equal(int64(101), turn.RiverJobID)
-		s.Nil(turn.ParentID)
-
-		var storedInput rez.AgentTurnInput
-		decodeErr := json.Unmarshal(turn.Input, &storedInput)
-		s.Require().NoError(decodeErr)
-		s.Require().NotNil(storedInput.Message)
-		s.Equal("initial", storedInput.Message.Text())
-
-		s.Require().Len(h.jobs.Calls, 1)
-		insertedArgs, argsOK := h.jobs.Calls[0].Arguments.Get(1).(jobs.InvokeAgentTurn)
-		s.Require().True(argsOK)
-		s.Equal(session.ID, insertedArgs.AgentSessionID)
-		s.Equal(turn.ID, insertedArgs.AgentTurnID)
-	*/
+	s.Equal("123", session.Metadata["baz"])
 }
 
 func (s *AgentSessionServiceSuite) TestCreateAgentSessionRollsBackWhenJobInsertFails() {
@@ -235,6 +252,7 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionRollsBackWhenJobInsertF
 	params := rez.CreateAgentSessionParams{
 		AgentName:   "test-agent",
 		OwnerUserID: &s.SeedUser.ID,
+		Input:       testAgentInput{Foo: "bar"},
 	}
 	session, createErr := h.service.CreateAgentSession(ctx, params)
 	s.Nil(session)
@@ -253,33 +271,35 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionRollsBackWhenJobInsertF
 func (s *AgentSessionServiceSuite) TestRequestAgentTurnValidatesInputAndCompletedRoot() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
-	session := s.createAgentSession(ctx, testAgentInput{})
-	root := s.createAgentTurn(ctx, session, agentTurnSeed{
+	session := s.createAgentSession(ctx, testAgentInput{Foo: "bar"})
+
+	initialTurn := s.createAgentTurn(ctx, session, agentTurnSeed{
 		riverJobID: 201,
 		status:     at.StatusQueued,
 	})
+
 	validParams := &rez.RequestAgentTurnParams{
-		Input: &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage("follow up")},
+		Input: &rez.AiAgentTurnInput{
+			Message: ai.NewUserTextMessage("follow up"),
+		},
 	}
 
 	turn, requestErr := h.service.RequestAgentTurn(ctx, session.ID, validParams)
 	s.Nil(turn)
 	s.ErrorIs(requestErr, rez.ErrConflict)
 
-	completeRoot := root.Update().
+	setInitialCompleted := initialTurn.Update().
 		SetStatus(at.StatusCompleted).
-		SetState([]byte(`{"root":true}`)).
 		SetFinishReason(string(aix.AgentFinishReasonStop)).
 		SetFinishedAt(time.Now().UTC())
-	root, completeErr := completeRoot.Save(ctx)
-	s.Require().NoError(completeErr)
+	s.Require().NoError(setInitialCompleted.Exec(ctx))
 
 	turn, requestErr = h.service.RequestAgentTurn(ctx, session.ID, nil)
 	s.Nil(turn)
 	s.ErrorIs(requestErr, rez.ErrInvalidInput)
 
 	emptyParams := &rez.RequestAgentTurnParams{
-		Input: &rez.AiAgentTurnInput{Resume: &ai.GenerateActionResume{}},
+		Input: &rez.AiAgentTurnInput{Resume: &aix.ToolResume{}},
 	}
 	turn, requestErr = h.service.RequestAgentTurn(ctx, session.ID, emptyParams)
 	s.Nil(turn)
@@ -289,189 +309,186 @@ func (s *AgentSessionServiceSuite) TestRequestAgentTurnValidatesInputAndComplete
 		Insert(mock.Anything, mock.Anything, (*river.InsertOpts)(nil)).
 		Return(makeJobInsertResult(202), nil).
 		Once()
+
 	turn, requestErr = h.service.RequestAgentTurn(ctx, session.ID, validParams)
 	s.Require().NoError(requestErr)
 	s.Require().NotNil(turn)
 	s.Equal(at.StatusQueued, turn.Status)
+	s.Equal(2, turn.Sequence)
 	s.Equal(int64(202), turn.RiverJobID)
-	s.Nil(turn.ParentID)
-	s.Equal(root.AgentSessionID, turn.AgentSessionID)
-}
+	s.Equal(initialTurn.AgentSessionID, turn.AgentSessionID)
+	s.Require().NotNil(turn.InputMessageID)
 
-func (s *AgentSessionServiceSuite) TestClaimAgentTurnUsesFIFOAndSuccessfulLeafState() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionTestHarness()
-	session := s.createAgentSession(ctx, testAgentInput{})
-	baseTime := time.Now().UTC().Add(-3 * time.Minute)
-	rootState := []byte(`{"root":true}`)
-	root := s.createAgentTurn(ctx, session, agentTurnSeed{
-		riverJobID:   401,
-		status:       at.StatusCompleted,
-		state:        rootState,
-		finishReason: string(aix.AgentFinishReasonStop),
-		createdAt:    baseTime,
-	})
-	older := s.createAgentTurn(ctx, session, agentTurnSeed{
-		riverJobID: 402,
-		status:     at.StatusQueued,
-		createdAt:  baseTime.Add(time.Minute),
-	})
-	younger := s.createAgentTurn(ctx, session, agentTurnSeed{
-		riverJobID: 403,
-		status:     at.StatusQueued,
-		createdAt:  baseTime.Add(2 * time.Minute),
-	})
-
-	claim, claimErr := h.turnWorker.claimAgentTurn(ctx, makeAgentTurnJob(younger, 1))
-	s.Nil(claim)
-	s.True(errors.Is(claimErr, &river.JobSnoozeError{}))
-
-	queryYounger := s.Client(ctx).AgentTurn.Query().Where(at.ID(younger.ID))
-	younger, queryYoungerErr := queryYounger.Only(ctx)
-	s.Require().NoError(queryYoungerErr)
-	s.Equal(at.StatusQueued, younger.Status)
-
-	claim, claimErr = h.turnWorker.claimAgentTurn(ctx, makeAgentTurnJob(older, 1))
-	s.Require().NoError(claimErr)
-	s.Require().NotNil(claim)
-	s.Equal(rootState, claim.parent.State)
-	s.Require().NotNil(claim.turn.ParentID)
-	s.Equal(root.ID, *claim.turn.ParentID)
-	s.Equal(at.StatusRunning, claim.turn.Status)
-	s.NotNil(claim.turn.StartedAt)
+	inputMsg, inputMsgErr := turn.QueryInputMessage().Only(ctx)
+	s.Require().NoError(inputMsgErr)
+	s.Equal(agentmessage.RoleUser, inputMsg.Role)
+	s.Equal("follow up", inputMsg.MakeGenkitMessage().Text())
 }
 
 func (s *AgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublishesEvent() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
-	session := s.createAgentSession(ctx, testAgentInput{})
-	rootState := []byte(`{"root":true}`)
-	resultState := []byte(`{"messages":["done"]}`)
-	root := s.createAgentTurn(ctx, session, agentTurnSeed{
+	session := s.createAgentSession(ctx, testAgentInput{Foo: "bar"})
+
+	initialTurn := s.createAgentTurn(ctx, session, agentTurnSeed{
 		riverJobID:   501,
 		status:       at.StatusCompleted,
-		state:        rootState,
 		finishReason: string(aix.AgentFinishReasonStop),
 	})
-	input := &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage("continue")}
-	turn := s.createAgentTurn(ctx, session, agentTurnSeed{
+	s.Require().NotNil(initialTurn)
+	initialReply := ai.NewModelTextMessage("ready")
+	s.createAgentMessage(ctx, session, initialTurn, initialReply)
+
+	followUpInput := ai.NewUserTextMessage("baz")
+	followUp := s.createAgentTurn(ctx, session, agentTurnSeed{
 		riverJobID: 502,
 		status:     at.StatusQueued,
-		input:      input,
+		input:      &rez.AiAgentTurnInput{Message: followUpInput},
 	})
-	response := ai.NewModelTextMessage("done")
-	result := &rez.AiAgentInvocationResult{
-		State:        resultState,
-		Response:     response,
+	s.Require().NotNil(followUp)
+
+	followUpReply := ai.NewModelTextMessage("done")
+	artifact := &aix.Artifact{
+		Name:     "report",
+		Parts:    []*ai.Part{ai.NewTextPart("new report")},
+		Metadata: map[string]any{"version": "new"},
+	}
+	s.Client(ctx).AgentArtifact.Create().
+		SetAgentSessionID(session.ID).
+		SetAgentTurnID(initialTurn.ID).
+		SetName(artifact.Name).
+		SetParts([]*ai.Part{ai.NewTextPart("old report")}).
+		SetMetadata(map[string]any{"version": "old"}).
+		ExecX(ctx)
+
+	turnResult := &rez.AiAgentInvocationResult{
+		State: rez.AiAgentTurnState{
+			Messages: []*ai.Message{
+				initialTurn.Edges.Messages[0].MakeGenkitMessage(),
+				initialReply,
+				followUpInput,
+				followUpReply,
+			},
+			Artifacts: []*aix.Artifact{artifact},
+		},
+		Response:     followUpReply,
 		FinishReason: aix.AgentFinishReasonStop,
 	}
 
 	h.ai.EXPECT().
-		InvokeAgentTurn(mock.Anything, mock.Anything).
-		Return(result, nil).
+		InvokeAgentTurn(mock.Anything, mock.MatchedBy(func(params rez.InvokeAgentTurnParams) bool {
+			return params.Session.ID == session.ID &&
+				params.Turn.ID == followUp.ID &&
+				params.Input != nil &&
+				params.Input.Message != nil &&
+				params.Input.Message.Text() == "baz" &&
+				len(params.State.Messages) == 2 &&
+				params.State.Messages[0].Text() == "test" &&
+				params.State.Messages[1].Text() == "ready"
+		})).
+		Return(turnResult, nil).
 		Once()
+
 	h.msgs.EXPECT().
-		Publish(mock.Anything, mock.Anything).
+		Publish(mock.Anything, mock.MatchedBy(func(ev *rezai.EventOnAgentTurnFinished) bool {
+			return ev.AgentSessionId == session.ID &&
+				ev.AgentTurnId == followUp.ID &&
+				ev.FinishReason == aix.AgentFinishReasonStop &&
+				ev.Response == followUpReply
+		})).
 		Return(nil).
+		Once()
+
+	s.Require().NoError(h.turnWorker.Work(ctx, makeAgentTurnJob(followUp, 1)))
+
+	queryTurn := s.Client(ctx).AgentTurn.Query().
+		Where(at.ID(followUp.ID)).
+		WithMessages().
+		WithArtifacts()
+	turn, queryTurnErr := queryTurn.Only(ctx)
+	s.Require().NoError(queryTurnErr)
+	s.Equal(at.StatusCompleted, turn.Status)
+	s.Nil(turn.Error)
+	s.Equal(string(aix.AgentFinishReasonStop), turn.FinishReason)
+	s.NotNil(turn.FinishedAt)
+
+	turnMsgs, queryMsgsErr := turn.QueryMessages().Order(agentmessage.BySequence()).All(ctx)
+	s.Require().NoError(queryMsgsErr)
+	s.Require().Len(turnMsgs, 2)
+	s.Equal("baz", turnMsgs[0].MakeGenkitMessage().Text())
+	s.Equal("done", turnMsgs[1].MakeGenkitMessage().Text())
+	s.Equal(3, turnMsgs[0].Sequence)
+	s.Equal(4, turnMsgs[1].Sequence)
+
+	updatedArtifact, artifactErr := session.QueryArtifacts().Only(ctx)
+	s.Require().NoError(artifactErr)
+	s.Equal(followUp.ID, *updatedArtifact.LastAgentTurnID)
+	s.Equal("new", updatedArtifact.Metadata["version"])
+	s.Require().Len(updatedArtifact.Parts, 1)
+	s.Equal("new report", updatedArtifact.Parts[0].Text)
+}
+
+func (s *AgentSessionServiceSuite) TestWorkerFailsTurnWhenAgentReturnsNilResult() {
+	ctx := s.SeedTenantContext()
+	h := s.newAgentSessionTestHarness()
+	session := s.createAgentSession(ctx, testAgentInput{})
+
+	_ = s.createAgentTurn(ctx, session, agentTurnSeed{
+		riverJobID:   551,
+		status:       at.StatusCompleted,
+		finishReason: string(aix.AgentFinishReasonStop),
+	})
+	turn := s.createAgentTurn(ctx, session, agentTurnSeed{
+		riverJobID: 552,
+		status:     at.StatusQueued,
+	})
+
+	h.ai.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		Return(nil, nil).
 		Once()
 
 	workErr := h.turnWorker.Work(ctx, makeAgentTurnJob(turn, 1))
 	s.Require().NoError(workErr)
 
-	queryTurn := s.Client(ctx).AgentTurn.Query().Where(at.ID(turn.ID))
-	turn, queryTurnErr := queryTurn.Only(ctx)
-	s.Require().NoError(queryTurnErr)
-	s.Equal(at.StatusCompleted, turn.Status)
-	s.Equal(resultState, turn.State)
-	s.Nil(turn.Error)
-	s.Equal(string(aix.AgentFinishReasonStop), turn.FinishReason)
+	turn, turnErr := s.Client(ctx).AgentTurn.Get(ctx, turn.ID)
+	s.Require().NoError(turnErr)
+	s.Equal(at.StatusFailed, turn.Status)
+	s.Require().NotNil(turn.Error)
+	s.Contains(*turn.Error, "agent returned no result")
+	s.Equal(string(aix.AgentFinishReasonFailed), turn.FinishReason)
 	s.NotNil(turn.FinishedAt)
-	s.Require().NotNil(turn.ParentID)
-	s.Equal(root.ID, *turn.ParentID)
-
-	s.Require().Len(h.msgs.Calls, 1)
-	published, eventOK := h.msgs.Calls[0].Arguments.Get(1).(*rezai.EventOnAgentTurnFinished)
-	s.Require().True(eventOK)
-	s.Equal(session.ID, published.AgentSessionId)
-	s.Equal(turn.ID, published.AgentTurnId)
-	s.Equal(response, published.Response)
 }
 
 func (s *AgentSessionServiceSuite) TestWorkerTerminalizesRunningRedeliveryWithoutInvokingAgent() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
 	session := s.createAgentSession(ctx, testAgentInput{})
-	root := s.createAgentTurn(ctx, session, agentTurnSeed{
+
+	_ = s.createAgentTurn(ctx, session, agentTurnSeed{
 		riverJobID:   601,
 		status:       at.StatusCompleted,
-		state:        []byte(`{"root":true}`),
 		finishReason: string(aix.AgentFinishReasonStop),
 	})
+
 	turn := s.createAgentTurn(ctx, session, agentTurnSeed{
 		riverJobID: 602,
-		parentID:   &root.ID,
 		status:     at.StatusRunning,
-		state:      []byte(`{"partial":true}`),
 		startedAt:  new(time.Now().UTC().Add(-time.Minute)),
 	})
 
 	workErr := h.turnWorker.Work(ctx, makeAgentTurnJob(turn, 2))
 	s.Require().NoError(workErr)
 
-	queryTurn := s.Client(ctx).AgentTurn.Query().Where(at.ID(turn.ID))
-	turn, queryTurnErr := queryTurn.Only(ctx)
-	s.Require().NoError(queryTurnErr)
+	var turnErr error
+	turn, turnErr = s.Client(ctx).AgentTurn.Get(ctx, turn.ID)
+	s.Require().NoError(turnErr)
 	s.Equal(at.StatusFailed, turn.Status)
-	s.Nil(turn.State)
-	s.True(json.Valid(turn.Error))
+	s.NotNil(turn.Error)
 	s.Equal(string(aix.AgentFinishReasonFailed), turn.FinishReason)
 	s.NotNil(turn.FinishedAt)
 	s.Empty(h.ai.Calls)
 	s.Empty(h.msgs.Calls)
-}
-
-func (s *AgentSessionServiceSuite) TestWorkerPersistsFailedResultWithLastGoodState() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionTestHarness()
-	session := s.createAgentSession(ctx, testAgentInput{})
-	rootState := []byte(`{"root":true}`)
-	lastGoodState := []byte(`{"lastGood":true}`)
-	s.createAgentTurn(ctx, session, agentTurnSeed{
-		riverJobID:   651,
-		status:       at.StatusCompleted,
-		state:        rootState,
-		finishReason: string(aix.AgentFinishReasonStop),
-	})
-	turn := s.createAgentTurn(ctx, session, agentTurnSeed{
-		riverJobID: 652,
-		status:     at.StatusQueued,
-	})
-	result := &rez.AiAgentInvocationResult{
-		State:        lastGoodState,
-		FinishReason: aix.AgentFinishReasonFailed,
-		Error:        core.AsGenkitError(errors.New("model failed")),
-	}
-
-	h.ai.EXPECT().
-		InvokeAgentTurn(mock.Anything, mock.Anything).
-		Return(result, nil).
-		Once()
-	h.msgs.EXPECT().
-		Publish(mock.Anything, mock.Anything).
-		Return(nil).
-		Once()
-
-	workErr := h.turnWorker.Work(ctx, makeAgentTurnJob(turn, 1))
-	s.Require().NoError(workErr)
-
-	queryTurn := s.Client(ctx).AgentTurn.Query().Where(at.ID(turn.ID))
-	turn, queryTurnErr := queryTurn.Only(ctx)
-	s.Require().NoError(queryTurnErr)
-	s.Equal(at.StatusFailed, turn.Status)
-	s.Equal(lastGoodState, turn.State)
-	s.True(json.Valid(turn.Error))
-	s.Equal(string(aix.AgentFinishReasonFailed), turn.FinishReason)
-	s.NotNil(turn.FinishedAt)
 }
 
 func (s *AgentSessionServiceSuite) TestAbortAgentTurnIsIdempotent() {
@@ -481,8 +498,6 @@ func (s *AgentSessionServiceSuite) TestAbortAgentTurnIsIdempotent() {
 	turn := s.createAgentTurn(ctx, session, agentTurnSeed{
 		riverJobID: 701,
 		status:     at.StatusQueued,
-		state:      []byte(`{"stale":true}`),
-		error:      []byte(`{"message":"stale"}`),
 	})
 
 	h.jobs.EXPECT().
@@ -494,12 +509,11 @@ func (s *AgentSessionServiceSuite) TestAbortAgentTurnIsIdempotent() {
 	s.Require().NoError(abortErr)
 	s.Equal(at.StatusAborted, aborted.Status)
 	s.Equal(string(aix.AgentFinishReasonAborted), aborted.FinishReason)
-	s.Nil(aborted.State)
 	s.Nil(aborted.Error)
 	s.NotNil(aborted.FinishedAt)
 
-	abortedAgain, abortErr := h.service.AbortAgentTurn(ctx, turn.ID)
-	s.Require().NoError(abortErr)
+	abortedAgain, abortAgainErr := h.service.AbortAgentTurn(ctx, turn.ID)
+	s.Require().NoError(abortAgainErr)
 	s.Equal(aborted.ID, abortedAgain.ID)
 	s.Equal(at.StatusAborted, abortedAgain.Status)
 }
@@ -508,46 +522,46 @@ func (s *AgentSessionServiceSuite) TestRetryAgentTurnRequeuesSameTurnAndClearsTe
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
 	session := s.createAgentSession(ctx, testAgentInput{})
+
 	root := s.createAgentTurn(ctx, session, agentTurnSeed{
 		riverJobID:   801,
 		status:       at.StatusCompleted,
-		state:        []byte(`{"root":true}`),
 		finishReason: string(aix.AgentFinishReasonStop),
 	})
-	originalInput := &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage("retry me")}
+	s.Require().NotNil(root)
+
+	inputMsg := ai.NewUserTextMessage("retry me")
+
 	turn := s.createAgentTurn(ctx, session, agentTurnSeed{
 		riverJobID:   802,
-		parentID:     &root.ID,
-		input:        originalInput,
+		input:        &rez.AiAgentTurnInput{Message: inputMsg},
 		status:       at.StatusFailed,
-		state:        []byte(`{"lastGood":true}`),
-		error:        []byte(`{"message":"failed"}`),
+		error:        fmt.Errorf("failed"),
 		finishReason: string(aix.AgentFinishReasonFailed),
 		startedAt:    new(time.Now().UTC().Add(-2 * time.Minute)),
 		finishedAt:   new(time.Now().UTC().Add(-time.Minute)),
 	})
-	originalEncodedInput := append([]byte(nil), turn.Input...)
 
+	args := jobs.InvokeAgentTurn{AgentTurnID: turn.ID, AgentSessionID: session.ID}
 	h.jobs.EXPECT().
-		Insert(mock.Anything, mock.Anything, (*river.InsertOpts)(nil)).
+		Insert(mock.Anything, args, mock.Anything).
 		Return(makeJobInsertResult(803), nil).
 		Once()
+
+	msgsBefore, msgsBeforeErr := turn.QueryMessages().Count(ctx)
+	s.Require().NoError(msgsBeforeErr)
 
 	retried, retryErr := h.service.RetryAgentTurn(ctx, turn.ID)
 	s.Require().NoError(retryErr)
 	s.Equal(turn.ID, retried.ID)
 	s.Equal(at.StatusQueued, retried.Status)
 	s.Equal(int64(803), retried.RiverJobID)
-	s.Equal(originalEncodedInput, retried.Input)
-	s.Nil(retried.State)
 	s.Nil(retried.Error)
 	s.Nil(retried.StartedAt)
 	s.Nil(retried.FinishedAt)
 	s.Empty(retried.FinishReason)
 
-	s.Require().Len(h.jobs.Calls, 1)
-	insertedArgs, argsOK := h.jobs.Calls[0].Arguments.Get(1).(jobs.InvokeAgentTurn)
-	s.Require().True(argsOK)
-	s.Equal(session.ID, insertedArgs.AgentSessionID)
-	s.Equal(turn.ID, insertedArgs.AgentTurnID)
+	msgsAfter, msgsAfterErr := retried.QueryMessages().Count(ctx)
+	s.Require().NoError(msgsAfterErr)
+	s.Require().Equal(msgsBefore, msgsAfter)
 }

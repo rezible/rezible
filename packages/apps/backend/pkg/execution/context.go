@@ -181,7 +181,7 @@ func NewAiAgentContext(ctx context.Context, sess *ent.AgentSession, turn *ent.Ag
 		UserID:         sess.OwnerUserID,
 		AgentSessionID: &sess.ID,
 		AgentTurnID:    &turn.ID,
-		Scopes:         append(sess.DefaultScopes, turn.Scopes...), // TODO: scopes for turn
+		Scopes:         sess.Scopes, // TODO: scopes for turn
 	}
 	return SetContext(ctx, c)
 }

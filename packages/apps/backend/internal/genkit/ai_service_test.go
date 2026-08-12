@@ -10,6 +10,7 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/stretchr/testify/suite"
 
@@ -40,12 +41,11 @@ func (s *AiServiceSuite) makeService(opts ...AiServiceOption) *AiService {
 	return svc
 }
 
-func (s *AiServiceSuite) makeAgentSession(svc *AiService, name string, sessInput rezai.AgentInput) (*ent.AgentSession, *ent.AgentTurn) {
+func (s *AiServiceSuite) makeAgentSession(svc *AiService, name string, sessInput rezai.AgentInput) *ent.AgentSession {
 	sessInputJson, sessInputJsonErr := json.Marshal(sessInput)
 	s.Require().NoError(sessInputJsonErr)
 
 	var session *ent.AgentSession
-	var initialTurn *ent.AgentTurn
 	txFn := func(ctx context.Context, tx *ent.Client) error {
 		createSess := tx.AgentSession.Create().
 			SetAgentName(name).
@@ -55,34 +55,57 @@ func (s *AiServiceSuite) makeAgentSession(svc *AiService, name string, sessInput
 		if saveSessionErr != nil {
 			return fmt.Errorf("create session: %w", saveSessionErr)
 		}
+		session = createdSession.Unwrap()
 
 		turnInput, inputErr := svc.MakeInitialAgentTurnInput(ctx, createdSession)
 		if inputErr != nil {
 			return fmt.Errorf("initial agent turn input: %w", inputErr)
 		}
-		turnInputJson, turnInputJsonErr := json.Marshal(turnInput)
-		if turnInputJsonErr != nil {
-			return fmt.Errorf("initial agent turn input: %w", turnInputJsonErr)
-		}
 
 		createTurn := tx.AgentTurn.Create().
 			SetID(uuid.New()).
 			SetAgentSession(createdSession).
+			SetSequence(1).
 			SetRiverJobID(1). // synthetic test handle
 			SetStatus(agentturn.StatusQueued).
-			SetInput(turnInputJson)
+			SetInputToolResume(turnInput.Resume)
 		createdTurn, saveTurnErr := createTurn.Save(ctx)
 		if saveTurnErr != nil {
 			return fmt.Errorf("create turn: %w", saveTurnErr)
 		}
 
-		session = createdSession.Unwrap()
-		initialTurn = createdTurn.Unwrap()
+		if turnInput.Message != nil {
+			createMsg := tx.AgentMessage.Create().
+				SetID(uuid.New()).
+				SetAgentSessionID(createdSession.ID).
+				SetAgentTurnID(createdTurn.ID).
+				SetSequence(1).
+				SetRole(agentmessage.RoleUser).
+				SetContent(turnInput.Message.Content).
+				SetMetadata(turnInput.Message.Metadata)
+			createdMsg, saveMsgErr := createMsg.Save(ctx)
+			if saveMsgErr != nil {
+				return fmt.Errorf("create msg: %w", saveMsgErr)
+			}
+			createdTurn = createdTurn.Update().SetInputMessageID(createdMsg.ID).SaveX(ctx)
+
+			session.Edges.Messages = append(session.Edges.Messages, createdMsg.Unwrap())
+		}
+
+		session.Edges.Turns = append(session.Edges.Turns, createdTurn.Unwrap())
 
 		return nil
 	}
 	s.Require().NoError(s.Database().WithTx(s.SeedTenantContext(), txFn))
-	return session, initialTurn
+	return session
+}
+
+func (s *AiServiceSuite) makeInvokeSessionParams(sess *ent.AgentSession) rez.InvokeAgentTurnParams {
+	s.Require().Greater(len(sess.Edges.Turns), 0)
+	return rez.InvokeAgentTurnParams{
+		Session: sess,
+		Turn:    sess.Edges.Turns[0],
+	}
 }
 
 type (
@@ -113,41 +136,30 @@ func (s *AiServiceSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
 	msg := ai.NewUserTextMessage("hello world")
 	ta := makeTestAgent[testAgentState](msg)
 	svc := s.makeService(WithAgent(ta))
+	sess := s.makeAgentSession(svc, ta.def.Name, testAgentInput{})
 
-	sess, initialTurn := s.makeAgentSession(svc, ta.def.Name, testAgentInput{})
-	initParams := rez.InvokeAgentTurnParams{
-		Session: sess,
-		Parent:  nil,
-		Turn:    initialTurn,
-		Input:   &rez.AiAgentTurnInput{Message: msg},
-	}
+	initParams := s.makeInvokeSessionParams(sess)
+	initParams.Input = &rez.AiAgentTurnInput{Message: msg}
 
 	initialRes, initialErr := svc.InvokeAgentTurn(ctx, initParams)
 	s.Require().NoError(initialErr)
 	s.Require().NotNil(initialRes)
-
-	var rootState aix.SessionState[testAgentState]
-	s.Require().NoError(json.Unmarshal(initialRes.State, &rootState))
-	s.Equal(sess.ID.String(), rootState.SessionID)
+	s.Require().NotEmpty(initialRes.State.Messages)
+	s.Equal("hello world", initialRes.State.Messages[0].Text())
 
 	resumeText := "resume"
-	nextParams := rez.InvokeAgentTurnParams{
-		Session: sess,
-		Parent:  &ent.AgentTurn{State: initialRes.State},
-		Turn:    &ent.AgentTurn{ID: uuid.New()},
-		Input: &rez.AiAgentTurnInput{
-			Resume: &ai.GenerateActionResume{
-				Respond: []*ai.Part{ai.NewTextPart(resumeText)},
-			},
+	nextParams := s.makeInvokeSessionParams(sess)
+	nextParams.Turn.ID = uuid.New()
+	nextParams.State = initialRes.State
+	nextParams.Input = &rez.AiAgentTurnInput{
+		Resume: &aix.ToolResume{
+			Respond: []*ai.Part{ai.NewTextPart(resumeText)},
 		},
 	}
-	next, nextErr := svc.InvokeAgentTurn(ctx, nextParams)
+	nextRes, nextErr := svc.InvokeAgentTurn(ctx, nextParams)
 	s.Require().NoError(nextErr)
-	s.Require().NotNil(next)
-
-	var nextState aix.SessionState[testAgentState]
-	s.Require().NoError(json.Unmarshal(next.State, &nextState))
-	s.Equal(sess.ID.String(), nextState.SessionID)
+	s.Require().NotNil(nextRes)
+	s.Require().GreaterOrEqual(len(nextRes.State.Messages), len(initialRes.State.Messages))
 }
 
 func (s *AiServiceSuite) TestSimpleGreetingAgent() {
@@ -161,24 +173,16 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 	ta := makeTestAgent[testAgentState](msg)
 	svc := s.makeService(WithAgent(ta))
 
-	session, initialTurn := s.makeAgentSession(svc, ta.def.Name, testAgentInput{})
-	s.T().Logf("Starting test agent session (id %s)", session.ID)
+	sess := s.makeAgentSession(svc, ta.def.Name, testAgentInput{})
+	s.T().Logf("Starting test agent session (id %s)", sess.ID)
 
-	initParams := rez.InvokeAgentTurnParams{
-		Session: session,
-		Parent:  nil,
-		Turn:    initialTurn,
-		Input:   &rez.AiAgentTurnInput{Message: msg},
-	}
+	initParams := s.makeInvokeSessionParams(sess)
+	initParams.Input = &rez.AiAgentTurnInput{Message: msg}
+
 	result, invokeErr := svc.InvokeAgentTurn(ctx, initParams)
 	s.Require().NoError(invokeErr)
 	s.Require().NotNil(result)
-
-	s.Require().NotEmpty(result.State)
-	var state aix.SessionState[testAgentState]
-	s.Require().NoError(json.Unmarshal(result.State, &state))
-	s.Equal(session.ID.String(), state.SessionID)
-	s.Require().NotEmpty(state.Messages)
+	s.NotEmpty(result.State.Messages)
 }
 
 type (
@@ -197,6 +201,11 @@ func (t *testAgent[S]) agentDefinition() testAgentDef[S] {
 
 func (t *testAgent[S]) makeInitialTurnInput(ctx context.Context, input testAgentInput) (*rez.AiAgentTurnInput, error) {
 	return &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(t.userMessage.Text())}, nil
+}
+
+func (t *testAgent[S]) getCustomState(ctx context.Context, sess *ent.AgentSession) (*S, error) {
+	var s S
+	return &s, nil
 }
 
 func (t *testAgent[S]) transformState(ctx context.Context, state *aix.SessionState[S]) (*aix.SessionState[S], error) {

@@ -1,5 +1,25 @@
+-- create "agent_artifacts" table
+CREATE TABLE "agent_artifacts" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "name" character varying NOT NULL, "parts" jsonb NOT NULL, "metadata" jsonb NOT NULL, "tenant_id" bigint NOT NULL, "agent_session_id" uuid NOT NULL, "last_agent_turn_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "agentartifact_tenant_id" to table: "agent_artifacts"
+CREATE INDEX "agentartifact_tenant_id" ON "agent_artifacts" ("tenant_id");
+-- create index "agentartifact_agent_session_id_name" to table: "agent_artifacts"
+CREATE UNIQUE INDEX "agentartifact_agent_session_id_name" ON "agent_artifacts" ("agent_session_id", "name");
+-- create index "agentartifact_tenant_id_agent_session_id_created_at" to table: "agent_artifacts"
+CREATE INDEX "agentartifact_tenant_id_agent_session_id_created_at" ON "agent_artifacts" ("tenant_id", "agent_session_id", "created_at");
+-- create index "agentartifact_tenant_id_last_agent_turn_id" to table: "agent_artifacts"
+CREATE INDEX "agentartifact_tenant_id_last_agent_turn_id" ON "agent_artifacts" ("tenant_id", "last_agent_turn_id");
+-- create "agent_messages" table
+CREATE TABLE "agent_messages" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "sequence" bigint NOT NULL, "role" character varying NOT NULL, "content" jsonb NOT NULL, "metadata" jsonb NOT NULL, "visible" boolean NOT NULL DEFAULT true, "tenant_id" bigint NOT NULL, "agent_session_id" uuid NOT NULL, "agent_turn_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "agentmessage_tenant_id" to table: "agent_messages"
+CREATE INDEX "agentmessage_tenant_id" ON "agent_messages" ("tenant_id");
+-- create index "agentmessage_agent_session_id_sequence" to table: "agent_messages"
+CREATE UNIQUE INDEX "agentmessage_agent_session_id_sequence" ON "agent_messages" ("agent_session_id", "sequence");
+-- create index "agentmessage_tenant_id_agent_session_id_created_at" to table: "agent_messages"
+CREATE INDEX "agentmessage_tenant_id_agent_session_id_created_at" ON "agent_messages" ("tenant_id", "agent_session_id", "created_at");
+-- create index "agentmessage_tenant_id_agent_turn_id_sequence" to table: "agent_messages"
+CREATE INDEX "agentmessage_tenant_id_agent_turn_id_sequence" ON "agent_messages" ("tenant_id", "agent_turn_id", "sequence");
 -- create "agent_sessions" table
-CREATE TABLE "agent_sessions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "agent_name" character varying NOT NULL, "default_scopes" jsonb NOT NULL, "input" bytea NOT NULL, "metadata" jsonb NULL, "tenant_id" bigint NOT NULL, "owner_user_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "agent_sessions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "agent_name" character varying NOT NULL, "scopes" jsonb NOT NULL, "input" bytea NOT NULL, "metadata" jsonb NULL, "tenant_id" bigint NOT NULL, "owner_user_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "agentsession_tenant_id" to table: "agent_sessions"
 CREATE INDEX "agentsession_tenant_id" ON "agent_sessions" ("tenant_id");
 -- create index "agentsession_tenant_id_owner_user_id_created_at" to table: "agent_sessions"
@@ -7,15 +27,15 @@ CREATE INDEX "agentsession_tenant_id_owner_user_id_created_at" ON "agent_session
 -- create index "agentsession_tenant_id_agent_name_created_at" to table: "agent_sessions"
 CREATE INDEX "agentsession_tenant_id_agent_name_created_at" ON "agent_sessions" ("tenant_id", "agent_name", "created_at");
 -- create "agent_turns" table
-CREATE TABLE "agent_turns" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "river_job_id" bigint NOT NULL, "scopes" jsonb NULL, "input" bytea NOT NULL, "status" character varying NOT NULL, "started_at" timestamptz NULL, "finished_at" timestamptz NULL, "finish_reason" character varying NOT NULL DEFAULT '', "state" bytea NULL, "error" bytea NULL, "agent_session_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "parent_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "agent_turns_agent_turns_parent" FOREIGN KEY ("parent_id") REFERENCES "agent_turns" ("id") ON DELETE SET NULL);
+CREATE TABLE "agent_turns" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "sequence" bigint NOT NULL, "river_job_id" bigint NOT NULL, "input_tool_resume" jsonb NULL, "status" character varying NOT NULL, "started_at" timestamptz NULL, "finished_at" timestamptz NULL, "finish_reason" character varying NOT NULL DEFAULT '', "error" character varying NULL, "agent_session_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "input_message_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "agentturn_tenant_id" to table: "agent_turns"
 CREATE INDEX "agentturn_tenant_id" ON "agent_turns" ("tenant_id");
--- create index "agent_turn_one_running_per_session" to table: "agent_turns"
-CREATE UNIQUE INDEX "agent_turn_one_running_per_session" ON "agent_turns" ("agent_session_id") WHERE status = 'running';
--- create index "agent_turn_one_successful_child_per_parent" to table: "agent_turns"
-CREATE UNIQUE INDEX "agent_turn_one_successful_child_per_parent" ON "agent_turns" ("parent_id") WHERE parent_id IS NOT NULL AND status IN ('running', 'completed');
--- create index "agent_turn_one_successful_root_per_session" to table: "agent_turns"
-CREATE UNIQUE INDEX "agent_turn_one_successful_root_per_session" ON "agent_turns" ("agent_session_id") WHERE parent_id IS NULL AND status IN ('running', 'completed');
+-- create index "agentturn_agent_session_id_sequence" to table: "agent_turns"
+CREATE UNIQUE INDEX "agentturn_agent_session_id_sequence" ON "agent_turns" ("agent_session_id", "sequence");
+-- create index "agent_turn_one_active_per_session" to table: "agent_turns"
+CREATE UNIQUE INDEX "agent_turn_one_active_per_session" ON "agent_turns" ("agent_session_id") WHERE status IN ('queued', 'running');
+-- create index "agent_turn_input_message_unique" to table: "agent_turns"
+CREATE UNIQUE INDEX "agent_turn_input_message_unique" ON "agent_turns" ("input_message_id") WHERE input_message_id IS NOT NULL;
 -- create index "agentturn_tenant_id_agent_session_id_created_at" to table: "agent_turns"
 CREATE INDEX "agentturn_tenant_id_agent_session_id_created_at" ON "agent_turns" ("tenant_id", "agent_session_id", "created_at");
 -- create "agent_turn_knowledge_citations" table
@@ -434,10 +454,14 @@ CREATE TABLE "task_tickets" ("task_id" uuid NOT NULL, "ticket_id" uuid NOT NULL,
 CREATE TABLE "team_oncall_rosters" ("team_id" uuid NOT NULL, "oncall_roster_id" uuid NOT NULL, PRIMARY KEY ("team_id", "oncall_roster_id"));
 -- create "user_watched_oncall_rosters" table
 CREATE TABLE "user_watched_oncall_rosters" ("user_id" uuid NOT NULL, "oncall_roster_id" uuid NOT NULL, PRIMARY KEY ("user_id", "oncall_roster_id"));
+-- modify "agent_artifacts" table
+ALTER TABLE "agent_artifacts" ADD CONSTRAINT "agent_artifacts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_artifacts_agent_sessions_artifacts" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_artifacts_agent_turns_artifacts" FOREIGN KEY ("last_agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE SET NULL;
+-- modify "agent_messages" table
+ALTER TABLE "agent_messages" ADD CONSTRAINT "agent_messages_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_messages_agent_sessions_messages" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_messages_agent_turns_messages" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE NO ACTION;
 -- modify "agent_sessions" table
 ALTER TABLE "agent_sessions" ADD CONSTRAINT "agent_sessions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_sessions_users_owner_user" FOREIGN KEY ("owner_user_id") REFERENCES "users" ("id") ON DELETE SET NULL;
 -- modify "agent_turns" table
-ALTER TABLE "agent_turns" ADD CONSTRAINT "agent_turns_agent_sessions_turns" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turns_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+ALTER TABLE "agent_turns" ADD CONSTRAINT "agent_turns_agent_sessions_turns" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turns_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turns_agent_messages_input_message" FOREIGN KEY ("input_message_id") REFERENCES "agent_messages" ("id") ON DELETE SET NULL;
 -- modify "agent_turn_knowledge_citations" table
 ALTER TABLE "agent_turn_knowledge_citations" ADD CONSTRAINT "agent_turn_knowledge_citations_agent_turns_knowledge_citations" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turn_knowledge_citations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turn_knowledge_citations_4794ae641d5b312d64f1656ea2b13971" FOREIGN KEY ("knowledge_evidence_id") REFERENCES "knowledge_evidences" ("id") ON DELETE NO ACTION;
 -- modify "alerts" table

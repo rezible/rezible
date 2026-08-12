@@ -159,9 +159,13 @@ ALTER TABLE "alerts" DROP CONSTRAINT "alerts_knowledge_entities_knowledge_entity
 -- reverse: modify "agent_turn_knowledge_citations" table
 ALTER TABLE "agent_turn_knowledge_citations" DROP CONSTRAINT "agent_turn_knowledge_citations_4794ae641d5b312d64f1656ea2b13971", DROP CONSTRAINT "agent_turn_knowledge_citations_tenants_tenant", DROP CONSTRAINT "agent_turn_knowledge_citations_agent_turns_knowledge_citations";
 -- reverse: modify "agent_turns" table
-ALTER TABLE "agent_turns" DROP CONSTRAINT "agent_turns_tenants_tenant", DROP CONSTRAINT "agent_turns_agent_sessions_turns";
+ALTER TABLE "agent_turns" DROP CONSTRAINT "agent_turns_agent_messages_input_message", DROP CONSTRAINT "agent_turns_tenants_tenant", DROP CONSTRAINT "agent_turns_agent_sessions_turns";
 -- reverse: modify "agent_sessions" table
 ALTER TABLE "agent_sessions" DROP CONSTRAINT "agent_sessions_users_owner_user", DROP CONSTRAINT "agent_sessions_tenants_tenant";
+-- reverse: modify "agent_messages" table
+ALTER TABLE "agent_messages" DROP CONSTRAINT "agent_messages_agent_turns_messages", DROP CONSTRAINT "agent_messages_agent_sessions_messages", DROP CONSTRAINT "agent_messages_tenants_tenant";
+-- reverse: modify "agent_artifacts" table
+ALTER TABLE "agent_artifacts" DROP CONSTRAINT "agent_artifacts_agent_turns_artifacts", DROP CONSTRAINT "agent_artifacts_agent_sessions_artifacts", DROP CONSTRAINT "agent_artifacts_tenants_tenant";
 -- reverse: create "user_watched_oncall_rosters" table
 DROP TABLE "user_watched_oncall_rosters";
 -- reverse: create "team_oncall_rosters" table
@@ -580,12 +584,12 @@ DROP INDEX "agentturnknowledgecitation_tenant_id";
 DROP TABLE "agent_turn_knowledge_citations";
 -- reverse: create index "agentturn_tenant_id_agent_session_id_created_at" to table: "agent_turns"
 DROP INDEX "agentturn_tenant_id_agent_session_id_created_at";
--- reverse: create index "agent_turn_one_successful_root_per_session" to table: "agent_turns"
-DROP INDEX "agent_turn_one_successful_root_per_session";
--- reverse: create index "agent_turn_one_successful_child_per_parent" to table: "agent_turns"
-DROP INDEX "agent_turn_one_successful_child_per_parent";
--- reverse: create index "agent_turn_one_running_per_session" to table: "agent_turns"
-DROP INDEX "agent_turn_one_running_per_session";
+-- reverse: create index "agent_turn_input_message_unique" to table: "agent_turns"
+DROP INDEX "agent_turn_input_message_unique";
+-- reverse: create index "agent_turn_one_active_per_session" to table: "agent_turns"
+DROP INDEX "agent_turn_one_active_per_session";
+-- reverse: create index "agentturn_agent_session_id_sequence" to table: "agent_turns"
+DROP INDEX "agentturn_agent_session_id_sequence";
 -- reverse: create index "agentturn_tenant_id" to table: "agent_turns"
 DROP INDEX "agentturn_tenant_id";
 -- reverse: create "agent_turns" table
@@ -598,3 +602,23 @@ DROP INDEX "agentsession_tenant_id_owner_user_id_created_at";
 DROP INDEX "agentsession_tenant_id";
 -- reverse: create "agent_sessions" table
 DROP TABLE "agent_sessions";
+-- reverse: create index "agentmessage_tenant_id_agent_turn_id_sequence" to table: "agent_messages"
+DROP INDEX "agentmessage_tenant_id_agent_turn_id_sequence";
+-- reverse: create index "agentmessage_tenant_id_agent_session_id_created_at" to table: "agent_messages"
+DROP INDEX "agentmessage_tenant_id_agent_session_id_created_at";
+-- reverse: create index "agentmessage_agent_session_id_sequence" to table: "agent_messages"
+DROP INDEX "agentmessage_agent_session_id_sequence";
+-- reverse: create index "agentmessage_tenant_id" to table: "agent_messages"
+DROP INDEX "agentmessage_tenant_id";
+-- reverse: create "agent_messages" table
+DROP TABLE "agent_messages";
+-- reverse: create index "agentartifact_tenant_id_last_agent_turn_id" to table: "agent_artifacts"
+DROP INDEX "agentartifact_tenant_id_last_agent_turn_id";
+-- reverse: create index "agentartifact_tenant_id_agent_session_id_created_at" to table: "agent_artifacts"
+DROP INDEX "agentartifact_tenant_id_agent_session_id_created_at";
+-- reverse: create index "agentartifact_agent_session_id_name" to table: "agent_artifacts"
+DROP INDEX "agentartifact_agent_session_id_name";
+-- reverse: create index "agentartifact_tenant_id" to table: "agent_artifacts"
+DROP INDEX "agentartifact_tenant_id";
+-- reverse: create "agent_artifacts" table
+DROP TABLE "agent_artifacts";
