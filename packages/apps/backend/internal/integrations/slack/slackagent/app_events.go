@@ -143,21 +143,15 @@ func (a *App) onMessageEvent(ctx context.Context, cw *slackintegration.ClientWra
 		return fmt.Errorf("lookup slack thread binding: %w", bindingErr)
 	}
 
-	shouldRespond, respErr := a.shouldRespondToMessage(ctx, binding, data)
-	if respErr != nil {
-		return fmt.Errorf("failed to check if message requires response: %w", respErr)
+	args := CheckAgentThreadResponseRequiredArgs{
+		BindingId: binding.ID,
+		ReplyTs:   data.TimeStamp,
 	}
-	if shouldRespond {
-		// TODO
+	if _, jobErr := a.jobs.Insert(ctx, args, nil); jobErr != nil {
+		slog.Error("failed to insert check agent thread job", "error", jobErr)
 	}
 
 	return nil
-}
-
-func (a *App) shouldRespondToMessage(ctx context.Context, binding *ent.AgentSessionBinding, data *slackevents.MessageEvent) (bool, error) {
-	slog.Debug("TODO: check if message is directed at agent", "binding", binding)
-
-	return false, nil
 }
 
 func (a *App) onAssistantThreadStartedEvent(ctx context.Context, data *slackevents.AssistantThreadStartedEvent) error {

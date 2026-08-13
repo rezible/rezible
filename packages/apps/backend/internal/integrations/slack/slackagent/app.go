@@ -43,11 +43,19 @@ func MakeApp(cfg rez.Config, jobSvc rez.JobService, msgs rez.MessageService, int
 		agents:   agents,
 		events:   events,
 	}
+
 	jobs.RegisterWorkerFunc(h.handleSendMessageJob)
+	jobs.RegisterWorkerFunc(h.handleCheckThreadResponseRequired)
+
 	if msgsErr := h.registerMessageHandlers(); msgsErr != nil {
 		return nil, fmt.Errorf("message handlers: %w", msgsErr)
 	}
 	return h, nil
+}
+
+func (a *App) registerMessageHandlers() error {
+	return a.messages.AddHandlers(
+		messages.NewEventHandler("slackagent.OnAiAgentTurnFinished", a.onAiAgentTurnFinished))
 }
 
 func (a *App) IntegrationName() string {
@@ -109,11 +117,6 @@ func (a *App) GetIntegrationClientWrapper(ctx context.Context, preds ...predicat
 	return slackintegration.NewClientWrapper(intg)
 }
 
-func (a *App) registerMessageHandlers() error {
-	return a.messages.AddHandlers(
-		messages.NewEventHandler("slackagent.OnAiAgentTurnFinished", a.onAiAgentTurnFinished))
-}
-
 func (a *App) lookupAiAgentSessionBinding(ctx context.Context, sessionId uuid.UUID) (*ent.AgentSessionBinding, error) {
 	preds := []predicate.AgentSessionBinding{
 		asb.AgentSessionID(sessionId),
@@ -145,9 +148,9 @@ func (a *App) onAiAgentTurnFinished(ctx context.Context, ev *rezai.EventOnAgentT
 		return nil
 	}
 
-	channelID, threadTs, refErr := parseSlackThreadResourceRef(binding.ResourceRef)
-	if refErr != nil {
-		return refErr
+	channelID, threadTs, ok := strings.Cut(binding.ResourceRef, ":")
+	if !ok || channelID == "" || threadTs == "" {
+		return fmt.Errorf("invalid slack thread resource ref %q", binding.ResourceRef)
 	}
 
 	args := SendMessageJobArgs{
@@ -163,12 +166,43 @@ func (a *App) onAiAgentTurnFinished(ctx context.Context, ev *rezai.EventOnAgentT
 	return nil
 }
 
-func parseSlackThreadResourceRef(resourceRef string) (string, string, error) {
-	channelID, threadTs, ok := strings.Cut(resourceRef, ":")
-	if !ok || channelID == "" || threadTs == "" {
-		return "", "", fmt.Errorf("invalid slack thread resource ref %q", resourceRef)
+type CheckAgentThreadResponseRequiredArgs struct {
+	BindingId uuid.UUID `json:"binding_id" river:"unique"`
+	ReplyTs   string    `json:"reply_ts" river:"unique"`
+}
+
+func (a CheckAgentThreadResponseRequiredArgs) Kind() string {
+	return "slack-check-agent-thread-response-required"
+}
+
+func (CheckAgentThreadResponseRequiredArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{
+		MaxAttempts: 2,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: jobs.UniqueStateNonCompleted,
+		},
 	}
-	return channelID, threadTs, nil
+}
+
+func (a *App) handleCheckThreadResponseRequired(ctx context.Context, args CheckAgentThreadResponseRequiredArgs) error {
+	binding, bindingErr := a.agents.LookupAgentSessionBinding(ctx, asb.ID(args.BindingId))
+	if bindingErr != nil {
+		return fmt.Errorf("lookup slack agent session binding: %w", bindingErr)
+	}
+	if binding.IntegrationID == nil {
+		return nil
+	}
+
+	_, wrapperErr := a.GetIntegrationClientWrapper(ctx, in.ID(*binding.IntegrationID))
+	if wrapperErr != nil {
+		slog.Warn("failed to get slack integration client wrapper", "err", wrapperErr)
+		return fmt.Errorf("get integration client wrapper: %w", wrapperErr)
+	}
+
+	slog.Debug("TODO: check if message is directed at agent", "binding", binding)
+
+	return nil
 }
 
 type SendMessageJobArgs struct {
