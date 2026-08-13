@@ -477,6 +477,35 @@ func HasArtifactsWith(preds ...predicate.AgentArtifact) predicate.AgentSession {
 	})
 }
 
+// HasBindings applies the HasEdge predicate on the "bindings" edge.
+func HasBindings() predicate.AgentSession {
+	return predicate.AgentSession(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, BindingsTable, BindingsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentSessionBinding
+		step.Edge.Schema = schemaConfig.AgentSessionBinding
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBindingsWith applies the HasEdge predicate on the "bindings" edge with a given conditions (other predicates).
+func HasBindingsWith(preds ...predicate.AgentSessionBinding) predicate.AgentSession {
+	return predicate.AgentSession(func(s *sql.Selector) {
+		step := newBindingsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentSessionBinding
+		step.Edge.Schema = schemaConfig.AgentSessionBinding
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.AgentSession) predicate.AgentSession {
 	return predicate.AgentSession(sql.AndPredicates(predicates...))

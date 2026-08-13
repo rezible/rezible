@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
+	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/alert"
@@ -102,6 +103,8 @@ type Client struct {
 	AgentMessage *AgentMessageClient
 	// AgentSession is the client for interacting with the AgentSession builders.
 	AgentSession *AgentSessionClient
+	// AgentSessionBinding is the client for interacting with the AgentSessionBinding builders.
+	AgentSessionBinding *AgentSessionBindingClient
 	// AgentTurn is the client for interacting with the AgentTurn builders.
 	AgentTurn *AgentTurnClient
 	// AgentTurnKnowledgeCitation is the client for interacting with the AgentTurnKnowledgeCitation builders.
@@ -254,6 +257,7 @@ func (c *Client) init() {
 	c.AgentArtifact = NewAgentArtifactClient(c.config)
 	c.AgentMessage = NewAgentMessageClient(c.config)
 	c.AgentSession = NewAgentSessionClient(c.config)
+	c.AgentSessionBinding = NewAgentSessionBindingClient(c.config)
 	c.AgentTurn = NewAgentTurnClient(c.config)
 	c.AgentTurnKnowledgeCitation = NewAgentTurnKnowledgeCitationClient(c.config)
 	c.Alert = NewAlertClient(c.config)
@@ -421,6 +425,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AgentArtifact:                           NewAgentArtifactClient(cfg),
 		AgentMessage:                            NewAgentMessageClient(cfg),
 		AgentSession:                            NewAgentSessionClient(cfg),
+		AgentSessionBinding:                     NewAgentSessionBindingClient(cfg),
 		AgentTurn:                               NewAgentTurnClient(cfg),
 		AgentTurnKnowledgeCitation:              NewAgentTurnKnowledgeCitationClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
@@ -512,6 +517,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AgentArtifact:                           NewAgentArtifactClient(cfg),
 		AgentMessage:                            NewAgentMessageClient(cfg),
 		AgentSession:                            NewAgentSessionClient(cfg),
+		AgentSessionBinding:                     NewAgentSessionBindingClient(cfg),
 		AgentTurn:                               NewAgentTurnClient(cfg),
 		AgentTurnKnowledgeCitation:              NewAgentTurnKnowledgeCitationClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
@@ -610,10 +616,10 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentTurn,
-		c.AgentTurnKnowledgeCitation, c.Alert, c.AlertFeedback, c.AlertInstance,
-		c.AlertInvestigation, c.Document, c.DocumentAccess, c.EventAnnotation,
-		c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
+		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentSessionBinding,
+		c.AgentTurn, c.AgentTurnKnowledgeCitation, c.Alert, c.AlertFeedback,
+		c.AlertInstance, c.AlertInvestigation, c.Document, c.DocumentAccess,
+		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
 		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
 		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
 		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
@@ -641,13 +647,14 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentTurn,
-		c.AgentTurnKnowledgeCitation, c.Alert, c.AlertFeedback, c.AlertInstance,
-		c.AlertInvestigation, c.AlertMetrics, c.Document, c.DocumentAccess,
-		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
-		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
-		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentSessionBinding,
+		c.AgentTurn, c.AgentTurnKnowledgeCitation, c.Alert, c.AlertFeedback,
+		c.AlertInstance, c.AlertInvestigation, c.AlertMetrics, c.Document,
+		c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
 		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
 		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
 		c.IncidentTimelineEventSystemContext, c.IncidentType, c.Integration,
@@ -677,6 +684,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AgentMessage.mutate(ctx, m)
 	case *AgentSessionMutation:
 		return c.AgentSession.mutate(ctx, m)
+	case *AgentSessionBindingMutation:
+		return c.AgentSessionBinding.mutate(ctx, m)
 	case *AgentTurnMutation:
 		return c.AgentTurn.mutate(ctx, m)
 	case *AgentTurnKnowledgeCitationMutation:
@@ -1403,6 +1412,25 @@ func (c *AgentSessionClient) QueryArtifacts(_m *AgentSession) *AgentArtifactQuer
 	return query
 }
 
+// QueryBindings queries the bindings edge of a AgentSession.
+func (c *AgentSessionClient) QueryBindings(_m *AgentSession) *AgentSessionBindingQuery {
+	query := (&AgentSessionBindingClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentsession.Table, agentsession.FieldID, id),
+			sqlgraph.To(agentsessionbinding.Table, agentsessionbinding.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, agentsession.BindingsTable, agentsession.BindingsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentSessionBinding
+		step.Edge.Schema = schemaConfig.AgentSessionBinding
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *AgentSessionClient) Hooks() []Hook {
 	hooks := c.hooks.AgentSession
@@ -1426,6 +1454,197 @@ func (c *AgentSessionClient) mutate(ctx context.Context, m *AgentSessionMutation
 		return (&AgentSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AgentSession mutation op: %q", m.Op())
+	}
+}
+
+// AgentSessionBindingClient is a client for the AgentSessionBinding schema.
+type AgentSessionBindingClient struct {
+	config
+}
+
+// NewAgentSessionBindingClient returns a client for the AgentSessionBinding from the given config.
+func NewAgentSessionBindingClient(c config) *AgentSessionBindingClient {
+	return &AgentSessionBindingClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `agentsessionbinding.Hooks(f(g(h())))`.
+func (c *AgentSessionBindingClient) Use(hooks ...Hook) {
+	c.hooks.AgentSessionBinding = append(c.hooks.AgentSessionBinding, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `agentsessionbinding.Intercept(f(g(h())))`.
+func (c *AgentSessionBindingClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AgentSessionBinding = append(c.inters.AgentSessionBinding, interceptors...)
+}
+
+// Create returns a builder for creating a AgentSessionBinding entity.
+func (c *AgentSessionBindingClient) Create() *AgentSessionBindingCreate {
+	mutation := newAgentSessionBindingMutation(c.config, OpCreate)
+	return &AgentSessionBindingCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AgentSessionBinding entities.
+func (c *AgentSessionBindingClient) CreateBulk(builders ...*AgentSessionBindingCreate) *AgentSessionBindingCreateBulk {
+	return &AgentSessionBindingCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AgentSessionBindingClient) MapCreateBulk(slice any, setFunc func(*AgentSessionBindingCreate, int)) *AgentSessionBindingCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AgentSessionBindingCreateBulk{err: fmt.Errorf("calling to AgentSessionBindingClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AgentSessionBindingCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AgentSessionBindingCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AgentSessionBinding.
+func (c *AgentSessionBindingClient) Update() *AgentSessionBindingUpdate {
+	mutation := newAgentSessionBindingMutation(c.config, OpUpdate)
+	return &AgentSessionBindingUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AgentSessionBindingClient) UpdateOne(_m *AgentSessionBinding) *AgentSessionBindingUpdateOne {
+	mutation := newAgentSessionBindingMutation(c.config, OpUpdateOne, withAgentSessionBinding(_m))
+	return &AgentSessionBindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AgentSessionBindingClient) UpdateOneID(id uuid.UUID) *AgentSessionBindingUpdateOne {
+	mutation := newAgentSessionBindingMutation(c.config, OpUpdateOne, withAgentSessionBindingID(id))
+	return &AgentSessionBindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AgentSessionBinding.
+func (c *AgentSessionBindingClient) Delete() *AgentSessionBindingDelete {
+	mutation := newAgentSessionBindingMutation(c.config, OpDelete)
+	return &AgentSessionBindingDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AgentSessionBindingClient) DeleteOne(_m *AgentSessionBinding) *AgentSessionBindingDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AgentSessionBindingClient) DeleteOneID(id uuid.UUID) *AgentSessionBindingDeleteOne {
+	builder := c.Delete().Where(agentsessionbinding.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AgentSessionBindingDeleteOne{builder}
+}
+
+// Query returns a query builder for AgentSessionBinding.
+func (c *AgentSessionBindingClient) Query() *AgentSessionBindingQuery {
+	return &AgentSessionBindingQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAgentSessionBinding},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AgentSessionBinding entity by its id.
+func (c *AgentSessionBindingClient) Get(ctx context.Context, id uuid.UUID) (*AgentSessionBinding, error) {
+	return c.Query().Where(agentsessionbinding.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AgentSessionBindingClient) GetX(ctx context.Context, id uuid.UUID) *AgentSessionBinding {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a AgentSessionBinding.
+func (c *AgentSessionBindingClient) QueryTenant(_m *AgentSessionBinding) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentsessionbinding.Table, agentsessionbinding.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentsessionbinding.TenantTable, agentsessionbinding.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.AgentSessionBinding
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentSession queries the agent_session edge of a AgentSessionBinding.
+func (c *AgentSessionBindingClient) QueryAgentSession(_m *AgentSessionBinding) *AgentSessionQuery {
+	query := (&AgentSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentsessionbinding.Table, agentsessionbinding.FieldID, id),
+			sqlgraph.To(agentsession.Table, agentsession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, agentsessionbinding.AgentSessionTable, agentsessionbinding.AgentSessionColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentSession
+		step.Edge.Schema = schemaConfig.AgentSessionBinding
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIntegration queries the integration edge of a AgentSessionBinding.
+func (c *AgentSessionBindingClient) QueryIntegration(_m *AgentSessionBinding) *IntegrationQuery {
+	query := (&IntegrationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentsessionbinding.Table, agentsessionbinding.FieldID, id),
+			sqlgraph.To(integration.Table, integration.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentsessionbinding.IntegrationTable, agentsessionbinding.IntegrationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Integration
+		step.Edge.Schema = schemaConfig.AgentSessionBinding
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AgentSessionBindingClient) Hooks() []Hook {
+	hooks := c.hooks.AgentSessionBinding
+	return append(hooks[:len(hooks):len(hooks)], agentsessionbinding.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *AgentSessionBindingClient) Interceptors() []Interceptor {
+	return c.inters.AgentSessionBinding
+}
+
+func (c *AgentSessionBindingClient) mutate(ctx context.Context, m *AgentSessionBindingMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AgentSessionBindingCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AgentSessionBindingUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AgentSessionBindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AgentSessionBindingDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AgentSessionBinding mutation op: %q", m.Op())
 	}
 }
 
@@ -15486,7 +15705,7 @@ func (c *VideoConferenceClient) mutate(ctx context.Context, m *VideoConferenceMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AgentArtifact, AgentMessage, AgentSession, AgentTurn,
+		AgentArtifact, AgentMessage, AgentSession, AgentSessionBinding, AgentTurn,
 		AgentTurnKnowledgeCitation, Alert, AlertFeedback, AlertInstance,
 		AlertInvestigation, Document, DocumentAccess, EventAnnotation, Incident,
 		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
@@ -15508,7 +15727,7 @@ type (
 		VideoConference []ent.Hook
 	}
 	inters struct {
-		AgentArtifact, AgentMessage, AgentSession, AgentTurn,
+		AgentArtifact, AgentMessage, AgentSession, AgentSessionBinding, AgentTurn,
 		AgentTurnKnowledgeCitation, Alert, AlertFeedback, AlertInstance,
 		AlertInvestigation, AlertMetrics, Document, DocumentAccess, EventAnnotation,
 		Incident, IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
@@ -15537,6 +15756,7 @@ var (
 		AgentArtifact:                         tableSchemas[0],
 		AgentMessage:                          tableSchemas[0],
 		AgentSession:                          tableSchemas[0],
+		AgentSessionBinding:                   tableSchemas[0],
 		AgentTurn:                             tableSchemas[0],
 		AgentTurnKnowledgeCitation:            tableSchemas[0],
 		Alert:                                 tableSchemas[0],

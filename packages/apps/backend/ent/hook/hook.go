@@ -45,6 +45,18 @@ func (f AgentSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentSessionMutation", m)
 }
 
+// The AgentSessionBindingFunc type is an adapter to allow the use of ordinary
+// function as AgentSessionBinding mutator.
+type AgentSessionBindingFunc func(context.Context, *ent.AgentSessionBindingMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentSessionBindingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentSessionBindingMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentSessionBindingMutation", m)
+}
+
 // The AgentTurnFunc type is an adapter to allow the use of ordinary
 // function as AgentTurn mutator.
 type AgentTurnFunc func(context.Context, *ent.AgentTurnMutation) (ent.Value, error)

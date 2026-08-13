@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -46,6 +47,7 @@ func (AgentSession) Edges() []ent.Edge {
 		edge.To("turns", AgentTurn.Type),
 		edge.To("messages", AgentMessage.Type),
 		edge.To("artifacts", AgentArtifact.Type),
+		edge.To("bindings", AgentSessionBinding.Type),
 	}
 }
 
@@ -53,6 +55,75 @@ func (AgentSession) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "owner_user_id", "created_at"),
 		index.Fields("tenant_id", "agent_name", "created_at"),
+	}
+}
+
+type AgentSessionBinding struct {
+	ent.Schema
+}
+
+func (AgentSessionBinding) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+		TimestampsMixin{},
+	}
+}
+
+func (AgentSessionBinding) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Checks(map[string]string{
+			"agent_session_binding_source_integration_consistency": "(source = 'rezible' AND integration_id IS NULL) OR (source <> 'rezible' AND integration_id IS NOT NULL)",
+		}),
+	}
+}
+
+func (AgentSessionBinding) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("agent_session_id", uuid.UUID{}).Immutable(),
+		field.UUID("integration_id", uuid.UUID{}).
+			Optional().
+			Nillable().
+			Immutable(),
+		field.String("source").NotEmpty().Immutable(),
+		field.String("resource_kind").NotEmpty().Immutable(),
+		field.String("resource_ref").NotEmpty().Immutable(),
+		field.Time("closed_at").
+			Optional().
+			Nillable(),
+		field.JSON("metadata", map[string]any{}).
+			SchemaType(schemaTypeJsonB).
+			Optional(),
+	}
+}
+
+func (AgentSessionBinding) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("agent_session", AgentSession.Type).
+			Ref("bindings").
+			Required().
+			Unique().
+			Immutable().
+			Field("agent_session_id"),
+		edge.To("integration", Integration.Type).
+			Unique().
+			Immutable().
+			Field("integration_id"),
+	}
+}
+
+func (AgentSessionBinding) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "agent_session_id"),
+		index.Fields("tenant_id", "integration_id", "source", "resource_kind", "resource_ref").
+			Unique().
+			StorageKey("agent_session_binding_one_per_integration_resource").
+			Annotations(entsql.IndexWhere("integration_id IS NOT NULL")),
+		index.Fields("tenant_id", "source", "resource_kind", "resource_ref").
+			Unique().
+			StorageKey("agent_session_binding_one_per_source_resource").
+			Annotations(entsql.IndexWhere("integration_id IS NULL")),
 	}
 }
 

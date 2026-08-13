@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
+	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
@@ -168,6 +169,21 @@ func (_c *AgentSessionCreate) AddArtifacts(v ...*AgentArtifact) *AgentSessionCre
 		ids[i] = v[i].ID
 	}
 	return _c.AddArtifactIDs(ids...)
+}
+
+// AddBindingIDs adds the "bindings" edge to the AgentSessionBinding entity by IDs.
+func (_c *AgentSessionCreate) AddBindingIDs(ids ...uuid.UUID) *AgentSessionCreate {
+	_c.mutation.AddBindingIDs(ids...)
+	return _c
+}
+
+// AddBindings adds the "bindings" edges to the AgentSessionBinding entity.
+func (_c *AgentSessionCreate) AddBindings(v ...*AgentSessionBinding) *AgentSessionCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddBindingIDs(ids...)
 }
 
 // Mutation returns the AgentSessionMutation object of the builder.
@@ -406,6 +422,23 @@ func (_c *AgentSessionCreate) createSpec() (*AgentSession, *sqlgraph.CreateSpec)
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.BindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.BindingsTable,
+			Columns: []string{agentsession.BindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsessionbinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentSessionBinding
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

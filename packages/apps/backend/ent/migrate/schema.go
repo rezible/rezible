@@ -180,6 +180,74 @@ var (
 			},
 		},
 	}
+	// AgentSessionBindingsColumns holds the columns for the "agent_session_bindings" table.
+	AgentSessionBindingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "source", Type: field.TypeString},
+		{Name: "resource_kind", Type: field.TypeString},
+		{Name: "resource_ref", Type: field.TypeString},
+		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "agent_session_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "integration_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// AgentSessionBindingsTable holds the schema information for the "agent_session_bindings" table.
+	AgentSessionBindingsTable = &schema.Table{
+		Name:       "agent_session_bindings",
+		Columns:    AgentSessionBindingsColumns,
+		PrimaryKey: []*schema.Column{AgentSessionBindingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "agent_session_bindings_agent_sessions_bindings",
+				Columns:    []*schema.Column{AgentSessionBindingsColumns[8]},
+				RefColumns: []*schema.Column{AgentSessionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_session_bindings_tenants_tenant",
+				Columns:    []*schema.Column{AgentSessionBindingsColumns[9]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_session_bindings_integrations_integration",
+				Columns:    []*schema.Column{AgentSessionBindingsColumns[10]},
+				RefColumns: []*schema.Column{IntegrationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "agentsessionbinding_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentSessionBindingsColumns[9]},
+			},
+			{
+				Name:    "agentsessionbinding_tenant_id_agent_session_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentSessionBindingsColumns[9], AgentSessionBindingsColumns[8]},
+			},
+			{
+				Name:    "agent_session_binding_one_per_integration_resource",
+				Unique:  true,
+				Columns: []*schema.Column{AgentSessionBindingsColumns[9], AgentSessionBindingsColumns[10], AgentSessionBindingsColumns[3], AgentSessionBindingsColumns[4], AgentSessionBindingsColumns[5]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "integration_id IS NOT NULL",
+				},
+			},
+			{
+				Name:    "agent_session_binding_one_per_source_resource",
+				Unique:  true,
+				Columns: []*schema.Column{AgentSessionBindingsColumns[9], AgentSessionBindingsColumns[3], AgentSessionBindingsColumns[4], AgentSessionBindingsColumns[5]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "integration_id IS NULL",
+				},
+			},
+		},
+	}
 	// AgentTurnsColumns holds the columns for the "agent_turns" table.
 	AgentTurnsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -3460,6 +3528,7 @@ var (
 		AgentArtifactsTable,
 		AgentMessagesTable,
 		AgentSessionsTable,
+		AgentSessionBindingsTable,
 		AgentTurnsTable,
 		AgentTurnKnowledgeCitationsTable,
 		AlertsTable,
@@ -3554,6 +3623,13 @@ func init() {
 	AgentMessagesTable.ForeignKeys[2].RefTable = AgentTurnsTable
 	AgentSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentSessionsTable.ForeignKeys[1].RefTable = UsersTable
+	AgentSessionBindingsTable.ForeignKeys[0].RefTable = AgentSessionsTable
+	AgentSessionBindingsTable.ForeignKeys[1].RefTable = TenantsTable
+	AgentSessionBindingsTable.ForeignKeys[2].RefTable = IntegrationsTable
+	AgentSessionBindingsTable.Annotation = &entsql.Annotation{}
+	AgentSessionBindingsTable.Annotation.Checks = map[string]string{
+		"agent_session_binding_source_integration_consistency": "(source = 'rezible' AND integration_id IS NULL) OR (source <> 'rezible' AND integration_id IS NOT NULL)",
+	}
 	AgentTurnsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	AgentTurnsTable.ForeignKeys[1].RefTable = TenantsTable
 	AgentTurnsTable.ForeignKeys[2].RefTable = AgentMessagesTable

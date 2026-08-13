@@ -42,6 +42,8 @@ const (
 	EdgeMessages = "messages"
 	// EdgeArtifacts holds the string denoting the artifacts edge name in mutations.
 	EdgeArtifacts = "artifacts"
+	// EdgeBindings holds the string denoting the bindings edge name in mutations.
+	EdgeBindings = "bindings"
 	// Table holds the table name of the agentsession in the database.
 	Table = "agent_sessions"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -79,6 +81,13 @@ const (
 	ArtifactsInverseTable = "agent_artifacts"
 	// ArtifactsColumn is the table column denoting the artifacts relation/edge.
 	ArtifactsColumn = "agent_session_id"
+	// BindingsTable is the table that holds the bindings relation/edge.
+	BindingsTable = "agent_session_bindings"
+	// BindingsInverseTable is the table name for the AgentSessionBinding entity.
+	// It exists in this package in order to avoid circular dependency with the "agentsessionbinding" package.
+	BindingsInverseTable = "agent_session_bindings"
+	// BindingsColumn is the table column denoting the bindings relation/edge.
+	BindingsColumn = "agent_session_id"
 )
 
 // Columns holds all SQL columns for agentsession fields.
@@ -214,6 +223,20 @@ func ByArtifacts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newArtifactsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByBindingsCount orders the results by bindings count.
+func ByBindingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newBindingsStep(), opts...)
+	}
+}
+
+// ByBindings orders the results by bindings terms.
+func ByBindings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newBindingsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -247,5 +270,12 @@ func newArtifactsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ArtifactsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ArtifactsTable, ArtifactsColumn),
+	)
+}
+func newBindingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(BindingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, BindingsTable, BindingsColumn),
 	)
 }

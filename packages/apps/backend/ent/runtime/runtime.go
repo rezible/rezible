@@ -10,6 +10,7 @@ import (
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
+	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/alert"
@@ -201,6 +202,46 @@ func init() {
 	agentsessionDescID := agentsessionFields[0].Descriptor()
 	// agentsession.DefaultID holds the default value on creation for the id field.
 	agentsession.DefaultID = agentsessionDescID.Default.(func() uuid.UUID)
+	agentsessionbindingMixin := schema.AgentSessionBinding{}.Mixin()
+	agentsessionbinding.Policy = privacy.NewPolicies(agentsessionbindingMixin[0], agentsessionbindingMixin[1], schema.AgentSessionBinding{})
+	agentsessionbinding.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := agentsessionbinding.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	agentsessionbindingMixinFields2 := agentsessionbindingMixin[2].Fields()
+	_ = agentsessionbindingMixinFields2
+	agentsessionbindingFields := schema.AgentSessionBinding{}.Fields()
+	_ = agentsessionbindingFields
+	// agentsessionbindingDescCreatedAt is the schema descriptor for created_at field.
+	agentsessionbindingDescCreatedAt := agentsessionbindingMixinFields2[0].Descriptor()
+	// agentsessionbinding.DefaultCreatedAt holds the default value on creation for the created_at field.
+	agentsessionbinding.DefaultCreatedAt = agentsessionbindingDescCreatedAt.Default.(func() time.Time)
+	// agentsessionbindingDescUpdatedAt is the schema descriptor for updated_at field.
+	agentsessionbindingDescUpdatedAt := agentsessionbindingMixinFields2[1].Descriptor()
+	// agentsessionbinding.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	agentsessionbinding.DefaultUpdatedAt = agentsessionbindingDescUpdatedAt.Default.(func() time.Time)
+	// agentsessionbinding.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	agentsessionbinding.UpdateDefaultUpdatedAt = agentsessionbindingDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// agentsessionbindingDescSource is the schema descriptor for source field.
+	agentsessionbindingDescSource := agentsessionbindingFields[3].Descriptor()
+	// agentsessionbinding.SourceValidator is a validator for the "source" field. It is called by the builders before save.
+	agentsessionbinding.SourceValidator = agentsessionbindingDescSource.Validators[0].(func(string) error)
+	// agentsessionbindingDescResourceKind is the schema descriptor for resource_kind field.
+	agentsessionbindingDescResourceKind := agentsessionbindingFields[4].Descriptor()
+	// agentsessionbinding.ResourceKindValidator is a validator for the "resource_kind" field. It is called by the builders before save.
+	agentsessionbinding.ResourceKindValidator = agentsessionbindingDescResourceKind.Validators[0].(func(string) error)
+	// agentsessionbindingDescResourceRef is the schema descriptor for resource_ref field.
+	agentsessionbindingDescResourceRef := agentsessionbindingFields[5].Descriptor()
+	// agentsessionbinding.ResourceRefValidator is a validator for the "resource_ref" field. It is called by the builders before save.
+	agentsessionbinding.ResourceRefValidator = agentsessionbindingDescResourceRef.Validators[0].(func(string) error)
+	// agentsessionbindingDescID is the schema descriptor for id field.
+	agentsessionbindingDescID := agentsessionbindingFields[0].Descriptor()
+	// agentsessionbinding.DefaultID holds the default value on creation for the id field.
+	agentsessionbinding.DefaultID = agentsessionbindingDescID.Default.(func() uuid.UUID)
 	agentturnMixin := schema.AgentTurn{}.Mixin()
 	agentturn.Policy = privacy.NewPolicies(agentturnMixin[0], agentturnMixin[1], schema.AgentTurn{})
 	agentturn.Hooks[0] = func(next ent.Mutator) ent.Mutator {

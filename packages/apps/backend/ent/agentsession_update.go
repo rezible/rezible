@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
+	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
@@ -170,6 +171,21 @@ func (_u *AgentSessionUpdate) AddArtifacts(v ...*AgentArtifact) *AgentSessionUpd
 	return _u.AddArtifactIDs(ids...)
 }
 
+// AddBindingIDs adds the "bindings" edge to the AgentSessionBinding entity by IDs.
+func (_u *AgentSessionUpdate) AddBindingIDs(ids ...uuid.UUID) *AgentSessionUpdate {
+	_u.mutation.AddBindingIDs(ids...)
+	return _u
+}
+
+// AddBindings adds the "bindings" edges to the AgentSessionBinding entity.
+func (_u *AgentSessionUpdate) AddBindings(v ...*AgentSessionBinding) *AgentSessionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddBindingIDs(ids...)
+}
+
 // Mutation returns the AgentSessionMutation object of the builder.
 func (_u *AgentSessionUpdate) Mutation() *AgentSessionMutation {
 	return _u.mutation
@@ -242,6 +258,27 @@ func (_u *AgentSessionUpdate) RemoveArtifacts(v ...*AgentArtifact) *AgentSession
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveArtifactIDs(ids...)
+}
+
+// ClearBindings clears all "bindings" edges to the AgentSessionBinding entity.
+func (_u *AgentSessionUpdate) ClearBindings() *AgentSessionUpdate {
+	_u.mutation.ClearBindings()
+	return _u
+}
+
+// RemoveBindingIDs removes the "bindings" edge to AgentSessionBinding entities by IDs.
+func (_u *AgentSessionUpdate) RemoveBindingIDs(ids ...uuid.UUID) *AgentSessionUpdate {
+	_u.mutation.RemoveBindingIDs(ids...)
+	return _u
+}
+
+// RemoveBindings removes "bindings" edges to AgentSessionBinding entities.
+func (_u *AgentSessionUpdate) RemoveBindings(v ...*AgentSessionBinding) *AgentSessionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveBindingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -518,6 +555,54 @@ func (_u *AgentSessionUpdate) sqlSave(ctx context.Context) (_node int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.BindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.BindingsTable,
+			Columns: []string{agentsession.BindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsessionbinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSessionBinding
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedBindingsIDs(); len(nodes) > 0 && !_u.mutation.BindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.BindingsTable,
+			Columns: []string{agentsession.BindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsessionbinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSessionBinding
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.BindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.BindingsTable,
+			Columns: []string{agentsession.BindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsessionbinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSessionBinding
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.AgentSession
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -676,6 +761,21 @@ func (_u *AgentSessionUpdateOne) AddArtifacts(v ...*AgentArtifact) *AgentSession
 	return _u.AddArtifactIDs(ids...)
 }
 
+// AddBindingIDs adds the "bindings" edge to the AgentSessionBinding entity by IDs.
+func (_u *AgentSessionUpdateOne) AddBindingIDs(ids ...uuid.UUID) *AgentSessionUpdateOne {
+	_u.mutation.AddBindingIDs(ids...)
+	return _u
+}
+
+// AddBindings adds the "bindings" edges to the AgentSessionBinding entity.
+func (_u *AgentSessionUpdateOne) AddBindings(v ...*AgentSessionBinding) *AgentSessionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddBindingIDs(ids...)
+}
+
 // Mutation returns the AgentSessionMutation object of the builder.
 func (_u *AgentSessionUpdateOne) Mutation() *AgentSessionMutation {
 	return _u.mutation
@@ -748,6 +848,27 @@ func (_u *AgentSessionUpdateOne) RemoveArtifacts(v ...*AgentArtifact) *AgentSess
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveArtifactIDs(ids...)
+}
+
+// ClearBindings clears all "bindings" edges to the AgentSessionBinding entity.
+func (_u *AgentSessionUpdateOne) ClearBindings() *AgentSessionUpdateOne {
+	_u.mutation.ClearBindings()
+	return _u
+}
+
+// RemoveBindingIDs removes the "bindings" edge to AgentSessionBinding entities by IDs.
+func (_u *AgentSessionUpdateOne) RemoveBindingIDs(ids ...uuid.UUID) *AgentSessionUpdateOne {
+	_u.mutation.RemoveBindingIDs(ids...)
+	return _u
+}
+
+// RemoveBindings removes "bindings" edges to AgentSessionBinding entities.
+func (_u *AgentSessionUpdateOne) RemoveBindings(v ...*AgentSessionBinding) *AgentSessionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveBindingIDs(ids...)
 }
 
 // Where appends a list predicates to the AgentSessionUpdate builder.
@@ -1049,6 +1170,54 @@ func (_u *AgentSessionUpdateOne) sqlSave(ctx context.Context) (_node *AgentSessi
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.BindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.BindingsTable,
+			Columns: []string{agentsession.BindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsessionbinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSessionBinding
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedBindingsIDs(); len(nodes) > 0 && !_u.mutation.BindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.BindingsTable,
+			Columns: []string{agentsession.BindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsessionbinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSessionBinding
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.BindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentsession.BindingsTable,
+			Columns: []string{agentsession.BindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsessionbinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSessionBinding
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

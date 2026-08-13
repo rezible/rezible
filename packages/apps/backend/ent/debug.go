@@ -28,6 +28,14 @@ func (c *AgentSessionClient) Debug() *AgentSessionClient {
 	return &AgentSessionClient{config: cfg}
 }
 
+func (c *AgentSessionBindingClient) Debug() *AgentSessionBindingClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentSessionBindingClient{config: cfg}
+}
+
 func (c *AgentTurnClient) Debug() *AgentTurnClient {
 	if c.debug {
 		return c

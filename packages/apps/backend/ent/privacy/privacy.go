@@ -183,6 +183,30 @@ func (f AgentSessionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mu
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentSessionMutation", m)
 }
 
+// The AgentSessionBindingQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AgentSessionBindingQueryRuleFunc func(context.Context, *ent.AgentSessionBindingQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AgentSessionBindingQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentSessionBindingQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentSessionBindingQuery", q)
+}
+
+// The AgentSessionBindingMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AgentSessionBindingMutationRuleFunc func(context.Context, *ent.AgentSessionBindingMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AgentSessionBindingMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AgentSessionBindingMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentSessionBindingMutation", m)
+}
+
 // The AgentTurnQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AgentTurnQueryRuleFunc func(context.Context, *ent.AgentTurnQuery) error
@@ -1868,6 +1892,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AgentSessionQuery:
 		return q.Filter(), nil
+	case *ent.AgentSessionBindingQuery:
+		return q.Filter(), nil
 	case *ent.AgentTurnQuery:
 		return q.Filter(), nil
 	case *ent.AgentTurnKnowledgeCitationQuery:
@@ -2018,6 +2044,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.AgentMessageMutation:
 		return m.Filter(), nil
 	case *ent.AgentSessionMutation:
+		return m.Filter(), nil
+	case *ent.AgentSessionBindingMutation:
 		return m.Filter(), nil
 	case *ent.AgentTurnMutation:
 		return m.Filter(), nil

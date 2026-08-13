@@ -15,6 +15,9 @@ type AgentMessage func(*sql.Selector)
 // AgentSession is the predicate function for agentsession builders.
 type AgentSession func(*sql.Selector)
 
+// AgentSessionBinding is the predicate function for agentsessionbinding builders.
+type AgentSessionBinding func(*sql.Selector)
+
 // AgentTurn is the predicate function for agentturn builders.
 type AgentTurn func(*sql.Selector)
 

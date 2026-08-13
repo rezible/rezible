@@ -26,6 +26,16 @@ CREATE INDEX "agentsession_tenant_id" ON "agent_sessions" ("tenant_id");
 CREATE INDEX "agentsession_tenant_id_owner_user_id_created_at" ON "agent_sessions" ("tenant_id", "owner_user_id", "created_at");
 -- create index "agentsession_tenant_id_agent_name_created_at" to table: "agent_sessions"
 CREATE INDEX "agentsession_tenant_id_agent_name_created_at" ON "agent_sessions" ("tenant_id", "agent_name", "created_at");
+-- create "agent_session_bindings" table
+CREATE TABLE "agent_session_bindings" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "source" character varying NOT NULL, "resource_kind" character varying NOT NULL, "resource_ref" character varying NOT NULL, "closed_at" timestamptz NULL, "metadata" jsonb NULL, "agent_session_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "agent_session_binding_source_integration_consistency" CHECK ((source = 'rezible' AND integration_id IS NULL) OR (source <> 'rezible' AND integration_id IS NOT NULL)));
+-- create index "agentsessionbinding_tenant_id" to table: "agent_session_bindings"
+CREATE INDEX "agentsessionbinding_tenant_id" ON "agent_session_bindings" ("tenant_id");
+-- create index "agentsessionbinding_tenant_id_agent_session_id" to table: "agent_session_bindings"
+CREATE INDEX "agentsessionbinding_tenant_id_agent_session_id" ON "agent_session_bindings" ("tenant_id", "agent_session_id");
+-- create index "agent_session_binding_one_per_integration_resource" to table: "agent_session_bindings"
+CREATE UNIQUE INDEX "agent_session_binding_one_per_integration_resource" ON "agent_session_bindings" ("tenant_id", "integration_id", "source", "resource_kind", "resource_ref") WHERE integration_id IS NOT NULL;
+-- create index "agent_session_binding_one_per_source_resource" to table: "agent_session_bindings"
+CREATE UNIQUE INDEX "agent_session_binding_one_per_source_resource" ON "agent_session_bindings" ("tenant_id", "source", "resource_kind", "resource_ref") WHERE integration_id IS NULL;
 -- create "agent_turns" table
 CREATE TABLE "agent_turns" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "sequence" bigint NOT NULL, "river_job_id" bigint NOT NULL, "input_tool_resume" jsonb NULL, "status" character varying NOT NULL, "started_at" timestamptz NULL, "finished_at" timestamptz NULL, "finish_reason" character varying NOT NULL DEFAULT '', "error" character varying NULL, "agent_session_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "input_message_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "agentturn_tenant_id" to table: "agent_turns"
@@ -460,6 +470,8 @@ ALTER TABLE "agent_artifacts" ADD CONSTRAINT "agent_artifacts_tenants_tenant" FO
 ALTER TABLE "agent_messages" ADD CONSTRAINT "agent_messages_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_messages_agent_sessions_messages" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_messages_agent_turns_messages" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE NO ACTION;
 -- modify "agent_sessions" table
 ALTER TABLE "agent_sessions" ADD CONSTRAINT "agent_sessions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_sessions_users_owner_user" FOREIGN KEY ("owner_user_id") REFERENCES "users" ("id") ON DELETE SET NULL;
+-- modify "agent_session_bindings" table
+ALTER TABLE "agent_session_bindings" ADD CONSTRAINT "agent_session_bindings_agent_sessions_bindings" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_session_bindings_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_session_bindings_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE SET NULL;
 -- modify "agent_turns" table
 ALTER TABLE "agent_turns" ADD CONSTRAINT "agent_turns_agent_sessions_turns" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turns_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turns_agent_messages_input_message" FOREIGN KEY ("input_message_id") REFERENCES "agent_messages" ("id") ON DELETE SET NULL;
 -- modify "agent_turn_knowledge_citations" table

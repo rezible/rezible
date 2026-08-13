@@ -55,9 +55,11 @@ type AgentSessionEdges struct {
 	Messages []*AgentMessage `json:"messages,omitempty"`
 	// Artifacts holds the value of the artifacts edge.
 	Artifacts []*AgentArtifact `json:"artifacts,omitempty"`
+	// Bindings holds the value of the bindings edge.
+	Bindings []*AgentSessionBinding `json:"bindings,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -107,6 +109,15 @@ func (e AgentSessionEdges) ArtifactsOrErr() ([]*AgentArtifact, error) {
 		return e.Artifacts, nil
 	}
 	return nil, &NotLoadedError{edge: "artifacts"}
+}
+
+// BindingsOrErr returns the Bindings value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentSessionEdges) BindingsOrErr() ([]*AgentSessionBinding, error) {
+	if e.loadedTypes[5] {
+		return e.Bindings, nil
+	}
+	return nil, &NotLoadedError{edge: "bindings"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -236,6 +247,11 @@ func (_m *AgentSession) QueryMessages() *AgentMessageQuery {
 // QueryArtifacts queries the "artifacts" edge of the AgentSession entity.
 func (_m *AgentSession) QueryArtifacts() *AgentArtifactQuery {
 	return NewAgentSessionClient(_m.config).QueryArtifacts(_m)
+}
+
+// QueryBindings queries the "bindings" edge of the AgentSession entity.
+func (_m *AgentSession) QueryBindings() *AgentSessionBindingQuery {
+	return NewAgentSessionClient(_m.config).QueryBindings(_m)
 }
 
 // Update returns a builder for updating this AgentSession.
