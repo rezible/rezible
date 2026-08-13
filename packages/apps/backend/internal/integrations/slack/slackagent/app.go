@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strings"
 
-	"github.com/go-viper/mapstructure/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/pkg/messages"
 	"github.com/riverqueue/river"
@@ -14,6 +14,8 @@ import (
 	"github.com/slack-go/slack/slackevents"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	asb "github.com/rezible/rezible/ent/agentsessionbinding"
 	in "github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/predicate"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
@@ -112,24 +114,47 @@ func (a *App) registerMessageHandlers() error {
 		messages.NewEventHandler("slackagent.OnAiAgentTurnFinished", a.onAiAgentTurnFinished))
 }
 
-func (a *App) onAiAgentTurnFinished(ctx context.Context, ev *rezai.EventOnAgentTurnFinished) error {
-	var metadata aiChatAgentSessionMetadata
-	if mdErr := mapstructure.Decode(ev.AgentSessionMetadata, &metadata); mdErr != nil {
-		return fmt.Errorf("decode metadata: %w", mdErr)
+func (a *App) lookupAiAgentSessionBinding(ctx context.Context, sessionId uuid.UUID) (*ent.AgentSessionBinding, error) {
+	preds := []predicate.AgentSessionBinding{
+		asb.AgentSessionID(sessionId),
+		asb.Source(slackAgentBindingSource),
+		asb.ResourceKind(slackAgentBindingResourceKindThread),
 	}
+	binding, bindingErr := a.agents.LookupAgentSessionBinding(ctx, preds...)
+	if bindingErr != nil {
+		if ent.IsNotFound(bindingErr) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("lookup: %w", bindingErr)
+	}
+	if binding.IntegrationID == nil {
+		return nil, fmt.Errorf("slack session binding missing integration id")
+	}
+	return binding, nil
+}
 
-	if !metadata.IsSlack {
-		return nil
-	}
+func (a *App) onAiAgentTurnFinished(ctx context.Context, ev *rezai.EventOnAgentTurnFinished) error {
 	if len(ev.Response.Text()) == 0 {
 		return nil
 	}
 
+	binding, bindingErr := a.lookupAiAgentSessionBinding(ctx, ev.AgentSessionId)
+	if bindingErr != nil {
+		return fmt.Errorf(" session binding: %w", bindingErr)
+	} else if binding == nil {
+		return nil
+	}
+
+	channelID, threadTs, refErr := parseSlackThreadResourceRef(binding.ResourceRef)
+	if refErr != nil {
+		return refErr
+	}
+
 	args := SendMessageJobArgs{
-		Message:        ev.Response.Text(),
-		IntegrationRef: metadata.IntegrationRef,
-		Channel:        metadata.SlackReplyChannel,
-		ReplyTs:        metadata.SlackReplyTs,
+		Message:       ev.Response.Text(),
+		IntegrationID: *binding.IntegrationID,
+		Channel:       channelID,
+		ReplyTs:       threadTs,
 	}
 	if _, cmdErr := a.jobs.Insert(ctx, args, nil); cmdErr != nil {
 		return fmt.Errorf("insert job: %w", cmdErr)
@@ -138,11 +163,19 @@ func (a *App) onAiAgentTurnFinished(ctx context.Context, ev *rezai.EventOnAgentT
 	return nil
 }
 
+func parseSlackThreadResourceRef(resourceRef string) (string, string, error) {
+	channelID, threadTs, ok := strings.Cut(resourceRef, ":")
+	if !ok || channelID == "" || threadTs == "" {
+		return "", "", fmt.Errorf("invalid slack thread resource ref %q", resourceRef)
+	}
+	return channelID, threadTs, nil
+}
+
 type SendMessageJobArgs struct {
-	IntegrationRef string `json:"integration_ref" river:"unique"`
-	Message        string `json:"message" river:"unique"`
-	Channel        string `json:"channel"`
-	ReplyTs        string `json:"reply_ts" river:"unique"`
+	IntegrationID uuid.UUID `json:"integration_id" river:"unique"`
+	Message       string    `json:"message" river:"unique"`
+	Channel       string    `json:"channel"`
+	ReplyTs       string    `json:"reply_ts" river:"unique"`
 }
 
 func (a SendMessageJobArgs) Kind() string {
@@ -160,7 +193,7 @@ func (SendMessageJobArgs) InsertOpts() river.InsertOpts {
 }
 
 func (a *App) handleSendMessageJob(ctx context.Context, args SendMessageJobArgs) error {
-	cw, wrapperErr := a.GetIntegrationClientWrapper(ctx, in.ExternalRef(args.IntegrationRef))
+	cw, wrapperErr := a.GetIntegrationClientWrapper(ctx, in.ID(args.IntegrationID))
 	if wrapperErr != nil {
 		slog.Warn("failed to get slack integration client wrapper", "err", wrapperErr)
 		return fmt.Errorf("get integration client wrapper: %w", wrapperErr)

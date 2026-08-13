@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/riverqueue/river"
 	"github.com/samber/do/v2"
 	"github.com/sourcegraph/conc/pool"
 
@@ -142,8 +143,12 @@ func registerIntegrations(i do.Injector) error {
 }
 
 func registerJobWorkers(i do.Injector) error {
-	jobs.RegisterWorker(do.MustInvoke[jobs.Worker[jobs.StartAgentSession]](i))
-	jobs.RegisterWorker(do.MustInvoke[jobs.Worker[jobs.InvokeAgentTurn]](i))
-
+	registerJobWorker[jobs.StartAgentSession](i)
+	registerJobWorker[jobs.InvokeAgentTurn](i)
+	registerJobWorker[jobs.SyncIntegrationSourceEvents](i)
 	return nil
+}
+
+func registerJobWorker[A river.JobArgs](i do.Injector) {
+	jobs.RegisterWorker(do.MustInvoke[jobs.Worker[A]](i))
 }

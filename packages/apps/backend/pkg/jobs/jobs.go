@@ -35,13 +35,13 @@ func (ProjectNormalizedEvent) InsertOpts() river.InsertOpts {
 	}
 }
 
-type SyncIntegrationEventsArgs struct {
+type SyncIntegrationSourceEvents struct {
 	IntegrationId uuid.UUID `json:"integration_id"`
 	Sources       []string  `json:"sources"`
 	SyncReason    string    `json:"sync_reason,omitempty"`
 }
 
-func (SyncIntegrationEventsArgs) Kind() string {
+func (SyncIntegrationSourceEvents) Kind() string {
 	return "sync-integration-events"
 }
 

@@ -50,7 +50,7 @@ func (s *OrganizationService) Set(ctx context.Context, id uuid.UUID, setFn func(
 	})
 }
 
-var orgInitialSetupIntegrationSyncJob = jobs.SyncIntegrationEventsArgs{SyncReason: "org_initial_setup"}
+var orgInitialSetupIntegrationSyncJob = jobs.SyncIntegrationSourceEvents{SyncReason: "org_initial_setup"}
 
 func (s *OrganizationService) SetPreferences(ctx context.Context, orgId uuid.UUID, setFn func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error) {
 	var prefs *ent.OrganizationPreferences

@@ -21,6 +21,7 @@ import (
 	as "github.com/rezible/rezible/ent/agentsession"
 	at "github.com/rezible/rezible/ent/agentturn"
 	atkc "github.com/rezible/rezible/ent/agentturnknowledgecitation"
+	"github.com/rezible/rezible/ent/predicate"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
@@ -99,6 +100,17 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 			return fmt.Errorf("create agent session: %w", createErr)
 		}
 
+		if len(params.Bindings) > 0 {
+			createBindings := tx.AgentSessionBinding.
+				MapCreateBulk(params.Bindings, func(c *ent.AgentSessionBindingCreate, i int) {
+					c.SetAgentSessionID(createdSession.ID)
+					s.setSessionBindingParams(c.Mutation(), params.Bindings[i])
+				})
+			if bindingsErr := createBindings.Exec(ctx); bindingsErr != nil {
+				return fmt.Errorf("create agent session bindings: %w", bindingsErr)
+			}
+		}
+
 		startJobArgs := jobs.StartAgentSession{SessionID: createdSession.ID}
 		_, jobErr := s.jobs.Insert(ctx, startJobArgs, nil)
 		if jobErr != nil {
@@ -106,6 +118,61 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 		}
 
 		session = createdSession.Unwrap()
+		return nil
+	})
+}
+
+func (s *AgentSessionService) setSessionBindingParams(m *ent.AgentSessionBindingMutation, params rez.AgentSessionBindingParams) {
+	if params.IntegrationID == nil {
+		m.ClearIntegrationID()
+	} else {
+		m.SetIntegrationID(*params.IntegrationID)
+	}
+	m.SetSource(strings.TrimSpace(params.Source))
+	m.SetResourceKind(strings.TrimSpace(params.ResourceKind))
+	m.SetResourceRef(strings.TrimSpace(params.ResourceRef))
+
+	metadata := make(map[string]any, len(params.Metadata))
+	for key, value := range params.Metadata {
+		metadata[key] = value
+	}
+	m.SetMetadata(metadata)
+}
+
+func (s *AgentSessionService) ListAgentSessionBindings(ctx context.Context, params rez.ListAgentSessionBindingsParams) (ent.AgentSessionBindings, error) {
+	query := s.db.Client(ctx).AgentSessionBinding.Query().
+		Where(params.Predicates...)
+	//if !params.IncludeClosed {
+	//	bindingQuery.Where(asb.ClosedAtIsNil())
+	//}
+	return query.All(ctx)
+}
+
+func (s *AgentSessionService) LookupAgentSessionBinding(ctx context.Context, preds ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error) {
+	query := s.db.Client(ctx).AgentSessionBinding.Query().
+		Where(preds...).
+		WithAgentSession().
+		WithIntegration()
+	return query.Only(ctx)
+}
+
+func (s *AgentSessionService) SetAgentSessionBinding(ctx context.Context, bindingId uuid.UUID, setFn func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error) {
+	var binding *ent.AgentSessionBinding
+	return binding, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		var mutator ent.EntityMutator[*ent.AgentSessionBinding, *ent.AgentSessionBindingMutation]
+		if bindingId == uuid.Nil {
+			mutator = tx.AgentSessionBinding.Create().SetID(uuid.New())
+		} else {
+			mutator = tx.AgentSessionBinding.UpdateOneID(bindingId)
+		}
+
+		setFn(mutator.Mutation())
+
+		saved, saveErr := mutator.Save(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("create binding: %w", saveErr)
+		}
+		binding = saved.Unwrap()
 		return nil
 	})
 }

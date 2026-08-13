@@ -275,7 +275,7 @@ func (s *IntegrationsService) set(ctx context.Context, id uuid.UUID, setFn func(
 	// TODO: check updated fields?
 	shouldTriggerSync := s.jobs != nil
 	if shouldTriggerSync {
-		args := jobs.SyncIntegrationEventsArgs{
+		args := jobs.SyncIntegrationSourceEvents{
 			IntegrationId: intg.ID,
 			SyncReason:    "updated",
 		}
@@ -534,7 +534,7 @@ func (s *IntegrationsService) InstallTargets(ctx context.Context, targets []rez.
 }
 
 func (s *IntegrationsService) RequestIntegrationEventSync(ctx context.Context, id uuid.UUID, sources []string) error {
-	args := jobs.SyncIntegrationEventsArgs{
+	args := jobs.SyncIntegrationSourceEvents{
 		SyncReason:    "manual",
 		IntegrationId: id,
 		Sources:       sources,
@@ -558,7 +558,7 @@ func (s *IntegrationsService) ListIntegrationEventSyncRuns(ctx context.Context, 
 }
 
 type IntegrationEventsSyncWorker struct {
-	river.WorkerDefaults[jobs.SyncIntegrationEventsArgs]
+	river.WorkerDefaults[jobs.SyncIntegrationSourceEvents]
 
 	db       rez.Database
 	msgs     rez.MessageService
@@ -583,11 +583,11 @@ func NewIntegrationEventsSyncWorker(cfg rez.Config, tel rez.TelemetryService, db
 	return w, nil
 }
 
-func (w *IntegrationEventsSyncWorker) Timeout(job *river.Job[jobs.SyncIntegrationEventsArgs]) time.Duration {
+func (w *IntegrationEventsSyncWorker) Timeout(job *river.Job[jobs.SyncIntegrationSourceEvents]) time.Duration {
 	return w.timeout
 }
 
-func (w *IntegrationEventsSyncWorker) Work(ctx context.Context, job *river.Job[jobs.SyncIntegrationEventsArgs]) error {
+func (w *IntegrationEventsSyncWorker) Work(ctx context.Context, job *river.Job[jobs.SyncIntegrationSourceEvents]) error {
 	args := job.Args
 	if args.IntegrationId == uuid.Nil {
 		// TODO: sync all installed?
@@ -628,7 +628,7 @@ func (w *IntegrationEventsSyncWorker) Work(ctx context.Context, job *river.Job[j
 	return nil
 }
 
-func (w *IntegrationEventsSyncWorker) lookupSourceSyncCursors(ctx context.Context, args jobs.SyncIntegrationEventsArgs) (rez.ProviderEventQuerySourceCursors, error) {
+func (w *IntegrationEventsSyncWorker) lookupSourceSyncCursors(ctx context.Context, args jobs.SyncIntegrationSourceEvents) (rez.ProviderEventQuerySourceCursors, error) {
 	sourceCursors := rez.ProviderEventQuerySourceCursors{}
 	for _, src := range args.Sources {
 		// TODO: look up cursors from last sync
@@ -638,7 +638,7 @@ func (w *IntegrationEventsSyncWorker) lookupSourceSyncCursors(ctx context.Contex
 	return sourceCursors, nil
 }
 
-func (w *IntegrationEventsSyncWorker) saveSyncResult(ctx context.Context, args jobs.SyncIntegrationEventsArgs, res rez.ProviderEventSyncResult) error {
+func (w *IntegrationEventsSyncWorker) saveSyncResult(ctx context.Context, args jobs.SyncIntegrationSourceEvents, res rez.ProviderEventSyncResult) error {
 	// TODO: we should store this properly, but will require refactoring the integration sync result struct
 	startedAt := time.Now()
 	for _, dur := range res.SourceSyncDurations {

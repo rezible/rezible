@@ -16,7 +16,9 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentmessage"
+	asb "github.com/rezible/rezible/ent/agentsessionbinding"
 	at "github.com/rezible/rezible/ent/agentturn"
+	"github.com/rezible/rezible/ent/predicate"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/test"
@@ -230,6 +232,44 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionCreatesQueuedStartAtomi
 	s.Require().NotNil(session)
 	s.Equal("test-agent", session.AgentName)
 	s.Equal("123", session.Metadata["baz"])
+}
+
+func (s *AgentSessionServiceSuite) TestCreateAgentSessionCreatesRequestedBindings() {
+	ctx := s.SeedTenantContext()
+	h := s.newAgentSessionTestHarness()
+	resourceRef := uuid.NewString()
+
+	h.jobs.EXPECT().
+		Insert(mock.Anything, mock.IsType(jobs.StartAgentSession{}), mock.Anything).
+		Return(makeJobInsertResult(101), nil).
+		Once()
+
+	bindingParams := rez.AgentSessionBindingParams{
+		Source:       "rezible",
+		ResourceKind: "incident",
+		ResourceRef:  resourceRef,
+		Metadata:     map[string]any{"origin": "test"},
+	}
+	params := rez.CreateAgentSessionParams{
+		AgentName: "test-agent",
+		Input:     testAgentInput{Foo: "bar"},
+		Bindings:  []rez.AgentSessionBindingParams{bindingParams},
+	}
+
+	session, createErr := h.service.CreateAgentSession(ctx, params)
+	s.Require().NoError(createErr)
+	s.Require().NotNil(session)
+
+	bindingPreds := []predicate.AgentSessionBinding{
+		asb.Source(bindingParams.Source),
+		asb.ResourceKind(bindingParams.ResourceKind),
+		asb.ResourceRef(resourceRef),
+	}
+	binding, bindingErr := h.service.LookupAgentSessionBinding(ctx, bindingPreds...)
+	s.Require().NoError(bindingErr)
+	s.Equal(session.ID, binding.AgentSessionID)
+	s.Nil(binding.IntegrationID)
+	s.Equal("test", binding.Metadata["origin"])
 }
 
 func (s *AgentSessionServiceSuite) TestCreateAgentSessionRollsBackWhenJobInsertFails() {

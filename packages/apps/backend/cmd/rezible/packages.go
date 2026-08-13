@@ -350,7 +350,7 @@ var provideJobWorkers = do.Package(
 			do.MustInvoke[rez.AgentSessionService](i),
 		)
 	}),
-	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.SyncIntegrationEventsArgs], error) {
+	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.SyncIntegrationSourceEvents], error) {
 		return db.NewIntegrationEventsSyncWorker(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.TelemetryService](i),

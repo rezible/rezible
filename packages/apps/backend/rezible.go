@@ -481,23 +481,36 @@ type (
 		InvokeAgentTurn(context.Context, InvokeAgentTurnParams) (*AiAgentInvocationResult, error)
 	}
 
-	CreateAgentSessionParams struct {
-		AgentName        string
-		OwnerUserID      *uuid.UUID
-		PermissionScopes []string
-		Input            AiAgentSessionInput
-		Metadata         map[string]any
-	}
-
 	ListAgentSessionsParams struct {
 		ent.ListParams
 		Predicates []predicate.AgentSession
 		Metadata   map[string]any
 	}
 
+	CreateAgentSessionParams struct {
+		AgentName        string
+		OwnerUserID      *uuid.UUID
+		PermissionScopes []string
+		Input            AiAgentSessionInput
+		Metadata         map[string]any
+		Bindings         []AgentSessionBindingParams
+	}
+
+	AgentSessionBindingParams struct {
+		IntegrationID *uuid.UUID
+		Source        string
+		ResourceKind  string
+		ResourceRef   string
+		Metadata      map[string]any
+	}
+
+	ListAgentSessionBindingsParams struct {
+		ent.ListParams
+		Predicates []predicate.AgentSessionBinding
+	}
+
 	RequestAgentTurnParams struct {
 		Input *AiAgentTurnInput
-		// BranchTurnID *uuid.UUID // no branching for now
 	}
 
 	ListAgentTurnsParams struct {
@@ -509,6 +522,10 @@ type (
 		ListAgentSessions(context.Context, ListAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error)
 		CreateAgentSession(context.Context, CreateAgentSessionParams) (*ent.AgentSession, error)
 		GetAgentSession(context.Context, uuid.UUID) (*ent.AgentSession, error)
+
+		ListAgentSessionBindings(context.Context, ListAgentSessionBindingsParams) (ent.AgentSessionBindings, error)
+		LookupAgentSessionBinding(context.Context, ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error)
+		SetAgentSessionBinding(context.Context, uuid.UUID, func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error)
 
 		RequestAgentTurn(context.Context, uuid.UUID, *RequestAgentTurnParams) (*ent.AgentTurn, error)
 
