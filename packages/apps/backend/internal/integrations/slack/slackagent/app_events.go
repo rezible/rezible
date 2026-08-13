@@ -123,7 +123,6 @@ func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWra
 	}
 
 	cleanedText := strings.TrimSpace(mentionRe.ReplaceAllString(data.Text, ""))
-	fmt.Printf("clean mention text: '%s'\n", cleanedText)
 
 	return a.startOrContinueAgentThreadReply(ctx, usr.ID, cleanedText, sessionMetadata)
 }

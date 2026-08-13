@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/firebase/genkit/go/ai"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"golang.org/x/oauth2"
 )
 
 func GetSourceQueryCursor(cursors map[string]string, source string) (string, bool) {
@@ -64,7 +64,7 @@ type IntegrationWithWebhookHandler interface {
 	WebhookHandler() http.Handler
 }
 
-func (r *PackageRegistry) GetWebhookHandlers() map[string]http.Handler {
+func (r *PackageRegistry) GetAvailableWebhookHandlers() map[string]http.Handler {
 	whs := make(map[string]http.Handler)
 	for _, pkg := range r.availablePackages {
 		if whPkg, hasWebhook := pkg.(IntegrationWithWebhookHandler); hasWebhook {
@@ -74,10 +74,12 @@ func (r *PackageRegistry) GetWebhookHandlers() map[string]http.Handler {
 	return whs
 }
 
-func (r *PackageRegistry) GetProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
-	type IntegrationWithProviderEventQuerier interface {
-		MakeProviderEventQuerier(*ent.Integration) (rez.ProviderEventQuerier, error)
-	}
+type IntegrationWithProviderEventQuerier interface {
+	MakeProviderEventQuerier(*ent.Integration) (rez.ProviderEventQuerier, error)
+}
+
+func (r *PackageRegistry) GetProviderEventQuerier(ii rez.InstalledIntegration) (rez.ProviderEventQuerier, error) {
+	intg := ii.Integration()
 	pkg, valid := r.nameMap[intg.IntegrationName]
 	if !valid {
 		return nil, fmt.Errorf("unknown integration package: %s", intg.IntegrationName)
@@ -88,17 +90,12 @@ func (r *PackageRegistry) GetProviderEventQuerier(intg *ent.Integration) (rez.Pr
 	return nil, fmt.Errorf("integration does not provide an event querier")
 }
 
-type IntegrationWithOAuth2Flow interface {
-	OAuth2Config() *oauth2.Config
-	RetrieveInstallationTargetOptions(context.Context, *oauth2.Token) ([]rez.IntegrationInstallationTarget, error)
-}
-
-func (r *PackageRegistry) GetOAuthIntegration(name string) (IntegrationWithOAuth2Flow, error) {
+func (r *PackageRegistry) GetOAuth2FlowIntegration(name string) (rez.OAuth2FlowIntegration, error) {
 	ip, ipErr := r.GetPackage(name)
 	if ipErr != nil {
 		return nil, fmt.Errorf("invalid integration %s: %w", name, ipErr)
 	}
-	oauth2Intg, ok := ip.(IntegrationWithOAuth2Flow)
+	oauth2Intg, ok := ip.(rez.OAuth2FlowIntegration)
 	if !ok {
 		return nil, fmt.Errorf("oauth2 flow not supported for integration %s", name)
 	}
@@ -106,4 +103,35 @@ func (r *PackageRegistry) GetOAuthIntegration(name string) (IntegrationWithOAuth
 		return nil, fmt.Errorf("empty integration oauth2 configuration")
 	}
 	return oauth2Intg, nil
+}
+
+type IntegrationWithAgentToolProvider interface {
+	GetAvailableAgentTools(context.Context, []rez.InstalledIntegration, rez.GetAvailableAgentToolsParams) ([]ai.Tool, error)
+}
+
+func (r *PackageRegistry) GetAvailableAgentTools(ctx context.Context, intgs []rez.InstalledIntegration, params rez.GetAvailableAgentToolsParams) (map[rez.IntegrationPackage][]ai.Tool, error) {
+	packageMap := make(map[string][]rez.InstalledIntegration)
+	for _, ii := range intgs {
+		pkgName := ii.Integration().IntegrationName
+		packageMap[pkgName] = append(packageMap[pkgName], ii)
+	}
+
+	pkgToolsMap := make(map[rez.IntegrationPackage][]ai.Tool)
+	for pkgName, installations := range packageMap {
+		pkg, pkgErr := r.GetPackage(pkgName)
+		if pkgErr != nil {
+			slog.ErrorContext(ctx, "failed to get integration package",
+				"integration", pkgName,
+				"error", pkgErr)
+			continue
+		}
+		if toolsPkg, providesTools := pkg.(IntegrationWithAgentToolProvider); providesTools {
+			pkgTools, toolsErr := toolsPkg.GetAvailableAgentTools(ctx, installations, params)
+			if toolsErr != nil {
+				return nil, fmt.Errorf("get agent tools for integration %s: %w", pkg.Name(), toolsErr)
+			}
+			pkgToolsMap[pkg] = pkgTools
+		}
+	}
+	return pkgToolsMap, nil
 }

@@ -119,7 +119,8 @@ func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Cont
 
 func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier rez.ProviderEventQuerier, sourceCursors rez.ProviderEventQuerySourceCursors) rez.ProviderEventSyncResult {
 	res := rez.ProviderEventSyncResult{
-		SourceCursorsAfter: sourceCursors,
+		SourceCursorsAfter:  sourceCursors,
+		SourceSyncDurations: make(map[string]time.Duration),
 	}
 
 	const batchSize = 100

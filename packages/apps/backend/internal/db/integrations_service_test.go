@@ -1,10 +1,12 @@
 package db
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"testing"
 
+	"github.com/firebase/genkit/go/ai"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/integrations"
@@ -22,31 +24,48 @@ func TestIntegrationsServiceSuite(t *testing.T) {
 	suite.Run(t, &IntegrationsServiceSuite{Suite: test.NewSuite()})
 }
 
-func (s *IntegrationsServiceSuite) newService(reg *integrations.PackageRegistry) *IntegrationsService {
+func (s *IntegrationsServiceSuite) newRegistry(pkgs ...rez.IntegrationPackage) rez.IntegrationPackageRegistry {
+	reg := integrations.NewPackageRegistry()
+	for _, pkg := range pkgs {
+		s.Require().NoError(reg.RegisterPackage(pkg))
+	}
+	return reg
+}
+
+func (s *IntegrationsServiceSuite) newService(reg rez.IntegrationPackageRegistry) *IntegrationsService {
 	jobs := mocks.NewMockJobService(s.T())
 	jobs.EXPECT().Insert(mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, nil)
 
-	svc, err := NewIntegrationsService(s.Config().App, s.Database(), jobs, reg, nil)
+	svc, err := NewIntegrationsService(s.Config(), s.Database(), jobs, reg)
 	s.Require().NoError(err)
+
 	return svc
+}
+
+func (s *IntegrationsServiceSuite) installTestIntegration(ctx context.Context, svc *IntegrationsService, i rez.IntegrationPackage, ref string) rez.InstalledIntegration {
+	target := rez.IntegrationInstallationTarget{
+		IntegrationName: i.Name(),
+		DisplayName:     i.DisplayName(),
+		Config:          &testInstalledIntegrationConfig{TestRef: ref},
+	}
+	s.T().Logf("installing integration %+v", target)
+	ii, installErr := svc.InstallFromTarget(ctx, target)
+	s.Require().NoError(installErr)
+	return ii
 }
 
 func (s *IntegrationsServiceSuite) TestInstallIntegration() {
 	ctx := s.SeedTenantContext()
 
 	i := &testIntegration{
-		available:   true,
 		maxInstalls: new(1),
 	}
-	reg := integrations.NewPackageRegistry()
-	s.Require().NoError(reg.RegisterPackage(i))
+	reg := s.newRegistry(i)
 
 	svc := s.newService(reg)
 
-	cfg := testInstalledIntegrationConfig{
-		TestRef: "foobar",
-	}
+	cfg := testInstalledIntegrationConfig{TestRef: "foobar"}
 	rawCfg, jsonErr := json.Marshal(cfg)
 	s.Require().NoError(jsonErr)
 
@@ -64,12 +83,50 @@ func (s *IntegrationsServiceSuite) TestInstallIntegration() {
 	s.Require().Equal(cfg.TestRef, ii.Config().ExternalRef())
 }
 
+func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsSkipsIntegrationsWithoutTools() {
+	ctx := s.SeedTenantContext()
+
+	intgs := s.Client(ctx).Integration.Query().AllX(ctx)
+	for _, intg := range intgs {
+		fmt.Printf("\nintegration %+v\n", intg)
+	}
+
+	i := &testIntegration{}
+	svc := s.newService(s.newRegistry(i))
+	s.installTestIntegration(ctx, svc, i, "target-a")
+
+	tools, toolsErr := svc.GetAvailableAgentTools(ctx, rez.GetAvailableAgentToolsParams{})
+	s.Require().NoError(toolsErr)
+	s.Empty(tools)
+}
+
+func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsRejectsDuplicateToolNames() {
+	ctx := s.SeedTenantContext()
+
+	tools := []ai.Tool{newTestAgentTool("duplicate_tool")}
+	i1 := &testIntegration{name: "pkg-a", tools: tools}
+	i2 := &testIntegration{name: "pkg-b", tools: tools}
+
+	svc := s.newService(s.newRegistry(i1, i2))
+	s.installTestIntegration(ctx, svc, i1, "target-a")
+	s.installTestIntegration(ctx, svc, i2, "target-b")
+
+	_, toolsErr := svc.GetAvailableAgentTools(ctx, rez.GetAvailableAgentToolsParams{})
+	s.Require().Error(toolsErr)
+	s.ErrorContains(toolsErr, "duplicate agent tool")
+}
+
 type testIntegration struct {
-	available   bool
+	name        string
+	unavailable bool
 	maxInstalls *int
+	tools       []ai.Tool
 }
 
 func (p *testIntegration) Name() string {
+	if p.name != "" {
+		return p.name
+	}
 	return "test-package"
 }
 
@@ -90,7 +147,7 @@ func (p *testIntegration) Provider() string {
 }
 
 func (p *testIntegration) IsAvailable() (bool, error) {
-	return p.available, nil
+	return !p.unavailable, nil
 }
 
 func (p *testIntegration) MaxInstalls() *int {
@@ -121,6 +178,10 @@ func (p *testIntegration) GetInstalledIntegration(intg *ent.Integration) (rez.In
 	return ii, nil
 }
 
+func (p *testIntegration) GetAvailableAgentTools(ctx context.Context, installations []rez.InstalledIntegration, params rez.GetAvailableAgentToolsParams) ([]ai.Tool, error) {
+	return p.tools, nil
+}
+
 type testInstalledIntegration struct {
 	intg *ent.Integration
 	cfg  *testInstalledIntegrationConfig
@@ -148,4 +209,14 @@ func (c *testInstalledIntegrationConfig) Encode() ([]byte, error) {
 
 func (c *testInstalledIntegrationConfig) ExternalRef() string {
 	return c.TestRef
+}
+
+func newTestAgentTool(name string) ai.Tool {
+	return ai.NewTool[map[string]any, map[string]any](
+		name,
+		"test tool",
+		func(ctx *ai.ToolContext, input map[string]any) (map[string]any, error) {
+			return map[string]any{"ok": true}, nil
+		},
+	)
 }

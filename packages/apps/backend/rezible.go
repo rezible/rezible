@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"iter"
 	"log/slog"
+	"net/http"
 	"net/url"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/texm/prosemirror-go"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/oauth2"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
@@ -197,11 +199,12 @@ type (
 	}
 
 	ProviderEventSyncResult struct {
-		SyncErrors         []error
-		SourceCursorsAfter ProviderEventQuerySourceCursors
-		EventsPulled       int
-		EventsIngested     int
-		NumDuplicates      int
+		SourceSyncDurations map[string]time.Duration
+		SyncErrors          []error
+		SourceCursorsAfter  ProviderEventQuerySourceCursors
+		EventsPulled        int
+		EventsIngested      int
+		NumDuplicates       int
 	}
 
 	ProviderEventPipelineService interface {
@@ -236,6 +239,21 @@ type (
 		ExternalRef() string
 	}
 
+	OAuth2FlowIntegration interface {
+		OAuth2Config() *oauth2.Config
+		RetrieveInstallationTargetOptions(context.Context, *oauth2.Token) ([]IntegrationInstallationTarget, error)
+	}
+
+	IntegrationPackageRegistry interface {
+		RegisterPackage(IntegrationPackage) error
+		GetAvailable() []IntegrationPackage
+		GetAvailableWebhookHandlers() map[string]http.Handler
+		GetPackage(string) (IntegrationPackage, error)
+		GetOAuth2FlowIntegration(string) (OAuth2FlowIntegration, error)
+		GetProviderEventQuerier(InstalledIntegration) (ProviderEventQuerier, error)
+		GetAvailableAgentTools(context.Context, []InstalledIntegration, GetAvailableAgentToolsParams) (map[IntegrationPackage][]ai.Tool, error)
+	}
+
 	ListIntegrationsParams struct {
 		ent.ListParams
 		Predicates []predicate.Integration
@@ -259,6 +277,10 @@ type (
 		Config          IntegrationInstallationConfig
 	}
 
+	GetAvailableAgentToolsParams struct {
+		AgentName string
+	}
+
 	IntegrationService interface {
 		GetAvailable() []IntegrationPackage
 
@@ -272,6 +294,7 @@ type (
 		DeleteInstalled(ctx context.Context, id uuid.UUID) error
 
 		AsInstalledIntegration(i *ent.Integration) (InstalledIntegration, error)
+		GetAvailableAgentTools(context.Context, GetAvailableAgentToolsParams) ([]ai.Tool, error)
 
 		StartOAuth2Flow(ctx context.Context, integrationName string) (string, error)
 		CompleteOAuth2Flow(ctx context.Context, integrationName string, params CompleteIntegrationOAuth2FlowParams) (*CompleteIntegrationOAuth2FlowResult, error)

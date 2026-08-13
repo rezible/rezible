@@ -23,13 +23,11 @@ type (
 	AgentState[S SessionState] aix.SessionState[S]
 
 	AgentDefinition[I AgentInput, S SessionState] struct {
-		Name                 string
-		Description          string
-		Model                string
-		SystemPrompt         string
-		EnableArtifacts      bool
-		EnableKnowledgeGraph bool
-		inputValidator       func(I) error
+		Name           string
+		Description    string
+		Model          string
+		SystemPrompt   string
+		inputValidator func(I) error
 	}
 )
 
@@ -70,10 +68,8 @@ func (i AlertAgentInput) Validate() error {
 }
 
 var AlertsAgent = AlertsAgentDefinition{
-	Name:                 "alerts",
-	Description:          "",
-	EnableArtifacts:      true,
-	EnableKnowledgeGraph: true,
+	Name:        "alerts",
+	Description: "an alert investigation agent",
 	SystemPrompt: `You are Rezible's alerts agent. You help software engineering teams quickly understand an alert, identify likely causes, assess impact, and decide the next action.
 
 Work like an experienced on-call engineer:
@@ -126,9 +122,8 @@ func (i ChatAgentInput) Validate() error {
 }
 
 var ChatAgent = ChatAgentDefinition{
-	Name:                 "chat",
-	Description:          "a chat presence agent that can respond to messages",
-	EnableKnowledgeGraph: true,
+	Name:        "chat",
+	Description: "a chat presence agent that can respond to messages",
 	SystemPrompt: `You are an AI agent responsible for generating responses to user chat messages. 
 You help answer any operational questions that software engineering teams.
 Create replies to user messages to the best of your capability - be concise and keep the tone professional.`,

@@ -11,13 +11,11 @@ import (
 	"github.com/firebase/genkit/go/plugins/googlegenai"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	rezai "github.com/rezible/rezible/pkg/ai"
 	"google.golang.org/genai"
 )
 
 type AiService struct {
-	cfg       rez.AiConfig
-	knowledge rez.KnowledgeGraphService
+	cfg rez.AiConfig
 
 	toolRefs []ai.ToolRef
 	gk       *genkit.Genkit
@@ -25,10 +23,9 @@ type AiService struct {
 	agentWrappers map[string]AgentWrapper
 }
 
-func NewAiService(cfg rez.Config, knowledge rez.KnowledgeGraphService) *AiService {
+func NewAiService(cfg rez.Config) *AiService {
 	return &AiService{
 		cfg:           cfg.AI,
-		knowledge:     knowledge,
 		toolRefs:      make([]ai.ToolRef, 0),
 		agentWrappers: make(map[string]AgentWrapper),
 	}
@@ -44,7 +41,6 @@ func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
 		genkit.WithPlugins(plugins...),
 		genkit.WithDefaultModel(flashModel.Name()),
 		genkit.WithExperimental(),
-		//genkit.WithPromptFS(rezai.PromptsDir),
 	)
 
 	slices.SortFunc(opts, func(a, b AiServiceOption) int {
@@ -67,20 +63,6 @@ func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
 type AiServiceOption struct {
 	kind  string
 	optFn func(*AiService) error
-}
-
-func WithAgent[I rezai.AgentInput, S rezai.SessionState](r agentRunner[I, S]) AiServiceOption {
-	return AiServiceOption{
-		kind: "agent",
-		optFn: func(s *AiService) error {
-			wrapper, wrapperErr := makeAgentWrapper(s, r)
-			if wrapperErr != nil || wrapper == nil {
-				return fmt.Errorf("wrap runner: %w", wrapperErr)
-			}
-			s.agentWrappers[r.agentDefinition().Name] = wrapper
-			return nil
-		},
-	}
 }
 
 func (s *AiService) GetAgents() []rez.AiAgentConfig {
@@ -111,7 +93,7 @@ func (s *AiService) MakeInitialAgentTurnInput(ctx context.Context, sess *ent.Age
 	if wrapperErr != nil {
 		return nil, wrapperErr
 	}
-	return wrapper.MakeInitialTurnInput(ctx, sess.Input)
+	return wrapper.MakeInitialTurnInput(ctx, sess)
 }
 
 func (s *AiService) InvokeAgentTurn(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error) {

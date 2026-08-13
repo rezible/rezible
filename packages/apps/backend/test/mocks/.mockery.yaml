@@ -16,5 +16,6 @@ packages:
       UserService: {}
       AlertService: {}
       AiService: {}
+      IntegrationService: {}
       IncidentService: {}
       KnowledgeGraphService: {}

@@ -11,6 +11,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 	iesr "github.com/rezible/rezible/ent/integrationeventsyncrun"
 	iuis "github.com/rezible/rezible/ent/integrationuserinstallstate"
@@ -22,35 +23,29 @@ import (
 	"github.com/rezible/rezible/ent"
 	in "github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/pkg/execution"
-	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/jobs"
 )
 
 type IntegrationsService struct {
-	db             rez.Database
-	jobs           rez.JobService
-	reg            *integrations.PackageRegistry
-	eventsPipeline rez.ProviderEventPipelineService
+	db   rez.Database
+	jobs rez.JobService
+	reg  rez.IntegrationPackageRegistry
 
 	oauthRedirectUrlBase *url.URL
 }
 
-func NewIntegrationsService(appCfg rez.AppConfig, db rez.Database, jobSvc rez.JobService, reg *integrations.PackageRegistry, pep rez.ProviderEventPipelineService) (*IntegrationsService, error) {
-	redirectUrl, redirectUrlErr := appCfg.GetFrontendUrl("/connect")
+func NewIntegrationsService(cfg rez.Config, db rez.Database, jobSvc rez.JobService, reg rez.IntegrationPackageRegistry) (*IntegrationsService, error) {
+	redirectUrl, redirectUrlErr := cfg.App.GetFrontendUrl("/connect")
 	if redirectUrlErr != nil {
 		return nil, fmt.Errorf("invalid oauth callback url: %w", redirectUrlErr)
 	}
 
 	s := &IntegrationsService{
-		db:             db,
-		jobs:           jobSvc,
-		reg:            reg,
-		eventsPipeline: pep,
-
+		db:                   db,
+		jobs:                 jobSvc,
+		reg:                  reg,
 		oauthRedirectUrlBase: redirectUrl,
 	}
-
-	jobs.RegisterWorkerFunc(s.HandleSyncIntegrationEventsJob)
 
 	return s, nil
 }
@@ -62,17 +57,42 @@ func (s *IntegrationsService) GetAvailable() []rez.IntegrationPackage {
 func (s *IntegrationsService) ListInstalled(ctx context.Context, params rez.ListIntegrationsParams) ([]rez.InstalledIntegration, error) {
 	intgs, listErr := s.listIntegrations(ctx, params)
 	if listErr != nil {
-		return nil, fmt.Errorf("failed to list integrations: %w", listErr)
+		return nil, fmt.Errorf("query: %w", listErr)
 	}
 	cfgIs := make([]rez.InstalledIntegration, len(intgs))
 	for i, intg := range intgs {
 		ci, ciErr := s.AsInstalledIntegration(intg)
 		if ciErr != nil {
-			return nil, fmt.Errorf("failed to list integrations: %w", ciErr)
+			return nil, fmt.Errorf("as installed integration: %w", ciErr)
 		}
 		cfgIs[i] = ci
 	}
 	return cfgIs, nil
+}
+
+func (s *IntegrationsService) GetAvailableAgentTools(ctx context.Context, params rez.GetAvailableAgentToolsParams) ([]ai.Tool, error) {
+	installed, listErr := s.ListInstalled(ctx, rez.ListIntegrationsParams{})
+	if listErr != nil {
+		return nil, fmt.Errorf("list installed: %w", listErr)
+	}
+
+	pkgToolsMap, toolsErr := s.reg.GetAvailableAgentTools(ctx, installed, params)
+	if toolsErr != nil {
+		return nil, fmt.Errorf("get available tools: %w", toolsErr)
+	}
+
+	toolNames := mapset.NewSet[string]()
+	var tools []ai.Tool
+	for pkg, pkgTools := range pkgToolsMap {
+		for _, tool := range pkgTools {
+			toolName := tool.Name()
+			if !toolNames.Add(toolName) {
+				return nil, fmt.Errorf("duplicate agent tool %q from integration %s", toolName, pkg.Name())
+			}
+			tools = append(tools, tool)
+		}
+	}
+	return tools, nil
 }
 
 func (s *IntegrationsService) GetInstalledIntegration(ctx context.Context, id uuid.UUID) (rez.InstalledIntegration, error) {
@@ -333,8 +353,8 @@ func (s *IntegrationsService) lookupUserInstallationState(ctx context.Context, u
 	return state, nil
 }
 
-func (s *IntegrationsService) getOAuthIntegration(name string) (integrations.IntegrationWithOAuth2Flow, *oauth2.Config, error) {
-	oi, oiErr := s.reg.GetOAuthIntegration(name)
+func (s *IntegrationsService) getOAuthIntegration(name string) (rez.OAuth2FlowIntegration, *oauth2.Config, error) {
+	oi, oiErr := s.reg.GetOAuth2FlowIntegration(name)
 	if oiErr != nil {
 		return nil, nil, fmt.Errorf("invalid integration: %w", oiErr)
 	}
@@ -529,13 +549,52 @@ func (s *IntegrationsService) RequestIntegrationEventSync(ctx context.Context, i
 	return insertErr
 }
 
-func (s *IntegrationsService) HandleSyncIntegrationEventsJob(ctx context.Context, args jobs.SyncIntegrationEventsArgs) error {
+func (s *IntegrationsService) ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error) {
+	query := s.db.Client(ctx).IntegrationEventSyncRun.Query().
+		Where(iesr.IntegrationID(id)).
+		Order(iesr.ByStartedAt(sql.OrderDesc())).
+		Limit(5)
+	return ent.DoListQuery[ent.IntegrationEventSyncRun, *ent.IntegrationEventSyncRunQuery](ctx, query, ent.ListParams{Limit: 5})
+}
+
+type IntegrationEventsSyncWorker struct {
+	river.WorkerDefaults[jobs.SyncIntegrationEventsArgs]
+
+	db       rez.Database
+	msgs     rez.MessageService
+	intgs    rez.IntegrationService
+	registry rez.IntegrationPackageRegistry
+	pipeline rez.ProviderEventPipelineService
+
+	logger  *slog.Logger
+	timeout time.Duration
+}
+
+func NewIntegrationEventsSyncWorker(cfg rez.Config, tel rez.TelemetryService, db rez.Database, msgs rez.MessageService, intgs rez.IntegrationService, reg rez.IntegrationPackageRegistry, pipeline rez.ProviderEventPipelineService) (*IntegrationEventsSyncWorker, error) {
+	w := &IntegrationEventsSyncWorker{
+		db:       db,
+		msgs:     msgs,
+		intgs:    intgs,
+		registry: reg,
+		pipeline: pipeline,
+		logger:   tel.NewLogger(rez.NewLoggerOptions{Name: "sync_integration_events_worker"}),
+		timeout:  time.Minute * 10,
+	}
+	return w, nil
+}
+
+func (w *IntegrationEventsSyncWorker) Timeout(job *river.Job[jobs.SyncIntegrationEventsArgs]) time.Duration {
+	return w.timeout
+}
+
+func (w *IntegrationEventsSyncWorker) Work(ctx context.Context, job *river.Job[jobs.SyncIntegrationEventsArgs]) error {
+	args := job.Args
 	if args.IntegrationId == uuid.Nil {
 		// TODO: sync all installed?
 		return nil
 	}
 
-	intg, intgErr := s.LookupInstallation(ctx, in.ID(args.IntegrationId))
+	intg, intgErr := w.intgs.LookupInstallation(ctx, in.ID(args.IntegrationId))
 	if intgErr != nil {
 		slog.WarnContext(ctx, "failed to get installed integration")
 		if ent.IsNotFound(intgErr) {
@@ -543,22 +602,49 @@ func (s *IntegrationsService) HandleSyncIntegrationEventsJob(ctx context.Context
 		}
 		return fmt.Errorf("get installed integration: %w", intgErr)
 	}
+	ii, iiErr := w.intgs.AsInstalledIntegration(intg)
+	if iiErr != nil {
+		return fmt.Errorf("get installed integration: %w", iiErr)
+	}
 
-	querier, querierErr := s.reg.GetProviderEventQuerier(intg)
+	querier, querierErr := w.registry.GetProviderEventQuerier(ii)
 	if querierErr != nil || querier == nil {
 		slog.WarnContext(ctx, "failed to get integration event querier", "error", querierErr)
 		return nil
 	}
 
-	sourceCursors := map[string]string{}
+	cursors, cursorsErr := w.lookupSourceSyncCursors(ctx, args)
+	if cursorsErr != nil {
+		slog.WarnContext(ctx, "failed to lookup integration sync cursors", "error", cursorsErr)
+		return cursorsErr
+	}
+
+	res := w.pipeline.SyncEvents(ctx, querier, cursors)
+	if saveResErr := w.saveSyncResult(ctx, args, res); saveResErr != nil {
+		slog.ErrorContext(ctx, "failed to save integration event sync run",
+			"error", saveResErr)
+	}
+
+	return nil
+}
+
+func (w *IntegrationEventsSyncWorker) lookupSourceSyncCursors(ctx context.Context, args jobs.SyncIntegrationEventsArgs) (rez.ProviderEventQuerySourceCursors, error) {
+	sourceCursors := rez.ProviderEventQuerySourceCursors{}
 	for _, src := range args.Sources {
 		// TODO: look up cursors from last sync
 		sourceCursors[src] = ""
 	}
 
-	startedAt := time.Now().UTC()
-	res := s.eventsPipeline.SyncEvents(ctx, querier, sourceCursors)
-	saveRun := s.db.Client(ctx).IntegrationEventSyncRun.Create().
+	return sourceCursors, nil
+}
+
+func (w *IntegrationEventsSyncWorker) saveSyncResult(ctx context.Context, args jobs.SyncIntegrationEventsArgs, res rez.ProviderEventSyncResult) error {
+	// TODO: we should store this properly, but will require refactoring the integration sync result struct
+	startedAt := time.Now()
+	for _, dur := range res.SourceSyncDurations {
+		startedAt = startedAt.Add(-dur)
+	}
+	saveRun := w.db.Client(ctx).IntegrationEventSyncRun.Create().
 		SetSyncReason(args.SyncReason).
 		SetIntegrationID(args.IntegrationId).
 		SetStartedAt(startedAt).
@@ -572,17 +658,5 @@ func (s *IntegrationsService) HandleSyncIntegrationEventsJob(ctx context.Context
 		saveRun.SetStatus(iesr.StatusFailed)
 		saveRun.SetFailureMessage(errors.Join(res.SyncErrors...).Error())
 	}
-	if saveRunErr := saveRun.Exec(ctx); saveRunErr != nil {
-		slog.ErrorContext(ctx, "failed to save integration event sync run", "err", saveRunErr)
-	}
-
-	return nil
-}
-
-func (s *IntegrationsService) ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error) {
-	query := s.db.Client(ctx).IntegrationEventSyncRun.Query().
-		Where(iesr.IntegrationID(id)).
-		Order(iesr.ByStartedAt(sql.OrderDesc())).
-		Limit(5)
-	return ent.DoListQuery[ent.IntegrationEventSyncRun, *ent.IntegrationEventSyncRunQuery](ctx, query, ent.ListParams{Limit: 5})
+	return saveRun.Exec(ctx)
 }

@@ -13,6 +13,13 @@ import (
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
+type (
+	AgentDetails struct {
+		Name string
+	}
+	AgentMiddlewareConstructorFn = func(AgentDetails) ai.Middleware
+)
+
 type agentDebugMiddleware struct{}
 
 func (m *agentDebugMiddleware) Name() string {
@@ -38,63 +45,86 @@ func (m *toolCallDisplayLabelMiddleware) Name() string {
 func (m *toolCallDisplayLabelMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 	return &ai.Hooks{
 		WrapTool: func(ctx context.Context, params *ai.ToolParams, next ai.ToolNext) (*ai.MultipartToolResponse, error) {
-			// TODO: wrap tool call with user-facing display text
+			// TODO: wrap tool call params to add user-facing display text field
 			return next(ctx, params)
 		},
 	}, nil
 }
 
-type knowledgeGraphMiddleware[I rezai.AgentInput, S rezai.SessionState] struct {
-	runner    agentRunner[I, S]
+func WithIntegrationToolsMiddleware(integrations rez.IntegrationService) AgentMiddlewareConstructorFn {
+	return func(d AgentDetails) ai.Middleware {
+		return newIntegrationToolsMiddleware(d.Name, integrations)
+	}
+}
+
+type integrationToolsMiddleware struct {
+	agentName    string
+	integrations rez.IntegrationService
+}
+
+func newIntegrationToolsMiddleware(agentName string, integrations rez.IntegrationService) *integrationToolsMiddleware {
+	return &integrationToolsMiddleware{agentName: agentName, integrations: integrations}
+}
+
+func (m *integrationToolsMiddleware) Name() string {
+	return "integration_tools"
+}
+
+func (m *integrationToolsMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
+	params := rez.GetAvailableAgentToolsParams{AgentName: m.agentName}
+	tools, toolsErr := m.integrations.GetAvailableAgentTools(ctx, params)
+	if toolsErr != nil {
+		return nil, fmt.Errorf("get available integration agent tools: %w", toolsErr)
+	}
+	return &ai.Hooks{Tools: tools}, nil
+}
+
+type knowledgeGraphMiddleware struct {
 	knowledge rez.KnowledgeGraphService
 }
 
-func newKnowledgeGraphMiddleware[I rezai.AgentInput, S rezai.SessionState](knowledge rez.KnowledgeGraphService, runner agentRunner[I, S]) *knowledgeGraphMiddleware[I, S] {
-	return &knowledgeGraphMiddleware[I, S]{knowledge: knowledge, runner: runner}
+func newKnowledgeGraphMiddleware(knowledge rez.KnowledgeGraphService) *knowledgeGraphMiddleware {
+	return &knowledgeGraphMiddleware{knowledge: knowledge}
 }
 
-func (m *knowledgeGraphMiddleware[I, S]) Name() string {
+func (m *knowledgeGraphMiddleware) Name() string {
 	return "knowledge_graph"
 }
 
-func (m *knowledgeGraphMiddleware[I, S]) New(ctx context.Context) (*ai.Hooks, error) {
-	return &ai.Hooks{
-		Tools: []ai.Tool{
-			m.makeQueryTool(),
-			m.makeRecordCitationTool(),
-		},
-		WrapGenerate: func(ctx context.Context, params *ai.GenerateParams, next ai.GenerateNext) (*ai.ModelResponse, error) {
-			return next(ctx, params)
-		},
-	}, nil
+func (m *knowledgeGraphMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
+	tools := []ai.Tool{
+		m.makeQueryTool(),
+		m.makeRecordCitationTool(),
+	}
+	return &ai.Hooks{Tools: tools}, nil
 }
 
-func (m *knowledgeGraphMiddleware[I, S]) makeQueryTool() ai.Tool {
+func (m *knowledgeGraphMiddleware) makeQueryTool() ai.Tool {
 	return aix.NewTool(
 		rezai.QueryKnowledgeGraphTool.Name(),
 		rezai.QueryKnowledgeGraphTool.Description(),
 		func(ctx context.Context, input rezai.QueryKnowledgeGraphInput) (rezai.QueryKnowledgeGraphOutput, error) {
 			output, queryErr := m.query(ctx, input)
-			if queryErr != nil {
+			if queryErr != nil || output == nil {
 				return rezai.QueryKnowledgeGraphOutput{}, queryErr
 			}
-			return output, nil
+			return *output, nil
 		},
 	)
 }
 
-func (m *knowledgeGraphMiddleware[I, S]) query(ctx context.Context, input rezai.QueryKnowledgeGraphInput) (rezai.QueryKnowledgeGraphOutput, error) {
+func (m *knowledgeGraphMiddleware) query(ctx context.Context, input rezai.QueryKnowledgeGraphInput) (*rezai.QueryKnowledgeGraphOutput, error) {
 	entityID, parseErr := uuid.Parse(input.EntityID)
 	if parseErr != nil {
-		return rezai.QueryKnowledgeGraphOutput{}, fmt.Errorf("invalid knowledge graph entity ID %q: %w", input.EntityID, parseErr)
+		return nil, fmt.Errorf("invalid knowledge graph entity ID %q: %w", input.EntityID, parseErr)
 	}
 	viewParams := rez.GetKnowledgeGraphViewParams{EntityID: entityID, Depth: input.Depth}
 	view, viewErr := m.knowledge.GetView(ctx, viewParams)
 	if viewErr != nil {
-		return rezai.QueryKnowledgeGraphOutput{}, fmt.Errorf("get knowledge graph view: %w", viewErr)
+		return nil, fmt.Errorf("get knowledge graph view: %w", viewErr)
 	}
 
-	output := rezai.QueryKnowledgeGraphOutput{
+	output := &rezai.QueryKnowledgeGraphOutput{
 		RootEntityID:  entityID.String(),
 		Truncated:     view.Truncated,
 		Entities:      make([]rezai.KnowledgeGraphToolEntity, 0, len(view.Entities)),
@@ -109,10 +139,13 @@ func (m *knowledgeGraphMiddleware[I, S]) query(ctx context.Context, input rezai.
 		}
 		if currEv := entity.LatestEvidence(); currEv != nil {
 			outputEntity.State = currEv.SubjectState
-			output.Evidence = append(output.Evidence, knowledgeEvidenceToolOutput(currEv, entity.ID.String(), ""))
+			e := knowledgeEvidenceToolOutput(currEv)
+			e.EntityID = entity.ID.String()
+			output.Evidence = append(output.Evidence, e)
 		}
 		output.Entities = append(output.Entities, outputEntity)
 	}
+
 	for _, relationship := range view.Relationships {
 		outputRelationship := rezai.KnowledgeGraphToolRelationship{
 			ID:       relationship.ID.String(),
@@ -122,24 +155,24 @@ func (m *knowledgeGraphMiddleware[I, S]) query(ctx context.Context, input rezai.
 		}
 		if currEv := relationship.LatestEvidence(); currEv != nil {
 			outputRelationship.State = currEv.SubjectState
-			output.Evidence = append(output.Evidence, knowledgeEvidenceToolOutput(currEv, "", relationship.ID.String()))
+			ev := knowledgeEvidenceToolOutput(currEv)
+			ev.RelationshipID = relationship.ID.String()
+			output.Evidence = append(output.Evidence, ev)
 		}
 		output.Relationships = append(output.Relationships, outputRelationship)
 	}
+
 	return output, nil
 }
 
-func knowledgeEvidenceToolOutput(ev *ent.KnowledgeEvidence, entityID string, relationshipID string) rezai.KnowledgeGraphToolEvidence {
-	output := rezai.KnowledgeGraphToolEvidence{
-		ID:             ev.ID.String(),
-		Assertion:      ev.Assertion,
-		EvidenceKind:   ev.Kind.String(),
-		EffectiveAt:    ev.EffectiveAt,
-		Properties:     ev.SubjectState.Properties,
-		EntityID:       entityID,
-		RelationshipID: relationshipID,
+func knowledgeEvidenceToolOutput(ev *ent.KnowledgeEvidence) rezai.KnowledgeGraphToolEvidence {
+	return rezai.KnowledgeGraphToolEvidence{
+		ID:           ev.ID.String(),
+		Assertion:    ev.Assertion,
+		EvidenceKind: ev.Kind.String(),
+		EffectiveAt:  ev.EffectiveAt,
+		Properties:   ev.SubjectState.Properties,
 	}
-	return output
 }
 
 type evidenceCitationCustomArtifactPart map[string]any
@@ -163,24 +196,7 @@ func (a evidenceCitationCustomArtifactPart) Citation() (*rez.AiAgentKnowledgeCit
 	}, nil
 }
 
-func getAgentKnowledgeCitations(artifacts []*aix.Artifact) ([]rez.AiAgentKnowledgeCitation, error) {
-	var citations []rez.AiAgentKnowledgeCitation
-	for _, a := range artifacts {
-		if a.Name == "citations" {
-			for _, p := range a.Parts {
-				c, cErr := evidenceCitationCustomArtifactPart(p.Custom).Citation()
-				if cErr != nil {
-					return nil, cErr
-				}
-				citations = append(citations, *c)
-			}
-			break
-		}
-	}
-	return citations, nil
-}
-
-func (m *knowledgeGraphMiddleware[I, S]) makeRecordCitationTool() ai.Tool {
+func (m *knowledgeGraphMiddleware) makeRecordCitationTool() ai.Tool {
 	return aix.NewTool(
 		rezai.RecordKnowledgeCitationsTool.Name(),
 		rezai.RecordKnowledgeCitationsTool.Description(),
@@ -218,4 +234,21 @@ func (m *knowledgeGraphMiddleware[I, S]) makeRecordCitationTool() ai.Tool {
 			return rezai.RecordKnowledgeCitationsOutput{Recorded: recorded}, nil
 		},
 	)
+}
+
+func getAgentKnowledgeCitations(artifacts []*aix.Artifact) ([]rez.AiAgentKnowledgeCitation, error) {
+	var citations []rez.AiAgentKnowledgeCitation
+	for _, a := range artifacts {
+		if a.Name == "citations" {
+			for _, p := range a.Parts {
+				c, cErr := evidenceCitationCustomArtifactPart(p.Custom).Citation()
+				if cErr != nil {
+					return nil, cErr
+				}
+				citations = append(citations, *c)
+			}
+			break
+		}
+	}
+	return citations, nil
 }

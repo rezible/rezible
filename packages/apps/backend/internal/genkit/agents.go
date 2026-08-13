@@ -11,7 +11,6 @@ import (
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/core"
 	genkitx "github.com/firebase/genkit/go/genkit/exp"
-	middlewarex "github.com/firebase/genkit/go/plugins/middleware/exp"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -42,12 +41,26 @@ type (
 	AgentWrapper interface {
 		AgentConfig() rez.AiAgentConfig
 		ValidateInput([]byte) (rez.AiAgentSessionInput, error)
-		MakeInitialTurnInput(context.Context, []byte) (*rez.AiAgentTurnInput, error)
+		MakeInitialTurnInput(context.Context, *ent.AgentSession) (*rez.AiAgentTurnInput, error)
 		Invoke(context.Context, rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error)
 	}
 )
 
-func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, runner agentRunner[I, S]) (AgentWrapper, error) {
+func WithAgent[I rezai.AgentInput, S rezai.SessionState](r agentRunner[I, S], mwFuncs ...AgentMiddlewareConstructorFn) AiServiceOption {
+	return AiServiceOption{
+		kind: "agent",
+		optFn: func(s *AiService) error {
+			wrapper, wrapperErr := makeAgentWrapper(s, r, mwFuncs...)
+			if wrapperErr != nil || wrapper == nil {
+				return fmt.Errorf("wrap runner: %w", wrapperErr)
+			}
+			s.agentWrappers[r.agentDefinition().Name] = wrapper
+			return nil
+		},
+	}
+}
+
+func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, runner agentRunner[I, S], mwFuncs ...AgentMiddlewareConstructorFn) (AgentWrapper, error) {
 	d := runner.agentDefinition()
 	opts := []aix.AgentOption[S]{
 		aix.WithDescription[S](d.Description),
@@ -65,16 +78,15 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 		&toolCallDisplayLabelMiddleware{},
 	}
 
-	if d.EnableKnowledgeGraph {
-		//middleware = append(middleware, newKnowledgeGraphMiddleware(svc.knowledge, runner))
+	if len(mwFuncs) > 0 {
+		ad := AgentDetails{Name: d.Name}
+		for _, mwFn := range mwFuncs {
+			middleware = append(middleware, mwFn(ad))
+		}
 	}
 
 	if mp, ok := runner.(runnerMiddlewareProvider); ok {
 		middleware = append(middleware, mp.makeMiddleware()...)
-	}
-
-	if d.EnableArtifacts {
-		middleware = append(middleware, &middlewarex.Artifacts{})
 	}
 
 	var agent *aix.Agent[S]
@@ -106,13 +118,13 @@ func (w *agentWrapper[I, S]) AgentConfig() rez.AiAgentConfig {
 }
 
 func (w *agentWrapper[I, S]) ValidateInput(raw []byte) (rez.AiAgentSessionInput, error) {
-	inp, validationErr := w.runner.agentDefinition().ValidateInput(raw)
+	input, validationErr := w.runner.agentDefinition().ValidateInput(raw)
 	if validationErr != nil {
 		return nil, validationErr
-	} else if inp == nil {
+	} else if input == nil {
 		return nil, fmt.Errorf("nil input")
 	}
-	return *inp, nil
+	return *input, nil
 }
 
 func (w *agentWrapper[I, S]) normalizeTurnInput(input *rez.AiAgentTurnInput) (*aix.AgentInput, error) {
@@ -128,8 +140,8 @@ func (w *agentWrapper[I, S]) normalizeTurnInput(input *rez.AiAgentTurnInput) (*a
 	return nil, fmt.Errorf("%w: agent turn message or resume is required", rez.ErrInvalidInput)
 }
 
-func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, raw []byte) (*rez.AiAgentTurnInput, error) {
-	input, inputErr := w.runner.agentDefinition().ValidateInput(raw)
+func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, sess *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
+	input, inputErr := w.runner.agentDefinition().ValidateInput(sess.Input)
 	if inputErr != nil || input == nil {
 		return nil, fmt.Errorf("input: %w", inputErr)
 	}

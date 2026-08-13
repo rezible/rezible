@@ -13,7 +13,6 @@ import (
 	"github.com/sourcegraph/conc/pool"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/pkg/integrations"
 )
 
 func withMigrationService(i do.Injector, fn func(rez.MigrationService) error) error {
@@ -111,7 +110,7 @@ func shutdownServers(baseCtx context.Context, i do.Injector) error {
 }
 
 func registerServerPackages(i do.Injector) error {
-	if intgErr := registerIntegrationPackages(i); intgErr != nil {
+	if intgErr := registerIntegrations(i); intgErr != nil {
 		return fmt.Errorf("failed to auto-register integration packages: %w", intgErr)
 	}
 	if jobsErr := registerJobWorkers(i); jobsErr != nil {
@@ -120,8 +119,8 @@ func registerServerPackages(i do.Injector) error {
 	return nil
 }
 
-func registerIntegrationPackages(i do.Injector) error {
-	intgReg := do.MustInvoke[*integrations.PackageRegistry](i)
+func registerIntegrations(i do.Injector) error {
+	intgReg := do.MustInvoke[rez.IntegrationPackageRegistry](i)
 	eventProcessors := do.MustInvoke[rez.ProviderEventProcessorRegistry](i)
 
 	for _, desc := range i.ListProvidedServices() {

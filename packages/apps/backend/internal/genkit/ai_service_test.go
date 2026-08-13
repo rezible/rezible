@@ -12,6 +12,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentturn"
+	"github.com/rezible/rezible/test/mocks"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
@@ -35,7 +37,7 @@ func (s *AiServiceSuite) checkSkip(name string) {
 }
 
 func (s *AiServiceSuite) makeService(opts ...AiServiceOption) *AiService {
-	svc := NewAiService(s.Config(), nil)
+	svc := NewAiService(s.Config())
 	s.Require().NoError(svc.Init(s.T().Context(), opts...))
 
 	return svc
@@ -108,27 +110,35 @@ func (s *AiServiceSuite) makeInvokeSessionParams(sess *ent.AgentSession) rez.Inv
 	}
 }
 
-type (
-	testAgentInput struct{}
-	testAgentState struct {
-		Foo string `json:"foo"`
-	}
-)
+func (s *AiServiceSuite) TestIntegrationToolsMiddlewareLoadsToolsPerTurn() {
+	ta := makeTestAgent[testAgentState](ai.NewUserTextMessage("hello"))
 
-func (i testAgentInput) Validate() error {
-	return nil
-}
+	tool := ai.NewTool[any, map[string]any](
+		"test_integration_lookup",
+		"test integration lookup",
+		func(ctx *ai.ToolContext, input any) (map[string]any, error) {
+			return map[string]any{"ok": true}, nil
+		},
+	)
 
-func makeTestAgent[S rezai.SessionState](userMessage *ai.Message) *testAgent[S] {
-	taDef := testAgentDef[S]{
-		Name:         "test_agent",
-		Description:  "A simple agent",
-		SystemPrompt: "You are an ai agent that follow user instructions exactly. Keep output concise",
-	}
-	return &testAgent[S]{
-		def:         taDef,
-		userMessage: userMessage,
-	}
+	intgs := mocks.NewMockIntegrationService(s.T())
+	intgs.EXPECT().
+		GetAvailableAgentTools(mock.Anything, rez.GetAvailableAgentToolsParams{AgentName: ta.def.Name}).
+		Return([]ai.Tool{tool}, nil).
+		Twice()
+
+	ctx := s.T().Context()
+
+	mw := newIntegrationToolsMiddleware(ta.def.Name, intgs)
+	firstHooks, firstErr := mw.New(ctx)
+	s.Require().NoError(firstErr, "first middleware init")
+	s.Require().NotEmpty(firstHooks.Tools, "no tools supplied")
+	s.Require().Equal(tool.Name(), firstHooks.Tools[0].Name(), "unexpected tool name")
+
+	secondHooks, secondErr := mw.New(ctx)
+	s.Require().NoError(secondErr, "second middleware init")
+	s.Require().NotEmpty(secondHooks.Tools, "no tools supplied")
+	s.Require().Equal(tool.Name(), secondHooks.Tools[0].Name(), "unexpected tool name")
 }
 
 func (s *AiServiceSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
@@ -165,8 +175,6 @@ func (s *AiServiceSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
 func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 	s.checkSkip("simple_greeting")
 
-	s.SeedTestEntities()
-
 	ctx := s.SeedTenantContext()
 
 	msg := ai.NewUserTextMessage("Reply with a one-word greeting.")
@@ -185,7 +193,21 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 	s.NotEmpty(result.State.Messages)
 }
 
+func makeTestAgent[S rezai.SessionState](msg *ai.Message) *testAgent[S] {
+	taDef := testAgentDef[S]{
+		Name:         "test_agent",
+		Description:  "A simple agent",
+		SystemPrompt: "You are an ai agent that follow user instructions exactly. Keep output concise",
+	}
+	return &testAgent[S]{def: taDef, userMessage: msg}
+}
+
 type (
+	testAgentInput struct{}
+	testAgentState struct {
+		Foo string `json:"foo"`
+	}
+
 	testAgentDef[S rezai.SessionState] = rezai.AgentDefinition[testAgentInput, S]
 
 	testAgent[S rezai.SessionState] struct {
@@ -194,6 +216,12 @@ type (
 		userMessage *ai.Message
 	}
 )
+
+var _ agentRunner[testAgentInput, any] = &testAgent[any]{}
+
+func (i testAgentInput) Validate() error {
+	return nil
+}
 
 func (t *testAgent[S]) agentDefinition() testAgentDef[S] {
 	return t.def

@@ -41,8 +41,8 @@ type Provider = func(do.Injector)
 
 func makePackageProvider(ctx context.Context) Provider {
 	return do.Package(
-		do.Eager(rez.ProviderEventProcessorRegistry{}),
-		do.Eager(integrations.NewPackageRegistry()),
+		do.Eager[rez.ProviderEventProcessorRegistry](rez.ProviderEventProcessorRegistry{}),
+		do.Eager[rez.IntegrationPackageRegistry](integrations.NewPackageRegistry()),
 		makeOpenTelemetryProvider(ctx),
 		makePostgresProvider(ctx),
 		makeMessageServiceProvider(ctx),
@@ -106,13 +106,11 @@ func makeMessageServiceProvider(ctx context.Context) Provider {
 
 func makeGenkitProvider(ctx context.Context) Provider {
 	return do.Lazy(func(i do.Injector) (rez.AiService, error) {
-		s := genkit.NewAiService(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.KnowledgeGraphService](i),
-		)
+		s := genkit.NewAiService(do.MustInvoke[rez.Config](i))
+		intgToolsMw := genkit.WithIntegrationToolsMiddleware(do.MustInvoke[rez.IntegrationService](i))
 		return s, s.Init(ctx,
-			genkit.WithAgent(genkit.NewChatAgent()),
-			genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i))),
+			genkit.WithAgent(genkit.NewChatAgent(), intgToolsMw),
+			genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i)), intgToolsMw),
 		)
 	})
 }
@@ -212,11 +210,10 @@ var provideServices = do.Package(
 
 	do.Lazy(func(i do.Injector) (rez.IntegrationService, error) {
 		return db.NewIntegrationsService(
-			do.MustInvoke[rez.Config](i).App,
+			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[*integrations.PackageRegistry](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i),
+			do.MustInvoke[rez.IntegrationPackageRegistry](i),
 		)
 	}),
 
@@ -353,6 +350,17 @@ var provideJobWorkers = do.Package(
 			do.MustInvoke[rez.AgentSessionService](i),
 		)
 	}),
+	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.SyncIntegrationEventsArgs], error) {
+		return db.NewIntegrationEventsSyncWorker(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.IntegrationPackageRegistry](i),
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
+		)
+	}),
 )
 
 var provideHttpServer = do.Package(
@@ -379,8 +387,8 @@ var provideHttpServer = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) (http.WebhookHandlers, error) {
-		reg := do.MustInvoke[*integrations.PackageRegistry](i)
-		return reg.GetWebhookHandlers(), nil
+		reg := do.MustInvoke[rez.IntegrationPackageRegistry](i)
+		return reg.GetAvailableWebhookHandlers(), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (*http.Server, error) {

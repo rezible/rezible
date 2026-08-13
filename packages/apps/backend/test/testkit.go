@@ -44,13 +44,13 @@ func NewSuite(optFns ...SuiteOption) Suite {
 	return Suite{opts: opts}
 }
 
-func (s *Suite) SetupSuite() {
+func (s *Suite) SetupTest() {
 	s.loadConfig()
 	s.setupTestDatabase()
 	s.SeedTestEntities()
 }
 
-func (s *Suite) TearDownSuite() {
+func (s *Suite) TearDownTest() {
 	s.closeTestDatabase()
 }
 
@@ -123,8 +123,10 @@ func (s *Suite) setupTestDatabase() {
 			Password: cfg.AppRole.Password,
 		},
 	}
+	s.T().Logf("creating pgtestdb")
 	testConfig := pgtestdb.Custom(s.T(), pgxConf, newTestDbMigrator())
 	s.Require().NotNil(testConfig)
+	s.T().Logf("created pgtestdb")
 
 	port, portErr := strconv.ParseUint(testConfig.Port, 10, 16)
 	s.Require().NoError(portErr)
@@ -144,12 +146,21 @@ func (s *Suite) setupTestDatabase() {
 
 	pool, poolErr := postgres.MakePgxPool(s.T().Context(), testDbCfg, false)
 	s.Require().NoError(poolErr)
+	s.pg = pool
 
 	db, dbErr := postgres.NewPgxPoolDatabaseClient(pool)
 	s.Require().NoError(dbErr)
-
-	s.pg = pool
 	s.db = db
+
+	s.T().Logf("created test database")
+}
+
+func (s *Suite) closeTestDatabase() {
+	if s.db != nil {
+		if closeErr := s.db.Shutdown(); closeErr != nil {
+			s.T().Logf("failed to close database client: %v", closeErr)
+		}
+	}
 }
 
 type testDbMigrator struct {
@@ -178,10 +189,4 @@ func (m *testDbMigrator) Migrate(ctx context.Context, db *sql.DB, config pgtestd
 		return fmt.Errorf("setup schema (query=[%s]): %w", setupQuery, setupErr)
 	}
 	return m.gm.Migrate(ctx, db, config)
-}
-
-func (s *Suite) closeTestDatabase() {
-	if closeErr := s.db.Shutdown(); closeErr != nil {
-		s.T().Logf("failed to close database client: %v", closeErr)
-	}
 }

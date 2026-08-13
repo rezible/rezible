@@ -21,8 +21,6 @@ func TestOrganizationsServiceSuite(t *testing.T) {
 }
 
 func (s *OrganizationsServiceSuite) TestCompleteSetupEnqueuesSyncJobAndSetsTimestamp() {
-	s.SeedTestEntities()
-
 	jobs := mocks.NewMockJobService(s.T())
 	jobs.On("Insert", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
 
@@ -36,8 +34,4 @@ func (s *OrganizationsServiceSuite) TestCompleteSetupEnqueuesSyncJobAndSetsTimes
 
 	s.False(prefs.InitialSetupAt.IsZero())
 	s.True(jobs.AssertCalled(s.T(), "Insert", mock.Anything, orgInitialSetupIntegrationSyncJob, mock.Anything))
-}
-
-func (s *OrganizationsServiceSuite) TestSyncFromAuthProvider() {
-	// TODO
 }
