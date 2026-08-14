@@ -2,38 +2,30 @@ package slackincidents
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/rezible/rezible/ent"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
-	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
 func (a *App) RespondEventTypes() []slackevents.EventsAPIType {
 	return []slackevents.EventsAPIType{
-		slackevents.AppHomeOpened,
 		slackevents.AppMention,
-		slackevents.AssistantThreadStarted,
 		slackevents.Message,
 	}
 }
 
 func (a *App) EventsApiHandler() slackintegration.EventsApiHandler {
 	return func(ctx context.Context, ii *ent.Integration, ev *slackevents.EventsAPIEvent) error {
-		cw, cwErr := slackintegration.NewClientWrapper(ii)
-		if cwErr != nil {
-			return fmt.Errorf("failed to create client wrapper: %w", cwErr)
-		}
+		//cw, cwErr := slackintegration.NewClientWrapper(ii)
+		//if cwErr != nil {
+		//	return fmt.Errorf("failed to create client wrapper: %w", cwErr)
+		//}
 
 		switch data := ev.InnerEvent.Data.(type) {
-		case *slackevents.AppHomeOpenedEvent:
-			return a.onUserHomeOpenedEvent(ctx, cw, data)
 		case *slackevents.AppMentionEvent:
 			return a.onMentionEvent(ctx, data)
-		case *slackevents.AssistantThreadStartedEvent:
-			return a.onAssistantThreadStartedEvent(ctx, data)
 		case *slackevents.MessageEvent:
 			return a.onMessageEvent(ctx, data)
 		default:
@@ -67,31 +59,6 @@ func (a *App) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent
 			"user", data.User,
 		)
 	*/
-
-	return nil
-}
-
-func (a *App) onAssistantThreadStartedEvent(ctx context.Context, data *slackevents.AssistantThreadStartedEvent) error {
-	slog.Debug("assistant thread started")
-	return nil
-}
-
-func (a *App) onUserHomeOpenedEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.AppHomeOpenedEvent) error {
-	homeView, viewErr := makeUserHomeView(ctx)
-	if viewErr != nil || homeView == nil {
-		return fmt.Errorf("failed to create user home view: %w", viewErr)
-	}
-
-	req := slack.PublishViewContextRequest{
-		UserID: data.User,
-		View:   *homeView,
-		Hash:   nil,
-	}
-	resp, publishErr := cw.Client().PublishViewContext(ctx, req)
-	if publishErr != nil {
-		slackintegration.LogSlackViewErrorResponse(slog.Default(), publishErr, resp)
-		return fmt.Errorf("failed to publish user home view: %w", publishErr)
-	}
 
 	return nil
 }

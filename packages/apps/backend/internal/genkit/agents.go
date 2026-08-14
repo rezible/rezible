@@ -17,6 +17,20 @@ import (
 	"github.com/rezible/rezible/pkg/execution"
 )
 
+func WithAgent[I rezai.AgentInput, S rezai.SessionState](r agentRunner[I, S], mwFuncs ...AgentMiddlewareConstructorFn) AiServiceOption {
+	return AiServiceOption{
+		kind: AiServiceOptionKindAgent,
+		optFn: func(s *AiService) error {
+			wrapper, wrapperErr := makeAgentWrapper(s, r, mwFuncs...)
+			if wrapperErr != nil || wrapper == nil {
+				return fmt.Errorf("wrap runner: %w", wrapperErr)
+			}
+			s.agentWrappers[r.agentDefinition().Name] = wrapper
+			return nil
+		},
+	}
+}
+
 type (
 	agentRunner[I rezai.AgentInput, S rezai.SessionState] interface {
 		agentDefinition() rezai.AgentDefinition[I, S]
@@ -30,37 +44,20 @@ type (
 		makeAgentFunc([]ai.Middleware) aix.AgentFunc[S]
 	}
 
-	initialContextSeeder[I rezai.AgentInput] interface {
-		makeInitialContextSeed(context.Context, I) (string, error)
+	systemPromptFuncAgentRunner[I rezai.AgentInput] interface {
+		makeSystemPrompt(context.Context, I) (string, error)
+	}
+
+	runnerWithInitialTurnMessage[I rezai.AgentInput] interface {
+		updateInitialTurnMessage(context.Context, I) (string, error)
 	}
 
 	runnerMiddlewareProvider interface {
 		makeMiddleware() []ai.Middleware
 	}
-
-	AgentWrapper interface {
-		AgentConfig() rez.AiAgentConfig
-		ValidateInput([]byte) (rez.AiAgentSessionInput, error)
-		MakeInitialTurnInput(context.Context, *ent.AgentSession) (*rez.AiAgentTurnInput, error)
-		Invoke(context.Context, rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error)
-	}
 )
 
-func WithAgent[I rezai.AgentInput, S rezai.SessionState](r agentRunner[I, S], mwFuncs ...AgentMiddlewareConstructorFn) AiServiceOption {
-	return AiServiceOption{
-		kind: "agent",
-		optFn: func(s *AiService) error {
-			wrapper, wrapperErr := makeAgentWrapper(s, r, mwFuncs...)
-			if wrapperErr != nil || wrapper == nil {
-				return fmt.Errorf("wrap runner: %w", wrapperErr)
-			}
-			s.agentWrappers[r.agentDefinition().Name] = wrapper
-			return nil
-		},
-	}
-}
-
-func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, runner agentRunner[I, S], mwFuncs ...AgentMiddlewareConstructorFn) (AgentWrapper, error) {
+func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, runner agentRunner[I, S], mwFuncs ...AgentMiddlewareConstructorFn) (rezai.AgentWrapper, error) {
 	d := runner.agentDefinition()
 	opts := []aix.AgentOption[S]{
 		aix.WithDescription[S](d.Description),
@@ -68,25 +65,35 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 		aix.WithStreamTransform[S](runner.transformStreamChunk),
 	}
 
-	modelOpt := ai.WithModel(svc.getDefaultModel())
+	withModel := ai.WithModel(svc.getDefaultModel())
 	if d.Model != "" {
-		modelOpt = ai.WithModelName(d.Model)
+		withModel = ai.WithModelName(d.Model)
 	}
 
 	middleware := []ai.Middleware{
 		&agentDebugMiddleware{},
 		&toolCallDisplayLabelMiddleware{},
 	}
-
 	if len(mwFuncs) > 0 {
 		ad := AgentDetails{Name: d.Name}
 		for _, mwFn := range mwFuncs {
 			middleware = append(middleware, mwFn(ad))
 		}
 	}
-
 	if mp, ok := runner.(runnerMiddlewareProvider); ok {
 		middleware = append(middleware, mp.makeMiddleware()...)
+	}
+	withMiddleware := ai.WithUse(middleware...)
+
+	withSystemPrompt := ai.WithSystem(d.SystemPrompt)
+	if spr, hasPromptFn := runner.(systemPromptFuncAgentRunner[I]); hasPromptFn {
+		withSystemPrompt = ai.WithSystemFn(func(ctx context.Context, i any) (string, error) {
+			input, inputOk := i.(I)
+			if !inputOk {
+				return "", fmt.Errorf("invalid input type %T", i)
+			}
+			return spr.makeSystemPrompt(ctx, input)
+		})
 	}
 
 	var agent *aix.Agent[S]
@@ -94,9 +101,9 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 		agent = genkitx.DefineCustomAgent(svc.gk, d.Name, cr.makeAgentFunc(middleware), opts...)
 	} else {
 		prompt := aix.InlinePrompt{
-			modelOpt,
-			ai.WithSystem(d.SystemPrompt),
-			ai.WithUse(middleware...),
+			withModel,
+			withSystemPrompt,
+			withMiddleware,
 		}
 		agent = genkitx.DefineAgent(svc.gk, d.Name, prompt, opts...)
 	}
@@ -108,16 +115,16 @@ type agentWrapper[I rezai.AgentInput, S rezai.SessionState] struct {
 	runner agentRunner[I, S]
 }
 
-func (w *agentWrapper[I, S]) AgentConfig() rez.AiAgentConfig {
+func (w *agentWrapper[I, S]) Config() rez.AiAgentConfig {
 	d := w.runner.agentDefinition()
 	return rez.AiAgentConfig{
 		Name:        d.Name,
-		DisplayName: "",
-		Model:       "",
+		DisplayName: d.Name,
+		Model:       d.Model,
 	}
 }
 
-func (w *agentWrapper[I, S]) ValidateInput(raw []byte) (rez.AiAgentSessionInput, error) {
+func (w *agentWrapper[I, S]) ValidateInput(raw []byte) (rez.ValidatingInput, error) {
 	input, validationErr := w.runner.agentDefinition().ValidateInput(raw)
 	if validationErr != nil {
 		return nil, validationErr
@@ -151,10 +158,10 @@ func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, sess *ent
 	} else if turnInput == nil {
 		return nil, rez.ErrInvalidInput
 	}
-	if seeder, ok := w.runner.(initialContextSeeder[I]); ok {
-		seed, seedErr := seeder.makeInitialContextSeed(ctx, *input)
-		if seedErr != nil {
-			return nil, seedErr
+	if msgSetter, setMsg := w.runner.(runnerWithInitialTurnMessage[I]); setMsg {
+		seed, msgErr := msgSetter.updateInitialTurnMessage(ctx, *input)
+		if msgErr != nil {
+			return nil, msgErr
 		}
 		if strings.TrimSpace(seed) != "" {
 			task := ""

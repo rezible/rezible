@@ -427,6 +427,18 @@ type (
 )
 
 type (
+	ValidatingInput interface {
+		Validate() error
+	}
+
+	AiWorkflowInput = ValidatingInput
+
+	AiWorkflowOutput interface{}
+
+	AiWorkflowRunner = interface {
+		Run(context.Context, AiWorkflowInput) (AiWorkflowOutput, error)
+	}
+
 	AiAgentTurnInput struct {
 		Message *ai.Message     `json:"message,omitempty"`
 		Resume  *aix.ToolResume `json:"resume,omitempty"`
@@ -470,13 +482,10 @@ type (
 		Model       string `json:"model"`
 	}
 
-	AiAgentSessionInput interface {
-		Validate() error
-	}
-
 	AiService interface {
+		GetWorkflowRunner(string) (AiWorkflowRunner, error)
 		GetAgents() []AiAgentConfig
-		ValidateAgentSessionInput(string, []byte) (AiAgentSessionInput, error)
+		ValidateAgentSessionInput(string, []byte) (ValidatingInput, error)
 		MakeInitialAgentTurnInput(context.Context, *ent.AgentSession) (*AiAgentTurnInput, error)
 		InvokeAgentTurn(context.Context, InvokeAgentTurnParams) (*AiAgentInvocationResult, error)
 	}
@@ -491,7 +500,7 @@ type (
 		AgentName        string
 		OwnerUserID      *uuid.UUID
 		PermissionScopes []string
-		Input            AiAgentSessionInput
+		Input            ValidatingInput
 		Metadata         map[string]any
 		Bindings         []AgentSessionBindingParams
 	}

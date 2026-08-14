@@ -148,10 +148,6 @@ components:
         createdAt:
           format: date-time
           type: string
-        initialTurn:
-          $ref: "#/components/schemas/AgentTurn"
-        latestTurn:
-          $ref: "#/components/schemas/AgentTurn"
         ownerUserId:
           type: string
         permissionScopes:
@@ -206,13 +202,12 @@ components:
           items:
             $ref: "#/components/schemas/AgentTurnKnowledgeCitation"
           type: array
-        parentTurnId:
-          type: string
+        sequence:
+          format: int64
+          type: integer
         startedAt:
           format: date-time
           type: string
-        state:
-          $ref: "#/components/schemas/SessionStateRawMessage"
         status:
           type: string
         updatedAt:
@@ -220,6 +215,7 @@ components:
           type: string
       required:
         - status
+        - sequence
         - createdAt
         - updatedAt
       type: object
@@ -382,21 +378,6 @@ components:
         - accurateUnknown
         - docsAvailable
         - docsNeedsUpdate
-      type: object
-    Artifact:
-      additionalProperties: false
-      properties:
-        metadata:
-          additionalProperties: {}
-          type: object
-        name:
-          type: string
-        parts:
-          items:
-            $ref: "#/components/schemas/Part"
-          type: array
-      required:
-        - parts
       type: object
     CompleteIntegrationOAuthFlowRequestAttributes:
       additionalProperties: false
@@ -4265,19 +4246,6 @@ components:
         - attendees
         - documentName
       type: object
-    Message:
-      additionalProperties: false
-      properties:
-        content:
-          items:
-            $ref: "#/components/schemas/Part"
-          type: array
-        metadata:
-          additionalProperties: {}
-          type: object
-        role:
-          type: string
-      type: object
     OncallRoster:
       additionalProperties: false
       properties:
@@ -4899,21 +4867,6 @@ components:
           $ref: "#/components/schemas/OncallShiftHandover"
       required:
         - data
-      type: object
-    SessionStateRawMessage:
-      additionalProperties: false
-      properties:
-        artifacts:
-          items:
-            $ref: "#/components/schemas/Artifact"
-          type: array
-        custom: {}
-        messages:
-          items:
-            $ref: "#/components/schemas/Message"
-          type: array
-        sessionId:
-          type: string
       type: object
     SetIncidentTimelineEventSystemContextAttributes:
       additionalProperties: false

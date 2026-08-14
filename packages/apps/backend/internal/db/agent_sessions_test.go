@@ -82,7 +82,7 @@ func (s *AgentSessionServiceSuite) newAgentSessionTestHarness() *agentSessionTes
 	}
 }
 
-func (s *AgentSessionServiceSuite) createAgentSession(ctx context.Context, input rez.AiAgentSessionInput) *ent.AgentSession {
+func (s *AgentSessionServiceSuite) createAgentSession(ctx context.Context, input rez.ValidatingInput) *ent.AgentSession {
 	inputJson, jsonErr := json.Marshal(input)
 	s.Require().NoError(jsonErr)
 	createSession := s.Client(ctx).AgentSession.Create().

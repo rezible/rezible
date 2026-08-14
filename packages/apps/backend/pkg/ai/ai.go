@@ -15,6 +15,10 @@ type EventOnAgentTurnFinished struct {
 	Response             *ai.Message
 }
 
+func (e EventOnAgentTurnFinished) MessageScopes() []string {
+	return []string{"agent_session:" + e.AgentSessionId.String(), "agent_turn:" + e.AgentTurnId.String()}
+}
+
 type EventOnAgentTurnChunk struct {
 	AgentSessionId uuid.UUID
 	AgentTurnId    uuid.UUID

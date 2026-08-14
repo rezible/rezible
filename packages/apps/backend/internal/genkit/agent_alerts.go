@@ -33,7 +33,7 @@ func (a *AlertsAgent) makeInitialTurnInput(ctx context.Context, input rezai.Aler
 	}, nil
 }
 
-func (a *AlertsAgent) makeInitialContextSeed(ctx context.Context, input rezai.AlertAgentInput) (string, error) {
+func (a *AlertsAgent) updateInitialTurnMessage(ctx context.Context, input rezai.AlertAgentInput) (string, error) {
 	inst, instErr := a.alerts.GetAlertInstance(ctx, input.AlertInstanceID)
 	if instErr != nil {
 		return "", fmt.Errorf("get alert instance: %w", instErr)

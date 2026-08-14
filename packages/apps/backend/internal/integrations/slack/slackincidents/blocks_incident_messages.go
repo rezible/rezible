@@ -31,10 +31,10 @@ func newIncidentDetailsMessageBuilder(inc *ent.Incident, incUrl *url.URL) *incid
 }
 
 func (b *incidentDetailsMessageBuilder) makeMessageBlocks() slack.MsgOption {
-	return slack.MsgOptionBlocks(b.build()...)
+	return slack.MsgOptionBlocks(b.Build()...)
 }
 
-func (b *incidentDetailsMessageBuilder) build() []slack.Block {
+func (b *incidentDetailsMessageBuilder) Build() []slack.Block {
 	b.blocks = make([]slack.Block, 0)
 	b.makeDetailsText()
 	b.makeActions()

@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/firebase/genkit/go/core"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 var (
@@ -15,7 +17,7 @@ var (
 )
 
 type (
-	AgentInput = rez.AiAgentSessionInput
+	AgentInput = rez.ValidatingInput
 
 	SessionState interface {
 	}
@@ -28,6 +30,13 @@ type (
 		Model          string
 		SystemPrompt   string
 		inputValidator func(I) error
+	}
+
+	AgentWrapper interface {
+		Config() rez.AiAgentConfig
+		ValidateInput([]byte) (rez.ValidatingInput, error)
+		MakeInitialTurnInput(context.Context, *ent.AgentSession) (*rez.AiAgentTurnInput, error)
+		Invoke(context.Context, rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error)
 	}
 )
 

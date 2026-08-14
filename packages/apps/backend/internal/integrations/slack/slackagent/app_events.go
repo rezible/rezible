@@ -7,17 +7,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/firebase/genkit/go/ai"
-	"github.com/google/uuid"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	asb "github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/user"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
-	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
 func (a *App) RespondEventTypes() []slackevents.EventsAPIType {
@@ -52,90 +47,31 @@ func (a *App) EventsApiHandler() slackintegration.EventsApiHandler {
 	}
 }
 
-const (
-	slackAgentBindingSource             = "slack"
-	slackAgentBindingResourceKindThread = "thread"
-)
-
-func slackThreadResourceRef(channelID string, threadTs string) string {
-	return channelID + ":" + threadTs
-}
-
-func (a *App) lookupSlackThreadBinding(ctx context.Context, integrationID uuid.UUID, channelID string, threadTs string) (*ent.AgentSessionBinding, error) {
-	return a.agents.LookupAgentSessionBinding(ctx,
-		asb.IntegrationID(integrationID),
-		asb.Source(slackAgentBindingSource),
-		asb.ResourceKind(slackAgentBindingResourceKindThread),
-		asb.ResourceRef(slackThreadResourceRef(channelID, threadTs)))
-}
-
-func (a *App) startAgentThreadReply(ctx context.Context, cw *slackintegration.ClientWrapper, userId uuid.UUID, msg string, channelID string, threadTs string) error {
-	bindingParams := rez.AgentSessionBindingParams{
-		IntegrationID: &cw.Integration().ID,
-		Source:        slackAgentBindingSource,
-		ResourceKind:  slackAgentBindingResourceKindThread,
-		ResourceRef:   slackThreadResourceRef(channelID, threadTs),
-		Metadata: map[string]any{
-			"channel_id": channelID,
-			"thread_ts":  threadTs,
-		},
-	}
-	createSessionParams := rez.CreateAgentSessionParams{
-		AgentName:   rezai.ChatAgent.Name,
-		OwnerUserID: &userId,
-		Input:       rezai.ChatAgentInput{UserId: userId, Message: msg},
-		Bindings:    []rez.AgentSessionBindingParams{bindingParams},
-	}
-	if _, sessionErr := a.agents.CreateAgentSession(ctx, createSessionParams); sessionErr != nil {
-		slog.Error("failed to create chat agent session", "error", sessionErr)
-	}
-	return nil
-}
-
-var mentionRe = regexp.MustCompile(`<@([^>]+)>`)
-
 func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.AppMentionEvent) error {
-	replyTs := data.TimeStamp
-	if data.ThreadTimeStamp != "" {
-		replyTs = data.ThreadTimeStamp
-	}
-
 	usr, usrErr := a.users.Get(ctx, user.ChatID(data.User))
 	if usrErr != nil {
 		return fmt.Errorf("failed to lookup chat user: %w", usrErr)
 	}
-
-	cleanedText := strings.TrimSpace(mentionRe.ReplaceAllString(data.Text, ""))
-
-	binding, bindingErr := a.lookupSlackThreadBinding(ctx, cw.Integration().ID, data.Channel, replyTs)
-	if bindingErr != nil && !ent.IsNotFound(bindingErr) {
-		return fmt.Errorf("failed to lookup agent session binding: %w", bindingErr)
-	}
-	if binding == nil {
-		return a.startAgentThreadReply(ctx, cw, usr.ID, cleanedText, data.Channel, replyTs)
-	}
-
-	slog.Debug("continuing existing agent session in thread")
-	params := &rez.RequestAgentTurnParams{
-		Input: &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(cleanedText)},
-	}
-	_, requestErr := a.agents.RequestAgentTurn(ctx, binding.AgentSessionID, params)
-	if requestErr != nil {
-		slog.Error("failed to request chat agent turn", "error", requestErr)
-	}
-	return nil
+	return a.onAgentMentionedByUser(ctx, usr, cw.Integration(), data)
 }
+
+var mentionRe = regexp.MustCompile(`<@([^>]+)>`)
 
 func (a *App) onMessageEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.MessageEvent) error {
 	if data.User == "" || data.BotID != "" || data.SubType != "" || data.ThreadTimeStamp == "" || data.ThreadTimeStamp == data.TimeStamp {
 		return nil
 	}
-	cleanedText := strings.TrimSpace(mentionRe.ReplaceAllString(data.Text, ""))
-	if cleanedText == "" {
+
+	if cleanedText := strings.TrimSpace(mentionRe.ReplaceAllString(data.Text, "")); cleanedText == "" {
 		return nil
 	}
 
-	binding, bindingErr := a.lookupSlackThreadBinding(ctx, cw.Integration().ID, data.Channel, data.ThreadTimeStamp)
+	res := &agentThreadBindingResource{
+		ChannelId: data.Channel,
+		ThreadTs:  data.ThreadTimeStamp,
+	}
+
+	binding, bindingErr := a.lookupSlackThreadBinding(ctx, cw.Integration().ID, res)
 	if bindingErr != nil {
 		if ent.IsNotFound(bindingErr) {
 			return nil
@@ -143,15 +79,12 @@ func (a *App) onMessageEvent(ctx context.Context, cw *slackintegration.ClientWra
 		return fmt.Errorf("lookup slack thread binding: %w", bindingErr)
 	}
 
-	args := CheckAgentThreadResponseRequiredArgs{
-		BindingId: binding.ID,
-		ReplyTs:   data.TimeStamp,
-	}
-	if _, jobErr := a.jobs.Insert(ctx, args, nil); jobErr != nil {
-		slog.Error("failed to insert check agent thread job", "error", jobErr)
-	}
+	//usr, usrErr := a.users.Get(ctx, user.ChatID(data.User))
+	//if usrErr != nil {
+	//	return fmt.Errorf("failed to lookup chat user: %w", usrErr)
+	//}
 
-	return nil
+	return a.onBoundAgentThreadUserMessage(ctx, binding, data.Message)
 }
 
 func (a *App) onAssistantThreadStartedEvent(ctx context.Context, data *slackevents.AssistantThreadStartedEvent) error {
@@ -160,7 +93,7 @@ func (a *App) onAssistantThreadStartedEvent(ctx context.Context, data *slackeven
 }
 
 func (a *App) onUserHomeOpenedEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.AppHomeOpenedEvent) error {
-	homeView, viewErr := makeUserHomeView(ctx)
+	homeView, viewErr := makeUserHomeViewRequest(ctx)
 	if viewErr != nil || homeView == nil {
 		return fmt.Errorf("failed to create user home view: %w", viewErr)
 	}

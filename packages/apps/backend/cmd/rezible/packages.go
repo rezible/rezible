@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
+	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/jobs"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
@@ -105,14 +106,22 @@ func makeMessageServiceProvider(ctx context.Context) Provider {
 }
 
 func makeGenkitProvider(ctx context.Context) Provider {
-	return do.Lazy(func(i do.Injector) (rez.AiService, error) {
-		s := genkit.NewAiService(do.MustInvoke[rez.Config](i))
-		intgToolsMw := genkit.WithIntegrationToolsMiddleware(do.MustInvoke[rez.IntegrationService](i))
-		return s, s.Init(ctx,
-			genkit.WithAgent(genkit.NewChatAgent(), intgToolsMw),
-			genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i)), intgToolsMw),
-		)
-	})
+	return do.Package(
+		do.Lazy(func(i do.Injector) (*genkit.AiService, error) {
+			s := genkit.NewAiService(do.MustInvoke[rez.Config](i))
+			intgToolsMw := genkit.WithIntegrationToolsMiddleware(do.MustInvoke[rez.IntegrationService](i))
+			return s, s.Init(ctx,
+				genkit.WithAgent(genkit.NewChatAgent(), intgToolsMw),
+				genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i)), intgToolsMw),
+				genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
+			)
+		}),
+		do.Bind[*genkit.AiService, rez.AiService](),
+
+		do.Lazy(func(i do.Injector) (rezai.ClassifyAgentThreadResponseWorkflowRunner, error) {
+			return rezai.ClassifyAgentThreadResponseWorkflow.GetRunner(do.MustInvoke[rez.AiService](i))
+		}),
+	)
 }
 
 var provideIntegrations = do.Package(
@@ -159,6 +168,7 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.AgentSessionService](i),
 			do.MustInvoke[rez.EventsService](i),
+			do.MustInvoke[rezai.ClassifyAgentThreadResponseWorkflowRunner](i),
 		)
 		if appErr != nil {
 			return nil, fmt.Errorf("making slackagent app: %w", appErr)

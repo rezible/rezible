@@ -1,7 +1,12 @@
 package slackincidents
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/incident"
 
 	"github.com/slack-go/slack"
 
@@ -10,23 +15,74 @@ import (
 	"github.com/rezible/rezible/internal/integrations/slack"
 )
 
-type incidentModalViewBuilder struct {
+const viewCallbackIdIncidentDetailsModal = "incident_details_modal"
+
+type incidentDetailsModalViewMetadata struct {
+	UserId           string    `json:"uid"`
+	CommandChannelId string    `json:"cid"`
+	IncidentId       uuid.UUID `json:"iid,omitempty"`
+}
+
+func (a *App) makeIncidentDetailsModalView(ctx context.Context, prefs UserSettingsIncidents, meta *incidentDetailsModalViewMetadata) (*slack.ModalViewRequest, error) {
+	var curr *ent.Incident
+	if meta.IncidentId != uuid.Nil {
+		inc, incErr := a.incidents.Get(ctx, incident.ID(meta.IncidentId))
+		if incErr != nil && !ent.IsNotFound(incErr) {
+			return nil, incErr
+		}
+		curr = inc
+	}
+
+	incMeta, incMetaErr := a.incidents.GetIncidentMetadata(ctx)
+	if incMetaErr != nil {
+		return nil, fmt.Errorf("failed to get incident metadata: %w", incMetaErr)
+	}
+
+	builder := newIncidentDetailsModalViewBuilder(curr, meta, prefs)
+	blockSet := builder.Build(incMeta)
+
+	jsonMetadata, jsonErr := json.Marshal(meta)
+	if jsonErr != nil {
+		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
+	}
+
+	titleText := "Open Incident"
+	submitText := "Submit"
+	if curr != nil {
+		titleText = "Update Incident"
+		submitText = "Update"
+	}
+
+	view := &slack.ModalViewRequest{
+		Type:            "modal",
+		CallbackID:      viewCallbackIdIncidentDetailsModal,
+		Title:           slackintegration.PlainTextBlock(titleText),
+		Submit:          slackintegration.PlainTextBlock(submitText),
+		Close:           slackintegration.PlainTextBlock("Cancel"),
+		PrivateMetadata: string(jsonMetadata),
+		Blocks:          blockSet,
+	}
+
+	return view, nil
+}
+
+type incidentDetailsModalViewBuilder struct {
 	blocks   []slack.Block
 	incident *ent.Incident
 	metadata *incidentDetailsModalViewMetadata
 	prefs    UserSettingsIncidents
 }
 
-func newIncidentModalViewBuilder(curr *ent.Incident, meta *incidentDetailsModalViewMetadata, prefs UserSettingsIncidents) *incidentModalViewBuilder {
-	return &incidentModalViewBuilder{
-		blocks:   []slack.Block{},
+func newIncidentDetailsModalViewBuilder(curr *ent.Incident, meta *incidentDetailsModalViewMetadata, prefs UserSettingsIncidents) *incidentDetailsModalViewBuilder {
+	return &incidentDetailsModalViewBuilder{
 		incident: curr,
 		metadata: meta,
 		prefs:    prefs,
 	}
 }
 
-func (b *incidentModalViewBuilder) build(im *rez.IncidentMetadata) slack.Blocks {
+func (b *incidentDetailsModalViewBuilder) Build(im *rez.IncidentMetadata) slack.Blocks {
+	b.blocks = make([]slack.Block, 0)
 	b.makeTitleInput()
 	b.makeSeveritySelect(im.Severities)
 	if b.incident != nil {
@@ -92,7 +148,7 @@ func incidentModalFieldOptionIds(optId string) slackintegration.BlockActionIds {
 	return slackintegration.BlockActionIds{Block: "incident_field_" + optId, Input: "incident_field_select_" + optId}
 }
 
-func (b *incidentModalViewBuilder) makeTitleInput() {
+func (b *incidentDetailsModalViewBuilder) makeTitleInput() {
 	// Title input
 	titleInput := slack.NewPlainTextInputBlockElement(nil, incidentModalTitleIds.Input)
 	if b.incident != nil {
@@ -102,13 +158,13 @@ func (b *incidentModalViewBuilder) makeTitleInput() {
 		slack.NewInputBlock(incidentModalTitleIds.Block, slackintegration.PlainTextBlock("Title"), nil, titleInput))
 }
 
-func (b *incidentModalViewBuilder) makeOpenMilestoneModalButton() {
+func (b *incidentDetailsModalViewBuilder) makeOpenMilestoneModalButton() {
 	milestoneButtonText := slackintegration.PlainTextBlock("Update Status")
 	milestoneButton := slack.NewButtonBlockElement(actionCallbackIdIncidentMilestoneModalButton, "milestone", milestoneButtonText)
 	b.blocks = append(b.blocks, slack.NewActionBlock("incident_actions", milestoneButton))
 }
 
-func (b *incidentModalViewBuilder) makeSeveritySelect(sevs ent.IncidentSeverities) {
+func (b *incidentDetailsModalViewBuilder) makeSeveritySelect(sevs ent.IncidentSeverities) {
 	options := make([]*slack.OptionBlockObject, len(sevs))
 	initialOptIdx := 0
 	for i, sev := range sevs {
@@ -126,7 +182,7 @@ func (b *incidentModalViewBuilder) makeSeveritySelect(sevs ent.IncidentSeveritie
 		slack.NewInputBlock(incidentModalSeverityIds.Block, slackintegration.PlainTextBlock("Severity"), nil, severitySelect))
 }
 
-func (b *incidentModalViewBuilder) makeTypeSelect(types ent.IncidentTypes) {
+func (b *incidentDetailsModalViewBuilder) makeTypeSelect(types ent.IncidentTypes) {
 	options := make([]*slack.OptionBlockObject, len(types))
 	initialOptIdx := 0
 	for i, t := range types {
@@ -144,7 +200,7 @@ func (b *incidentModalViewBuilder) makeTypeSelect(types ent.IncidentTypes) {
 		slack.NewInputBlock(incidentModalTypeIds.Block, slackintegration.PlainTextBlock("Incident Type"), nil, typeSelect))
 }
 
-func (b *incidentModalViewBuilder) makeTagsSelect(tags ent.IncidentTags) {
+func (b *incidentDetailsModalViewBuilder) makeTagsSelect(tags ent.IncidentTags) {
 	options := make([]*slack.OptionBlockObject, len(tags))
 	initialOptions := make([]*slack.OptionBlockObject, 0, len(tags))
 	selectedTagIds := map[uuid.UUID]struct{}{}
@@ -174,7 +230,7 @@ func (b *incidentModalViewBuilder) makeTagsSelect(tags ent.IncidentTags) {
 		slack.NewInputBlock(incidentModalTagIds.Block, slackintegration.PlainTextBlock("Tags"), nil, tagSelect).WithOptional(true))
 }
 
-func (b *incidentModalViewBuilder) makeCustomFieldSelect(fields ent.IncidentFields) {
+func (b *incidentDetailsModalViewBuilder) makeCustomFieldSelect(fields ent.IncidentFields) {
 	b.blocks = append(b.blocks, slack.NewDividerBlock())
 	for _, field := range fields {
 		fieldOptions := make([]*slack.OptionBlockObject, len(field.Edges.Options))
