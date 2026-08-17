@@ -23,7 +23,6 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
-	"github.com/rezible/rezible/ent/incidenttimelineevent"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
@@ -48,7 +47,6 @@ type IncidentQuery struct {
 	withSeverity         *IncidentSeverityQuery
 	withType             *IncidentTypeQuery
 	withMilestones       *IncidentMilestoneQuery
-	withTimelineEvents   *IncidentTimelineEventQuery
 	withRetrospective    *RetrospectiveQuery
 	withUsers            *UserQuery
 	withRoleAssignments  *IncidentRoleAssignmentQuery
@@ -218,31 +216,6 @@ func (_q *IncidentQuery) QueryMilestones() *IncidentMilestoneQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.IncidentMilestone
 		step.Edge.Schema = schemaConfig.IncidentMilestone
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryTimelineEvents chains the current query on the "timeline_events" edge.
-func (_q *IncidentQuery) QueryTimelineEvents() *IncidentTimelineEventQuery {
-	query := (&IncidentTimelineEventClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(incidenttimelineevent.Table, incidenttimelineevent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incident.TimelineEventsTable, incident.TimelineEventsColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.IncidentTimelineEvent
-		step.Edge.Schema = schemaConfig.IncidentTimelineEvent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -771,7 +744,6 @@ func (_q *IncidentQuery) Clone() *IncidentQuery {
 		withSeverity:         _q.withSeverity.Clone(),
 		withType:             _q.withType.Clone(),
 		withMilestones:       _q.withMilestones.Clone(),
-		withTimelineEvents:   _q.withTimelineEvents.Clone(),
 		withRetrospective:    _q.withRetrospective.Clone(),
 		withUsers:            _q.withUsers.Clone(),
 		withRoleAssignments:  _q.withRoleAssignments.Clone(),
@@ -844,17 +816,6 @@ func (_q *IncidentQuery) WithMilestones(opts ...func(*IncidentMilestoneQuery)) *
 		opt(query)
 	}
 	_q.withMilestones = query
-	return _q
-}
-
-// WithTimelineEvents tells the query-builder to eager-load the nodes that are connected to
-// the "timeline_events" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentQuery) WithTimelineEvents(opts ...func(*IncidentTimelineEventQuery)) *IncidentQuery {
-	query := (&IncidentTimelineEventClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withTimelineEvents = query
 	return _q
 }
 
@@ -1085,13 +1046,12 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = _q.querySpec()
-		loadedTypes = [19]bool{
+		loadedTypes = [18]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withSeverity != nil,
 			_q.withType != nil,
 			_q.withMilestones != nil,
-			_q.withTimelineEvents != nil,
 			_q.withRetrospective != nil,
 			_q.withUsers != nil,
 			_q.withRoleAssignments != nil,
@@ -1158,15 +1118,6 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 		if err := _q.loadMilestones(ctx, query, nodes,
 			func(n *Incident) { n.Edges.Milestones = []*IncidentMilestone{} },
 			func(n *Incident, e *IncidentMilestone) { n.Edges.Milestones = append(n.Edges.Milestones, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withTimelineEvents; query != nil {
-		if err := _q.loadTimelineEvents(ctx, query, nodes,
-			func(n *Incident) { n.Edges.TimelineEvents = []*IncidentTimelineEvent{} },
-			func(n *Incident, e *IncidentTimelineEvent) {
-				n.Edges.TimelineEvents = append(n.Edges.TimelineEvents, e)
-			}); err != nil {
 			return nil, err
 		}
 	}
@@ -1401,36 +1352,6 @@ func (_q *IncidentQuery) loadMilestones(ctx context.Context, query *IncidentMile
 	}
 	query.Where(predicate.IncidentMilestone(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(incident.MilestonesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.IncidentID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *IncidentQuery) loadTimelineEvents(ctx context.Context, query *IncidentTimelineEventQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentTimelineEvent)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Incident)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidenttimelineevent.FieldIncidentID)
-	}
-	query.Where(predicate.IncidentTimelineEvent(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incident.TimelineEventsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

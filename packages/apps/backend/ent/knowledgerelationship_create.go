@@ -62,8 +62,14 @@ func (_c *KnowledgeRelationshipCreate) SetNillableUpdatedAt(v *time.Time) *Knowl
 }
 
 // SetKind sets the "kind" field.
-func (_c *KnowledgeRelationshipCreate) SetKind(v string) *KnowledgeRelationshipCreate {
+func (_c *KnowledgeRelationshipCreate) SetKind(v knowledgerelationship.Kind) *KnowledgeRelationshipCreate {
 	_c.mutation.SetKind(v)
+	return _c
+}
+
+// SetSubkind sets the "subkind" field.
+func (_c *KnowledgeRelationshipCreate) SetSubkind(v string) *KnowledgeRelationshipCreate {
+	_c.mutation.SetSubkind(v)
 	return _c
 }
 
@@ -203,6 +209,14 @@ func (_c *KnowledgeRelationshipCreate) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeRelationship.kind": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.Subkind(); !ok {
+		return &ValidationError{Name: "subkind", err: errors.New(`ent: missing required field "KnowledgeRelationship.subkind"`)}
+	}
+	if v, ok := _c.mutation.Subkind(); ok {
+		if err := knowledgerelationship.SubkindValidator(v); err != nil {
+			return &ValidationError{Name: "subkind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeRelationship.subkind": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.SourceEntityID(); !ok {
 		return &ValidationError{Name: "source_entity_id", err: errors.New(`ent: missing required field "KnowledgeRelationship.source_entity_id"`)}
 	}
@@ -264,8 +278,12 @@ func (_c *KnowledgeRelationshipCreate) createSpec() (*KnowledgeRelationship, *sq
 		_node.UpdatedAt = value
 	}
 	if value, ok := _c.mutation.Kind(); ok {
-		_spec.SetField(knowledgerelationship.FieldKind, field.TypeString, value)
+		_spec.SetField(knowledgerelationship.FieldKind, field.TypeEnum, value)
 		_node.Kind = value
+	}
+	if value, ok := _c.mutation.Subkind(); ok {
+		_spec.SetField(knowledgerelationship.FieldSubkind, field.TypeString, value)
+		_node.Subkind = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -436,6 +454,9 @@ func (u *KnowledgeRelationshipUpsertOne) UpdateNewValues() *KnowledgeRelationshi
 		}
 		if _, exists := u.create.mutation.Kind(); exists {
 			s.SetIgnore(knowledgerelationship.FieldKind)
+		}
+		if _, exists := u.create.mutation.Subkind(); exists {
+			s.SetIgnore(knowledgerelationship.FieldSubkind)
 		}
 		if _, exists := u.create.mutation.SourceEntityID(); exists {
 			s.SetIgnore(knowledgerelationship.FieldSourceEntityID)
@@ -690,6 +711,9 @@ func (u *KnowledgeRelationshipUpsertBulk) UpdateNewValues() *KnowledgeRelationsh
 			}
 			if _, exists := b.mutation.Kind(); exists {
 				s.SetIgnore(knowledgerelationship.FieldKind)
+			}
+			if _, exists := b.mutation.Subkind(); exists {
+				s.SetIgnore(knowledgerelationship.FieldSubkind)
 			}
 			if _, exists := b.mutation.SourceEntityID(); exists {
 				s.SetIgnore(knowledgerelationship.FieldSourceEntityID)

@@ -21,7 +21,6 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
-	"github.com/rezible/rezible/ent/incidenttimelineevent"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
@@ -225,21 +224,6 @@ func (_u *IncidentUpdate) AddMilestones(v ...*IncidentMilestone) *IncidentUpdate
 		ids[i] = v[i].ID
 	}
 	return _u.AddMilestoneIDs(ids...)
-}
-
-// AddTimelineEventIDs adds the "timeline_events" edge to the IncidentTimelineEvent entity by IDs.
-func (_u *IncidentUpdate) AddTimelineEventIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.AddTimelineEventIDs(ids...)
-	return _u
-}
-
-// AddTimelineEvents adds the "timeline_events" edges to the IncidentTimelineEvent entity.
-func (_u *IncidentUpdate) AddTimelineEvents(v ...*IncidentTimelineEvent) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddTimelineEventIDs(ids...)
 }
 
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
@@ -483,27 +467,6 @@ func (_u *IncidentUpdate) RemoveMilestones(v ...*IncidentMilestone) *IncidentUpd
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMilestoneIDs(ids...)
-}
-
-// ClearTimelineEvents clears all "timeline_events" edges to the IncidentTimelineEvent entity.
-func (_u *IncidentUpdate) ClearTimelineEvents() *IncidentUpdate {
-	_u.mutation.ClearTimelineEvents()
-	return _u
-}
-
-// RemoveTimelineEventIDs removes the "timeline_events" edge to IncidentTimelineEvent entities by IDs.
-func (_u *IncidentUpdate) RemoveTimelineEventIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.RemoveTimelineEventIDs(ids...)
-	return _u
-}
-
-// RemoveTimelineEvents removes "timeline_events" edges to IncidentTimelineEvent entities.
-func (_u *IncidentUpdate) RemoveTimelineEvents(v ...*IncidentTimelineEvent) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveTimelineEventIDs(ids...)
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
@@ -1001,54 +964,6 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentMilestone
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.TimelineEventsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TimelineEventsTable,
-			Columns: []string{incident.TimelineEventsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedTimelineEventsIDs(); len(nodes) > 0 && !_u.mutation.TimelineEventsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TimelineEventsTable,
-			Columns: []string{incident.TimelineEventsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.TimelineEventsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TimelineEventsTable,
-			Columns: []string{incident.TimelineEventsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1886,21 +1801,6 @@ func (_u *IncidentUpdateOne) AddMilestones(v ...*IncidentMilestone) *IncidentUpd
 	return _u.AddMilestoneIDs(ids...)
 }
 
-// AddTimelineEventIDs adds the "timeline_events" edge to the IncidentTimelineEvent entity by IDs.
-func (_u *IncidentUpdateOne) AddTimelineEventIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.AddTimelineEventIDs(ids...)
-	return _u
-}
-
-// AddTimelineEvents adds the "timeline_events" edges to the IncidentTimelineEvent entity.
-func (_u *IncidentUpdateOne) AddTimelineEvents(v ...*IncidentTimelineEvent) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddTimelineEventIDs(ids...)
-}
-
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
 func (_u *IncidentUpdateOne) SetRetrospectiveID(id uuid.UUID) *IncidentUpdateOne {
 	_u.mutation.SetRetrospectiveID(id)
@@ -2142,27 +2042,6 @@ func (_u *IncidentUpdateOne) RemoveMilestones(v ...*IncidentMilestone) *Incident
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMilestoneIDs(ids...)
-}
-
-// ClearTimelineEvents clears all "timeline_events" edges to the IncidentTimelineEvent entity.
-func (_u *IncidentUpdateOne) ClearTimelineEvents() *IncidentUpdateOne {
-	_u.mutation.ClearTimelineEvents()
-	return _u
-}
-
-// RemoveTimelineEventIDs removes the "timeline_events" edge to IncidentTimelineEvent entities by IDs.
-func (_u *IncidentUpdateOne) RemoveTimelineEventIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.RemoveTimelineEventIDs(ids...)
-	return _u
-}
-
-// RemoveTimelineEvents removes "timeline_events" edges to IncidentTimelineEvent entities.
-func (_u *IncidentUpdateOne) RemoveTimelineEvents(v ...*IncidentTimelineEvent) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveTimelineEventIDs(ids...)
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
@@ -2690,54 +2569,6 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentMilestone
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.TimelineEventsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TimelineEventsTable,
-			Columns: []string{incident.TimelineEventsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedTimelineEventsIDs(); len(nodes) > 0 && !_u.mutation.TimelineEventsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TimelineEventsTable,
-			Columns: []string{incident.TimelineEventsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.TimelineEventsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TimelineEventsTable,
-			Columns: []string{incident.TimelineEventsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

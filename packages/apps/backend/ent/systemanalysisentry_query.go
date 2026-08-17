@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -14,62 +15,62 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
+	"github.com/rezible/rezible/ent/systemanalysisentry"
+	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// SystemAnalysisTopologyEdgeQuery is the builder for querying SystemAnalysisTopologyEdge entities.
-type SystemAnalysisTopologyEdgeQuery struct {
+// SystemAnalysisEntryQuery is the builder for querying SystemAnalysisEntry entities.
+type SystemAnalysisEntryQuery struct {
 	config
-	ctx                       *QueryContext
-	order                     []systemanalysistopologyedge.OrderOption
-	inters                    []Interceptor
-	predicates                []predicate.SystemAnalysisTopologyEdge
-	withTenant                *TenantQuery
-	withAnalysis              *SystemAnalysisQuery
-	withKnowledgeRelationship *KnowledgeRelationshipQuery
-	modifiers                 []func(*sql.Selector)
+	ctx          *QueryContext
+	order        []systemanalysisentry.OrderOption
+	inters       []Interceptor
+	predicates   []predicate.SystemAnalysisEntry
+	withTenant   *TenantQuery
+	withAnalysis *SystemAnalysisQuery
+	withSubjects *SystemAnalysisEntrySubjectQuery
+	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the SystemAnalysisTopologyEdgeQuery builder.
-func (_q *SystemAnalysisTopologyEdgeQuery) Where(ps ...predicate.SystemAnalysisTopologyEdge) *SystemAnalysisTopologyEdgeQuery {
+// Where adds a new predicate for the SystemAnalysisEntryQuery builder.
+func (_q *SystemAnalysisEntryQuery) Where(ps ...predicate.SystemAnalysisEntry) *SystemAnalysisEntryQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *SystemAnalysisTopologyEdgeQuery) Limit(limit int) *SystemAnalysisTopologyEdgeQuery {
+func (_q *SystemAnalysisEntryQuery) Limit(limit int) *SystemAnalysisEntryQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *SystemAnalysisTopologyEdgeQuery) Offset(offset int) *SystemAnalysisTopologyEdgeQuery {
+func (_q *SystemAnalysisEntryQuery) Offset(offset int) *SystemAnalysisEntryQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *SystemAnalysisTopologyEdgeQuery) Unique(unique bool) *SystemAnalysisTopologyEdgeQuery {
+func (_q *SystemAnalysisEntryQuery) Unique(unique bool) *SystemAnalysisEntryQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *SystemAnalysisTopologyEdgeQuery) Order(o ...systemanalysistopologyedge.OrderOption) *SystemAnalysisTopologyEdgeQuery {
+func (_q *SystemAnalysisEntryQuery) Order(o ...systemanalysisentry.OrderOption) *SystemAnalysisEntryQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *SystemAnalysisTopologyEdgeQuery) QueryTenant() *TenantQuery {
+func (_q *SystemAnalysisEntryQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -80,13 +81,13 @@ func (_q *SystemAnalysisTopologyEdgeQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID, selector),
+			sqlgraph.From(systemanalysisentry.Table, systemanalysisentry.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysistopologyedge.TenantTable, systemanalysistopologyedge.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisentry.TenantTable, systemanalysisentry.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -94,7 +95,7 @@ func (_q *SystemAnalysisTopologyEdgeQuery) QueryTenant() *TenantQuery {
 }
 
 // QueryAnalysis chains the current query on the "analysis" edge.
-func (_q *SystemAnalysisTopologyEdgeQuery) QueryAnalysis() *SystemAnalysisQuery {
+func (_q *SystemAnalysisEntryQuery) QueryAnalysis() *SystemAnalysisQuery {
 	query := (&SystemAnalysisClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -105,22 +106,22 @@ func (_q *SystemAnalysisTopologyEdgeQuery) QueryAnalysis() *SystemAnalysisQuery 
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID, selector),
+			sqlgraph.From(systemanalysisentry.Table, systemanalysisentry.FieldID, selector),
 			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysistopologyedge.AnalysisTable, systemanalysistopologyedge.AnalysisColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisentry.AnalysisTable, systemanalysisentry.AnalysisColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysis
-		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryKnowledgeRelationship chains the current query on the "knowledge_relationship" edge.
-func (_q *SystemAnalysisTopologyEdgeQuery) QueryKnowledgeRelationship() *KnowledgeRelationshipQuery {
-	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+// QuerySubjects chains the current query on the "subjects" edge.
+func (_q *SystemAnalysisEntryQuery) QuerySubjects() *SystemAnalysisEntrySubjectQuery {
+	query := (&SystemAnalysisEntrySubjectClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -130,34 +131,34 @@ func (_q *SystemAnalysisTopologyEdgeQuery) QueryKnowledgeRelationship() *Knowled
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID, selector),
-			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysistopologyedge.KnowledgeRelationshipTable, systemanalysistopologyedge.KnowledgeRelationshipColumn),
+			sqlgraph.From(systemanalysisentry.Table, systemanalysisentry.FieldID, selector),
+			sqlgraph.To(systemanalysisentrysubject.Table, systemanalysisentrysubject.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysisentry.SubjectsTable, systemanalysisentry.SubjectsColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeRelationship
-		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		step.To.Schema = schemaConfig.SystemAnalysisEntrySubject
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// First returns the first SystemAnalysisTopologyEdge entity from the query.
-// Returns a *NotFoundError when no SystemAnalysisTopologyEdge was found.
-func (_q *SystemAnalysisTopologyEdgeQuery) First(ctx context.Context) (*SystemAnalysisTopologyEdge, error) {
+// First returns the first SystemAnalysisEntry entity from the query.
+// Returns a *NotFoundError when no SystemAnalysisEntry was found.
+func (_q *SystemAnalysisEntryQuery) First(ctx context.Context) (*SystemAnalysisEntry, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{systemanalysistopologyedge.Label}
+		return nil, &NotFoundError{systemanalysisentry.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *SystemAnalysisTopologyEdgeQuery) FirstX(ctx context.Context) *SystemAnalysisTopologyEdge {
+func (_q *SystemAnalysisEntryQuery) FirstX(ctx context.Context) *SystemAnalysisEntry {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -165,22 +166,22 @@ func (_q *SystemAnalysisTopologyEdgeQuery) FirstX(ctx context.Context) *SystemAn
 	return node
 }
 
-// FirstID returns the first SystemAnalysisTopologyEdge ID from the query.
-// Returns a *NotFoundError when no SystemAnalysisTopologyEdge ID was found.
-func (_q *SystemAnalysisTopologyEdgeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first SystemAnalysisEntry ID from the query.
+// Returns a *NotFoundError when no SystemAnalysisEntry ID was found.
+func (_q *SystemAnalysisEntryQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{systemanalysistopologyedge.Label}
+		err = &NotFoundError{systemanalysisentry.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *SystemAnalysisTopologyEdgeQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *SystemAnalysisEntryQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -188,10 +189,10 @@ func (_q *SystemAnalysisTopologyEdgeQuery) FirstIDX(ctx context.Context) uuid.UU
 	return id
 }
 
-// Only returns a single SystemAnalysisTopologyEdge entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one SystemAnalysisTopologyEdge entity is found.
-// Returns a *NotFoundError when no SystemAnalysisTopologyEdge entities are found.
-func (_q *SystemAnalysisTopologyEdgeQuery) Only(ctx context.Context) (*SystemAnalysisTopologyEdge, error) {
+// Only returns a single SystemAnalysisEntry entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one SystemAnalysisEntry entity is found.
+// Returns a *NotFoundError when no SystemAnalysisEntry entities are found.
+func (_q *SystemAnalysisEntryQuery) Only(ctx context.Context) (*SystemAnalysisEntry, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -200,14 +201,14 @@ func (_q *SystemAnalysisTopologyEdgeQuery) Only(ctx context.Context) (*SystemAna
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{systemanalysistopologyedge.Label}
+		return nil, &NotFoundError{systemanalysisentry.Label}
 	default:
-		return nil, &NotSingularError{systemanalysistopologyedge.Label}
+		return nil, &NotSingularError{systemanalysisentry.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *SystemAnalysisTopologyEdgeQuery) OnlyX(ctx context.Context) *SystemAnalysisTopologyEdge {
+func (_q *SystemAnalysisEntryQuery) OnlyX(ctx context.Context) *SystemAnalysisEntry {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -215,10 +216,10 @@ func (_q *SystemAnalysisTopologyEdgeQuery) OnlyX(ctx context.Context) *SystemAna
 	return node
 }
 
-// OnlyID is like Only, but returns the only SystemAnalysisTopologyEdge ID in the query.
-// Returns a *NotSingularError when more than one SystemAnalysisTopologyEdge ID is found.
+// OnlyID is like Only, but returns the only SystemAnalysisEntry ID in the query.
+// Returns a *NotSingularError when more than one SystemAnalysisEntry ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *SystemAnalysisTopologyEdgeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemAnalysisEntryQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -227,15 +228,15 @@ func (_q *SystemAnalysisTopologyEdgeQuery) OnlyID(ctx context.Context) (id uuid.
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{systemanalysistopologyedge.Label}
+		err = &NotFoundError{systemanalysisentry.Label}
 	default:
-		err = &NotSingularError{systemanalysistopologyedge.Label}
+		err = &NotSingularError{systemanalysisentry.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *SystemAnalysisTopologyEdgeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *SystemAnalysisEntryQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -243,18 +244,18 @@ func (_q *SystemAnalysisTopologyEdgeQuery) OnlyIDX(ctx context.Context) uuid.UUI
 	return id
 }
 
-// All executes the query and returns a list of SystemAnalysisTopologyEdges.
-func (_q *SystemAnalysisTopologyEdgeQuery) All(ctx context.Context) ([]*SystemAnalysisTopologyEdge, error) {
+// All executes the query and returns a list of SystemAnalysisEntries.
+func (_q *SystemAnalysisEntryQuery) All(ctx context.Context) ([]*SystemAnalysisEntry, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*SystemAnalysisTopologyEdge, *SystemAnalysisTopologyEdgeQuery]()
-	return withInterceptors[[]*SystemAnalysisTopologyEdge](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*SystemAnalysisEntry, *SystemAnalysisEntryQuery]()
+	return withInterceptors[[]*SystemAnalysisEntry](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *SystemAnalysisTopologyEdgeQuery) AllX(ctx context.Context) []*SystemAnalysisTopologyEdge {
+func (_q *SystemAnalysisEntryQuery) AllX(ctx context.Context) []*SystemAnalysisEntry {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -262,20 +263,20 @@ func (_q *SystemAnalysisTopologyEdgeQuery) AllX(ctx context.Context) []*SystemAn
 	return nodes
 }
 
-// IDs executes the query and returns a list of SystemAnalysisTopologyEdge IDs.
-func (_q *SystemAnalysisTopologyEdgeQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of SystemAnalysisEntry IDs.
+func (_q *SystemAnalysisEntryQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(systemanalysistopologyedge.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(systemanalysisentry.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *SystemAnalysisTopologyEdgeQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *SystemAnalysisEntryQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -284,16 +285,16 @@ func (_q *SystemAnalysisTopologyEdgeQuery) IDsX(ctx context.Context) []uuid.UUID
 }
 
 // Count returns the count of the given query.
-func (_q *SystemAnalysisTopologyEdgeQuery) Count(ctx context.Context) (int, error) {
+func (_q *SystemAnalysisEntryQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*SystemAnalysisTopologyEdgeQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*SystemAnalysisEntryQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *SystemAnalysisTopologyEdgeQuery) CountX(ctx context.Context) int {
+func (_q *SystemAnalysisEntryQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -302,7 +303,7 @@ func (_q *SystemAnalysisTopologyEdgeQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *SystemAnalysisTopologyEdgeQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *SystemAnalysisEntryQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -315,7 +316,7 @@ func (_q *SystemAnalysisTopologyEdgeQuery) Exist(ctx context.Context) (bool, err
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *SystemAnalysisTopologyEdgeQuery) ExistX(ctx context.Context) bool {
+func (_q *SystemAnalysisEntryQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -323,21 +324,21 @@ func (_q *SystemAnalysisTopologyEdgeQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the SystemAnalysisTopologyEdgeQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the SystemAnalysisEntryQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *SystemAnalysisTopologyEdgeQuery) Clone() *SystemAnalysisTopologyEdgeQuery {
+func (_q *SystemAnalysisEntryQuery) Clone() *SystemAnalysisEntryQuery {
 	if _q == nil {
 		return nil
 	}
-	return &SystemAnalysisTopologyEdgeQuery{
-		config:                    _q.config,
-		ctx:                       _q.ctx.Clone(),
-		order:                     append([]systemanalysistopologyedge.OrderOption{}, _q.order...),
-		inters:                    append([]Interceptor{}, _q.inters...),
-		predicates:                append([]predicate.SystemAnalysisTopologyEdge{}, _q.predicates...),
-		withTenant:                _q.withTenant.Clone(),
-		withAnalysis:              _q.withAnalysis.Clone(),
-		withKnowledgeRelationship: _q.withKnowledgeRelationship.Clone(),
+	return &SystemAnalysisEntryQuery{
+		config:       _q.config,
+		ctx:          _q.ctx.Clone(),
+		order:        append([]systemanalysisentry.OrderOption{}, _q.order...),
+		inters:       append([]Interceptor{}, _q.inters...),
+		predicates:   append([]predicate.SystemAnalysisEntry{}, _q.predicates...),
+		withTenant:   _q.withTenant.Clone(),
+		withAnalysis: _q.withAnalysis.Clone(),
+		withSubjects: _q.withSubjects.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -347,7 +348,7 @@ func (_q *SystemAnalysisTopologyEdgeQuery) Clone() *SystemAnalysisTopologyEdgeQu
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisTopologyEdgeQuery) WithTenant(opts ...func(*TenantQuery)) *SystemAnalysisTopologyEdgeQuery {
+func (_q *SystemAnalysisEntryQuery) WithTenant(opts ...func(*TenantQuery)) *SystemAnalysisEntryQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -358,7 +359,7 @@ func (_q *SystemAnalysisTopologyEdgeQuery) WithTenant(opts ...func(*TenantQuery)
 
 // WithAnalysis tells the query-builder to eager-load the nodes that are connected to
 // the "analysis" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisTopologyEdgeQuery) WithAnalysis(opts ...func(*SystemAnalysisQuery)) *SystemAnalysisTopologyEdgeQuery {
+func (_q *SystemAnalysisEntryQuery) WithAnalysis(opts ...func(*SystemAnalysisQuery)) *SystemAnalysisEntryQuery {
 	query := (&SystemAnalysisClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -367,14 +368,14 @@ func (_q *SystemAnalysisTopologyEdgeQuery) WithAnalysis(opts ...func(*SystemAnal
 	return _q
 }
 
-// WithKnowledgeRelationship tells the query-builder to eager-load the nodes that are connected to
-// the "knowledge_relationship" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisTopologyEdgeQuery) WithKnowledgeRelationship(opts ...func(*KnowledgeRelationshipQuery)) *SystemAnalysisTopologyEdgeQuery {
-	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+// WithSubjects tells the query-builder to eager-load the nodes that are connected to
+// the "subjects" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisEntryQuery) WithSubjects(opts ...func(*SystemAnalysisEntrySubjectQuery)) *SystemAnalysisEntryQuery {
+	query := (&SystemAnalysisEntrySubjectClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withKnowledgeRelationship = query
+	_q.withSubjects = query
 	return _q
 }
 
@@ -388,15 +389,15 @@ func (_q *SystemAnalysisTopologyEdgeQuery) WithKnowledgeRelationship(opts ...fun
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.SystemAnalysisTopologyEdge.Query().
-//		GroupBy(systemanalysistopologyedge.FieldTenantID).
+//	client.SystemAnalysisEntry.Query().
+//		GroupBy(systemanalysisentry.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *SystemAnalysisTopologyEdgeQuery) GroupBy(field string, fields ...string) *SystemAnalysisTopologyEdgeGroupBy {
+func (_q *SystemAnalysisEntryQuery) GroupBy(field string, fields ...string) *SystemAnalysisEntryGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &SystemAnalysisTopologyEdgeGroupBy{build: _q}
+	grbuild := &SystemAnalysisEntryGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = systemanalysistopologyedge.Label
+	grbuild.label = systemanalysisentry.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -410,23 +411,23 @@ func (_q *SystemAnalysisTopologyEdgeQuery) GroupBy(field string, fields ...strin
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.SystemAnalysisTopologyEdge.Query().
-//		Select(systemanalysistopologyedge.FieldTenantID).
+//	client.SystemAnalysisEntry.Query().
+//		Select(systemanalysisentry.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *SystemAnalysisTopologyEdgeQuery) Select(fields ...string) *SystemAnalysisTopologyEdgeSelect {
+func (_q *SystemAnalysisEntryQuery) Select(fields ...string) *SystemAnalysisEntrySelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &SystemAnalysisTopologyEdgeSelect{SystemAnalysisTopologyEdgeQuery: _q}
-	sbuild.label = systemanalysistopologyedge.Label
+	sbuild := &SystemAnalysisEntrySelect{SystemAnalysisEntryQuery: _q}
+	sbuild.label = systemanalysisentry.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a SystemAnalysisTopologyEdgeSelect configured with the given aggregations.
-func (_q *SystemAnalysisTopologyEdgeQuery) Aggregate(fns ...AggregateFunc) *SystemAnalysisTopologyEdgeSelect {
+// Aggregate returns a SystemAnalysisEntrySelect configured with the given aggregations.
+func (_q *SystemAnalysisEntryQuery) Aggregate(fns ...AggregateFunc) *SystemAnalysisEntrySelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *SystemAnalysisTopologyEdgeQuery) prepareQuery(ctx context.Context) error {
+func (_q *SystemAnalysisEntryQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -438,7 +439,7 @@ func (_q *SystemAnalysisTopologyEdgeQuery) prepareQuery(ctx context.Context) err
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !systemanalysistopologyedge.ValidColumn(f) {
+		if !systemanalysisentry.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -449,35 +450,35 @@ func (_q *SystemAnalysisTopologyEdgeQuery) prepareQuery(ctx context.Context) err
 		}
 		_q.sql = prev
 	}
-	if systemanalysistopologyedge.Policy == nil {
-		return errors.New("ent: uninitialized systemanalysistopologyedge.Policy (forgotten import ent/runtime?)")
+	if systemanalysisentry.Policy == nil {
+		return errors.New("ent: uninitialized systemanalysisentry.Policy (forgotten import ent/runtime?)")
 	}
-	if err := systemanalysistopologyedge.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := systemanalysisentry.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *SystemAnalysisTopologyEdgeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemAnalysisTopologyEdge, error) {
+func (_q *SystemAnalysisEntryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemAnalysisEntry, error) {
 	var (
-		nodes       = []*SystemAnalysisTopologyEdge{}
+		nodes       = []*SystemAnalysisEntry{}
 		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withAnalysis != nil,
-			_q.withKnowledgeRelationship != nil,
+			_q.withSubjects != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*SystemAnalysisTopologyEdge).scanValues(nil, columns)
+		return (*SystemAnalysisEntry).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &SystemAnalysisTopologyEdge{config: _q.config}
+		node := &SystemAnalysisEntry{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.SystemAnalysisTopologyEdge
+	_spec.Node.Schema = _q.schemaConfig.SystemAnalysisEntry
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -493,28 +494,31 @@ func (_q *SystemAnalysisTopologyEdgeQuery) sqlAll(ctx context.Context, hooks ...
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *SystemAnalysisTopologyEdge, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *SystemAnalysisEntry, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := _q.withAnalysis; query != nil {
 		if err := _q.loadAnalysis(ctx, query, nodes, nil,
-			func(n *SystemAnalysisTopologyEdge, e *SystemAnalysis) { n.Edges.Analysis = e }); err != nil {
+			func(n *SystemAnalysisEntry, e *SystemAnalysis) { n.Edges.Analysis = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withKnowledgeRelationship; query != nil {
-		if err := _q.loadKnowledgeRelationship(ctx, query, nodes, nil,
-			func(n *SystemAnalysisTopologyEdge, e *KnowledgeRelationship) { n.Edges.KnowledgeRelationship = e }); err != nil {
+	if query := _q.withSubjects; query != nil {
+		if err := _q.loadSubjects(ctx, query, nodes,
+			func(n *SystemAnalysisEntry) { n.Edges.Subjects = []*SystemAnalysisEntrySubject{} },
+			func(n *SystemAnalysisEntry, e *SystemAnalysisEntrySubject) {
+				n.Edges.Subjects = append(n.Edges.Subjects, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *SystemAnalysisTopologyEdgeQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemAnalysisTopologyEdge, init func(*SystemAnalysisTopologyEdge), assign func(*SystemAnalysisTopologyEdge, *Tenant)) error {
+func (_q *SystemAnalysisEntryQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemAnalysisEntry, init func(*SystemAnalysisEntry), assign func(*SystemAnalysisEntry, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*SystemAnalysisTopologyEdge)
+	nodeids := make(map[int][]*SystemAnalysisEntry)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -541,9 +545,9 @@ func (_q *SystemAnalysisTopologyEdgeQuery) loadTenant(ctx context.Context, query
 	}
 	return nil
 }
-func (_q *SystemAnalysisTopologyEdgeQuery) loadAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*SystemAnalysisTopologyEdge, init func(*SystemAnalysisTopologyEdge), assign func(*SystemAnalysisTopologyEdge, *SystemAnalysis)) error {
+func (_q *SystemAnalysisEntryQuery) loadAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*SystemAnalysisEntry, init func(*SystemAnalysisEntry), assign func(*SystemAnalysisEntry, *SystemAnalysis)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*SystemAnalysisTopologyEdge)
+	nodeids := make(map[uuid.UUID][]*SystemAnalysisEntry)
 	for i := range nodes {
 		fk := nodes[i].AnalysisID
 		if _, ok := nodeids[fk]; !ok {
@@ -570,39 +574,40 @@ func (_q *SystemAnalysisTopologyEdgeQuery) loadAnalysis(ctx context.Context, que
 	}
 	return nil
 }
-func (_q *SystemAnalysisTopologyEdgeQuery) loadKnowledgeRelationship(ctx context.Context, query *KnowledgeRelationshipQuery, nodes []*SystemAnalysisTopologyEdge, init func(*SystemAnalysisTopologyEdge), assign func(*SystemAnalysisTopologyEdge, *KnowledgeRelationship)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*SystemAnalysisTopologyEdge)
+func (_q *SystemAnalysisEntryQuery) loadSubjects(ctx context.Context, query *SystemAnalysisEntrySubjectQuery, nodes []*SystemAnalysisEntry, init func(*SystemAnalysisEntry), assign func(*SystemAnalysisEntry, *SystemAnalysisEntrySubject)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*SystemAnalysisEntry)
 	for i := range nodes {
-		fk := nodes[i].KnowledgeRelationshipID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
 		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(ids) == 0 {
-		return nil
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(systemanalysisentrysubject.FieldEntryID)
 	}
-	query.Where(knowledgerelationship.IDIn(ids...))
+	query.Where(predicate.SystemAnalysisEntrySubject(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemanalysisentry.SubjectsColumn), fks...))
+	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		fk := n.EntryID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "knowledge_relationship_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "entry_id" returned %v for node %v`, fk, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
+		assign(node, n)
 	}
 	return nil
 }
 
-func (_q *SystemAnalysisTopologyEdgeQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *SystemAnalysisEntryQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.SystemAnalysisTopologyEdge
+	_spec.Node.Schema = _q.schemaConfig.SystemAnalysisEntry
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -614,8 +619,8 @@ func (_q *SystemAnalysisTopologyEdgeQuery) sqlCount(ctx context.Context) (int, e
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *SystemAnalysisTopologyEdgeQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(systemanalysistopologyedge.Table, systemanalysistopologyedge.Columns, sqlgraph.NewFieldSpec(systemanalysistopologyedge.FieldID, field.TypeUUID))
+func (_q *SystemAnalysisEntryQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(systemanalysisentry.Table, systemanalysisentry.Columns, sqlgraph.NewFieldSpec(systemanalysisentry.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -624,20 +629,17 @@ func (_q *SystemAnalysisTopologyEdgeQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, systemanalysistopologyedge.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, systemanalysisentry.FieldID)
 		for i := range fields {
-			if fields[i] != systemanalysistopologyedge.FieldID {
+			if fields[i] != systemanalysisentry.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(systemanalysistopologyedge.FieldTenantID)
+			_spec.Node.AddColumnOnce(systemanalysisentry.FieldTenantID)
 		}
 		if _q.withAnalysis != nil {
-			_spec.Node.AddColumnOnce(systemanalysistopologyedge.FieldAnalysisID)
-		}
-		if _q.withKnowledgeRelationship != nil {
-			_spec.Node.AddColumnOnce(systemanalysistopologyedge.FieldKnowledgeRelationshipID)
+			_spec.Node.AddColumnOnce(systemanalysisentry.FieldAnalysisID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -663,12 +665,12 @@ func (_q *SystemAnalysisTopologyEdgeQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *SystemAnalysisTopologyEdgeQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *SystemAnalysisEntryQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(systemanalysistopologyedge.Table)
+	t1 := builder.Table(systemanalysisentry.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = systemanalysistopologyedge.Columns
+		columns = systemanalysisentry.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -678,7 +680,7 @@ func (_q *SystemAnalysisTopologyEdgeQuery) sqlQuery(ctx context.Context) *sql.Se
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.SystemAnalysisTopologyEdge)
+	t1.Schema(_q.schemaConfig.SystemAnalysisEntry)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -702,33 +704,33 @@ func (_q *SystemAnalysisTopologyEdgeQuery) sqlQuery(ctx context.Context) *sql.Se
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *SystemAnalysisTopologyEdgeQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisTopologyEdgeSelect {
+func (_q *SystemAnalysisEntryQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisEntrySelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// SystemAnalysisTopologyEdgeGroupBy is the group-by builder for SystemAnalysisTopologyEdge entities.
-type SystemAnalysisTopologyEdgeGroupBy struct {
+// SystemAnalysisEntryGroupBy is the group-by builder for SystemAnalysisEntry entities.
+type SystemAnalysisEntryGroupBy struct {
 	selector
-	build *SystemAnalysisTopologyEdgeQuery
+	build *SystemAnalysisEntryQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *SystemAnalysisTopologyEdgeGroupBy) Aggregate(fns ...AggregateFunc) *SystemAnalysisTopologyEdgeGroupBy {
+func (_g *SystemAnalysisEntryGroupBy) Aggregate(fns ...AggregateFunc) *SystemAnalysisEntryGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *SystemAnalysisTopologyEdgeGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *SystemAnalysisEntryGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemAnalysisTopologyEdgeQuery, *SystemAnalysisTopologyEdgeGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*SystemAnalysisEntryQuery, *SystemAnalysisEntryGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *SystemAnalysisTopologyEdgeGroupBy) sqlScan(ctx context.Context, root *SystemAnalysisTopologyEdgeQuery, v any) error {
+func (_g *SystemAnalysisEntryGroupBy) sqlScan(ctx context.Context, root *SystemAnalysisEntryQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -755,28 +757,28 @@ func (_g *SystemAnalysisTopologyEdgeGroupBy) sqlScan(ctx context.Context, root *
 	return sql.ScanSlice(rows, v)
 }
 
-// SystemAnalysisTopologyEdgeSelect is the builder for selecting fields of SystemAnalysisTopologyEdge entities.
-type SystemAnalysisTopologyEdgeSelect struct {
-	*SystemAnalysisTopologyEdgeQuery
+// SystemAnalysisEntrySelect is the builder for selecting fields of SystemAnalysisEntry entities.
+type SystemAnalysisEntrySelect struct {
+	*SystemAnalysisEntryQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *SystemAnalysisTopologyEdgeSelect) Aggregate(fns ...AggregateFunc) *SystemAnalysisTopologyEdgeSelect {
+func (_s *SystemAnalysisEntrySelect) Aggregate(fns ...AggregateFunc) *SystemAnalysisEntrySelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *SystemAnalysisTopologyEdgeSelect) Scan(ctx context.Context, v any) error {
+func (_s *SystemAnalysisEntrySelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemAnalysisTopologyEdgeQuery, *SystemAnalysisTopologyEdgeSelect](ctx, _s.SystemAnalysisTopologyEdgeQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*SystemAnalysisEntryQuery, *SystemAnalysisEntrySelect](ctx, _s.SystemAnalysisEntryQuery, _s, _s.inters, v)
 }
 
-func (_s *SystemAnalysisTopologyEdgeSelect) sqlScan(ctx context.Context, root *SystemAnalysisTopologyEdgeQuery, v any) error {
+func (_s *SystemAnalysisEntrySelect) sqlScan(ctx context.Context, root *SystemAnalysisEntryQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -798,7 +800,7 @@ func (_s *SystemAnalysisTopologyEdgeSelect) sqlScan(ctx context.Context, root *S
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *SystemAnalysisTopologyEdgeSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisTopologyEdgeSelect {
+func (_s *SystemAnalysisEntrySelect) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisEntrySelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

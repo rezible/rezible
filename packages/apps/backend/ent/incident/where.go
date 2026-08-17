@@ -747,35 +747,6 @@ func HasMilestonesWith(preds ...predicate.IncidentMilestone) predicate.Incident 
 	})
 }
 
-// HasTimelineEvents applies the HasEdge predicate on the "timeline_events" edge.
-func HasTimelineEvents() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TimelineEventsTable, TimelineEventsColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentTimelineEvent
-		step.Edge.Schema = schemaConfig.IncidentTimelineEvent
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasTimelineEventsWith applies the HasEdge predicate on the "timeline_events" edge with a given conditions (other predicates).
-func HasTimelineEventsWith(preds ...predicate.IncidentTimelineEvent) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newTimelineEventsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentTimelineEvent
-		step.Edge.Schema = schemaConfig.IncidentTimelineEvent
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasRetrospective applies the HasEdge predicate on the "retrospective" edge.
 func HasRetrospective() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {

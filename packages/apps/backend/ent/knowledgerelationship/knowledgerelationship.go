@@ -3,6 +3,7 @@
 package knowledgerelationship
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -24,6 +25,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
+	// FieldSubkind holds the string denoting the subkind field in the database.
+	FieldSubkind = "subkind"
 	// FieldSourceEntityID holds the string denoting the source_entity_id field in the database.
 	FieldSourceEntityID = "source_entity_id"
 	// FieldTargetEntityID holds the string denoting the target_entity_id field in the database.
@@ -75,6 +78,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldKind,
+	FieldSubkind,
 	FieldSourceEntityID,
 	FieldTargetEntityID,
 }
@@ -103,11 +107,45 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// KindValidator is a validator for the "kind" field. It is called by the builders before save.
-	KindValidator func(string) error
+	// SubkindValidator is a validator for the "subkind" field. It is called by the builders before save.
+	SubkindValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// Kind defines the type for the "kind" enum field.
+type Kind string
+
+// Kind values.
+const (
+	KindContains       Kind = "contains"
+	KindInteractsWith  Kind = "interacts_with"
+	KindOwns           Kind = "owns"
+	KindImplementedBy  Kind = "implemented_by"
+	KindRunsOn         Kind = "runs_on"
+	KindControlAction  Kind = "control_action"
+	KindFeedback       Kind = "feedback"
+	KindSupports       Kind = "supports"
+	KindParticipatesIn Kind = "participates_in"
+	KindInfluences     Kind = "influences"
+	KindConstrains     Kind = "constrains"
+	KindAddresses      Kind = "addresses"
+	KindImpacts        Kind = "impacts"
+)
+
+func (k Kind) String() string {
+	return string(k)
+}
+
+// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
+func KindValidator(k Kind) error {
+	switch k {
+	case KindContains, KindInteractsWith, KindOwns, KindImplementedBy, KindRunsOn, KindControlAction, KindFeedback, KindSupports, KindParticipatesIn, KindInfluences, KindConstrains, KindAddresses, KindImpacts:
+		return nil
+	default:
+		return fmt.Errorf("knowledgerelationship: invalid enum value for kind field: %q", k)
+	}
+}
 
 // OrderOption defines the ordering options for the KnowledgeRelationship queries.
 type OrderOption func(*sql.Selector)
@@ -135,6 +173,11 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByKind orders the results by the kind field.
 func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
+}
+
+// BySubkind orders the results by the subkind field.
+func BySubkind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubkind, opts...).ToFunc()
 }
 
 // BySourceEntityID orders the results by the source_entity_id field.

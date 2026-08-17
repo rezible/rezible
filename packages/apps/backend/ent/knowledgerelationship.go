@@ -27,7 +27,9 @@ type KnowledgeRelationship struct {
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Kind holds the value of the "kind" field.
-	Kind string `json:"kind,omitempty"`
+	Kind knowledgerelationship.Kind `json:"kind,omitempty"`
+	// Provider or domain subtype
+	Subkind string `json:"subkind,omitempty"`
 	// SourceEntityID holds the value of the "source_entity_id" field.
 	SourceEntityID uuid.UUID `json:"source_entity_id,omitempty"`
 	// TargetEntityID holds the value of the "target_entity_id" field.
@@ -102,7 +104,7 @@ func (*KnowledgeRelationship) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case knowledgerelationship.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgerelationship.FieldKind:
+		case knowledgerelationship.FieldKind, knowledgerelationship.FieldSubkind:
 			values[i] = new(sql.NullString)
 		case knowledgerelationship.FieldCreatedAt, knowledgerelationship.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -151,7 +153,13 @@ func (_m *KnowledgeRelationship) assignValues(columns []string, values []any) er
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				_m.Kind = value.String
+				_m.Kind = knowledgerelationship.Kind(value.String)
+			}
+		case knowledgerelationship.FieldSubkind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field subkind", values[i])
+			} else if value.Valid {
+				_m.Subkind = value.String
 			}
 		case knowledgerelationship.FieldSourceEntityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -231,7 +239,10 @@ func (_m *KnowledgeRelationship) String() string {
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
-	builder.WriteString(_m.Kind)
+	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
+	builder.WriteString(", ")
+	builder.WriteString("subkind=")
+	builder.WriteString(_m.Subkind)
 	builder.WriteString(", ")
 	builder.WriteString("source_entity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SourceEntityID))

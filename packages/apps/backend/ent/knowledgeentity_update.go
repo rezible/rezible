@@ -54,15 +54,29 @@ func (_u *KnowledgeEntityUpdate) SetUpdatedAt(v time.Time) *KnowledgeEntityUpdat
 }
 
 // SetKind sets the "kind" field.
-func (_u *KnowledgeEntityUpdate) SetKind(v string) *KnowledgeEntityUpdate {
+func (_u *KnowledgeEntityUpdate) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpdate {
 	_u.mutation.SetKind(v)
 	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdate) SetNillableKind(v *string) *KnowledgeEntityUpdate {
+func (_u *KnowledgeEntityUpdate) SetNillableKind(v *knowledgeentity.Kind) *KnowledgeEntityUpdate {
 	if v != nil {
 		_u.SetKind(*v)
+	}
+	return _u
+}
+
+// SetSubkind sets the "subkind" field.
+func (_u *KnowledgeEntityUpdate) SetSubkind(v string) *KnowledgeEntityUpdate {
+	_u.mutation.SetSubkind(v)
+	return _u
+}
+
+// SetNillableSubkind sets the "subkind" field if the given value is not nil.
+func (_u *KnowledgeEntityUpdate) SetNillableSubkind(v *string) *KnowledgeEntityUpdate {
+	if v != nil {
+		_u.SetSubkind(*v)
 	}
 	return _u
 }
@@ -229,6 +243,11 @@ func (_u *KnowledgeEntityUpdate) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.kind": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Subkind(); ok {
+		if err := knowledgeentity.SubkindValidator(v); err != nil {
+			return &ValidationError{Name: "subkind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.subkind": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "KnowledgeEntity.tenant"`)
 	}
@@ -260,7 +279,10 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 		_spec.SetField(knowledgeentity.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
+		_spec.SetField(knowledgeentity.FieldKind, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Subkind(); ok {
+		_spec.SetField(knowledgeentity.FieldSubkind, field.TypeString, value)
 	}
 	if _u.mutation.AliasesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -451,15 +473,29 @@ func (_u *KnowledgeEntityUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeEntityUp
 }
 
 // SetKind sets the "kind" field.
-func (_u *KnowledgeEntityUpdateOne) SetKind(v string) *KnowledgeEntityUpdateOne {
+func (_u *KnowledgeEntityUpdateOne) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpdateOne {
 	_u.mutation.SetKind(v)
 	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdateOne) SetNillableKind(v *string) *KnowledgeEntityUpdateOne {
+func (_u *KnowledgeEntityUpdateOne) SetNillableKind(v *knowledgeentity.Kind) *KnowledgeEntityUpdateOne {
 	if v != nil {
 		_u.SetKind(*v)
+	}
+	return _u
+}
+
+// SetSubkind sets the "subkind" field.
+func (_u *KnowledgeEntityUpdateOne) SetSubkind(v string) *KnowledgeEntityUpdateOne {
+	_u.mutation.SetSubkind(v)
+	return _u
+}
+
+// SetNillableSubkind sets the "subkind" field if the given value is not nil.
+func (_u *KnowledgeEntityUpdateOne) SetNillableSubkind(v *string) *KnowledgeEntityUpdateOne {
+	if v != nil {
+		_u.SetSubkind(*v)
 	}
 	return _u
 }
@@ -639,6 +675,11 @@ func (_u *KnowledgeEntityUpdateOne) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.kind": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Subkind(); ok {
+		if err := knowledgeentity.SubkindValidator(v); err != nil {
+			return &ValidationError{Name: "subkind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.subkind": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "KnowledgeEntity.tenant"`)
 	}
@@ -687,7 +728,10 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 		_spec.SetField(knowledgeentity.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
+		_spec.SetField(knowledgeentity.FieldKind, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Subkind(); ok {
+		_spec.SetField(knowledgeentity.FieldSubkind, field.TypeString, value)
 	}
 	if _u.mutation.AliasesCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -22,7 +22,6 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
-	"github.com/rezible/rezible/ent/incidenttimelineevent"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/meetingsession"
@@ -202,21 +201,6 @@ func (_c *IncidentCreate) AddMilestones(v ...*IncidentMilestone) *IncidentCreate
 		ids[i] = v[i].ID
 	}
 	return _c.AddMilestoneIDs(ids...)
-}
-
-// AddTimelineEventIDs adds the "timeline_events" edge to the IncidentTimelineEvent entity by IDs.
-func (_c *IncidentCreate) AddTimelineEventIDs(ids ...uuid.UUID) *IncidentCreate {
-	_c.mutation.AddTimelineEventIDs(ids...)
-	return _c
-}
-
-// AddTimelineEvents adds the "timeline_events" edges to the IncidentTimelineEvent entity.
-func (_c *IncidentCreate) AddTimelineEvents(v ...*IncidentTimelineEvent) *IncidentCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddTimelineEventIDs(ids...)
 }
 
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
@@ -670,23 +654,6 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.IncidentMilestone
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.TimelineEventsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TimelineEventsTable,
-			Columns: []string{incident.TimelineEventsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.IncidentTimelineEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -3,6 +3,7 @@
 package knowledgeentity
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -24,6 +25,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
+	// FieldSubkind holds the string denoting the subkind field in the database.
+	FieldSubkind = "subkind"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAliases holds the string denoting the aliases edge name in mutations.
@@ -71,6 +74,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldKind,
+	FieldSubkind,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -97,11 +101,42 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// KindValidator is a validator for the "kind" field. It is called by the builders before save.
-	KindValidator func(string) error
+	// SubkindValidator is a validator for the "subkind" field. It is called by the builders before save.
+	SubkindValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// Kind defines the type for the "kind" enum field.
+type Kind string
+
+// Kind values.
+const (
+	KindActor          Kind = "actor"
+	KindSystem         Kind = "system"
+	KindContainer      Kind = "container"
+	KindComponent      Kind = "component"
+	KindCode           Kind = "code"
+	KindDeploymentNode Kind = "deployment_node"
+	KindProcess        Kind = "process"
+	KindConcern        Kind = "concern"
+	KindDecision       Kind = "decision"
+	KindEvent          Kind = "event"
+)
+
+func (k Kind) String() string {
+	return string(k)
+}
+
+// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
+func KindValidator(k Kind) error {
+	switch k {
+	case KindActor, KindSystem, KindContainer, KindComponent, KindCode, KindDeploymentNode, KindProcess, KindConcern, KindDecision, KindEvent:
+		return nil
+	default:
+		return fmt.Errorf("knowledgeentity: invalid enum value for kind field: %q", k)
+	}
+}
 
 // OrderOption defines the ordering options for the KnowledgeEntity queries.
 type OrderOption func(*sql.Selector)
@@ -129,6 +164,11 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByKind orders the results by the kind field.
 func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
+}
+
+// BySubkind orders the results by the subkind field.
+func BySubkind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubkind, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

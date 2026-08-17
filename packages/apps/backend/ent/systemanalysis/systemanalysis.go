@@ -22,12 +22,20 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldScopeEntityID holds the string denoting the scope_entity_id field in the database.
+	FieldScopeEntityID = "scope_entity_id"
+	// FieldSubjectEntityID holds the string denoting the subject_entity_id field in the database.
+	FieldSubjectEntityID = "subject_entity_id"
+	// FieldReferenceTime holds the string denoting the reference_time field in the database.
+	FieldReferenceTime = "reference_time"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeAnalysisNodes holds the string denoting the analysis_nodes edge name in mutations.
-	EdgeAnalysisNodes = "analysis_nodes"
-	// EdgeAnalysisEdges holds the string denoting the analysis_edges edge name in mutations.
-	EdgeAnalysisEdges = "analysis_edges"
+	// EdgeScopeEntity holds the string denoting the scope_entity edge name in mutations.
+	EdgeScopeEntity = "scope_entity"
+	// EdgeSubjectEntity holds the string denoting the subject_entity edge name in mutations.
+	EdgeSubjectEntity = "subject_entity"
+	// EdgeEntries holds the string denoting the entries edge name in mutations.
+	EdgeEntries = "entries"
 	// Table holds the table name of the systemanalysis in the database.
 	Table = "system_analyses"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -37,20 +45,27 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// AnalysisNodesTable is the table that holds the analysis_nodes relation/edge.
-	AnalysisNodesTable = "system_analysis_topology_nodes"
-	// AnalysisNodesInverseTable is the table name for the SystemAnalysisTopologyNode entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysistopologynode" package.
-	AnalysisNodesInverseTable = "system_analysis_topology_nodes"
-	// AnalysisNodesColumn is the table column denoting the analysis_nodes relation/edge.
-	AnalysisNodesColumn = "analysis_id"
-	// AnalysisEdgesTable is the table that holds the analysis_edges relation/edge.
-	AnalysisEdgesTable = "system_analysis_topology_edges"
-	// AnalysisEdgesInverseTable is the table name for the SystemAnalysisTopologyEdge entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysistopologyedge" package.
-	AnalysisEdgesInverseTable = "system_analysis_topology_edges"
-	// AnalysisEdgesColumn is the table column denoting the analysis_edges relation/edge.
-	AnalysisEdgesColumn = "analysis_id"
+	// ScopeEntityTable is the table that holds the scope_entity relation/edge.
+	ScopeEntityTable = "system_analyses"
+	// ScopeEntityInverseTable is the table name for the KnowledgeEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
+	ScopeEntityInverseTable = "knowledge_entities"
+	// ScopeEntityColumn is the table column denoting the scope_entity relation/edge.
+	ScopeEntityColumn = "scope_entity_id"
+	// SubjectEntityTable is the table that holds the subject_entity relation/edge.
+	SubjectEntityTable = "system_analyses"
+	// SubjectEntityInverseTable is the table name for the KnowledgeEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
+	SubjectEntityInverseTable = "knowledge_entities"
+	// SubjectEntityColumn is the table column denoting the subject_entity relation/edge.
+	SubjectEntityColumn = "subject_entity_id"
+	// EntriesTable is the table that holds the entries relation/edge.
+	EntriesTable = "system_analysis_entries"
+	// EntriesInverseTable is the table name for the SystemAnalysisEntry entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysisentry" package.
+	EntriesInverseTable = "system_analysis_entries"
+	// EntriesColumn is the table column denoting the entries relation/edge.
+	EntriesColumn = "analysis_id"
 )
 
 // Columns holds all SQL columns for systemanalysis fields.
@@ -59,6 +74,9 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldScopeEntityID,
+	FieldSubjectEntityID,
+	FieldReferenceTime,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -112,6 +130,21 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByScopeEntityID orders the results by the scope_entity_id field.
+func ByScopeEntityID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldScopeEntityID, opts...).ToFunc()
+}
+
+// BySubjectEntityID orders the results by the subject_entity_id field.
+func BySubjectEntityID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubjectEntityID, opts...).ToFunc()
+}
+
+// ByReferenceTime orders the results by the reference_time field.
+func ByReferenceTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReferenceTime, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -119,31 +152,31 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByAnalysisNodesCount orders the results by analysis_nodes count.
-func ByAnalysisNodesCount(opts ...sql.OrderTermOption) OrderOption {
+// ByScopeEntityField orders the results by scope_entity field.
+func ByScopeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAnalysisNodesStep(), opts...)
+		sqlgraph.OrderByNeighborTerms(s, newScopeEntityStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByAnalysisNodes orders the results by analysis_nodes terms.
-func ByAnalysisNodes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// BySubjectEntityField orders the results by subject_entity field.
+func BySubjectEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAnalysisNodesStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newSubjectEntityStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByAnalysisEdgesCount orders the results by analysis_edges count.
-func ByAnalysisEdgesCount(opts ...sql.OrderTermOption) OrderOption {
+// ByEntriesCount orders the results by entries count.
+func ByEntriesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAnalysisEdgesStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newEntriesStep(), opts...)
 	}
 }
 
-// ByAnalysisEdges orders the results by analysis_edges terms.
-func ByAnalysisEdges(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByEntries orders the results by entries terms.
+func ByEntries(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAnalysisEdgesStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newEntriesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -153,17 +186,24 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newAnalysisNodesStep() *sqlgraph.Step {
+func newScopeEntityStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AnalysisNodesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, AnalysisNodesTable, AnalysisNodesColumn),
+		sqlgraph.To(ScopeEntityInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ScopeEntityTable, ScopeEntityColumn),
 	)
 }
-func newAnalysisEdgesStep() *sqlgraph.Step {
+func newSubjectEntityStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AnalysisEdgesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, AnalysisEdgesTable, AnalysisEdgesColumn),
+		sqlgraph.To(SubjectEntityInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, SubjectEntityTable, SubjectEntityColumn),
+	)
+}
+func newEntriesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EntriesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, EntriesTable, EntriesColumn),
 	)
 }

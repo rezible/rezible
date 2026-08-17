@@ -1232,218 +1232,6 @@ var (
 			},
 		},
 	}
-	// IncidentTimelineEventsColumns holds the columns for the "incident_timeline_events" table.
-	IncidentTimelineEventsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "timestamp", Type: field.TypeTime},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"observation", "context", "decision", "action"}},
-		{Name: "title", Type: field.TypeString},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "is_key", Type: field.TypeBool, Default: false},
-		{Name: "sequence", Type: field.TypeInt, Default: 0},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "incident_id", Type: field.TypeUUID},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "event_id", Type: field.TypeUUID, Nullable: true},
-	}
-	// IncidentTimelineEventsTable holds the schema information for the "incident_timeline_events" table.
-	IncidentTimelineEventsTable = &schema.Table{
-		Name:       "incident_timeline_events",
-		Columns:    IncidentTimelineEventsColumns,
-		PrimaryKey: []*schema.Column{IncidentTimelineEventsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "incident_timeline_events_incidents_timeline_events",
-				Columns:    []*schema.Column{IncidentTimelineEventsColumns[9]},
-				RefColumns: []*schema.Column{IncidentsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "incident_timeline_events_tenants_tenant",
-				Columns:    []*schema.Column{IncidentTimelineEventsColumns[10]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "incident_timeline_events_normalized_events_event",
-				Columns:    []*schema.Column{IncidentTimelineEventsColumns[11]},
-				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "incidenttimelineevent_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{IncidentTimelineEventsColumns[10]},
-			},
-			{
-				Name:    "incidenttimelineevent_kind",
-				Unique:  false,
-				Columns: []*schema.Column{IncidentTimelineEventsColumns[2]},
-			},
-		},
-	}
-	// IncidentTimelineEventContextsColumns holds the columns for the "incident_timeline_event_contexts" table.
-	IncidentTimelineEventContextsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "system_state", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "decision_options", Type: field.TypeJSON, Nullable: true},
-		{Name: "decision_rationale", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "involved_personnel", Type: field.TypeJSON, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "incident_timeline_event_context", Type: field.TypeUUID, Unique: true},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// IncidentTimelineEventContextsTable holds the schema information for the "incident_timeline_event_contexts" table.
-	IncidentTimelineEventContextsTable = &schema.Table{
-		Name:       "incident_timeline_event_contexts",
-		Columns:    IncidentTimelineEventContextsColumns,
-		PrimaryKey: []*schema.Column{IncidentTimelineEventContextsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "incident_timeline_event_contexts_incident_timeline_events_context",
-				Columns:    []*schema.Column{IncidentTimelineEventContextsColumns[6]},
-				RefColumns: []*schema.Column{IncidentTimelineEventsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "incident_timeline_event_contexts_tenants_tenant",
-				Columns:    []*schema.Column{IncidentTimelineEventContextsColumns[7]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "incidenttimelineeventcontext_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{IncidentTimelineEventContextsColumns[7]},
-			},
-		},
-	}
-	// IncidentTimelineEventContributingFactorsColumns holds the columns for the "incident_timeline_event_contributing_factors" table.
-	IncidentTimelineEventContributingFactorsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "factor_type", Type: field.TypeString},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "incident_timeline_event_factors", Type: field.TypeUUID},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// IncidentTimelineEventContributingFactorsTable holds the schema information for the "incident_timeline_event_contributing_factors" table.
-	IncidentTimelineEventContributingFactorsTable = &schema.Table{
-		Name:       "incident_timeline_event_contributing_factors",
-		Columns:    IncidentTimelineEventContributingFactorsColumns,
-		PrimaryKey: []*schema.Column{IncidentTimelineEventContributingFactorsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "incident_timeline_event_contributing_factors_incident_timeline_events_factors",
-				Columns:    []*schema.Column{IncidentTimelineEventContributingFactorsColumns[4]},
-				RefColumns: []*schema.Column{IncidentTimelineEventsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "incident_timeline_event_contributing_factors_tenants_tenant",
-				Columns:    []*schema.Column{IncidentTimelineEventContributingFactorsColumns[5]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "incidenttimelineeventcontributingfactor_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{IncidentTimelineEventContributingFactorsColumns[5]},
-			},
-		},
-	}
-	// IncidentTimelineEventEvidencesColumns holds the columns for the "incident_timeline_event_evidences" table.
-	IncidentTimelineEventEvidencesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "evidence_type", Type: field.TypeEnum, Enums: []string{"log", "metric", "chat", "ticket", "other"}},
-		{Name: "url", Type: field.TypeString},
-		{Name: "title", Type: field.TypeString},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "incident_timeline_event_evidence", Type: field.TypeUUID},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// IncidentTimelineEventEvidencesTable holds the schema information for the "incident_timeline_event_evidences" table.
-	IncidentTimelineEventEvidencesTable = &schema.Table{
-		Name:       "incident_timeline_event_evidences",
-		Columns:    IncidentTimelineEventEvidencesColumns,
-		PrimaryKey: []*schema.Column{IncidentTimelineEventEvidencesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "incident_timeline_event_evidences_incident_timeline_events_evidence",
-				Columns:    []*schema.Column{IncidentTimelineEventEvidencesColumns[6]},
-				RefColumns: []*schema.Column{IncidentTimelineEventsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "incident_timeline_event_evidences_tenants_tenant",
-				Columns:    []*schema.Column{IncidentTimelineEventEvidencesColumns[7]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "incidenttimelineeventevidence_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{IncidentTimelineEventEvidencesColumns[7]},
-			},
-		},
-	}
-	// IncidentTimelineEventSystemContextsColumns holds the columns for the "incident_timeline_event_system_contexts" table.
-	IncidentTimelineEventSystemContextsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "relationship", Type: field.TypeEnum, Enums: []string{"primary", "affected", "contributing"}},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "incident_event_id", Type: field.TypeUUID},
-		{Name: "system_analysis_node_id", Type: field.TypeUUID},
-	}
-	// IncidentTimelineEventSystemContextsTable holds the schema information for the "incident_timeline_event_system_contexts" table.
-	IncidentTimelineEventSystemContextsTable = &schema.Table{
-		Name:       "incident_timeline_event_system_contexts",
-		Columns:    IncidentTimelineEventSystemContextsColumns,
-		PrimaryKey: []*schema.Column{IncidentTimelineEventSystemContextsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "incident_timeline_event_system_contexts_tenants_tenant",
-				Columns:    []*schema.Column{IncidentTimelineEventSystemContextsColumns[3]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "incident_timeline_event_system_contexts_incident_timeline_events_event",
-				Columns:    []*schema.Column{IncidentTimelineEventSystemContextsColumns[4]},
-				RefColumns: []*schema.Column{IncidentTimelineEventsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "incident_timeline_event_system_contexts_system_analysis_topology_nodes_system_analysis_node",
-				Columns:    []*schema.Column{IncidentTimelineEventSystemContextsColumns[5]},
-				RefColumns: []*schema.Column{SystemAnalysisTopologyNodesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "incidenttimelineeventsystemcontext_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{IncidentTimelineEventSystemContextsColumns[3]},
-			},
-			{
-				Name:    "incidenttimelineeventsystemcontext_tenant_id_incident_event_id_system_analysis_node_id",
-				Unique:  true,
-				Columns: []*schema.Column{IncidentTimelineEventSystemContextsColumns[3], IncidentTimelineEventSystemContextsColumns[4], IncidentTimelineEventSystemContextsColumns[5]},
-			},
-		},
-	}
 	// IncidentTypesColumns holds the columns for the "incident_types" table.
 	IncidentTypesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1668,7 +1456,8 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "kind", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"actor", "system", "container", "component", "code", "deployment_node", "process", "concern", "decision", "event"}},
+		{Name: "subkind", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// KnowledgeEntitiesTable holds the schema information for the "knowledge_entities" table.
@@ -1679,7 +1468,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "knowledge_entities_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeEntitiesColumns[4]},
+				Columns:    []*schema.Column{KnowledgeEntitiesColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1688,12 +1477,12 @@ var (
 			{
 				Name:    "knowledgeentity_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEntitiesColumns[4]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[5]},
 			},
 			{
-				Name:    "knowledgeentity_tenant_id_kind",
+				Name:    "knowledgeentity_tenant_id_kind_subkind",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEntitiesColumns[4], KnowledgeEntitiesColumns[3]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[5], KnowledgeEntitiesColumns[3], KnowledgeEntitiesColumns[4]},
 			},
 		},
 	}
@@ -1762,7 +1551,8 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "kind", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"contains", "interacts_with", "owns", "implemented_by", "runs_on", "control_action", "feedback", "supports", "participates_in", "influences", "constrains", "addresses", "impacts"}},
+		{Name: "subkind", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "source_entity_id", Type: field.TypeUUID},
 		{Name: "target_entity_id", Type: field.TypeUUID},
@@ -1775,19 +1565,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "knowledge_relationships_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[4]},
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "knowledge_relationships_knowledge_entities_source_entity",
-				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[5]},
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[6]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "knowledge_relationships_knowledge_entities_target_entity",
-				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[6]},
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[7]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1796,27 +1586,27 @@ var (
 			{
 				Name:    "knowledgerelationship_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[4]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[5]},
 			},
 			{
-				Name:    "knowledgerelationship_tenant_id_kind",
-				Unique:  false,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[4], KnowledgeRelationshipsColumns[3]},
+				Name:    "knowledgerelationship_tenant_id_kind_subkind_source_entity_id_target_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[5], KnowledgeRelationshipsColumns[3], KnowledgeRelationshipsColumns[4], KnowledgeRelationshipsColumns[6], KnowledgeRelationshipsColumns[7]},
 			},
 			{
 				Name:    "knowledgerelationship_tenant_id_source_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[4], KnowledgeRelationshipsColumns[5]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[5], KnowledgeRelationshipsColumns[6]},
 			},
 			{
 				Name:    "knowledgerelationship_tenant_id_target_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[4], KnowledgeRelationshipsColumns[6]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[5], KnowledgeRelationshipsColumns[7]},
 			},
 			{
-				Name:    "knowledgerelationship_tenant_id_kind_source_entity_id_target_entity_id",
-				Unique:  true,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[4], KnowledgeRelationshipsColumns[3], KnowledgeRelationshipsColumns[5], KnowledgeRelationshipsColumns[6]},
+				Name:    "knowledgerelationship_tenant_id_kind_subkind",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[5], KnowledgeRelationshipsColumns[3], KnowledgeRelationshipsColumns[4]},
 			},
 		},
 	}
@@ -2706,7 +2496,10 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "reference_time", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "scope_entity_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "subject_entity_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SystemAnalysesTable holds the schema information for the "system_analyses" table.
 	SystemAnalysesTable = &schema.Table{
@@ -2716,116 +2509,176 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "system_analyses_tenants_tenant",
-				Columns:    []*schema.Column{SystemAnalysesColumns[3]},
+				Columns:    []*schema.Column{SystemAnalysesColumns[4]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analyses_knowledge_entities_scope_entity",
+				Columns:    []*schema.Column{SystemAnalysesColumns[5]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "system_analyses_knowledge_entities_subject_entity",
+				Columns:    []*schema.Column{SystemAnalysesColumns[6]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "systemanalysis_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SystemAnalysesColumns[3]},
+				Columns: []*schema.Column{SystemAnalysesColumns[4]},
+			},
+			{
+				Name:    "systemanalysis_tenant_id_scope_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysesColumns[4], SystemAnalysesColumns[5]},
+			},
+			{
+				Name:    "systemanalysis_tenant_id_subject_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysesColumns[4], SystemAnalysesColumns[6]},
 			},
 		},
 	}
-	// SystemAnalysisTopologyEdgesColumns holds the columns for the "system_analysis_topology_edges" table.
-	SystemAnalysisTopologyEdgesColumns = []*schema.Column{
+	// SystemAnalysisEntriesColumns holds the columns for the "system_analysis_entries" table.
+	SystemAnalysisEntriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "referenced_at", Type: field.TypeTime},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"observation", "context", "decision", "action", "finding", "recommendation"}},
+		{Name: "occurred_at", Type: field.TypeTime, Nullable: true},
+		{Name: "sequence", Type: field.TypeInt, Default: 0},
+		{Name: "title", Type: field.TypeString},
+		{Name: "body", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "analysis_id", Type: field.TypeUUID},
-		{Name: "knowledge_relationship_id", Type: field.TypeUUID},
 	}
-	// SystemAnalysisTopologyEdgesTable holds the schema information for the "system_analysis_topology_edges" table.
-	SystemAnalysisTopologyEdgesTable = &schema.Table{
-		Name:       "system_analysis_topology_edges",
-		Columns:    SystemAnalysisTopologyEdgesColumns,
-		PrimaryKey: []*schema.Column{SystemAnalysisTopologyEdgesColumns[0]},
+	// SystemAnalysisEntriesTable holds the schema information for the "system_analysis_entries" table.
+	SystemAnalysisEntriesTable = &schema.Table{
+		Name:       "system_analysis_entries",
+		Columns:    SystemAnalysisEntriesColumns,
+		PrimaryKey: []*schema.Column{SystemAnalysisEntriesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_analysis_topology_edges_tenants_tenant",
-				Columns:    []*schema.Column{SystemAnalysisTopologyEdgesColumns[5]},
+				Symbol:     "system_analysis_entries_tenants_tenant",
+				Columns:    []*schema.Column{SystemAnalysisEntriesColumns[9]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_analysis_topology_edges_system_analyses_analysis",
-				Columns:    []*schema.Column{SystemAnalysisTopologyEdgesColumns[6]},
+				Symbol:     "system_analysis_entries_system_analyses_analysis",
+				Columns:    []*schema.Column{SystemAnalysisEntriesColumns[10]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_analysis_topology_edges_knowledge_relationships_knowledge_relationship",
-				Columns:    []*schema.Column{SystemAnalysisTopologyEdgesColumns[7]},
-				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "systemanalysistopologyedge_tenant_id",
+				Name:    "systemanalysisentry_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SystemAnalysisTopologyEdgesColumns[5]},
+				Columns: []*schema.Column{SystemAnalysisEntriesColumns[9]},
 			},
 			{
-				Name:    "systemanalysistopologyedge_tenant_id_analysis_id_knowledge_relationship_id",
-				Unique:  true,
-				Columns: []*schema.Column{SystemAnalysisTopologyEdgesColumns[5], SystemAnalysisTopologyEdgesColumns[6], SystemAnalysisTopologyEdgesColumns[7]},
+				Name:    "systemanalysisentry_tenant_id_analysis_id_kind",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisEntriesColumns[9], SystemAnalysisEntriesColumns[10], SystemAnalysisEntriesColumns[3]},
+			},
+			{
+				Name:    "systemanalysisentry_tenant_id_analysis_id_sequence",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisEntriesColumns[9], SystemAnalysisEntriesColumns[10], SystemAnalysisEntriesColumns[5]},
 			},
 		},
 	}
-	// SystemAnalysisTopologyNodesColumns holds the columns for the "system_analysis_topology_nodes" table.
-	SystemAnalysisTopologyNodesColumns = []*schema.Column{
+	// SystemAnalysisEntrySubjectsColumns holds the columns for the "system_analysis_entry_subjects" table.
+	SystemAnalysisEntrySubjectsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "referenced_at", Type: field.TypeTime},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "pos_x", Type: field.TypeFloat64, Default: 0},
-		{Name: "pos_y", Type: field.TypeFloat64, Default: 0},
+		{Name: "role", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "analysis_id", Type: field.TypeUUID},
-		{Name: "knowledge_entity_id", Type: field.TypeUUID},
+		{Name: "entry_id", Type: field.TypeUUID},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "knowledge_relationship_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "knowledge_evidence_id", Type: field.TypeUUID, Nullable: true},
 	}
-	// SystemAnalysisTopologyNodesTable holds the schema information for the "system_analysis_topology_nodes" table.
-	SystemAnalysisTopologyNodesTable = &schema.Table{
-		Name:       "system_analysis_topology_nodes",
-		Columns:    SystemAnalysisTopologyNodesColumns,
-		PrimaryKey: []*schema.Column{SystemAnalysisTopologyNodesColumns[0]},
+	// SystemAnalysisEntrySubjectsTable holds the schema information for the "system_analysis_entry_subjects" table.
+	SystemAnalysisEntrySubjectsTable = &schema.Table{
+		Name:       "system_analysis_entry_subjects",
+		Columns:    SystemAnalysisEntrySubjectsColumns,
+		PrimaryKey: []*schema.Column{SystemAnalysisEntrySubjectsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_analysis_topology_nodes_tenants_tenant",
-				Columns:    []*schema.Column{SystemAnalysisTopologyNodesColumns[7]},
+				Symbol:     "system_analysis_entry_subjects_tenants_tenant",
+				Columns:    []*schema.Column{SystemAnalysisEntrySubjectsColumns[4]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_analysis_topology_nodes_system_analyses_analysis",
-				Columns:    []*schema.Column{SystemAnalysisTopologyNodesColumns[8]},
-				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
+				Symbol:     "system_analysis_entry_subjects_system_analysis_entries_entry",
+				Columns:    []*schema.Column{SystemAnalysisEntrySubjectsColumns[5]},
+				RefColumns: []*schema.Column{SystemAnalysisEntriesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_analysis_topology_nodes_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{SystemAnalysisTopologyNodesColumns[9]},
+				Symbol:     "system_analysis_entry_subjects_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{SystemAnalysisEntrySubjectsColumns[6]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "system_analysis_entry_subjects_knowledge_relationships_knowledge_relationship",
+				Columns:    []*schema.Column{SystemAnalysisEntrySubjectsColumns[7]},
+				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "system_analysis_entry_subjects_knowledge_evidences_knowledge_evidence",
+				Columns:    []*schema.Column{SystemAnalysisEntrySubjectsColumns[8]},
+				RefColumns: []*schema.Column{KnowledgeEvidencesColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "systemanalysistopologynode_tenant_id",
+				Name:    "systemanalysisentrysubject_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SystemAnalysisTopologyNodesColumns[7]},
+				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4]},
 			},
 			{
-				Name:    "systemanalysistopologynode_tenant_id_analysis_id_knowledge_entity_id",
+				Name:    "systemanalysisentrysubject_tenant_id_entry_id_knowledge_entity_id_role",
 				Unique:  true,
-				Columns: []*schema.Column{SystemAnalysisTopologyNodesColumns[7], SystemAnalysisTopologyNodesColumns[8], SystemAnalysisTopologyNodesColumns[9]},
+				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[5], SystemAnalysisEntrySubjectsColumns[6], SystemAnalysisEntrySubjectsColumns[3]},
+			},
+			{
+				Name:    "systemanalysisentrysubject_tenant_id_entry_id_knowledge_relationship_id_role",
+				Unique:  true,
+				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[5], SystemAnalysisEntrySubjectsColumns[7], SystemAnalysisEntrySubjectsColumns[3]},
+			},
+			{
+				Name:    "systemanalysisentrysubject_tenant_id_entry_id_knowledge_evidence_id_role",
+				Unique:  true,
+				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[5], SystemAnalysisEntrySubjectsColumns[8], SystemAnalysisEntrySubjectsColumns[3]},
+			},
+			{
+				Name:    "systemanalysisentrysubject_tenant_id_knowledge_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[6]},
+			},
+			{
+				Name:    "systemanalysisentrysubject_tenant_id_knowledge_relationship_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[7]},
+			},
+			{
+				Name:    "systemanalysisentrysubject_tenant_id_knowledge_evidence_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[8]},
 			},
 		},
 	}
@@ -3552,11 +3405,6 @@ var (
 		IncidentRoleAssignmentsTable,
 		IncidentSeveritiesTable,
 		IncidentTagsTable,
-		IncidentTimelineEventsTable,
-		IncidentTimelineEventContextsTable,
-		IncidentTimelineEventContributingFactorsTable,
-		IncidentTimelineEventEvidencesTable,
-		IncidentTimelineEventSystemContextsTable,
 		IncidentTypesTable,
 		IntegrationsTable,
 		IntegrationEventSyncCursorsTable,
@@ -3587,8 +3435,8 @@ var (
 		RetrospectiveCommentsTable,
 		RetrospectiveReviewsTable,
 		SystemAnalysesTable,
-		SystemAnalysisTopologyEdgesTable,
-		SystemAnalysisTopologyNodesTable,
+		SystemAnalysisEntriesTable,
+		SystemAnalysisEntrySubjectsTable,
 		TasksTable,
 		TeamsTable,
 		TeamMembershipsTable,
@@ -3685,18 +3533,6 @@ func init() {
 	IncidentRoleAssignmentsTable.ForeignKeys[3].RefTable = IncidentRolesTable
 	IncidentSeveritiesTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentTagsTable.ForeignKeys[0].RefTable = TenantsTable
-	IncidentTimelineEventsTable.ForeignKeys[0].RefTable = IncidentsTable
-	IncidentTimelineEventsTable.ForeignKeys[1].RefTable = TenantsTable
-	IncidentTimelineEventsTable.ForeignKeys[2].RefTable = NormalizedEventsTable
-	IncidentTimelineEventContextsTable.ForeignKeys[0].RefTable = IncidentTimelineEventsTable
-	IncidentTimelineEventContextsTable.ForeignKeys[1].RefTable = TenantsTable
-	IncidentTimelineEventContributingFactorsTable.ForeignKeys[0].RefTable = IncidentTimelineEventsTable
-	IncidentTimelineEventContributingFactorsTable.ForeignKeys[1].RefTable = TenantsTable
-	IncidentTimelineEventEvidencesTable.ForeignKeys[0].RefTable = IncidentTimelineEventsTable
-	IncidentTimelineEventEvidencesTable.ForeignKeys[1].RefTable = TenantsTable
-	IncidentTimelineEventSystemContextsTable.ForeignKeys[0].RefTable = TenantsTable
-	IncidentTimelineEventSystemContextsTable.ForeignKeys[1].RefTable = IncidentTimelineEventsTable
-	IncidentTimelineEventSystemContextsTable.ForeignKeys[2].RefTable = SystemAnalysisTopologyNodesTable
 	IncidentTypesTable.ForeignKeys[0].RefTable = TenantsTable
 	IntegrationsTable.ForeignKeys[0].RefTable = TenantsTable
 	IntegrationEventSyncCursorsTable.ForeignKeys[0].RefTable = TenantsTable
@@ -3764,12 +3600,15 @@ func init() {
 	RetrospectiveReviewsTable.ForeignKeys[3].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[4].RefTable = RetrospectiveCommentsTable
 	SystemAnalysesTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemAnalysisTopologyEdgesTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemAnalysisTopologyEdgesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
-	SystemAnalysisTopologyEdgesTable.ForeignKeys[2].RefTable = KnowledgeRelationshipsTable
-	SystemAnalysisTopologyNodesTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemAnalysisTopologyNodesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
-	SystemAnalysisTopologyNodesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	SystemAnalysesTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
+	SystemAnalysesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	SystemAnalysisEntriesTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemAnalysisEntriesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
+	SystemAnalysisEntrySubjectsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemAnalysisEntrySubjectsTable.ForeignKeys[1].RefTable = SystemAnalysisEntriesTable
+	SystemAnalysisEntrySubjectsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	SystemAnalysisEntrySubjectsTable.ForeignKeys[3].RefTable = KnowledgeRelationshipsTable
+	SystemAnalysisEntrySubjectsTable.ForeignKeys[4].RefTable = KnowledgeEvidencesTable
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable
 	TasksTable.ForeignKeys[1].RefTable = TenantsTable
 	TasksTable.ForeignKeys[2].RefTable = UsersTable

@@ -72,9 +72,9 @@ func UpdatedAt(v time.Time) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// Kind applies equality check predicate on the "kind" field. It's identical to KindEQ.
-func Kind(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldKind, v))
+// Subkind applies equality check predicate on the "subkind" field. It's identical to SubkindEQ.
+func Subkind(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldSubkind, v))
 }
 
 // SourceEntityID applies equality check predicate on the "source_entity_id" field. It's identical to SourceEntityIDEQ.
@@ -188,68 +188,88 @@ func UpdatedAtLTE(v time.Time) predicate.KnowledgeRelationship {
 }
 
 // KindEQ applies the EQ predicate on the "kind" field.
-func KindEQ(v string) predicate.KnowledgeRelationship {
+func KindEQ(v Kind) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldKind, v))
 }
 
 // KindNEQ applies the NEQ predicate on the "kind" field.
-func KindNEQ(v string) predicate.KnowledgeRelationship {
+func KindNEQ(v Kind) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldKind, v))
 }
 
 // KindIn applies the In predicate on the "kind" field.
-func KindIn(vs ...string) predicate.KnowledgeRelationship {
+func KindIn(vs ...Kind) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldIn(FieldKind, vs...))
 }
 
 // KindNotIn applies the NotIn predicate on the "kind" field.
-func KindNotIn(vs ...string) predicate.KnowledgeRelationship {
+func KindNotIn(vs ...Kind) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldKind, vs...))
 }
 
-// KindGT applies the GT predicate on the "kind" field.
-func KindGT(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGT(FieldKind, v))
+// SubkindEQ applies the EQ predicate on the "subkind" field.
+func SubkindEQ(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldSubkind, v))
 }
 
-// KindGTE applies the GTE predicate on the "kind" field.
-func KindGTE(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldGTE(FieldKind, v))
+// SubkindNEQ applies the NEQ predicate on the "subkind" field.
+func SubkindNEQ(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldSubkind, v))
 }
 
-// KindLT applies the LT predicate on the "kind" field.
-func KindLT(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLT(FieldKind, v))
+// SubkindIn applies the In predicate on the "subkind" field.
+func SubkindIn(vs ...string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIn(FieldSubkind, vs...))
 }
 
-// KindLTE applies the LTE predicate on the "kind" field.
-func KindLTE(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldKind, v))
+// SubkindNotIn applies the NotIn predicate on the "subkind" field.
+func SubkindNotIn(vs ...string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldSubkind, vs...))
 }
 
-// KindContains applies the Contains predicate on the "kind" field.
-func KindContains(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldContains(FieldKind, v))
+// SubkindGT applies the GT predicate on the "subkind" field.
+func SubkindGT(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldGT(FieldSubkind, v))
 }
 
-// KindHasPrefix applies the HasPrefix predicate on the "kind" field.
-func KindHasPrefix(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldHasPrefix(FieldKind, v))
+// SubkindGTE applies the GTE predicate on the "subkind" field.
+func SubkindGTE(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldGTE(FieldSubkind, v))
 }
 
-// KindHasSuffix applies the HasSuffix predicate on the "kind" field.
-func KindHasSuffix(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldHasSuffix(FieldKind, v))
+// SubkindLT applies the LT predicate on the "subkind" field.
+func SubkindLT(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldLT(FieldSubkind, v))
 }
 
-// KindEqualFold applies the EqualFold predicate on the "kind" field.
-func KindEqualFold(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldEqualFold(FieldKind, v))
+// SubkindLTE applies the LTE predicate on the "subkind" field.
+func SubkindLTE(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldSubkind, v))
 }
 
-// KindContainsFold applies the ContainsFold predicate on the "kind" field.
-func KindContainsFold(v string) predicate.KnowledgeRelationship {
-	return predicate.KnowledgeRelationship(sql.FieldContainsFold(FieldKind, v))
+// SubkindContains applies the Contains predicate on the "subkind" field.
+func SubkindContains(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldContains(FieldSubkind, v))
+}
+
+// SubkindHasPrefix applies the HasPrefix predicate on the "subkind" field.
+func SubkindHasPrefix(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldHasPrefix(FieldSubkind, v))
+}
+
+// SubkindHasSuffix applies the HasSuffix predicate on the "subkind" field.
+func SubkindHasSuffix(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldHasSuffix(FieldSubkind, v))
+}
+
+// SubkindEqualFold applies the EqualFold predicate on the "subkind" field.
+func SubkindEqualFold(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEqualFold(FieldSubkind, v))
+}
+
+// SubkindContainsFold applies the ContainsFold predicate on the "subkind" field.
+func SubkindContainsFold(v string) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldContainsFold(FieldSubkind, v))
 }
 
 // SourceEntityIDEQ applies the EQ predicate on the "source_entity_id" field.

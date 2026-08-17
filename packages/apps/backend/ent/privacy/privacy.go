@@ -771,126 +771,6 @@ func (f IncidentTagMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mut
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTagMutation", m)
 }
 
-// The IncidentTimelineEventQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type IncidentTimelineEventQueryRuleFunc func(context.Context, *ent.IncidentTimelineEventQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f IncidentTimelineEventQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentTimelineEventQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IncidentTimelineEventQuery", q)
-}
-
-// The IncidentTimelineEventMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type IncidentTimelineEventMutationRuleFunc func(context.Context, *ent.IncidentTimelineEventMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f IncidentTimelineEventMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.IncidentTimelineEventMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTimelineEventMutation", m)
-}
-
-// The IncidentTimelineEventContextQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type IncidentTimelineEventContextQueryRuleFunc func(context.Context, *ent.IncidentTimelineEventContextQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f IncidentTimelineEventContextQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentTimelineEventContextQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IncidentTimelineEventContextQuery", q)
-}
-
-// The IncidentTimelineEventContextMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type IncidentTimelineEventContextMutationRuleFunc func(context.Context, *ent.IncidentTimelineEventContextMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f IncidentTimelineEventContextMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.IncidentTimelineEventContextMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTimelineEventContextMutation", m)
-}
-
-// The IncidentTimelineEventContributingFactorQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type IncidentTimelineEventContributingFactorQueryRuleFunc func(context.Context, *ent.IncidentTimelineEventContributingFactorQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f IncidentTimelineEventContributingFactorQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentTimelineEventContributingFactorQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IncidentTimelineEventContributingFactorQuery", q)
-}
-
-// The IncidentTimelineEventContributingFactorMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type IncidentTimelineEventContributingFactorMutationRuleFunc func(context.Context, *ent.IncidentTimelineEventContributingFactorMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f IncidentTimelineEventContributingFactorMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.IncidentTimelineEventContributingFactorMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTimelineEventContributingFactorMutation", m)
-}
-
-// The IncidentTimelineEventEvidenceQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type IncidentTimelineEventEvidenceQueryRuleFunc func(context.Context, *ent.IncidentTimelineEventEvidenceQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f IncidentTimelineEventEvidenceQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentTimelineEventEvidenceQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IncidentTimelineEventEvidenceQuery", q)
-}
-
-// The IncidentTimelineEventEvidenceMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type IncidentTimelineEventEvidenceMutationRuleFunc func(context.Context, *ent.IncidentTimelineEventEvidenceMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f IncidentTimelineEventEvidenceMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.IncidentTimelineEventEvidenceMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTimelineEventEvidenceMutation", m)
-}
-
-// The IncidentTimelineEventSystemContextQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type IncidentTimelineEventSystemContextQueryRuleFunc func(context.Context, *ent.IncidentTimelineEventSystemContextQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f IncidentTimelineEventSystemContextQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentTimelineEventSystemContextQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IncidentTimelineEventSystemContextQuery", q)
-}
-
-// The IncidentTimelineEventSystemContextMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type IncidentTimelineEventSystemContextMutationRuleFunc func(context.Context, *ent.IncidentTimelineEventSystemContextMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f IncidentTimelineEventSystemContextMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.IncidentTimelineEventSystemContextMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTimelineEventSystemContextMutation", m)
-}
-
 // The IncidentTypeQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type IncidentTypeQueryRuleFunc func(context.Context, *ent.IncidentTypeQuery) error
@@ -1611,52 +1491,52 @@ func (f SystemAnalysisMutationRuleFunc) EvalMutation(ctx context.Context, m ent.
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisMutation", m)
 }
 
-// The SystemAnalysisTopologyEdgeQueryRuleFunc type is an adapter to allow the use of ordinary
+// The SystemAnalysisEntryQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type SystemAnalysisTopologyEdgeQueryRuleFunc func(context.Context, *ent.SystemAnalysisTopologyEdgeQuery) error
+type SystemAnalysisEntryQueryRuleFunc func(context.Context, *ent.SystemAnalysisEntryQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f SystemAnalysisTopologyEdgeQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemAnalysisTopologyEdgeQuery); ok {
+func (f SystemAnalysisEntryQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemAnalysisEntryQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemAnalysisTopologyEdgeQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemAnalysisEntryQuery", q)
 }
 
-// The SystemAnalysisTopologyEdgeMutationRuleFunc type is an adapter to allow the use of ordinary
+// The SystemAnalysisEntryMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type SystemAnalysisTopologyEdgeMutationRuleFunc func(context.Context, *ent.SystemAnalysisTopologyEdgeMutation) error
+type SystemAnalysisEntryMutationRuleFunc func(context.Context, *ent.SystemAnalysisEntryMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f SystemAnalysisTopologyEdgeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemAnalysisTopologyEdgeMutation); ok {
+func (f SystemAnalysisEntryMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SystemAnalysisEntryMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisTopologyEdgeMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisEntryMutation", m)
 }
 
-// The SystemAnalysisTopologyNodeQueryRuleFunc type is an adapter to allow the use of ordinary
+// The SystemAnalysisEntrySubjectQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type SystemAnalysisTopologyNodeQueryRuleFunc func(context.Context, *ent.SystemAnalysisTopologyNodeQuery) error
+type SystemAnalysisEntrySubjectQueryRuleFunc func(context.Context, *ent.SystemAnalysisEntrySubjectQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f SystemAnalysisTopologyNodeQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemAnalysisTopologyNodeQuery); ok {
+func (f SystemAnalysisEntrySubjectQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemAnalysisEntrySubjectQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemAnalysisTopologyNodeQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemAnalysisEntrySubjectQuery", q)
 }
 
-// The SystemAnalysisTopologyNodeMutationRuleFunc type is an adapter to allow the use of ordinary
+// The SystemAnalysisEntrySubjectMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type SystemAnalysisTopologyNodeMutationRuleFunc func(context.Context, *ent.SystemAnalysisTopologyNodeMutation) error
+type SystemAnalysisEntrySubjectMutationRuleFunc func(context.Context, *ent.SystemAnalysisEntrySubjectMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f SystemAnalysisTopologyNodeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemAnalysisTopologyNodeMutation); ok {
+func (f SystemAnalysisEntrySubjectMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SystemAnalysisEntrySubjectMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisTopologyNodeMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisEntrySubjectMutation", m)
 }
 
 // The TaskQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1942,16 +1822,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.IncidentTagQuery:
 		return q.Filter(), nil
-	case *ent.IncidentTimelineEventQuery:
-		return q.Filter(), nil
-	case *ent.IncidentTimelineEventContextQuery:
-		return q.Filter(), nil
-	case *ent.IncidentTimelineEventContributingFactorQuery:
-		return q.Filter(), nil
-	case *ent.IncidentTimelineEventEvidenceQuery:
-		return q.Filter(), nil
-	case *ent.IncidentTimelineEventSystemContextQuery:
-		return q.Filter(), nil
 	case *ent.IncidentTypeQuery:
 		return q.Filter(), nil
 	case *ent.IntegrationQuery:
@@ -2012,9 +1882,9 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.SystemAnalysisQuery:
 		return q.Filter(), nil
-	case *ent.SystemAnalysisTopologyEdgeQuery:
+	case *ent.SystemAnalysisEntryQuery:
 		return q.Filter(), nil
-	case *ent.SystemAnalysisTopologyNodeQuery:
+	case *ent.SystemAnalysisEntrySubjectQuery:
 		return q.Filter(), nil
 	case *ent.TaskQuery:
 		return q.Filter(), nil
@@ -2093,16 +1963,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.IncidentTagMutation:
 		return m.Filter(), nil
-	case *ent.IncidentTimelineEventMutation:
-		return m.Filter(), nil
-	case *ent.IncidentTimelineEventContextMutation:
-		return m.Filter(), nil
-	case *ent.IncidentTimelineEventContributingFactorMutation:
-		return m.Filter(), nil
-	case *ent.IncidentTimelineEventEvidenceMutation:
-		return m.Filter(), nil
-	case *ent.IncidentTimelineEventSystemContextMutation:
-		return m.Filter(), nil
 	case *ent.IncidentTypeMutation:
 		return m.Filter(), nil
 	case *ent.IntegrationMutation:
@@ -2163,9 +2023,9 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.SystemAnalysisMutation:
 		return m.Filter(), nil
-	case *ent.SystemAnalysisTopologyEdgeMutation:
+	case *ent.SystemAnalysisEntryMutation:
 		return m.Filter(), nil
-	case *ent.SystemAnalysisTopologyNodeMutation:
+	case *ent.SystemAnalysisEntrySubjectMutation:
 		return m.Filter(), nil
 	case *ent.TaskMutation:
 		return m.Filter(), nil

@@ -44,11 +44,6 @@ type SchemaConfig struct {
 	IncidentRoleAssignment                    string // IncidentRoleAssignment table.
 	IncidentSeverity                          string // IncidentSeverity table.
 	IncidentTag                               string // IncidentTag table.
-	IncidentTimelineEvent                     string // IncidentTimelineEvent table.
-	IncidentTimelineEventContext              string // IncidentTimelineEventContext table.
-	IncidentTimelineEventContributingFactor   string // IncidentTimelineEventContributingFactor table.
-	IncidentTimelineEventEvidence             string // IncidentTimelineEventEvidence table.
-	IncidentTimelineEventSystemContext        string // IncidentTimelineEventSystemContext table.
 	IncidentType                              string // IncidentType table.
 	Integration                               string // Integration table.
 	IntegrationEventSyncCursor                string // IntegrationEventSyncCursor table.
@@ -82,8 +77,8 @@ type SchemaConfig struct {
 	RetrospectiveComment                      string // RetrospectiveComment table.
 	RetrospectiveReview                       string // RetrospectiveReview table.
 	SystemAnalysis                            string // SystemAnalysis table.
-	SystemAnalysisTopologyEdge                string // SystemAnalysisTopologyEdge table.
-	SystemAnalysisTopologyNode                string // SystemAnalysisTopologyNode table.
+	SystemAnalysisEntry                       string // SystemAnalysisEntry table.
+	SystemAnalysisEntrySubject                string // SystemAnalysisEntrySubject table.
 	Task                                      string // Task table.
 	TaskTickets                               string // Task-tickets->Ticket table.
 	Team                                      string // Team table.

@@ -68,16 +68,6 @@ type Tx struct {
 	IncidentSeverity *IncidentSeverityClient
 	// IncidentTag is the client for interacting with the IncidentTag builders.
 	IncidentTag *IncidentTagClient
-	// IncidentTimelineEvent is the client for interacting with the IncidentTimelineEvent builders.
-	IncidentTimelineEvent *IncidentTimelineEventClient
-	// IncidentTimelineEventContext is the client for interacting with the IncidentTimelineEventContext builders.
-	IncidentTimelineEventContext *IncidentTimelineEventContextClient
-	// IncidentTimelineEventContributingFactor is the client for interacting with the IncidentTimelineEventContributingFactor builders.
-	IncidentTimelineEventContributingFactor *IncidentTimelineEventContributingFactorClient
-	// IncidentTimelineEventEvidence is the client for interacting with the IncidentTimelineEventEvidence builders.
-	IncidentTimelineEventEvidence *IncidentTimelineEventEvidenceClient
-	// IncidentTimelineEventSystemContext is the client for interacting with the IncidentTimelineEventSystemContext builders.
-	IncidentTimelineEventSystemContext *IncidentTimelineEventSystemContextClient
 	// IncidentType is the client for interacting with the IncidentType builders.
 	IncidentType *IncidentTypeClient
 	// Integration is the client for interacting with the Integration builders.
@@ -138,10 +128,10 @@ type Tx struct {
 	RetrospectiveReview *RetrospectiveReviewClient
 	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
 	SystemAnalysis *SystemAnalysisClient
-	// SystemAnalysisTopologyEdge is the client for interacting with the SystemAnalysisTopologyEdge builders.
-	SystemAnalysisTopologyEdge *SystemAnalysisTopologyEdgeClient
-	// SystemAnalysisTopologyNode is the client for interacting with the SystemAnalysisTopologyNode builders.
-	SystemAnalysisTopologyNode *SystemAnalysisTopologyNodeClient
+	// SystemAnalysisEntry is the client for interacting with the SystemAnalysisEntry builders.
+	SystemAnalysisEntry *SystemAnalysisEntryClient
+	// SystemAnalysisEntrySubject is the client for interacting with the SystemAnalysisEntrySubject builders.
+	SystemAnalysisEntrySubject *SystemAnalysisEntrySubjectClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -317,11 +307,6 @@ func (tx *Tx) init() {
 	tx.IncidentRoleAssignment = NewIncidentRoleAssignmentClient(tx.config)
 	tx.IncidentSeverity = NewIncidentSeverityClient(tx.config)
 	tx.IncidentTag = NewIncidentTagClient(tx.config)
-	tx.IncidentTimelineEvent = NewIncidentTimelineEventClient(tx.config)
-	tx.IncidentTimelineEventContext = NewIncidentTimelineEventContextClient(tx.config)
-	tx.IncidentTimelineEventContributingFactor = NewIncidentTimelineEventContributingFactorClient(tx.config)
-	tx.IncidentTimelineEventEvidence = NewIncidentTimelineEventEvidenceClient(tx.config)
-	tx.IncidentTimelineEventSystemContext = NewIncidentTimelineEventSystemContextClient(tx.config)
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
 	tx.Integration = NewIntegrationClient(tx.config)
 	tx.IntegrationEventSyncCursor = NewIntegrationEventSyncCursorClient(tx.config)
@@ -352,8 +337,8 @@ func (tx *Tx) init() {
 	tx.RetrospectiveComment = NewRetrospectiveCommentClient(tx.config)
 	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)
 	tx.SystemAnalysis = NewSystemAnalysisClient(tx.config)
-	tx.SystemAnalysisTopologyEdge = NewSystemAnalysisTopologyEdgeClient(tx.config)
-	tx.SystemAnalysisTopologyNode = NewSystemAnalysisTopologyNodeClient(tx.config)
+	tx.SystemAnalysisEntry = NewSystemAnalysisEntryClient(tx.config)
+	tx.SystemAnalysisEntrySubject = NewSystemAnalysisEntrySubjectClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
 	tx.TeamMembership = NewTeamMembershipClient(tx.config)

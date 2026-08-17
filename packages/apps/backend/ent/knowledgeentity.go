@@ -25,8 +25,10 @@ type KnowledgeEntity struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Kind holds the value of the "kind" field.
-	Kind string `json:"kind,omitempty"`
+	// Stable semantic category used by graph queries, generated views, and agent reasoning.
+	Kind knowledgeentity.Kind `json:"kind,omitempty"`
+	// Provider or domain subtype used for filtering, legends, and display; not product control flow.
+	Subkind string `json:"subkind,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEntityQuery when eager-loading is set.
 	Edges        KnowledgeEntityEdges `json:"edges"`
@@ -93,7 +95,7 @@ func (*KnowledgeEntity) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case knowledgeentity.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgeentity.FieldKind:
+		case knowledgeentity.FieldKind, knowledgeentity.FieldSubkind:
 			values[i] = new(sql.NullString)
 		case knowledgeentity.FieldCreatedAt, knowledgeentity.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -142,7 +144,13 @@ func (_m *KnowledgeEntity) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				_m.Kind = value.String
+				_m.Kind = knowledgeentity.Kind(value.String)
+			}
+		case knowledgeentity.FieldSubkind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field subkind", values[i])
+			} else if value.Valid {
+				_m.Subkind = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -210,7 +218,10 @@ func (_m *KnowledgeEntity) String() string {
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
-	builder.WriteString(_m.Kind)
+	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
+	builder.WriteString(", ")
+	builder.WriteString("subkind=")
+	builder.WriteString(_m.Subkind)
 	builder.WriteByte(')')
 	return builder.String()
 }

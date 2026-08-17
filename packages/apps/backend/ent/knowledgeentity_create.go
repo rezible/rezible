@@ -62,8 +62,14 @@ func (_c *KnowledgeEntityCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeEn
 }
 
 // SetKind sets the "kind" field.
-func (_c *KnowledgeEntityCreate) SetKind(v string) *KnowledgeEntityCreate {
+func (_c *KnowledgeEntityCreate) SetKind(v knowledgeentity.Kind) *KnowledgeEntityCreate {
 	_c.mutation.SetKind(v)
+	return _c
+}
+
+// SetSubkind sets the "subkind" field.
+func (_c *KnowledgeEntityCreate) SetSubkind(v string) *KnowledgeEntityCreate {
+	_c.mutation.SetSubkind(v)
 	return _c
 }
 
@@ -211,6 +217,14 @@ func (_c *KnowledgeEntityCreate) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.kind": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.Subkind(); !ok {
+		return &ValidationError{Name: "subkind", err: errors.New(`ent: missing required field "KnowledgeEntity.subkind"`)}
+	}
+	if v, ok := _c.mutation.Subkind(); ok {
+		if err := knowledgeentity.SubkindValidator(v); err != nil {
+			return &ValidationError{Name: "subkind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.subkind": %w`, err)}
+		}
+	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeEntity.tenant"`)}
 	}
@@ -260,8 +274,12 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		_node.UpdatedAt = value
 	}
 	if value, ok := _c.mutation.Kind(); ok {
-		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
+		_spec.SetField(knowledgeentity.FieldKind, field.TypeEnum, value)
 		_node.Kind = value
+	}
+	if value, ok := _c.mutation.Subkind(); ok {
+		_spec.SetField(knowledgeentity.FieldSubkind, field.TypeString, value)
+		_node.Subkind = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -409,7 +427,7 @@ func (u *KnowledgeEntityUpsert) UpdateUpdatedAt() *KnowledgeEntityUpsert {
 }
 
 // SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsert) SetKind(v string) *KnowledgeEntityUpsert {
+func (u *KnowledgeEntityUpsert) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpsert {
 	u.Set(knowledgeentity.FieldKind, v)
 	return u
 }
@@ -417,6 +435,18 @@ func (u *KnowledgeEntityUpsert) SetKind(v string) *KnowledgeEntityUpsert {
 // UpdateKind sets the "kind" field to the value that was provided on create.
 func (u *KnowledgeEntityUpsert) UpdateKind() *KnowledgeEntityUpsert {
 	u.SetExcluded(knowledgeentity.FieldKind)
+	return u
+}
+
+// SetSubkind sets the "subkind" field.
+func (u *KnowledgeEntityUpsert) SetSubkind(v string) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldSubkind, v)
+	return u
+}
+
+// UpdateSubkind sets the "subkind" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateSubkind() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldSubkind)
 	return u
 }
 
@@ -500,7 +530,7 @@ func (u *KnowledgeEntityUpsertOne) UpdateUpdatedAt() *KnowledgeEntityUpsertOne {
 }
 
 // SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsertOne) SetKind(v string) *KnowledgeEntityUpsertOne {
+func (u *KnowledgeEntityUpsertOne) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.SetKind(v)
 	})
@@ -510,6 +540,20 @@ func (u *KnowledgeEntityUpsertOne) SetKind(v string) *KnowledgeEntityUpsertOne {
 func (u *KnowledgeEntityUpsertOne) UpdateKind() *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.UpdateKind()
+	})
+}
+
+// SetSubkind sets the "subkind" field.
+func (u *KnowledgeEntityUpsertOne) SetSubkind(v string) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetSubkind(v)
+	})
+}
+
+// UpdateSubkind sets the "subkind" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateSubkind() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateSubkind()
 	})
 }
 
@@ -760,7 +804,7 @@ func (u *KnowledgeEntityUpsertBulk) UpdateUpdatedAt() *KnowledgeEntityUpsertBulk
 }
 
 // SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsertBulk) SetKind(v string) *KnowledgeEntityUpsertBulk {
+func (u *KnowledgeEntityUpsertBulk) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.SetKind(v)
 	})
@@ -770,6 +814,20 @@ func (u *KnowledgeEntityUpsertBulk) SetKind(v string) *KnowledgeEntityUpsertBulk
 func (u *KnowledgeEntityUpsertBulk) UpdateKind() *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.UpdateKind()
+	})
+}
+
+// SetSubkind sets the "subkind" field.
+func (u *KnowledgeEntityUpsertBulk) SetSubkind(v string) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetSubkind(v)
+	})
+}
+
+// UpdateSubkind sets the "subkind" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateSubkind() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateSubkind()
 	})
 }
 

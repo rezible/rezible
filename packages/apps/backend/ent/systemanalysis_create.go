@@ -13,9 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
-	"github.com/rezible/rezible/ent/systemanalysistopologynode"
+	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -61,6 +61,48 @@ func (_c *SystemAnalysisCreate) SetNillableUpdatedAt(v *time.Time) *SystemAnalys
 	return _c
 }
 
+// SetScopeEntityID sets the "scope_entity_id" field.
+func (_c *SystemAnalysisCreate) SetScopeEntityID(v uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.SetScopeEntityID(v)
+	return _c
+}
+
+// SetNillableScopeEntityID sets the "scope_entity_id" field if the given value is not nil.
+func (_c *SystemAnalysisCreate) SetNillableScopeEntityID(v *uuid.UUID) *SystemAnalysisCreate {
+	if v != nil {
+		_c.SetScopeEntityID(*v)
+	}
+	return _c
+}
+
+// SetSubjectEntityID sets the "subject_entity_id" field.
+func (_c *SystemAnalysisCreate) SetSubjectEntityID(v uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.SetSubjectEntityID(v)
+	return _c
+}
+
+// SetNillableSubjectEntityID sets the "subject_entity_id" field if the given value is not nil.
+func (_c *SystemAnalysisCreate) SetNillableSubjectEntityID(v *uuid.UUID) *SystemAnalysisCreate {
+	if v != nil {
+		_c.SetSubjectEntityID(*v)
+	}
+	return _c
+}
+
+// SetReferenceTime sets the "reference_time" field.
+func (_c *SystemAnalysisCreate) SetReferenceTime(v time.Time) *SystemAnalysisCreate {
+	_c.mutation.SetReferenceTime(v)
+	return _c
+}
+
+// SetNillableReferenceTime sets the "reference_time" field if the given value is not nil.
+func (_c *SystemAnalysisCreate) SetNillableReferenceTime(v *time.Time) *SystemAnalysisCreate {
+	if v != nil {
+		_c.SetReferenceTime(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *SystemAnalysisCreate) SetID(v uuid.UUID) *SystemAnalysisCreate {
 	_c.mutation.SetID(v)
@@ -80,34 +122,29 @@ func (_c *SystemAnalysisCreate) SetTenant(v *Tenant) *SystemAnalysisCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// AddAnalysisNodeIDs adds the "analysis_nodes" edge to the SystemAnalysisTopologyNode entity by IDs.
-func (_c *SystemAnalysisCreate) AddAnalysisNodeIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
-	_c.mutation.AddAnalysisNodeIDs(ids...)
+// SetScopeEntity sets the "scope_entity" edge to the KnowledgeEntity entity.
+func (_c *SystemAnalysisCreate) SetScopeEntity(v *KnowledgeEntity) *SystemAnalysisCreate {
+	return _c.SetScopeEntityID(v.ID)
+}
+
+// SetSubjectEntity sets the "subject_entity" edge to the KnowledgeEntity entity.
+func (_c *SystemAnalysisCreate) SetSubjectEntity(v *KnowledgeEntity) *SystemAnalysisCreate {
+	return _c.SetSubjectEntityID(v.ID)
+}
+
+// AddEntryIDs adds the "entries" edge to the SystemAnalysisEntry entity by IDs.
+func (_c *SystemAnalysisCreate) AddEntryIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.AddEntryIDs(ids...)
 	return _c
 }
 
-// AddAnalysisNodes adds the "analysis_nodes" edges to the SystemAnalysisTopologyNode entity.
-func (_c *SystemAnalysisCreate) AddAnalysisNodes(v ...*SystemAnalysisTopologyNode) *SystemAnalysisCreate {
+// AddEntries adds the "entries" edges to the SystemAnalysisEntry entity.
+func (_c *SystemAnalysisCreate) AddEntries(v ...*SystemAnalysisEntry) *SystemAnalysisCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddAnalysisNodeIDs(ids...)
-}
-
-// AddAnalysisEdgeIDs adds the "analysis_edges" edge to the SystemAnalysisTopologyEdge entity by IDs.
-func (_c *SystemAnalysisCreate) AddAnalysisEdgeIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
-	_c.mutation.AddAnalysisEdgeIDs(ids...)
-	return _c
-}
-
-// AddAnalysisEdges adds the "analysis_edges" edges to the SystemAnalysisTopologyEdge entity.
-func (_c *SystemAnalysisCreate) AddAnalysisEdges(v ...*SystemAnalysisTopologyEdge) *SystemAnalysisCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAnalysisEdgeIDs(ids...)
+	return _c.AddEntryIDs(ids...)
 }
 
 // Mutation returns the SystemAnalysisMutation object of the builder.
@@ -230,6 +267,10 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if value, ok := _c.mutation.ReferenceTime(); ok {
+		_spec.SetField(systemanalysis.FieldReferenceTime, field.TypeTime, value)
+		_node.ReferenceTime = &value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -248,35 +289,54 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AnalysisNodesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ScopeEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemanalysis.AnalysisNodesTable,
-			Columns: []string{systemanalysis.AnalysisNodesColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.ScopeEntityTable,
+			Columns: []string{systemanalysis.ScopeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologynode.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SystemAnalysisTopologyNode
+		edge.Schema = _c.schemaConfig.SystemAnalysis
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.ScopeEntityID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AnalysisEdgesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SubjectEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.SubjectEntityTable,
+			Columns: []string{systemanalysis.SubjectEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SystemAnalysis
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.SubjectEntityID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.EntriesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemanalysis.AnalysisEdgesTable,
-			Columns: []string{systemanalysis.AnalysisEdgesColumn},
+			Table:   systemanalysis.EntriesTable,
+			Columns: []string{systemanalysis.EntriesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologyedge.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentry.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SystemAnalysisTopologyEdge
+		edge.Schema = _c.schemaConfig.SystemAnalysisEntry
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -358,6 +418,60 @@ func (u *SystemAnalysisUpsert) UpdateUpdatedAt() *SystemAnalysisUpsert {
 	return u
 }
 
+// SetScopeEntityID sets the "scope_entity_id" field.
+func (u *SystemAnalysisUpsert) SetScopeEntityID(v uuid.UUID) *SystemAnalysisUpsert {
+	u.Set(systemanalysis.FieldScopeEntityID, v)
+	return u
+}
+
+// UpdateScopeEntityID sets the "scope_entity_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsert) UpdateScopeEntityID() *SystemAnalysisUpsert {
+	u.SetExcluded(systemanalysis.FieldScopeEntityID)
+	return u
+}
+
+// ClearScopeEntityID clears the value of the "scope_entity_id" field.
+func (u *SystemAnalysisUpsert) ClearScopeEntityID() *SystemAnalysisUpsert {
+	u.SetNull(systemanalysis.FieldScopeEntityID)
+	return u
+}
+
+// SetSubjectEntityID sets the "subject_entity_id" field.
+func (u *SystemAnalysisUpsert) SetSubjectEntityID(v uuid.UUID) *SystemAnalysisUpsert {
+	u.Set(systemanalysis.FieldSubjectEntityID, v)
+	return u
+}
+
+// UpdateSubjectEntityID sets the "subject_entity_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsert) UpdateSubjectEntityID() *SystemAnalysisUpsert {
+	u.SetExcluded(systemanalysis.FieldSubjectEntityID)
+	return u
+}
+
+// ClearSubjectEntityID clears the value of the "subject_entity_id" field.
+func (u *SystemAnalysisUpsert) ClearSubjectEntityID() *SystemAnalysisUpsert {
+	u.SetNull(systemanalysis.FieldSubjectEntityID)
+	return u
+}
+
+// SetReferenceTime sets the "reference_time" field.
+func (u *SystemAnalysisUpsert) SetReferenceTime(v time.Time) *SystemAnalysisUpsert {
+	u.Set(systemanalysis.FieldReferenceTime, v)
+	return u
+}
+
+// UpdateReferenceTime sets the "reference_time" field to the value that was provided on create.
+func (u *SystemAnalysisUpsert) UpdateReferenceTime() *SystemAnalysisUpsert {
+	u.SetExcluded(systemanalysis.FieldReferenceTime)
+	return u
+}
+
+// ClearReferenceTime clears the value of the "reference_time" field.
+func (u *SystemAnalysisUpsert) ClearReferenceTime() *SystemAnalysisUpsert {
+	u.SetNull(systemanalysis.FieldReferenceTime)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -434,6 +548,69 @@ func (u *SystemAnalysisUpsertOne) SetUpdatedAt(v time.Time) *SystemAnalysisUpser
 func (u *SystemAnalysisUpsertOne) UpdateUpdatedAt() *SystemAnalysisUpsertOne {
 	return u.Update(func(s *SystemAnalysisUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetScopeEntityID sets the "scope_entity_id" field.
+func (u *SystemAnalysisUpsertOne) SetScopeEntityID(v uuid.UUID) *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.SetScopeEntityID(v)
+	})
+}
+
+// UpdateScopeEntityID sets the "scope_entity_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsertOne) UpdateScopeEntityID() *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.UpdateScopeEntityID()
+	})
+}
+
+// ClearScopeEntityID clears the value of the "scope_entity_id" field.
+func (u *SystemAnalysisUpsertOne) ClearScopeEntityID() *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.ClearScopeEntityID()
+	})
+}
+
+// SetSubjectEntityID sets the "subject_entity_id" field.
+func (u *SystemAnalysisUpsertOne) SetSubjectEntityID(v uuid.UUID) *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.SetSubjectEntityID(v)
+	})
+}
+
+// UpdateSubjectEntityID sets the "subject_entity_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsertOne) UpdateSubjectEntityID() *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.UpdateSubjectEntityID()
+	})
+}
+
+// ClearSubjectEntityID clears the value of the "subject_entity_id" field.
+func (u *SystemAnalysisUpsertOne) ClearSubjectEntityID() *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.ClearSubjectEntityID()
+	})
+}
+
+// SetReferenceTime sets the "reference_time" field.
+func (u *SystemAnalysisUpsertOne) SetReferenceTime(v time.Time) *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.SetReferenceTime(v)
+	})
+}
+
+// UpdateReferenceTime sets the "reference_time" field to the value that was provided on create.
+func (u *SystemAnalysisUpsertOne) UpdateReferenceTime() *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.UpdateReferenceTime()
+	})
+}
+
+// ClearReferenceTime clears the value of the "reference_time" field.
+func (u *SystemAnalysisUpsertOne) ClearReferenceTime() *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.ClearReferenceTime()
 	})
 }
 
@@ -680,6 +857,69 @@ func (u *SystemAnalysisUpsertBulk) SetUpdatedAt(v time.Time) *SystemAnalysisUpse
 func (u *SystemAnalysisUpsertBulk) UpdateUpdatedAt() *SystemAnalysisUpsertBulk {
 	return u.Update(func(s *SystemAnalysisUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetScopeEntityID sets the "scope_entity_id" field.
+func (u *SystemAnalysisUpsertBulk) SetScopeEntityID(v uuid.UUID) *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.SetScopeEntityID(v)
+	})
+}
+
+// UpdateScopeEntityID sets the "scope_entity_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsertBulk) UpdateScopeEntityID() *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.UpdateScopeEntityID()
+	})
+}
+
+// ClearScopeEntityID clears the value of the "scope_entity_id" field.
+func (u *SystemAnalysisUpsertBulk) ClearScopeEntityID() *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.ClearScopeEntityID()
+	})
+}
+
+// SetSubjectEntityID sets the "subject_entity_id" field.
+func (u *SystemAnalysisUpsertBulk) SetSubjectEntityID(v uuid.UUID) *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.SetSubjectEntityID(v)
+	})
+}
+
+// UpdateSubjectEntityID sets the "subject_entity_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsertBulk) UpdateSubjectEntityID() *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.UpdateSubjectEntityID()
+	})
+}
+
+// ClearSubjectEntityID clears the value of the "subject_entity_id" field.
+func (u *SystemAnalysisUpsertBulk) ClearSubjectEntityID() *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.ClearSubjectEntityID()
+	})
+}
+
+// SetReferenceTime sets the "reference_time" field.
+func (u *SystemAnalysisUpsertBulk) SetReferenceTime(v time.Time) *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.SetReferenceTime(v)
+	})
+}
+
+// UpdateReferenceTime sets the "reference_time" field to the value that was provided on create.
+func (u *SystemAnalysisUpsertBulk) UpdateReferenceTime() *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.UpdateReferenceTime()
+	})
+}
+
+// ClearReferenceTime clears the value of the "reference_time" field.
+func (u *SystemAnalysisUpsertBulk) ClearReferenceTime() *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.ClearReferenceTime()
 	})
 }
 

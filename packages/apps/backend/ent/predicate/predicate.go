@@ -90,21 +90,6 @@ type IncidentSeverity func(*sql.Selector)
 // IncidentTag is the predicate function for incidenttag builders.
 type IncidentTag func(*sql.Selector)
 
-// IncidentTimelineEvent is the predicate function for incidenttimelineevent builders.
-type IncidentTimelineEvent func(*sql.Selector)
-
-// IncidentTimelineEventContext is the predicate function for incidenttimelineeventcontext builders.
-type IncidentTimelineEventContext func(*sql.Selector)
-
-// IncidentTimelineEventContributingFactor is the predicate function for incidenttimelineeventcontributingfactor builders.
-type IncidentTimelineEventContributingFactor func(*sql.Selector)
-
-// IncidentTimelineEventEvidence is the predicate function for incidenttimelineeventevidence builders.
-type IncidentTimelineEventEvidence func(*sql.Selector)
-
-// IncidentTimelineEventSystemContext is the predicate function for incidenttimelineeventsystemcontext builders.
-type IncidentTimelineEventSystemContext func(*sql.Selector)
-
 // IncidentType is the predicate function for incidenttype builders.
 type IncidentType func(*sql.Selector)
 
@@ -195,11 +180,11 @@ type RetrospectiveReview func(*sql.Selector)
 // SystemAnalysis is the predicate function for systemanalysis builders.
 type SystemAnalysis func(*sql.Selector)
 
-// SystemAnalysisTopologyEdge is the predicate function for systemanalysistopologyedge builders.
-type SystemAnalysisTopologyEdge func(*sql.Selector)
+// SystemAnalysisEntry is the predicate function for systemanalysisentry builders.
+type SystemAnalysisEntry func(*sql.Selector)
 
-// SystemAnalysisTopologyNode is the predicate function for systemanalysistopologynode builders.
-type SystemAnalysisTopologyNode func(*sql.Selector)
+// SystemAnalysisEntrySubject is the predicate function for systemanalysisentrysubject builders.
+type SystemAnalysisEntrySubject func(*sql.Selector)
 
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)

@@ -48,8 +48,6 @@ const (
 	EdgeType = "type"
 	// EdgeMilestones holds the string denoting the milestones edge name in mutations.
 	EdgeMilestones = "milestones"
-	// EdgeTimelineEvents holds the string denoting the timeline_events edge name in mutations.
-	EdgeTimelineEvents = "timeline_events"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
 	EdgeRetrospective = "retrospective"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
@@ -113,13 +111,6 @@ const (
 	MilestonesInverseTable = "incident_milestones"
 	// MilestonesColumn is the table column denoting the milestones relation/edge.
 	MilestonesColumn = "incident_id"
-	// TimelineEventsTable is the table that holds the timeline_events relation/edge.
-	TimelineEventsTable = "incident_timeline_events"
-	// TimelineEventsInverseTable is the table name for the IncidentTimelineEvent entity.
-	// It exists in this package in order to avoid circular dependency with the "incidenttimelineevent" package.
-	TimelineEventsInverseTable = "incident_timeline_events"
-	// TimelineEventsColumn is the table column denoting the timeline_events relation/edge.
-	TimelineEventsColumn = "incident_id"
 	// RetrospectiveTable is the table that holds the retrospective relation/edge.
 	RetrospectiveTable = "retrospectives"
 	// RetrospectiveInverseTable is the table name for the Retrospective entity.
@@ -369,20 +360,6 @@ func ByMilestones(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByTimelineEventsCount orders the results by timeline_events count.
-func ByTimelineEventsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newTimelineEventsStep(), opts...)
-	}
-}
-
-// ByTimelineEvents orders the results by timeline_events terms.
-func ByTimelineEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTimelineEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByRetrospectiveField orders the results by retrospective field.
 func ByRetrospectiveField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -590,13 +567,6 @@ func newMilestonesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MilestonesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, MilestonesTable, MilestonesColumn),
-	)
-}
-func newTimelineEventsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(TimelineEventsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, TimelineEventsTable, TimelineEventsColumn),
 	)
 }
 func newRetrospectiveStep() *sqlgraph.Step {

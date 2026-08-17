@@ -72,6 +72,21 @@ func UpdatedAt(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// ScopeEntityID applies equality check predicate on the "scope_entity_id" field. It's identical to ScopeEntityIDEQ.
+func ScopeEntityID(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldScopeEntityID, v))
+}
+
+// SubjectEntityID applies equality check predicate on the "subject_entity_id" field. It's identical to SubjectEntityIDEQ.
+func SubjectEntityID(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldSubjectEntityID, v))
+}
+
+// ReferenceTime applies equality check predicate on the "reference_time" field. It's identical to ReferenceTimeEQ.
+func ReferenceTime(v time.Time) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldReferenceTime, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldTenantID, v))
@@ -172,6 +187,116 @@ func UpdatedAtLTE(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
+// ScopeEntityIDEQ applies the EQ predicate on the "scope_entity_id" field.
+func ScopeEntityIDEQ(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldScopeEntityID, v))
+}
+
+// ScopeEntityIDNEQ applies the NEQ predicate on the "scope_entity_id" field.
+func ScopeEntityIDNEQ(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNEQ(FieldScopeEntityID, v))
+}
+
+// ScopeEntityIDIn applies the In predicate on the "scope_entity_id" field.
+func ScopeEntityIDIn(vs ...uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldIn(FieldScopeEntityID, vs...))
+}
+
+// ScopeEntityIDNotIn applies the NotIn predicate on the "scope_entity_id" field.
+func ScopeEntityIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNotIn(FieldScopeEntityID, vs...))
+}
+
+// ScopeEntityIDIsNil applies the IsNil predicate on the "scope_entity_id" field.
+func ScopeEntityIDIsNil() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldIsNull(FieldScopeEntityID))
+}
+
+// ScopeEntityIDNotNil applies the NotNil predicate on the "scope_entity_id" field.
+func ScopeEntityIDNotNil() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNotNull(FieldScopeEntityID))
+}
+
+// SubjectEntityIDEQ applies the EQ predicate on the "subject_entity_id" field.
+func SubjectEntityIDEQ(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldSubjectEntityID, v))
+}
+
+// SubjectEntityIDNEQ applies the NEQ predicate on the "subject_entity_id" field.
+func SubjectEntityIDNEQ(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNEQ(FieldSubjectEntityID, v))
+}
+
+// SubjectEntityIDIn applies the In predicate on the "subject_entity_id" field.
+func SubjectEntityIDIn(vs ...uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldIn(FieldSubjectEntityID, vs...))
+}
+
+// SubjectEntityIDNotIn applies the NotIn predicate on the "subject_entity_id" field.
+func SubjectEntityIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNotIn(FieldSubjectEntityID, vs...))
+}
+
+// SubjectEntityIDIsNil applies the IsNil predicate on the "subject_entity_id" field.
+func SubjectEntityIDIsNil() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldIsNull(FieldSubjectEntityID))
+}
+
+// SubjectEntityIDNotNil applies the NotNil predicate on the "subject_entity_id" field.
+func SubjectEntityIDNotNil() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNotNull(FieldSubjectEntityID))
+}
+
+// ReferenceTimeEQ applies the EQ predicate on the "reference_time" field.
+func ReferenceTimeEQ(v time.Time) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldReferenceTime, v))
+}
+
+// ReferenceTimeNEQ applies the NEQ predicate on the "reference_time" field.
+func ReferenceTimeNEQ(v time.Time) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNEQ(FieldReferenceTime, v))
+}
+
+// ReferenceTimeIn applies the In predicate on the "reference_time" field.
+func ReferenceTimeIn(vs ...time.Time) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldIn(FieldReferenceTime, vs...))
+}
+
+// ReferenceTimeNotIn applies the NotIn predicate on the "reference_time" field.
+func ReferenceTimeNotIn(vs ...time.Time) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNotIn(FieldReferenceTime, vs...))
+}
+
+// ReferenceTimeGT applies the GT predicate on the "reference_time" field.
+func ReferenceTimeGT(v time.Time) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldGT(FieldReferenceTime, v))
+}
+
+// ReferenceTimeGTE applies the GTE predicate on the "reference_time" field.
+func ReferenceTimeGTE(v time.Time) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldGTE(FieldReferenceTime, v))
+}
+
+// ReferenceTimeLT applies the LT predicate on the "reference_time" field.
+func ReferenceTimeLT(v time.Time) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldLT(FieldReferenceTime, v))
+}
+
+// ReferenceTimeLTE applies the LTE predicate on the "reference_time" field.
+func ReferenceTimeLTE(v time.Time) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldLTE(FieldReferenceTime, v))
+}
+
+// ReferenceTimeIsNil applies the IsNil predicate on the "reference_time" field.
+func ReferenceTimeIsNil() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldIsNull(FieldReferenceTime))
+}
+
+// ReferenceTimeNotNil applies the NotNil predicate on the "reference_time" field.
+func ReferenceTimeNotNil() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNotNull(FieldReferenceTime))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
@@ -201,27 +326,27 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.SystemAnalysis {
 	})
 }
 
-// HasAnalysisNodes applies the HasEdge predicate on the "analysis_nodes" edge.
-func HasAnalysisNodes() predicate.SystemAnalysis {
+// HasScopeEntity applies the HasEdge predicate on the "scope_entity" edge.
+func HasScopeEntity() predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, AnalysisNodesTable, AnalysisNodesColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, ScopeEntityTable, ScopeEntityColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisTopologyNode
-		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SystemAnalysis
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAnalysisNodesWith applies the HasEdge predicate on the "analysis_nodes" edge with a given conditions (other predicates).
-func HasAnalysisNodesWith(preds ...predicate.SystemAnalysisTopologyNode) predicate.SystemAnalysis {
+// HasScopeEntityWith applies the HasEdge predicate on the "scope_entity" edge with a given conditions (other predicates).
+func HasScopeEntityWith(preds ...predicate.KnowledgeEntity) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
-		step := newAnalysisNodesStep()
+		step := newScopeEntityStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisTopologyNode
-		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SystemAnalysis
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -230,27 +355,56 @@ func HasAnalysisNodesWith(preds ...predicate.SystemAnalysisTopologyNode) predica
 	})
 }
 
-// HasAnalysisEdges applies the HasEdge predicate on the "analysis_edges" edge.
-func HasAnalysisEdges() predicate.SystemAnalysis {
+// HasSubjectEntity applies the HasEdge predicate on the "subject_entity" edge.
+func HasSubjectEntity() predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, AnalysisEdgesTable, AnalysisEdgesColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, SubjectEntityTable, SubjectEntityColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisTopologyEdge
-		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SystemAnalysis
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAnalysisEdgesWith applies the HasEdge predicate on the "analysis_edges" edge with a given conditions (other predicates).
-func HasAnalysisEdgesWith(preds ...predicate.SystemAnalysisTopologyEdge) predicate.SystemAnalysis {
+// HasSubjectEntityWith applies the HasEdge predicate on the "subject_entity" edge with a given conditions (other predicates).
+func HasSubjectEntityWith(preds ...predicate.KnowledgeEntity) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
-		step := newAnalysisEdgesStep()
+		step := newSubjectEntityStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisTopologyEdge
-		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SystemAnalysis
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasEntries applies the HasEdge predicate on the "entries" edge.
+func HasEntries() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, EntriesTable, EntriesColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisEntry
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEntriesWith applies the HasEdge predicate on the "entries" edge with a given conditions (other predicates).
+func HasEntriesWith(preds ...predicate.SystemAnalysisEntry) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := newEntriesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisEntry
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

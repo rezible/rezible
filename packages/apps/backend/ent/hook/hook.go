@@ -333,66 +333,6 @@ func (f IncidentTagFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTagMutation", m)
 }
 
-// The IncidentTimelineEventFunc type is an adapter to allow the use of ordinary
-// function as IncidentTimelineEvent mutator.
-type IncidentTimelineEventFunc func(context.Context, *ent.IncidentTimelineEventMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentTimelineEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentTimelineEventMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventMutation", m)
-}
-
-// The IncidentTimelineEventContextFunc type is an adapter to allow the use of ordinary
-// function as IncidentTimelineEventContext mutator.
-type IncidentTimelineEventContextFunc func(context.Context, *ent.IncidentTimelineEventContextMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentTimelineEventContextFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentTimelineEventContextMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventContextMutation", m)
-}
-
-// The IncidentTimelineEventContributingFactorFunc type is an adapter to allow the use of ordinary
-// function as IncidentTimelineEventContributingFactor mutator.
-type IncidentTimelineEventContributingFactorFunc func(context.Context, *ent.IncidentTimelineEventContributingFactorMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentTimelineEventContributingFactorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentTimelineEventContributingFactorMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventContributingFactorMutation", m)
-}
-
-// The IncidentTimelineEventEvidenceFunc type is an adapter to allow the use of ordinary
-// function as IncidentTimelineEventEvidence mutator.
-type IncidentTimelineEventEvidenceFunc func(context.Context, *ent.IncidentTimelineEventEvidenceMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentTimelineEventEvidenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentTimelineEventEvidenceMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventEvidenceMutation", m)
-}
-
-// The IncidentTimelineEventSystemContextFunc type is an adapter to allow the use of ordinary
-// function as IncidentTimelineEventSystemContext mutator.
-type IncidentTimelineEventSystemContextFunc func(context.Context, *ent.IncidentTimelineEventSystemContextMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentTimelineEventSystemContextFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentTimelineEventSystemContextMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventSystemContextMutation", m)
-}
-
 // The IncidentTypeFunc type is an adapter to allow the use of ordinary
 // function as IncidentType mutator.
 type IncidentTypeFunc func(context.Context, *ent.IncidentTypeMutation) (ent.Value, error)
@@ -753,28 +693,28 @@ func (f SystemAnalysisFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemAnalysisMutation", m)
 }
 
-// The SystemAnalysisTopologyEdgeFunc type is an adapter to allow the use of ordinary
-// function as SystemAnalysisTopologyEdge mutator.
-type SystemAnalysisTopologyEdgeFunc func(context.Context, *ent.SystemAnalysisTopologyEdgeMutation) (ent.Value, error)
+// The SystemAnalysisEntryFunc type is an adapter to allow the use of ordinary
+// function as SystemAnalysisEntry mutator.
+type SystemAnalysisEntryFunc func(context.Context, *ent.SystemAnalysisEntryMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f SystemAnalysisTopologyEdgeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SystemAnalysisTopologyEdgeMutation); ok {
+func (f SystemAnalysisEntryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemAnalysisEntryMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemAnalysisTopologyEdgeMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemAnalysisEntryMutation", m)
 }
 
-// The SystemAnalysisTopologyNodeFunc type is an adapter to allow the use of ordinary
-// function as SystemAnalysisTopologyNode mutator.
-type SystemAnalysisTopologyNodeFunc func(context.Context, *ent.SystemAnalysisTopologyNodeMutation) (ent.Value, error)
+// The SystemAnalysisEntrySubjectFunc type is an adapter to allow the use of ordinary
+// function as SystemAnalysisEntrySubject mutator.
+type SystemAnalysisEntrySubjectFunc func(context.Context, *ent.SystemAnalysisEntrySubjectMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f SystemAnalysisTopologyNodeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SystemAnalysisTopologyNodeMutation); ok {
+func (f SystemAnalysisEntrySubjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemAnalysisEntrySubjectMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemAnalysisTopologyNodeMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemAnalysisEntrySubjectMutation", m)
 }
 
 // The TaskFunc type is an adapter to allow the use of ordinary

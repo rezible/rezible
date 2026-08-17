@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -25,6 +26,12 @@ type SystemAnalysis struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Optional knowledge graph entity that bounds analysis context and default graph traversal.
+	ScopeEntityID *uuid.UUID `json:"scope_entity_id,omitempty"`
+	// Optional primary knowledge graph entity this analysis is about.
+	SubjectEntityID *uuid.UUID `json:"subject_entity_id,omitempty"`
+	// Optional evidence time used to render historical graph state; nil means current state.
+	ReferenceTime *time.Time `json:"reference_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SystemAnalysisQuery when eager-loading is set.
 	Edges        SystemAnalysisEdges `json:"edges"`
@@ -35,13 +42,15 @@ type SystemAnalysis struct {
 type SystemAnalysisEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// AnalysisNodes holds the value of the analysis_nodes edge.
-	AnalysisNodes []*SystemAnalysisTopologyNode `json:"analysis_nodes,omitempty"`
-	// AnalysisEdges holds the value of the analysis_edges edge.
-	AnalysisEdges []*SystemAnalysisTopologyEdge `json:"analysis_edges,omitempty"`
+	// ScopeEntity holds the value of the scope_entity edge.
+	ScopeEntity *KnowledgeEntity `json:"scope_entity,omitempty"`
+	// SubjectEntity holds the value of the subject_entity edge.
+	SubjectEntity *KnowledgeEntity `json:"subject_entity,omitempty"`
+	// Entries holds the value of the entries edge.
+	Entries []*SystemAnalysisEntry `json:"entries,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -55,22 +64,35 @@ func (e SystemAnalysisEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AnalysisNodesOrErr returns the AnalysisNodes value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemAnalysisEdges) AnalysisNodesOrErr() ([]*SystemAnalysisTopologyNode, error) {
-	if e.loadedTypes[1] {
-		return e.AnalysisNodes, nil
+// ScopeEntityOrErr returns the ScopeEntity value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemAnalysisEdges) ScopeEntityOrErr() (*KnowledgeEntity, error) {
+	if e.ScopeEntity != nil {
+		return e.ScopeEntity, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: knowledgeentity.Label}
 	}
-	return nil, &NotLoadedError{edge: "analysis_nodes"}
+	return nil, &NotLoadedError{edge: "scope_entity"}
 }
 
-// AnalysisEdgesOrErr returns the AnalysisEdges value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemAnalysisEdges) AnalysisEdgesOrErr() ([]*SystemAnalysisTopologyEdge, error) {
-	if e.loadedTypes[2] {
-		return e.AnalysisEdges, nil
+// SubjectEntityOrErr returns the SubjectEntity value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemAnalysisEdges) SubjectEntityOrErr() (*KnowledgeEntity, error) {
+	if e.SubjectEntity != nil {
+		return e.SubjectEntity, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: knowledgeentity.Label}
 	}
-	return nil, &NotLoadedError{edge: "analysis_edges"}
+	return nil, &NotLoadedError{edge: "subject_entity"}
+}
+
+// EntriesOrErr returns the Entries value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemAnalysisEdges) EntriesOrErr() ([]*SystemAnalysisEntry, error) {
+	if e.loadedTypes[3] {
+		return e.Entries, nil
+	}
+	return nil, &NotLoadedError{edge: "entries"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -78,9 +100,11 @@ func (*SystemAnalysis) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemanalysis.FieldScopeEntityID, systemanalysis.FieldSubjectEntityID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case systemanalysis.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case systemanalysis.FieldCreatedAt, systemanalysis.FieldUpdatedAt:
+		case systemanalysis.FieldCreatedAt, systemanalysis.FieldUpdatedAt, systemanalysis.FieldReferenceTime:
 			values[i] = new(sql.NullTime)
 		case systemanalysis.FieldID:
 			values[i] = new(uuid.UUID)
@@ -123,6 +147,27 @@ func (_m *SystemAnalysis) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
+		case systemanalysis.FieldScopeEntityID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field scope_entity_id", values[i])
+			} else if value.Valid {
+				_m.ScopeEntityID = new(uuid.UUID)
+				*_m.ScopeEntityID = *value.S.(*uuid.UUID)
+			}
+		case systemanalysis.FieldSubjectEntityID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field subject_entity_id", values[i])
+			} else if value.Valid {
+				_m.SubjectEntityID = new(uuid.UUID)
+				*_m.SubjectEntityID = *value.S.(*uuid.UUID)
+			}
+		case systemanalysis.FieldReferenceTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field reference_time", values[i])
+			} else if value.Valid {
+				_m.ReferenceTime = new(time.Time)
+				*_m.ReferenceTime = value.Time
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -141,14 +186,19 @@ func (_m *SystemAnalysis) QueryTenant() *TenantQuery {
 	return NewSystemAnalysisClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAnalysisNodes queries the "analysis_nodes" edge of the SystemAnalysis entity.
-func (_m *SystemAnalysis) QueryAnalysisNodes() *SystemAnalysisTopologyNodeQuery {
-	return NewSystemAnalysisClient(_m.config).QueryAnalysisNodes(_m)
+// QueryScopeEntity queries the "scope_entity" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QueryScopeEntity() *KnowledgeEntityQuery {
+	return NewSystemAnalysisClient(_m.config).QueryScopeEntity(_m)
 }
 
-// QueryAnalysisEdges queries the "analysis_edges" edge of the SystemAnalysis entity.
-func (_m *SystemAnalysis) QueryAnalysisEdges() *SystemAnalysisTopologyEdgeQuery {
-	return NewSystemAnalysisClient(_m.config).QueryAnalysisEdges(_m)
+// QuerySubjectEntity queries the "subject_entity" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QuerySubjectEntity() *KnowledgeEntityQuery {
+	return NewSystemAnalysisClient(_m.config).QuerySubjectEntity(_m)
+}
+
+// QueryEntries queries the "entries" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QueryEntries() *SystemAnalysisEntryQuery {
+	return NewSystemAnalysisClient(_m.config).QueryEntries(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysis.
@@ -182,6 +232,21 @@ func (_m *SystemAnalysis) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := _m.ScopeEntityID; v != nil {
+		builder.WriteString("scope_entity_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.SubjectEntityID; v != nil {
+		builder.WriteString("subject_entity_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.ReferenceTime; v != nil {
+		builder.WriteString("reference_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }
