@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/rezible/rezible/ent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 )
 
 type SubjectKind string
@@ -153,7 +155,8 @@ type (
 	// SystemComponentSubjectAttributes are the provider-neutral attributes persisted for system component observations.
 	SystemComponentSubjectAttributes struct {
 		ExternalRef string         `json:"external_ref" validate:"required"`
-		Kind        string         `json:"kind" validate:"required"`
+		Kind        kne.Kind       `json:"kind" validate:"required"`
+		Subkind     string         `json:"subkind" validate:"required"`
 		DisplayName string         `json:"display_name" validate:"required"`
 		Description string         `json:"description"`
 		Properties  map[string]any `json:"properties"`
@@ -173,14 +176,17 @@ type (
 	// SystemRelationshipSubjectAttributes are the provider-neutral attributes persisted for system relationship observations.
 	SystemRelationshipSubjectAttributes struct {
 		ExternalRef       string         `json:"external_ref" validate:"required"`
-		Kind              string         `json:"kind" validate:"required"`
+		Kind              knr.Kind       `json:"kind" validate:"required"`
+		Subkind           string         `json:"subkind" validate:"required"`
 		DisplayName       string         `json:"display_name"`
 		Description       string         `json:"description"`
 		SourceExternalRef string         `json:"source_external_ref" validate:"required"`
-		SourceKind        string         `json:"source_kind" validate:"required"`
+		SourceKind        kne.Kind       `json:"source_kind" validate:"required"`
+		SourceSubkind     string         `json:"source_subkind" validate:"required"`
 		SourceDisplayName string         `json:"source_display_name" validate:"required"`
 		TargetExternalRef string         `json:"target_external_ref" validate:"required"`
-		TargetKind        string         `json:"target_kind" validate:"required"`
+		TargetKind        kne.Kind       `json:"target_kind" validate:"required"`
+		TargetSubkind     string         `json:"target_subkind" validate:"required"`
 		TargetDisplayName string         `json:"target_display_name" validate:"required"`
 		Properties        map[string]any `json:"properties"`
 	}

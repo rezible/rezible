@@ -13,7 +13,6 @@ type Handler struct {
 	*incidentsHandler
 	*incidentMetadataHandler
 	*incidentDebriefsHandler
-	*incidentTimelineHandler
 	*incidentMilestonesHandler
 	*aiHandler
 	*integrationsHandler
@@ -50,6 +49,7 @@ func NewHandler(
 	oncallMetrics rez.OncallMetricsService,
 	playbooks rez.PlaybookService,
 	retros rez.RetrospectiveService,
+	systemAnalysis rez.SystemAnalysisService,
 	knowledge rez.KnowledgeGraphService,
 ) (*Handler, error) {
 	h := &Handler{
@@ -58,7 +58,6 @@ func NewHandler(
 		userSessionsHandler:       newUserSessionsHandler(orgs, users),
 		documentsHandler:          newDocumentsHandler(documents, users),
 		incidentDebriefsHandler:   newIncidentDebriefsHandler(db, users, debriefs),
-		incidentTimelineHandler:   newIncidentTimelineHandler(db),
 		incidentMetadataHandler:   newIncidentMetadataHandler(db, incidents),
 		incidentMilestonesHandler: newIncidentMilestonesHandler(db),
 		tasksHandler:              newTasksHandler(db),
@@ -72,7 +71,7 @@ func NewHandler(
 		organizationsHandler:      newOrganizationsHandler(orgs),
 		playbooksHandler:          newPlaybooksHandler(playbooks),
 		retrospectivesHandler:     newRetrospectivesHandler(users, incidents, retros, documents),
-		systemAnalysisHandler:     newSystemAnalysisHandler(db, knowledge),
+		systemAnalysisHandler:     newSystemAnalysisHandler(systemAnalysis),
 		knowledgeGraphHandler:     newKnowledgeGraphHandler(knowledge),
 		teamsHandler:              newTeamsHandler(db),
 		usersHandler:              newUsersHandler(users),

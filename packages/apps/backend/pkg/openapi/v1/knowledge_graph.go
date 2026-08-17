@@ -57,6 +57,7 @@ type (
 	}
 	KnowledgeGraphEntityAttributes struct {
 		Kind        string                       `json:"kind"`
+		Subkind     string                       `json:"subkind"`
 		Aliases     []KnowledgeGraphSubjectAlias `json:"aliases"`
 		LatestState *KnowledgeGraphSubjectState  `json:"latestState,omitempty"`
 		CreatedAt   time.Time                    `json:"createdAt"`
@@ -69,6 +70,7 @@ type (
 	}
 	KnowledgeGraphRelationshipAttributes struct {
 		Kind           string                       `json:"kind"`
+		Subkind        string                       `json:"subkind"`
 		SourceEntityId uuid.UUID                    `json:"sourceEntityId"`
 		TargetEntityId uuid.UUID                    `json:"targetEntityId"`
 		Aliases        []KnowledgeGraphSubjectAlias `json:"aliases"`
@@ -98,7 +100,8 @@ type (
 
 func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
 	attr := KnowledgeGraphEntityAttributes{
-		Kind:      e.Kind,
+		Kind:      e.Kind.String(),
+		Subkind:   e.Subkind,
 		Aliases:   make([]KnowledgeGraphSubjectAlias, len(e.Edges.Aliases)),
 		CreatedAt: e.CreatedAt,
 		UpdatedAt: e.UpdatedAt,
@@ -116,7 +119,8 @@ func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
 
 func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) KnowledgeGraphRelationship {
 	attr := KnowledgeGraphRelationshipAttributes{
-		Kind:           rel.Kind,
+		Kind:           rel.Kind.String(),
+		Subkind:        rel.Subkind,
 		SourceEntityId: rel.SourceEntityID,
 		TargetEntityId: rel.TargetEntityID,
 		CreatedAt:      rel.CreatedAt,
@@ -182,6 +186,7 @@ var ListKnowledgeGraphEntities = huma.Operation{
 type ListKnowledgeGraphEntitiesRequest struct {
 	ListRequest
 	Kind           []string `query:"kind" required:"false"`
+	Subkind        []string `query:"subkind" required:"false"`
 	Provider       string   `query:"provider" required:"false"`
 	ProviderSource string   `query:"providerSource" required:"false"`
 	SubjectKind    string   `query:"subjectKind" required:"false"`
@@ -212,6 +217,7 @@ var ListKnowledgeGraphRelationships = huma.Operation{
 type ListKnowledgeGraphRelationshipsRequest struct {
 	ListRequest
 	Kind           []string  `query:"kind" required:"false"`
+	Subkind        []string  `query:"subkind" required:"false"`
 	EntityId       uuid.UUID `query:"entityId" required:"false"`
 	SourceEntityId uuid.UUID `query:"sourceEntityId" required:"false"`
 	TargetEntityId uuid.UUID `query:"targetEntityId" required:"false"`

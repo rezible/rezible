@@ -82,8 +82,8 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 	now := time.Now().UTC()
 
 	for _, component := range []projections.SystemComponentSubjectAttributes{
-		{ExternalRef: "api", Kind: "service", DisplayName: "API"},
-		{ExternalRef: "database", Kind: "database", DisplayName: "Database"},
+		{ExternalRef: "api", Kind: kne.KindContainer, Subkind: "service", DisplayName: "API"},
+		{ExternalRef: "database", Kind: kne.KindContainer, Subkind: "database", DisplayName: "Database"},
 	} {
 		event := s.createNormalizedEvent(
 			projections.SubjectKindSystemComponent,
@@ -98,13 +98,16 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 
 	relationship := projections.SystemRelationshipSubjectAttributes{
 		ExternalRef:       "api-uses-database",
-		Kind:              "uses",
+		Kind:              knr.KindInteractsWith,
+		Subkind:           "uses",
 		DisplayName:       "uses",
 		SourceExternalRef: "api",
-		SourceKind:        "service",
+		SourceKind:        kne.KindContainer,
+		SourceSubkind:     "service",
 		SourceDisplayName: "API",
 		TargetExternalRef: "database",
-		TargetKind:        "database",
+		TargetKind:        kne.KindContainer,
+		TargetSubkind:     "database",
 		TargetDisplayName: "Database",
 	}
 	event := s.createNormalizedEvent(
@@ -117,8 +120,12 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 	_, projectionErr := runProjection(ctx, service, event)
 	s.Require().NoError(projectionErr)
 
-	s.Equal(2, s.Client(ctx).KnowledgeEntity.Query().Where(kne.Kind(knowledgeEntityKindSystemComponent)).CountX(ctx))
-	s.Equal(1, s.Client(ctx).KnowledgeRelationship.Query().Where(knr.Kind("uses")).CountX(ctx))
+	s.Equal(2, s.Client(ctx).KnowledgeEntity.Query().
+		Where(kne.KindEQ(kne.KindContainer), kne.SubkindIn("service", "database")).
+		CountX(ctx))
+	s.Equal(1, s.Client(ctx).KnowledgeRelationship.Query().
+		Where(knr.KindEQ(knr.KindInteractsWith), knr.Subkind("uses")).
+		CountX(ctx))
 }
 
 func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() {
@@ -158,7 +165,8 @@ func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() 
 		CountX(ctx))
 	s.Equal(1, s.Client(ctx).KnowledgeRelationship.Query().
 		Where(
-			knr.Kind(knowledgeRelationshipKindMemberOf),
+			knr.KindEQ(knr.KindParticipatesIn),
+			knr.Subkind(knowledgeRelationshipSubkindMemberOf),
 			knr.SourceEntityID(*createdUser.KnowledgeEntityID),
 			knr.TargetEntityID(*createdTeam.KnowledgeEntityID),
 		).

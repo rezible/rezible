@@ -146,11 +146,25 @@ type (
 		GetEvidence(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)
 
 		GetView(context.Context, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
-		GetEntityAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeEntity, error)
-		GetRelationshipAt(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeRelationship, error)
 
 		IngestEntityEvidence(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (*ent.KnowledgeEntity, error)
 		IngestEvidenceBulk(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) (ent.KnowledgeSubjectAliasSlice, error)
+	}
+)
+
+type (
+	SystemAnalysisService interface {
+		GetSystemAnalysis(context.Context, uuid.UUID) (*ent.SystemAnalysis, error)
+		SetSystemAnalysis(context.Context, uuid.UUID, func(*ent.SystemAnalysisMutation)) (*ent.SystemAnalysis, error)
+
+		GetSystemAnalysisGraph(context.Context, uuid.UUID, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
+
+		ListSystemAnalysisEntries(context.Context, uuid.UUID) (ent.SystemAnalysisEntries, error)
+		SetSystemAnalysisEntry(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntryMutation)) (*ent.SystemAnalysisEntry, error)
+		DeleteSystemAnalysisEntry(context.Context, uuid.UUID) error
+
+		SetSystemAnalysisEntrySubject(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntrySubject, error)
+		DeleteSystemAnalysisEntrySubject(context.Context, uuid.UUID) error
 	}
 )
 

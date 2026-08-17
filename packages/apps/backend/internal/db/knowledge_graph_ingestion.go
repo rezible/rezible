@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	knowledgeRelationshipUniqueColumns = sql.ConflictColumns(knr.FieldTenantID, knr.FieldKind, knr.FieldSourceEntityID, knr.FieldTargetEntityID)
+	knowledgeRelationshipUniqueColumns = sql.ConflictColumns(knr.FieldTenantID, knr.FieldKind, knr.FieldSubkind, knr.FieldSourceEntityID, knr.FieldTargetEntityID)
 	knowledgeSubjectAliasUniqueColumns = sql.ConflictColumns(ksa.FieldTenantID, ksa.FieldSubjectKind, ksa.FieldProvider, ksa.FieldProviderSource, ksa.FieldProviderSubjectRef)
 	knowledgeEvidenceUniqueColumns     = sql.ConflictColumns(ke.FieldTenantID, ke.FieldEventID, ke.FieldSubjectAliasID)
 )
@@ -38,14 +38,15 @@ func (s *KnowledgeGraphService) setEntityFromRef(ctx context.Context, ref ent.Kn
 		if entityErr != nil {
 			return nil, fmt.Errorf("load alias entity: %w", entityErr)
 		}
-		if entity.Kind != ref.Kind {
-			return nil, fmt.Errorf("%w: alias identifies %q, evidence expects %q", rez.ErrConflict, entity.Kind, ref.Kind)
+		if entity.Kind != ref.Kind || entity.Subkind != ref.Subkind {
+			return nil, fmt.Errorf("%w: alias identifies %q/%q, evidence expects %q/%q", rez.ErrConflict, entity.Kind, entity.Subkind, ref.Kind, ref.Subkind)
 		}
 		return alias, nil
 	}
 
 	createEntity := s.db.Client(ctx).KnowledgeEntity.Create().
-		SetKind(ref.Kind)
+		SetKind(ref.Kind).
+		SetSubkind(ref.Subkind)
 	createdEntity, createEntityErr := createEntity.Save(ctx)
 	if createEntityErr != nil {
 		return nil, fmt.Errorf("create knowledge entity: %w", createEntityErr)
@@ -89,7 +90,7 @@ func (s *KnowledgeGraphService) setRelationshipFromRef(ctx context.Context, ref 
 		if edgeErr != nil {
 			return nil, fmt.Errorf("load aliased relationship: %w", edgeErr)
 		}
-		if rel.Kind != ref.Kind || rel.SourceEntityID != sourceId || rel.TargetEntityID != targetId {
+		if rel.Kind != ref.Kind || rel.Subkind != ref.Subkind || rel.SourceEntityID != sourceId || rel.TargetEntityID != targetId {
 			return nil, fmt.Errorf("%w: relationship alias identifies different topology", rez.ErrConflict)
 		}
 		return existingAlias, nil
@@ -97,6 +98,7 @@ func (s *KnowledgeGraphService) setRelationshipFromRef(ctx context.Context, ref 
 
 	upsertRel := s.db.Client(ctx).KnowledgeRelationship.Create().
 		SetKind(ref.Kind).
+		SetSubkind(ref.Subkind).
 		SetSourceEntityID(sourceId).
 		SetTargetEntityID(targetId).
 		OnConflict(knowledgeRelationshipUniqueColumns).

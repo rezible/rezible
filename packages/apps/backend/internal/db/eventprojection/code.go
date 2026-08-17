@@ -6,17 +6,13 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 const (
-	knowledgeEntityKindCodeRepository = "code_repository"
-	knowledgeEntityKindCodeChange     = "code_change"
-
-	knowledgeRelationshipKindTouchedRepository = "touched_repository"
-	knowledgeRelationshipKindChangeImpacted    = "code_change_impacted"
-
 	knowledgeAssertionCodeRepositoryObserved = "code_repository_exists"
 	knowledgeAssertionCodeChangeObserved     = "code_change_observed"
 	knowledgeAssertionCodeChangeRepository   = "code_change_touched_repository"
@@ -37,8 +33,9 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 			Properties:  properties,
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:  knowledgeEntityKindCodeRepository,
-			Alias: event.Event.KnowledgeAliasRef(),
+			Kind:    kne.KindCode,
+			Subkind: knowledgeEntitySubkindRepository,
+			Alias:   event.Event.KnowledgeAliasRef(),
 		},
 	}
 
@@ -54,8 +51,9 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 	evidenceKind := projectionEvidenceKind(event.Event)
 
 	changeRef := ent.KnowledgeEntityRef{
-		Kind:  knowledgeEntityKindCodeChange,
-		Alias: event.Event.KnowledgeAliasRef(),
+		Kind:    kne.KindEvent,
+		Subkind: knowledgeEntitySubkindCodeChange,
+		Alias:   event.Event.KnowledgeAliasRef(),
 	}
 	codeChangeEvidence := ent.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
@@ -70,8 +68,9 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 	repoAlias := event.Event.KnowledgeAliasRef()
 	repoAlias.ProviderSubjectRef = attributes.RepositoryExternalRef
 	repositoryRef := ent.KnowledgeEntityRef{
-		Kind:  knowledgeEntityKindCodeRepository,
-		Alias: repoAlias,
+		Kind:    kne.KindCode,
+		Subkind: knowledgeEntitySubkindRepository,
+		Alias:   repoAlias,
 	}
 	repoEntityEvidence := ent.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
@@ -88,7 +87,8 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		Assertion:   knowledgeAssertionCodeChangeRepository,
 		EffectiveAt: event.Event.OccurredAt,
 		SubjectRelationship: &ent.KnowledgeRelationshipRef{
-			Kind: knowledgeRelationshipKindTouchedRepository,
+			Kind:    knr.KindImpacts,
+			Subkind: knowledgeRelationshipSubkindTouchedRepository,
 			Alias: ent.KnowledgeAliasRef{
 				Provider:           event.Event.Provider,
 				ProviderSource:     event.Event.ProviderSource,
@@ -112,10 +112,11 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 			EffectiveAt: event.Event.OccurredAt,
 			SubjectState: schematypes.KnowledgeGraphSubjectState{
 				DisplayName: related.DisplayName,
-				Properties:  map[string]any{"component_kind": related.Kind},
+				Properties:  map[string]any{"entity_subkind": related.Subkind},
 			},
 			SubjectRelationship: &ent.KnowledgeRelationshipRef{
-				Kind: knowledgeRelationshipKindChangeImpacted,
+				Kind:    knr.KindImpacts,
+				Subkind: knowledgeRelationshipSubkindCodeChangeImpacted,
 				Alias: ent.KnowledgeAliasRef{
 					Provider:           event.Event.Provider,
 					ProviderSource:     event.Event.ProviderSource,
@@ -123,7 +124,8 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 				},
 				Source: changeRef,
 				Target: ent.KnowledgeEntityRef{
-					Kind: knowledgeEntityKindSystemComponent,
+					Kind:    related.Kind,
+					Subkind: related.Subkind,
 					Alias: ent.KnowledgeAliasRef{
 						Provider:           event.Event.Provider,
 						ProviderSource:     event.Event.ProviderSource,

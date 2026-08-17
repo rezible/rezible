@@ -116,12 +116,14 @@ const (
 	KindSystem         Kind = "system"
 	KindContainer      Kind = "container"
 	KindComponent      Kind = "component"
+	KindInfrastructure Kind = "infrastructure"
 	KindCode           Kind = "code"
-	KindDeploymentNode Kind = "deployment_node"
 	KindProcess        Kind = "process"
+	KindDomainObject   Kind = "domain_object"
 	KindConcern        Kind = "concern"
 	KindDecision       Kind = "decision"
 	KindEvent          Kind = "event"
+	KindSignal         Kind = "signal"
 )
 
 func (k Kind) String() string {
@@ -131,7 +133,7 @@ func (k Kind) String() string {
 // KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
 func KindValidator(k Kind) error {
 	switch k {
-	case KindActor, KindSystem, KindContainer, KindComponent, KindCode, KindDeploymentNode, KindProcess, KindConcern, KindDecision, KindEvent:
+	case KindActor, KindSystem, KindContainer, KindComponent, KindInfrastructure, KindCode, KindProcess, KindDomainObject, KindConcern, KindDecision, KindEvent, KindSignal:
 		return nil
 	default:
 		return fmt.Errorf("knowledgeentity: invalid enum value for kind field: %q", k)

@@ -9,7 +9,9 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
@@ -70,7 +72,11 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: "Old API name",
 		},
-		SubjectEntity: &ent.KnowledgeEntityRef{Kind: "system_component", Alias: sourceAlias},
+		SubjectEntity: &ent.KnowledgeEntityRef{
+			Kind:    kne.KindContainer,
+			Subkind: "service",
+			Alias:   sourceAlias,
+		},
 	})
 	s.Require().NoError(ingestErr)
 
@@ -82,7 +88,11 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: "API",
 		},
-		SubjectEntity: &ent.KnowledgeEntityRef{Kind: "system_component", Alias: sourceAlias},
+		SubjectEntity: &ent.KnowledgeEntityRef{
+			Kind:    kne.KindContainer,
+			Subkind: "service",
+			Alias:   sourceAlias,
+		},
 	})
 	s.Require().NoError(ingestErr)
 
@@ -93,8 +103,9 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 		EffectiveAt:  now.Add(-time.Hour),
 		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "Database"},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:  "system_component",
-			Alias: targetAlias,
+			Kind:    kne.KindContainer,
+			Subkind: "database",
+			Alias:   targetAlias,
 		},
 	})
 	s.Require().NoError(ingestErr)
@@ -111,10 +122,11 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 		EffectiveAt:  now,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "uses"},
 		SubjectRelationship: &ent.KnowledgeRelationshipRef{
-			Kind:   "uses",
-			Alias:  relationshipAlias,
-			Source: ent.KnowledgeEntityRef{Kind: "system_component", Alias: sourceAlias},
-			Target: ent.KnowledgeEntityRef{Kind: "system_component", Alias: targetAlias},
+			Kind:    knr.KindInteractsWith,
+			Subkind: "uses",
+			Alias:   relationshipAlias,
+			Source:  ent.KnowledgeEntityRef{Kind: kne.KindContainer, Subkind: "service", Alias: sourceAlias},
+			Target:  ent.KnowledgeEntityRef{Kind: kne.KindContainer, Subkind: "database", Alias: targetAlias},
 		},
 	})
 	s.Require().NoError(ingestErr)
@@ -133,4 +145,37 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 	s.Len(view.Entities, 2)
 	s.Len(view.Relationships, 1)
 	s.Equal(source.ID, view.RootID)
+}
+
+func (s *KnowledgeGraphServiceSuite) TestBoundedViewIncludesIsolatedRootEntity() {
+	ctx := s.SeedTenantContext()
+	service := s.knowledgeService()
+	now := time.Now().UTC()
+	alias := ent.KnowledgeAliasRef{
+		Provider:           "test",
+		ProviderSource:     "knowledge-graph-tests",
+		ProviderSubjectRef: "service:api",
+	}
+
+	event := s.createEvent(projections.SubjectKindSystemComponent, ne.KindObserved, alias.ProviderSubjectRef, now, struct{}{})
+	evidenceRef := ent.KnowledgeEvidenceRef{
+		Kind:         ke.KindObserved,
+		Assertion:    "component_exists",
+		EffectiveAt:  now,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "API"},
+		SubjectEntity: &ent.KnowledgeEntityRef{
+			Kind:    kne.KindContainer,
+			Subkind: "service",
+			Alias:   alias,
+		},
+	}
+	root, ingestErr := service.IngestEntityEvidence(ctx, event, evidenceRef)
+	s.Require().NoError(ingestErr)
+
+	view, viewErr := service.GetView(ctx, rez.GetKnowledgeGraphViewParams{Depth: 1, EntityID: root.ID})
+	s.Require().NoError(viewErr)
+	s.Equal(root.ID, view.RootID)
+	s.Len(view.Entities, 1)
+	s.Len(view.Relationships, 0)
+	s.Equal(root.ID, view.Entities[0].ID)
 }

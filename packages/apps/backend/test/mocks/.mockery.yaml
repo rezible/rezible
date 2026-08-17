@@ -19,3 +19,4 @@ packages:
       IntegrationService: {}
       IncidentService: {}
       KnowledgeGraphService: {}
+      SystemAnalysisService: {}

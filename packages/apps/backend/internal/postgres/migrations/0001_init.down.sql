@@ -40,12 +40,12 @@ ALTER TABLE "team_memberships" DROP CONSTRAINT "team_memberships_users_user", DR
 ALTER TABLE "teams" DROP CONSTRAINT "teams_knowledge_entities_knowledge_entity", DROP CONSTRAINT "teams_tenants_tenant";
 -- reverse: modify "tasks" table
 ALTER TABLE "tasks" DROP CONSTRAINT "tasks_users_created_tasks", DROP CONSTRAINT "tasks_users_assigned_tasks", DROP CONSTRAINT "tasks_tenants_tenant", DROP CONSTRAINT "tasks_incidents_tasks";
--- reverse: modify "system_analysis_topology_nodes" table
-ALTER TABLE "system_analysis_topology_nodes" DROP CONSTRAINT "system_analysis_topology_nodes_d5cfda9a7f5854e673b4f4b8f949ad7e", DROP CONSTRAINT "system_analysis_topology_nodes_system_analyses_analysis", DROP CONSTRAINT "system_analysis_topology_nodes_tenants_tenant";
--- reverse: modify "system_analysis_topology_edges" table
-ALTER TABLE "system_analysis_topology_edges" DROP CONSTRAINT "system_analysis_topology_edges_470b5b4998b62e9c588bf4e828eb05a3", DROP CONSTRAINT "system_analysis_topology_edges_system_analyses_analysis", DROP CONSTRAINT "system_analysis_topology_edges_tenants_tenant";
+-- reverse: modify "system_analysis_entry_subjects" table
+ALTER TABLE "system_analysis_entry_subjects" DROP CONSTRAINT "system_analysis_entry_subjects_1264d7dddb02bff88a4448e8cddecac8", DROP CONSTRAINT "system_analysis_entry_subjects_900e59485c580b401fec755bd8cd2504", DROP CONSTRAINT "system_analysis_entry_subjects_49d5b666fad2cccccfff680228c04fc3", DROP CONSTRAINT "system_analysis_entry_subjects_system_analysis_entries_entry", DROP CONSTRAINT "system_analysis_entry_subjects_tenants_tenant";
+-- reverse: modify "system_analysis_entries" table
+ALTER TABLE "system_analysis_entries" DROP CONSTRAINT "system_analysis_entries_system_analyses_analysis", DROP CONSTRAINT "system_analysis_entries_tenants_tenant";
 -- reverse: modify "system_analyses" table
-ALTER TABLE "system_analyses" DROP CONSTRAINT "system_analyses_tenants_tenant";
+ALTER TABLE "system_analyses" DROP CONSTRAINT "system_analyses_knowledge_entities_subject_entity", DROP CONSTRAINT "system_analyses_knowledge_entities_scope_entity", DROP CONSTRAINT "system_analyses_tenants_tenant";
 -- reverse: modify "retrospective_reviews" table
 ALTER TABLE "retrospective_reviews" DROP CONSTRAINT "retrospective_reviews_retrospective_comments_comment", DROP CONSTRAINT "retrospective_reviews_users_reviewer", DROP CONSTRAINT "retrospective_reviews_users_requester", DROP CONSTRAINT "retrospective_reviews_retrospectives_retrospective", DROP CONSTRAINT "retrospective_reviews_tenants_tenant";
 -- reverse: modify "retrospective_comments" table
@@ -104,16 +104,6 @@ ALTER TABLE "integration_event_sync_cursors" DROP CONSTRAINT "integration_event_
 ALTER TABLE "integrations" DROP CONSTRAINT "integrations_tenants_tenant";
 -- reverse: modify "incident_types" table
 ALTER TABLE "incident_types" DROP CONSTRAINT "incident_types_tenants_tenant";
--- reverse: modify "incident_timeline_event_system_contexts" table
-ALTER TABLE "incident_timeline_event_system_contexts" DROP CONSTRAINT "incident_timeline_event_system_19e1db8aab986ae60cc2bdc64d4ae2ae", DROP CONSTRAINT "incident_timeline_event_system_8d430e9079180616f13c07ec69552180", DROP CONSTRAINT "incident_timeline_event_system_contexts_tenants_tenant";
--- reverse: modify "incident_timeline_event_evidences" table
-ALTER TABLE "incident_timeline_event_evidences" DROP CONSTRAINT "incident_timeline_event_evidences_tenants_tenant", DROP CONSTRAINT "incident_timeline_event_eviden_37786b98ea2184b38a27c223bdf28160";
--- reverse: modify "incident_timeline_event_contributing_factors" table
-ALTER TABLE "incident_timeline_event_contributing_factors" DROP CONSTRAINT "incident_timeline_event_contributing_factors_tenants_tenant", DROP CONSTRAINT "incident_timeline_event_contri_0aecb2f20121e2d628c1402580fe5d71";
--- reverse: modify "incident_timeline_event_contexts" table
-ALTER TABLE "incident_timeline_event_contexts" DROP CONSTRAINT "incident_timeline_event_contexts_tenants_tenant", DROP CONSTRAINT "incident_timeline_event_contex_5ac24bfc474fb61b9351fb5cba7c87cb";
--- reverse: modify "incident_timeline_events" table
-ALTER TABLE "incident_timeline_events" DROP CONSTRAINT "incident_timeline_events_normalized_events_event", DROP CONSTRAINT "incident_timeline_events_tenants_tenant", DROP CONSTRAINT "incident_timeline_events_incidents_timeline_events";
 -- reverse: modify "incident_tags" table
 ALTER TABLE "incident_tags" DROP CONSTRAINT "incident_tags_tenants_tenant";
 -- reverse: modify "incident_severities" table
@@ -246,18 +236,34 @@ DROP TABLE "teams";
 DROP INDEX "task_tenant_id";
 -- reverse: create "tasks" table
 DROP TABLE "tasks";
--- reverse: create index "systemanalysistopologynode_ten_913ae4db8a508a24e1a29646b99882dd" to table: "system_analysis_topology_nodes"
-DROP INDEX "systemanalysistopologynode_ten_913ae4db8a508a24e1a29646b99882dd";
--- reverse: create index "systemanalysistopologynode_tenant_id" to table: "system_analysis_topology_nodes"
-DROP INDEX "systemanalysistopologynode_tenant_id";
--- reverse: create "system_analysis_topology_nodes" table
-DROP TABLE "system_analysis_topology_nodes";
--- reverse: create index "systemanalysistopologyedge_ten_5af57d11e47e169dc1bfee68d8924ac7" to table: "system_analysis_topology_edges"
-DROP INDEX "systemanalysistopologyedge_ten_5af57d11e47e169dc1bfee68d8924ac7";
--- reverse: create index "systemanalysistopologyedge_tenant_id" to table: "system_analysis_topology_edges"
-DROP INDEX "systemanalysistopologyedge_tenant_id";
--- reverse: create "system_analysis_topology_edges" table
-DROP TABLE "system_analysis_topology_edges";
+-- reverse: create index "systemanalysisentrysubject_tenant_id_knowledge_evidence_id" to table: "system_analysis_entry_subjects"
+DROP INDEX "systemanalysisentrysubject_tenant_id_knowledge_evidence_id";
+-- reverse: create index "systemanalysisentrysubject_tenant_id_knowledge_relationship_id" to table: "system_analysis_entry_subjects"
+DROP INDEX "systemanalysisentrysubject_tenant_id_knowledge_relationship_id";
+-- reverse: create index "systemanalysisentrysubject_tenant_id_knowledge_entity_id" to table: "system_analysis_entry_subjects"
+DROP INDEX "systemanalysisentrysubject_tenant_id_knowledge_entity_id";
+-- reverse: create index "systemanalysisentrysubject_ten_dc57a3ba916d5e935c195e68bedc78ed" to table: "system_analysis_entry_subjects"
+DROP INDEX "systemanalysisentrysubject_ten_dc57a3ba916d5e935c195e68bedc78ed";
+-- reverse: create index "systemanalysisentrysubject_ten_dc808ec92a5050740e97559ed0829fef" to table: "system_analysis_entry_subjects"
+DROP INDEX "systemanalysisentrysubject_ten_dc808ec92a5050740e97559ed0829fef";
+-- reverse: create index "systemanalysisentrysubject_ten_c4a21fbb3b9de2428569f66a19985134" to table: "system_analysis_entry_subjects"
+DROP INDEX "systemanalysisentrysubject_ten_c4a21fbb3b9de2428569f66a19985134";
+-- reverse: create index "systemanalysisentrysubject_tenant_id" to table: "system_analysis_entry_subjects"
+DROP INDEX "systemanalysisentrysubject_tenant_id";
+-- reverse: create "system_analysis_entry_subjects" table
+DROP TABLE "system_analysis_entry_subjects";
+-- reverse: create index "systemanalysisentry_tenant_id_analysis_id_sequence" to table: "system_analysis_entries"
+DROP INDEX "systemanalysisentry_tenant_id_analysis_id_sequence";
+-- reverse: create index "systemanalysisentry_tenant_id_analysis_id_kind" to table: "system_analysis_entries"
+DROP INDEX "systemanalysisentry_tenant_id_analysis_id_kind";
+-- reverse: create index "systemanalysisentry_tenant_id" to table: "system_analysis_entries"
+DROP INDEX "systemanalysisentry_tenant_id";
+-- reverse: create "system_analysis_entries" table
+DROP TABLE "system_analysis_entries";
+-- reverse: create index "systemanalysis_tenant_id_subject_entity_id" to table: "system_analyses"
+DROP INDEX "systemanalysis_tenant_id_subject_entity_id";
+-- reverse: create index "systemanalysis_tenant_id_scope_entity_id" to table: "system_analyses"
+DROP INDEX "systemanalysis_tenant_id_scope_entity_id";
 -- reverse: create index "systemanalysis_tenant_id" to table: "system_analyses"
 DROP INDEX "systemanalysis_tenant_id";
 -- reverse: create "system_analyses" table
@@ -380,14 +386,14 @@ DROP INDEX "knowledgesubjectalias_tenant_i_6f09432e3199d3a39c8b228b817d4d1b";
 DROP INDEX "knowledgesubjectalias_tenant_id";
 -- reverse: create "knowledge_subject_alias" table
 DROP TABLE "knowledge_subject_alias";
--- reverse: create index "knowledgerelationship_tenant_i_c2e180b6bf727a089ab234a0504ce8ba" to table: "knowledge_relationships"
-DROP INDEX "knowledgerelationship_tenant_i_c2e180b6bf727a089ab234a0504ce8ba";
+-- reverse: create index "knowledgerelationship_tenant_id_kind_subkind" to table: "knowledge_relationships"
+DROP INDEX "knowledgerelationship_tenant_id_kind_subkind";
 -- reverse: create index "knowledgerelationship_tenant_id_target_entity_id" to table: "knowledge_relationships"
 DROP INDEX "knowledgerelationship_tenant_id_target_entity_id";
 -- reverse: create index "knowledgerelationship_tenant_id_source_entity_id" to table: "knowledge_relationships"
 DROP INDEX "knowledgerelationship_tenant_id_source_entity_id";
--- reverse: create index "knowledgerelationship_tenant_id_kind" to table: "knowledge_relationships"
-DROP INDEX "knowledgerelationship_tenant_id_kind";
+-- reverse: create index "knowledgerelationship_tenant_i_76ca0509ef63b512682a477cd94166d2" to table: "knowledge_relationships"
+DROP INDEX "knowledgerelationship_tenant_i_76ca0509ef63b512682a477cd94166d2";
 -- reverse: create index "knowledgerelationship_tenant_id" to table: "knowledge_relationships"
 DROP INDEX "knowledgerelationship_tenant_id";
 -- reverse: create "knowledge_relationships" table
@@ -402,8 +408,8 @@ DROP INDEX "knowledgeevidence_tenant_id_event_id_subject_alias_id";
 DROP INDEX "knowledgeevidence_tenant_id";
 -- reverse: create "knowledge_evidences" table
 DROP TABLE "knowledge_evidences";
--- reverse: create index "knowledgeentity_tenant_id_kind" to table: "knowledge_entities"
-DROP INDEX "knowledgeentity_tenant_id_kind";
+-- reverse: create index "knowledgeentity_tenant_id_kind_subkind" to table: "knowledge_entities"
+DROP INDEX "knowledgeentity_tenant_id_kind_subkind";
 -- reverse: create index "knowledgeentity_tenant_id" to table: "knowledge_entities"
 DROP INDEX "knowledgeentity_tenant_id";
 -- reverse: create "knowledge_entities" table
@@ -444,32 +450,6 @@ DROP INDEX "incidenttype_tenant_id_name";
 DROP INDEX "incidenttype_tenant_id";
 -- reverse: create "incident_types" table
 DROP TABLE "incident_types";
--- reverse: create index "incidenttimelineeventsystemcon_2a3e032c8fbfa9c8772835a10a3bf369" to table: "incident_timeline_event_system_contexts"
-DROP INDEX "incidenttimelineeventsystemcon_2a3e032c8fbfa9c8772835a10a3bf369";
--- reverse: create index "incidenttimelineeventsystemcontext_tenant_id" to table: "incident_timeline_event_system_contexts"
-DROP INDEX "incidenttimelineeventsystemcontext_tenant_id";
--- reverse: create "incident_timeline_event_system_contexts" table
-DROP TABLE "incident_timeline_event_system_contexts";
--- reverse: create index "incidenttimelineeventevidence_tenant_id" to table: "incident_timeline_event_evidences"
-DROP INDEX "incidenttimelineeventevidence_tenant_id";
--- reverse: create "incident_timeline_event_evidences" table
-DROP TABLE "incident_timeline_event_evidences";
--- reverse: create index "incidenttimelineeventcontributingfactor_tenant_id" to table: "incident_timeline_event_contributing_factors"
-DROP INDEX "incidenttimelineeventcontributingfactor_tenant_id";
--- reverse: create "incident_timeline_event_contributing_factors" table
-DROP TABLE "incident_timeline_event_contributing_factors";
--- reverse: create index "incidenttimelineeventcontext_tenant_id" to table: "incident_timeline_event_contexts"
-DROP INDEX "incidenttimelineeventcontext_tenant_id";
--- reverse: create index "incident_timeline_event_contexts_incident_timeline_event_context_key" to table: "incident_timeline_event_contexts"
-DROP INDEX "incident_timeline_event_contexts_incident_timeline_event_context_key";
--- reverse: create "incident_timeline_event_contexts" table
-DROP TABLE "incident_timeline_event_contexts";
--- reverse: create index "incidenttimelineevent_kind" to table: "incident_timeline_events"
-DROP INDEX "incidenttimelineevent_kind";
--- reverse: create index "incidenttimelineevent_tenant_id" to table: "incident_timeline_events"
-DROP INDEX "incidenttimelineevent_tenant_id";
--- reverse: create "incident_timeline_events" table
-DROP TABLE "incident_timeline_events";
 -- reverse: create index "incidenttag_tenant_id" to table: "incident_tags"
 DROP INDEX "incidenttag_tenant_id";
 -- reverse: create "incident_tags" table

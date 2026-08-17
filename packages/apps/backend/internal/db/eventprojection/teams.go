@@ -8,6 +8,8 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	entschema "github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/schema/schematypes"
@@ -18,11 +20,8 @@ import (
 )
 
 const (
-	knowledgeEntityKindTeam = "team"
-
-	knowledgeRelationshipKindMemberOf = "member_of"
-	knowledgeAssertionTeamObserved    = "team_profile_observed"
-	knowledgeAssertionMembership      = "team_membership_observed"
+	knowledgeAssertionTeamObserved = "team_profile_observed"
+	knowledgeAssertionMembership   = "team_membership_observed"
 )
 
 func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.TeamEvent) ([]rez.ProjectedEntityRef, error) {
@@ -39,8 +38,9 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 			},
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:  knowledgeEntityKindTeam,
-			Alias: e.Event.KnowledgeAliasRef(),
+			Kind:    kne.KindActor,
+			Subkind: knowledgeEntitySubkindTeam,
+			Alias:   e.Event.KnowledgeAliasRef(),
 		},
 	}
 
@@ -83,7 +83,7 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 		if saveErr != nil {
 			return fmt.Errorf("save team: %w", saveErr)
 		}
-		projected = append(projected, rez.ProjectedEntityRef{Kind: knowledgeEntityKindTeam, Id: saved.ID})
+		projected = append(projected, rez.ProjectedEntityRef{Kind: knowledgeEntitySubkindTeam, Id: saved.ID})
 		return nil
 	})
 }
@@ -109,7 +109,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, event
 			SubjectState: schematypes.KnowledgeGraphSubjectState{
 				DisplayName: attributes.User.Name,
 			},
-			SubjectEntity: &ent.KnowledgeEntityRef{Kind: knowledgeEntityKindUser, Alias: userAlias},
+			SubjectEntity: &ent.KnowledgeEntityRef{Kind: kne.KindActor, Subkind: knowledgeEntitySubkindUser, Alias: userAlias},
 		},
 		{
 			Kind:        kind,
@@ -118,7 +118,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, event
 			SubjectState: schematypes.KnowledgeGraphSubjectState{
 				DisplayName: attributes.Team.Name,
 			},
-			SubjectEntity: &ent.KnowledgeEntityRef{Kind: knowledgeEntityKindTeam, Alias: teamAlias},
+			SubjectEntity: &ent.KnowledgeEntityRef{Kind: kne.KindActor, Subkind: knowledgeEntitySubkindTeam, Alias: teamAlias},
 		},
 		{
 			Kind:        kind,
@@ -129,10 +129,11 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, event
 				Properties:  map[string]any{"role": attributes.Role},
 			},
 			SubjectRelationship: &ent.KnowledgeRelationshipRef{
-				Kind:   knowledgeRelationshipKindMemberOf,
-				Alias:  event.Event.KnowledgeAliasRef(),
-				Source: ent.KnowledgeEntityRef{Kind: knowledgeEntityKindUser, Alias: userAlias},
-				Target: ent.KnowledgeEntityRef{Kind: knowledgeEntityKindTeam, Alias: teamAlias},
+				Kind:    knr.KindParticipatesIn,
+				Subkind: knowledgeRelationshipSubkindMemberOf,
+				Alias:   event.Event.KnowledgeAliasRef(),
+				Source:  ent.KnowledgeEntityRef{Kind: kne.KindActor, Subkind: knowledgeEntitySubkindUser, Alias: userAlias},
+				Target:  ent.KnowledgeEntityRef{Kind: kne.KindActor, Subkind: knowledgeEntitySubkindTeam, Alias: teamAlias},
 			},
 		},
 	}

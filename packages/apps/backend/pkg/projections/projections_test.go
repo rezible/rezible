@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/rezible/rezible/ent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -45,8 +46,8 @@ func TestDecodeWithRejectsMissingRequiredAttributes(t *testing.T) {
 
 func TestSortRelatedEntityRefs(t *testing.T) {
 	refs := []RelatedEntityRef{
-		{ExternalRef: "demo:component:search_api", Kind: "service", DisplayName: "Search API"},
-		{ExternalRef: "demo:component:elasticsearch_catalog", Kind: "search_cluster", DisplayName: "Elasticsearch Catalog"},
+		{ExternalRef: "demo:component:search_api", Kind: kne.KindContainer, Subkind: "service", DisplayName: "Search API"},
+		{ExternalRef: "demo:component:elasticsearch_catalog", Kind: kne.KindContainer, Subkind: "search_cluster", DisplayName: "Elasticsearch Catalog"},
 	}
 
 	sortedRefs := SortRelatedEntityRefs(refs)

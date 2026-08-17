@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"github.com/firebase/genkit/go/ai"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	kev "github.com/rezible/rezible/ent/knowledgeevidence"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
@@ -84,15 +86,17 @@ func (a KnowledgeAliasRef) LockKey(kind ksa.SubjectKind) string {
 
 type (
 	KnowledgeEntityRef struct {
-		Kind  string
-		Alias KnowledgeAliasRef
+		Kind    kne.Kind
+		Subkind string
+		Alias   KnowledgeAliasRef
 	}
 
 	KnowledgeRelationshipRef struct {
-		Kind   string
-		Alias  KnowledgeAliasRef
-		Source KnowledgeEntityRef
-		Target KnowledgeEntityRef
+		Kind    knr.Kind
+		Subkind string
+		Alias   KnowledgeAliasRef
+		Source  KnowledgeEntityRef
+		Target  KnowledgeEntityRef
 	}
 
 	KnowledgeEvidenceRef struct {

@@ -1456,7 +1456,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"actor", "system", "container", "component", "code", "deployment_node", "process", "concern", "decision", "event"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"actor", "system", "container", "component", "infrastructure", "code", "process", "domain_object", "concern", "decision", "event", "signal"}},
 		{Name: "subkind", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -1551,7 +1551,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"contains", "interacts_with", "owns", "implemented_by", "runs_on", "control_action", "feedback", "supports", "participates_in", "influences", "constrains", "addresses", "impacts"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"contains", "interacts_with", "depends_on", "runs_on", "owns", "supports", "participates_in", "controls", "observes", "influences", "constrains", "addresses", "impacts"}},
 		{Name: "subkind", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "source_entity_id", Type: field.TypeUUID},

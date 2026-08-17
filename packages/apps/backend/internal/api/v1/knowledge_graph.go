@@ -27,7 +27,17 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphEntities(ctx context.Context, 
 	var response oapi.ListKnowledgeGraphEntitiesResponse
 	var preds []predicate.KnowledgeEntity
 	if len(request.Kind) > 0 {
-		preds = append(preds, kne.KindIn(request.Kind...))
+		kinds := make([]kne.Kind, len(request.Kind))
+		for i, kind := range request.Kind {
+			kinds[i] = kne.Kind(kind)
+			if kindErr := kne.KindValidator(kinds[i]); kindErr != nil {
+				return nil, oapi.Error(ctx, "invalid knowledge graph entity kind", kindErr)
+			}
+		}
+		preds = append(preds, kne.KindIn(kinds...))
+	}
+	if len(request.Subkind) > 0 {
+		preds = append(preds, kne.SubkindIn(request.Subkind...))
 	}
 	if request.Provider != "" {
 		preds = append(preds, kne.HasAliasesWith(ksa.Provider(request.Provider)))
@@ -64,7 +74,17 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphRelationships(ctx context.Cont
 	var response oapi.ListKnowledgeGraphRelationshipsResponse
 	var preds []predicate.KnowledgeRelationship
 	if len(request.Kind) > 0 {
-		preds = append(preds, kr.KindIn(request.Kind...))
+		kinds := make([]kr.Kind, len(request.Kind))
+		for i, kind := range request.Kind {
+			kinds[i] = kr.Kind(kind)
+			if kindErr := kr.KindValidator(kinds[i]); kindErr != nil {
+				return nil, oapi.Error(ctx, "invalid knowledge graph relationship kind", kindErr)
+			}
+		}
+		preds = append(preds, kr.KindIn(kinds...))
+	}
+	if len(request.Subkind) > 0 {
+		preds = append(preds, kr.SubkindIn(request.Subkind...))
 	}
 	if request.EntityId != uuid.Nil {
 		preds = append(preds, kr.Or(kr.SourceEntityID(request.EntityId), kr.TargetEntityID(request.EntityId)))

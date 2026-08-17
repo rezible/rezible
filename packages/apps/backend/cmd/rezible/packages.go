@@ -290,6 +290,13 @@ var provideServices = do.Package(
 		return db.NewKnowledgeGraphService(do.MustInvoke[rez.Database](i))
 	}),
 
+	do.Lazy(func(i do.Injector) (rez.SystemAnalysisService, error) {
+		return db.NewSystemAnalysisService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.KnowledgeGraphService](i),
+		)
+	}),
+
 	do.Lazy(func(i do.Injector) (rez.DebriefService, error) {
 		return db.NewDebriefService(
 			do.MustInvoke[rez.Database](i),
@@ -392,6 +399,7 @@ var provideHttpServer = do.Package(
 			do.MustInvoke[rez.OncallMetricsService](i),
 			do.MustInvoke[rez.PlaybookService](i),
 			do.MustInvoke[rez.RetrospectiveService](i),
+			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphService](i),
 		)
 	}),

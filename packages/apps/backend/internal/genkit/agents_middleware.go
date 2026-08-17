@@ -134,8 +134,9 @@ func (m *knowledgeGraphMiddleware) query(ctx context.Context, input rezai.QueryK
 
 	for _, entity := range view.Entities {
 		outputEntity := rezai.KnowledgeGraphToolEntity{
-			ID:   entity.ID.String(),
-			Kind: entity.Kind,
+			ID:      entity.ID.String(),
+			Kind:    entity.Kind.String(),
+			Subkind: entity.Subkind,
 		}
 		if currEv := entity.LatestEvidence(); currEv != nil {
 			outputEntity.State = currEv.SubjectState
@@ -149,7 +150,8 @@ func (m *knowledgeGraphMiddleware) query(ctx context.Context, input rezai.QueryK
 	for _, relationship := range view.Relationships {
 		outputRelationship := rezai.KnowledgeGraphToolRelationship{
 			ID:       relationship.ID.String(),
-			Kind:     relationship.Kind,
+			Kind:     relationship.Kind.String(),
+			Subkind:  relationship.Subkind,
 			SourceID: relationship.SourceEntityID.String(),
 			TargetID: relationship.TargetEntityID.String(),
 		}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/rezible/rezible/ent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 )
 
 type Event[T any] struct {
@@ -100,9 +101,10 @@ func validateAttributes[A any](attrs A) error {
 }
 
 type RelatedEntityRef struct {
-	ExternalRef string `json:"external_ref" validate:"required"`
-	Kind        string `json:"kind" validate:"required"`
-	DisplayName string `json:"display_name" validate:"required"`
+	ExternalRef string   `json:"external_ref" validate:"required"`
+	Kind        kne.Kind `json:"kind" validate:"required"`
+	Subkind     string   `json:"subkind" validate:"required"`
+	DisplayName string   `json:"display_name" validate:"required"`
 }
 
 func SortRelatedEntityRefs(refs []RelatedEntityRef) []RelatedEntityRef {
@@ -112,18 +114,12 @@ func SortRelatedEntityRefs(refs []RelatedEntityRef) []RelatedEntityRef {
 			return strings.Compare(left.ExternalRef, right.ExternalRef)
 		}
 		if left.Kind != right.Kind {
-			return strings.Compare(left.Kind, right.Kind)
+			return strings.Compare(left.Kind.String(), right.Kind.String())
+		}
+		if left.Subkind != right.Subkind {
+			return strings.Compare(left.Subkind, right.Subkind)
 		}
 		return strings.Compare(left.DisplayName, right.DisplayName)
 	})
 	return sortedRefs
 }
-
-//func KnowledgeAliasFromEvent(ev *ent.NormalizedEvent) rez.KnowledgeAliasRef {
-//	return rez.KnowledgeAliasRef{
-//		Provider:            ev.Provider,
-//		ProviderSource:      ev.ProviderSource,
-//		ProviderSubjectKind: ev.SubjectKind,
-//		ProviderSubjectRef:  ev.ProviderSubjectRef,
-//	}
-//}

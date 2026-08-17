@@ -120,13 +120,13 @@ type Kind string
 const (
 	KindContains       Kind = "contains"
 	KindInteractsWith  Kind = "interacts_with"
-	KindOwns           Kind = "owns"
-	KindImplementedBy  Kind = "implemented_by"
+	KindDependsOn      Kind = "depends_on"
 	KindRunsOn         Kind = "runs_on"
-	KindControlAction  Kind = "control_action"
-	KindFeedback       Kind = "feedback"
+	KindOwns           Kind = "owns"
 	KindSupports       Kind = "supports"
 	KindParticipatesIn Kind = "participates_in"
+	KindControls       Kind = "controls"
+	KindObserves       Kind = "observes"
 	KindInfluences     Kind = "influences"
 	KindConstrains     Kind = "constrains"
 	KindAddresses      Kind = "addresses"
@@ -140,7 +140,7 @@ func (k Kind) String() string {
 // KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
 func KindValidator(k Kind) error {
 	switch k {
-	case KindContains, KindInteractsWith, KindOwns, KindImplementedBy, KindRunsOn, KindControlAction, KindFeedback, KindSupports, KindParticipatesIn, KindInfluences, KindConstrains, KindAddresses, KindImpacts:
+	case KindContains, KindInteractsWith, KindDependsOn, KindRunsOn, KindOwns, KindSupports, KindParticipatesIn, KindControls, KindObserves, KindInfluences, KindConstrains, KindAddresses, KindImpacts:
 		return nil
 	default:
 		return fmt.Errorf("knowledgerelationship: invalid enum value for kind field: %q", k)

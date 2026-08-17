@@ -3,244 +3,190 @@ package apiv1
 import (
 	"context"
 
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	isc "github.com/rezible/rezible/ent/incidenttimelineeventsystemcontext"
-	sa "github.com/rezible/rezible/ent/systemanalysis"
-	sate "github.com/rezible/rezible/ent/systemanalysistopologyedge"
-	satn "github.com/rezible/rezible/ent/systemanalysistopologynode"
+	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type systemAnalysisHandler struct {
-	db        rez.Database
-	knowledge rez.KnowledgeGraphService
+	analysis rez.SystemAnalysisService
 }
 
-func newSystemAnalysisHandler(db rez.Database, knowledge rez.KnowledgeGraphService) *systemAnalysisHandler {
-	return &systemAnalysisHandler{db: db, knowledge: knowledge}
+func newSystemAnalysisHandler(analysis rez.SystemAnalysisService) *systemAnalysisHandler {
+	return &systemAnalysisHandler{analysis: analysis}
 }
 
-func (s *systemAnalysisHandler) nodeFromEnt(ctx context.Context, node *ent.SystemAnalysisTopologyNode) (oapi.SystemAnalysisNode, error) {
-	entity, entityErr := s.knowledge.GetEntityAt(ctx, node.KnowledgeEntityID, node.ReferencedAt)
-	if entityErr != nil {
-		return oapi.SystemAnalysisNode{}, entityErr
-	}
-	attrs := oapi.SystemAnalysisNodeAttributes{
-		KnowledgeEntity: oapi.KnowledgeGraphEntityFromEnt(entity),
-		ReferencedAt:    node.ReferencedAt,
-		Position:        oapi.SystemAnalysisDiagramPosition{X: node.PosX, Y: node.PosY},
-		Description:     node.Description,
-	}
-	return oapi.SystemAnalysisNode{Id: node.ID, Attributes: attrs}, nil
-}
-
-func (s *systemAnalysisHandler) edgeFromEnt(ctx context.Context, edge *ent.SystemAnalysisTopologyEdge) (oapi.SystemAnalysisEdge, error) {
-	relationship, relationshipErr := s.knowledge.GetRelationshipAt(ctx, edge.KnowledgeRelationshipID, edge.ReferencedAt)
-	if relationshipErr != nil {
-		return oapi.SystemAnalysisEdge{}, relationshipErr
-	}
-	return oapi.SystemAnalysisEdge{
-		Id: edge.ID,
-		Attributes: oapi.SystemAnalysisEdgeAttributes{
-			KnowledgeRelationship: oapi.KnowledgeGraphRelationshipFromEnt(relationship),
-			ReferencedAt:          edge.ReferencedAt,
-			Description:           edge.Description,
-		},
-	}, nil
-}
-
-func (s *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *oapi.GetSystemAnalysisRequest) (*oapi.GetSystemAnalysisResponse, error) {
-	analysis, queryErr := s.db.Client(ctx).SystemAnalysis.Query().
-		Where(sa.ID(request.Id)).
-		WithAnalysisNodes().
-		WithAnalysisEdges().
-		Only(ctx)
+func (h *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *oapi.GetSystemAnalysisRequest) (*oapi.GetSystemAnalysisResponse, error) {
+	analysis, queryErr := h.analysis.GetSystemAnalysis(ctx, request.Id)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "get system analysis", queryErr)
 	}
 
-	result := oapi.SystemAnalysis{Id: analysis.ID}
-	result.Attributes.Nodes = make([]oapi.SystemAnalysisNode, len(analysis.Edges.AnalysisNodes))
-	for i, node := range analysis.Edges.AnalysisNodes {
-		converted, convertErr := s.nodeFromEnt(ctx, node)
-		if convertErr != nil {
-			return nil, oapi.Error(ctx, "get system analysis node", convertErr)
-		}
-		result.Attributes.Nodes[i] = converted
-	}
-	result.Attributes.Edges = make([]oapi.SystemAnalysisEdge, len(analysis.Edges.AnalysisEdges))
-	for i, edge := range analysis.Edges.AnalysisEdges {
-		converted, convertErr := s.edgeFromEnt(ctx, edge)
-		if convertErr != nil {
-			return nil, oapi.Error(ctx, "get system analysis edge", convertErr)
-		}
-		result.Attributes.Edges[i] = converted
-	}
 	var response oapi.GetSystemAnalysisResponse
-	response.Body.Data = result
+	response.Body.Data = oapi.SystemAnalysisWithEntriesFromEnt(analysis)
 	return &response, nil
 }
 
-func (s *systemAnalysisHandler) ListSystemAnalysisNodes(ctx context.Context, request *oapi.ListSystemAnalysisNodesRequest) (*oapi.ListSystemAnalysisNodesResponse, error) {
-	nodes, queryErr := s.db.Client(ctx).SystemAnalysisTopologyNode.Query().Where(satn.AnalysisID(request.Id)).All(ctx)
-	if queryErr != nil {
-		return nil, oapi.Error(ctx, "list system analysis nodes", queryErr)
-	}
-	var response oapi.ListSystemAnalysisNodesResponse
-	response.Body.Data = make([]oapi.SystemAnalysisNode, len(nodes))
-	for i, node := range nodes {
-		converted, convertErr := s.nodeFromEnt(ctx, node)
-		if convertErr != nil {
-			return nil, oapi.Error(ctx, "get system analysis node", convertErr)
+func (h *systemAnalysisHandler) UpdateSystemAnalysis(ctx context.Context, request *oapi.UpdateSystemAnalysisRequest) (*oapi.UpdateSystemAnalysisResponse, error) {
+	attrs := request.Body.Attributes
+	setFn := func(m *ent.SystemAnalysisMutation) {
+		if attrs.ScopeEntityId != nil {
+			m.SetScopeEntityID(*attrs.ScopeEntityId)
 		}
-		response.Body.Data[i] = converted
+		if attrs.SubjectEntityId != nil {
+			m.SetSubjectEntityID(*attrs.SubjectEntityId)
+		}
+		if attrs.ReferenceTime != nil {
+			m.SetReferenceTime(*attrs.ReferenceTime)
+		}
 	}
-	response.Body.Pagination.Total = len(nodes)
-	return &response, nil
-}
-
-func (s *systemAnalysisHandler) AddSystemAnalysisNode(ctx context.Context, request *oapi.AddSystemAnalysisNodeRequest) (*oapi.AddSystemAnalysisNodeResponse, error) {
-	attributes := request.Body.Attributes
-	created, createErr := s.db.Client(ctx).SystemAnalysisTopologyNode.Create().
-		SetAnalysisID(request.Id).
-		SetKnowledgeEntityID(attributes.KnowledgeEntityId).
-		SetNillableReferencedAt(attributes.ReferencedAt).
-		SetPosX(attributes.Position.X).
-		SetPosY(attributes.Position.Y).
-		SetDescription(attributes.Description).
-		Save(ctx)
-	if createErr != nil {
-		return nil, oapi.Error(ctx, "add system analysis node", createErr)
-	}
-	converted, convertErr := s.nodeFromEnt(ctx, created)
-	if convertErr != nil {
-		return nil, oapi.Error(ctx, "get system analysis node", convertErr)
-	}
-	var response oapi.AddSystemAnalysisNodeResponse
-	response.Body.Data = converted
-	return &response, nil
-}
-
-func (s *systemAnalysisHandler) GetSystemAnalysisNode(ctx context.Context, request *oapi.GetSystemAnalysisNodeRequest) (*oapi.GetSystemAnalysisNodeResponse, error) {
-	node, getErr := s.db.Client(ctx).SystemAnalysisTopologyNode.Get(ctx, request.Id)
-	if getErr != nil {
-		return nil, oapi.Error(ctx, "get system analysis node", getErr)
-	}
-	converted, convertErr := s.nodeFromEnt(ctx, node)
-	if convertErr != nil {
-		return nil, oapi.Error(ctx, "resolve system analysis node", convertErr)
-	}
-	var response oapi.GetSystemAnalysisNodeResponse
-	response.Body.Data = converted
-	return &response, nil
-}
-
-func (s *systemAnalysisHandler) UpdateSystemAnalysisNode(ctx context.Context, request *oapi.UpdateSystemAnalysisNodeRequest) (*oapi.UpdateSystemAnalysisNodeResponse, error) {
-	attributes := request.Body.Attributes
-	update := s.db.Client(ctx).SystemAnalysisTopologyNode.UpdateOneID(request.Id).SetNillableDescription(attributes.Description)
-	if attributes.Position != nil {
-		update.SetPosX(attributes.Position.X).SetPosY(attributes.Position.Y)
-	}
-	updated, updateErr := update.Save(ctx)
+	analysis, updateErr := h.analysis.SetSystemAnalysis(ctx, request.Id, setFn)
 	if updateErr != nil {
-		return nil, oapi.Error(ctx, "update system analysis node", updateErr)
+		return nil, oapi.Error(ctx, "update system analysis", updateErr)
 	}
-	converted, convertErr := s.nodeFromEnt(ctx, updated)
-	if convertErr != nil {
-		return nil, oapi.Error(ctx, "resolve system analysis node", convertErr)
-	}
-	var response oapi.UpdateSystemAnalysisNodeResponse
-	response.Body.Data = converted
+
+	var response oapi.UpdateSystemAnalysisResponse
+	response.Body.Data = oapi.SystemAnalysisWithEntriesFromEnt(analysis)
 	return &response, nil
 }
 
-func (s *systemAnalysisHandler) DeleteSystemAnalysisNode(ctx context.Context, request *oapi.DeleteSystemAnalysisNodeRequest) (*oapi.DeleteSystemAnalysisNodeResponse, error) {
-	deleteErr := s.db.WithTx(ctx, func(txCtx context.Context, tx *ent.Client) error {
-		if _, contextErr := tx.IncidentTimelineEventSystemContext.Delete().
-			Where(isc.SystemAnalysisNodeID(request.Id)).
-			Exec(txCtx); contextErr != nil {
-			return contextErr
-		}
-		return tx.SystemAnalysisTopologyNode.DeleteOneID(request.Id).Exec(txCtx)
-	})
-	if deleteErr != nil {
-		return nil, oapi.Error(ctx, "delete system analysis node", deleteErr)
+func (h *systemAnalysisHandler) GetSystemAnalysisGraph(ctx context.Context, request *oapi.GetSystemAnalysisGraphRequest) (*oapi.GetSystemAnalysisGraphResponse, error) {
+	params := rez.GetKnowledgeGraphViewParams{
+		Depth:             request.Depth,
+		RelationshipKinds: request.RelationshipKind,
 	}
-	return &oapi.DeleteSystemAnalysisNodeResponse{}, nil
-}
+	view, viewErr := h.analysis.GetSystemAnalysisGraph(ctx, request.Id, params)
+	if viewErr != nil {
+		return nil, oapi.Error(ctx, "get system analysis graph", viewErr)
+	}
 
-func (s *systemAnalysisHandler) ListSystemAnalysisEdges(ctx context.Context, request *oapi.ListSystemAnalysisEdgesRequest) (*oapi.ListSystemAnalysisEdgesResponse, error) {
-	edges, queryErr := s.db.Client(ctx).SystemAnalysisTopologyEdge.Query().Where(sate.AnalysisID(request.Id)).All(ctx)
-	if queryErr != nil {
-		return nil, oapi.Error(ctx, "list system analysis edges", queryErr)
-	}
-	var response oapi.ListSystemAnalysisEdgesResponse
-	response.Body.Data = make([]oapi.SystemAnalysisEdge, len(edges))
-	for i, edge := range edges {
-		converted, convertErr := s.edgeFromEnt(ctx, edge)
-		if convertErr != nil {
-			return nil, oapi.Error(ctx, "get system analysis edge", convertErr)
-		}
-		response.Body.Data[i] = converted
-	}
-	response.Body.Pagination.Total = len(edges)
+	var response oapi.GetSystemAnalysisGraphResponse
+	response.Body.Data = oapi.KnowledgeGraphViewFromRez(view)
 	return &response, nil
 }
 
-func (s *systemAnalysisHandler) AddSystemAnalysisEdge(ctx context.Context, request *oapi.AddSystemAnalysisEdgeRequest) (*oapi.AddSystemAnalysisEdgeResponse, error) {
-	attributes := request.Body.Attributes
-	created, createErr := s.db.Client(ctx).SystemAnalysisTopologyEdge.Create().
-		SetAnalysisID(request.Id).
-		SetKnowledgeRelationshipID(attributes.KnowledgeRelationshipId).
-		SetNillableReferencedAt(attributes.ReferencedAt).
-		SetDescription(attributes.Description).
-		Save(ctx)
+func (h *systemAnalysisHandler) ListSystemAnalysisEntries(ctx context.Context, request *oapi.ListSystemAnalysisEntriesRequest) (*oapi.ListSystemAnalysisEntriesResponse, error) {
+	entries, listErr := h.analysis.ListSystemAnalysisEntries(ctx, request.Id)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "list system analysis entries", listErr)
+	}
+
+	var response oapi.ListSystemAnalysisEntriesResponse
+	response.Body.Data = oapi.ConvertSlice(entries, oapi.SystemAnalysisEntryWithSubjectsFromEnt)
+	response.Body.Pagination.Total = len(response.Body.Data)
+	return &response, nil
+}
+
+func (h *systemAnalysisHandler) CreateSystemAnalysisEntry(ctx context.Context, request *oapi.CreateSystemAnalysisEntryRequest) (*oapi.CreateSystemAnalysisEntryResponse, error) {
+	attrs := request.Body.Attributes
+	setFn := func(m *ent.SystemAnalysisEntryMutation) {
+		m.SetAnalysisID(request.Id)
+		m.SetKind(sae.Kind(attrs.Kind))
+		if attrs.OccurredAt != nil {
+			m.SetOccurredAt(*attrs.OccurredAt)
+		}
+		m.SetSequence(attrs.Sequence)
+		m.SetTitle(attrs.Title)
+		if attrs.Body != nil {
+			m.SetBody(*attrs.Body)
+		}
+		if attrs.Properties != nil {
+			m.SetProperties(attrs.Properties)
+		}
+	}
+	entry, createErr := h.analysis.SetSystemAnalysisEntry(ctx, uuid.Nil, setFn)
 	if createErr != nil {
-		return nil, oapi.Error(ctx, "add system analysis edge", createErr)
+		return nil, oapi.Error(ctx, "create system analysis entry", createErr)
 	}
-	converted, convertErr := s.edgeFromEnt(ctx, created)
-	if convertErr != nil {
-		return nil, oapi.Error(ctx, "resolve system analysis edge", convertErr)
-	}
-	var response oapi.AddSystemAnalysisEdgeResponse
-	response.Body.Data = converted
+
+	var response oapi.CreateSystemAnalysisEntryResponse
+	response.Body.Data = oapi.SystemAnalysisEntryWithSubjectsFromEnt(entry)
 	return &response, nil
 }
 
-func (s *systemAnalysisHandler) GetSystemAnalysisEdge(ctx context.Context, request *oapi.GetSystemAnalysisEdgeRequest) (*oapi.GetSystemAnalysisEdgeResponse, error) {
-	edge, getErr := s.db.Client(ctx).SystemAnalysisTopologyEdge.Get(ctx, request.Id)
-	if getErr != nil {
-		return nil, oapi.Error(ctx, "get system analysis edge", getErr)
+func (h *systemAnalysisHandler) UpdateSystemAnalysisEntry(ctx context.Context, request *oapi.UpdateSystemAnalysisEntryRequest) (*oapi.UpdateSystemAnalysisEntryResponse, error) {
+	attrs := request.Body.Attributes
+	setFn := func(m *ent.SystemAnalysisEntryMutation) {
+		if attrs.Kind != nil {
+			m.SetKind(sae.Kind(*attrs.Kind))
+		}
+		if attrs.OccurredAt != nil {
+			m.SetOccurredAt(*attrs.OccurredAt)
+		}
+		if attrs.Title != nil {
+			m.SetTitle(*attrs.Title)
+		}
+		if attrs.Body != nil {
+			m.SetBody(*attrs.Body)
+		}
+		if attrs.Sequence != nil {
+			m.SetSequence(*attrs.Sequence)
+		}
+		if attrs.Properties != nil {
+			m.SetProperties(attrs.Properties)
+		}
 	}
-	converted, convertErr := s.edgeFromEnt(ctx, edge)
-	if convertErr != nil {
-		return nil, oapi.Error(ctx, "resolve system analysis edge", convertErr)
-	}
-	var response oapi.GetSystemAnalysisEdgeResponse
-	response.Body.Data = converted
-	return &response, nil
-}
-
-func (s *systemAnalysisHandler) UpdateSystemAnalysisEdge(ctx context.Context, request *oapi.UpdateSystemAnalysisEdgeRequest) (*oapi.UpdateSystemAnalysisEdgeResponse, error) {
-	updated, updateErr := s.db.Client(ctx).SystemAnalysisTopologyEdge.UpdateOneID(request.Id).
-		SetNillableDescription(request.Body.Attributes.Description).
-		Save(ctx)
+	entry, updateErr := h.analysis.SetSystemAnalysisEntry(ctx, request.Id, setFn)
 	if updateErr != nil {
-		return nil, oapi.Error(ctx, "update system analysis edge", updateErr)
+		return nil, oapi.Error(ctx, "update system analysis entry", updateErr)
 	}
-	converted, convertErr := s.edgeFromEnt(ctx, updated)
-	if convertErr != nil {
-		return nil, oapi.Error(ctx, "resolve system analysis edge", convertErr)
-	}
-	var response oapi.UpdateSystemAnalysisEdgeResponse
-	response.Body.Data = converted
+
+	var response oapi.UpdateSystemAnalysisEntryResponse
+	response.Body.Data = oapi.SystemAnalysisEntryWithSubjectsFromEnt(entry)
 	return &response, nil
 }
 
-func (s *systemAnalysisHandler) DeleteSystemAnalysisEdge(ctx context.Context, request *oapi.DeleteSystemAnalysisEdgeRequest) (*oapi.DeleteSystemAnalysisEdgeResponse, error) {
-	if deleteErr := s.db.Client(ctx).SystemAnalysisTopologyEdge.DeleteOneID(request.Id).Exec(ctx); deleteErr != nil {
-		return nil, oapi.Error(ctx, "delete system analysis edge", deleteErr)
+func (h *systemAnalysisHandler) DeleteSystemAnalysisEntry(ctx context.Context, request *oapi.DeleteSystemAnalysisEntryRequest) (*oapi.DeleteSystemAnalysisEntryResponse, error) {
+	if deleteErr := h.analysis.DeleteSystemAnalysisEntry(ctx, request.Id); deleteErr != nil {
+		return nil, oapi.Error(ctx, "delete system analysis entry", deleteErr)
 	}
-	return &oapi.DeleteSystemAnalysisEdgeResponse{}, nil
+	return &oapi.DeleteSystemAnalysisEntryResponse{}, nil
+}
+
+func (h *systemAnalysisHandler) AddSystemAnalysisEntrySubject(ctx context.Context, request *oapi.AddSystemAnalysisEntrySubjectRequest) (*oapi.AddSystemAnalysisEntrySubjectResponse, error) {
+	attrs := request.Body.Attributes
+	setFn := func(m *ent.SystemAnalysisEntrySubjectMutation) {
+		m.SetEntryID(request.Id)
+		m.SetRole(attrs.Role)
+		if attrs.KnowledgeEntityId != nil {
+			m.SetKnowledgeEntityID(*attrs.KnowledgeEntityId)
+		}
+		if attrs.KnowledgeRelationshipId != nil {
+			m.SetKnowledgeRelationshipID(*attrs.KnowledgeRelationshipId)
+		}
+		if attrs.KnowledgeEvidenceId != nil {
+			m.SetKnowledgeEvidenceID(*attrs.KnowledgeEvidenceId)
+		}
+	}
+	subject, createErr := h.analysis.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, setFn)
+	if createErr != nil {
+		return nil, oapi.Error(ctx, "add system analysis entry subject", createErr)
+	}
+
+	var response oapi.AddSystemAnalysisEntrySubjectResponse
+	response.Body.Data = oapi.SystemAnalysisEntrySubjectFromEnt(subject)
+	return &response, nil
+}
+
+func (h *systemAnalysisHandler) UpdateSystemAnalysisEntrySubject(ctx context.Context, request *oapi.UpdateSystemAnalysisEntrySubjectRequest) (*oapi.UpdateSystemAnalysisEntrySubjectResponse, error) {
+	setFn := func(m *ent.SystemAnalysisEntrySubjectMutation) {
+		m.SetRole(request.Body.Attributes.Role)
+	}
+	subject, updateErr := h.analysis.SetSystemAnalysisEntrySubject(ctx, request.Id, setFn)
+	if updateErr != nil {
+		return nil, oapi.Error(ctx, "update system analysis entry subject", updateErr)
+	}
+
+	var response oapi.UpdateSystemAnalysisEntrySubjectResponse
+	response.Body.Data = oapi.SystemAnalysisEntrySubjectFromEnt(subject)
+	return &response, nil
+}
+
+func (h *systemAnalysisHandler) DeleteSystemAnalysisEntrySubject(ctx context.Context, request *oapi.DeleteSystemAnalysisEntrySubjectRequest) (*oapi.DeleteSystemAnalysisEntrySubjectResponse, error) {
+	if deleteErr := h.analysis.DeleteSystemAnalysisEntrySubject(ctx, request.Id); deleteErr != nil {
+		return nil, oapi.Error(ctx, "delete system analysis entry subject", deleteErr)
+	}
+	return &oapi.DeleteSystemAnalysisEntrySubjectResponse{}, nil
 }

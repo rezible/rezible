@@ -38,14 +38,16 @@ type (
 	}
 
 	KnowledgeGraphToolEntity struct {
-		ID    string                                 `json:"id"`
-		Kind  string                                 `json:"kind"`
-		State schematypes.KnowledgeGraphSubjectState `json:"state"`
+		ID      string                                 `json:"id"`
+		Kind    string                                 `json:"kind"`
+		Subkind string                                 `json:"subkind"`
+		State   schematypes.KnowledgeGraphSubjectState `json:"state"`
 	}
 
 	KnowledgeGraphToolRelationship struct {
 		ID       string                                 `json:"id"`
 		Kind     string                                 `json:"kind"`
+		Subkind  string                                 `json:"subkind"`
 		SourceID string                                 `json:"source_id"`
 		TargetID string                                 `json:"target_id"`
 		State    schematypes.KnowledgeGraphSubjectState `json:"state"`

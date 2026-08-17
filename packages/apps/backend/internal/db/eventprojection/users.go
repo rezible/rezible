@@ -7,13 +7,13 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 const (
-	knowledgeEntityKindUser               = "user"
 	knowledgeAssertionUserProfileObserved = "user_profile_observed"
 )
 
@@ -30,8 +30,9 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, event *projecti
 			Properties:  nil,
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:  knowledgeEntityKindUser,
-			Alias: event.Event.KnowledgeAliasRef(),
+			Kind:    kne.KindActor,
+			Subkind: knowledgeEntitySubkindUser,
+			Alias:   event.Event.KnowledgeAliasRef(),
 		},
 	}
 
@@ -65,7 +66,7 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, event *projecti
 			return fmt.Errorf("save user: %w", setErr)
 		}
 
-		projected = append(projected, rez.ProjectedEntityRef{Kind: knowledgeEntityKindUser, Id: usr.ID})
+		projected = append(projected, rez.ProjectedEntityRef{Kind: knowledgeEntitySubkindUser, Id: usr.ID})
 
 		return nil
 	})

@@ -38,94 +38,33 @@ components:
       required:
         - data
       type: object
-    AddSystemAnalysisEdgeAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        knowledgeRelationshipId:
-          type: string
-        referencedAt:
-          format: date-time
-          type: string
-      required:
-        - knowledgeRelationshipId
-        - description
-      type: object
-    AddSystemAnalysisEdgeRequestBody:
+    AddSystemAnalysisEntrySubjectRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/AddSystemAnalysisEdgeRequestBody.json
+            - /v1/schemas/AddSystemAnalysisEntrySubjectRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/AddSystemAnalysisEdgeAttributes"
+          $ref: "#/components/schemas/SetSystemAnalysisEntrySubjectAttributes"
       required:
         - attributes
       type: object
-    AddSystemAnalysisEdgeResponseBody:
+    AddSystemAnalysisEntrySubjectResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/AddSystemAnalysisEdgeResponseBody.json
+            - /v1/schemas/AddSystemAnalysisEntrySubjectResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemAnalysisEdge"
-      required:
-        - data
-      type: object
-    AddSystemAnalysisNodeAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        knowledgeEntityId:
-          type: string
-        position:
-          $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
-        referencedAt:
-          format: date-time
-          type: string
-      required:
-        - knowledgeEntityId
-        - position
-        - description
-      type: object
-    AddSystemAnalysisNodeRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/AddSystemAnalysisNodeRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/AddSystemAnalysisNodeAttributes"
-      required:
-        - attributes
-      type: object
-    AddSystemAnalysisNodeResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/AddSystemAnalysisNodeResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemAnalysisNode"
+          $ref: "#/components/schemas/SystemAnalysisEntrySubject"
       required:
         - data
       type: object
@@ -846,62 +785,6 @@ components:
       required:
         - data
       type: object
-    CreateIncidentTimelineEventAttributes:
-      additionalProperties: false
-      properties:
-        isKey:
-          type: boolean
-        kind:
-          enum:
-            - observation
-            - action
-            - decision
-            - context
-          type: string
-        systemContext:
-          items:
-            $ref: "#/components/schemas/SetIncidentTimelineEventSystemContextAttributes"
-          type: array
-        timestamp:
-          format: date-time
-          type: string
-        title:
-          type: string
-      required:
-        - title
-        - kind
-        - timestamp
-      type: object
-    CreateIncidentTimelineEventRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateIncidentTimelineEventRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/CreateIncidentTimelineEventAttributes"
-      required:
-        - attributes
-      type: object
-    CreateIncidentTimelineEventResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateIncidentTimelineEventResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/IncidentTimelineEvent"
-      required:
-        - data
-      type: object
     CreateIncidentTypeAttributes:
       additionalProperties: false
       properties:
@@ -1214,6 +1097,66 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/RetrospectiveReview"
+      required:
+        - data
+      type: object
+    CreateSystemAnalysisEntryAttributes:
+      additionalProperties: false
+      properties:
+        body:
+          type: string
+        kind:
+          enum:
+            - observation
+            - context
+            - decision
+            - action
+            - finding
+            - recommendation
+          type: string
+        occurredAt:
+          format: date-time
+          type: string
+        properties:
+          additionalProperties: {}
+          type: object
+        sequence:
+          format: int64
+          type: integer
+        title:
+          type: string
+      required:
+        - kind
+        - sequence
+        - title
+      type: object
+    CreateSystemAnalysisEntryRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateSystemAnalysisEntryRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/CreateSystemAnalysisEntryAttributes"
+      required:
+        - attributes
+      type: object
+    CreateSystemAnalysisEntryResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateSystemAnalysisEntryResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SystemAnalysisEntry"
       required:
         - data
       type: object
@@ -1819,21 +1762,6 @@ components:
       required:
         - data
       type: object
-    GetIncidentTimelineEventMetadataResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetIncidentTimelineEventMetadataResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/IncidentTimelineEventMetadata"
-      required:
-        - data
-      type: object
     GetIncidentTypeResponseBody:
       additionalProperties: false
       properties:
@@ -2136,33 +2064,18 @@ components:
       required:
         - data
       type: object
-    GetSystemAnalysisEdgeResponseBody:
+    GetSystemAnalysisGraphResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/GetSystemAnalysisEdgeResponseBody.json
+            - /v1/schemas/GetSystemAnalysisGraphResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemAnalysisEdge"
-      required:
-        - data
-      type: object
-    GetSystemAnalysisNodeResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetSystemAnalysisNodeResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemAnalysisNode"
+          $ref: "#/components/schemas/KnowledgeGraphView"
       required:
         - data
       type: object
@@ -2767,227 +2680,6 @@ components:
         - startedAt
         - endedAt
       type: object
-    IncidentTimelineEvent:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentTimelineEventAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentTimelineEventAttributes:
-      additionalProperties: false
-      properties:
-        contributingFactors:
-          items:
-            $ref: "#/components/schemas/IncidentTimelineEventContributingFactor"
-          type: array
-        decisionContext:
-          $ref: "#/components/schemas/IncidentTimelineEventDecisionContext"
-        description:
-          type: string
-        evidence:
-          items:
-            $ref: "#/components/schemas/IncidentTimelineEventEvidence"
-          type: array
-        incidentId:
-          type: string
-        isKey:
-          type: boolean
-        kind:
-          enum:
-            - observation
-            - action
-            - decision
-            - context
-          type: string
-        sequence:
-          format: int64
-          type: integer
-        systemContext:
-          items:
-            $ref: "#/components/schemas/IncidentTimelineEventSystemContext"
-          type: array
-        timestamp:
-          format: date-time
-          type: string
-        title:
-          type: string
-      required:
-        - incidentId
-        - kind
-        - timestamp
-        - isKey
-        - title
-        - sequence
-        - contributingFactors
-        - evidence
-        - systemContext
-      type: object
-    IncidentTimelineEventContributingFactor:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentTimelineEventContributingFactorAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentTimelineEventContributingFactorAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        factorTypeId:
-          type: string
-        links:
-          items:
-            type: string
-          type: array
-      required:
-        - factorTypeId
-        - description
-        - links
-      type: object
-    IncidentTimelineEventContributingFactorCategory:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentTimelineEventContributingFactorCategoryAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentTimelineEventContributingFactorCategoryAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        factorTypes:
-          items:
-            $ref: "#/components/schemas/IncidentTimelineEventContributingFactorType"
-          type: array
-        name:
-          type: string
-      required:
-        - name
-        - description
-        - factorTypes
-      type: object
-    IncidentTimelineEventContributingFactorType:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentTimelineEventContributingFactorTypeAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentTimelineEventContributingFactorTypeAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        examples:
-          items:
-            type: string
-          type: array
-        name:
-          type: string
-      required:
-        - name
-        - description
-        - examples
-      type: object
-    IncidentTimelineEventDecisionContext:
-      additionalProperties: false
-      properties:
-        constraints:
-          items:
-            type: string
-          type: array
-        decisionRationale:
-          type: string
-        optionsConsidered:
-          items:
-            type: string
-          type: array
-      required:
-        - optionsConsidered
-        - constraints
-        - decisionRationale
-      type: object
-    IncidentTimelineEventEvidence:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentTimelineEventEvidenceAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentTimelineEventEvidenceAttributes:
-      additionalProperties: false
-      properties:
-        properties:
-          additionalProperties:
-            type: string
-          type: object
-        source:
-          type: string
-        value:
-          type: string
-      required:
-        - source
-        - value
-      type: object
-    IncidentTimelineEventMetadata:
-      additionalProperties: false
-      properties:
-        contributingFactorCategories:
-          items:
-            $ref: "#/components/schemas/IncidentTimelineEventContributingFactorCategory"
-          type: array
-      required:
-        - contributingFactorCategories
-      type: object
-    IncidentTimelineEventSystemContext:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentTimelineEventSystemContextAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentTimelineEventSystemContextAttributes:
-      additionalProperties: false
-      properties:
-        relationship:
-          enum:
-            - primary
-            - affected
-            - contributing
-          type: string
-        systemAnalysisNodeId:
-          type: string
-      required:
-        - systemAnalysisNodeId
-        - relationship
-      type: object
     IncidentType:
       additionalProperties: false
       properties:
@@ -3243,14 +2935,46 @@ components:
           type: string
         latestState:
           $ref: "#/components/schemas/KnowledgeGraphSubjectState"
+        subkind:
+          type: string
         updatedAt:
           format: date-time
           type: string
       required:
         - kind
+        - subkind
         - aliases
         - createdAt
         - updatedAt
+      type: object
+    KnowledgeGraphEvidence:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeGraphEvidenceAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    KnowledgeGraphEvidenceAttributes:
+      additionalProperties: false
+      properties:
+        effectiveAt:
+          format: date-time
+          type: string
+        kind:
+          enum:
+            - observed
+            - deleted
+          type: string
+        subjectState:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
+      required:
+        - kind
+        - effectiveAt
+        - subjectState
       type: object
     KnowledgeGraphRelationship:
       additionalProperties: false
@@ -3279,6 +3003,8 @@ components:
           $ref: "#/components/schemas/KnowledgeGraphSubjectState"
         sourceEntityId:
           type: string
+        subkind:
+          type: string
         targetEntityId:
           type: string
         updatedAt:
@@ -3286,6 +3012,7 @@ components:
           type: string
       required:
         - kind
+        - subkind
         - sourceEntityId
         - targetEntityId
         - aliases
@@ -3679,26 +3406,6 @@ components:
         - data
         - pagination
       type: object
-    ListResponseBodyIncidentTimelineEvent:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIncidentTimelineEvent.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentTimelineEvent"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
     ListResponseBodyIncidentType:
       additionalProperties: false
       properties:
@@ -3979,39 +3686,19 @@ components:
         - data
         - pagination
       type: object
-    ListResponseBodySystemAnalysisEdge:
+    ListResponseBodySystemAnalysisEntry:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListResponseBodySystemAnalysisEdge.json
+            - /v1/schemas/ListResponseBodySystemAnalysisEntry.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/SystemAnalysisEdge"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodySystemAnalysisNode:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodySystemAnalysisNode.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/SystemAnalysisNode"
+            $ref: "#/components/schemas/SystemAnalysisEntry"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -4868,20 +4555,19 @@ components:
       required:
         - data
       type: object
-    SetIncidentTimelineEventSystemContextAttributes:
+    SetSystemAnalysisEntrySubjectAttributes:
       additionalProperties: false
       properties:
-        relationship:
-          enum:
-            - primary
-            - affected
-            - contributing
+        knowledgeEntityId:
           type: string
-        systemAnalysisNodeId:
+        knowledgeEvidenceId:
+          type: string
+        knowledgeRelationshipId:
+          type: string
+        role:
           type: string
       required:
-        - systemAnalysisNodeId
-        - relationship
+        - role
       type: object
     StartIntegrationOAuthFlowResponseBody:
       additionalProperties: false
@@ -4912,88 +4598,107 @@ components:
     SystemAnalysisAttributes:
       additionalProperties: false
       properties:
-        edges:
+        entries:
           items:
-            $ref: "#/components/schemas/SystemAnalysisEdge"
+            $ref: "#/components/schemas/SystemAnalysisEntry"
           type: array
-        nodes:
-          items:
-            $ref: "#/components/schemas/SystemAnalysisNode"
-          type: array
+        referenceTime:
+          format: date-time
+          type: string
+        scopeEntityId:
+          type: string
+        subjectEntityId:
+          type: string
       required:
-        - nodes
-        - edges
+        - entries
       type: object
-    SystemAnalysisDiagramPosition:
-      additionalProperties: false
-      properties:
-        x:
-          format: double
-          type: number
-        "y":
-          format: double
-          type: number
-        z:
-          format: double
-          type: number
-      required:
-        - x
-        - "y"
-      type: object
-    SystemAnalysisEdge:
+    SystemAnalysisEntry:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/SystemAnalysisEdgeAttributes"
+          $ref: "#/components/schemas/SystemAnalysisEntryAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    SystemAnalysisEdgeAttributes:
+    SystemAnalysisEntryAttributes:
       additionalProperties: false
       properties:
-        description:
+        body:
+          type: string
+        kind:
+          enum:
+            - observation
+            - context
+            - decision
+            - action
+            - finding
+            - recommendation
+          type: string
+        occurredAt:
+          format: date-time
+          type: string
+        properties:
+          additionalProperties: {}
+          type: object
+        sequence:
+          format: int64
+          type: integer
+        subjects:
+          items:
+            $ref: "#/components/schemas/SystemAnalysisEntrySubject"
+          type: array
+        title:
+          type: string
+      required:
+        - kind
+        - sequence
+        - title
+        - properties
+        - subjects
+      type: object
+    SystemAnalysisEntrySubject:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/SystemAnalysisEntrySubjectAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    SystemAnalysisEntrySubjectAttributes:
+      additionalProperties: false
+      properties:
+        knowledgeEntity:
+          $ref: "#/components/schemas/KnowledgeGraphEntity"
+        knowledgeEntityId:
+          type: string
+        knowledgeEvidence:
+          $ref: "#/components/schemas/KnowledgeGraphEvidence"
+        knowledgeEvidenceId:
           type: string
         knowledgeRelationship:
           $ref: "#/components/schemas/KnowledgeGraphRelationship"
-        referencedAt:
-          format: date-time
+        knowledgeRelationshipId:
+          type: string
+        role:
+          type: string
+        subjectId:
+          type: string
+        subjectKind:
+          enum:
+            - entity
+            - relationship
+            - evidence
           type: string
       required:
-        - knowledgeRelationship
-        - referencedAt
-        - description
-      type: object
-    SystemAnalysisNode:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SystemAnalysisNodeAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SystemAnalysisNodeAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        knowledgeEntity:
-          $ref: "#/components/schemas/KnowledgeGraphEntity"
-        position:
-          $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
-        referencedAt:
-          format: date-time
-          type: string
-      required:
-        - knowledgeEntity
-        - referencedAt
-        - position
-        - description
+        - role
+        - subjectKind
+        - subjectId
       type: object
     Task:
       additionalProperties: false
@@ -5494,56 +5199,6 @@ components:
       required:
         - data
       type: object
-    UpdateIncidentTimelineEventAttributes:
-      additionalProperties: false
-      properties:
-        kind:
-          enum:
-            - observation
-            - action
-            - decision
-            - context
-          type: string
-        systemContext:
-          items:
-            $ref: "#/components/schemas/SetIncidentTimelineEventSystemContextAttributes"
-          type: array
-        timestamp:
-          format: date-time
-          type: string
-        title:
-          type: string
-      type: object
-    UpdateIncidentTimelineEventRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateIncidentTimelineEventRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateIncidentTimelineEventAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateIncidentTimelineEventResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateIncidentTimelineEventResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/IncidentTimelineEvent"
-      required:
-        - data
-      type: object
     UpdateIncidentTypeAttributes:
       additionalProperties: false
       properties:
@@ -5949,77 +5604,138 @@ components:
       required:
         - data
       type: object
-    UpdateSystemAnalysisEdgeAttributes:
+    UpdateSystemAnalysisAttributes:
       additionalProperties: false
       properties:
-        description:
+        referenceTime:
+          format: date-time
+          type: string
+        scopeEntityId:
+          type: string
+        subjectEntityId:
           type: string
       type: object
-    UpdateSystemAnalysisEdgeRequestBody:
+    UpdateSystemAnalysisEntryAttributes:
+      additionalProperties: false
+      properties:
+        body:
+          type: string
+        kind:
+          enum:
+            - observation
+            - context
+            - decision
+            - action
+            - finding
+            - recommendation
+          type: string
+        occurredAt:
+          format: date-time
+          type: string
+        properties:
+          additionalProperties: {}
+          type: object
+        sequence:
+          format: int64
+          type: integer
+        title:
+          type: string
+      type: object
+    UpdateSystemAnalysisEntryRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/UpdateSystemAnalysisEdgeRequestBody.json
+            - /v1/schemas/UpdateSystemAnalysisEntryRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/UpdateSystemAnalysisEdgeAttributes"
+          $ref: "#/components/schemas/UpdateSystemAnalysisEntryAttributes"
       required:
         - attributes
       type: object
-    UpdateSystemAnalysisEdgeResponseBody:
+    UpdateSystemAnalysisEntryResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/UpdateSystemAnalysisEdgeResponseBody.json
+            - /v1/schemas/UpdateSystemAnalysisEntryResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemAnalysisEdge"
+          $ref: "#/components/schemas/SystemAnalysisEntry"
       required:
         - data
       type: object
-    UpdateSystemAnalysisNodeAttributes:
+    UpdateSystemAnalysisEntrySubjectAttributes:
       additionalProperties: false
       properties:
-        description:
+        role:
           type: string
-        position:
-          $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
+      required:
+        - role
       type: object
-    UpdateSystemAnalysisNodeRequestBody:
+    UpdateSystemAnalysisEntrySubjectRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/UpdateSystemAnalysisNodeRequestBody.json
+            - /v1/schemas/UpdateSystemAnalysisEntrySubjectRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/UpdateSystemAnalysisNodeAttributes"
+          $ref: "#/components/schemas/UpdateSystemAnalysisEntrySubjectAttributes"
       required:
         - attributes
       type: object
-    UpdateSystemAnalysisNodeResponseBody:
+    UpdateSystemAnalysisEntrySubjectResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/UpdateSystemAnalysisNodeResponseBody.json
+            - /v1/schemas/UpdateSystemAnalysisEntrySubjectResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemAnalysisNode"
+          $ref: "#/components/schemas/SystemAnalysisEntrySubject"
+      required:
+        - data
+      type: object
+    UpdateSystemAnalysisRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateSystemAnalysisRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdateSystemAnalysisAttributes"
+      required:
+        - attributes
+      type: object
+    UpdateSystemAnalysisResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateSystemAnalysisResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SystemAnalysis"
       required:
         - data
       type: object
@@ -10095,166 +9811,6 @@ paths:
       summary: Update an Incident Milestone
       tags:
         - Incident Milestones
-  /incident_timeline/event_metadata:
-    get:
-      operationId: list-incident-timeline-event-metadata
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetIncidentTimelineEventMetadataResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get metadata available for incident timeline events
-      tags:
-        - Incident Timeline
-  /incident_timeline/events/{id}:
-    delete:
-      operationId: delete-incident-timeline-event
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Delete an Incident Event
-      tags:
-        - Incident Timeline
-    patch:
-      operationId: update-incident-timeline-event
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateIncidentTimelineEventRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateIncidentTimelineEventResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Update an Incident Event
-      tags:
-        - Incident Timeline
   /incidents:
     get:
       operationId: list-incidents
@@ -10728,150 +10284,6 @@ paths:
       summary: Create an Incident Milestone
       tags:
         - Incident Milestones
-  /incidents/{id}/timeline_events:
-    get:
-      operationId: list-incident-timeline-events
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListResponseBodyIncidentTimelineEvent"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Events for Incident
-      tags:
-        - Incidents
-        - Incident Timeline
-    post:
-      operationId: create-incident-timeline-event
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateIncidentTimelineEventRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateIncidentTimelineEventResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Create an Incident Event
-      tags:
-        - Incident Timeline
   /integrations:
     get:
       operationId: get-installable-integrations
@@ -11633,6 +11045,13 @@ paths:
             type: array
         - explode: false
           in: query
+          name: subkind
+          schema:
+            items:
+              type: string
+            type: array
+        - explode: false
+          in: query
           name: provider
           schema:
             type: string
@@ -11782,6 +11201,13 @@ paths:
         - explode: false
           in: query
           name: kind
+          schema:
+            items:
+              type: string
+            type: array
+        - explode: false
+          in: query
+          name: subkind
           schema:
             items:
               type: string
@@ -14934,9 +14360,69 @@ paths:
       summary: Get System Analysis
       tags:
         - System Analysis
-  /system_analysis/{id}/edges:
+    patch:
+      operationId: update-system-analysis
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSystemAnalysisRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateSystemAnalysisResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Update System Analysis
+      tags:
+        - System Analysis
+  /system_analysis/{id}/entries:
     get:
-      operationId: list-system-analysis-edges
+      operationId: list-system-analysis-entries
       parameters:
         - in: path
           name: id
@@ -14976,7 +14462,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodySystemAnalysisEdge"
+                $ref: "#/components/schemas/ListResponseBodySystemAnalysisEntry"
           description: OK
         "400":
           content:
@@ -15014,11 +14500,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: List edges in a system analysis
+      summary: List System Analysis Entries
       tags:
         - System Analysis
     post:
-      operationId: add-system-analysis-edge
+      operationId: create-system-analysis-entry
       parameters:
         - in: path
           name: id
@@ -15029,14 +14515,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AddSystemAnalysisEdgeRequestBody"
+              $ref: "#/components/schemas/CreateSystemAnalysisEntryRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AddSystemAnalysisEdgeResponseBody"
+                $ref: "#/components/schemas/CreateSystemAnalysisEntryResponseBody"
           description: OK
         "400":
           content:
@@ -15074,12 +14560,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Add an edge to a system analysis
+      summary: Create System Analysis Entry
       tags:
         - System Analysis
-  /system_analysis/{id}/nodes:
+  /system_analysis/{id}/graph:
     get:
-      operationId: list-system-analysis-nodes
+      operationId: get-system-analysis-graph
       parameters:
         - in: path
           name: id
@@ -15088,38 +14574,23 @@ paths:
             type: string
         - explode: false
           in: query
-          name: limit
+          name: depth
           schema:
-            default: 10
             format: int64
-            maximum: 50
-            minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: relationshipKind
           schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
+            items:
+              type: string
+            type: array
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodySystemAnalysisNode"
+                $ref: "#/components/schemas/GetSystemAnalysisGraphResponseBody"
           description: OK
         "400":
           content:
@@ -15157,72 +14628,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: List nodes in a system analysis
+      summary: Get System Analysis Graph
       tags:
         - System Analysis
-    post:
-      operationId: add-system-analysis-node
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AddSystemAnalysisNodeRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AddSystemAnalysisNodeResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Add a node to a system analysis
-      tags:
-        - System Analysis
-  /system_analysis_edges/{id}:
+  /system_analysis_entries/{id}:
     delete:
-      operationId: delete-system-analysis-edge
+      operationId: delete-system-analysis-entry
       parameters:
         - in: path
           name: id
@@ -15268,65 +14679,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Delete a system analysis edge
-      tags:
-        - System Analysis
-    get:
-      operationId: get-system-analysis-edge
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetSystemAnalysisEdgeResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get a system analysis edge
+      summary: Delete System Analysis Entry
       tags:
         - System Analysis
     patch:
-      operationId: update-system-analysis-edge
+      operationId: update-system-analysis-entry
       parameters:
         - in: path
           name: id
@@ -15337,14 +14694,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateSystemAnalysisEdgeRequestBody"
+              $ref: "#/components/schemas/UpdateSystemAnalysisEntryRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UpdateSystemAnalysisEdgeResponseBody"
+                $ref: "#/components/schemas/UpdateSystemAnalysisEntryResponseBody"
           description: OK
         "400":
           content:
@@ -15382,12 +14739,73 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Update a system analysis edge
+      summary: Update System Analysis Entry
       tags:
         - System Analysis
-  /system_analysis_nodes/{id}:
+  /system_analysis_entries/{id}/subjects:
+    post:
+      operationId: add-system-analysis-entry-subject
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddSystemAnalysisEntrySubjectRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddSystemAnalysisEntrySubjectResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Add System Analysis Entry Subject
+      tags:
+        - System Analysis
+  /system_analysis_entry_subjects/{id}:
     delete:
-      operationId: delete-system-analysis-node
+      operationId: delete-system-analysis-entry-subject
       parameters:
         - in: path
           name: id
@@ -15433,65 +14851,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Delete a system analysis node
-      tags:
-        - System Analysis
-    get:
-      operationId: get-system-analysis-node
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetSystemAnalysisNodeResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get a system analysis node
+      summary: Delete System Analysis Entry Subject
       tags:
         - System Analysis
     patch:
-      operationId: update-system-analysis-node
+      operationId: update-system-analysis-entry-subject
       parameters:
         - in: path
           name: id
@@ -15502,14 +14866,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateSystemAnalysisNodeRequestBody"
+              $ref: "#/components/schemas/UpdateSystemAnalysisEntrySubjectRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UpdateSystemAnalysisNodeResponseBody"
+                $ref: "#/components/schemas/UpdateSystemAnalysisEntrySubjectResponseBody"
           description: OK
         "400":
           content:
@@ -15547,7 +14911,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Update a system analysis node
+      summary: Update System Analysis Entry Subject
       tags:
         - System Analysis
   /tasks:

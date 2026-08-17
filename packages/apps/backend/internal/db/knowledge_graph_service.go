@@ -35,7 +35,7 @@ func NewKnowledgeGraphService(db rez.Database) (*KnowledgeGraphService, error) {
 	return &KnowledgeGraphService{db: db}, nil
 }
 
-func (s *KnowledgeGraphService) aliasWithEvidenceQuery(evP ...predicate.KnowledgeEvidence) func(*ent.KnowledgeSubjectAliasQuery) {
+func knowledgeAliasWithEvidenceQuery(evP ...predicate.KnowledgeEvidence) func(*ent.KnowledgeSubjectAliasQuery) {
 	return func(aq *ent.KnowledgeSubjectAliasQuery) {
 		aq.WithEvidence(func(eq *ent.KnowledgeEvidenceQuery) {
 			eq.Where(evP...)
@@ -48,11 +48,11 @@ func (s *KnowledgeGraphService) aliasWithEvidenceQuery(evP ...predicate.Knowledg
 
 func (s *KnowledgeGraphService) ListEntities(ctx context.Context, params rez.ListKnowledgeGraphEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error) {
 	query := s.db.Client(ctx).KnowledgeEntity.Query().
-		WithAliases(s.aliasWithEvidenceQuery())
+		WithAliases(knowledgeAliasWithEvidenceQuery())
 
 	if search := strings.TrimSpace(params.Search); search != "" {
 		searchMatch := kne.Or(
-			kne.KindContainsFold(search),
+			kne.SubkindContainsFold(search),
 			kne.HasAliasesWith(
 				ksa.HasEvidenceWith(func(selector *sql.Selector) {
 					selector.Where(sql.P(func(builder *sql.Builder) {
@@ -75,7 +75,7 @@ func (s *KnowledgeGraphService) ListEntities(ctx context.Context, params rez.Lis
 func (s *KnowledgeGraphService) entityQueryWithEvidence(ctx context.Context, id uuid.UUID, evP ...predicate.KnowledgeEvidence) *ent.KnowledgeEntityQuery {
 	return s.db.Client(ctx).KnowledgeEntity.Query().
 		Where(kne.ID(id)).
-		WithAliases(s.aliasWithEvidenceQuery(append(evP, ke.HasSubjectAliasWith(ksa.HasEntityWith(kne.ID(id))))...))
+		WithAliases(knowledgeAliasWithEvidenceQuery(append(evP, ke.HasSubjectAliasWith(ksa.HasEntityWith(kne.ID(id))))...))
 }
 
 func (s *KnowledgeGraphService) GetEntity(ctx context.Context, id uuid.UUID) (*ent.KnowledgeEntity, error) {
@@ -89,7 +89,7 @@ func (s *KnowledgeGraphService) GetEntityAt(ctx context.Context, id uuid.UUID, r
 func (s *KnowledgeGraphService) relationshipQueryWithEvidence(ctx context.Context, id uuid.UUID, evP ...predicate.KnowledgeEvidence) *ent.KnowledgeRelationshipQuery {
 	return s.db.Client(ctx).KnowledgeRelationship.Query().
 		Where(knr.ID(id)).
-		WithAliases(s.aliasWithEvidenceQuery(append(evP, ke.HasSubjectAliasWith(ksa.HasRelationshipWith(knr.ID(id))))...))
+		WithAliases(knowledgeAliasWithEvidenceQuery(append(evP, ke.HasSubjectAliasWith(ksa.HasRelationshipWith(knr.ID(id))))...))
 }
 
 func (s *KnowledgeGraphService) GetEvidence(ctx context.Context, id uuid.UUID) (*ent.KnowledgeEvidence, error) {
@@ -102,7 +102,7 @@ func (s *KnowledgeGraphService) GetEvidence(ctx context.Context, id uuid.UUID) (
 
 func (s *KnowledgeGraphService) ListRelationships(ctx context.Context, params rez.ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {
 	query := s.db.Client(ctx).KnowledgeRelationship.Query().
-		WithAliases(s.aliasWithEvidenceQuery())
+		WithAliases(knowledgeAliasWithEvidenceQuery())
 	if len(params.Predicates) > 0 {
 		query.Where(params.Predicates...)
 	}
@@ -138,12 +138,29 @@ func (s *KnowledgeGraphService) GetView(ctx context.Context, params rez.GetKnowl
 
 	entityIDs := mapset.NewSet[uuid.UUID]()
 	relationshipIDs := mapset.NewSet[uuid.UUID]()
+	rootEntity, rootErr := s.entityQueryWithEvidence(ctx, view.RootID).Only(ctx)
+	if rootErr != nil {
+		if ent.IsNotFound(rootErr) {
+			return view, nil
+		}
+		return nil, fmt.Errorf("query root entity: %w", rootErr)
+	}
+	entityIDs.Add(rootEntity.ID)
+	view.Entities = append(view.Entities, rootEntity)
+
 	queryFrontier := func(ids []uuid.UUID) ([]uuid.UUID, error) {
 		queryRels := s.db.Client(ctx).KnowledgeRelationship.Query().
 			Where(knr.Or(knr.SourceEntityIDIn(ids...), knr.TargetEntityIDIn(ids...))).
-			WithAliases(s.aliasWithEvidenceQuery())
+			WithAliases(knowledgeAliasWithEvidenceQuery())
 		if len(params.RelationshipKinds) > 0 {
-			queryRels.Where(knr.KindIn(params.RelationshipKinds...))
+			relationshipKinds := make([]knr.Kind, len(params.RelationshipKinds))
+			for i, kind := range params.RelationshipKinds {
+				relationshipKinds[i] = knr.Kind(kind)
+				if kindErr := knr.KindValidator(relationshipKinds[i]); kindErr != nil {
+					return nil, kindErr
+				}
+			}
+			queryRels.Where(knr.KindIn(relationshipKinds...))
 		}
 		queryRels.Limit(maxKnowledgeViewRelationships + 1)
 
@@ -177,7 +194,7 @@ func (s *KnowledgeGraphService) GetView(ctx context.Context, params rez.GetKnowl
 		if len(nextIDs) > 0 {
 			queryEntities := s.db.Client(ctx).KnowledgeEntity.Query().
 				Where(kne.IDIn(nextIDs...)).
-				WithAliases(s.aliasWithEvidenceQuery())
+				WithAliases(knowledgeAliasWithEvidenceQuery())
 			nextEntities, queryEntitiesErr := queryEntities.All(ctx)
 			if queryEntitiesErr != nil {
 				return nil, fmt.Errorf("query entities: %w", queryEntitiesErr)

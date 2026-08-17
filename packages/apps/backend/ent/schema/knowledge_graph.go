@@ -13,32 +13,34 @@ import (
 
 var (
 	knowledgeEntityKinds = []string{
-		"actor",
-		"system",
-		"container",
-		"component",
-		"code",
-		"deployment_node",
-		"process",
-		"concern",
-		"decision",
-		"event",
+		"actor",          // Human or organizational participant; e.g. customer, on-call team.
+		"system",         // Top-level software or business system; e.g. ecommerce platform, billing system.
+		"container",      // Independently deployable or runnable unit; e.g. service, database.
+		"component",      // Internal part of a container/system; e.g. module, background worker.
+		"infrastructure", // Runtime or platform resource; e.g. Kubernetes cluster, namespace.
+		"code",           // Source-code artifact; e.g. repository, package.
+		"process",        // Business or operational workflow; e.g. checkout flow, deploy process.
+		"domain_object",  // Business/domain object; e.g. customer, order.
+		"concern",        // External force, risk, or requirement; e.g. compliance rule, latency target.
+		"decision",       // Chosen design or operating tradeoff; e.g. ADR, mitigation choice.
+		"event",          // Time-bound occurrence; e.g. incident, deploy.
+		"signal",         // Observable telemetry or notification; e.g. alert, metric.
 	}
 
 	knowledgeRelationshipKinds = []string{
-		"contains",
-		"interacts_with",
-		"owns",
-		"implemented_by",
-		"runs_on",
-		"control_action",
-		"feedback",
-		"supports",
-		"participates_in",
-		"influences",
-		"constrains",
-		"addresses",
-		"impacts",
+		"contains",        // Structural containment; e.g. system contains service or namespace contains pod.
+		"interacts_with",  // Runtime or logical interaction; e.g. service calls API or worker reads queue.
+		"depends_on",      // Required dependency; e.g. service depends on database or provider.
+		"runs_on",         // Runtime placement; e.g. service runs on cluster or pod runs on node.
+		"owns",            // Accountability or stewardship; e.g. team owns service or group owns process.
+		"supports",        // Capability or dependency support; e.g. service supports checkout flow.
+		"participates_in", // Actor or object participation; e.g. user in team or service in process.
+		"controls",        // Control exerted over another subject; e.g. runbook controls recovery or rate limit controls API.
+		"observes",        // Telemetry or observation path; e.g. alert observes service or dashboard observes queue.
+		"influences",      // Non-binding causal pressure; e.g. regulation influences decision.
+		"constrains",      // Hard limit or rule; e.g. SLO constrains design or policy constrains access.
+		"addresses",       // Response to concern or risk; e.g. decision addresses hazard.
+		"impacts",         // Effect or consequence; e.g. incident impacts customer or deploy impacts service.
 	}
 )
 

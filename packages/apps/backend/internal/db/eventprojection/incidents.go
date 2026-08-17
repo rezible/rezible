@@ -10,13 +10,12 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 const (
-	knowledgeEntityKindIncident = "incident"
-
 	knowledgeAssertionIncidentObserved = "incident_observed"
 )
 
@@ -37,8 +36,9 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 			Description: attributes.Summary,
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:  knowledgeEntityKindIncident,
-			Alias: event.Event.KnowledgeAliasRef(),
+			Kind:    kne.KindEvent,
+			Subkind: knowledgeEntitySubkindIncident,
+			Alias:   event.Event.KnowledgeAliasRef(),
 		},
 	}
 
@@ -92,7 +92,7 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 			return fmt.Errorf("set incident: %w", setErr)
 		}
 		projected = append(projected, rez.ProjectedEntityRef{
-			Kind: knowledgeEntityKindIncident,
+			Kind: knowledgeEntitySubkindIncident,
 			Id:   inc.ID,
 		})
 

@@ -7,13 +7,12 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 const (
-	knowledgeEntityKindAlert                  = "alert"
-	knowledgeRelationshipKindAlertRelatedTo   = "alert_related_to"
 	knowledgeAssertionAlertDefinitionObserved = "alert_definition_observed"
 )
 
@@ -21,8 +20,9 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 	attributes := event.Attributes
 
 	alertEntityRef := ent.KnowledgeEntityRef{
-		Kind:  knowledgeEntityKindAlert,
-		Alias: event.Event.KnowledgeAliasRef(),
+		Kind:    kne.KindSignal,
+		Subkind: knowledgeEntitySubkindAlert,
+		Alias:   event.Event.KnowledgeAliasRef(),
 	}
 	alertEntityEvidence := ent.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event.Event),
@@ -57,7 +57,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 		if alertErr != nil {
 			return fmt.Errorf("upsert alert: %w", alertErr)
 		}
-		projected = append(projected, rez.ProjectedEntityRef{Kind: knowledgeEntityKindAlert, Id: alertID})
+		projected = append(projected, rez.ProjectedEntityRef{Kind: knowledgeEntitySubkindAlert, Id: alertID})
 
 		return nil
 	})

@@ -11,8 +11,6 @@ import (
 )
 
 const (
-	knowledgeEntityKindSystemComponent = "system_component"
-
 	knowledgeAssertionSystemComponentExists    = "system_component_exists"
 	knowledgeAssertionSystemRelationshipExists = "system_relationship_exists"
 )
@@ -23,7 +21,7 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, even
 	for key, value := range attributes.Properties {
 		properties[key] = value
 	}
-	properties["component_kind"] = attributes.Kind
+	properties["component_subkind"] = attributes.Subkind
 
 	evidence := ent.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event.Event),
@@ -35,8 +33,9 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, even
 			Properties:  properties,
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:  knowledgeEntityKindSystemComponent,
-			Alias: event.Event.KnowledgeAliasRef(),
+			Kind:    attributes.Kind,
+			Subkind: attributes.Subkind,
+			Alias:   event.Event.KnowledgeAliasRef(),
 		},
 	}
 
@@ -58,10 +57,12 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 			Properties:  attributes.Properties,
 		},
 		SubjectRelationship: &ent.KnowledgeRelationshipRef{
-			Kind:  attributes.Kind,
-			Alias: event.Event.KnowledgeAliasRef(),
+			Kind:    attributes.Kind,
+			Subkind: attributes.Subkind,
+			Alias:   event.Event.KnowledgeAliasRef(),
 			Source: ent.KnowledgeEntityRef{
-				Kind: knowledgeEntityKindSystemComponent,
+				Kind:    attributes.SourceKind,
+				Subkind: attributes.SourceSubkind,
 				Alias: ent.KnowledgeAliasRef{
 					Provider:           event.Event.Provider,
 					ProviderSource:     event.Event.ProviderSource,
@@ -69,7 +70,8 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 				},
 			},
 			Target: ent.KnowledgeEntityRef{
-				Kind: knowledgeEntityKindSystemComponent,
+				Kind:    attributes.TargetKind,
+				Subkind: attributes.TargetSubkind,
 				Alias: ent.KnowledgeAliasRef{
 					Provider:           event.Event.Provider,
 					ProviderSource:     event.Event.ProviderSource,

@@ -6,7 +6,6 @@ package mocks
 
 import (
 	"context"
-	"time"
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
@@ -589,80 +588,6 @@ func (_c *MockKnowledgeGraphService_GetEntity_Call) RunAndReturn(run func(contex
 	return _c
 }
 
-// GetEntityAt provides a mock function for the type MockKnowledgeGraphService
-func (_mock *MockKnowledgeGraphService) GetEntityAt(context1 context.Context, uUID uuid.UUID, time1 time.Time) (*ent.KnowledgeEntity, error) {
-	ret := _mock.Called(context1, uUID, time1)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetEntityAt")
-	}
-
-	var r0 *ent.KnowledgeEntity
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeEntity, error)); ok {
-		return returnFunc(context1, uUID, time1)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, time.Time) *ent.KnowledgeEntity); ok {
-		r0 = returnFunc(context1, uUID, time1)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.KnowledgeEntity)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, time.Time) error); ok {
-		r1 = returnFunc(context1, uUID, time1)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockKnowledgeGraphService_GetEntityAt_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetEntityAt'
-type MockKnowledgeGraphService_GetEntityAt_Call struct {
-	*mock.Call
-}
-
-// GetEntityAt is a helper method to define mock.On call
-//   - context1 context.Context
-//   - uUID uuid.UUID
-//   - time1 time.Time
-func (_e *MockKnowledgeGraphService_Expecter) GetEntityAt(context1 interface{}, uUID interface{}, time1 interface{}) *MockKnowledgeGraphService_GetEntityAt_Call {
-	return &MockKnowledgeGraphService_GetEntityAt_Call{Call: _e.mock.On("GetEntityAt", context1, uUID, time1)}
-}
-
-func (_c *MockKnowledgeGraphService_GetEntityAt_Call) Run(run func(context1 context.Context, uUID uuid.UUID, time1 time.Time)) *MockKnowledgeGraphService_GetEntityAt_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		var arg2 time.Time
-		if args[2] != nil {
-			arg2 = args[2].(time.Time)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockKnowledgeGraphService_GetEntityAt_Call) Return(knowledgeEntity *ent.KnowledgeEntity, err error) *MockKnowledgeGraphService_GetEntityAt_Call {
-	_c.Call.Return(knowledgeEntity, err)
-	return _c
-}
-
-func (_c *MockKnowledgeGraphService_GetEntityAt_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, time1 time.Time) (*ent.KnowledgeEntity, error)) *MockKnowledgeGraphService_GetEntityAt_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetEvidence provides a mock function for the type MockKnowledgeGraphService
 func (_mock *MockKnowledgeGraphService) GetEvidence(context1 context.Context, uUID uuid.UUID) (*ent.KnowledgeEvidence, error) {
 	ret := _mock.Called(context1, uUID)
@@ -795,80 +720,6 @@ func (_c *MockKnowledgeGraphService_GetRelationship_Call) Return(knowledgeRelati
 }
 
 func (_c *MockKnowledgeGraphService_GetRelationship_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.KnowledgeRelationship, error)) *MockKnowledgeGraphService_GetRelationship_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetRelationshipAt provides a mock function for the type MockKnowledgeGraphService
-func (_mock *MockKnowledgeGraphService) GetRelationshipAt(context1 context.Context, uUID uuid.UUID, time1 time.Time) (*ent.KnowledgeRelationship, error) {
-	ret := _mock.Called(context1, uUID, time1)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetRelationshipAt")
-	}
-
-	var r0 *ent.KnowledgeRelationship
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, time.Time) (*ent.KnowledgeRelationship, error)); ok {
-		return returnFunc(context1, uUID, time1)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, time.Time) *ent.KnowledgeRelationship); ok {
-		r0 = returnFunc(context1, uUID, time1)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.KnowledgeRelationship)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, time.Time) error); ok {
-		r1 = returnFunc(context1, uUID, time1)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockKnowledgeGraphService_GetRelationshipAt_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRelationshipAt'
-type MockKnowledgeGraphService_GetRelationshipAt_Call struct {
-	*mock.Call
-}
-
-// GetRelationshipAt is a helper method to define mock.On call
-//   - context1 context.Context
-//   - uUID uuid.UUID
-//   - time1 time.Time
-func (_e *MockKnowledgeGraphService_Expecter) GetRelationshipAt(context1 interface{}, uUID interface{}, time1 interface{}) *MockKnowledgeGraphService_GetRelationshipAt_Call {
-	return &MockKnowledgeGraphService_GetRelationshipAt_Call{Call: _e.mock.On("GetRelationshipAt", context1, uUID, time1)}
-}
-
-func (_c *MockKnowledgeGraphService_GetRelationshipAt_Call) Run(run func(context1 context.Context, uUID uuid.UUID, time1 time.Time)) *MockKnowledgeGraphService_GetRelationshipAt_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		var arg2 time.Time
-		if args[2] != nil {
-			arg2 = args[2].(time.Time)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockKnowledgeGraphService_GetRelationshipAt_Call) Return(knowledgeRelationship *ent.KnowledgeRelationship, err error) *MockKnowledgeGraphService_GetRelationshipAt_Call {
-	_c.Call.Return(knowledgeRelationship, err)
-	return _c
-}
-
-func (_c *MockKnowledgeGraphService_GetRelationshipAt_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, time1 time.Time) (*ent.KnowledgeRelationship, error)) *MockKnowledgeGraphService_GetRelationshipAt_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1234,6 +1085,579 @@ func (_c *MockKnowledgeGraphService_ListRelationships_Call) Return(listResult *e
 }
 
 func (_c *MockKnowledgeGraphService_ListRelationships_Call) RunAndReturn(run func(context1 context.Context, listKnowledgeGraphRelationshipsParams rez.ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)) *MockKnowledgeGraphService_ListRelationships_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NewMockSystemAnalysisService creates a new instance of MockSystemAnalysisService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func NewMockSystemAnalysisService(t interface {
+	mock.TestingT
+	Cleanup(func())
+}) *MockSystemAnalysisService {
+	mock := &MockSystemAnalysisService{}
+	mock.Mock.Test(t)
+
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+
+	return mock
+}
+
+// MockSystemAnalysisService is an autogenerated mock type for the SystemAnalysisService type
+type MockSystemAnalysisService struct {
+	mock.Mock
+}
+
+type MockSystemAnalysisService_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *MockSystemAnalysisService) EXPECT() *MockSystemAnalysisService_Expecter {
+	return &MockSystemAnalysisService_Expecter{mock: &_m.Mock}
+}
+
+// DeleteSystemAnalysisEntry provides a mock function for the type MockSystemAnalysisService
+func (_mock *MockSystemAnalysisService) DeleteSystemAnalysisEntry(context1 context.Context, uUID uuid.UUID) error {
+	ret := _mock.Called(context1, uUID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteSystemAnalysisEntry")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(context1, uUID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockSystemAnalysisService_DeleteSystemAnalysisEntry_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteSystemAnalysisEntry'
+type MockSystemAnalysisService_DeleteSystemAnalysisEntry_Call struct {
+	*mock.Call
+}
+
+// DeleteSystemAnalysisEntry is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+func (_e *MockSystemAnalysisService_Expecter) DeleteSystemAnalysisEntry(context1 interface{}, uUID interface{}) *MockSystemAnalysisService_DeleteSystemAnalysisEntry_Call {
+	return &MockSystemAnalysisService_DeleteSystemAnalysisEntry_Call{Call: _e.mock.On("DeleteSystemAnalysisEntry", context1, uUID)}
+}
+
+func (_c *MockSystemAnalysisService_DeleteSystemAnalysisEntry_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockSystemAnalysisService_DeleteSystemAnalysisEntry_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_DeleteSystemAnalysisEntry_Call) Return(err error) *MockSystemAnalysisService_DeleteSystemAnalysisEntry_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_DeleteSystemAnalysisEntry_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) error) *MockSystemAnalysisService_DeleteSystemAnalysisEntry_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteSystemAnalysisEntrySubject provides a mock function for the type MockSystemAnalysisService
+func (_mock *MockSystemAnalysisService) DeleteSystemAnalysisEntrySubject(context1 context.Context, uUID uuid.UUID) error {
+	ret := _mock.Called(context1, uUID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteSystemAnalysisEntrySubject")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(context1, uUID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockSystemAnalysisService_DeleteSystemAnalysisEntrySubject_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteSystemAnalysisEntrySubject'
+type MockSystemAnalysisService_DeleteSystemAnalysisEntrySubject_Call struct {
+	*mock.Call
+}
+
+// DeleteSystemAnalysisEntrySubject is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+func (_e *MockSystemAnalysisService_Expecter) DeleteSystemAnalysisEntrySubject(context1 interface{}, uUID interface{}) *MockSystemAnalysisService_DeleteSystemAnalysisEntrySubject_Call {
+	return &MockSystemAnalysisService_DeleteSystemAnalysisEntrySubject_Call{Call: _e.mock.On("DeleteSystemAnalysisEntrySubject", context1, uUID)}
+}
+
+func (_c *MockSystemAnalysisService_DeleteSystemAnalysisEntrySubject_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockSystemAnalysisService_DeleteSystemAnalysisEntrySubject_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_DeleteSystemAnalysisEntrySubject_Call) Return(err error) *MockSystemAnalysisService_DeleteSystemAnalysisEntrySubject_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_DeleteSystemAnalysisEntrySubject_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) error) *MockSystemAnalysisService_DeleteSystemAnalysisEntrySubject_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetSystemAnalysis provides a mock function for the type MockSystemAnalysisService
+func (_mock *MockSystemAnalysisService) GetSystemAnalysis(context1 context.Context, uUID uuid.UUID) (*ent.SystemAnalysis, error) {
+	ret := _mock.Called(context1, uUID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetSystemAnalysis")
+	}
+
+	var r0 *ent.SystemAnalysis
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.SystemAnalysis, error)); ok {
+		return returnFunc(context1, uUID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.SystemAnalysis); ok {
+		r0 = returnFunc(context1, uUID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.SystemAnalysis)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(context1, uUID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSystemAnalysisService_GetSystemAnalysis_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetSystemAnalysis'
+type MockSystemAnalysisService_GetSystemAnalysis_Call struct {
+	*mock.Call
+}
+
+// GetSystemAnalysis is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+func (_e *MockSystemAnalysisService_Expecter) GetSystemAnalysis(context1 interface{}, uUID interface{}) *MockSystemAnalysisService_GetSystemAnalysis_Call {
+	return &MockSystemAnalysisService_GetSystemAnalysis_Call{Call: _e.mock.On("GetSystemAnalysis", context1, uUID)}
+}
+
+func (_c *MockSystemAnalysisService_GetSystemAnalysis_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockSystemAnalysisService_GetSystemAnalysis_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_GetSystemAnalysis_Call) Return(systemAnalysis *ent.SystemAnalysis, err error) *MockSystemAnalysisService_GetSystemAnalysis_Call {
+	_c.Call.Return(systemAnalysis, err)
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_GetSystemAnalysis_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.SystemAnalysis, error)) *MockSystemAnalysisService_GetSystemAnalysis_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetSystemAnalysisGraph provides a mock function for the type MockSystemAnalysisService
+func (_mock *MockSystemAnalysisService) GetSystemAnalysisGraph(context1 context.Context, uUID uuid.UUID, getKnowledgeGraphViewParams rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error) {
+	ret := _mock.Called(context1, uUID, getKnowledgeGraphViewParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetSystemAnalysisGraph")
+	}
+
+	var r0 *rez.KnowledgeGraphView
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error)); ok {
+		return returnFunc(context1, uUID, getKnowledgeGraphViewParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, rez.GetKnowledgeGraphViewParams) *rez.KnowledgeGraphView); ok {
+		r0 = returnFunc(context1, uUID, getKnowledgeGraphViewParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*rez.KnowledgeGraphView)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, rez.GetKnowledgeGraphViewParams) error); ok {
+		r1 = returnFunc(context1, uUID, getKnowledgeGraphViewParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSystemAnalysisService_GetSystemAnalysisGraph_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetSystemAnalysisGraph'
+type MockSystemAnalysisService_GetSystemAnalysisGraph_Call struct {
+	*mock.Call
+}
+
+// GetSystemAnalysisGraph is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+//   - getKnowledgeGraphViewParams rez.GetKnowledgeGraphViewParams
+func (_e *MockSystemAnalysisService_Expecter) GetSystemAnalysisGraph(context1 interface{}, uUID interface{}, getKnowledgeGraphViewParams interface{}) *MockSystemAnalysisService_GetSystemAnalysisGraph_Call {
+	return &MockSystemAnalysisService_GetSystemAnalysisGraph_Call{Call: _e.mock.On("GetSystemAnalysisGraph", context1, uUID, getKnowledgeGraphViewParams)}
+}
+
+func (_c *MockSystemAnalysisService_GetSystemAnalysisGraph_Call) Run(run func(context1 context.Context, uUID uuid.UUID, getKnowledgeGraphViewParams rez.GetKnowledgeGraphViewParams)) *MockSystemAnalysisService_GetSystemAnalysisGraph_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 rez.GetKnowledgeGraphViewParams
+		if args[2] != nil {
+			arg2 = args[2].(rez.GetKnowledgeGraphViewParams)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_GetSystemAnalysisGraph_Call) Return(knowledgeGraphView *rez.KnowledgeGraphView, err error) *MockSystemAnalysisService_GetSystemAnalysisGraph_Call {
+	_c.Call.Return(knowledgeGraphView, err)
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_GetSystemAnalysisGraph_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, getKnowledgeGraphViewParams rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error)) *MockSystemAnalysisService_GetSystemAnalysisGraph_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListSystemAnalysisEntries provides a mock function for the type MockSystemAnalysisService
+func (_mock *MockSystemAnalysisService) ListSystemAnalysisEntries(context1 context.Context, uUID uuid.UUID) (ent.SystemAnalysisEntries, error) {
+	ret := _mock.Called(context1, uUID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListSystemAnalysisEntries")
+	}
+
+	var r0 ent.SystemAnalysisEntries
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (ent.SystemAnalysisEntries, error)); ok {
+		return returnFunc(context1, uUID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ent.SystemAnalysisEntries); ok {
+		r0 = returnFunc(context1, uUID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(ent.SystemAnalysisEntries)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(context1, uUID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSystemAnalysisService_ListSystemAnalysisEntries_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListSystemAnalysisEntries'
+type MockSystemAnalysisService_ListSystemAnalysisEntries_Call struct {
+	*mock.Call
+}
+
+// ListSystemAnalysisEntries is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+func (_e *MockSystemAnalysisService_Expecter) ListSystemAnalysisEntries(context1 interface{}, uUID interface{}) *MockSystemAnalysisService_ListSystemAnalysisEntries_Call {
+	return &MockSystemAnalysisService_ListSystemAnalysisEntries_Call{Call: _e.mock.On("ListSystemAnalysisEntries", context1, uUID)}
+}
+
+func (_c *MockSystemAnalysisService_ListSystemAnalysisEntries_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockSystemAnalysisService_ListSystemAnalysisEntries_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_ListSystemAnalysisEntries_Call) Return(systemAnalysisEntries ent.SystemAnalysisEntries, err error) *MockSystemAnalysisService_ListSystemAnalysisEntries_Call {
+	_c.Call.Return(systemAnalysisEntries, err)
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_ListSystemAnalysisEntries_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (ent.SystemAnalysisEntries, error)) *MockSystemAnalysisService_ListSystemAnalysisEntries_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetSystemAnalysis provides a mock function for the type MockSystemAnalysisService
+func (_mock *MockSystemAnalysisService) SetSystemAnalysis(context1 context.Context, uUID uuid.UUID, fn func(*ent.SystemAnalysisMutation)) (*ent.SystemAnalysis, error) {
+	ret := _mock.Called(context1, uUID, fn)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetSystemAnalysis")
+	}
+
+	var r0 *ent.SystemAnalysis
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, func(*ent.SystemAnalysisMutation)) (*ent.SystemAnalysis, error)); ok {
+		return returnFunc(context1, uUID, fn)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, func(*ent.SystemAnalysisMutation)) *ent.SystemAnalysis); ok {
+		r0 = returnFunc(context1, uUID, fn)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.SystemAnalysis)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, func(*ent.SystemAnalysisMutation)) error); ok {
+		r1 = returnFunc(context1, uUID, fn)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSystemAnalysisService_SetSystemAnalysis_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetSystemAnalysis'
+type MockSystemAnalysisService_SetSystemAnalysis_Call struct {
+	*mock.Call
+}
+
+// SetSystemAnalysis is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+//   - fn func(*ent.SystemAnalysisMutation)
+func (_e *MockSystemAnalysisService_Expecter) SetSystemAnalysis(context1 interface{}, uUID interface{}, fn interface{}) *MockSystemAnalysisService_SetSystemAnalysis_Call {
+	return &MockSystemAnalysisService_SetSystemAnalysis_Call{Call: _e.mock.On("SetSystemAnalysis", context1, uUID, fn)}
+}
+
+func (_c *MockSystemAnalysisService_SetSystemAnalysis_Call) Run(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.SystemAnalysisMutation))) *MockSystemAnalysisService_SetSystemAnalysis_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 func(*ent.SystemAnalysisMutation)
+		if args[2] != nil {
+			arg2 = args[2].(func(*ent.SystemAnalysisMutation))
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_SetSystemAnalysis_Call) Return(systemAnalysis *ent.SystemAnalysis, err error) *MockSystemAnalysisService_SetSystemAnalysis_Call {
+	_c.Call.Return(systemAnalysis, err)
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_SetSystemAnalysis_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.SystemAnalysisMutation)) (*ent.SystemAnalysis, error)) *MockSystemAnalysisService_SetSystemAnalysis_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetSystemAnalysisEntry provides a mock function for the type MockSystemAnalysisService
+func (_mock *MockSystemAnalysisService) SetSystemAnalysisEntry(context1 context.Context, uUID uuid.UUID, fn func(*ent.SystemAnalysisEntryMutation)) (*ent.SystemAnalysisEntry, error) {
+	ret := _mock.Called(context1, uUID, fn)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetSystemAnalysisEntry")
+	}
+
+	var r0 *ent.SystemAnalysisEntry
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntryMutation)) (*ent.SystemAnalysisEntry, error)); ok {
+		return returnFunc(context1, uUID, fn)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntryMutation)) *ent.SystemAnalysisEntry); ok {
+		r0 = returnFunc(context1, uUID, fn)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.SystemAnalysisEntry)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntryMutation)) error); ok {
+		r1 = returnFunc(context1, uUID, fn)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSystemAnalysisService_SetSystemAnalysisEntry_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetSystemAnalysisEntry'
+type MockSystemAnalysisService_SetSystemAnalysisEntry_Call struct {
+	*mock.Call
+}
+
+// SetSystemAnalysisEntry is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+//   - fn func(*ent.SystemAnalysisEntryMutation)
+func (_e *MockSystemAnalysisService_Expecter) SetSystemAnalysisEntry(context1 interface{}, uUID interface{}, fn interface{}) *MockSystemAnalysisService_SetSystemAnalysisEntry_Call {
+	return &MockSystemAnalysisService_SetSystemAnalysisEntry_Call{Call: _e.mock.On("SetSystemAnalysisEntry", context1, uUID, fn)}
+}
+
+func (_c *MockSystemAnalysisService_SetSystemAnalysisEntry_Call) Run(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.SystemAnalysisEntryMutation))) *MockSystemAnalysisService_SetSystemAnalysisEntry_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 func(*ent.SystemAnalysisEntryMutation)
+		if args[2] != nil {
+			arg2 = args[2].(func(*ent.SystemAnalysisEntryMutation))
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_SetSystemAnalysisEntry_Call) Return(systemAnalysisEntry *ent.SystemAnalysisEntry, err error) *MockSystemAnalysisService_SetSystemAnalysisEntry_Call {
+	_c.Call.Return(systemAnalysisEntry, err)
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_SetSystemAnalysisEntry_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.SystemAnalysisEntryMutation)) (*ent.SystemAnalysisEntry, error)) *MockSystemAnalysisService_SetSystemAnalysisEntry_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetSystemAnalysisEntrySubject provides a mock function for the type MockSystemAnalysisService
+func (_mock *MockSystemAnalysisService) SetSystemAnalysisEntrySubject(context1 context.Context, uUID uuid.UUID, fn func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntrySubject, error) {
+	ret := _mock.Called(context1, uUID, fn)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetSystemAnalysisEntrySubject")
+	}
+
+	var r0 *ent.SystemAnalysisEntrySubject
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntrySubject, error)); ok {
+		return returnFunc(context1, uUID, fn)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntrySubjectMutation)) *ent.SystemAnalysisEntrySubject); ok {
+		r0 = returnFunc(context1, uUID, fn)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.SystemAnalysisEntrySubject)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntrySubjectMutation)) error); ok {
+		r1 = returnFunc(context1, uUID, fn)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSystemAnalysisService_SetSystemAnalysisEntrySubject_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetSystemAnalysisEntrySubject'
+type MockSystemAnalysisService_SetSystemAnalysisEntrySubject_Call struct {
+	*mock.Call
+}
+
+// SetSystemAnalysisEntrySubject is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+//   - fn func(*ent.SystemAnalysisEntrySubjectMutation)
+func (_e *MockSystemAnalysisService_Expecter) SetSystemAnalysisEntrySubject(context1 interface{}, uUID interface{}, fn interface{}) *MockSystemAnalysisService_SetSystemAnalysisEntrySubject_Call {
+	return &MockSystemAnalysisService_SetSystemAnalysisEntrySubject_Call{Call: _e.mock.On("SetSystemAnalysisEntrySubject", context1, uUID, fn)}
+}
+
+func (_c *MockSystemAnalysisService_SetSystemAnalysisEntrySubject_Call) Run(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.SystemAnalysisEntrySubjectMutation))) *MockSystemAnalysisService_SetSystemAnalysisEntrySubject_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 func(*ent.SystemAnalysisEntrySubjectMutation)
+		if args[2] != nil {
+			arg2 = args[2].(func(*ent.SystemAnalysisEntrySubjectMutation))
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_SetSystemAnalysisEntrySubject_Call) Return(systemAnalysisEntrySubject *ent.SystemAnalysisEntrySubject, err error) *MockSystemAnalysisService_SetSystemAnalysisEntrySubject_Call {
+	_c.Call.Return(systemAnalysisEntrySubject, err)
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_SetSystemAnalysisEntrySubject_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntrySubject, error)) *MockSystemAnalysisService_SetSystemAnalysisEntrySubject_Call {
 	_c.Call.Return(run)
 	return _c
 }
