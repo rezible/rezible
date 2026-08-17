@@ -77,8 +77,10 @@ type SchemaConfig struct {
 	RetrospectiveComment                      string // RetrospectiveComment table.
 	RetrospectiveReview                       string // RetrospectiveReview table.
 	SystemAnalysis                            string // SystemAnalysis table.
+	SystemAnalysisEntity                      string // SystemAnalysisEntity table.
 	SystemAnalysisEntry                       string // SystemAnalysisEntry table.
 	SystemAnalysisEntrySubject                string // SystemAnalysisEntrySubject table.
+	SystemAnalysisRelationship                string // SystemAnalysisRelationship table.
 	Task                                      string // Task table.
 	TaskTickets                               string // Task-tickets->Ticket table.
 	Team                                      string // Team table.

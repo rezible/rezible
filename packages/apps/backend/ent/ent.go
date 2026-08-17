@@ -70,8 +70,10 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -198,8 +200,10 @@ func checkColumn(t, c string) error {
 			retrospectivecomment.Table:            retrospectivecomment.ValidColumn,
 			retrospectivereview.Table:             retrospectivereview.ValidColumn,
 			systemanalysis.Table:                  systemanalysis.ValidColumn,
+			systemanalysisentity.Table:            systemanalysisentity.ValidColumn,
 			systemanalysisentry.Table:             systemanalysisentry.ValidColumn,
 			systemanalysisentrysubject.Table:      systemanalysisentrysubject.ValidColumn,
+			systemanalysisrelationship.Table:      systemanalysisrelationship.ValidColumn,
 			task.Table:                            task.ValidColumn,
 			team.Table:                            team.ValidColumn,
 			teammembership.Table:                  teammembership.ValidColumn,

@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, type MutationOptions, queryOptions } from '@tanstack/svelte-query';
 
 import { client } from '../client.gen';
-import { abortAgentTurn, addIncidentDebriefUserMessage, addSystemAnalysisEdge, addSystemAnalysisNode, addWatchedOncallRoster, archiveDebriefQuestion, archiveIncident, archiveIncidentField, archiveIncidentRole, archiveIncidentSeverity, archiveIncidentTag, archiveIncidentType, archiveMeetingSchedule, archiveMeetingSession, archiveOncallHandoverTemplate, archivePlaybook, archiveRetrospectiveReview, archiveTask, archiveTeam, completeIntegrationOauthFlow, createAgentSession, createDebriefQuestion, createEventAnnotation, createIncident, createIncidentField, createIncidentMilestone, createIncidentRole, createIncidentSeverity, createIncidentTag, createIncidentTimelineEvent, createIncidentType, createMeetingSchedule, createMeetingSession, createOncallHandoverTemplate, createPlaybook, createRetrospectiveComment, createRetrospectiveReview, createTask, createTeam, createTeamMembership, deleteEventAnnotation, deleteIncidentMilestone, deleteIncidentTimelineEvent, deleteIntegrationInstallation, deleteSystemAnalysisEdge, deleteSystemAnalysisNode, deleteTeamMembership, deleteUserNotification, getAdjacentOncallShifts, getAgentSession, getAlert, getAlertMetrics, getDebriefQuestion, getDocumentSession, getEvent, getIncident, getIncidentDebrief, getIncidentField, getIncidentMetadata, getIncidentRole, getIncidentSeverity, getIncidentTag, getIncidentType, getIncidentUserDebrief, getInstallableIntegrations, getIntegrationInstallation, getKnowledgeGraphEntity, getKnowledgeGraphRelationship, getKnowledgeGraphView, getMeetingSchedule, getMeetingSession, getOncallRoster, getOncallRosterMetrics, getOncallShift, getOncallShiftBurdenMetricWeights, getOncallShiftHandover, getOncallShiftHandoverTemplate, getOncallShiftMetrics, getOrganization, getPlaybook, getRetrospective, getRetrospectiveComment, getSystemAnalysis, getSystemAnalysisEdge, getSystemAnalysisNode, getTask, getTeam, getUser, getUserOncallInformation, getUserSession, getUserSessionPreferences, installIntegration, installIntegrationFromTargets, listAgentSessions, listAgentTurns, listAiAgents, listAlertIncidentLinks, listAlerts, listDebriefMessages, listDebriefQuestions, listDebriefSuggestions, listEventAnnotations, listEvents, listIncidentFields, listIncidentMilestones, listIncidentRoles, listIncidents, listIncidentSeverities, listIncidentTags, listIncidentTimelineEventMetadata, listIncidentTimelineEvents, listIncidentTypes, listIntegrationEventSyncRuns, listIntegrationInstallations, listIntegrationInstallTargets, listKnowledgeGraphEntities, listKnowledgeGraphRelationships, listMeetingSchedules, listMeetingSessions, listOncallRosters, listOncallShifts, listPlaybooks, listRetrospectiveComments, listRetrospectiveReviews, listRetrospectives, listSystemAnalysisEdges, listSystemAnalysisNodes, listTasks, listTeamMemberships, listTeams, listUserNotifications, listUsers, listWatchedOncallRosters, type Options, removeWatchedOncallRoster, requestAgentTurn, requestDocumentSessionAuth, requestIntegrationEventSync, retryAgentTurn, sendOncallShiftHandover, startIntegrationOauthFlow, updateDebriefQuestion, updateEventAnnotation, updateIncident, updateIncidentDebrief, updateIncidentField, updateIncidentMilestone, updateIncidentRole, updateIncidentSeverity, updateIncidentTag, updateIncidentTimelineEvent, updateIncidentType, updateIntegrationInstallation, updateMeetingSchedule, updateMeetingSession, updateOncallHandoverTemplate, updateOncallShiftHandover, updateOrganizationPreferences, updatePlaybook, updateRetrospective, updateRetrospectiveComment, updateRetrospectiveReview, updateSystemAnalysisEdge, updateSystemAnalysisNode, updateTask, updateTeamMembership, updateTeams, updateUserSessionPreferences } from '../sdk.gen';
-import type { AbortAgentTurnData, AbortAgentTurnError, AbortAgentTurnResponse, AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageError, AddIncidentDebriefUserMessageResponse, AddSystemAnalysisEdgeData, AddSystemAnalysisEdgeError, AddSystemAnalysisEdgeResponse, AddSystemAnalysisNodeData, AddSystemAnalysisNodeError, AddSystemAnalysisNodeResponse, AddWatchedOncallRosterData, AddWatchedOncallRosterError, AddWatchedOncallRosterResponse, ArchiveDebriefQuestionData, ArchiveDebriefQuestionError, ArchiveDebriefQuestionResponse, ArchiveIncidentData, ArchiveIncidentError, ArchiveIncidentFieldData, ArchiveIncidentFieldError, ArchiveIncidentFieldResponse, ArchiveIncidentResponse, ArchiveIncidentRoleData, ArchiveIncidentRoleError, ArchiveIncidentRoleResponse, ArchiveIncidentSeverityData, ArchiveIncidentSeverityError, ArchiveIncidentSeverityResponse, ArchiveIncidentTagData, ArchiveIncidentTagError, ArchiveIncidentTagResponse, ArchiveIncidentTypeData, ArchiveIncidentTypeError, ArchiveIncidentTypeResponse, ArchiveMeetingScheduleData, ArchiveMeetingScheduleError, ArchiveMeetingScheduleResponse, ArchiveMeetingSessionData, ArchiveMeetingSessionError, ArchiveMeetingSessionResponse, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateError, ArchiveOncallHandoverTemplateResponse, ArchivePlaybookData, ArchivePlaybookError, ArchivePlaybookResponse, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewError, ArchiveRetrospectiveReviewResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, ArchiveTeamData, ArchiveTeamError, ArchiveTeamResponse, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowError, CompleteIntegrationOauthFlowResponse, CreateAgentSessionData, CreateAgentSessionError, CreateAgentSessionResponse, CreateDebriefQuestionData, CreateDebriefQuestionError, CreateDebriefQuestionResponse, CreateEventAnnotationData, CreateEventAnnotationError, CreateEventAnnotationResponse, CreateIncidentData, CreateIncidentError, CreateIncidentFieldData, CreateIncidentFieldError, CreateIncidentFieldResponse, CreateIncidentMilestoneData, CreateIncidentMilestoneError, CreateIncidentMilestoneResponse, CreateIncidentResponse, CreateIncidentRoleData, CreateIncidentRoleError, CreateIncidentRoleResponse, CreateIncidentSeverityData, CreateIncidentSeverityError, CreateIncidentSeverityResponse, CreateIncidentTagData, CreateIncidentTagError, CreateIncidentTagResponse, CreateIncidentTimelineEventData, CreateIncidentTimelineEventError, CreateIncidentTimelineEventResponse, CreateIncidentTypeData, CreateIncidentTypeError, CreateIncidentTypeResponse, CreateMeetingScheduleData, CreateMeetingScheduleError, CreateMeetingScheduleResponse, CreateMeetingSessionData, CreateMeetingSessionError, CreateMeetingSessionResponse, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateError, CreateOncallHandoverTemplateResponse, CreatePlaybookData, CreatePlaybookError, CreatePlaybookResponse, CreateRetrospectiveCommentData, CreateRetrospectiveCommentError, CreateRetrospectiveCommentResponse, CreateRetrospectiveReviewData, CreateRetrospectiveReviewError, CreateRetrospectiveReviewResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateTeamData, CreateTeamError, CreateTeamMembershipData, CreateTeamMembershipError, CreateTeamMembershipResponse, CreateTeamResponse, DeleteEventAnnotationData, DeleteEventAnnotationError, DeleteEventAnnotationResponse, DeleteIncidentMilestoneData, DeleteIncidentMilestoneError, DeleteIncidentMilestoneResponse, DeleteIncidentTimelineEventData, DeleteIncidentTimelineEventError, DeleteIncidentTimelineEventResponse, DeleteIntegrationInstallationData, DeleteIntegrationInstallationError, DeleteIntegrationInstallationResponse, DeleteSystemAnalysisEdgeData, DeleteSystemAnalysisEdgeError, DeleteSystemAnalysisEdgeResponse, DeleteSystemAnalysisNodeData, DeleteSystemAnalysisNodeError, DeleteSystemAnalysisNodeResponse, DeleteTeamMembershipData, DeleteTeamMembershipError, DeleteTeamMembershipResponse, DeleteUserNotificationData, DeleteUserNotificationError, DeleteUserNotificationResponse, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsError, GetAdjacentOncallShiftsResponse, GetAgentSessionData, GetAgentSessionError, GetAgentSessionResponse, GetAlertData, GetAlertError, GetAlertMetricsData, GetAlertMetricsError, GetAlertMetricsResponse, GetAlertResponse, GetDebriefQuestionData, GetDebriefQuestionError, GetDebriefQuestionResponse, GetDocumentSessionData, GetDocumentSessionError, GetDocumentSessionResponse, GetEventData, GetEventError, GetEventResponse, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefError, GetIncidentDebriefResponse, GetIncidentError, GetIncidentFieldData, GetIncidentFieldError, GetIncidentFieldResponse, GetIncidentMetadataData, GetIncidentMetadataError, GetIncidentMetadataResponse, GetIncidentResponse, GetIncidentRoleData, GetIncidentRoleError, GetIncidentRoleResponse, GetIncidentSeverityData, GetIncidentSeverityError, GetIncidentSeverityResponse, GetIncidentTagData, GetIncidentTagError, GetIncidentTagResponse, GetIncidentTypeData, GetIncidentTypeError, GetIncidentTypeResponse, GetIncidentUserDebriefData, GetIncidentUserDebriefError, GetIncidentUserDebriefResponse, GetInstallableIntegrationsData, GetInstallableIntegrationsError, GetInstallableIntegrationsResponse, GetIntegrationInstallationData, GetIntegrationInstallationError, GetIntegrationInstallationResponse, GetKnowledgeGraphEntityData, GetKnowledgeGraphEntityError, GetKnowledgeGraphEntityResponse, GetKnowledgeGraphRelationshipData, GetKnowledgeGraphRelationshipError, GetKnowledgeGraphRelationshipResponse, GetKnowledgeGraphViewData, GetKnowledgeGraphViewError, GetKnowledgeGraphViewResponse, GetMeetingScheduleData, GetMeetingScheduleError, GetMeetingScheduleResponse, GetMeetingSessionData, GetMeetingSessionError, GetMeetingSessionResponse, GetOncallRosterData, GetOncallRosterError, GetOncallRosterMetricsData, GetOncallRosterMetricsError, GetOncallRosterMetricsResponse, GetOncallRosterResponse, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsError, GetOncallShiftBurdenMetricWeightsResponse, GetOncallShiftData, GetOncallShiftError, GetOncallShiftHandoverData, GetOncallShiftHandoverError, GetOncallShiftHandoverResponse, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateError, GetOncallShiftHandoverTemplateResponse, GetOncallShiftMetricsData, GetOncallShiftMetricsError, GetOncallShiftMetricsResponse, GetOncallShiftResponse, GetOrganizationData, GetOrganizationError, GetOrganizationResponse, GetPlaybookData, GetPlaybookError, GetPlaybookResponse, GetRetrospectiveCommentData, GetRetrospectiveCommentError, GetRetrospectiveCommentResponse, GetRetrospectiveData, GetRetrospectiveError, GetRetrospectiveResponse, GetSystemAnalysisData, GetSystemAnalysisEdgeData, GetSystemAnalysisEdgeError, GetSystemAnalysisEdgeResponse, GetSystemAnalysisError, GetSystemAnalysisNodeData, GetSystemAnalysisNodeError, GetSystemAnalysisNodeResponse, GetSystemAnalysisResponse, GetTaskData, GetTaskError, GetTaskResponse, GetTeamData, GetTeamError, GetTeamResponse, GetUserData, GetUserError, GetUserOncallInformationData, GetUserOncallInformationError, GetUserOncallInformationResponse, GetUserResponse, GetUserSessionData, GetUserSessionError, GetUserSessionPreferencesData, GetUserSessionPreferencesError, GetUserSessionPreferencesResponse, GetUserSessionResponse, InstallIntegrationData, InstallIntegrationError, InstallIntegrationFromTargetsData, InstallIntegrationFromTargetsError, InstallIntegrationFromTargetsResponse, InstallIntegrationResponse, ListAgentSessionsData, ListAgentSessionsError, ListAgentSessionsResponse, ListAgentTurnsData, ListAgentTurnsError, ListAgentTurnsResponse, ListAiAgentsData, ListAiAgentsError, ListAiAgentsResponse, ListAlertIncidentLinksData, ListAlertIncidentLinksError, ListAlertIncidentLinksResponse, ListAlertsData, ListAlertsError, ListAlertsResponse, ListDebriefMessagesData, ListDebriefMessagesError, ListDebriefMessagesResponse, ListDebriefQuestionsData, ListDebriefQuestionsError, ListDebriefQuestionsResponse, ListDebriefSuggestionsData, ListDebriefSuggestionsError, ListDebriefSuggestionsResponse, ListEventAnnotationsData, ListEventAnnotationsError, ListEventAnnotationsResponse, ListEventsData, ListEventsError, ListEventsResponse, ListIncidentFieldsData, ListIncidentFieldsError, ListIncidentFieldsResponse, ListIncidentMilestonesData, ListIncidentMilestonesError, ListIncidentMilestonesResponse, ListIncidentRolesData, ListIncidentRolesError, ListIncidentRolesResponse, ListIncidentsData, ListIncidentsError, ListIncidentSeveritiesData, ListIncidentSeveritiesError, ListIncidentSeveritiesResponse, ListIncidentsResponse, ListIncidentTagsData, ListIncidentTagsError, ListIncidentTagsResponse, ListIncidentTimelineEventMetadataData, ListIncidentTimelineEventMetadataError, ListIncidentTimelineEventMetadataResponse, ListIncidentTimelineEventsData, ListIncidentTimelineEventsError, ListIncidentTimelineEventsResponse, ListIncidentTypesData, ListIncidentTypesError, ListIncidentTypesResponse, ListIntegrationEventSyncRunsData, ListIntegrationEventSyncRunsError, ListIntegrationEventSyncRunsResponse, ListIntegrationInstallationsData, ListIntegrationInstallationsError, ListIntegrationInstallationsResponse, ListIntegrationInstallTargetsData, ListIntegrationInstallTargetsError, ListIntegrationInstallTargetsResponse, ListKnowledgeGraphEntitiesData, ListKnowledgeGraphEntitiesError, ListKnowledgeGraphEntitiesResponse, ListKnowledgeGraphRelationshipsData, ListKnowledgeGraphRelationshipsError, ListKnowledgeGraphRelationshipsResponse, ListMeetingSchedulesData, ListMeetingSchedulesError, ListMeetingSchedulesResponse, ListMeetingSessionsData, ListMeetingSessionsError, ListMeetingSessionsResponse, ListOncallRostersData, ListOncallRostersError, ListOncallRostersResponse, ListOncallShiftsData, ListOncallShiftsError, ListOncallShiftsResponse, ListPlaybooksData, ListPlaybooksError, ListPlaybooksResponse, ListRetrospectiveCommentsData, ListRetrospectiveCommentsError, ListRetrospectiveCommentsResponse, ListRetrospectiveReviewsData, ListRetrospectiveReviewsError, ListRetrospectiveReviewsResponse, ListRetrospectivesData, ListRetrospectivesError, ListRetrospectivesResponse, ListSystemAnalysisEdgesData, ListSystemAnalysisEdgesError, ListSystemAnalysisEdgesResponse, ListSystemAnalysisNodesData, ListSystemAnalysisNodesError, ListSystemAnalysisNodesResponse, ListTasksData, ListTasksError, ListTasksResponse, ListTeamMembershipsData, ListTeamMembershipsError, ListTeamMembershipsResponse, ListTeamsData, ListTeamsError, ListTeamsResponse, ListUserNotificationsData, ListUserNotificationsError, ListUserNotificationsResponse, ListUsersData, ListUsersError, ListUsersResponse, ListWatchedOncallRostersData, ListWatchedOncallRostersError, ListWatchedOncallRostersResponse, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterError, RemoveWatchedOncallRosterResponse, RequestAgentTurnData, RequestAgentTurnError, RequestAgentTurnResponse, RequestDocumentSessionAuthData, RequestDocumentSessionAuthError, RequestDocumentSessionAuthResponse, RequestIntegrationEventSyncData, RequestIntegrationEventSyncError, RequestIntegrationEventSyncResponse, RetryAgentTurnData, RetryAgentTurnError, RetryAgentTurnResponse, SendOncallShiftHandoverData, SendOncallShiftHandoverError, SendOncallShiftHandoverResponse, StartIntegrationOauthFlowData, StartIntegrationOauthFlowError, StartIntegrationOauthFlowResponse, UpdateDebriefQuestionData, UpdateDebriefQuestionError, UpdateDebriefQuestionResponse, UpdateEventAnnotationData, UpdateEventAnnotationError, UpdateEventAnnotationResponse, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefError, UpdateIncidentDebriefResponse, UpdateIncidentError, UpdateIncidentFieldData, UpdateIncidentFieldError, UpdateIncidentFieldResponse, UpdateIncidentMilestoneData, UpdateIncidentMilestoneError, UpdateIncidentMilestoneResponse, UpdateIncidentResponse, UpdateIncidentRoleData, UpdateIncidentRoleError, UpdateIncidentRoleResponse, UpdateIncidentSeverityData, UpdateIncidentSeverityError, UpdateIncidentSeverityResponse, UpdateIncidentTagData, UpdateIncidentTagError, UpdateIncidentTagResponse, UpdateIncidentTimelineEventData, UpdateIncidentTimelineEventError, UpdateIncidentTimelineEventResponse, UpdateIncidentTypeData, UpdateIncidentTypeError, UpdateIncidentTypeResponse, UpdateIntegrationInstallationData, UpdateIntegrationInstallationError, UpdateIntegrationInstallationResponse, UpdateMeetingScheduleData, UpdateMeetingScheduleError, UpdateMeetingScheduleResponse, UpdateMeetingSessionData, UpdateMeetingSessionError, UpdateMeetingSessionResponse, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateError, UpdateOncallHandoverTemplateResponse, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverError, UpdateOncallShiftHandoverResponse, UpdateOrganizationPreferencesData, UpdateOrganizationPreferencesError, UpdateOrganizationPreferencesResponse, UpdatePlaybookData, UpdatePlaybookError, UpdatePlaybookResponse, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentError, UpdateRetrospectiveCommentResponse, UpdateRetrospectiveData, UpdateRetrospectiveError, UpdateRetrospectiveResponse, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewError, UpdateRetrospectiveReviewResponse, UpdateSystemAnalysisEdgeData, UpdateSystemAnalysisEdgeError, UpdateSystemAnalysisEdgeResponse, UpdateSystemAnalysisNodeData, UpdateSystemAnalysisNodeError, UpdateSystemAnalysisNodeResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateTeamMembershipData, UpdateTeamMembershipError, UpdateTeamMembershipResponse, UpdateTeamsData, UpdateTeamsError, UpdateTeamsResponse, UpdateUserSessionPreferencesData, UpdateUserSessionPreferencesError, UpdateUserSessionPreferencesResponse } from '../types.gen';
+import { abortAgentTurn, addIncidentDebriefUserMessage, addSystemAnalysisEntrySubject, addWatchedOncallRoster, archiveDebriefQuestion, archiveIncident, archiveIncidentField, archiveIncidentRole, archiveIncidentSeverity, archiveIncidentTag, archiveIncidentType, archiveMeetingSchedule, archiveMeetingSession, archiveOncallHandoverTemplate, archivePlaybook, archiveRetrospectiveReview, archiveTask, archiveTeam, completeIntegrationOauthFlow, createAgentSession, createDebriefQuestion, createEventAnnotation, createIncident, createIncidentField, createIncidentMilestone, createIncidentRole, createIncidentSeverity, createIncidentTag, createIncidentType, createMeetingSchedule, createMeetingSession, createOncallHandoverTemplate, createPlaybook, createRetrospectiveComment, createRetrospectiveReview, createSystemAnalysisEntry, createTask, createTeam, createTeamMembership, deleteEventAnnotation, deleteIncidentMilestone, deleteIntegrationInstallation, deleteSystemAnalysisEntry, deleteSystemAnalysisEntrySubject, deleteTeamMembership, deleteUserNotification, getAdjacentOncallShifts, getAgentSession, getAlert, getAlertMetrics, getDebriefQuestion, getDocumentSession, getEvent, getIncident, getIncidentDebrief, getIncidentField, getIncidentMetadata, getIncidentRole, getIncidentSeverity, getIncidentTag, getIncidentType, getIncidentUserDebrief, getInstallableIntegrations, getIntegrationInstallation, getKnowledgeGraphEntity, getKnowledgeGraphRelationship, getKnowledgeGraphView, getMeetingSchedule, getMeetingSession, getOncallRoster, getOncallRosterMetrics, getOncallShift, getOncallShiftBurdenMetricWeights, getOncallShiftHandover, getOncallShiftHandoverTemplate, getOncallShiftMetrics, getOrganization, getPlaybook, getRetrospective, getRetrospectiveComment, getSystemAnalysis, getSystemAnalysisGraph, getTask, getTeam, getUser, getUserOncallInformation, getUserSession, getUserSessionPreferences, installIntegration, installIntegrationFromTargets, listAgentSessions, listAgentTurns, listAiAgents, listAlertIncidentLinks, listAlerts, listDebriefMessages, listDebriefQuestions, listDebriefSuggestions, listEventAnnotations, listEvents, listIncidentFields, listIncidentMilestones, listIncidentRoles, listIncidents, listIncidentSeverities, listIncidentTags, listIncidentTypes, listIntegrationEventSyncRuns, listIntegrationInstallations, listIntegrationInstallTargets, listKnowledgeGraphEntities, listKnowledgeGraphRelationships, listMeetingSchedules, listMeetingSessions, listOncallRosters, listOncallShifts, listPlaybooks, listRetrospectiveComments, listRetrospectiveReviews, listRetrospectives, listSystemAnalysisEntries, listTasks, listTeamMemberships, listTeams, listUserNotifications, listUsers, listWatchedOncallRosters, type Options, removeWatchedOncallRoster, requestAgentTurn, requestDocumentSessionAuth, requestIntegrationEventSync, retryAgentTurn, sendOncallShiftHandover, startIntegrationOauthFlow, updateDebriefQuestion, updateEventAnnotation, updateIncident, updateIncidentDebrief, updateIncidentField, updateIncidentMilestone, updateIncidentRole, updateIncidentSeverity, updateIncidentTag, updateIncidentType, updateIntegrationInstallation, updateMeetingSchedule, updateMeetingSession, updateOncallHandoverTemplate, updateOncallShiftHandover, updateOrganizationPreferences, updatePlaybook, updateRetrospective, updateRetrospectiveComment, updateRetrospectiveReview, updateSystemAnalysis, updateSystemAnalysisEntry, updateSystemAnalysisEntrySubject, updateTask, updateTeamMembership, updateTeams, updateUserSessionPreferences } from '../sdk.gen';
+import type { AbortAgentTurnData, AbortAgentTurnError, AbortAgentTurnResponse, AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageError, AddIncidentDebriefUserMessageResponse, AddSystemAnalysisEntrySubjectData, AddSystemAnalysisEntrySubjectError, AddSystemAnalysisEntrySubjectResponse, AddWatchedOncallRosterData, AddWatchedOncallRosterError, AddWatchedOncallRosterResponse, ArchiveDebriefQuestionData, ArchiveDebriefQuestionError, ArchiveDebriefQuestionResponse, ArchiveIncidentData, ArchiveIncidentError, ArchiveIncidentFieldData, ArchiveIncidentFieldError, ArchiveIncidentFieldResponse, ArchiveIncidentResponse, ArchiveIncidentRoleData, ArchiveIncidentRoleError, ArchiveIncidentRoleResponse, ArchiveIncidentSeverityData, ArchiveIncidentSeverityError, ArchiveIncidentSeverityResponse, ArchiveIncidentTagData, ArchiveIncidentTagError, ArchiveIncidentTagResponse, ArchiveIncidentTypeData, ArchiveIncidentTypeError, ArchiveIncidentTypeResponse, ArchiveMeetingScheduleData, ArchiveMeetingScheduleError, ArchiveMeetingScheduleResponse, ArchiveMeetingSessionData, ArchiveMeetingSessionError, ArchiveMeetingSessionResponse, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateError, ArchiveOncallHandoverTemplateResponse, ArchivePlaybookData, ArchivePlaybookError, ArchivePlaybookResponse, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewError, ArchiveRetrospectiveReviewResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, ArchiveTeamData, ArchiveTeamError, ArchiveTeamResponse, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowError, CompleteIntegrationOauthFlowResponse, CreateAgentSessionData, CreateAgentSessionError, CreateAgentSessionResponse, CreateDebriefQuestionData, CreateDebriefQuestionError, CreateDebriefQuestionResponse, CreateEventAnnotationData, CreateEventAnnotationError, CreateEventAnnotationResponse, CreateIncidentData, CreateIncidentError, CreateIncidentFieldData, CreateIncidentFieldError, CreateIncidentFieldResponse, CreateIncidentMilestoneData, CreateIncidentMilestoneError, CreateIncidentMilestoneResponse, CreateIncidentResponse, CreateIncidentRoleData, CreateIncidentRoleError, CreateIncidentRoleResponse, CreateIncidentSeverityData, CreateIncidentSeverityError, CreateIncidentSeverityResponse, CreateIncidentTagData, CreateIncidentTagError, CreateIncidentTagResponse, CreateIncidentTypeData, CreateIncidentTypeError, CreateIncidentTypeResponse, CreateMeetingScheduleData, CreateMeetingScheduleError, CreateMeetingScheduleResponse, CreateMeetingSessionData, CreateMeetingSessionError, CreateMeetingSessionResponse, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateError, CreateOncallHandoverTemplateResponse, CreatePlaybookData, CreatePlaybookError, CreatePlaybookResponse, CreateRetrospectiveCommentData, CreateRetrospectiveCommentError, CreateRetrospectiveCommentResponse, CreateRetrospectiveReviewData, CreateRetrospectiveReviewError, CreateRetrospectiveReviewResponse, CreateSystemAnalysisEntryData, CreateSystemAnalysisEntryError, CreateSystemAnalysisEntryResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateTeamData, CreateTeamError, CreateTeamMembershipData, CreateTeamMembershipError, CreateTeamMembershipResponse, CreateTeamResponse, DeleteEventAnnotationData, DeleteEventAnnotationError, DeleteEventAnnotationResponse, DeleteIncidentMilestoneData, DeleteIncidentMilestoneError, DeleteIncidentMilestoneResponse, DeleteIntegrationInstallationData, DeleteIntegrationInstallationError, DeleteIntegrationInstallationResponse, DeleteSystemAnalysisEntryData, DeleteSystemAnalysisEntryError, DeleteSystemAnalysisEntryResponse, DeleteSystemAnalysisEntrySubjectData, DeleteSystemAnalysisEntrySubjectError, DeleteSystemAnalysisEntrySubjectResponse, DeleteTeamMembershipData, DeleteTeamMembershipError, DeleteTeamMembershipResponse, DeleteUserNotificationData, DeleteUserNotificationError, DeleteUserNotificationResponse, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsError, GetAdjacentOncallShiftsResponse, GetAgentSessionData, GetAgentSessionError, GetAgentSessionResponse, GetAlertData, GetAlertError, GetAlertMetricsData, GetAlertMetricsError, GetAlertMetricsResponse, GetAlertResponse, GetDebriefQuestionData, GetDebriefQuestionError, GetDebriefQuestionResponse, GetDocumentSessionData, GetDocumentSessionError, GetDocumentSessionResponse, GetEventData, GetEventError, GetEventResponse, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefError, GetIncidentDebriefResponse, GetIncidentError, GetIncidentFieldData, GetIncidentFieldError, GetIncidentFieldResponse, GetIncidentMetadataData, GetIncidentMetadataError, GetIncidentMetadataResponse, GetIncidentResponse, GetIncidentRoleData, GetIncidentRoleError, GetIncidentRoleResponse, GetIncidentSeverityData, GetIncidentSeverityError, GetIncidentSeverityResponse, GetIncidentTagData, GetIncidentTagError, GetIncidentTagResponse, GetIncidentTypeData, GetIncidentTypeError, GetIncidentTypeResponse, GetIncidentUserDebriefData, GetIncidentUserDebriefError, GetIncidentUserDebriefResponse, GetInstallableIntegrationsData, GetInstallableIntegrationsError, GetInstallableIntegrationsResponse, GetIntegrationInstallationData, GetIntegrationInstallationError, GetIntegrationInstallationResponse, GetKnowledgeGraphEntityData, GetKnowledgeGraphEntityError, GetKnowledgeGraphEntityResponse, GetKnowledgeGraphRelationshipData, GetKnowledgeGraphRelationshipError, GetKnowledgeGraphRelationshipResponse, GetKnowledgeGraphViewData, GetKnowledgeGraphViewError, GetKnowledgeGraphViewResponse, GetMeetingScheduleData, GetMeetingScheduleError, GetMeetingScheduleResponse, GetMeetingSessionData, GetMeetingSessionError, GetMeetingSessionResponse, GetOncallRosterData, GetOncallRosterError, GetOncallRosterMetricsData, GetOncallRosterMetricsError, GetOncallRosterMetricsResponse, GetOncallRosterResponse, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsError, GetOncallShiftBurdenMetricWeightsResponse, GetOncallShiftData, GetOncallShiftError, GetOncallShiftHandoverData, GetOncallShiftHandoverError, GetOncallShiftHandoverResponse, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateError, GetOncallShiftHandoverTemplateResponse, GetOncallShiftMetricsData, GetOncallShiftMetricsError, GetOncallShiftMetricsResponse, GetOncallShiftResponse, GetOrganizationData, GetOrganizationError, GetOrganizationResponse, GetPlaybookData, GetPlaybookError, GetPlaybookResponse, GetRetrospectiveCommentData, GetRetrospectiveCommentError, GetRetrospectiveCommentResponse, GetRetrospectiveData, GetRetrospectiveError, GetRetrospectiveResponse, GetSystemAnalysisData, GetSystemAnalysisError, GetSystemAnalysisGraphData, GetSystemAnalysisGraphError, GetSystemAnalysisGraphResponse, GetSystemAnalysisResponse, GetTaskData, GetTaskError, GetTaskResponse, GetTeamData, GetTeamError, GetTeamResponse, GetUserData, GetUserError, GetUserOncallInformationData, GetUserOncallInformationError, GetUserOncallInformationResponse, GetUserResponse, GetUserSessionData, GetUserSessionError, GetUserSessionPreferencesData, GetUserSessionPreferencesError, GetUserSessionPreferencesResponse, GetUserSessionResponse, InstallIntegrationData, InstallIntegrationError, InstallIntegrationFromTargetsData, InstallIntegrationFromTargetsError, InstallIntegrationFromTargetsResponse, InstallIntegrationResponse, ListAgentSessionsData, ListAgentSessionsError, ListAgentSessionsResponse, ListAgentTurnsData, ListAgentTurnsError, ListAgentTurnsResponse, ListAiAgentsData, ListAiAgentsError, ListAiAgentsResponse, ListAlertIncidentLinksData, ListAlertIncidentLinksError, ListAlertIncidentLinksResponse, ListAlertsData, ListAlertsError, ListAlertsResponse, ListDebriefMessagesData, ListDebriefMessagesError, ListDebriefMessagesResponse, ListDebriefQuestionsData, ListDebriefQuestionsError, ListDebriefQuestionsResponse, ListDebriefSuggestionsData, ListDebriefSuggestionsError, ListDebriefSuggestionsResponse, ListEventAnnotationsData, ListEventAnnotationsError, ListEventAnnotationsResponse, ListEventsData, ListEventsError, ListEventsResponse, ListIncidentFieldsData, ListIncidentFieldsError, ListIncidentFieldsResponse, ListIncidentMilestonesData, ListIncidentMilestonesError, ListIncidentMilestonesResponse, ListIncidentRolesData, ListIncidentRolesError, ListIncidentRolesResponse, ListIncidentsData, ListIncidentsError, ListIncidentSeveritiesData, ListIncidentSeveritiesError, ListIncidentSeveritiesResponse, ListIncidentsResponse, ListIncidentTagsData, ListIncidentTagsError, ListIncidentTagsResponse, ListIncidentTypesData, ListIncidentTypesError, ListIncidentTypesResponse, ListIntegrationEventSyncRunsData, ListIntegrationEventSyncRunsError, ListIntegrationEventSyncRunsResponse, ListIntegrationInstallationsData, ListIntegrationInstallationsError, ListIntegrationInstallationsResponse, ListIntegrationInstallTargetsData, ListIntegrationInstallTargetsError, ListIntegrationInstallTargetsResponse, ListKnowledgeGraphEntitiesData, ListKnowledgeGraphEntitiesError, ListKnowledgeGraphEntitiesResponse, ListKnowledgeGraphRelationshipsData, ListKnowledgeGraphRelationshipsError, ListKnowledgeGraphRelationshipsResponse, ListMeetingSchedulesData, ListMeetingSchedulesError, ListMeetingSchedulesResponse, ListMeetingSessionsData, ListMeetingSessionsError, ListMeetingSessionsResponse, ListOncallRostersData, ListOncallRostersError, ListOncallRostersResponse, ListOncallShiftsData, ListOncallShiftsError, ListOncallShiftsResponse, ListPlaybooksData, ListPlaybooksError, ListPlaybooksResponse, ListRetrospectiveCommentsData, ListRetrospectiveCommentsError, ListRetrospectiveCommentsResponse, ListRetrospectiveReviewsData, ListRetrospectiveReviewsError, ListRetrospectiveReviewsResponse, ListRetrospectivesData, ListRetrospectivesError, ListRetrospectivesResponse, ListSystemAnalysisEntriesData, ListSystemAnalysisEntriesError, ListSystemAnalysisEntriesResponse, ListTasksData, ListTasksError, ListTasksResponse, ListTeamMembershipsData, ListTeamMembershipsError, ListTeamMembershipsResponse, ListTeamsData, ListTeamsError, ListTeamsResponse, ListUserNotificationsData, ListUserNotificationsError, ListUserNotificationsResponse, ListUsersData, ListUsersError, ListUsersResponse, ListWatchedOncallRostersData, ListWatchedOncallRostersError, ListWatchedOncallRostersResponse, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterError, RemoveWatchedOncallRosterResponse, RequestAgentTurnData, RequestAgentTurnError, RequestAgentTurnResponse, RequestDocumentSessionAuthData, RequestDocumentSessionAuthError, RequestDocumentSessionAuthResponse, RequestIntegrationEventSyncData, RequestIntegrationEventSyncError, RequestIntegrationEventSyncResponse, RetryAgentTurnData, RetryAgentTurnError, RetryAgentTurnResponse, SendOncallShiftHandoverData, SendOncallShiftHandoverError, SendOncallShiftHandoverResponse, StartIntegrationOauthFlowData, StartIntegrationOauthFlowError, StartIntegrationOauthFlowResponse, UpdateDebriefQuestionData, UpdateDebriefQuestionError, UpdateDebriefQuestionResponse, UpdateEventAnnotationData, UpdateEventAnnotationError, UpdateEventAnnotationResponse, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefError, UpdateIncidentDebriefResponse, UpdateIncidentError, UpdateIncidentFieldData, UpdateIncidentFieldError, UpdateIncidentFieldResponse, UpdateIncidentMilestoneData, UpdateIncidentMilestoneError, UpdateIncidentMilestoneResponse, UpdateIncidentResponse, UpdateIncidentRoleData, UpdateIncidentRoleError, UpdateIncidentRoleResponse, UpdateIncidentSeverityData, UpdateIncidentSeverityError, UpdateIncidentSeverityResponse, UpdateIncidentTagData, UpdateIncidentTagError, UpdateIncidentTagResponse, UpdateIncidentTypeData, UpdateIncidentTypeError, UpdateIncidentTypeResponse, UpdateIntegrationInstallationData, UpdateIntegrationInstallationError, UpdateIntegrationInstallationResponse, UpdateMeetingScheduleData, UpdateMeetingScheduleError, UpdateMeetingScheduleResponse, UpdateMeetingSessionData, UpdateMeetingSessionError, UpdateMeetingSessionResponse, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateError, UpdateOncallHandoverTemplateResponse, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverError, UpdateOncallShiftHandoverResponse, UpdateOrganizationPreferencesData, UpdateOrganizationPreferencesError, UpdateOrganizationPreferencesResponse, UpdatePlaybookData, UpdatePlaybookError, UpdatePlaybookResponse, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentError, UpdateRetrospectiveCommentResponse, UpdateRetrospectiveData, UpdateRetrospectiveError, UpdateRetrospectiveResponse, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewError, UpdateRetrospectiveReviewResponse, UpdateSystemAnalysisData, UpdateSystemAnalysisEntryData, UpdateSystemAnalysisEntryError, UpdateSystemAnalysisEntryResponse, UpdateSystemAnalysisEntrySubjectData, UpdateSystemAnalysisEntrySubjectError, UpdateSystemAnalysisEntrySubjectResponse, UpdateSystemAnalysisError, UpdateSystemAnalysisResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateTeamMembershipData, UpdateTeamMembershipError, UpdateTeamMembershipResponse, UpdateTeamsData, UpdateTeamsError, UpdateTeamsResponse, UpdateUserSessionPreferencesData, UpdateUserSessionPreferencesError, UpdateUserSessionPreferencesResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -91,27 +91,30 @@ export const listAgentSessionsInfiniteQueryKey = (options?: Options<ListAgentSes
 /**
  * List Agent Sessions
  */
-export const listAgentSessionsInfiniteOptions = (options?: Options<ListAgentSessionsData>) => infiniteQueryOptions<ListAgentSessionsResponse, ListAgentSessionsError, InfiniteData<ListAgentSessionsResponse>, QueryKey<Options<ListAgentSessionsData>>, number | Pick<QueryKey<Options<ListAgentSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListAgentSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listAgentSessions({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listAgentSessionsInfiniteQueryKey(options)
-});
+export const listAgentSessionsInfiniteOptions = (options?: Options<ListAgentSessionsData>) => {
+    const opts = infiniteQueryOptions<ListAgentSessionsResponse, ListAgentSessionsError, InfiniteData<ListAgentSessionsResponse>, QueryKey<Options<ListAgentSessionsData>>, number | Pick<QueryKey<Options<ListAgentSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListAgentSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listAgentSessions({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listAgentSessionsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create Agent Session
@@ -171,27 +174,30 @@ export const listAgentTurnsInfiniteQueryKey = (options: Options<ListAgentTurnsDa
 /**
  * List Agent Turns
  */
-export const listAgentTurnsInfiniteOptions = (options: Options<ListAgentTurnsData>) => infiniteQueryOptions<ListAgentTurnsResponse, ListAgentTurnsError, InfiniteData<ListAgentTurnsResponse>, QueryKey<Options<ListAgentTurnsData>>, number | Pick<QueryKey<Options<ListAgentTurnsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListAgentTurnsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listAgentTurns({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listAgentTurnsInfiniteQueryKey(options)
-});
+export const listAgentTurnsInfiniteOptions = (options: Options<ListAgentTurnsData>) => {
+    const opts = infiniteQueryOptions<ListAgentTurnsResponse, ListAgentTurnsError, InfiniteData<ListAgentTurnsResponse>, QueryKey<Options<ListAgentTurnsData>>, number | Pick<QueryKey<Options<ListAgentTurnsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListAgentTurnsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listAgentTurns({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listAgentTurnsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Request Agent Turn
@@ -285,27 +291,30 @@ export const listAlertsInfiniteQueryKey = (options?: Options<ListAlertsData>): Q
 /**
  * List Alerts
  */
-export const listAlertsInfiniteOptions = (options?: Options<ListAlertsData>) => infiniteQueryOptions<ListAlertsResponse, ListAlertsError, InfiniteData<ListAlertsResponse>, QueryKey<Options<ListAlertsData>>, number | Pick<QueryKey<Options<ListAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listAlerts({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listAlertsInfiniteQueryKey(options)
-});
+export const listAlertsInfiniteOptions = (options?: Options<ListAlertsData>) => {
+    const opts = infiniteQueryOptions<ListAlertsResponse, ListAlertsError, InfiniteData<ListAlertsResponse>, QueryKey<Options<ListAlertsData>>, number | Pick<QueryKey<Options<ListAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listAlerts({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listAlertsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const getAlertQueryKey = (options: Options<GetAlertData>) => createQueryKey('getAlert', options);
 
@@ -348,27 +357,30 @@ export const listAlertIncidentLinksInfiniteQueryKey = (options: Options<ListAler
 /**
  * List Incident Links for an Alert
  */
-export const listAlertIncidentLinksInfiniteOptions = (options: Options<ListAlertIncidentLinksData>) => infiniteQueryOptions<ListAlertIncidentLinksResponse, ListAlertIncidentLinksError, InfiniteData<ListAlertIncidentLinksResponse>, QueryKey<Options<ListAlertIncidentLinksData>>, number | Pick<QueryKey<Options<ListAlertIncidentLinksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListAlertIncidentLinksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listAlertIncidentLinks({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listAlertIncidentLinksInfiniteQueryKey(options)
-});
+export const listAlertIncidentLinksInfiniteOptions = (options: Options<ListAlertIncidentLinksData>) => {
+    const opts = infiniteQueryOptions<ListAlertIncidentLinksResponse, ListAlertIncidentLinksError, InfiniteData<ListAlertIncidentLinksResponse>, QueryKey<Options<ListAlertIncidentLinksData>>, number | Pick<QueryKey<Options<ListAlertIncidentLinksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListAlertIncidentLinksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listAlertIncidentLinks({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listAlertIncidentLinksInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const getAlertMetricsQueryKey = (options: Options<GetAlertMetricsData>) => createQueryKey('getAlertMetrics', options);
 
@@ -411,27 +423,30 @@ export const listUserNotificationsInfiniteQueryKey = (options?: Options<ListUser
 /**
  * List Notifications for the Current User
  */
-export const listUserNotificationsInfiniteOptions = (options?: Options<ListUserNotificationsData>) => infiniteQueryOptions<ListUserNotificationsResponse, ListUserNotificationsError, InfiniteData<ListUserNotificationsResponse>, QueryKey<Options<ListUserNotificationsData>>, number | Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listUserNotifications({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listUserNotificationsInfiniteQueryKey(options)
-});
+export const listUserNotificationsInfiniteOptions = (options?: Options<ListUserNotificationsData>) => {
+    const opts = infiniteQueryOptions<ListUserNotificationsResponse, ListUserNotificationsError, InfiniteData<ListUserNotificationsResponse>, QueryKey<Options<ListUserNotificationsData>>, number | Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listUserNotifications({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listUserNotificationsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const listDebriefQuestionsQueryKey = (options?: Options<ListDebriefQuestionsData>) => createQueryKey('listDebriefQuestions', options);
 
@@ -456,27 +471,30 @@ export const listDebriefQuestionsInfiniteQueryKey = (options?: Options<ListDebri
 /**
  * List Incident Debrief Questions
  */
-export const listDebriefQuestionsInfiniteOptions = (options?: Options<ListDebriefQuestionsData>) => infiniteQueryOptions<ListDebriefQuestionsResponse, ListDebriefQuestionsError, InfiniteData<ListDebriefQuestionsResponse>, QueryKey<Options<ListDebriefQuestionsData>>, number | Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listDebriefQuestions({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listDebriefQuestionsInfiniteQueryKey(options)
-});
+export const listDebriefQuestionsInfiniteOptions = (options?: Options<ListDebriefQuestionsData>) => {
+    const opts = infiniteQueryOptions<ListDebriefQuestionsResponse, ListDebriefQuestionsError, InfiniteData<ListDebriefQuestionsResponse>, QueryKey<Options<ListDebriefQuestionsData>>, number | Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listDebriefQuestions({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listDebriefQuestionsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create an Incident Debrief Question
@@ -605,27 +623,30 @@ export const listEventAnnotationsInfiniteQueryKey = (options?: Options<ListEvent
 /**
  * List Event Annotations
  */
-export const listEventAnnotationsInfiniteOptions = (options?: Options<ListEventAnnotationsData>) => infiniteQueryOptions<ListEventAnnotationsResponse, ListEventAnnotationsError, InfiniteData<ListEventAnnotationsResponse>, QueryKey<Options<ListEventAnnotationsData>>, number | Pick<QueryKey<Options<ListEventAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListEventAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listEventAnnotations({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listEventAnnotationsInfiniteQueryKey(options)
-});
+export const listEventAnnotationsInfiniteOptions = (options?: Options<ListEventAnnotationsData>) => {
+    const opts = infiniteQueryOptions<ListEventAnnotationsResponse, ListEventAnnotationsError, InfiniteData<ListEventAnnotationsResponse>, QueryKey<Options<ListEventAnnotationsData>>, number | Pick<QueryKey<Options<ListEventAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListEventAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listEventAnnotations({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listEventAnnotationsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create an Event Annotation
@@ -701,27 +722,30 @@ export const listEventsInfiniteQueryKey = (options?: Options<ListEventsData>): Q
 /**
  * List Events
  */
-export const listEventsInfiniteOptions = (options?: Options<ListEventsData>) => infiniteQueryOptions<ListEventsResponse, ListEventsError, InfiniteData<ListEventsResponse>, QueryKey<Options<ListEventsData>>, number | Pick<QueryKey<Options<ListEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListEventsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listEvents({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listEventsInfiniteQueryKey(options)
-});
+export const listEventsInfiniteOptions = (options?: Options<ListEventsData>) => {
+    const opts = infiniteQueryOptions<ListEventsResponse, ListEventsError, InfiniteData<ListEventsResponse>, QueryKey<Options<ListEventsData>>, number | Pick<QueryKey<Options<ListEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListEventsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listEvents({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listEventsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const getEventQueryKey = (options: Options<GetEventData>) => createQueryKey('getEvent', options);
 
@@ -799,27 +823,30 @@ export const listDebriefMessagesInfiniteQueryKey = (options: Options<ListDebrief
 /**
  * List Incident Debrief Messages
  */
-export const listDebriefMessagesInfiniteOptions = (options: Options<ListDebriefMessagesData>) => infiniteQueryOptions<ListDebriefMessagesResponse, ListDebriefMessagesError, InfiniteData<ListDebriefMessagesResponse>, QueryKey<Options<ListDebriefMessagesData>>, number | Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listDebriefMessages({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listDebriefMessagesInfiniteQueryKey(options)
-});
+export const listDebriefMessagesInfiniteOptions = (options: Options<ListDebriefMessagesData>) => {
+    const opts = infiniteQueryOptions<ListDebriefMessagesResponse, ListDebriefMessagesError, InfiniteData<ListDebriefMessagesResponse>, QueryKey<Options<ListDebriefMessagesData>>, number | Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listDebriefMessages({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listDebriefMessagesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Add an Incident Debrief message
@@ -861,27 +888,30 @@ export const listDebriefSuggestionsInfiniteQueryKey = (options: Options<ListDebr
 /**
  * List Incident Debrief Suggestions
  */
-export const listDebriefSuggestionsInfiniteOptions = (options: Options<ListDebriefSuggestionsData>) => infiniteQueryOptions<ListDebriefSuggestionsResponse, ListDebriefSuggestionsError, InfiniteData<ListDebriefSuggestionsResponse>, QueryKey<Options<ListDebriefSuggestionsData>>, number | Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listDebriefSuggestions({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listDebriefSuggestionsInfiniteQueryKey(options)
-});
+export const listDebriefSuggestionsInfiniteOptions = (options: Options<ListDebriefSuggestionsData>) => {
+    const opts = infiniteQueryOptions<ListDebriefSuggestionsResponse, ListDebriefSuggestionsError, InfiniteData<ListDebriefSuggestionsResponse>, QueryKey<Options<ListDebriefSuggestionsData>>, number | Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listDebriefSuggestions({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listDebriefSuggestionsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const getIncidentMetadataQueryKey = (options?: Options<GetIncidentMetadataData>) => createQueryKey('getIncidentMetadata', options);
 
@@ -924,27 +954,30 @@ export const listIncidentFieldsInfiniteQueryKey = (options?: Options<ListInciden
 /**
  * List Incident Fields
  */
-export const listIncidentFieldsInfiniteOptions = (options?: Options<ListIncidentFieldsData>) => infiniteQueryOptions<ListIncidentFieldsResponse, ListIncidentFieldsError, InfiniteData<ListIncidentFieldsResponse>, QueryKey<Options<ListIncidentFieldsData>>, number | Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentFields({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentFieldsInfiniteQueryKey(options)
-});
+export const listIncidentFieldsInfiniteOptions = (options?: Options<ListIncidentFieldsData>) => {
+    const opts = infiniteQueryOptions<ListIncidentFieldsResponse, ListIncidentFieldsError, InfiniteData<ListIncidentFieldsResponse>, QueryKey<Options<ListIncidentFieldsData>>, number | Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidentFields({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentFieldsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create an Incident Field
@@ -1038,27 +1071,30 @@ export const listIncidentRolesInfiniteQueryKey = (options?: Options<ListIncident
 /**
  * List Incident Roles
  */
-export const listIncidentRolesInfiniteOptions = (options?: Options<ListIncidentRolesData>) => infiniteQueryOptions<ListIncidentRolesResponse, ListIncidentRolesError, InfiniteData<ListIncidentRolesResponse>, QueryKey<Options<ListIncidentRolesData>>, number | Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentRoles({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentRolesInfiniteQueryKey(options)
-});
+export const listIncidentRolesInfiniteOptions = (options?: Options<ListIncidentRolesData>) => {
+    const opts = infiniteQueryOptions<ListIncidentRolesResponse, ListIncidentRolesError, InfiniteData<ListIncidentRolesResponse>, QueryKey<Options<ListIncidentRolesData>>, number | Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidentRoles({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentRolesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create an Incident Role
@@ -1152,27 +1188,30 @@ export const listIncidentSeveritiesInfiniteQueryKey = (options?: Options<ListInc
 /**
  * List Severities
  */
-export const listIncidentSeveritiesInfiniteOptions = (options?: Options<ListIncidentSeveritiesData>) => infiniteQueryOptions<ListIncidentSeveritiesResponse, ListIncidentSeveritiesError, InfiniteData<ListIncidentSeveritiesResponse>, QueryKey<Options<ListIncidentSeveritiesData>>, number | Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentSeverities({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentSeveritiesInfiniteQueryKey(options)
-});
+export const listIncidentSeveritiesInfiniteOptions = (options?: Options<ListIncidentSeveritiesData>) => {
+    const opts = infiniteQueryOptions<ListIncidentSeveritiesResponse, ListIncidentSeveritiesError, InfiniteData<ListIncidentSeveritiesResponse>, QueryKey<Options<ListIncidentSeveritiesData>>, number | Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidentSeverities({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentSeveritiesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create a Severity
@@ -1266,27 +1305,30 @@ export const listIncidentTagsInfiniteQueryKey = (options?: Options<ListIncidentT
 /**
  * List Incident Tags
  */
-export const listIncidentTagsInfiniteOptions = (options?: Options<ListIncidentTagsData>) => infiniteQueryOptions<ListIncidentTagsResponse, ListIncidentTagsError, InfiniteData<ListIncidentTagsResponse>, QueryKey<Options<ListIncidentTagsData>>, number | Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentTags({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentTagsInfiniteQueryKey(options)
-});
+export const listIncidentTagsInfiniteOptions = (options?: Options<ListIncidentTagsData>) => {
+    const opts = infiniteQueryOptions<ListIncidentTagsResponse, ListIncidentTagsError, InfiniteData<ListIncidentTagsResponse>, QueryKey<Options<ListIncidentTagsData>>, number | Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidentTags({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentTagsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create an Incident Tag
@@ -1380,27 +1422,30 @@ export const listIncidentTypesInfiniteQueryKey = (options?: Options<ListIncident
 /**
  * List Types
  */
-export const listIncidentTypesInfiniteOptions = (options?: Options<ListIncidentTypesData>) => infiniteQueryOptions<ListIncidentTypesResponse, ListIncidentTypesError, InfiniteData<ListIncidentTypesResponse>, QueryKey<Options<ListIncidentTypesData>>, number | Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentTypes({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentTypesInfiniteQueryKey(options)
-});
+export const listIncidentTypesInfiniteOptions = (options?: Options<ListIncidentTypesData>) => {
+    const opts = infiniteQueryOptions<ListIncidentTypesResponse, ListIncidentTypesError, InfiniteData<ListIncidentTypesResponse>, QueryKey<Options<ListIncidentTypesData>>, number | Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidentTypes({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentTypesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create an Incident Type
@@ -1505,58 +1550,6 @@ export const updateIncidentMilestoneMutation = (options?: Partial<Options<Update
     return mutationOptions;
 };
 
-export const listIncidentTimelineEventMetadataQueryKey = (options?: Options<ListIncidentTimelineEventMetadataData>) => createQueryKey('listIncidentTimelineEventMetadata', options);
-
-/**
- * Get metadata available for incident timeline events
- */
-export const listIncidentTimelineEventMetadataOptions = (options?: Options<ListIncidentTimelineEventMetadataData>) => queryOptions<ListIncidentTimelineEventMetadataResponse, ListIncidentTimelineEventMetadataError, ListIncidentTimelineEventMetadataResponse, ReturnType<typeof listIncidentTimelineEventMetadataQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await listIncidentTimelineEventMetadata({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentTimelineEventMetadataQueryKey(options)
-});
-
-/**
- * Delete an Incident Event
- */
-export const deleteIncidentTimelineEventMutation = (options?: Partial<Options<DeleteIncidentTimelineEventData>>): MutationOptions<DeleteIncidentTimelineEventResponse, DeleteIncidentTimelineEventError, Options<DeleteIncidentTimelineEventData>> => {
-    const mutationOptions: MutationOptions<DeleteIncidentTimelineEventResponse, DeleteIncidentTimelineEventError, Options<DeleteIncidentTimelineEventData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await deleteIncidentTimelineEvent({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Update an Incident Event
- */
-export const updateIncidentTimelineEventMutation = (options?: Partial<Options<UpdateIncidentTimelineEventData>>): MutationOptions<UpdateIncidentTimelineEventResponse, UpdateIncidentTimelineEventError, Options<UpdateIncidentTimelineEventData>> => {
-    const mutationOptions: MutationOptions<UpdateIncidentTimelineEventResponse, UpdateIncidentTimelineEventError, Options<UpdateIncidentTimelineEventData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await updateIncidentTimelineEvent({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const listIncidentsQueryKey = (options?: Options<ListIncidentsData>) => createQueryKey('listIncidents', options);
 
 /**
@@ -1580,27 +1573,30 @@ export const listIncidentsInfiniteQueryKey = (options?: Options<ListIncidentsDat
 /**
  * List Incidents
  */
-export const listIncidentsInfiniteOptions = (options?: Options<ListIncidentsData>) => infiniteQueryOptions<ListIncidentsResponse, ListIncidentsError, InfiniteData<ListIncidentsResponse>, QueryKey<Options<ListIncidentsData>>, number | Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidents({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentsInfiniteQueryKey(options)
-});
+export const listIncidentsInfiniteOptions = (options?: Options<ListIncidentsData>) => {
+    const opts = infiniteQueryOptions<ListIncidentsResponse, ListIncidentsError, InfiniteData<ListIncidentsResponse>, QueryKey<Options<ListIncidentsData>>, number | Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidents({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create an Incident
@@ -1724,68 +1720,6 @@ export const createIncidentMilestoneMutation = (options?: Partial<Options<Create
     return mutationOptions;
 };
 
-export const listIncidentTimelineEventsQueryKey = (options: Options<ListIncidentTimelineEventsData>) => createQueryKey('listIncidentTimelineEvents', options);
-
-/**
- * List Events for Incident
- */
-export const listIncidentTimelineEventsOptions = (options: Options<ListIncidentTimelineEventsData>) => queryOptions<ListIncidentTimelineEventsResponse, ListIncidentTimelineEventsError, ListIncidentTimelineEventsResponse, ReturnType<typeof listIncidentTimelineEventsQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await listIncidentTimelineEvents({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentTimelineEventsQueryKey(options)
-});
-
-export const listIncidentTimelineEventsInfiniteQueryKey = (options: Options<ListIncidentTimelineEventsData>): QueryKey<Options<ListIncidentTimelineEventsData>> => createQueryKey('listIncidentTimelineEvents', options, true);
-
-/**
- * List Events for Incident
- */
-export const listIncidentTimelineEventsInfiniteOptions = (options: Options<ListIncidentTimelineEventsData>) => infiniteQueryOptions<ListIncidentTimelineEventsResponse, ListIncidentTimelineEventsError, InfiniteData<ListIncidentTimelineEventsResponse>, QueryKey<Options<ListIncidentTimelineEventsData>>, number | Pick<QueryKey<Options<ListIncidentTimelineEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentTimelineEventsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentTimelineEvents({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentTimelineEventsInfiniteQueryKey(options)
-});
-
-/**
- * Create an Incident Event
- */
-export const createIncidentTimelineEventMutation = (options?: Partial<Options<CreateIncidentTimelineEventData>>): MutationOptions<CreateIncidentTimelineEventResponse, CreateIncidentTimelineEventError, Options<CreateIncidentTimelineEventData>> => {
-    const mutationOptions: MutationOptions<CreateIncidentTimelineEventResponse, CreateIncidentTimelineEventError, Options<CreateIncidentTimelineEventData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await createIncidentTimelineEvent({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const getInstallableIntegrationsQueryKey = (options?: Options<GetInstallableIntegrationsData>) => createQueryKey('getInstallableIntegrations', options);
 
 /**
@@ -1809,27 +1743,30 @@ export const getInstallableIntegrationsInfiniteQueryKey = (options?: Options<Get
 /**
  * Get Installable Integrations
  */
-export const getInstallableIntegrationsInfiniteOptions = (options?: Options<GetInstallableIntegrationsData>) => infiniteQueryOptions<GetInstallableIntegrationsResponse, GetInstallableIntegrationsError, InfiniteData<GetInstallableIntegrationsResponse>, QueryKey<Options<GetInstallableIntegrationsData>>, number | Pick<QueryKey<Options<GetInstallableIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<GetInstallableIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await getInstallableIntegrations({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getInstallableIntegrationsInfiniteQueryKey(options)
-});
+export const getInstallableIntegrationsInfiniteOptions = (options?: Options<GetInstallableIntegrationsData>) => {
+    const opts = infiniteQueryOptions<GetInstallableIntegrationsResponse, GetInstallableIntegrationsError, InfiniteData<GetInstallableIntegrationsResponse>, QueryKey<Options<GetInstallableIntegrationsData>>, number | Pick<QueryKey<Options<GetInstallableIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<GetInstallableIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await getInstallableIntegrations({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getInstallableIntegrationsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Install an Integration
@@ -1940,27 +1877,30 @@ export const listIntegrationInstallationsInfiniteQueryKey = (options?: Options<L
 /**
  * List Installed Integrations
  */
-export const listIntegrationInstallationsInfiniteOptions = (options?: Options<ListIntegrationInstallationsData>) => infiniteQueryOptions<ListIntegrationInstallationsResponse, ListIntegrationInstallationsError, InfiniteData<ListIntegrationInstallationsResponse>, QueryKey<Options<ListIntegrationInstallationsData>>, number | Pick<QueryKey<Options<ListIntegrationInstallationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIntegrationInstallationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIntegrationInstallations({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIntegrationInstallationsInfiniteQueryKey(options)
-});
+export const listIntegrationInstallationsInfiniteOptions = (options?: Options<ListIntegrationInstallationsData>) => {
+    const opts = infiniteQueryOptions<ListIntegrationInstallationsResponse, ListIntegrationInstallationsError, InfiniteData<ListIntegrationInstallationsResponse>, QueryKey<Options<ListIntegrationInstallationsData>>, number | Pick<QueryKey<Options<ListIntegrationInstallationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIntegrationInstallationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIntegrationInstallations({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIntegrationInstallationsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Delete an Integration
@@ -2072,27 +2012,30 @@ export const listKnowledgeGraphEntitiesInfiniteQueryKey = (options?: Options<Lis
 /**
  * List Knowledge Graph Entities
  */
-export const listKnowledgeGraphEntitiesInfiniteOptions = (options?: Options<ListKnowledgeGraphEntitiesData>) => infiniteQueryOptions<ListKnowledgeGraphEntitiesResponse, ListKnowledgeGraphEntitiesError, InfiniteData<ListKnowledgeGraphEntitiesResponse>, QueryKey<Options<ListKnowledgeGraphEntitiesData>>, number | Pick<QueryKey<Options<ListKnowledgeGraphEntitiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListKnowledgeGraphEntitiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listKnowledgeGraphEntities({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listKnowledgeGraphEntitiesInfiniteQueryKey(options)
-});
+export const listKnowledgeGraphEntitiesInfiniteOptions = (options?: Options<ListKnowledgeGraphEntitiesData>) => {
+    const opts = infiniteQueryOptions<ListKnowledgeGraphEntitiesResponse, ListKnowledgeGraphEntitiesError, InfiniteData<ListKnowledgeGraphEntitiesResponse>, QueryKey<Options<ListKnowledgeGraphEntitiesData>>, number | Pick<QueryKey<Options<ListKnowledgeGraphEntitiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListKnowledgeGraphEntitiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listKnowledgeGraphEntities({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listKnowledgeGraphEntitiesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const getKnowledgeGraphEntityQueryKey = (options: Options<GetKnowledgeGraphEntityData>) => createQueryKey('getKnowledgeGraphEntity', options);
 
@@ -2135,27 +2078,30 @@ export const listKnowledgeGraphRelationshipsInfiniteQueryKey = (options?: Option
 /**
  * List Knowledge Graph Relationships
  */
-export const listKnowledgeGraphRelationshipsInfiniteOptions = (options?: Options<ListKnowledgeGraphRelationshipsData>) => infiniteQueryOptions<ListKnowledgeGraphRelationshipsResponse, ListKnowledgeGraphRelationshipsError, InfiniteData<ListKnowledgeGraphRelationshipsResponse>, QueryKey<Options<ListKnowledgeGraphRelationshipsData>>, number | Pick<QueryKey<Options<ListKnowledgeGraphRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListKnowledgeGraphRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listKnowledgeGraphRelationships({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listKnowledgeGraphRelationshipsInfiniteQueryKey(options)
-});
+export const listKnowledgeGraphRelationshipsInfiniteOptions = (options?: Options<ListKnowledgeGraphRelationshipsData>) => {
+    const opts = infiniteQueryOptions<ListKnowledgeGraphRelationshipsResponse, ListKnowledgeGraphRelationshipsError, InfiniteData<ListKnowledgeGraphRelationshipsResponse>, QueryKey<Options<ListKnowledgeGraphRelationshipsData>>, number | Pick<QueryKey<Options<ListKnowledgeGraphRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListKnowledgeGraphRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listKnowledgeGraphRelationships({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listKnowledgeGraphRelationshipsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const getKnowledgeGraphRelationshipQueryKey = (options: Options<GetKnowledgeGraphRelationshipData>) => createQueryKey('getKnowledgeGraphRelationship', options);
 
@@ -2216,27 +2162,30 @@ export const listMeetingSchedulesInfiniteQueryKey = (options?: Options<ListMeeti
 /**
  * List Meeting Schedules
  */
-export const listMeetingSchedulesInfiniteOptions = (options?: Options<ListMeetingSchedulesData>) => infiniteQueryOptions<ListMeetingSchedulesResponse, ListMeetingSchedulesError, InfiniteData<ListMeetingSchedulesResponse>, QueryKey<Options<ListMeetingSchedulesData>>, number | Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listMeetingSchedules({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listMeetingSchedulesInfiniteQueryKey(options)
-});
+export const listMeetingSchedulesInfiniteOptions = (options?: Options<ListMeetingSchedulesData>) => {
+    const opts = infiniteQueryOptions<ListMeetingSchedulesResponse, ListMeetingSchedulesError, InfiniteData<ListMeetingSchedulesResponse>, QueryKey<Options<ListMeetingSchedulesData>>, number | Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listMeetingSchedules({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listMeetingSchedulesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create a Meeting Schedule
@@ -2330,27 +2279,30 @@ export const listMeetingSessionsInfiniteQueryKey = (options?: Options<ListMeetin
 /**
  * List Sessions
  */
-export const listMeetingSessionsInfiniteOptions = (options?: Options<ListMeetingSessionsData>) => infiniteQueryOptions<ListMeetingSessionsResponse, ListMeetingSessionsError, InfiniteData<ListMeetingSessionsResponse>, QueryKey<Options<ListMeetingSessionsData>>, number | Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listMeetingSessions({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listMeetingSessionsInfiniteQueryKey(options)
-});
+export const listMeetingSessionsInfiniteOptions = (options?: Options<ListMeetingSessionsData>) => {
+    const opts = infiniteQueryOptions<ListMeetingSessionsResponse, ListMeetingSessionsError, InfiniteData<ListMeetingSessionsResponse>, QueryKey<Options<ListMeetingSessionsData>>, number | Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listMeetingSessions({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listMeetingSessionsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create a Meeting Session
@@ -2547,27 +2499,30 @@ export const listOncallRostersInfiniteQueryKey = (options?: Options<ListOncallRo
 /**
  * List Oncall Rosters
  */
-export const listOncallRostersInfiniteOptions = (options?: Options<ListOncallRostersData>) => infiniteQueryOptions<ListOncallRostersResponse, ListOncallRostersError, InfiniteData<ListOncallRostersResponse>, QueryKey<Options<ListOncallRostersData>>, number | Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listOncallRosters({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallRostersInfiniteQueryKey(options)
-});
+export const listOncallRostersInfiniteOptions = (options?: Options<ListOncallRostersData>) => {
+    const opts = infiniteQueryOptions<ListOncallRostersResponse, ListOncallRostersError, InfiniteData<ListOncallRostersResponse>, QueryKey<Options<ListOncallRostersData>>, number | Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listOncallRosters({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallRostersInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const getOncallRosterQueryKey = (options: Options<GetOncallRosterData>) => createQueryKey('getOncallRoster', options);
 
@@ -2610,27 +2565,30 @@ export const listOncallShiftsInfiniteQueryKey = (options?: Options<ListOncallShi
 /**
  * List Oncall Shifts
  */
-export const listOncallShiftsInfiniteOptions = (options?: Options<ListOncallShiftsData>) => infiniteQueryOptions<ListOncallShiftsResponse, ListOncallShiftsError, InfiniteData<ListOncallShiftsResponse>, QueryKey<Options<ListOncallShiftsData>>, number | Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listOncallShifts({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallShiftsInfiniteQueryKey(options)
-});
+export const listOncallShiftsInfiniteOptions = (options?: Options<ListOncallShiftsData>) => {
+    const opts = infiniteQueryOptions<ListOncallShiftsResponse, ListOncallShiftsError, InfiniteData<ListOncallShiftsResponse>, QueryKey<Options<ListOncallShiftsData>>, number | Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listOncallShifts({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallShiftsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const getOncallShiftQueryKey = (options: Options<GetOncallShiftData>) => createQueryKey('getOncallShift', options);
 
@@ -2868,27 +2826,30 @@ export const listPlaybooksInfiniteQueryKey = (options?: Options<ListPlaybooksDat
 /**
  * List Playbooks
  */
-export const listPlaybooksInfiniteOptions = (options?: Options<ListPlaybooksData>) => infiniteQueryOptions<ListPlaybooksResponse, ListPlaybooksError, InfiniteData<ListPlaybooksResponse>, QueryKey<Options<ListPlaybooksData>>, number | Pick<QueryKey<Options<ListPlaybooksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListPlaybooksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listPlaybooks({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listPlaybooksInfiniteQueryKey(options)
-});
+export const listPlaybooksInfiniteOptions = (options?: Options<ListPlaybooksData>) => {
+    const opts = infiniteQueryOptions<ListPlaybooksResponse, ListPlaybooksError, InfiniteData<ListPlaybooksResponse>, QueryKey<Options<ListPlaybooksData>>, number | Pick<QueryKey<Options<ListPlaybooksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListPlaybooksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listPlaybooks({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listPlaybooksInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create a Playbook
@@ -2982,27 +2943,30 @@ export const getRetrospectiveCommentInfiniteQueryKey = (options: Options<GetRetr
 /**
  * Get a Retrospective Comment
  */
-export const getRetrospectiveCommentInfiniteOptions = (options: Options<GetRetrospectiveCommentData>) => infiniteQueryOptions<GetRetrospectiveCommentResponse, GetRetrospectiveCommentError, InfiniteData<GetRetrospectiveCommentResponse>, QueryKey<Options<GetRetrospectiveCommentData>>, number | Pick<QueryKey<Options<GetRetrospectiveCommentData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<GetRetrospectiveCommentData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await getRetrospectiveComment({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getRetrospectiveCommentInfiniteQueryKey(options)
-});
+export const getRetrospectiveCommentInfiniteOptions = (options: Options<GetRetrospectiveCommentData>) => {
+    const opts = infiniteQueryOptions<GetRetrospectiveCommentResponse, GetRetrospectiveCommentError, InfiniteData<GetRetrospectiveCommentResponse>, QueryKey<Options<GetRetrospectiveCommentData>>, number | Pick<QueryKey<Options<GetRetrospectiveCommentData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<GetRetrospectiveCommentData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await getRetrospectiveComment({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getRetrospectiveCommentInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Update a Retrospective Comment
@@ -3078,27 +3042,30 @@ export const listRetrospectivesInfiniteQueryKey = (options?: Options<ListRetrosp
 /**
  * List Retrospectives
  */
-export const listRetrospectivesInfiniteOptions = (options?: Options<ListRetrospectivesData>) => infiniteQueryOptions<ListRetrospectivesResponse, ListRetrospectivesError, InfiniteData<ListRetrospectivesResponse>, QueryKey<Options<ListRetrospectivesData>>, number | Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listRetrospectives({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listRetrospectivesInfiniteQueryKey(options)
-});
+export const listRetrospectivesInfiniteOptions = (options?: Options<ListRetrospectivesData>) => {
+    const opts = infiniteQueryOptions<ListRetrospectivesResponse, ListRetrospectivesError, InfiniteData<ListRetrospectivesResponse>, QueryKey<Options<ListRetrospectivesData>>, number | Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listRetrospectives({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listRetrospectivesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const getRetrospectiveQueryKey = (options: Options<GetRetrospectiveData>) => createQueryKey('getRetrospective', options);
 
@@ -3158,27 +3125,30 @@ export const listRetrospectiveCommentsInfiniteQueryKey = (options: Options<ListR
 /**
  * List Comments For a Retrospective
  */
-export const listRetrospectiveCommentsInfiniteOptions = (options: Options<ListRetrospectiveCommentsData>) => infiniteQueryOptions<ListRetrospectiveCommentsResponse, ListRetrospectiveCommentsError, InfiniteData<ListRetrospectiveCommentsResponse>, QueryKey<Options<ListRetrospectiveCommentsData>>, number | Pick<QueryKey<Options<ListRetrospectiveCommentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListRetrospectiveCommentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listRetrospectiveComments({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listRetrospectiveCommentsInfiniteQueryKey(options)
-});
+export const listRetrospectiveCommentsInfiniteOptions = (options: Options<ListRetrospectiveCommentsData>) => {
+    const opts = infiniteQueryOptions<ListRetrospectiveCommentsResponse, ListRetrospectiveCommentsError, InfiniteData<ListRetrospectiveCommentsResponse>, QueryKey<Options<ListRetrospectiveCommentsData>>, number | Pick<QueryKey<Options<ListRetrospectiveCommentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListRetrospectiveCommentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listRetrospectiveComments({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listRetrospectiveCommentsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create a Retrospective Comment
@@ -3220,27 +3190,30 @@ export const listRetrospectiveReviewsInfiniteQueryKey = (options?: Options<ListR
 /**
  * List Retrospective Reviews
  */
-export const listRetrospectiveReviewsInfiniteOptions = (options?: Options<ListRetrospectiveReviewsData>) => infiniteQueryOptions<ListRetrospectiveReviewsResponse, ListRetrospectiveReviewsError, InfiniteData<ListRetrospectiveReviewsResponse>, QueryKey<Options<ListRetrospectiveReviewsData>>, number | Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listRetrospectiveReviews({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listRetrospectiveReviewsInfiniteQueryKey(options)
-});
+export const listRetrospectiveReviewsInfiniteOptions = (options?: Options<ListRetrospectiveReviewsData>) => {
+    const opts = infiniteQueryOptions<ListRetrospectiveReviewsResponse, ListRetrospectiveReviewsError, InfiniteData<ListRetrospectiveReviewsResponse>, QueryKey<Options<ListRetrospectiveReviewsData>>, number | Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listRetrospectiveReviews({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listRetrospectiveReviewsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create a Retrospective Review
@@ -3277,14 +3250,31 @@ export const getSystemAnalysisOptions = (options: Options<GetSystemAnalysisData>
     queryKey: getSystemAnalysisQueryKey(options)
 });
 
-export const listSystemAnalysisEdgesQueryKey = (options: Options<ListSystemAnalysisEdgesData>) => createQueryKey('listSystemAnalysisEdges', options);
+/**
+ * Update System Analysis
+ */
+export const updateSystemAnalysisMutation = (options?: Partial<Options<UpdateSystemAnalysisData>>): MutationOptions<UpdateSystemAnalysisResponse, UpdateSystemAnalysisError, Options<UpdateSystemAnalysisData>> => {
+    const mutationOptions: MutationOptions<UpdateSystemAnalysisResponse, UpdateSystemAnalysisError, Options<UpdateSystemAnalysisData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateSystemAnalysis({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listSystemAnalysisEntriesQueryKey = (options: Options<ListSystemAnalysisEntriesData>) => createQueryKey('listSystemAnalysisEntries', options);
 
 /**
- * List edges in a system analysis
+ * List System Analysis Entries
  */
-export const listSystemAnalysisEdgesOptions = (options: Options<ListSystemAnalysisEdgesData>) => queryOptions<ListSystemAnalysisEdgesResponse, ListSystemAnalysisEdgesError, ListSystemAnalysisEdgesResponse, ReturnType<typeof listSystemAnalysisEdgesQueryKey>>({
+export const listSystemAnalysisEntriesOptions = (options: Options<ListSystemAnalysisEntriesData>) => queryOptions<ListSystemAnalysisEntriesResponse, ListSystemAnalysisEntriesError, ListSystemAnalysisEntriesResponse, ReturnType<typeof listSystemAnalysisEntriesQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await listSystemAnalysisEdges({
+        const { data } = await listSystemAnalysisEntries({
             ...options,
             ...queryKey[0],
             signal,
@@ -3292,43 +3282,46 @@ export const listSystemAnalysisEdgesOptions = (options: Options<ListSystemAnalys
         });
         return data;
     },
-    queryKey: listSystemAnalysisEdgesQueryKey(options)
+    queryKey: listSystemAnalysisEntriesQueryKey(options)
 });
 
-export const listSystemAnalysisEdgesInfiniteQueryKey = (options: Options<ListSystemAnalysisEdgesData>): QueryKey<Options<ListSystemAnalysisEdgesData>> => createQueryKey('listSystemAnalysisEdges', options, true);
+export const listSystemAnalysisEntriesInfiniteQueryKey = (options: Options<ListSystemAnalysisEntriesData>): QueryKey<Options<ListSystemAnalysisEntriesData>> => createQueryKey('listSystemAnalysisEntries', options, true);
 
 /**
- * List edges in a system analysis
+ * List System Analysis Entries
  */
-export const listSystemAnalysisEdgesInfiniteOptions = (options: Options<ListSystemAnalysisEdgesData>) => infiniteQueryOptions<ListSystemAnalysisEdgesResponse, ListSystemAnalysisEdgesError, InfiniteData<ListSystemAnalysisEdgesResponse>, QueryKey<Options<ListSystemAnalysisEdgesData>>, number | Pick<QueryKey<Options<ListSystemAnalysisEdgesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListSystemAnalysisEdgesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listSystemAnalysisEdges({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listSystemAnalysisEdgesInfiniteQueryKey(options)
-});
+export const listSystemAnalysisEntriesInfiniteOptions = (options: Options<ListSystemAnalysisEntriesData>) => {
+    const opts = infiniteQueryOptions<ListSystemAnalysisEntriesResponse, ListSystemAnalysisEntriesError, InfiniteData<ListSystemAnalysisEntriesResponse>, QueryKey<Options<ListSystemAnalysisEntriesData>>, number | Pick<QueryKey<Options<ListSystemAnalysisEntriesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListSystemAnalysisEntriesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listSystemAnalysisEntries({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listSystemAnalysisEntriesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
- * Add an edge to a system analysis
+ * Create System Analysis Entry
  */
-export const addSystemAnalysisEdgeMutation = (options?: Partial<Options<AddSystemAnalysisEdgeData>>): MutationOptions<AddSystemAnalysisEdgeResponse, AddSystemAnalysisEdgeError, Options<AddSystemAnalysisEdgeData>> => {
-    const mutationOptions: MutationOptions<AddSystemAnalysisEdgeResponse, AddSystemAnalysisEdgeError, Options<AddSystemAnalysisEdgeData>> = {
+export const createSystemAnalysisEntryMutation = (options?: Partial<Options<CreateSystemAnalysisEntryData>>): MutationOptions<CreateSystemAnalysisEntryResponse, CreateSystemAnalysisEntryError, Options<CreateSystemAnalysisEntryData>> => {
+    const mutationOptions: MutationOptions<CreateSystemAnalysisEntryResponse, CreateSystemAnalysisEntryError, Options<CreateSystemAnalysisEntryData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await addSystemAnalysisEdge({
+            const { data } = await createSystemAnalysisEntry({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -3339,14 +3332,14 @@ export const addSystemAnalysisEdgeMutation = (options?: Partial<Options<AddSyste
     return mutationOptions;
 };
 
-export const listSystemAnalysisNodesQueryKey = (options: Options<ListSystemAnalysisNodesData>) => createQueryKey('listSystemAnalysisNodes', options);
+export const getSystemAnalysisGraphQueryKey = (options: Options<GetSystemAnalysisGraphData>) => createQueryKey('getSystemAnalysisGraph', options);
 
 /**
- * List nodes in a system analysis
+ * Get System Analysis Graph
  */
-export const listSystemAnalysisNodesOptions = (options: Options<ListSystemAnalysisNodesData>) => queryOptions<ListSystemAnalysisNodesResponse, ListSystemAnalysisNodesError, ListSystemAnalysisNodesResponse, ReturnType<typeof listSystemAnalysisNodesQueryKey>>({
+export const getSystemAnalysisGraphOptions = (options: Options<GetSystemAnalysisGraphData>) => queryOptions<GetSystemAnalysisGraphResponse, GetSystemAnalysisGraphError, GetSystemAnalysisGraphResponse, ReturnType<typeof getSystemAnalysisGraphQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await listSystemAnalysisNodes({
+        const { data } = await getSystemAnalysisGraph({
             ...options,
             ...queryKey[0],
             signal,
@@ -3354,43 +3347,16 @@ export const listSystemAnalysisNodesOptions = (options: Options<ListSystemAnalys
         });
         return data;
     },
-    queryKey: listSystemAnalysisNodesQueryKey(options)
-});
-
-export const listSystemAnalysisNodesInfiniteQueryKey = (options: Options<ListSystemAnalysisNodesData>): QueryKey<Options<ListSystemAnalysisNodesData>> => createQueryKey('listSystemAnalysisNodes', options, true);
-
-/**
- * List nodes in a system analysis
- */
-export const listSystemAnalysisNodesInfiniteOptions = (options: Options<ListSystemAnalysisNodesData>) => infiniteQueryOptions<ListSystemAnalysisNodesResponse, ListSystemAnalysisNodesError, InfiniteData<ListSystemAnalysisNodesResponse>, QueryKey<Options<ListSystemAnalysisNodesData>>, number | Pick<QueryKey<Options<ListSystemAnalysisNodesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListSystemAnalysisNodesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listSystemAnalysisNodes({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listSystemAnalysisNodesInfiniteQueryKey(options)
+    queryKey: getSystemAnalysisGraphQueryKey(options)
 });
 
 /**
- * Add a node to a system analysis
+ * Delete System Analysis Entry
  */
-export const addSystemAnalysisNodeMutation = (options?: Partial<Options<AddSystemAnalysisNodeData>>): MutationOptions<AddSystemAnalysisNodeResponse, AddSystemAnalysisNodeError, Options<AddSystemAnalysisNodeData>> => {
-    const mutationOptions: MutationOptions<AddSystemAnalysisNodeResponse, AddSystemAnalysisNodeError, Options<AddSystemAnalysisNodeData>> = {
+export const deleteSystemAnalysisEntryMutation = (options?: Partial<Options<DeleteSystemAnalysisEntryData>>): MutationOptions<DeleteSystemAnalysisEntryResponse, DeleteSystemAnalysisEntryError, Options<DeleteSystemAnalysisEntryData>> => {
+    const mutationOptions: MutationOptions<DeleteSystemAnalysisEntryResponse, DeleteSystemAnalysisEntryError, Options<DeleteSystemAnalysisEntryData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await addSystemAnalysisNode({
+            const { data } = await deleteSystemAnalysisEntry({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -3402,47 +3368,12 @@ export const addSystemAnalysisNodeMutation = (options?: Partial<Options<AddSyste
 };
 
 /**
- * Delete a system analysis edge
+ * Update System Analysis Entry
  */
-export const deleteSystemAnalysisEdgeMutation = (options?: Partial<Options<DeleteSystemAnalysisEdgeData>>): MutationOptions<DeleteSystemAnalysisEdgeResponse, DeleteSystemAnalysisEdgeError, Options<DeleteSystemAnalysisEdgeData>> => {
-    const mutationOptions: MutationOptions<DeleteSystemAnalysisEdgeResponse, DeleteSystemAnalysisEdgeError, Options<DeleteSystemAnalysisEdgeData>> = {
+export const updateSystemAnalysisEntryMutation = (options?: Partial<Options<UpdateSystemAnalysisEntryData>>): MutationOptions<UpdateSystemAnalysisEntryResponse, UpdateSystemAnalysisEntryError, Options<UpdateSystemAnalysisEntryData>> => {
+    const mutationOptions: MutationOptions<UpdateSystemAnalysisEntryResponse, UpdateSystemAnalysisEntryError, Options<UpdateSystemAnalysisEntryData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await deleteSystemAnalysisEdge({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const getSystemAnalysisEdgeQueryKey = (options: Options<GetSystemAnalysisEdgeData>) => createQueryKey('getSystemAnalysisEdge', options);
-
-/**
- * Get a system analysis edge
- */
-export const getSystemAnalysisEdgeOptions = (options: Options<GetSystemAnalysisEdgeData>) => queryOptions<GetSystemAnalysisEdgeResponse, GetSystemAnalysisEdgeError, GetSystemAnalysisEdgeResponse, ReturnType<typeof getSystemAnalysisEdgeQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getSystemAnalysisEdge({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getSystemAnalysisEdgeQueryKey(options)
-});
-
-/**
- * Update a system analysis edge
- */
-export const updateSystemAnalysisEdgeMutation = (options?: Partial<Options<UpdateSystemAnalysisEdgeData>>): MutationOptions<UpdateSystemAnalysisEdgeResponse, UpdateSystemAnalysisEdgeError, Options<UpdateSystemAnalysisEdgeData>> => {
-    const mutationOptions: MutationOptions<UpdateSystemAnalysisEdgeResponse, UpdateSystemAnalysisEdgeError, Options<UpdateSystemAnalysisEdgeData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await updateSystemAnalysisEdge({
+            const { data } = await updateSystemAnalysisEntry({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -3454,12 +3385,12 @@ export const updateSystemAnalysisEdgeMutation = (options?: Partial<Options<Updat
 };
 
 /**
- * Delete a system analysis node
+ * Add System Analysis Entry Subject
  */
-export const deleteSystemAnalysisNodeMutation = (options?: Partial<Options<DeleteSystemAnalysisNodeData>>): MutationOptions<DeleteSystemAnalysisNodeResponse, DeleteSystemAnalysisNodeError, Options<DeleteSystemAnalysisNodeData>> => {
-    const mutationOptions: MutationOptions<DeleteSystemAnalysisNodeResponse, DeleteSystemAnalysisNodeError, Options<DeleteSystemAnalysisNodeData>> = {
+export const addSystemAnalysisEntrySubjectMutation = (options?: Partial<Options<AddSystemAnalysisEntrySubjectData>>): MutationOptions<AddSystemAnalysisEntrySubjectResponse, AddSystemAnalysisEntrySubjectError, Options<AddSystemAnalysisEntrySubjectData>> => {
+    const mutationOptions: MutationOptions<AddSystemAnalysisEntrySubjectResponse, AddSystemAnalysisEntrySubjectError, Options<AddSystemAnalysisEntrySubjectData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await deleteSystemAnalysisNode({
+            const { data } = await addSystemAnalysisEntrySubject({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -3470,31 +3401,30 @@ export const deleteSystemAnalysisNodeMutation = (options?: Partial<Options<Delet
     return mutationOptions;
 };
 
-export const getSystemAnalysisNodeQueryKey = (options: Options<GetSystemAnalysisNodeData>) => createQueryKey('getSystemAnalysisNode', options);
-
 /**
- * Get a system analysis node
+ * Delete System Analysis Entry Subject
  */
-export const getSystemAnalysisNodeOptions = (options: Options<GetSystemAnalysisNodeData>) => queryOptions<GetSystemAnalysisNodeResponse, GetSystemAnalysisNodeError, GetSystemAnalysisNodeResponse, ReturnType<typeof getSystemAnalysisNodeQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getSystemAnalysisNode({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getSystemAnalysisNodeQueryKey(options)
-});
-
-/**
- * Update a system analysis node
- */
-export const updateSystemAnalysisNodeMutation = (options?: Partial<Options<UpdateSystemAnalysisNodeData>>): MutationOptions<UpdateSystemAnalysisNodeResponse, UpdateSystemAnalysisNodeError, Options<UpdateSystemAnalysisNodeData>> => {
-    const mutationOptions: MutationOptions<UpdateSystemAnalysisNodeResponse, UpdateSystemAnalysisNodeError, Options<UpdateSystemAnalysisNodeData>> = {
+export const deleteSystemAnalysisEntrySubjectMutation = (options?: Partial<Options<DeleteSystemAnalysisEntrySubjectData>>): MutationOptions<DeleteSystemAnalysisEntrySubjectResponse, DeleteSystemAnalysisEntrySubjectError, Options<DeleteSystemAnalysisEntrySubjectData>> => {
+    const mutationOptions: MutationOptions<DeleteSystemAnalysisEntrySubjectResponse, DeleteSystemAnalysisEntrySubjectError, Options<DeleteSystemAnalysisEntrySubjectData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await updateSystemAnalysisNode({
+            const { data } = await deleteSystemAnalysisEntrySubject({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update System Analysis Entry Subject
+ */
+export const updateSystemAnalysisEntrySubjectMutation = (options?: Partial<Options<UpdateSystemAnalysisEntrySubjectData>>): MutationOptions<UpdateSystemAnalysisEntrySubjectResponse, UpdateSystemAnalysisEntrySubjectError, Options<UpdateSystemAnalysisEntrySubjectData>> => {
+    const mutationOptions: MutationOptions<UpdateSystemAnalysisEntrySubjectResponse, UpdateSystemAnalysisEntrySubjectError, Options<UpdateSystemAnalysisEntrySubjectData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateSystemAnalysisEntrySubject({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -3528,27 +3458,30 @@ export const listTasksInfiniteQueryKey = (options?: Options<ListTasksData>): Que
 /**
  * List Tasks
  */
-export const listTasksInfiniteOptions = (options?: Options<ListTasksData>) => infiniteQueryOptions<ListTasksResponse, ListTasksError, InfiniteData<ListTasksResponse>, QueryKey<Options<ListTasksData>>, number | Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listTasks({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listTasksInfiniteQueryKey(options)
-});
+export const listTasksInfiniteOptions = (options?: Options<ListTasksData>) => {
+    const opts = infiniteQueryOptions<ListTasksResponse, ListTasksError, InfiniteData<ListTasksResponse>, QueryKey<Options<ListTasksData>>, number | Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listTasks({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listTasksInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create a Task
@@ -3642,27 +3575,30 @@ export const listTeamMembershipsInfiniteQueryKey = (options?: Options<ListTeamMe
 /**
  * List Team Memberships
  */
-export const listTeamMembershipsInfiniteOptions = (options?: Options<ListTeamMembershipsData>) => infiniteQueryOptions<ListTeamMembershipsResponse, ListTeamMembershipsError, InfiniteData<ListTeamMembershipsResponse>, QueryKey<Options<ListTeamMembershipsData>>, number | Pick<QueryKey<Options<ListTeamMembershipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListTeamMembershipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listTeamMemberships({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listTeamMembershipsInfiniteQueryKey(options)
-});
+export const listTeamMembershipsInfiniteOptions = (options?: Options<ListTeamMembershipsData>) => {
+    const opts = infiniteQueryOptions<ListTeamMembershipsResponse, ListTeamMembershipsError, InfiniteData<ListTeamMembershipsResponse>, QueryKey<Options<ListTeamMembershipsData>>, number | Pick<QueryKey<Options<ListTeamMembershipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListTeamMembershipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listTeamMemberships({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listTeamMembershipsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create Team Membership
@@ -3738,27 +3674,30 @@ export const listTeamsInfiniteQueryKey = (options?: Options<ListTeamsData>): Que
 /**
  * List Teams
  */
-export const listTeamsInfiniteOptions = (options?: Options<ListTeamsData>) => infiniteQueryOptions<ListTeamsResponse, ListTeamsError, InfiniteData<ListTeamsResponse>, QueryKey<Options<ListTeamsData>>, number | Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listTeams({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listTeamsInfiniteQueryKey(options)
-});
+export const listTeamsInfiniteOptions = (options?: Options<ListTeamsData>) => {
+    const opts = infiniteQueryOptions<ListTeamsResponse, ListTeamsError, InfiniteData<ListTeamsResponse>, QueryKey<Options<ListTeamsData>>, number | Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listTeams({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listTeamsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Create a Team
@@ -3922,27 +3861,30 @@ export const listUsersInfiniteQueryKey = (options?: Options<ListUsersData>): Que
 /**
  * List Users
  */
-export const listUsersInfiniteOptions = (options?: Options<ListUsersData>) => infiniteQueryOptions<ListUsersResponse, ListUsersError, InfiniteData<ListUsersResponse>, QueryKey<Options<ListUsersData>>, number | Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listUsers({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listUsersInfiniteQueryKey(options)
-});
+export const listUsersInfiniteOptions = (options?: Options<ListUsersData>) => {
+    const opts = infiniteQueryOptions<ListUsersResponse, ListUsersError, InfiniteData<ListUsersResponse>, QueryKey<Options<ListUsersData>>, number | Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listUsers({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listUsersInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const getUserQueryKey = (options: Options<GetUserData>) => createQueryKey('getUser', options);
 

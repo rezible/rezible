@@ -1491,6 +1491,30 @@ func (f SystemAnalysisMutationRuleFunc) EvalMutation(ctx context.Context, m ent.
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisMutation", m)
 }
 
+// The SystemAnalysisEntityQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type SystemAnalysisEntityQueryRuleFunc func(context.Context, *ent.SystemAnalysisEntityQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f SystemAnalysisEntityQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemAnalysisEntityQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemAnalysisEntityQuery", q)
+}
+
+// The SystemAnalysisEntityMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type SystemAnalysisEntityMutationRuleFunc func(context.Context, *ent.SystemAnalysisEntityMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f SystemAnalysisEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SystemAnalysisEntityMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisEntityMutation", m)
+}
+
 // The SystemAnalysisEntryQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type SystemAnalysisEntryQueryRuleFunc func(context.Context, *ent.SystemAnalysisEntryQuery) error
@@ -1537,6 +1561,30 @@ func (f SystemAnalysisEntrySubjectMutationRuleFunc) EvalMutation(ctx context.Con
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisEntrySubjectMutation", m)
+}
+
+// The SystemAnalysisRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type SystemAnalysisRelationshipQueryRuleFunc func(context.Context, *ent.SystemAnalysisRelationshipQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f SystemAnalysisRelationshipQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemAnalysisRelationshipQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemAnalysisRelationshipQuery", q)
+}
+
+// The SystemAnalysisRelationshipMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type SystemAnalysisRelationshipMutationRuleFunc func(context.Context, *ent.SystemAnalysisRelationshipMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f SystemAnalysisRelationshipMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SystemAnalysisRelationshipMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisRelationshipMutation", m)
 }
 
 // The TaskQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1882,9 +1930,13 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.SystemAnalysisQuery:
 		return q.Filter(), nil
+	case *ent.SystemAnalysisEntityQuery:
+		return q.Filter(), nil
 	case *ent.SystemAnalysisEntryQuery:
 		return q.Filter(), nil
 	case *ent.SystemAnalysisEntrySubjectQuery:
+		return q.Filter(), nil
+	case *ent.SystemAnalysisRelationshipQuery:
 		return q.Filter(), nil
 	case *ent.TaskQuery:
 		return q.Filter(), nil
@@ -2023,9 +2075,13 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.SystemAnalysisMutation:
 		return m.Filter(), nil
+	case *ent.SystemAnalysisEntityMutation:
+		return m.Filter(), nil
 	case *ent.SystemAnalysisEntryMutation:
 		return m.Filter(), nil
 	case *ent.SystemAnalysisEntrySubjectMutation:
+		return m.Filter(), nil
+	case *ent.SystemAnalysisRelationshipMutation:
 		return m.Filter(), nil
 	case *ent.TaskMutation:
 		return m.Filter(), nil

@@ -46,11 +46,15 @@ type SystemAnalysisEdges struct {
 	ScopeEntity *KnowledgeEntity `json:"scope_entity,omitempty"`
 	// SubjectEntity holds the value of the subject_entity edge.
 	SubjectEntity *KnowledgeEntity `json:"subject_entity,omitempty"`
+	// AnalysisEntities holds the value of the analysis_entities edge.
+	AnalysisEntities []*SystemAnalysisEntity `json:"analysis_entities,omitempty"`
+	// AnalysisRelationships holds the value of the analysis_relationships edge.
+	AnalysisRelationships []*SystemAnalysisRelationship `json:"analysis_relationships,omitempty"`
 	// Entries holds the value of the entries edge.
 	Entries []*SystemAnalysisEntry `json:"entries,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -86,10 +90,28 @@ func (e SystemAnalysisEdges) SubjectEntityOrErr() (*KnowledgeEntity, error) {
 	return nil, &NotLoadedError{edge: "subject_entity"}
 }
 
+// AnalysisEntitiesOrErr returns the AnalysisEntities value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemAnalysisEdges) AnalysisEntitiesOrErr() ([]*SystemAnalysisEntity, error) {
+	if e.loadedTypes[3] {
+		return e.AnalysisEntities, nil
+	}
+	return nil, &NotLoadedError{edge: "analysis_entities"}
+}
+
+// AnalysisRelationshipsOrErr returns the AnalysisRelationships value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemAnalysisEdges) AnalysisRelationshipsOrErr() ([]*SystemAnalysisRelationship, error) {
+	if e.loadedTypes[4] {
+		return e.AnalysisRelationships, nil
+	}
+	return nil, &NotLoadedError{edge: "analysis_relationships"}
+}
+
 // EntriesOrErr returns the Entries value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisEdges) EntriesOrErr() ([]*SystemAnalysisEntry, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[5] {
 		return e.Entries, nil
 	}
 	return nil, &NotLoadedError{edge: "entries"}
@@ -194,6 +216,16 @@ func (_m *SystemAnalysis) QueryScopeEntity() *KnowledgeEntityQuery {
 // QuerySubjectEntity queries the "subject_entity" edge of the SystemAnalysis entity.
 func (_m *SystemAnalysis) QuerySubjectEntity() *KnowledgeEntityQuery {
 	return NewSystemAnalysisClient(_m.config).QuerySubjectEntity(_m)
+}
+
+// QueryAnalysisEntities queries the "analysis_entities" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QueryAnalysisEntities() *SystemAnalysisEntityQuery {
+	return NewSystemAnalysisClient(_m.config).QueryAnalysisEntities(_m)
+}
+
+// QueryAnalysisRelationships queries the "analysis_relationships" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QueryAnalysisRelationships() *SystemAnalysisRelationshipQuery {
+	return NewSystemAnalysisClient(_m.config).QueryAnalysisRelationships(_m)
 }
 
 // QueryEntries queries the "entries" edge of the SystemAnalysis entity.

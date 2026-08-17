@@ -74,8 +74,10 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -152,8 +154,10 @@ const (
 	TypeRetrospectiveComment            = "RetrospectiveComment"
 	TypeRetrospectiveReview             = "RetrospectiveReview"
 	TypeSystemAnalysis                  = "SystemAnalysis"
+	TypeSystemAnalysisEntity            = "SystemAnalysisEntity"
 	TypeSystemAnalysisEntry             = "SystemAnalysisEntry"
 	TypeSystemAnalysisEntrySubject      = "SystemAnalysisEntrySubject"
+	TypeSystemAnalysisRelationship      = "SystemAnalysisRelationship"
 	TypeTask                            = "Task"
 	TypeTeam                            = "Team"
 	TypeTeamMembership                  = "TeamMembership"
@@ -49553,25 +49557,31 @@ func (m *RetrospectiveReviewMutation) ResetEdge(name string) error {
 // SystemAnalysisMutation represents an operation that mutates the SystemAnalysis nodes in the graph.
 type SystemAnalysisMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	created_at            *time.Time
-	updated_at            *time.Time
-	reference_time        *time.Time
-	clearedFields         map[string]struct{}
-	tenant                *int
-	clearedtenant         bool
-	scope_entity          *uuid.UUID
-	clearedscope_entity   bool
-	subject_entity        *uuid.UUID
-	clearedsubject_entity bool
-	entries               map[uuid.UUID]struct{}
-	removedentries        map[uuid.UUID]struct{}
-	clearedentries        bool
-	done                  bool
-	oldValue              func(context.Context) (*SystemAnalysis, error)
-	predicates            []predicate.SystemAnalysis
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	created_at                    *time.Time
+	updated_at                    *time.Time
+	reference_time                *time.Time
+	clearedFields                 map[string]struct{}
+	tenant                        *int
+	clearedtenant                 bool
+	scope_entity                  *uuid.UUID
+	clearedscope_entity           bool
+	subject_entity                *uuid.UUID
+	clearedsubject_entity         bool
+	analysis_entities             map[uuid.UUID]struct{}
+	removedanalysis_entities      map[uuid.UUID]struct{}
+	clearedanalysis_entities      bool
+	analysis_relationships        map[uuid.UUID]struct{}
+	removedanalysis_relationships map[uuid.UUID]struct{}
+	clearedanalysis_relationships bool
+	entries                       map[uuid.UUID]struct{}
+	removedentries                map[uuid.UUID]struct{}
+	clearedentries                bool
+	done                          bool
+	oldValue                      func(context.Context) (*SystemAnalysis, error)
+	predicates                    []predicate.SystemAnalysis
 }
 
 var _ ent.Mutation = (*SystemAnalysisMutation)(nil)
@@ -50014,6 +50024,114 @@ func (m *SystemAnalysisMutation) ResetSubjectEntity() {
 	m.clearedsubject_entity = false
 }
 
+// AddAnalysisEntityIDs adds the "analysis_entities" edge to the SystemAnalysisEntity entity by ids.
+func (m *SystemAnalysisMutation) AddAnalysisEntityIDs(ids ...uuid.UUID) {
+	if m.analysis_entities == nil {
+		m.analysis_entities = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.analysis_entities[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAnalysisEntities clears the "analysis_entities" edge to the SystemAnalysisEntity entity.
+func (m *SystemAnalysisMutation) ClearAnalysisEntities() {
+	m.clearedanalysis_entities = true
+}
+
+// AnalysisEntitiesCleared reports if the "analysis_entities" edge to the SystemAnalysisEntity entity was cleared.
+func (m *SystemAnalysisMutation) AnalysisEntitiesCleared() bool {
+	return m.clearedanalysis_entities
+}
+
+// RemoveAnalysisEntityIDs removes the "analysis_entities" edge to the SystemAnalysisEntity entity by IDs.
+func (m *SystemAnalysisMutation) RemoveAnalysisEntityIDs(ids ...uuid.UUID) {
+	if m.removedanalysis_entities == nil {
+		m.removedanalysis_entities = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.analysis_entities, ids[i])
+		m.removedanalysis_entities[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAnalysisEntities returns the removed IDs of the "analysis_entities" edge to the SystemAnalysisEntity entity.
+func (m *SystemAnalysisMutation) RemovedAnalysisEntitiesIDs() (ids []uuid.UUID) {
+	for id := range m.removedanalysis_entities {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AnalysisEntitiesIDs returns the "analysis_entities" edge IDs in the mutation.
+func (m *SystemAnalysisMutation) AnalysisEntitiesIDs() (ids []uuid.UUID) {
+	for id := range m.analysis_entities {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAnalysisEntities resets all changes to the "analysis_entities" edge.
+func (m *SystemAnalysisMutation) ResetAnalysisEntities() {
+	m.analysis_entities = nil
+	m.clearedanalysis_entities = false
+	m.removedanalysis_entities = nil
+}
+
+// AddAnalysisRelationshipIDs adds the "analysis_relationships" edge to the SystemAnalysisRelationship entity by ids.
+func (m *SystemAnalysisMutation) AddAnalysisRelationshipIDs(ids ...uuid.UUID) {
+	if m.analysis_relationships == nil {
+		m.analysis_relationships = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.analysis_relationships[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAnalysisRelationships clears the "analysis_relationships" edge to the SystemAnalysisRelationship entity.
+func (m *SystemAnalysisMutation) ClearAnalysisRelationships() {
+	m.clearedanalysis_relationships = true
+}
+
+// AnalysisRelationshipsCleared reports if the "analysis_relationships" edge to the SystemAnalysisRelationship entity was cleared.
+func (m *SystemAnalysisMutation) AnalysisRelationshipsCleared() bool {
+	return m.clearedanalysis_relationships
+}
+
+// RemoveAnalysisRelationshipIDs removes the "analysis_relationships" edge to the SystemAnalysisRelationship entity by IDs.
+func (m *SystemAnalysisMutation) RemoveAnalysisRelationshipIDs(ids ...uuid.UUID) {
+	if m.removedanalysis_relationships == nil {
+		m.removedanalysis_relationships = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.analysis_relationships, ids[i])
+		m.removedanalysis_relationships[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAnalysisRelationships returns the removed IDs of the "analysis_relationships" edge to the SystemAnalysisRelationship entity.
+func (m *SystemAnalysisMutation) RemovedAnalysisRelationshipsIDs() (ids []uuid.UUID) {
+	for id := range m.removedanalysis_relationships {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AnalysisRelationshipsIDs returns the "analysis_relationships" edge IDs in the mutation.
+func (m *SystemAnalysisMutation) AnalysisRelationshipsIDs() (ids []uuid.UUID) {
+	for id := range m.analysis_relationships {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAnalysisRelationships resets all changes to the "analysis_relationships" edge.
+func (m *SystemAnalysisMutation) ResetAnalysisRelationships() {
+	m.analysis_relationships = nil
+	m.clearedanalysis_relationships = false
+	m.removedanalysis_relationships = nil
+}
+
 // AddEntryIDs adds the "entries" edge to the SystemAnalysisEntry entity by ids.
 func (m *SystemAnalysisMutation) AddEntryIDs(ids ...uuid.UUID) {
 	if m.entries == nil {
@@ -50310,7 +50428,7 @@ func (m *SystemAnalysisMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemAnalysisMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, systemanalysis.EdgeTenant)
 	}
@@ -50319,6 +50437,12 @@ func (m *SystemAnalysisMutation) AddedEdges() []string {
 	}
 	if m.subject_entity != nil {
 		edges = append(edges, systemanalysis.EdgeSubjectEntity)
+	}
+	if m.analysis_entities != nil {
+		edges = append(edges, systemanalysis.EdgeAnalysisEntities)
+	}
+	if m.analysis_relationships != nil {
+		edges = append(edges, systemanalysis.EdgeAnalysisRelationships)
 	}
 	if m.entries != nil {
 		edges = append(edges, systemanalysis.EdgeEntries)
@@ -50342,6 +50466,18 @@ func (m *SystemAnalysisMutation) AddedIDs(name string) []ent.Value {
 		if id := m.subject_entity; id != nil {
 			return []ent.Value{*id}
 		}
+	case systemanalysis.EdgeAnalysisEntities:
+		ids := make([]ent.Value, 0, len(m.analysis_entities))
+		for id := range m.analysis_entities {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemanalysis.EdgeAnalysisRelationships:
+		ids := make([]ent.Value, 0, len(m.analysis_relationships))
+		for id := range m.analysis_relationships {
+			ids = append(ids, id)
+		}
+		return ids
 	case systemanalysis.EdgeEntries:
 		ids := make([]ent.Value, 0, len(m.entries))
 		for id := range m.entries {
@@ -50354,7 +50490,13 @@ func (m *SystemAnalysisMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemAnalysisMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
+	if m.removedanalysis_entities != nil {
+		edges = append(edges, systemanalysis.EdgeAnalysisEntities)
+	}
+	if m.removedanalysis_relationships != nil {
+		edges = append(edges, systemanalysis.EdgeAnalysisRelationships)
+	}
 	if m.removedentries != nil {
 		edges = append(edges, systemanalysis.EdgeEntries)
 	}
@@ -50365,6 +50507,18 @@ func (m *SystemAnalysisMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *SystemAnalysisMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case systemanalysis.EdgeAnalysisEntities:
+		ids := make([]ent.Value, 0, len(m.removedanalysis_entities))
+		for id := range m.removedanalysis_entities {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemanalysis.EdgeAnalysisRelationships:
+		ids := make([]ent.Value, 0, len(m.removedanalysis_relationships))
+		for id := range m.removedanalysis_relationships {
+			ids = append(ids, id)
+		}
+		return ids
 	case systemanalysis.EdgeEntries:
 		ids := make([]ent.Value, 0, len(m.removedentries))
 		for id := range m.removedentries {
@@ -50377,7 +50531,7 @@ func (m *SystemAnalysisMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemAnalysisMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, systemanalysis.EdgeTenant)
 	}
@@ -50386,6 +50540,12 @@ func (m *SystemAnalysisMutation) ClearedEdges() []string {
 	}
 	if m.clearedsubject_entity {
 		edges = append(edges, systemanalysis.EdgeSubjectEntity)
+	}
+	if m.clearedanalysis_entities {
+		edges = append(edges, systemanalysis.EdgeAnalysisEntities)
+	}
+	if m.clearedanalysis_relationships {
+		edges = append(edges, systemanalysis.EdgeAnalysisRelationships)
 	}
 	if m.clearedentries {
 		edges = append(edges, systemanalysis.EdgeEntries)
@@ -50403,6 +50563,10 @@ func (m *SystemAnalysisMutation) EdgeCleared(name string) bool {
 		return m.clearedscope_entity
 	case systemanalysis.EdgeSubjectEntity:
 		return m.clearedsubject_entity
+	case systemanalysis.EdgeAnalysisEntities:
+		return m.clearedanalysis_entities
+	case systemanalysis.EdgeAnalysisRelationships:
+		return m.clearedanalysis_relationships
 	case systemanalysis.EdgeEntries:
 		return m.clearedentries
 	}
@@ -50439,11 +50603,1204 @@ func (m *SystemAnalysisMutation) ResetEdge(name string) error {
 	case systemanalysis.EdgeSubjectEntity:
 		m.ResetSubjectEntity()
 		return nil
+	case systemanalysis.EdgeAnalysisEntities:
+		m.ResetAnalysisEntities()
+		return nil
+	case systemanalysis.EdgeAnalysisRelationships:
+		m.ResetAnalysisRelationships()
+		return nil
 	case systemanalysis.EdgeEntries:
 		m.ResetEntries()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysis edge %s", name)
+}
+
+// SystemAnalysisEntityMutation represents an operation that mutates the SystemAnalysisEntity nodes in the graph.
+type SystemAnalysisEntityMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	created_at              *time.Time
+	updated_at              *time.Time
+	pos_x                   *float64
+	addpos_x                *float64
+	pos_y                   *float64
+	addpos_y                *float64
+	hidden                  *bool
+	label_override          *string
+	description_override    *string
+	properties              *map[string]interface{}
+	clearedFields           map[string]struct{}
+	tenant                  *int
+	clearedtenant           bool
+	analysis                *uuid.UUID
+	clearedanalysis         bool
+	knowledge_entity        *uuid.UUID
+	clearedknowledge_entity bool
+	done                    bool
+	oldValue                func(context.Context) (*SystemAnalysisEntity, error)
+	predicates              []predicate.SystemAnalysisEntity
+}
+
+var _ ent.Mutation = (*SystemAnalysisEntityMutation)(nil)
+
+// systemanalysisentityOption allows management of the mutation configuration using functional options.
+type systemanalysisentityOption func(*SystemAnalysisEntityMutation)
+
+// newSystemAnalysisEntityMutation creates new mutation for the SystemAnalysisEntity entity.
+func newSystemAnalysisEntityMutation(c config, op Op, opts ...systemanalysisentityOption) *SystemAnalysisEntityMutation {
+	m := &SystemAnalysisEntityMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSystemAnalysisEntity,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSystemAnalysisEntityID sets the ID field of the mutation.
+func withSystemAnalysisEntityID(id uuid.UUID) systemanalysisentityOption {
+	return func(m *SystemAnalysisEntityMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *SystemAnalysisEntity
+		)
+		m.oldValue = func(ctx context.Context) (*SystemAnalysisEntity, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().SystemAnalysisEntity.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSystemAnalysisEntity sets the old SystemAnalysisEntity of the mutation.
+func withSystemAnalysisEntity(node *SystemAnalysisEntity) systemanalysisentityOption {
+	return func(m *SystemAnalysisEntityMutation) {
+		m.oldValue = func(context.Context) (*SystemAnalysisEntity, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SystemAnalysisEntityMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SystemAnalysisEntityMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of SystemAnalysisEntity entities.
+func (m *SystemAnalysisEntityMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SystemAnalysisEntityMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SystemAnalysisEntityMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().SystemAnalysisEntity.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *SystemAnalysisEntityMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *SystemAnalysisEntityMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the SystemAnalysisEntity entity.
+// If the SystemAnalysisEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntityMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *SystemAnalysisEntityMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *SystemAnalysisEntityMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *SystemAnalysisEntityMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the SystemAnalysisEntity entity.
+// If the SystemAnalysisEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntityMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *SystemAnalysisEntityMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *SystemAnalysisEntityMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *SystemAnalysisEntityMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the SystemAnalysisEntity entity.
+// If the SystemAnalysisEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntityMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *SystemAnalysisEntityMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetAnalysisID sets the "analysis_id" field.
+func (m *SystemAnalysisEntityMutation) SetAnalysisID(u uuid.UUID) {
+	m.analysis = &u
+}
+
+// AnalysisID returns the value of the "analysis_id" field in the mutation.
+func (m *SystemAnalysisEntityMutation) AnalysisID() (r uuid.UUID, exists bool) {
+	v := m.analysis
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAnalysisID returns the old "analysis_id" field's value of the SystemAnalysisEntity entity.
+// If the SystemAnalysisEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntityMutation) OldAnalysisID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAnalysisID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAnalysisID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAnalysisID: %w", err)
+	}
+	return oldValue.AnalysisID, nil
+}
+
+// ResetAnalysisID resets all changes to the "analysis_id" field.
+func (m *SystemAnalysisEntityMutation) ResetAnalysisID() {
+	m.analysis = nil
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (m *SystemAnalysisEntityMutation) SetKnowledgeEntityID(u uuid.UUID) {
+	m.knowledge_entity = &u
+}
+
+// KnowledgeEntityID returns the value of the "knowledge_entity_id" field in the mutation.
+func (m *SystemAnalysisEntityMutation) KnowledgeEntityID() (r uuid.UUID, exists bool) {
+	v := m.knowledge_entity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKnowledgeEntityID returns the old "knowledge_entity_id" field's value of the SystemAnalysisEntity entity.
+// If the SystemAnalysisEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntityMutation) OldKnowledgeEntityID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKnowledgeEntityID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKnowledgeEntityID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKnowledgeEntityID: %w", err)
+	}
+	return oldValue.KnowledgeEntityID, nil
+}
+
+// ResetKnowledgeEntityID resets all changes to the "knowledge_entity_id" field.
+func (m *SystemAnalysisEntityMutation) ResetKnowledgeEntityID() {
+	m.knowledge_entity = nil
+}
+
+// SetPosX sets the "pos_x" field.
+func (m *SystemAnalysisEntityMutation) SetPosX(f float64) {
+	m.pos_x = &f
+	m.addpos_x = nil
+}
+
+// PosX returns the value of the "pos_x" field in the mutation.
+func (m *SystemAnalysisEntityMutation) PosX() (r float64, exists bool) {
+	v := m.pos_x
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPosX returns the old "pos_x" field's value of the SystemAnalysisEntity entity.
+// If the SystemAnalysisEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntityMutation) OldPosX(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPosX is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPosX requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPosX: %w", err)
+	}
+	return oldValue.PosX, nil
+}
+
+// AddPosX adds f to the "pos_x" field.
+func (m *SystemAnalysisEntityMutation) AddPosX(f float64) {
+	if m.addpos_x != nil {
+		*m.addpos_x += f
+	} else {
+		m.addpos_x = &f
+	}
+}
+
+// AddedPosX returns the value that was added to the "pos_x" field in this mutation.
+func (m *SystemAnalysisEntityMutation) AddedPosX() (r float64, exists bool) {
+	v := m.addpos_x
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearPosX clears the value of the "pos_x" field.
+func (m *SystemAnalysisEntityMutation) ClearPosX() {
+	m.pos_x = nil
+	m.addpos_x = nil
+	m.clearedFields[systemanalysisentity.FieldPosX] = struct{}{}
+}
+
+// PosXCleared returns if the "pos_x" field was cleared in this mutation.
+func (m *SystemAnalysisEntityMutation) PosXCleared() bool {
+	_, ok := m.clearedFields[systemanalysisentity.FieldPosX]
+	return ok
+}
+
+// ResetPosX resets all changes to the "pos_x" field.
+func (m *SystemAnalysisEntityMutation) ResetPosX() {
+	m.pos_x = nil
+	m.addpos_x = nil
+	delete(m.clearedFields, systemanalysisentity.FieldPosX)
+}
+
+// SetPosY sets the "pos_y" field.
+func (m *SystemAnalysisEntityMutation) SetPosY(f float64) {
+	m.pos_y = &f
+	m.addpos_y = nil
+}
+
+// PosY returns the value of the "pos_y" field in the mutation.
+func (m *SystemAnalysisEntityMutation) PosY() (r float64, exists bool) {
+	v := m.pos_y
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPosY returns the old "pos_y" field's value of the SystemAnalysisEntity entity.
+// If the SystemAnalysisEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntityMutation) OldPosY(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPosY is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPosY requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPosY: %w", err)
+	}
+	return oldValue.PosY, nil
+}
+
+// AddPosY adds f to the "pos_y" field.
+func (m *SystemAnalysisEntityMutation) AddPosY(f float64) {
+	if m.addpos_y != nil {
+		*m.addpos_y += f
+	} else {
+		m.addpos_y = &f
+	}
+}
+
+// AddedPosY returns the value that was added to the "pos_y" field in this mutation.
+func (m *SystemAnalysisEntityMutation) AddedPosY() (r float64, exists bool) {
+	v := m.addpos_y
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearPosY clears the value of the "pos_y" field.
+func (m *SystemAnalysisEntityMutation) ClearPosY() {
+	m.pos_y = nil
+	m.addpos_y = nil
+	m.clearedFields[systemanalysisentity.FieldPosY] = struct{}{}
+}
+
+// PosYCleared returns if the "pos_y" field was cleared in this mutation.
+func (m *SystemAnalysisEntityMutation) PosYCleared() bool {
+	_, ok := m.clearedFields[systemanalysisentity.FieldPosY]
+	return ok
+}
+
+// ResetPosY resets all changes to the "pos_y" field.
+func (m *SystemAnalysisEntityMutation) ResetPosY() {
+	m.pos_y = nil
+	m.addpos_y = nil
+	delete(m.clearedFields, systemanalysisentity.FieldPosY)
+}
+
+// SetHidden sets the "hidden" field.
+func (m *SystemAnalysisEntityMutation) SetHidden(b bool) {
+	m.hidden = &b
+}
+
+// Hidden returns the value of the "hidden" field in the mutation.
+func (m *SystemAnalysisEntityMutation) Hidden() (r bool, exists bool) {
+	v := m.hidden
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHidden returns the old "hidden" field's value of the SystemAnalysisEntity entity.
+// If the SystemAnalysisEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntityMutation) OldHidden(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHidden is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHidden requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHidden: %w", err)
+	}
+	return oldValue.Hidden, nil
+}
+
+// ResetHidden resets all changes to the "hidden" field.
+func (m *SystemAnalysisEntityMutation) ResetHidden() {
+	m.hidden = nil
+}
+
+// SetLabelOverride sets the "label_override" field.
+func (m *SystemAnalysisEntityMutation) SetLabelOverride(s string) {
+	m.label_override = &s
+}
+
+// LabelOverride returns the value of the "label_override" field in the mutation.
+func (m *SystemAnalysisEntityMutation) LabelOverride() (r string, exists bool) {
+	v := m.label_override
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLabelOverride returns the old "label_override" field's value of the SystemAnalysisEntity entity.
+// If the SystemAnalysisEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntityMutation) OldLabelOverride(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLabelOverride is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLabelOverride requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLabelOverride: %w", err)
+	}
+	return oldValue.LabelOverride, nil
+}
+
+// ClearLabelOverride clears the value of the "label_override" field.
+func (m *SystemAnalysisEntityMutation) ClearLabelOverride() {
+	m.label_override = nil
+	m.clearedFields[systemanalysisentity.FieldLabelOverride] = struct{}{}
+}
+
+// LabelOverrideCleared returns if the "label_override" field was cleared in this mutation.
+func (m *SystemAnalysisEntityMutation) LabelOverrideCleared() bool {
+	_, ok := m.clearedFields[systemanalysisentity.FieldLabelOverride]
+	return ok
+}
+
+// ResetLabelOverride resets all changes to the "label_override" field.
+func (m *SystemAnalysisEntityMutation) ResetLabelOverride() {
+	m.label_override = nil
+	delete(m.clearedFields, systemanalysisentity.FieldLabelOverride)
+}
+
+// SetDescriptionOverride sets the "description_override" field.
+func (m *SystemAnalysisEntityMutation) SetDescriptionOverride(s string) {
+	m.description_override = &s
+}
+
+// DescriptionOverride returns the value of the "description_override" field in the mutation.
+func (m *SystemAnalysisEntityMutation) DescriptionOverride() (r string, exists bool) {
+	v := m.description_override
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescriptionOverride returns the old "description_override" field's value of the SystemAnalysisEntity entity.
+// If the SystemAnalysisEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntityMutation) OldDescriptionOverride(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescriptionOverride is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescriptionOverride requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescriptionOverride: %w", err)
+	}
+	return oldValue.DescriptionOverride, nil
+}
+
+// ClearDescriptionOverride clears the value of the "description_override" field.
+func (m *SystemAnalysisEntityMutation) ClearDescriptionOverride() {
+	m.description_override = nil
+	m.clearedFields[systemanalysisentity.FieldDescriptionOverride] = struct{}{}
+}
+
+// DescriptionOverrideCleared returns if the "description_override" field was cleared in this mutation.
+func (m *SystemAnalysisEntityMutation) DescriptionOverrideCleared() bool {
+	_, ok := m.clearedFields[systemanalysisentity.FieldDescriptionOverride]
+	return ok
+}
+
+// ResetDescriptionOverride resets all changes to the "description_override" field.
+func (m *SystemAnalysisEntityMutation) ResetDescriptionOverride() {
+	m.description_override = nil
+	delete(m.clearedFields, systemanalysisentity.FieldDescriptionOverride)
+}
+
+// SetProperties sets the "properties" field.
+func (m *SystemAnalysisEntityMutation) SetProperties(value map[string]interface{}) {
+	m.properties = &value
+}
+
+// Properties returns the value of the "properties" field in the mutation.
+func (m *SystemAnalysisEntityMutation) Properties() (r map[string]interface{}, exists bool) {
+	v := m.properties
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProperties returns the old "properties" field's value of the SystemAnalysisEntity entity.
+// If the SystemAnalysisEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntityMutation) OldProperties(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProperties is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProperties requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProperties: %w", err)
+	}
+	return oldValue.Properties, nil
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (m *SystemAnalysisEntityMutation) ClearProperties() {
+	m.properties = nil
+	m.clearedFields[systemanalysisentity.FieldProperties] = struct{}{}
+}
+
+// PropertiesCleared returns if the "properties" field was cleared in this mutation.
+func (m *SystemAnalysisEntityMutation) PropertiesCleared() bool {
+	_, ok := m.clearedFields[systemanalysisentity.FieldProperties]
+	return ok
+}
+
+// ResetProperties resets all changes to the "properties" field.
+func (m *SystemAnalysisEntityMutation) ResetProperties() {
+	m.properties = nil
+	delete(m.clearedFields, systemanalysisentity.FieldProperties)
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *SystemAnalysisEntityMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[systemanalysisentity.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *SystemAnalysisEntityMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisEntityMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *SystemAnalysisEntityMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearAnalysis clears the "analysis" edge to the SystemAnalysis entity.
+func (m *SystemAnalysisEntityMutation) ClearAnalysis() {
+	m.clearedanalysis = true
+	m.clearedFields[systemanalysisentity.FieldAnalysisID] = struct{}{}
+}
+
+// AnalysisCleared reports if the "analysis" edge to the SystemAnalysis entity was cleared.
+func (m *SystemAnalysisEntityMutation) AnalysisCleared() bool {
+	return m.clearedanalysis
+}
+
+// AnalysisIDs returns the "analysis" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AnalysisID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisEntityMutation) AnalysisIDs() (ids []uuid.UUID) {
+	if id := m.analysis; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAnalysis resets all changes to the "analysis" edge.
+func (m *SystemAnalysisEntityMutation) ResetAnalysis() {
+	m.analysis = nil
+	m.clearedanalysis = false
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (m *SystemAnalysisEntityMutation) ClearKnowledgeEntity() {
+	m.clearedknowledge_entity = true
+	m.clearedFields[systemanalysisentity.FieldKnowledgeEntityID] = struct{}{}
+}
+
+// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
+func (m *SystemAnalysisEntityMutation) KnowledgeEntityCleared() bool {
+	return m.clearedknowledge_entity
+}
+
+// KnowledgeEntityIDs returns the "knowledge_entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// KnowledgeEntityID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisEntityMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
+	if id := m.knowledge_entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetKnowledgeEntity resets all changes to the "knowledge_entity" edge.
+func (m *SystemAnalysisEntityMutation) ResetKnowledgeEntity() {
+	m.knowledge_entity = nil
+	m.clearedknowledge_entity = false
+}
+
+// Where appends a list predicates to the SystemAnalysisEntityMutation builder.
+func (m *SystemAnalysisEntityMutation) Where(ps ...predicate.SystemAnalysisEntity) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the SystemAnalysisEntityMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *SystemAnalysisEntityMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.SystemAnalysisEntity, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *SystemAnalysisEntityMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *SystemAnalysisEntityMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (SystemAnalysisEntity).
+func (m *SystemAnalysisEntityMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SystemAnalysisEntityMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.tenant != nil {
+		fields = append(fields, systemanalysisentity.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, systemanalysisentity.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, systemanalysisentity.FieldUpdatedAt)
+	}
+	if m.analysis != nil {
+		fields = append(fields, systemanalysisentity.FieldAnalysisID)
+	}
+	if m.knowledge_entity != nil {
+		fields = append(fields, systemanalysisentity.FieldKnowledgeEntityID)
+	}
+	if m.pos_x != nil {
+		fields = append(fields, systemanalysisentity.FieldPosX)
+	}
+	if m.pos_y != nil {
+		fields = append(fields, systemanalysisentity.FieldPosY)
+	}
+	if m.hidden != nil {
+		fields = append(fields, systemanalysisentity.FieldHidden)
+	}
+	if m.label_override != nil {
+		fields = append(fields, systemanalysisentity.FieldLabelOverride)
+	}
+	if m.description_override != nil {
+		fields = append(fields, systemanalysisentity.FieldDescriptionOverride)
+	}
+	if m.properties != nil {
+		fields = append(fields, systemanalysisentity.FieldProperties)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SystemAnalysisEntityMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case systemanalysisentity.FieldTenantID:
+		return m.TenantID()
+	case systemanalysisentity.FieldCreatedAt:
+		return m.CreatedAt()
+	case systemanalysisentity.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case systemanalysisentity.FieldAnalysisID:
+		return m.AnalysisID()
+	case systemanalysisentity.FieldKnowledgeEntityID:
+		return m.KnowledgeEntityID()
+	case systemanalysisentity.FieldPosX:
+		return m.PosX()
+	case systemanalysisentity.FieldPosY:
+		return m.PosY()
+	case systemanalysisentity.FieldHidden:
+		return m.Hidden()
+	case systemanalysisentity.FieldLabelOverride:
+		return m.LabelOverride()
+	case systemanalysisentity.FieldDescriptionOverride:
+		return m.DescriptionOverride()
+	case systemanalysisentity.FieldProperties:
+		return m.Properties()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SystemAnalysisEntityMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case systemanalysisentity.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case systemanalysisentity.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case systemanalysisentity.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case systemanalysisentity.FieldAnalysisID:
+		return m.OldAnalysisID(ctx)
+	case systemanalysisentity.FieldKnowledgeEntityID:
+		return m.OldKnowledgeEntityID(ctx)
+	case systemanalysisentity.FieldPosX:
+		return m.OldPosX(ctx)
+	case systemanalysisentity.FieldPosY:
+		return m.OldPosY(ctx)
+	case systemanalysisentity.FieldHidden:
+		return m.OldHidden(ctx)
+	case systemanalysisentity.FieldLabelOverride:
+		return m.OldLabelOverride(ctx)
+	case systemanalysisentity.FieldDescriptionOverride:
+		return m.OldDescriptionOverride(ctx)
+	case systemanalysisentity.FieldProperties:
+		return m.OldProperties(ctx)
+	}
+	return nil, fmt.Errorf("unknown SystemAnalysisEntity field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemAnalysisEntityMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case systemanalysisentity.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case systemanalysisentity.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case systemanalysisentity.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case systemanalysisentity.FieldAnalysisID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAnalysisID(v)
+		return nil
+	case systemanalysisentity.FieldKnowledgeEntityID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKnowledgeEntityID(v)
+		return nil
+	case systemanalysisentity.FieldPosX:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPosX(v)
+		return nil
+	case systemanalysisentity.FieldPosY:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPosY(v)
+		return nil
+	case systemanalysisentity.FieldHidden:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHidden(v)
+		return nil
+	case systemanalysisentity.FieldLabelOverride:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLabelOverride(v)
+		return nil
+	case systemanalysisentity.FieldDescriptionOverride:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescriptionOverride(v)
+		return nil
+	case systemanalysisentity.FieldProperties:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProperties(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SystemAnalysisEntity field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SystemAnalysisEntityMutation) AddedFields() []string {
+	var fields []string
+	if m.addpos_x != nil {
+		fields = append(fields, systemanalysisentity.FieldPosX)
+	}
+	if m.addpos_y != nil {
+		fields = append(fields, systemanalysisentity.FieldPosY)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SystemAnalysisEntityMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case systemanalysisentity.FieldPosX:
+		return m.AddedPosX()
+	case systemanalysisentity.FieldPosY:
+		return m.AddedPosY()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemAnalysisEntityMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case systemanalysisentity.FieldPosX:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPosX(v)
+		return nil
+	case systemanalysisentity.FieldPosY:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPosY(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SystemAnalysisEntity numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SystemAnalysisEntityMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(systemanalysisentity.FieldPosX) {
+		fields = append(fields, systemanalysisentity.FieldPosX)
+	}
+	if m.FieldCleared(systemanalysisentity.FieldPosY) {
+		fields = append(fields, systemanalysisentity.FieldPosY)
+	}
+	if m.FieldCleared(systemanalysisentity.FieldLabelOverride) {
+		fields = append(fields, systemanalysisentity.FieldLabelOverride)
+	}
+	if m.FieldCleared(systemanalysisentity.FieldDescriptionOverride) {
+		fields = append(fields, systemanalysisentity.FieldDescriptionOverride)
+	}
+	if m.FieldCleared(systemanalysisentity.FieldProperties) {
+		fields = append(fields, systemanalysisentity.FieldProperties)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SystemAnalysisEntityMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SystemAnalysisEntityMutation) ClearField(name string) error {
+	switch name {
+	case systemanalysisentity.FieldPosX:
+		m.ClearPosX()
+		return nil
+	case systemanalysisentity.FieldPosY:
+		m.ClearPosY()
+		return nil
+	case systemanalysisentity.FieldLabelOverride:
+		m.ClearLabelOverride()
+		return nil
+	case systemanalysisentity.FieldDescriptionOverride:
+		m.ClearDescriptionOverride()
+		return nil
+	case systemanalysisentity.FieldProperties:
+		m.ClearProperties()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemAnalysisEntity nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SystemAnalysisEntityMutation) ResetField(name string) error {
+	switch name {
+	case systemanalysisentity.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case systemanalysisentity.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case systemanalysisentity.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case systemanalysisentity.FieldAnalysisID:
+		m.ResetAnalysisID()
+		return nil
+	case systemanalysisentity.FieldKnowledgeEntityID:
+		m.ResetKnowledgeEntityID()
+		return nil
+	case systemanalysisentity.FieldPosX:
+		m.ResetPosX()
+		return nil
+	case systemanalysisentity.FieldPosY:
+		m.ResetPosY()
+		return nil
+	case systemanalysisentity.FieldHidden:
+		m.ResetHidden()
+		return nil
+	case systemanalysisentity.FieldLabelOverride:
+		m.ResetLabelOverride()
+		return nil
+	case systemanalysisentity.FieldDescriptionOverride:
+		m.ResetDescriptionOverride()
+		return nil
+	case systemanalysisentity.FieldProperties:
+		m.ResetProperties()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemAnalysisEntity field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SystemAnalysisEntityMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.tenant != nil {
+		edges = append(edges, systemanalysisentity.EdgeTenant)
+	}
+	if m.analysis != nil {
+		edges = append(edges, systemanalysisentity.EdgeAnalysis)
+	}
+	if m.knowledge_entity != nil {
+		edges = append(edges, systemanalysisentity.EdgeKnowledgeEntity)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SystemAnalysisEntityMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case systemanalysisentity.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case systemanalysisentity.EdgeAnalysis:
+		if id := m.analysis; id != nil {
+			return []ent.Value{*id}
+		}
+	case systemanalysisentity.EdgeKnowledgeEntity:
+		if id := m.knowledge_entity; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SystemAnalysisEntityMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SystemAnalysisEntityMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SystemAnalysisEntityMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedtenant {
+		edges = append(edges, systemanalysisentity.EdgeTenant)
+	}
+	if m.clearedanalysis {
+		edges = append(edges, systemanalysisentity.EdgeAnalysis)
+	}
+	if m.clearedknowledge_entity {
+		edges = append(edges, systemanalysisentity.EdgeKnowledgeEntity)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SystemAnalysisEntityMutation) EdgeCleared(name string) bool {
+	switch name {
+	case systemanalysisentity.EdgeTenant:
+		return m.clearedtenant
+	case systemanalysisentity.EdgeAnalysis:
+		return m.clearedanalysis
+	case systemanalysisentity.EdgeKnowledgeEntity:
+		return m.clearedknowledge_entity
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SystemAnalysisEntityMutation) ClearEdge(name string) error {
+	switch name {
+	case systemanalysisentity.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case systemanalysisentity.EdgeAnalysis:
+		m.ClearAnalysis()
+		return nil
+	case systemanalysisentity.EdgeKnowledgeEntity:
+		m.ClearKnowledgeEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemAnalysisEntity unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SystemAnalysisEntityMutation) ResetEdge(name string) error {
+	switch name {
+	case systemanalysisentity.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case systemanalysisentity.EdgeAnalysis:
+		m.ResetAnalysis()
+		return nil
+	case systemanalysisentity.EdgeKnowledgeEntity:
+		m.ResetKnowledgeEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemAnalysisEntity edge %s", name)
 }
 
 // SystemAnalysisEntryMutation represents an operation that mutates the SystemAnalysisEntry nodes in the graph.
@@ -52554,6 +53911,1278 @@ func (m *SystemAnalysisEntrySubjectMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisEntrySubject edge %s", name)
+}
+
+// SystemAnalysisRelationshipMutation represents an operation that mutates the SystemAnalysisRelationship nodes in the graph.
+type SystemAnalysisRelationshipMutation struct {
+	config
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	created_at                    *time.Time
+	updated_at                    *time.Time
+	hidden                        *bool
+	label_override                *string
+	description_override          *string
+	layout                        *map[string]interface{}
+	properties                    *map[string]interface{}
+	clearedFields                 map[string]struct{}
+	tenant                        *int
+	clearedtenant                 bool
+	analysis                      *uuid.UUID
+	clearedanalysis               bool
+	knowledge_relationship        *uuid.UUID
+	clearedknowledge_relationship bool
+	source_entity                 *uuid.UUID
+	clearedsource_entity          bool
+	target_entity                 *uuid.UUID
+	clearedtarget_entity          bool
+	done                          bool
+	oldValue                      func(context.Context) (*SystemAnalysisRelationship, error)
+	predicates                    []predicate.SystemAnalysisRelationship
+}
+
+var _ ent.Mutation = (*SystemAnalysisRelationshipMutation)(nil)
+
+// systemanalysisrelationshipOption allows management of the mutation configuration using functional options.
+type systemanalysisrelationshipOption func(*SystemAnalysisRelationshipMutation)
+
+// newSystemAnalysisRelationshipMutation creates new mutation for the SystemAnalysisRelationship entity.
+func newSystemAnalysisRelationshipMutation(c config, op Op, opts ...systemanalysisrelationshipOption) *SystemAnalysisRelationshipMutation {
+	m := &SystemAnalysisRelationshipMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSystemAnalysisRelationship,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSystemAnalysisRelationshipID sets the ID field of the mutation.
+func withSystemAnalysisRelationshipID(id uuid.UUID) systemanalysisrelationshipOption {
+	return func(m *SystemAnalysisRelationshipMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *SystemAnalysisRelationship
+		)
+		m.oldValue = func(ctx context.Context) (*SystemAnalysisRelationship, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().SystemAnalysisRelationship.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSystemAnalysisRelationship sets the old SystemAnalysisRelationship of the mutation.
+func withSystemAnalysisRelationship(node *SystemAnalysisRelationship) systemanalysisrelationshipOption {
+	return func(m *SystemAnalysisRelationshipMutation) {
+		m.oldValue = func(context.Context) (*SystemAnalysisRelationship, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SystemAnalysisRelationshipMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SystemAnalysisRelationshipMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of SystemAnalysisRelationship entities.
+func (m *SystemAnalysisRelationshipMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SystemAnalysisRelationshipMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SystemAnalysisRelationshipMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().SystemAnalysisRelationship.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *SystemAnalysisRelationshipMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *SystemAnalysisRelationshipMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *SystemAnalysisRelationshipMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *SystemAnalysisRelationshipMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *SystemAnalysisRelationshipMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *SystemAnalysisRelationshipMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetAnalysisID sets the "analysis_id" field.
+func (m *SystemAnalysisRelationshipMutation) SetAnalysisID(u uuid.UUID) {
+	m.analysis = &u
+}
+
+// AnalysisID returns the value of the "analysis_id" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) AnalysisID() (r uuid.UUID, exists bool) {
+	v := m.analysis
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAnalysisID returns the old "analysis_id" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldAnalysisID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAnalysisID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAnalysisID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAnalysisID: %w", err)
+	}
+	return oldValue.AnalysisID, nil
+}
+
+// ResetAnalysisID resets all changes to the "analysis_id" field.
+func (m *SystemAnalysisRelationshipMutation) ResetAnalysisID() {
+	m.analysis = nil
+}
+
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (m *SystemAnalysisRelationshipMutation) SetKnowledgeRelationshipID(u uuid.UUID) {
+	m.knowledge_relationship = &u
+}
+
+// KnowledgeRelationshipID returns the value of the "knowledge_relationship_id" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) KnowledgeRelationshipID() (r uuid.UUID, exists bool) {
+	v := m.knowledge_relationship
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKnowledgeRelationshipID returns the old "knowledge_relationship_id" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldKnowledgeRelationshipID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKnowledgeRelationshipID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKnowledgeRelationshipID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKnowledgeRelationshipID: %w", err)
+	}
+	return oldValue.KnowledgeRelationshipID, nil
+}
+
+// ResetKnowledgeRelationshipID resets all changes to the "knowledge_relationship_id" field.
+func (m *SystemAnalysisRelationshipMutation) ResetKnowledgeRelationshipID() {
+	m.knowledge_relationship = nil
+}
+
+// SetSourceAnalysisEntityID sets the "source_analysis_entity_id" field.
+func (m *SystemAnalysisRelationshipMutation) SetSourceAnalysisEntityID(u uuid.UUID) {
+	m.source_entity = &u
+}
+
+// SourceAnalysisEntityID returns the value of the "source_analysis_entity_id" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) SourceAnalysisEntityID() (r uuid.UUID, exists bool) {
+	v := m.source_entity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceAnalysisEntityID returns the old "source_analysis_entity_id" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldSourceAnalysisEntityID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourceAnalysisEntityID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourceAnalysisEntityID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceAnalysisEntityID: %w", err)
+	}
+	return oldValue.SourceAnalysisEntityID, nil
+}
+
+// ResetSourceAnalysisEntityID resets all changes to the "source_analysis_entity_id" field.
+func (m *SystemAnalysisRelationshipMutation) ResetSourceAnalysisEntityID() {
+	m.source_entity = nil
+}
+
+// SetTargetAnalysisEntityID sets the "target_analysis_entity_id" field.
+func (m *SystemAnalysisRelationshipMutation) SetTargetAnalysisEntityID(u uuid.UUID) {
+	m.target_entity = &u
+}
+
+// TargetAnalysisEntityID returns the value of the "target_analysis_entity_id" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) TargetAnalysisEntityID() (r uuid.UUID, exists bool) {
+	v := m.target_entity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetAnalysisEntityID returns the old "target_analysis_entity_id" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldTargetAnalysisEntityID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetAnalysisEntityID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetAnalysisEntityID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetAnalysisEntityID: %w", err)
+	}
+	return oldValue.TargetAnalysisEntityID, nil
+}
+
+// ResetTargetAnalysisEntityID resets all changes to the "target_analysis_entity_id" field.
+func (m *SystemAnalysisRelationshipMutation) ResetTargetAnalysisEntityID() {
+	m.target_entity = nil
+}
+
+// SetHidden sets the "hidden" field.
+func (m *SystemAnalysisRelationshipMutation) SetHidden(b bool) {
+	m.hidden = &b
+}
+
+// Hidden returns the value of the "hidden" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) Hidden() (r bool, exists bool) {
+	v := m.hidden
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHidden returns the old "hidden" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldHidden(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHidden is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHidden requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHidden: %w", err)
+	}
+	return oldValue.Hidden, nil
+}
+
+// ResetHidden resets all changes to the "hidden" field.
+func (m *SystemAnalysisRelationshipMutation) ResetHidden() {
+	m.hidden = nil
+}
+
+// SetLabelOverride sets the "label_override" field.
+func (m *SystemAnalysisRelationshipMutation) SetLabelOverride(s string) {
+	m.label_override = &s
+}
+
+// LabelOverride returns the value of the "label_override" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) LabelOverride() (r string, exists bool) {
+	v := m.label_override
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLabelOverride returns the old "label_override" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldLabelOverride(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLabelOverride is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLabelOverride requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLabelOverride: %w", err)
+	}
+	return oldValue.LabelOverride, nil
+}
+
+// ClearLabelOverride clears the value of the "label_override" field.
+func (m *SystemAnalysisRelationshipMutation) ClearLabelOverride() {
+	m.label_override = nil
+	m.clearedFields[systemanalysisrelationship.FieldLabelOverride] = struct{}{}
+}
+
+// LabelOverrideCleared returns if the "label_override" field was cleared in this mutation.
+func (m *SystemAnalysisRelationshipMutation) LabelOverrideCleared() bool {
+	_, ok := m.clearedFields[systemanalysisrelationship.FieldLabelOverride]
+	return ok
+}
+
+// ResetLabelOverride resets all changes to the "label_override" field.
+func (m *SystemAnalysisRelationshipMutation) ResetLabelOverride() {
+	m.label_override = nil
+	delete(m.clearedFields, systemanalysisrelationship.FieldLabelOverride)
+}
+
+// SetDescriptionOverride sets the "description_override" field.
+func (m *SystemAnalysisRelationshipMutation) SetDescriptionOverride(s string) {
+	m.description_override = &s
+}
+
+// DescriptionOverride returns the value of the "description_override" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) DescriptionOverride() (r string, exists bool) {
+	v := m.description_override
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescriptionOverride returns the old "description_override" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldDescriptionOverride(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescriptionOverride is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescriptionOverride requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescriptionOverride: %w", err)
+	}
+	return oldValue.DescriptionOverride, nil
+}
+
+// ClearDescriptionOverride clears the value of the "description_override" field.
+func (m *SystemAnalysisRelationshipMutation) ClearDescriptionOverride() {
+	m.description_override = nil
+	m.clearedFields[systemanalysisrelationship.FieldDescriptionOverride] = struct{}{}
+}
+
+// DescriptionOverrideCleared returns if the "description_override" field was cleared in this mutation.
+func (m *SystemAnalysisRelationshipMutation) DescriptionOverrideCleared() bool {
+	_, ok := m.clearedFields[systemanalysisrelationship.FieldDescriptionOverride]
+	return ok
+}
+
+// ResetDescriptionOverride resets all changes to the "description_override" field.
+func (m *SystemAnalysisRelationshipMutation) ResetDescriptionOverride() {
+	m.description_override = nil
+	delete(m.clearedFields, systemanalysisrelationship.FieldDescriptionOverride)
+}
+
+// SetLayout sets the "layout" field.
+func (m *SystemAnalysisRelationshipMutation) SetLayout(value map[string]interface{}) {
+	m.layout = &value
+}
+
+// Layout returns the value of the "layout" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) Layout() (r map[string]interface{}, exists bool) {
+	v := m.layout
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLayout returns the old "layout" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldLayout(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLayout is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLayout requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLayout: %w", err)
+	}
+	return oldValue.Layout, nil
+}
+
+// ClearLayout clears the value of the "layout" field.
+func (m *SystemAnalysisRelationshipMutation) ClearLayout() {
+	m.layout = nil
+	m.clearedFields[systemanalysisrelationship.FieldLayout] = struct{}{}
+}
+
+// LayoutCleared returns if the "layout" field was cleared in this mutation.
+func (m *SystemAnalysisRelationshipMutation) LayoutCleared() bool {
+	_, ok := m.clearedFields[systemanalysisrelationship.FieldLayout]
+	return ok
+}
+
+// ResetLayout resets all changes to the "layout" field.
+func (m *SystemAnalysisRelationshipMutation) ResetLayout() {
+	m.layout = nil
+	delete(m.clearedFields, systemanalysisrelationship.FieldLayout)
+}
+
+// SetProperties sets the "properties" field.
+func (m *SystemAnalysisRelationshipMutation) SetProperties(value map[string]interface{}) {
+	m.properties = &value
+}
+
+// Properties returns the value of the "properties" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) Properties() (r map[string]interface{}, exists bool) {
+	v := m.properties
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProperties returns the old "properties" field's value of the SystemAnalysisRelationship entity.
+// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisRelationshipMutation) OldProperties(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProperties is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProperties requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProperties: %w", err)
+	}
+	return oldValue.Properties, nil
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (m *SystemAnalysisRelationshipMutation) ClearProperties() {
+	m.properties = nil
+	m.clearedFields[systemanalysisrelationship.FieldProperties] = struct{}{}
+}
+
+// PropertiesCleared returns if the "properties" field was cleared in this mutation.
+func (m *SystemAnalysisRelationshipMutation) PropertiesCleared() bool {
+	_, ok := m.clearedFields[systemanalysisrelationship.FieldProperties]
+	return ok
+}
+
+// ResetProperties resets all changes to the "properties" field.
+func (m *SystemAnalysisRelationshipMutation) ResetProperties() {
+	m.properties = nil
+	delete(m.clearedFields, systemanalysisrelationship.FieldProperties)
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *SystemAnalysisRelationshipMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[systemanalysisrelationship.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *SystemAnalysisRelationshipMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisRelationshipMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *SystemAnalysisRelationshipMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearAnalysis clears the "analysis" edge to the SystemAnalysis entity.
+func (m *SystemAnalysisRelationshipMutation) ClearAnalysis() {
+	m.clearedanalysis = true
+	m.clearedFields[systemanalysisrelationship.FieldAnalysisID] = struct{}{}
+}
+
+// AnalysisCleared reports if the "analysis" edge to the SystemAnalysis entity was cleared.
+func (m *SystemAnalysisRelationshipMutation) AnalysisCleared() bool {
+	return m.clearedanalysis
+}
+
+// AnalysisIDs returns the "analysis" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AnalysisID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisRelationshipMutation) AnalysisIDs() (ids []uuid.UUID) {
+	if id := m.analysis; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAnalysis resets all changes to the "analysis" edge.
+func (m *SystemAnalysisRelationshipMutation) ResetAnalysis() {
+	m.analysis = nil
+	m.clearedanalysis = false
+}
+
+// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (m *SystemAnalysisRelationshipMutation) ClearKnowledgeRelationship() {
+	m.clearedknowledge_relationship = true
+	m.clearedFields[systemanalysisrelationship.FieldKnowledgeRelationshipID] = struct{}{}
+}
+
+// KnowledgeRelationshipCleared reports if the "knowledge_relationship" edge to the KnowledgeRelationship entity was cleared.
+func (m *SystemAnalysisRelationshipMutation) KnowledgeRelationshipCleared() bool {
+	return m.clearedknowledge_relationship
+}
+
+// KnowledgeRelationshipIDs returns the "knowledge_relationship" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// KnowledgeRelationshipID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisRelationshipMutation) KnowledgeRelationshipIDs() (ids []uuid.UUID) {
+	if id := m.knowledge_relationship; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetKnowledgeRelationship resets all changes to the "knowledge_relationship" edge.
+func (m *SystemAnalysisRelationshipMutation) ResetKnowledgeRelationship() {
+	m.knowledge_relationship = nil
+	m.clearedknowledge_relationship = false
+}
+
+// SetSourceEntityID sets the "source_entity" edge to the SystemAnalysisEntity entity by id.
+func (m *SystemAnalysisRelationshipMutation) SetSourceEntityID(id uuid.UUID) {
+	m.source_entity = &id
+}
+
+// ClearSourceEntity clears the "source_entity" edge to the SystemAnalysisEntity entity.
+func (m *SystemAnalysisRelationshipMutation) ClearSourceEntity() {
+	m.clearedsource_entity = true
+	m.clearedFields[systemanalysisrelationship.FieldSourceAnalysisEntityID] = struct{}{}
+}
+
+// SourceEntityCleared reports if the "source_entity" edge to the SystemAnalysisEntity entity was cleared.
+func (m *SystemAnalysisRelationshipMutation) SourceEntityCleared() bool {
+	return m.clearedsource_entity
+}
+
+// SourceEntityID returns the "source_entity" edge ID in the mutation.
+func (m *SystemAnalysisRelationshipMutation) SourceEntityID() (id uuid.UUID, exists bool) {
+	if m.source_entity != nil {
+		return *m.source_entity, true
+	}
+	return
+}
+
+// SourceEntityIDs returns the "source_entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SourceEntityID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisRelationshipMutation) SourceEntityIDs() (ids []uuid.UUID) {
+	if id := m.source_entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetSourceEntity resets all changes to the "source_entity" edge.
+func (m *SystemAnalysisRelationshipMutation) ResetSourceEntity() {
+	m.source_entity = nil
+	m.clearedsource_entity = false
+}
+
+// SetTargetEntityID sets the "target_entity" edge to the SystemAnalysisEntity entity by id.
+func (m *SystemAnalysisRelationshipMutation) SetTargetEntityID(id uuid.UUID) {
+	m.target_entity = &id
+}
+
+// ClearTargetEntity clears the "target_entity" edge to the SystemAnalysisEntity entity.
+func (m *SystemAnalysisRelationshipMutation) ClearTargetEntity() {
+	m.clearedtarget_entity = true
+	m.clearedFields[systemanalysisrelationship.FieldTargetAnalysisEntityID] = struct{}{}
+}
+
+// TargetEntityCleared reports if the "target_entity" edge to the SystemAnalysisEntity entity was cleared.
+func (m *SystemAnalysisRelationshipMutation) TargetEntityCleared() bool {
+	return m.clearedtarget_entity
+}
+
+// TargetEntityID returns the "target_entity" edge ID in the mutation.
+func (m *SystemAnalysisRelationshipMutation) TargetEntityID() (id uuid.UUID, exists bool) {
+	if m.target_entity != nil {
+		return *m.target_entity, true
+	}
+	return
+}
+
+// TargetEntityIDs returns the "target_entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TargetEntityID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisRelationshipMutation) TargetEntityIDs() (ids []uuid.UUID) {
+	if id := m.target_entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTargetEntity resets all changes to the "target_entity" edge.
+func (m *SystemAnalysisRelationshipMutation) ResetTargetEntity() {
+	m.target_entity = nil
+	m.clearedtarget_entity = false
+}
+
+// Where appends a list predicates to the SystemAnalysisRelationshipMutation builder.
+func (m *SystemAnalysisRelationshipMutation) Where(ps ...predicate.SystemAnalysisRelationship) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the SystemAnalysisRelationshipMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *SystemAnalysisRelationshipMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.SystemAnalysisRelationship, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *SystemAnalysisRelationshipMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *SystemAnalysisRelationshipMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (SystemAnalysisRelationship).
+func (m *SystemAnalysisRelationshipMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SystemAnalysisRelationshipMutation) Fields() []string {
+	fields := make([]string, 0, 12)
+	if m.tenant != nil {
+		fields = append(fields, systemanalysisrelationship.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, systemanalysisrelationship.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, systemanalysisrelationship.FieldUpdatedAt)
+	}
+	if m.analysis != nil {
+		fields = append(fields, systemanalysisrelationship.FieldAnalysisID)
+	}
+	if m.knowledge_relationship != nil {
+		fields = append(fields, systemanalysisrelationship.FieldKnowledgeRelationshipID)
+	}
+	if m.source_entity != nil {
+		fields = append(fields, systemanalysisrelationship.FieldSourceAnalysisEntityID)
+	}
+	if m.target_entity != nil {
+		fields = append(fields, systemanalysisrelationship.FieldTargetAnalysisEntityID)
+	}
+	if m.hidden != nil {
+		fields = append(fields, systemanalysisrelationship.FieldHidden)
+	}
+	if m.label_override != nil {
+		fields = append(fields, systemanalysisrelationship.FieldLabelOverride)
+	}
+	if m.description_override != nil {
+		fields = append(fields, systemanalysisrelationship.FieldDescriptionOverride)
+	}
+	if m.layout != nil {
+		fields = append(fields, systemanalysisrelationship.FieldLayout)
+	}
+	if m.properties != nil {
+		fields = append(fields, systemanalysisrelationship.FieldProperties)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SystemAnalysisRelationshipMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case systemanalysisrelationship.FieldTenantID:
+		return m.TenantID()
+	case systemanalysisrelationship.FieldCreatedAt:
+		return m.CreatedAt()
+	case systemanalysisrelationship.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case systemanalysisrelationship.FieldAnalysisID:
+		return m.AnalysisID()
+	case systemanalysisrelationship.FieldKnowledgeRelationshipID:
+		return m.KnowledgeRelationshipID()
+	case systemanalysisrelationship.FieldSourceAnalysisEntityID:
+		return m.SourceAnalysisEntityID()
+	case systemanalysisrelationship.FieldTargetAnalysisEntityID:
+		return m.TargetAnalysisEntityID()
+	case systemanalysisrelationship.FieldHidden:
+		return m.Hidden()
+	case systemanalysisrelationship.FieldLabelOverride:
+		return m.LabelOverride()
+	case systemanalysisrelationship.FieldDescriptionOverride:
+		return m.DescriptionOverride()
+	case systemanalysisrelationship.FieldLayout:
+		return m.Layout()
+	case systemanalysisrelationship.FieldProperties:
+		return m.Properties()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SystemAnalysisRelationshipMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case systemanalysisrelationship.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case systemanalysisrelationship.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case systemanalysisrelationship.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case systemanalysisrelationship.FieldAnalysisID:
+		return m.OldAnalysisID(ctx)
+	case systemanalysisrelationship.FieldKnowledgeRelationshipID:
+		return m.OldKnowledgeRelationshipID(ctx)
+	case systemanalysisrelationship.FieldSourceAnalysisEntityID:
+		return m.OldSourceAnalysisEntityID(ctx)
+	case systemanalysisrelationship.FieldTargetAnalysisEntityID:
+		return m.OldTargetAnalysisEntityID(ctx)
+	case systemanalysisrelationship.FieldHidden:
+		return m.OldHidden(ctx)
+	case systemanalysisrelationship.FieldLabelOverride:
+		return m.OldLabelOverride(ctx)
+	case systemanalysisrelationship.FieldDescriptionOverride:
+		return m.OldDescriptionOverride(ctx)
+	case systemanalysisrelationship.FieldLayout:
+		return m.OldLayout(ctx)
+	case systemanalysisrelationship.FieldProperties:
+		return m.OldProperties(ctx)
+	}
+	return nil, fmt.Errorf("unknown SystemAnalysisRelationship field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemAnalysisRelationshipMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case systemanalysisrelationship.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case systemanalysisrelationship.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case systemanalysisrelationship.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case systemanalysisrelationship.FieldAnalysisID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAnalysisID(v)
+		return nil
+	case systemanalysisrelationship.FieldKnowledgeRelationshipID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKnowledgeRelationshipID(v)
+		return nil
+	case systemanalysisrelationship.FieldSourceAnalysisEntityID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceAnalysisEntityID(v)
+		return nil
+	case systemanalysisrelationship.FieldTargetAnalysisEntityID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetAnalysisEntityID(v)
+		return nil
+	case systemanalysisrelationship.FieldHidden:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHidden(v)
+		return nil
+	case systemanalysisrelationship.FieldLabelOverride:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLabelOverride(v)
+		return nil
+	case systemanalysisrelationship.FieldDescriptionOverride:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescriptionOverride(v)
+		return nil
+	case systemanalysisrelationship.FieldLayout:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLayout(v)
+		return nil
+	case systemanalysisrelationship.FieldProperties:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProperties(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SystemAnalysisRelationship field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SystemAnalysisRelationshipMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SystemAnalysisRelationshipMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemAnalysisRelationshipMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown SystemAnalysisRelationship numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SystemAnalysisRelationshipMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(systemanalysisrelationship.FieldLabelOverride) {
+		fields = append(fields, systemanalysisrelationship.FieldLabelOverride)
+	}
+	if m.FieldCleared(systemanalysisrelationship.FieldDescriptionOverride) {
+		fields = append(fields, systemanalysisrelationship.FieldDescriptionOverride)
+	}
+	if m.FieldCleared(systemanalysisrelationship.FieldLayout) {
+		fields = append(fields, systemanalysisrelationship.FieldLayout)
+	}
+	if m.FieldCleared(systemanalysisrelationship.FieldProperties) {
+		fields = append(fields, systemanalysisrelationship.FieldProperties)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SystemAnalysisRelationshipMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SystemAnalysisRelationshipMutation) ClearField(name string) error {
+	switch name {
+	case systemanalysisrelationship.FieldLabelOverride:
+		m.ClearLabelOverride()
+		return nil
+	case systemanalysisrelationship.FieldDescriptionOverride:
+		m.ClearDescriptionOverride()
+		return nil
+	case systemanalysisrelationship.FieldLayout:
+		m.ClearLayout()
+		return nil
+	case systemanalysisrelationship.FieldProperties:
+		m.ClearProperties()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemAnalysisRelationship nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SystemAnalysisRelationshipMutation) ResetField(name string) error {
+	switch name {
+	case systemanalysisrelationship.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case systemanalysisrelationship.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case systemanalysisrelationship.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case systemanalysisrelationship.FieldAnalysisID:
+		m.ResetAnalysisID()
+		return nil
+	case systemanalysisrelationship.FieldKnowledgeRelationshipID:
+		m.ResetKnowledgeRelationshipID()
+		return nil
+	case systemanalysisrelationship.FieldSourceAnalysisEntityID:
+		m.ResetSourceAnalysisEntityID()
+		return nil
+	case systemanalysisrelationship.FieldTargetAnalysisEntityID:
+		m.ResetTargetAnalysisEntityID()
+		return nil
+	case systemanalysisrelationship.FieldHidden:
+		m.ResetHidden()
+		return nil
+	case systemanalysisrelationship.FieldLabelOverride:
+		m.ResetLabelOverride()
+		return nil
+	case systemanalysisrelationship.FieldDescriptionOverride:
+		m.ResetDescriptionOverride()
+		return nil
+	case systemanalysisrelationship.FieldLayout:
+		m.ResetLayout()
+		return nil
+	case systemanalysisrelationship.FieldProperties:
+		m.ResetProperties()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemAnalysisRelationship field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SystemAnalysisRelationshipMutation) AddedEdges() []string {
+	edges := make([]string, 0, 5)
+	if m.tenant != nil {
+		edges = append(edges, systemanalysisrelationship.EdgeTenant)
+	}
+	if m.analysis != nil {
+		edges = append(edges, systemanalysisrelationship.EdgeAnalysis)
+	}
+	if m.knowledge_relationship != nil {
+		edges = append(edges, systemanalysisrelationship.EdgeKnowledgeRelationship)
+	}
+	if m.source_entity != nil {
+		edges = append(edges, systemanalysisrelationship.EdgeSourceEntity)
+	}
+	if m.target_entity != nil {
+		edges = append(edges, systemanalysisrelationship.EdgeTargetEntity)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SystemAnalysisRelationshipMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case systemanalysisrelationship.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case systemanalysisrelationship.EdgeAnalysis:
+		if id := m.analysis; id != nil {
+			return []ent.Value{*id}
+		}
+	case systemanalysisrelationship.EdgeKnowledgeRelationship:
+		if id := m.knowledge_relationship; id != nil {
+			return []ent.Value{*id}
+		}
+	case systemanalysisrelationship.EdgeSourceEntity:
+		if id := m.source_entity; id != nil {
+			return []ent.Value{*id}
+		}
+	case systemanalysisrelationship.EdgeTargetEntity:
+		if id := m.target_entity; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SystemAnalysisRelationshipMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 5)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SystemAnalysisRelationshipMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SystemAnalysisRelationshipMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 5)
+	if m.clearedtenant {
+		edges = append(edges, systemanalysisrelationship.EdgeTenant)
+	}
+	if m.clearedanalysis {
+		edges = append(edges, systemanalysisrelationship.EdgeAnalysis)
+	}
+	if m.clearedknowledge_relationship {
+		edges = append(edges, systemanalysisrelationship.EdgeKnowledgeRelationship)
+	}
+	if m.clearedsource_entity {
+		edges = append(edges, systemanalysisrelationship.EdgeSourceEntity)
+	}
+	if m.clearedtarget_entity {
+		edges = append(edges, systemanalysisrelationship.EdgeTargetEntity)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SystemAnalysisRelationshipMutation) EdgeCleared(name string) bool {
+	switch name {
+	case systemanalysisrelationship.EdgeTenant:
+		return m.clearedtenant
+	case systemanalysisrelationship.EdgeAnalysis:
+		return m.clearedanalysis
+	case systemanalysisrelationship.EdgeKnowledgeRelationship:
+		return m.clearedknowledge_relationship
+	case systemanalysisrelationship.EdgeSourceEntity:
+		return m.clearedsource_entity
+	case systemanalysisrelationship.EdgeTargetEntity:
+		return m.clearedtarget_entity
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SystemAnalysisRelationshipMutation) ClearEdge(name string) error {
+	switch name {
+	case systemanalysisrelationship.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case systemanalysisrelationship.EdgeAnalysis:
+		m.ClearAnalysis()
+		return nil
+	case systemanalysisrelationship.EdgeKnowledgeRelationship:
+		m.ClearKnowledgeRelationship()
+		return nil
+	case systemanalysisrelationship.EdgeSourceEntity:
+		m.ClearSourceEntity()
+		return nil
+	case systemanalysisrelationship.EdgeTargetEntity:
+		m.ClearTargetEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemAnalysisRelationship unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SystemAnalysisRelationshipMutation) ResetEdge(name string) error {
+	switch name {
+	case systemanalysisrelationship.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case systemanalysisrelationship.EdgeAnalysis:
+		m.ResetAnalysis()
+		return nil
+	case systemanalysisrelationship.EdgeKnowledgeRelationship:
+		m.ResetKnowledgeRelationship()
+		return nil
+	case systemanalysisrelationship.EdgeSourceEntity:
+		m.ResetSourceEntity()
+		return nil
+	case systemanalysisrelationship.EdgeTargetEntity:
+		m.ResetTargetEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemAnalysisRelationship edge %s", name)
 }
 
 // TaskMutation represents an operation that mutates the Task nodes in the graph.

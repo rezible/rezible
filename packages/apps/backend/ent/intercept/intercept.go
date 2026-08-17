@@ -67,8 +67,10 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -1701,6 +1703,33 @@ func (f TraverseSystemAnalysis) Traverse(ctx context.Context, q ent.Query) error
 	return fmt.Errorf("unexpected query type %T. expect *ent.SystemAnalysisQuery", q)
 }
 
+// The SystemAnalysisEntityFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SystemAnalysisEntityFunc func(context.Context, *ent.SystemAnalysisEntityQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SystemAnalysisEntityFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SystemAnalysisEntityQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SystemAnalysisEntityQuery", q)
+}
+
+// The TraverseSystemAnalysisEntity type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSystemAnalysisEntity func(context.Context, *ent.SystemAnalysisEntityQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSystemAnalysisEntity) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSystemAnalysisEntity) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemAnalysisEntityQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SystemAnalysisEntityQuery", q)
+}
+
 // The SystemAnalysisEntryFunc type is an adapter to allow the use of ordinary function as a Querier.
 type SystemAnalysisEntryFunc func(context.Context, *ent.SystemAnalysisEntryQuery) (ent.Value, error)
 
@@ -1753,6 +1782,33 @@ func (f TraverseSystemAnalysisEntrySubject) Traverse(ctx context.Context, q ent.
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.SystemAnalysisEntrySubjectQuery", q)
+}
+
+// The SystemAnalysisRelationshipFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SystemAnalysisRelationshipFunc func(context.Context, *ent.SystemAnalysisRelationshipQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SystemAnalysisRelationshipFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SystemAnalysisRelationshipQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SystemAnalysisRelationshipQuery", q)
+}
+
+// The TraverseSystemAnalysisRelationship type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSystemAnalysisRelationship func(context.Context, *ent.SystemAnalysisRelationshipQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSystemAnalysisRelationship) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSystemAnalysisRelationship) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemAnalysisRelationshipQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SystemAnalysisRelationshipQuery", q)
 }
 
 // The TaskFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2090,10 +2146,14 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.RetrospectiveReviewQuery, predicate.RetrospectiveReview, retrospectivereview.OrderOption]{typ: ent.TypeRetrospectiveReview, tq: q}, nil
 	case *ent.SystemAnalysisQuery:
 		return &query[*ent.SystemAnalysisQuery, predicate.SystemAnalysis, systemanalysis.OrderOption]{typ: ent.TypeSystemAnalysis, tq: q}, nil
+	case *ent.SystemAnalysisEntityQuery:
+		return &query[*ent.SystemAnalysisEntityQuery, predicate.SystemAnalysisEntity, systemanalysisentity.OrderOption]{typ: ent.TypeSystemAnalysisEntity, tq: q}, nil
 	case *ent.SystemAnalysisEntryQuery:
 		return &query[*ent.SystemAnalysisEntryQuery, predicate.SystemAnalysisEntry, systemanalysisentry.OrderOption]{typ: ent.TypeSystemAnalysisEntry, tq: q}, nil
 	case *ent.SystemAnalysisEntrySubjectQuery:
 		return &query[*ent.SystemAnalysisEntrySubjectQuery, predicate.SystemAnalysisEntrySubject, systemanalysisentrysubject.OrderOption]{typ: ent.TypeSystemAnalysisEntrySubject, tq: q}, nil
+	case *ent.SystemAnalysisRelationshipQuery:
+		return &query[*ent.SystemAnalysisRelationshipQuery, predicate.SystemAnalysisRelationship, systemanalysisrelationship.OrderOption]{typ: ent.TypeSystemAnalysisRelationship, tq: q}, nil
 	case *ent.TaskQuery:
 		return &query[*ent.TaskQuery, predicate.Task, task.OrderOption]{typ: ent.TypeTask, tq: q}, nil
 	case *ent.TeamQuery:

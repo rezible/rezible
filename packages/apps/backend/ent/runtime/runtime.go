@@ -66,8 +66,10 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -1434,6 +1436,38 @@ func init() {
 	systemanalysisDescID := systemanalysisFields[0].Descriptor()
 	// systemanalysis.DefaultID holds the default value on creation for the id field.
 	systemanalysis.DefaultID = systemanalysisDescID.Default.(func() uuid.UUID)
+	systemanalysisentityMixin := schema.SystemAnalysisEntity{}.Mixin()
+	systemanalysisentity.Policy = privacy.NewPolicies(systemanalysisentityMixin[0], systemanalysisentityMixin[1], schema.SystemAnalysisEntity{})
+	systemanalysisentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := systemanalysisentity.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	systemanalysisentityMixinFields2 := systemanalysisentityMixin[2].Fields()
+	_ = systemanalysisentityMixinFields2
+	systemanalysisentityFields := schema.SystemAnalysisEntity{}.Fields()
+	_ = systemanalysisentityFields
+	// systemanalysisentityDescCreatedAt is the schema descriptor for created_at field.
+	systemanalysisentityDescCreatedAt := systemanalysisentityMixinFields2[0].Descriptor()
+	// systemanalysisentity.DefaultCreatedAt holds the default value on creation for the created_at field.
+	systemanalysisentity.DefaultCreatedAt = systemanalysisentityDescCreatedAt.Default.(func() time.Time)
+	// systemanalysisentityDescUpdatedAt is the schema descriptor for updated_at field.
+	systemanalysisentityDescUpdatedAt := systemanalysisentityMixinFields2[1].Descriptor()
+	// systemanalysisentity.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	systemanalysisentity.DefaultUpdatedAt = systemanalysisentityDescUpdatedAt.Default.(func() time.Time)
+	// systemanalysisentity.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	systemanalysisentity.UpdateDefaultUpdatedAt = systemanalysisentityDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// systemanalysisentityDescHidden is the schema descriptor for hidden field.
+	systemanalysisentityDescHidden := systemanalysisentityFields[5].Descriptor()
+	// systemanalysisentity.DefaultHidden holds the default value on creation for the hidden field.
+	systemanalysisentity.DefaultHidden = systemanalysisentityDescHidden.Default.(bool)
+	// systemanalysisentityDescID is the schema descriptor for id field.
+	systemanalysisentityDescID := systemanalysisentityFields[0].Descriptor()
+	// systemanalysisentity.DefaultID holds the default value on creation for the id field.
+	systemanalysisentity.DefaultID = systemanalysisentityDescID.Default.(func() uuid.UUID)
 	systemanalysisentryMixin := schema.SystemAnalysisEntry{}.Mixin()
 	systemanalysisentry.Policy = privacy.NewPolicies(systemanalysisentryMixin[0], systemanalysisentryMixin[1], schema.SystemAnalysisEntry{})
 	systemanalysisentry.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1502,6 +1536,38 @@ func init() {
 	systemanalysisentrysubjectDescID := systemanalysisentrysubjectFields[0].Descriptor()
 	// systemanalysisentrysubject.DefaultID holds the default value on creation for the id field.
 	systemanalysisentrysubject.DefaultID = systemanalysisentrysubjectDescID.Default.(func() uuid.UUID)
+	systemanalysisrelationshipMixin := schema.SystemAnalysisRelationship{}.Mixin()
+	systemanalysisrelationship.Policy = privacy.NewPolicies(systemanalysisrelationshipMixin[0], systemanalysisrelationshipMixin[1], schema.SystemAnalysisRelationship{})
+	systemanalysisrelationship.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := systemanalysisrelationship.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	systemanalysisrelationshipMixinFields2 := systemanalysisrelationshipMixin[2].Fields()
+	_ = systemanalysisrelationshipMixinFields2
+	systemanalysisrelationshipFields := schema.SystemAnalysisRelationship{}.Fields()
+	_ = systemanalysisrelationshipFields
+	// systemanalysisrelationshipDescCreatedAt is the schema descriptor for created_at field.
+	systemanalysisrelationshipDescCreatedAt := systemanalysisrelationshipMixinFields2[0].Descriptor()
+	// systemanalysisrelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
+	systemanalysisrelationship.DefaultCreatedAt = systemanalysisrelationshipDescCreatedAt.Default.(func() time.Time)
+	// systemanalysisrelationshipDescUpdatedAt is the schema descriptor for updated_at field.
+	systemanalysisrelationshipDescUpdatedAt := systemanalysisrelationshipMixinFields2[1].Descriptor()
+	// systemanalysisrelationship.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	systemanalysisrelationship.DefaultUpdatedAt = systemanalysisrelationshipDescUpdatedAt.Default.(func() time.Time)
+	// systemanalysisrelationship.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	systemanalysisrelationship.UpdateDefaultUpdatedAt = systemanalysisrelationshipDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// systemanalysisrelationshipDescHidden is the schema descriptor for hidden field.
+	systemanalysisrelationshipDescHidden := systemanalysisrelationshipFields[5].Descriptor()
+	// systemanalysisrelationship.DefaultHidden holds the default value on creation for the hidden field.
+	systemanalysisrelationship.DefaultHidden = systemanalysisrelationshipDescHidden.Default.(bool)
+	// systemanalysisrelationshipDescID is the schema descriptor for id field.
+	systemanalysisrelationshipDescID := systemanalysisrelationshipFields[0].Descriptor()
+	// systemanalysisrelationship.DefaultID holds the default value on creation for the id field.
+	systemanalysisrelationship.DefaultID = systemanalysisrelationshipDescID.Default.(func() uuid.UUID)
 	taskMixin := schema.Task{}.Mixin()
 	task.Policy = privacy.NewPolicies(taskMixin[0], taskMixin[1], schema.Task{})
 	task.Hooks[0] = func(next ent.Mutator) ent.Mutator {

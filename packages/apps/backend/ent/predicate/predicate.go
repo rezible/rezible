@@ -180,11 +180,17 @@ type RetrospectiveReview func(*sql.Selector)
 // SystemAnalysis is the predicate function for systemanalysis builders.
 type SystemAnalysis func(*sql.Selector)
 
+// SystemAnalysisEntity is the predicate function for systemanalysisentity builders.
+type SystemAnalysisEntity func(*sql.Selector)
+
 // SystemAnalysisEntry is the predicate function for systemanalysisentry builders.
 type SystemAnalysisEntry func(*sql.Selector)
 
 // SystemAnalysisEntrySubject is the predicate function for systemanalysisentrysubject builders.
 type SystemAnalysisEntrySubject func(*sql.Selector)
+
+// SystemAnalysisRelationship is the predicate function for systemanalysisrelationship builders.
+type SystemAnalysisRelationship func(*sql.Selector)
 
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)

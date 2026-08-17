@@ -2544,6 +2544,64 @@ var (
 			},
 		},
 	}
+	// SystemAnalysisEntitiesColumns holds the columns for the "system_analysis_entities" table.
+	SystemAnalysisEntitiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "pos_x", Type: field.TypeFloat64, Nullable: true},
+		{Name: "pos_y", Type: field.TypeFloat64, Nullable: true},
+		{Name: "hidden", Type: field.TypeBool, Default: false},
+		{Name: "label_override", Type: field.TypeString, Nullable: true},
+		{Name: "description_override", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "analysis_id", Type: field.TypeUUID},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID},
+	}
+	// SystemAnalysisEntitiesTable holds the schema information for the "system_analysis_entities" table.
+	SystemAnalysisEntitiesTable = &schema.Table{
+		Name:       "system_analysis_entities",
+		Columns:    SystemAnalysisEntitiesColumns,
+		PrimaryKey: []*schema.Column{SystemAnalysisEntitiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_analysis_entities_tenants_tenant",
+				Columns:    []*schema.Column{SystemAnalysisEntitiesColumns[9]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_entities_system_analyses_analysis",
+				Columns:    []*schema.Column{SystemAnalysisEntitiesColumns[10]},
+				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_entities_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{SystemAnalysisEntitiesColumns[11]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemanalysisentity_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisEntitiesColumns[9]},
+			},
+			{
+				Name:    "systemanalysisentity_tenant_id_analysis_id_knowledge_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{SystemAnalysisEntitiesColumns[9], SystemAnalysisEntitiesColumns[10], SystemAnalysisEntitiesColumns[11]},
+			},
+			{
+				Name:    "systemanalysisentity_tenant_id_knowledge_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisEntitiesColumns[9], SystemAnalysisEntitiesColumns[11]},
+			},
+		},
+	}
 	// SystemAnalysisEntriesColumns holds the columns for the "system_analysis_entries" table.
 	SystemAnalysisEntriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -2679,6 +2737,87 @@ var (
 				Name:    "systemanalysisentrysubject_tenant_id_knowledge_evidence_id",
 				Unique:  false,
 				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[8]},
+			},
+		},
+	}
+	// SystemAnalysisRelationshipsColumns holds the columns for the "system_analysis_relationships" table.
+	SystemAnalysisRelationshipsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "hidden", Type: field.TypeBool, Default: false},
+		{Name: "label_override", Type: field.TypeString, Nullable: true},
+		{Name: "description_override", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "layout", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "analysis_id", Type: field.TypeUUID},
+		{Name: "knowledge_relationship_id", Type: field.TypeUUID},
+		{Name: "source_analysis_entity_id", Type: field.TypeUUID},
+		{Name: "target_analysis_entity_id", Type: field.TypeUUID},
+	}
+	// SystemAnalysisRelationshipsTable holds the schema information for the "system_analysis_relationships" table.
+	SystemAnalysisRelationshipsTable = &schema.Table{
+		Name:       "system_analysis_relationships",
+		Columns:    SystemAnalysisRelationshipsColumns,
+		PrimaryKey: []*schema.Column{SystemAnalysisRelationshipsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_analysis_relationships_tenants_tenant",
+				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[8]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_relationships_system_analyses_analysis",
+				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[9]},
+				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_relationships_knowledge_relationships_knowledge_relationship",
+				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[10]},
+				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_relationships_system_analysis_entities_source_entity",
+				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[11]},
+				RefColumns: []*schema.Column{SystemAnalysisEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_relationships_system_analysis_entities_target_entity",
+				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[12]},
+				RefColumns: []*schema.Column{SystemAnalysisEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemanalysisrelationship_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisRelationshipsColumns[8]},
+			},
+			{
+				Name:    "systemanalysisrelationship_tenant_id_analysis_id_knowledge_relationship_id",
+				Unique:  true,
+				Columns: []*schema.Column{SystemAnalysisRelationshipsColumns[8], SystemAnalysisRelationshipsColumns[9], SystemAnalysisRelationshipsColumns[10]},
+			},
+			{
+				Name:    "systemanalysisrelationship_tenant_id_knowledge_relationship_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisRelationshipsColumns[8], SystemAnalysisRelationshipsColumns[10]},
+			},
+			{
+				Name:    "systemanalysisrelationship_tenant_id_source_analysis_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisRelationshipsColumns[8], SystemAnalysisRelationshipsColumns[11]},
+			},
+			{
+				Name:    "systemanalysisrelationship_tenant_id_target_analysis_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisRelationshipsColumns[8], SystemAnalysisRelationshipsColumns[12]},
 			},
 		},
 	}
@@ -3435,8 +3574,10 @@ var (
 		RetrospectiveCommentsTable,
 		RetrospectiveReviewsTable,
 		SystemAnalysesTable,
+		SystemAnalysisEntitiesTable,
 		SystemAnalysisEntriesTable,
 		SystemAnalysisEntrySubjectsTable,
+		SystemAnalysisRelationshipsTable,
 		TasksTable,
 		TeamsTable,
 		TeamMembershipsTable,
@@ -3602,6 +3743,9 @@ func init() {
 	SystemAnalysesTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemAnalysesTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	SystemAnalysesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	SystemAnalysisEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemAnalysisEntitiesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
+	SystemAnalysisEntitiesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	SystemAnalysisEntriesTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemAnalysisEntriesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[0].RefTable = TenantsTable
@@ -3609,6 +3753,11 @@ func init() {
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[3].RefTable = KnowledgeRelationshipsTable
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[4].RefTable = KnowledgeEvidencesTable
+	SystemAnalysisRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemAnalysisRelationshipsTable.ForeignKeys[1].RefTable = SystemAnalysesTable
+	SystemAnalysisRelationshipsTable.ForeignKeys[2].RefTable = KnowledgeRelationshipsTable
+	SystemAnalysisRelationshipsTable.ForeignKeys[3].RefTable = SystemAnalysisEntitiesTable
+	SystemAnalysisRelationshipsTable.ForeignKeys[4].RefTable = SystemAnalysisEntitiesTable
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable
 	TasksTable.ForeignKeys[1].RefTable = TenantsTable
 	TasksTable.ForeignKeys[2].RefTable = UsersTable

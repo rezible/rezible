@@ -384,6 +384,64 @@ func HasSubjectEntityWith(preds ...predicate.KnowledgeEntity) predicate.SystemAn
 	})
 }
 
+// HasAnalysisEntities applies the HasEdge predicate on the "analysis_entities" edge.
+func HasAnalysisEntities() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, AnalysisEntitiesTable, AnalysisEntitiesColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisEntity
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntity
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAnalysisEntitiesWith applies the HasEdge predicate on the "analysis_entities" edge with a given conditions (other predicates).
+func HasAnalysisEntitiesWith(preds ...predicate.SystemAnalysisEntity) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := newAnalysisEntitiesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisEntity
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntity
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAnalysisRelationships applies the HasEdge predicate on the "analysis_relationships" edge.
+func HasAnalysisRelationships() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, AnalysisRelationshipsTable, AnalysisRelationshipsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisRelationship
+		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAnalysisRelationshipsWith applies the HasEdge predicate on the "analysis_relationships" edge with a given conditions (other predicates).
+func HasAnalysisRelationshipsWith(preds ...predicate.SystemAnalysisRelationship) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := newAnalysisRelationshipsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisRelationship
+		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasEntries applies the HasEdge predicate on the "entries" edge.
 func HasEntries() predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {

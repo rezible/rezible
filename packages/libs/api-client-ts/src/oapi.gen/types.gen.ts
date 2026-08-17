@@ -24,49 +24,20 @@ export type AddIncidentDebriefUserMessageResponseBody = {
     data: IncidentDebriefMessage;
 };
 
-export type AddSystemAnalysisEdgeAttributes = {
-    description: string;
-    knowledgeRelationshipId: string;
-    referencedAt?: string;
-};
-
-export type AddSystemAnalysisEdgeRequestBody = {
+export type AddSystemAnalysisEntrySubjectRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: AddSystemAnalysisEdgeAttributes;
+    attributes: SetSystemAnalysisEntrySubjectAttributes;
 };
 
-export type AddSystemAnalysisEdgeResponseBody = {
+export type AddSystemAnalysisEntrySubjectResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemAnalysisEdge;
-};
-
-export type AddSystemAnalysisNodeAttributes = {
-    description: string;
-    knowledgeEntityId: string;
-    position: SystemAnalysisDiagramPosition;
-    referencedAt?: string;
-};
-
-export type AddSystemAnalysisNodeRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: AddSystemAnalysisNodeAttributes;
-};
-
-export type AddSystemAnalysisNodeResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemAnalysisNode;
+    data: SystemAnalysisEntrySubject;
 };
 
 export type AgentSession = {
@@ -77,8 +48,6 @@ export type AgentSession = {
 export type AgentSessionAttributes = {
     agentName: string;
     createdAt: string;
-    initialTurn?: AgentTurn;
-    latestTurn?: AgentTurn;
     ownerUserId?: string;
     permissionScopes: Array<string>;
 };
@@ -102,9 +71,8 @@ export type AgentTurnAttributes = {
     finishReason?: string;
     finishedAt?: string;
     knowledgeCitations?: Array<AgentTurnKnowledgeCitation>;
-    parentTurnId?: string;
+    sequence: number;
     startedAt?: string;
-    state?: SessionStateRawMessage;
     status: string;
     updatedAt: string;
 };
@@ -170,14 +138,6 @@ export type AlertMetrics = {
     interrupts: number;
     nightInterrupts: number;
     triggers: number;
-};
-
-export type Artifact = {
-    metadata?: {
-        [key: string]: unknown;
-    };
-    name?: string;
-    parts: Array<Part>;
 };
 
 export type CompleteIntegrationOAuthFlowRequestAttributes = {
@@ -405,30 +365,6 @@ export type CreateIncidentTagResponseBody = {
     data: IncidentTag;
 };
 
-export type CreateIncidentTimelineEventAttributes = {
-    isKey?: boolean;
-    kind: 'observation' | 'action' | 'decision' | 'context';
-    systemContext?: Array<SetIncidentTimelineEventSystemContextAttributes>;
-    timestamp: string;
-    title: string;
-};
-
-export type CreateIncidentTimelineEventRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateIncidentTimelineEventAttributes;
-};
-
-export type CreateIncidentTimelineEventResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: IncidentTimelineEvent;
-};
-
 export type CreateIncidentTypeAttributes = {
     name: string;
 };
@@ -579,6 +515,33 @@ export type CreateRetrospectiveReviewResponseBody = {
      */
     readonly $schema?: string;
     data: RetrospectiveReview;
+};
+
+export type CreateSystemAnalysisEntryAttributes = {
+    body?: string;
+    kind: 'observation' | 'context' | 'decision' | 'action' | 'finding' | 'recommendation';
+    occurredAt?: string;
+    properties?: {
+        [key: string]: unknown;
+    };
+    sequence: number;
+    title: string;
+};
+
+export type CreateSystemAnalysisEntryRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateSystemAnalysisEntryAttributes;
+};
+
+export type CreateSystemAnalysisEntryResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemAnalysisEntry;
 };
 
 export type CreateTaskAttributes = {
@@ -892,14 +855,6 @@ export type GetIncidentTagResponseBody = {
     data: IncidentTag;
 };
 
-export type GetIncidentTimelineEventMetadataResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: IncidentTimelineEventMetadata;
-};
-
 export type GetIncidentTypeResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1060,20 +1015,12 @@ export type GetRetrospectiveResponseBody = {
     data: Retrospective;
 };
 
-export type GetSystemAnalysisEdgeResponseBody = {
+export type GetSystemAnalysisGraphResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemAnalysisEdge;
-};
-
-export type GetSystemAnalysisNodeResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemAnalysisNode;
+    data: KnowledgeGraphView;
 };
 
 export type GetSystemAnalysisResponseBody = {
@@ -1316,91 +1263,6 @@ export type IncidentTeamAssignment = {
     team: Team;
 };
 
-export type IncidentTimelineEvent = {
-    attributes: IncidentTimelineEventAttributes;
-    id: string;
-};
-
-export type IncidentTimelineEventAttributes = {
-    contributingFactors: Array<IncidentTimelineEventContributingFactor>;
-    decisionContext?: IncidentTimelineEventDecisionContext;
-    description?: string;
-    evidence: Array<IncidentTimelineEventEvidence>;
-    incidentId: string;
-    isKey: boolean;
-    kind: 'observation' | 'action' | 'decision' | 'context';
-    sequence: number;
-    systemContext: Array<IncidentTimelineEventSystemContext>;
-    timestamp: string;
-    title: string;
-};
-
-export type IncidentTimelineEventContributingFactor = {
-    attributes: IncidentTimelineEventContributingFactorAttributes;
-    id: string;
-};
-
-export type IncidentTimelineEventContributingFactorAttributes = {
-    description: string;
-    factorTypeId: string;
-    links: Array<string>;
-};
-
-export type IncidentTimelineEventContributingFactorCategory = {
-    attributes: IncidentTimelineEventContributingFactorCategoryAttributes;
-    id: string;
-};
-
-export type IncidentTimelineEventContributingFactorCategoryAttributes = {
-    description: string;
-    factorTypes: Array<IncidentTimelineEventContributingFactorType>;
-    name: string;
-};
-
-export type IncidentTimelineEventContributingFactorType = {
-    attributes: IncidentTimelineEventContributingFactorTypeAttributes;
-    id: string;
-};
-
-export type IncidentTimelineEventContributingFactorTypeAttributes = {
-    description: string;
-    examples: Array<string>;
-    name: string;
-};
-
-export type IncidentTimelineEventDecisionContext = {
-    constraints: Array<string>;
-    decisionRationale: string;
-    optionsConsidered: Array<string>;
-};
-
-export type IncidentTimelineEventEvidence = {
-    attributes: IncidentTimelineEventEvidenceAttributes;
-    id: string;
-};
-
-export type IncidentTimelineEventEvidenceAttributes = {
-    properties?: {
-        [key: string]: string;
-    };
-    source: string;
-    value: string;
-};
-
-export type IncidentTimelineEventMetadata = {
-    contributingFactorCategories: Array<IncidentTimelineEventContributingFactorCategory>;
-};
-
-export type IncidentTimelineEventSystemContext = {
-    attributes: IncidentTimelineEventSystemContextAttributes;
-    id: string;
-};
-
-export type IncidentTimelineEventSystemContextAttributes = {
-    relationship: 'primary' | 'affected' | 'contributing';
-    systemAnalysisNodeId: string;
-};
-
 export type IncidentType = {
     attributes: IncidentTypeAttributes;
     id: string;
@@ -1512,7 +1374,19 @@ export type KnowledgeGraphEntityAttributes = {
     createdAt: string;
     kind: string;
     latestState?: KnowledgeGraphSubjectState;
+    subkind: string;
     updatedAt: string;
+};
+
+export type KnowledgeGraphEvidence = {
+    attributes: KnowledgeGraphEvidenceAttributes;
+    id: string;
+};
+
+export type KnowledgeGraphEvidenceAttributes = {
+    effectiveAt: string;
+    kind: 'observed' | 'deleted';
+    subjectState: KnowledgeGraphSubjectState;
 };
 
 export type KnowledgeGraphRelationship = {
@@ -1526,6 +1400,7 @@ export type KnowledgeGraphRelationshipAttributes = {
     kind: string;
     latestState?: KnowledgeGraphSubjectState;
     sourceEntityId: string;
+    subkind: string;
     targetEntityId: string;
     updatedAt: string;
 };
@@ -1701,15 +1576,6 @@ export type ListResponseBodyIncidentTag = {
     pagination: ResponsePagination;
 };
 
-export type ListResponseBodyIncidentTimelineEvent = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentTimelineEvent>;
-    pagination: ResponsePagination;
-};
-
 export type ListResponseBodyIncidentType = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1836,21 +1702,12 @@ export type ListResponseBodyRetrospectiveReview = {
     pagination: ResponsePagination;
 };
 
-export type ListResponseBodySystemAnalysisEdge = {
+export type ListResponseBodySystemAnalysisEntry = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemAnalysisEdge>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodySystemAnalysisNode = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<SystemAnalysisNode>;
+    data: Array<SystemAnalysisEntry>;
     pagination: ResponsePagination;
 };
 
@@ -1942,14 +1799,6 @@ export type MeetingSessionAttributes = {
     meetingScheduleId: string;
     startsAt: string;
     title: string;
-};
-
-export type Message = {
-    content?: Array<Part>;
-    metadata?: {
-        [key: string]: unknown;
-    };
-    role?: string;
 };
 
 export type OncallRoster = {
@@ -2220,16 +2069,11 @@ export type SendOncallShiftHandoverResponseBody = {
     data: OncallShiftHandover;
 };
 
-export type SessionStateRawMessage = {
-    artifacts?: Array<Artifact>;
-    custom?: unknown;
-    messages?: Array<Message>;
-    sessionId?: string;
-};
-
-export type SetIncidentTimelineEventSystemContextAttributes = {
-    relationship: 'primary' | 'affected' | 'contributing';
-    systemAnalysisNodeId: string;
+export type SetSystemAnalysisEntrySubjectAttributes = {
+    knowledgeEntityId?: string;
+    knowledgeEvidenceId?: string;
+    knowledgeRelationshipId?: string;
+    role: string;
 };
 
 export type StartIntegrationOAuthFlowResponseBody = {
@@ -2246,37 +2090,44 @@ export type SystemAnalysis = {
 };
 
 export type SystemAnalysisAttributes = {
-    edges: Array<SystemAnalysisEdge>;
-    nodes: Array<SystemAnalysisNode>;
+    entries: Array<SystemAnalysisEntry>;
+    referenceTime?: string;
+    scopeEntityId?: string;
+    subjectEntityId?: string;
 };
 
-export type SystemAnalysisDiagramPosition = {
-    x: number;
-    y: number;
-    z?: number;
-};
-
-export type SystemAnalysisEdge = {
-    attributes: SystemAnalysisEdgeAttributes;
+export type SystemAnalysisEntry = {
+    attributes: SystemAnalysisEntryAttributes;
     id: string;
 };
 
-export type SystemAnalysisEdgeAttributes = {
-    description: string;
-    knowledgeRelationship: KnowledgeGraphRelationship;
-    referencedAt: string;
+export type SystemAnalysisEntryAttributes = {
+    body?: string;
+    kind: 'observation' | 'context' | 'decision' | 'action' | 'finding' | 'recommendation';
+    occurredAt?: string;
+    properties: {
+        [key: string]: unknown;
+    };
+    sequence: number;
+    subjects: Array<SystemAnalysisEntrySubject>;
+    title: string;
 };
 
-export type SystemAnalysisNode = {
-    attributes: SystemAnalysisNodeAttributes;
+export type SystemAnalysisEntrySubject = {
+    attributes: SystemAnalysisEntrySubjectAttributes;
     id: string;
 };
 
-export type SystemAnalysisNodeAttributes = {
-    description: string;
-    knowledgeEntity: KnowledgeGraphEntity;
-    position: SystemAnalysisDiagramPosition;
-    referencedAt: string;
+export type SystemAnalysisEntrySubjectAttributes = {
+    knowledgeEntity?: KnowledgeGraphEntity;
+    knowledgeEntityId?: string;
+    knowledgeEvidence?: KnowledgeGraphEvidence;
+    knowledgeEvidenceId?: string;
+    knowledgeRelationship?: KnowledgeGraphRelationship;
+    knowledgeRelationshipId?: string;
+    role: string;
+    subjectId: string;
+    subjectKind: 'entity' | 'relationship' | 'evidence';
 };
 
 export type Task = {
@@ -2532,29 +2383,6 @@ export type UpdateIncidentTagResponseBody = {
     data: IncidentTag;
 };
 
-export type UpdateIncidentTimelineEventAttributes = {
-    kind?: 'observation' | 'action' | 'decision' | 'context';
-    systemContext?: Array<SetIncidentTimelineEventSystemContextAttributes>;
-    timestamp?: string;
-    title?: string;
-};
-
-export type UpdateIncidentTimelineEventRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateIncidentTimelineEventAttributes;
-};
-
-export type UpdateIncidentTimelineEventResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: IncidentTimelineEvent;
-};
-
 export type UpdateIncidentTypeAttributes = {
     archived?: boolean;
     name?: string;
@@ -2782,45 +2610,73 @@ export type UpdateRetrospectiveReviewResponseBody = {
     data: RetrospectiveReview;
 };
 
-export type UpdateSystemAnalysisEdgeAttributes = {
-    description?: string;
+export type UpdateSystemAnalysisAttributes = {
+    referenceTime?: string;
+    scopeEntityId?: string;
+    subjectEntityId?: string;
 };
 
-export type UpdateSystemAnalysisEdgeRequestBody = {
+export type UpdateSystemAnalysisEntryAttributes = {
+    body?: string;
+    kind?: 'observation' | 'context' | 'decision' | 'action' | 'finding' | 'recommendation';
+    occurredAt?: string;
+    properties?: {
+        [key: string]: unknown;
+    };
+    sequence?: number;
+    title?: string;
+};
+
+export type UpdateSystemAnalysisEntryRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: UpdateSystemAnalysisEdgeAttributes;
+    attributes: UpdateSystemAnalysisEntryAttributes;
 };
 
-export type UpdateSystemAnalysisEdgeResponseBody = {
+export type UpdateSystemAnalysisEntryResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemAnalysisEdge;
+    data: SystemAnalysisEntry;
 };
 
-export type UpdateSystemAnalysisNodeAttributes = {
-    description?: string;
-    position?: SystemAnalysisDiagramPosition;
+export type UpdateSystemAnalysisEntrySubjectAttributes = {
+    role: string;
 };
 
-export type UpdateSystemAnalysisNodeRequestBody = {
+export type UpdateSystemAnalysisEntrySubjectRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: UpdateSystemAnalysisNodeAttributes;
+    attributes: UpdateSystemAnalysisEntrySubjectAttributes;
 };
 
-export type UpdateSystemAnalysisNodeResponseBody = {
+export type UpdateSystemAnalysisEntrySubjectResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemAnalysisNode;
+    data: SystemAnalysisEntrySubject;
+};
+
+export type UpdateSystemAnalysisRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateSystemAnalysisAttributes;
+};
+
+export type UpdateSystemAnalysisResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemAnalysis;
 };
 
 export type UpdateTaskAttributes = {
@@ -5819,145 +5675,6 @@ export type UpdateIncidentMilestoneResponses = {
 
 export type UpdateIncidentMilestoneResponse = UpdateIncidentMilestoneResponses[keyof UpdateIncidentMilestoneResponses];
 
-export type ListIncidentTimelineEventMetadataData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/incident_timeline/event_metadata';
-};
-
-export type ListIncidentTimelineEventMetadataErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListIncidentTimelineEventMetadataError = ListIncidentTimelineEventMetadataErrors[keyof ListIncidentTimelineEventMetadataErrors];
-
-export type ListIncidentTimelineEventMetadataResponses = {
-    /**
-     * OK
-     */
-    200: GetIncidentTimelineEventMetadataResponseBody;
-};
-
-export type ListIncidentTimelineEventMetadataResponse = ListIncidentTimelineEventMetadataResponses[keyof ListIncidentTimelineEventMetadataResponses];
-
-export type DeleteIncidentTimelineEventData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_timeline/events/{id}';
-};
-
-export type DeleteIncidentTimelineEventErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type DeleteIncidentTimelineEventError = DeleteIncidentTimelineEventErrors[keyof DeleteIncidentTimelineEventErrors];
-
-export type DeleteIncidentTimelineEventResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type DeleteIncidentTimelineEventResponse = DeleteIncidentTimelineEventResponses[keyof DeleteIncidentTimelineEventResponses];
-
-export type UpdateIncidentTimelineEventData = {
-    body: UpdateIncidentTimelineEventRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_timeline/events/{id}';
-};
-
-export type UpdateIncidentTimelineEventErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateIncidentTimelineEventError = UpdateIncidentTimelineEventErrors[keyof UpdateIncidentTimelineEventErrors];
-
-export type UpdateIncidentTimelineEventResponses = {
-    /**
-     * OK
-     */
-    200: UpdateIncidentTimelineEventResponseBody;
-};
-
-export type UpdateIncidentTimelineEventResponse = UpdateIncidentTimelineEventResponses[keyof UpdateIncidentTimelineEventResponses];
-
 export type ListIncidentsData = {
     body?: never;
     path?: never;
@@ -6335,105 +6052,6 @@ export type CreateIncidentMilestoneResponses = {
 };
 
 export type CreateIncidentMilestoneResponse = CreateIncidentMilestoneResponses[keyof CreateIncidentMilestoneResponses];
-
-export type ListIncidentTimelineEventsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/incidents/{id}/timeline_events';
-};
-
-export type ListIncidentTimelineEventsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListIncidentTimelineEventsError = ListIncidentTimelineEventsErrors[keyof ListIncidentTimelineEventsErrors];
-
-export type ListIncidentTimelineEventsResponses = {
-    /**
-     * OK
-     */
-    200: ListResponseBodyIncidentTimelineEvent;
-};
-
-export type ListIncidentTimelineEventsResponse = ListIncidentTimelineEventsResponses[keyof ListIncidentTimelineEventsResponses];
-
-export type CreateIncidentTimelineEventData = {
-    body: CreateIncidentTimelineEventRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incidents/{id}/timeline_events';
-};
-
-export type CreateIncidentTimelineEventErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateIncidentTimelineEventError = CreateIncidentTimelineEventErrors[keyof CreateIncidentTimelineEventErrors];
-
-export type CreateIncidentTimelineEventResponses = {
-    /**
-     * OK
-     */
-    200: CreateIncidentTimelineEventResponseBody;
-};
-
-export type CreateIncidentTimelineEventResponse = CreateIncidentTimelineEventResponses[keyof CreateIncidentTimelineEventResponses];
 
 export type GetInstallableIntegrationsData = {
     body?: never;
@@ -7012,6 +6630,7 @@ export type ListKnowledgeGraphEntitiesData = {
         search?: string;
         archived?: boolean;
         kind?: Array<string>;
+        subkind?: Array<string>;
         provider?: string;
         providerSource?: string;
         subjectKind?: string;
@@ -7113,6 +6732,7 @@ export type ListKnowledgeGraphRelationshipsData = {
         search?: string;
         archived?: boolean;
         kind?: Array<string>;
+        subkind?: Array<string>;
         entityId?: string;
         sourceEntityId?: string;
         targetEntityId?: string;
@@ -9544,7 +9164,54 @@ export type GetSystemAnalysisResponses = {
 
 export type GetSystemAnalysisResponse = GetSystemAnalysisResponses[keyof GetSystemAnalysisResponses];
 
-export type ListSystemAnalysisEdgesData = {
+export type UpdateSystemAnalysisData = {
+    body: UpdateSystemAnalysisRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis/{id}';
+};
+
+export type UpdateSystemAnalysisErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateSystemAnalysisError = UpdateSystemAnalysisErrors[keyof UpdateSystemAnalysisErrors];
+
+export type UpdateSystemAnalysisResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemAnalysisResponseBody;
+};
+
+export type UpdateSystemAnalysisResponse = UpdateSystemAnalysisResponses[keyof UpdateSystemAnalysisResponses];
+
+export type ListSystemAnalysisEntriesData = {
     body?: never;
     path: {
         id: string;
@@ -9555,10 +9222,10 @@ export type ListSystemAnalysisEdgesData = {
         search?: string;
         archived?: boolean;
     };
-    url: '/system_analysis/{id}/edges';
+    url: '/system_analysis/{id}/entries';
 };
 
-export type ListSystemAnalysisEdgesErrors = {
+export type ListSystemAnalysisEntriesErrors = {
     /**
      * Bad Request
      */
@@ -9585,27 +9252,27 @@ export type ListSystemAnalysisEdgesErrors = {
     500: ErrorModel;
 };
 
-export type ListSystemAnalysisEdgesError = ListSystemAnalysisEdgesErrors[keyof ListSystemAnalysisEdgesErrors];
+export type ListSystemAnalysisEntriesError = ListSystemAnalysisEntriesErrors[keyof ListSystemAnalysisEntriesErrors];
 
-export type ListSystemAnalysisEdgesResponses = {
+export type ListSystemAnalysisEntriesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodySystemAnalysisEdge;
+    200: ListResponseBodySystemAnalysisEntry;
 };
 
-export type ListSystemAnalysisEdgesResponse = ListSystemAnalysisEdgesResponses[keyof ListSystemAnalysisEdgesResponses];
+export type ListSystemAnalysisEntriesResponse = ListSystemAnalysisEntriesResponses[keyof ListSystemAnalysisEntriesResponses];
 
-export type AddSystemAnalysisEdgeData = {
-    body: AddSystemAnalysisEdgeRequestBody;
+export type CreateSystemAnalysisEntryData = {
+    body: CreateSystemAnalysisEntryRequestBody;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis/{id}/edges';
+    url: '/system_analysis/{id}/entries';
 };
 
-export type AddSystemAnalysisEdgeErrors = {
+export type CreateSystemAnalysisEntryErrors = {
     /**
      * Bad Request
      */
@@ -9632,32 +9299,30 @@ export type AddSystemAnalysisEdgeErrors = {
     500: ErrorModel;
 };
 
-export type AddSystemAnalysisEdgeError = AddSystemAnalysisEdgeErrors[keyof AddSystemAnalysisEdgeErrors];
+export type CreateSystemAnalysisEntryError = CreateSystemAnalysisEntryErrors[keyof CreateSystemAnalysisEntryErrors];
 
-export type AddSystemAnalysisEdgeResponses = {
+export type CreateSystemAnalysisEntryResponses = {
     /**
      * OK
      */
-    200: AddSystemAnalysisEdgeResponseBody;
+    200: CreateSystemAnalysisEntryResponseBody;
 };
 
-export type AddSystemAnalysisEdgeResponse = AddSystemAnalysisEdgeResponses[keyof AddSystemAnalysisEdgeResponses];
+export type CreateSystemAnalysisEntryResponse = CreateSystemAnalysisEntryResponses[keyof CreateSystemAnalysisEntryResponses];
 
-export type ListSystemAnalysisNodesData = {
+export type GetSystemAnalysisGraphData = {
     body?: never;
     path: {
         id: string;
     };
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        depth?: number;
+        relationshipKind?: Array<string>;
     };
-    url: '/system_analysis/{id}/nodes';
+    url: '/system_analysis/{id}/graph';
 };
 
-export type ListSystemAnalysisNodesErrors = {
+export type GetSystemAnalysisGraphErrors = {
     /**
      * Bad Request
      */
@@ -9684,74 +9349,27 @@ export type ListSystemAnalysisNodesErrors = {
     500: ErrorModel;
 };
 
-export type ListSystemAnalysisNodesError = ListSystemAnalysisNodesErrors[keyof ListSystemAnalysisNodesErrors];
+export type GetSystemAnalysisGraphError = GetSystemAnalysisGraphErrors[keyof GetSystemAnalysisGraphErrors];
 
-export type ListSystemAnalysisNodesResponses = {
+export type GetSystemAnalysisGraphResponses = {
     /**
      * OK
      */
-    200: ListResponseBodySystemAnalysisNode;
+    200: GetSystemAnalysisGraphResponseBody;
 };
 
-export type ListSystemAnalysisNodesResponse = ListSystemAnalysisNodesResponses[keyof ListSystemAnalysisNodesResponses];
+export type GetSystemAnalysisGraphResponse = GetSystemAnalysisGraphResponses[keyof GetSystemAnalysisGraphResponses];
 
-export type AddSystemAnalysisNodeData = {
-    body: AddSystemAnalysisNodeRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_analysis/{id}/nodes';
-};
-
-export type AddSystemAnalysisNodeErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type AddSystemAnalysisNodeError = AddSystemAnalysisNodeErrors[keyof AddSystemAnalysisNodeErrors];
-
-export type AddSystemAnalysisNodeResponses = {
-    /**
-     * OK
-     */
-    200: AddSystemAnalysisNodeResponseBody;
-};
-
-export type AddSystemAnalysisNodeResponse = AddSystemAnalysisNodeResponses[keyof AddSystemAnalysisNodeResponses];
-
-export type DeleteSystemAnalysisEdgeData = {
+export type DeleteSystemAnalysisEntryData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis_edges/{id}';
+    url: '/system_analysis_entries/{id}';
 };
 
-export type DeleteSystemAnalysisEdgeErrors = {
+export type DeleteSystemAnalysisEntryErrors = {
     /**
      * Bad Request
      */
@@ -9778,27 +9396,121 @@ export type DeleteSystemAnalysisEdgeErrors = {
     500: ErrorModel;
 };
 
-export type DeleteSystemAnalysisEdgeError = DeleteSystemAnalysisEdgeErrors[keyof DeleteSystemAnalysisEdgeErrors];
+export type DeleteSystemAnalysisEntryError = DeleteSystemAnalysisEntryErrors[keyof DeleteSystemAnalysisEntryErrors];
 
-export type DeleteSystemAnalysisEdgeResponses = {
+export type DeleteSystemAnalysisEntryResponses = {
     /**
      * No Content
      */
     204: void;
 };
 
-export type DeleteSystemAnalysisEdgeResponse = DeleteSystemAnalysisEdgeResponses[keyof DeleteSystemAnalysisEdgeResponses];
+export type DeleteSystemAnalysisEntryResponse = DeleteSystemAnalysisEntryResponses[keyof DeleteSystemAnalysisEntryResponses];
 
-export type GetSystemAnalysisEdgeData = {
+export type UpdateSystemAnalysisEntryData = {
+    body: UpdateSystemAnalysisEntryRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_entries/{id}';
+};
+
+export type UpdateSystemAnalysisEntryErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateSystemAnalysisEntryError = UpdateSystemAnalysisEntryErrors[keyof UpdateSystemAnalysisEntryErrors];
+
+export type UpdateSystemAnalysisEntryResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemAnalysisEntryResponseBody;
+};
+
+export type UpdateSystemAnalysisEntryResponse = UpdateSystemAnalysisEntryResponses[keyof UpdateSystemAnalysisEntryResponses];
+
+export type AddSystemAnalysisEntrySubjectData = {
+    body: AddSystemAnalysisEntrySubjectRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_entries/{id}/subjects';
+};
+
+export type AddSystemAnalysisEntrySubjectErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type AddSystemAnalysisEntrySubjectError = AddSystemAnalysisEntrySubjectErrors[keyof AddSystemAnalysisEntrySubjectErrors];
+
+export type AddSystemAnalysisEntrySubjectResponses = {
+    /**
+     * OK
+     */
+    200: AddSystemAnalysisEntrySubjectResponseBody;
+};
+
+export type AddSystemAnalysisEntrySubjectResponse = AddSystemAnalysisEntrySubjectResponses[keyof AddSystemAnalysisEntrySubjectResponses];
+
+export type DeleteSystemAnalysisEntrySubjectData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis_edges/{id}';
+    url: '/system_analysis_entry_subjects/{id}';
 };
 
-export type GetSystemAnalysisEdgeErrors = {
+export type DeleteSystemAnalysisEntrySubjectErrors = {
     /**
      * Bad Request
      */
@@ -9825,121 +9537,27 @@ export type GetSystemAnalysisEdgeErrors = {
     500: ErrorModel;
 };
 
-export type GetSystemAnalysisEdgeError = GetSystemAnalysisEdgeErrors[keyof GetSystemAnalysisEdgeErrors];
+export type DeleteSystemAnalysisEntrySubjectError = DeleteSystemAnalysisEntrySubjectErrors[keyof DeleteSystemAnalysisEntrySubjectErrors];
 
-export type GetSystemAnalysisEdgeResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemAnalysisEdgeResponseBody;
-};
-
-export type GetSystemAnalysisEdgeResponse = GetSystemAnalysisEdgeResponses[keyof GetSystemAnalysisEdgeResponses];
-
-export type UpdateSystemAnalysisEdgeData = {
-    body: UpdateSystemAnalysisEdgeRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_analysis_edges/{id}';
-};
-
-export type UpdateSystemAnalysisEdgeErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemAnalysisEdgeError = UpdateSystemAnalysisEdgeErrors[keyof UpdateSystemAnalysisEdgeErrors];
-
-export type UpdateSystemAnalysisEdgeResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemAnalysisEdgeResponseBody;
-};
-
-export type UpdateSystemAnalysisEdgeResponse = UpdateSystemAnalysisEdgeResponses[keyof UpdateSystemAnalysisEdgeResponses];
-
-export type DeleteSystemAnalysisNodeData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_analysis_nodes/{id}';
-};
-
-export type DeleteSystemAnalysisNodeErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type DeleteSystemAnalysisNodeError = DeleteSystemAnalysisNodeErrors[keyof DeleteSystemAnalysisNodeErrors];
-
-export type DeleteSystemAnalysisNodeResponses = {
+export type DeleteSystemAnalysisEntrySubjectResponses = {
     /**
      * No Content
      */
     204: void;
 };
 
-export type DeleteSystemAnalysisNodeResponse = DeleteSystemAnalysisNodeResponses[keyof DeleteSystemAnalysisNodeResponses];
+export type DeleteSystemAnalysisEntrySubjectResponse = DeleteSystemAnalysisEntrySubjectResponses[keyof DeleteSystemAnalysisEntrySubjectResponses];
 
-export type GetSystemAnalysisNodeData = {
-    body?: never;
+export type UpdateSystemAnalysisEntrySubjectData = {
+    body: UpdateSystemAnalysisEntrySubjectRequestBody;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis_nodes/{id}';
+    url: '/system_analysis_entry_subjects/{id}';
 };
 
-export type GetSystemAnalysisNodeErrors = {
+export type UpdateSystemAnalysisEntrySubjectErrors = {
     /**
      * Bad Request
      */
@@ -9966,63 +9584,16 @@ export type GetSystemAnalysisNodeErrors = {
     500: ErrorModel;
 };
 
-export type GetSystemAnalysisNodeError = GetSystemAnalysisNodeErrors[keyof GetSystemAnalysisNodeErrors];
+export type UpdateSystemAnalysisEntrySubjectError = UpdateSystemAnalysisEntrySubjectErrors[keyof UpdateSystemAnalysisEntrySubjectErrors];
 
-export type GetSystemAnalysisNodeResponses = {
+export type UpdateSystemAnalysisEntrySubjectResponses = {
     /**
      * OK
      */
-    200: GetSystemAnalysisNodeResponseBody;
+    200: UpdateSystemAnalysisEntrySubjectResponseBody;
 };
 
-export type GetSystemAnalysisNodeResponse = GetSystemAnalysisNodeResponses[keyof GetSystemAnalysisNodeResponses];
-
-export type UpdateSystemAnalysisNodeData = {
-    body: UpdateSystemAnalysisNodeRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_analysis_nodes/{id}';
-};
-
-export type UpdateSystemAnalysisNodeErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemAnalysisNodeError = UpdateSystemAnalysisNodeErrors[keyof UpdateSystemAnalysisNodeErrors];
-
-export type UpdateSystemAnalysisNodeResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemAnalysisNodeResponseBody;
-};
-
-export type UpdateSystemAnalysisNodeResponse = UpdateSystemAnalysisNodeResponses[keyof UpdateSystemAnalysisNodeResponses];
+export type UpdateSystemAnalysisEntrySubjectResponse = UpdateSystemAnalysisEntrySubjectResponses[keyof UpdateSystemAnalysisEntrySubjectResponses];
 
 export type ListTasksData = {
     body?: never;

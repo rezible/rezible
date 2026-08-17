@@ -15,7 +15,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -130,6 +132,36 @@ func (_c *SystemAnalysisCreate) SetScopeEntity(v *KnowledgeEntity) *SystemAnalys
 // SetSubjectEntity sets the "subject_entity" edge to the KnowledgeEntity entity.
 func (_c *SystemAnalysisCreate) SetSubjectEntity(v *KnowledgeEntity) *SystemAnalysisCreate {
 	return _c.SetSubjectEntityID(v.ID)
+}
+
+// AddAnalysisEntityIDs adds the "analysis_entities" edge to the SystemAnalysisEntity entity by IDs.
+func (_c *SystemAnalysisCreate) AddAnalysisEntityIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.AddAnalysisEntityIDs(ids...)
+	return _c
+}
+
+// AddAnalysisEntities adds the "analysis_entities" edges to the SystemAnalysisEntity entity.
+func (_c *SystemAnalysisCreate) AddAnalysisEntities(v ...*SystemAnalysisEntity) *SystemAnalysisCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAnalysisEntityIDs(ids...)
+}
+
+// AddAnalysisRelationshipIDs adds the "analysis_relationships" edge to the SystemAnalysisRelationship entity by IDs.
+func (_c *SystemAnalysisCreate) AddAnalysisRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.AddAnalysisRelationshipIDs(ids...)
+	return _c
+}
+
+// AddAnalysisRelationships adds the "analysis_relationships" edges to the SystemAnalysisRelationship entity.
+func (_c *SystemAnalysisCreate) AddAnalysisRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAnalysisRelationshipIDs(ids...)
 }
 
 // AddEntryIDs adds the "entries" edge to the SystemAnalysisEntry entity by IDs.
@@ -323,6 +355,40 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.SubjectEntityID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AnalysisEntitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEntitiesTable,
+			Columns: []string{systemanalysis.AnalysisEntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AnalysisRelationshipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisRelationshipsTable,
+			Columns: []string{systemanalysis.AnalysisRelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.EntriesIDs(); len(nodes) > 0 {

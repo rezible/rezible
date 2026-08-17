@@ -73,8 +73,10 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -208,10 +210,14 @@ type Client struct {
 	RetrospectiveReview *RetrospectiveReviewClient
 	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
 	SystemAnalysis *SystemAnalysisClient
+	// SystemAnalysisEntity is the client for interacting with the SystemAnalysisEntity builders.
+	SystemAnalysisEntity *SystemAnalysisEntityClient
 	// SystemAnalysisEntry is the client for interacting with the SystemAnalysisEntry builders.
 	SystemAnalysisEntry *SystemAnalysisEntryClient
 	// SystemAnalysisEntrySubject is the client for interacting with the SystemAnalysisEntrySubject builders.
 	SystemAnalysisEntrySubject *SystemAnalysisEntrySubjectClient
+	// SystemAnalysisRelationship is the client for interacting with the SystemAnalysisRelationship builders.
+	SystemAnalysisRelationship *SystemAnalysisRelationshipClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -297,8 +303,10 @@ func (c *Client) init() {
 	c.RetrospectiveComment = NewRetrospectiveCommentClient(c.config)
 	c.RetrospectiveReview = NewRetrospectiveReviewClient(c.config)
 	c.SystemAnalysis = NewSystemAnalysisClient(c.config)
+	c.SystemAnalysisEntity = NewSystemAnalysisEntityClient(c.config)
 	c.SystemAnalysisEntry = NewSystemAnalysisEntryClient(c.config)
 	c.SystemAnalysisEntrySubject = NewSystemAnalysisEntrySubjectClient(c.config)
+	c.SystemAnalysisRelationship = NewSystemAnalysisRelationshipClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.Team = NewTeamClient(c.config)
 	c.TeamMembership = NewTeamMembershipClient(c.config)
@@ -460,8 +468,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		RetrospectiveComment:            NewRetrospectiveCommentClient(cfg),
 		RetrospectiveReview:             NewRetrospectiveReviewClient(cfg),
 		SystemAnalysis:                  NewSystemAnalysisClient(cfg),
+		SystemAnalysisEntity:            NewSystemAnalysisEntityClient(cfg),
 		SystemAnalysisEntry:             NewSystemAnalysisEntryClient(cfg),
 		SystemAnalysisEntrySubject:      NewSystemAnalysisEntrySubjectClient(cfg),
+		SystemAnalysisRelationship:      NewSystemAnalysisRelationshipClient(cfg),
 		Task:                            NewTaskClient(cfg),
 		Team:                            NewTeamClient(cfg),
 		TeamMembership:                  NewTeamMembershipClient(cfg),
@@ -547,8 +557,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		RetrospectiveComment:            NewRetrospectiveCommentClient(cfg),
 		RetrospectiveReview:             NewRetrospectiveReviewClient(cfg),
 		SystemAnalysis:                  NewSystemAnalysisClient(cfg),
+		SystemAnalysisEntity:            NewSystemAnalysisEntityClient(cfg),
 		SystemAnalysisEntry:             NewSystemAnalysisEntryClient(cfg),
 		SystemAnalysisEntrySubject:      NewSystemAnalysisEntrySubjectClient(cfg),
+		SystemAnalysisRelationship:      NewSystemAnalysisRelationshipClient(cfg),
 		Task:                            NewTaskClient(cfg),
 		Team:                            NewTeamClient(cfg),
 		TeamMembership:                  NewTeamMembershipClient(cfg),
@@ -603,9 +615,9 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject, c.Task, c.Team,
-		c.TeamMembership, c.Tenant, c.Ticket, c.User, c.UserAuthSession,
-		c.VideoConference,
+		c.SystemAnalysisEntity, c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
+		c.SystemAnalysisRelationship, c.Task, c.Team, c.TeamMembership, c.Tenant,
+		c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
 	} {
 		n.Use(hooks...)
 	}
@@ -632,9 +644,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject, c.Task, c.Team,
-		c.TeamMembership, c.Tenant, c.Ticket, c.User, c.UserAuthSession,
-		c.VideoConference,
+		c.SystemAnalysisEntity, c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
+		c.SystemAnalysisRelationship, c.Task, c.Team, c.TeamMembership, c.Tenant,
+		c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -757,10 +769,14 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.RetrospectiveReview.mutate(ctx, m)
 	case *SystemAnalysisMutation:
 		return c.SystemAnalysis.mutate(ctx, m)
+	case *SystemAnalysisEntityMutation:
+		return c.SystemAnalysisEntity.mutate(ctx, m)
 	case *SystemAnalysisEntryMutation:
 		return c.SystemAnalysisEntry.mutate(ctx, m)
 	case *SystemAnalysisEntrySubjectMutation:
 		return c.SystemAnalysisEntrySubject.mutate(ctx, m)
+	case *SystemAnalysisRelationshipMutation:
+		return c.SystemAnalysisRelationship.mutate(ctx, m)
 	case *TaskMutation:
 		return c.Task.mutate(ctx, m)
 	case *TeamMutation:
@@ -12347,6 +12363,44 @@ func (c *SystemAnalysisClient) QuerySubjectEntity(_m *SystemAnalysis) *Knowledge
 	return query
 }
 
+// QueryAnalysisEntities queries the analysis_entities edge of a SystemAnalysis.
+func (c *SystemAnalysisClient) QueryAnalysisEntities(_m *SystemAnalysis) *SystemAnalysisEntityQuery {
+	query := (&SystemAnalysisEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
+			sqlgraph.To(systemanalysisentity.Table, systemanalysisentity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AnalysisEntitiesTable, systemanalysis.AnalysisEntitiesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisEntity
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnalysisRelationships queries the analysis_relationships edge of a SystemAnalysis.
+func (c *SystemAnalysisClient) QueryAnalysisRelationships(_m *SystemAnalysis) *SystemAnalysisRelationshipQuery {
+	query := (&SystemAnalysisRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
+			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AnalysisRelationshipsTable, systemanalysis.AnalysisRelationshipsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisRelationship
+		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryEntries queries the entries edge of a SystemAnalysis.
 func (c *SystemAnalysisClient) QueryEntries(_m *SystemAnalysis) *SystemAnalysisEntryQuery {
 	query := (&SystemAnalysisEntryClient{config: c.config}).Query()
@@ -12389,6 +12443,197 @@ func (c *SystemAnalysisClient) mutate(ctx context.Context, m *SystemAnalysisMuta
 		return (&SystemAnalysisDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown SystemAnalysis mutation op: %q", m.Op())
+	}
+}
+
+// SystemAnalysisEntityClient is a client for the SystemAnalysisEntity schema.
+type SystemAnalysisEntityClient struct {
+	config
+}
+
+// NewSystemAnalysisEntityClient returns a client for the SystemAnalysisEntity from the given config.
+func NewSystemAnalysisEntityClient(c config) *SystemAnalysisEntityClient {
+	return &SystemAnalysisEntityClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `systemanalysisentity.Hooks(f(g(h())))`.
+func (c *SystemAnalysisEntityClient) Use(hooks ...Hook) {
+	c.hooks.SystemAnalysisEntity = append(c.hooks.SystemAnalysisEntity, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `systemanalysisentity.Intercept(f(g(h())))`.
+func (c *SystemAnalysisEntityClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemAnalysisEntity = append(c.inters.SystemAnalysisEntity, interceptors...)
+}
+
+// Create returns a builder for creating a SystemAnalysisEntity entity.
+func (c *SystemAnalysisEntityClient) Create() *SystemAnalysisEntityCreate {
+	mutation := newSystemAnalysisEntityMutation(c.config, OpCreate)
+	return &SystemAnalysisEntityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SystemAnalysisEntity entities.
+func (c *SystemAnalysisEntityClient) CreateBulk(builders ...*SystemAnalysisEntityCreate) *SystemAnalysisEntityCreateBulk {
+	return &SystemAnalysisEntityCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SystemAnalysisEntityClient) MapCreateBulk(slice any, setFunc func(*SystemAnalysisEntityCreate, int)) *SystemAnalysisEntityCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SystemAnalysisEntityCreateBulk{err: fmt.Errorf("calling to SystemAnalysisEntityClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SystemAnalysisEntityCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SystemAnalysisEntityCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SystemAnalysisEntity.
+func (c *SystemAnalysisEntityClient) Update() *SystemAnalysisEntityUpdate {
+	mutation := newSystemAnalysisEntityMutation(c.config, OpUpdate)
+	return &SystemAnalysisEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SystemAnalysisEntityClient) UpdateOne(_m *SystemAnalysisEntity) *SystemAnalysisEntityUpdateOne {
+	mutation := newSystemAnalysisEntityMutation(c.config, OpUpdateOne, withSystemAnalysisEntity(_m))
+	return &SystemAnalysisEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SystemAnalysisEntityClient) UpdateOneID(id uuid.UUID) *SystemAnalysisEntityUpdateOne {
+	mutation := newSystemAnalysisEntityMutation(c.config, OpUpdateOne, withSystemAnalysisEntityID(id))
+	return &SystemAnalysisEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SystemAnalysisEntity.
+func (c *SystemAnalysisEntityClient) Delete() *SystemAnalysisEntityDelete {
+	mutation := newSystemAnalysisEntityMutation(c.config, OpDelete)
+	return &SystemAnalysisEntityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SystemAnalysisEntityClient) DeleteOne(_m *SystemAnalysisEntity) *SystemAnalysisEntityDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SystemAnalysisEntityClient) DeleteOneID(id uuid.UUID) *SystemAnalysisEntityDeleteOne {
+	builder := c.Delete().Where(systemanalysisentity.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SystemAnalysisEntityDeleteOne{builder}
+}
+
+// Query returns a query builder for SystemAnalysisEntity.
+func (c *SystemAnalysisEntityClient) Query() *SystemAnalysisEntityQuery {
+	return &SystemAnalysisEntityQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSystemAnalysisEntity},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SystemAnalysisEntity entity by its id.
+func (c *SystemAnalysisEntityClient) Get(ctx context.Context, id uuid.UUID) (*SystemAnalysisEntity, error) {
+	return c.Query().Where(systemanalysisentity.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SystemAnalysisEntityClient) GetX(ctx context.Context, id uuid.UUID) *SystemAnalysisEntity {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a SystemAnalysisEntity.
+func (c *SystemAnalysisEntityClient) QueryTenant(_m *SystemAnalysisEntity) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisentity.Table, systemanalysisentity.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisentity.TenantTable, systemanalysisentity.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnalysis queries the analysis edge of a SystemAnalysisEntity.
+func (c *SystemAnalysisEntityClient) QueryAnalysis(_m *SystemAnalysisEntity) *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisentity.Table, systemanalysisentity.FieldID, id),
+			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisentity.AnalysisTable, systemanalysisentity.AnalysisColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeEntity queries the knowledge_entity edge of a SystemAnalysisEntity.
+func (c *SystemAnalysisEntityClient) QueryKnowledgeEntity(_m *SystemAnalysisEntity) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisentity.Table, systemanalysisentity.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisentity.KnowledgeEntityTable, systemanalysisentity.KnowledgeEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SystemAnalysisEntityClient) Hooks() []Hook {
+	hooks := c.hooks.SystemAnalysisEntity
+	return append(hooks[:len(hooks):len(hooks)], systemanalysisentity.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *SystemAnalysisEntityClient) Interceptors() []Interceptor {
+	return c.inters.SystemAnalysisEntity
+}
+
+func (c *SystemAnalysisEntityClient) mutate(ctx context.Context, m *SystemAnalysisEntityMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SystemAnalysisEntityCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SystemAnalysisEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SystemAnalysisEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SystemAnalysisEntityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SystemAnalysisEntity mutation op: %q", m.Op())
 	}
 }
 
@@ -12809,6 +13054,235 @@ func (c *SystemAnalysisEntrySubjectClient) mutate(ctx context.Context, m *System
 		return (&SystemAnalysisEntrySubjectDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown SystemAnalysisEntrySubject mutation op: %q", m.Op())
+	}
+}
+
+// SystemAnalysisRelationshipClient is a client for the SystemAnalysisRelationship schema.
+type SystemAnalysisRelationshipClient struct {
+	config
+}
+
+// NewSystemAnalysisRelationshipClient returns a client for the SystemAnalysisRelationship from the given config.
+func NewSystemAnalysisRelationshipClient(c config) *SystemAnalysisRelationshipClient {
+	return &SystemAnalysisRelationshipClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `systemanalysisrelationship.Hooks(f(g(h())))`.
+func (c *SystemAnalysisRelationshipClient) Use(hooks ...Hook) {
+	c.hooks.SystemAnalysisRelationship = append(c.hooks.SystemAnalysisRelationship, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `systemanalysisrelationship.Intercept(f(g(h())))`.
+func (c *SystemAnalysisRelationshipClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemAnalysisRelationship = append(c.inters.SystemAnalysisRelationship, interceptors...)
+}
+
+// Create returns a builder for creating a SystemAnalysisRelationship entity.
+func (c *SystemAnalysisRelationshipClient) Create() *SystemAnalysisRelationshipCreate {
+	mutation := newSystemAnalysisRelationshipMutation(c.config, OpCreate)
+	return &SystemAnalysisRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SystemAnalysisRelationship entities.
+func (c *SystemAnalysisRelationshipClient) CreateBulk(builders ...*SystemAnalysisRelationshipCreate) *SystemAnalysisRelationshipCreateBulk {
+	return &SystemAnalysisRelationshipCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SystemAnalysisRelationshipClient) MapCreateBulk(slice any, setFunc func(*SystemAnalysisRelationshipCreate, int)) *SystemAnalysisRelationshipCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SystemAnalysisRelationshipCreateBulk{err: fmt.Errorf("calling to SystemAnalysisRelationshipClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SystemAnalysisRelationshipCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SystemAnalysisRelationshipCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SystemAnalysisRelationship.
+func (c *SystemAnalysisRelationshipClient) Update() *SystemAnalysisRelationshipUpdate {
+	mutation := newSystemAnalysisRelationshipMutation(c.config, OpUpdate)
+	return &SystemAnalysisRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SystemAnalysisRelationshipClient) UpdateOne(_m *SystemAnalysisRelationship) *SystemAnalysisRelationshipUpdateOne {
+	mutation := newSystemAnalysisRelationshipMutation(c.config, OpUpdateOne, withSystemAnalysisRelationship(_m))
+	return &SystemAnalysisRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SystemAnalysisRelationshipClient) UpdateOneID(id uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	mutation := newSystemAnalysisRelationshipMutation(c.config, OpUpdateOne, withSystemAnalysisRelationshipID(id))
+	return &SystemAnalysisRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SystemAnalysisRelationship.
+func (c *SystemAnalysisRelationshipClient) Delete() *SystemAnalysisRelationshipDelete {
+	mutation := newSystemAnalysisRelationshipMutation(c.config, OpDelete)
+	return &SystemAnalysisRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SystemAnalysisRelationshipClient) DeleteOne(_m *SystemAnalysisRelationship) *SystemAnalysisRelationshipDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SystemAnalysisRelationshipClient) DeleteOneID(id uuid.UUID) *SystemAnalysisRelationshipDeleteOne {
+	builder := c.Delete().Where(systemanalysisrelationship.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SystemAnalysisRelationshipDeleteOne{builder}
+}
+
+// Query returns a query builder for SystemAnalysisRelationship.
+func (c *SystemAnalysisRelationshipClient) Query() *SystemAnalysisRelationshipQuery {
+	return &SystemAnalysisRelationshipQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSystemAnalysisRelationship},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SystemAnalysisRelationship entity by its id.
+func (c *SystemAnalysisRelationshipClient) Get(ctx context.Context, id uuid.UUID) (*SystemAnalysisRelationship, error) {
+	return c.Query().Where(systemanalysisrelationship.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SystemAnalysisRelationshipClient) GetX(ctx context.Context, id uuid.UUID) *SystemAnalysisRelationship {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a SystemAnalysisRelationship.
+func (c *SystemAnalysisRelationshipClient) QueryTenant(_m *SystemAnalysisRelationship) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.TenantTable, systemanalysisrelationship.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnalysis queries the analysis edge of a SystemAnalysisRelationship.
+func (c *SystemAnalysisRelationshipClient) QueryAnalysis(_m *SystemAnalysisRelationship) *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
+			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.AnalysisTable, systemanalysisrelationship.AnalysisColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeRelationship queries the knowledge_relationship edge of a SystemAnalysisRelationship.
+func (c *SystemAnalysisRelationshipClient) QueryKnowledgeRelationship(_m *SystemAnalysisRelationship) *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.KnowledgeRelationshipTable, systemanalysisrelationship.KnowledgeRelationshipColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySourceEntity queries the source_entity edge of a SystemAnalysisRelationship.
+func (c *SystemAnalysisRelationshipClient) QuerySourceEntity(_m *SystemAnalysisRelationship) *SystemAnalysisEntityQuery {
+	query := (&SystemAnalysisEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
+			sqlgraph.To(systemanalysisentity.Table, systemanalysisentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.SourceEntityTable, systemanalysisrelationship.SourceEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisEntity
+		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetEntity queries the target_entity edge of a SystemAnalysisRelationship.
+func (c *SystemAnalysisRelationshipClient) QueryTargetEntity(_m *SystemAnalysisRelationship) *SystemAnalysisEntityQuery {
+	query := (&SystemAnalysisEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
+			sqlgraph.To(systemanalysisentity.Table, systemanalysisentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.TargetEntityTable, systemanalysisrelationship.TargetEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisEntity
+		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SystemAnalysisRelationshipClient) Hooks() []Hook {
+	hooks := c.hooks.SystemAnalysisRelationship
+	return append(hooks[:len(hooks):len(hooks)], systemanalysisrelationship.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *SystemAnalysisRelationshipClient) Interceptors() []Interceptor {
+	return c.inters.SystemAnalysisRelationship
+}
+
+func (c *SystemAnalysisRelationshipClient) mutate(ctx context.Context, m *SystemAnalysisRelationshipMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SystemAnalysisRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SystemAnalysisRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SystemAnalysisRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SystemAnalysisRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SystemAnalysisRelationship mutation op: %q", m.Op())
 	}
 }
 
@@ -14739,7 +15213,8 @@ type (
 		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
 		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisEntry, SystemAnalysisEntrySubject, Task, Team,
+		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		SystemAnalysisEntrySubject, SystemAnalysisRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, UserAuthSession,
 		VideoConference []ent.Hook
 	}
@@ -14759,7 +15234,8 @@ type (
 		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
 		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisEntry, SystemAnalysisEntrySubject, Task, Team,
+		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		SystemAnalysisEntrySubject, SystemAnalysisRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, UserAuthSession,
 		VideoConference []ent.Interceptor
 	}
@@ -14837,8 +15313,10 @@ var (
 		RetrospectiveComment:                      tableSchemas[0],
 		RetrospectiveReview:                       tableSchemas[0],
 		SystemAnalysis:                            tableSchemas[0],
+		SystemAnalysisEntity:                      tableSchemas[0],
 		SystemAnalysisEntry:                       tableSchemas[0],
 		SystemAnalysisEntrySubject:                tableSchemas[0],
+		SystemAnalysisRelationship:                tableSchemas[0],
 		Task:                                      tableSchemas[0],
 		TaskTickets:                               tableSchemas[0],
 		Team:                                      tableSchemas[0],

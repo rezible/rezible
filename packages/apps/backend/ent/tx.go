@@ -128,10 +128,14 @@ type Tx struct {
 	RetrospectiveReview *RetrospectiveReviewClient
 	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
 	SystemAnalysis *SystemAnalysisClient
+	// SystemAnalysisEntity is the client for interacting with the SystemAnalysisEntity builders.
+	SystemAnalysisEntity *SystemAnalysisEntityClient
 	// SystemAnalysisEntry is the client for interacting with the SystemAnalysisEntry builders.
 	SystemAnalysisEntry *SystemAnalysisEntryClient
 	// SystemAnalysisEntrySubject is the client for interacting with the SystemAnalysisEntrySubject builders.
 	SystemAnalysisEntrySubject *SystemAnalysisEntrySubjectClient
+	// SystemAnalysisRelationship is the client for interacting with the SystemAnalysisRelationship builders.
+	SystemAnalysisRelationship *SystemAnalysisRelationshipClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -337,8 +341,10 @@ func (tx *Tx) init() {
 	tx.RetrospectiveComment = NewRetrospectiveCommentClient(tx.config)
 	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)
 	tx.SystemAnalysis = NewSystemAnalysisClient(tx.config)
+	tx.SystemAnalysisEntity = NewSystemAnalysisEntityClient(tx.config)
 	tx.SystemAnalysisEntry = NewSystemAnalysisEntryClient(tx.config)
 	tx.SystemAnalysisEntrySubject = NewSystemAnalysisEntrySubjectClient(tx.config)
+	tx.SystemAnalysisRelationship = NewSystemAnalysisRelationshipClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
 	tx.TeamMembership = NewTeamMembershipClient(tx.config)

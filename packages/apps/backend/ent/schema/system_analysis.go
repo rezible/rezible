@@ -47,6 +47,10 @@ func (SystemAnalysis) Edges() []ent.Edge {
 		edge.To("subject_entity", KnowledgeEntity.Type).
 			Unique().
 			Field("subject_entity_id"),
+		edge.From("analysis_entities", SystemAnalysisEntity.Type).
+			Ref("analysis"),
+		edge.From("analysis_relationships", SystemAnalysisRelationship.Type).
+			Ref("analysis"),
 		edge.From("entries", SystemAnalysisEntry.Type).
 			Ref("analysis"),
 	}
@@ -56,6 +60,129 @@ func (SystemAnalysis) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "scope_entity_id"),
 		index.Fields("tenant_id", "subject_entity_id"),
+	}
+}
+
+type SystemAnalysisEntity struct {
+	ent.Schema
+}
+
+func (SystemAnalysisEntity) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+		TimestampsMixin{},
+	}
+}
+
+func (SystemAnalysisEntity) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("analysis_id", uuid.UUID{}),
+		field.UUID("knowledge_entity_id", uuid.UUID{}),
+		field.Float("pos_x").
+			Optional().
+			Nillable(),
+		field.Float("pos_y").
+			Optional().
+			Nillable(),
+		field.Bool("hidden").
+			Default(false),
+		field.String("label_override").
+			Optional().
+			Nillable(),
+		field.Text("description_override").
+			Optional().
+			Nillable(),
+		field.JSON("properties", map[string]any{}).
+			Optional().
+			SchemaType(schemaTypeJsonB),
+	}
+}
+
+func (SystemAnalysisEntity) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("analysis", SystemAnalysis.Type).
+			Required().
+			Unique().
+			Field("analysis_id"),
+		edge.To("knowledge_entity", KnowledgeEntity.Type).
+			Required().
+			Unique().
+			Field("knowledge_entity_id"),
+	}
+}
+
+func (SystemAnalysisEntity) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "analysis_id", "knowledge_entity_id").Unique(),
+		index.Fields("tenant_id", "knowledge_entity_id"),
+	}
+}
+
+type SystemAnalysisRelationship struct {
+	ent.Schema
+}
+
+func (SystemAnalysisRelationship) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+		TimestampsMixin{},
+	}
+}
+
+func (SystemAnalysisRelationship) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("analysis_id", uuid.UUID{}),
+		field.UUID("knowledge_relationship_id", uuid.UUID{}),
+		field.UUID("source_analysis_entity_id", uuid.UUID{}),
+		field.UUID("target_analysis_entity_id", uuid.UUID{}),
+		field.Bool("hidden").
+			Default(false),
+		field.String("label_override").
+			Optional().
+			Nillable(),
+		field.Text("description_override").
+			Optional().
+			Nillable(),
+		field.JSON("layout", map[string]any{}).
+			Optional().
+			SchemaType(schemaTypeJsonB),
+		field.JSON("properties", map[string]any{}).
+			Optional().
+			SchemaType(schemaTypeJsonB),
+	}
+}
+
+func (SystemAnalysisRelationship) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("analysis", SystemAnalysis.Type).
+			Required().
+			Unique().
+			Field("analysis_id"),
+		edge.To("knowledge_relationship", KnowledgeRelationship.Type).
+			Required().
+			Unique().
+			Field("knowledge_relationship_id"),
+		edge.To("source_entity", SystemAnalysisEntity.Type).
+			Required().
+			Unique().
+			Field("source_analysis_entity_id"),
+		edge.To("target_entity", SystemAnalysisEntity.Type).
+			Required().
+			Unique().
+			Field("target_analysis_entity_id"),
+	}
+}
+
+func (SystemAnalysisRelationship) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "analysis_id", "knowledge_relationship_id").Unique(),
+		index.Fields("tenant_id", "knowledge_relationship_id"),
+		index.Fields("tenant_id", "source_analysis_entity_id"),
+		index.Fields("tenant_id", "target_analysis_entity_id"),
 	}
 }
 

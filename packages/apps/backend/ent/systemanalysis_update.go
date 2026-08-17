@@ -16,7 +16,9 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 )
 
 // SystemAnalysisUpdate is the builder for updating SystemAnalysis entities.
@@ -123,6 +125,36 @@ func (_u *SystemAnalysisUpdate) SetSubjectEntity(v *KnowledgeEntity) *SystemAnal
 	return _u.SetSubjectEntityID(v.ID)
 }
 
+// AddAnalysisEntityIDs adds the "analysis_entities" edge to the SystemAnalysisEntity entity by IDs.
+func (_u *SystemAnalysisUpdate) AddAnalysisEntityIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.AddAnalysisEntityIDs(ids...)
+	return _u
+}
+
+// AddAnalysisEntities adds the "analysis_entities" edges to the SystemAnalysisEntity entity.
+func (_u *SystemAnalysisUpdate) AddAnalysisEntities(v ...*SystemAnalysisEntity) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAnalysisEntityIDs(ids...)
+}
+
+// AddAnalysisRelationshipIDs adds the "analysis_relationships" edge to the SystemAnalysisRelationship entity by IDs.
+func (_u *SystemAnalysisUpdate) AddAnalysisRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.AddAnalysisRelationshipIDs(ids...)
+	return _u
+}
+
+// AddAnalysisRelationships adds the "analysis_relationships" edges to the SystemAnalysisRelationship entity.
+func (_u *SystemAnalysisUpdate) AddAnalysisRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAnalysisRelationshipIDs(ids...)
+}
+
 // AddEntryIDs adds the "entries" edge to the SystemAnalysisEntry entity by IDs.
 func (_u *SystemAnalysisUpdate) AddEntryIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
 	_u.mutation.AddEntryIDs(ids...)
@@ -153,6 +185,48 @@ func (_u *SystemAnalysisUpdate) ClearScopeEntity() *SystemAnalysisUpdate {
 func (_u *SystemAnalysisUpdate) ClearSubjectEntity() *SystemAnalysisUpdate {
 	_u.mutation.ClearSubjectEntity()
 	return _u
+}
+
+// ClearAnalysisEntities clears all "analysis_entities" edges to the SystemAnalysisEntity entity.
+func (_u *SystemAnalysisUpdate) ClearAnalysisEntities() *SystemAnalysisUpdate {
+	_u.mutation.ClearAnalysisEntities()
+	return _u
+}
+
+// RemoveAnalysisEntityIDs removes the "analysis_entities" edge to SystemAnalysisEntity entities by IDs.
+func (_u *SystemAnalysisUpdate) RemoveAnalysisEntityIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.RemoveAnalysisEntityIDs(ids...)
+	return _u
+}
+
+// RemoveAnalysisEntities removes "analysis_entities" edges to SystemAnalysisEntity entities.
+func (_u *SystemAnalysisUpdate) RemoveAnalysisEntities(v ...*SystemAnalysisEntity) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAnalysisEntityIDs(ids...)
+}
+
+// ClearAnalysisRelationships clears all "analysis_relationships" edges to the SystemAnalysisRelationship entity.
+func (_u *SystemAnalysisUpdate) ClearAnalysisRelationships() *SystemAnalysisUpdate {
+	_u.mutation.ClearAnalysisRelationships()
+	return _u
+}
+
+// RemoveAnalysisRelationshipIDs removes the "analysis_relationships" edge to SystemAnalysisRelationship entities by IDs.
+func (_u *SystemAnalysisUpdate) RemoveAnalysisRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.RemoveAnalysisRelationshipIDs(ids...)
+	return _u
+}
+
+// RemoveAnalysisRelationships removes "analysis_relationships" edges to SystemAnalysisRelationship entities.
+func (_u *SystemAnalysisUpdate) RemoveAnalysisRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAnalysisRelationshipIDs(ids...)
 }
 
 // ClearEntries clears all "entries" edges to the SystemAnalysisEntry entity.
@@ -313,6 +387,102 @@ func (_u *SystemAnalysisUpdate) sqlSave(ctx context.Context) (_node int, err err
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysis
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AnalysisEntitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEntitiesTable,
+			Columns: []string{systemanalysis.AnalysisEntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntity
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAnalysisEntitiesIDs(); len(nodes) > 0 && !_u.mutation.AnalysisEntitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEntitiesTable,
+			Columns: []string{systemanalysis.AnalysisEntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AnalysisEntitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEntitiesTable,
+			Columns: []string{systemanalysis.AnalysisEntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AnalysisRelationshipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisRelationshipsTable,
+			Columns: []string{systemanalysis.AnalysisRelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAnalysisRelationshipsIDs(); len(nodes) > 0 && !_u.mutation.AnalysisRelationshipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisRelationshipsTable,
+			Columns: []string{systemanalysis.AnalysisRelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AnalysisRelationshipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisRelationshipsTable,
+			Columns: []string{systemanalysis.AnalysisRelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -480,6 +650,36 @@ func (_u *SystemAnalysisUpdateOne) SetSubjectEntity(v *KnowledgeEntity) *SystemA
 	return _u.SetSubjectEntityID(v.ID)
 }
 
+// AddAnalysisEntityIDs adds the "analysis_entities" edge to the SystemAnalysisEntity entity by IDs.
+func (_u *SystemAnalysisUpdateOne) AddAnalysisEntityIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.AddAnalysisEntityIDs(ids...)
+	return _u
+}
+
+// AddAnalysisEntities adds the "analysis_entities" edges to the SystemAnalysisEntity entity.
+func (_u *SystemAnalysisUpdateOne) AddAnalysisEntities(v ...*SystemAnalysisEntity) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAnalysisEntityIDs(ids...)
+}
+
+// AddAnalysisRelationshipIDs adds the "analysis_relationships" edge to the SystemAnalysisRelationship entity by IDs.
+func (_u *SystemAnalysisUpdateOne) AddAnalysisRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.AddAnalysisRelationshipIDs(ids...)
+	return _u
+}
+
+// AddAnalysisRelationships adds the "analysis_relationships" edges to the SystemAnalysisRelationship entity.
+func (_u *SystemAnalysisUpdateOne) AddAnalysisRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAnalysisRelationshipIDs(ids...)
+}
+
 // AddEntryIDs adds the "entries" edge to the SystemAnalysisEntry entity by IDs.
 func (_u *SystemAnalysisUpdateOne) AddEntryIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
 	_u.mutation.AddEntryIDs(ids...)
@@ -510,6 +710,48 @@ func (_u *SystemAnalysisUpdateOne) ClearScopeEntity() *SystemAnalysisUpdateOne {
 func (_u *SystemAnalysisUpdateOne) ClearSubjectEntity() *SystemAnalysisUpdateOne {
 	_u.mutation.ClearSubjectEntity()
 	return _u
+}
+
+// ClearAnalysisEntities clears all "analysis_entities" edges to the SystemAnalysisEntity entity.
+func (_u *SystemAnalysisUpdateOne) ClearAnalysisEntities() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearAnalysisEntities()
+	return _u
+}
+
+// RemoveAnalysisEntityIDs removes the "analysis_entities" edge to SystemAnalysisEntity entities by IDs.
+func (_u *SystemAnalysisUpdateOne) RemoveAnalysisEntityIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.RemoveAnalysisEntityIDs(ids...)
+	return _u
+}
+
+// RemoveAnalysisEntities removes "analysis_entities" edges to SystemAnalysisEntity entities.
+func (_u *SystemAnalysisUpdateOne) RemoveAnalysisEntities(v ...*SystemAnalysisEntity) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAnalysisEntityIDs(ids...)
+}
+
+// ClearAnalysisRelationships clears all "analysis_relationships" edges to the SystemAnalysisRelationship entity.
+func (_u *SystemAnalysisUpdateOne) ClearAnalysisRelationships() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearAnalysisRelationships()
+	return _u
+}
+
+// RemoveAnalysisRelationshipIDs removes the "analysis_relationships" edge to SystemAnalysisRelationship entities by IDs.
+func (_u *SystemAnalysisUpdateOne) RemoveAnalysisRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.RemoveAnalysisRelationshipIDs(ids...)
+	return _u
+}
+
+// RemoveAnalysisRelationships removes "analysis_relationships" edges to SystemAnalysisRelationship entities.
+func (_u *SystemAnalysisUpdateOne) RemoveAnalysisRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAnalysisRelationshipIDs(ids...)
 }
 
 // ClearEntries clears all "entries" edges to the SystemAnalysisEntry entity.
@@ -700,6 +942,102 @@ func (_u *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *SystemAn
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysis
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AnalysisEntitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEntitiesTable,
+			Columns: []string{systemanalysis.AnalysisEntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntity
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAnalysisEntitiesIDs(); len(nodes) > 0 && !_u.mutation.AnalysisEntitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEntitiesTable,
+			Columns: []string{systemanalysis.AnalysisEntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AnalysisEntitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEntitiesTable,
+			Columns: []string{systemanalysis.AnalysisEntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AnalysisRelationshipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisRelationshipsTable,
+			Columns: []string{systemanalysis.AnalysisRelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAnalysisRelationshipsIDs(); len(nodes) > 0 && !_u.mutation.AnalysisRelationshipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisRelationshipsTable,
+			Columns: []string{systemanalysis.AnalysisRelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AnalysisRelationshipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisRelationshipsTable,
+			Columns: []string{systemanalysis.AnalysisRelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

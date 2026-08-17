@@ -34,6 +34,10 @@ const (
 	EdgeScopeEntity = "scope_entity"
 	// EdgeSubjectEntity holds the string denoting the subject_entity edge name in mutations.
 	EdgeSubjectEntity = "subject_entity"
+	// EdgeAnalysisEntities holds the string denoting the analysis_entities edge name in mutations.
+	EdgeAnalysisEntities = "analysis_entities"
+	// EdgeAnalysisRelationships holds the string denoting the analysis_relationships edge name in mutations.
+	EdgeAnalysisRelationships = "analysis_relationships"
 	// EdgeEntries holds the string denoting the entries edge name in mutations.
 	EdgeEntries = "entries"
 	// Table holds the table name of the systemanalysis in the database.
@@ -59,6 +63,20 @@ const (
 	SubjectEntityInverseTable = "knowledge_entities"
 	// SubjectEntityColumn is the table column denoting the subject_entity relation/edge.
 	SubjectEntityColumn = "subject_entity_id"
+	// AnalysisEntitiesTable is the table that holds the analysis_entities relation/edge.
+	AnalysisEntitiesTable = "system_analysis_entities"
+	// AnalysisEntitiesInverseTable is the table name for the SystemAnalysisEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysisentity" package.
+	AnalysisEntitiesInverseTable = "system_analysis_entities"
+	// AnalysisEntitiesColumn is the table column denoting the analysis_entities relation/edge.
+	AnalysisEntitiesColumn = "analysis_id"
+	// AnalysisRelationshipsTable is the table that holds the analysis_relationships relation/edge.
+	AnalysisRelationshipsTable = "system_analysis_relationships"
+	// AnalysisRelationshipsInverseTable is the table name for the SystemAnalysisRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysisrelationship" package.
+	AnalysisRelationshipsInverseTable = "system_analysis_relationships"
+	// AnalysisRelationshipsColumn is the table column denoting the analysis_relationships relation/edge.
+	AnalysisRelationshipsColumn = "analysis_id"
 	// EntriesTable is the table that holds the entries relation/edge.
 	EntriesTable = "system_analysis_entries"
 	// EntriesInverseTable is the table name for the SystemAnalysisEntry entity.
@@ -166,6 +184,34 @@ func BySubjectEntityField(field string, opts ...sql.OrderTermOption) OrderOption
 	}
 }
 
+// ByAnalysisEntitiesCount orders the results by analysis_entities count.
+func ByAnalysisEntitiesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAnalysisEntitiesStep(), opts...)
+	}
+}
+
+// ByAnalysisEntities orders the results by analysis_entities terms.
+func ByAnalysisEntities(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAnalysisEntitiesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByAnalysisRelationshipsCount orders the results by analysis_relationships count.
+func ByAnalysisRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAnalysisRelationshipsStep(), opts...)
+	}
+}
+
+// ByAnalysisRelationships orders the results by analysis_relationships terms.
+func ByAnalysisRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAnalysisRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByEntriesCount orders the results by entries count.
 func ByEntriesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -198,6 +244,20 @@ func newSubjectEntityStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SubjectEntityInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, SubjectEntityTable, SubjectEntityColumn),
+	)
+}
+func newAnalysisEntitiesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AnalysisEntitiesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, AnalysisEntitiesTable, AnalysisEntitiesColumn),
+	)
+}
+func newAnalysisRelationshipsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AnalysisRelationshipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, AnalysisRelationshipsTable, AnalysisRelationshipsColumn),
 	)
 }
 func newEntriesStep() *sqlgraph.Step {

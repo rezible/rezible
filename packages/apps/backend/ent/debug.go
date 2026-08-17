@@ -468,6 +468,14 @@ func (c *SystemAnalysisClient) Debug() *SystemAnalysisClient {
 	return &SystemAnalysisClient{config: cfg}
 }
 
+func (c *SystemAnalysisEntityClient) Debug() *SystemAnalysisEntityClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemAnalysisEntityClient{config: cfg}
+}
+
 func (c *SystemAnalysisEntryClient) Debug() *SystemAnalysisEntryClient {
 	if c.debug {
 		return c
@@ -482,6 +490,14 @@ func (c *SystemAnalysisEntrySubjectClient) Debug() *SystemAnalysisEntrySubjectCl
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &SystemAnalysisEntrySubjectClient{config: cfg}
+}
+
+func (c *SystemAnalysisRelationshipClient) Debug() *SystemAnalysisRelationshipClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemAnalysisRelationshipClient{config: cfg}
 }
 
 func (c *TaskClient) Debug() *TaskClient {
