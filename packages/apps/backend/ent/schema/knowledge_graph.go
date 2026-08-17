@@ -11,6 +11,37 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
+var (
+	knowledgeEntityKinds = []string{
+		"actor",
+		"system",
+		"container",
+		"component",
+		"code",
+		"deployment_node",
+		"process",
+		"concern",
+		"decision",
+		"event",
+	}
+
+	knowledgeRelationshipKinds = []string{
+		"contains",
+		"interacts_with",
+		"owns",
+		"implemented_by",
+		"runs_on",
+		"control_action",
+		"feedback",
+		"supports",
+		"participates_in",
+		"influences",
+		"constrains",
+		"addresses",
+		"impacts",
+	}
+)
+
 type KnowledgeEntity struct {
 	ent.Schema
 }
@@ -26,7 +57,11 @@ func (KnowledgeEntity) Mixin() []ent.Mixin {
 func (KnowledgeEntity) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.String("kind").NotEmpty(),
+		field.Enum("kind").
+			Values(knowledgeEntityKinds...).
+			Comment("Stable semantic category used by graph queries, generated views, and agent reasoning."),
+		field.String("subkind").NotEmpty().
+			Comment("Provider or domain subtype used for filtering, legends, and display; not product control flow."),
 	}
 }
 
@@ -43,7 +78,7 @@ func (KnowledgeEntity) Edges() []ent.Edge {
 
 func (KnowledgeEntity) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "kind"),
+		index.Fields("tenant_id", "kind", "subkind"),
 	}
 }
 
@@ -62,7 +97,12 @@ func (KnowledgeRelationship) Mixin() []ent.Mixin {
 func (KnowledgeRelationship) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.String("kind").NotEmpty().Immutable(),
+		field.Enum("kind").
+			Values(knowledgeRelationshipKinds...).
+			Immutable(),
+		field.String("subkind").NotEmpty().
+			Comment("Provider or domain subtype").
+			Immutable(),
 		field.UUID("source_entity_id", uuid.UUID{}).Immutable(),
 		field.UUID("target_entity_id", uuid.UUID{}).Immutable(),
 	}
@@ -87,10 +127,10 @@ func (KnowledgeRelationship) Edges() []ent.Edge {
 
 func (KnowledgeRelationship) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "kind"),
+		index.Fields("tenant_id", "kind", "subkind", "source_entity_id", "target_entity_id").Unique(),
 		index.Fields("tenant_id", "source_entity_id"),
 		index.Fields("tenant_id", "target_entity_id"),
-		index.Fields("tenant_id", "kind", "source_entity_id", "target_entity_id").Unique(),
+		index.Fields("tenant_id", "kind", "subkind"),
 	}
 }
 

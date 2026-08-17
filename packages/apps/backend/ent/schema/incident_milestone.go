@@ -35,7 +35,7 @@ func (IncidentMilestone) Fields() []ent.Field {
 	}
 }
 
-// Edges of the IncidentTimelineEvent.
+// Edges of the IncidentMilestone.
 func (IncidentMilestone) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("incident", Incident.Type).
