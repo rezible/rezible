@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/rezible/rezible/internal/genkit"
 	"github.com/urfave/cli/v3"
 
 	rez "github.com/rezible/rezible"
@@ -44,6 +45,13 @@ func makeServerCli() *cli.Command {
 				Usage: "Run rezible server",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
 					return startServicesFor[*http.Server](ctx, i)
+				},
+			},
+			{
+				Name:  "genkit-server",
+				Usage: "Run genkit dev server",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					return startServicesFor[*genkit.DevServer](ctx, i)
 				},
 			},
 			{

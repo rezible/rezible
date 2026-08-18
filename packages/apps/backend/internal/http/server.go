@@ -32,7 +32,7 @@ type (
 	WebhookHandlers map[string]http.Handler
 )
 
-func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionService, oapiV1Handler oapiv1.Handler, wh WebhookHandlers) (*Server, error) {
+func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionService, oapiV1Handler oapiv1.Handler, webhooks WebhookHandlers) (*Server, error) {
 	s := &Server{
 		cfg:    cfg.HttpServer,
 		logger: slog.Default().WithGroup("http"),
@@ -56,7 +56,7 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionServ
 	handler.Get("/health", s.makeHealthCheckHandler())
 
 	webhooksHandler := chi.NewMux()
-	for prefix, wh := range wh {
+	for prefix, wh := range webhooks {
 		route := ensureSlashPrefix(prefix)
 		slog.Debug("mounting webhook handler", "route", route)
 		webhooksHandler.Mount(route, wh)
@@ -235,10 +235,10 @@ func (s *Server) Start(ctx context.Context) error {
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
-	slog.Info("HTTP server shutting down")
 	if s.httpServer == nil {
 		return nil
 	}
+	slog.Info("HTTP server shutting down")
 	return s.httpServer.Shutdown(ctx)
 }
 

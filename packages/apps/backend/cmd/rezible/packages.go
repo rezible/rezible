@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/rezible/rezible/internal/koanf"
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/samber/do/v2"
 
 	rez "github.com/rezible/rezible"
@@ -51,7 +52,7 @@ func makePackageProvider(ctx context.Context) Provider {
 		provideDatabaseServices,
 		provideIntegrations,
 		provideJobWorkers,
-		provideHttpServer,
+		provideHttpApiServer,
 	)
 }
 
@@ -100,20 +101,29 @@ func makePostgresProvider(ctx context.Context) Provider {
 }
 
 func makeGenkitProvider(ctx context.Context) Provider {
+	initService := func(initCtx context.Context, i do.Injector, svc *genkit.AiService) error {
+		intgToolsMw := genkit.WithIntegrationToolsMiddleware(do.MustInvoke[rez.IntegrationService](i))
+		return svc.Init(initCtx,
+			genkit.WithAgent(genkit.NewChatAgent(), intgToolsMw),
+			genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i)), intgToolsMw),
+			genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
+		)
+	}
 	return do.Package(
 		do.Lazy(func(i do.Injector) (*genkit.AiService, error) {
 			svc := genkit.NewAiService(do.MustInvoke[rez.Config](i))
-			intgToolsMw := genkit.WithIntegrationToolsMiddleware(do.MustInvoke[rez.IntegrationService](i))
-			return svc, svc.Init(ctx,
-				genkit.WithAgent(genkit.NewChatAgent(), intgToolsMw),
-				genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i)), intgToolsMw),
-				genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
-			)
+			return svc, initService(ctx, i, svc)
 		}),
 		do.Bind[*genkit.AiService, rez.AiService](),
 
 		do.Lazy(func(i do.Injector) (rezai.ClassifyAgentThreadResponseWorkflowRunner, error) {
 			return rezai.ClassifyAgentThreadResponseWorkflow.GetRunner(do.MustInvoke[rez.AiService](i))
+		}),
+
+		do.Lazy(func(i do.Injector) (*genkit.DevServer, error) {
+			svc := genkit.NewAiService(do.MustInvoke[rez.Config](i))
+			devCtx := execution.NewTenantContext(ctx, 1)
+			return svc.MakeDevServer(), initService(devCtx, i, svc)
 		}),
 	)
 }
@@ -131,9 +141,13 @@ var provideWatermillMessageService = do.Package(
 )
 
 var provideIntegrations = do.Package(
-	do.Eager[rez.IntegrationPackageRegistry](integrations.NewPackageRegistry()),
+	do.Lazy(func(i do.Injector) (rez.IntegrationPackageRegistry, error) {
+		return integrations.NewPackageRegistry(), nil
+	}),
 
-	do.Eager[rez.ProviderEventProcessorRegistry](rez.ProviderEventProcessorRegistry{}),
+	do.Lazy(func(i do.Injector) (rez.ProviderEventProcessorRegistry, error) {
+		return rez.ProviderEventProcessorRegistry{}, nil
+	}),
 
 	do.Lazy(func(i do.Injector) (rez.EventProjectionService, error) {
 		return eventprojection.NewProjectionService(
@@ -390,7 +404,7 @@ var provideJobWorkers = do.Package(
 	}),
 )
 
-var provideHttpServer = do.Package(
+var provideHttpApiServer = do.Package(
 	do.Lazy(func(i do.Injector) (oapiv1.Handler, error) {
 		return apiv1.NewHandler(
 			do.MustInvoke[rez.Database](i),

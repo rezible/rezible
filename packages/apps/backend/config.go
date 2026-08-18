@@ -21,7 +21,7 @@ func DefaultConfig() Config {
 			},
 		},
 		AI: AiConfig{
-			Agents: AgentsConfig{
+			Agents: AiAgentsConfig{
 				MaxWorkers:    4,
 				WorkerTimeout: 15 * time.Minute,
 			},
@@ -105,14 +105,19 @@ func (a AppConfig) GetFrontendUrl(paths ...string) (*url.URL, error) {
 
 type (
 	AiConfig struct {
-		Agents AgentsConfig   `cfg:"agents"`
-		Gemini AiConfigGemini `cfg:"gemini"`
+		DevServer AiDevServerConfig      `cfg:"dev_server"`
+		Agents    AiAgentsConfig         `cfg:"agents"`
+		Gemini    AiProviderConfigGemini `cfg:"gemini"`
 	}
-	AgentsConfig struct {
+	AiAgentsConfig struct {
 		MaxWorkers    int           `cfg:"max_workers" validate:"min=1"`
 		WorkerTimeout time.Duration `cfg:"worker_timeout" validate:"gt=0"`
 	}
-	AiConfigGemini struct {
+	AiDevServerConfig struct {
+		Enabled bool   `cfg:"enabled"`
+		Port    string `cfg:"port"`
+	}
+	AiProviderConfigGemini struct {
 		Enabled bool   `cfg:"enabled"`
 		APIKey  string `cfg:"api_key"`
 	}

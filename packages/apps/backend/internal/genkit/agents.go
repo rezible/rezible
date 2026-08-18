@@ -52,7 +52,7 @@ type (
 		updateInitialTurnMessage(context.Context, I) (string, error)
 	}
 
-	runnerMiddlewareProvider interface {
+	runnerWithMiddleware interface {
 		makeMiddleware() []ai.Middleware
 	}
 )
@@ -80,8 +80,8 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 			middleware = append(middleware, mwFn(ad))
 		}
 	}
-	if mp, ok := runner.(runnerMiddlewareProvider); ok {
-		middleware = append(middleware, mp.makeMiddleware()...)
+	if mwRunner, ok := runner.(runnerWithMiddleware); ok {
+		middleware = append(middleware, mwRunner.makeMiddleware()...)
 	}
 	withMiddleware := ai.WithUse(middleware...)
 
@@ -100,11 +100,7 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 	if cr, ok := runner.(customAgentRunner[I, S]); ok {
 		agent = genkitx.DefineCustomAgent(svc.gk, d.Name, cr.makeAgentFunc(middleware), opts...)
 	} else {
-		prompt := aix.InlinePrompt{
-			withModel,
-			withSystemPrompt,
-			withMiddleware,
-		}
+		prompt := aix.InlinePrompt{withModel, withSystemPrompt, withMiddleware}
 		agent = genkitx.DefineAgent(svc.gk, d.Name, prompt, opts...)
 	}
 	return &agentWrapper[I, S]{agent: agent, runner: runner}, nil

@@ -37,8 +37,8 @@ type startable interface {
 }
 
 func startServicesFor[Entrypoint startable](ctx context.Context, i do.Injector) error {
-	if regErr := registerServerPackages(i); regErr != nil {
-		return fmt.Errorf("register packages: %w", regErr)
+	if regErr := registerBackgroundServicePackages(i); regErr != nil {
+		return fmt.Errorf("register background services: %w", regErr)
 	}
 
 	// invoke entrypoint service to load required service dependencies
@@ -112,14 +112,8 @@ func shutdownServices(ctx context.Context, i do.Injector) error {
 	return shutdownErr
 }
 
-func registerServerPackages(i do.Injector) error {
-	if intgErr := registerIntegrationPackages(i); intgErr != nil {
-		return fmt.Errorf("auto-register integration packages: %w", intgErr)
-	}
-	if jobsErr := registerJobWorkers(i); jobsErr != nil {
-		return fmt.Errorf("register job workers: %w", jobsErr)
-	}
-	return nil
+func registerBackgroundServicePackages(i do.Injector) error {
+	return errors.Join(registerIntegrationPackages(i), registerJobWorkers(i))
 }
 
 func registerIntegrationPackages(i do.Injector) error {
@@ -144,15 +138,15 @@ func registerIntegrationPackages(i do.Injector) error {
 	return nil
 }
 
-func registerJobWorker[A river.JobArgs](i do.Injector) error {
-	jobs.RegisterWorker(do.MustInvoke[jobs.Worker[A]](i))
-	return nil
-}
-
 func registerJobWorkers(i do.Injector) error {
 	return errors.Join(
 		registerJobWorker[jobs.StartAgentSession](i),
 		registerJobWorker[jobs.InvokeAgentTurn](i),
 		registerJobWorker[jobs.SyncIntegrationSourceEvents](i),
 	)
+}
+
+func registerJobWorker[A river.JobArgs](i do.Injector) error {
+	jobs.RegisterWorker(do.MustInvoke[jobs.Worker[A]](i))
+	return nil
 }

@@ -46,6 +46,11 @@ format:
 @run *ARGS:
     go run ./cmd/rezible {{ARGS}}
 
+[env("GENKIT_ENV", "dev")]
+[env("GENKIT_REFLECTION_V2_SERVER", "true")]
+@run-genkit-dev:
+    bunx genkit-cli start --experimental-reflection-v2 -- go run ./cmd/rezible genkit-server
+
 @test *ARGS:
     go test {{ARGS}}
 

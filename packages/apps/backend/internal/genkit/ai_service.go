@@ -3,7 +3,11 @@ package genkit
 import (
 	"cmp"
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
+	"net"
+	"net/http"
 	"slices"
 
 	"github.com/firebase/genkit/go/ai"
@@ -132,4 +136,39 @@ func (s *AiService) GetWorkflowRunner(name string) (rez.AiWorkflowRunner, error)
 		return nil, fmt.Errorf("workflow not found: %s", name)
 	}
 	return wr, nil
+}
+
+type DevServer struct {
+	httpServer *http.Server
+}
+
+func (s *AiService) MakeDevServer() *DevServer {
+	ds := &DevServer{}
+	if s.cfg.DevServer.Enabled {
+		mux := http.NewServeMux()
+		ds.httpServer = &http.Server{
+			Addr:    net.JoinHostPort("localhost", s.cfg.DevServer.Port),
+			Handler: mux,
+		}
+	}
+	return ds
+}
+
+func (s *DevServer) Start(ctx context.Context) error {
+	if s.httpServer == nil {
+		return nil
+	}
+	slog.Info("Genkit dev server HTTP server listening", "addr", s.httpServer.Addr)
+	if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return fmt.Errorf("http server error: %w", err)
+	}
+	return nil
+}
+
+func (s *DevServer) Shutdown(ctx context.Context) error {
+	if s.httpServer == nil {
+		return nil
+	}
+	slog.Info("Genkit dev server HTTP server shutdown")
+	return s.httpServer.Shutdown(ctx)
 }
