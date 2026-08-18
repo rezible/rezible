@@ -12,7 +12,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/http"
-	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/pkg/execution"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -20,50 +19,41 @@ import (
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
-
 	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
-	cfg, cfgErr := koanf.LoadConfig(ctx, koanf.Options{LoadEnvironment: true})
-	if cfgErr != nil {
-		log.Fatalf("load config: %v", cfgErr)
-	}
 
-	serverCli := makeServerCli(*cfg)
-
-	if runErr := serverCli.Run(ctx, os.Args); runErr != nil {
+	if runErr := makeServerCli().Run(ctx, os.Args); runErr != nil {
 		log.Fatalf("error: %v", runErr)
 	}
 }
 
-func makeServerCli(cfg rez.Config) *cli.Command {
-	i := makePackageInjector(cfg)
+func makeServerCli() *cli.Command {
+	i := makePackageInjector()
 
 	return &cli.Command{
 		Name:  "rezible",
 		Usage: "backend server control",
 		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-			return createPackageContext(ctx, i)
+			return ctx, initPackages(ctx, i)
 		},
 		After: func(ctx context.Context, command *cli.Command) error {
-			return shutdownServers(ctx, i)
+			return shutdownServices(ctx, i)
 		},
 		Commands: []*cli.Command{
 			{
 				Name:  "serve",
 				Usage: "Run rezible server",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					svcs, svcsErr := getServerServices[*http.Server](i)
-					if svcsErr != nil {
-						return svcsErr
-					}
-					return startServices(ctx, svcs)
+					return startServicesFor[*http.Server](ctx, i)
 				},
 			},
 			{
 				Name:  "print-config",
 				Usage: "print loaded configuration",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					fmt.Printf("%+v\n", cfg)
-					return nil
+					return withConfig(i, func(cfg rez.Config) error {
+						fmt.Println(cfg.Format())
+						return nil
+					})
 				},
 			},
 			{

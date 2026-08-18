@@ -2,6 +2,7 @@ package rez
 
 import (
 	"cmp"
+	"fmt"
 	"net/url"
 	"os"
 	"time"
@@ -74,6 +75,10 @@ type Config struct {
 	Integrations IntegrationsConfig `cfg:"integrations"`
 	Postgres     PostgresConfig     `cfg:"postgres"`
 	Telemetry    TelemetryConfig    `cfg:"telemetry"`
+}
+
+func (cfg Config) Format() string {
+	return fmt.Sprintf("%+v", cfg)
 }
 
 type (

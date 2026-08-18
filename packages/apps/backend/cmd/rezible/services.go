@@ -24,29 +24,34 @@ func withMigrationService(i do.Injector, fn func(rez.MigrationService) error) er
 	return fn(ms)
 }
 
-type (
-	startable interface {
-		Start(context.Context) error
+func withConfig(i do.Injector, fn func(rez.Config) error) error {
+	cfg, cfgErr := do.Invoke[rez.Config](i)
+	if cfgErr != nil {
+		return fmt.Errorf("invoke config: %w", cfgErr)
 	}
-	ServerServices []startable
-)
+	return fn(cfg)
+}
 
-func getServerServices[Entrypoint startable](i do.Injector) (ServerServices, error) {
+type startable interface {
+	Start(context.Context) error
+}
+
+func startServicesFor[Entrypoint startable](ctx context.Context, i do.Injector) error {
 	if regErr := registerServerPackages(i); regErr != nil {
-		return nil, fmt.Errorf("register packages: %w", regErr)
+		return fmt.Errorf("register packages: %w", regErr)
 	}
 
 	// invoke entrypoint service to load required service dependencies
 	entrySvc, srvErr := do.Invoke[Entrypoint](i)
 	if srvErr != nil {
-		return nil, fmt.Errorf("initialize entrypoint %T: %v", entrySvc, srvErr)
+		return fmt.Errorf("initialize entrypoint %T: %v", entrySvc, srvErr)
 	}
 
-	var services ServerServices
+	var services []startable
 	for _, desc := range i.ListInvokedServices() {
 		svc, invErr := do.InvokeNamed[any](i, desc.Service)
 		if invErr != nil {
-			return nil, fmt.Errorf("failed to invoke: %v", invErr)
+			return fmt.Errorf("failed to invoke %s: %v", desc.Service, invErr)
 		}
 		if intgSvc, isIntegration := svc.(rez.IntegrationPackage); isIntegration {
 			// skipping unavailable integration
@@ -63,16 +68,13 @@ func getServerServices[Entrypoint startable](i do.Injector) (ServerServices, err
 		}
 	}
 
-	return services, nil
+	return startServices(ctx, services)
 }
 
-func startServices(ctx context.Context, svcs ServerServices) error {
+func startServices(ctx context.Context, svcs []startable) error {
 	errChan := make(chan error)
 	go func() {
-		p := pool.New().
-			WithErrors().
-			WithContext(ctx).
-			WithFirstError()
+		p := pool.New().WithErrors().WithContext(ctx).WithFirstError()
 		for _, l := range svcs {
 			slog.Info("Starting " + strings.TrimLeft(fmt.Sprintf("%T", l), "*"))
 			p.Go(l.Start)
@@ -96,10 +98,10 @@ func startServices(ctx context.Context, svcs ServerServices) error {
 	return nil
 }
 
-func shutdownServers(baseCtx context.Context, i do.Injector) error {
-	ctx, cancel := context.WithTimeout(context.WithoutCancel(baseCtx), 5*time.Second)
+func shutdownServices(ctx context.Context, i do.Injector) error {
+	cancelCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 	defer cancel()
-	shutdown := i.ShutdownWithContext(ctx)
+	shutdown := i.ShutdownWithContext(cancelCtx)
 	var shutdownErr error
 	for sd, sErr := range shutdown.Errors {
 		if !errors.Is(sErr, context.Canceled) {
@@ -111,16 +113,16 @@ func shutdownServers(baseCtx context.Context, i do.Injector) error {
 }
 
 func registerServerPackages(i do.Injector) error {
-	if intgErr := registerIntegrations(i); intgErr != nil {
-		return fmt.Errorf("failed to auto-register integration packages: %w", intgErr)
+	if intgErr := registerIntegrationPackages(i); intgErr != nil {
+		return fmt.Errorf("auto-register integration packages: %w", intgErr)
 	}
 	if jobsErr := registerJobWorkers(i); jobsErr != nil {
-		return fmt.Errorf("failed to register job workers: %w", jobsErr)
+		return fmt.Errorf("register job workers: %w", jobsErr)
 	}
 	return nil
 }
 
-func registerIntegrations(i do.Injector) error {
+func registerIntegrationPackages(i do.Injector) error {
 	intgReg := do.MustInvoke[rez.IntegrationPackageRegistry](i)
 	eventProcessors := do.MustInvoke[rez.ProviderEventProcessorRegistry](i)
 
@@ -142,13 +144,15 @@ func registerIntegrations(i do.Injector) error {
 	return nil
 }
 
-func registerJobWorkers(i do.Injector) error {
-	registerJobWorker[jobs.StartAgentSession](i)
-	registerJobWorker[jobs.InvokeAgentTurn](i)
-	registerJobWorker[jobs.SyncIntegrationSourceEvents](i)
+func registerJobWorker[A river.JobArgs](i do.Injector) error {
+	jobs.RegisterWorker(do.MustInvoke[jobs.Worker[A]](i))
 	return nil
 }
 
-func registerJobWorker[A river.JobArgs](i do.Injector) {
-	jobs.RegisterWorker(do.MustInvoke[jobs.Worker[A]](i))
+func registerJobWorkers(i do.Injector) error {
+	return errors.Join(
+		registerJobWorker[jobs.StartAgentSession](i),
+		registerJobWorker[jobs.InvokeAgentTurn](i),
+		registerJobWorker[jobs.SyncIntegrationSourceEvents](i),
+	)
 }

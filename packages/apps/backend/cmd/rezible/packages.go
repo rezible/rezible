@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/rezible/rezible/internal/koanf"
 	"github.com/samber/do/v2"
 
 	rez "github.com/rezible/rezible"
@@ -28,59 +29,64 @@ import (
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
-func makePackageInjector(cfg rez.Config) do.Injector {
+func makePackageInjector() do.Injector {
 	opts := &do.InjectorOpts{}
-	return do.NewWithOpts(opts, do.Eager(cfg))
+	return do.NewWithOpts(opts)
 }
 
-func createPackageContext(ctx context.Context, i do.Injector) (context.Context, error) {
+func initPackages(ctx context.Context, i do.Injector) error {
 	makePackageProvider(ctx)(i)
-	return ctx, nil
+	return nil
 }
 
 type Provider = func(do.Injector)
 
 func makePackageProvider(ctx context.Context) Provider {
 	return do.Package(
-		do.Eager[rez.ProviderEventProcessorRegistry](rez.ProviderEventProcessorRegistry{}),
-		do.Eager[rez.IntegrationPackageRegistry](integrations.NewPackageRegistry()),
+		makeConfigProvider(ctx),
 		makeOpenTelemetryProvider(ctx),
 		makePostgresProvider(ctx),
-		makeMessageServiceProvider(ctx),
 		makeGenkitProvider(ctx),
-		provideServices,
+		provideWatermillMessageService,
+		provideDatabaseServices,
 		provideIntegrations,
 		provideJobWorkers,
 		provideHttpServer,
 	)
 }
 
+func makeConfigProvider(ctx context.Context) Provider {
+	return do.Lazy(func(i do.Injector) (rez.Config, error) {
+		return koanf.LoadConfig(ctx, koanf.Options{LoadEnvironment: true})
+	})
+}
+
 func makeOpenTelemetryProvider(ctx context.Context) Provider {
 	return do.Lazy(func(i do.Injector) (rez.TelemetryService, error) {
-		return opentelemetry.NewOpenTelemetryService(ctx,
-			do.MustInvoke[rez.Config](i))
+		return opentelemetry.NewOpenTelemetryService(ctx, do.MustInvoke[rez.Config](i))
 	})
 }
 
 func makePostgresProvider(ctx context.Context) Provider {
 	return do.Package(
+		do.Lazy(func(i do.Injector) (rez.PostgresConfig, error) {
+			return do.MustInvoke[rez.Config](i).Postgres, nil
+		}),
+
 		do.Lazy(func(i do.Injector) (rez.MigrationService, error) {
-			pgCfg := do.MustInvoke[rez.Config](i).Postgres
-			mgPool, mgPoolErr := postgres.MakePgxPool(ctx, pgCfg, true)
+			mgPool, mgPoolErr := postgres.MakePgxPool(ctx, do.MustInvoke[rez.PostgresConfig](i), true)
 			if mgPoolErr != nil {
-				return nil, mgPoolErr
+				return nil, fmt.Errorf("admin pgx pool: %w", mgPoolErr)
 			}
 			return postgres.NewMigrationService(mgPool)
 		}),
 
 		do.Lazy(func(i do.Injector) (*postgres.ConnectionPool, error) {
-			pgCfg := do.MustInvoke[rez.Config](i).Postgres
-			return postgres.MakePgxPool(ctx, pgCfg, false)
+			return postgres.MakePgxPool(ctx, do.MustInvoke[rez.PostgresConfig](i), false)
 		}),
 
 		do.Lazy(func(i do.Injector) (rez.Database, error) {
-			return postgres.NewPgxPoolDatabaseClient(
-				do.MustInvoke[*postgres.ConnectionPool](i))
+			return postgres.NewPgxPoolDatabaseClient(do.MustInvoke[*postgres.ConnectionPool](i))
 		}),
 
 		do.Lazy(func(i do.Injector) (rez.JobService, error) {
@@ -93,24 +99,12 @@ func makePostgresProvider(ctx context.Context) Provider {
 	)
 }
 
-func makeMessageServiceProvider(ctx context.Context) Provider {
-	return do.Package(
-		do.Eager[watermill.Transport](nil),
-		do.Lazy(func(i do.Injector) (rez.MessageService, error) {
-			return watermill.NewMessageService(
-				do.MustInvoke[rez.TelemetryService](i),
-				do.MustInvoke[watermill.Transport](i),
-			)
-		}),
-	)
-}
-
 func makeGenkitProvider(ctx context.Context) Provider {
 	return do.Package(
 		do.Lazy(func(i do.Injector) (*genkit.AiService, error) {
-			s := genkit.NewAiService(do.MustInvoke[rez.Config](i))
+			svc := genkit.NewAiService(do.MustInvoke[rez.Config](i))
 			intgToolsMw := genkit.WithIntegrationToolsMiddleware(do.MustInvoke[rez.IntegrationService](i))
-			return s, s.Init(ctx,
+			return svc, svc.Init(ctx,
 				genkit.WithAgent(genkit.NewChatAgent(), intgToolsMw),
 				genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i)), intgToolsMw),
 				genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
@@ -124,7 +118,23 @@ func makeGenkitProvider(ctx context.Context) Provider {
 	)
 }
 
+var provideWatermillMessageService = do.Package(
+	do.Lazy(func(i do.Injector) (watermill.Transport, error) {
+		return nil, nil
+	}),
+	do.Lazy(func(i do.Injector) (rez.MessageService, error) {
+		return watermill.NewMessageService(
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[watermill.Transport](i),
+		)
+	}),
+)
+
 var provideIntegrations = do.Package(
+	do.Eager[rez.IntegrationPackageRegistry](integrations.NewPackageRegistry()),
+
+	do.Eager[rez.ProviderEventProcessorRegistry](rez.ProviderEventProcessorRegistry{}),
+
 	do.Lazy(func(i do.Injector) (rez.EventProjectionService, error) {
 		return eventprojection.NewProjectionService(
 			do.MustInvoke[rez.Database](i),
@@ -207,7 +217,7 @@ var provideIntegrations = do.Package(
 	}),
 )
 
-var provideServices = do.Package(
+var provideDatabaseServices = do.Package(
 	do.Lazy(func(i do.Injector) (rez.ProviderEventPipelineService, error) {
 		return db.NewProviderEventPipelineService(
 			do.MustInvoke[rez.TelemetryService](i),

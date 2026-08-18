@@ -86,7 +86,7 @@ func (s *Suite) loadConfig() {
 	}
 	cfg, cfgErr := koanf.LoadConfig(s.T().Context(), opts)
 	s.Require().NoError(cfgErr)
-	s.cfg = *cfg
+	s.cfg = cfg
 }
 
 func (s *Suite) Config() rez.Config { return s.cfg }

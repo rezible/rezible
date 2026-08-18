@@ -32,7 +32,7 @@ const (
 	structTag = "cfg"
 )
 
-func LoadConfig(ctx context.Context, opts Options) (*rez.Config, error) {
+func LoadConfig(ctx context.Context, opts Options) (rez.Config, error) {
 	return NewConfigLoader(opts).LoadConfig(ctx)
 }
 
@@ -44,12 +44,15 @@ func NewConfigLoader(opts Options) *ConfigLoader {
 	}
 }
 
-func (c *ConfigLoader) LoadConfig(ctx context.Context) (*rez.Config, error) {
+func (c *ConfigLoader) LoadConfig(ctx context.Context) (rez.Config, error) {
 	cfg := rez.DefaultConfig()
+	return cfg, c.loadConfig(ctx, &cfg)
+}
 
+func (c *ConfigLoader) loadConfig(ctx context.Context, cfg *rez.Config) error {
 	if c.opts.LoadEnvironment {
 		if envErr := c.loadEnvironment(); envErr != nil {
-			return nil, fmt.Errorf("failed to load env provider: %w", envErr)
+			return fmt.Errorf("failed to load env provider: %w", envErr)
 		}
 	}
 
@@ -57,26 +60,26 @@ func (c *ConfigLoader) LoadConfig(ctx context.Context) (*rez.Config, error) {
 		overrideLoader := koanf.New(delim)
 		for k, v := range c.opts.Overrides {
 			if ovrErr := overrideLoader.Set(k, v); ovrErr != nil {
-				return nil, fmt.Errorf("failed to set override (%s=%s): %w", k, v, ovrErr)
+				return fmt.Errorf("failed to set override (%s=%s): %w", k, v, ovrErr)
 			}
 		}
 		if mergeErr := c.loader.Merge(overrideLoader); mergeErr != nil {
-			return nil, fmt.Errorf("failed to merge overrides: %w", mergeErr)
+			return fmt.Errorf("failed to merge overrides: %w", mergeErr)
 		}
 	}
 
-	cfgErr := c.loader.UnmarshalWithConf("", &cfg, koanf.UnmarshalConf{Tag: structTag})
+	cfgErr := c.loader.UnmarshalWithConf("", cfg, koanf.UnmarshalConf{Tag: structTag})
 	if cfgErr != nil {
-		return nil, fmt.Errorf("unmarshal: %w", cfgErr)
+		return fmt.Errorf("unmarshal: %w", cfgErr)
 	}
 
 	if !c.opts.SkipValidation {
-		if validationErr := c.validateConfig(ctx, cfg); validationErr != nil {
-			return nil, fmt.Errorf("failed to validate config:\n%w", validationErr)
+		if validationErr := c.validateConfig(ctx, *cfg); validationErr != nil {
+			return fmt.Errorf("failed to validate config:\n%w", validationErr)
 		}
 	}
 
-	return &cfg, nil
+	return nil
 }
 
 func (c *ConfigLoader) loadEnvironment() error {
