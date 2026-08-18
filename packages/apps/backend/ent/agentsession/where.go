@@ -87,6 +87,11 @@ func Input(v []byte) predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldEQ(FieldInput, v))
 }
 
+// SystemAnalysisID applies equality check predicate on the "system_analysis_id" field. It's identical to SystemAnalysisIDEQ.
+func SystemAnalysisID(v uuid.UUID) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldEQ(FieldSystemAnalysisID, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldEQ(FieldTenantID, v))
@@ -322,6 +327,36 @@ func InputLTE(v []byte) predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldLTE(FieldInput, v))
 }
 
+// SystemAnalysisIDEQ applies the EQ predicate on the "system_analysis_id" field.
+func SystemAnalysisIDEQ(v uuid.UUID) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldEQ(FieldSystemAnalysisID, v))
+}
+
+// SystemAnalysisIDNEQ applies the NEQ predicate on the "system_analysis_id" field.
+func SystemAnalysisIDNEQ(v uuid.UUID) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldNEQ(FieldSystemAnalysisID, v))
+}
+
+// SystemAnalysisIDIn applies the In predicate on the "system_analysis_id" field.
+func SystemAnalysisIDIn(vs ...uuid.UUID) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldIn(FieldSystemAnalysisID, vs...))
+}
+
+// SystemAnalysisIDNotIn applies the NotIn predicate on the "system_analysis_id" field.
+func SystemAnalysisIDNotIn(vs ...uuid.UUID) predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldNotIn(FieldSystemAnalysisID, vs...))
+}
+
+// SystemAnalysisIDIsNil applies the IsNil predicate on the "system_analysis_id" field.
+func SystemAnalysisIDIsNil() predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldIsNull(FieldSystemAnalysisID))
+}
+
+// SystemAnalysisIDNotNil applies the NotNil predicate on the "system_analysis_id" field.
+func SystemAnalysisIDNotNil() predicate.AgentSession {
+	return predicate.AgentSession(sql.FieldNotNull(FieldSystemAnalysisID))
+}
+
 // MetadataIsNil applies the IsNil predicate on the "metadata" field.
 func MetadataIsNil() predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldIsNull(FieldMetadata))
@@ -381,6 +416,35 @@ func HasOwnerUserWith(preds ...predicate.User) predicate.AgentSession {
 		step := newOwnerUserStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.AgentSession
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSystemAnalysis applies the HasEdge predicate on the "system_analysis" edge.
+func HasSystemAnalysis() predicate.AgentSession {
+	return predicate.AgentSession(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, SystemAnalysisTable, SystemAnalysisColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.AgentSession
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSystemAnalysisWith applies the HasEdge predicate on the "system_analysis" edge with a given conditions (other predicates).
+func HasSystemAnalysisWith(preds ...predicate.SystemAnalysis) predicate.AgentSession {
+	return predicate.AgentSession(func(s *sql.Selector) {
+		step := newSystemAnalysisStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysis
 		step.Edge.Schema = schemaConfig.AgentSession
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

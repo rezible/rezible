@@ -52,9 +52,11 @@ type SystemAnalysisEdges struct {
 	AnalysisRelationships []*SystemAnalysisRelationship `json:"analysis_relationships,omitempty"`
 	// Entries holds the value of the entries edge.
 	Entries []*SystemAnalysisEntry `json:"entries,omitempty"`
+	// AgentSessions holds the value of the agent_sessions edge.
+	AgentSessions []*AgentSession `json:"agent_sessions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -115,6 +117,15 @@ func (e SystemAnalysisEdges) EntriesOrErr() ([]*SystemAnalysisEntry, error) {
 		return e.Entries, nil
 	}
 	return nil, &NotLoadedError{edge: "entries"}
+}
+
+// AgentSessionsOrErr returns the AgentSessions value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemAnalysisEdges) AgentSessionsOrErr() ([]*AgentSession, error) {
+	if e.loadedTypes[6] {
+		return e.AgentSessions, nil
+	}
+	return nil, &NotLoadedError{edge: "agent_sessions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -231,6 +242,11 @@ func (_m *SystemAnalysis) QueryAnalysisRelationships() *SystemAnalysisRelationsh
 // QueryEntries queries the "entries" edge of the SystemAnalysis entity.
 func (_m *SystemAnalysis) QueryEntries() *SystemAnalysisEntryQuery {
 	return NewSystemAnalysisClient(_m.config).QueryEntries(_m)
+}
+
+// QueryAgentSessions queries the "agent_sessions" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QueryAgentSessions() *AgentSessionQuery {
+	return NewSystemAnalysisClient(_m.config).QueryAgentSessions(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysis.

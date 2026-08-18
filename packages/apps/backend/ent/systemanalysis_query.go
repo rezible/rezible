@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
@@ -37,6 +38,7 @@ type SystemAnalysisQuery struct {
 	withAnalysisEntities      *SystemAnalysisEntityQuery
 	withAnalysisRelationships *SystemAnalysisRelationshipQuery
 	withEntries               *SystemAnalysisEntryQuery
+	withAgentSessions         *AgentSessionQuery
 	modifiers                 []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -218,6 +220,31 @@ func (_q *SystemAnalysisQuery) QueryEntries() *SystemAnalysisEntryQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysisEntry
 		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAgentSessions chains the current query on the "agent_sessions" edge.
+func (_q *SystemAnalysisQuery) QueryAgentSessions() *AgentSessionQuery {
+	query := (&AgentSessionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
+			sqlgraph.To(agentsession.Table, agentsession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AgentSessionsTable, systemanalysis.AgentSessionsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentSession
+		step.Edge.Schema = schemaConfig.AgentSession
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -422,6 +449,7 @@ func (_q *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
 		withAnalysisEntities:      _q.withAnalysisEntities.Clone(),
 		withAnalysisRelationships: _q.withAnalysisRelationships.Clone(),
 		withEntries:               _q.withEntries.Clone(),
+		withAgentSessions:         _q.withAgentSessions.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -492,6 +520,17 @@ func (_q *SystemAnalysisQuery) WithEntries(opts ...func(*SystemAnalysisEntryQuer
 		opt(query)
 	}
 	_q.withEntries = query
+	return _q
+}
+
+// WithAgentSessions tells the query-builder to eager-load the nodes that are connected to
+// the "agent_sessions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisQuery) WithAgentSessions(opts ...func(*AgentSessionQuery)) *SystemAnalysisQuery {
+	query := (&AgentSessionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAgentSessions = query
 	return _q
 }
 
@@ -579,13 +618,14 @@ func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	var (
 		nodes       = []*SystemAnalysis{}
 		_spec       = _q.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [7]bool{
 			_q.withTenant != nil,
 			_q.withScopeEntity != nil,
 			_q.withSubjectEntity != nil,
 			_q.withAnalysisEntities != nil,
 			_q.withAnalysisRelationships != nil,
 			_q.withEntries != nil,
+			_q.withAgentSessions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -651,6 +691,13 @@ func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 		if err := _q.loadEntries(ctx, query, nodes,
 			func(n *SystemAnalysis) { n.Edges.Entries = []*SystemAnalysisEntry{} },
 			func(n *SystemAnalysis, e *SystemAnalysisEntry) { n.Edges.Entries = append(n.Edges.Entries, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAgentSessions; query != nil {
+		if err := _q.loadAgentSessions(ctx, query, nodes,
+			func(n *SystemAnalysis) { n.Edges.AgentSessions = []*AgentSession{} },
+			func(n *SystemAnalysis, e *AgentSession) { n.Edges.AgentSessions = append(n.Edges.AgentSessions, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -835,6 +882,39 @@ func (_q *SystemAnalysisQuery) loadEntries(ctx context.Context, query *SystemAna
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "analysis_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *SystemAnalysisQuery) loadAgentSessions(ctx context.Context, query *AgentSessionQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *AgentSession)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*SystemAnalysis)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(agentsession.FieldSystemAnalysisID)
+	}
+	query.Where(predicate.AgentSession(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemanalysis.AgentSessionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.SystemAnalysisID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "system_analysis_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "system_analysis_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

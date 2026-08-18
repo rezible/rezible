@@ -33,6 +33,9 @@ func (AgentSession) Fields() []ent.Field {
 			Nillable(),
 		field.Strings("scopes").Default([]string{}),
 		field.Bytes("input"),
+		field.UUID("system_analysis_id", uuid.UUID{}).
+			Optional().
+			Nillable(),
 		field.JSON("metadata", map[string]any{}).
 			SchemaType(schemaTypeJsonB).
 			Optional(),
@@ -44,6 +47,9 @@ func (AgentSession) Edges() []ent.Edge {
 		edge.To("owner_user", User.Type).
 			Unique().
 			Field("owner_user_id"),
+		edge.To("system_analysis", SystemAnalysis.Type).
+			Unique().
+			Field("system_analysis_id"),
 		edge.To("turns", AgentTurn.Type),
 		edge.To("messages", AgentMessage.Type),
 		edge.To("artifacts", AgentArtifact.Type),

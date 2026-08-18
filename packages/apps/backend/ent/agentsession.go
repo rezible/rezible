@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentsession"
+	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -35,6 +36,8 @@ type AgentSession struct {
 	Scopes []string `json:"scopes,omitempty"`
 	// Input holds the value of the "input" field.
 	Input []byte `json:"input,omitempty"`
+	// SystemAnalysisID holds the value of the "system_analysis_id" field.
+	SystemAnalysisID *uuid.UUID `json:"system_analysis_id,omitempty"`
 	// Metadata holds the value of the "metadata" field.
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -49,6 +52,8 @@ type AgentSessionEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// OwnerUser holds the value of the owner_user edge.
 	OwnerUser *User `json:"owner_user,omitempty"`
+	// SystemAnalysis holds the value of the system_analysis edge.
+	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// Turns holds the value of the turns edge.
 	Turns []*AgentTurn `json:"turns,omitempty"`
 	// Messages holds the value of the messages edge.
@@ -59,7 +64,7 @@ type AgentSessionEdges struct {
 	Bindings []*AgentSessionBinding `json:"bindings,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -84,10 +89,21 @@ func (e AgentSessionEdges) OwnerUserOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "owner_user"}
 }
 
+// SystemAnalysisOrErr returns the SystemAnalysis value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AgentSessionEdges) SystemAnalysisOrErr() (*SystemAnalysis, error) {
+	if e.SystemAnalysis != nil {
+		return e.SystemAnalysis, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: systemanalysis.Label}
+	}
+	return nil, &NotLoadedError{edge: "system_analysis"}
+}
+
 // TurnsOrErr returns the Turns value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentSessionEdges) TurnsOrErr() ([]*AgentTurn, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Turns, nil
 	}
 	return nil, &NotLoadedError{edge: "turns"}
@@ -96,7 +112,7 @@ func (e AgentSessionEdges) TurnsOrErr() ([]*AgentTurn, error) {
 // MessagesOrErr returns the Messages value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentSessionEdges) MessagesOrErr() ([]*AgentMessage, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Messages, nil
 	}
 	return nil, &NotLoadedError{edge: "messages"}
@@ -105,7 +121,7 @@ func (e AgentSessionEdges) MessagesOrErr() ([]*AgentMessage, error) {
 // ArtifactsOrErr returns the Artifacts value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentSessionEdges) ArtifactsOrErr() ([]*AgentArtifact, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.Artifacts, nil
 	}
 	return nil, &NotLoadedError{edge: "artifacts"}
@@ -114,7 +130,7 @@ func (e AgentSessionEdges) ArtifactsOrErr() ([]*AgentArtifact, error) {
 // BindingsOrErr returns the Bindings value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentSessionEdges) BindingsOrErr() ([]*AgentSessionBinding, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.Bindings, nil
 	}
 	return nil, &NotLoadedError{edge: "bindings"}
@@ -125,7 +141,7 @@ func (*AgentSession) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentsession.FieldOwnerUserID:
+		case agentsession.FieldOwnerUserID, agentsession.FieldSystemAnalysisID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case agentsession.FieldScopes, agentsession.FieldInput, agentsession.FieldMetadata:
 			values[i] = new([]byte)
@@ -203,6 +219,13 @@ func (_m *AgentSession) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.Input = *value
 			}
+		case agentsession.FieldSystemAnalysisID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field system_analysis_id", values[i])
+			} else if value.Valid {
+				_m.SystemAnalysisID = new(uuid.UUID)
+				*_m.SystemAnalysisID = *value.S.(*uuid.UUID)
+			}
 		case agentsession.FieldMetadata:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field metadata", values[i])
@@ -232,6 +255,11 @@ func (_m *AgentSession) QueryTenant() *TenantQuery {
 // QueryOwnerUser queries the "owner_user" edge of the AgentSession entity.
 func (_m *AgentSession) QueryOwnerUser() *UserQuery {
 	return NewAgentSessionClient(_m.config).QueryOwnerUser(_m)
+}
+
+// QuerySystemAnalysis queries the "system_analysis" edge of the AgentSession entity.
+func (_m *AgentSession) QuerySystemAnalysis() *SystemAnalysisQuery {
+	return NewAgentSessionClient(_m.config).QuerySystemAnalysis(_m)
 }
 
 // QueryTurns queries the "turns" edge of the AgentSession entity.
@@ -299,6 +327,11 @@ func (_m *AgentSession) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("input=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Input))
+	builder.WriteString(", ")
+	if v := _m.SystemAnalysisID; v != nil {
+		builder.WriteString("system_analysis_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("metadata=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Metadata))

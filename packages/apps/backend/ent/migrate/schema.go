@@ -142,6 +142,7 @@ var (
 		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "owner_user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "system_analysis_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AgentSessionsTable holds the schema information for the "agent_sessions" table.
 	AgentSessionsTable = &schema.Table{
@@ -159,6 +160,12 @@ var (
 				Symbol:     "agent_sessions_users_owner_user",
 				Columns:    []*schema.Column{AgentSessionsColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "agent_sessions_system_analyses_system_analysis",
+				Columns:    []*schema.Column{AgentSessionsColumns[9]},
+				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -3612,6 +3619,7 @@ func init() {
 	AgentMessagesTable.ForeignKeys[2].RefTable = AgentTurnsTable
 	AgentSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentSessionsTable.ForeignKeys[1].RefTable = UsersTable
+	AgentSessionsTable.ForeignKeys[2].RefTable = SystemAnalysesTable
 	AgentSessionBindingsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	AgentSessionBindingsTable.ForeignKeys[1].RefTable = TenantsTable
 	AgentSessionBindingsTable.ForeignKeys[2].RefTable = IntegrationsTable

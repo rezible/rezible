@@ -53,6 +53,8 @@ func (SystemAnalysis) Edges() []ent.Edge {
 			Ref("analysis"),
 		edge.From("entries", SystemAnalysisEntry.Type).
 			Ref("analysis"),
+
+		edge.From("agent_sessions", AgentSession.Type).Ref("system_analysis"),
 	}
 }
 

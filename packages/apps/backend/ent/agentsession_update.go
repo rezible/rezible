@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -109,6 +110,26 @@ func (_u *AgentSessionUpdate) SetInput(v []byte) *AgentSessionUpdate {
 	return _u
 }
 
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (_u *AgentSessionUpdate) SetSystemAnalysisID(v uuid.UUID) *AgentSessionUpdate {
+	_u.mutation.SetSystemAnalysisID(v)
+	return _u
+}
+
+// SetNillableSystemAnalysisID sets the "system_analysis_id" field if the given value is not nil.
+func (_u *AgentSessionUpdate) SetNillableSystemAnalysisID(v *uuid.UUID) *AgentSessionUpdate {
+	if v != nil {
+		_u.SetSystemAnalysisID(*v)
+	}
+	return _u
+}
+
+// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
+func (_u *AgentSessionUpdate) ClearSystemAnalysisID() *AgentSessionUpdate {
+	_u.mutation.ClearSystemAnalysisID()
+	return _u
+}
+
 // SetMetadata sets the "metadata" field.
 func (_u *AgentSessionUpdate) SetMetadata(v map[string]interface{}) *AgentSessionUpdate {
 	_u.mutation.SetMetadata(v)
@@ -124,6 +145,11 @@ func (_u *AgentSessionUpdate) ClearMetadata() *AgentSessionUpdate {
 // SetOwnerUser sets the "owner_user" edge to the User entity.
 func (_u *AgentSessionUpdate) SetOwnerUser(v *User) *AgentSessionUpdate {
 	return _u.SetOwnerUserID(v.ID)
+}
+
+// SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
+func (_u *AgentSessionUpdate) SetSystemAnalysis(v *SystemAnalysis) *AgentSessionUpdate {
+	return _u.SetSystemAnalysisID(v.ID)
 }
 
 // AddTurnIDs adds the "turns" edge to the AgentTurn entity by IDs.
@@ -194,6 +220,12 @@ func (_u *AgentSessionUpdate) Mutation() *AgentSessionMutation {
 // ClearOwnerUser clears the "owner_user" edge to the User entity.
 func (_u *AgentSessionUpdate) ClearOwnerUser() *AgentSessionUpdate {
 	_u.mutation.ClearOwnerUser()
+	return _u
+}
+
+// ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
+func (_u *AgentSessionUpdate) ClearSystemAnalysis() *AgentSessionUpdate {
+	_u.mutation.ClearSystemAnalysis()
 	return _u
 }
 
@@ -403,6 +435,37 @@ func (_u *AgentSessionUpdate) sqlSave(ctx context.Context) (_node int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSession
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SystemAnalysisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentsession.SystemAnalysisTable,
+			Columns: []string{agentsession.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSession
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentsession.SystemAnalysisTable,
+			Columns: []string{agentsession.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentSession
@@ -699,6 +762,26 @@ func (_u *AgentSessionUpdateOne) SetInput(v []byte) *AgentSessionUpdateOne {
 	return _u
 }
 
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (_u *AgentSessionUpdateOne) SetSystemAnalysisID(v uuid.UUID) *AgentSessionUpdateOne {
+	_u.mutation.SetSystemAnalysisID(v)
+	return _u
+}
+
+// SetNillableSystemAnalysisID sets the "system_analysis_id" field if the given value is not nil.
+func (_u *AgentSessionUpdateOne) SetNillableSystemAnalysisID(v *uuid.UUID) *AgentSessionUpdateOne {
+	if v != nil {
+		_u.SetSystemAnalysisID(*v)
+	}
+	return _u
+}
+
+// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
+func (_u *AgentSessionUpdateOne) ClearSystemAnalysisID() *AgentSessionUpdateOne {
+	_u.mutation.ClearSystemAnalysisID()
+	return _u
+}
+
 // SetMetadata sets the "metadata" field.
 func (_u *AgentSessionUpdateOne) SetMetadata(v map[string]interface{}) *AgentSessionUpdateOne {
 	_u.mutation.SetMetadata(v)
@@ -714,6 +797,11 @@ func (_u *AgentSessionUpdateOne) ClearMetadata() *AgentSessionUpdateOne {
 // SetOwnerUser sets the "owner_user" edge to the User entity.
 func (_u *AgentSessionUpdateOne) SetOwnerUser(v *User) *AgentSessionUpdateOne {
 	return _u.SetOwnerUserID(v.ID)
+}
+
+// SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
+func (_u *AgentSessionUpdateOne) SetSystemAnalysis(v *SystemAnalysis) *AgentSessionUpdateOne {
+	return _u.SetSystemAnalysisID(v.ID)
 }
 
 // AddTurnIDs adds the "turns" edge to the AgentTurn entity by IDs.
@@ -784,6 +872,12 @@ func (_u *AgentSessionUpdateOne) Mutation() *AgentSessionMutation {
 // ClearOwnerUser clears the "owner_user" edge to the User entity.
 func (_u *AgentSessionUpdateOne) ClearOwnerUser() *AgentSessionUpdateOne {
 	_u.mutation.ClearOwnerUser()
+	return _u
+}
+
+// ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
+func (_u *AgentSessionUpdateOne) ClearSystemAnalysis() *AgentSessionUpdateOne {
+	_u.mutation.ClearSystemAnalysis()
 	return _u
 }
 
@@ -1023,6 +1117,37 @@ func (_u *AgentSessionUpdateOne) sqlSave(ctx context.Context) (_node *AgentSessi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSession
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SystemAnalysisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentsession.SystemAnalysisTable,
+			Columns: []string{agentsession.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSession
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentsession.SystemAnalysisTable,
+			Columns: []string{agentsession.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentSession

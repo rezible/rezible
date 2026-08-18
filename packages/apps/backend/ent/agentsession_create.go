@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
+	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -96,6 +97,20 @@ func (_c *AgentSessionCreate) SetInput(v []byte) *AgentSessionCreate {
 	return _c
 }
 
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (_c *AgentSessionCreate) SetSystemAnalysisID(v uuid.UUID) *AgentSessionCreate {
+	_c.mutation.SetSystemAnalysisID(v)
+	return _c
+}
+
+// SetNillableSystemAnalysisID sets the "system_analysis_id" field if the given value is not nil.
+func (_c *AgentSessionCreate) SetNillableSystemAnalysisID(v *uuid.UUID) *AgentSessionCreate {
+	if v != nil {
+		_c.SetSystemAnalysisID(*v)
+	}
+	return _c
+}
+
 // SetMetadata sets the "metadata" field.
 func (_c *AgentSessionCreate) SetMetadata(v map[string]interface{}) *AgentSessionCreate {
 	_c.mutation.SetMetadata(v)
@@ -124,6 +139,11 @@ func (_c *AgentSessionCreate) SetTenant(v *Tenant) *AgentSessionCreate {
 // SetOwnerUser sets the "owner_user" edge to the User entity.
 func (_c *AgentSessionCreate) SetOwnerUser(v *User) *AgentSessionCreate {
 	return _c.SetOwnerUserID(v.ID)
+}
+
+// SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
+func (_c *AgentSessionCreate) SetSystemAnalysis(v *SystemAnalysis) *AgentSessionCreate {
+	return _c.SetSystemAnalysisID(v.ID)
 }
 
 // AddTurnIDs adds the "turns" edge to the AgentTurn entity by IDs.
@@ -376,6 +396,24 @@ func (_c *AgentSessionCreate) createSpec() (*AgentSession, *sqlgraph.CreateSpec)
 		_node.OwnerUserID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentsession.SystemAnalysisTable,
+			Columns: []string{agentsession.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentSession
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.SystemAnalysisID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.TurnsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -574,6 +612,24 @@ func (u *AgentSessionUpsert) UpdateInput() *AgentSessionUpsert {
 	return u
 }
 
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (u *AgentSessionUpsert) SetSystemAnalysisID(v uuid.UUID) *AgentSessionUpsert {
+	u.Set(agentsession.FieldSystemAnalysisID, v)
+	return u
+}
+
+// UpdateSystemAnalysisID sets the "system_analysis_id" field to the value that was provided on create.
+func (u *AgentSessionUpsert) UpdateSystemAnalysisID() *AgentSessionUpsert {
+	u.SetExcluded(agentsession.FieldSystemAnalysisID)
+	return u
+}
+
+// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
+func (u *AgentSessionUpsert) ClearSystemAnalysisID() *AgentSessionUpsert {
+	u.SetNull(agentsession.FieldSystemAnalysisID)
+	return u
+}
+
 // SetMetadata sets the "metadata" field.
 func (u *AgentSessionUpsert) SetMetadata(v map[string]interface{}) *AgentSessionUpsert {
 	u.Set(agentsession.FieldMetadata, v)
@@ -731,6 +787,27 @@ func (u *AgentSessionUpsertOne) SetInput(v []byte) *AgentSessionUpsertOne {
 func (u *AgentSessionUpsertOne) UpdateInput() *AgentSessionUpsertOne {
 	return u.Update(func(s *AgentSessionUpsert) {
 		s.UpdateInput()
+	})
+}
+
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (u *AgentSessionUpsertOne) SetSystemAnalysisID(v uuid.UUID) *AgentSessionUpsertOne {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.SetSystemAnalysisID(v)
+	})
+}
+
+// UpdateSystemAnalysisID sets the "system_analysis_id" field to the value that was provided on create.
+func (u *AgentSessionUpsertOne) UpdateSystemAnalysisID() *AgentSessionUpsertOne {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.UpdateSystemAnalysisID()
+	})
+}
+
+// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
+func (u *AgentSessionUpsertOne) ClearSystemAnalysisID() *AgentSessionUpsertOne {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.ClearSystemAnalysisID()
 	})
 }
 
@@ -1061,6 +1138,27 @@ func (u *AgentSessionUpsertBulk) SetInput(v []byte) *AgentSessionUpsertBulk {
 func (u *AgentSessionUpsertBulk) UpdateInput() *AgentSessionUpsertBulk {
 	return u.Update(func(s *AgentSessionUpsert) {
 		s.UpdateInput()
+	})
+}
+
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (u *AgentSessionUpsertBulk) SetSystemAnalysisID(v uuid.UUID) *AgentSessionUpsertBulk {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.SetSystemAnalysisID(v)
+	})
+}
+
+// UpdateSystemAnalysisID sets the "system_analysis_id" field to the value that was provided on create.
+func (u *AgentSessionUpsertBulk) UpdateSystemAnalysisID() *AgentSessionUpsertBulk {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.UpdateSystemAnalysisID()
+	})
+}
+
+// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
+func (u *AgentSessionUpsertBulk) ClearSystemAnalysisID() *AgentSessionUpsertBulk {
+	return u.Update(func(s *AgentSessionUpsert) {
+		s.ClearSystemAnalysisID()
 	})
 }
 

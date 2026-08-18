@@ -139,14 +139,15 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "AgentSession",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			agentsession.FieldTenantID:    {Type: field.TypeInt, Column: agentsession.FieldTenantID},
-			agentsession.FieldCreatedAt:   {Type: field.TypeTime, Column: agentsession.FieldCreatedAt},
-			agentsession.FieldUpdatedAt:   {Type: field.TypeTime, Column: agentsession.FieldUpdatedAt},
-			agentsession.FieldAgentName:   {Type: field.TypeString, Column: agentsession.FieldAgentName},
-			agentsession.FieldOwnerUserID: {Type: field.TypeUUID, Column: agentsession.FieldOwnerUserID},
-			agentsession.FieldScopes:      {Type: field.TypeJSON, Column: agentsession.FieldScopes},
-			agentsession.FieldInput:       {Type: field.TypeBytes, Column: agentsession.FieldInput},
-			agentsession.FieldMetadata:    {Type: field.TypeJSON, Column: agentsession.FieldMetadata},
+			agentsession.FieldTenantID:         {Type: field.TypeInt, Column: agentsession.FieldTenantID},
+			agentsession.FieldCreatedAt:        {Type: field.TypeTime, Column: agentsession.FieldCreatedAt},
+			agentsession.FieldUpdatedAt:        {Type: field.TypeTime, Column: agentsession.FieldUpdatedAt},
+			agentsession.FieldAgentName:        {Type: field.TypeString, Column: agentsession.FieldAgentName},
+			agentsession.FieldOwnerUserID:      {Type: field.TypeUUID, Column: agentsession.FieldOwnerUserID},
+			agentsession.FieldScopes:           {Type: field.TypeJSON, Column: agentsession.FieldScopes},
+			agentsession.FieldInput:            {Type: field.TypeBytes, Column: agentsession.FieldInput},
+			agentsession.FieldSystemAnalysisID: {Type: field.TypeUUID, Column: agentsession.FieldSystemAnalysisID},
+			agentsession.FieldMetadata:         {Type: field.TypeJSON, Column: agentsession.FieldMetadata},
 		},
 	}
 	graph.Nodes[3] = &sqlgraph.Node{
@@ -1540,6 +1541,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"AgentSession",
 		"User",
+	)
+	graph.MustAddE(
+		"system_analysis",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentsession.SystemAnalysisTable,
+			Columns: []string{agentsession.SystemAnalysisColumn},
+			Bidi:    false,
+		},
+		"AgentSession",
+		"SystemAnalysis",
 	)
 	graph.MustAddE(
 		"turns",
@@ -3954,6 +3967,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"SystemAnalysisEntry",
 	)
 	graph.MustAddE(
+		"agent_sessions",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AgentSessionsTable,
+			Columns: []string{systemanalysis.AgentSessionsColumn},
+			Bidi:    false,
+		},
+		"SystemAnalysis",
+		"AgentSession",
+	)
+	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -5011,6 +5036,11 @@ func (f *AgentSessionFilter) WhereInput(p entql.BytesP) {
 	f.Where(p.Field(agentsession.FieldInput))
 }
 
+// WhereSystemAnalysisID applies the entql [16]byte predicate on the system_analysis_id field.
+func (f *AgentSessionFilter) WhereSystemAnalysisID(p entql.ValueP) {
+	f.Where(p.Field(agentsession.FieldSystemAnalysisID))
+}
+
 // WhereMetadata applies the entql json.RawMessage predicate on the metadata field.
 func (f *AgentSessionFilter) WhereMetadata(p entql.BytesP) {
 	f.Where(p.Field(agentsession.FieldMetadata))
@@ -5038,6 +5068,20 @@ func (f *AgentSessionFilter) WhereHasOwnerUser() {
 // WhereHasOwnerUserWith applies a predicate to check if query has an edge owner_user with a given conditions (other predicates).
 func (f *AgentSessionFilter) WhereHasOwnerUserWith(preds ...predicate.User) {
 	f.Where(entql.HasEdgeWith("owner_user", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSystemAnalysis applies a predicate to check if query has an edge system_analysis.
+func (f *AgentSessionFilter) WhereHasSystemAnalysis() {
+	f.Where(entql.HasEdge("system_analysis"))
+}
+
+// WhereHasSystemAnalysisWith applies a predicate to check if query has an edge system_analysis with a given conditions (other predicates).
+func (f *AgentSessionFilter) WhereHasSystemAnalysisWith(preds ...predicate.SystemAnalysis) {
+	f.Where(entql.HasEdgeWith("system_analysis", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -11742,6 +11786,20 @@ func (f *SystemAnalysisFilter) WhereHasEntries() {
 // WhereHasEntriesWith applies a predicate to check if query has an edge entries with a given conditions (other predicates).
 func (f *SystemAnalysisFilter) WhereHasEntriesWith(preds ...predicate.SystemAnalysisEntry) {
 	f.Where(entql.HasEdgeWith("entries", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasAgentSessions applies a predicate to check if query has an edge agent_sessions.
+func (f *SystemAnalysisFilter) WhereHasAgentSessions() {
+	f.Where(entql.HasEdge("agent_sessions"))
+}
+
+// WhereHasAgentSessionsWith applies a predicate to check if query has an edge agent_sessions with a given conditions (other predicates).
+func (f *SystemAnalysisFilter) WhereHasAgentSessionsWith(preds ...predicate.AgentSession) {
+	f.Where(entql.HasEdgeWith("agent_sessions", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

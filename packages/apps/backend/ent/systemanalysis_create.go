@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
@@ -177,6 +178,21 @@ func (_c *SystemAnalysisCreate) AddEntries(v ...*SystemAnalysisEntry) *SystemAna
 		ids[i] = v[i].ID
 	}
 	return _c.AddEntryIDs(ids...)
+}
+
+// AddAgentSessionIDs adds the "agent_sessions" edge to the AgentSession entity by IDs.
+func (_c *SystemAnalysisCreate) AddAgentSessionIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.AddAgentSessionIDs(ids...)
+	return _c
+}
+
+// AddAgentSessions adds the "agent_sessions" edges to the AgentSession entity.
+func (_c *SystemAnalysisCreate) AddAgentSessions(v ...*AgentSession) *SystemAnalysisCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAgentSessionIDs(ids...)
 }
 
 // Mutation returns the SystemAnalysisMutation object of the builder.
@@ -403,6 +419,23 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 			},
 		}
 		edge.Schema = _c.schemaConfig.SystemAnalysisEntry
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AgentSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AgentSessionsTable,
+			Columns: []string{systemanalysis.AgentSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentSession
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

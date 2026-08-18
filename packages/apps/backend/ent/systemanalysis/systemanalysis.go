@@ -40,6 +40,8 @@ const (
 	EdgeAnalysisRelationships = "analysis_relationships"
 	// EdgeEntries holds the string denoting the entries edge name in mutations.
 	EdgeEntries = "entries"
+	// EdgeAgentSessions holds the string denoting the agent_sessions edge name in mutations.
+	EdgeAgentSessions = "agent_sessions"
 	// Table holds the table name of the systemanalysis in the database.
 	Table = "system_analyses"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -84,6 +86,13 @@ const (
 	EntriesInverseTable = "system_analysis_entries"
 	// EntriesColumn is the table column denoting the entries relation/edge.
 	EntriesColumn = "analysis_id"
+	// AgentSessionsTable is the table that holds the agent_sessions relation/edge.
+	AgentSessionsTable = "agent_sessions"
+	// AgentSessionsInverseTable is the table name for the AgentSession entity.
+	// It exists in this package in order to avoid circular dependency with the "agentsession" package.
+	AgentSessionsInverseTable = "agent_sessions"
+	// AgentSessionsColumn is the table column denoting the agent_sessions relation/edge.
+	AgentSessionsColumn = "system_analysis_id"
 )
 
 // Columns holds all SQL columns for systemanalysis fields.
@@ -225,6 +234,20 @@ func ByEntries(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newEntriesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAgentSessionsCount orders the results by agent_sessions count.
+func ByAgentSessionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAgentSessionsStep(), opts...)
+	}
+}
+
+// ByAgentSessions orders the results by agent_sessions terms.
+func ByAgentSessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAgentSessionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -265,5 +288,12 @@ func newEntriesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EntriesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, EntriesTable, EntriesColumn),
+	)
+}
+func newAgentSessionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AgentSessionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, AgentSessionsTable, AgentSessionsColumn),
 	)
 }

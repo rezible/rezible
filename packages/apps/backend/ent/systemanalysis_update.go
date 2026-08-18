@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
@@ -170,6 +171,21 @@ func (_u *SystemAnalysisUpdate) AddEntries(v ...*SystemAnalysisEntry) *SystemAna
 	return _u.AddEntryIDs(ids...)
 }
 
+// AddAgentSessionIDs adds the "agent_sessions" edge to the AgentSession entity by IDs.
+func (_u *SystemAnalysisUpdate) AddAgentSessionIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.AddAgentSessionIDs(ids...)
+	return _u
+}
+
+// AddAgentSessions adds the "agent_sessions" edges to the AgentSession entity.
+func (_u *SystemAnalysisUpdate) AddAgentSessions(v ...*AgentSession) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAgentSessionIDs(ids...)
+}
+
 // Mutation returns the SystemAnalysisMutation object of the builder.
 func (_u *SystemAnalysisUpdate) Mutation() *SystemAnalysisMutation {
 	return _u.mutation
@@ -248,6 +264,27 @@ func (_u *SystemAnalysisUpdate) RemoveEntries(v ...*SystemAnalysisEntry) *System
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEntryIDs(ids...)
+}
+
+// ClearAgentSessions clears all "agent_sessions" edges to the AgentSession entity.
+func (_u *SystemAnalysisUpdate) ClearAgentSessions() *SystemAnalysisUpdate {
+	_u.mutation.ClearAgentSessions()
+	return _u
+}
+
+// RemoveAgentSessionIDs removes the "agent_sessions" edge to AgentSession entities by IDs.
+func (_u *SystemAnalysisUpdate) RemoveAgentSessionIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.RemoveAgentSessionIDs(ids...)
+	return _u
+}
+
+// RemoveAgentSessions removes "agent_sessions" edges to AgentSession entities.
+func (_u *SystemAnalysisUpdate) RemoveAgentSessions(v ...*AgentSession) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAgentSessionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -536,6 +573,54 @@ func (_u *SystemAnalysisUpdate) sqlSave(ctx context.Context) (_node int, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.AgentSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AgentSessionsTable,
+			Columns: []string{systemanalysis.AgentSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSession
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAgentSessionsIDs(); len(nodes) > 0 && !_u.mutation.AgentSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AgentSessionsTable,
+			Columns: []string{systemanalysis.AgentSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSession
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AgentSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AgentSessionsTable,
+			Columns: []string{systemanalysis.AgentSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSession
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.SystemAnalysis
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -695,6 +780,21 @@ func (_u *SystemAnalysisUpdateOne) AddEntries(v ...*SystemAnalysisEntry) *System
 	return _u.AddEntryIDs(ids...)
 }
 
+// AddAgentSessionIDs adds the "agent_sessions" edge to the AgentSession entity by IDs.
+func (_u *SystemAnalysisUpdateOne) AddAgentSessionIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.AddAgentSessionIDs(ids...)
+	return _u
+}
+
+// AddAgentSessions adds the "agent_sessions" edges to the AgentSession entity.
+func (_u *SystemAnalysisUpdateOne) AddAgentSessions(v ...*AgentSession) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAgentSessionIDs(ids...)
+}
+
 // Mutation returns the SystemAnalysisMutation object of the builder.
 func (_u *SystemAnalysisUpdateOne) Mutation() *SystemAnalysisMutation {
 	return _u.mutation
@@ -773,6 +873,27 @@ func (_u *SystemAnalysisUpdateOne) RemoveEntries(v ...*SystemAnalysisEntry) *Sys
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEntryIDs(ids...)
+}
+
+// ClearAgentSessions clears all "agent_sessions" edges to the AgentSession entity.
+func (_u *SystemAnalysisUpdateOne) ClearAgentSessions() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearAgentSessions()
+	return _u
+}
+
+// RemoveAgentSessionIDs removes the "agent_sessions" edge to AgentSession entities by IDs.
+func (_u *SystemAnalysisUpdateOne) RemoveAgentSessionIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.RemoveAgentSessionIDs(ids...)
+	return _u
+}
+
+// RemoveAgentSessions removes "agent_sessions" edges to AgentSession entities.
+func (_u *SystemAnalysisUpdateOne) RemoveAgentSessions(v ...*AgentSession) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAgentSessionIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemAnalysisUpdate builder.
@@ -1086,6 +1207,54 @@ func (_u *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *SystemAn
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysisEntry
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AgentSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AgentSessionsTable,
+			Columns: []string{systemanalysis.AgentSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSession
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAgentSessionsIDs(); len(nodes) > 0 && !_u.mutation.AgentSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AgentSessionsTable,
+			Columns: []string{systemanalysis.AgentSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSession
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AgentSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AgentSessionsTable,
+			Columns: []string{systemanalysis.AgentSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentSession
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

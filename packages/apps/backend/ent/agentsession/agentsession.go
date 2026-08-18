@@ -30,12 +30,16 @@ const (
 	FieldScopes = "scopes"
 	// FieldInput holds the string denoting the input field in the database.
 	FieldInput = "input"
+	// FieldSystemAnalysisID holds the string denoting the system_analysis_id field in the database.
+	FieldSystemAnalysisID = "system_analysis_id"
 	// FieldMetadata holds the string denoting the metadata field in the database.
 	FieldMetadata = "metadata"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeOwnerUser holds the string denoting the owner_user edge name in mutations.
 	EdgeOwnerUser = "owner_user"
+	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
+	EdgeSystemAnalysis = "system_analysis"
 	// EdgeTurns holds the string denoting the turns edge name in mutations.
 	EdgeTurns = "turns"
 	// EdgeMessages holds the string denoting the messages edge name in mutations.
@@ -60,6 +64,13 @@ const (
 	OwnerUserInverseTable = "users"
 	// OwnerUserColumn is the table column denoting the owner_user relation/edge.
 	OwnerUserColumn = "owner_user_id"
+	// SystemAnalysisTable is the table that holds the system_analysis relation/edge.
+	SystemAnalysisTable = "agent_sessions"
+	// SystemAnalysisInverseTable is the table name for the SystemAnalysis entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
+	SystemAnalysisInverseTable = "system_analyses"
+	// SystemAnalysisColumn is the table column denoting the system_analysis relation/edge.
+	SystemAnalysisColumn = "system_analysis_id"
 	// TurnsTable is the table that holds the turns relation/edge.
 	TurnsTable = "agent_turns"
 	// TurnsInverseTable is the table name for the AgentTurn entity.
@@ -100,6 +111,7 @@ var Columns = []string{
 	FieldOwnerUserID,
 	FieldScopes,
 	FieldInput,
+	FieldSystemAnalysisID,
 	FieldMetadata,
 }
 
@@ -168,6 +180,11 @@ func ByOwnerUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOwnerUserID, opts...).ToFunc()
 }
 
+// BySystemAnalysisID orders the results by the system_analysis_id field.
+func BySystemAnalysisID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSystemAnalysisID, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -179,6 +196,13 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByOwnerUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newOwnerUserStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// BySystemAnalysisField orders the results by system_analysis field.
+func BySystemAnalysisField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysisStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -249,6 +273,13 @@ func newOwnerUserStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OwnerUserInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, OwnerUserTable, OwnerUserColumn),
+	)
+}
+func newSystemAnalysisStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SystemAnalysisInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, SystemAnalysisTable, SystemAnalysisColumn),
 	)
 }
 func newTurnsStep() *sqlgraph.Step {
