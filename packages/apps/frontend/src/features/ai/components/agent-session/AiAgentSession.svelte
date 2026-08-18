@@ -15,7 +15,7 @@
 	const { sessionId }: Props = $props();
 	const ctrl = initAgentSessionComponentController(() => sessionId);
 	const attrs = $derived(ctrl.session?.attributes);
-	const status = $derived(attrs?.latestTurn?.attributes.status);
+	const status = $derived(ctrl.latestTurn?.attributes.status);
 </script>
 
 <section class="w-full min-w-0 space-y-3">

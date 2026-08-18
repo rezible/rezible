@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import {
-		listSystemAnalysisNodesOptions,
-		type IncidentTimelineEventSystemContext,
-		type IncidentTimelineEventSystemContextAttributes,
-		type SystemAnalysisNode,
-	} from "$lib/api";
+	import { listSystemAnalysisNodesOptions, type SystemAnalysisNode } from "$lib/api";
 	import { v4 as uuidv4 } from "uuid";
 	import { SvelteMap } from "svelte/reactivity";
 	import { Button } from "$components/ui/button";
@@ -14,6 +9,7 @@
 	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import { useEventDialogAttributes } from "./attributes.svelte";
 	import { useIncidentAnalysis } from "$features/incidents/views/incident/analysis/controller.svelte";
+	import type { TimelineEntrySystemContext, TimelineEntrySystemContextAttributes } from "../../entry-model";
 
 	const attributes = useEventDialogAttributes();
 
@@ -26,34 +22,39 @@
 	}));
 	const analysisNodes = $derived(analysisNodesQuery.data?.data ?? []);
 	const analysisNodeMap = $derived(new SvelteMap(analysisNodes.map((node) => [node.id, node])));
+	const knowledgeEntityNodeMap = $derived(
+		new SvelteMap(analysisNodes.map((node) => [node.attributes.knowledgeEntity.id, node]))
+	);
 
-	let relationship = $state<IncidentTimelineEventSystemContextAttributes["relationship"]>("affected");
+	let relationship = $state<TimelineEntrySystemContextAttributes["relationship"]>("affected");
 
-	const getAttributes = (node: SystemAnalysisNode): IncidentTimelineEventSystemContextAttributes => ({
+	const getAttributes = (node: SystemAnalysisNode): TimelineEntrySystemContextAttributes => ({
 		systemAnalysisNodeId: node.id,
+		knowledgeEntityId: node.attributes.knowledgeEntity.id,
 		relationship: $state.snapshot(relationship),
 	});
 
+	const getContextNode = (cx: TimelineEntrySystemContext) =>
+		(cx.attributes.systemAnalysisNodeId
+			? analysisNodeMap.get(cx.attributes.systemAnalysisNodeId)
+			: undefined) ?? knowledgeEntityNodeMap.get(cx.attributes.knowledgeEntityId);
+
 	let selecting = $state(false);
 	let selectedNode = $state<SystemAnalysisNode>();
-	let editing = $state<IncidentTimelineEventSystemContext>();
-	const editNode = $derived(
-		editing?.attributes.systemAnalysisNodeId
-			? analysisNodeMap.get(editing.attributes.systemAnalysisNodeId)
-			: undefined
-	);
+	let editing = $state<TimelineEntrySystemContext>();
+	const editNode = $derived(editing ? getContextNode(editing) : undefined);
 
-	const setEditing = (cx: IncidentTimelineEventSystemContext) => {
+	const setEditing = (cx: TimelineEntrySystemContext) => {
 		editing = $state.snapshot(cx);
 		relationship = $state.snapshot(cx.attributes.relationship);
 	};
 
-	const confirmDelete = (cx: IncidentTimelineEventSystemContext) => {
-		const node = analysisNodeMap.get(cx.attributes.systemAnalysisNodeId);
+	const _confirmDelete = (cx: TimelineEntrySystemContext) => {
+		const node = getContextNode(cx);
 		editing = undefined;
-		const nodeName = node?.attributes.knowledgeEntity.attributes.latestState?.displayName ?? "this entity";
-		if (!node || !confirm(`Are you sure you want to remove ${nodeName}?`))
-			return;
+		const nodeName =
+			node?.attributes.knowledgeEntity.attributes.latestState?.displayName ?? "this entity";
+		if (!node || !confirm(`Are you sure you want to remove ${nodeName}?`)) return;
 		const idx = attributes.systemContext.findIndex((c) => c.id === cx.id);
 		if (idx >= 0) attributes.systemContext.splice(idx, 1);
 	};
@@ -103,7 +104,7 @@
 				onClose={onCancel}
 				confirmText={selecting ? "Add" : "Save"}
 				{onConfirm}
-				saveEnabled={!!selectedNode}
+				saveEnabled={selecting ? !!selectedNode : !!editNode}
 			/>
 		</div>
 	{/snippet}
@@ -141,7 +142,7 @@
 		</div>
 	{:else}
 		{#each attributes.systemContext as cx (cx.id)}
-			{@const node = analysisNodeMap.get(cx.attributes.systemAnalysisNodeId)}
+			{@const node = getContextNode(cx)}
 			<button type="button" class="text-left" onclick={() => setEditing(cx)}>
 				{node?.attributes.knowledgeEntity.attributes.latestState?.displayName ?? "Unknown Entity"}
 			</button>

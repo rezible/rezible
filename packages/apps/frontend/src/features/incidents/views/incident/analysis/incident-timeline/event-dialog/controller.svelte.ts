@@ -1,27 +1,37 @@
 import {
-	createIncidentTimelineEventMutation,
-	updateIncidentTimelineEventMutation,
-	type CreateIncidentTimelineEventAttributes,
-	type Incident,
-	type IncidentTimelineEvent,
-	type IncidentTimelineEventAttributes,
-	type UpdateIncidentTimelineEventAttributes,
+	addSystemAnalysisEntrySubjectMutation,
+	createSystemAnalysisEntryMutation,
+	deleteSystemAnalysisEntrySubjectMutation,
+	updateSystemAnalysisEntryMutation,
+	updateSystemAnalysisEntrySubjectMutation,
 } from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
 import { Context } from "runed";
 
 import { useIncidentView } from "$features/incidents/views/incident";
-import { initEventDialogAttributes, type TimelineEventDialogAttributes } from "./attribute-panels/attributes.svelte";
+import { useIncidentAnalysis } from "$features/incidents/views/incident/analysis/controller.svelte";
+import {
+	initEventDialogAttributes,
+	type TimelineEventDialogAttributes,
+} from "./attribute-panels/attributes.svelte";
+import {
+	timelineEntryProperties,
+	type TimelineAnalysisEntry,
+	type TimelineAnalysisEntryAttributes,
+	type TimelineEntrySystemContext,
+} from "../entry-model";
 
 type EditorDialogView = "closed" | "create" | "edit";
-export type OnEventAddedCallbackFn = (e: IncidentTimelineEvent) => void;
+export type OnEventChangedCallbackFn = () => void;
 
 export class IncidentEventDialogController {
 	incidentViewController = useIncidentView();
+	analysisController = useIncidentAnalysis();
 	incident = $derived(this.incidentViewController.incident);
-	
-	editingEvent = $state<IncidentTimelineEvent>();
-	onEventAddedCallback: OnEventAddedCallbackFn;
+	analysisId = $derived(this.analysisController.analysisId);
+
+	editingEntry = $state<TimelineAnalysisEntry>();
+	onEventChangedCallback: OnEventChangedCallbackFn;
 
 	view = $state<EditorDialogView>("closed");
 	previousView = $state<EditorDialogView>("closed");
@@ -30,8 +40,8 @@ export class IncidentEventDialogController {
 
 	attributes: TimelineEventDialogAttributes;
 
-	constructor(onEventAdded: OnEventAddedCallbackFn) {
-		this.onEventAddedCallback = onEventAdded;
+	constructor(onEventChanged: OnEventChangedCallbackFn) {
+		this.onEventChangedCallback = onEventChanged;
 		this.attributes = initEventDialogAttributes();
 	}
 
@@ -42,56 +52,129 @@ export class IncidentEventDialogController {
 
 	clear() {
 		this.setView("closed");
-		this.editingEvent = undefined;
-	};
+		this.editingEntry = undefined;
+	}
 
-	onSuccess({ data: event }: { data: IncidentTimelineEvent }) {
-		this.onEventAddedCallback(event);
+	onSuccess() {
+		this.onEventChangedCallback();
 		this.clear();
 	}
 
-	createEventMut = createMutation(() => ({ ...createIncidentTimelineEventMutation(), onSuccess: e => {this.onSuccess(e)} }));
-	updateEventMut = createMutation(() => ({ ...updateIncidentTimelineEventMutation(), onSuccess: e => {this.onSuccess(e)} }));
-	
-	loading = $derived(this.createEventMut.isPending || this.updateEventMut.isPending);
+	createEntryMut = createMutation(() => createSystemAnalysisEntryMutation());
+	updateEntryMut = createMutation(() => updateSystemAnalysisEntryMutation());
+	addSubjectMut = createMutation(() => addSystemAnalysisEntrySubjectMutation());
+	updateSubjectMut = createMutation(() => updateSystemAnalysisEntrySubjectMutation());
+	deleteSubjectMut = createMutation(() => deleteSystemAnalysisEntrySubjectMutation());
 
-	doCreate() {
-		if (!this.incident) return;
-		const attrs = this.attributes.snapshot();
-		const path = { id: $state.snapshot(this.incident.id) };
-		const attributes: CreateIncidentTimelineEventAttributes = {
+	loading = $derived(
+		this.createEntryMut.isPending ||
+			this.updateEntryMut.isPending ||
+			this.addSubjectMut.isPending ||
+			this.updateSubjectMut.isPending ||
+			this.deleteSubjectMut.isPending
+	);
+
+	private makeCreateAttributes(attrs: TimelineAnalysisEntryAttributes) {
+		return {
 			kind: attrs.kind,
-			timestamp: attrs.timestamp,
-			isKey: attrs.isKey,
+			occurredAt: attrs.timestamp,
+			sequence: 0,
 			title: attrs.title,
-			systemContext: attrs.systemContext.map((context) => context.attributes),
+			body: attrs.description,
+			properties: timelineEntryProperties(attrs),
 		};
-		this.createEventMut.mutate({ path, body: { attributes } });
 	}
 
-	doEdit() {
-		if (!this.editingEvent) return;
-		const attrs = this.attributes.snapshot();
-		const path = { id: $state.snapshot(this.editingEvent.id) };
-		const attributes: UpdateIncidentTimelineEventAttributes = {
+	private makeUpdateAttributes(attrs: TimelineAnalysisEntryAttributes) {
+		return {
 			kind: attrs.kind,
-			timestamp: attrs.timestamp,
+			occurredAt: attrs.timestamp,
 			title: attrs.title,
-			systemContext: attrs.systemContext.map((context) => context.attributes),
+			body: attrs.description,
+			properties: timelineEntryProperties(attrs),
 		};
-		this.updateEventMut.mutate({ path, body: { attributes } });
 	}
 
-	setCreating(attrs?: Partial<IncidentTimelineEventAttributes>) {
+	private async addSubject(entryId: string, context: TimelineEntrySystemContext) {
+		await this.addSubjectMut.mutateAsync({
+			path: { id: entryId },
+			body: {
+				attributes: {
+					role: context.attributes.relationship || "related",
+					knowledgeEntityId: context.attributes.knowledgeEntityId,
+				},
+			},
+		});
+	}
+
+	private async syncSubjects(
+		entryId: string,
+		previous: TimelineEntrySystemContext[],
+		next: TimelineEntrySystemContext[]
+	) {
+		const retainedSubjectIds = new Set<string>();
+		const previousById = new Map(
+			previous.filter((context) => !!context.id).map((context) => [context.id!, context])
+		);
+
+		for (const context of next) {
+			const previousContext = context.id ? previousById.get(context.id) : undefined;
+			if (
+				!previousContext ||
+				previousContext.attributes.knowledgeEntityId !== context.attributes.knowledgeEntityId
+			) {
+				await this.addSubject(entryId, context);
+				continue;
+			}
+
+			retainedSubjectIds.add(previousContext.id!);
+			if (previousContext.attributes.relationship !== context.attributes.relationship) {
+				await this.updateSubjectMut.mutateAsync({
+					path: { id: previousContext.id! },
+					body: { attributes: { role: context.attributes.relationship || "related" } },
+				});
+			}
+		}
+
+		for (const previousContext of previous) {
+			if (!previousContext.id || retainedSubjectIds.has(previousContext.id)) continue;
+			await this.deleteSubjectMut.mutateAsync({ path: { id: previousContext.id } });
+		}
+	}
+
+	async doCreate() {
+		if (!this.incident || !this.analysisId) return;
+		const attrs = this.attributes.snapshot();
+		const created = await this.createEntryMut.mutateAsync({
+			path: { id: this.analysisId },
+			body: { attributes: this.makeCreateAttributes(attrs) },
+		});
+		await this.syncSubjects(created.data.id, [], attrs.systemContext);
+		this.onSuccess();
+	}
+
+	async doEdit() {
+		if (!this.editingEntry) return;
+		const attrs = this.attributes.snapshot();
+		const entryId = $state.snapshot(this.editingEntry.id);
+		await this.updateEntryMut.mutateAsync({
+			path: { id: entryId },
+			body: { attributes: this.makeUpdateAttributes(attrs) },
+		});
+		await this.syncSubjects(entryId, this.editingEntry.attributes.systemContext, attrs.systemContext);
+		this.onSuccess();
+	}
+
+	setCreating(attrs?: Partial<TimelineAnalysisEntryAttributes>) {
 		this.setView("create");
 		this.attributes.init(this.incident, attrs);
 	}
 
-	setEditing(ev: IncidentTimelineEvent) {
+	setEditing(ev: TimelineAnalysisEntry) {
 		this.setView("edit");
-		this.editingEvent = $state.snapshot(ev);
+		this.editingEntry = $state.snapshot(ev);
 		this.attributes.init(this.incident, ev.attributes);
-	};
+	}
 
 	confirm() {
 		if (this.view === "create") {
@@ -101,9 +184,10 @@ export class IncidentEventDialogController {
 		} else {
 			console.error("something went wrong", $state.snapshot(this.view));
 		}
-	};
+	}
 }
 
 const ctx = new Context<IncidentEventDialogController>("IncidentEventDialogController");
-export const initEventDialog = (onEventAdded: OnEventAddedCallbackFn) => ctx.set(new IncidentEventDialogController(onEventAdded));
+export const initEventDialog = (onEventChanged: OnEventChangedCallbackFn) =>
+	ctx.set(new IncidentEventDialogController(onEventChanged));
 export const useEventDialog = () => ctx.get();

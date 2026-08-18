@@ -34,6 +34,15 @@ export class AgentSessionComponentController {
 		this.isMock ? mockAgentSession : this.sessionQuery.data?.data
 	);
 	turns = $derived<AgentTurn[]>(this.isMock ? mockAgentTurns : (this.turnsQuery.data?.data ?? []));
+	latestTurn = $derived.by(() => {
+		return this.turns.reduce<AgentTurn | undefined>((latest, turn) => {
+			if (!latest) return turn;
+			if (turn.attributes.sequence > latest.attributes.sequence) return turn;
+			return new Date(turn.attributes.updatedAt) > new Date(latest.attributes.updatedAt)
+				? turn
+				: latest;
+		}, undefined);
+	});
 	isLoading = $derived(
 		this.sessionQuery.isLoading ||
 			this.sessionQuery.isPending ||

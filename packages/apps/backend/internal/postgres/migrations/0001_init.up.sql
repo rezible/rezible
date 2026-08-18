@@ -352,6 +352,14 @@ CREATE INDEX "systemanalysis_tenant_id" ON "system_analyses" ("tenant_id");
 CREATE INDEX "systemanalysis_tenant_id_scope_entity_id" ON "system_analyses" ("tenant_id", "scope_entity_id");
 -- create index "systemanalysis_tenant_id_subject_entity_id" to table: "system_analyses"
 CREATE INDEX "systemanalysis_tenant_id_subject_entity_id" ON "system_analyses" ("tenant_id", "subject_entity_id");
+-- create "system_analysis_entities" table
+CREATE TABLE "system_analysis_entities" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "pos_x" double precision NULL, "pos_y" double precision NULL, "hidden" boolean NOT NULL DEFAULT false, "label_override" character varying NULL, "description_override" text NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, "knowledge_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "systemanalysisentity_tenant_id" to table: "system_analysis_entities"
+CREATE INDEX "systemanalysisentity_tenant_id" ON "system_analysis_entities" ("tenant_id");
+-- create index "systemanalysisentity_tenant_id_analysis_id_knowledge_entity_id" to table: "system_analysis_entities"
+CREATE UNIQUE INDEX "systemanalysisentity_tenant_id_analysis_id_knowledge_entity_id" ON "system_analysis_entities" ("tenant_id", "analysis_id", "knowledge_entity_id");
+-- create index "systemanalysisentity_tenant_id_knowledge_entity_id" to table: "system_analysis_entities"
+CREATE INDEX "systemanalysisentity_tenant_id_knowledge_entity_id" ON "system_analysis_entities" ("tenant_id", "knowledge_entity_id");
 -- create "system_analysis_entries" table
 CREATE TABLE "system_analysis_entries" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "kind" character varying NOT NULL, "occurred_at" timestamptz NULL, "sequence" bigint NOT NULL DEFAULT 0, "title" character varying NOT NULL, "body" text NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "systemanalysisentry_tenant_id" to table: "system_analysis_entries"
@@ -376,6 +384,18 @@ CREATE INDEX "systemanalysisentrysubject_tenant_id_knowledge_entity_id" ON "syst
 CREATE INDEX "systemanalysisentrysubject_tenant_id_knowledge_relationship_id" ON "system_analysis_entry_subjects" ("tenant_id", "knowledge_relationship_id");
 -- create index "systemanalysisentrysubject_tenant_id_knowledge_evidence_id" to table: "system_analysis_entry_subjects"
 CREATE INDEX "systemanalysisentrysubject_tenant_id_knowledge_evidence_id" ON "system_analysis_entry_subjects" ("tenant_id", "knowledge_evidence_id");
+-- create "system_analysis_relationships" table
+CREATE TABLE "system_analysis_relationships" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "hidden" boolean NOT NULL DEFAULT false, "label_override" character varying NULL, "description_override" text NULL, "layout" jsonb NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, "knowledge_relationship_id" uuid NOT NULL, "source_analysis_entity_id" uuid NOT NULL, "target_analysis_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "systemanalysisrelationship_tenant_id" to table: "system_analysis_relationships"
+CREATE INDEX "systemanalysisrelationship_tenant_id" ON "system_analysis_relationships" ("tenant_id");
+-- create index "systemanalysisrelationship_ten_4ca9378453889ae93a25a749d875e2ed" to table: "system_analysis_relationships"
+CREATE UNIQUE INDEX "systemanalysisrelationship_ten_4ca9378453889ae93a25a749d875e2ed" ON "system_analysis_relationships" ("tenant_id", "analysis_id", "knowledge_relationship_id");
+-- create index "systemanalysisrelationship_tenant_id_knowledge_relationship_id" to table: "system_analysis_relationships"
+CREATE INDEX "systemanalysisrelationship_tenant_id_knowledge_relationship_id" ON "system_analysis_relationships" ("tenant_id", "knowledge_relationship_id");
+-- create index "systemanalysisrelationship_tenant_id_source_analysis_entity_id" to table: "system_analysis_relationships"
+CREATE INDEX "systemanalysisrelationship_tenant_id_source_analysis_entity_id" ON "system_analysis_relationships" ("tenant_id", "source_analysis_entity_id");
+-- create index "systemanalysisrelationship_tenant_id_target_analysis_entity_id" to table: "system_analysis_relationships"
+CREATE INDEX "systemanalysisrelationship_tenant_id_target_analysis_entity_id" ON "system_analysis_relationships" ("tenant_id", "target_analysis_entity_id");
 -- create "tasks" table
 CREATE TABLE "tasks" ("id" uuid NOT NULL, "type" character varying NOT NULL, "title" character varying NOT NULL, "incident_id" uuid NULL, "tenant_id" bigint NOT NULL, "assignee_id" uuid NULL, "creator_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "task_tenant_id" to table: "tasks"
@@ -568,10 +588,14 @@ ALTER TABLE "retrospective_comments" ADD CONSTRAINT "retrospective_comments_tena
 ALTER TABLE "retrospective_reviews" ADD CONSTRAINT "retrospective_reviews_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospective_reviews_retrospectives_retrospective" FOREIGN KEY ("retrospective_id") REFERENCES "retrospectives" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospective_reviews_users_requester" FOREIGN KEY ("requester_id") REFERENCES "users" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospective_reviews_users_reviewer" FOREIGN KEY ("reviewer_id") REFERENCES "users" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospective_reviews_retrospective_comments_comment" FOREIGN KEY ("comment_id") REFERENCES "retrospective_comments" ("id") ON DELETE NO ACTION;
 -- modify "system_analyses" table
 ALTER TABLE "system_analyses" ADD CONSTRAINT "system_analyses_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analyses_knowledge_entities_scope_entity" FOREIGN KEY ("scope_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "system_analyses_knowledge_entities_subject_entity" FOREIGN KEY ("subject_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
+-- modify "system_analysis_entities" table
+ALTER TABLE "system_analysis_entities" ADD CONSTRAINT "system_analysis_entities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_entities_system_analyses_analysis" FOREIGN KEY ("analysis_id") REFERENCES "system_analyses" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_entities_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE NO ACTION;
 -- modify "system_analysis_entries" table
 ALTER TABLE "system_analysis_entries" ADD CONSTRAINT "system_analysis_entries_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_entries_system_analyses_analysis" FOREIGN KEY ("analysis_id") REFERENCES "system_analyses" ("id") ON DELETE NO ACTION;
 -- modify "system_analysis_entry_subjects" table
 ALTER TABLE "system_analysis_entry_subjects" ADD CONSTRAINT "system_analysis_entry_subjects_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_entry_subjects_system_analysis_entries_entry" FOREIGN KEY ("entry_id") REFERENCES "system_analysis_entries" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_entry_subjects_49d5b666fad2cccccfff680228c04fc3" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "system_analysis_entry_subjects_900e59485c580b401fec755bd8cd2504" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "system_analysis_entry_subjects_1264d7dddb02bff88a4448e8cddecac8" FOREIGN KEY ("knowledge_evidence_id") REFERENCES "knowledge_evidences" ("id") ON DELETE SET NULL;
+-- modify "system_analysis_relationships" table
+ALTER TABLE "system_analysis_relationships" ADD CONSTRAINT "system_analysis_relationships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_relationships_system_analyses_analysis" FOREIGN KEY ("analysis_id") REFERENCES "system_analyses" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_relationships__b7ca708fb4a6c01cc857332c522e01e3" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_relationships__a89e244cf39e964fef2d63b30e0240ed" FOREIGN KEY ("source_analysis_entity_id") REFERENCES "system_analysis_entities" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_relationships__a52161f8e0ea09a9056ddd871238af0c" FOREIGN KEY ("target_analysis_entity_id") REFERENCES "system_analysis_entities" ("id") ON DELETE NO ACTION;
 -- modify "tasks" table
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_incidents_tasks" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE SET NULL, ADD CONSTRAINT "tasks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "tasks_users_assigned_tasks" FOREIGN KEY ("assignee_id") REFERENCES "users" ("id") ON DELETE SET NULL, ADD CONSTRAINT "tasks_users_created_tasks" FOREIGN KEY ("creator_id") REFERENCES "users" ("id") ON DELETE SET NULL;
 -- modify "teams" table

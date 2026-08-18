@@ -25,7 +25,7 @@ func (h *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *
 	}
 
 	var response oapi.GetSystemAnalysisResponse
-	response.Body.Data = oapi.SystemAnalysisWithEntriesFromEnt(analysis)
+	response.Body.Data = oapi.SystemAnalysisFromEnt(analysis)
 	return &response, nil
 }
 
@@ -48,7 +48,7 @@ func (h *systemAnalysisHandler) UpdateSystemAnalysis(ctx context.Context, reques
 	}
 
 	var response oapi.UpdateSystemAnalysisResponse
-	response.Body.Data = oapi.SystemAnalysisWithEntriesFromEnt(analysis)
+	response.Body.Data = oapi.SystemAnalysisFromEnt(analysis)
 	return &response, nil
 }
 
@@ -65,6 +65,146 @@ func (h *systemAnalysisHandler) GetSystemAnalysisGraph(ctx context.Context, requ
 	var response oapi.GetSystemAnalysisGraphResponse
 	response.Body.Data = oapi.KnowledgeGraphViewFromRez(view)
 	return &response, nil
+}
+
+func (h *systemAnalysisHandler) ListSystemAnalysisNodes(ctx context.Context, request *oapi.ListSystemAnalysisNodesRequest) (*oapi.ListSystemAnalysisNodesResponse, error) {
+	nodes, listErr := h.analysis.ListSystemAnalysisEntities(ctx, request.Id)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "list system analysis nodes", listErr)
+	}
+
+	var response oapi.ListSystemAnalysisNodesResponse
+	response.Body.Data = oapi.ConvertSlice(nodes, oapi.SystemAnalysisNodeFromEnt)
+	response.Body.Pagination.Total = len(response.Body.Data)
+	return &response, nil
+}
+
+func (h *systemAnalysisHandler) AddSystemAnalysisNode(ctx context.Context, request *oapi.AddSystemAnalysisNodeRequest) (*oapi.AddSystemAnalysisNodeResponse, error) {
+	attrs := request.Body.Attributes
+	setFn := func(m *ent.SystemAnalysisEntityMutation) {
+		m.SetAnalysisID(request.Id)
+		m.SetKnowledgeEntityID(attrs.KnowledgeEntityId)
+		m.SetPosX(attrs.Position.X)
+		m.SetPosY(attrs.Position.Y)
+		if attrs.DescriptionOverride != nil {
+			m.SetDescriptionOverride(*attrs.DescriptionOverride)
+		}
+		if attrs.Hidden != nil {
+			m.SetHidden(*attrs.Hidden)
+		}
+		if attrs.LabelOverride != nil {
+			m.SetLabelOverride(*attrs.LabelOverride)
+		}
+	}
+	node, createErr := h.analysis.SetSystemAnalysisEntity(ctx, uuid.Nil, setFn)
+	if createErr != nil {
+		return nil, oapi.Error(ctx, "add system analysis node", createErr)
+	}
+
+	var response oapi.AddSystemAnalysisNodeResponse
+	response.Body.Data = oapi.SystemAnalysisNodeFromEnt(node)
+	return &response, nil
+}
+
+func (h *systemAnalysisHandler) UpdateSystemAnalysisNode(ctx context.Context, request *oapi.UpdateSystemAnalysisNodeRequest) (*oapi.UpdateSystemAnalysisNodeResponse, error) {
+	attrs := request.Body.Attributes
+	setFn := func(m *ent.SystemAnalysisEntityMutation) {
+		if attrs.Position != nil {
+			m.SetPosX(attrs.Position.X)
+			m.SetPosY(attrs.Position.Y)
+		}
+		if attrs.DescriptionOverride != nil {
+			m.SetDescriptionOverride(*attrs.DescriptionOverride)
+		}
+		if attrs.Hidden != nil {
+			m.SetHidden(*attrs.Hidden)
+		}
+		if attrs.LabelOverride != nil {
+			m.SetLabelOverride(*attrs.LabelOverride)
+		}
+	}
+	node, updateErr := h.analysis.SetSystemAnalysisEntity(ctx, request.Id, setFn)
+	if updateErr != nil {
+		return nil, oapi.Error(ctx, "update system analysis node", updateErr)
+	}
+
+	var response oapi.UpdateSystemAnalysisNodeResponse
+	response.Body.Data = oapi.SystemAnalysisNodeFromEnt(node)
+	return &response, nil
+}
+
+func (h *systemAnalysisHandler) DeleteSystemAnalysisNode(ctx context.Context, request *oapi.DeleteSystemAnalysisNodeRequest) (*oapi.DeleteSystemAnalysisNodeResponse, error) {
+	if deleteErr := h.analysis.DeleteSystemAnalysisEntity(ctx, request.Id); deleteErr != nil {
+		return nil, oapi.Error(ctx, "delete system analysis node", deleteErr)
+	}
+	return &oapi.DeleteSystemAnalysisNodeResponse{}, nil
+}
+
+func (h *systemAnalysisHandler) ListSystemAnalysisEdges(ctx context.Context, request *oapi.ListSystemAnalysisEdgesRequest) (*oapi.ListSystemAnalysisEdgesResponse, error) {
+	edges, listErr := h.analysis.ListSystemAnalysisRelationships(ctx, request.Id)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "list system analysis edges", listErr)
+	}
+
+	var response oapi.ListSystemAnalysisEdgesResponse
+	response.Body.Data = oapi.ConvertSlice(edges, oapi.SystemAnalysisEdgeFromEnt)
+	response.Body.Pagination.Total = len(response.Body.Data)
+	return &response, nil
+}
+
+func (h *systemAnalysisHandler) AddSystemAnalysisEdge(ctx context.Context, request *oapi.AddSystemAnalysisEdgeRequest) (*oapi.AddSystemAnalysisEdgeResponse, error) {
+	attrs := request.Body.Attributes
+	setFn := func(m *ent.SystemAnalysisRelationshipMutation) {
+		m.SetAnalysisID(request.Id)
+		m.SetKnowledgeRelationshipID(attrs.KnowledgeRelationshipId)
+		if attrs.DescriptionOverride != nil {
+			m.SetDescriptionOverride(*attrs.DescriptionOverride)
+		}
+		if attrs.Hidden != nil {
+			m.SetHidden(*attrs.Hidden)
+		}
+		if attrs.LabelOverride != nil {
+			m.SetLabelOverride(*attrs.LabelOverride)
+		}
+	}
+	edge, createErr := h.analysis.SetSystemAnalysisRelationship(ctx, uuid.Nil, setFn)
+	if createErr != nil {
+		return nil, oapi.Error(ctx, "add system analysis edge", createErr)
+	}
+
+	var response oapi.AddSystemAnalysisEdgeResponse
+	response.Body.Data = oapi.SystemAnalysisEdgeFromEnt(edge)
+	return &response, nil
+}
+
+func (h *systemAnalysisHandler) UpdateSystemAnalysisEdge(ctx context.Context, request *oapi.UpdateSystemAnalysisEdgeRequest) (*oapi.UpdateSystemAnalysisEdgeResponse, error) {
+	attrs := request.Body.Attributes
+	setFn := func(m *ent.SystemAnalysisRelationshipMutation) {
+		if attrs.DescriptionOverride != nil {
+			m.SetDescriptionOverride(*attrs.DescriptionOverride)
+		}
+		if attrs.Hidden != nil {
+			m.SetHidden(*attrs.Hidden)
+		}
+		if attrs.LabelOverride != nil {
+			m.SetLabelOverride(*attrs.LabelOverride)
+		}
+	}
+	edge, updateErr := h.analysis.SetSystemAnalysisRelationship(ctx, request.Id, setFn)
+	if updateErr != nil {
+		return nil, oapi.Error(ctx, "update system analysis edge", updateErr)
+	}
+
+	var response oapi.UpdateSystemAnalysisEdgeResponse
+	response.Body.Data = oapi.SystemAnalysisEdgeFromEnt(edge)
+	return &response, nil
+}
+
+func (h *systemAnalysisHandler) DeleteSystemAnalysisEdge(ctx context.Context, request *oapi.DeleteSystemAnalysisEdgeRequest) (*oapi.DeleteSystemAnalysisEdgeResponse, error) {
+	if deleteErr := h.analysis.DeleteSystemAnalysisRelationship(ctx, request.Id); deleteErr != nil {
+		return nil, oapi.Error(ctx, "delete system analysis edge", deleteErr)
+	}
+	return &oapi.DeleteSystemAnalysisEdgeResponse{}, nil
 }
 
 func (h *systemAnalysisHandler) ListSystemAnalysisEntries(ctx context.Context, request *oapi.ListSystemAnalysisEntriesRequest) (*oapi.ListSystemAnalysisEntriesResponse, error) {

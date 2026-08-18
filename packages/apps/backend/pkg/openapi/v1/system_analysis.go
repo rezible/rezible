@@ -15,6 +15,16 @@ type SystemAnalysisHandler interface {
 	UpdateSystemAnalysis(context.Context, *UpdateSystemAnalysisRequest) (*UpdateSystemAnalysisResponse, error)
 	GetSystemAnalysisGraph(context.Context, *GetSystemAnalysisGraphRequest) (*GetSystemAnalysisGraphResponse, error)
 
+	ListSystemAnalysisNodes(context.Context, *ListSystemAnalysisNodesRequest) (*ListSystemAnalysisNodesResponse, error)
+	AddSystemAnalysisNode(context.Context, *AddSystemAnalysisNodeRequest) (*AddSystemAnalysisNodeResponse, error)
+	UpdateSystemAnalysisNode(context.Context, *UpdateSystemAnalysisNodeRequest) (*UpdateSystemAnalysisNodeResponse, error)
+	DeleteSystemAnalysisNode(context.Context, *DeleteSystemAnalysisNodeRequest) (*DeleteSystemAnalysisNodeResponse, error)
+
+	ListSystemAnalysisEdges(context.Context, *ListSystemAnalysisEdgesRequest) (*ListSystemAnalysisEdgesResponse, error)
+	AddSystemAnalysisEdge(context.Context, *AddSystemAnalysisEdgeRequest) (*AddSystemAnalysisEdgeResponse, error)
+	UpdateSystemAnalysisEdge(context.Context, *UpdateSystemAnalysisEdgeRequest) (*UpdateSystemAnalysisEdgeResponse, error)
+	DeleteSystemAnalysisEdge(context.Context, *DeleteSystemAnalysisEdgeRequest) (*DeleteSystemAnalysisEdgeResponse, error)
+
 	ListSystemAnalysisEntries(context.Context, *ListSystemAnalysisEntriesRequest) (*ListSystemAnalysisEntriesResponse, error)
 	CreateSystemAnalysisEntry(context.Context, *CreateSystemAnalysisEntryRequest) (*CreateSystemAnalysisEntryResponse, error)
 	UpdateSystemAnalysisEntry(context.Context, *UpdateSystemAnalysisEntryRequest) (*UpdateSystemAnalysisEntryResponse, error)
@@ -29,6 +39,14 @@ func (o operations) RegisterSystemAnalysis(api huma.API) {
 	huma.Register(api, GetSystemAnalysis, o.GetSystemAnalysis)
 	huma.Register(api, UpdateSystemAnalysis, o.UpdateSystemAnalysis)
 	huma.Register(api, GetSystemAnalysisGraph, o.GetSystemAnalysisGraph)
+	huma.Register(api, ListSystemAnalysisNodes, o.ListSystemAnalysisNodes)
+	huma.Register(api, AddSystemAnalysisNode, o.AddSystemAnalysisNode)
+	huma.Register(api, UpdateSystemAnalysisNode, o.UpdateSystemAnalysisNode)
+	huma.Register(api, DeleteSystemAnalysisNode, o.DeleteSystemAnalysisNode)
+	huma.Register(api, ListSystemAnalysisEdges, o.ListSystemAnalysisEdges)
+	huma.Register(api, AddSystemAnalysisEdge, o.AddSystemAnalysisEdge)
+	huma.Register(api, UpdateSystemAnalysisEdge, o.UpdateSystemAnalysisEdge)
+	huma.Register(api, DeleteSystemAnalysisEdge, o.DeleteSystemAnalysisEdge)
 	huma.Register(api, ListSystemAnalysisEntries, o.ListSystemAnalysisEntries)
 	huma.Register(api, CreateSystemAnalysisEntry, o.CreateSystemAnalysisEntry)
 	huma.Register(api, UpdateSystemAnalysisEntry, o.UpdateSystemAnalysisEntry)
@@ -48,9 +66,47 @@ type (
 		ScopeEntityId   *uuid.UUID            `json:"scopeEntityId,omitempty"`
 		SubjectEntityId *uuid.UUID            `json:"subjectEntityId,omitempty"`
 		ReferenceTime   *time.Time            `json:"referenceTime,omitempty"`
+		Nodes           []SystemAnalysisNode  `json:"nodes"`
+		Edges           []SystemAnalysisEdge  `json:"edges"`
 		Entries         []SystemAnalysisEntry `json:"entries"`
 	}
+)
 
+type (
+	SystemAnalysisNode struct {
+		Id         uuid.UUID                    `json:"id"`
+		Attributes SystemAnalysisNodeAttributes `json:"attributes"`
+	}
+
+	SystemAnalysisNodeAttributes struct {
+		KnowledgeEntity     KnowledgeGraphEntity          `json:"knowledgeEntity"`
+		Position            SystemAnalysisDiagramPosition `json:"position"`
+		Hidden              bool                          `json:"hidden"`
+		LabelOverride       *string                       `json:"labelOverride,omitempty"`
+		DescriptionOverride *string                       `json:"descriptionOverride,omitempty"`
+	}
+
+	SystemAnalysisDiagramPosition struct {
+		X float64 `json:"x"`
+		Y float64 `json:"y"`
+	}
+
+	SystemAnalysisEdge struct {
+		Id         uuid.UUID                    `json:"id"`
+		Attributes SystemAnalysisEdgeAttributes `json:"attributes"`
+	}
+
+	SystemAnalysisEdgeAttributes struct {
+		KnowledgeRelationship KnowledgeGraphRelationship `json:"knowledgeRelationship"`
+		SourceNodeId          uuid.UUID                  `json:"sourceNodeId"`
+		TargetNodeId          uuid.UUID                  `json:"targetNodeId"`
+		Hidden                bool                       `json:"hidden"`
+		LabelOverride         *string                    `json:"labelOverride,omitempty"`
+		DescriptionOverride   *string                    `json:"descriptionOverride,omitempty"`
+	}
+)
+
+type (
 	SystemAnalysisEntry struct {
 		Id         uuid.UUID                     `json:"id"`
 		Attributes SystemAnalysisEntryAttributes `json:"attributes"`
@@ -72,66 +128,59 @@ type (
 	}
 
 	SystemAnalysisEntrySubjectAttributes struct {
-		Role                    string                      `json:"role"`
-		SubjectKind             string                      `json:"subjectKind" enum:"entity,relationship,evidence"`
-		SubjectId               uuid.UUID                   `json:"subjectId"`
-		KnowledgeEntityId       *uuid.UUID                  `json:"knowledgeEntityId,omitempty"`
-		KnowledgeRelationshipId *uuid.UUID                  `json:"knowledgeRelationshipId,omitempty"`
-		KnowledgeEvidenceId     *uuid.UUID                  `json:"knowledgeEvidenceId,omitempty"`
-		KnowledgeEntity         *KnowledgeGraphEntity       `json:"knowledgeEntity,omitempty"`
-		KnowledgeRelationship   *KnowledgeGraphRelationship `json:"knowledgeRelationship,omitempty"`
-		KnowledgeEvidence       *KnowledgeGraphEvidence     `json:"knowledgeEvidence,omitempty"`
-	}
-
-	UpdateSystemAnalysisAttributes struct {
-		ScopeEntityId   *uuid.UUID `json:"scopeEntityId,omitempty"`
-		SubjectEntityId *uuid.UUID `json:"subjectEntityId,omitempty"`
-		ReferenceTime   *time.Time `json:"referenceTime,omitempty"`
-	}
-
-	CreateSystemAnalysisEntryAttributes struct {
-		Kind       string         `json:"kind" enum:"observation,context,decision,action,finding,recommendation"`
-		OccurredAt *time.Time     `json:"occurredAt,omitempty"`
-		Sequence   int            `json:"sequence"`
-		Title      string         `json:"title"`
-		Body       *string        `json:"body,omitempty"`
-		Properties map[string]any `json:"properties,omitempty"`
-	}
-
-	UpdateSystemAnalysisEntryAttributes struct {
-		Kind       *string        `json:"kind,omitempty" enum:"observation,context,decision,action,finding,recommendation"`
-		OccurredAt *time.Time     `json:"occurredAt,omitempty"`
-		Sequence   *int           `json:"sequence,omitempty"`
-		Title      *string        `json:"title,omitempty"`
-		Body       *string        `json:"body,omitempty"`
-		Properties map[string]any `json:"properties,omitempty"`
-	}
-
-	SetSystemAnalysisEntrySubjectAttributes struct {
-		Role                    string     `json:"role"`
-		KnowledgeEntityId       *uuid.UUID `json:"knowledgeEntityId,omitempty"`
-		KnowledgeRelationshipId *uuid.UUID `json:"knowledgeRelationshipId,omitempty"`
-		KnowledgeEvidenceId     *uuid.UUID `json:"knowledgeEvidenceId,omitempty"`
-	}
-
-	UpdateSystemAnalysisEntrySubjectAttributes struct {
-		Role string `json:"role"`
+		Role                  string                      `json:"role"`
+		SubjectKind           string                      `json:"subjectKind" enum:"entity,relationship,evidence"`
+		SubjectId             uuid.UUID                   `json:"subjectId"`
+		KnowledgeEntity       *KnowledgeGraphEntity       `json:"knowledgeEntity,omitempty"`
+		KnowledgeRelationship *KnowledgeGraphRelationship `json:"knowledgeRelationship,omitempty"`
+		KnowledgeEvidence     *KnowledgeGraphEvidence     `json:"knowledgeEvidence,omitempty"`
 	}
 )
 
-func SystemAnalysisFromEnt(analysis *ent.SystemAnalysis, entries []SystemAnalysisEntry) SystemAnalysis {
+func SystemAnalysisFromEnt(analysis *ent.SystemAnalysis) SystemAnalysis {
 	attrs := SystemAnalysisAttributes{
 		ScopeEntityId:   analysis.ScopeEntityID,
 		SubjectEntityId: analysis.SubjectEntityID,
 		ReferenceTime:   analysis.ReferenceTime,
-		Entries:         entries,
+		Nodes:           ConvertSlice(analysis.Edges.AnalysisEntities, SystemAnalysisNodeFromEnt),
+		Edges:           ConvertSlice(analysis.Edges.AnalysisRelationships, SystemAnalysisEdgeFromEnt),
+		Entries:         ConvertSlice(analysis.Edges.Entries, SystemAnalysisEntryWithSubjectsFromEnt),
 	}
 	return SystemAnalysis{Id: analysis.ID, Attributes: attrs}
 }
 
-func SystemAnalysisWithEntriesFromEnt(analysis *ent.SystemAnalysis) SystemAnalysis {
-	entries := ConvertSlice(analysis.Edges.Entries, SystemAnalysisEntryWithSubjectsFromEnt)
-	return SystemAnalysisFromEnt(analysis, entries)
+func SystemAnalysisNodeFromEnt(node *ent.SystemAnalysisEntity) SystemAnalysisNode {
+	position := SystemAnalysisDiagramPosition{}
+	if node.PosX != nil {
+		position.X = *node.PosX
+	}
+	if node.PosY != nil {
+		position.Y = *node.PosY
+	}
+	attrs := SystemAnalysisNodeAttributes{
+		Position:            position,
+		Hidden:              node.Hidden,
+		LabelOverride:       node.LabelOverride,
+		DescriptionOverride: node.DescriptionOverride,
+	}
+	if node.Edges.KnowledgeEntity != nil {
+		attrs.KnowledgeEntity = KnowledgeGraphEntityFromEnt(node.Edges.KnowledgeEntity)
+	}
+	return SystemAnalysisNode{Id: node.ID, Attributes: attrs}
+}
+
+func SystemAnalysisEdgeFromEnt(edge *ent.SystemAnalysisRelationship) SystemAnalysisEdge {
+	attrs := SystemAnalysisEdgeAttributes{
+		SourceNodeId:        edge.SourceAnalysisEntityID,
+		TargetNodeId:        edge.TargetAnalysisEntityID,
+		Hidden:              edge.Hidden,
+		LabelOverride:       edge.LabelOverride,
+		DescriptionOverride: edge.DescriptionOverride,
+	}
+	if edge.Edges.KnowledgeRelationship != nil {
+		attrs.KnowledgeRelationship = KnowledgeGraphRelationshipFromEnt(edge.Edges.KnowledgeRelationship)
+	}
+	return SystemAnalysisEdge{Id: edge.ID, Attributes: attrs}
 }
 
 func SystemAnalysisEntryFromEnt(entry *ent.SystemAnalysisEntry, subjects []SystemAnalysisEntrySubject) SystemAnalysisEntry {
@@ -158,10 +207,7 @@ func SystemAnalysisEntryWithSubjectsFromEnt(entry *ent.SystemAnalysisEntry) Syst
 
 func SystemAnalysisEntrySubjectFromEnt(subject *ent.SystemAnalysisEntrySubject) SystemAnalysisEntrySubject {
 	attrs := SystemAnalysisEntrySubjectAttributes{
-		Role:                    subject.Role,
-		KnowledgeEntityId:       subject.KnowledgeEntityID,
-		KnowledgeRelationshipId: subject.KnowledgeRelationshipID,
-		KnowledgeEvidenceId:     subject.KnowledgeEvidenceID,
+		Role: subject.Role,
 	}
 
 	if subject.KnowledgeEntityID != nil {
@@ -214,6 +260,11 @@ var UpdateSystemAnalysis = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
+type UpdateSystemAnalysisAttributes struct {
+	ScopeEntityId   *uuid.UUID `json:"scopeEntityId,omitempty"`
+	SubjectEntityId *uuid.UUID `json:"subjectEntityId,omitempty"`
+	ReferenceTime   *time.Time `json:"referenceTime,omitempty"`
+}
 type UpdateSystemAnalysisRequest IdRequestWithBody[UpdateSystemAnalysisAttributes]
 type UpdateSystemAnalysisResponse ItemResponse[SystemAnalysis]
 
@@ -232,6 +283,126 @@ type GetSystemAnalysisGraphRequest struct {
 	RelationshipKind []string  `query:"relationshipKind" required:"false"`
 }
 type GetSystemAnalysisGraphResponse ItemResponse[KnowledgeGraphView]
+
+var ListSystemAnalysisNodes = huma.Operation{
+	OperationID: "list-system-analysis-nodes",
+	Method:      http.MethodGet,
+	Path:        "/system_analysis/{id}/nodes",
+	Summary:     "List System Analysis Nodes",
+	Tags:        systemAnalysisTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListSystemAnalysisNodesRequest ListIdRequest
+type ListSystemAnalysisNodesResponse ListResponse[SystemAnalysisNode]
+
+var AddSystemAnalysisNode = huma.Operation{
+	OperationID: "add-system-analysis-node",
+	Method:      http.MethodPost,
+	Path:        "/system_analysis/{id}/nodes",
+	Summary:     "Add System Analysis Node",
+	Tags:        systemAnalysisTags,
+	Errors:      ErrorCodes(),
+}
+
+type AddSystemAnalysisNodeAttributes struct {
+	KnowledgeEntityId   uuid.UUID                     `json:"knowledgeEntityId"`
+	Position            SystemAnalysisDiagramPosition `json:"position"`
+	Hidden              *bool                         `json:"hidden,omitempty"`
+	LabelOverride       *string                       `json:"labelOverride,omitempty"`
+	DescriptionOverride *string                       `json:"descriptionOverride,omitempty"`
+}
+type AddSystemAnalysisNodeRequest IdRequestWithBody[AddSystemAnalysisNodeAttributes]
+type AddSystemAnalysisNodeResponse ItemResponse[SystemAnalysisNode]
+
+var UpdateSystemAnalysisNode = huma.Operation{
+	OperationID: "update-system-analysis-node",
+	Method:      http.MethodPatch,
+	Path:        "/system_analysis_nodes/{id}",
+	Summary:     "Update System Analysis Node",
+	Tags:        systemAnalysisTags,
+	Errors:      ErrorCodes(),
+}
+
+type UpdateSystemAnalysisNodeAttributes struct {
+	Position            *SystemAnalysisDiagramPosition `json:"position,omitempty"`
+	Hidden              *bool                          `json:"hidden,omitempty"`
+	LabelOverride       *string                        `json:"labelOverride,omitempty"`
+	DescriptionOverride *string                        `json:"descriptionOverride,omitempty"`
+}
+type UpdateSystemAnalysisNodeRequest IdRequestWithBody[UpdateSystemAnalysisNodeAttributes]
+type UpdateSystemAnalysisNodeResponse ItemResponse[SystemAnalysisNode]
+
+var DeleteSystemAnalysisNode = huma.Operation{
+	OperationID: "delete-system-analysis-node",
+	Method:      http.MethodDelete,
+	Path:        "/system_analysis_nodes/{id}",
+	Summary:     "Delete System Analysis Node",
+	Tags:        systemAnalysisTags,
+	Errors:      ErrorCodes(),
+}
+
+type DeleteSystemAnalysisNodeRequest IdRequest
+type DeleteSystemAnalysisNodeResponse EmptyResponse
+
+var ListSystemAnalysisEdges = huma.Operation{
+	OperationID: "list-system-analysis-edges",
+	Method:      http.MethodGet,
+	Path:        "/system_analysis/{id}/edges",
+	Summary:     "List System Analysis Edges",
+	Tags:        systemAnalysisTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListSystemAnalysisEdgesRequest ListIdRequest
+type ListSystemAnalysisEdgesResponse ListResponse[SystemAnalysisEdge]
+
+var AddSystemAnalysisEdge = huma.Operation{
+	OperationID: "add-system-analysis-edge",
+	Method:      http.MethodPost,
+	Path:        "/system_analysis/{id}/edges",
+	Summary:     "Add System Analysis Edge",
+	Tags:        systemAnalysisTags,
+	Errors:      ErrorCodes(),
+}
+
+type AddSystemAnalysisEdgeAttributes struct {
+	KnowledgeRelationshipId uuid.UUID `json:"knowledgeRelationshipId"`
+	Hidden                  *bool     `json:"hidden,omitempty"`
+	LabelOverride           *string   `json:"labelOverride,omitempty"`
+	DescriptionOverride     *string   `json:"descriptionOverride,omitempty"`
+}
+type AddSystemAnalysisEdgeRequest IdRequestWithBody[AddSystemAnalysisEdgeAttributes]
+type AddSystemAnalysisEdgeResponse ItemResponse[SystemAnalysisEdge]
+
+var UpdateSystemAnalysisEdge = huma.Operation{
+	OperationID: "update-system-analysis-edge",
+	Method:      http.MethodPatch,
+	Path:        "/system_analysis_edges/{id}",
+	Summary:     "Update System Analysis Edge",
+	Tags:        systemAnalysisTags,
+	Errors:      ErrorCodes(),
+}
+
+type UpdateSystemAnalysisEdgeAttributes struct {
+	Hidden              *bool   `json:"hidden,omitempty"`
+	LabelOverride       *string `json:"labelOverride,omitempty"`
+	DescriptionOverride *string `json:"descriptionOverride,omitempty"`
+}
+type UpdateSystemAnalysisEdgeRequest IdRequestWithBody[UpdateSystemAnalysisEdgeAttributes]
+type UpdateSystemAnalysisEdgeResponse ItemResponse[SystemAnalysisEdge]
+
+var DeleteSystemAnalysisEdge = huma.Operation{
+	OperationID: "delete-system-analysis-edge",
+	Method:      http.MethodDelete,
+	Path:        "/system_analysis_edges/{id}",
+	Summary:     "Delete System Analysis Edge",
+	Tags:        systemAnalysisTags,
+	Errors:      ErrorCodes(),
+}
+
+type DeleteSystemAnalysisEdgeRequest IdRequest
+type DeleteSystemAnalysisEdgeResponse EmptyResponse
 
 var ListSystemAnalysisEntries = huma.Operation{
 	OperationID: "list-system-analysis-entries",
@@ -254,6 +425,14 @@ var CreateSystemAnalysisEntry = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
+type CreateSystemAnalysisEntryAttributes struct {
+	Kind       string         `json:"kind" enum:"observation,context,decision,action,finding,recommendation"`
+	OccurredAt *time.Time     `json:"occurredAt,omitempty"`
+	Sequence   int            `json:"sequence"`
+	Title      string         `json:"title"`
+	Body       *string        `json:"body,omitempty"`
+	Properties map[string]any `json:"properties,omitempty"`
+}
 type CreateSystemAnalysisEntryRequest IdRequestWithBody[CreateSystemAnalysisEntryAttributes]
 type CreateSystemAnalysisEntryResponse ItemResponse[SystemAnalysisEntry]
 
@@ -266,6 +445,14 @@ var UpdateSystemAnalysisEntry = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
+type UpdateSystemAnalysisEntryAttributes struct {
+	Kind       *string        `json:"kind,omitempty" enum:"observation,context,decision,action,finding,recommendation"`
+	OccurredAt *time.Time     `json:"occurredAt,omitempty"`
+	Sequence   *int           `json:"sequence,omitempty"`
+	Title      *string        `json:"title,omitempty"`
+	Body       *string        `json:"body,omitempty"`
+	Properties map[string]any `json:"properties,omitempty"`
+}
 type UpdateSystemAnalysisEntryRequest IdRequestWithBody[UpdateSystemAnalysisEntryAttributes]
 type UpdateSystemAnalysisEntryResponse ItemResponse[SystemAnalysisEntry]
 
@@ -290,7 +477,13 @@ var AddSystemAnalysisEntrySubject = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type AddSystemAnalysisEntrySubjectRequest IdRequestWithBody[SetSystemAnalysisEntrySubjectAttributes]
+type AddSystemAnalysisEntrySubjectAttributes struct {
+	Role                    string     `json:"role"`
+	KnowledgeEntityId       *uuid.UUID `json:"knowledgeEntityId,omitempty"`
+	KnowledgeRelationshipId *uuid.UUID `json:"knowledgeRelationshipId,omitempty"`
+	KnowledgeEvidenceId     *uuid.UUID `json:"knowledgeEvidenceId,omitempty"`
+}
+type AddSystemAnalysisEntrySubjectRequest IdRequestWithBody[AddSystemAnalysisEntrySubjectAttributes]
 type AddSystemAnalysisEntrySubjectResponse ItemResponse[SystemAnalysisEntrySubject]
 
 var UpdateSystemAnalysisEntrySubject = huma.Operation{
@@ -302,6 +495,9 @@ var UpdateSystemAnalysisEntrySubject = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
+type UpdateSystemAnalysisEntrySubjectAttributes struct {
+	Role string `json:"role"`
+}
 type UpdateSystemAnalysisEntrySubjectRequest IdRequestWithBody[UpdateSystemAnalysisEntrySubjectAttributes]
 type UpdateSystemAnalysisEntrySubjectResponse ItemResponse[SystemAnalysisEntrySubject]
 

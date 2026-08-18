@@ -38,6 +38,64 @@ components:
       required:
         - data
       type: object
+    AddSystemAnalysisEdgeAttributes:
+      additionalProperties: false
+      properties:
+        descriptionOverride:
+          type: string
+        hidden:
+          type: boolean
+        knowledgeRelationshipId:
+          type: string
+        labelOverride:
+          type: string
+      required:
+        - knowledgeRelationshipId
+      type: object
+    AddSystemAnalysisEdgeRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/AddSystemAnalysisEdgeRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/AddSystemAnalysisEdgeAttributes"
+      required:
+        - attributes
+      type: object
+    AddSystemAnalysisEdgeResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/AddSystemAnalysisEdgeResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SystemAnalysisEdge"
+      required:
+        - data
+      type: object
+    AddSystemAnalysisEntrySubjectAttributes:
+      additionalProperties: false
+      properties:
+        knowledgeEntityId:
+          type: string
+        knowledgeEvidenceId:
+          type: string
+        knowledgeRelationshipId:
+          type: string
+        role:
+          type: string
+      required:
+        - role
+      type: object
     AddSystemAnalysisEntrySubjectRequestBody:
       additionalProperties: false
       properties:
@@ -49,7 +107,7 @@ components:
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/SetSystemAnalysisEntrySubjectAttributes"
+          $ref: "#/components/schemas/AddSystemAnalysisEntrySubjectAttributes"
       required:
         - attributes
       type: object
@@ -65,6 +123,53 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/SystemAnalysisEntrySubject"
+      required:
+        - data
+      type: object
+    AddSystemAnalysisNodeAttributes:
+      additionalProperties: false
+      properties:
+        descriptionOverride:
+          type: string
+        hidden:
+          type: boolean
+        knowledgeEntityId:
+          type: string
+        labelOverride:
+          type: string
+        position:
+          $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
+      required:
+        - knowledgeEntityId
+        - position
+      type: object
+    AddSystemAnalysisNodeRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/AddSystemAnalysisNodeRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/AddSystemAnalysisNodeAttributes"
+      required:
+        - attributes
+      type: object
+    AddSystemAnalysisNodeResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/AddSystemAnalysisNodeResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SystemAnalysisNode"
       required:
         - data
       type: object
@@ -3686,6 +3791,26 @@ components:
         - data
         - pagination
       type: object
+    ListResponseBodySystemAnalysisEdge:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodySystemAnalysisEdge.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/SystemAnalysisEdge"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
     ListResponseBodySystemAnalysisEntry:
       additionalProperties: false
       properties:
@@ -3699,6 +3824,26 @@ components:
         data:
           items:
             $ref: "#/components/schemas/SystemAnalysisEntry"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListResponseBodySystemAnalysisNode:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListResponseBodySystemAnalysisNode.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/SystemAnalysisNode"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -4555,20 +4700,6 @@ components:
       required:
         - data
       type: object
-    SetSystemAnalysisEntrySubjectAttributes:
-      additionalProperties: false
-      properties:
-        knowledgeEntityId:
-          type: string
-        knowledgeEvidenceId:
-          type: string
-        knowledgeRelationshipId:
-          type: string
-        role:
-          type: string
-      required:
-        - role
-      type: object
     StartIntegrationOAuthFlowResponseBody:
       additionalProperties: false
       properties:
@@ -4598,9 +4729,17 @@ components:
     SystemAnalysisAttributes:
       additionalProperties: false
       properties:
+        edges:
+          items:
+            $ref: "#/components/schemas/SystemAnalysisEdge"
+          type: array
         entries:
           items:
             $ref: "#/components/schemas/SystemAnalysisEntry"
+          type: array
+        nodes:
+          items:
+            $ref: "#/components/schemas/SystemAnalysisNode"
           type: array
         referenceTime:
           format: date-time
@@ -4610,7 +4749,54 @@ components:
         subjectEntityId:
           type: string
       required:
+        - nodes
+        - edges
         - entries
+      type: object
+    SystemAnalysisDiagramPosition:
+      additionalProperties: false
+      properties:
+        x:
+          format: double
+          type: number
+        "y":
+          format: double
+          type: number
+      required:
+        - x
+        - "y"
+      type: object
+    SystemAnalysisEdge:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/SystemAnalysisEdgeAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    SystemAnalysisEdgeAttributes:
+      additionalProperties: false
+      properties:
+        descriptionOverride:
+          type: string
+        hidden:
+          type: boolean
+        knowledgeRelationship:
+          $ref: "#/components/schemas/KnowledgeGraphRelationship"
+        labelOverride:
+          type: string
+        sourceNodeId:
+          type: string
+        targetNodeId:
+          type: string
+      required:
+        - knowledgeRelationship
+        - sourceNodeId
+        - targetNodeId
+        - hidden
       type: object
     SystemAnalysisEntry:
       additionalProperties: false
@@ -4675,16 +4861,10 @@ components:
       properties:
         knowledgeEntity:
           $ref: "#/components/schemas/KnowledgeGraphEntity"
-        knowledgeEntityId:
-          type: string
         knowledgeEvidence:
           $ref: "#/components/schemas/KnowledgeGraphEvidence"
-        knowledgeEvidenceId:
-          type: string
         knowledgeRelationship:
           $ref: "#/components/schemas/KnowledgeGraphRelationship"
-        knowledgeRelationshipId:
-          type: string
         role:
           type: string
         subjectId:
@@ -4699,6 +4879,35 @@ components:
         - role
         - subjectKind
         - subjectId
+      type: object
+    SystemAnalysisNode:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/SystemAnalysisNodeAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    SystemAnalysisNodeAttributes:
+      additionalProperties: false
+      properties:
+        descriptionOverride:
+          type: string
+        hidden:
+          type: boolean
+        knowledgeEntity:
+          $ref: "#/components/schemas/KnowledgeGraphEntity"
+        labelOverride:
+          type: string
+        position:
+          $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
+      required:
+        - knowledgeEntity
+        - position
+        - hidden
       type: object
     Task:
       additionalProperties: false
@@ -5615,6 +5824,46 @@ components:
         subjectEntityId:
           type: string
       type: object
+    UpdateSystemAnalysisEdgeAttributes:
+      additionalProperties: false
+      properties:
+        descriptionOverride:
+          type: string
+        hidden:
+          type: boolean
+        labelOverride:
+          type: string
+      type: object
+    UpdateSystemAnalysisEdgeRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateSystemAnalysisEdgeRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdateSystemAnalysisEdgeAttributes"
+      required:
+        - attributes
+      type: object
+    UpdateSystemAnalysisEdgeResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateSystemAnalysisEdgeResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SystemAnalysisEdge"
+      required:
+        - data
+      type: object
     UpdateSystemAnalysisEntryAttributes:
       additionalProperties: false
       properties:
@@ -5706,6 +5955,48 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/SystemAnalysisEntrySubject"
+      required:
+        - data
+      type: object
+    UpdateSystemAnalysisNodeAttributes:
+      additionalProperties: false
+      properties:
+        descriptionOverride:
+          type: string
+        hidden:
+          type: boolean
+        labelOverride:
+          type: string
+        position:
+          $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
+      type: object
+    UpdateSystemAnalysisNodeRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateSystemAnalysisNodeRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdateSystemAnalysisNodeAttributes"
+      required:
+        - attributes
+      type: object
+    UpdateSystemAnalysisNodeResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateSystemAnalysisNodeResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SystemAnalysisNode"
       required:
         - data
       type: object
@@ -14420,6 +14711,149 @@ paths:
       summary: Update System Analysis
       tags:
         - System Analysis
+  /system_analysis/{id}/edges:
+    get:
+      operationId: list-system-analysis-edges
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 10
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: search
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: archived
+          schema:
+            default: false
+            type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponseBodySystemAnalysisEdge"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List System Analysis Edges
+      tags:
+        - System Analysis
+    post:
+      operationId: add-system-analysis-edge
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddSystemAnalysisEdgeRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddSystemAnalysisEdgeResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Add System Analysis Edge
+      tags:
+        - System Analysis
   /system_analysis/{id}/entries:
     get:
       operationId: list-system-analysis-entries
@@ -14629,6 +15063,260 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Get System Analysis Graph
+      tags:
+        - System Analysis
+  /system_analysis/{id}/nodes:
+    get:
+      operationId: list-system-analysis-nodes
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 10
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: search
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: archived
+          schema:
+            default: false
+            type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponseBodySystemAnalysisNode"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List System Analysis Nodes
+      tags:
+        - System Analysis
+    post:
+      operationId: add-system-analysis-node
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddSystemAnalysisNodeRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddSystemAnalysisNodeResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Add System Analysis Node
+      tags:
+        - System Analysis
+  /system_analysis_edges/{id}:
+    delete:
+      operationId: delete-system-analysis-edge
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Delete System Analysis Edge
+      tags:
+        - System Analysis
+    patch:
+      operationId: update-system-analysis-edge
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSystemAnalysisEdgeRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateSystemAnalysisEdgeResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Update System Analysis Edge
       tags:
         - System Analysis
   /system_analysis_entries/{id}:
@@ -14912,6 +15600,117 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Update System Analysis Entry Subject
+      tags:
+        - System Analysis
+  /system_analysis_nodes/{id}:
+    delete:
+      operationId: delete-system-analysis-node
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Delete System Analysis Node
+      tags:
+        - System Analysis
+    patch:
+      operationId: update-system-analysis-node
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSystemAnalysisNodeRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateSystemAnalysisNodeResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Update System Analysis Node
       tags:
         - System Analysis
   /tasks:

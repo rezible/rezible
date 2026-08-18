@@ -164,7 +164,7 @@ export class SystemDiagramState {
 
 			const position = { x: event.pageX - x, y: event.pageY - y };
 			const knowledgeEntityId = this.addingEntityGhost.id;
-			this.analysis.addNode({ knowledgeEntityId, position, description: "" });
+			this.analysis.addNode({ knowledgeEntityId, position });
 			// TODO: check if success? show pending state?
 			this.setAddingEntityGhost();
 		}

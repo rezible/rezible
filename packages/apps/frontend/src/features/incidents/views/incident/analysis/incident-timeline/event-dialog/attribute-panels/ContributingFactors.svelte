@@ -1,21 +1,14 @@
 <script lang="ts">
-	import { mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
+	import { mdiPlus } from "@mdi/js";
 	import { Button } from "$components/ui/button";
 	import Icon from "$components/common/icon/Icon.svelte";
 	import { v4 as uuidv4 } from "uuid";
 	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
-	import {
-		listIncidentTimelineEventMetadataOptions,
-		type IncidentTimelineEventContributingFactor,
-	} from "$lib/api";
-	import { createQuery } from "@tanstack/svelte-query";
 	import { SvelteMap } from "svelte/reactivity";
 	import { useEventDialogAttributes } from "./attributes.svelte";
+	import type { TimelineEntryContributingFactor } from "../../entry-model";
 
 	const attributes = useEventDialogAttributes();
-
-	const metadataQuery = createQuery(() => listIncidentTimelineEventMetadataOptions());
-	const categories = $derived(metadataQuery.data?.data.contributingFactorCategories ?? []);
 
 	type FactorMenuOption = {
 		label: string;
@@ -24,30 +17,21 @@
 		description: string;
 		examples: string;
 	};
-	const factorTypeOptions = $derived.by(() => {
-		let options: FactorMenuOption[] = [];
-		categories.forEach((cat) => {
-			cat.attributes.factorTypes.forEach(({ id, attributes }) => {
-				options.push({
-					value: id,
-					label: attributes.name,
-					group: cat.attributes.name,
-					description: attributes.description,
-					examples: attributes.examples.join(", "),
-				});
-			});
-		});
-		return options;
-	});
+	const factorTypeOptions: FactorMenuOption[] = [];
 
 	const factorCategoryNames = $derived(
 		new SvelteMap(factorTypeOptions.map((opt) => [opt.value, opt.group ?? "Unknown Category"]))
 	);
 
-	let editFactor = $state<IncidentTimelineEventContributingFactor>();
+	let editFactor = $state<TimelineEntryContributingFactor>();
 	const selectedFactorType = $derived(
 		editFactor
-			? factorTypeOptions.find((opt) => opt.value === editFactor?.attributes.factorTypeId)
+			? (factorTypeOptions.find((opt) => opt.value === editFactor?.attributes.factorTypeId) ?? {
+					value: editFactor.attributes.factorTypeId,
+					label: editFactor.attributes.factorTypeId,
+					description: "",
+					examples: "",
+				})
 			: undefined
 	);
 
@@ -56,14 +40,8 @@
 		attributes: { factorTypeId: "", description: "", links: [] },
 	});
 
-	const setEditing = (f?: IncidentTimelineEventContributingFactor) => {
+	const setEditing = (f?: TimelineEntryContributingFactor) => {
 		editFactor = f ? $state.snapshot(f) : makeEmptyFactor();
-	};
-
-	const confirmRemoveFactor = (f: IncidentTimelineEventContributingFactor) => {
-		if (!confirm("Are you sure you want to remove this factor?")) return;
-		const newFactors = attributes.contributingFactors.filter(v => v.id !== f.id);
-		attributes.contributingFactors = newFactors;
 	};
 
 	const resetAddingState = () => {
@@ -145,10 +123,7 @@
 			</ListItem> -->
 		{/each}
 
-		<Button
-			color="primary"
-			onclick={() => setEditing()}
-		>
+		<Button color="primary" onclick={() => setEditing()}>
 			<span class="flex items-center gap-2 text-primary-content">
 				Add Factor
 				<Icon data={mdiPlus} />

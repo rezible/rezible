@@ -159,6 +159,14 @@ type (
 
 		GetSystemAnalysisGraph(context.Context, uuid.UUID, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
 
+		ListSystemAnalysisEntities(context.Context, uuid.UUID) (ent.SystemAnalysisEntities, error)
+		SetSystemAnalysisEntity(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntityMutation)) (*ent.SystemAnalysisEntity, error)
+		DeleteSystemAnalysisEntity(context.Context, uuid.UUID) error
+
+		ListSystemAnalysisRelationships(context.Context, uuid.UUID) (ent.SystemAnalysisRelationships, error)
+		SetSystemAnalysisRelationship(context.Context, uuid.UUID, func(*ent.SystemAnalysisRelationshipMutation)) (*ent.SystemAnalysisRelationship, error)
+		DeleteSystemAnalysisRelationship(context.Context, uuid.UUID) error
+
 		ListSystemAnalysisEntries(context.Context, uuid.UUID) (ent.SystemAnalysisEntries, error)
 		SetSystemAnalysisEntry(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntryMutation)) (*ent.SystemAnalysisEntry, error)
 		DeleteSystemAnalysisEntry(context.Context, uuid.UUID) error

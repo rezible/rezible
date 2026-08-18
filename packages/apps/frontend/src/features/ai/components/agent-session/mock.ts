@@ -7,26 +7,21 @@ export const mockAgentTurns: AgentTurn[] = [
 	{
 		id: "5ecdf9c2-7e81-49df-8350-80594169de89",
 		attributes: {
+			sequence: 2,
 			status: "completed",
 			finishReason: "stop",
-			parentTurnId: "71fe66df-9767-4d77-b945-88b612d54d80",
 			createdAt: isoMinutesAgo(2),
 			updatedAt: isoMinutesAgo(1),
-			state: {
-				sessionId: "mock",
-				messages: [{ role: "model", content: [{ text: "Investigation complete." }] }],
-				custom: { phase: "complete" },
-			},
 		},
 	},
 	{
 		id: "71fe66df-9767-4d77-b945-88b612d54d80",
 		attributes: {
+			sequence: 1,
 			status: "completed",
 			finishReason: "stop",
 			createdAt: isoMinutesAgo(12),
 			updatedAt: isoMinutesAgo(6),
-			state: { sessionId: "mock", messages: [], custom: { phase: "initial-context" } },
 		},
 	},
 ];
@@ -38,6 +33,5 @@ export const mockAgentSession: AgentSession = {
 		ownerUserId: "8c8c1b3d-6d54-4f31-8875-c8913f7e4ad7",
 		permissionScopes: ["incidents:read", "events:read", "topology:read"],
 		createdAt: isoMinutesAgo(12),
-		latestTurn: mockAgentTurns[0],
 	},
 };

@@ -24,12 +24,42 @@ export type AddIncidentDebriefUserMessageResponseBody = {
     data: IncidentDebriefMessage;
 };
 
+export type AddSystemAnalysisEdgeAttributes = {
+    descriptionOverride?: string;
+    hidden?: boolean;
+    knowledgeRelationshipId: string;
+    labelOverride?: string;
+};
+
+export type AddSystemAnalysisEdgeRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: AddSystemAnalysisEdgeAttributes;
+};
+
+export type AddSystemAnalysisEdgeResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemAnalysisEdge;
+};
+
+export type AddSystemAnalysisEntrySubjectAttributes = {
+    knowledgeEntityId?: string;
+    knowledgeEvidenceId?: string;
+    knowledgeRelationshipId?: string;
+    role: string;
+};
+
 export type AddSystemAnalysisEntrySubjectRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: SetSystemAnalysisEntrySubjectAttributes;
+    attributes: AddSystemAnalysisEntrySubjectAttributes;
 };
 
 export type AddSystemAnalysisEntrySubjectResponseBody = {
@@ -38,6 +68,30 @@ export type AddSystemAnalysisEntrySubjectResponseBody = {
      */
     readonly $schema?: string;
     data: SystemAnalysisEntrySubject;
+};
+
+export type AddSystemAnalysisNodeAttributes = {
+    descriptionOverride?: string;
+    hidden?: boolean;
+    knowledgeEntityId: string;
+    labelOverride?: string;
+    position: SystemAnalysisDiagramPosition;
+};
+
+export type AddSystemAnalysisNodeRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: AddSystemAnalysisNodeAttributes;
+};
+
+export type AddSystemAnalysisNodeResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemAnalysisNode;
 };
 
 export type AgentSession = {
@@ -1702,12 +1756,30 @@ export type ListResponseBodyRetrospectiveReview = {
     pagination: ResponsePagination;
 };
 
+export type ListResponseBodySystemAnalysisEdge = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<SystemAnalysisEdge>;
+    pagination: ResponsePagination;
+};
+
 export type ListResponseBodySystemAnalysisEntry = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
     data: Array<SystemAnalysisEntry>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodySystemAnalysisNode = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<SystemAnalysisNode>;
     pagination: ResponsePagination;
 };
 
@@ -2069,13 +2141,6 @@ export type SendOncallShiftHandoverResponseBody = {
     data: OncallShiftHandover;
 };
 
-export type SetSystemAnalysisEntrySubjectAttributes = {
-    knowledgeEntityId?: string;
-    knowledgeEvidenceId?: string;
-    knowledgeRelationshipId?: string;
-    role: string;
-};
-
 export type StartIntegrationOAuthFlowResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2090,10 +2155,31 @@ export type SystemAnalysis = {
 };
 
 export type SystemAnalysisAttributes = {
+    edges: Array<SystemAnalysisEdge>;
     entries: Array<SystemAnalysisEntry>;
+    nodes: Array<SystemAnalysisNode>;
     referenceTime?: string;
     scopeEntityId?: string;
     subjectEntityId?: string;
+};
+
+export type SystemAnalysisDiagramPosition = {
+    x: number;
+    y: number;
+};
+
+export type SystemAnalysisEdge = {
+    attributes: SystemAnalysisEdgeAttributes;
+    id: string;
+};
+
+export type SystemAnalysisEdgeAttributes = {
+    descriptionOverride?: string;
+    hidden: boolean;
+    knowledgeRelationship: KnowledgeGraphRelationship;
+    labelOverride?: string;
+    sourceNodeId: string;
+    targetNodeId: string;
 };
 
 export type SystemAnalysisEntry = {
@@ -2120,14 +2206,24 @@ export type SystemAnalysisEntrySubject = {
 
 export type SystemAnalysisEntrySubjectAttributes = {
     knowledgeEntity?: KnowledgeGraphEntity;
-    knowledgeEntityId?: string;
     knowledgeEvidence?: KnowledgeGraphEvidence;
-    knowledgeEvidenceId?: string;
     knowledgeRelationship?: KnowledgeGraphRelationship;
-    knowledgeRelationshipId?: string;
     role: string;
     subjectId: string;
     subjectKind: 'entity' | 'relationship' | 'evidence';
+};
+
+export type SystemAnalysisNode = {
+    attributes: SystemAnalysisNodeAttributes;
+    id: string;
+};
+
+export type SystemAnalysisNodeAttributes = {
+    descriptionOverride?: string;
+    hidden: boolean;
+    knowledgeEntity: KnowledgeGraphEntity;
+    labelOverride?: string;
+    position: SystemAnalysisDiagramPosition;
 };
 
 export type Task = {
@@ -2616,6 +2712,28 @@ export type UpdateSystemAnalysisAttributes = {
     subjectEntityId?: string;
 };
 
+export type UpdateSystemAnalysisEdgeAttributes = {
+    descriptionOverride?: string;
+    hidden?: boolean;
+    labelOverride?: string;
+};
+
+export type UpdateSystemAnalysisEdgeRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateSystemAnalysisEdgeAttributes;
+};
+
+export type UpdateSystemAnalysisEdgeResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemAnalysisEdge;
+};
+
 export type UpdateSystemAnalysisEntryAttributes = {
     body?: string;
     kind?: 'observation' | 'context' | 'decision' | 'action' | 'finding' | 'recommendation';
@@ -2661,6 +2779,29 @@ export type UpdateSystemAnalysisEntrySubjectResponseBody = {
      */
     readonly $schema?: string;
     data: SystemAnalysisEntrySubject;
+};
+
+export type UpdateSystemAnalysisNodeAttributes = {
+    descriptionOverride?: string;
+    hidden?: boolean;
+    labelOverride?: string;
+    position?: SystemAnalysisDiagramPosition;
+};
+
+export type UpdateSystemAnalysisNodeRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateSystemAnalysisNodeAttributes;
+};
+
+export type UpdateSystemAnalysisNodeResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemAnalysisNode;
 };
 
 export type UpdateSystemAnalysisRequestBody = {
@@ -9211,6 +9352,105 @@ export type UpdateSystemAnalysisResponses = {
 
 export type UpdateSystemAnalysisResponse = UpdateSystemAnalysisResponses[keyof UpdateSystemAnalysisResponses];
 
+export type ListSystemAnalysisEdgesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/system_analysis/{id}/edges';
+};
+
+export type ListSystemAnalysisEdgesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListSystemAnalysisEdgesError = ListSystemAnalysisEdgesErrors[keyof ListSystemAnalysisEdgesErrors];
+
+export type ListSystemAnalysisEdgesResponses = {
+    /**
+     * OK
+     */
+    200: ListResponseBodySystemAnalysisEdge;
+};
+
+export type ListSystemAnalysisEdgesResponse = ListSystemAnalysisEdgesResponses[keyof ListSystemAnalysisEdgesResponses];
+
+export type AddSystemAnalysisEdgeData = {
+    body: AddSystemAnalysisEdgeRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis/{id}/edges';
+};
+
+export type AddSystemAnalysisEdgeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type AddSystemAnalysisEdgeError = AddSystemAnalysisEdgeErrors[keyof AddSystemAnalysisEdgeErrors];
+
+export type AddSystemAnalysisEdgeResponses = {
+    /**
+     * OK
+     */
+    200: AddSystemAnalysisEdgeResponseBody;
+};
+
+export type AddSystemAnalysisEdgeResponse = AddSystemAnalysisEdgeResponses[keyof AddSystemAnalysisEdgeResponses];
+
 export type ListSystemAnalysisEntriesData = {
     body?: never;
     path: {
@@ -9359,6 +9599,199 @@ export type GetSystemAnalysisGraphResponses = {
 };
 
 export type GetSystemAnalysisGraphResponse = GetSystemAnalysisGraphResponses[keyof GetSystemAnalysisGraphResponses];
+
+export type ListSystemAnalysisNodesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/system_analysis/{id}/nodes';
+};
+
+export type ListSystemAnalysisNodesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListSystemAnalysisNodesError = ListSystemAnalysisNodesErrors[keyof ListSystemAnalysisNodesErrors];
+
+export type ListSystemAnalysisNodesResponses = {
+    /**
+     * OK
+     */
+    200: ListResponseBodySystemAnalysisNode;
+};
+
+export type ListSystemAnalysisNodesResponse = ListSystemAnalysisNodesResponses[keyof ListSystemAnalysisNodesResponses];
+
+export type AddSystemAnalysisNodeData = {
+    body: AddSystemAnalysisNodeRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis/{id}/nodes';
+};
+
+export type AddSystemAnalysisNodeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type AddSystemAnalysisNodeError = AddSystemAnalysisNodeErrors[keyof AddSystemAnalysisNodeErrors];
+
+export type AddSystemAnalysisNodeResponses = {
+    /**
+     * OK
+     */
+    200: AddSystemAnalysisNodeResponseBody;
+};
+
+export type AddSystemAnalysisNodeResponse = AddSystemAnalysisNodeResponses[keyof AddSystemAnalysisNodeResponses];
+
+export type DeleteSystemAnalysisEdgeData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_edges/{id}';
+};
+
+export type DeleteSystemAnalysisEdgeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type DeleteSystemAnalysisEdgeError = DeleteSystemAnalysisEdgeErrors[keyof DeleteSystemAnalysisEdgeErrors];
+
+export type DeleteSystemAnalysisEdgeResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteSystemAnalysisEdgeResponse = DeleteSystemAnalysisEdgeResponses[keyof DeleteSystemAnalysisEdgeResponses];
+
+export type UpdateSystemAnalysisEdgeData = {
+    body: UpdateSystemAnalysisEdgeRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_edges/{id}';
+};
+
+export type UpdateSystemAnalysisEdgeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateSystemAnalysisEdgeError = UpdateSystemAnalysisEdgeErrors[keyof UpdateSystemAnalysisEdgeErrors];
+
+export type UpdateSystemAnalysisEdgeResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemAnalysisEdgeResponseBody;
+};
+
+export type UpdateSystemAnalysisEdgeResponse = UpdateSystemAnalysisEdgeResponses[keyof UpdateSystemAnalysisEdgeResponses];
 
 export type DeleteSystemAnalysisEntryData = {
     body?: never;
@@ -9594,6 +10027,100 @@ export type UpdateSystemAnalysisEntrySubjectResponses = {
 };
 
 export type UpdateSystemAnalysisEntrySubjectResponse = UpdateSystemAnalysisEntrySubjectResponses[keyof UpdateSystemAnalysisEntrySubjectResponses];
+
+export type DeleteSystemAnalysisNodeData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_nodes/{id}';
+};
+
+export type DeleteSystemAnalysisNodeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type DeleteSystemAnalysisNodeError = DeleteSystemAnalysisNodeErrors[keyof DeleteSystemAnalysisNodeErrors];
+
+export type DeleteSystemAnalysisNodeResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteSystemAnalysisNodeResponse = DeleteSystemAnalysisNodeResponses[keyof DeleteSystemAnalysisNodeResponses];
+
+export type UpdateSystemAnalysisNodeData = {
+    body: UpdateSystemAnalysisNodeRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_nodes/{id}';
+};
+
+export type UpdateSystemAnalysisNodeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateSystemAnalysisNodeError = UpdateSystemAnalysisNodeErrors[keyof UpdateSystemAnalysisNodeErrors];
+
+export type UpdateSystemAnalysisNodeResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemAnalysisNodeResponseBody;
+};
+
+export type UpdateSystemAnalysisNodeResponse = UpdateSystemAnalysisNodeResponses[keyof UpdateSystemAnalysisNodeResponses];
 
 export type ListTasksData = {
     body?: never;

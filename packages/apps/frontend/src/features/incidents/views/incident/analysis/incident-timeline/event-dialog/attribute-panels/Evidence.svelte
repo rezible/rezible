@@ -1,20 +1,20 @@
 <script lang="ts">
 	import type { Component } from "svelte";
 	import { v4 as uuidv4 } from "uuid";
-	import type { IncidentTimelineEventEvidence, IncidentTimelineEventEvidenceAttributes } from "$lib/api";
-	import { mdiPencil, mdiPlus, mdiSlack, mdiTrashCan, mdiWeb } from "@mdi/js";
+	import { mdiPlus, mdiSlack, mdiWeb } from "@mdi/js";
 	import Icon from "$components/common/icon/Icon.svelte";
 	import { Button } from "$components/ui/button";
 	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import Slack from "./data-sources/Slack.svelte";
 	import Url from "./data-sources/Url.svelte";
 	import { useEventDialogAttributes } from "./attributes.svelte";
+	import type { TimelineEntryEvidence, TimelineEntryEvidenceAttributes } from "../../entry-model";
 
 	const attributes = useEventDialogAttributes();
 
-	type MenuOption<T extends any> = { label: string; value: T, icon: string };
+	type MenuOption<T> = { label: string; value: T; icon: string };
 
-	type DataSourceComponent = Component<{ dataValue: string }, {}, "dataValue">;
+	type DataSourceComponent = Component<{ dataValue: string }, Record<string, never>, "dataValue">;
 	type DataSourceMenuOption = MenuOption<string> & { component: DataSourceComponent };
 	const dataSourceOptions: DataSourceMenuOption[] = [
 		{ value: "slack", label: "Slack", icon: mdiSlack, component: Slack },
@@ -24,11 +24,10 @@
 		{ value: "url", label: "Web URL", icon: mdiWeb, component: Url },
 	];
 
-	let editing = $state<IncidentTimelineEventEvidence>();
+	let editing = $state<TimelineEntryEvidence>();
 	const editOption = $derived(
 		editing ? dataSourceOptions.find((o) => o.value === editing?.attributes.source) : undefined
 	);
-	const setEditing = (ev: IncidentTimelineEventEvidence) => (editing = $state.snapshot(ev));
 	const cancelEditing = () => (editing = undefined);
 	const confirmEdit = () => {
 		if (!editing) return;
@@ -38,7 +37,7 @@
 		editing = undefined;
 	};
 
-	let adding = $state<IncidentTimelineEventEvidenceAttributes>();
+	let adding = $state<TimelineEntryEvidenceAttributes>();
 	const addOption = $derived(
 		adding ? dataSourceOptions.find((o) => o.value === adding?.source) : undefined
 	);
@@ -49,13 +48,6 @@
 		if (!adding) return;
 		attributes.evidence.push({ id: uuidv4(), attributes: $state.snapshot(adding) });
 		adding = undefined;
-	};
-
-	const confirmDelete = (ev: IncidentTimelineEventEvidence) => {
-		if (!confirm("Are you sure you want to delete this evidence?")) return;
-		const idx = attributes.evidence.findIndex((e) => e.id === ev.id);
-		if (idx === -1) return;
-		attributes.evidence.splice(idx, 1);
 	};
 </script>
 
@@ -108,10 +100,7 @@
 			</ListItem> -->
 		{/each}
 
-		<Button
-			color="primary"
-			onclick={setAddingNew}
-		>
+		<Button color="primary" onclick={setAddingNew}>
 			<span class="flex items-center gap-2 text-primary-content">
 				Add Evidence
 				<Icon data={mdiPlus} />

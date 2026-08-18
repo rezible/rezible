@@ -16,8 +16,10 @@ import (
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	saentity "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
+	sarel "github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
@@ -119,6 +121,100 @@ func (s *SystemAnalysisServiceSuite) createGraphFixture() systemAnalysisGraphFix
 		Relationship: relationship,
 		Evidence:     evidence,
 	}
+}
+
+func (s *SystemAnalysisServiceSuite) TestAnalysisEntityMutationsAndDelete() {
+	ctx := s.SeedTenantContext()
+	fixture := s.createGraphFixture()
+	svc := s.service(&KnowledgeGraphService{db: s.Database()})
+	analysis := s.createAnalysis()
+
+	node, createErr := svc.SetSystemAnalysisEntity(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntityMutation) {
+		m.SetAnalysisID(analysis.ID)
+		m.SetKnowledgeEntityID(fixture.Source.ID)
+		m.SetPosX(10)
+		m.SetPosY(20)
+		m.SetDescriptionOverride("checkout service")
+	})
+	s.Require().NoError(createErr)
+	s.Equal(fixture.Source.ID, node.KnowledgeEntityID)
+	s.Require().NotNil(node.PosX)
+	s.Require().NotNil(node.PosY)
+	s.Equal(10.0, *node.PosX)
+	s.Equal(20.0, *node.PosY)
+	s.Require().NotNil(node.Edges.KnowledgeEntity)
+	s.NotEmpty(node.Edges.KnowledgeEntity.Edges.Aliases)
+
+	_, retargetErr := svc.SetSystemAnalysisEntity(ctx, node.ID, func(m *ent.SystemAnalysisEntityMutation) {
+		m.SetKnowledgeEntityID(fixture.Target.ID)
+	})
+	s.ErrorIs(retargetErr, rez.ErrInvalidInput)
+
+	updated, updateErr := svc.SetSystemAnalysisEntity(ctx, node.ID, func(m *ent.SystemAnalysisEntityMutation) {
+		m.SetPosX(30)
+		m.SetPosY(40)
+		m.SetHidden(true)
+	})
+	s.Require().NoError(updateErr)
+	s.Equal(30.0, *updated.PosX)
+	s.Equal(40.0, *updated.PosY)
+	s.True(updated.Hidden)
+
+	nodes, listErr := svc.ListSystemAnalysisEntities(ctx, analysis.ID)
+	s.Require().NoError(listErr)
+	s.Require().Len(nodes, 1)
+	s.Equal(node.ID, nodes[0].ID)
+
+	s.Require().NoError(svc.DeleteSystemAnalysisEntity(ctx, node.ID))
+	nodeQuery := s.Client(ctx).SystemAnalysisEntity.Query().
+		Where(saentity.ID(node.ID))
+	s.Equal(0, nodeQuery.CountX(ctx))
+}
+
+func (s *SystemAnalysisServiceSuite) TestAnalysisRelationshipDerivesEndpointEntities() {
+	ctx := s.SeedTenantContext()
+	fixture := s.createGraphFixture()
+	svc := s.service(&KnowledgeGraphService{db: s.Database()})
+	analysis := s.createAnalysis()
+
+	relationship, createErr := svc.SetSystemAnalysisRelationship(ctx, uuid.Nil, func(m *ent.SystemAnalysisRelationshipMutation) {
+		m.SetAnalysisID(analysis.ID)
+		m.SetKnowledgeRelationshipID(fixture.Relationship.ID)
+		m.SetDescriptionOverride("service uses database")
+	})
+	s.Require().NoError(createErr)
+	s.Equal(fixture.Relationship.ID, relationship.KnowledgeRelationshipID)
+	s.Require().NotNil(relationship.Edges.SourceEntity)
+	s.Require().NotNil(relationship.Edges.TargetEntity)
+	s.Equal(fixture.Source.ID, relationship.Edges.SourceEntity.KnowledgeEntityID)
+	s.Equal(fixture.Target.ID, relationship.Edges.TargetEntity.KnowledgeEntityID)
+	s.Require().NotNil(relationship.Edges.KnowledgeRelationship)
+
+	nodes, listNodesErr := svc.ListSystemAnalysisEntities(ctx, analysis.ID)
+	s.Require().NoError(listNodesErr)
+	s.Require().Len(nodes, 2)
+	relationships, listRelationshipsErr := svc.ListSystemAnalysisRelationships(ctx, analysis.ID)
+	s.Require().NoError(listRelationshipsErr)
+	s.Require().Len(relationships, 1)
+
+	_, retargetErr := svc.SetSystemAnalysisRelationship(ctx, relationship.ID, func(m *ent.SystemAnalysisRelationshipMutation) {
+		m.SetKnowledgeRelationshipID(uuid.New())
+	})
+	s.ErrorIs(retargetErr, rez.ErrInvalidInput)
+
+	layout := map[string]any{"curve": "smooth"}
+	updated, updateErr := svc.SetSystemAnalysisRelationship(ctx, relationship.ID, func(m *ent.SystemAnalysisRelationshipMutation) {
+		m.SetHidden(true)
+		m.SetLayout(layout)
+	})
+	s.Require().NoError(updateErr)
+	s.True(updated.Hidden)
+	s.Equal(layout, updated.Layout)
+
+	s.Require().NoError(svc.DeleteSystemAnalysisEntity(ctx, relationship.SourceAnalysisEntityID))
+	relationshipQuery := s.Client(ctx).SystemAnalysisRelationship.Query().
+		Where(sarel.ID(relationship.ID))
+	s.Equal(0, relationshipQuery.CountX(ctx))
 }
 
 func (s *SystemAnalysisServiceSuite) TestListEntriesOrdersAndLoadsSubjects() {

@@ -1,22 +1,33 @@
-import type { IncidentTimelineEventDecisionContext, IncidentTimelineEventAttributes, IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence, IncidentTimelineEventSystemContext, Incident } from "$lib/api";
+import type { Incident } from "$lib/api";
 import { createMentionEditor } from "$src/components/tiptap-editor/editors";
 import type { Content } from "@tiptap/core";
-import {now, getLocalTimeZone, type ZonedDateTime, parseAbsoluteToLocal} from '@internationalized/date';
+import { now, getLocalTimeZone, type ZonedDateTime, parseAbsoluteToLocal } from "@internationalized/date";
 import { Context } from "runed";
+import {
+	makeDefaultDecisionContext,
+	type TimelineAnalysisEntryAttributes,
+	type TimelineEntryContributingFactor,
+	type TimelineEntryDecisionContext,
+	type TimelineEntryEvidence,
+	type TimelineEntrySystemContext,
+} from "../../entry-model";
 
 const makeTimeAnchor = (from?: string): ZonedDateTime => {
 	if (from) return parseAbsoluteToLocal(from);
 	return now(getLocalTimeZone());
 };
 
-const makeDefaultDecisionContext = () => ({
-	optionsConsidered: [],
-	constraints: [],
-	decisionRationale: "",
-});
-
 type DescriptionEditor = ReturnType<typeof createMentionEditor> | null;
-type EventKind = IncidentTimelineEventAttributes["kind"];
+type EventKind = TimelineAnalysisEntryAttributes["kind"];
+
+const parseDescriptionContent = (description?: string): Content | undefined => {
+	if (!description) return undefined;
+	try {
+		return JSON.parse(description) as Content;
+	} catch {
+		return description;
+	}
+};
 
 export class TimelineEventDialogAttributes {
 	kind = $state<EventKind>("observation");
@@ -25,15 +36,15 @@ export class TimelineEventDialogAttributes {
 	descriptionEditor = $state<DescriptionEditor>(null);
 	timestamp = $state<ZonedDateTime>(makeTimeAnchor());
 	isKey = $state(false);
-	decisionContext = $state<IncidentTimelineEventDecisionContext>(makeDefaultDecisionContext());
-	contributingFactors = $state<IncidentTimelineEventContributingFactor[]>([]);
-	evidence = $state<IncidentTimelineEventEvidence[]>([]);
-	systemContext = $state<IncidentTimelineEventSystemContext[]>([]);
+	decisionContext = $state<TimelineEntryDecisionContext>(makeDefaultDecisionContext());
+	contributingFactors = $state<TimelineEntryContributingFactor[]>([]);
+	evidence = $state<TimelineEntryEvidence[]>([]);
+	systemContext = $state<TimelineEntrySystemContext[]>([]);
 
-	init(inc?: Incident, e?: Partial<IncidentTimelineEventAttributes>) {
+	init(inc?: Incident, e?: Partial<TimelineAnalysisEntryAttributes>) {
 		this.kind = $state.snapshot(e?.kind) ?? "observation";
 		this.title = $state.snapshot(e?.title) ?? "";
-		this.descriptionContent = (!!e?.description) ? JSON.parse(e.description) as Content : undefined;
+		this.descriptionContent = parseDescriptionContent(e?.description);
 		this.isKey = $state.snapshot(e?.isKey) ?? false;
 		this.timestamp = makeTimeAnchor(e?.timestamp ?? inc?.attributes.openedAt); // TODO: use incident start time
 		this.decisionContext = $state.snapshot(e?.decisionContext) ?? makeDefaultDecisionContext();
@@ -47,11 +58,14 @@ export class TimelineEventDialogAttributes {
 	}
 
 	mountDescriptionEditor() {
-		this.descriptionEditor = createMentionEditor(this.descriptionContent ?? "", "cursor-text focus:outline-none min-h-20");
+		this.descriptionEditor = createMentionEditor(
+			this.descriptionContent ?? "",
+			"cursor-text focus:outline-none min-h-20"
+		);
 		return () => {
 			this.descriptionEditor?.destroy();
 			this.descriptionEditor = null;
-		}
+		};
 	}
 
 	getDescriptionContent() {
@@ -70,7 +84,7 @@ export class TimelineEventDialogAttributes {
 			contributingFactors: this.contributingFactors,
 			evidence: this.evidence,
 			systemContext: this.systemContext,
-		})
+		});
 	}
 }
 

@@ -9,46 +9,40 @@
 	type Props = {
 		containerRect: DOMRect;
 		item?: TimelineItem;
-		clickPos: {x: number; y: number};
+		clickPos: { x: number; y: number };
 		timestamp: ZonedDateTime;
 		close: () => void;
 	};
-	const {item, containerRect, clickPos, timestamp, close}: Props = $props();
+	const { item, containerRect, clickPos, timestamp, close }: Props = $props();
 
 	const timelineController = useIncidentTimelineController();
 	const eventDialog = useEventDialog();
 
-	const onClicked = (e: MouseEvent) => {e.stopPropagation()};
+	const onClicked = (e: MouseEvent) => {
+		e.stopPropagation();
+	};
 
 	const onAddEventClick = () => {
-		eventDialog.setCreating({timestamp: timestamp.toAbsoluteString()})
+		eventDialog.setCreating({ timestamp: timestamp.toAbsoluteString() });
 		close();
-	}
+	};
 
-	const itemId = $derived(item?.id.toString())
-	const event = $derived(itemId && timelineController.events.events.find(e => (e.id === itemId)));
+	const itemId = $derived(item?.id.toString());
+	const event = $derived(itemId && timelineController.events.events.find((entry) => entry.id === itemId));
 
 	const onEditEventClick = () => {
 		if (!event) return;
 		eventDialog.setEditing(event);
 		close();
-	}
+	};
 </script>
 
 <AnalysisContextMenu title="Timeline Actions" {containerRect} {clickPos}>
-	<div 
-		id="timeline-ctx-container"
-		onclick={onClicked}
-		role="presentation"
-	>
+	<div id="timeline-ctx-container" onclick={onClicked} role="presentation">
 		{#if event}
-			<Button onclick={onEditEventClick}>
-				Edit Event
-			</Button>
+			<Button onclick={onEditEventClick}>Edit Event</Button>
 		{/if}
-		
-		<Button onclick={onAddEventClick}>
-			Add New Event
-		</Button>
+
+		<Button onclick={onAddEventClick}>Add New Event</Button>
 	</div>
 </AnalysisContextMenu>

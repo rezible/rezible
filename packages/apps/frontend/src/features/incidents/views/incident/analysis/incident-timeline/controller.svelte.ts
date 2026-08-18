@@ -1,45 +1,73 @@
 import { mount, onMount, tick, unmount } from "svelte";
-import { Timeline, type DataGroup, type DataItemCollectionType, type TimelineItem, type TimelineOptions } from "vis-timeline";
+import {
+	Timeline,
+	type DataGroup,
+	type DataItemCollectionType,
+	type TimelineItem,
+	type TimelineOptions,
+} from "vis-timeline";
 import { DataSet } from "vis-data";
 
-import { createQuery, QueryClient, useQueryClient } from "@tanstack/svelte-query";
+import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
-import { listIncidentTimelineEventsOptions, listIncidentMilestonesOptions, type Incident, type IncidentTimelineEvent, type IncidentMilestone } from "$lib/api";
+import {
+	listIncidentMilestonesOptions,
+	listSystemAnalysisEntriesOptions,
+	type Incident,
+	type IncidentMilestone,
+} from "$lib/api";
 import { useIncidentView } from "$features/incidents/views/incident";
 
-import IncidentTimelineEventItemContent, { type Props as TimelineEventComponentProps } from "./IncidentTimelineEventItemContent.svelte";
-import IncidentTimelineMilestoneItemContent, { type Props as TimelineMilestoneComponentProps } from "./IncidentTimelineMilestoneItemContent.svelte";
+import IncidentTimelineEventItemContent, {
+	type Props as TimelineEventComponentProps,
+} from "./IncidentTimelineEventItemContent.svelte";
+import IncidentTimelineMilestoneItemContent, {
+	type Props as TimelineMilestoneComponentProps,
+} from "./IncidentTimelineMilestoneItemContent.svelte";
 import { SvelteSet } from "svelte/reactivity";
 import { initEventDialog } from "./event-dialog/controller.svelte";
 import { initMilestonesDialog } from "./milestones-dialog/controller.svelte";
+import { systemAnalysisEntryToTimelineEntry, type TimelineAnalysisEntry } from "./entry-model";
 
 const IncidentGroup = "incident";
 const EventsGroup = "events";
 const MilestonesGroup = "milestones";
 
+type TimelineSelectEvent = {
+	items: string[];
+};
+
+type TimelineRangeChangeEvent = {
+	start: Date;
+	end: Date;
+};
+
 export type TimelineRange = {
 	start: number;
 	end: number;
-}
+};
 
 const OneHour = 1000 * 60 * 60;
 
 const flushItemsAndRedrawTimeline = (i: DataSet<TimelineItem>, tl?: Timeline) => {
-	tick().then(() => {i.flush?.(); tl?.redraw()});
-}
+	tick().then(() => {
+		i.flush?.();
+		tl?.redraw();
+	});
+};
 
 class TimelineEventElement {
 	props = $state<TimelineEventComponentProps>({ selected: false });
 	ref = document.createElement("div");
 	component: ReturnType<typeof mount> | undefined;
 
-	constructor(event: IncidentTimelineEvent) {
+	constructor(event: TimelineAnalysisEntry) {
 		this.ref.setAttribute("event-id", $state.snapshot(event.id));
 		this.props.event = event;
 		tick().then(() => {
-			this.component = mount(IncidentTimelineEventItemContent, { target: this.ref, props: this.props });	
-		})
+			this.component = mount(IncidentTimelineEventItemContent, { target: this.ref, props: this.props });
+		});
 	}
 
 	unmount() {
@@ -48,34 +76,39 @@ class TimelineEventElement {
 	}
 }
 
-const createTimelineEventItem = (e: IncidentTimelineEvent, ref: HTMLElement): TimelineItem => {
-	return { 
-		id: e.id, 
+const createTimelineEventItem = (e: TimelineAnalysisEntry, ref: HTMLElement): TimelineItem => {
+	return {
+		id: e.id,
 		start: new Date(e.attributes.timestamp),
 		type: "box",
 		group: EventsGroup,
 		// subgroup: "foo",
 		content: ref,
-	}
-}
+	};
+};
 
 export const isEventItem = (item: TimelineItem) => {
-	return (item.group === EventsGroup);
-}
+	return item.group === EventsGroup;
+};
 
 const getMilestoneIds = (id: string) => {
-	return [id + "_bg", id + "_box"]
+	return [id + "_bg", id + "_box"];
 };
 
 const getBackgroundColorForMilestoneKind = (kind: IncidentMilestone["attributes"]["kind"]) => {
 	switch (kind) {
-		case "impact": return "background-color: #f6ad55;";
-		case "detection": return "background-color:rgb(74, 163, 144);";
-		case "investigation": return "background-color:rgb(107, 39, 149);";
-		case "mitigation": return "background-color:rgb(136, 186, 61);";
-		case "resolution": return "background-color: #48bb78;";
+		case "impact":
+			return "background-color: #f6ad55;";
+		case "detection":
+			return "background-color:rgb(74, 163, 144);";
+		case "investigation":
+			return "background-color:rgb(107, 39, 149);";
+		case "mitigation":
+			return "background-color:rgb(136, 186, 61);";
+		case "resolution":
+			return "background-color: #48bb78;";
 	}
-}
+};
 
 const createMilestoneTimelineItems = (el: TimelineMilestoneElement, ms: IncidentMilestone, endTime: Date) => {
 	const start = new Date(ms.attributes.timestamp);
@@ -101,16 +134,16 @@ const createMilestoneTimelineItems = (el: TimelineMilestoneElement, ms: Incident
 		content: el.ref,
 		align: "left",
 		start,
-	}
+	};
 
 	return [bgItem, boxItem];
-}
+};
 
 const createIncidentWindowTimelineItems = (r: TimelineRange) => {
 	const windowKey = "incident-window";
 	const windowBg: TimelineItem = {
 		id: `${windowKey}-bg`,
-		start: r.start, 
+		start: r.start,
 		end: r.end,
 		type: "background",
 		content: "",
@@ -137,33 +170,40 @@ const createIncidentWindowTimelineItems = (r: TimelineRange) => {
 		start: r.end,
 	};
 	return [windowBg, windowStartPoint, windowEndPoint];
-}
+};
 
 export const isMilestoneItem = (item: TimelineItem) => {
-	return (item.group === MilestonesGroup);
-}
+	return item.group === MilestonesGroup;
+};
 
 class TimelineEventsState {
 	items: DataSet<TimelineItem>;
-	incidentId = $state.raw("");
+	analysisId = $state.raw("");
 	timeline = $state.raw<Timeline>();
 	timelineElements = new Map<string, TimelineEventElement>();
 
-	queryClient = $state<QueryClient>();
 	eventsQuery = createQuery(() => ({
-		...listIncidentTimelineEventsOptions({ path: { id: this.incidentId } }),
-		enabled: !!this.incidentId,
+		...listSystemAnalysisEntriesOptions({ path: { id: this.analysisId } }),
+		enabled: !!this.analysisId,
 	}));
-	events = $derived(this.eventsQuery.data?.data || []);
+	events = $derived(
+		(this.eventsQuery.data?.data ?? [])
+			.map(systemAnalysisEntryToTimelineEntry)
+			.filter((event): event is TimelineAnalysisEntry => !!event)
+	);
 
 	constructor(items: DataSet<TimelineItem>) {
 		this.items = items;
-		this.queryClient = useQueryClient();
-		watch(() => this.events, evs => {this.onEventsDataUpdated(evs)});
+		watch(
+			() => this.events,
+			(evs) => {
+				this.onEventsDataUpdated(evs);
+			}
+		);
 	}
 
-	setIncident(inc: Incident) {
-		this.incidentId = inc.id;
+	setAnalysis(id?: string) {
+		this.analysisId = id ?? "";
 	}
 
 	setTimeline(t: Timeline) {
@@ -171,12 +211,14 @@ class TimelineEventsState {
 	}
 
 	clear() {
-		this.timelineElements.forEach(c => {c.unmount()});
+		this.timelineElements.forEach((c) => {
+			c.unmount();
+		});
 		this.timelineElements.clear();
 	}
 
-	onEventsDataUpdated(events: IncidentTimelineEvent[]) {
-		const eventsMap = new Map(events.map(ev => [ev.id, ev]));
+	onEventsDataUpdated(events: TimelineAnalysisEntry[]) {
+		const eventsMap = new Map(events.map((ev) => [ev.id, ev]));
 		const removeIds: string[] = [];
 
 		this.items.forEach((item, rawId) => {
@@ -185,13 +227,15 @@ class TimelineEventsState {
 			if (!eventsMap.has(id)) removeIds.push(id);
 		});
 
-		this.removeEventIds(removeIds)
-		eventsMap.forEach(ev => {this.updateEvent(ev)});
+		this.removeEventIds(removeIds);
+		eventsMap.forEach((ev) => {
+			this.updateEvent(ev);
+		});
 
 		flushItemsAndRedrawTimeline(this.items, this.timeline);
 	}
 
-	updateEvent(event: IncidentTimelineEvent) {
+	updateEvent(event: TimelineAnalysisEntry) {
 		let el = this.timelineElements.get(event.id);
 		if (!el) {
 			el = new TimelineEventElement(event);
@@ -203,14 +247,14 @@ class TimelineEventsState {
 
 	removeEventIds(ids: string[]) {
 		this.items.remove(ids);
-		ids.forEach(id => {
+		ids.forEach((id) => {
 			const el = this.timelineElements.get(id);
 			if (el) el.unmount();
 			this.timelineElements.delete(id);
-		})
+		});
 	}
 
-	onEventAdded(event: IncidentTimelineEvent) {
+	onEventChanged() {
 		this.eventsQuery.refetch();
 	}
 
@@ -229,8 +273,11 @@ class TimelineMilestoneElement {
 		this.ref.setAttribute("milestone-id", $state.snapshot(milestone.id));
 		this.props.milestone = milestone;
 		tick().then(() => {
-			this.component = mount(IncidentTimelineMilestoneItemContent, { target: this.ref, props: this.props });	
-		})
+			this.component = mount(IncidentTimelineMilestoneItemContent, {
+				target: this.ref,
+				props: this.props,
+			});
+		});
 	}
 
 	unmount() {
@@ -254,22 +301,29 @@ class TimelineMilestonesState {
 
 	constructor(items: DataSet<TimelineItem>) {
 		this.items = items;
-		watch(() => this.milestones, () => {this.onMilestonesDataUpdated()});
+		watch(
+			() => this.milestones,
+			() => {
+				this.onMilestonesDataUpdated();
+			}
+		);
 	}
 
 	clear() {
-		this.timelineElements.forEach(c => c.unmount());
+		this.timelineElements.forEach((c) => c.unmount());
 		this.timelineElements.clear();
 	}
 
-	setTimeline(t: Timeline) {this.timeline = t}
+	setTimeline(t: Timeline) {
+		this.timeline = t;
+	}
 
 	setIncident(inc: Incident) {
 		this.incident = inc;
 	}
 
 	onMilestonesDataUpdated() {
-		const dataMap = new Map(this.milestones.map(m => [m.id, m]));
+		const dataMap = new Map(this.milestones.map((m) => [m.id, m]));
 		const removeIds: string[] = [];
 
 		this.items.forEach((item, rawId) => {
@@ -278,7 +332,7 @@ class TimelineMilestonesState {
 			if (!dataMap.get(msId)) removeIds.push(msId);
 		});
 
-		this.removeMilestoneIds(removeIds)
+		this.removeMilestoneIds(removeIds);
 
 		const sortedMilestones = this.milestones.toSorted((a: IncidentMilestone, b: IncidentMilestone) => {
 			return new Date(a.attributes.timestamp).valueOf() - new Date(b.attributes.timestamp).valueOf();
@@ -288,7 +342,7 @@ class TimelineMilestonesState {
 		});
 
 		flushItemsAndRedrawTimeline(this.items, this.timeline);
-	};
+	}
 
 	setMilestone(ms: IncidentMilestone, nextMs?: IncidentMilestone) {
 		let el = this.timelineElements.get(ms.id);
@@ -310,7 +364,7 @@ class TimelineMilestonesState {
 
 	removeMilestoneIds(ids: string[]) {
 		let itemIds: string[] = [];
-		ids.forEach(id => {
+		ids.forEach((id) => {
 			itemIds.push(...getMilestoneIds(id));
 			const el = this.timelineElements.get(id);
 			el?.unmount();
@@ -330,32 +384,55 @@ export class IncidentTimelineController {
 
 	timeline = $state.raw<Timeline>();
 
-	incidentWindow = $state.raw<TimelineRange>({start: 0, end: 0});
-	viewWindow = $state.raw<TimelineRange>({start: 0, end: 0});
-	viewBounds = $state.raw<TimelineRange>({start: 0, end: 0});
+	incidentWindow = $state.raw<TimelineRange>({ start: 0, end: 0 });
+	viewWindow = $state.raw<TimelineRange>({ start: 0, end: 0 });
+	viewBounds = $state.raw<TimelineRange>({ start: 0, end: 0 });
 
 	selectedItems = new SvelteSet<string>();
 
 	constructor() {
-		initEventDialog(this.onEventAdded);
+		initEventDialog(this.onEventChanged);
 		initMilestonesDialog();
 
 		this.items.clear();
 
-		this.items.on("*", () => {this.onItemsUpdate()});
+		this.items.on("*", () => {
+			this.onItemsUpdate();
+		});
 
-		watch(() => this.incident, inc => {this.onIncidentUpdate(inc)});
+		watch(
+			() => this.incident,
+			(inc) => {
+				this.onIncidentUpdate(inc);
+			}
+		);
+		watch(
+			() => this.view.systemAnalysisId,
+			(id) => {
+				this.events.setAnalysis(id);
+			}
+		);
 
-		onMount(() => {return () => {this.cleanup()}});
+		onMount(() => {
+			return () => {
+				this.cleanup();
+			};
+		});
 	}
 
 	mountTimeline(ref: HTMLElement) {
-		if (this.timeline) {this.timeline.destroy()};
+		if (this.timeline) {
+			this.timeline.destroy();
+		}
 
 		this.timeline = this.createTimeline(ref, this.items as DataItemCollectionType);
 
-		this.timeline.on("select", e => {this.onTimelineSelect(e)});
-		this.timeline.on("rangechange", e => {this.onTimelineRangeChanged(e)});
+		this.timeline.on("select", (e) => {
+			this.onTimelineSelect(e);
+		});
+		this.timeline.on("rangechange", (e) => {
+			this.onTimelineRangeChanged(e);
+		});
 
 		this.events.setTimeline(this.timeline);
 		this.milestones.setTimeline(this.timeline);
@@ -390,7 +467,7 @@ export class IncidentTimelineController {
 
 	onIncidentUpdate(inc?: Incident) {
 		if (!inc) return;
-		this.events.setIncident(inc);
+		this.events.setAnalysis(this.view.systemAnalysisId);
 		this.milestones.setIncident(inc);
 		this.setIncidentWindow(inc);
 	}
@@ -401,15 +478,15 @@ export class IncidentTimelineController {
 		const start = new Date(inc.attributes.openedAt).valueOf();
 		const end = Math.max(new Date(inc.attributes.closedAt).valueOf(), start + 1);
 
-		this.incidentWindow = {start, end};
+		this.incidentWindow = { start, end };
 		this.items.update(createIncidentWindowTimelineItems(this.incidentWindow));
-		this.timeline.setWindow(start - OneHour, end + OneHour, {animation: false});
+		this.timeline.setWindow(start - OneHour, end + OneHour, { animation: false });
 	}
 
 	updateTimelineViewBounds(tl: Timeline) {
 		let min = this.incidentWindow.start.valueOf();
 		let max = this.incidentWindow.end.valueOf();
-		this.items.forEach(item => {
+		this.items.forEach((item) => {
 			const d = new Date(item.start.valueOf()).valueOf();
 			if (d < min) min = d;
 			if (d > max) max = d;
@@ -421,8 +498,8 @@ export class IncidentTimelineController {
 		const offsetMin = min - offset;
 		const offsetMax = max + offset;
 
-		tl.setOptions({min: offsetMin, max: offsetMax});
-		this.viewBounds = {start: offsetMin, end: offsetMax};
+		tl.setOptions({ min: offsetMin, max: offsetMax });
+		this.viewBounds = { start: offsetMin, end: offsetMax };
 	}
 
 	cleanup() {
@@ -432,36 +509,36 @@ export class IncidentTimelineController {
 		this.timeline?.destroy();
 	}
 
-	onTimelineSelect(e: any) {
-		const newSelected = new Set(e.items as string[]);
+	onTimelineSelect(e: TimelineSelectEvent) {
+		const newSelected = new Set(e.items);
 		const deselectedItems = this.selectedItems.difference(newSelected);
-		
-		deselectedItems.forEach(id => {
+
+		deselectedItems.forEach((id) => {
 			this.events.setSelected(id, false);
 			this.milestones.setSelected(id, false);
 			this.selectedItems.delete(id);
 		});
-		newSelected.forEach(id => {
+		newSelected.forEach((id) => {
 			this.events.setSelected(id, true);
 			this.milestones.setSelected(id, true);
 			this.selectedItems.add(id);
 		});
 	}
 
-	onTimelineRangeChanged(e: any) {
-		const start = (e.start as Date).valueOf();
-		const end = (e.end as Date).valueOf();
-		this.viewWindow = {start, end};
+	onTimelineRangeChanged(e: TimelineRangeChangeEvent) {
+		const start = e.start.valueOf();
+		const end = e.end.valueOf();
+		this.viewWindow = { start, end };
 	}
 
-	onEventAdded(event: IncidentTimelineEvent) {
-		this.events.onEventAdded(event);
+	onEventChanged() {
+		this.events.onEventChanged();
 	}
 
-	onMilestoneAdded(ms: IncidentMilestone) {
+	onMilestoneAdded(_ms: IncidentMilestone) {
 		// this.milestones.onMilestoneAdded(ms);
 	}
-};
+}
 
 const ctx = new Context<IncidentTimelineController>("IncidentTimelineController");
 export const initIncidentTimeline = () => ctx.set(new IncidentTimelineController());

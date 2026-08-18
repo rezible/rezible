@@ -1,15 +1,16 @@
 <script lang="ts" module>
-	import type { IncidentTimelineEvent } from "$lib/api";
+	import type { TimelineAnalysisEntry } from "./entry-model";
+
 	export type Props = {
-		event?: IncidentTimelineEvent;
+		event?: TimelineAnalysisEntry;
 		selected: boolean;
 	};
 </script>
 
 <script lang="ts">
-	const {event, selected}: Props = $props();
+	const { event, selected }: Props = $props();
 </script>
 
-<div class="p-2">
+<div class="p-2" class:ring-1={selected} class:ring-primary={selected}>
 	<span>{event?.attributes.title || "title"}</span>
 </div>

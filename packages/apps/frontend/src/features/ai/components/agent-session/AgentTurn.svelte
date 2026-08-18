@@ -8,7 +8,6 @@
 
 	const { turn }: Props = $props();
 	const attrs = $derived(turn.attributes);
-	const state = $derived(attrs.state === undefined ? undefined : JSON.stringify(attrs.state, null, 2));
 	const badgeVariant = $derived(attrs.status === "failed" ? "destructive" : "outline");
 </script>
 
@@ -31,9 +30,16 @@
 			)}</pre>
 	{/if}
 
-	{#if state}
-		<pre class="max-h-96 overflow-auto rounded bg-muted p-3 text-xs text-foreground">{state}</pre>
+	{#if attrs.knowledgeCitations?.length}
+		<div class="space-y-2 rounded bg-muted p-3 text-xs text-foreground">
+			{#each attrs.knowledgeCitations as citation (citation.id)}
+				<div>
+					<div class="font-medium">{citation.attributes.summary}</div>
+					<div class="text-muted-foreground">{citation.attributes.knowledgeEvidenceId}</div>
+				</div>
+			{/each}
+		</div>
 	{:else}
-		<p class="text-sm text-muted-foreground">No persisted state.</p>
+		<p class="text-sm text-muted-foreground">No knowledge citations.</p>
 	{/if}
 </article>
