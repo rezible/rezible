@@ -48,9 +48,6 @@ func (a *AlertsAgent) updateInitialTurnMessage(ctx context.Context, input rezai.
 Title: %s
 Description: %s
 Definition: %s`, input.AlertInstanceID, alrt.Title, alrt.Description, alrt.Definition)
-	if alrt.KnowledgeEntityID != nil {
-		seed += fmt.Sprintf("\nKnowledge graph entity ID: %s", *alrt.KnowledgeEntityID)
-	}
 	return seed, nil
 }
 

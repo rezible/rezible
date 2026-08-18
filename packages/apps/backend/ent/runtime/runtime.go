@@ -12,7 +12,6 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
@@ -271,38 +270,6 @@ func init() {
 	agentturnDescFinishReason := agentturnFields[9].Descriptor()
 	// agentturn.DefaultFinishReason holds the default value on creation for the finish_reason field.
 	agentturn.DefaultFinishReason = agentturnDescFinishReason.Default.(string)
-	agentturnknowledgecitationMixin := schema.AgentTurnKnowledgeCitation{}.Mixin()
-	agentturnknowledgecitation.Policy = privacy.NewPolicies(agentturnknowledgecitationMixin[0], agentturnknowledgecitationMixin[1], schema.AgentTurnKnowledgeCitation{})
-	agentturnknowledgecitation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := agentturnknowledgecitation.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	agentturnknowledgecitationMixinFields2 := agentturnknowledgecitationMixin[2].Fields()
-	_ = agentturnknowledgecitationMixinFields2
-	agentturnknowledgecitationFields := schema.AgentTurnKnowledgeCitation{}.Fields()
-	_ = agentturnknowledgecitationFields
-	// agentturnknowledgecitationDescCreatedAt is the schema descriptor for created_at field.
-	agentturnknowledgecitationDescCreatedAt := agentturnknowledgecitationMixinFields2[0].Descriptor()
-	// agentturnknowledgecitation.DefaultCreatedAt holds the default value on creation for the created_at field.
-	agentturnknowledgecitation.DefaultCreatedAt = agentturnknowledgecitationDescCreatedAt.Default.(func() time.Time)
-	// agentturnknowledgecitationDescUpdatedAt is the schema descriptor for updated_at field.
-	agentturnknowledgecitationDescUpdatedAt := agentturnknowledgecitationMixinFields2[1].Descriptor()
-	// agentturnknowledgecitation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	agentturnknowledgecitation.DefaultUpdatedAt = agentturnknowledgecitationDescUpdatedAt.Default.(func() time.Time)
-	// agentturnknowledgecitation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	agentturnknowledgecitation.UpdateDefaultUpdatedAt = agentturnknowledgecitationDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// agentturnknowledgecitationDescSummary is the schema descriptor for summary field.
-	agentturnknowledgecitationDescSummary := agentturnknowledgecitationFields[3].Descriptor()
-	// agentturnknowledgecitation.SummaryValidator is a validator for the "summary" field. It is called by the builders before save.
-	agentturnknowledgecitation.SummaryValidator = agentturnknowledgecitationDescSummary.Validators[0].(func(string) error)
-	// agentturnknowledgecitationDescID is the schema descriptor for id field.
-	agentturnknowledgecitationDescID := agentturnknowledgecitationFields[0].Descriptor()
-	// agentturnknowledgecitation.DefaultID holds the default value on creation for the id field.
-	agentturnknowledgecitation.DefaultID = agentturnknowledgecitationDescID.Default.(func() uuid.UUID)
 	alertMixin := schema.Alert{}.Mixin()
 	alert.Policy = privacy.NewPolicies(alertMixin[0], alertMixin[1], schema.Alert{})
 	alert.Hooks[0] = func(next ent.Mutator) ent.Mutator {

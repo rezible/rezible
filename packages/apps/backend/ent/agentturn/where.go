@@ -757,35 +757,6 @@ func HasArtifactsWith(preds ...predicate.AgentArtifact) predicate.AgentTurn {
 	})
 }
 
-// HasKnowledgeCitations applies the HasEdge predicate on the "knowledge_citations" edge.
-func HasKnowledgeCitations() predicate.AgentTurn {
-	return predicate.AgentTurn(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, KnowledgeCitationsTable, KnowledgeCitationsColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasKnowledgeCitationsWith applies the HasEdge predicate on the "knowledge_citations" edge with a given conditions (other predicates).
-func HasKnowledgeCitationsWith(preds ...predicate.AgentTurnKnowledgeCitation) predicate.AgentTurn {
-	return predicate.AgentTurn(func(s *sql.Selector) {
-		step := newKnowledgeCitationsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.AgentTurn) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.AndPredicates(predicates...))

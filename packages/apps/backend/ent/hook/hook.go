@@ -69,18 +69,6 @@ func (f AgentTurnFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentTurnMutation", m)
 }
 
-// The AgentTurnKnowledgeCitationFunc type is an adapter to allow the use of ordinary
-// function as AgentTurnKnowledgeCitation mutator.
-type AgentTurnKnowledgeCitationFunc func(context.Context, *ent.AgentTurnKnowledgeCitationMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AgentTurnKnowledgeCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentTurnKnowledgeCitationMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentTurnKnowledgeCitationMutation", m)
-}
-
 // The AlertFunc type is an adapter to allow the use of ordinary
 // function as Alert mutator.
 type AlertFunc func(context.Context, *ent.AlertMutation) (ent.Value, error)

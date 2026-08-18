@@ -150,14 +150,12 @@ ALTER TABLE "alert_instances" DROP CONSTRAINT "alert_instances_tenants_tenant", 
 ALTER TABLE "alert_feedbacks" DROP CONSTRAINT "alert_feedbacks_alert_instances_alert_instance", DROP CONSTRAINT "alert_feedbacks_tenants_tenant";
 -- reverse: modify "alerts" table
 ALTER TABLE "alerts" DROP CONSTRAINT "alerts_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alerts_tenants_tenant";
--- reverse: modify "agent_turn_knowledge_citations" table
-ALTER TABLE "agent_turn_knowledge_citations" DROP CONSTRAINT "agent_turn_knowledge_citations_4794ae641d5b312d64f1656ea2b13971", DROP CONSTRAINT "agent_turn_knowledge_citations_tenants_tenant", DROP CONSTRAINT "agent_turn_knowledge_citations_agent_turns_knowledge_citations";
 -- reverse: modify "agent_turns" table
 ALTER TABLE "agent_turns" DROP CONSTRAINT "agent_turns_agent_messages_input_message", DROP CONSTRAINT "agent_turns_tenants_tenant", DROP CONSTRAINT "agent_turns_agent_sessions_turns";
 -- reverse: modify "agent_session_bindings" table
 ALTER TABLE "agent_session_bindings" DROP CONSTRAINT "agent_session_bindings_integrations_integration", DROP CONSTRAINT "agent_session_bindings_tenants_tenant", DROP CONSTRAINT "agent_session_bindings_agent_sessions_bindings";
 -- reverse: modify "agent_sessions" table
-ALTER TABLE "agent_sessions" DROP CONSTRAINT "agent_sessions_users_owner_user", DROP CONSTRAINT "agent_sessions_tenants_tenant";
+ALTER TABLE "agent_sessions" DROP CONSTRAINT "agent_sessions_system_analyses_system_analysis", DROP CONSTRAINT "agent_sessions_users_owner_user", DROP CONSTRAINT "agent_sessions_tenants_tenant";
 -- reverse: modify "agent_messages" table
 ALTER TABLE "agent_messages" DROP CONSTRAINT "agent_messages_agent_turns_messages", DROP CONSTRAINT "agent_messages_agent_sessions_messages", DROP CONSTRAINT "agent_messages_tenants_tenant";
 -- reverse: modify "agent_artifacts" table
@@ -580,14 +578,6 @@ DROP INDEX "alert_tenant_id_knowledge_entity_id";
 DROP INDEX "alert_tenant_id";
 -- reverse: create "alerts" table
 DROP TABLE "alerts";
--- reverse: create index "agentturnknowledgecitation_tenant_id_knowledge_evidence_id" to table: "agent_turn_knowledge_citations"
-DROP INDEX "agentturnknowledgecitation_tenant_id_knowledge_evidence_id";
--- reverse: create index "agentturnknowledgecitation_ten_1df7f3234b14df6d6507e5957bac4bec" to table: "agent_turn_knowledge_citations"
-DROP INDEX "agentturnknowledgecitation_ten_1df7f3234b14df6d6507e5957bac4bec";
--- reverse: create index "agentturnknowledgecitation_tenant_id" to table: "agent_turn_knowledge_citations"
-DROP INDEX "agentturnknowledgecitation_tenant_id";
--- reverse: create "agent_turn_knowledge_citations" table
-DROP TABLE "agent_turn_knowledge_citations";
 -- reverse: create index "agentturn_tenant_id_agent_session_id_created_at" to table: "agent_turns"
 DROP INDEX "agentturn_tenant_id_agent_session_id_created_at";
 -- reverse: create index "agent_turn_input_message_unique" to table: "agent_turns"

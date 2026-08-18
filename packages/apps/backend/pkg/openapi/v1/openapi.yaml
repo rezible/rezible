@@ -242,10 +242,6 @@ components:
         finishedAt:
           format: date-time
           type: string
-        knowledgeCitations:
-          items:
-            $ref: "#/components/schemas/AgentTurnKnowledgeCitation"
-          type: array
         sequence:
           format: int64
           type: integer
@@ -273,32 +269,6 @@ components:
       required:
         - message
         - code
-      type: object
-    AgentTurnKnowledgeCitation:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/AgentTurnKnowledgeCitationAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    AgentTurnKnowledgeCitationAttributes:
-      additionalProperties: false
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        knowledgeEvidenceId:
-          type: string
-        summary:
-          type: string
-      required:
-        - knowledgeEvidenceId
-        - summary
-        - createdAt
       type: object
     AgentTurnResume:
       additionalProperties: false

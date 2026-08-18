@@ -15,6 +15,7 @@ packages:
       OrganizationService: {}
       UserService: {}
       AlertService: {}
+      AgentSessionService: {}
       AiService: {}
       IntegrationService: {}
       IncidentService: {}

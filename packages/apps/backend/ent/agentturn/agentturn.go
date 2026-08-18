@@ -52,8 +52,6 @@ const (
 	EdgeMessages = "messages"
 	// EdgeArtifacts holds the string denoting the artifacts edge name in mutations.
 	EdgeArtifacts = "artifacts"
-	// EdgeKnowledgeCitations holds the string denoting the knowledge_citations edge name in mutations.
-	EdgeKnowledgeCitations = "knowledge_citations"
 	// Table holds the table name of the agentturn in the database.
 	Table = "agent_turns"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -91,13 +89,6 @@ const (
 	ArtifactsInverseTable = "agent_artifacts"
 	// ArtifactsColumn is the table column denoting the artifacts relation/edge.
 	ArtifactsColumn = "last_agent_turn_id"
-	// KnowledgeCitationsTable is the table that holds the knowledge_citations relation/edge.
-	KnowledgeCitationsTable = "agent_turn_knowledge_citations"
-	// KnowledgeCitationsInverseTable is the table name for the AgentTurnKnowledgeCitation entity.
-	// It exists in this package in order to avoid circular dependency with the "agentturnknowledgecitation" package.
-	KnowledgeCitationsInverseTable = "agent_turn_knowledge_citations"
-	// KnowledgeCitationsColumn is the table column denoting the knowledge_citations relation/edge.
-	KnowledgeCitationsColumn = "agent_turn_id"
 )
 
 // Columns holds all SQL columns for agentturn fields.
@@ -290,20 +281,6 @@ func ByArtifacts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newArtifactsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByKnowledgeCitationsCount orders the results by knowledge_citations count.
-func ByKnowledgeCitationsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newKnowledgeCitationsStep(), opts...)
-	}
-}
-
-// ByKnowledgeCitations orders the results by knowledge_citations terms.
-func ByKnowledgeCitations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newKnowledgeCitationsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -337,12 +314,5 @@ func newArtifactsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ArtifactsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ArtifactsTable, ArtifactsColumn),
-	)
-}
-func newKnowledgeCitationsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(KnowledgeCitationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, KnowledgeCitationsTable, KnowledgeCitationsColumn),
 	)
 }

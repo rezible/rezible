@@ -20,7 +20,6 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
@@ -101,7 +100,6 @@ const (
 	TypeAgentSession                    = "AgentSession"
 	TypeAgentSessionBinding             = "AgentSessionBinding"
 	TypeAgentTurn                       = "AgentTurn"
-	TypeAgentTurnKnowledgeCitation      = "AgentTurnKnowledgeCitation"
 	TypeAlert                           = "Alert"
 	TypeAlertFeedback                   = "AlertFeedback"
 	TypeAlertInstance                   = "AlertInstance"
@@ -4447,40 +4445,37 @@ func (m *AgentSessionBindingMutation) ResetEdge(name string) error {
 // AgentTurnMutation represents an operation that mutates the AgentTurn nodes in the graph.
 type AgentTurnMutation struct {
 	config
-	op                         Op
-	typ                        string
-	id                         *uuid.UUID
-	created_at                 *time.Time
-	updated_at                 *time.Time
-	sequence                   *int
-	addsequence                *int
-	river_job_id               *int64
-	addriver_job_id            *int64
-	input_tool_resume          **exp.ToolResume
-	status                     *agentturn.Status
-	started_at                 *time.Time
-	finished_at                *time.Time
-	finish_reason              *string
-	error                      *string
-	clearedFields              map[string]struct{}
-	tenant                     *int
-	clearedtenant              bool
-	agent_session              *uuid.UUID
-	clearedagent_session       bool
-	input_message              *uuid.UUID
-	clearedinput_message       bool
-	messages                   map[uuid.UUID]struct{}
-	removedmessages            map[uuid.UUID]struct{}
-	clearedmessages            bool
-	artifacts                  map[uuid.UUID]struct{}
-	removedartifacts           map[uuid.UUID]struct{}
-	clearedartifacts           bool
-	knowledge_citations        map[uuid.UUID]struct{}
-	removedknowledge_citations map[uuid.UUID]struct{}
-	clearedknowledge_citations bool
-	done                       bool
-	oldValue                   func(context.Context) (*AgentTurn, error)
-	predicates                 []predicate.AgentTurn
+	op                   Op
+	typ                  string
+	id                   *uuid.UUID
+	created_at           *time.Time
+	updated_at           *time.Time
+	sequence             *int
+	addsequence          *int
+	river_job_id         *int64
+	addriver_job_id      *int64
+	input_tool_resume    **exp.ToolResume
+	status               *agentturn.Status
+	started_at           *time.Time
+	finished_at          *time.Time
+	finish_reason        *string
+	error                *string
+	clearedFields        map[string]struct{}
+	tenant               *int
+	clearedtenant        bool
+	agent_session        *uuid.UUID
+	clearedagent_session bool
+	input_message        *uuid.UUID
+	clearedinput_message bool
+	messages             map[uuid.UUID]struct{}
+	removedmessages      map[uuid.UUID]struct{}
+	clearedmessages      bool
+	artifacts            map[uuid.UUID]struct{}
+	removedartifacts     map[uuid.UUID]struct{}
+	clearedartifacts     bool
+	done                 bool
+	oldValue             func(context.Context) (*AgentTurn, error)
+	predicates           []predicate.AgentTurn
 }
 
 var _ ent.Mutation = (*AgentTurnMutation)(nil)
@@ -5349,60 +5344,6 @@ func (m *AgentTurnMutation) ResetArtifacts() {
 	m.removedartifacts = nil
 }
 
-// AddKnowledgeCitationIDs adds the "knowledge_citations" edge to the AgentTurnKnowledgeCitation entity by ids.
-func (m *AgentTurnMutation) AddKnowledgeCitationIDs(ids ...uuid.UUID) {
-	if m.knowledge_citations == nil {
-		m.knowledge_citations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.knowledge_citations[ids[i]] = struct{}{}
-	}
-}
-
-// ClearKnowledgeCitations clears the "knowledge_citations" edge to the AgentTurnKnowledgeCitation entity.
-func (m *AgentTurnMutation) ClearKnowledgeCitations() {
-	m.clearedknowledge_citations = true
-}
-
-// KnowledgeCitationsCleared reports if the "knowledge_citations" edge to the AgentTurnKnowledgeCitation entity was cleared.
-func (m *AgentTurnMutation) KnowledgeCitationsCleared() bool {
-	return m.clearedknowledge_citations
-}
-
-// RemoveKnowledgeCitationIDs removes the "knowledge_citations" edge to the AgentTurnKnowledgeCitation entity by IDs.
-func (m *AgentTurnMutation) RemoveKnowledgeCitationIDs(ids ...uuid.UUID) {
-	if m.removedknowledge_citations == nil {
-		m.removedknowledge_citations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.knowledge_citations, ids[i])
-		m.removedknowledge_citations[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedKnowledgeCitations returns the removed IDs of the "knowledge_citations" edge to the AgentTurnKnowledgeCitation entity.
-func (m *AgentTurnMutation) RemovedKnowledgeCitationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedknowledge_citations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// KnowledgeCitationsIDs returns the "knowledge_citations" edge IDs in the mutation.
-func (m *AgentTurnMutation) KnowledgeCitationsIDs() (ids []uuid.UUID) {
-	for id := range m.knowledge_citations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetKnowledgeCitations resets all changes to the "knowledge_citations" edge.
-func (m *AgentTurnMutation) ResetKnowledgeCitations() {
-	m.knowledge_citations = nil
-	m.clearedknowledge_citations = false
-	m.removedknowledge_citations = nil
-}
-
 // Where appends a list predicates to the AgentTurnMutation builder.
 func (m *AgentTurnMutation) Where(ps ...predicate.AgentTurn) {
 	m.predicates = append(m.predicates, ps...)
@@ -5800,7 +5741,7 @@ func (m *AgentTurnMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentTurnMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.tenant != nil {
 		edges = append(edges, agentturn.EdgeTenant)
 	}
@@ -5815,9 +5756,6 @@ func (m *AgentTurnMutation) AddedEdges() []string {
 	}
 	if m.artifacts != nil {
 		edges = append(edges, agentturn.EdgeArtifacts)
-	}
-	if m.knowledge_citations != nil {
-		edges = append(edges, agentturn.EdgeKnowledgeCitations)
 	}
 	return edges
 }
@@ -5850,27 +5788,18 @@ func (m *AgentTurnMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case agentturn.EdgeKnowledgeCitations:
-		ids := make([]ent.Value, 0, len(m.knowledge_citations))
-		for id := range m.knowledge_citations {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentTurnMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.removedmessages != nil {
 		edges = append(edges, agentturn.EdgeMessages)
 	}
 	if m.removedartifacts != nil {
 		edges = append(edges, agentturn.EdgeArtifacts)
-	}
-	if m.removedknowledge_citations != nil {
-		edges = append(edges, agentturn.EdgeKnowledgeCitations)
 	}
 	return edges
 }
@@ -5891,19 +5820,13 @@ func (m *AgentTurnMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case agentturn.EdgeKnowledgeCitations:
-		ids := make([]ent.Value, 0, len(m.removedknowledge_citations))
-		for id := range m.removedknowledge_citations {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentTurnMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.clearedtenant {
 		edges = append(edges, agentturn.EdgeTenant)
 	}
@@ -5918,9 +5841,6 @@ func (m *AgentTurnMutation) ClearedEdges() []string {
 	}
 	if m.clearedartifacts {
 		edges = append(edges, agentturn.EdgeArtifacts)
-	}
-	if m.clearedknowledge_citations {
-		edges = append(edges, agentturn.EdgeKnowledgeCitations)
 	}
 	return edges
 }
@@ -5939,8 +5859,6 @@ func (m *AgentTurnMutation) EdgeCleared(name string) bool {
 		return m.clearedmessages
 	case agentturn.EdgeArtifacts:
 		return m.clearedartifacts
-	case agentturn.EdgeKnowledgeCitations:
-		return m.clearedknowledge_citations
 	}
 	return false
 }
@@ -5981,762 +5899,8 @@ func (m *AgentTurnMutation) ResetEdge(name string) error {
 	case agentturn.EdgeArtifacts:
 		m.ResetArtifacts()
 		return nil
-	case agentturn.EdgeKnowledgeCitations:
-		m.ResetKnowledgeCitations()
-		return nil
 	}
 	return fmt.Errorf("unknown AgentTurn edge %s", name)
-}
-
-// AgentTurnKnowledgeCitationMutation represents an operation that mutates the AgentTurnKnowledgeCitation nodes in the graph.
-type AgentTurnKnowledgeCitationMutation struct {
-	config
-	op                        Op
-	typ                       string
-	id                        *uuid.UUID
-	created_at                *time.Time
-	updated_at                *time.Time
-	summary                   *string
-	clearedFields             map[string]struct{}
-	tenant                    *int
-	clearedtenant             bool
-	agent_turn                *uuid.UUID
-	clearedagent_turn         bool
-	knowledge_evidence        *uuid.UUID
-	clearedknowledge_evidence bool
-	done                      bool
-	oldValue                  func(context.Context) (*AgentTurnKnowledgeCitation, error)
-	predicates                []predicate.AgentTurnKnowledgeCitation
-}
-
-var _ ent.Mutation = (*AgentTurnKnowledgeCitationMutation)(nil)
-
-// agentturnknowledgecitationOption allows management of the mutation configuration using functional options.
-type agentturnknowledgecitationOption func(*AgentTurnKnowledgeCitationMutation)
-
-// newAgentTurnKnowledgeCitationMutation creates new mutation for the AgentTurnKnowledgeCitation entity.
-func newAgentTurnKnowledgeCitationMutation(c config, op Op, opts ...agentturnknowledgecitationOption) *AgentTurnKnowledgeCitationMutation {
-	m := &AgentTurnKnowledgeCitationMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeAgentTurnKnowledgeCitation,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withAgentTurnKnowledgeCitationID sets the ID field of the mutation.
-func withAgentTurnKnowledgeCitationID(id uuid.UUID) agentturnknowledgecitationOption {
-	return func(m *AgentTurnKnowledgeCitationMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *AgentTurnKnowledgeCitation
-		)
-		m.oldValue = func(ctx context.Context) (*AgentTurnKnowledgeCitation, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().AgentTurnKnowledgeCitation.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withAgentTurnKnowledgeCitation sets the old AgentTurnKnowledgeCitation of the mutation.
-func withAgentTurnKnowledgeCitation(node *AgentTurnKnowledgeCitation) agentturnknowledgecitationOption {
-	return func(m *AgentTurnKnowledgeCitationMutation) {
-		m.oldValue = func(context.Context) (*AgentTurnKnowledgeCitation, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m AgentTurnKnowledgeCitationMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m AgentTurnKnowledgeCitationMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of AgentTurnKnowledgeCitation entities.
-func (m *AgentTurnKnowledgeCitationMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *AgentTurnKnowledgeCitationMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *AgentTurnKnowledgeCitationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().AgentTurnKnowledgeCitation.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *AgentTurnKnowledgeCitationMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the AgentTurnKnowledgeCitation entity.
-// If the AgentTurnKnowledgeCitation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTurnKnowledgeCitationMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *AgentTurnKnowledgeCitationMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *AgentTurnKnowledgeCitationMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the AgentTurnKnowledgeCitation entity.
-// If the AgentTurnKnowledgeCitation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTurnKnowledgeCitationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *AgentTurnKnowledgeCitationMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *AgentTurnKnowledgeCitationMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *AgentTurnKnowledgeCitationMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the AgentTurnKnowledgeCitation entity.
-// If the AgentTurnKnowledgeCitation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTurnKnowledgeCitationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *AgentTurnKnowledgeCitationMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetAgentTurnID sets the "agent_turn_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) SetAgentTurnID(u uuid.UUID) {
-	m.agent_turn = &u
-}
-
-// AgentTurnID returns the value of the "agent_turn_id" field in the mutation.
-func (m *AgentTurnKnowledgeCitationMutation) AgentTurnID() (r uuid.UUID, exists bool) {
-	v := m.agent_turn
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAgentTurnID returns the old "agent_turn_id" field's value of the AgentTurnKnowledgeCitation entity.
-// If the AgentTurnKnowledgeCitation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTurnKnowledgeCitationMutation) OldAgentTurnID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAgentTurnID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAgentTurnID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAgentTurnID: %w", err)
-	}
-	return oldValue.AgentTurnID, nil
-}
-
-// ResetAgentTurnID resets all changes to the "agent_turn_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) ResetAgentTurnID() {
-	m.agent_turn = nil
-}
-
-// SetKnowledgeEvidenceID sets the "knowledge_evidence_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) SetKnowledgeEvidenceID(u uuid.UUID) {
-	m.knowledge_evidence = &u
-}
-
-// KnowledgeEvidenceID returns the value of the "knowledge_evidence_id" field in the mutation.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeEvidenceID() (r uuid.UUID, exists bool) {
-	v := m.knowledge_evidence
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeEvidenceID returns the old "knowledge_evidence_id" field's value of the AgentTurnKnowledgeCitation entity.
-// If the AgentTurnKnowledgeCitation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTurnKnowledgeCitationMutation) OldKnowledgeEvidenceID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeEvidenceID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeEvidenceID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeEvidenceID: %w", err)
-	}
-	return oldValue.KnowledgeEvidenceID, nil
-}
-
-// ResetKnowledgeEvidenceID resets all changes to the "knowledge_evidence_id" field.
-func (m *AgentTurnKnowledgeCitationMutation) ResetKnowledgeEvidenceID() {
-	m.knowledge_evidence = nil
-}
-
-// SetSummary sets the "summary" field.
-func (m *AgentTurnKnowledgeCitationMutation) SetSummary(s string) {
-	m.summary = &s
-}
-
-// Summary returns the value of the "summary" field in the mutation.
-func (m *AgentTurnKnowledgeCitationMutation) Summary() (r string, exists bool) {
-	v := m.summary
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSummary returns the old "summary" field's value of the AgentTurnKnowledgeCitation entity.
-// If the AgentTurnKnowledgeCitation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTurnKnowledgeCitationMutation) OldSummary(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSummary is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSummary requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSummary: %w", err)
-	}
-	return oldValue.Summary, nil
-}
-
-// ResetSummary resets all changes to the "summary" field.
-func (m *AgentTurnKnowledgeCitationMutation) ResetSummary() {
-	m.summary = nil
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *AgentTurnKnowledgeCitationMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[agentturnknowledgecitation.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *AgentTurnKnowledgeCitationMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *AgentTurnKnowledgeCitationMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *AgentTurnKnowledgeCitationMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// ClearAgentTurn clears the "agent_turn" edge to the AgentTurn entity.
-func (m *AgentTurnKnowledgeCitationMutation) ClearAgentTurn() {
-	m.clearedagent_turn = true
-	m.clearedFields[agentturnknowledgecitation.FieldAgentTurnID] = struct{}{}
-}
-
-// AgentTurnCleared reports if the "agent_turn" edge to the AgentTurn entity was cleared.
-func (m *AgentTurnKnowledgeCitationMutation) AgentTurnCleared() bool {
-	return m.clearedagent_turn
-}
-
-// AgentTurnIDs returns the "agent_turn" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// AgentTurnID instead. It exists only for internal usage by the builders.
-func (m *AgentTurnKnowledgeCitationMutation) AgentTurnIDs() (ids []uuid.UUID) {
-	if id := m.agent_turn; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetAgentTurn resets all changes to the "agent_turn" edge.
-func (m *AgentTurnKnowledgeCitationMutation) ResetAgentTurn() {
-	m.agent_turn = nil
-	m.clearedagent_turn = false
-}
-
-// ClearKnowledgeEvidence clears the "knowledge_evidence" edge to the KnowledgeEvidence entity.
-func (m *AgentTurnKnowledgeCitationMutation) ClearKnowledgeEvidence() {
-	m.clearedknowledge_evidence = true
-	m.clearedFields[agentturnknowledgecitation.FieldKnowledgeEvidenceID] = struct{}{}
-}
-
-// KnowledgeEvidenceCleared reports if the "knowledge_evidence" edge to the KnowledgeEvidence entity was cleared.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeEvidenceCleared() bool {
-	return m.clearedknowledge_evidence
-}
-
-// KnowledgeEvidenceIDs returns the "knowledge_evidence" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// KnowledgeEvidenceID instead. It exists only for internal usage by the builders.
-func (m *AgentTurnKnowledgeCitationMutation) KnowledgeEvidenceIDs() (ids []uuid.UUID) {
-	if id := m.knowledge_evidence; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetKnowledgeEvidence resets all changes to the "knowledge_evidence" edge.
-func (m *AgentTurnKnowledgeCitationMutation) ResetKnowledgeEvidence() {
-	m.knowledge_evidence = nil
-	m.clearedknowledge_evidence = false
-}
-
-// Where appends a list predicates to the AgentTurnKnowledgeCitationMutation builder.
-func (m *AgentTurnKnowledgeCitationMutation) Where(ps ...predicate.AgentTurnKnowledgeCitation) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the AgentTurnKnowledgeCitationMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *AgentTurnKnowledgeCitationMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.AgentTurnKnowledgeCitation, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *AgentTurnKnowledgeCitationMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *AgentTurnKnowledgeCitationMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (AgentTurnKnowledgeCitation).
-func (m *AgentTurnKnowledgeCitationMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *AgentTurnKnowledgeCitationMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.tenant != nil {
-		fields = append(fields, agentturnknowledgecitation.FieldTenantID)
-	}
-	if m.created_at != nil {
-		fields = append(fields, agentturnknowledgecitation.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, agentturnknowledgecitation.FieldUpdatedAt)
-	}
-	if m.agent_turn != nil {
-		fields = append(fields, agentturnknowledgecitation.FieldAgentTurnID)
-	}
-	if m.knowledge_evidence != nil {
-		fields = append(fields, agentturnknowledgecitation.FieldKnowledgeEvidenceID)
-	}
-	if m.summary != nil {
-		fields = append(fields, agentturnknowledgecitation.FieldSummary)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *AgentTurnKnowledgeCitationMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case agentturnknowledgecitation.FieldTenantID:
-		return m.TenantID()
-	case agentturnknowledgecitation.FieldCreatedAt:
-		return m.CreatedAt()
-	case agentturnknowledgecitation.FieldUpdatedAt:
-		return m.UpdatedAt()
-	case agentturnknowledgecitation.FieldAgentTurnID:
-		return m.AgentTurnID()
-	case agentturnknowledgecitation.FieldKnowledgeEvidenceID:
-		return m.KnowledgeEvidenceID()
-	case agentturnknowledgecitation.FieldSummary:
-		return m.Summary()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *AgentTurnKnowledgeCitationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case agentturnknowledgecitation.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case agentturnknowledgecitation.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case agentturnknowledgecitation.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	case agentturnknowledgecitation.FieldAgentTurnID:
-		return m.OldAgentTurnID(ctx)
-	case agentturnknowledgecitation.FieldKnowledgeEvidenceID:
-		return m.OldKnowledgeEvidenceID(ctx)
-	case agentturnknowledgecitation.FieldSummary:
-		return m.OldSummary(ctx)
-	}
-	return nil, fmt.Errorf("unknown AgentTurnKnowledgeCitation field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *AgentTurnKnowledgeCitationMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case agentturnknowledgecitation.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case agentturnknowledgecitation.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case agentturnknowledgecitation.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	case agentturnknowledgecitation.FieldAgentTurnID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAgentTurnID(v)
-		return nil
-	case agentturnknowledgecitation.FieldKnowledgeEvidenceID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeEvidenceID(v)
-		return nil
-	case agentturnknowledgecitation.FieldSummary:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSummary(v)
-		return nil
-	}
-	return fmt.Errorf("unknown AgentTurnKnowledgeCitation field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *AgentTurnKnowledgeCitationMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *AgentTurnKnowledgeCitationMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *AgentTurnKnowledgeCitationMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown AgentTurnKnowledgeCitation numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *AgentTurnKnowledgeCitationMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *AgentTurnKnowledgeCitationMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *AgentTurnKnowledgeCitationMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown AgentTurnKnowledgeCitation nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *AgentTurnKnowledgeCitationMutation) ResetField(name string) error {
-	switch name {
-	case agentturnknowledgecitation.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case agentturnknowledgecitation.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case agentturnknowledgecitation.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	case agentturnknowledgecitation.FieldAgentTurnID:
-		m.ResetAgentTurnID()
-		return nil
-	case agentturnknowledgecitation.FieldKnowledgeEvidenceID:
-		m.ResetKnowledgeEvidenceID()
-		return nil
-	case agentturnknowledgecitation.FieldSummary:
-		m.ResetSummary()
-		return nil
-	}
-	return fmt.Errorf("unknown AgentTurnKnowledgeCitation field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *AgentTurnKnowledgeCitationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.tenant != nil {
-		edges = append(edges, agentturnknowledgecitation.EdgeTenant)
-	}
-	if m.agent_turn != nil {
-		edges = append(edges, agentturnknowledgecitation.EdgeAgentTurn)
-	}
-	if m.knowledge_evidence != nil {
-		edges = append(edges, agentturnknowledgecitation.EdgeKnowledgeEvidence)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *AgentTurnKnowledgeCitationMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case agentturnknowledgecitation.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case agentturnknowledgecitation.EdgeAgentTurn:
-		if id := m.agent_turn; id != nil {
-			return []ent.Value{*id}
-		}
-	case agentturnknowledgecitation.EdgeKnowledgeEvidence:
-		if id := m.knowledge_evidence; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *AgentTurnKnowledgeCitationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *AgentTurnKnowledgeCitationMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *AgentTurnKnowledgeCitationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.clearedtenant {
-		edges = append(edges, agentturnknowledgecitation.EdgeTenant)
-	}
-	if m.clearedagent_turn {
-		edges = append(edges, agentturnknowledgecitation.EdgeAgentTurn)
-	}
-	if m.clearedknowledge_evidence {
-		edges = append(edges, agentturnknowledgecitation.EdgeKnowledgeEvidence)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *AgentTurnKnowledgeCitationMutation) EdgeCleared(name string) bool {
-	switch name {
-	case agentturnknowledgecitation.EdgeTenant:
-		return m.clearedtenant
-	case agentturnknowledgecitation.EdgeAgentTurn:
-		return m.clearedagent_turn
-	case agentturnknowledgecitation.EdgeKnowledgeEvidence:
-		return m.clearedknowledge_evidence
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *AgentTurnKnowledgeCitationMutation) ClearEdge(name string) error {
-	switch name {
-	case agentturnknowledgecitation.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	case agentturnknowledgecitation.EdgeAgentTurn:
-		m.ClearAgentTurn()
-		return nil
-	case agentturnknowledgecitation.EdgeKnowledgeEvidence:
-		m.ClearKnowledgeEvidence()
-		return nil
-	}
-	return fmt.Errorf("unknown AgentTurnKnowledgeCitation unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *AgentTurnKnowledgeCitationMutation) ResetEdge(name string) error {
-	switch name {
-	case agentturnknowledgecitation.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	case agentturnknowledgecitation.EdgeAgentTurn:
-		m.ResetAgentTurn()
-		return nil
-	case agentturnknowledgecitation.EdgeKnowledgeEvidence:
-		m.ResetKnowledgeEvidence()
-		return nil
-	}
-	return fmt.Errorf("unknown AgentTurnKnowledgeCitation edge %s", name)
 }
 
 // AlertMutation represents an operation that mutates the Alert nodes in the graph.

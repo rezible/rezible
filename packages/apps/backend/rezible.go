@@ -486,16 +486,10 @@ type (
 	}
 
 	AiAgentInvocationResult struct {
-		State              AiAgentTurnState
-		Response           *ai.Message
-		FinishReason       aix.AgentFinishReason
-		Error              error
-		KnowledgeCitations []AiAgentKnowledgeCitation
-	}
-
-	AiAgentKnowledgeCitation struct {
-		EvidenceID uuid.UUID `json:"evidence_id"`
-		Summary    string    `json:"summary"`
+		State        AiAgentTurnState
+		Response     *ai.Message
+		FinishReason aix.AgentFinishReason
+		Error        error
 	}
 
 	AiAgentConfig struct {
@@ -523,6 +517,7 @@ type (
 		OwnerUserID      *uuid.UUID
 		PermissionScopes []string
 		Input            ValidatingInput
+		SystemAnalysisID *uuid.UUID
 		Metadata         map[string]any
 		Bindings         []AgentSessionBindingParams
 	}

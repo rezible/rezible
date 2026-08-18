@@ -21,7 +21,6 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
@@ -104,8 +103,6 @@ type Client struct {
 	AgentSessionBinding *AgentSessionBindingClient
 	// AgentTurn is the client for interacting with the AgentTurn builders.
 	AgentTurn *AgentTurnClient
-	// AgentTurnKnowledgeCitation is the client for interacting with the AgentTurnKnowledgeCitation builders.
-	AgentTurnKnowledgeCitation *AgentTurnKnowledgeCitationClient
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
@@ -250,7 +247,6 @@ func (c *Client) init() {
 	c.AgentSession = NewAgentSessionClient(c.config)
 	c.AgentSessionBinding = NewAgentSessionBindingClient(c.config)
 	c.AgentTurn = NewAgentTurnClient(c.config)
-	c.AgentTurnKnowledgeCitation = NewAgentTurnKnowledgeCitationClient(c.config)
 	c.Alert = NewAlertClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
 	c.AlertInstance = NewAlertInstanceClient(c.config)
@@ -415,7 +411,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AgentSession:                    NewAgentSessionClient(cfg),
 		AgentSessionBinding:             NewAgentSessionBindingClient(cfg),
 		AgentTurn:                       NewAgentTurnClient(cfg),
-		AgentTurnKnowledgeCitation:      NewAgentTurnKnowledgeCitationClient(cfg),
 		Alert:                           NewAlertClient(cfg),
 		AlertFeedback:                   NewAlertFeedbackClient(cfg),
 		AlertInstance:                   NewAlertInstanceClient(cfg),
@@ -504,7 +499,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AgentSession:                    NewAgentSessionClient(cfg),
 		AgentSessionBinding:             NewAgentSessionBindingClient(cfg),
 		AgentTurn:                       NewAgentTurnClient(cfg),
-		AgentTurnKnowledgeCitation:      NewAgentTurnKnowledgeCitationClient(cfg),
 		Alert:                           NewAlertClient(cfg),
 		AlertFeedback:                   NewAlertFeedbackClient(cfg),
 		AlertInstance:                   NewAlertInstanceClient(cfg),
@@ -599,20 +593,19 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentSessionBinding,
-		c.AgentTurn, c.AgentTurnKnowledgeCitation, c.Alert, c.AlertFeedback,
-		c.AlertInstance, c.AlertInvestigation, c.Document, c.DocumentAccess,
-		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
-		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
-		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
-		c.IncidentType, c.Integration, c.IntegrationEventSyncCursor,
-		c.IntegrationEventSyncRun, c.IntegrationUserInstallState, c.KnowledgeEntity,
-		c.KnowledgeEvidence, c.KnowledgeRelationship, c.KnowledgeSubjectAlias,
-		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
-		c.NormalizedEventProjection, c.NormalizedEventProjectionEntity,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
-		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.AgentTurn, c.Alert, c.AlertFeedback, c.AlertInstance, c.AlertInvestigation,
+		c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
+		c.Integration, c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
+		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEvidence,
+		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
+		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
+		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisEntity, c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
@@ -628,10 +621,9 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentSessionBinding,
-		c.AgentTurn, c.AgentTurnKnowledgeCitation, c.Alert, c.AlertFeedback,
-		c.AlertInstance, c.AlertInvestigation, c.AlertMetrics, c.Document,
-		c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
-		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.AgentTurn, c.Alert, c.AlertFeedback, c.AlertInstance, c.AlertInvestigation,
+		c.AlertMetrics, c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident,
+		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
 		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
@@ -665,8 +657,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AgentSessionBinding.mutate(ctx, m)
 	case *AgentTurnMutation:
 		return c.AgentTurn.mutate(ctx, m)
-	case *AgentTurnKnowledgeCitationMutation:
-		return c.AgentTurnKnowledgeCitation.mutate(ctx, m)
 	case *AlertMutation:
 		return c.Alert.mutate(ctx, m)
 	case *AlertFeedbackMutation:
@@ -1841,25 +1831,6 @@ func (c *AgentTurnClient) QueryArtifacts(_m *AgentTurn) *AgentArtifactQuery {
 	return query
 }
 
-// QueryKnowledgeCitations queries the knowledge_citations edge of a AgentTurn.
-func (c *AgentTurnClient) QueryKnowledgeCitations(_m *AgentTurn) *AgentTurnKnowledgeCitationQuery {
-	query := (&AgentTurnKnowledgeCitationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentturn.Table, agentturn.FieldID, id),
-			sqlgraph.To(agentturnknowledgecitation.Table, agentturnknowledgecitation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, agentturn.KnowledgeCitationsTable, agentturn.KnowledgeCitationsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *AgentTurnClient) Hooks() []Hook {
 	hooks := c.hooks.AgentTurn
@@ -1883,197 +1854,6 @@ func (c *AgentTurnClient) mutate(ctx context.Context, m *AgentTurnMutation) (Val
 		return (&AgentTurnDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AgentTurn mutation op: %q", m.Op())
-	}
-}
-
-// AgentTurnKnowledgeCitationClient is a client for the AgentTurnKnowledgeCitation schema.
-type AgentTurnKnowledgeCitationClient struct {
-	config
-}
-
-// NewAgentTurnKnowledgeCitationClient returns a client for the AgentTurnKnowledgeCitation from the given config.
-func NewAgentTurnKnowledgeCitationClient(c config) *AgentTurnKnowledgeCitationClient {
-	return &AgentTurnKnowledgeCitationClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `agentturnknowledgecitation.Hooks(f(g(h())))`.
-func (c *AgentTurnKnowledgeCitationClient) Use(hooks ...Hook) {
-	c.hooks.AgentTurnKnowledgeCitation = append(c.hooks.AgentTurnKnowledgeCitation, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `agentturnknowledgecitation.Intercept(f(g(h())))`.
-func (c *AgentTurnKnowledgeCitationClient) Intercept(interceptors ...Interceptor) {
-	c.inters.AgentTurnKnowledgeCitation = append(c.inters.AgentTurnKnowledgeCitation, interceptors...)
-}
-
-// Create returns a builder for creating a AgentTurnKnowledgeCitation entity.
-func (c *AgentTurnKnowledgeCitationClient) Create() *AgentTurnKnowledgeCitationCreate {
-	mutation := newAgentTurnKnowledgeCitationMutation(c.config, OpCreate)
-	return &AgentTurnKnowledgeCitationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of AgentTurnKnowledgeCitation entities.
-func (c *AgentTurnKnowledgeCitationClient) CreateBulk(builders ...*AgentTurnKnowledgeCitationCreate) *AgentTurnKnowledgeCitationCreateBulk {
-	return &AgentTurnKnowledgeCitationCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *AgentTurnKnowledgeCitationClient) MapCreateBulk(slice any, setFunc func(*AgentTurnKnowledgeCitationCreate, int)) *AgentTurnKnowledgeCitationCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &AgentTurnKnowledgeCitationCreateBulk{err: fmt.Errorf("calling to AgentTurnKnowledgeCitationClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*AgentTurnKnowledgeCitationCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &AgentTurnKnowledgeCitationCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for AgentTurnKnowledgeCitation.
-func (c *AgentTurnKnowledgeCitationClient) Update() *AgentTurnKnowledgeCitationUpdate {
-	mutation := newAgentTurnKnowledgeCitationMutation(c.config, OpUpdate)
-	return &AgentTurnKnowledgeCitationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *AgentTurnKnowledgeCitationClient) UpdateOne(_m *AgentTurnKnowledgeCitation) *AgentTurnKnowledgeCitationUpdateOne {
-	mutation := newAgentTurnKnowledgeCitationMutation(c.config, OpUpdateOne, withAgentTurnKnowledgeCitation(_m))
-	return &AgentTurnKnowledgeCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *AgentTurnKnowledgeCitationClient) UpdateOneID(id uuid.UUID) *AgentTurnKnowledgeCitationUpdateOne {
-	mutation := newAgentTurnKnowledgeCitationMutation(c.config, OpUpdateOne, withAgentTurnKnowledgeCitationID(id))
-	return &AgentTurnKnowledgeCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for AgentTurnKnowledgeCitation.
-func (c *AgentTurnKnowledgeCitationClient) Delete() *AgentTurnKnowledgeCitationDelete {
-	mutation := newAgentTurnKnowledgeCitationMutation(c.config, OpDelete)
-	return &AgentTurnKnowledgeCitationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *AgentTurnKnowledgeCitationClient) DeleteOne(_m *AgentTurnKnowledgeCitation) *AgentTurnKnowledgeCitationDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *AgentTurnKnowledgeCitationClient) DeleteOneID(id uuid.UUID) *AgentTurnKnowledgeCitationDeleteOne {
-	builder := c.Delete().Where(agentturnknowledgecitation.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &AgentTurnKnowledgeCitationDeleteOne{builder}
-}
-
-// Query returns a query builder for AgentTurnKnowledgeCitation.
-func (c *AgentTurnKnowledgeCitationClient) Query() *AgentTurnKnowledgeCitationQuery {
-	return &AgentTurnKnowledgeCitationQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeAgentTurnKnowledgeCitation},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a AgentTurnKnowledgeCitation entity by its id.
-func (c *AgentTurnKnowledgeCitationClient) Get(ctx context.Context, id uuid.UUID) (*AgentTurnKnowledgeCitation, error) {
-	return c.Query().Where(agentturnknowledgecitation.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *AgentTurnKnowledgeCitationClient) GetX(ctx context.Context, id uuid.UUID) *AgentTurnKnowledgeCitation {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a AgentTurnKnowledgeCitation.
-func (c *AgentTurnKnowledgeCitationClient) QueryTenant(_m *AgentTurnKnowledgeCitation) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentturnknowledgecitation.Table, agentturnknowledgecitation.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentturnknowledgecitation.TenantTable, agentturnknowledgecitation.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAgentTurn queries the agent_turn edge of a AgentTurnKnowledgeCitation.
-func (c *AgentTurnKnowledgeCitationClient) QueryAgentTurn(_m *AgentTurnKnowledgeCitation) *AgentTurnQuery {
-	query := (&AgentTurnClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentturnknowledgecitation.Table, agentturnknowledgecitation.FieldID, id),
-			sqlgraph.To(agentturn.Table, agentturn.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, agentturnknowledgecitation.AgentTurnTable, agentturnknowledgecitation.AgentTurnColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AgentTurn
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryKnowledgeEvidence queries the knowledge_evidence edge of a AgentTurnKnowledgeCitation.
-func (c *AgentTurnKnowledgeCitationClient) QueryKnowledgeEvidence(_m *AgentTurnKnowledgeCitation) *KnowledgeEvidenceQuery {
-	query := (&KnowledgeEvidenceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentturnknowledgecitation.Table, agentturnknowledgecitation.FieldID, id),
-			sqlgraph.To(knowledgeevidence.Table, knowledgeevidence.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentturnknowledgecitation.KnowledgeEvidenceTable, agentturnknowledgecitation.KnowledgeEvidenceColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEvidence
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *AgentTurnKnowledgeCitationClient) Hooks() []Hook {
-	hooks := c.hooks.AgentTurnKnowledgeCitation
-	return append(hooks[:len(hooks):len(hooks)], agentturnknowledgecitation.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *AgentTurnKnowledgeCitationClient) Interceptors() []Interceptor {
-	return c.inters.AgentTurnKnowledgeCitation
-}
-
-func (c *AgentTurnKnowledgeCitationClient) mutate(ctx context.Context, m *AgentTurnKnowledgeCitationMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&AgentTurnKnowledgeCitationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&AgentTurnKnowledgeCitationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&AgentTurnKnowledgeCitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&AgentTurnKnowledgeCitationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown AgentTurnKnowledgeCitation mutation op: %q", m.Op())
 	}
 }
 
@@ -15237,42 +15017,40 @@ func (c *VideoConferenceClient) mutate(ctx context.Context, m *VideoConferenceMu
 type (
 	hooks struct {
 		AgentArtifact, AgentMessage, AgentSession, AgentSessionBinding, AgentTurn,
-		AgentTurnKnowledgeCitation, Alert, AlertFeedback, AlertInstance,
-		AlertInvestigation, Document, DocumentAccess, EventAnnotation, Incident,
-		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
-		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
-		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
-		IncidentSeverity, IncidentTag, IncidentType, Integration,
-		IntegrationEventSyncCursor, IntegrationEventSyncRun,
-		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEvidence,
-		KnowledgeRelationship, KnowledgeSubjectAlias, MeetingSchedule, MeetingSession,
-		NormalizedEvent, NormalizedEventProjection, NormalizedEventProjectionEntity,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
-		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		Alert, AlertFeedback, AlertInstance, AlertInvestigation, Document,
+		DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
+		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
+		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentTag, IncidentType, Integration, IntegrationEventSyncCursor,
+		IntegrationEventSyncRun, IntegrationUserInstallState, KnowledgeEntity,
+		KnowledgeEvidence, KnowledgeRelationship, KnowledgeSubjectAlias,
+		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
+		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
+		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
 		SystemAnalysisEntrySubject, SystemAnalysisRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, UserAuthSession,
 		VideoConference []ent.Hook
 	}
 	inters struct {
 		AgentArtifact, AgentMessage, AgentSession, AgentSessionBinding, AgentTurn,
-		AgentTurnKnowledgeCitation, Alert, AlertFeedback, AlertInstance,
-		AlertInvestigation, AlertMetrics, Document, DocumentAccess, EventAnnotation,
-		Incident, IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
-		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
-		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
-		IncidentSeverity, IncidentTag, IncidentType, Integration,
-		IntegrationEventSyncCursor, IntegrationEventSyncRun,
-		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEvidence,
-		KnowledgeRelationship, KnowledgeSubjectAlias, MeetingSchedule, MeetingSession,
-		NormalizedEvent, NormalizedEventProjection, NormalizedEventProjectionEntity,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
-		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		Alert, AlertFeedback, AlertInstance, AlertInvestigation, AlertMetrics,
+		Document, DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
+		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
+		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentTag, IncidentType, Integration, IntegrationEventSyncCursor,
+		IntegrationEventSyncRun, IntegrationUserInstallState, KnowledgeEntity,
+		KnowledgeEvidence, KnowledgeRelationship, KnowledgeSubjectAlias,
+		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
+		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
+		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
 		SystemAnalysisEntrySubject, SystemAnalysisRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, UserAuthSession,
 		VideoConference []ent.Interceptor
@@ -15287,7 +15065,6 @@ var (
 		AgentSession:                          tableSchemas[0],
 		AgentSessionBinding:                   tableSchemas[0],
 		AgentTurn:                             tableSchemas[0],
-		AgentTurnKnowledgeCitation:            tableSchemas[0],
 		Alert:                                 tableSchemas[0],
 		AlertFeedback:                         tableSchemas[0],
 		AlertInstance:                         tableSchemas[0],

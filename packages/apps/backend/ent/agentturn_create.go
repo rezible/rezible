@@ -18,7 +18,6 @@ import (
 	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -213,21 +212,6 @@ func (_c *AgentTurnCreate) AddArtifacts(v ...*AgentArtifact) *AgentTurnCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddArtifactIDs(ids...)
-}
-
-// AddKnowledgeCitationIDs adds the "knowledge_citations" edge to the AgentTurnKnowledgeCitation entity by IDs.
-func (_c *AgentTurnCreate) AddKnowledgeCitationIDs(ids ...uuid.UUID) *AgentTurnCreate {
-	_c.mutation.AddKnowledgeCitationIDs(ids...)
-	return _c
-}
-
-// AddKnowledgeCitations adds the "knowledge_citations" edges to the AgentTurnKnowledgeCitation entity.
-func (_c *AgentTurnCreate) AddKnowledgeCitations(v ...*AgentTurnKnowledgeCitation) *AgentTurnCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddKnowledgeCitationIDs(ids...)
 }
 
 // Mutation returns the AgentTurnMutation object of the builder.
@@ -490,23 +474,6 @@ func (_c *AgentTurnCreate) createSpec() (*AgentTurn, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentArtifact
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.KnowledgeCitationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentturn.KnowledgeCitationsTable,
-			Columns: []string{agentturn.KnowledgeCitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturnknowledgecitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AgentTurnKnowledgeCitation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

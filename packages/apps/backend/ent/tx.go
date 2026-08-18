@@ -22,8 +22,6 @@ type Tx struct {
 	AgentSessionBinding *AgentSessionBindingClient
 	// AgentTurn is the client for interacting with the AgentTurn builders.
 	AgentTurn *AgentTurnClient
-	// AgentTurnKnowledgeCitation is the client for interacting with the AgentTurnKnowledgeCitation builders.
-	AgentTurnKnowledgeCitation *AgentTurnKnowledgeCitationClient
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
@@ -288,7 +286,6 @@ func (tx *Tx) init() {
 	tx.AgentSession = NewAgentSessionClient(tx.config)
 	tx.AgentSessionBinding = NewAgentSessionBindingClient(tx.config)
 	tx.AgentTurn = NewAgentTurnClient(tx.config)
-	tx.AgentTurnKnowledgeCitation = NewAgentTurnKnowledgeCitationClient(tx.config)
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertInstance = NewAlertInstanceClient(tx.config)

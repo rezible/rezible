@@ -21,9 +21,6 @@ type AgentSessionBinding func(*sql.Selector)
 // AgentTurn is the predicate function for agentturn builders.
 type AgentTurn func(*sql.Selector)
 
-// AgentTurnKnowledgeCitation is the predicate function for agentturnknowledgecitation builders.
-type AgentTurnKnowledgeCitation func(*sql.Selector)
-
 // Alert is the predicate function for alert builders.
 type Alert func(*sql.Selector)
 

@@ -54,26 +54,14 @@ type (
 	}
 
 	AgentTurnAttributes struct {
-		Status             string                       `json:"status"`
-		Sequence           int                          `json:"sequence"`
-		CreatedAt          time.Time                    `json:"createdAt"`
-		UpdatedAt          time.Time                    `json:"updatedAt"`
-		StartedAt          *time.Time                   `json:"startedAt,omitempty"`
-		FinishedAt         *time.Time                   `json:"finishedAt,omitempty"`
-		FinishReason       string                       `json:"finishReason,omitempty"`
-		Error              *AgentTurnError              `json:"error,omitempty"`
-		KnowledgeCitations []AgentTurnKnowledgeCitation `json:"knowledgeCitations,omitempty"`
-	}
-
-	AgentTurnKnowledgeCitation struct {
-		Id         uuid.UUID                            `json:"id"`
-		Attributes AgentTurnKnowledgeCitationAttributes `json:"attributes"`
-	}
-
-	AgentTurnKnowledgeCitationAttributes struct {
-		KnowledgeEvidenceId uuid.UUID `json:"knowledgeEvidenceId"`
-		Summary             string    `json:"summary"`
-		CreatedAt           time.Time `json:"createdAt"`
+		Status       string          `json:"status"`
+		Sequence     int             `json:"sequence"`
+		CreatedAt    time.Time       `json:"createdAt"`
+		UpdatedAt    time.Time       `json:"updatedAt"`
+		StartedAt    *time.Time      `json:"startedAt,omitempty"`
+		FinishedAt   *time.Time      `json:"finishedAt,omitempty"`
+		FinishReason string          `json:"finishReason,omitempty"`
+		Error        *AgentTurnError `json:"error,omitempty"`
 	}
 
 	AgentTurnError struct {
@@ -123,18 +111,7 @@ func AgentTurnFromEnt(turn *ent.AgentTurn) AgentTurn {
 		}
 	}
 
-	attrs.KnowledgeCitations = ConvertSlice(turn.Edges.KnowledgeCitations, AgentTurnKnowledgeCitationFromEnt)
-
 	return AgentTurn{Id: turn.ID, Attributes: attrs}
-}
-
-func AgentTurnKnowledgeCitationFromEnt(citation *ent.AgentTurnKnowledgeCitation) AgentTurnKnowledgeCitation {
-	attrs := AgentTurnKnowledgeCitationAttributes{
-		KnowledgeEvidenceId: citation.KnowledgeEvidenceID,
-		Summary:             citation.Summary,
-		CreatedAt:           citation.CreatedAt,
-	}
-	return AgentTurnKnowledgeCitation{Id: citation.ID, Attributes: attrs}
 }
 
 var aiTags = []string{"AI"}

@@ -18,7 +18,6 @@ import (
 	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
@@ -27,17 +26,16 @@ import (
 // AgentTurnQuery is the builder for querying AgentTurn entities.
 type AgentTurnQuery struct {
 	config
-	ctx                    *QueryContext
-	order                  []agentturn.OrderOption
-	inters                 []Interceptor
-	predicates             []predicate.AgentTurn
-	withTenant             *TenantQuery
-	withAgentSession       *AgentSessionQuery
-	withInputMessage       *AgentMessageQuery
-	withMessages           *AgentMessageQuery
-	withArtifacts          *AgentArtifactQuery
-	withKnowledgeCitations *AgentTurnKnowledgeCitationQuery
-	modifiers              []func(*sql.Selector)
+	ctx              *QueryContext
+	order            []agentturn.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.AgentTurn
+	withTenant       *TenantQuery
+	withAgentSession *AgentSessionQuery
+	withInputMessage *AgentMessageQuery
+	withMessages     *AgentMessageQuery
+	withArtifacts    *AgentArtifactQuery
+	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -193,31 +191,6 @@ func (_q *AgentTurnQuery) QueryArtifacts() *AgentArtifactQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentArtifact
 		step.Edge.Schema = schemaConfig.AgentArtifact
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryKnowledgeCitations chains the current query on the "knowledge_citations" edge.
-func (_q *AgentTurnQuery) QueryKnowledgeCitations() *AgentTurnKnowledgeCitationQuery {
-	query := (&AgentTurnKnowledgeCitationClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentturn.Table, agentturn.FieldID, selector),
-			sqlgraph.To(agentturnknowledgecitation.Table, agentturnknowledgecitation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, agentturn.KnowledgeCitationsTable, agentturn.KnowledgeCitationsColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AgentTurnKnowledgeCitation
-		step.Edge.Schema = schemaConfig.AgentTurnKnowledgeCitation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -411,17 +384,16 @@ func (_q *AgentTurnQuery) Clone() *AgentTurnQuery {
 		return nil
 	}
 	return &AgentTurnQuery{
-		config:                 _q.config,
-		ctx:                    _q.ctx.Clone(),
-		order:                  append([]agentturn.OrderOption{}, _q.order...),
-		inters:                 append([]Interceptor{}, _q.inters...),
-		predicates:             append([]predicate.AgentTurn{}, _q.predicates...),
-		withTenant:             _q.withTenant.Clone(),
-		withAgentSession:       _q.withAgentSession.Clone(),
-		withInputMessage:       _q.withInputMessage.Clone(),
-		withMessages:           _q.withMessages.Clone(),
-		withArtifacts:          _q.withArtifacts.Clone(),
-		withKnowledgeCitations: _q.withKnowledgeCitations.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]agentturn.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.AgentTurn{}, _q.predicates...),
+		withTenant:       _q.withTenant.Clone(),
+		withAgentSession: _q.withAgentSession.Clone(),
+		withInputMessage: _q.withInputMessage.Clone(),
+		withMessages:     _q.withMessages.Clone(),
+		withArtifacts:    _q.withArtifacts.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -481,17 +453,6 @@ func (_q *AgentTurnQuery) WithArtifacts(opts ...func(*AgentArtifactQuery)) *Agen
 		opt(query)
 	}
 	_q.withArtifacts = query
-	return _q
-}
-
-// WithKnowledgeCitations tells the query-builder to eager-load the nodes that are connected to
-// the "knowledge_citations" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentTurnQuery) WithKnowledgeCitations(opts ...func(*AgentTurnKnowledgeCitationQuery)) *AgentTurnQuery {
-	query := (&AgentTurnKnowledgeCitationClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withKnowledgeCitations = query
 	return _q
 }
 
@@ -579,13 +540,12 @@ func (_q *AgentTurnQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ag
 	var (
 		nodes       = []*AgentTurn{}
 		_spec       = _q.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withAgentSession != nil,
 			_q.withInputMessage != nil,
 			_q.withMessages != nil,
 			_q.withArtifacts != nil,
-			_q.withKnowledgeCitations != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -640,15 +600,6 @@ func (_q *AgentTurnQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ag
 		if err := _q.loadArtifacts(ctx, query, nodes,
 			func(n *AgentTurn) { n.Edges.Artifacts = []*AgentArtifact{} },
 			func(n *AgentTurn, e *AgentArtifact) { n.Edges.Artifacts = append(n.Edges.Artifacts, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withKnowledgeCitations; query != nil {
-		if err := _q.loadKnowledgeCitations(ctx, query, nodes,
-			func(n *AgentTurn) { n.Edges.KnowledgeCitations = []*AgentTurnKnowledgeCitation{} },
-			func(n *AgentTurn, e *AgentTurnKnowledgeCitation) {
-				n.Edges.KnowledgeCitations = append(n.Edges.KnowledgeCitations, e)
-			}); err != nil {
 			return nil, err
 		}
 	}
@@ -803,36 +754,6 @@ func (_q *AgentTurnQuery) loadArtifacts(ctx context.Context, query *AgentArtifac
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "last_agent_turn_id" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *AgentTurnQuery) loadKnowledgeCitations(ctx context.Context, query *AgentTurnKnowledgeCitationQuery, nodes []*AgentTurn, init func(*AgentTurn), assign func(*AgentTurn, *AgentTurnKnowledgeCitation)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*AgentTurn)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(agentturnknowledgecitation.FieldAgentTurnID)
-	}
-	query.Where(predicate.AgentTurnKnowledgeCitation(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(agentturn.KnowledgeCitationsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.AgentTurnID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "agent_turn_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

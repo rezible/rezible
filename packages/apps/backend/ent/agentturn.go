@@ -67,11 +67,9 @@ type AgentTurnEdges struct {
 	Messages []*AgentMessage `json:"messages,omitempty"`
 	// Artifacts holds the value of the artifacts edge.
 	Artifacts []*AgentArtifact `json:"artifacts,omitempty"`
-	// KnowledgeCitations holds the value of the knowledge_citations edge.
-	KnowledgeCitations []*AgentTurnKnowledgeCitation `json:"knowledge_citations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -123,15 +121,6 @@ func (e AgentTurnEdges) ArtifactsOrErr() ([]*AgentArtifact, error) {
 		return e.Artifacts, nil
 	}
 	return nil, &NotLoadedError{edge: "artifacts"}
-}
-
-// KnowledgeCitationsOrErr returns the KnowledgeCitations value or an error if the edge
-// was not loaded in eager-loading.
-func (e AgentTurnEdges) KnowledgeCitationsOrErr() ([]*AgentTurnKnowledgeCitation, error) {
-	if e.loadedTypes[5] {
-		return e.KnowledgeCitations, nil
-	}
-	return nil, &NotLoadedError{edge: "knowledge_citations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -292,11 +281,6 @@ func (_m *AgentTurn) QueryMessages() *AgentMessageQuery {
 // QueryArtifacts queries the "artifacts" edge of the AgentTurn entity.
 func (_m *AgentTurn) QueryArtifacts() *AgentArtifactQuery {
 	return NewAgentTurnClient(_m.config).QueryArtifacts(_m)
-}
-
-// QueryKnowledgeCitations queries the "knowledge_citations" edge of the AgentTurn entity.
-func (_m *AgentTurn) QueryKnowledgeCitations() *AgentTurnKnowledgeCitationQuery {
-	return NewAgentTurnClient(_m.config).QueryKnowledgeCitations(_m)
 }
 
 // Update returns a builder for updating this AgentTurn.

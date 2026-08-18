@@ -24,69 +24,57 @@ func defineTool[D ToolDefinition[I, O], I any, O any](name, description string) 
 }
 
 type (
-	QueryKnowledgeGraphInput struct {
-		EntityID string `json:"entity_id"`
-		Depth    int    `json:"depth,omitempty"`
+	ExploreSystemAnalysisInput struct {
+		Search string `json:"search,omitempty"`
 	}
 
-	QueryKnowledgeGraphOutput struct {
-		RootEntityID  string                           `json:"root_entity_id"`
-		Entities      []KnowledgeGraphToolEntity       `json:"entities"`
-		Relationships []KnowledgeGraphToolRelationship `json:"relationships"`
-		Evidence      []KnowledgeGraphToolEvidence     `json:"evidence"`
-		Truncated     bool                             `json:"truncated"`
+	ExploreSystemAnalysisOutput struct {
+		Analysis string `json:"analysis"`
 	}
 
-	KnowledgeGraphToolEntity struct {
-		ID      string                                 `json:"id"`
-		Kind    string                                 `json:"kind"`
-		Subkind string                                 `json:"subkind"`
-		State   schematypes.KnowledgeGraphSubjectState `json:"state"`
+	UpdateSystemAnalysisInput struct {
+		Search  string                         `json:"search,omitempty"`
+		Include []string                       `json:"include,omitempty"`
+		Prune   []string                       `json:"prune,omitempty"`
+		Entries []SystemAnalysisEntryToolInput `json:"entries,omitempty"`
 	}
 
-	KnowledgeGraphToolRelationship struct {
-		ID       string                                 `json:"id"`
-		Kind     string                                 `json:"kind"`
-		Subkind  string                                 `json:"subkind"`
-		SourceID string                                 `json:"source_id"`
-		TargetID string                                 `json:"target_id"`
-		State    schematypes.KnowledgeGraphSubjectState `json:"state"`
+	UpdateSystemAnalysisOutput struct {
+		Analysis string                         `json:"analysis"`
+		Counts   SystemAnalysisToolUpdateCounts `json:"counts"`
 	}
 
-	KnowledgeGraphToolEvidence struct {
-		ID             string         `json:"id"`
-		Assertion      string         `json:"assertion"`
-		EvidenceKind   string         `json:"evidence_kind"`
-		EffectiveAt    time.Time      `json:"effective_at"`
-		Properties     map[string]any `json:"properties"`
-		EntityID       string         `json:"entity_id,omitempty"`
-		RelationshipID string         `json:"relationship_id,omitempty"`
-	}
-)
-
-var QueryKnowledgeGraphTool = defineTool[ToolDefinition[QueryKnowledgeGraphInput, QueryKnowledgeGraphOutput]](
-	"query_knowledge_graph",
-	"Get evidence-backed entities and relationships around a knowledge graph entity.",
-)
-
-type (
-	RecordKnowledgeCitationsInput struct {
-		Citations []KnowledgeCitation `json:"citations"`
+	SystemAnalysisEntryToolInput struct {
+		Kind       string                                `json:"kind"`
+		Title      string                                `json:"title"`
+		Body       string                                `json:"body,omitempty"`
+		OccurredAt *time.Time                            `json:"occurred_at,omitempty"`
+		Subjects   []SystemAnalysisEntrySubjectToolInput `json:"subjects,omitempty"`
 	}
 
-	KnowledgeCitation struct {
-		EvidenceID string `json:"evidence_id"`
-		Summary    string `json:"summary"`
+	SystemAnalysisEntrySubjectToolInput struct {
+		Role   string `json:"role"`
+		Handle string `json:"handle"`
 	}
 
-	RecordKnowledgeCitationsOutput struct {
-		Recorded int `json:"recorded"`
+	SystemAnalysisToolUpdateCounts struct {
+		IncludedEntities      int `json:"included_entities"`
+		IncludedRelationships int `json:"included_relationships"`
+		PrunedEntities        int `json:"pruned_entities"`
+		PrunedRelationships   int `json:"pruned_relationships"`
+		Entries               int `json:"entries"`
+		EntrySubjects         int `json:"entry_subjects"`
 	}
 )
 
-var RecordKnowledgeCitationsTool = defineTool[ToolDefinition[RecordKnowledgeCitationsInput, RecordKnowledgeCitationsOutput]](
-	"record_knowledge_citations",
-	"Record only the retrieved evidence that directly supports claims in the response.",
+var ExploreSystemAnalysisTool = defineTool[ToolDefinition[ExploreSystemAnalysisInput, ExploreSystemAnalysisOutput]](
+	"explore_system_analysis",
+	"Inspect the current system analysis, nearby knowledge graph candidates, and search results as compact text with handles.",
+)
+
+var UpdateSystemAnalysisTool = defineTool[ToolDefinition[UpdateSystemAnalysisInput, UpdateSystemAnalysisOutput]](
+	"update_system_analysis",
+	"Update the current system analysis using handles from the rendered analysis.",
 )
 
 type (

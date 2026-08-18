@@ -13,7 +13,6 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
@@ -270,33 +269,6 @@ func (f TraverseAgentTurn) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AgentTurnQuery", q)
-}
-
-// The AgentTurnKnowledgeCitationFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AgentTurnKnowledgeCitationFunc func(context.Context, *ent.AgentTurnKnowledgeCitationQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f AgentTurnKnowledgeCitationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AgentTurnKnowledgeCitationQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentTurnKnowledgeCitationQuery", q)
-}
-
-// The TraverseAgentTurnKnowledgeCitation type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAgentTurnKnowledgeCitation func(context.Context, *ent.AgentTurnKnowledgeCitationQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAgentTurnKnowledgeCitation) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseAgentTurnKnowledgeCitation) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AgentTurnKnowledgeCitationQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AgentTurnKnowledgeCitationQuery", q)
 }
 
 // The AlertFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2040,8 +2012,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AgentSessionBindingQuery, predicate.AgentSessionBinding, agentsessionbinding.OrderOption]{typ: ent.TypeAgentSessionBinding, tq: q}, nil
 	case *ent.AgentTurnQuery:
 		return &query[*ent.AgentTurnQuery, predicate.AgentTurn, agentturn.OrderOption]{typ: ent.TypeAgentTurn, tq: q}, nil
-	case *ent.AgentTurnKnowledgeCitationQuery:
-		return &query[*ent.AgentTurnKnowledgeCitationQuery, predicate.AgentTurnKnowledgeCitation, agentturnknowledgecitation.OrderOption]{typ: ent.TypeAgentTurnKnowledgeCitation, tq: q}, nil
 	case *ent.AlertQuery:
 		return &query[*ent.AlertQuery, predicate.Alert, alert.OrderOption]{typ: ent.TypeAlert, tq: q}, nil
 	case *ent.AlertFeedbackQuery:

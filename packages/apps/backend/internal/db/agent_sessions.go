@@ -20,7 +20,6 @@ import (
 	"github.com/rezible/rezible/ent/agentmessage"
 	as "github.com/rezible/rezible/ent/agentsession"
 	at "github.com/rezible/rezible/ent/agentturn"
-	atkc "github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/predicate"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
@@ -93,6 +92,7 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 			SetAgentName(name).
 			SetInput(sessionInput).
 			SetNillableOwnerUserID(params.OwnerUserID).
+			SetNillableSystemAnalysisID(params.SystemAnalysisID).
 			SetScopes(params.PermissionScopes).
 			SetMetadata(metadata)
 		createdSession, createErr := createSession.Save(ctx)
@@ -178,10 +178,7 @@ func (s *AgentSessionService) SetAgentSessionBinding(ctx context.Context, bindin
 }
 
 func (s *AgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
-	q := s.db.Client(ctx).AgentTurn.Query().
-		WithKnowledgeCitations(func(cq *ent.AgentTurnKnowledgeCitationQuery) {
-			cq.Order(atkc.ByCreatedAt(sql.OrderAsc()), atkc.ByID(sql.OrderAsc()))
-		})
+	q := s.db.Client(ctx).AgentTurn.Query()
 	if userID, isUserContext := execution.GetContext(ctx).UserID(); isUserContext {
 		q.Where(at.HasAgentSessionWith(as.OwnerUserID(userID)))
 	}
@@ -854,20 +851,6 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 				})
 			if artifactsErr := upsertArtifacts.Exec(ctx); artifactsErr != nil {
 				return fmt.Errorf("update agent artifacts: %w", artifactsErr)
-			}
-		}
-
-		if citations := result.KnowledgeCitations; len(citations) > 0 {
-			upsertCitations := tx.AgentTurnKnowledgeCitation.
-				MapCreateBulk(citations, func(cc *ent.AgentTurnKnowledgeCitationCreate, i int) {
-					cit := citations[i]
-					cc.SetAgentTurnID(turn.ID)
-					cc.SetSummary(cit.Summary)
-					cc.SetKnowledgeEvidenceID(cit.EvidenceID)
-				}).
-				OnConflictColumns(atkc.FieldTenantID, atkc.FieldAgentTurnID, atkc.FieldKnowledgeEvidenceID).DoNothing()
-			if citationErr := upsertCitations.Exec(ctx); citationErr != nil {
-				return fmt.Errorf("record agent turn knowledge citations: %w", citationErr)
 			}
 		}
 

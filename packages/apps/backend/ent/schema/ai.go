@@ -180,7 +180,6 @@ func (AgentTurn) Edges() []ent.Edge {
 
 		edge.To("messages", AgentMessage.Type),
 		edge.To("artifacts", AgentArtifact.Type),
-		edge.To("knowledge_citations", AgentTurnKnowledgeCitation.Type),
 	}
 }
 
@@ -308,48 +307,5 @@ func (AgentArtifact) Indexes() []ent.Index {
 		index.Fields("agent_session_id", "name").Unique(),
 		index.Fields("tenant_id", "agent_session_id", "created_at"),
 		index.Fields("tenant_id", "last_agent_turn_id"),
-	}
-}
-
-type AgentTurnKnowledgeCitation struct {
-	ent.Schema
-}
-
-func (AgentTurnKnowledgeCitation) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-		TimestampsMixin{},
-	}
-}
-
-func (AgentTurnKnowledgeCitation) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("agent_turn_id", uuid.UUID{}),
-		field.UUID("knowledge_evidence_id", uuid.UUID{}),
-		field.Text("summary").NotEmpty(),
-	}
-}
-
-func (AgentTurnKnowledgeCitation) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.From("agent_turn", AgentTurn.Type).
-			Ref("knowledge_citations").
-			Unique().
-			Required().
-			Field("agent_turn_id"),
-
-		edge.To("knowledge_evidence", KnowledgeEvidence.Type).
-			Unique().
-			Required().
-			Field("knowledge_evidence_id"),
-	}
-}
-
-func (AgentTurnKnowledgeCitation) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "agent_turn_id", "knowledge_evidence_id").Unique(),
-		index.Fields("tenant_id", "knowledge_evidence_id"),
 	}
 }

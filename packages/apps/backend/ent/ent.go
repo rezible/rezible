@@ -17,7 +17,6 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
@@ -147,7 +146,6 @@ func checkColumn(t, c string) error {
 			agentsession.Table:                    agentsession.ValidColumn,
 			agentsessionbinding.Table:             agentsessionbinding.ValidColumn,
 			agentturn.Table:                       agentturn.ValidColumn,
-			agentturnknowledgecitation.Table:      agentturnknowledgecitation.ValidColumn,
 			alert.Table:                           alert.ValidColumn,
 			alertfeedback.Table:                   alertfeedback.ValidColumn,
 			alertinstance.Table:                   alertinstance.ValidColumn,

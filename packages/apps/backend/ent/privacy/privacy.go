@@ -231,30 +231,6 @@ func (f AgentTurnMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutat
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentTurnMutation", m)
 }
 
-// The AgentTurnKnowledgeCitationQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type AgentTurnKnowledgeCitationQueryRuleFunc func(context.Context, *ent.AgentTurnKnowledgeCitationQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f AgentTurnKnowledgeCitationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AgentTurnKnowledgeCitationQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentTurnKnowledgeCitationQuery", q)
-}
-
-// The AgentTurnKnowledgeCitationMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type AgentTurnKnowledgeCitationMutationRuleFunc func(context.Context, *ent.AgentTurnKnowledgeCitationMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f AgentTurnKnowledgeCitationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.AgentTurnKnowledgeCitationMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentTurnKnowledgeCitationMutation", m)
-}
-
 // The AlertQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AlertQueryRuleFunc func(context.Context, *ent.AlertQuery) error
@@ -1824,8 +1800,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AgentTurnQuery:
 		return q.Filter(), nil
-	case *ent.AgentTurnKnowledgeCitationQuery:
-		return q.Filter(), nil
 	case *ent.AlertQuery:
 		return q.Filter(), nil
 	case *ent.AlertFeedbackQuery:
@@ -1970,8 +1944,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.AgentSessionBindingMutation:
 		return m.Filter(), nil
 	case *ent.AgentTurnMutation:
-		return m.Filter(), nil
-	case *ent.AgentTurnKnowledgeCitationMutation:
 		return m.Filter(), nil
 	case *ent.AlertMutation:
 		return m.Filter(), nil

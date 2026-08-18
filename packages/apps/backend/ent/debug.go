@@ -44,14 +44,6 @@ func (c *AgentTurnClient) Debug() *AgentTurnClient {
 	return &AgentTurnClient{config: cfg}
 }
 
-func (c *AgentTurnKnowledgeCitationClient) Debug() *AgentTurnKnowledgeCitationClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AgentTurnKnowledgeCitationClient{config: cfg}
-}
-
 func (c *AlertClient) Debug() *AlertClient {
 	if c.debug {
 		return c

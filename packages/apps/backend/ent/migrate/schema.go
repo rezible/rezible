@@ -331,59 +331,6 @@ var (
 			},
 		},
 	}
-	// AgentTurnKnowledgeCitationsColumns holds the columns for the "agent_turn_knowledge_citations" table.
-	AgentTurnKnowledgeCitationsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "summary", Type: field.TypeString, Size: 2147483647},
-		{Name: "agent_turn_id", Type: field.TypeUUID},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "knowledge_evidence_id", Type: field.TypeUUID},
-	}
-	// AgentTurnKnowledgeCitationsTable holds the schema information for the "agent_turn_knowledge_citations" table.
-	AgentTurnKnowledgeCitationsTable = &schema.Table{
-		Name:       "agent_turn_knowledge_citations",
-		Columns:    AgentTurnKnowledgeCitationsColumns,
-		PrimaryKey: []*schema.Column{AgentTurnKnowledgeCitationsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "agent_turn_knowledge_citations_agent_turns_knowledge_citations",
-				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[4]},
-				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "agent_turn_knowledge_citations_tenants_tenant",
-				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[5]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "agent_turn_knowledge_citations_knowledge_evidences_knowledge_evidence",
-				Columns:    []*schema.Column{AgentTurnKnowledgeCitationsColumns[6]},
-				RefColumns: []*schema.Column{KnowledgeEvidencesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "agentturnknowledgecitation_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5]},
-			},
-			{
-				Name:    "agentturnknowledgecitation_tenant_id_agent_turn_id_knowledge_evidence_id",
-				Unique:  true,
-				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5], AgentTurnKnowledgeCitationsColumns[4], AgentTurnKnowledgeCitationsColumns[6]},
-			},
-			{
-				Name:    "agentturnknowledgecitation_tenant_id_knowledge_evidence_id",
-				Unique:  false,
-				Columns: []*schema.Column{AgentTurnKnowledgeCitationsColumns[5], AgentTurnKnowledgeCitationsColumns[6]},
-			},
-		},
-	}
 	// AlertsColumns holds the columns for the "alerts" table.
 	AlertsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -3529,7 +3476,6 @@ var (
 		AgentSessionsTable,
 		AgentSessionBindingsTable,
 		AgentTurnsTable,
-		AgentTurnKnowledgeCitationsTable,
 		AlertsTable,
 		AlertFeedbacksTable,
 		AlertInstancesTable,
@@ -3630,9 +3576,6 @@ func init() {
 	AgentTurnsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	AgentTurnsTable.ForeignKeys[1].RefTable = TenantsTable
 	AgentTurnsTable.ForeignKeys[2].RefTable = AgentMessagesTable
-	AgentTurnKnowledgeCitationsTable.ForeignKeys[0].RefTable = AgentTurnsTable
-	AgentTurnKnowledgeCitationsTable.ForeignKeys[1].RefTable = TenantsTable
-	AgentTurnKnowledgeCitationsTable.ForeignKeys[2].RefTable = KnowledgeEvidencesTable
 	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable

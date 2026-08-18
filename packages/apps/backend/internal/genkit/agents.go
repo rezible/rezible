@@ -272,15 +272,9 @@ func (w *agentWrapper[I, S]) wrapInvocationOutput(out *aix.AgentOutput[S]) (*rez
 		return nil, fmt.Errorf("client-managed agent returned snapshot ID %q", out.SnapshotID)
 	}
 
-	citations, citationsErr := getAgentKnowledgeCitations(out.Artifacts)
-	if citationsErr != nil {
-		return nil, fmt.Errorf("unable to get agent knowledge citations: %w", citationsErr)
-	}
-
 	result := &rez.AiAgentInvocationResult{
-		Response:           out.Message,
-		FinishReason:       out.FinishReason,
-		KnowledgeCitations: citations,
+		Response:     out.Message,
+		FinishReason: out.FinishReason,
 	}
 	if out.Error != nil || result.FinishReason == aix.AgentFinishReasonFailed {
 		result.FinishReason = aix.AgentFinishReasonFailed

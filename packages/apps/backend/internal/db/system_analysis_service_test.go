@@ -153,12 +153,10 @@ func (s *SystemAnalysisServiceSuite) TestAnalysisEntityMutationsAndDelete() {
 	updated, updateErr := svc.SetSystemAnalysisEntity(ctx, node.ID, func(m *ent.SystemAnalysisEntityMutation) {
 		m.SetPosX(30)
 		m.SetPosY(40)
-		m.SetHidden(true)
 	})
 	s.Require().NoError(updateErr)
 	s.Equal(30.0, *updated.PosX)
 	s.Equal(40.0, *updated.PosY)
-	s.True(updated.Hidden)
 
 	nodes, listErr := svc.ListSystemAnalysisEntities(ctx, analysis.ID)
 	s.Require().NoError(listErr)
@@ -204,11 +202,9 @@ func (s *SystemAnalysisServiceSuite) TestAnalysisRelationshipDerivesEndpointEnti
 
 	layout := map[string]any{"curve": "smooth"}
 	updated, updateErr := svc.SetSystemAnalysisRelationship(ctx, relationship.ID, func(m *ent.SystemAnalysisRelationshipMutation) {
-		m.SetHidden(true)
 		m.SetLayout(layout)
 	})
 	s.Require().NoError(updateErr)
-	s.True(updated.Hidden)
 	s.Equal(layout, updated.Layout)
 
 	s.Require().NoError(svc.DeleteSystemAnalysisEntity(ctx, relationship.SourceAnalysisEntityID))

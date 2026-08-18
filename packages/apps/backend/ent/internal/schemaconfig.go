@@ -12,7 +12,6 @@ type SchemaConfig struct {
 	AgentSession                              string // AgentSession table.
 	AgentSessionBinding                       string // AgentSessionBinding table.
 	AgentTurn                                 string // AgentTurn table.
-	AgentTurnKnowledgeCitation                string // AgentTurnKnowledgeCitation table.
 	Alert                                     string // Alert table.
 	AlertFeedback                             string // AlertFeedback table.
 	AlertInstance                             string // AlertInstance table.

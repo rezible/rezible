@@ -16,7 +16,6 @@ import (
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/agentturnknowledgecitation"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -231,21 +230,6 @@ func (_u *AgentTurnUpdate) AddArtifacts(v ...*AgentArtifact) *AgentTurnUpdate {
 	return _u.AddArtifactIDs(ids...)
 }
 
-// AddKnowledgeCitationIDs adds the "knowledge_citations" edge to the AgentTurnKnowledgeCitation entity by IDs.
-func (_u *AgentTurnUpdate) AddKnowledgeCitationIDs(ids ...uuid.UUID) *AgentTurnUpdate {
-	_u.mutation.AddKnowledgeCitationIDs(ids...)
-	return _u
-}
-
-// AddKnowledgeCitations adds the "knowledge_citations" edges to the AgentTurnKnowledgeCitation entity.
-func (_u *AgentTurnUpdate) AddKnowledgeCitations(v ...*AgentTurnKnowledgeCitation) *AgentTurnUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddKnowledgeCitationIDs(ids...)
-}
-
 // Mutation returns the AgentTurnMutation object of the builder.
 func (_u *AgentTurnUpdate) Mutation() *AgentTurnMutation {
 	return _u.mutation
@@ -297,27 +281,6 @@ func (_u *AgentTurnUpdate) RemoveArtifacts(v ...*AgentArtifact) *AgentTurnUpdate
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveArtifactIDs(ids...)
-}
-
-// ClearKnowledgeCitations clears all "knowledge_citations" edges to the AgentTurnKnowledgeCitation entity.
-func (_u *AgentTurnUpdate) ClearKnowledgeCitations() *AgentTurnUpdate {
-	_u.mutation.ClearKnowledgeCitations()
-	return _u
-}
-
-// RemoveKnowledgeCitationIDs removes the "knowledge_citations" edge to AgentTurnKnowledgeCitation entities by IDs.
-func (_u *AgentTurnUpdate) RemoveKnowledgeCitationIDs(ids ...uuid.UUID) *AgentTurnUpdate {
-	_u.mutation.RemoveKnowledgeCitationIDs(ids...)
-	return _u
-}
-
-// RemoveKnowledgeCitations removes "knowledge_citations" edges to AgentTurnKnowledgeCitation entities.
-func (_u *AgentTurnUpdate) RemoveKnowledgeCitations(v ...*AgentTurnKnowledgeCitation) *AgentTurnUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveKnowledgeCitationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -565,54 +528,6 @@ func (_u *AgentTurnUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.KnowledgeCitationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentturn.KnowledgeCitationsTable,
-			Columns: []string{agentturn.KnowledgeCitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturnknowledgecitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedKnowledgeCitationsIDs(); len(nodes) > 0 && !_u.mutation.KnowledgeCitationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentturn.KnowledgeCitationsTable,
-			Columns: []string{agentturn.KnowledgeCitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturnknowledgecitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeCitationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentturn.KnowledgeCitationsTable,
-			Columns: []string{agentturn.KnowledgeCitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturnknowledgecitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	_spec.Node.Schema = _u.schemaConfig.AgentTurn
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -833,21 +748,6 @@ func (_u *AgentTurnUpdateOne) AddArtifacts(v ...*AgentArtifact) *AgentTurnUpdate
 	return _u.AddArtifactIDs(ids...)
 }
 
-// AddKnowledgeCitationIDs adds the "knowledge_citations" edge to the AgentTurnKnowledgeCitation entity by IDs.
-func (_u *AgentTurnUpdateOne) AddKnowledgeCitationIDs(ids ...uuid.UUID) *AgentTurnUpdateOne {
-	_u.mutation.AddKnowledgeCitationIDs(ids...)
-	return _u
-}
-
-// AddKnowledgeCitations adds the "knowledge_citations" edges to the AgentTurnKnowledgeCitation entity.
-func (_u *AgentTurnUpdateOne) AddKnowledgeCitations(v ...*AgentTurnKnowledgeCitation) *AgentTurnUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddKnowledgeCitationIDs(ids...)
-}
-
 // Mutation returns the AgentTurnMutation object of the builder.
 func (_u *AgentTurnUpdateOne) Mutation() *AgentTurnMutation {
 	return _u.mutation
@@ -899,27 +799,6 @@ func (_u *AgentTurnUpdateOne) RemoveArtifacts(v ...*AgentArtifact) *AgentTurnUpd
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveArtifactIDs(ids...)
-}
-
-// ClearKnowledgeCitations clears all "knowledge_citations" edges to the AgentTurnKnowledgeCitation entity.
-func (_u *AgentTurnUpdateOne) ClearKnowledgeCitations() *AgentTurnUpdateOne {
-	_u.mutation.ClearKnowledgeCitations()
-	return _u
-}
-
-// RemoveKnowledgeCitationIDs removes the "knowledge_citations" edge to AgentTurnKnowledgeCitation entities by IDs.
-func (_u *AgentTurnUpdateOne) RemoveKnowledgeCitationIDs(ids ...uuid.UUID) *AgentTurnUpdateOne {
-	_u.mutation.RemoveKnowledgeCitationIDs(ids...)
-	return _u
-}
-
-// RemoveKnowledgeCitations removes "knowledge_citations" edges to AgentTurnKnowledgeCitation entities.
-func (_u *AgentTurnUpdateOne) RemoveKnowledgeCitations(v ...*AgentTurnKnowledgeCitation) *AgentTurnUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveKnowledgeCitationIDs(ids...)
 }
 
 // Where appends a list predicates to the AgentTurnUpdate builder.
@@ -1192,54 +1071,6 @@ func (_u *AgentTurnUpdateOne) sqlSave(ctx context.Context) (_node *AgentTurn, er
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentArtifact
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeCitationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentturn.KnowledgeCitationsTable,
-			Columns: []string{agentturn.KnowledgeCitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturnknowledgecitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedKnowledgeCitationsIDs(); len(nodes) > 0 && !_u.mutation.KnowledgeCitationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentturn.KnowledgeCitationsTable,
-			Columns: []string{agentturn.KnowledgeCitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturnknowledgecitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeCitationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   agentturn.KnowledgeCitationsTable,
-			Columns: []string{agentturn.KnowledgeCitationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentturnknowledgecitation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentTurnKnowledgeCitation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
