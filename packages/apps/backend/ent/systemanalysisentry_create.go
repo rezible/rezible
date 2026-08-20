@@ -468,18 +468,6 @@ func (u *SystemAnalysisEntryUpsert) UpdateUpdatedAt() *SystemAnalysisEntryUpsert
 	return u
 }
 
-// SetAnalysisID sets the "analysis_id" field.
-func (u *SystemAnalysisEntryUpsert) SetAnalysisID(v uuid.UUID) *SystemAnalysisEntryUpsert {
-	u.Set(systemanalysisentry.FieldAnalysisID, v)
-	return u
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntryUpsert) UpdateAnalysisID() *SystemAnalysisEntryUpsert {
-	u.SetExcluded(systemanalysisentry.FieldAnalysisID)
-	return u
-}
-
 // SetKind sets the "kind" field.
 func (u *SystemAnalysisEntryUpsert) SetKind(v systemanalysisentry.Kind) *SystemAnalysisEntryUpsert {
 	u.Set(systemanalysisentry.FieldKind, v)
@@ -596,6 +584,9 @@ func (u *SystemAnalysisEntryUpsertOne) UpdateNewValues() *SystemAnalysisEntryUps
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(systemanalysisentry.FieldTenantID)
 		}
+		if _, exists := u.create.mutation.AnalysisID(); exists {
+			s.SetIgnore(systemanalysisentry.FieldAnalysisID)
+		}
 	}))
 	return u
 }
@@ -652,20 +643,6 @@ func (u *SystemAnalysisEntryUpsertOne) SetUpdatedAt(v time.Time) *SystemAnalysis
 func (u *SystemAnalysisEntryUpsertOne) UpdateUpdatedAt() *SystemAnalysisEntryUpsertOne {
 	return u.Update(func(s *SystemAnalysisEntryUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (u *SystemAnalysisEntryUpsertOne) SetAnalysisID(v uuid.UUID) *SystemAnalysisEntryUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntryUpsert) {
-		s.SetAnalysisID(v)
-	})
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntryUpsertOne) UpdateAnalysisID() *SystemAnalysisEntryUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntryUpsert) {
-		s.UpdateAnalysisID()
 	})
 }
 
@@ -967,6 +944,9 @@ func (u *SystemAnalysisEntryUpsertBulk) UpdateNewValues() *SystemAnalysisEntryUp
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(systemanalysisentry.FieldTenantID)
 			}
+			if _, exists := b.mutation.AnalysisID(); exists {
+				s.SetIgnore(systemanalysisentry.FieldAnalysisID)
+			}
 		}
 	}))
 	return u
@@ -1024,20 +1004,6 @@ func (u *SystemAnalysisEntryUpsertBulk) SetUpdatedAt(v time.Time) *SystemAnalysi
 func (u *SystemAnalysisEntryUpsertBulk) UpdateUpdatedAt() *SystemAnalysisEntryUpsertBulk {
 	return u.Update(func(s *SystemAnalysisEntryUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (u *SystemAnalysisEntryUpsertBulk) SetAnalysisID(v uuid.UUID) *SystemAnalysisEntryUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntryUpsert) {
-		s.SetAnalysisID(v)
-	})
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntryUpsertBulk) UpdateAnalysisID() *SystemAnalysisEntryUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntryUpsert) {
-		s.UpdateAnalysisID()
 	})
 }
 

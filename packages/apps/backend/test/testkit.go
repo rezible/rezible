@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/postgres/migrations"
@@ -91,7 +92,9 @@ func (s *Suite) loadConfig() {
 
 func (s *Suite) Config() rez.Config { return s.cfg }
 
-func (s *Suite) Database() rez.Database { return s.db }
+func (s *Suite) Database() rez.Database {
+	return s.db
+}
 
 func (s *Suite) PostgresPool() *postgres.PgxPool { return s.pg }
 
@@ -106,6 +109,7 @@ func (s *Suite) SeedTenantContext() context.Context {
 }
 
 func (s *Suite) setupTestDatabase() {
+	start := time.Now()
 	cfg := s.cfg.Postgres
 	s.Require().NotEmpty(cfg.AdminRole.Name, "postgres migrations admin config empty")
 
@@ -123,10 +127,8 @@ func (s *Suite) setupTestDatabase() {
 			Password: cfg.AppRole.Password,
 		},
 	}
-	s.T().Logf("creating pgtestdb")
 	testConfig := pgtestdb.Custom(s.T(), pgxConf, newTestDbMigrator())
 	s.Require().NotNil(testConfig)
-	s.T().Logf("created pgtestdb")
 
 	port, portErr := strconv.ParseUint(testConfig.Port, 10, 16)
 	s.Require().NoError(portErr)
@@ -152,7 +154,11 @@ func (s *Suite) setupTestDatabase() {
 	s.Require().NoError(dbErr)
 	s.db = db
 
-	s.T().Logf("created test database")
+	s.T().Logf("created test database in %dms", time.Since(start).Milliseconds())
+
+	s.SeedTestEntities()
+
+	s.T().Logf("seeded test entities")
 }
 
 func (s *Suite) closeTestDatabase() {

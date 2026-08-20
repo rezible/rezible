@@ -1,6 +1,9 @@
 package ai
 
 import (
+	"time"
+
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
@@ -22,16 +25,175 @@ func defineTool[D ToolDefinition[I, O], I any, O any](name, description string) 
 }
 
 type (
-	SaveAlertInvestigationReportInput struct {
-		Report schematypes.AlertInvestigationReport `json:"report"`
+	KnowledgeEntitySummary struct {
+		ID          uuid.UUID `json:"id"`
+		Kind        string    `json:"kind"`
+		Subkind     string    `json:"subkind"`
+		DisplayName string    `json:"display_name"`
 	}
 
-	SaveAlertInvestigationReportOutput struct {
+	KnowledgeRelationshipSummary struct {
+		ID          uuid.UUID `json:"id"`
+		Kind        string    `json:"kind"`
+		Subkind     string    `json:"subkind"`
+		DisplayName string    `json:"display_name"`
+	}
+
+	KnowledgeSubjectAliasSummary struct {
+		ID                       uuid.UUID `json:"id"`
+		Provider                 string    `json:"provider"`
+		ProviderSource           string    `json:"provider_source"`
+		ProviderSubjectReference string    `json:"provider_subject_reference"`
+	}
+
+	KnowledgeEvidenceSummary struct {
+		ID          uuid.UUID `json:"id"`
+		Kind        string    `json:"kind"`
+		Assertion   string    `json:"assertion"`
+		EffectiveAt time.Time `json:"effective_at"`
+		CreatedAt   time.Time `json:"created_at"`
+	}
+)
+
+type (
+	SummarizeSystemNeighborhoodToolInput struct {
+		EntityID *string `json:"entity_id,omitempty" jsonschema:"description=Knowledge entity to summarize. Omit to use the default analysis subject,format=uuid"`
+	}
+	SummarizeSystemNeighborhoodToolOutput struct {
+		IncomingRelationships map[string]SystemNeighborhoodGroupSummary `json:"incoming_relationships"`
+		OutgoingRelationships map[string]SystemNeighborhoodGroupSummary `json:"outgoing_relationships"`
+	}
+	SystemNeighborhoodGroupSummary struct {
+		Count int `json:"count"`
+	}
+)
+
+var SummarizeSystemNeighborhoodTool = defineTool[ToolDefinition[SummarizeSystemNeighborhoodToolInput, SummarizeSystemNeighborhoodToolOutput]](
+	"summarize_system_neighborhood",
+	"Summarize the one-hop knowledge graph neighborhood of the system analysis subject or an included entity, grouped by direction and relationship kind.",
+)
+
+type (
+	ExploreSystemNeighborhoodToolInput struct {
+		EntityID         *string `json:"entity_id,omitempty" jsonschema:"description=Knowledge entity to explore. Omit to use the default analysis subject,format=uuid"`
+		RelationshipKind *string `json:"relationship_kind,omitempty" jsonschema:"description=Optional exact relationship kind,minLength=1"`
+		NeighborKind     *string `json:"neighbor_kind,omitempty" jsonschema:"description=Optional exact kind of the entity at the opposite endpoint,minLength=1"`
+		Offset           *int    `json:"offset,omitempty" jsonschema:"description=Zero-based result offset,minimum=0"`
+	}
+
+	ExploreSystemNeighborhoodToolOutput struct {
+		Neighbours []SystemEntityNeighbor `json:"neighbours"`
+		NextOffset *int                   `json:"next_offset,omitempty"`
+	}
+	SystemEntityNeighbor struct {
+		Relationship KnowledgeRelationshipSummary `json:"relationship"`
+		Entity       KnowledgeEntitySummary       `json:"entity"`
+	}
+)
+
+var ExploreSystemNeighborhoodTool = defineTool[ToolDefinition[ExploreSystemNeighborhoodToolInput, ExploreSystemNeighborhoodToolOutput]](
+	"explore_system_neighborhood",
+	"Query neighboring related entities. Exploration is read-only.",
+)
+
+type (
+	InspectKnowledgeSubjectToolInput struct {
+		SubjectKind string `json:"subject_kind" jsonschema:"description=Kind of knowledge subject to inspect,enum=entity,enum=relationship,enum=evidence"`
+		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject UUID,format=uuid"`
+	}
+	InspectKnowledgeSubjectToolOutput struct {
+		Entity       *KnowledgeEntityDetail       `json:"entity,omitempty"`
+		Relationship *KnowledgeRelationshipDetail `json:"relationship,omitempty"`
+		Evidence     *KnowledgeEvidenceDetail     `json:"evidence,omitempty"`
+	}
+	KnowledgeEntityDetail struct {
+		Summary     KnowledgeEntitySummary        `json:"summary"`
+		Description string                        `json:"description,omitempty"`
+		Properties  map[string]any                `json:"properties"`
+		Aliases     []KnowledgeSubjectAliasDetail `json:"aliases"`
+	}
+	KnowledgeRelationshipDetail struct {
+		Summary     KnowledgeRelationshipSummary  `json:"summary"`
+		Description string                        `json:"description,omitempty"`
+		Properties  map[string]any                `json:"properties"`
+		Aliases     []KnowledgeSubjectAliasDetail `json:"aliases"`
+		Source      KnowledgeEntitySummary        `json:"source"`
+		Target      KnowledgeEntitySummary        `json:"target"`
+	}
+	KnowledgeSubjectAliasDetail struct {
+		Summary        KnowledgeSubjectAliasSummary `json:"summary"`
+		LatestEvidence *KnowledgeEvidenceSummary    `json:"latest_evidence,omitempty"`
+	}
+	KnowledgeEvidenceDetail struct {
+		Summary     KnowledgeEvidenceSummary     `json:"summary"`
+		Description string                       `json:"description,omitempty"`
+		Properties  map[string]any               `json:"properties"`
+		Alias       KnowledgeSubjectAliasSummary `json:"alias"`
+	}
+)
+
+var InspectKnowledgeSubjectTool = defineTool[ToolDefinition[InspectKnowledgeSubjectToolInput, InspectKnowledgeSubjectToolOutput]](
+	"inspect_knowledge_subject",
+	`Get detailed current information and evidence for one knowledge entity, relationship, or evidence record.
+	Use IDs returned by neighborhood exploration or another trusted tool.`,
+)
+
+type (
+	IncludeAnalysisSubjectsToolInput struct {
+		Subjects []IncludeAnalysisSubjectToolInputSubject `json:"subjects" jsonschema:"description=Knowledge subjects to include,minItems=1,maxItems=20"`
+	}
+	IncludeAnalysisSubjectToolInputSubject struct {
+		SubjectKind string `json:"subject_kind" jsonschema:"description=Kind of knowledge subject to include,enum=entity,enum=relationship"`
+		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject UUID,format=uuid"`
+	}
+
+	IncludeAnalysisSubjectsToolOutput struct {
+		Included int `json:"included"`
+	}
+)
+
+var IncludeAnalysisSubjectsTool = defineTool[ToolDefinition[IncludeAnalysisSubjectsToolInput, IncludeAnalysisSubjectsToolOutput]](
+	"include_analysis_subjects",
+	`Include chosen knowledge entities and relationships in the current system analysis subgraph.
+	Including a relationship also includes both related entities. This does not record a finding.`,
+)
+
+type (
+	RecordAnalysisFindingToolInput struct {
+		Title    string                                   `json:"title" jsonschema:"description=Concise finding title,minLength=1"`
+		Detail   string                                   `json:"body,omitempty" jsonschema:"description=Optional supporting detail for the finding"`
+		Subjects []AnalysisFindingSubjectToolInputSubject `json:"subjects" jsonschema:"description=Knowledge subjects supporting the finding; at least one must be evidence,minItems=1,maxItems=20"`
+	}
+	AnalysisFindingSubjectToolInputSubject struct {
+		SubjectKind string `json:"subject_kind" jsonschema:"description=Kind of cited knowledge subject,enum=entity,enum=relationship,enum=evidence"`
+		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject UUID,format=uuid"`
+		Role        string `json:"role" jsonschema:"description=Concise role such as primary or affected or contributing or evidence_for,minLength=1"`
+	}
+
+	RecordAnalysisFindingToolOutput struct {
+		FindingID    uuid.UUID `json:"finding_id"`
+		Sequence     int       `json:"sequence"`
+		Title        string    `json:"title"`
+		SubjectCount int       `json:"subject_count"`
+	}
+)
+
+var RecordAnalysisFindingTool = defineTool[ToolDefinition[RecordAnalysisFindingToolInput, RecordAnalysisFindingToolOutput]](
+	"record_analysis_finding",
+	"Record an evidence-backed finding in the current system analysis. Cite at least one inspected evidence record and any relevant knowledge entities or relationships as subjects. Use concise roles such as primary, affected, contributing, and evidence_for.",
+)
+
+type (
+	SaveAlertInvestigationReportToolInput struct {
+		Report schematypes.AlertInvestigationReport `json:"report" jsonschema:"description=Completed alert investigation report"`
+	}
+
+	SaveAlertInvestigationReportToolOutput struct {
 		Saved bool `json:"saved"`
 	}
 )
 
-var SaveAlertInvestigationReportTool = defineTool[ToolDefinition[SaveAlertInvestigationReportInput, SaveAlertInvestigationReportOutput]](
+var SaveAlertInvestigationReportTool = defineTool[ToolDefinition[SaveAlertInvestigationReportToolInput, SaveAlertInvestigationReportToolOutput]](
 	"save_alert_investigation_report",
 	"Save the alert investigation report for this agent session.",
 )

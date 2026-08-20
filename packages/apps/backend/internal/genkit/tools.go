@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/firebase/genkit/go/ai"
+	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/genkit"
 	genkitx "github.com/firebase/genkit/go/genkit/exp"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -29,6 +30,17 @@ func (s *AiService) getRegisteredTools(refs []ai.ToolRef) ([]ai.ToolRef, []ai.To
 type ToolRunner[Input any, Output any] interface {
 	Definition() rezai.ToolDefinition[Input, Output]
 	ToolFunc(context.Context, Input) (Output, error)
+}
+
+func makeDefinedTool[I any, O any](def rezai.ToolDefinition[I, O], toolFn aix.ToolFunc[I, *O]) ai.Tool {
+	return aix.NewTool(def.Name(), def.Description(), func(ctx context.Context, i I) (O, error) {
+		toolOutput, toolErr := toolFn(ctx, i)
+		var o O
+		if toolOutput != nil {
+			o = *toolOutput
+		}
+		return o, toolErr
+	})
 }
 
 func WithDefinedTool[I any, O any](t ToolRunner[I, O]) AiServiceOption {

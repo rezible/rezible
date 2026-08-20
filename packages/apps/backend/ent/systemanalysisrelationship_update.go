@@ -11,12 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 )
 
@@ -51,62 +47,6 @@ func (_u *SystemAnalysisRelationshipUpdate) SetNillableCreatedAt(v *time.Time) *
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *SystemAnalysisRelationshipUpdate) SetUpdatedAt(v time.Time) *SystemAnalysisRelationshipUpdate {
 	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (_u *SystemAnalysisRelationshipUpdate) SetAnalysisID(v uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	_u.mutation.SetAnalysisID(v)
-	return _u
-}
-
-// SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
-func (_u *SystemAnalysisRelationshipUpdate) SetNillableAnalysisID(v *uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	if v != nil {
-		_u.SetAnalysisID(*v)
-	}
-	return _u
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (_u *SystemAnalysisRelationshipUpdate) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	_u.mutation.SetKnowledgeRelationshipID(v)
-	return _u
-}
-
-// SetNillableKnowledgeRelationshipID sets the "knowledge_relationship_id" field if the given value is not nil.
-func (_u *SystemAnalysisRelationshipUpdate) SetNillableKnowledgeRelationshipID(v *uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	if v != nil {
-		_u.SetKnowledgeRelationshipID(*v)
-	}
-	return _u
-}
-
-// SetSourceAnalysisEntityID sets the "source_analysis_entity_id" field.
-func (_u *SystemAnalysisRelationshipUpdate) SetSourceAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	_u.mutation.SetSourceAnalysisEntityID(v)
-	return _u
-}
-
-// SetNillableSourceAnalysisEntityID sets the "source_analysis_entity_id" field if the given value is not nil.
-func (_u *SystemAnalysisRelationshipUpdate) SetNillableSourceAnalysisEntityID(v *uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	if v != nil {
-		_u.SetSourceAnalysisEntityID(*v)
-	}
-	return _u
-}
-
-// SetTargetAnalysisEntityID sets the "target_analysis_entity_id" field.
-func (_u *SystemAnalysisRelationshipUpdate) SetTargetAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	_u.mutation.SetTargetAnalysisEntityID(v)
-	return _u
-}
-
-// SetNillableTargetAnalysisEntityID sets the "target_analysis_entity_id" field if the given value is not nil.
-func (_u *SystemAnalysisRelationshipUpdate) SetNillableTargetAnalysisEntityID(v *uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	if v != nil {
-		_u.SetTargetAnalysisEntityID(*v)
-	}
 	return _u
 }
 
@@ -188,65 +128,9 @@ func (_u *SystemAnalysisRelationshipUpdate) ClearProperties() *SystemAnalysisRel
 	return _u
 }
 
-// SetAnalysis sets the "analysis" edge to the SystemAnalysis entity.
-func (_u *SystemAnalysisRelationshipUpdate) SetAnalysis(v *SystemAnalysis) *SystemAnalysisRelationshipUpdate {
-	return _u.SetAnalysisID(v.ID)
-}
-
-// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemAnalysisRelationshipUpdate) SetKnowledgeRelationship(v *KnowledgeRelationship) *SystemAnalysisRelationshipUpdate {
-	return _u.SetKnowledgeRelationshipID(v.ID)
-}
-
-// SetSourceEntityID sets the "source_entity" edge to the SystemAnalysisEntity entity by ID.
-func (_u *SystemAnalysisRelationshipUpdate) SetSourceEntityID(id uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	_u.mutation.SetSourceEntityID(id)
-	return _u
-}
-
-// SetSourceEntity sets the "source_entity" edge to the SystemAnalysisEntity entity.
-func (_u *SystemAnalysisRelationshipUpdate) SetSourceEntity(v *SystemAnalysisEntity) *SystemAnalysisRelationshipUpdate {
-	return _u.SetSourceEntityID(v.ID)
-}
-
-// SetTargetEntityID sets the "target_entity" edge to the SystemAnalysisEntity entity by ID.
-func (_u *SystemAnalysisRelationshipUpdate) SetTargetEntityID(id uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	_u.mutation.SetTargetEntityID(id)
-	return _u
-}
-
-// SetTargetEntity sets the "target_entity" edge to the SystemAnalysisEntity entity.
-func (_u *SystemAnalysisRelationshipUpdate) SetTargetEntity(v *SystemAnalysisEntity) *SystemAnalysisRelationshipUpdate {
-	return _u.SetTargetEntityID(v.ID)
-}
-
 // Mutation returns the SystemAnalysisRelationshipMutation object of the builder.
 func (_u *SystemAnalysisRelationshipUpdate) Mutation() *SystemAnalysisRelationshipMutation {
 	return _u.mutation
-}
-
-// ClearAnalysis clears the "analysis" edge to the SystemAnalysis entity.
-func (_u *SystemAnalysisRelationshipUpdate) ClearAnalysis() *SystemAnalysisRelationshipUpdate {
-	_u.mutation.ClearAnalysis()
-	return _u
-}
-
-// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemAnalysisRelationshipUpdate) ClearKnowledgeRelationship() *SystemAnalysisRelationshipUpdate {
-	_u.mutation.ClearKnowledgeRelationship()
-	return _u
-}
-
-// ClearSourceEntity clears the "source_entity" edge to the SystemAnalysisEntity entity.
-func (_u *SystemAnalysisRelationshipUpdate) ClearSourceEntity() *SystemAnalysisRelationshipUpdate {
-	_u.mutation.ClearSourceEntity()
-	return _u
-}
-
-// ClearTargetEntity clears the "target_entity" edge to the SystemAnalysisEntity entity.
-func (_u *SystemAnalysisRelationshipUpdate) ClearTargetEntity() *SystemAnalysisRelationshipUpdate {
-	_u.mutation.ClearTargetEntity()
-	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -302,12 +186,6 @@ func (_u *SystemAnalysisRelationshipUpdate) check() error {
 	if _u.mutation.KnowledgeRelationshipCleared() && len(_u.mutation.KnowledgeRelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.knowledge_relationship"`)
 	}
-	if _u.mutation.SourceEntityCleared() && len(_u.mutation.SourceEntityIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.source_entity"`)
-	}
-	if _u.mutation.TargetEntityCleared() && len(_u.mutation.TargetEntityIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.target_entity"`)
-	}
 	return nil
 }
 
@@ -362,130 +240,6 @@ func (_u *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (_node 
 	if _u.mutation.PropertiesCleared() {
 		_spec.ClearField(systemanalysisrelationship.FieldProperties, field.TypeJSON)
 	}
-	if _u.mutation.AnalysisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.AnalysisTable,
-			Columns: []string{systemanalysisrelationship.AnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AnalysisIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.AnalysisTable,
-			Columns: []string{systemanalysisrelationship.AnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeRelationshipCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.KnowledgeRelationshipTable,
-			Columns: []string{systemanalysisrelationship.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.KnowledgeRelationshipTable,
-			Columns: []string{systemanalysisrelationship.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.SourceEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.SourceEntityTable,
-			Columns: []string{systemanalysisrelationship.SourceEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SourceEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.SourceEntityTable,
-			Columns: []string{systemanalysisrelationship.SourceEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.TargetEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.TargetEntityTable,
-			Columns: []string{systemanalysisrelationship.TargetEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.TargetEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.TargetEntityTable,
-			Columns: []string{systemanalysisrelationship.TargetEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	_spec.Node.Schema = _u.schemaConfig.SystemAnalysisRelationship
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -527,62 +281,6 @@ func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableCreatedAt(v *time.Time
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *SystemAnalysisRelationshipUpdateOne) SetUpdatedAt(v time.Time) *SystemAnalysisRelationshipUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetAnalysisID(v uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.SetAnalysisID(v)
-	return _u
-}
-
-// SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableAnalysisID(v *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	if v != nil {
-		_u.SetAnalysisID(*v)
-	}
-	return _u
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.SetKnowledgeRelationshipID(v)
-	return _u
-}
-
-// SetNillableKnowledgeRelationshipID sets the "knowledge_relationship_id" field if the given value is not nil.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableKnowledgeRelationshipID(v *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	if v != nil {
-		_u.SetKnowledgeRelationshipID(*v)
-	}
-	return _u
-}
-
-// SetSourceAnalysisEntityID sets the "source_analysis_entity_id" field.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetSourceAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.SetSourceAnalysisEntityID(v)
-	return _u
-}
-
-// SetNillableSourceAnalysisEntityID sets the "source_analysis_entity_id" field if the given value is not nil.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableSourceAnalysisEntityID(v *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	if v != nil {
-		_u.SetSourceAnalysisEntityID(*v)
-	}
-	return _u
-}
-
-// SetTargetAnalysisEntityID sets the "target_analysis_entity_id" field.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetTargetAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.SetTargetAnalysisEntityID(v)
-	return _u
-}
-
-// SetNillableTargetAnalysisEntityID sets the "target_analysis_entity_id" field if the given value is not nil.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableTargetAnalysisEntityID(v *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	if v != nil {
-		_u.SetTargetAnalysisEntityID(*v)
-	}
 	return _u
 }
 
@@ -664,65 +362,9 @@ func (_u *SystemAnalysisRelationshipUpdateOne) ClearProperties() *SystemAnalysis
 	return _u
 }
 
-// SetAnalysis sets the "analysis" edge to the SystemAnalysis entity.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetAnalysis(v *SystemAnalysis) *SystemAnalysisRelationshipUpdateOne {
-	return _u.SetAnalysisID(v.ID)
-}
-
-// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetKnowledgeRelationship(v *KnowledgeRelationship) *SystemAnalysisRelationshipUpdateOne {
-	return _u.SetKnowledgeRelationshipID(v.ID)
-}
-
-// SetSourceEntityID sets the "source_entity" edge to the SystemAnalysisEntity entity by ID.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetSourceEntityID(id uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.SetSourceEntityID(id)
-	return _u
-}
-
-// SetSourceEntity sets the "source_entity" edge to the SystemAnalysisEntity entity.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetSourceEntity(v *SystemAnalysisEntity) *SystemAnalysisRelationshipUpdateOne {
-	return _u.SetSourceEntityID(v.ID)
-}
-
-// SetTargetEntityID sets the "target_entity" edge to the SystemAnalysisEntity entity by ID.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetTargetEntityID(id uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.SetTargetEntityID(id)
-	return _u
-}
-
-// SetTargetEntity sets the "target_entity" edge to the SystemAnalysisEntity entity.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetTargetEntity(v *SystemAnalysisEntity) *SystemAnalysisRelationshipUpdateOne {
-	return _u.SetTargetEntityID(v.ID)
-}
-
 // Mutation returns the SystemAnalysisRelationshipMutation object of the builder.
 func (_u *SystemAnalysisRelationshipUpdateOne) Mutation() *SystemAnalysisRelationshipMutation {
 	return _u.mutation
-}
-
-// ClearAnalysis clears the "analysis" edge to the SystemAnalysis entity.
-func (_u *SystemAnalysisRelationshipUpdateOne) ClearAnalysis() *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.ClearAnalysis()
-	return _u
-}
-
-// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemAnalysisRelationshipUpdateOne) ClearKnowledgeRelationship() *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.ClearKnowledgeRelationship()
-	return _u
-}
-
-// ClearSourceEntity clears the "source_entity" edge to the SystemAnalysisEntity entity.
-func (_u *SystemAnalysisRelationshipUpdateOne) ClearSourceEntity() *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.ClearSourceEntity()
-	return _u
-}
-
-// ClearTargetEntity clears the "target_entity" edge to the SystemAnalysisEntity entity.
-func (_u *SystemAnalysisRelationshipUpdateOne) ClearTargetEntity() *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.ClearTargetEntity()
-	return _u
 }
 
 // Where appends a list predicates to the SystemAnalysisRelationshipUpdate builder.
@@ -790,12 +432,6 @@ func (_u *SystemAnalysisRelationshipUpdateOne) check() error {
 	}
 	if _u.mutation.KnowledgeRelationshipCleared() && len(_u.mutation.KnowledgeRelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.knowledge_relationship"`)
-	}
-	if _u.mutation.SourceEntityCleared() && len(_u.mutation.SourceEntityIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.source_entity"`)
-	}
-	if _u.mutation.TargetEntityCleared() && len(_u.mutation.TargetEntityIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.target_entity"`)
 	}
 	return nil
 }
@@ -867,130 +503,6 @@ func (_u *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (_no
 	}
 	if _u.mutation.PropertiesCleared() {
 		_spec.ClearField(systemanalysisrelationship.FieldProperties, field.TypeJSON)
-	}
-	if _u.mutation.AnalysisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.AnalysisTable,
-			Columns: []string{systemanalysisrelationship.AnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AnalysisIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.AnalysisTable,
-			Columns: []string{systemanalysisrelationship.AnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeRelationshipCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.KnowledgeRelationshipTable,
-			Columns: []string{systemanalysisrelationship.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.KnowledgeRelationshipTable,
-			Columns: []string{systemanalysisrelationship.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.SourceEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.SourceEntityTable,
-			Columns: []string{systemanalysisrelationship.SourceEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SourceEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.SourceEntityTable,
-			Columns: []string{systemanalysisrelationship.SourceEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.TargetEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.TargetEntityTable,
-			Columns: []string{systemanalysisrelationship.TargetEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.TargetEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.TargetEntityTable,
-			Columns: []string{systemanalysisrelationship.TargetEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.SystemAnalysisRelationship
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

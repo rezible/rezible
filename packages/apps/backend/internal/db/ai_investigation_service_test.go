@@ -10,6 +10,7 @@ import (
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alertinvestigation"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
@@ -115,25 +116,20 @@ func (s *InvestigationServiceSuite) TestCreateAlertInvestigationCreatesAnalysisA
 	s.Equal(entity.ID, analysisEntities[0].KnowledgeEntityID)
 }
 
-func (s *InvestigationServiceSuite) TestCreateAlertInvestigationWorksWithoutAlertEntity() {
+func (s *InvestigationServiceSuite) TestCreateAlertInvestigationRejectsAlertWithoutKnowledgeEntity() {
 	ctx := s.SeedTenantContext()
 	h := s.newHarness()
 	instance := s.createAlertInstance(ctx, nil)
 
-	h.jobs.EXPECT().
-		Insert(mock.Anything, mock.Anything, (*river.InsertOpts)(nil)).
-		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 1002}}, nil).
-		Once()
-
+	sessionsBefore := s.Client(ctx).AgentSession.Query().CountX(ctx)
+	analysesBefore := s.Client(ctx).SystemAnalysis.Query().CountX(ctx)
+	investigationsBefore := s.Client(ctx).AlertInvestigation.Query().CountX(ctx)
 	investigation, createErr := h.service.CreateAlertInvestigation(ctx, instance.ID)
-	s.Require().NoError(createErr)
-	session := s.Client(ctx).AgentSession.GetX(ctx, investigation.AgentSessionID)
-	s.Require().NotNil(session.SystemAnalysisID)
-	analysis := s.Client(ctx).SystemAnalysis.GetX(ctx, *session.SystemAnalysisID)
-	s.Nil(analysis.SubjectEntityID)
-	queryAnalysisEntities := s.Client(ctx).SystemAnalysisEntity.Query().
-		Where(saentity.AnalysisID(analysis.ID))
-	s.Equal(0, queryAnalysisEntities.CountX(ctx))
+	s.Nil(investigation)
+	s.ErrorIs(createErr, rez.ErrInvalidInput)
+	s.Equal(sessionsBefore, s.Client(ctx).AgentSession.Query().CountX(ctx))
+	s.Equal(analysesBefore, s.Client(ctx).SystemAnalysis.Query().CountX(ctx))
+	s.Equal(investigationsBefore, s.Client(ctx).AlertInvestigation.Query().CountX(ctx))
 }
 
 func (s *InvestigationServiceSuite) TestCreateAlertInvestigationRollsBackWhenStartJobFails() {

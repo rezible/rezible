@@ -460,72 +460,6 @@ func (u *SystemAnalysisEntrySubjectUpsert) UpdateUpdatedAt() *SystemAnalysisEntr
 	return u
 }
 
-// SetEntryID sets the "entry_id" field.
-func (u *SystemAnalysisEntrySubjectUpsert) SetEntryID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsert {
-	u.Set(systemanalysisentrysubject.FieldEntryID, v)
-	return u
-}
-
-// UpdateEntryID sets the "entry_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsert) UpdateEntryID() *SystemAnalysisEntrySubjectUpsert {
-	u.SetExcluded(systemanalysisentrysubject.FieldEntryID)
-	return u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *SystemAnalysisEntrySubjectUpsert) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsert {
-	u.Set(systemanalysisentrysubject.FieldKnowledgeEntityID, v)
-	return u
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsert) UpdateKnowledgeEntityID() *SystemAnalysisEntrySubjectUpsert {
-	u.SetExcluded(systemanalysisentrysubject.FieldKnowledgeEntityID)
-	return u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *SystemAnalysisEntrySubjectUpsert) ClearKnowledgeEntityID() *SystemAnalysisEntrySubjectUpsert {
-	u.SetNull(systemanalysisentrysubject.FieldKnowledgeEntityID)
-	return u
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (u *SystemAnalysisEntrySubjectUpsert) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsert {
-	u.Set(systemanalysisentrysubject.FieldKnowledgeRelationshipID, v)
-	return u
-}
-
-// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsert) UpdateKnowledgeRelationshipID() *SystemAnalysisEntrySubjectUpsert {
-	u.SetExcluded(systemanalysisentrysubject.FieldKnowledgeRelationshipID)
-	return u
-}
-
-// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
-func (u *SystemAnalysisEntrySubjectUpsert) ClearKnowledgeRelationshipID() *SystemAnalysisEntrySubjectUpsert {
-	u.SetNull(systemanalysisentrysubject.FieldKnowledgeRelationshipID)
-	return u
-}
-
-// SetKnowledgeEvidenceID sets the "knowledge_evidence_id" field.
-func (u *SystemAnalysisEntrySubjectUpsert) SetKnowledgeEvidenceID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsert {
-	u.Set(systemanalysisentrysubject.FieldKnowledgeEvidenceID, v)
-	return u
-}
-
-// UpdateKnowledgeEvidenceID sets the "knowledge_evidence_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsert) UpdateKnowledgeEvidenceID() *SystemAnalysisEntrySubjectUpsert {
-	u.SetExcluded(systemanalysisentrysubject.FieldKnowledgeEvidenceID)
-	return u
-}
-
-// ClearKnowledgeEvidenceID clears the value of the "knowledge_evidence_id" field.
-func (u *SystemAnalysisEntrySubjectUpsert) ClearKnowledgeEvidenceID() *SystemAnalysisEntrySubjectUpsert {
-	u.SetNull(systemanalysisentrysubject.FieldKnowledgeEvidenceID)
-	return u
-}
-
 // SetRole sets the "role" field.
 func (u *SystemAnalysisEntrySubjectUpsert) SetRole(v string) *SystemAnalysisEntrySubjectUpsert {
 	u.Set(systemanalysisentrysubject.FieldRole, v)
@@ -557,6 +491,18 @@ func (u *SystemAnalysisEntrySubjectUpsertOne) UpdateNewValues() *SystemAnalysisE
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(systemanalysisentrysubject.FieldTenantID)
+		}
+		if _, exists := u.create.mutation.EntryID(); exists {
+			s.SetIgnore(systemanalysisentrysubject.FieldEntryID)
+		}
+		if _, exists := u.create.mutation.KnowledgeEntityID(); exists {
+			s.SetIgnore(systemanalysisentrysubject.FieldKnowledgeEntityID)
+		}
+		if _, exists := u.create.mutation.KnowledgeRelationshipID(); exists {
+			s.SetIgnore(systemanalysisentrysubject.FieldKnowledgeRelationshipID)
+		}
+		if _, exists := u.create.mutation.KnowledgeEvidenceID(); exists {
+			s.SetIgnore(systemanalysisentrysubject.FieldKnowledgeEvidenceID)
 		}
 	}))
 	return u
@@ -614,83 +560,6 @@ func (u *SystemAnalysisEntrySubjectUpsertOne) SetUpdatedAt(v time.Time) *SystemA
 func (u *SystemAnalysisEntrySubjectUpsertOne) UpdateUpdatedAt() *SystemAnalysisEntrySubjectUpsertOne {
 	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetEntryID sets the "entry_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertOne) SetEntryID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.SetEntryID(v)
-	})
-}
-
-// UpdateEntryID sets the "entry_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsertOne) UpdateEntryID() *SystemAnalysisEntrySubjectUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.UpdateEntryID()
-	})
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.SetKnowledgeEntityID(v)
-	})
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsertOne) UpdateKnowledgeEntityID() *SystemAnalysisEntrySubjectUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.UpdateKnowledgeEntityID()
-	})
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertOne) ClearKnowledgeEntityID() *SystemAnalysisEntrySubjectUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.ClearKnowledgeEntityID()
-	})
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertOne) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.SetKnowledgeRelationshipID(v)
-	})
-}
-
-// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsertOne) UpdateKnowledgeRelationshipID() *SystemAnalysisEntrySubjectUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.UpdateKnowledgeRelationshipID()
-	})
-}
-
-// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertOne) ClearKnowledgeRelationshipID() *SystemAnalysisEntrySubjectUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.ClearKnowledgeRelationshipID()
-	})
-}
-
-// SetKnowledgeEvidenceID sets the "knowledge_evidence_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertOne) SetKnowledgeEvidenceID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.SetKnowledgeEvidenceID(v)
-	})
-}
-
-// UpdateKnowledgeEvidenceID sets the "knowledge_evidence_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsertOne) UpdateKnowledgeEvidenceID() *SystemAnalysisEntrySubjectUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.UpdateKnowledgeEvidenceID()
-	})
-}
-
-// ClearKnowledgeEvidenceID clears the value of the "knowledge_evidence_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertOne) ClearKnowledgeEvidenceID() *SystemAnalysisEntrySubjectUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.ClearKnowledgeEvidenceID()
 	})
 }
 
@@ -894,6 +763,18 @@ func (u *SystemAnalysisEntrySubjectUpsertBulk) UpdateNewValues() *SystemAnalysis
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(systemanalysisentrysubject.FieldTenantID)
 			}
+			if _, exists := b.mutation.EntryID(); exists {
+				s.SetIgnore(systemanalysisentrysubject.FieldEntryID)
+			}
+			if _, exists := b.mutation.KnowledgeEntityID(); exists {
+				s.SetIgnore(systemanalysisentrysubject.FieldKnowledgeEntityID)
+			}
+			if _, exists := b.mutation.KnowledgeRelationshipID(); exists {
+				s.SetIgnore(systemanalysisentrysubject.FieldKnowledgeRelationshipID)
+			}
+			if _, exists := b.mutation.KnowledgeEvidenceID(); exists {
+				s.SetIgnore(systemanalysisentrysubject.FieldKnowledgeEvidenceID)
+			}
 		}
 	}))
 	return u
@@ -951,83 +832,6 @@ func (u *SystemAnalysisEntrySubjectUpsertBulk) SetUpdatedAt(v time.Time) *System
 func (u *SystemAnalysisEntrySubjectUpsertBulk) UpdateUpdatedAt() *SystemAnalysisEntrySubjectUpsertBulk {
 	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetEntryID sets the "entry_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertBulk) SetEntryID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.SetEntryID(v)
-	})
-}
-
-// UpdateEntryID sets the "entry_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsertBulk) UpdateEntryID() *SystemAnalysisEntrySubjectUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.UpdateEntryID()
-	})
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.SetKnowledgeEntityID(v)
-	})
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsertBulk) UpdateKnowledgeEntityID() *SystemAnalysisEntrySubjectUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.UpdateKnowledgeEntityID()
-	})
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertBulk) ClearKnowledgeEntityID() *SystemAnalysisEntrySubjectUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.ClearKnowledgeEntityID()
-	})
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertBulk) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.SetKnowledgeRelationshipID(v)
-	})
-}
-
-// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsertBulk) UpdateKnowledgeRelationshipID() *SystemAnalysisEntrySubjectUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.UpdateKnowledgeRelationshipID()
-	})
-}
-
-// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertBulk) ClearKnowledgeRelationshipID() *SystemAnalysisEntrySubjectUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.ClearKnowledgeRelationshipID()
-	})
-}
-
-// SetKnowledgeEvidenceID sets the "knowledge_evidence_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertBulk) SetKnowledgeEvidenceID(v uuid.UUID) *SystemAnalysisEntrySubjectUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.SetKnowledgeEvidenceID(v)
-	})
-}
-
-// UpdateKnowledgeEvidenceID sets the "knowledge_evidence_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntrySubjectUpsertBulk) UpdateKnowledgeEvidenceID() *SystemAnalysisEntrySubjectUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.UpdateKnowledgeEvidenceID()
-	})
-}
-
-// ClearKnowledgeEvidenceID clears the value of the "knowledge_evidence_id" field.
-func (u *SystemAnalysisEntrySubjectUpsertBulk) ClearKnowledgeEvidenceID() *SystemAnalysisEntrySubjectUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntrySubjectUpsert) {
-		s.ClearKnowledgeEvidenceID()
 	})
 }
 

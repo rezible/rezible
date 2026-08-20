@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -71,18 +70,6 @@ func (_c *SystemAnalysisRelationshipCreate) SetAnalysisID(v uuid.UUID) *SystemAn
 // SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
 func (_c *SystemAnalysisRelationshipCreate) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipCreate {
 	_c.mutation.SetKnowledgeRelationshipID(v)
-	return _c
-}
-
-// SetSourceAnalysisEntityID sets the "source_analysis_entity_id" field.
-func (_c *SystemAnalysisRelationshipCreate) SetSourceAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipCreate {
-	_c.mutation.SetSourceAnalysisEntityID(v)
-	return _c
-}
-
-// SetTargetAnalysisEntityID sets the "target_analysis_entity_id" field.
-func (_c *SystemAnalysisRelationshipCreate) SetTargetAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipCreate {
-	_c.mutation.SetTargetAnalysisEntityID(v)
 	return _c
 }
 
@@ -169,28 +156,6 @@ func (_c *SystemAnalysisRelationshipCreate) SetKnowledgeRelationship(v *Knowledg
 	return _c.SetKnowledgeRelationshipID(v.ID)
 }
 
-// SetSourceEntityID sets the "source_entity" edge to the SystemAnalysisEntity entity by ID.
-func (_c *SystemAnalysisRelationshipCreate) SetSourceEntityID(id uuid.UUID) *SystemAnalysisRelationshipCreate {
-	_c.mutation.SetSourceEntityID(id)
-	return _c
-}
-
-// SetSourceEntity sets the "source_entity" edge to the SystemAnalysisEntity entity.
-func (_c *SystemAnalysisRelationshipCreate) SetSourceEntity(v *SystemAnalysisEntity) *SystemAnalysisRelationshipCreate {
-	return _c.SetSourceEntityID(v.ID)
-}
-
-// SetTargetEntityID sets the "target_entity" edge to the SystemAnalysisEntity entity by ID.
-func (_c *SystemAnalysisRelationshipCreate) SetTargetEntityID(id uuid.UUID) *SystemAnalysisRelationshipCreate {
-	_c.mutation.SetTargetEntityID(id)
-	return _c
-}
-
-// SetTargetEntity sets the "target_entity" edge to the SystemAnalysisEntity entity.
-func (_c *SystemAnalysisRelationshipCreate) SetTargetEntity(v *SystemAnalysisEntity) *SystemAnalysisRelationshipCreate {
-	return _c.SetTargetEntityID(v.ID)
-}
-
 // Mutation returns the SystemAnalysisRelationshipMutation object of the builder.
 func (_c *SystemAnalysisRelationshipCreate) Mutation() *SystemAnalysisRelationshipMutation {
 	return _c.mutation
@@ -273,12 +238,6 @@ func (_c *SystemAnalysisRelationshipCreate) check() error {
 	if _, ok := _c.mutation.KnowledgeRelationshipID(); !ok {
 		return &ValidationError{Name: "knowledge_relationship_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.knowledge_relationship_id"`)}
 	}
-	if _, ok := _c.mutation.SourceAnalysisEntityID(); !ok {
-		return &ValidationError{Name: "source_analysis_entity_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.source_analysis_entity_id"`)}
-	}
-	if _, ok := _c.mutation.TargetAnalysisEntityID(); !ok {
-		return &ValidationError{Name: "target_analysis_entity_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.target_analysis_entity_id"`)}
-	}
 	if _, ok := _c.mutation.Hidden(); !ok {
 		return &ValidationError{Name: "hidden", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.hidden"`)}
 	}
@@ -290,12 +249,6 @@ func (_c *SystemAnalysisRelationshipCreate) check() error {
 	}
 	if len(_c.mutation.KnowledgeRelationshipIDs()) == 0 {
 		return &ValidationError{Name: "knowledge_relationship", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.knowledge_relationship"`)}
-	}
-	if len(_c.mutation.SourceEntityIDs()) == 0 {
-		return &ValidationError{Name: "source_entity", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.source_entity"`)}
-	}
-	if len(_c.mutation.TargetEntityIDs()) == 0 {
-		return &ValidationError{Name: "target_entity", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.target_entity"`)}
 	}
 	return nil
 }
@@ -416,42 +369,6 @@ func (_c *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelatio
 		_node.KnowledgeRelationshipID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SourceEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.SourceEntityTable,
-			Columns: []string{systemanalysisrelationship.SourceEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.SourceAnalysisEntityID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.TargetEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.TargetEntityTable,
-			Columns: []string{systemanalysisrelationship.TargetEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.TargetAnalysisEntityID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	return _node, _spec
 }
 
@@ -525,54 +442,6 @@ func (u *SystemAnalysisRelationshipUpsert) SetUpdatedAt(v time.Time) *SystemAnal
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
 func (u *SystemAnalysisRelationshipUpsert) UpdateUpdatedAt() *SystemAnalysisRelationshipUpsert {
 	u.SetExcluded(systemanalysisrelationship.FieldUpdatedAt)
-	return u
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (u *SystemAnalysisRelationshipUpsert) SetAnalysisID(v uuid.UUID) *SystemAnalysisRelationshipUpsert {
-	u.Set(systemanalysisrelationship.FieldAnalysisID, v)
-	return u
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsert) UpdateAnalysisID() *SystemAnalysisRelationshipUpsert {
-	u.SetExcluded(systemanalysisrelationship.FieldAnalysisID)
-	return u
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (u *SystemAnalysisRelationshipUpsert) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsert {
-	u.Set(systemanalysisrelationship.FieldKnowledgeRelationshipID, v)
-	return u
-}
-
-// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsert) UpdateKnowledgeRelationshipID() *SystemAnalysisRelationshipUpsert {
-	u.SetExcluded(systemanalysisrelationship.FieldKnowledgeRelationshipID)
-	return u
-}
-
-// SetSourceAnalysisEntityID sets the "source_analysis_entity_id" field.
-func (u *SystemAnalysisRelationshipUpsert) SetSourceAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipUpsert {
-	u.Set(systemanalysisrelationship.FieldSourceAnalysisEntityID, v)
-	return u
-}
-
-// UpdateSourceAnalysisEntityID sets the "source_analysis_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsert) UpdateSourceAnalysisEntityID() *SystemAnalysisRelationshipUpsert {
-	u.SetExcluded(systemanalysisrelationship.FieldSourceAnalysisEntityID)
-	return u
-}
-
-// SetTargetAnalysisEntityID sets the "target_analysis_entity_id" field.
-func (u *SystemAnalysisRelationshipUpsert) SetTargetAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipUpsert {
-	u.Set(systemanalysisrelationship.FieldTargetAnalysisEntityID, v)
-	return u
-}
-
-// UpdateTargetAnalysisEntityID sets the "target_analysis_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsert) UpdateTargetAnalysisEntityID() *SystemAnalysisRelationshipUpsert {
-	u.SetExcluded(systemanalysisrelationship.FieldTargetAnalysisEntityID)
 	return u
 }
 
@@ -680,6 +549,12 @@ func (u *SystemAnalysisRelationshipUpsertOne) UpdateNewValues() *SystemAnalysisR
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(systemanalysisrelationship.FieldTenantID)
 		}
+		if _, exists := u.create.mutation.AnalysisID(); exists {
+			s.SetIgnore(systemanalysisrelationship.FieldAnalysisID)
+		}
+		if _, exists := u.create.mutation.KnowledgeRelationshipID(); exists {
+			s.SetIgnore(systemanalysisrelationship.FieldKnowledgeRelationshipID)
+		}
 	}))
 	return u
 }
@@ -736,62 +611,6 @@ func (u *SystemAnalysisRelationshipUpsertOne) SetUpdatedAt(v time.Time) *SystemA
 func (u *SystemAnalysisRelationshipUpsertOne) UpdateUpdatedAt() *SystemAnalysisRelationshipUpsertOne {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (u *SystemAnalysisRelationshipUpsertOne) SetAnalysisID(v uuid.UUID) *SystemAnalysisRelationshipUpsertOne {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetAnalysisID(v)
-	})
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertOne) UpdateAnalysisID() *SystemAnalysisRelationshipUpsertOne {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateAnalysisID()
-	})
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (u *SystemAnalysisRelationshipUpsertOne) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsertOne {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetKnowledgeRelationshipID(v)
-	})
-}
-
-// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertOne) UpdateKnowledgeRelationshipID() *SystemAnalysisRelationshipUpsertOne {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateKnowledgeRelationshipID()
-	})
-}
-
-// SetSourceAnalysisEntityID sets the "source_analysis_entity_id" field.
-func (u *SystemAnalysisRelationshipUpsertOne) SetSourceAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipUpsertOne {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetSourceAnalysisEntityID(v)
-	})
-}
-
-// UpdateSourceAnalysisEntityID sets the "source_analysis_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertOne) UpdateSourceAnalysisEntityID() *SystemAnalysisRelationshipUpsertOne {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateSourceAnalysisEntityID()
-	})
-}
-
-// SetTargetAnalysisEntityID sets the "target_analysis_entity_id" field.
-func (u *SystemAnalysisRelationshipUpsertOne) SetTargetAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipUpsertOne {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetTargetAnalysisEntityID(v)
-	})
-}
-
-// UpdateTargetAnalysisEntityID sets the "target_analysis_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertOne) UpdateTargetAnalysisEntityID() *SystemAnalysisRelationshipUpsertOne {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateTargetAnalysisEntityID()
 	})
 }
 
@@ -1079,6 +898,12 @@ func (u *SystemAnalysisRelationshipUpsertBulk) UpdateNewValues() *SystemAnalysis
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(systemanalysisrelationship.FieldTenantID)
 			}
+			if _, exists := b.mutation.AnalysisID(); exists {
+				s.SetIgnore(systemanalysisrelationship.FieldAnalysisID)
+			}
+			if _, exists := b.mutation.KnowledgeRelationshipID(); exists {
+				s.SetIgnore(systemanalysisrelationship.FieldKnowledgeRelationshipID)
+			}
 		}
 	}))
 	return u
@@ -1136,62 +961,6 @@ func (u *SystemAnalysisRelationshipUpsertBulk) SetUpdatedAt(v time.Time) *System
 func (u *SystemAnalysisRelationshipUpsertBulk) UpdateUpdatedAt() *SystemAnalysisRelationshipUpsertBulk {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (u *SystemAnalysisRelationshipUpsertBulk) SetAnalysisID(v uuid.UUID) *SystemAnalysisRelationshipUpsertBulk {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetAnalysisID(v)
-	})
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertBulk) UpdateAnalysisID() *SystemAnalysisRelationshipUpsertBulk {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateAnalysisID()
-	})
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (u *SystemAnalysisRelationshipUpsertBulk) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsertBulk {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetKnowledgeRelationshipID(v)
-	})
-}
-
-// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertBulk) UpdateKnowledgeRelationshipID() *SystemAnalysisRelationshipUpsertBulk {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateKnowledgeRelationshipID()
-	})
-}
-
-// SetSourceAnalysisEntityID sets the "source_analysis_entity_id" field.
-func (u *SystemAnalysisRelationshipUpsertBulk) SetSourceAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipUpsertBulk {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetSourceAnalysisEntityID(v)
-	})
-}
-
-// UpdateSourceAnalysisEntityID sets the "source_analysis_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertBulk) UpdateSourceAnalysisEntityID() *SystemAnalysisRelationshipUpsertBulk {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateSourceAnalysisEntityID()
-	})
-}
-
-// SetTargetAnalysisEntityID sets the "target_analysis_entity_id" field.
-func (u *SystemAnalysisRelationshipUpsertBulk) SetTargetAnalysisEntityID(v uuid.UUID) *SystemAnalysisRelationshipUpsertBulk {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetTargetAnalysisEntityID(v)
-	})
-}
-
-// UpdateTargetAnalysisEntityID sets the "target_analysis_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertBulk) UpdateTargetAnalysisEntityID() *SystemAnalysisRelationshipUpsertBulk {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateTargetAnalysisEntityID()
 	})
 }
 

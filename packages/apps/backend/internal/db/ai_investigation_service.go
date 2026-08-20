@@ -54,22 +54,21 @@ func (s *InvestigationService) CreateAlertInvestigation(ctx context.Context, ins
 		if alertErr != nil {
 			return fmt.Errorf("get alert: %w", alertErr)
 		}
-
-		createAnalysis := tx.SystemAnalysis.Create()
-		if alrt.KnowledgeEntityID != nil {
-			createAnalysis.SetSubjectEntityID(*alrt.KnowledgeEntityID)
+		if alrt.KnowledgeEntityID == nil || *alrt.KnowledgeEntityID == uuid.Nil {
+			return fmt.Errorf("%w: alert has no knowledge entity", rez.ErrInvalidInput)
 		}
+
+		createAnalysis := tx.SystemAnalysis.Create().
+			SetSubjectEntityID(*alrt.KnowledgeEntityID)
 		analysis, analysisErr := createAnalysis.Save(ctx)
 		if analysisErr != nil {
 			return fmt.Errorf("create system analysis: %w", analysisErr)
 		}
-		if alrt.KnowledgeEntityID != nil {
-			createAnalysisEntity := tx.SystemAnalysisEntity.Create().
-				SetAnalysisID(analysis.ID).
-				SetKnowledgeEntityID(*alrt.KnowledgeEntityID)
-			if _, entityErr := createAnalysisEntity.Save(ctx); entityErr != nil {
-				return fmt.Errorf("seed system analysis entity: %w", entityErr)
-			}
+		createAnalysisEntity := tx.SystemAnalysisEntity.Create().
+			SetAnalysisID(analysis.ID).
+			SetKnowledgeEntityID(*alrt.KnowledgeEntityID)
+		if _, entityErr := createAnalysisEntity.Save(ctx); entityErr != nil {
+			return fmt.Errorf("seed system analysis entity: %w", entityErr)
 		}
 
 		params := rez.CreateAgentSessionParams{

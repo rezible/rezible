@@ -6,7 +6,10 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/predicate"
+	saent "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
+	sarel "github.com/rezible/rezible/ent/systemanalysisrelationship"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -52,34 +55,25 @@ func (h *systemAnalysisHandler) UpdateSystemAnalysis(ctx context.Context, reques
 	return &response, nil
 }
 
-func (h *systemAnalysisHandler) GetSystemAnalysisGraph(ctx context.Context, request *oapi.GetSystemAnalysisGraphRequest) (*oapi.GetSystemAnalysisGraphResponse, error) {
-	params := rez.GetKnowledgeGraphViewParams{
-		Depth:             request.Depth,
-		RelationshipKinds: request.RelationshipKind,
-	}
-	view, viewErr := h.analysis.GetSystemAnalysisGraph(ctx, request.Id, params)
-	if viewErr != nil {
-		return nil, oapi.Error(ctx, "get system analysis graph", viewErr)
-	}
-
-	var response oapi.GetSystemAnalysisGraphResponse
-	response.Body.Data = oapi.KnowledgeGraphViewFromRez(view)
-	return &response, nil
-}
-
 func (h *systemAnalysisHandler) ListSystemAnalysisNodes(ctx context.Context, request *oapi.ListSystemAnalysisNodesRequest) (*oapi.ListSystemAnalysisNodesResponse, error) {
-	nodes, listErr := h.analysis.ListSystemAnalysisEntities(ctx, request.Id)
+	params := rez.ListSystemAnalysisEntitiesParams{
+		ListParams: request.ListParams(),
+		Predicates: []predicate.SystemAnalysisEntity{saent.AnalysisID(request.Id)},
+	}
+	nodes, listErr := h.analysis.ListSystemAnalysisEntities(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list system analysis nodes", listErr)
 	}
 
-	var response oapi.ListSystemAnalysisNodesResponse
-	response.Body.Data = oapi.ConvertSlice(nodes, oapi.SystemAnalysisNodeFromEnt)
-	response.Body.Pagination.Total = len(response.Body.Data)
-	return &response, nil
+	body, bodyErr := oapi.MaybeConvertListResultBody(nodes, oapi.SystemAnalysisNodeFromEnt)
+	if bodyErr != nil {
+		return nil, oapi.Error(ctx, "list system analysis nodes", bodyErr)
+	}
+	return &oapi.ListSystemAnalysisNodesResponse{Body: *body}, nil
 }
 
 func (h *systemAnalysisHandler) AddSystemAnalysisNode(ctx context.Context, request *oapi.AddSystemAnalysisNodeRequest) (*oapi.AddSystemAnalysisNodeResponse, error) {
+	var resp oapi.AddSystemAnalysisNodeResponse
 	attrs := request.Body.Attributes
 	setFn := func(m *ent.SystemAnalysisEntityMutation) {
 		m.SetAnalysisID(request.Id)
@@ -101,12 +95,16 @@ func (h *systemAnalysisHandler) AddSystemAnalysisNode(ctx context.Context, reque
 		return nil, oapi.Error(ctx, "add system analysis node", createErr)
 	}
 
-	var response oapi.AddSystemAnalysisNodeResponse
-	response.Body.Data = oapi.SystemAnalysisNodeFromEnt(node)
-	return &response, nil
+	data, dataErr := oapi.SystemAnalysisNodeFromEnt(node)
+	if dataErr != nil {
+		return nil, oapi.Error(ctx, "add system analysis node", dataErr)
+	}
+	resp.Body.Data = *data
+	return &resp, nil
 }
 
 func (h *systemAnalysisHandler) UpdateSystemAnalysisNode(ctx context.Context, request *oapi.UpdateSystemAnalysisNodeRequest) (*oapi.UpdateSystemAnalysisNodeResponse, error) {
+	var resp oapi.UpdateSystemAnalysisNodeResponse
 	attrs := request.Body.Attributes
 	setFn := func(m *ent.SystemAnalysisEntityMutation) {
 		if attrs.Position != nil {
@@ -128,9 +126,12 @@ func (h *systemAnalysisHandler) UpdateSystemAnalysisNode(ctx context.Context, re
 		return nil, oapi.Error(ctx, "update system analysis node", updateErr)
 	}
 
-	var response oapi.UpdateSystemAnalysisNodeResponse
-	response.Body.Data = oapi.SystemAnalysisNodeFromEnt(node)
-	return &response, nil
+	data, dataErr := oapi.SystemAnalysisNodeFromEnt(node)
+	if dataErr != nil {
+		return nil, oapi.Error(ctx, "add system analysis node", dataErr)
+	}
+	resp.Body.Data = *data
+	return &resp, nil
 }
 
 func (h *systemAnalysisHandler) DeleteSystemAnalysisNode(ctx context.Context, request *oapi.DeleteSystemAnalysisNodeRequest) (*oapi.DeleteSystemAnalysisNodeResponse, error) {
@@ -141,15 +142,22 @@ func (h *systemAnalysisHandler) DeleteSystemAnalysisNode(ctx context.Context, re
 }
 
 func (h *systemAnalysisHandler) ListSystemAnalysisEdges(ctx context.Context, request *oapi.ListSystemAnalysisEdgesRequest) (*oapi.ListSystemAnalysisEdgesResponse, error) {
-	edges, listErr := h.analysis.ListSystemAnalysisRelationships(ctx, request.Id)
+	params := rez.ListSystemAnalysisRelationshipsParams{
+		ListParams: request.ListParams(),
+		Predicates: []predicate.SystemAnalysisRelationship{sarel.AnalysisID(request.Id)},
+	}
+	edges, listErr := h.analysis.ListSystemAnalysisRelationships(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list system analysis edges", listErr)
 	}
 
-	var response oapi.ListSystemAnalysisEdgesResponse
-	response.Body.Data = oapi.ConvertSlice(edges, oapi.SystemAnalysisEdgeFromEnt)
-	response.Body.Pagination.Total = len(response.Body.Data)
-	return &response, nil
+	var resp oapi.ListSystemAnalysisEdgesResponse
+	body, bodyErr := oapi.MaybeConvertListResultBody(edges, oapi.SystemAnalysisEdgeFromEnt)
+	if bodyErr != nil {
+		return nil, oapi.Error(ctx, "list system analysis edges", bodyErr)
+	}
+	resp.Body = *body
+	return &resp, nil
 }
 
 func (h *systemAnalysisHandler) AddSystemAnalysisEdge(ctx context.Context, request *oapi.AddSystemAnalysisEdgeRequest) (*oapi.AddSystemAnalysisEdgeResponse, error) {
@@ -172,9 +180,13 @@ func (h *systemAnalysisHandler) AddSystemAnalysisEdge(ctx context.Context, reque
 		return nil, oapi.Error(ctx, "add system analysis edge", createErr)
 	}
 
-	var response oapi.AddSystemAnalysisEdgeResponse
-	response.Body.Data = oapi.SystemAnalysisEdgeFromEnt(edge)
-	return &response, nil
+	var resp oapi.AddSystemAnalysisEdgeResponse
+	data, dataErr := oapi.SystemAnalysisEdgeFromEnt(edge)
+	if dataErr != nil {
+		return nil, oapi.Error(ctx, "add system analysis edge", dataErr)
+	}
+	resp.Body.Data = *data
+	return &resp, nil
 }
 
 func (h *systemAnalysisHandler) UpdateSystemAnalysisEdge(ctx context.Context, request *oapi.UpdateSystemAnalysisEdgeRequest) (*oapi.UpdateSystemAnalysisEdgeResponse, error) {
@@ -195,9 +207,13 @@ func (h *systemAnalysisHandler) UpdateSystemAnalysisEdge(ctx context.Context, re
 		return nil, oapi.Error(ctx, "update system analysis edge", updateErr)
 	}
 
-	var response oapi.UpdateSystemAnalysisEdgeResponse
-	response.Body.Data = oapi.SystemAnalysisEdgeFromEnt(edge)
-	return &response, nil
+	var resp oapi.UpdateSystemAnalysisEdgeResponse
+	data, dataErr := oapi.SystemAnalysisEdgeFromEnt(edge)
+	if dataErr != nil {
+		return nil, oapi.Error(ctx, "convert edge", dataErr)
+	}
+	resp.Body.Data = *data
+	return &resp, nil
 }
 
 func (h *systemAnalysisHandler) DeleteSystemAnalysisEdge(ctx context.Context, request *oapi.DeleteSystemAnalysisEdgeRequest) (*oapi.DeleteSystemAnalysisEdgeResponse, error) {
@@ -208,18 +224,21 @@ func (h *systemAnalysisHandler) DeleteSystemAnalysisEdge(ctx context.Context, re
 }
 
 func (h *systemAnalysisHandler) ListSystemAnalysisEntries(ctx context.Context, request *oapi.ListSystemAnalysisEntriesRequest) (*oapi.ListSystemAnalysisEntriesResponse, error) {
-	entries, listErr := h.analysis.ListSystemAnalysisEntries(ctx, request.Id)
+	var resp oapi.ListSystemAnalysisEntriesResponse
+	params := rez.ListSystemAnalysisEntriesParams{
+		ListParams: request.ListParams(),
+		Predicates: []predicate.SystemAnalysisEntry{sae.AnalysisID(request.Id)},
+	}
+	entries, listErr := h.analysis.ListSystemAnalysisEntries(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list system analysis entries", listErr)
 	}
-
-	var response oapi.ListSystemAnalysisEntriesResponse
-	response.Body.Data = oapi.ConvertSlice(entries, oapi.SystemAnalysisEntryWithSubjectsFromEnt)
-	response.Body.Pagination.Total = len(response.Body.Data)
-	return &response, nil
+	resp.Body = oapi.ConvertListResultBody(entries, oapi.SystemAnalysisEntryFromEnt)
+	return &resp, nil
 }
 
 func (h *systemAnalysisHandler) CreateSystemAnalysisEntry(ctx context.Context, request *oapi.CreateSystemAnalysisEntryRequest) (*oapi.CreateSystemAnalysisEntryResponse, error) {
+	var resp oapi.CreateSystemAnalysisEntryResponse
 	attrs := request.Body.Attributes
 	setFn := func(m *ent.SystemAnalysisEntryMutation) {
 		m.SetAnalysisID(request.Id)
@@ -227,7 +246,6 @@ func (h *systemAnalysisHandler) CreateSystemAnalysisEntry(ctx context.Context, r
 		if attrs.OccurredAt != nil {
 			m.SetOccurredAt(*attrs.OccurredAt)
 		}
-		m.SetSequence(attrs.Sequence)
 		m.SetTitle(attrs.Title)
 		if attrs.Body != nil {
 			m.SetBody(*attrs.Body)
@@ -241,12 +259,12 @@ func (h *systemAnalysisHandler) CreateSystemAnalysisEntry(ctx context.Context, r
 		return nil, oapi.Error(ctx, "create system analysis entry", createErr)
 	}
 
-	var response oapi.CreateSystemAnalysisEntryResponse
-	response.Body.Data = oapi.SystemAnalysisEntryWithSubjectsFromEnt(entry)
-	return &response, nil
+	resp.Body.Data = oapi.SystemAnalysisEntryFromEnt(entry)
+	return &resp, nil
 }
 
 func (h *systemAnalysisHandler) UpdateSystemAnalysisEntry(ctx context.Context, request *oapi.UpdateSystemAnalysisEntryRequest) (*oapi.UpdateSystemAnalysisEntryResponse, error) {
+	var resp oapi.UpdateSystemAnalysisEntryResponse
 	attrs := request.Body.Attributes
 	setFn := func(m *ent.SystemAnalysisEntryMutation) {
 		if attrs.Kind != nil {
@@ -273,9 +291,8 @@ func (h *systemAnalysisHandler) UpdateSystemAnalysisEntry(ctx context.Context, r
 		return nil, oapi.Error(ctx, "update system analysis entry", updateErr)
 	}
 
-	var response oapi.UpdateSystemAnalysisEntryResponse
-	response.Body.Data = oapi.SystemAnalysisEntryWithSubjectsFromEnt(entry)
-	return &response, nil
+	resp.Body.Data = oapi.SystemAnalysisEntryFromEnt(entry)
+	return &resp, nil
 }
 
 func (h *systemAnalysisHandler) DeleteSystemAnalysisEntry(ctx context.Context, request *oapi.DeleteSystemAnalysisEntryRequest) (*oapi.DeleteSystemAnalysisEntryResponse, error) {
@@ -305,9 +322,9 @@ func (h *systemAnalysisHandler) AddSystemAnalysisEntrySubject(ctx context.Contex
 		return nil, oapi.Error(ctx, "add system analysis entry subject", createErr)
 	}
 
-	var response oapi.AddSystemAnalysisEntrySubjectResponse
-	response.Body.Data = oapi.SystemAnalysisEntrySubjectFromEnt(subject)
-	return &response, nil
+	var resp oapi.AddSystemAnalysisEntrySubjectResponse
+	resp.Body.Data = oapi.SystemAnalysisEntrySubjectFromEnt(subject)
+	return &resp, nil
 }
 
 func (h *systemAnalysisHandler) UpdateSystemAnalysisEntrySubject(ctx context.Context, request *oapi.UpdateSystemAnalysisEntrySubjectRequest) (*oapi.UpdateSystemAnalysisEntrySubjectResponse, error) {
@@ -319,9 +336,9 @@ func (h *systemAnalysisHandler) UpdateSystemAnalysisEntrySubject(ctx context.Con
 		return nil, oapi.Error(ctx, "update system analysis entry subject", updateErr)
 	}
 
-	var response oapi.UpdateSystemAnalysisEntrySubjectResponse
-	response.Body.Data = oapi.SystemAnalysisEntrySubjectFromEnt(subject)
-	return &response, nil
+	var resp oapi.UpdateSystemAnalysisEntrySubjectResponse
+	resp.Body.Data = oapi.SystemAnalysisEntrySubjectFromEnt(subject)
+	return &resp, nil
 }
 
 func (h *systemAnalysisHandler) DeleteSystemAnalysisEntrySubject(ctx context.Context, request *oapi.DeleteSystemAnalysisEntrySubjectRequest) (*oapi.DeleteSystemAnalysisEntrySubjectResponse, error) {

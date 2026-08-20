@@ -75,30 +75,24 @@ func (m *alertInvestigationReportMiddleware) Name() string {
 
 func (m *alertInvestigationReportMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 	return &ai.Hooks{
-		Tools: []ai.Tool{m.makeUpdateReportTool()},
+		Tools: []ai.Tool{makeDefinedTool(rezai.SaveAlertInvestigationReportTool, m.updateReportToolFunc)},
 	}, nil
 }
 
-func (m *alertInvestigationReportMiddleware) makeUpdateReportTool() ai.Tool {
-	return aix.NewTool(
-		rezai.SaveAlertInvestigationReportTool.Name(),
-		rezai.SaveAlertInvestigationReportTool.Description(),
-		func(ctx context.Context, input rezai.SaveAlertInvestigationReportInput) (rezai.SaveAlertInvestigationReportOutput, error) {
-			report := input.Report
-			report.Text = strings.TrimSpace(report.Text)
-			if report.Text == "" {
-				return rezai.SaveAlertInvestigationReportOutput{}, fmt.Errorf("%w: report text is required", rez.ErrInvalidInput)
-			}
-			reportJson, jsonErr := json.Marshal(report)
-			if jsonErr != nil {
-				return rezai.SaveAlertInvestigationReportOutput{}, jsonErr
-			}
-			as := aix.ArtifactStoreFromContext(ctx)
-			as.AddArtifacts(&aix.Artifact{
-				Name:  "investigation_report",
-				Parts: []*ai.Part{ai.NewJSONPart(string(reportJson))},
-			})
-			return rezai.SaveAlertInvestigationReportOutput{Saved: true}, nil
-		},
-	)
+func (m *alertInvestigationReportMiddleware) updateReportToolFunc(ctx context.Context, input rezai.SaveAlertInvestigationReportToolInput) (*rezai.SaveAlertInvestigationReportToolOutput, error) {
+	report := input.Report
+	report.Text = strings.TrimSpace(report.Text)
+	if report.Text == "" {
+		return nil, fmt.Errorf("%w: report text is required", rez.ErrInvalidInput)
+	}
+	reportJson, jsonErr := json.Marshal(report)
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+	as := aix.ArtifactStoreFromContext(ctx)
+	as.AddArtifacts(&aix.Artifact{
+		Name:  "investigation_report",
+		Parts: []*ai.Part{ai.NewJSONPart(string(reportJson))},
+	})
+	return &rezai.SaveAlertInvestigationReportToolOutput{Saved: true}, nil
 }

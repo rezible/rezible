@@ -82,16 +82,6 @@ func KnowledgeRelationshipID(v uuid.UUID) predicate.SystemAnalysisRelationship {
 	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldKnowledgeRelationshipID, v))
 }
 
-// SourceAnalysisEntityID applies equality check predicate on the "source_analysis_entity_id" field. It's identical to SourceAnalysisEntityIDEQ.
-func SourceAnalysisEntityID(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldSourceAnalysisEntityID, v))
-}
-
-// TargetAnalysisEntityID applies equality check predicate on the "target_analysis_entity_id" field. It's identical to TargetAnalysisEntityIDEQ.
-func TargetAnalysisEntityID(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldTargetAnalysisEntityID, v))
-}
-
 // Hidden applies equality check predicate on the "hidden" field. It's identical to HiddenEQ.
 func Hidden(v bool) predicate.SystemAnalysisRelationship {
 	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldHidden, v))
@@ -245,46 +235,6 @@ func KnowledgeRelationshipIDIn(vs ...uuid.UUID) predicate.SystemAnalysisRelation
 // KnowledgeRelationshipIDNotIn applies the NotIn predicate on the "knowledge_relationship_id" field.
 func KnowledgeRelationshipIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
 	return predicate.SystemAnalysisRelationship(sql.FieldNotIn(FieldKnowledgeRelationshipID, vs...))
-}
-
-// SourceAnalysisEntityIDEQ applies the EQ predicate on the "source_analysis_entity_id" field.
-func SourceAnalysisEntityIDEQ(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldSourceAnalysisEntityID, v))
-}
-
-// SourceAnalysisEntityIDNEQ applies the NEQ predicate on the "source_analysis_entity_id" field.
-func SourceAnalysisEntityIDNEQ(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldNEQ(FieldSourceAnalysisEntityID, v))
-}
-
-// SourceAnalysisEntityIDIn applies the In predicate on the "source_analysis_entity_id" field.
-func SourceAnalysisEntityIDIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldIn(FieldSourceAnalysisEntityID, vs...))
-}
-
-// SourceAnalysisEntityIDNotIn applies the NotIn predicate on the "source_analysis_entity_id" field.
-func SourceAnalysisEntityIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldNotIn(FieldSourceAnalysisEntityID, vs...))
-}
-
-// TargetAnalysisEntityIDEQ applies the EQ predicate on the "target_analysis_entity_id" field.
-func TargetAnalysisEntityIDEQ(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldTargetAnalysisEntityID, v))
-}
-
-// TargetAnalysisEntityIDNEQ applies the NEQ predicate on the "target_analysis_entity_id" field.
-func TargetAnalysisEntityIDNEQ(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldNEQ(FieldTargetAnalysisEntityID, v))
-}
-
-// TargetAnalysisEntityIDIn applies the In predicate on the "target_analysis_entity_id" field.
-func TargetAnalysisEntityIDIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldIn(FieldTargetAnalysisEntityID, vs...))
-}
-
-// TargetAnalysisEntityIDNotIn applies the NotIn predicate on the "target_analysis_entity_id" field.
-func TargetAnalysisEntityIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldNotIn(FieldTargetAnalysisEntityID, vs...))
 }
 
 // HiddenEQ applies the EQ predicate on the "hidden" field.
@@ -545,64 +495,6 @@ func HasKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) pred
 		step := newKnowledgeRelationshipStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeRelationship
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasSourceEntity applies the HasEdge predicate on the "source_entity" edge.
-func HasSourceEntity() predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, SourceEntityTable, SourceEntityColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisEntity
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSourceEntityWith applies the HasEdge predicate on the "source_entity" edge with a given conditions (other predicates).
-func HasSourceEntityWith(preds ...predicate.SystemAnalysisEntity) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
-		step := newSourceEntityStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisEntity
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasTargetEntity applies the HasEdge predicate on the "target_entity" edge.
-func HasTargetEntity() predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, TargetEntityTable, TargetEntityColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisEntity
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasTargetEntityWith applies the HasEdge predicate on the "target_entity" edge with a given conditions (other predicates).
-func HasTargetEntityWith(preds ...predicate.SystemAnalysisEntity) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
-		step := newTargetEntityStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisEntity
 		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

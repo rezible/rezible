@@ -2707,8 +2707,6 @@ var (
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "analysis_id", Type: field.TypeUUID},
 		{Name: "knowledge_relationship_id", Type: field.TypeUUID},
-		{Name: "source_analysis_entity_id", Type: field.TypeUUID},
-		{Name: "target_analysis_entity_id", Type: field.TypeUUID},
 	}
 	// SystemAnalysisRelationshipsTable holds the schema information for the "system_analysis_relationships" table.
 	SystemAnalysisRelationshipsTable = &schema.Table{
@@ -2734,18 +2732,6 @@ var (
 				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
-			{
-				Symbol:     "system_analysis_relationships_system_analysis_entities_source_entity",
-				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[11]},
-				RefColumns: []*schema.Column{SystemAnalysisEntitiesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_analysis_relationships_system_analysis_entities_target_entity",
-				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[12]},
-				RefColumns: []*schema.Column{SystemAnalysisEntitiesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
 		},
 		Indexes: []*schema.Index{
 			{
@@ -2762,16 +2748,6 @@ var (
 				Name:    "systemanalysisrelationship_tenant_id_knowledge_relationship_id",
 				Unique:  false,
 				Columns: []*schema.Column{SystemAnalysisRelationshipsColumns[8], SystemAnalysisRelationshipsColumns[10]},
-			},
-			{
-				Name:    "systemanalysisrelationship_tenant_id_source_analysis_entity_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemAnalysisRelationshipsColumns[8], SystemAnalysisRelationshipsColumns[11]},
-			},
-			{
-				Name:    "systemanalysisrelationship_tenant_id_target_analysis_entity_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemAnalysisRelationshipsColumns[8], SystemAnalysisRelationshipsColumns[12]},
 			},
 		},
 	}
@@ -3704,11 +3680,13 @@ func init() {
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[3].RefTable = KnowledgeRelationshipsTable
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[4].RefTable = KnowledgeEvidencesTable
+	SystemAnalysisEntrySubjectsTable.Annotation = &entsql.Annotation{}
+	SystemAnalysisEntrySubjectsTable.Annotation.Checks = map[string]string{
+		"system_analysis_entry_subject_exactly_one_reference": "num_nonnulls(knowledge_entity_id, knowledge_relationship_id, knowledge_evidence_id) = 1",
+	}
 	SystemAnalysisRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemAnalysisRelationshipsTable.ForeignKeys[1].RefTable = SystemAnalysesTable
 	SystemAnalysisRelationshipsTable.ForeignKeys[2].RefTable = KnowledgeRelationshipsTable
-	SystemAnalysisRelationshipsTable.ForeignKeys[3].RefTable = SystemAnalysisEntitiesTable
-	SystemAnalysisRelationshipsTable.ForeignKeys[4].RefTable = SystemAnalysisEntitiesTable
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable
 	TasksTable.ForeignKeys[1].RefTable = TenantsTable
 	TasksTable.ForeignKeys[2].RefTable = UsersTable

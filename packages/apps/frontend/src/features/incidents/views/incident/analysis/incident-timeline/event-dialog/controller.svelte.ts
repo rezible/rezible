@@ -78,7 +78,6 @@ export class IncidentEventDialogController {
 		return {
 			kind: attrs.kind,
 			occurredAt: attrs.timestamp,
-			sequence: 0,
 			title: attrs.title,
 			body: attrs.description,
 			properties: timelineEntryProperties(attrs),

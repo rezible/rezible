@@ -2,6 +2,8 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	entschema "entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -80,8 +82,10 @@ func (SystemAnalysisEntity) Mixin() []ent.Mixin {
 func (SystemAnalysisEntity) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("analysis_id", uuid.UUID{}),
-		field.UUID("knowledge_entity_id", uuid.UUID{}),
+		field.UUID("analysis_id", uuid.UUID{}).
+			Immutable(),
+		field.UUID("knowledge_entity_id", uuid.UUID{}).
+			Immutable(),
 		field.Float("pos_x").
 			Optional().
 			Nillable(),
@@ -107,10 +111,12 @@ func (SystemAnalysisEntity) Edges() []ent.Edge {
 		edge.To("analysis", SystemAnalysis.Type).
 			Required().
 			Unique().
+			Immutable().
 			Field("analysis_id"),
 		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Required().
 			Unique().
+			Immutable().
 			Field("knowledge_entity_id"),
 	}
 }
@@ -137,10 +143,10 @@ func (SystemAnalysisRelationship) Mixin() []ent.Mixin {
 func (SystemAnalysisRelationship) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("analysis_id", uuid.UUID{}),
-		field.UUID("knowledge_relationship_id", uuid.UUID{}),
-		field.UUID("source_analysis_entity_id", uuid.UUID{}),
-		field.UUID("target_analysis_entity_id", uuid.UUID{}),
+		field.UUID("analysis_id", uuid.UUID{}).
+			Immutable(),
+		field.UUID("knowledge_relationship_id", uuid.UUID{}).
+			Immutable(),
 		field.Bool("hidden").
 			Default(false),
 		field.String("label_override").
@@ -163,19 +169,13 @@ func (SystemAnalysisRelationship) Edges() []ent.Edge {
 		edge.To("analysis", SystemAnalysis.Type).
 			Required().
 			Unique().
+			Immutable().
 			Field("analysis_id"),
 		edge.To("knowledge_relationship", KnowledgeRelationship.Type).
 			Required().
 			Unique().
+			Immutable().
 			Field("knowledge_relationship_id"),
-		edge.To("source_entity", SystemAnalysisEntity.Type).
-			Required().
-			Unique().
-			Field("source_analysis_entity_id"),
-		edge.To("target_entity", SystemAnalysisEntity.Type).
-			Required().
-			Unique().
-			Field("target_analysis_entity_id"),
 	}
 }
 
@@ -183,8 +183,6 @@ func (SystemAnalysisRelationship) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "analysis_id", "knowledge_relationship_id").Unique(),
 		index.Fields("tenant_id", "knowledge_relationship_id"),
-		index.Fields("tenant_id", "source_analysis_entity_id"),
-		index.Fields("tenant_id", "target_analysis_entity_id"),
 	}
 }
 
@@ -203,7 +201,8 @@ func (SystemAnalysisEntry) Mixin() []ent.Mixin {
 func (SystemAnalysisEntry) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("analysis_id", uuid.UUID{}),
+		field.UUID("analysis_id", uuid.UUID{}).
+			Immutable(),
 		field.Enum("kind").
 			Values("observation", "context", "decision", "action", "finding", "recommendation"),
 		field.Time("occurred_at").
@@ -225,6 +224,7 @@ func (SystemAnalysisEntry) Edges() []ent.Edge {
 		edge.To("analysis", SystemAnalysis.Type).
 			Required().
 			Unique().
+			Immutable().
 			Field("analysis_id"),
 		edge.From("subjects", SystemAnalysisEntrySubject.Type).
 			Ref("entry"),
@@ -253,18 +253,30 @@ func (SystemAnalysisEntrySubject) Mixin() []ent.Mixin {
 func (SystemAnalysisEntrySubject) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("entry_id", uuid.UUID{}),
+		field.UUID("entry_id", uuid.UUID{}).
+			Immutable(),
 		field.UUID("knowledge_entity_id", uuid.UUID{}).
 			Optional().
-			Nillable(),
+			Nillable().
+			Immutable(),
 		field.UUID("knowledge_relationship_id", uuid.UUID{}).
 			Optional().
-			Nillable(),
+			Nillable().
+			Immutable(),
 		field.UUID("knowledge_evidence_id", uuid.UUID{}).
 			Optional().
-			Nillable(),
+			Nillable().
+			Immutable(),
 		field.String("role").NotEmpty().
 			Comment("How the graph subject participates in the analysis entry, e.g. primary, affected, contributing, evidence_for."),
+	}
+}
+
+func (SystemAnalysisEntrySubject) Annotations() []entschema.Annotation {
+	return []entschema.Annotation{
+		entsql.Annotation{Checks: map[string]string{
+			"system_analysis_entry_subject_exactly_one_reference": "num_nonnulls(knowledge_entity_id, knowledge_relationship_id, knowledge_evidence_id) = 1",
+		}},
 	}
 }
 
@@ -273,21 +285,26 @@ func (SystemAnalysisEntrySubject) Edges() []ent.Edge {
 		edge.To("entry", SystemAnalysisEntry.Type).
 			Required().
 			Unique().
+			Immutable().
 			Field("entry_id"),
 		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Unique().
+			Immutable().
 			Field("knowledge_entity_id"),
 		edge.To("knowledge_relationship", KnowledgeRelationship.Type).
 			Unique().
+			Immutable().
 			Field("knowledge_relationship_id"),
 		edge.To("knowledge_evidence", KnowledgeEvidence.Type).
 			Unique().
+			Immutable().
 			Field("knowledge_evidence_id"),
 	}
 }
 
 func (SystemAnalysisEntrySubject) Indexes() []ent.Index {
 	return []ent.Index{
+		// TODO: clean these up
 		index.Fields("tenant_id", "entry_id", "knowledge_entity_id", "role").Unique(),
 		index.Fields("tenant_id", "entry_id", "knowledge_relationship_id", "role").Unique(),
 		index.Fields("tenant_id", "entry_id", "knowledge_evidence_id", "role").Unique(),

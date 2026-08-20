@@ -6,7 +6,8 @@ import {
 	addSystemAnalysisNodeMutation,
 	deleteSystemAnalysisEdgeMutation,
 	deleteSystemAnalysisNodeMutation,
-	getSystemAnalysisOptions,
+	listSystemAnalysisEdgesOptions,
+	listSystemAnalysisNodesOptions,
 	updateSystemAnalysisEdgeMutation,
 	updateSystemAnalysisNodeMutation,
 	type AddSystemAnalysisEdgeAttributes,
@@ -22,41 +23,47 @@ import SystemDiagramContextMenu from "./system-diagram/SystemDiagramContextMenu.
 type ContextMenuProps = {
 	timeline?: ComponentProps<typeof IncidentTimelineContextMenu>;
 	diagram?: ComponentProps<typeof SystemDiagramContextMenu>;
-}
+};
 
 export class IncidentAnalysisController {
 	view = useIncidentView();
 	analysisId = $derived(this.view.systemAnalysisId || "");
 
-	private analysisQueryOptions = $derived(getSystemAnalysisOptions({ path: { id: this.analysisId } }));
-	private analysisQuery = createQuery(() => ({
-		...this.analysisQueryOptions,
+	private analysisNodesQuery = createQuery(() => ({
+		...listSystemAnalysisNodesOptions({ path: { id: this.analysisId } }),
 		enabled: !!this.analysisId,
 	}));
-	analysisData = $derived(this.analysisQuery.data?.data);
+	analysisNodes = $derived(this.analysisNodesQuery.data?.data ?? []);
 
-	private invalidateAnalysisQuery() {
-		this.analysisQuery.refetch();
+	private analysisEdgesQuery = createQuery(() => ({
+		...listSystemAnalysisEdgesOptions({ path: { id: this.analysisId } }),
+		enabled: !!this.analysisId,
+	}));
+	analysisEdges = $derived(this.analysisEdgesQuery.data?.data ?? []);
+
+	private refetchGraph() {
+		this.analysisNodesQuery.refetch();
+		this.analysisEdgesQuery.refetch();
 	}
 
 	private addAnalysisNodeMutation = createMutation(() => ({
 		...addSystemAnalysisNodeMutation(),
 		onSuccess: () => {
-			this.invalidateAnalysisQuery();
+			this.refetchGraph();
 		},
 	}));
 
 	addNode(attributes: AddSystemAnalysisNodeAttributes) {
 		return this.addAnalysisNodeMutation.mutateAsync({
 			path: { id: this.analysisId },
-			body: { attributes }
+			body: { attributes },
 		});
 	}
 
 	private updateAnalysisNodeMut = createMutation(() => ({
 		...updateSystemAnalysisNodeMutation(),
 		onSuccess: () => {
-			this.invalidateAnalysisQuery();
+			this.refetchGraph();
 		},
 	}));
 
@@ -67,41 +74,41 @@ export class IncidentAnalysisController {
 	private removeAnalysisNodeMut = createMutation(() => ({
 		...deleteSystemAnalysisNodeMutation(),
 		onSuccess: () => {
-			this.invalidateAnalysisQuery();
+			this.refetchGraph();
 		},
 	}));
 	async removeNode(id: string) {
-		return this.removeAnalysisNodeMut.mutate({ path: { id } })
+		return this.removeAnalysisNodeMut.mutate({ path: { id } });
 	}
 
-	private addEdgeMut = createMutation(() => ({ 
-		...addSystemAnalysisEdgeMutation(), 
+	private addEdgeMut = createMutation(() => ({
+		...addSystemAnalysisEdgeMutation(),
 		onSuccess: () => {
-			this.invalidateAnalysisQuery();
-		}, 
+			this.refetchGraph();
+		},
 	}));
 	async addEdge(attributes: AddSystemAnalysisEdgeAttributes) {
 		return this.addEdgeMut.mutate({ path: { id: this.analysisId }, body: { attributes } });
 	}
 
 	private updateEdgeMut = createMutation(() => ({
-		...updateSystemAnalysisEdgeMutation(), 
+		...updateSystemAnalysisEdgeMutation(),
 		onSuccess: () => {
-			this.invalidateAnalysisQuery();
-		}, 
+			this.refetchGraph();
+		},
 	}));
 	async updateEdge(id: string, attributes: UpdateSystemAnalysisEdgeAttributes) {
 		return this.updateEdgeMut.mutate({ path: { id }, body: { attributes } });
 	}
 
 	private removeEdgeMut = createMutation(() => ({
-		...deleteSystemAnalysisEdgeMutation(), 
+		...deleteSystemAnalysisEdgeMutation(),
 		onSuccess: () => {
-			this.invalidateAnalysisQuery();
-		}, 
+			this.refetchGraph();
+		},
 	}));
 	async removeEdge(id: string) {
-		return this.removeEdgeMut.mutate({ path: { id }});
+		return this.removeEdgeMut.mutate({ path: { id } });
 	}
 
 	contextMenu = $state.raw<ContextMenuProps>({});

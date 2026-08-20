@@ -104,7 +104,6 @@ func makeGenkitProvider(ctx context.Context) Provider {
 	initService := func(initCtx context.Context, i do.Injector, svc *genkit.AiService) error {
 		intgToolsMw := genkit.WithIntegrationToolsMiddleware(do.MustInvoke[rez.IntegrationService](i))
 		systemAnalysisMw := genkit.WithSystemAnalysisMiddleware(
-			do.MustInvoke[rez.AgentSessionService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphService](i),
 		)

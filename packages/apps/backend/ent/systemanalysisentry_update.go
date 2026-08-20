@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 )
@@ -50,20 +49,6 @@ func (_u *SystemAnalysisEntryUpdate) SetNillableCreatedAt(v *time.Time) *SystemA
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *SystemAnalysisEntryUpdate) SetUpdatedAt(v time.Time) *SystemAnalysisEntryUpdate {
 	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (_u *SystemAnalysisEntryUpdate) SetAnalysisID(v uuid.UUID) *SystemAnalysisEntryUpdate {
-	_u.mutation.SetAnalysisID(v)
-	return _u
-}
-
-// SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
-func (_u *SystemAnalysisEntryUpdate) SetNillableAnalysisID(v *uuid.UUID) *SystemAnalysisEntryUpdate {
-	if v != nil {
-		_u.SetAnalysisID(*v)
-	}
 	return _u
 }
 
@@ -168,11 +153,6 @@ func (_u *SystemAnalysisEntryUpdate) ClearProperties() *SystemAnalysisEntryUpdat
 	return _u
 }
 
-// SetAnalysis sets the "analysis" edge to the SystemAnalysis entity.
-func (_u *SystemAnalysisEntryUpdate) SetAnalysis(v *SystemAnalysis) *SystemAnalysisEntryUpdate {
-	return _u.SetAnalysisID(v.ID)
-}
-
 // AddSubjectIDs adds the "subjects" edge to the SystemAnalysisEntrySubject entity by IDs.
 func (_u *SystemAnalysisEntryUpdate) AddSubjectIDs(ids ...uuid.UUID) *SystemAnalysisEntryUpdate {
 	_u.mutation.AddSubjectIDs(ids...)
@@ -191,12 +171,6 @@ func (_u *SystemAnalysisEntryUpdate) AddSubjects(v ...*SystemAnalysisEntrySubjec
 // Mutation returns the SystemAnalysisEntryMutation object of the builder.
 func (_u *SystemAnalysisEntryUpdate) Mutation() *SystemAnalysisEntryMutation {
 	return _u.mutation
-}
-
-// ClearAnalysis clears the "analysis" edge to the SystemAnalysis entity.
-func (_u *SystemAnalysisEntryUpdate) ClearAnalysis() *SystemAnalysisEntryUpdate {
-	_u.mutation.ClearAnalysis()
-	return _u
 }
 
 // ClearSubjects clears all "subjects" edges to the SystemAnalysisEntrySubject entity.
@@ -337,37 +311,6 @@ func (_u *SystemAnalysisEntryUpdate) sqlSave(ctx context.Context) (_node int, er
 	if _u.mutation.PropertiesCleared() {
 		_spec.ClearField(systemanalysisentry.FieldProperties, field.TypeJSON)
 	}
-	if _u.mutation.AnalysisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentry.AnalysisTable,
-			Columns: []string{systemanalysisentry.AnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntry
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AnalysisIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentry.AnalysisTable,
-			Columns: []string{systemanalysisentry.AnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntry
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.SubjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -457,20 +400,6 @@ func (_u *SystemAnalysisEntryUpdateOne) SetNillableCreatedAt(v *time.Time) *Syst
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *SystemAnalysisEntryUpdateOne) SetUpdatedAt(v time.Time) *SystemAnalysisEntryUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (_u *SystemAnalysisEntryUpdateOne) SetAnalysisID(v uuid.UUID) *SystemAnalysisEntryUpdateOne {
-	_u.mutation.SetAnalysisID(v)
-	return _u
-}
-
-// SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
-func (_u *SystemAnalysisEntryUpdateOne) SetNillableAnalysisID(v *uuid.UUID) *SystemAnalysisEntryUpdateOne {
-	if v != nil {
-		_u.SetAnalysisID(*v)
-	}
 	return _u
 }
 
@@ -575,11 +504,6 @@ func (_u *SystemAnalysisEntryUpdateOne) ClearProperties() *SystemAnalysisEntryUp
 	return _u
 }
 
-// SetAnalysis sets the "analysis" edge to the SystemAnalysis entity.
-func (_u *SystemAnalysisEntryUpdateOne) SetAnalysis(v *SystemAnalysis) *SystemAnalysisEntryUpdateOne {
-	return _u.SetAnalysisID(v.ID)
-}
-
 // AddSubjectIDs adds the "subjects" edge to the SystemAnalysisEntrySubject entity by IDs.
 func (_u *SystemAnalysisEntryUpdateOne) AddSubjectIDs(ids ...uuid.UUID) *SystemAnalysisEntryUpdateOne {
 	_u.mutation.AddSubjectIDs(ids...)
@@ -598,12 +522,6 @@ func (_u *SystemAnalysisEntryUpdateOne) AddSubjects(v ...*SystemAnalysisEntrySub
 // Mutation returns the SystemAnalysisEntryMutation object of the builder.
 func (_u *SystemAnalysisEntryUpdateOne) Mutation() *SystemAnalysisEntryMutation {
 	return _u.mutation
-}
-
-// ClearAnalysis clears the "analysis" edge to the SystemAnalysis entity.
-func (_u *SystemAnalysisEntryUpdateOne) ClearAnalysis() *SystemAnalysisEntryUpdateOne {
-	_u.mutation.ClearAnalysis()
-	return _u
 }
 
 // ClearSubjects clears all "subjects" edges to the SystemAnalysisEntrySubject entity.
@@ -773,37 +691,6 @@ func (_u *SystemAnalysisEntryUpdateOne) sqlSave(ctx context.Context) (_node *Sys
 	}
 	if _u.mutation.PropertiesCleared() {
 		_spec.ClearField(systemanalysisentry.FieldProperties, field.TypeJSON)
-	}
-	if _u.mutation.AnalysisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentry.AnalysisTable,
-			Columns: []string{systemanalysisentry.AnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntry
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AnalysisIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentry.AnalysisTable,
-			Columns: []string{systemanalysisentry.AnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntry
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.SubjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{

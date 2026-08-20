@@ -30,16 +30,4 @@
 			)}</pre>
 	{/if}
 
-	{#if attrs.knowledgeCitations?.length}
-		<div class="space-y-2 rounded bg-muted p-3 text-xs text-foreground">
-			{#each attrs.knowledgeCitations as citation (citation.id)}
-				<div>
-					<div class="font-medium">{citation.attributes.summary}</div>
-					<div class="text-muted-foreground">{citation.attributes.knowledgeEvidenceId}</div>
-				</div>
-			{/each}
-		</div>
-	{:else}
-		<p class="text-sm text-muted-foreground">No knowledge citations.</p>
-	{/if}
 </article>

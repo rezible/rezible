@@ -123,9 +123,33 @@ type (
 		Predicates []predicate.KnowledgeRelationship
 	}
 
+	ListKnowledgeGraphEvidenceParams struct {
+		ent.ListParams
+		Predicates []predicate.KnowledgeEvidence
+	}
+
+	QueryKnowledgeEntityNeighborhoodParams struct {
+		EntityID            *uuid.UUID
+		SourceEntityID      *uuid.UUID
+		TargetEntityID      *uuid.UUID
+		NeighborEntityKinds []string
+		RelationshipKinds   []string
+		Depth               int
+
+		Offset int
+		Limit  int
+	}
+
+	KnowledgeGraphNeighborhoodSlice struct {
+		RootEntityID  uuid.UUID
+		Entities      ent.KnowledgeEntities
+		Relationships ent.KnowledgeRelationships
+
+		RelationshipCount int
+	}
+
 	GetKnowledgeGraphViewParams struct {
 		EntityID          uuid.UUID
-		RelationshipID    uuid.UUID
 		Depth             int
 		RelationshipKinds []string
 	}
@@ -137,13 +161,26 @@ type (
 		Truncated     bool
 	}
 
+	KnowledgeGraphEntityNeighborhoodSummary struct {
+		OutgoingRelationships map[string]KnowledgeGraphNeighborhoodGroupSummary
+		IncomingRelationships map[string]KnowledgeGraphNeighborhoodGroupSummary
+	}
+	KnowledgeGraphNeighborhoodGroupSummary struct {
+		Count int
+	}
+
 	KnowledgeGraphService interface {
 		ListEntities(context.Context, ListKnowledgeGraphEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
 		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
 
 		ListRelationships(context.Context, ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
 		GetRelationship(context.Context, uuid.UUID) (*ent.KnowledgeRelationship, error)
+
+		ListEvidence(context.Context, ListKnowledgeGraphEvidenceParams) (*ent.ListResult[ent.KnowledgeEvidence], error)
 		GetEvidence(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)
+
+		QueryEntityNeighborhood(context.Context, QueryKnowledgeEntityNeighborhoodParams) (*KnowledgeGraphNeighborhoodSlice, error)
+		SummarizeEntityNeighborhood(context.Context, uuid.UUID) (*KnowledgeGraphEntityNeighborhoodSummary, error)
 
 		GetView(context.Context, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
 
@@ -153,22 +190,44 @@ type (
 )
 
 type (
+	ListSystemAnalysisEntitiesParams struct {
+		ent.ListParams
+		Predicates []predicate.SystemAnalysisEntity
+	}
+
+	ListSystemAnalysisRelationshipsParams struct {
+		ent.ListParams
+		Predicates []predicate.SystemAnalysisRelationship
+	}
+
+	ListSystemAnalysisEntriesParams struct {
+		ent.ListParams
+		Predicates []predicate.SystemAnalysisEntry
+	}
+
+	IncludeSystemAnalysisSubjectsParams struct {
+		AnalysisId      uuid.UUID
+		EntityIds       []uuid.UUID
+		RelationshipIds []uuid.UUID
+	}
+
 	SystemAnalysisService interface {
 		GetSystemAnalysis(context.Context, uuid.UUID) (*ent.SystemAnalysis, error)
 		SetSystemAnalysis(context.Context, uuid.UUID, func(*ent.SystemAnalysisMutation)) (*ent.SystemAnalysis, error)
 
-		GetSystemAnalysisGraph(context.Context, uuid.UUID, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
+		IncludeSystemAnalysisSubjects(context.Context, IncludeSystemAnalysisSubjectsParams) error
 
-		ListSystemAnalysisEntities(context.Context, uuid.UUID) (ent.SystemAnalysisEntities, error)
+		ListSystemAnalysisEntities(context.Context, ListSystemAnalysisEntitiesParams) (*ent.ListResult[ent.SystemAnalysisEntity], error)
 		SetSystemAnalysisEntity(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntityMutation)) (*ent.SystemAnalysisEntity, error)
+		HasSystemAnalysisEntity(context.Context, uuid.UUID, uuid.UUID) (bool, error)
 		DeleteSystemAnalysisEntity(context.Context, uuid.UUID) error
 
-		ListSystemAnalysisRelationships(context.Context, uuid.UUID) (ent.SystemAnalysisRelationships, error)
+		ListSystemAnalysisRelationships(context.Context, ListSystemAnalysisRelationshipsParams) (*ent.ListResult[ent.SystemAnalysisRelationship], error)
 		SetSystemAnalysisRelationship(context.Context, uuid.UUID, func(*ent.SystemAnalysisRelationshipMutation)) (*ent.SystemAnalysisRelationship, error)
 		DeleteSystemAnalysisRelationship(context.Context, uuid.UUID) error
 
-		ListSystemAnalysisEntries(context.Context, uuid.UUID) (ent.SystemAnalysisEntries, error)
-		SetSystemAnalysisEntry(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntryMutation)) (*ent.SystemAnalysisEntry, error)
+		ListSystemAnalysisEntries(context.Context, ListSystemAnalysisEntriesParams) (*ent.ListResult[ent.SystemAnalysisEntry], error)
+		SetSystemAnalysisEntry(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntryMutation), ...func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntry, error)
 		DeleteSystemAnalysisEntry(context.Context, uuid.UUID) error
 
 		SetSystemAnalysisEntrySubject(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntrySubject, error)

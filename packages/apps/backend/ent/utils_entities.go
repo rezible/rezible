@@ -115,6 +115,13 @@ func (aliases KnowledgeSubjectAliasSlice) LatestEvidence() *KnowledgeEvidence {
 		for _, ev := range alias.Edges.Evidence {
 			if latest == nil || ev.EffectiveAt.After(latest.EffectiveAt) {
 				latest = ev
+				continue
+			}
+			if ev.EffectiveAt.Before(latest.EffectiveAt) || ev.CreatedAt.Before(latest.CreatedAt) {
+				continue
+			}
+			if ev.CreatedAt.After(latest.CreatedAt) || ev.ID.String() > latest.ID.String() {
+				latest = ev
 			}
 		}
 	}

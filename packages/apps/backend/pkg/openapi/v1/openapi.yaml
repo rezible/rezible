@@ -1195,14 +1195,10 @@ components:
         properties:
           additionalProperties: {}
           type: object
-        sequence:
-          format: int64
-          type: integer
         title:
           type: string
       required:
         - kind
-        - sequence
         - title
       type: object
     CreateSystemAnalysisEntryRequestBody:
@@ -4699,18 +4695,6 @@ components:
     SystemAnalysisAttributes:
       additionalProperties: false
       properties:
-        edges:
-          items:
-            $ref: "#/components/schemas/SystemAnalysisEdge"
-          type: array
-        entries:
-          items:
-            $ref: "#/components/schemas/SystemAnalysisEntry"
-          type: array
-        nodes:
-          items:
-            $ref: "#/components/schemas/SystemAnalysisNode"
-          type: array
         referenceTime:
           format: date-time
           type: string
@@ -4718,10 +4702,6 @@ components:
           type: string
         subjectEntityId:
           type: string
-      required:
-        - nodes
-        - edges
-        - entries
       type: object
     SystemAnalysisDiagramPosition:
       additionalProperties: false

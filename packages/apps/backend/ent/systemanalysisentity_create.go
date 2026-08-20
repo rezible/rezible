@@ -471,30 +471,6 @@ func (u *SystemAnalysisEntityUpsert) UpdateUpdatedAt() *SystemAnalysisEntityUpse
 	return u
 }
 
-// SetAnalysisID sets the "analysis_id" field.
-func (u *SystemAnalysisEntityUpsert) SetAnalysisID(v uuid.UUID) *SystemAnalysisEntityUpsert {
-	u.Set(systemanalysisentity.FieldAnalysisID, v)
-	return u
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntityUpsert) UpdateAnalysisID() *SystemAnalysisEntityUpsert {
-	u.SetExcluded(systemanalysisentity.FieldAnalysisID)
-	return u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *SystemAnalysisEntityUpsert) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisEntityUpsert {
-	u.Set(systemanalysisentity.FieldKnowledgeEntityID, v)
-	return u
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntityUpsert) UpdateKnowledgeEntityID() *SystemAnalysisEntityUpsert {
-	u.SetExcluded(systemanalysisentity.FieldKnowledgeEntityID)
-	return u
-}
-
 // SetPosX sets the "pos_x" field.
 func (u *SystemAnalysisEntityUpsert) SetPosX(v float64) *SystemAnalysisEntityUpsert {
 	u.Set(systemanalysisentity.FieldPosX, v)
@@ -629,6 +605,12 @@ func (u *SystemAnalysisEntityUpsertOne) UpdateNewValues() *SystemAnalysisEntityU
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(systemanalysisentity.FieldTenantID)
 		}
+		if _, exists := u.create.mutation.AnalysisID(); exists {
+			s.SetIgnore(systemanalysisentity.FieldAnalysisID)
+		}
+		if _, exists := u.create.mutation.KnowledgeEntityID(); exists {
+			s.SetIgnore(systemanalysisentity.FieldKnowledgeEntityID)
+		}
 	}))
 	return u
 }
@@ -685,34 +667,6 @@ func (u *SystemAnalysisEntityUpsertOne) SetUpdatedAt(v time.Time) *SystemAnalysi
 func (u *SystemAnalysisEntityUpsertOne) UpdateUpdatedAt() *SystemAnalysisEntityUpsertOne {
 	return u.Update(func(s *SystemAnalysisEntityUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (u *SystemAnalysisEntityUpsertOne) SetAnalysisID(v uuid.UUID) *SystemAnalysisEntityUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntityUpsert) {
-		s.SetAnalysisID(v)
-	})
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntityUpsertOne) UpdateAnalysisID() *SystemAnalysisEntityUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntityUpsert) {
-		s.UpdateAnalysisID()
-	})
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *SystemAnalysisEntityUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisEntityUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntityUpsert) {
-		s.SetKnowledgeEntityID(v)
-	})
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntityUpsertOne) UpdateKnowledgeEntityID() *SystemAnalysisEntityUpsertOne {
-	return u.Update(func(s *SystemAnalysisEntityUpsert) {
-		s.UpdateKnowledgeEntityID()
 	})
 }
 
@@ -1035,6 +989,12 @@ func (u *SystemAnalysisEntityUpsertBulk) UpdateNewValues() *SystemAnalysisEntity
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(systemanalysisentity.FieldTenantID)
 			}
+			if _, exists := b.mutation.AnalysisID(); exists {
+				s.SetIgnore(systemanalysisentity.FieldAnalysisID)
+			}
+			if _, exists := b.mutation.KnowledgeEntityID(); exists {
+				s.SetIgnore(systemanalysisentity.FieldKnowledgeEntityID)
+			}
 		}
 	}))
 	return u
@@ -1092,34 +1052,6 @@ func (u *SystemAnalysisEntityUpsertBulk) SetUpdatedAt(v time.Time) *SystemAnalys
 func (u *SystemAnalysisEntityUpsertBulk) UpdateUpdatedAt() *SystemAnalysisEntityUpsertBulk {
 	return u.Update(func(s *SystemAnalysisEntityUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (u *SystemAnalysisEntityUpsertBulk) SetAnalysisID(v uuid.UUID) *SystemAnalysisEntityUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntityUpsert) {
-		s.SetAnalysisID(v)
-	})
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntityUpsertBulk) UpdateAnalysisID() *SystemAnalysisEntityUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntityUpsert) {
-		s.UpdateAnalysisID()
-	})
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *SystemAnalysisEntityUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisEntityUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntityUpsert) {
-		s.SetKnowledgeEntityID(v)
-	})
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *SystemAnalysisEntityUpsertBulk) UpdateKnowledgeEntityID() *SystemAnalysisEntityUpsertBulk {
-	return u.Update(func(s *SystemAnalysisEntityUpsert) {
-		s.UpdateKnowledgeEntityID()
 	})
 }
 

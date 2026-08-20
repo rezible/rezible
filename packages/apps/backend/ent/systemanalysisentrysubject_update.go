@@ -11,13 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeevidence"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 )
 
@@ -55,80 +50,6 @@ func (_u *SystemAnalysisEntrySubjectUpdate) SetUpdatedAt(v time.Time) *SystemAna
 	return _u
 }
 
-// SetEntryID sets the "entry_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetEntryID(v uuid.UUID) *SystemAnalysisEntrySubjectUpdate {
-	_u.mutation.SetEntryID(v)
-	return _u
-}
-
-// SetNillableEntryID sets the "entry_id" field if the given value is not nil.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetNillableEntryID(v *uuid.UUID) *SystemAnalysisEntrySubjectUpdate {
-	if v != nil {
-		_u.SetEntryID(*v)
-	}
-	return _u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisEntrySubjectUpdate {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *SystemAnalysisEntrySubjectUpdate {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdate) ClearKnowledgeEntityID() *SystemAnalysisEntrySubjectUpdate {
-	_u.mutation.ClearKnowledgeEntityID()
-	return _u
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisEntrySubjectUpdate {
-	_u.mutation.SetKnowledgeRelationshipID(v)
-	return _u
-}
-
-// SetNillableKnowledgeRelationshipID sets the "knowledge_relationship_id" field if the given value is not nil.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetNillableKnowledgeRelationshipID(v *uuid.UUID) *SystemAnalysisEntrySubjectUpdate {
-	if v != nil {
-		_u.SetKnowledgeRelationshipID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdate) ClearKnowledgeRelationshipID() *SystemAnalysisEntrySubjectUpdate {
-	_u.mutation.ClearKnowledgeRelationshipID()
-	return _u
-}
-
-// SetKnowledgeEvidenceID sets the "knowledge_evidence_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetKnowledgeEvidenceID(v uuid.UUID) *SystemAnalysisEntrySubjectUpdate {
-	_u.mutation.SetKnowledgeEvidenceID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEvidenceID sets the "knowledge_evidence_id" field if the given value is not nil.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetNillableKnowledgeEvidenceID(v *uuid.UUID) *SystemAnalysisEntrySubjectUpdate {
-	if v != nil {
-		_u.SetKnowledgeEvidenceID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEvidenceID clears the value of the "knowledge_evidence_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdate) ClearKnowledgeEvidenceID() *SystemAnalysisEntrySubjectUpdate {
-	_u.mutation.ClearKnowledgeEvidenceID()
-	return _u
-}
-
 // SetRole sets the "role" field.
 func (_u *SystemAnalysisEntrySubjectUpdate) SetRole(v string) *SystemAnalysisEntrySubjectUpdate {
 	_u.mutation.SetRole(v)
@@ -143,53 +64,9 @@ func (_u *SystemAnalysisEntrySubjectUpdate) SetNillableRole(v *string) *SystemAn
 	return _u
 }
 
-// SetEntry sets the "entry" edge to the SystemAnalysisEntry entity.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetEntry(v *SystemAnalysisEntry) *SystemAnalysisEntrySubjectUpdate {
-	return _u.SetEntryID(v.ID)
-}
-
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *SystemAnalysisEntrySubjectUpdate {
-	return _u.SetKnowledgeEntityID(v.ID)
-}
-
-// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetKnowledgeRelationship(v *KnowledgeRelationship) *SystemAnalysisEntrySubjectUpdate {
-	return _u.SetKnowledgeRelationshipID(v.ID)
-}
-
-// SetKnowledgeEvidence sets the "knowledge_evidence" edge to the KnowledgeEvidence entity.
-func (_u *SystemAnalysisEntrySubjectUpdate) SetKnowledgeEvidence(v *KnowledgeEvidence) *SystemAnalysisEntrySubjectUpdate {
-	return _u.SetKnowledgeEvidenceID(v.ID)
-}
-
 // Mutation returns the SystemAnalysisEntrySubjectMutation object of the builder.
 func (_u *SystemAnalysisEntrySubjectUpdate) Mutation() *SystemAnalysisEntrySubjectMutation {
 	return _u.mutation
-}
-
-// ClearEntry clears the "entry" edge to the SystemAnalysisEntry entity.
-func (_u *SystemAnalysisEntrySubjectUpdate) ClearEntry() *SystemAnalysisEntrySubjectUpdate {
-	_u.mutation.ClearEntry()
-	return _u
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *SystemAnalysisEntrySubjectUpdate) ClearKnowledgeEntity() *SystemAnalysisEntrySubjectUpdate {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
-}
-
-// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemAnalysisEntrySubjectUpdate) ClearKnowledgeRelationship() *SystemAnalysisEntrySubjectUpdate {
-	_u.mutation.ClearKnowledgeRelationship()
-	return _u
-}
-
-// ClearKnowledgeEvidence clears the "knowledge_evidence" edge to the KnowledgeEvidence entity.
-func (_u *SystemAnalysisEntrySubjectUpdate) ClearKnowledgeEvidence() *SystemAnalysisEntrySubjectUpdate {
-	_u.mutation.ClearKnowledgeEvidence()
-	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -277,130 +154,6 @@ func (_u *SystemAnalysisEntrySubjectUpdate) sqlSave(ctx context.Context) (_node 
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(systemanalysisentrysubject.FieldRole, field.TypeString, value)
 	}
-	if _u.mutation.EntryCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.EntryTable,
-			Columns: []string{systemanalysisentrysubject.EntryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentry.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.EntryIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.EntryTable,
-			Columns: []string{systemanalysisentrysubject.EntryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentry.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeEntityTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeEntityTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeRelationshipCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeRelationshipTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeRelationshipTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeEvidenceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeEvidenceTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeEvidenceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeevidence.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEvidenceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeEvidenceTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeEvidenceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeevidence.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	_spec.Node.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -445,80 +198,6 @@ func (_u *SystemAnalysisEntrySubjectUpdateOne) SetUpdatedAt(v time.Time) *System
 	return _u
 }
 
-// SetEntryID sets the "entry_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetEntryID(v uuid.UUID) *SystemAnalysisEntrySubjectUpdateOne {
-	_u.mutation.SetEntryID(v)
-	return _u
-}
-
-// SetNillableEntryID sets the "entry_id" field if the given value is not nil.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetNillableEntryID(v *uuid.UUID) *SystemAnalysisEntrySubjectUpdateOne {
-	if v != nil {
-		_u.SetEntryID(*v)
-	}
-	return _u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *SystemAnalysisEntrySubjectUpdateOne {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *SystemAnalysisEntrySubjectUpdateOne {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) ClearKnowledgeEntityID() *SystemAnalysisEntrySubjectUpdateOne {
-	_u.mutation.ClearKnowledgeEntityID()
-	return _u
-}
-
-// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisEntrySubjectUpdateOne {
-	_u.mutation.SetKnowledgeRelationshipID(v)
-	return _u
-}
-
-// SetNillableKnowledgeRelationshipID sets the "knowledge_relationship_id" field if the given value is not nil.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetNillableKnowledgeRelationshipID(v *uuid.UUID) *SystemAnalysisEntrySubjectUpdateOne {
-	if v != nil {
-		_u.SetKnowledgeRelationshipID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeRelationshipID clears the value of the "knowledge_relationship_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) ClearKnowledgeRelationshipID() *SystemAnalysisEntrySubjectUpdateOne {
-	_u.mutation.ClearKnowledgeRelationshipID()
-	return _u
-}
-
-// SetKnowledgeEvidenceID sets the "knowledge_evidence_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetKnowledgeEvidenceID(v uuid.UUID) *SystemAnalysisEntrySubjectUpdateOne {
-	_u.mutation.SetKnowledgeEvidenceID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEvidenceID sets the "knowledge_evidence_id" field if the given value is not nil.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetNillableKnowledgeEvidenceID(v *uuid.UUID) *SystemAnalysisEntrySubjectUpdateOne {
-	if v != nil {
-		_u.SetKnowledgeEvidenceID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEvidenceID clears the value of the "knowledge_evidence_id" field.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) ClearKnowledgeEvidenceID() *SystemAnalysisEntrySubjectUpdateOne {
-	_u.mutation.ClearKnowledgeEvidenceID()
-	return _u
-}
-
 // SetRole sets the "role" field.
 func (_u *SystemAnalysisEntrySubjectUpdateOne) SetRole(v string) *SystemAnalysisEntrySubjectUpdateOne {
 	_u.mutation.SetRole(v)
@@ -533,53 +212,9 @@ func (_u *SystemAnalysisEntrySubjectUpdateOne) SetNillableRole(v *string) *Syste
 	return _u
 }
 
-// SetEntry sets the "entry" edge to the SystemAnalysisEntry entity.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetEntry(v *SystemAnalysisEntry) *SystemAnalysisEntrySubjectUpdateOne {
-	return _u.SetEntryID(v.ID)
-}
-
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *SystemAnalysisEntrySubjectUpdateOne {
-	return _u.SetKnowledgeEntityID(v.ID)
-}
-
-// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetKnowledgeRelationship(v *KnowledgeRelationship) *SystemAnalysisEntrySubjectUpdateOne {
-	return _u.SetKnowledgeRelationshipID(v.ID)
-}
-
-// SetKnowledgeEvidence sets the "knowledge_evidence" edge to the KnowledgeEvidence entity.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) SetKnowledgeEvidence(v *KnowledgeEvidence) *SystemAnalysisEntrySubjectUpdateOne {
-	return _u.SetKnowledgeEvidenceID(v.ID)
-}
-
 // Mutation returns the SystemAnalysisEntrySubjectMutation object of the builder.
 func (_u *SystemAnalysisEntrySubjectUpdateOne) Mutation() *SystemAnalysisEntrySubjectMutation {
 	return _u.mutation
-}
-
-// ClearEntry clears the "entry" edge to the SystemAnalysisEntry entity.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) ClearEntry() *SystemAnalysisEntrySubjectUpdateOne {
-	_u.mutation.ClearEntry()
-	return _u
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) ClearKnowledgeEntity() *SystemAnalysisEntrySubjectUpdateOne {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
-}
-
-// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) ClearKnowledgeRelationship() *SystemAnalysisEntrySubjectUpdateOne {
-	_u.mutation.ClearKnowledgeRelationship()
-	return _u
-}
-
-// ClearKnowledgeEvidence clears the "knowledge_evidence" edge to the KnowledgeEvidence entity.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) ClearKnowledgeEvidence() *SystemAnalysisEntrySubjectUpdateOne {
-	_u.mutation.ClearKnowledgeEvidence()
-	return _u
 }
 
 // Where appends a list predicates to the SystemAnalysisEntrySubjectUpdate builder.
@@ -696,130 +331,6 @@ func (_u *SystemAnalysisEntrySubjectUpdateOne) sqlSave(ctx context.Context) (_no
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(systemanalysisentrysubject.FieldRole, field.TypeString, value)
-	}
-	if _u.mutation.EntryCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.EntryTable,
-			Columns: []string{systemanalysisentrysubject.EntryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentry.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.EntryIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.EntryTable,
-			Columns: []string{systemanalysisentrysubject.EntryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentry.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeEntityTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeEntityTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeRelationshipCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeRelationshipTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeRelationshipTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeEvidenceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeEvidenceTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeEvidenceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeevidence.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEvidenceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisentrysubject.KnowledgeEvidenceTable,
-			Columns: []string{systemanalysisentrysubject.KnowledgeEvidenceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeevidence.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

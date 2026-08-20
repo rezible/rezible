@@ -17,7 +17,6 @@ import (
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -32,8 +31,6 @@ type SystemAnalysisRelationshipQuery struct {
 	withTenant                *TenantQuery
 	withAnalysis              *SystemAnalysisQuery
 	withKnowledgeRelationship *KnowledgeRelationshipQuery
-	withSourceEntity          *SystemAnalysisEntityQuery
-	withTargetEntity          *SystemAnalysisEntityQuery
 	modifiers                 []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -139,56 +136,6 @@ func (_q *SystemAnalysisRelationshipQuery) QueryKnowledgeRelationship() *Knowled
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeRelationship
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySourceEntity chains the current query on the "source_entity" edge.
-func (_q *SystemAnalysisRelationshipQuery) QuerySourceEntity() *SystemAnalysisEntityQuery {
-	query := (&SystemAnalysisEntityClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, selector),
-			sqlgraph.To(systemanalysisentity.Table, systemanalysisentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.SourceEntityTable, systemanalysisrelationship.SourceEntityColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisEntity
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryTargetEntity chains the current query on the "target_entity" edge.
-func (_q *SystemAnalysisRelationshipQuery) QueryTargetEntity() *SystemAnalysisEntityQuery {
-	query := (&SystemAnalysisEntityClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, selector),
-			sqlgraph.To(systemanalysisentity.Table, systemanalysisentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.TargetEntityTable, systemanalysisrelationship.TargetEntityColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisEntity
 		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -391,8 +338,6 @@ func (_q *SystemAnalysisRelationshipQuery) Clone() *SystemAnalysisRelationshipQu
 		withTenant:                _q.withTenant.Clone(),
 		withAnalysis:              _q.withAnalysis.Clone(),
 		withKnowledgeRelationship: _q.withKnowledgeRelationship.Clone(),
-		withSourceEntity:          _q.withSourceEntity.Clone(),
-		withTargetEntity:          _q.withTargetEntity.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -430,28 +375,6 @@ func (_q *SystemAnalysisRelationshipQuery) WithKnowledgeRelationship(opts ...fun
 		opt(query)
 	}
 	_q.withKnowledgeRelationship = query
-	return _q
-}
-
-// WithSourceEntity tells the query-builder to eager-load the nodes that are connected to
-// the "source_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisRelationshipQuery) WithSourceEntity(opts ...func(*SystemAnalysisEntityQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisEntityClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withSourceEntity = query
-	return _q
-}
-
-// WithTargetEntity tells the query-builder to eager-load the nodes that are connected to
-// the "target_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisRelationshipQuery) WithTargetEntity(opts ...func(*SystemAnalysisEntityQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisEntityClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withTargetEntity = query
 	return _q
 }
 
@@ -539,12 +462,10 @@ func (_q *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks ...
 	var (
 		nodes       = []*SystemAnalysisRelationship{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withAnalysis != nil,
 			_q.withKnowledgeRelationship != nil,
-			_q.withSourceEntity != nil,
-			_q.withTargetEntity != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -585,18 +506,6 @@ func (_q *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks ...
 	if query := _q.withKnowledgeRelationship; query != nil {
 		if err := _q.loadKnowledgeRelationship(ctx, query, nodes, nil,
 			func(n *SystemAnalysisRelationship, e *KnowledgeRelationship) { n.Edges.KnowledgeRelationship = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withSourceEntity; query != nil {
-		if err := _q.loadSourceEntity(ctx, query, nodes, nil,
-			func(n *SystemAnalysisRelationship, e *SystemAnalysisEntity) { n.Edges.SourceEntity = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withTargetEntity; query != nil {
-		if err := _q.loadTargetEntity(ctx, query, nodes, nil,
-			func(n *SystemAnalysisRelationship, e *SystemAnalysisEntity) { n.Edges.TargetEntity = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -690,64 +599,6 @@ func (_q *SystemAnalysisRelationshipQuery) loadKnowledgeRelationship(ctx context
 	}
 	return nil
 }
-func (_q *SystemAnalysisRelationshipQuery) loadSourceEntity(ctx context.Context, query *SystemAnalysisEntityQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemAnalysisEntity)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*SystemAnalysisRelationship)
-	for i := range nodes {
-		fk := nodes[i].SourceAnalysisEntityID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(systemanalysisentity.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "source_analysis_entity_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *SystemAnalysisRelationshipQuery) loadTargetEntity(ctx context.Context, query *SystemAnalysisEntityQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemAnalysisEntity)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*SystemAnalysisRelationship)
-	for i := range nodes {
-		fk := nodes[i].TargetAnalysisEntityID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(systemanalysisentity.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "target_analysis_entity_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 
 func (_q *SystemAnalysisRelationshipQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -787,12 +638,6 @@ func (_q *SystemAnalysisRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withKnowledgeRelationship != nil {
 			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldKnowledgeRelationshipID)
-		}
-		if _q.withSourceEntity != nil {
-			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldSourceAnalysisEntityID)
-		}
-		if _q.withTargetEntity != nil {
-			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldTargetAnalysisEntityID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

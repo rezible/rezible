@@ -1267,8 +1267,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysisrelationship.FieldUpdatedAt:               {Type: field.TypeTime, Column: systemanalysisrelationship.FieldUpdatedAt},
 			systemanalysisrelationship.FieldAnalysisID:              {Type: field.TypeUUID, Column: systemanalysisrelationship.FieldAnalysisID},
 			systemanalysisrelationship.FieldKnowledgeRelationshipID: {Type: field.TypeUUID, Column: systemanalysisrelationship.FieldKnowledgeRelationshipID},
-			systemanalysisrelationship.FieldSourceAnalysisEntityID:  {Type: field.TypeUUID, Column: systemanalysisrelationship.FieldSourceAnalysisEntityID},
-			systemanalysisrelationship.FieldTargetAnalysisEntityID:  {Type: field.TypeUUID, Column: systemanalysisrelationship.FieldTargetAnalysisEntityID},
 			systemanalysisrelationship.FieldHidden:                  {Type: field.TypeBool, Column: systemanalysisrelationship.FieldHidden},
 			systemanalysisrelationship.FieldLabelOverride:           {Type: field.TypeString, Column: systemanalysisrelationship.FieldLabelOverride},
 			systemanalysisrelationship.FieldDescriptionOverride:     {Type: field.TypeString, Column: systemanalysisrelationship.FieldDescriptionOverride},
@@ -4077,30 +4075,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"SystemAnalysisRelationship",
 		"KnowledgeRelationship",
-	)
-	graph.MustAddE(
-		"source_entity",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.SourceEntityTable,
-			Columns: []string{systemanalysisrelationship.SourceEntityColumn},
-			Bidi:    false,
-		},
-		"SystemAnalysisRelationship",
-		"SystemAnalysisEntity",
-	)
-	graph.MustAddE(
-		"target_entity",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.TargetEntityTable,
-			Columns: []string{systemanalysisrelationship.TargetEntityColumn},
-			Bidi:    false,
-		},
-		"SystemAnalysisRelationship",
-		"SystemAnalysisEntity",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -12096,16 +12070,6 @@ func (f *SystemAnalysisRelationshipFilter) WhereKnowledgeRelationshipID(p entql.
 	f.Where(p.Field(systemanalysisrelationship.FieldKnowledgeRelationshipID))
 }
 
-// WhereSourceAnalysisEntityID applies the entql [16]byte predicate on the source_analysis_entity_id field.
-func (f *SystemAnalysisRelationshipFilter) WhereSourceAnalysisEntityID(p entql.ValueP) {
-	f.Where(p.Field(systemanalysisrelationship.FieldSourceAnalysisEntityID))
-}
-
-// WhereTargetAnalysisEntityID applies the entql [16]byte predicate on the target_analysis_entity_id field.
-func (f *SystemAnalysisRelationshipFilter) WhereTargetAnalysisEntityID(p entql.ValueP) {
-	f.Where(p.Field(systemanalysisrelationship.FieldTargetAnalysisEntityID))
-}
-
 // WhereHidden applies the entql bool predicate on the hidden field.
 func (f *SystemAnalysisRelationshipFilter) WhereHidden(p entql.BoolP) {
 	f.Where(p.Field(systemanalysisrelationship.FieldHidden))
@@ -12167,34 +12131,6 @@ func (f *SystemAnalysisRelationshipFilter) WhereHasKnowledgeRelationship() {
 // WhereHasKnowledgeRelationshipWith applies a predicate to check if query has an edge knowledge_relationship with a given conditions (other predicates).
 func (f *SystemAnalysisRelationshipFilter) WhereHasKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) {
 	f.Where(entql.HasEdgeWith("knowledge_relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasSourceEntity applies a predicate to check if query has an edge source_entity.
-func (f *SystemAnalysisRelationshipFilter) WhereHasSourceEntity() {
-	f.Where(entql.HasEdge("source_entity"))
-}
-
-// WhereHasSourceEntityWith applies a predicate to check if query has an edge source_entity with a given conditions (other predicates).
-func (f *SystemAnalysisRelationshipFilter) WhereHasSourceEntityWith(preds ...predicate.SystemAnalysisEntity) {
-	f.Where(entql.HasEdgeWith("source_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasTargetEntity applies a predicate to check if query has an edge target_entity.
-func (f *SystemAnalysisRelationshipFilter) WhereHasTargetEntity() {
-	f.Where(entql.HasEdge("target_entity"))
-}
-
-// WhereHasTargetEntityWith applies a predicate to check if query has an edge target_entity with a given conditions (other predicates).
-func (f *SystemAnalysisRelationshipFilter) WhereHasTargetEntityWith(preds ...predicate.SystemAnalysisEntity) {
-	f.Where(entql.HasEdgeWith("target_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

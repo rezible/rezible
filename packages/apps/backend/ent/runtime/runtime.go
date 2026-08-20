@@ -1528,7 +1528,7 @@ func init() {
 	// systemanalysisrelationship.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysisrelationship.UpdateDefaultUpdatedAt = systemanalysisrelationshipDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemanalysisrelationshipDescHidden is the schema descriptor for hidden field.
-	systemanalysisrelationshipDescHidden := systemanalysisrelationshipFields[5].Descriptor()
+	systemanalysisrelationshipDescHidden := systemanalysisrelationshipFields[3].Descriptor()
 	// systemanalysisrelationship.DefaultHidden holds the default value on creation for the hidden field.
 	systemanalysisrelationship.DefaultHidden = systemanalysisrelationshipDescHidden.Default.(bool)
 	// systemanalysisrelationshipDescID is the schema descriptor for id field.

@@ -41,7 +41,7 @@ ALTER TABLE "teams" DROP CONSTRAINT "teams_knowledge_entities_knowledge_entity",
 -- reverse: modify "tasks" table
 ALTER TABLE "tasks" DROP CONSTRAINT "tasks_users_created_tasks", DROP CONSTRAINT "tasks_users_assigned_tasks", DROP CONSTRAINT "tasks_tenants_tenant", DROP CONSTRAINT "tasks_incidents_tasks";
 -- reverse: modify "system_analysis_relationships" table
-ALTER TABLE "system_analysis_relationships" DROP CONSTRAINT "system_analysis_relationships__a52161f8e0ea09a9056ddd871238af0c", DROP CONSTRAINT "system_analysis_relationships__a89e244cf39e964fef2d63b30e0240ed", DROP CONSTRAINT "system_analysis_relationships__b7ca708fb4a6c01cc857332c522e01e3", DROP CONSTRAINT "system_analysis_relationships_system_analyses_analysis", DROP CONSTRAINT "system_analysis_relationships_tenants_tenant";
+ALTER TABLE "system_analysis_relationships" DROP CONSTRAINT "system_analysis_relationships__b7ca708fb4a6c01cc857332c522e01e3", DROP CONSTRAINT "system_analysis_relationships_system_analyses_analysis", DROP CONSTRAINT "system_analysis_relationships_tenants_tenant";
 -- reverse: modify "system_analysis_entry_subjects" table
 ALTER TABLE "system_analysis_entry_subjects" DROP CONSTRAINT "system_analysis_entry_subjects_1264d7dddb02bff88a4448e8cddecac8", DROP CONSTRAINT "system_analysis_entry_subjects_900e59485c580b401fec755bd8cd2504", DROP CONSTRAINT "system_analysis_entry_subjects_49d5b666fad2cccccfff680228c04fc3", DROP CONSTRAINT "system_analysis_entry_subjects_system_analysis_entries_entry", DROP CONSTRAINT "system_analysis_entry_subjects_tenants_tenant";
 -- reverse: modify "system_analysis_entries" table
@@ -238,10 +238,6 @@ DROP TABLE "teams";
 DROP INDEX "task_tenant_id";
 -- reverse: create "tasks" table
 DROP TABLE "tasks";
--- reverse: create index "systemanalysisrelationship_tenant_id_target_analysis_entity_id" to table: "system_analysis_relationships"
-DROP INDEX "systemanalysisrelationship_tenant_id_target_analysis_entity_id";
--- reverse: create index "systemanalysisrelationship_tenant_id_source_analysis_entity_id" to table: "system_analysis_relationships"
-DROP INDEX "systemanalysisrelationship_tenant_id_source_analysis_entity_id";
 -- reverse: create index "systemanalysisrelationship_tenant_id_knowledge_relationship_id" to table: "system_analysis_relationships"
 DROP INDEX "systemanalysisrelationship_tenant_id_knowledge_relationship_id";
 -- reverse: create index "systemanalysisrelationship_ten_4ca9378453889ae93a25a749d875e2ed" to table: "system_analysis_relationships"

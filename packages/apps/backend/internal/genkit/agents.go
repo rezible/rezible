@@ -200,8 +200,23 @@ func (w *agentWrapper[I, S]) getTurnState(ctx context.Context, params rez.Invoke
 	return state, nil
 }
 
+type agentInvocationContext struct {
+	Session *ent.AgentSession
+	Turn    *ent.AgentTurn
+}
+
+type agentInvocationContextKey struct{}
+
+func getAgentInvocationContext(ctx context.Context) (*agentInvocationContext, bool) {
+	c, ok := ctx.Value(agentInvocationContextKey{}).(*agentInvocationContext)
+	return c, ok
+}
+
 func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
 	ctx = execution.NewAiAgentContext(ctx, params.Session, params.Turn)
+
+	invCtx := &agentInvocationContext{Session: params.Session, Turn: params.Turn}
+	ctx = context.WithValue(ctx, agentInvocationContextKey{}, invCtx)
 
 	turnInput, inputErr := w.normalizeTurnInput(params.Input)
 	if inputErr != nil {

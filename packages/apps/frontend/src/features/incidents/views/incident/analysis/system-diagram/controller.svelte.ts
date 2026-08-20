@@ -10,12 +10,7 @@ import {
 	type Connection,
 } from "@xyflow/svelte";
 
-import {
-	type SystemAnalysis,
-	type SystemAnalysisNode,
-	type SystemAnalysisEdge,
-	type KnowledgeGraphEntity,
-} from "$lib/api";
+import { type SystemAnalysisNode, type SystemAnalysisEdge, type KnowledgeGraphEntity } from "$lib/api";
 
 import { useIncidentAnalysis } from "../controller.svelte";
 
@@ -27,10 +22,13 @@ export type SystemRelationshipEdgeData = {
 	edge: SystemAnalysisEdge;
 };
 
-const translateSystemAnalysis = (an: SystemAnalysis) => {
+const translateSystemAnalysis = (
+	analysisNodes: SystemAnalysisNode[],
+	analysisEdges: SystemAnalysisEdge[]
+) => {
 	let nodes: Node[] = [];
 	const nodeIdsByEntityId = new SvelteMap<string, string>();
-	an.attributes.nodes.forEach((analysisNode) => {
+	analysisNodes.forEach((analysisNode) => {
 		const { position, knowledgeEntity } = analysisNode.attributes;
 		nodeIdsByEntityId.set(knowledgeEntity.id, analysisNode.id);
 		nodes.push({
@@ -42,7 +40,7 @@ const translateSystemAnalysis = (an: SystemAnalysis) => {
 	});
 
 	let edges: Edge[] = [];
-	an.attributes.edges.forEach((sr) => {
+	analysisEdges.forEach((sr) => {
 		const { id, attributes } = sr;
 		const relattr = attributes.knowledgeRelationship.attributes;
 		const source = nodeIdsByEntityId.get(relattr.sourceEntityId);
@@ -76,9 +74,9 @@ export class SystemDiagramState {
 			this.containerEl = ref;
 		});
 		watch(
-			() => this.analysis.analysisData,
-			(data) => {
-				this.onAnalysisDataUpdate(data);
+			() => [this.analysis.analysisNodes, this.analysis.analysisEdges] as const,
+			([nodes, edges]) => {
+				this.onAnalysisGraphUpdate(nodes, edges);
 			}
 		);
 	}
@@ -86,9 +84,8 @@ export class SystemDiagramState {
 	nodes = $state.raw<Node[]>([]);
 	edges = $state.raw<Edge[]>([]);
 
-	onAnalysisDataUpdate(data?: SystemAnalysis) {
-		if (!data) return;
-		const translated = translateSystemAnalysis($state.snapshot(data));
+	onAnalysisGraphUpdate(nodes: SystemAnalysisNode[], edges: SystemAnalysisEdge[]) {
+		const translated = translateSystemAnalysis($state.snapshot(nodes), $state.snapshot(edges));
 		this.nodes = translated.nodes;
 		this.edges = translated.edges;
 	}

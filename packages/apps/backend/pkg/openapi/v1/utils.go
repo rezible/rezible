@@ -96,11 +96,16 @@ type (
 	}
 )
 
-func ConvertListResultBody[T any, R any](result *ent.ListResult[R], fn func(*R) T) ListResponseBody[T] {
-	data := make([]T, len(result.Data))
-	for i, r := range result.Data {
-		data[i] = fn(r)
+func ConvertSlice[D any, O any](data []D, fn func(D) O) []O {
+	res := make([]O, len(data))
+	for i, d := range data {
+		res[i] = fn(d)
 	}
+	return res
+}
+
+func ConvertListResultBody[T any, R any](result *ent.ListResult[R], fn func(*R) T) ListResponseBody[T] {
+	data := ConvertSlice(result.Data, fn)
 	pagination := ResponsePagination{
 		Next:     nil,
 		Previous: nil,
@@ -109,12 +114,29 @@ func ConvertListResultBody[T any, R any](result *ent.ListResult[R], fn func(*R) 
 	return ListResponseBody[T]{Data: data, Pagination: pagination}
 }
 
-func ConvertSlice[D any, O any](data []D, fn func(D) O) []O {
+func MaybeConvertSlice[D any, O any](data []D, fn func(D) (*O, error)) ([]O, error) {
 	res := make([]O, len(data))
 	for i, d := range data {
-		res[i] = fn(d)
+		rd, fnErr := fn(d)
+		if fnErr != nil {
+			return nil, fnErr
+		}
+		res[i] = *rd
 	}
-	return res
+	return res, nil
+}
+
+func MaybeConvertListResultBody[T any, R any](result *ent.ListResult[R], fn func(*R) (*T, error)) (*ListResponseBody[T], error) {
+	data, dataErr := MaybeConvertSlice(result.Data, fn)
+	if dataErr != nil {
+		return nil, dataErr
+	}
+	pagination := ResponsePagination{
+		Next:     nil,
+		Previous: nil,
+		Total:    result.Count,
+	}
+	return &ListResponseBody[T]{Data: data, Pagination: pagination}, nil
 }
 
 type CalendarDate string

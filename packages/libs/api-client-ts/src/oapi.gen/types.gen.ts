@@ -124,7 +124,6 @@ export type AgentTurnAttributes = {
     error?: AgentTurnError;
     finishReason?: string;
     finishedAt?: string;
-    knowledgeCitations?: Array<AgentTurnKnowledgeCitation>;
     sequence: number;
     startedAt?: string;
     status: string;
@@ -134,17 +133,6 @@ export type AgentTurnAttributes = {
 export type AgentTurnError = {
     code: string;
     message: string;
-};
-
-export type AgentTurnKnowledgeCitation = {
-    attributes: AgentTurnKnowledgeCitationAttributes;
-    id: string;
-};
-
-export type AgentTurnKnowledgeCitationAttributes = {
-    createdAt: string;
-    knowledgeEvidenceId: string;
-    summary: string;
 };
 
 export type AgentTurnResume = {
@@ -578,7 +566,6 @@ export type CreateSystemAnalysisEntryAttributes = {
     properties?: {
         [key: string]: unknown;
     };
-    sequence: number;
     title: string;
 };
 
@@ -2155,9 +2142,6 @@ export type SystemAnalysis = {
 };
 
 export type SystemAnalysisAttributes = {
-    edges: Array<SystemAnalysisEdge>;
-    entries: Array<SystemAnalysisEntry>;
-    nodes: Array<SystemAnalysisNode>;
     referenceTime?: string;
     scopeEntityId?: string;
     subjectEntityId?: string;

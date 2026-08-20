@@ -53299,10 +53299,6 @@ type SystemAnalysisRelationshipMutation struct {
 	clearedanalysis               bool
 	knowledge_relationship        *uuid.UUID
 	clearedknowledge_relationship bool
-	source_entity                 *uuid.UUID
-	clearedsource_entity          bool
-	target_entity                 *uuid.UUID
-	clearedtarget_entity          bool
 	done                          bool
 	oldValue                      func(context.Context) (*SystemAnalysisRelationship, error)
 	predicates                    []predicate.SystemAnalysisRelationship
@@ -53590,78 +53586,6 @@ func (m *SystemAnalysisRelationshipMutation) OldKnowledgeRelationshipID(ctx cont
 // ResetKnowledgeRelationshipID resets all changes to the "knowledge_relationship_id" field.
 func (m *SystemAnalysisRelationshipMutation) ResetKnowledgeRelationshipID() {
 	m.knowledge_relationship = nil
-}
-
-// SetSourceAnalysisEntityID sets the "source_analysis_entity_id" field.
-func (m *SystemAnalysisRelationshipMutation) SetSourceAnalysisEntityID(u uuid.UUID) {
-	m.source_entity = &u
-}
-
-// SourceAnalysisEntityID returns the value of the "source_analysis_entity_id" field in the mutation.
-func (m *SystemAnalysisRelationshipMutation) SourceAnalysisEntityID() (r uuid.UUID, exists bool) {
-	v := m.source_entity
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSourceAnalysisEntityID returns the old "source_analysis_entity_id" field's value of the SystemAnalysisRelationship entity.
-// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisRelationshipMutation) OldSourceAnalysisEntityID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceAnalysisEntityID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceAnalysisEntityID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceAnalysisEntityID: %w", err)
-	}
-	return oldValue.SourceAnalysisEntityID, nil
-}
-
-// ResetSourceAnalysisEntityID resets all changes to the "source_analysis_entity_id" field.
-func (m *SystemAnalysisRelationshipMutation) ResetSourceAnalysisEntityID() {
-	m.source_entity = nil
-}
-
-// SetTargetAnalysisEntityID sets the "target_analysis_entity_id" field.
-func (m *SystemAnalysisRelationshipMutation) SetTargetAnalysisEntityID(u uuid.UUID) {
-	m.target_entity = &u
-}
-
-// TargetAnalysisEntityID returns the value of the "target_analysis_entity_id" field in the mutation.
-func (m *SystemAnalysisRelationshipMutation) TargetAnalysisEntityID() (r uuid.UUID, exists bool) {
-	v := m.target_entity
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTargetAnalysisEntityID returns the old "target_analysis_entity_id" field's value of the SystemAnalysisRelationship entity.
-// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisRelationshipMutation) OldTargetAnalysisEntityID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTargetAnalysisEntityID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTargetAnalysisEntityID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTargetAnalysisEntityID: %w", err)
-	}
-	return oldValue.TargetAnalysisEntityID, nil
-}
-
-// ResetTargetAnalysisEntityID resets all changes to the "target_analysis_entity_id" field.
-func (m *SystemAnalysisRelationshipMutation) ResetTargetAnalysisEntityID() {
-	m.target_entity = nil
 }
 
 // SetHidden sets the "hidden" field.
@@ -53977,86 +53901,6 @@ func (m *SystemAnalysisRelationshipMutation) ResetKnowledgeRelationship() {
 	m.clearedknowledge_relationship = false
 }
 
-// SetSourceEntityID sets the "source_entity" edge to the SystemAnalysisEntity entity by id.
-func (m *SystemAnalysisRelationshipMutation) SetSourceEntityID(id uuid.UUID) {
-	m.source_entity = &id
-}
-
-// ClearSourceEntity clears the "source_entity" edge to the SystemAnalysisEntity entity.
-func (m *SystemAnalysisRelationshipMutation) ClearSourceEntity() {
-	m.clearedsource_entity = true
-	m.clearedFields[systemanalysisrelationship.FieldSourceAnalysisEntityID] = struct{}{}
-}
-
-// SourceEntityCleared reports if the "source_entity" edge to the SystemAnalysisEntity entity was cleared.
-func (m *SystemAnalysisRelationshipMutation) SourceEntityCleared() bool {
-	return m.clearedsource_entity
-}
-
-// SourceEntityID returns the "source_entity" edge ID in the mutation.
-func (m *SystemAnalysisRelationshipMutation) SourceEntityID() (id uuid.UUID, exists bool) {
-	if m.source_entity != nil {
-		return *m.source_entity, true
-	}
-	return
-}
-
-// SourceEntityIDs returns the "source_entity" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SourceEntityID instead. It exists only for internal usage by the builders.
-func (m *SystemAnalysisRelationshipMutation) SourceEntityIDs() (ids []uuid.UUID) {
-	if id := m.source_entity; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetSourceEntity resets all changes to the "source_entity" edge.
-func (m *SystemAnalysisRelationshipMutation) ResetSourceEntity() {
-	m.source_entity = nil
-	m.clearedsource_entity = false
-}
-
-// SetTargetEntityID sets the "target_entity" edge to the SystemAnalysisEntity entity by id.
-func (m *SystemAnalysisRelationshipMutation) SetTargetEntityID(id uuid.UUID) {
-	m.target_entity = &id
-}
-
-// ClearTargetEntity clears the "target_entity" edge to the SystemAnalysisEntity entity.
-func (m *SystemAnalysisRelationshipMutation) ClearTargetEntity() {
-	m.clearedtarget_entity = true
-	m.clearedFields[systemanalysisrelationship.FieldTargetAnalysisEntityID] = struct{}{}
-}
-
-// TargetEntityCleared reports if the "target_entity" edge to the SystemAnalysisEntity entity was cleared.
-func (m *SystemAnalysisRelationshipMutation) TargetEntityCleared() bool {
-	return m.clearedtarget_entity
-}
-
-// TargetEntityID returns the "target_entity" edge ID in the mutation.
-func (m *SystemAnalysisRelationshipMutation) TargetEntityID() (id uuid.UUID, exists bool) {
-	if m.target_entity != nil {
-		return *m.target_entity, true
-	}
-	return
-}
-
-// TargetEntityIDs returns the "target_entity" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TargetEntityID instead. It exists only for internal usage by the builders.
-func (m *SystemAnalysisRelationshipMutation) TargetEntityIDs() (ids []uuid.UUID) {
-	if id := m.target_entity; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTargetEntity resets all changes to the "target_entity" edge.
-func (m *SystemAnalysisRelationshipMutation) ResetTargetEntity() {
-	m.target_entity = nil
-	m.clearedtarget_entity = false
-}
-
 // Where appends a list predicates to the SystemAnalysisRelationshipMutation builder.
 func (m *SystemAnalysisRelationshipMutation) Where(ps ...predicate.SystemAnalysisRelationship) {
 	m.predicates = append(m.predicates, ps...)
@@ -54091,7 +53935,7 @@ func (m *SystemAnalysisRelationshipMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemAnalysisRelationshipMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 10)
 	if m.tenant != nil {
 		fields = append(fields, systemanalysisrelationship.FieldTenantID)
 	}
@@ -54106,12 +53950,6 @@ func (m *SystemAnalysisRelationshipMutation) Fields() []string {
 	}
 	if m.knowledge_relationship != nil {
 		fields = append(fields, systemanalysisrelationship.FieldKnowledgeRelationshipID)
-	}
-	if m.source_entity != nil {
-		fields = append(fields, systemanalysisrelationship.FieldSourceAnalysisEntityID)
-	}
-	if m.target_entity != nil {
-		fields = append(fields, systemanalysisrelationship.FieldTargetAnalysisEntityID)
 	}
 	if m.hidden != nil {
 		fields = append(fields, systemanalysisrelationship.FieldHidden)
@@ -54146,10 +53984,6 @@ func (m *SystemAnalysisRelationshipMutation) Field(name string) (ent.Value, bool
 		return m.AnalysisID()
 	case systemanalysisrelationship.FieldKnowledgeRelationshipID:
 		return m.KnowledgeRelationshipID()
-	case systemanalysisrelationship.FieldSourceAnalysisEntityID:
-		return m.SourceAnalysisEntityID()
-	case systemanalysisrelationship.FieldTargetAnalysisEntityID:
-		return m.TargetAnalysisEntityID()
 	case systemanalysisrelationship.FieldHidden:
 		return m.Hidden()
 	case systemanalysisrelationship.FieldLabelOverride:
@@ -54179,10 +54013,6 @@ func (m *SystemAnalysisRelationshipMutation) OldField(ctx context.Context, name 
 		return m.OldAnalysisID(ctx)
 	case systemanalysisrelationship.FieldKnowledgeRelationshipID:
 		return m.OldKnowledgeRelationshipID(ctx)
-	case systemanalysisrelationship.FieldSourceAnalysisEntityID:
-		return m.OldSourceAnalysisEntityID(ctx)
-	case systemanalysisrelationship.FieldTargetAnalysisEntityID:
-		return m.OldTargetAnalysisEntityID(ctx)
 	case systemanalysisrelationship.FieldHidden:
 		return m.OldHidden(ctx)
 	case systemanalysisrelationship.FieldLabelOverride:
@@ -54236,20 +54066,6 @@ func (m *SystemAnalysisRelationshipMutation) SetField(name string, value ent.Val
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetKnowledgeRelationshipID(v)
-		return nil
-	case systemanalysisrelationship.FieldSourceAnalysisEntityID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSourceAnalysisEntityID(v)
-		return nil
-	case systemanalysisrelationship.FieldTargetAnalysisEntityID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTargetAnalysisEntityID(v)
 		return nil
 	case systemanalysisrelationship.FieldHidden:
 		v, ok := value.(bool)
@@ -54380,12 +54196,6 @@ func (m *SystemAnalysisRelationshipMutation) ResetField(name string) error {
 	case systemanalysisrelationship.FieldKnowledgeRelationshipID:
 		m.ResetKnowledgeRelationshipID()
 		return nil
-	case systemanalysisrelationship.FieldSourceAnalysisEntityID:
-		m.ResetSourceAnalysisEntityID()
-		return nil
-	case systemanalysisrelationship.FieldTargetAnalysisEntityID:
-		m.ResetTargetAnalysisEntityID()
-		return nil
 	case systemanalysisrelationship.FieldHidden:
 		m.ResetHidden()
 		return nil
@@ -54407,7 +54217,7 @@ func (m *SystemAnalysisRelationshipMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemAnalysisRelationshipMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, systemanalysisrelationship.EdgeTenant)
 	}
@@ -54416,12 +54226,6 @@ func (m *SystemAnalysisRelationshipMutation) AddedEdges() []string {
 	}
 	if m.knowledge_relationship != nil {
 		edges = append(edges, systemanalysisrelationship.EdgeKnowledgeRelationship)
-	}
-	if m.source_entity != nil {
-		edges = append(edges, systemanalysisrelationship.EdgeSourceEntity)
-	}
-	if m.target_entity != nil {
-		edges = append(edges, systemanalysisrelationship.EdgeTargetEntity)
 	}
 	return edges
 }
@@ -54442,21 +54246,13 @@ func (m *SystemAnalysisRelationshipMutation) AddedIDs(name string) []ent.Value {
 		if id := m.knowledge_relationship; id != nil {
 			return []ent.Value{*id}
 		}
-	case systemanalysisrelationship.EdgeSourceEntity:
-		if id := m.source_entity; id != nil {
-			return []ent.Value{*id}
-		}
-	case systemanalysisrelationship.EdgeTargetEntity:
-		if id := m.target_entity; id != nil {
-			return []ent.Value{*id}
-		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemAnalysisRelationshipMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 3)
 	return edges
 }
 
@@ -54468,7 +54264,7 @@ func (m *SystemAnalysisRelationshipMutation) RemovedIDs(name string) []ent.Value
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemAnalysisRelationshipMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, systemanalysisrelationship.EdgeTenant)
 	}
@@ -54477,12 +54273,6 @@ func (m *SystemAnalysisRelationshipMutation) ClearedEdges() []string {
 	}
 	if m.clearedknowledge_relationship {
 		edges = append(edges, systemanalysisrelationship.EdgeKnowledgeRelationship)
-	}
-	if m.clearedsource_entity {
-		edges = append(edges, systemanalysisrelationship.EdgeSourceEntity)
-	}
-	if m.clearedtarget_entity {
-		edges = append(edges, systemanalysisrelationship.EdgeTargetEntity)
 	}
 	return edges
 }
@@ -54497,10 +54287,6 @@ func (m *SystemAnalysisRelationshipMutation) EdgeCleared(name string) bool {
 		return m.clearedanalysis
 	case systemanalysisrelationship.EdgeKnowledgeRelationship:
 		return m.clearedknowledge_relationship
-	case systemanalysisrelationship.EdgeSourceEntity:
-		return m.clearedsource_entity
-	case systemanalysisrelationship.EdgeTargetEntity:
-		return m.clearedtarget_entity
 	}
 	return false
 }
@@ -54518,12 +54304,6 @@ func (m *SystemAnalysisRelationshipMutation) ClearEdge(name string) error {
 	case systemanalysisrelationship.EdgeKnowledgeRelationship:
 		m.ClearKnowledgeRelationship()
 		return nil
-	case systemanalysisrelationship.EdgeSourceEntity:
-		m.ClearSourceEntity()
-		return nil
-	case systemanalysisrelationship.EdgeTargetEntity:
-		m.ClearTargetEntity()
-		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisRelationship unique edge %s", name)
 }
@@ -54540,12 +54320,6 @@ func (m *SystemAnalysisRelationshipMutation) ResetEdge(name string) error {
 		return nil
 	case systemanalysisrelationship.EdgeKnowledgeRelationship:
 		m.ResetKnowledgeRelationship()
-		return nil
-	case systemanalysisrelationship.EdgeSourceEntity:
-		m.ResetSourceEntity()
-		return nil
-	case systemanalysisrelationship.EdgeTargetEntity:
-		m.ResetTargetEntity()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisRelationship edge %s", name)

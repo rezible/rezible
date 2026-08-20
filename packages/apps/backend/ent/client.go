@@ -13040,44 +13040,6 @@ func (c *SystemAnalysisRelationshipClient) QueryKnowledgeRelationship(_m *System
 	return query
 }
 
-// QuerySourceEntity queries the source_entity edge of a SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) QuerySourceEntity(_m *SystemAnalysisRelationship) *SystemAnalysisEntityQuery {
-	query := (&SystemAnalysisEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
-			sqlgraph.To(systemanalysisentity.Table, systemanalysisentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.SourceEntityTable, systemanalysisrelationship.SourceEntityColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisEntity
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTargetEntity queries the target_entity edge of a SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) QueryTargetEntity(_m *SystemAnalysisRelationship) *SystemAnalysisEntityQuery {
-	query := (&SystemAnalysisEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
-			sqlgraph.To(systemanalysisentity.Table, systemanalysisentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.TargetEntityTable, systemanalysisrelationship.TargetEntityColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisEntity
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *SystemAnalysisRelationshipClient) Hooks() []Hook {
 	hooks := c.hooks.SystemAnalysisRelationship

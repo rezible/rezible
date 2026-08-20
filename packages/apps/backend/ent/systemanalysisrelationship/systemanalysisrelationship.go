@@ -26,10 +26,6 @@ const (
 	FieldAnalysisID = "analysis_id"
 	// FieldKnowledgeRelationshipID holds the string denoting the knowledge_relationship_id field in the database.
 	FieldKnowledgeRelationshipID = "knowledge_relationship_id"
-	// FieldSourceAnalysisEntityID holds the string denoting the source_analysis_entity_id field in the database.
-	FieldSourceAnalysisEntityID = "source_analysis_entity_id"
-	// FieldTargetAnalysisEntityID holds the string denoting the target_analysis_entity_id field in the database.
-	FieldTargetAnalysisEntityID = "target_analysis_entity_id"
 	// FieldHidden holds the string denoting the hidden field in the database.
 	FieldHidden = "hidden"
 	// FieldLabelOverride holds the string denoting the label_override field in the database.
@@ -46,10 +42,6 @@ const (
 	EdgeAnalysis = "analysis"
 	// EdgeKnowledgeRelationship holds the string denoting the knowledge_relationship edge name in mutations.
 	EdgeKnowledgeRelationship = "knowledge_relationship"
-	// EdgeSourceEntity holds the string denoting the source_entity edge name in mutations.
-	EdgeSourceEntity = "source_entity"
-	// EdgeTargetEntity holds the string denoting the target_entity edge name in mutations.
-	EdgeTargetEntity = "target_entity"
 	// Table holds the table name of the systemanalysisrelationship in the database.
 	Table = "system_analysis_relationships"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -73,20 +65,6 @@ const (
 	KnowledgeRelationshipInverseTable = "knowledge_relationships"
 	// KnowledgeRelationshipColumn is the table column denoting the knowledge_relationship relation/edge.
 	KnowledgeRelationshipColumn = "knowledge_relationship_id"
-	// SourceEntityTable is the table that holds the source_entity relation/edge.
-	SourceEntityTable = "system_analysis_relationships"
-	// SourceEntityInverseTable is the table name for the SystemAnalysisEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysisentity" package.
-	SourceEntityInverseTable = "system_analysis_entities"
-	// SourceEntityColumn is the table column denoting the source_entity relation/edge.
-	SourceEntityColumn = "source_analysis_entity_id"
-	// TargetEntityTable is the table that holds the target_entity relation/edge.
-	TargetEntityTable = "system_analysis_relationships"
-	// TargetEntityInverseTable is the table name for the SystemAnalysisEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysisentity" package.
-	TargetEntityInverseTable = "system_analysis_entities"
-	// TargetEntityColumn is the table column denoting the target_entity relation/edge.
-	TargetEntityColumn = "target_analysis_entity_id"
 )
 
 // Columns holds all SQL columns for systemanalysisrelationship fields.
@@ -97,8 +75,6 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldAnalysisID,
 	FieldKnowledgeRelationshipID,
-	FieldSourceAnalysisEntityID,
-	FieldTargetAnalysisEntityID,
 	FieldHidden,
 	FieldLabelOverride,
 	FieldDescriptionOverride,
@@ -169,16 +145,6 @@ func ByKnowledgeRelationshipID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKnowledgeRelationshipID, opts...).ToFunc()
 }
 
-// BySourceAnalysisEntityID orders the results by the source_analysis_entity_id field.
-func BySourceAnalysisEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSourceAnalysisEntityID, opts...).ToFunc()
-}
-
-// ByTargetAnalysisEntityID orders the results by the target_analysis_entity_id field.
-func ByTargetAnalysisEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTargetAnalysisEntityID, opts...).ToFunc()
-}
-
 // ByHidden orders the results by the hidden field.
 func ByHidden(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldHidden, opts...).ToFunc()
@@ -214,20 +180,6 @@ func ByKnowledgeRelationshipField(field string, opts ...sql.OrderTermOption) Ord
 		sqlgraph.OrderByNeighborTerms(s, newKnowledgeRelationshipStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// BySourceEntityField orders the results by source_entity field.
-func BySourceEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSourceEntityStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByTargetEntityField orders the results by target_entity field.
-func ByTargetEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTargetEntityStep(), sql.OrderByField(field, opts...))
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -247,19 +199,5 @@ func newKnowledgeRelationshipStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(KnowledgeRelationshipInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeRelationshipTable, KnowledgeRelationshipColumn),
-	)
-}
-func newSourceEntityStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SourceEntityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, SourceEntityTable, SourceEntityColumn),
-	)
-}
-func newTargetEntityStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(TargetEntityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, TargetEntityTable, TargetEntityColumn),
 	)
 }
