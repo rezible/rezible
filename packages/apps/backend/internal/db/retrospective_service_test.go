@@ -19,10 +19,8 @@ func TestRetrospectiveServiceSuite(t *testing.T) {
 	suite.Run(t, &RetrospectiveServiceSuite{Suite: test.NewSuite()})
 }
 
-func (s *RetrospectiveServiceSuite) createIncident() *ent.Incident {
+func (s *RetrospectiveServiceSuite) createIncident(client *ent.Client) *ent.Incident {
 	ctx := s.SeedTenantContext()
-
-	client := s.Database().Client(ctx)
 
 	severity, err := client.IncidentSeverity.Create().
 		SetName("SEV-1 " + uuid.NewString()).
@@ -48,16 +46,19 @@ func (s *RetrospectiveServiceSuite) createIncident() *ent.Incident {
 
 func (s *RetrospectiveServiceSuite) TestCreateFullRetrospective() {
 	ctx := s.SeedTenantContext()
-	svc := &RetrospectiveService{db: s.Database()}
-	inc := s.createIncident()
+	tdb := s.CreateTestDatabase()
+	svc := &RetrospectiveService{db: tdb}
+
+	client := tdb.Client(ctx)
+	inc := s.createIncident(client)
 
 	retro, err := svc.createForIncident(ctx, inc)
 	s.Require().NoError(err)
 	s.Equal(retrospective.KindFull, retro.Kind)
 	s.NotEqual(uuid.Nil, retro.DocumentID)
 	s.NotEqual(uuid.Nil, retro.SystemAnalysisID)
-	_, documentErr := s.Database().Client(ctx).Document.Get(ctx, retro.DocumentID)
+	_, documentErr := client.Document.Get(ctx, retro.DocumentID)
 	s.Require().NoError(documentErr)
-	_, analysisErr := s.Database().Client(ctx).SystemAnalysis.Get(ctx, retro.SystemAnalysisID)
+	_, analysisErr := client.SystemAnalysis.Get(ctx, retro.SystemAnalysisID)
 	s.Require().NoError(analysisErr)
 }

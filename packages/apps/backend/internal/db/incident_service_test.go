@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	ifo "github.com/rezible/rezible/ent/incidentfieldoption"
@@ -22,18 +23,17 @@ func TestIncidentServiceSuite(t *testing.T) {
 	suite.Run(t, &IncidentServiceSuite{Suite: test.NewSuite()})
 }
 
-func (s *IncidentServiceSuite) newService() *IncidentService {
+func (s *IncidentServiceSuite) newService(tdb rez.Database) *IncidentService {
 	msgs := mocks.NewMockMessageService(s.T())
 	msgs.EXPECT().AddHandlers(mock.Anything).Return(nil)
 	msgs.EXPECT().Publish(mock.Anything, mock.Anything).Return(nil).Maybe()
 
-	svc, err := NewIncidentService(s.Database(), msgs)
+	svc, err := NewIncidentService(tdb, msgs)
 	s.Require().NoError(err)
 	return svc
 }
 
-func (s *IncidentServiceSuite) createBasicIncident(ctx context.Context, svc *IncidentService, title string) *ent.Incident {
-	client := s.Client(ctx)
+func (s *IncidentServiceSuite) createBasicIncident(ctx context.Context, client *ent.Client, svc *IncidentService, title string) *ent.Incident {
 	severity, err := client.IncidentSeverity.Create().
 		SetName("SEV-" + uuid.NewString()).
 		SetRank(1).
@@ -54,9 +54,10 @@ func (s *IncidentServiceSuite) createBasicIncident(ctx context.Context, svc *Inc
 
 func (s *IncidentServiceSuite) TestCreateIncidentWithMetadataRoundTrips() {
 	ctx := s.SeedTenantContext()
-	svc := s.newService()
+	tdb := s.CreateTestDatabase()
+	svc := s.newService(tdb)
 
-	client := s.Database().Client(ctx)
+	client := tdb.Client(ctx)
 
 	severity, err := client.IncidentSeverity.Create().
 		SetName("SEV-1").

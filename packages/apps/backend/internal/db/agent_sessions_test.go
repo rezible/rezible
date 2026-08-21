@@ -38,6 +38,7 @@ func TestAgentSessionServiceSuite(t *testing.T) {
 }
 
 type agentSessionTestHarness struct {
+	tdb        rez.Database
 	jobs       *mocks.MockJobService
 	ai         *mocks.MockAiService
 	msgs       *mocks.MockMessageService
@@ -47,6 +48,7 @@ type agentSessionTestHarness struct {
 }
 
 func (s *AgentSessionServiceSuite) newAgentSessionTestHarness() *agentSessionTestHarness {
+	tdb := s.CreateTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	aiService := mocks.NewMockAiService(s.T())
 	messageService := mocks.NewMockMessageService(s.T())
@@ -54,25 +56,26 @@ func (s *AgentSessionServiceSuite) newAgentSessionTestHarness() *agentSessionTes
 
 	svc := &AgentSessionService{
 		logger: logger,
-		db:     s.Database(),
+		db:     tdb,
 		jobs:   jobService,
 	}
 
 	sessWorker := &StartAgentSessionWorker{
-		db:     s.Database(),
+		db:     tdb,
 		ai:     aiService,
 		aiSess: svc,
 		logger: logger,
 	}
 
 	turnWorker := &InvokeAgentTurnWorker{
-		db:     s.Database(),
+		db:     tdb,
 		ai:     aiService,
 		msgs:   messageService,
 		logger: logger,
 	}
 
 	return &agentSessionTestHarness{
+		tdb:        tdb,
 		jobs:       jobService,
 		ai:         aiService,
 		msgs:       messageService,
@@ -82,10 +85,10 @@ func (s *AgentSessionServiceSuite) newAgentSessionTestHarness() *agentSessionTes
 	}
 }
 
-func (s *AgentSessionServiceSuite) createAgentSession(ctx context.Context, input rez.ValidatingInput) *ent.AgentSession {
+func (s *AgentSessionServiceSuite) createAgentSession(ctx context.Context, tdb rez.Database, input rez.ValidatingInput) *ent.AgentSession {
 	inputJson, jsonErr := json.Marshal(input)
 	s.Require().NoError(jsonErr)
-	createSession := s.Client(ctx).AgentSession.Create().
+	createSession := tdb.Client(ctx).AgentSession.Create().
 		SetAgentName("test-agent").
 		SetInput(inputJson)
 	session, createErr := createSession.Save(ctx)
@@ -105,7 +108,7 @@ type agentTurnSeed struct {
 	finishedAt   *time.Time
 }
 
-func (s *AgentSessionServiceSuite) createAgentTurn(ctx context.Context, session *ent.AgentSession, seed agentTurnSeed) *ent.AgentTurn {
+func (s *AgentSessionServiceSuite) createAgentTurn(ctx context.Context, tdb rez.Database, session *ent.AgentSession, seed agentTurnSeed) *ent.AgentTurn {
 	if seed.id == uuid.Nil {
 		seed.id = uuid.New()
 	}
@@ -117,7 +120,7 @@ func (s *AgentSessionServiceSuite) createAgentTurn(ctx context.Context, session 
 	s.Require().NoError(inputErr)
 
 	var turn *ent.AgentTurn
-	txErr := s.Database().WithTx(ctx, func(ctx context.Context, client *ent.Client) error {
+	txErr := tdb.WithTx(ctx, func(ctx context.Context, client *ent.Client) error {
 		sess := client.AgentSession.GetX(ctx, session.ID)
 
 		numTurns := sess.QueryTurns().CountX(ctx)
@@ -170,11 +173,11 @@ func (s *AgentSessionServiceSuite) createAgentTurn(ctx context.Context, session 
 	return turn
 }
 
-func (s *AgentSessionServiceSuite) createAgentMessage(ctx context.Context, session *ent.AgentSession, turn *ent.AgentTurn, msg *ai.Message) *ent.AgentMessage {
+func (s *AgentSessionServiceSuite) createAgentMessage(ctx context.Context, tdb rez.Database, session *ent.AgentSession, turn *ent.AgentTurn, msg *ai.Message) *ent.AgentMessage {
 	numMsgs, countErr := session.QueryMessages().Count(ctx)
 	s.Require().NoError(countErr)
 
-	createMsg := s.Client(ctx).AgentMessage.Create().
+	createMsg := tdb.Client(ctx).AgentMessage.Create().
 		SetAgentSessionID(session.ID).
 		SetAgentTurnID(turn.ID).
 		SetSequence(numMsgs + 1).
@@ -215,7 +218,7 @@ func (i testAgentInput) Validate() error {
 func (s *AgentSessionServiceSuite) TestCreateAgentSessionCreatesQueuedStartAtomically() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
-	analysis := s.Client(ctx).SystemAnalysis.Create().SaveX(ctx)
+	analysis := h.tdb.Client(ctx).SystemAnalysis.Create().SaveX(ctx)
 
 	h.jobs.EXPECT().
 		Insert(mock.Anything, mock.IsType(jobs.StartAgentSession{}), mock.Anything).
@@ -279,7 +282,7 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionCreatesRequestedBinding
 func (s *AgentSessionServiceSuite) TestCreateAgentSessionRollsBackWhenJobInsertFails() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
-	client := s.Client(ctx)
+	client := h.tdb.Client(ctx)
 
 	insertJobErr := errors.New("job insert failed")
 	h.jobs.EXPECT().
@@ -294,9 +297,8 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionRollsBackWhenJobInsertF
 	s.Require().NoError(countTurnsBeforeErr)
 
 	params := rez.CreateAgentSessionParams{
-		AgentName:   "test-agent",
-		OwnerUserID: &s.SeedUser.ID,
-		Input:       testAgentInput{Foo: "bar"},
+		AgentName: "test-agent",
+		Input:     testAgentInput{Foo: "bar"},
 	}
 	session, createErr := h.service.CreateAgentSession(ctx, params)
 	s.Nil(session)
@@ -315,9 +317,9 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionRollsBackWhenJobInsertF
 func (s *AgentSessionServiceSuite) TestRequestAgentTurnValidatesInputAndCompletedRoot() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
-	session := s.createAgentSession(ctx, testAgentInput{Foo: "bar"})
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{Foo: "bar"})
 
-	initialTurn := s.createAgentTurn(ctx, session, agentTurnSeed{
+	initialTurn := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID: 201,
 		status:     at.StatusQueued,
 	})
@@ -372,19 +374,19 @@ func (s *AgentSessionServiceSuite) TestRequestAgentTurnValidatesInputAndComplete
 func (s *AgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublishesEvent() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
-	session := s.createAgentSession(ctx, testAgentInput{Foo: "bar"})
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{Foo: "bar"})
 
-	initialTurn := s.createAgentTurn(ctx, session, agentTurnSeed{
+	initialTurn := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID:   501,
 		status:       at.StatusCompleted,
 		finishReason: string(aix.AgentFinishReasonStop),
 	})
 	s.Require().NotNil(initialTurn)
 	initialReply := ai.NewModelTextMessage("ready")
-	s.createAgentMessage(ctx, session, initialTurn, initialReply)
+	s.createAgentMessage(ctx, h.tdb, session, initialTurn, initialReply)
 
 	followUpInput := ai.NewUserTextMessage("baz")
-	followUp := s.createAgentTurn(ctx, session, agentTurnSeed{
+	followUp := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID: 502,
 		status:     at.StatusQueued,
 		input:      &rez.AiAgentTurnInput{Message: followUpInput},
@@ -397,7 +399,7 @@ func (s *AgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublishe
 		Parts:    []*ai.Part{ai.NewTextPart("new report")},
 		Metadata: map[string]any{"version": "new"},
 	}
-	s.Client(ctx).AgentArtifact.Create().
+	h.tdb.Client(ctx).AgentArtifact.Create().
 		SetAgentSessionID(session.ID).
 		SetAgentTurnID(initialTurn.ID).
 		SetName(artifact.Name).
@@ -445,7 +447,7 @@ func (s *AgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublishe
 
 	s.Require().NoError(h.turnWorker.Work(ctx, makeAgentTurnJob(followUp, 1)))
 
-	queryTurn := s.Client(ctx).AgentTurn.Query().
+	queryTurn := h.tdb.Client(ctx).AgentTurn.Query().
 		Where(at.ID(followUp.ID)).
 		WithMessages().
 		WithArtifacts()
@@ -475,14 +477,14 @@ func (s *AgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublishe
 func (s *AgentSessionServiceSuite) TestWorkerFailsTurnWhenAgentReturnsNilResult() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
-	session := s.createAgentSession(ctx, testAgentInput{})
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
 
-	_ = s.createAgentTurn(ctx, session, agentTurnSeed{
+	_ = s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID:   551,
 		status:       at.StatusCompleted,
 		finishReason: string(aix.AgentFinishReasonStop),
 	})
-	turn := s.createAgentTurn(ctx, session, agentTurnSeed{
+	turn := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID: 552,
 		status:     at.StatusQueued,
 	})
@@ -495,7 +497,7 @@ func (s *AgentSessionServiceSuite) TestWorkerFailsTurnWhenAgentReturnsNilResult(
 	workErr := h.turnWorker.Work(ctx, makeAgentTurnJob(turn, 1))
 	s.Require().NoError(workErr)
 
-	turn, turnErr := s.Client(ctx).AgentTurn.Get(ctx, turn.ID)
+	turn, turnErr := h.tdb.Client(ctx).AgentTurn.Get(ctx, turn.ID)
 	s.Require().NoError(turnErr)
 	s.Equal(at.StatusFailed, turn.Status)
 	s.Require().NotNil(turn.Error)
@@ -507,15 +509,15 @@ func (s *AgentSessionServiceSuite) TestWorkerFailsTurnWhenAgentReturnsNilResult(
 func (s *AgentSessionServiceSuite) TestWorkerTerminalizesRunningRedeliveryWithoutInvokingAgent() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
-	session := s.createAgentSession(ctx, testAgentInput{})
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
 
-	_ = s.createAgentTurn(ctx, session, agentTurnSeed{
+	_ = s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID:   601,
 		status:       at.StatusCompleted,
 		finishReason: string(aix.AgentFinishReasonStop),
 	})
 
-	turn := s.createAgentTurn(ctx, session, agentTurnSeed{
+	turn := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID: 602,
 		status:     at.StatusRunning,
 		startedAt:  new(time.Now().UTC().Add(-time.Minute)),
@@ -525,7 +527,7 @@ func (s *AgentSessionServiceSuite) TestWorkerTerminalizesRunningRedeliveryWithou
 	s.Require().NoError(workErr)
 
 	var turnErr error
-	turn, turnErr = s.Client(ctx).AgentTurn.Get(ctx, turn.ID)
+	turn, turnErr = h.tdb.Client(ctx).AgentTurn.Get(ctx, turn.ID)
 	s.Require().NoError(turnErr)
 	s.Equal(at.StatusFailed, turn.Status)
 	s.NotNil(turn.Error)
@@ -538,8 +540,8 @@ func (s *AgentSessionServiceSuite) TestWorkerTerminalizesRunningRedeliveryWithou
 func (s *AgentSessionServiceSuite) TestAbortAgentTurnIsIdempotent() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
-	session := s.createAgentSession(ctx, testAgentInput{})
-	turn := s.createAgentTurn(ctx, session, agentTurnSeed{
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
+	turn := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID: 701,
 		status:     at.StatusQueued,
 	})
@@ -565,9 +567,9 @@ func (s *AgentSessionServiceSuite) TestAbortAgentTurnIsIdempotent() {
 func (s *AgentSessionServiceSuite) TestRetryAgentTurnRequeuesSameTurnAndClearsTerminalState() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
-	session := s.createAgentSession(ctx, testAgentInput{})
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
 
-	root := s.createAgentTurn(ctx, session, agentTurnSeed{
+	root := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID:   801,
 		status:       at.StatusCompleted,
 		finishReason: string(aix.AgentFinishReasonStop),
@@ -576,7 +578,7 @@ func (s *AgentSessionServiceSuite) TestRetryAgentTurnRequeuesSameTurnAndClearsTe
 
 	inputMsg := ai.NewUserTextMessage("retry me")
 
-	turn := s.createAgentTurn(ctx, session, agentTurnSeed{
+	turn := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID:   802,
 		input:        &rez.AiAgentTurnInput{Message: inputMsg},
 		status:       at.StatusFailed,

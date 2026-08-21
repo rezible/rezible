@@ -32,17 +32,17 @@ func TestProjectionServiceSuite(t *testing.T) {
 	suite.Run(t, &ProjectionServiceSuite{Suite: test.NewSuite()})
 }
 
-func (s *ProjectionServiceSuite) projectionService() *ProjectionService {
-	users, _ := db.NewUserService(s.Database(), mocks.NewMockOrganizationService(s.T()))
+func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *ProjectionService {
+	users, _ := db.NewUserService(tdb, mocks.NewMockOrganizationService(s.T()))
 
 	messageService := mocks.NewMockMessageService(s.T())
 	messageService.EXPECT().AddHandlers(mock.Anything).Return(nil).Once()
 
-	incidents, _ := db.NewIncidentService(s.Database(), messageService)
+	incidents, _ := db.NewIncidentService(tdb, messageService)
 
-	knowledge, _ := db.NewKnowledgeGraphService(s.Database())
+	knowledge, _ := db.NewKnowledgeGraphService(tdb)
 
-	service, err := NewProjectionService(s.Database(), users, incidents, knowledge)
+	service, err := NewProjectionService(tdb, users, incidents, knowledge)
 	s.Require().NoError(err)
 	return service
 }
@@ -55,12 +55,12 @@ func runProjection(ctx context.Context, service rez.EventProjectionService, even
 	return projector(ctx, event)
 }
 
-func (s *ProjectionServiceSuite) createNormalizedEvent(subjectKind projections.SubjectKind, providerSubjectRef string, kind ne.Kind, occurredAt time.Time, attributes any) *ent.NormalizedEvent {
+func (s *ProjectionServiceSuite) createNormalizedEvent(tdb rez.Database, subjectKind projections.SubjectKind, providerSubjectRef string, kind ne.Kind, occurredAt time.Time, attributes any) *ent.NormalizedEvent {
 	ctx := s.SeedTenantContext()
 	encodedAttributes, encodeErr := projections.EncodeAttributes(attributes)
 	s.Require().NoError(encodeErr)
 
-	create := s.Client(ctx).NormalizedEvent.Create().
+	create := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider("test").
 		SetProviderSource("projection").
 		SetProviderEventRef("event-" + uuid.NewString()).
@@ -78,7 +78,8 @@ func (s *ProjectionServiceSuite) createNormalizedEvent(subjectKind projections.S
 
 func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 	ctx := s.SeedTenantContext()
-	service := s.projectionService()
+	tdb := s.CreateTestDatabase()
+	service := s.projectionService(tdb)
 	now := time.Now().UTC()
 
 	for _, component := range []projections.SystemComponentSubjectAttributes{
@@ -86,6 +87,7 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 		{ExternalRef: "database", Kind: kne.KindContainer, Subkind: "database", DisplayName: "Database"},
 	} {
 		event := s.createNormalizedEvent(
+			tdb,
 			projections.SubjectKindSystemComponent,
 			component.ExternalRef,
 			ne.KindObserved,
@@ -111,6 +113,7 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 		TargetDisplayName: "Database",
 	}
 	event := s.createNormalizedEvent(
+		tdb,
 		projections.SubjectKindSystemRelationship,
 		relationship.ExternalRef,
 		ne.KindObserved,
@@ -120,17 +123,18 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 	_, projectionErr := runProjection(ctx, service, event)
 	s.Require().NoError(projectionErr)
 
-	s.Equal(2, s.Client(ctx).KnowledgeEntity.Query().
+	s.Equal(2, tdb.Client(ctx).KnowledgeEntity.Query().
 		Where(kne.KindEQ(kne.KindContainer), kne.SubkindIn("service", "database")).
 		CountX(ctx))
-	s.Equal(1, s.Client(ctx).KnowledgeRelationship.Query().
+	s.Equal(1, tdb.Client(ctx).KnowledgeRelationship.Query().
 		Where(knr.KindEQ(knr.KindInteractsWith), knr.Subkind("uses")).
 		CountX(ctx))
 }
 
 func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() {
 	ctx := s.SeedTenantContext()
-	service := s.projectionService()
+	tdb := s.CreateTestDatabase()
+	service := s.projectionService(tdb)
 	suffix := uuid.NewString()
 	attributes := projections.TeamMembershipSubjectAttributes{
 		Team: projections.TeamSubjectAttributes{
@@ -147,6 +151,7 @@ func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() 
 		Role:            "member",
 	}
 	event := s.createNormalizedEvent(
+		tdb,
 		projections.SubjectKindTeamMembership,
 		"slack:group-"+suffix+":user-"+suffix,
 		ne.KindObserved,
@@ -156,14 +161,14 @@ func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() 
 	_, projectionErr := runProjection(ctx, service, event)
 	s.Require().NoError(projectionErr)
 
-	createdUser := s.Client(ctx).User.Query().Where(user.Email(attributes.User.Email)).OnlyX(ctx)
-	createdTeam := s.Client(ctx).Team.Query().Where(team.Slug(attributes.Team.Slug)).OnlyX(ctx)
+	createdUser := tdb.Client(ctx).User.Query().Where(user.Email(attributes.User.Email)).OnlyX(ctx)
+	createdTeam := tdb.Client(ctx).Team.Query().Where(team.Slug(attributes.Team.Slug)).OnlyX(ctx)
 	s.NotNil(createdUser.KnowledgeEntityID)
 	s.NotNil(createdTeam.KnowledgeEntityID)
-	s.Equal(1, s.Client(ctx).TeamMembership.Query().
+	s.Equal(1, tdb.Client(ctx).TeamMembership.Query().
 		Where(teammembership.TeamID(createdTeam.ID), teammembership.UserID(createdUser.ID)).
 		CountX(ctx))
-	s.Equal(1, s.Client(ctx).KnowledgeRelationship.Query().
+	s.Equal(1, tdb.Client(ctx).KnowledgeRelationship.Query().
 		Where(
 			knr.KindEQ(knr.KindParticipatesIn),
 			knr.Subkind(knowledgeRelationshipSubkindMemberOf),

@@ -25,6 +25,31 @@ services:
     volumes:
       - "postgres-data:/var/lib/postgresql/data"
 
+  postgres-test:
+    image: postgres:17
+    restart: unless-stopped
+    ports: ["${POSTGRES_TEST_PORT:-7014}:5432"]
+    environment:
+      - PGUSER=${POSTGRES_ADMIN_USER}
+      - POSTGRES_USER=${POSTGRES_ADMIN_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_ADMIN_USER}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 1s
+      retries: 3
+      start_period: 1s
+    tmpfs:
+      - /var/lib/postgresql/data
+    command:
+      - postgres
+      - -c
+      - fsync=off
+      - -c
+      - synchronous_commit=off
+      - -c
+      - full_page_writes=off
+
   dex:
     scale: 1
     image: dexidp/dex:v2.41.1

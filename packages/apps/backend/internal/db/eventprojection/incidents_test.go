@@ -19,7 +19,7 @@ import (
 	"github.com/rezible/rezible/test/mocks"
 )
 
-func (s *ProjectionServiceSuite) incidentService(events *[]rez.EventOnIncidentUpdated) rez.IncidentService {
+func (s *ProjectionServiceSuite) incidentService(tdb rez.Database, events *[]rez.EventOnIncidentUpdated) rez.IncidentService {
 	messageService := mocks.NewMockMessageService(s.T())
 	messageService.EXPECT().AddHandlers(mock.Anything).Return(nil).Once()
 	messageService.EXPECT().
@@ -31,16 +31,16 @@ func (s *ProjectionServiceSuite) incidentService(events *[]rez.EventOnIncidentUp
 		}).
 		Return(nil).
 		Maybe()
-	service, err := db.NewIncidentService(s.Database(), messageService)
+	service, err := db.NewIncidentService(tdb, messageService)
 	s.Require().NoError(err)
 	return service
 }
 
-func (s *ProjectionServiceSuite) createIncidentProjectionEvent(subjectRef string, occurredAt time.Time, attrs projections.IncidentSubjectAttributes) *ent.NormalizedEvent {
+func (s *ProjectionServiceSuite) createIncidentProjectionEvent(tdb rez.Database, subjectRef string, occurredAt time.Time, attrs projections.IncidentSubjectAttributes) *ent.NormalizedEvent {
 	ctx := s.SeedTenantContext()
 	encoded, err := projections.EncodeAttributes(attrs)
 	s.Require().NoError(err)
-	event, err := s.Client(ctx).NormalizedEvent.Create().
+	event, err := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider("test").
 		SetProviderSource("incidents").
 		SetProviderEventRef("incident-event-" + uuid.NewString()).
@@ -57,10 +57,11 @@ func (s *ProjectionServiceSuite) createIncidentProjectionEvent(subjectRef string
 
 func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndSkipsIdenticalRepeat() {
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
 
-	projector := s.projectionService()
+	projector := s.projectionService(tdb)
 	var events []rez.EventOnIncidentUpdated
-	projector.incidents = s.incidentService(&events)
+	projector.incidents = s.incidentService(tdb, &events)
 
 	openedAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
 	attrs := projections.IncidentSubjectAttributes{
@@ -71,14 +72,14 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 		ExternalRef: "foo-bar-2",
 		OpenedAt:    openedAt,
 	}
-	first := s.createIncidentProjectionEvent("incident-1", openedAt, attrs)
+	first := s.createIncidentProjectionEvent(tdb, "incident-1", openedAt, attrs)
 
 	_, projErr := runProjection(ctx, projector, first)
 	s.Require().NoError(projErr)
 	s.Require().Len(events, 1)
 	s.True(events[0].Created)
 
-	created, err := s.Client(ctx).Incident.Query().
+	created, err := tdb.Client(ctx).Incident.Query().
 		Where(incident.Title(attrs.Title)).
 		Only(ctx)
 	s.Require().NoError(err)
@@ -90,19 +91,20 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 	s.Len(events, 1)
 
 	attrs.Title = "Search outage updated"
-	second := s.createIncidentProjectionEvent("incident-1", openedAt.Add(time.Minute), attrs)
+	second := s.createIncidentProjectionEvent(tdb, "incident-1", openedAt.Add(time.Minute), attrs)
 
 	_, projSecondErr := runProjection(ctx, projector, second)
 	s.Require().NoError(projSecondErr)
 	s.Require().Len(events, 2)
 	s.False(events[1].Created)
 
-	severityCount, err := s.Client(ctx).IncidentSeverity.Query().
+	severityCount, err := tdb.Client(ctx).IncidentSeverity.Query().
 		Where(incsev.Name("SEV-1")).
 		Count(ctx)
 	s.Require().NoError(err)
 	s.Equal(1, severityCount)
-	typeCount, err := s.Client(ctx).IncidentType.Query().
+
+	typeCount, err := tdb.Client(ctx).IncidentType.Query().
 		Where(inctype.Name("Customer Impact")).
 		Count(ctx)
 	s.Require().NoError(err)
@@ -111,10 +113,12 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 
 func (s *ProjectionServiceSuite) TestIncidentProjectionDoesNotPanicForDemoCatalogSearchEntity() {
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
 
-	projector := s.projectionService()
+	projector := s.projectionService(tdb)
 	var events []rez.EventOnIncidentUpdated
-	projector.incidents = s.incidentService(&events)
+	projector.incidents = s.incidentService(tdb, &events)
 
 	eventID := uuid.MustParse("d1be3113-c03a-45f0-adcb-1191041c3b02")
 	createdAt := time.Date(2026, 6, 19, 10, 4, 46, 429693000, time.UTC)
@@ -128,7 +132,7 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionDoesNotPanicForDemoCatalo
 		OpenedAt:    occurredAt,
 	})
 	s.Require().NoError(attrsErr)
-	createEvent := s.Client(ctx).NormalizedEvent.Create().
+	createEvent := client.NormalizedEvent.Create().
 		SetID(eventID).
 		SetKind(ne.KindObserved).
 		SetProvider("demo").
@@ -150,7 +154,7 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionDoesNotPanicForDemoCatalo
 	})
 	s.Require().NoError(projectionErr)
 
-	created, err := s.Client(ctx).Incident.Query().
+	created, err := client.Incident.Query().
 		Where(incident.Title("Catalog search returning stale results")).
 		Only(ctx)
 	s.Require().NoError(err)

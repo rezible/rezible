@@ -17,7 +17,6 @@ import (
 	"github.com/peterldowns/pgtestdb"
 	"github.com/peterldowns/pgtestdb/migrators/golangmigrator"
 
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/pkg/execution"
@@ -26,15 +25,8 @@ import (
 type Suite struct {
 	suite.Suite
 
+	cfg  *rez.Config
 	opts options
-
-	cfg rez.Config
-	db  rez.Database
-	pg  *postgres.PgxPool
-
-	SeedTenant       *ent.Tenant
-	SeedOrganization *ent.Organization
-	SeedUser         *ent.User
 }
 
 func NewSuite(optFns ...SuiteOption) Suite {
@@ -45,25 +37,26 @@ func NewSuite(optFns ...SuiteOption) Suite {
 	return Suite{opts: opts}
 }
 
-func (s *Suite) SetupTest() {
-	s.loadConfig()
-	s.setupTestDatabase()
-	s.SeedTestEntities()
+func (s *Suite) SetupSuite() {
+	s.cfg = new(s.loadConfig())
 }
 
-func (s *Suite) TearDownTest() {
-	s.closeTestDatabase()
+func (s *Suite) TearDownSuite() {
+
 }
 
-func (s *Suite) BeforeTest(suiteName, testName string) {
-	// s.loadConfig()
+func (s *Suite) Config() rez.Config {
+	if s.cfg == nil {
+		s.cfg = new(s.loadConfig())
+	}
+	return *s.cfg
 }
 
 func getEnvOr(key, fallback string) string {
 	return cmp.Or(os.Getenv(key), fallback)
 }
 
-func (s *Suite) loadConfig() {
+func (s *Suite) loadConfig() rez.Config {
 	pgAdminUser := getEnvOr("POSTGRES_ADMIN_USER", "postgres")
 	pgAppUser := getEnvOr("POSTGRES_APP_USER", "rez_app")
 	overrides := map[string]any{
@@ -87,30 +80,20 @@ func (s *Suite) loadConfig() {
 	}
 	cfg, cfgErr := koanf.LoadConfig(s.T().Context(), opts)
 	s.Require().NoError(cfgErr)
-	s.cfg = cfg
+	return cfg
 }
-
-func (s *Suite) Config() rez.Config { return s.cfg }
-
-func (s *Suite) Database() rez.Database {
-	return s.db
-}
-
-func (s *Suite) PostgresPool() *postgres.PgxPool { return s.pg }
-
-func (s *Suite) Client(ctx context.Context) *ent.Client { return s.db.Client(ctx) }
 
 func (s *Suite) SystemContext() context.Context {
 	return execution.NewSystemContext(s.T().Context())
 }
 
 func (s *Suite) SeedTenantContext() context.Context {
-	return execution.NewTenantContext(s.T().Context(), s.SeedTenant.ID)
+	return execution.NewTenantContext(s.T().Context(), seedTenantId)
 }
 
-func (s *Suite) setupTestDatabase() {
+func (s *Suite) CreateTestDatabase() rez.Database {
 	start := time.Now()
-	cfg := s.cfg.Postgres
+	cfg := s.Config().Postgres
 	s.Require().NotEmpty(cfg.AdminRole.Name, "postgres migrations admin config empty")
 
 	opts := fmt.Sprintf("sslmode=%s&search_path=%s", cfg.SSLMode, postgres.SchemaName)
@@ -148,25 +131,21 @@ func (s *Suite) setupTestDatabase() {
 
 	pool, poolErr := postgres.MakePgxPool(s.T().Context(), testDbCfg, false)
 	s.Require().NoError(poolErr)
-	s.pg = pool
 
 	db, dbErr := postgres.NewPgxPoolDatabaseClient(pool)
 	s.Require().NoError(dbErr)
-	s.db = db
 
 	s.T().Logf("created test database in %dms", time.Since(start).Milliseconds())
 
-	s.SeedTestEntities()
+	s.SeedTestEntities(db)
 
-	s.T().Logf("seeded test entities")
-}
-
-func (s *Suite) closeTestDatabase() {
-	if s.db != nil {
-		if closeErr := s.db.Shutdown(); closeErr != nil {
+	s.T().Cleanup(func() {
+		if closeErr := db.Shutdown(); closeErr != nil {
 			s.T().Logf("failed to close database client: %v", closeErr)
 		}
-	}
+	})
+
+	return db
 }
 
 type testDbMigrator struct {

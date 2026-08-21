@@ -15,7 +15,7 @@ import (
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
-func (s *AiServiceSuite) makeAgentSession(svc *AiService, name string, sessInput rezai.AgentInput) *ent.AgentSession {
+func (s *AiServiceSuite) makeAgentSession(svc *AiService, tdb rez.Database, name string, sessInput rezai.AgentInput) *ent.AgentSession {
 	sessInputJson, sessInputJsonErr := json.Marshal(sessInput)
 	s.Require().NoError(sessInputJsonErr)
 
@@ -23,8 +23,7 @@ func (s *AiServiceSuite) makeAgentSession(svc *AiService, name string, sessInput
 	txFn := func(ctx context.Context, tx *ent.Client) error {
 		createSess := tx.AgentSession.Create().
 			SetAgentName(name).
-			SetInput(sessInputJson).
-			SetOwnerUserID(s.SeedUser.ID)
+			SetInput(sessInputJson)
 		createdSession, saveSessionErr := createSess.Save(ctx)
 		if saveSessionErr != nil {
 			return fmt.Errorf("create session: %w", saveSessionErr)
@@ -70,7 +69,7 @@ func (s *AiServiceSuite) makeAgentSession(svc *AiService, name string, sessInput
 
 		return nil
 	}
-	s.Require().NoError(s.Database().WithTx(s.SeedTenantContext(), txFn))
+	s.Require().NoError(tdb.WithTx(s.SeedTenantContext(), txFn))
 	return session
 }
 
@@ -84,10 +83,11 @@ func (s *AiServiceSuite) makeInvokeAgentSessionParams(sess *ent.AgentSession) re
 
 func (s *AiServiceSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
 	msg := ai.NewUserTextMessage("hello world")
 	ta := makeTestAgent[testAgentState](msg)
 	svc := s.makeService(ctx, WithAgent(ta))
-	sess := s.makeAgentSession(svc, ta.def.Name, testAgentInput{})
+	sess := s.makeAgentSession(svc, tdb, ta.def.Name, testAgentInput{})
 
 	initParams := s.makeInvokeAgentSessionParams(sess)
 	initParams.Input = &rez.AiAgentTurnInput{Message: msg}
@@ -117,12 +117,13 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 	s.checkSkip("simple_greeting")
 
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
 
 	msg := ai.NewUserTextMessage("Reply with a one-word greeting.")
 	ta := makeTestAgent[testAgentState](msg)
 	svc := s.makeService(ctx, WithAgent(ta))
 
-	sess := s.makeAgentSession(svc, ta.def.Name, testAgentInput{})
+	sess := s.makeAgentSession(svc, tdb, ta.def.Name, testAgentInput{})
 	s.T().Logf("Starting test agent session (id %s)", sess.ID)
 
 	initParams := s.makeInvokeAgentSessionParams(sess)

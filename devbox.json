@@ -22,6 +22,8 @@
     "API_DOMAIN": "api.dev.rezible.com",
     "API_URL": "https://api.dev.rezible.com",
     "POSTGRES_PORT": "7010",
+    "POSTGRES_TEST_PORT": "7014",
+    "POSTGRES_TEST_DB": "postgres",
     "POSTGRES_ADMIN_USER": "postgres",
     "POSTGRES_APP_USER": "rez_app",
     "GRAFANA_PORT": "7012",

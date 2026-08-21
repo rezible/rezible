@@ -9,6 +9,14 @@ processes:
         command: docker compose exec -it postgres pg_isready
       period_seconds: 3
 
+  postgres-test:
+    command: just dev run-service postgres-test
+    is_daemon: true
+    readiness_probe:
+      exec:
+        command: docker compose exec -T postgres-test pg_isready
+      period_seconds: 3
+
   dex:
     command: just dev run-service dex
     is_daemon: true

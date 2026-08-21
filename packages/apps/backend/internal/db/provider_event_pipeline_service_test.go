@@ -39,10 +39,10 @@ func TestProviderEventPipelineServiceSuite(t *testing.T) {
 	suite.Run(t, &ProviderEventPipelineServiceSuite{Suite: test.NewSuite()})
 }
 
-func (s *ProviderEventPipelineServiceSuite) newPipelineService(jobSvc rez.JobService, proj rez.EventProjectionService) *ProviderEventPipelineService {
+func (s *ProviderEventPipelineServiceSuite) newPipelineService(tdb rez.Database, jobSvc rez.JobService, proj rez.EventProjectionService) *ProviderEventPipelineService {
 	return &ProviderEventPipelineService{
 		logger:     slog.Default(),
-		db:         s.Database(),
+		db:         tdb,
 		jobs:       jobSvc,
 		processors: map[string]rez.ProviderEventProcessor{pipelineTestProvider: pipelineTestProcessor{}},
 		projection: proj,
@@ -62,8 +62,8 @@ func (s *ProviderEventPipelineServiceSuite) makeTestEvent() rez.ProviderEvent {
 	}
 }
 
-func (s *ProviderEventPipelineServiceSuite) makeTestUser(ctx context.Context) *ent.User {
-	create := s.Client(ctx).User.Create().
+func (s *ProviderEventPipelineServiceSuite) makeTestUser(ctx context.Context, tdb rez.Database) *ent.User {
+	create := tdb.Client(ctx).User.Create().
 		SetEmail("pipeline-test+" + uuid.NewString() + "@example.com").
 		SetName("Pipeline Test User")
 	user, err := create.Save(ctx)
@@ -71,9 +71,9 @@ func (s *ProviderEventPipelineServiceSuite) makeTestUser(ctx context.Context) *e
 	return user
 }
 
-func (s *ProviderEventPipelineServiceSuite) createPipelineNormalizedEvent(ctx context.Context) *ent.NormalizedEvent {
+func (s *ProviderEventPipelineServiceSuite) createPipelineNormalizedEvent(ctx context.Context, tdb rez.Database) *ent.NormalizedEvent {
 	ev := s.makeTestEvent()
-	normalized, err := s.Client(ctx).NormalizedEvent.Create().
+	normalized, err := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider(ev.Provider).
 		SetProviderSource(ev.ProviderSource).
 		SetProviderEventRef("normalized-" + uuid.NewString()).
@@ -90,11 +90,12 @@ func (s *ProviderEventPipelineServiceSuite) createPipelineNormalizedEvent(ctx co
 
 func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd() {
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
 
 	jobSvc := mocks.NewMockJobService(s.T())
 
 	projector := &countingEventProjectionService{}
-	svc := s.newPipelineService(jobSvc, projector)
+	svc := s.newPipelineService(tdb, jobSvc, projector)
 
 	ev := s.makeTestEvent()
 
@@ -131,7 +132,7 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 
 	s.Require().NoError(svc.HandleProcessEventJob(ctx, capturedProcessArgs))
 
-	queryNormalized := s.Client(ctx).NormalizedEvent.Query().
+	queryNormalized := tdb.Client(ctx).NormalizedEvent.Query().
 		Where(ne.ProviderEventRef(ev.ProviderEventRef))
 
 	normalized, normalizedErr := queryNormalized.Only(ctx)
@@ -148,7 +149,7 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 
 	s.Require().NotZero(projector.calls)
 
-	queryProj := s.Client(ctx).NormalizedEventProjection.Query().
+	queryProj := tdb.Client(ctx).NormalizedEventProjection.Query().
 		Where(nep.EventID(normalized.ID))
 	proj, projErr := queryProj.Only(ctx)
 	s.Require().NoError(projErr)
@@ -157,6 +158,7 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 
 func (s *ProviderEventPipelineServiceSuite) TestProcessProviderEventDoesNotReinsertOrReprojectDuplicate() {
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
 
 	jobSvc := mocks.NewMockJobService(s.T())
 	jobSvc.EXPECT().
@@ -164,39 +166,40 @@ func (s *ProviderEventPipelineServiceSuite) TestProcessProviderEventDoesNotReins
 		Return([]*rivertype.JobInsertResult{{}}, nil).
 		Twice()
 
-	svc := s.newPipelineService(jobSvc, nil)
+	svc := s.newPipelineService(tdb, jobSvc, nil)
 
 	args := processProviderEventArgs{Event: s.makeTestEvent()}
 
 	s.Require().NoError(svc.HandleProcessEventJob(ctx, args))
 	s.Require().NoError(svc.HandleProcessEventJob(ctx, args))
 
-	queryCount := s.Client(ctx).NormalizedEvent.Query().
+	queryCount := tdb.Client(ctx).NormalizedEvent.Query().
 		Where(ne.ProviderEventRef(args.Event.ProviderEventRef))
 	count, countErr := queryCount.Count(ctx)
 	s.Require().NoError(countErr)
 	s.Equal(1, count)
 }
 
-func (s *ProviderEventPipelineServiceSuite) createProjectionResult(ctx context.Context, eventId uuid.UUID) {
-	s.Require().NoError(s.Client(ctx).NormalizedEventProjection.Create().
+func (s *ProviderEventPipelineServiceSuite) createProjectionResult(ctx context.Context, tdb rez.Database, eventId uuid.UUID) {
+	s.Require().NoError(tdb.Client(ctx).NormalizedEventProjection.Create().
 		SetEventID(eventId).
 		Exec(ctx))
 }
 
-func (s *ProviderEventPipelineServiceSuite) getProjection(ctx context.Context, eventId uuid.UUID) (*ent.NormalizedEventProjection, error) {
-	return s.Client(ctx).NormalizedEventProjection.Query().
+func (s *ProviderEventPipelineServiceSuite) getProjection(ctx context.Context, tdb rez.Database, eventId uuid.UUID) (*ent.NormalizedEventProjection, error) {
+	return tdb.Client(ctx).NormalizedEventProjection.Query().
 		Where(nep.EventID(eventId)).
 		Only(ctx)
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestProjectionSkipsEventWithReceipt() {
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
 	projector := &countingEventProjectionService{}
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
-	ev := s.createPipelineNormalizedEvent(ctx)
+	svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), projector)
+	ev := s.createPipelineNormalizedEvent(ctx, tdb)
 
-	s.createProjectionResult(ctx, ev.ID)
+	s.createProjectionResult(ctx, tdb, ev.ID)
 
 	s.Require().NoError(svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID}))
 	s.Equal(0, projector.calls)
@@ -204,20 +207,21 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionSkipsEventWithReceipt(
 
 func (s *ProviderEventPipelineServiceSuite) TestProjectionFailureRollsBackProjectorWrites() {
 	ctx := s.SeedTenantContext()
-	creator := s.makeTestUser(ctx)
-	projector := &rollbackPipelineProjector{db: s.Database(), creatorID: creator.ID}
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
-	ev := s.createPipelineNormalizedEvent(ctx)
+	tdb := s.CreateTestDatabase()
+	creator := s.makeTestUser(ctx, tdb)
+	projector := &rollbackPipelineProjector{db: tdb, creatorID: creator.ID}
+	svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), projector)
+	ev := s.createPipelineNormalizedEvent(ctx, tdb)
 
 	err := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID})
 	s.Require().Error(err)
 	var cancelErr *river.JobCancelError
 	s.Require().ErrorAs(err, &cancelErr)
 
-	_, projErr := s.getProjection(ctx, ev.ID)
+	_, projErr := s.getProjection(ctx, tdb, ev.ID)
 	s.True(ent.IsNotFound(projErr))
 
-	count, countErr := s.Client(ctx).EventAnnotation.Query().
+	count, countErr := tdb.Client(ctx).EventAnnotation.Query().
 		Where(eventannotation.EventID(ev.ID)).
 		Count(ctx)
 	s.Require().NoError(countErr)
@@ -226,37 +230,40 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionFailureRollsBackProjec
 
 func (s *ProviderEventPipelineServiceSuite) TestRetryableProjectionFailureReturnsError() {
 	ctx := s.SeedTenantContext()
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), &retryablePipelineProjector{})
-	ev := s.createPipelineNormalizedEvent(ctx)
+	tdb := s.CreateTestDatabase()
+	svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), &retryablePipelineProjector{})
+	ev := s.createPipelineNormalizedEvent(ctx, tdb)
 
 	err := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID})
 	s.Require().Error(err)
 	s.True(projections.IsRetryable(err))
 
-	_, projErr := s.getProjection(ctx, ev.ID)
+	_, projErr := s.getProjection(ctx, tdb, ev.ID)
 	s.True(ent.IsNotFound(projErr))
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestTransientDatabaseProjectionFailureReturnsRetryableError() {
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
 	transientErr := errors.New("database deadlock")
 	projector := &transientDatabasePipelineProjector{err: transientErr}
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
-	svc.db = transientDatabase{Database: s.Database(), transientErr: transientErr}
-	ev := s.createPipelineNormalizedEvent(ctx)
+	svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), projector)
+	svc.db = transientDatabase{Database: tdb, transientErr: transientErr}
+	ev := s.createPipelineNormalizedEvent(ctx, tdb)
 
 	err := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID})
 	s.Require().Error(err)
 	s.True(projections.IsRetryable(err))
 
-	_, projErr := s.getProjection(ctx, ev.ID)
+	_, projErr := s.getProjection(ctx, tdb, ev.ID)
 	s.True(ent.IsNotFound(projErr))
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestProjectionPanicCancelsJobWithoutReceipt() {
 	ctx := s.SeedTenantContext()
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), &panickingEventProjectionService{panicText: "boom"})
-	ev := s.createPipelineNormalizedEvent(ctx)
+	tdb := s.CreateTestDatabase()
+	svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), &panickingEventProjectionService{panicText: "boom"})
+	ev := s.createPipelineNormalizedEvent(ctx, tdb)
 
 	err := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID})
 	s.Require().Error(err)
@@ -264,18 +271,19 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionPanicCancelsJobWithout
 	s.Require().ErrorAs(err, &cancelErr)
 	s.Contains(err.Error(), "projector panic: boom")
 
-	_, projErr := s.getProjection(ctx, ev.ID)
+	_, projErr := s.getProjection(ctx, tdb, ev.ID)
 	s.True(ent.IsNotFound(projErr))
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestConcurrentProjectionRunsHandlerOnce() {
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
 	projector := &blockingPipelineProjector{
 		started: make(chan struct{}),
 		release: make(chan struct{}),
 	}
-	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
-	ev := s.createPipelineNormalizedEvent(ctx)
+	svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), projector)
+	ev := s.createPipelineNormalizedEvent(ctx, tdb)
 	args := jobs.ProjectNormalizedEvent{EventId: ev.ID}
 	results := make(chan error, 2)
 
@@ -291,7 +299,7 @@ func (s *ProviderEventPipelineServiceSuite) TestConcurrentProjectionRunsHandlerO
 	s.Require().NoError(<-results)
 	s.Require().NoError(<-results)
 	s.Equal(int32(1), projector.calls.Load())
-	_, receiptErr := s.getProjection(ctx, ev.ID)
+	_, receiptErr := s.getProjection(ctx, tdb, ev.ID)
 	s.Require().NoError(receiptErr)
 }
 

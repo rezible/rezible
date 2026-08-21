@@ -35,47 +35,49 @@ func TestInvestigationServiceSuite(t *testing.T) {
 }
 
 type investigationServiceHarness struct {
+	tdb     rez.Database
 	jobs    *mocks.MockJobService
 	agents  *AgentSessionService
 	service *InvestigationService
 }
 
-func (s *InvestigationServiceSuite) newHarness() *investigationServiceHarness {
+func (s *InvestigationServiceSuite) newHarness(tdb rez.Database) *investigationServiceHarness {
 	jobs := mocks.NewMockJobService(s.T())
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	agents := &AgentSessionService{
 		logger: logger,
-		db:     s.Database(),
+		db:     tdb,
 		jobs:   jobs,
 	}
-	alerts := &AlertService{db: s.Database()}
+	alerts := &AlertService{db: tdb}
 	return &investigationServiceHarness{
+		tdb:    tdb,
 		jobs:   jobs,
 		agents: agents,
 		service: &InvestigationService{
-			db:     s.Database(),
+			db:     tdb,
 			alerts: alerts,
 			agents: agents,
 		},
 	}
 }
 
-func (s *InvestigationServiceSuite) createAlertInstance(ctx context.Context, knowledgeEntityID *uuid.UUID) *ent.AlertInstance {
-	createAlert := s.Client(ctx).Alert.Create().
+func (s *InvestigationServiceSuite) createAlertInstance(ctx context.Context, client *ent.Client, knowledgeEntityID *uuid.UUID) *ent.AlertInstance {
+	createAlert := client.Alert.Create().
 		SetTitle("Checkout alert").
 		SetDescription("High error rate").
 		SetDefinition("sum(rate(errors[5m])) > 1").
 		SetNillableKnowledgeEntityID(knowledgeEntityID)
 	alert := createAlert.SaveX(ctx)
-	return s.Client(ctx).AlertInstance.Create().
+	return client.AlertInstance.Create().
 		SetAlertID(alert.ID).
 		SaveX(ctx)
 }
 
-func (s *InvestigationServiceSuite) createAgentSession(ctx context.Context) *ent.AgentSession {
+func (s *InvestigationServiceSuite) createAgentSession(ctx context.Context, client *ent.Client) *ent.AgentSession {
 	inputJSON, jsonErr := json.Marshal(rezai.AlertAgentInput{AlertInstanceID: uuid.New()})
 	s.Require().NoError(jsonErr)
-	createSession := s.Client(ctx).AgentSession.Create().
+	createSession := client.AgentSession.Create().
 		SetAgentName(rezai.AlertsAgent.Name).
 		SetInput(inputJSON)
 	return createSession.SaveX(ctx)
@@ -83,12 +85,14 @@ func (s *InvestigationServiceSuite) createAgentSession(ctx context.Context) *ent
 
 func (s *InvestigationServiceSuite) TestCreateAlertInvestigationCreatesAnalysisAndSeedsAlertEntity() {
 	ctx := s.SeedTenantContext()
-	h := s.newHarness()
-	createEntity := s.Client(ctx).KnowledgeEntity.Create().
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+	h := s.newHarness(tdb)
+	createEntity := client.KnowledgeEntity.Create().
 		SetKind(kne.KindSignal).
 		SetSubkind("alert")
 	entity := createEntity.SaveX(ctx)
-	instance := s.createAlertInstance(ctx, &entity.ID)
+	instance := s.createAlertInstance(ctx, client, &entity.ID)
 
 	h.jobs.EXPECT().
 		Insert(mock.Anything, mock.MatchedBy(func(args river.JobArgs) bool {
@@ -103,13 +107,13 @@ func (s *InvestigationServiceSuite) TestCreateAlertInvestigationCreatesAnalysisA
 	s.Require().NotNil(investigation)
 	s.Equal(instance.ID, investigation.AlertInstanceID)
 
-	session := s.Client(ctx).AgentSession.GetX(ctx, investigation.AgentSessionID)
+	session := client.AgentSession.GetX(ctx, investigation.AgentSessionID)
 	s.Require().NotNil(session.SystemAnalysisID)
-	analysis := s.Client(ctx).SystemAnalysis.GetX(ctx, *session.SystemAnalysisID)
+	analysis := client.SystemAnalysis.GetX(ctx, *session.SystemAnalysisID)
 	s.Require().NotNil(analysis.SubjectEntityID)
 	s.Equal(entity.ID, *analysis.SubjectEntityID)
 
-	queryAnalysisEntities := s.Client(ctx).SystemAnalysisEntity.Query().
+	queryAnalysisEntities := client.SystemAnalysisEntity.Query().
 		Where(saentity.AnalysisID(analysis.ID))
 	analysisEntities := queryAnalysisEntities.AllX(ctx)
 	s.Require().Len(analysisEntities, 1)
@@ -118,58 +122,64 @@ func (s *InvestigationServiceSuite) TestCreateAlertInvestigationCreatesAnalysisA
 
 func (s *InvestigationServiceSuite) TestCreateAlertInvestigationRejectsAlertWithoutKnowledgeEntity() {
 	ctx := s.SeedTenantContext()
-	h := s.newHarness()
-	instance := s.createAlertInstance(ctx, nil)
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+	h := s.newHarness(tdb)
+	instance := s.createAlertInstance(ctx, client, nil)
 
-	sessionsBefore := s.Client(ctx).AgentSession.Query().CountX(ctx)
-	analysesBefore := s.Client(ctx).SystemAnalysis.Query().CountX(ctx)
-	investigationsBefore := s.Client(ctx).AlertInvestigation.Query().CountX(ctx)
+	sessionsBefore := client.AgentSession.Query().CountX(ctx)
+	analysesBefore := client.SystemAnalysis.Query().CountX(ctx)
+	investigationsBefore := client.AlertInvestigation.Query().CountX(ctx)
 	investigation, createErr := h.service.CreateAlertInvestigation(ctx, instance.ID)
 	s.Nil(investigation)
 	s.ErrorIs(createErr, rez.ErrInvalidInput)
-	s.Equal(sessionsBefore, s.Client(ctx).AgentSession.Query().CountX(ctx))
-	s.Equal(analysesBefore, s.Client(ctx).SystemAnalysis.Query().CountX(ctx))
-	s.Equal(investigationsBefore, s.Client(ctx).AlertInvestigation.Query().CountX(ctx))
+	s.Equal(sessionsBefore, client.AgentSession.Query().CountX(ctx))
+	s.Equal(analysesBefore, client.SystemAnalysis.Query().CountX(ctx))
+	s.Equal(investigationsBefore, client.AlertInvestigation.Query().CountX(ctx))
 }
 
 func (s *InvestigationServiceSuite) TestCreateAlertInvestigationRollsBackWhenStartJobFails() {
 	ctx := s.SeedTenantContext()
-	h := s.newHarness()
-	createEntity := s.Client(ctx).KnowledgeEntity.Create().
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+	h := s.newHarness(tdb)
+	createEntity := client.KnowledgeEntity.Create().
 		SetKind(kne.KindSignal).
 		SetSubkind("alert")
 	entity := createEntity.SaveX(ctx)
-	instance := s.createAlertInstance(ctx, &entity.ID)
+	instance := s.createAlertInstance(ctx, client, &entity.ID)
 
 	h.jobs.EXPECT().
 		Insert(mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, errors.New("job insert failed")).
 		Once()
 
-	querySessionsBefore := s.Client(ctx).AgentSession.Query()
+	querySessionsBefore := client.AgentSession.Query()
 	sessionsBefore := querySessionsBefore.CountX(ctx)
-	queryAnalysesBefore := s.Client(ctx).SystemAnalysis.Query()
+	queryAnalysesBefore := client.SystemAnalysis.Query()
 	analysesBefore := queryAnalysesBefore.CountX(ctx)
-	queryInvestigationsBefore := s.Client(ctx).AlertInvestigation.Query()
+	queryInvestigationsBefore := client.AlertInvestigation.Query()
 	investigationsBefore := queryInvestigationsBefore.CountX(ctx)
 
 	investigation, createErr := h.service.CreateAlertInvestigation(ctx, instance.ID)
 	s.Nil(investigation)
 	s.Require().Error(createErr)
-	querySessionsAfter := s.Client(ctx).AgentSession.Query()
+	querySessionsAfter := client.AgentSession.Query()
 	s.Equal(sessionsBefore, querySessionsAfter.CountX(ctx))
-	queryAnalysesAfter := s.Client(ctx).SystemAnalysis.Query()
+	queryAnalysesAfter := client.SystemAnalysis.Query()
 	s.Equal(analysesBefore, queryAnalysesAfter.CountX(ctx))
-	queryInvestigationsAfter := s.Client(ctx).AlertInvestigation.Query()
+	queryInvestigationsAfter := client.AlertInvestigation.Query()
 	s.Equal(investigationsBefore, queryInvestigationsAfter.CountX(ctx))
 }
 
 func (s *InvestigationServiceSuite) TestOnAgentTurnFinishedPersistsReportArtifact() {
 	ctx := s.SeedTenantContext()
-	h := s.newHarness()
-	instance := s.createAlertInstance(ctx, nil)
-	session := s.createAgentSession(ctx)
-	createInvestigation := s.Client(ctx).AlertInvestigation.Create().
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+	h := s.newHarness(tdb)
+	instance := s.createAlertInstance(ctx, client, nil)
+	session := s.createAgentSession(ctx, client)
+	createInvestigation := client.AlertInvestigation.Create().
 		SetAlertInstanceID(instance.ID).
 		SetAgentSessionID(session.ID)
 	investigation := createInvestigation.SaveX(ctx)
@@ -180,7 +190,7 @@ func (s *InvestigationServiceSuite) TestOnAgentTurnFinishedPersistsReportArtifac
 	}
 	reportJSON, jsonErr := json.Marshal(report)
 	s.Require().NoError(jsonErr)
-	s.Client(ctx).AgentArtifact.Create().
+	client.AgentArtifact.Create().
 		SetAgentSessionID(session.ID).
 		SetName("investigation_report").
 		SetParts([]*ai.Part{ai.NewJSONPart(string(reportJSON))}).
@@ -189,7 +199,7 @@ func (s *InvestigationServiceSuite) TestOnAgentTurnFinishedPersistsReportArtifac
 	event := &rezai.EventOnAgentTurnFinished{AgentSessionId: session.ID}
 	s.Require().NoError(h.service.onAgentTurnFinished(ctx, event))
 
-	updated := s.Client(ctx).AlertInvestigation.GetX(ctx, investigation.ID)
+	updated := client.AlertInvestigation.GetX(ctx, investigation.ID)
 	s.Equal(report.Text, updated.Report.Text)
 	s.Equal(report.LikelyCause, updated.Report.LikelyCause)
 	s.Equal(report.RecommendedActions, updated.Report.RecommendedActions)
@@ -197,18 +207,20 @@ func (s *InvestigationServiceSuite) TestOnAgentTurnFinishedPersistsReportArtifac
 
 func (s *InvestigationServiceSuite) TestOnAgentTurnFinishedIgnoresNonInvestigationSessionsAndMissingArtifacts() {
 	ctx := s.SeedTenantContext()
-	h := s.newHarness()
-	nonInvestigationSession := s.createAgentSession(ctx)
-	s.Client(ctx).AgentArtifact.Create().
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+	h := s.newHarness(tdb)
+	nonInvestigationSession := s.createAgentSession(ctx, client)
+	client.AgentArtifact.Create().
 		SetAgentSessionID(nonInvestigationSession.ID).
 		SetName("investigation_report").
 		SetParts([]*ai.Part{ai.NewJSONPart("{")}).
 		SaveX(ctx)
 	s.NoError(h.service.onAgentTurnFinished(ctx, &rezai.EventOnAgentTurnFinished{AgentSessionId: nonInvestigationSession.ID}))
 
-	instance := s.createAlertInstance(ctx, nil)
-	investigationSession := s.createAgentSession(ctx)
-	s.Client(ctx).AlertInvestigation.Create().
+	instance := s.createAlertInstance(ctx, client, nil)
+	investigationSession := s.createAgentSession(ctx, client)
+	client.AlertInvestigation.Create().
 		SetAlertInstanceID(instance.ID).
 		SetAgentSessionID(investigationSession.ID).
 		SaveX(ctx)
@@ -217,14 +229,16 @@ func (s *InvestigationServiceSuite) TestOnAgentTurnFinishedIgnoresNonInvestigati
 
 func (s *InvestigationServiceSuite) TestOnAgentTurnFinishedRejectsMalformedReportArtifact() {
 	ctx := s.SeedTenantContext()
-	h := s.newHarness()
-	instance := s.createAlertInstance(ctx, nil)
-	session := s.createAgentSession(ctx)
-	s.Client(ctx).AlertInvestigation.Create().
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+	h := s.newHarness(tdb)
+	instance := s.createAlertInstance(ctx, client, nil)
+	session := s.createAgentSession(ctx, client)
+	client.AlertInvestigation.Create().
 		SetAlertInstanceID(instance.ID).
 		SetAgentSessionID(session.ID).
 		SaveX(ctx)
-	s.Client(ctx).AgentArtifact.Create().
+	client.AgentArtifact.Create().
 		SetAgentSessionID(session.ID).
 		SetName("investigation_report").
 		SetParts([]*ai.Part{ai.NewJSONPart("{")}).
@@ -235,17 +249,20 @@ func (s *InvestigationServiceSuite) TestOnAgentTurnFinishedRejectsMalformedRepor
 }
 
 func (s *InvestigationServiceSuite) TestReportArtifactRequiresJSONPart() {
-	h := s.newHarness()
+	//tdb := s.CreateTestDatabase()
+	h := s.newHarness(nil)
 	_, err := h.service.alertInvestigationReportFromArtifact([]*ai.Part{ai.NewTextPart("not json")})
 	s.Error(err)
 }
 
 func (s *InvestigationServiceSuite) TestSetAlertInvestigationReportTrimsAndValidatesText() {
 	ctx := s.SeedTenantContext()
-	h := s.newHarness()
-	instance := s.createAlertInstance(ctx, nil)
-	session := s.createAgentSession(ctx)
-	s.Client(ctx).AlertInvestigation.Create().
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+	h := s.newHarness(tdb)
+	instance := s.createAlertInstance(ctx, client, nil)
+	session := s.createAgentSession(ctx, client)
+	client.AlertInvestigation.Create().
 		SetAlertInstanceID(instance.ID).
 		SetAgentSessionID(session.ID).
 		SaveX(ctx)
@@ -260,29 +277,31 @@ func (s *InvestigationServiceSuite) TestSetAlertInvestigationReportTrimsAndValid
 
 func (s *InvestigationServiceSuite) TestInvestigationReportArtifactQueryUsesReportName() {
 	ctx := s.SeedTenantContext()
-	h := s.newHarness()
-	instance := s.createAlertInstance(ctx, nil)
-	session := s.createAgentSession(ctx)
-	createInvestigation := s.Client(ctx).AlertInvestigation.Create().
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+	h := s.newHarness(tdb)
+	instance := s.createAlertInstance(ctx, client, nil)
+	session := s.createAgentSession(ctx, client)
+	createInvestigation := client.AlertInvestigation.Create().
 		SetAlertInstanceID(instance.ID).
 		SetAgentSessionID(session.ID)
 	investigation := createInvestigation.SaveX(ctx)
 	report := schematypes.AlertInvestigationReport{Text: "real report"}
 	reportJSON, jsonErr := json.Marshal(report)
 	s.Require().NoError(jsonErr)
-	s.Client(ctx).AgentArtifact.Create().
+	client.AgentArtifact.Create().
 		SetAgentSessionID(session.ID).
 		SetName("other_report").
 		SetParts([]*ai.Part{ai.NewJSONPart(`{"text":"wrong"}`)}).
 		SaveX(ctx)
-	s.Client(ctx).AgentArtifact.Create().
+	client.AgentArtifact.Create().
 		SetAgentSessionID(session.ID).
 		SetName("investigation_report").
 		SetParts([]*ai.Part{ai.NewJSONPart(string(reportJSON))}).
 		SaveX(ctx)
 
 	s.Require().NoError(h.service.onAgentTurnFinished(ctx, &rezai.EventOnAgentTurnFinished{AgentSessionId: session.ID}))
-	queryUpdated := s.Client(ctx).AlertInvestigation.Query().
+	queryUpdated := client.AlertInvestigation.Query().
 		Where(alertinvestigation.ID(investigation.ID)).
 		WithAgentSession()
 	updated := queryUpdated.OnlyX(ctx)

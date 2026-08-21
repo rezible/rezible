@@ -13,7 +13,8 @@ import (
 
 func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsIdempotent() {
 	ctx := s.SeedTenantContext()
-	service := s.projectionService()
+	tdb := s.CreateTestDatabase()
+	service := s.projectionService(tdb)
 	occurredAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
 
 	repoRef := "repo-1"
@@ -22,7 +23,7 @@ func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsId
 		RepositoryExternalRef: repoRef,
 		DisplayName:           "main@abc123",
 	}
-	event := s.createNormalizedEvent(projections.SubjectKindCodeChange, codeChangeRef, ne.KindObserved, occurredAt, attrs)
+	event := s.createNormalizedEvent(tdb, projections.SubjectKindCodeChange, codeChangeRef, ne.KindObserved, occurredAt, attrs)
 
 	_, projectErr := runProjection(ctx, service, event)
 	s.Require().NoError(projectErr)
@@ -30,7 +31,8 @@ func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsId
 	_, projectErr = runProjection(ctx, service, event)
 	s.Require().NoError(projectErr)
 
-	queryEntities := s.Client(ctx).KnowledgeEntity.Query().
+	client := tdb.Client(ctx)
+	queryEntities := client.KnowledgeEntity.Query().
 		Where(kne.Or(
 			kne.And(kne.KindEQ(kne.KindEvent), kne.Subkind(knowledgeEntitySubkindCodeChange)),
 			kne.And(kne.KindEQ(kne.KindCode), kne.Subkind(knowledgeEntitySubkindRepository)),
@@ -39,13 +41,13 @@ func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsId
 	s.Require().NoError(entityErr)
 	s.Equal(2, entityCount)
 
-	queryRelations := s.Client(ctx).KnowledgeRelationship.Query().
+	queryRelations := client.KnowledgeRelationship.Query().
 		Where(knr.KindEQ(knr.KindImpacts), knr.Subkind(knowledgeRelationshipSubkindTouchedRepository))
 	relationshipCount, relationshipErr := queryRelations.Count(ctx)
 	s.Require().NoError(relationshipErr)
 	s.Equal(1, relationshipCount)
 
-	queryEvidence := s.Client(ctx).KnowledgeEvidence.Query().
+	queryEvidence := client.KnowledgeEvidence.Query().
 		Where(ke.EventID(event.ID)).
 		WithSubjectAlias()
 	evidence, evidenceErr := queryEvidence.All(ctx)

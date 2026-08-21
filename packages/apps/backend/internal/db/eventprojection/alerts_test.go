@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 
 	"github.com/rezible/rezible/ent"
 	entalert "github.com/rezible/rezible/ent/alert"
@@ -11,12 +12,12 @@ import (
 	"github.com/rezible/rezible/pkg/projections"
 )
 
-func (s *ProjectionServiceSuite) createAlertProjectionEvent(subjectRef string, attrs projections.AlertInstanceSubjectAttributes) *ent.NormalizedEvent {
+func (s *ProjectionServiceSuite) createAlertProjectionEvent(db rez.Database, subjectRef string, attrs projections.AlertInstanceSubjectAttributes) *ent.NormalizedEvent {
 	ctx := s.SeedTenantContext()
 	encoded, encodeErr := projections.EncodeAttributes(attrs)
 	s.Require().NoError(encodeErr)
 	occurredAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
-	createEvent := s.Client(ctx).NormalizedEvent.Create().
+	createEvent := db.Client(ctx).NormalizedEvent.Create().
 		SetProvider("test").
 		SetProviderSource("alerts").
 		SetProviderEventRef("alert-event-" + uuid.NewString()).
@@ -33,14 +34,16 @@ func (s *ProjectionServiceSuite) createAlertProjectionEvent(subjectRef string, a
 
 func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvidence() {
 	ctx := s.SeedTenantContext()
-	service := s.projectionService()
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+	service := s.projectionService(tdb)
 	attrs := projections.AlertInstanceSubjectAttributes{
 		Title:       "Search latency high",
 		Description: "p95 latency above threshold",
 		Definition:  "latency > 2000",
 		ExternalRef: "external-ref-" + uuid.NewString(),
 	}
-	first := s.createAlertProjectionEvent("alert-1", attrs)
+	first := s.createAlertProjectionEvent(tdb, "alert-1", attrs)
 
 	_, projectErr := runProjection(ctx, service, first)
 	s.Require().NoError(projectErr)
@@ -48,24 +51,24 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 	_, projectErr = runProjection(ctx, service, first)
 	s.Require().NoError(projectErr)
 
-	alerts, err := s.Client(ctx).Alert.Query().All(ctx)
+	alerts, err := client.Alert.Query().All(ctx)
 	s.Require().NoError(err)
 	s.Require().Len(alerts, 1)
 	s.Equal(attrs.Title, alerts[0].Title)
 	s.NotNil(alerts[0].KnowledgeEntityID)
 
 	attrs.Title = "Search latency critical"
-	second := s.createAlertProjectionEvent("alert-1", attrs)
+	second := s.createAlertProjectionEvent(tdb, "alert-1", attrs)
 	_, projectErr = runProjection(ctx, service, second)
 	s.Require().NoError(projectErr)
 
-	updated, err := s.Client(ctx).Alert.Query().
+	updated, err := client.Alert.Query().
 		Where(entalert.KnowledgeEntityID(*alerts[0].KnowledgeEntityID)).
 		Only(ctx)
 	s.Require().NoError(err)
 	s.Equal("Search latency critical", updated.Title)
 
-	evidenceCount, err := s.Client(ctx).KnowledgeEvidence.Query().Count(ctx)
+	evidenceCount, err := client.KnowledgeEvidence.Query().Count(ctx)
 	s.Require().NoError(err)
 	s.Equal(2, evidenceCount)
 }

@@ -32,12 +32,12 @@ func (s *IntegrationsServiceSuite) newRegistry(pkgs ...rez.IntegrationPackage) r
 	return reg
 }
 
-func (s *IntegrationsServiceSuite) newService(reg rez.IntegrationPackageRegistry) *IntegrationsService {
+func (s *IntegrationsServiceSuite) newService(tdb rez.Database, reg rez.IntegrationPackageRegistry) *IntegrationsService {
 	jobs := mocks.NewMockJobService(s.T())
 	jobs.EXPECT().Insert(mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, nil)
 
-	svc, err := NewIntegrationsService(s.Config(), s.Database(), jobs, reg)
+	svc, err := NewIntegrationsService(s.Config(), tdb, jobs, reg)
 	s.Require().NoError(err)
 
 	return svc
@@ -57,13 +57,14 @@ func (s *IntegrationsServiceSuite) installTestIntegration(ctx context.Context, s
 
 func (s *IntegrationsServiceSuite) TestInstallIntegration() {
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
 
 	i := &testIntegration{
 		maxInstalls: new(1),
 	}
 	reg := s.newRegistry(i)
 
-	svc := s.newService(reg)
+	svc := s.newService(tdb, reg)
 
 	cfg := testInstalledIntegrationConfig{TestRef: "foobar"}
 	rawCfg, jsonErr := json.Marshal(cfg)
@@ -85,14 +86,16 @@ func (s *IntegrationsServiceSuite) TestInstallIntegration() {
 
 func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsSkipsIntegrationsWithoutTools() {
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
 
-	intgs := s.Client(ctx).Integration.Query().AllX(ctx)
+	intgs := client.Integration.Query().AllX(ctx)
 	for _, intg := range intgs {
 		fmt.Printf("\nintegration %+v\n", intg)
 	}
 
 	i := &testIntegration{}
-	svc := s.newService(s.newRegistry(i))
+	svc := s.newService(tdb, s.newRegistry(i))
 	s.installTestIntegration(ctx, svc, i, "target-a")
 
 	tools, toolsErr := svc.GetAvailableAgentTools(ctx, rez.GetAvailableAgentToolsParams{})
@@ -102,12 +105,13 @@ func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsSkipsIntegrationsWi
 
 func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsRejectsDuplicateToolNames() {
 	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
 
 	tools := []ai.Tool{newTestAgentTool("duplicate_tool")}
 	i1 := &testIntegration{name: "pkg-a", tools: tools}
 	i2 := &testIntegration{name: "pkg-b", tools: tools}
 
-	svc := s.newService(s.newRegistry(i1, i2))
+	svc := s.newService(tdb, s.newRegistry(i1, i2))
 	s.installTestIntegration(ctx, svc, i1, "target-a")
 	s.installTestIntegration(ctx, svc, i2, "target-b")
 
