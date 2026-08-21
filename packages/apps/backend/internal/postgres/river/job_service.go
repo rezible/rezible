@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -45,9 +46,10 @@ func NewJobService(cfg rez.Config, pool *pgxpool.Pool, tel rez.TelemetryService)
 	})
 
 	riverCfg := &river.Config{
-		Schema:      SchemaName,
-		Logger:      s.logger,
-		MaxAttempts: 3,
+		Schema:          SchemaName,
+		Logger:          s.logger,
+		MaxAttempts:     3,
+		SoftStopTimeout: 5 * time.Second,
 		Middleware: []rivertype.Middleware{
 			telemetryMiddleware,
 			&accessContextMiddleware{},
@@ -71,15 +73,26 @@ func (s *JobService) RegisterPeriodicJob(job *river.PeriodicJob) {
 	s.client.PeriodicJobs().Add(job)
 }
 
-func (s *JobService) Start(ctx context.Context) error {
-	return s.client.Start(execution.NewRootContext(ctx, execution.KindSystem, execution.SourceJob))
-}
-
-func (s *JobService) Shutdown(ctx context.Context) error {
-	if s.client != nil {
-		return s.client.Stop(ctx)
+func (s *JobService) Lifecycle() *rez.ServiceLifecycle {
+	runFn := func(ctx context.Context) error {
+		clientCtx := execution.NewRootContext(ctx, execution.KindSystem, execution.SourceJob)
+		if startErr := s.client.Start(clientCtx); startErr != nil {
+			return fmt.Errorf("start river client: %w", startErr)
+		}
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-s.client.Stopped():
+			if ctx.Err() == nil {
+				return fmt.Errorf("river client stopped unexpectedly")
+			}
+			return nil
+		}
 	}
-	return nil
+	return &rez.ServiceLifecycle{
+		StartFns: []rez.LifecycleFunc{runFn},
+		StopFn:   s.client.Stop,
+	}
 }
 
 func (s *JobService) extractContextPgxTx(ctx context.Context) (bool, pgx.Tx, error) {

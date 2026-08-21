@@ -11,7 +11,7 @@ import (
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/riverqueue/river"
 	"github.com/samber/do/v2"
-	"github.com/sourcegraph/conc/pool"
+	"golang.org/x/sync/errgroup"
 
 	rez "github.com/rezible/rezible"
 )
@@ -32,26 +32,33 @@ func withConfig(i do.Injector, fn func(rez.Config) error) error {
 	return fn(cfg)
 }
 
-type startable interface {
-	Start(context.Context) error
-}
-
-func startServicesFor[Entrypoint startable](ctx context.Context, i do.Injector) error {
+func runServicesFor[Entrypoint rez.LifecycleService](ctx context.Context, i do.Injector) error {
 	if regErr := registerBackgroundServicePackages(i); regErr != nil {
 		return fmt.Errorf("register background services: %w", regErr)
 	}
 
-	// invoke entrypoint service to load required service dependencies
-	entrySvc, srvErr := do.Invoke[Entrypoint](i)
-	if srvErr != nil {
-		return fmt.Errorf("initialize entrypoint %T: %v", entrySvc, srvErr)
+	lifecycles, lifecyclesErr := getServiceLifecyclesFor[Entrypoint](i)
+	if lifecyclesErr != nil {
+		return fmt.Errorf("get service lifecycles: %w", lifecyclesErr)
 	}
 
-	var services []startable
+	return lifecycles.run(ctx)
+}
+
+type serviceLifecycles map[string]rez.ServiceLifecycle
+
+func getServiceLifecyclesFor[Entrypoint rez.LifecycleService](i do.Injector) (serviceLifecycles, error) {
+	// invoke entrypoint service to invoke required service dependencies
+	entrySvc, srvErr := do.Invoke[Entrypoint](i)
+	if srvErr != nil {
+		return nil, fmt.Errorf("invoke entrypoint %T: %w", entrySvc, srvErr)
+	}
+
+	services := make(serviceLifecycles)
 	for _, desc := range i.ListInvokedServices() {
 		svc, invErr := do.InvokeNamed[any](i, desc.Service)
 		if invErr != nil {
-			return fmt.Errorf("failed to invoke %s: %v", desc.Service, invErr)
+			return nil, fmt.Errorf("failed to invoke %s: %w", desc.Service, invErr)
 		}
 		if intgSvc, isIntegration := svc.(rez.IntegrationPackage); isIntegration {
 			// skipping unavailable integration
@@ -63,42 +70,66 @@ func startServicesFor[Entrypoint startable](ctx context.Context, i do.Injector) 
 				continue
 			}
 		}
-		if startableSvc, isStartable := svc.(startable); isStartable {
-			services = append(services, startableSvc)
+		if lifecycleSvc, isLifecycleSvc := svc.(rez.LifecycleService); isLifecycleSvc {
+			if ls := lifecycleSvc.Lifecycle(); ls != nil {
+				svcName := strings.TrimLeft(fmt.Sprintf("%T", svc), "*")
+				services[svcName] = *ls
+			}
 		}
 	}
 
-	return startServices(ctx, services)
+	return services, nil
 }
 
-func startServices(ctx context.Context, svcs []startable) error {
-	errChan := make(chan error)
-	go func() {
-		p := pool.New().WithErrors().WithContext(ctx).WithFirstError()
-		for _, l := range svcs {
-			slog.Info("Starting " + strings.TrimLeft(fmt.Sprintf("%T", l), "*"))
-			p.Go(l.Start)
-		}
-		errChan <- p.Wait()
-	}()
-
+func (ls serviceLifecycles) run(ctx context.Context) error {
 	slog.Info("=== Starting Services ===")
-	var servicesErr error
-	select {
-	case <-ctx.Done():
-		servicesErr = ctx.Err()
-	case poolErr := <-errChan:
-		servicesErr = poolErr
-	}
-	slog.Info("=== Stopping Services ===")
 
-	if servicesErr != nil && !errors.Is(servicesErr, context.Canceled) {
-		return fmt.Errorf("run services: %s", servicesErr.Error())
+	const lifecycleStopTimeout = 10 * time.Second
+
+	group, runCtx := errgroup.WithContext(ctx)
+	for name, lifecycle := range ls {
+		slog.Info("Starting " + name)
+
+		for _, runFn := range lifecycle.StartFns {
+			group.Go(func() error {
+				runErr := runFn(runCtx)
+				if runErr != nil {
+					if ctxErr := runCtx.Err(); ctxErr != nil && errors.Is(runErr, ctxErr) {
+						return nil
+					}
+					return fmt.Errorf("%s: %w", name, runErr)
+				}
+				if runCtx.Err() == nil {
+					return fmt.Errorf("%s stopped unexpectedly", name)
+				}
+				return nil
+			})
+		}
+
+		if lifecycle.StopFn != nil {
+			group.Go(func() error {
+				<-runCtx.Done()
+				stopCtx, cancel := context.WithTimeout(context.WithoutCancel(runCtx), lifecycleStopTimeout)
+				defer cancel()
+
+				if stopErr := lifecycle.StopFn(stopCtx); stopErr != nil {
+					return fmt.Errorf("stop %s: %w", name, stopErr)
+				}
+				return nil
+			})
+		}
+	}
+
+	servicesErr := group.Wait()
+	slog.Info("=== Services Stopped ===")
+
+	if servicesErr != nil {
+		return fmt.Errorf("run services: %w", servicesErr)
 	}
 	return nil
 }
 
-func shutdownServices(ctx context.Context, i do.Injector) error {
+func shutdownInjector(ctx context.Context, i do.Injector) error {
 	cancelCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 	defer cancel()
 	shutdown := i.ShutdownWithContext(cancelCtx)

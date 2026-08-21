@@ -37,21 +37,21 @@ func makeServerCli() *cli.Command {
 			return ctx, initPackages(ctx, i)
 		},
 		After: func(ctx context.Context, command *cli.Command) error {
-			return shutdownServices(ctx, i)
+			return shutdownInjector(ctx, i)
 		},
 		Commands: []*cli.Command{
 			{
 				Name:  "serve",
 				Usage: "Run rezible server",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return startServicesFor[*http.Server](ctx, i)
+					return runServicesFor[*http.Server](ctx, i)
 				},
 			},
 			{
 				Name:  "genkit-server",
 				Usage: "Run genkit dev server",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return startServicesFor[*genkit.DevServer](ctx, i)
+					return runServicesFor[*genkit.DevServer](ctx, i)
 				},
 			},
 			{

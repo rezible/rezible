@@ -5,70 +5,47 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-
-	"github.com/sourcegraph/conc/pool"
+	"runtime/debug"
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
+
+	rez "github.com/rezible/rezible"
 )
 
 type socketModeListener struct {
 	client       *socketmode.Client
 	eventHandler *appEventHandler
-	stopFn       func() error
 }
 
 func makeSocketModeListener(client *slack.Client, evth *appEventHandler) *socketModeListener {
 	return &socketModeListener{
 		eventHandler: evth,
 		client:       socketmode.New(client),
-		stopFn:       func() error { return nil },
 	}
 }
 
-func (l *socketModeListener) Start(baseCtx context.Context) error {
-	cancelCtx, cancel := context.WithCancel(baseCtx)
-
-	p := pool.New().
-		WithErrors().
-		WithContext(cancelCtx)
-
-	l.stopFn = func() error {
-		cancel()
-		if p != nil {
-			if poolErr := p.Wait(); poolErr != nil && !errors.Is(poolErr, context.Canceled) {
-				return fmt.Errorf("slack socket mode handler: %w", poolErr)
-			}
-		}
-		return nil
-	}
-
-	p.Go(l.client.RunContext)
-	p.Go(l.runEventConsumerLoop)
-
+func (l *socketModeListener) Lifecycle() *rez.ServiceLifecycle {
 	slog.Info("Listening for slack events in socket mode")
-
-	return nil
+	return &rez.ServiceLifecycle{
+		StartFns: []rez.LifecycleFunc{l.client.RunContext, l.runEventConsumerLoop},
+	}
 }
 
-func (l *socketModeListener) Shutdown(ctx context.Context) error {
-	slog.Info("Stopping Slack socket mode listener")
-	return l.stopFn()
-}
-
-func (l *socketModeListener) runEventConsumerLoop(ctx context.Context) error {
+func (l *socketModeListener) runEventConsumerLoop(ctx context.Context) (runErr error) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
-			slog.Error("panic while handling socket mode event", "panic", panicErr)
+			runErr = fmt.Errorf("panic handling Slack socket-mode event: %v\n%s", panicErr, debug.Stack())
 		}
 	}()
 	for {
 		select {
 		case evt, ok := <-l.client.Events:
-			if ok {
-				l.onEvent(ctx, &evt)
+			if !ok {
+				return errors.New("socket-mode events channel closed")
 			}
+			l.onEvent(ctx, &evt)
 		case <-ctx.Done():
 			return nil
 		}
@@ -97,7 +74,7 @@ func (l *socketModeListener) onEvent(ctx context.Context, evt *socketmode.Event)
 			"event_type", string(evt.Type),
 		)
 	}
-	if ackErr := l.client.AckCtx(ctx, evt.Request.EnvelopeID, nil); ackErr != nil {
+	if ackErr := l.client.AckCtx(ctx, evt.Request.EnvelopeID, nil); ackErr != nil && ctx.Err() == nil {
 		slog.Error("Error acking socket mode event", "error", ackErr)
 	}
 }

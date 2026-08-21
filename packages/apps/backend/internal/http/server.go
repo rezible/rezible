@@ -24,10 +24,9 @@ import (
 
 type (
 	Server struct {
-		cfg        rez.HttpServerConfig
-		router     *chi.Mux
-		logger     *slog.Logger
-		httpServer *http.Server
+		cfg    rez.HttpServerConfig
+		router *chi.Mux
+		logger *slog.Logger
 	}
 	WebhookHandlers map[string]http.Handler
 )
@@ -218,28 +217,35 @@ func (s *Server) makeHealthCheckHandler() http.HandlerFunc {
 	}
 }
 
-func (s *Server) Start(ctx context.Context) error {
-	s.httpServer = &http.Server{
+func (s *Server) Lifecycle() *rez.ServiceLifecycle {
+	server := &http.Server{
 		Addr:    net.JoinHostPort(s.cfg.Host, s.cfg.Port),
 		Handler: s.router,
-		BaseContext: func(l net.Listener) context.Context {
+	}
+
+	runFn := func(ctx context.Context) error {
+		server.BaseContext = func(net.Listener) context.Context {
 			return ctx
-		},
-	}
+		}
+		slog.Info("HTTP server listening", "addr", server.Addr)
 
-	slog.Info("HTTP server listening", "addr", s.httpServer.Addr)
-	if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("http server error: %w", err)
-	}
-	return nil
-}
-
-func (s *Server) Shutdown(ctx context.Context) error {
-	if s.httpServer == nil {
+		if srvErr := server.ListenAndServe(); !errors.Is(srvErr, http.ErrServerClosed) {
+			return fmt.Errorf("HTTP server: %w", srvErr)
+		}
 		return nil
 	}
-	slog.Info("HTTP server shutting down")
-	return s.httpServer.Shutdown(ctx)
+	stopFn := func(ctx context.Context) error {
+		slog.Info("HTTP server shutting down")
+		if shutdownErr := server.Shutdown(ctx); shutdownErr != nil {
+			return errors.Join(fmt.Errorf("shutdown HTTP server: %w", shutdownErr), server.Close())
+		}
+		return nil
+	}
+
+	return &rez.ServiceLifecycle{
+		StartFns: []rez.LifecycleFunc{runFn},
+		StopFn:   stopFn,
+	}
 }
 
 var (

@@ -21,12 +21,8 @@ type Integration struct {
 	appSvc *slackintegration.AppService[*App]
 }
 
-func (i *Integration) Start(ctx context.Context) error {
-	return i.appSvc.Start(ctx)
-}
-
-func (i *Integration) Shutdown(ctx context.Context) error {
-	return i.appSvc.Shutdown(ctx)
+func (i *Integration) Lifecycle() *rez.ServiceLifecycle {
+	return i.appSvc.Lifecycle()
 }
 
 func (i *Integration) Name() string {

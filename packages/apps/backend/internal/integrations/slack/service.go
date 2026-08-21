@@ -90,16 +90,9 @@ func (s *AppService[A]) WebhookHandler() http.Handler {
 	return s.webhookHandler
 }
 
-func (s *AppService[A]) Start(ctx context.Context) error {
+func (s *AppService[A]) Lifecycle() *rez.ServiceLifecycle {
 	if s.socketModeListener != nil {
-		return s.socketModeListener.Start(ctx)
-	}
-	return nil
-}
-
-func (s *AppService[A]) Shutdown(ctx context.Context) error {
-	if s.socketModeListener != nil {
-		return s.socketModeListener.Shutdown(ctx)
+		return s.socketModeListener.Lifecycle()
 	}
 	return nil
 }

@@ -14,6 +14,7 @@ import (
 	gkapi "github.com/firebase/genkit/go/core/api"
 	"github.com/firebase/genkit/go/genkit"
 	"github.com/firebase/genkit/go/plugins/googlegenai"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -139,36 +140,42 @@ func (s *AiService) GetWorkflowRunner(name string) (rez.AiWorkflowRunner, error)
 }
 
 type DevServer struct {
-	httpServer *http.Server
+	svc *AiService
 }
 
 func (s *AiService) MakeDevServer() *DevServer {
-	ds := &DevServer{}
-	if s.cfg.DevServer.Enabled {
-		mux := http.NewServeMux()
-		ds.httpServer = &http.Server{
-			Addr:    net.JoinHostPort("localhost", s.cfg.DevServer.Port),
-			Handler: mux,
+	return &DevServer{svc: s}
+}
+
+func (s *DevServer) Lifecycle() *rez.ServiceLifecycle {
+	cfg := s.svc.cfg
+	if !cfg.DevServer.Enabled {
+		return nil
+	}
+
+	mux := http.NewServeMux()
+	srv := &http.Server{
+		Addr:    net.JoinHostPort("localhost", cfg.DevServer.Port),
+		Handler: mux,
+	}
+
+	runFn := func(context.Context) error {
+		slog.Info("Genkit dev server HTTP server listening", "addr", srv.Addr)
+		if srvErr := srv.ListenAndServe(); !errors.Is(srvErr, http.ErrServerClosed) {
+			return fmt.Errorf("genkit dev server HTTP server: %w", srvErr)
 		}
-	}
-	return ds
-}
-
-func (s *DevServer) Start(ctx context.Context) error {
-	if s.httpServer == nil {
 		return nil
 	}
-	slog.Info("Genkit dev server HTTP server listening", "addr", s.httpServer.Addr)
-	if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("http server error: %w", err)
-	}
-	return nil
-}
-
-func (s *DevServer) Shutdown(ctx context.Context) error {
-	if s.httpServer == nil {
+	stopFn := func(ctx context.Context) error {
+		slog.Info("Genkit dev server HTTP server shutting down")
+		if shutdownErr := srv.Shutdown(ctx); shutdownErr != nil {
+			return errors.Join(fmt.Errorf("shutdown Genkit dev server: %w", shutdownErr), srv.Close())
+		}
 		return nil
 	}
-	slog.Info("Genkit dev server HTTP server shutdown")
-	return s.httpServer.Shutdown(ctx)
+
+	return &rez.ServiceLifecycle{
+		StartFns: []rez.LifecycleFunc{runFn},
+		StopFn:   stopFn,
+	}
 }

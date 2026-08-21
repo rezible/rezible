@@ -85,12 +85,13 @@ func NewMessageService(ts rez.TelemetryService, transport Transport) (*MessageSe
 	return &ms, nil
 }
 
-func (ms *MessageService) Start(ctx context.Context) error {
-	return ms.router.Run(ctx)
-}
-
-func (ms *MessageService) Shutdown() error {
-	return errors.Join(ms.router.Close(), ms.transport.Close())
+func (ms *MessageService) Lifecycle() *rez.ServiceLifecycle {
+	return &rez.ServiceLifecycle{
+		StartFns: []rez.LifecycleFunc{ms.router.Run},
+		StopFn: func(context.Context) error {
+			return errors.Join(ms.router.Close(), ms.transport.Close())
+		},
+	}
 }
 
 func (ms *MessageService) eventTopic(eventName string) string {

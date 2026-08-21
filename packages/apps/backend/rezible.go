@@ -36,6 +36,17 @@ var (
 )
 
 type (
+	LifecycleFunc    = func(context.Context) error
+	ServiceLifecycle struct {
+		StartFns []LifecycleFunc
+		StopFn   LifecycleFunc
+	}
+	LifecycleService interface {
+		Lifecycle() *ServiceLifecycle
+	}
+)
+
+type (
 	Database interface {
 		Client(context.Context) *ent.Client
 		WithTx(context.Context, func(context.Context, *ent.Client) error, ...ent.TxOption) error
