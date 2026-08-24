@@ -75,6 +75,15 @@ exclude_test_packages_pattern := "/ent/"
 @test-pattern PATTERN:
     just test $(go list ./... | grep -v '{{exclude_test_packages_pattern}}') -run {{PATTERN}}
 
+@evals *ARGS:
+    POSTGRES_HOST='{{testPostgresHost}}' \
+      POSTGRES_PORT='{{testPostgresPort}}' \
+      POSTGRES_APP_DB='{{testPostgresDatabase}}' \
+      POSTGRES__HOST='{{testPostgresHost}}' \
+      POSTGRES__PORT='{{testPostgresPort}}' \
+      POSTGRES__DATABASE='{{testPostgresDatabase}}' \
+      go run ./cmd/rezible evals {{ARGS}}
+
 @send-demo-webhook KIND="alert":
     curl -i -X POST "http://localhost:{{HTTP__PORT}}{{HTTP__BASE_PATH}}/webhooks/demo" \
       -H "Content-Type: application/json" \

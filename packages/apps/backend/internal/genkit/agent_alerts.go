@@ -29,7 +29,7 @@ func (a *AlertsAgent) agentDefinition() rezai.AlertsAgentDefinition {
 
 func (a *AlertsAgent) makeInitialTurnInput(ctx context.Context, input rezai.AlertAgentInput) (*rez.AiAgentTurnInput, error) {
 	return &rez.AiAgentTurnInput{
-		Message: ai.NewUserTextMessage(fmt.Sprintf("Investigate alert instance %s.", input.AlertInstanceID)),
+		Message: ai.NewUserTextMessage(fmt.Sprintf("Investigate this alert instance.")),
 	}, nil
 }
 
@@ -44,10 +44,9 @@ func (a *AlertsAgent) updateInitialTurnMessage(ctx context.Context, input rezai.
 		return "", fmt.Errorf("get alert: %w", alrtErr)
 	}
 
-	seed := fmt.Sprintf(`Alert instance ID: %s
-Title: %s
+	seed := fmt.Sprintf(`Title: %s
 Description: %s
-Definition: %s`, input.AlertInstanceID, alrt.Title, alrt.Description, alrt.Definition)
+Definition: %s`, alrt.Title, alrt.Description, alrt.Definition)
 	return seed, nil
 }
 

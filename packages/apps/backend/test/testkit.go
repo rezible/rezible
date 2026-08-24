@@ -3,22 +3,15 @@ package test
 import (
 	"cmp"
 	"context"
-	"database/sql"
-	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/stretchr/testify/suite"
-
-	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/peterldowns/pgtestdb"
-	"github.com/peterldowns/pgtestdb/migrators/golangmigrator"
 
 	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/postgres"
+	"github.com/rezible/rezible/internal/postgres/pgtestdb"
 	"github.com/rezible/rezible/pkg/execution"
 )
 
@@ -96,40 +89,13 @@ func (s *Suite) CreateTestDatabase() rez.Database {
 	cfg := s.Config().Postgres
 	s.Require().NotEmpty(cfg.AdminRole.Name, "postgres migrations admin config empty")
 
-	opts := fmt.Sprintf("sslmode=%s&search_path=%s", cfg.SSLMode, postgres.SchemaName)
-	pgxConf := pgtestdb.Config{
-		DriverName: "pgx",
-		Host:       cfg.Host,
-		Port:       fmt.Sprintf("%d", cfg.Port),
-		Database:   cfg.Database,
-		Options:    opts,
-		User:       cfg.AdminRole.Name,
-		Password:   cfg.AdminRole.Password,
-		TestRole: &pgtestdb.Role{
-			Username: cfg.AppRole.Name,
-			Password: cfg.AppRole.Password,
-		},
-	}
-	testConfig := pgtestdb.Custom(s.T(), pgxConf, newTestDbMigrator())
-	s.Require().NotNil(testConfig)
+	tdb, tdbErr := pgtestdb.New(cfg)
+	s.Require().NoError(tdbErr)
+	s.T().Cleanup(func() {
+		s.Require().NoError(tdb.Shutdown())
+	})
 
-	port, portErr := strconv.ParseUint(testConfig.Port, 10, 16)
-	s.Require().NoError(portErr)
-
-	testDbCfg := rez.PostgresConfig{
-		Host:     testConfig.Host,
-		Port:     uint16(port),
-		Database: testConfig.Database,
-		AppRole: rez.PostgresRoleConfig{
-			Name:     testConfig.User,
-			Password: testConfig.Password,
-		},
-		AdminRole:    cfg.AdminRole,
-		SSLMode:      cfg.SSLMode,
-		PoolMaxConns: cfg.PoolMaxConns,
-	}
-
-	pool, poolErr := postgres.MakePgxPool(s.T().Context(), testDbCfg, false)
+	pool, poolErr := postgres.MakePgxPool(s.T().Context(), tdb.Config(), false)
 	s.Require().NoError(poolErr)
 
 	db, dbErr := postgres.NewPgxPoolDatabaseClient(pool)
@@ -146,32 +112,4 @@ func (s *Suite) CreateTestDatabase() rez.Database {
 	})
 
 	return db
-}
-
-type testDbMigrator struct {
-	gm *golangmigrator.GolangMigrator
-}
-
-func newTestDbMigrator() *testDbMigrator {
-	return &testDbMigrator{
-		gm: golangmigrator.New(migrations.EmbedFSDir, golangmigrator.WithFS(migrations.FS)),
-	}
-}
-
-func (m *testDbMigrator) Hash() (string, error) {
-	return m.gm.Hash()
-}
-
-func (m *testDbMigrator) Migrate(ctx context.Context, db *sql.DB, config pgtestdb.Config) error {
-	var setupDbQueryTemplate = `
-		CREATE SCHEMA IF NOT EXISTS %[1]s;
-		GRANT USAGE ON SCHEMA %[1]s TO %[2]s;
-		ALTER DEFAULT PRIVILEGES IN SCHEMA %[1]s GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO %[2]s;
-		ALTER DEFAULT PRIVILEGES IN SCHEMA %[1]s GRANT USAGE, SELECT ON SEQUENCES TO %[2]s;
-		ALTER ROLE %[2]s SET search_path TO %[1]s;`
-	setupQuery := fmt.Sprintf(setupDbQueryTemplate, postgres.SchemaName, config.TestRole.Username)
-	if _, setupErr := db.ExecContext(ctx, setupQuery); setupErr != nil {
-		return fmt.Errorf("setup schema (query=[%s]): %w", setupQuery, setupErr)
-	}
-	return m.gm.Migrate(ctx, db, config)
 }

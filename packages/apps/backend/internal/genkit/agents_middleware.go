@@ -23,7 +23,14 @@ func (m *agentDebugMiddleware) Name() string {
 
 func (m *agentDebugMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 	return &ai.Hooks{
+		WrapTool: func(ctx context.Context, params *ai.ToolParams, next ai.ToolNext) (*ai.MultipartToolResponse, error) {
+			//pretty.Println("tool request", params.Request)
+			resp, respErr := next(ctx, params)
+			//pretty.Println("tool response", resp, "error", respErr)
+			return resp, respErr
+		},
 		WrapGenerate: func(ctx context.Context, params *ai.GenerateParams, next ai.GenerateNext) (*ai.ModelResponse, error) {
+			//pretty.Println("model request", params.Request)
 			resp, respErr := next(ctx, params)
 			//pretty.Println("model response", resp, "error", respErr)
 			return resp, respErr

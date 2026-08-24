@@ -7,17 +7,17 @@ import (
 	"google.golang.org/genai"
 )
 
-type ModelDefinition struct {
+type ModelDefinition[Config any] struct {
 	Name string
 	opts *ai.ModelOptions
-	fn   ai.ModelFunc
+	fn   ai.ModelActionFunc[Config]
 }
 
-func WithDefinedModel(def ModelDefinition) AiServiceOption {
+func WithDefinedModel[Config any](def ModelDefinition[Config]) AiServiceOption {
 	return AiServiceOption{
 		kind: AiServiceOptionKindModel,
 		optFn: func(s *AiService) error {
-			gk.DefineModel(s.gk, def.Name, def.opts, def.fn)
+			gk.DefineModelAction(s.gk, def.Name, def.opts, def.fn)
 			return nil
 		},
 	}

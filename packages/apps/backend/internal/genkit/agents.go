@@ -144,21 +144,25 @@ func (w *agentWrapper[I, S]) normalizeTurnInput(input *rez.AiAgentTurnInput) (*a
 }
 
 func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, sess *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
-	input, inputErr := w.runner.agentDefinition().ValidateInput(sess.Input)
-	if inputErr != nil || input == nil {
-		return nil, fmt.Errorf("input: %w", inputErr)
+	validated, validateErr := w.runner.agentDefinition().ValidateInput(sess.Input)
+	if validateErr != nil || validated == nil {
+		return nil, fmt.Errorf("input: %w", validateErr)
 	}
-	turnInput, turnErr := w.runner.makeInitialTurnInput(ctx, *input)
+	input := *validated
+
+	turnInput, turnErr := w.runner.makeInitialTurnInput(ctx, input)
 	if turnErr != nil {
-		return nil, turnErr
+		return nil, fmt.Errorf("make turn: %w", turnErr)
 	} else if turnInput == nil {
 		return nil, rez.ErrInvalidInput
 	}
+
 	if msgSetter, setMsg := w.runner.(runnerWithInitialTurnMessage[I]); setMsg {
-		seed, msgErr := msgSetter.updateInitialTurnMessage(ctx, *input)
+		seed, msgErr := msgSetter.updateInitialTurnMessage(ctx, input)
 		if msgErr != nil {
-			return nil, msgErr
+			return nil, fmt.Errorf("update message: %w", msgErr)
 		}
+
 		if strings.TrimSpace(seed) != "" {
 			task := ""
 			if turnInput.Message != nil {
@@ -167,6 +171,7 @@ func (w *agentWrapper[I, S]) MakeInitialTurnInput(ctx context.Context, sess *ent
 			turnInput.Message = ai.NewUserTextMessage(strings.TrimSpace("Context:\n" + seed + "\n\nTask:\n" + task))
 		}
 	}
+
 	normalized, normalizeErr := w.normalizeTurnInput(turnInput)
 	if normalizeErr != nil {
 		return nil, fmt.Errorf("normalize initial input: %w", normalizeErr)

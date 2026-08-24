@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/rezible/rezible/internal/koanf"
+	"github.com/rezible/rezible/internal/postgres/pgtestdb"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/samber/do/v2"
 
@@ -48,6 +49,7 @@ func makePackageProvider(ctx context.Context) Provider {
 		makeOpenTelemetryProvider(ctx),
 		makePostgresProvider(ctx),
 		makeGenkitProvider(ctx),
+		provideRiverJobService,
 		provideWatermillMessageService,
 		provideDatabaseServices,
 		provideIntegrations,
@@ -68,8 +70,21 @@ func makeOpenTelemetryProvider(ctx context.Context) Provider {
 	})
 }
 
+func useTestDatabase(i do.Injector) {
+	do.Override(i, func(i do.Injector) (rez.PostgresConfig, error) {
+		return do.InvokeNamed[rez.PostgresConfig](i, "pgcfg-test")
+	})
+}
+
 func makePostgresProvider(ctx context.Context) Provider {
 	return do.Package(
+		do.Lazy(func(i do.Injector) (*pgtestdb.Database, error) {
+			return pgtestdb.New(do.MustInvoke[rez.Config](i).Postgres)
+		}),
+		do.LazyNamed("pgcfg-test", func(i do.Injector) (rez.PostgresConfig, error) {
+			return do.MustInvoke[*pgtestdb.Database](i).Config(), nil
+		}),
+
 		do.Lazy(func(i do.Injector) (rez.PostgresConfig, error) {
 			return do.MustInvoke[rez.Config](i).Postgres, nil
 		}),
@@ -88,14 +103,6 @@ func makePostgresProvider(ctx context.Context) Provider {
 
 		do.Lazy(func(i do.Injector) (rez.Database, error) {
 			return postgres.NewPgxPoolDatabaseClient(do.MustInvoke[*postgres.ConnectionPool](i))
-		}),
-
-		do.Lazy(func(i do.Injector) (rez.JobService, error) {
-			return river.NewJobService(
-				do.MustInvoke[rez.Config](i),
-				do.MustInvoke[*postgres.ConnectionPool](i),
-				do.MustInvoke[rez.TelemetryService](i),
-			)
 		}),
 	)
 }
@@ -129,8 +136,22 @@ func makeGenkitProvider(ctx context.Context) Provider {
 			devCtx := execution.NewTenantContext(ctx, 1)
 			return svc.MakeDevServer(), initService(devCtx, i, svc)
 		}),
+
+		do.Lazy(func(i do.Injector) (*genkit.EvaluationService, error) {
+			return genkit.NewEvaluationService(do.MustInvoke[rez.Database](i), do.MustInvoke[rez.AiService](i)), nil
+		}),
 	)
 }
+
+var provideRiverJobService = do.Package(
+	do.Lazy(func(i do.Injector) (rez.JobService, error) {
+		return river.NewJobService(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[*postgres.ConnectionPool](i),
+			do.MustInvoke[rez.TelemetryService](i),
+		)
+	}),
+)
 
 var provideWatermillMessageService = do.Package(
 	do.Lazy(func(i do.Injector) (watermill.Transport, error) {

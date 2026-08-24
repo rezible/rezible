@@ -27,13 +27,13 @@ func (i testWorkflowInput) Validate() error {
 	return nil
 }
 
-func (s *AiServiceSuite) newTestOutputModel(output *testWorkflowOutput) ModelDefinition {
+func (s *AiServiceSuite) newTestOutputModel(output *testWorkflowOutput) ModelDefinition[any] {
 	out, jsonErr := json.Marshal(output)
 	s.Require().NoError(jsonErr)
 	response := &gkai.ModelResponse{
 		Message: gkai.NewModelTextMessage(string(out)),
 	}
-	return ModelDefinition{
+	return ModelDefinition[any]{
 		Name: "test/output",
 		opts: &gkai.ModelOptions{
 			Supports: &gkai.ModelSupports{
@@ -42,7 +42,7 @@ func (s *AiServiceSuite) newTestOutputModel(output *testWorkflowOutput) ModelDef
 				SystemRole:  true,
 			},
 		},
-		fn: func(ctx context.Context, req *gkai.ModelRequest, cb gkai.ModelStreamCallback) (*gkai.ModelResponse, error) {
+		fn: func(ctx context.Context, req *gkai.ModelRequest, cfg any, cb gkai.ModelStreamCallback) (*gkai.ModelResponse, error) {
 			return response, nil
 		},
 	}

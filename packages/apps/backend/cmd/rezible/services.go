@@ -16,20 +16,20 @@ import (
 	rez "github.com/rezible/rezible"
 )
 
-func withMigrationService(i do.Injector, fn func(rez.MigrationService) error) error {
-	ms, msErr := do.Invoke[rez.MigrationService](i)
-	if msErr != nil {
-		return fmt.Errorf("invoke migration service: %w", msErr)
-	}
-	return fn(ms)
-}
-
 func withConfig(i do.Injector, fn func(rez.Config) error) error {
 	cfg, cfgErr := do.Invoke[rez.Config](i)
 	if cfgErr != nil {
 		return fmt.Errorf("invoke config: %w", cfgErr)
 	}
 	return fn(cfg)
+}
+
+func withMigrationService(i do.Injector, fn func(rez.MigrationService) error) error {
+	ms, msErr := do.Invoke[rez.MigrationService](i)
+	if msErr != nil {
+		return fmt.Errorf("invoke migration service: %w", msErr)
+	}
+	return fn(ms)
 }
 
 func runServicesFor[Entrypoint rez.LifecycleService](ctx context.Context, i do.Injector) error {

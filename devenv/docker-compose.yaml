@@ -7,8 +7,16 @@ secrets:
   slack_webhook_url:
     environment: SLACK_WEBHOOK_URL
 
+x-postgres-resources: &postgres-resources
+  deploy:
+    resources:
+      limits:
+        cpus: "1"
+        memory: 1G
+
 services:
   postgres:
+    <<: *postgres-resources
     image: postgres:17
     restart: unless-stopped
     ports: ["${POSTGRES_PORT}:5432"]
@@ -26,6 +34,7 @@ services:
       - "postgres-data:/var/lib/postgresql/data"
 
   postgres-test:
+    <<: *postgres-resources
     image: postgres:17
     restart: unless-stopped
     ports: ["${POSTGRES_TEST_PORT:-7014}:5432"]

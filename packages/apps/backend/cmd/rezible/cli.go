@@ -9,6 +9,8 @@ import (
 	"syscall"
 
 	"github.com/rezible/rezible/internal/genkit"
+	"github.com/rezible/rezible/pkg/ai/evals"
+	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"
 
 	rez "github.com/rezible/rezible"
@@ -121,6 +123,51 @@ func makeServerCli() *cli.Command {
 							return withMigrationService(i, func(ms rez.MigrationService) error {
 								return ms.UpdateChecksum()
 							})
+						},
+					},
+				},
+			},
+			{
+				Name:  "evals",
+				Usage: "list and run AI agent evaluation scenarios",
+				Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
+					useTestDatabase(i)
+					return ctx, nil
+				},
+				Commands: []*cli.Command{
+					{
+						Name:  "list",
+						Usage: "List available evaluation scenarios",
+						Action: func(ctx context.Context, cmd *cli.Command) error {
+							for _, definition := range evals.List() {
+								fmt.Printf("%s\t%s\t%s\n", definition.Name, definition.AgentName, definition.Description)
+							}
+							return nil
+						},
+					},
+					{
+						Name:  "run",
+						Usage: "Run a named evaluation scenario",
+						Arguments: []cli.Argument{&cli.StringArg{
+							Name:      "name",
+							UsageText: "scenario name",
+							Config:    cli.StringConfig{TrimSpace: true},
+						}},
+						Action: func(ctx context.Context, cmd *cli.Command) error {
+							scenario, lookupErr := evals.Lookup(cmd.StringArg("name"))
+							if lookupErr != nil {
+								return lookupErr
+							}
+							svc, svcErr := do.Invoke[*genkit.EvaluationService](i)
+							if svcErr != nil {
+								return svcErr
+							}
+							runner, runnerErr := svc.MakeRunner(scenario)
+							if runnerErr != nil {
+								return runnerErr
+							}
+							report := runner.RunEvaluation(ctx)
+							return report.Write(cmd.Writer)
 						},
 					},
 				},
