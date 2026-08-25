@@ -77,6 +77,11 @@ func AnalysisID(v uuid.UUID) predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.FieldEQ(FieldAnalysisID, v))
 }
 
+// Reference applies equality check predicate on the "reference" field. It's identical to ReferenceEQ.
+func Reference(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldEQ(FieldReference, v))
+}
+
 // OccurredAt applies equality check predicate on the "occurred_at" field. It's identical to OccurredAtEQ.
 func OccurredAt(v time.Time) predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.FieldEQ(FieldOccurredAt, v))
@@ -215,6 +220,71 @@ func AnalysisIDIn(vs ...uuid.UUID) predicate.SystemAnalysisEntry {
 // AnalysisIDNotIn applies the NotIn predicate on the "analysis_id" field.
 func AnalysisIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.FieldNotIn(FieldAnalysisID, vs...))
+}
+
+// ReferenceEQ applies the EQ predicate on the "reference" field.
+func ReferenceEQ(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldEQ(FieldReference, v))
+}
+
+// ReferenceNEQ applies the NEQ predicate on the "reference" field.
+func ReferenceNEQ(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldNEQ(FieldReference, v))
+}
+
+// ReferenceIn applies the In predicate on the "reference" field.
+func ReferenceIn(vs ...string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldIn(FieldReference, vs...))
+}
+
+// ReferenceNotIn applies the NotIn predicate on the "reference" field.
+func ReferenceNotIn(vs ...string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldNotIn(FieldReference, vs...))
+}
+
+// ReferenceGT applies the GT predicate on the "reference" field.
+func ReferenceGT(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldGT(FieldReference, v))
+}
+
+// ReferenceGTE applies the GTE predicate on the "reference" field.
+func ReferenceGTE(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldGTE(FieldReference, v))
+}
+
+// ReferenceLT applies the LT predicate on the "reference" field.
+func ReferenceLT(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldLT(FieldReference, v))
+}
+
+// ReferenceLTE applies the LTE predicate on the "reference" field.
+func ReferenceLTE(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldLTE(FieldReference, v))
+}
+
+// ReferenceContains applies the Contains predicate on the "reference" field.
+func ReferenceContains(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldContains(FieldReference, v))
+}
+
+// ReferenceHasPrefix applies the HasPrefix predicate on the "reference" field.
+func ReferenceHasPrefix(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldHasPrefix(FieldReference, v))
+}
+
+// ReferenceHasSuffix applies the HasSuffix predicate on the "reference" field.
+func ReferenceHasSuffix(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldHasSuffix(FieldReference, v))
+}
+
+// ReferenceEqualFold applies the EqualFold predicate on the "reference" field.
+func ReferenceEqualFold(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldEqualFold(FieldReference, v))
+}
+
+// ReferenceContainsFold applies the ContainsFold predicate on the "reference" field.
+func ReferenceContainsFold(v string) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldContainsFold(FieldReference, v))
 }
 
 // KindEQ applies the EQ predicate on the "kind" field.

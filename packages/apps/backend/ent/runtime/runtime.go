@@ -1459,12 +1459,16 @@ func init() {
 	systemanalysisentry.DefaultUpdatedAt = systemanalysisentryDescUpdatedAt.Default.(func() time.Time)
 	// systemanalysisentry.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysisentry.UpdateDefaultUpdatedAt = systemanalysisentryDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// systemanalysisentryDescReference is the schema descriptor for reference field.
+	systemanalysisentryDescReference := systemanalysisentryFields[2].Descriptor()
+	// systemanalysisentry.ReferenceValidator is a validator for the "reference" field. It is called by the builders before save.
+	systemanalysisentry.ReferenceValidator = systemanalysisentryDescReference.Validators[0].(func(string) error)
 	// systemanalysisentryDescSequence is the schema descriptor for sequence field.
-	systemanalysisentryDescSequence := systemanalysisentryFields[4].Descriptor()
+	systemanalysisentryDescSequence := systemanalysisentryFields[5].Descriptor()
 	// systemanalysisentry.DefaultSequence holds the default value on creation for the sequence field.
 	systemanalysisentry.DefaultSequence = systemanalysisentryDescSequence.Default.(int)
 	// systemanalysisentryDescTitle is the schema descriptor for title field.
-	systemanalysisentryDescTitle := systemanalysisentryFields[5].Descriptor()
+	systemanalysisentryDescTitle := systemanalysisentryFields[6].Descriptor()
 	// systemanalysisentry.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	systemanalysisentry.TitleValidator = systemanalysisentryDescTitle.Validators[0].(func(string) error)
 	// systemanalysisentryDescID is the schema descriptor for id field.

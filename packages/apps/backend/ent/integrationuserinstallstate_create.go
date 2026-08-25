@@ -4,7 +4,7 @@ package ent
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"time"
@@ -74,7 +74,7 @@ func (_c *IntegrationUserInstallStateCreate) SetNillableOauthState(v *string) *I
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (_c *IntegrationUserInstallStateCreate) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateCreate {
+func (_c *IntegrationUserInstallStateCreate) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateCreate {
 	_c.mutation.SetInstallationTargetConfigs(v)
 	return _c
 }
@@ -373,7 +373,7 @@ func (u *IntegrationUserInstallStateUpsert) ClearOauthState() *IntegrationUserIn
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (u *IntegrationUserInstallStateUpsert) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateUpsert {
+func (u *IntegrationUserInstallStateUpsert) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateUpsert {
 	u.Set(integrationuserinstallstate.FieldInstallationTargetConfigs, v)
 	return u
 }
@@ -505,7 +505,7 @@ func (u *IntegrationUserInstallStateUpsertOne) ClearOauthState() *IntegrationUse
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (u *IntegrationUserInstallStateUpsertOne) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateUpsertOne {
+func (u *IntegrationUserInstallStateUpsertOne) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateUpsertOne {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
 		s.SetInstallationTargetConfigs(v)
 	})
@@ -807,7 +807,7 @@ func (u *IntegrationUserInstallStateUpsertBulk) ClearOauthState() *IntegrationUs
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (u *IntegrationUserInstallStateUpsertBulk) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateUpsertBulk {
+func (u *IntegrationUserInstallStateUpsertBulk) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateUpsertBulk {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
 		s.SetInstallationTargetConfigs(v)
 	})

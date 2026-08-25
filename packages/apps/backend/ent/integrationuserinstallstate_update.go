@@ -4,7 +4,7 @@ package ent
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"time"
@@ -96,7 +96,7 @@ func (_u *IntegrationUserInstallStateUpdate) ClearOauthState() *IntegrationUserI
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (_u *IntegrationUserInstallStateUpdate) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateUpdate {
+func (_u *IntegrationUserInstallStateUpdate) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateUpdate {
 	_u.mutation.SetInstallationTargetConfigs(v)
 	return _u
 }
@@ -315,7 +315,7 @@ func (_u *IntegrationUserInstallStateUpdateOne) ClearOauthState() *IntegrationUs
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (_u *IntegrationUserInstallStateUpdateOne) SetInstallationTargetConfigs(v map[string]json.RawMessage) *IntegrationUserInstallStateUpdateOne {
+func (_u *IntegrationUserInstallStateUpdateOne) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateUpdateOne {
 	_u.mutation.SetInstallationTargetConfigs(v)
 	return _u
 }

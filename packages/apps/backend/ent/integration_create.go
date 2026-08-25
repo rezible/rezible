@@ -4,7 +4,7 @@ package ent
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"time"
@@ -85,7 +85,7 @@ func (_c *IntegrationCreate) SetExternalRef(v string) *IntegrationCreate {
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (_c *IntegrationCreate) SetInstallationConfig(v json.RawMessage) *IntegrationCreate {
+func (_c *IntegrationCreate) SetInstallationConfig(v jsontext.Value) *IntegrationCreate {
 	_c.mutation.SetInstallationConfig(v)
 	return _c
 }
@@ -421,7 +421,7 @@ func (u *IntegrationUpsert) UpdateExternalRef() *IntegrationUpsert {
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (u *IntegrationUpsert) SetInstallationConfig(v json.RawMessage) *IntegrationUpsert {
+func (u *IntegrationUpsert) SetInstallationConfig(v jsontext.Value) *IntegrationUpsert {
 	u.Set(integration.FieldInstallationConfig, v)
 	return u
 }
@@ -586,7 +586,7 @@ func (u *IntegrationUpsertOne) UpdateExternalRef() *IntegrationUpsertOne {
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (u *IntegrationUpsertOne) SetInstallationConfig(v json.RawMessage) *IntegrationUpsertOne {
+func (u *IntegrationUpsertOne) SetInstallationConfig(v jsontext.Value) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetInstallationConfig(v)
 	})
@@ -923,7 +923,7 @@ func (u *IntegrationUpsertBulk) UpdateExternalRef() *IntegrationUpsertBulk {
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (u *IntegrationUpsertBulk) SetInstallationConfig(v json.RawMessage) *IntegrationUpsertBulk {
+func (u *IntegrationUpsertBulk) SetInstallationConfig(v jsontext.Value) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetInstallationConfig(v)
 	})

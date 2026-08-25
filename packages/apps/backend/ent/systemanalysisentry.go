@@ -29,6 +29,8 @@ type SystemAnalysisEntry struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AnalysisID holds the value of the "analysis_id" field.
 	AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
+	// Reference holds the value of the "reference" field.
+	Reference string `json:"reference,omitempty"`
 	// Kind holds the value of the "kind" field.
 	Kind systemanalysisentry.Kind `json:"kind,omitempty"`
 	// Domain time for observations/actions/events; nil for timeless findings or context.
@@ -100,7 +102,7 @@ func (*SystemAnalysisEntry) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case systemanalysisentry.FieldTenantID, systemanalysisentry.FieldSequence:
 			values[i] = new(sql.NullInt64)
-		case systemanalysisentry.FieldKind, systemanalysisentry.FieldTitle, systemanalysisentry.FieldBody:
+		case systemanalysisentry.FieldReference, systemanalysisentry.FieldKind, systemanalysisentry.FieldTitle, systemanalysisentry.FieldBody:
 			values[i] = new(sql.NullString)
 		case systemanalysisentry.FieldCreatedAt, systemanalysisentry.FieldUpdatedAt, systemanalysisentry.FieldOccurredAt:
 			values[i] = new(sql.NullTime)
@@ -150,6 +152,12 @@ func (_m *SystemAnalysisEntry) assignValues(columns []string, values []any) erro
 				return fmt.Errorf("unexpected type %T for field analysis_id", values[i])
 			} else if value != nil {
 				_m.AnalysisID = *value
+			}
+		case systemanalysisentry.FieldReference:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field reference", values[i])
+			} else if value.Valid {
+				_m.Reference = value.String
 			}
 		case systemanalysisentry.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -252,6 +260,9 @@ func (_m *SystemAnalysisEntry) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AnalysisID))
+	builder.WriteString(", ")
+	builder.WriteString("reference=")
+	builder.WriteString(_m.Reference)
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Kind))

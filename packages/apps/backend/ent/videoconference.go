@@ -4,6 +4,7 @@ package ent
 
 import (
 	"encoding/json"
+	"encoding/json/jsontext"
 	"fmt"
 	"strings"
 	"time"
@@ -47,7 +48,7 @@ type VideoConference struct {
 	// Status holds the value of the "status" field.
 	Status videoconference.Status `json:"status,omitempty"`
 	// Metadata holds the value of the "metadata" field.
-	Metadata json.RawMessage `json:"metadata,omitempty"`
+	Metadata jsontext.Value `json:"metadata,omitempty"`
 	// CreatedByIntegration holds the value of the "created_by_integration" field.
 	CreatedByIntegration string `json:"created_by_integration,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.

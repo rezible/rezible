@@ -4,6 +4,7 @@ package ent
 
 import (
 	"encoding/json"
+	"encoding/json/jsontext"
 	"fmt"
 	"strings"
 	"time"
@@ -35,7 +36,7 @@ type Integration struct {
 	// ExternalRef holds the value of the "external_ref" field.
 	ExternalRef string `json:"external_ref,omitempty"`
 	// InstallationConfig holds the value of the "installation_config" field.
-	InstallationConfig json.RawMessage `json:"installation_config,omitempty"`
+	InstallationConfig jsontext.Value `json:"installation_config,omitempty"`
 	// UserSettings holds the value of the "user_settings" field.
 	UserSettings map[string]interface{} `json:"user_settings,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.

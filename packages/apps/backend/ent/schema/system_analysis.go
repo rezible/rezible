@@ -203,6 +203,7 @@ func (SystemAnalysisEntry) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}).
 			Immutable(),
+		field.String("reference").NotEmpty().Immutable(),
 		field.Enum("kind").
 			Values("observation", "context", "decision", "action", "finding", "recommendation"),
 		field.Time("occurred_at").
@@ -233,6 +234,7 @@ func (SystemAnalysisEntry) Edges() []ent.Edge {
 
 func (SystemAnalysisEntry) Indexes() []ent.Index {
 	return []ent.Index{
+		index.Fields("tenant_id", "analysis_id", "reference").Unique(),
 		index.Fields("tenant_id", "analysis_id", "kind"),
 		index.Fields("tenant_id", "analysis_id", "sequence"),
 	}

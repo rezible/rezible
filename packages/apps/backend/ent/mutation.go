@@ -4,7 +4,7 @@ package ent
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"sync"
@@ -24563,8 +24563,8 @@ type IntegrationMutation struct {
 	integration_name          *string
 	display_name              *string
 	external_ref              *string
-	installation_config       *json.RawMessage
-	appendinstallation_config json.RawMessage
+	installation_config       *jsontext.Value
+	appendinstallation_config jsontext.Value
 	user_settings             *map[string]interface{}
 	clearedFields             map[string]struct{}
 	tenant                    *int
@@ -24931,13 +24931,13 @@ func (m *IntegrationMutation) ResetExternalRef() {
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (m *IntegrationMutation) SetInstallationConfig(jm json.RawMessage) {
-	m.installation_config = &jm
+func (m *IntegrationMutation) SetInstallationConfig(j jsontext.Value) {
+	m.installation_config = &j
 	m.appendinstallation_config = nil
 }
 
 // InstallationConfig returns the value of the "installation_config" field in the mutation.
-func (m *IntegrationMutation) InstallationConfig() (r json.RawMessage, exists bool) {
+func (m *IntegrationMutation) InstallationConfig() (r jsontext.Value, exists bool) {
 	v := m.installation_config
 	if v == nil {
 		return
@@ -24948,7 +24948,7 @@ func (m *IntegrationMutation) InstallationConfig() (r json.RawMessage, exists bo
 // OldInstallationConfig returns the old "installation_config" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldInstallationConfig(ctx context.Context) (v json.RawMessage, err error) {
+func (m *IntegrationMutation) OldInstallationConfig(ctx context.Context) (v jsontext.Value, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldInstallationConfig is only allowed on UpdateOne operations")
 	}
@@ -24962,13 +24962,13 @@ func (m *IntegrationMutation) OldInstallationConfig(ctx context.Context) (v json
 	return oldValue.InstallationConfig, nil
 }
 
-// AppendInstallationConfig adds jm to the "installation_config" field.
-func (m *IntegrationMutation) AppendInstallationConfig(jm json.RawMessage) {
-	m.appendinstallation_config = append(m.appendinstallation_config, jm...)
+// AppendInstallationConfig adds j to the "installation_config" field.
+func (m *IntegrationMutation) AppendInstallationConfig(j jsontext.Value) {
+	m.appendinstallation_config = append(m.appendinstallation_config, j...)
 }
 
 // AppendedInstallationConfig returns the list of values that were appended to the "installation_config" field in this mutation.
-func (m *IntegrationMutation) AppendedInstallationConfig() (json.RawMessage, bool) {
+func (m *IntegrationMutation) AppendedInstallationConfig() (jsontext.Value, bool) {
 	if len(m.appendinstallation_config) == 0 {
 		return nil, false
 	}
@@ -25231,7 +25231,7 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 		m.SetExternalRef(v)
 		return nil
 	case integration.FieldInstallationConfig:
-		v, ok := value.(json.RawMessage)
+		v, ok := value.(jsontext.Value)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -27334,7 +27334,7 @@ type IntegrationUserInstallStateMutation struct {
 	integration_name            *string
 	expires_at                  *time.Time
 	oauth_state                 *string
-	installation_target_configs *map[string]json.RawMessage
+	installation_target_configs *map[string]jsontext.Value
 	clearedFields               map[string]struct{}
 	tenant                      *int
 	clearedtenant               bool
@@ -27643,12 +27643,12 @@ func (m *IntegrationUserInstallStateMutation) ResetOauthState() {
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (m *IntegrationUserInstallStateMutation) SetInstallationTargetConfigs(mm map[string]json.RawMessage) {
-	m.installation_target_configs = &mm
+func (m *IntegrationUserInstallStateMutation) SetInstallationTargetConfigs(value map[string]jsontext.Value) {
+	m.installation_target_configs = &value
 }
 
 // InstallationTargetConfigs returns the value of the "installation_target_configs" field in the mutation.
-func (m *IntegrationUserInstallStateMutation) InstallationTargetConfigs() (r map[string]json.RawMessage, exists bool) {
+func (m *IntegrationUserInstallStateMutation) InstallationTargetConfigs() (r map[string]jsontext.Value, exists bool) {
 	v := m.installation_target_configs
 	if v == nil {
 		return
@@ -27659,7 +27659,7 @@ func (m *IntegrationUserInstallStateMutation) InstallationTargetConfigs() (r map
 // OldInstallationTargetConfigs returns the old "installation_target_configs" field's value of the IntegrationUserInstallState entity.
 // If the IntegrationUserInstallState object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationUserInstallStateMutation) OldInstallationTargetConfigs(ctx context.Context) (v map[string]json.RawMessage, err error) {
+func (m *IntegrationUserInstallStateMutation) OldInstallationTargetConfigs(ctx context.Context) (v map[string]jsontext.Value, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldInstallationTargetConfigs is only allowed on UpdateOne operations")
 	}
@@ -27884,7 +27884,7 @@ func (m *IntegrationUserInstallStateMutation) SetField(name string, value ent.Va
 		m.SetOauthState(v)
 		return nil
 	case integrationuserinstallstate.FieldInstallationTargetConfigs:
-		v, ok := value.(map[string]json.RawMessage)
+		v, ok := value.(map[string]jsontext.Value)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -51177,6 +51177,7 @@ type SystemAnalysisEntryMutation struct {
 	id              *uuid.UUID
 	created_at      *time.Time
 	updated_at      *time.Time
+	reference       *string
 	kind            *systemanalysisentry.Kind
 	occurred_at     *time.Time
 	sequence        *int
@@ -51443,6 +51444,42 @@ func (m *SystemAnalysisEntryMutation) OldAnalysisID(ctx context.Context) (v uuid
 // ResetAnalysisID resets all changes to the "analysis_id" field.
 func (m *SystemAnalysisEntryMutation) ResetAnalysisID() {
 	m.analysis = nil
+}
+
+// SetReference sets the "reference" field.
+func (m *SystemAnalysisEntryMutation) SetReference(s string) {
+	m.reference = &s
+}
+
+// Reference returns the value of the "reference" field in the mutation.
+func (m *SystemAnalysisEntryMutation) Reference() (r string, exists bool) {
+	v := m.reference
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReference returns the old "reference" field's value of the SystemAnalysisEntry entity.
+// If the SystemAnalysisEntry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntryMutation) OldReference(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReference is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReference requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReference: %w", err)
+	}
+	return oldValue.Reference, nil
+}
+
+// ResetReference resets all changes to the "reference" field.
+func (m *SystemAnalysisEntryMutation) ResetReference() {
+	m.reference = nil
 }
 
 // SetKind sets the "kind" field.
@@ -51862,7 +51899,7 @@ func (m *SystemAnalysisEntryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemAnalysisEntryMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.tenant != nil {
 		fields = append(fields, systemanalysisentry.FieldTenantID)
 	}
@@ -51874,6 +51911,9 @@ func (m *SystemAnalysisEntryMutation) Fields() []string {
 	}
 	if m.analysis != nil {
 		fields = append(fields, systemanalysisentry.FieldAnalysisID)
+	}
+	if m.reference != nil {
+		fields = append(fields, systemanalysisentry.FieldReference)
 	}
 	if m.kind != nil {
 		fields = append(fields, systemanalysisentry.FieldKind)
@@ -51909,6 +51949,8 @@ func (m *SystemAnalysisEntryMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case systemanalysisentry.FieldAnalysisID:
 		return m.AnalysisID()
+	case systemanalysisentry.FieldReference:
+		return m.Reference()
 	case systemanalysisentry.FieldKind:
 		return m.Kind()
 	case systemanalysisentry.FieldOccurredAt:
@@ -51938,6 +51980,8 @@ func (m *SystemAnalysisEntryMutation) OldField(ctx context.Context, name string)
 		return m.OldUpdatedAt(ctx)
 	case systemanalysisentry.FieldAnalysisID:
 		return m.OldAnalysisID(ctx)
+	case systemanalysisentry.FieldReference:
+		return m.OldReference(ctx)
 	case systemanalysisentry.FieldKind:
 		return m.OldKind(ctx)
 	case systemanalysisentry.FieldOccurredAt:
@@ -51986,6 +52030,13 @@ func (m *SystemAnalysisEntryMutation) SetField(name string, value ent.Value) err
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAnalysisID(v)
+		return nil
+	case systemanalysisentry.FieldReference:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReference(v)
 		return nil
 	case systemanalysisentry.FieldKind:
 		v, ok := value.(systemanalysisentry.Kind)
@@ -52125,6 +52176,9 @@ func (m *SystemAnalysisEntryMutation) ResetField(name string) error {
 		return nil
 	case systemanalysisentry.FieldAnalysisID:
 		m.ResetAnalysisID()
+		return nil
+	case systemanalysisentry.FieldReference:
+		m.ResetReference()
 		return nil
 	case systemanalysisentry.FieldKind:
 		m.ResetKind()
@@ -61213,8 +61267,8 @@ type VideoConferenceMutation struct {
 	dial_in                *string
 	passcode               *string
 	status                 *videoconference.Status
-	metadata               *json.RawMessage
-	appendmetadata         json.RawMessage
+	metadata               *jsontext.Value
+	appendmetadata         jsontext.Value
 	created_by_integration *string
 	clearedFields          map[string]struct{}
 	tenant                 *int
@@ -61843,13 +61897,13 @@ func (m *VideoConferenceMutation) ResetStatus() {
 }
 
 // SetMetadata sets the "metadata" field.
-func (m *VideoConferenceMutation) SetMetadata(jm json.RawMessage) {
-	m.metadata = &jm
+func (m *VideoConferenceMutation) SetMetadata(j jsontext.Value) {
+	m.metadata = &j
 	m.appendmetadata = nil
 }
 
 // Metadata returns the value of the "metadata" field in the mutation.
-func (m *VideoConferenceMutation) Metadata() (r json.RawMessage, exists bool) {
+func (m *VideoConferenceMutation) Metadata() (r jsontext.Value, exists bool) {
 	v := m.metadata
 	if v == nil {
 		return
@@ -61860,7 +61914,7 @@ func (m *VideoConferenceMutation) Metadata() (r json.RawMessage, exists bool) {
 // OldMetadata returns the old "metadata" field's value of the VideoConference entity.
 // If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *VideoConferenceMutation) OldMetadata(ctx context.Context) (v json.RawMessage, err error) {
+func (m *VideoConferenceMutation) OldMetadata(ctx context.Context) (v jsontext.Value, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
 	}
@@ -61874,13 +61928,13 @@ func (m *VideoConferenceMutation) OldMetadata(ctx context.Context) (v json.RawMe
 	return oldValue.Metadata, nil
 }
 
-// AppendMetadata adds jm to the "metadata" field.
-func (m *VideoConferenceMutation) AppendMetadata(jm json.RawMessage) {
-	m.appendmetadata = append(m.appendmetadata, jm...)
+// AppendMetadata adds j to the "metadata" field.
+func (m *VideoConferenceMutation) AppendMetadata(j jsontext.Value) {
+	m.appendmetadata = append(m.appendmetadata, j...)
 }
 
 // AppendedMetadata returns the list of values that were appended to the "metadata" field in this mutation.
-func (m *VideoConferenceMutation) AppendedMetadata() (json.RawMessage, bool) {
+func (m *VideoConferenceMutation) AppendedMetadata() (jsontext.Value, bool) {
 	if len(m.appendmetadata) == 0 {
 		return nil, false
 	}
@@ -62281,7 +62335,7 @@ func (m *VideoConferenceMutation) SetField(name string, value ent.Value) error {
 		m.SetStatus(v)
 		return nil
 	case videoconference.FieldMetadata:
-		v, ok := value.(json.RawMessage)
+		v, ok := value.(jsontext.Value)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

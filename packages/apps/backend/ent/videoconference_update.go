@@ -4,7 +4,7 @@ package ent
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"time"
@@ -218,13 +218,13 @@ func (_u *VideoConferenceUpdate) SetNillableStatus(v *videoconference.Status) *V
 }
 
 // SetMetadata sets the "metadata" field.
-func (_u *VideoConferenceUpdate) SetMetadata(v json.RawMessage) *VideoConferenceUpdate {
+func (_u *VideoConferenceUpdate) SetMetadata(v jsontext.Value) *VideoConferenceUpdate {
 	_u.mutation.SetMetadata(v)
 	return _u
 }
 
 // AppendMetadata appends value to the "metadata" field.
-func (_u *VideoConferenceUpdate) AppendMetadata(v json.RawMessage) *VideoConferenceUpdate {
+func (_u *VideoConferenceUpdate) AppendMetadata(v jsontext.Value) *VideoConferenceUpdate {
 	_u.mutation.AppendMetadata(v)
 	return _u
 }
@@ -680,13 +680,13 @@ func (_u *VideoConferenceUpdateOne) SetNillableStatus(v *videoconference.Status)
 }
 
 // SetMetadata sets the "metadata" field.
-func (_u *VideoConferenceUpdateOne) SetMetadata(v json.RawMessage) *VideoConferenceUpdateOne {
+func (_u *VideoConferenceUpdateOne) SetMetadata(v jsontext.Value) *VideoConferenceUpdateOne {
 	_u.mutation.SetMetadata(v)
 	return _u
 }
 
 // AppendMetadata appends value to the "metadata" field.
-func (_u *VideoConferenceUpdateOne) AppendMetadata(v json.RawMessage) *VideoConferenceUpdateOne {
+func (_u *VideoConferenceUpdateOne) AppendMetadata(v jsontext.Value) *VideoConferenceUpdateOne {
 	_u.mutation.AppendMetadata(v)
 	return _u
 }

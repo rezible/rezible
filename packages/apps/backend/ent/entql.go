@@ -1222,6 +1222,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysisentry.FieldCreatedAt:  {Type: field.TypeTime, Column: systemanalysisentry.FieldCreatedAt},
 			systemanalysisentry.FieldUpdatedAt:  {Type: field.TypeTime, Column: systemanalysisentry.FieldUpdatedAt},
 			systemanalysisentry.FieldAnalysisID: {Type: field.TypeUUID, Column: systemanalysisentry.FieldAnalysisID},
+			systemanalysisentry.FieldReference:  {Type: field.TypeString, Column: systemanalysisentry.FieldReference},
 			systemanalysisentry.FieldKind:       {Type: field.TypeEnum, Column: systemanalysisentry.FieldKind},
 			systemanalysisentry.FieldOccurredAt: {Type: field.TypeTime, Column: systemanalysisentry.FieldOccurredAt},
 			systemanalysisentry.FieldSequence:   {Type: field.TypeInt, Column: systemanalysisentry.FieldSequence},
@@ -11781,6 +11782,11 @@ func (f *SystemAnalysisEntryFilter) WhereUpdatedAt(p entql.TimeP) {
 // WhereAnalysisID applies the entql [16]byte predicate on the analysis_id field.
 func (f *SystemAnalysisEntryFilter) WhereAnalysisID(p entql.ValueP) {
 	f.Where(p.Field(systemanalysisentry.FieldAnalysisID))
+}
+
+// WhereReference applies the entql string predicate on the reference field.
+func (f *SystemAnalysisEntryFilter) WhereReference(p entql.StringP) {
+	f.Where(p.Field(systemanalysisentry.FieldReference))
 }
 
 // WhereKind applies the entql string predicate on the kind field.

@@ -67,6 +67,12 @@ func (_c *SystemAnalysisEntryCreate) SetAnalysisID(v uuid.UUID) *SystemAnalysisE
 	return _c
 }
 
+// SetReference sets the "reference" field.
+func (_c *SystemAnalysisEntryCreate) SetReference(v string) *SystemAnalysisEntryCreate {
+	_c.mutation.SetReference(v)
+	return _c
+}
+
 // SetKind sets the "kind" field.
 func (_c *SystemAnalysisEntryCreate) SetKind(v systemanalysisentry.Kind) *SystemAnalysisEntryCreate {
 	_c.mutation.SetKind(v)
@@ -245,6 +251,14 @@ func (_c *SystemAnalysisEntryCreate) check() error {
 	if _, ok := _c.mutation.AnalysisID(); !ok {
 		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "SystemAnalysisEntry.analysis_id"`)}
 	}
+	if _, ok := _c.mutation.Reference(); !ok {
+		return &ValidationError{Name: "reference", err: errors.New(`ent: missing required field "SystemAnalysisEntry.reference"`)}
+	}
+	if v, ok := _c.mutation.Reference(); ok {
+		if err := systemanalysisentry.ReferenceValidator(v); err != nil {
+			return &ValidationError{Name: "reference", err: fmt.Errorf(`ent: validator failed for field "SystemAnalysisEntry.reference": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "SystemAnalysisEntry.kind"`)}
 	}
@@ -314,6 +328,10 @@ func (_c *SystemAnalysisEntryCreate) createSpec() (*SystemAnalysisEntry, *sqlgra
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysisentry.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := _c.mutation.Reference(); ok {
+		_spec.SetField(systemanalysisentry.FieldReference, field.TypeString, value)
+		_node.Reference = value
 	}
 	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(systemanalysisentry.FieldKind, field.TypeEnum, value)
@@ -586,6 +604,9 @@ func (u *SystemAnalysisEntryUpsertOne) UpdateNewValues() *SystemAnalysisEntryUps
 		}
 		if _, exists := u.create.mutation.AnalysisID(); exists {
 			s.SetIgnore(systemanalysisentry.FieldAnalysisID)
+		}
+		if _, exists := u.create.mutation.Reference(); exists {
+			s.SetIgnore(systemanalysisentry.FieldReference)
 		}
 	}))
 	return u
@@ -946,6 +967,9 @@ func (u *SystemAnalysisEntryUpsertBulk) UpdateNewValues() *SystemAnalysisEntryUp
 			}
 			if _, exists := b.mutation.AnalysisID(); exists {
 				s.SetIgnore(systemanalysisentry.FieldAnalysisID)
+			}
+			if _, exists := b.mutation.Reference(); exists {
+				s.SetIgnore(systemanalysisentry.FieldReference)
 			}
 		}
 	}))

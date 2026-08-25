@@ -25,6 +25,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldAnalysisID holds the string denoting the analysis_id field in the database.
 	FieldAnalysisID = "analysis_id"
+	// FieldReference holds the string denoting the reference field in the database.
+	FieldReference = "reference"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
 	// FieldOccurredAt holds the string denoting the occurred_at field in the database.
@@ -75,6 +77,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldAnalysisID,
+	FieldReference,
 	FieldKind,
 	FieldOccurredAt,
 	FieldSequence,
@@ -107,6 +110,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// ReferenceValidator is a validator for the "reference" field. It is called by the builders before save.
+	ReferenceValidator func(string) error
 	// DefaultSequence holds the default value on creation for the "sequence" field.
 	DefaultSequence int
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
@@ -168,6 +173,11 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByAnalysisID orders the results by the analysis_id field.
 func ByAnalysisID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAnalysisID, opts...).ToFunc()
+}
+
+// ByReference orders the results by the reference field.
+func ByReference(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReference, opts...).ToFunc()
 }
 
 // ByKind orders the results by the kind field.

@@ -2561,6 +2561,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "reference", Type: field.TypeString},
 		{Name: "kind", Type: field.TypeEnum, Enums: []string{"observation", "context", "decision", "action", "finding", "recommendation"}},
 		{Name: "occurred_at", Type: field.TypeTime, Nullable: true},
 		{Name: "sequence", Type: field.TypeInt, Default: 0},
@@ -2578,13 +2579,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "system_analysis_entries_tenants_tenant",
-				Columns:    []*schema.Column{SystemAnalysisEntriesColumns[9]},
+				Columns:    []*schema.Column{SystemAnalysisEntriesColumns[10]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "system_analysis_entries_system_analyses_analysis",
-				Columns:    []*schema.Column{SystemAnalysisEntriesColumns[10]},
+				Columns:    []*schema.Column{SystemAnalysisEntriesColumns[11]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -2593,17 +2594,22 @@ var (
 			{
 				Name:    "systemanalysisentry_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SystemAnalysisEntriesColumns[9]},
+				Columns: []*schema.Column{SystemAnalysisEntriesColumns[10]},
+			},
+			{
+				Name:    "systemanalysisentry_tenant_id_analysis_id_reference",
+				Unique:  true,
+				Columns: []*schema.Column{SystemAnalysisEntriesColumns[10], SystemAnalysisEntriesColumns[11], SystemAnalysisEntriesColumns[3]},
 			},
 			{
 				Name:    "systemanalysisentry_tenant_id_analysis_id_kind",
 				Unique:  false,
-				Columns: []*schema.Column{SystemAnalysisEntriesColumns[9], SystemAnalysisEntriesColumns[10], SystemAnalysisEntriesColumns[3]},
+				Columns: []*schema.Column{SystemAnalysisEntriesColumns[10], SystemAnalysisEntriesColumns[11], SystemAnalysisEntriesColumns[4]},
 			},
 			{
 				Name:    "systemanalysisentry_tenant_id_analysis_id_sequence",
 				Unique:  false,
-				Columns: []*schema.Column{SystemAnalysisEntriesColumns[9], SystemAnalysisEntriesColumns[10], SystemAnalysisEntriesColumns[5]},
+				Columns: []*schema.Column{SystemAnalysisEntriesColumns[10], SystemAnalysisEntriesColumns[11], SystemAnalysisEntriesColumns[6]},
 			},
 		},
 	}

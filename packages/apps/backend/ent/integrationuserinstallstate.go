@@ -4,6 +4,7 @@ package ent
 
 import (
 	"encoding/json"
+	"encoding/json/jsontext"
 	"fmt"
 	"strings"
 	"time"
@@ -32,7 +33,7 @@ type IntegrationUserInstallState struct {
 	// OauthState holds the value of the "oauth_state" field.
 	OauthState string `json:"oauth_state,omitempty"`
 	// InstallationTargetConfigs holds the value of the "installation_target_configs" field.
-	InstallationTargetConfigs map[string]json.RawMessage `json:"installation_target_configs,omitempty"`
+	InstallationTargetConfigs map[string]jsontext.Value `json:"installation_target_configs,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IntegrationUserInstallStateQuery when eager-loading is set.
 	Edges        IntegrationUserInstallStateEdges `json:"edges"`

@@ -4,7 +4,7 @@ package ent
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"time"
@@ -173,7 +173,7 @@ func (_c *VideoConferenceCreate) SetNillableStatus(v *videoconference.Status) *V
 }
 
 // SetMetadata sets the "metadata" field.
-func (_c *VideoConferenceCreate) SetMetadata(v json.RawMessage) *VideoConferenceCreate {
+func (_c *VideoConferenceCreate) SetMetadata(v jsontext.Value) *VideoConferenceCreate {
 	_c.mutation.SetMetadata(v)
 	return _c
 }
@@ -670,7 +670,7 @@ func (u *VideoConferenceUpsert) UpdateStatus() *VideoConferenceUpsert {
 }
 
 // SetMetadata sets the "metadata" field.
-func (u *VideoConferenceUpsert) SetMetadata(v json.RawMessage) *VideoConferenceUpsert {
+func (u *VideoConferenceUpsert) SetMetadata(v jsontext.Value) *VideoConferenceUpsert {
 	u.Set(videoconference.FieldMetadata, v)
 	return u
 }
@@ -953,7 +953,7 @@ func (u *VideoConferenceUpsertOne) UpdateStatus() *VideoConferenceUpsertOne {
 }
 
 // SetMetadata sets the "metadata" field.
-func (u *VideoConferenceUpsertOne) SetMetadata(v json.RawMessage) *VideoConferenceUpsertOne {
+func (u *VideoConferenceUpsertOne) SetMetadata(v jsontext.Value) *VideoConferenceUpsertOne {
 	return u.Update(func(s *VideoConferenceUpsert) {
 		s.SetMetadata(v)
 	})
@@ -1409,7 +1409,7 @@ func (u *VideoConferenceUpsertBulk) UpdateStatus() *VideoConferenceUpsertBulk {
 }
 
 // SetMetadata sets the "metadata" field.
-func (u *VideoConferenceUpsertBulk) SetMetadata(v json.RawMessage) *VideoConferenceUpsertBulk {
+func (u *VideoConferenceUpsertBulk) SetMetadata(v jsontext.Value) *VideoConferenceUpsertBulk {
 	return u.Update(func(s *VideoConferenceUpsert) {
 		s.SetMetadata(v)
 	})

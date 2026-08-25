@@ -4,7 +4,7 @@ package ent
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"time"
@@ -109,13 +109,13 @@ func (_u *IntegrationUpdate) SetNillableExternalRef(v *string) *IntegrationUpdat
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (_u *IntegrationUpdate) SetInstallationConfig(v json.RawMessage) *IntegrationUpdate {
+func (_u *IntegrationUpdate) SetInstallationConfig(v jsontext.Value) *IntegrationUpdate {
 	_u.mutation.SetInstallationConfig(v)
 	return _u
 }
 
 // AppendInstallationConfig appends value to the "installation_config" field.
-func (_u *IntegrationUpdate) AppendInstallationConfig(v json.RawMessage) *IntegrationUpdate {
+func (_u *IntegrationUpdate) AppendInstallationConfig(v jsontext.Value) *IntegrationUpdate {
 	_u.mutation.AppendInstallationConfig(v)
 	return _u
 }
@@ -338,13 +338,13 @@ func (_u *IntegrationUpdateOne) SetNillableExternalRef(v *string) *IntegrationUp
 }
 
 // SetInstallationConfig sets the "installation_config" field.
-func (_u *IntegrationUpdateOne) SetInstallationConfig(v json.RawMessage) *IntegrationUpdateOne {
+func (_u *IntegrationUpdateOne) SetInstallationConfig(v jsontext.Value) *IntegrationUpdateOne {
 	_u.mutation.SetInstallationConfig(v)
 	return _u
 }
 
 // AppendInstallationConfig appends value to the "installation_config" field.
-func (_u *IntegrationUpdateOne) AppendInstallationConfig(v json.RawMessage) *IntegrationUpdateOne {
+func (_u *IntegrationUpdateOne) AppendInstallationConfig(v jsontext.Value) *IntegrationUpdateOne {
 	_u.mutation.AppendInstallationConfig(v)
 	return _u
 }
