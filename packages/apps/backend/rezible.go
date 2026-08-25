@@ -238,6 +238,7 @@ type (
 		DeleteSystemAnalysisRelationship(context.Context, uuid.UUID) error
 
 		ListSystemAnalysisEntries(context.Context, ListSystemAnalysisEntriesParams) (*ent.ListResult[ent.SystemAnalysisEntry], error)
+		LookupSystemAnalysisEntry(context.Context, predicate.SystemAnalysisEntry) (*ent.SystemAnalysisEntry, error)
 		SetSystemAnalysisEntry(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntryMutation), ...func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntry, error)
 		DeleteSystemAnalysisEntry(context.Context, uuid.UUID) error
 

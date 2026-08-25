@@ -541,7 +541,7 @@ func (w *InvokeAgentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.In
 		if errors.Is(claimErr, &river.JobCancelError{}) || errors.Is(claimErr, &river.JobSnoozeError{}) {
 			return claimErr
 		}
-		if errors.Is(claimErr, rezai.ErrAgentInterrupted) {
+		if errors.Is(claimErr, errAgentTurnAlreadyRunning) {
 			return w.saveInvocationResult(ctx, job, nil, nil, claimErr)
 		}
 		if job.Attempt >= job.MaxAttempts {
@@ -596,6 +596,8 @@ func (c *agentTurnClaim) newOutputMessagesFromState(stateMessages []*ai.Message)
 	return newMessages
 }
 
+var errAgentTurnAlreadyRunning = fmt.Errorf("agent turn already running")
+
 func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) (*agentTurnClaim, error) {
 	var claim *agentTurnClaim
 	return claim, w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
@@ -626,7 +628,7 @@ func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.J
 			case at.StatusFailed, at.StatusAborted:
 				return river.JobCancel(fmt.Errorf("agent turn is already %s", turn.Status))
 			case at.StatusRunning:
-				return rezai.ErrAgentInterrupted
+				return errAgentTurnAlreadyRunning
 			}
 			return fmt.Errorf("invalid agent turn status %q", turn.Status)
 		}
@@ -773,7 +775,8 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 			return fmt.Errorf("agent turn is %s, expected running", turn.Status)
 		}
 
-		u := tx.AgentTurn.UpdateOne(turn).SetFinishedAt(time.Now().UTC())
+		u := tx.AgentTurn.UpdateOne(turn).
+			SetFinishedAt(time.Now().UTC())
 
 		setErrorFn := func(msg string) {
 			u.SetStatus(at.StatusFailed)

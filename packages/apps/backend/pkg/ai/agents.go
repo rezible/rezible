@@ -6,14 +6,10 @@ import (
 	"fmt"
 
 	aix "github.com/firebase/genkit/go/ai/exp"
-	"github.com/firebase/genkit/go/core"
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-)
-
-var (
-	ErrAgentInterrupted = core.NewError(core.INTERNAL, "agent turn execution was interrupted after it started; explicit retry is required")
 )
 
 type (

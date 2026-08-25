@@ -3,7 +3,9 @@ package ai
 import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
+
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 )
 

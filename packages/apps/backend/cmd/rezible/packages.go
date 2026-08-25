@@ -108,33 +108,37 @@ func makePostgresProvider(ctx context.Context) Provider {
 }
 
 func makeGenkitProvider(ctx context.Context) Provider {
-	initService := func(initCtx context.Context, i do.Injector, svc *genkit.AiService) error {
-		intgToolsMw := genkit.WithIntegrationToolsMiddleware(do.MustInvoke[rez.IntegrationService](i))
-		systemAnalysisMw := genkit.WithSystemAnalysisMiddleware(
-			do.MustInvoke[rez.SystemAnalysisService](i),
-			do.MustInvoke[rez.KnowledgeGraphService](i),
-		)
-		return svc.Init(initCtx,
-			genkit.WithAgent(genkit.NewChatAgent(), intgToolsMw),
-			genkit.WithAgent(genkit.NewAlertsAgent(do.MustInvoke[rez.AlertService](i)), intgToolsMw, systemAnalysisMw),
-			genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
-		)
-	}
 	return do.Package(
+		do.Lazy(func(i do.Injector) (rezai.ClassifyAgentThreadResponseWorkflowRunner, error) {
+			return rezai.GetWorkflowRunner(do.MustInvoke[rez.AiService](i), rezai.ClassifyAgentThreadResponseWorkflow)
+		}),
+
+		do.Lazy(func(i do.Injector) ([]genkit.AiServiceOption, error) {
+			//intgToolsMw := genkit.WithIntegrationToolsAgentMiddleware(do.MustInvoke[rez.IntegrationService](i))
+			analysisMw := genkit.WithSystemAnalysisAgentMiddleware(
+				do.MustInvoke[rez.SystemAnalysisService](i),
+				do.MustInvoke[rez.KnowledgeGraphService](i),
+			)
+			alertSvc := do.MustInvoke[rez.AlertService](i)
+			return []genkit.AiServiceOption{
+				genkit.WithAgent(genkit.NewChatAgent()),
+				genkit.WithAgent(genkit.NewAlertsAgent(alertSvc), analysisMw),
+				genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
+			}, nil
+		}),
+
 		do.Lazy(func(i do.Injector) (*genkit.AiService, error) {
 			svc := genkit.NewAiService(do.MustInvoke[rez.Config](i))
-			return svc, initService(ctx, i, svc)
+			opts := do.MustInvoke[[]genkit.AiServiceOption](i)
+			return svc, svc.Init(ctx, opts...)
 		}),
 		do.Bind[*genkit.AiService, rez.AiService](),
 
-		do.Lazy(func(i do.Injector) (rezai.ClassifyAgentThreadResponseWorkflowRunner, error) {
-			return rezai.ClassifyAgentThreadResponseWorkflow.GetRunner(do.MustInvoke[rez.AiService](i))
-		}),
-
 		do.Lazy(func(i do.Injector) (*genkit.DevServer, error) {
 			svc := genkit.NewAiService(do.MustInvoke[rez.Config](i))
+			opts := do.MustInvoke[[]genkit.AiServiceOption](i)
 			devCtx := execution.NewTenantContext(ctx, 1)
-			return svc.MakeDevServer(), initService(devCtx, i, svc)
+			return svc.MakeDevServer(), svc.Init(devCtx, opts...)
 		}),
 
 		do.Lazy(func(i do.Injector) (*genkit.EvaluationService, error) {

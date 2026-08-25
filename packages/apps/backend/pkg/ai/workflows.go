@@ -23,8 +23,7 @@ type (
 		Description  string
 		Model        string
 		SystemPrompt string
-		//SystemPromptFn func(I) string
-		Prompt func(I) string
+		Prompt       func(I) string
 	}
 
 	workflowDefinitionRunner[I rez.AiWorkflowInput, O rez.AiWorkflowOutput] struct {
@@ -44,7 +43,7 @@ func (r *workflowDefinitionRunner[I, O]) Run(ctx context.Context, input I) (*O, 
 	return &output, nil
 }
 
-func (d WorkflowDefinition[I, O]) GetRunner(s rez.AiService) (WorkflowRunner[I, O], error) {
+func GetWorkflowRunner[I rez.AiWorkflowInput, O rez.AiWorkflowOutput](s rez.AiService, d WorkflowDefinition[I, O]) (WorkflowRunner[I, O], error) {
 	runner, runnerErr := s.GetWorkflowRunner(d.Name)
 	if runnerErr != nil {
 		return nil, runnerErr
@@ -62,8 +61,7 @@ type (
 		ShouldReply bool `json:"should_reply"`
 	}
 
-	ClassifyAgentThreadResponseWorkflowDefinition = WorkflowDefinition[ClassifyAgentThreadResponseInput, ClassifyAgentThreadResponseOutput]
-	ClassifyAgentThreadResponseWorkflowRunner     = WorkflowRunner[ClassifyAgentThreadResponseInput, ClassifyAgentThreadResponseOutput]
+	ClassifyAgentThreadResponseWorkflowRunner = WorkflowRunner[ClassifyAgentThreadResponseInput, ClassifyAgentThreadResponseOutput]
 )
 
 func (i ClassifyAgentThreadResponseInput) Validate() error {
@@ -73,7 +71,7 @@ func (i ClassifyAgentThreadResponseInput) Validate() error {
 	return nil
 }
 
-var ClassifyAgentThreadResponseWorkflow = ClassifyAgentThreadResponseWorkflowDefinition{
+var ClassifyAgentThreadResponseWorkflow = WorkflowDefinition[ClassifyAgentThreadResponseInput, ClassifyAgentThreadResponseOutput]{
 	Name:        "classify_agent_thread_response",
 	Description: "Classify whether a chat thread message needs a reply from the agent.",
 	SystemPrompt: `You are a simple classifier to determine whether an incoming message in a slack thread is directed at the rezible agent, and requires a reply.
@@ -86,7 +84,13 @@ If in doubt, err on the side of caution (set should_reply=false) - users can dir
 	Prompt: func(input ClassifyAgentThreadResponseInput) string {
 		var b strings.Builder
 		if len(input.PreviousMessages) > 0 {
-			b.WriteString(fmt.Sprintf("For context, the last %d messages:\n", len(input.PreviousMessages)))
+			b.WriteString("For context, the ")
+			if len(input.PreviousMessages) == 1 {
+				b.WriteString("previous message")
+			} else {
+				b.WriteString(fmt.Sprintf("previous %d messages", len(input.PreviousMessages)))
+			}
+			b.WriteString(":\n")
 			for _, msg := range input.PreviousMessages {
 				b.WriteString(fmt.Sprintf(" %s\n", strings.TrimSpace(msg)))
 			}

@@ -62,7 +62,7 @@ func (s *AiServiceSuite) TestDefineWorkflowValidatesInput() {
 
 	svc := s.makeService(ctx, WithDefinedModel(model), WithWorkflow(workflow))
 
-	runner, runnerErr := workflow.GetRunner(svc)
+	runner, runnerErr := rezai.GetWorkflowRunner(svc, workflow)
 	s.Require().NoError(runnerErr)
 
 	_, runErr := runner.Run(ctx, testWorkflowInput{})
@@ -83,7 +83,8 @@ func (s *AiServiceSuite) TestDefineWorkflowRunsTypedOutput() {
 	}
 
 	svc := s.makeService(ctx, WithDefinedModel(model), WithWorkflow(workflow))
-	runner, runnerErr := workflow.GetRunner(svc)
+
+	runner, runnerErr := rezai.GetWorkflowRunner(svc, workflow)
 	s.Require().NoError(runnerErr)
 
 	output, runErr := runner.Run(ctx, testWorkflowInput{Message: "hello"})

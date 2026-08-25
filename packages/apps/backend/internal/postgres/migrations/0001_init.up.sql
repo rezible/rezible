@@ -353,9 +353,11 @@ CREATE UNIQUE INDEX "systemanalysisentity_tenant_id_analysis_id_knowledge_entity
 -- create index "systemanalysisentity_tenant_id_knowledge_entity_id" to table: "system_analysis_entities"
 CREATE INDEX "systemanalysisentity_tenant_id_knowledge_entity_id" ON "system_analysis_entities" ("tenant_id", "knowledge_entity_id");
 -- create "system_analysis_entries" table
-CREATE TABLE "system_analysis_entries" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "kind" character varying NOT NULL, "occurred_at" timestamptz NULL, "sequence" bigint NOT NULL DEFAULT 0, "title" character varying NOT NULL, "body" text NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "system_analysis_entries" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "reference" character varying NOT NULL, "kind" character varying NOT NULL, "occurred_at" timestamptz NULL, "sequence" bigint NOT NULL DEFAULT 0, "title" character varying NOT NULL, "body" text NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "systemanalysisentry_tenant_id" to table: "system_analysis_entries"
 CREATE INDEX "systemanalysisentry_tenant_id" ON "system_analysis_entries" ("tenant_id");
+-- create index "systemanalysisentry_tenant_id_analysis_id_reference" to table: "system_analysis_entries"
+CREATE UNIQUE INDEX "systemanalysisentry_tenant_id_analysis_id_reference" ON "system_analysis_entries" ("tenant_id", "analysis_id", "reference");
 -- create index "systemanalysisentry_tenant_id_analysis_id_kind" to table: "system_analysis_entries"
 CREATE INDEX "systemanalysisentry_tenant_id_analysis_id_kind" ON "system_analysis_entries" ("tenant_id", "analysis_id", "kind");
 -- create index "systemanalysisentry_tenant_id_analysis_id_sequence" to table: "system_analysis_entries"

@@ -10,6 +10,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/predicate"
 	sa "github.com/rezible/rezible/ent/systemanalysis"
 	saentity "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
@@ -418,6 +419,12 @@ func (s *SystemAnalysisService) GetSystemAnalysisEntry(ctx context.Context, id u
 	return s.db.Client(ctx).SystemAnalysisEntry.Query().
 		Where(sae.ID(id)).
 		WithSubjects().
+		Only(ctx)
+}
+
+func (s *SystemAnalysisService) LookupSystemAnalysisEntry(ctx context.Context, pred predicate.SystemAnalysisEntry) (*ent.SystemAnalysisEntry, error) {
+	return s.db.Client(ctx).SystemAnalysisEntry.Query().
+		Where(pred).
 		Only(ctx)
 }
 

@@ -51,7 +51,9 @@ Definition: %s`, alrt.Title, alrt.Description, alrt.Definition)
 }
 
 func (a *AlertsAgent) makeMiddleware() []ai.Middleware {
-	return []ai.Middleware{&alertInvestigationReportMiddleware{}}
+	return []ai.Middleware{
+		&alertInvestigationReportMiddleware{},
+	}
 }
 
 func (a *AlertsAgent) getCustomState(context.Context, *ent.AgentSession) (*rezai.AlertAgentState, error) {

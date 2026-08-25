@@ -57,7 +57,7 @@ type (
 
 type (
 	SummarizeSystemNeighborhoodToolInput struct {
-		EntityID *string `json:"entity_id,omitempty" jsonschema:"description=Knowledge entity to summarize. Omit to use the default analysis subject,format=uuid"`
+		EntityID *string `json:"entity_id,omitempty" jsonschema:"description=Knowledge entity to summarize. Omit to use the default analysis subject"`
 	}
 	SummarizeSystemNeighborhoodToolOutput struct {
 		IncomingRelationships map[string]SystemNeighborhoodGroupSummary `json:"incoming_relationships"`
@@ -75,7 +75,7 @@ var SummarizeSystemNeighborhoodTool = defineTool[ToolDefinition[SummarizeSystemN
 
 type (
 	ExploreSystemNeighborhoodToolInput struct {
-		EntityID         *string `json:"entity_id,omitempty" jsonschema:"description=Knowledge entity to explore. Omit to use the default analysis subject,format=uuid"`
+		EntityID         *string `json:"entity_id,omitempty" jsonschema:"description=Knowledge entity to explore. Omit to use the default analysis subject"`
 		RelationshipKind *string `json:"relationship_kind,omitempty" jsonschema:"description=Optional exact relationship kind,minLength=1"`
 		NeighborKind     *string `json:"neighbor_kind,omitempty" jsonschema:"description=Optional exact kind of the entity at the opposite endpoint,minLength=1"`
 		Offset           *int    `json:"offset,omitempty" jsonschema:"description=Zero-based result offset,minimum=0"`
@@ -99,7 +99,7 @@ var ExploreSystemNeighborhoodTool = defineTool[ToolDefinition[ExploreSystemNeigh
 type (
 	InspectKnowledgeSubjectToolInput struct {
 		SubjectKind string `json:"subject_kind" jsonschema:"description=Kind of knowledge subject to inspect,enum=entity,enum=relationship,enum=evidence"`
-		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject UUID,format=uuid"`
+		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject id"`
 	}
 	InspectKnowledgeSubjectToolOutput struct {
 		Entity       *KnowledgeEntityDetail       `json:"entity,omitempty"`
@@ -144,7 +144,7 @@ type (
 	}
 	IncludeAnalysisSubjectToolInputSubject struct {
 		SubjectKind string `json:"subject_kind" jsonschema:"description=Kind of knowledge subject to include,enum=entity,enum=relationship"`
-		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject UUID,format=uuid"`
+		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject id"`
 	}
 
 	IncludeAnalysisSubjectsToolOutput struct {
@@ -160,21 +160,22 @@ var IncludeAnalysisSubjectsTool = defineTool[ToolDefinition[IncludeAnalysisSubje
 
 type (
 	RecordAnalysisFindingToolInput struct {
-		Title    string                                   `json:"title" jsonschema:"description=Concise finding title,minLength=1"`
-		Detail   string                                   `json:"body,omitempty" jsonschema:"description=Optional supporting detail for the finding"`
-		Subjects []AnalysisFindingSubjectToolInputSubject `json:"subjects" jsonschema:"description=Knowledge subjects supporting the finding; at least one must be evidence,minItems=1,maxItems=20"`
+		Reference string                                   `json:"reference" jsonschema:"description=A unique finding reference to create or update,minLength=1"`
+		Title     string                                   `json:"title" jsonschema:"description=Concise finding title,minLength=1"`
+		Detail    string                                   `json:"body,omitempty" jsonschema:"description=Optional supporting detail for the finding"`
+		Subjects  []AnalysisFindingSubjectToolInputSubject `json:"subjects" jsonschema:"description=Knowledge subjects supporting the finding; at least one must be evidence,minItems=1,maxItems=20"`
 	}
 	AnalysisFindingSubjectToolInputSubject struct {
 		SubjectKind string `json:"subject_kind" jsonschema:"description=Kind of cited knowledge subject,enum=entity,enum=relationship,enum=evidence"`
-		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject UUID,format=uuid"`
+		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject id"`
 		Role        string `json:"role" jsonschema:"description=Concise role such as primary or affected or contributing or evidence_for,minLength=1"`
 	}
 
 	RecordAnalysisFindingToolOutput struct {
-		FindingID    uuid.UUID `json:"finding_id"`
-		Sequence     int       `json:"sequence"`
-		Title        string    `json:"title"`
-		SubjectCount int       `json:"subject_count"`
+		Reference    string `json:"reference"`
+		Sequence     int    `json:"sequence"`
+		Title        string `json:"title"`
+		SubjectCount int    `json:"subject_count"`
 	}
 )
 

@@ -266,6 +266,8 @@ DROP TABLE "system_analysis_entry_subjects";
 DROP INDEX "systemanalysisentry_tenant_id_analysis_id_sequence";
 -- reverse: create index "systemanalysisentry_tenant_id_analysis_id_kind" to table: "system_analysis_entries"
 DROP INDEX "systemanalysisentry_tenant_id_analysis_id_kind";
+-- reverse: create index "systemanalysisentry_tenant_id_analysis_id_reference" to table: "system_analysis_entries"
+DROP INDEX "systemanalysisentry_tenant_id_analysis_id_reference";
 -- reverse: create index "systemanalysisentry_tenant_id" to table: "system_analysis_entries"
 DROP INDEX "systemanalysisentry_tenant_id";
 -- reverse: create "system_analysis_entries" table

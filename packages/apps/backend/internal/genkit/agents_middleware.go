@@ -9,11 +9,54 @@ import (
 )
 
 type (
-	AgentDetails struct {
-		Name string
-	}
-	AgentMiddlewareConstructorFn = func(AgentDetails) ai.Middleware
+	AgentMiddlewareConstructorFn = func(agentName string) ai.Middleware
 )
+
+type wrapGenerateFn = func(context.Context, *ai.GenerateParams, ai.GenerateNext) (*ai.ModelResponse, error)
+
+func makeSystemTextInjectorFn(marker, text string) wrapGenerateFn {
+	markedPart := ai.NewTextPart(text)
+	markedPart.Metadata = map[string]any{marker: true}
+
+	injectRequest := func(req *ai.ModelRequest) *ai.ModelRequest {
+		newReq := *req
+		newReq.Messages = append([]*ai.Message(nil), req.Messages...)
+		reqPart := markedPart.Clone()
+		for i, message := range newReq.Messages {
+			if message == nil {
+				continue
+			}
+			for j, part := range message.Content {
+				if part == nil || !part.IsText() || part.Metadata == nil || part.Metadata[marker] != true {
+					continue
+				}
+				if part.Text == text {
+					return &newReq
+				}
+				msgCopy := message.Clone()
+				msgCopy.Content[j] = reqPart
+				newReq.Messages[i] = msgCopy
+				return &newReq
+			}
+		}
+		for i, message := range newReq.Messages {
+			if message == nil || message.Role != ai.RoleSystem {
+				continue
+			}
+			msgCopy := message.Clone()
+			msgCopy.Content = append(msgCopy.Content, reqPart)
+			newReq.Messages[i] = msgCopy
+			return &newReq
+		}
+		newReq.Messages = append([]*ai.Message{ai.NewSystemMessage(reqPart)}, newReq.Messages...)
+		return &newReq
+	}
+	return func(ctx context.Context, params *ai.GenerateParams, next ai.GenerateNext) (*ai.ModelResponse, error) {
+		p := *params
+		p.Request = injectRequest(params.Request)
+		return next(ctx, &p)
+	}
+}
 
 type agentDebugMiddleware struct{}
 
@@ -53,9 +96,9 @@ func (m *toolCallDisplayLabelMiddleware) New(ctx context.Context) (*ai.Hooks, er
 	}, nil
 }
 
-func WithIntegrationToolsMiddleware(integrations rez.IntegrationService) AgentMiddlewareConstructorFn {
-	return func(d AgentDetails) ai.Middleware {
-		return newIntegrationToolsMiddleware(d.Name, integrations)
+func WithIntegrationToolsAgentMiddleware(integrations rez.IntegrationService) AgentMiddlewareConstructorFn {
+	return func(agentName string) ai.Middleware {
+		return newIntegrationToolsMiddleware(agentName, integrations)
 	}
 }
 

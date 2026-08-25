@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/firebase/genkit/go/ai"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )

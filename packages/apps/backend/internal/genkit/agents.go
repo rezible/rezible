@@ -74,11 +74,8 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 		&agentDebugMiddleware{},
 		&toolCallDisplayLabelMiddleware{},
 	}
-	if len(mwFuncs) > 0 {
-		ad := AgentDetails{Name: d.Name}
-		for _, mwFn := range mwFuncs {
-			middleware = append(middleware, mwFn(ad))
-		}
+	for _, mwFn := range mwFuncs {
+		middleware = append(middleware, mwFn(d.Name))
 	}
 	if mwRunner, ok := runner.(runnerWithMiddleware); ok {
 		middleware = append(middleware, mwRunner.makeMiddleware()...)

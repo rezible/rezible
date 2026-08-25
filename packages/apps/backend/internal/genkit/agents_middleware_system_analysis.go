@@ -29,8 +29,10 @@ A system analysis is attached to this session. Use its tools to gather graph con
 </system-analysis>`
 )
 
-func WithSystemAnalysisMiddleware(sa rez.SystemAnalysisService, kg rez.KnowledgeGraphService) AgentMiddlewareConstructorFn {
-	return func(AgentDetails) ai.Middleware { return newSystemAnalysisMiddleware(sa, kg) }
+func WithSystemAnalysisAgentMiddleware(sa rez.SystemAnalysisService, kg rez.KnowledgeGraphService) AgentMiddlewareConstructorFn {
+	return func(string) ai.Middleware {
+		return newSystemAnalysisMiddleware(sa, kg)
+	}
 }
 
 type systemAnalysisMiddleware struct {
@@ -42,13 +44,16 @@ func newSystemAnalysisMiddleware(analyses rez.SystemAnalysisService, knowledge r
 	return &systemAnalysisMiddleware{analyses: analyses, knowledge: knowledge}
 }
 
-func (m *systemAnalysisMiddleware) Name() string { return "system_analysis" }
+func (m *systemAnalysisMiddleware) Name() string {
+	return "system_analysis"
+}
 
 func (m *systemAnalysisMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 	if _, analysisErr := m.getSessionSystemAnalysisID(ctx); analysisErr != nil {
 		return nil, analysisErr
 	}
 	return &ai.Hooks{
+		WrapGenerate: makeSystemTextInjectorFn(systemAnalysisInstructionsMarker, systemAnalysisInstructions),
 		Tools: []ai.Tool{
 			makeDefinedTool(rezai.SummarizeSystemNeighborhoodTool, m.summarizeSystemNeighborhoodToolFunc),
 			makeDefinedTool(rezai.ExploreSystemNeighborhoodTool, m.exploreSystemEntityNeighborhoodToolFunc),
@@ -56,23 +61,21 @@ func (m *systemAnalysisMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 			makeDefinedTool(rezai.IncludeAnalysisSubjectsTool, m.includeAnalysisSubjectsToolFunc),
 			makeDefinedTool(rezai.RecordAnalysisFindingTool, m.recordAnalysisFindingToolFunc),
 		},
-		WrapGenerate: func(ctx context.Context, params *ai.GenerateParams, next ai.GenerateNext) (*ai.ModelResponse, error) {
-			paramsCopy := *params
-			paramsCopy.Request = injectMarkedSystemText(params.Request, systemAnalysisInstructionsMarker, systemAnalysisInstructions)
-			return next(ctx, &paramsCopy)
-		},
 	}, nil
 }
 
 func (m *systemAnalysisMiddleware) getSessionSystemAnalysisID(ctx context.Context) (uuid.UUID, error) {
-	invCtx, ctxOk := getAgentInvocationContext(ctx)
-	if !ctxOk || invCtx == nil || invCtx.Session == nil || invCtx.Session.SystemAnalysisID == nil || *invCtx.Session.SystemAnalysisID == uuid.Nil {
+	aic, ctxOk := getAgentInvocationContext(ctx)
+	if !ctxOk || aic == nil || aic.Session == nil {
+		return uuid.Nil, fmt.Errorf("agent session context does not exist")
+	}
+	if aic.Session.SystemAnalysisID == nil || *aic.Session.SystemAnalysisID == uuid.Nil {
 		return uuid.Nil, fmt.Errorf("system analysis middleware requires an invocation session with a system analysis")
 	}
-	return *invCtx.Session.SystemAnalysisID, nil
+	return *aic.Session.SystemAnalysisID, nil
 }
 
-func (m *systemAnalysisMiddleware) resolveExplorationRoot(ctx context.Context, entityID *string) (uuid.UUID, error) {
+func (m *systemAnalysisMiddleware) resolveExplorationEntityId(ctx context.Context, entityID *string) (uuid.UUID, error) {
 	analysisID, analysisIDErr := m.getSessionSystemAnalysisID(ctx)
 	if analysisIDErr != nil {
 		return uuid.Nil, fmt.Errorf("load analysis: %w", analysisIDErr)
@@ -85,36 +88,39 @@ func (m *systemAnalysisMiddleware) resolveExplorationRoot(ctx context.Context, e
 
 	var rootID uuid.UUID
 	if entityID != nil {
-		var parseErr error
-		if rootID, parseErr = uuid.Parse(*entityID); parseErr != nil {
-			return uuid.Nil, fmt.Errorf("%w: invalid entity UUID", rez.ErrInvalidInput)
+		id, idErr := uuid.Parse(*entityID)
+		if idErr != nil {
+			return uuid.Nil, fmt.Errorf("%w: invalid entity id: %s", rez.ErrInvalidInput, idErr)
 		}
+		rootID = id
 	} else if analysis.SubjectEntityID != nil {
 		rootID = *analysis.SubjectEntityID
 	}
+
 	if rootID == uuid.Nil {
 		return uuid.Nil, fmt.Errorf("%w: root entity ID is required", rez.ErrInvalidInput)
-	}
-	if analysis.SubjectEntityID != nil && rootID == *analysis.SubjectEntityID {
+	} else if analysis.SubjectEntityID != nil && rootID == *analysis.SubjectEntityID {
 		return rootID, nil
 	}
+
 	included, queryErr := m.analyses.HasSystemAnalysisEntity(ctx, analysis.ID, rootID)
-	if queryErr != nil {
-		return uuid.Nil, fmt.Errorf("check analysis entity: %w", queryErr)
-	}
 	if !included {
+		if queryErr != nil {
+			return uuid.Nil, fmt.Errorf("check analysis entity: %w", queryErr)
+		}
 		return uuid.Nil, fmt.Errorf("%w: entity %s is neither the analysis subject nor an included entity", rez.ErrInvalidInput, rootID)
 	}
+
 	return rootID, nil
 }
 
 func (m *systemAnalysisMiddleware) summarizeSystemNeighborhoodToolFunc(ctx context.Context, input rezai.SummarizeSystemNeighborhoodToolInput) (*rezai.SummarizeSystemNeighborhoodToolOutput, error) {
-	rootID, rootErr := m.resolveExplorationRoot(ctx, input.EntityID)
-	if rootErr != nil {
-		return nil, rootErr
+	entityId, entityErr := m.resolveExplorationEntityId(ctx, input.EntityID)
+	if entityErr != nil {
+		return nil, entityErr
 	}
 
-	summary, summaryErr := m.knowledge.SummarizeEntityNeighborhood(ctx, rootID)
+	summary, summaryErr := m.knowledge.SummarizeEntityNeighborhood(ctx, entityId)
 	if summaryErr != nil {
 		return nil, fmt.Errorf("summarize entity neighborhood: %w", summaryErr)
 	}
@@ -139,9 +145,9 @@ func (m *systemAnalysisMiddleware) summarizeSystemNeighborhoodToolFunc(ctx conte
 }
 
 func (m *systemAnalysisMiddleware) exploreSystemEntityNeighborhoodToolFunc(ctx context.Context, input rezai.ExploreSystemNeighborhoodToolInput) (*rezai.ExploreSystemNeighborhoodToolOutput, error) {
-	rootID, rootErr := m.resolveExplorationRoot(ctx, input.EntityID)
-	if rootErr != nil {
-		return nil, rootErr
+	entityId, entityErr := m.resolveExplorationEntityId(ctx, input.EntityID)
+	if entityErr != nil {
+		return nil, entityErr
 	}
 
 	var offset int
@@ -150,7 +156,7 @@ func (m *systemAnalysisMiddleware) exploreSystemEntityNeighborhoodToolFunc(ctx c
 	}
 
 	params := rez.QueryKnowledgeEntityNeighborhoodParams{
-		EntityID:            &rootID,
+		EntityID:            &entityId,
 		SourceEntityID:      nil,
 		TargetEntityID:      nil,
 		NeighborEntityKinds: nil,
@@ -172,7 +178,7 @@ func (m *systemAnalysisMiddleware) exploreSystemEntityNeighborhoodToolFunc(ctx c
 
 	entitySummaryMap := make(map[uuid.UUID]rezai.KnowledgeEntitySummary)
 	for _, e := range neighborhood.Entities {
-		if e.ID == rootID {
+		if e.ID == entityId {
 			continue
 		}
 		if _, seen := entitySummaryMap[e.ID]; !seen {
@@ -183,7 +189,7 @@ func (m *systemAnalysisMiddleware) exploreSystemEntityNeighborhoodToolFunc(ctx c
 	matches := make([]rezai.SystemEntityNeighbor, 0, len(neighborhood.Relationships))
 	for _, rel := range neighborhood.Relationships {
 		neighborId := rel.SourceEntityID
-		if neighborId == rootID {
+		if neighborId == entityId {
 			neighborId = rel.TargetEntityID
 		}
 		entSum, summaryOk := entitySummaryMap[neighborId]
@@ -192,8 +198,8 @@ func (m *systemAnalysisMiddleware) exploreSystemEntityNeighborhoodToolFunc(ctx c
 			continue
 		}
 		matches = append(matches, rezai.SystemEntityNeighbor{
-			Relationship: relationshipSummary(rel),
 			Entity:       entSum,
+			Relationship: relationshipSummary(rel),
 		})
 	}
 
@@ -296,6 +302,11 @@ func (m *systemAnalysisMiddleware) recordAnalysisFindingToolFunc(ctx context.Con
 		return nil, fmt.Errorf("%w: finding title is required", rez.ErrInvalidInput)
 	}
 
+	ref := strings.TrimSpace(input.Reference)
+	if ref == "" {
+		return nil, fmt.Errorf("%w: finding reference is required", rez.ErrInvalidInput)
+	}
+
 	setSubjects, subjectSettersErr := m.makeSubjectSetters(input.Subjects)
 	if subjectSettersErr != nil {
 		return nil, fmt.Errorf("include subject setters: %w", subjectSettersErr)
@@ -306,22 +317,40 @@ func (m *systemAnalysisMiddleware) recordAnalysisFindingToolFunc(ctx context.Con
 		return nil, fmt.Errorf("loading session analysis: %w", analysisIDErr)
 	}
 
+	existingId, existingErr := m.getExistingFindingId(ctx, analysisID, ref)
+	if existingErr != nil {
+		return nil, fmt.Errorf("finding existing finding: %w", existingErr)
+	}
+
 	setEntry := func(m *ent.SystemAnalysisEntryMutation) {
 		m.SetAnalysisID(analysisID)
+		m.SetReference(ref)
 		m.SetKind(sae.KindFinding)
 		m.SetTitle(title)
 		m.SetBody(detail)
 	}
-	entry, createErr := m.analyses.SetSystemAnalysisEntry(ctx, uuid.Nil, setEntry, setSubjects...)
+	entry, createErr := m.analyses.SetSystemAnalysisEntry(ctx, existingId, setEntry, setSubjects...)
 	if createErr != nil {
 		return nil, fmt.Errorf("record analysis finding: %w", createErr)
 	}
 	return &rezai.RecordAnalysisFindingToolOutput{
-		FindingID:    entry.ID,
+		Reference:    entry.Reference,
 		Sequence:     entry.Sequence,
 		Title:        entry.Title,
 		SubjectCount: len(setSubjects),
 	}, nil
+}
+
+func (m *systemAnalysisMiddleware) getExistingFindingId(ctx context.Context, analysisId uuid.UUID, ref string) (uuid.UUID, error) {
+	findingRefPred := sae.And(sae.AnalysisID(analysisId), sae.Reference(ref), sae.KindEQ(sae.KindFinding))
+	existing, listErr := m.analyses.LookupSystemAnalysisEntry(ctx, findingRefPred)
+	if existing == nil {
+		if listErr != nil && !ent.IsNotFound(listErr) {
+			return uuid.Nil, fmt.Errorf("list existing entries: %w", listErr)
+		}
+		return uuid.Nil, nil
+	}
+	return existing.ID, nil
 }
 
 func (m *systemAnalysisMiddleware) makeSubjectSetters(subjects []rezai.AnalysisFindingSubjectToolInputSubject) ([]func(*ent.SystemAnalysisEntrySubjectMutation), error) {
@@ -457,42 +486,4 @@ func evidenceDetail(evidence *ent.KnowledgeEvidence) (*rezai.KnowledgeEvidenceDe
 		Properties: evidence.SubjectState.Properties,
 		Alias:      subjectAliasSummary(alias),
 	}, nil
-}
-func injectMarkedSystemText(req *ai.ModelRequest, marker, text string) *ai.ModelRequest {
-	newReq := *req
-	newReq.Messages = append([]*ai.Message(nil), req.Messages...)
-	for i, message := range newReq.Messages {
-		if message == nil {
-			continue
-		}
-		for j, part := range message.Content {
-			if part == nil || !part.IsText() || part.Metadata == nil || part.Metadata[marker] != true {
-				continue
-			}
-			if part.Text == text {
-				return &newReq
-			}
-			msgCopy := message.Clone()
-			msgCopy.Content[j] = markedSystemTextPart(marker, text)
-			newReq.Messages[i] = msgCopy
-			return &newReq
-		}
-	}
-	for i, message := range newReq.Messages {
-		if message == nil || message.Role != ai.RoleSystem {
-			continue
-		}
-		msgCopy := message.Clone()
-		msgCopy.Content = append(msgCopy.Content, markedSystemTextPart(marker, text))
-		newReq.Messages[i] = msgCopy
-		return &newReq
-	}
-	newReq.Messages = append([]*ai.Message{ai.NewSystemMessage(markedSystemTextPart(marker, text))}, newReq.Messages...)
-	return &newReq
-}
-
-func markedSystemTextPart(marker, text string) *ai.Part {
-	part := ai.NewTextPart(text)
-	part.Metadata = map[string]any{marker: true}
-	return part
 }
