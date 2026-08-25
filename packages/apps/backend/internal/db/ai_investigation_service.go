@@ -73,7 +73,6 @@ func (s *InvestigationService) CreateAlertInvestigation(ctx context.Context, ins
 
 		params := rez.CreateAgentSessionParams{
 			AgentName:        rezai.AlertsAgent.Name,
-			OwnerUserID:      nil,
 			PermissionScopes: nil,
 			Input:            rezai.AlertAgentInput{AlertInstanceID: instanceId},
 			SystemAnalysisID: &analysis.ID,

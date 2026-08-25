@@ -334,7 +334,7 @@ func (m *systemAnalysisMiddleware) recordAnalysisFindingToolFunc(ctx context.Con
 		return nil, fmt.Errorf("record analysis finding: %w", createErr)
 	}
 	return &rezai.RecordAnalysisFindingToolOutput{
-		Reference:    entry.Reference,
+		Reference:    ref,
 		Sequence:     entry.Sequence,
 		Title:        entry.Title,
 		SubjectCount: len(setSubjects),

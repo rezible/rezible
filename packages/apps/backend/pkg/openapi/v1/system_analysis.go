@@ -104,6 +104,7 @@ type (
 		Attributes SystemAnalysisEntryAttributes `json:"attributes"`
 	}
 	SystemAnalysisEntryAttributes struct {
+		Reference  *string                      `json:"reference,omitempty"`
 		Kind       string                       `json:"kind" enum:"observation,context,decision,action,finding,recommendation"`
 		OccurredAt *time.Time                   `json:"occurredAt,omitempty"`
 		Sequence   int                          `json:"sequence"`
@@ -174,6 +175,7 @@ func SystemAnalysisEntryFromEnt(entry *ent.SystemAnalysisEntry) SystemAnalysisEn
 		properties = map[string]any{}
 	}
 	attrs := SystemAnalysisEntryAttributes{
+		Reference:  entry.Reference,
 		Kind:       entry.Kind.String(),
 		OccurredAt: entry.OccurredAt,
 		Sequence:   entry.Sequence,
@@ -368,6 +370,7 @@ var CreateSystemAnalysisEntry = huma.Operation{
 }
 
 type CreateSystemAnalysisEntryAttributes struct {
+	Reference  *string        `json:"reference,omitempty" minLength:"1"`
 	Kind       string         `json:"kind" enum:"observation,context,decision,action,finding,recommendation"`
 	OccurredAt *time.Time     `json:"occurredAt,omitempty"`
 	Title      string         `json:"title"`

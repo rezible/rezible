@@ -386,6 +386,7 @@ var provideDatabaseServices = do.Package(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[rez.MessageService](i),
 		)
 	}),
 
@@ -438,6 +439,7 @@ var provideHttpApiServer = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.AiService](i),
 			do.MustInvoke[rez.AgentSessionService](i),
+			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.AlertService](i),
 			do.MustInvoke[rez.OrganizationService](i),
 			do.MustInvoke[rez.UserService](i),

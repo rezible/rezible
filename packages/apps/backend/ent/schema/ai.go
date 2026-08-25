@@ -28,9 +28,6 @@ func (AgentSession) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("agent_name").NotEmpty(),
-		field.UUID("owner_user_id", uuid.UUID{}).
-			Optional().
-			Nillable(),
 		field.Strings("scopes").Default([]string{}),
 		field.Bytes("input"),
 		field.UUID("system_analysis_id", uuid.UUID{}).
@@ -44,9 +41,6 @@ func (AgentSession) Fields() []ent.Field {
 
 func (AgentSession) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("owner_user", User.Type).
-			Unique().
-			Field("owner_user_id"),
 		edge.To("system_analysis", SystemAnalysis.Type).
 			Unique().
 			Field("system_analysis_id"),
@@ -59,7 +53,6 @@ func (AgentSession) Edges() []ent.Edge {
 
 func (AgentSession) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "owner_user_id", "created_at"),
 		index.Fields("tenant_id", "agent_name", "created_at"),
 	}
 }

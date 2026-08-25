@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
 	"strings"
 	"time"
 
@@ -22,7 +23,6 @@ import (
 	at "github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/predicate"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/riverqueue/river"
 )
@@ -31,13 +31,15 @@ type AgentSessionService struct {
 	logger *slog.Logger
 	db     rez.Database
 	jobs   rez.JobService
+	msgs   rez.MessageService
 }
 
-func NewAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService) (*AgentSessionService, error) {
+func NewAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgs rez.MessageService) (*AgentSessionService, error) {
 	s := &AgentSessionService{
 		logger: tel.NewLogger(rez.NewLoggerOptions{Name: "agent_session_service"}),
 		db:     db,
 		jobs:   jobSvc,
+		msgs:   msgs,
 	}
 
 	return s, nil
@@ -46,9 +48,6 @@ func NewAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc re
 func (s *AgentSessionService) GetAgentSession(ctx context.Context, id uuid.UUID) (*ent.AgentSession, error) {
 	query := s.db.Client(ctx).AgentSession.Query().
 		Where(as.ID(id))
-	if userID, userOK := execution.GetContext(ctx).UserID(); userOK {
-		query.Where(as.OwnerUserID(userID))
-	}
 	return query.Only(ctx)
 }
 
@@ -57,10 +56,6 @@ func (s *AgentSessionService) ListAgentSessions(ctx context.Context, params rez.
 		Order(as.ByCreatedAt(sql.OrderDesc()), as.ByID(sql.OrderDesc())).
 		Where(params.Predicates...)
 
-	if userID, userOK := execution.GetContext(ctx).UserID(); userOK {
-		query.Where(as.OwnerUserID(userID))
-	}
-
 	for key, val := range params.Metadata {
 		query.Where(func(s *sql.Selector) {
 			s.Where(sqljson.ValueEQ(as.FieldMetadata, val, sqljson.DotPath(key)))
@@ -68,6 +63,20 @@ func (s *AgentSessionService) ListAgentSessions(ctx context.Context, params rez.
 	}
 
 	return ent.DoListQuery[ent.AgentSession, *ent.AgentSessionQuery](ctx, query, params.ListParams)
+}
+
+func (s *AgentSessionService) ListAgentMessages(ctx context.Context, params rez.ListAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error) {
+	query := s.db.Client(ctx).AgentMessage.Query().
+		Where(params.Predicates...).
+		Order(agentmessage.BySequence(sql.OrderAsc()), agentmessage.ByID(sql.OrderAsc()))
+	return ent.DoListQuery[ent.AgentMessage, *ent.AgentMessageQuery](ctx, query, params.ListParams)
+}
+
+func (s *AgentSessionService) ListAgentArtifacts(ctx context.Context, params rez.ListAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error) {
+	query := s.db.Client(ctx).AgentArtifact.Query().
+		Where(params.Predicates...).
+		Order(agentartifact.ByName(sql.OrderAsc()), agentartifact.ByID(sql.OrderAsc()))
+	return ent.DoListQuery[ent.AgentArtifact, *ent.AgentArtifactQuery](ctx, query, params.ListParams)
 }
 
 func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez.CreateAgentSessionParams) (*ent.AgentSession, error) {
@@ -82,16 +91,13 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 	}
 
 	metadata := make(map[string]any, len(params.Metadata))
-	for key, value := range params.Metadata {
-		metadata[key] = value
-	}
+	maps.Copy(metadata, params.Metadata)
 
 	var session *ent.AgentSession
 	return session, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		createSession := tx.AgentSession.Create().
 			SetAgentName(name).
 			SetInput(sessionInput).
-			SetNillableOwnerUserID(params.OwnerUserID).
 			SetNillableSystemAnalysisID(params.SystemAnalysisID).
 			SetScopes(params.PermissionScopes).
 			SetMetadata(metadata)
@@ -133,18 +139,13 @@ func (s *AgentSessionService) setSessionBindingParams(m *ent.AgentSessionBinding
 	m.SetResourceRef(strings.TrimSpace(params.ResourceRef))
 
 	metadata := make(map[string]any, len(params.Metadata))
-	for key, value := range params.Metadata {
-		metadata[key] = value
-	}
+	maps.Copy(metadata, params.Metadata)
 	m.SetMetadata(metadata)
 }
 
 func (s *AgentSessionService) ListAgentSessionBindings(ctx context.Context, params rez.ListAgentSessionBindingsParams) (ent.AgentSessionBindings, error) {
 	query := s.db.Client(ctx).AgentSessionBinding.Query().
 		Where(params.Predicates...)
-	//if !params.IncludeClosed {
-	//	bindingQuery.Where(asb.ClosedAtIsNil())
-	//}
 	return query.All(ctx)
 }
 
@@ -175,14 +176,6 @@ func (s *AgentSessionService) SetAgentSessionBinding(ctx context.Context, bindin
 		binding = saved.Unwrap()
 		return nil
 	})
-}
-
-func (s *AgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
-	q := s.db.Client(ctx).AgentTurn.Query()
-	if userID, isUserContext := execution.GetContext(ctx).UserID(); isUserContext {
-		q.Where(at.HasAgentSessionWith(as.OwnerUserID(userID)))
-	}
-	return q
 }
 
 func normalizeAgentTurnInput(input *rez.AiAgentTurnInput) (*rez.AiAgentTurnInput, error) {
@@ -222,9 +215,6 @@ func (s *AgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uu
 		}
 
 		querySession := tx.AgentSession.Query().Where(as.ID(sessionID))
-		if userID, isUserContext := execution.GetContext(ctx).UserID(); isUserContext {
-			querySession.Where(as.OwnerUserID(userID))
-		}
 		sess, sessErr := querySession.Only(ctx)
 		if sessErr != nil {
 			return fmt.Errorf("query agent session: %w", sessErr)
@@ -307,7 +297,10 @@ func (s *AgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uu
 }
 
 func (s *AgentSessionService) insertInvokeAgentTurnJob(ctx context.Context, sessId uuid.UUID, turnId uuid.UUID) (int64, error) {
-	jobArgs := jobs.InvokeAgentTurn{AgentSessionID: sessId, AgentTurnID: turnId}
+	jobArgs := jobs.InvokeAgentTurn{
+		AgentSessionID: sessId,
+		AgentTurnID:    turnId,
+	}
 	result, insertErr := s.jobs.Insert(ctx, jobArgs, nil)
 	if insertErr != nil {
 		return 0, fmt.Errorf("insert turn job: %w", insertErr)
@@ -321,8 +314,14 @@ func (s *AgentSessionService) insertInvokeAgentTurnJob(ctx context.Context, sess
 	return result.Job.ID, nil
 }
 
+func (s *AgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
+	return s.db.Client(ctx).AgentTurn.Query()
+}
+
 func (s *AgentSessionService) GetAgentTurn(ctx context.Context, id uuid.UUID) (*ent.AgentTurn, error) {
-	return s.queryAgentTurns(ctx).Where(at.ID(id)).Only(ctx)
+	return s.queryAgentTurns(ctx).
+		Where(at.ID(id)).
+		Only(ctx)
 }
 
 func (s *AgentSessionService) ListAgentTurns(ctx context.Context, params rez.ListAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error) {
@@ -333,10 +332,10 @@ func (s *AgentSessionService) ListAgentTurns(ctx context.Context, params rez.Lis
 }
 
 func (s *AgentSessionService) GetLatestTurnForSession(ctx context.Context, sessionId uuid.UUID) (*ent.AgentTurn, error) {
-	queryByYoungest := s.queryAgentTurns(ctx).
+	query := s.queryAgentTurns(ctx).
 		Where(at.AgentSessionID(sessionId)).
 		Order(at.BySequence(sql.OrderDesc()))
-	return queryByYoungest.First(ctx)
+	return query.First(ctx)
 }
 
 func (s *AgentSessionService) GetLastSuccessfulAgentTurn(ctx context.Context, sessionID uuid.UUID) (*ent.AgentTurn, error) {
@@ -353,9 +352,6 @@ func (s *AgentSessionService) GetLastSuccessfulAgentTurn(ctx context.Context, se
 func (s *AgentSessionService) lookupAgentTurnSessionAndAcquireLock(ctx context.Context, turnID uuid.UUID) (*ent.AgentSession, error) {
 	querySession := s.db.Client(ctx).AgentSession.Query().
 		Where(as.HasTurnsWith(at.ID(turnID)))
-	if userID, isUserContext := execution.GetContext(ctx).UserID(); isUserContext {
-		querySession.Where(as.OwnerUserID(userID))
-	}
 	sess, sessErr := querySession.Only(ctx)
 	if sessErr != nil {
 		return nil, sessErr
@@ -395,11 +391,17 @@ func (s *AgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.UU
 		if turn.Status == at.StatusQueued {
 			update.ClearError()
 		}
-		updated, updateErr := update.Save(ctx)
-		if updateErr != nil {
-			return fmt.Errorf("abort agent turn: %w", updateErr)
+		savedTurn, saveTurnErr := update.Save(ctx)
+		if saveTurnErr != nil {
+			return fmt.Errorf("abort agent turn: %w", saveTurnErr)
 		}
-		result = updated.Unwrap()
+		result = savedTurn.Unwrap()
+		if eventErr := s.publishTurnUpdated(ctx, result); eventErr != nil {
+			s.logger.WarnContext(ctx, "failed to publish agent turn update",
+				"error", eventErr,
+				"sessionId", turn.AgentSessionID,
+				"turnId", turn.ID)
+		}
 		return nil
 	})
 }
@@ -440,13 +442,30 @@ func (s *AgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.UU
 			ClearFinishedAt().
 			SetRiverJobID(jobID).
 			SetStatus(at.StatusQueued)
-		updated, updateErr := updateTurn.Save(ctx)
-		if updateErr != nil {
-			return fmt.Errorf("retry agent turn: %w", updateErr)
+		savedTurn, saveTurnErr := updateTurn.Save(ctx)
+		if saveTurnErr != nil {
+			return fmt.Errorf("retry agent turn: %w", saveTurnErr)
 		}
-		result = updated.Unwrap()
+		result = savedTurn.Unwrap()
+
+		if eventErr := s.publishTurnUpdated(ctx, result); eventErr != nil {
+			s.logger.WarnContext(ctx, "failed to publish agent turn update",
+				"error", eventErr,
+				"sessionId", turn.AgentSessionID,
+				"turnId", turn.ID)
+		}
 		return nil
 	})
+}
+
+func (s *AgentSessionService) publishTurnUpdated(ctx context.Context, turn *ent.AgentTurn) error {
+	event := rezai.AgentTurnUpdated{
+		AgentSessionId: turn.AgentSessionID,
+		AgentTurnId:    turn.ID,
+		Status:         turn.Status,
+		FinishReason:   turn.FinishReason,
+	}
+	return s.msgs.Publish(ctx, event)
 }
 
 type StartAgentSessionWorker struct {
@@ -600,7 +619,7 @@ var errAgentTurnAlreadyRunning = fmt.Errorf("agent turn already running")
 
 func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) (*agentTurnClaim, error) {
 	var claim *agentTurnClaim
-	return claim, w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	txErr := w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if lockErr := acquireAgentSessionTurnLock(ctx, w.db, job.Args.AgentSessionID); lockErr != nil {
 			return fmt.Errorf("acquire agent session lock: %w", lockErr)
 		}
@@ -692,7 +711,11 @@ func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.J
 			claim.state.Messages[i] = m.MakeGenkitMessage()
 		}
 		for i, a := range artifacts {
-			claim.state.Artifacts[i] = &aix.Artifact{Name: a.Name, Metadata: a.Metadata, Parts: a.Parts}
+			claim.state.Artifacts[i] = &aix.Artifact{
+				Name:     a.Name,
+				Metadata: a.Metadata,
+				Parts:    a.Parts,
+			}
 		}
 
 		var input *rez.AiAgentTurnInput
@@ -720,6 +743,23 @@ func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.J
 
 		return nil
 	})
+	if txErr != nil || claim == nil {
+		return claim, txErr
+	}
+	w.publishTurnUpdated(ctx, claim.turn)
+	return claim, nil
+}
+
+func (w *InvokeAgentTurnWorker) publishTurnUpdated(ctx context.Context, turn *ent.AgentTurn) {
+	event := rezai.AgentTurnUpdated{
+		AgentSessionId: turn.AgentSessionID,
+		AgentTurnId:    turn.ID,
+		Status:         turn.Status,
+		FinishReason:   turn.FinishReason,
+	}
+	if publishErr := w.msgs.Publish(ctx, event); publishErr != nil {
+		w.logger.WarnContext(ctx, "failed to publish agent turn update", "error", publishErr, "sessionId", turn.AgentSessionID, "turnId", turn.ID)
+	}
 }
 
 func (w *InvokeAgentTurnWorker) invokeTurn(ctx context.Context, claim agentTurnClaim) (*rez.AiAgentInvocationResult, error) {
@@ -748,7 +788,8 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 	}
 	defer cleanupCancel()
 
-	return w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	var updatedTurn *ent.AgentTurn
+	txErr := w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if lockErr := acquireAgentSessionTurnLock(ctx, w.db, job.Args.AgentSessionID); lockErr != nil {
 			return fmt.Errorf("acquire agent session lock: %w", lockErr)
 		}
@@ -795,7 +836,9 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 			u.SetFinishReason(string(result.FinishReason))
 			u.ClearError()
 		}
-		if updateErr := u.Exec(ctx); updateErr != nil {
+		var updateErr error
+		updatedTurn, updateErr = u.Save(ctx)
+		if updateErr != nil {
 			return fmt.Errorf("save agent turn result: %w", updateErr)
 		}
 
@@ -859,4 +902,11 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 
 		return nil
 	})
+	if txErr != nil {
+		return txErr
+	}
+	if updatedTurn != nil {
+		w.publishTurnUpdated(ctx, updatedTurn)
+	}
+	return nil
 }

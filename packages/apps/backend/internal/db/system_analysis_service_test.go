@@ -237,48 +237,54 @@ func (s *SystemAnalysisServiceSuite) TestListEntriesOrdersAndLoadsSubjects() {
 	svc := s.service(tdb, &KnowledgeGraphService{db: tdb})
 	analysis := s.createAnalysis(tdb)
 
-	first, createErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
+	entryOccAt := time.Now()
+	first, firstErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
 		m.SetAnalysisID(analysis.ID)
 		m.SetKind(sae.KindContext)
 		m.SetTitle("First")
 		m.SetProperties(map[string]any{"source": "test"})
+		m.SetOccurredAt(entryOccAt)
 	})
-	s.Require().NoError(createErr)
-	second, createErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
+	s.Require().NoError(firstErr)
+
+	second, secondErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
 		m.SetAnalysisID(analysis.ID)
 		m.SetKind(sae.KindObservation)
 		m.SetTitle("Second")
+		m.SetOccurredAt(entryOccAt.Add(time.Second))
 	})
-	s.Require().NoError(createErr)
+	s.Require().NoError(secondErr)
 	s.Empty(second.Properties)
 
-	_, addErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
+	_, subjectErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetEntryID(second.ID)
 		m.SetRole("primary")
 		m.SetKnowledgeEntityID(fixture.Source.ID)
 	})
-	s.Require().NoError(addErr)
+	s.Require().NoError(subjectErr)
 
 	params := rez.ListSystemAnalysisEntriesParams{
-		ListParams: ent.ListParams{Count: true},
 		Predicates: []predicate.SystemAnalysisEntry{sae.AnalysisID(analysis.ID)},
 	}
 	entries, listErr := svc.ListSystemAnalysisEntries(ctx, params)
 	s.Require().NoError(listErr)
-	s.Equal(2, entries.Count)
 	s.Require().Len(entries.Data, 2)
 	s.Equal(first.ID, entries.Data[0].ID)
-	s.Equal(second.ID, entries.Data[1].ID)
-	s.Require().Len(entries.Data[1].Edges.Subjects, 1)
-	subject := entries.Data[1].Edges.Subjects[0]
+
+	entrySecond := entries.Data[1]
+	s.Equal(second.ID, entrySecond.ID)
+
+	secondSubjects, secondSubjectsErr := entrySecond.Edges.SubjectsOrErr()
+	s.Require().NoError(secondSubjectsErr)
+	s.Require().Len(secondSubjects, 1)
+	subject := secondSubjects[0]
 	s.Equal("primary", subject.Role)
-	s.Require().NotNil(subject.Edges.KnowledgeEntity)
-	s.Equal(fixture.Source.ID, subject.Edges.KnowledgeEntity.ID)
-	s.NotEmpty(subject.Edges.KnowledgeEntity.Edges.Aliases)
 
 	params2 := rez.ListSystemAnalysisEntriesParams{
-		ListParams: ent.ListParams{Count: true, Limit: 1, Offset: 1},
 		Predicates: []predicate.SystemAnalysisEntry{sae.AnalysisID(analysis.ID)},
+		Count:      true,
+		Limit:      1,
+		Offset:     1,
 	}
 	page, pageErr := svc.ListSystemAnalysisEntries(ctx, params2)
 	s.Require().NoError(pageErr)

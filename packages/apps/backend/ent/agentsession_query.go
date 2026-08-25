@@ -23,7 +23,6 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
-	"github.com/rezible/rezible/ent/user"
 )
 
 // AgentSessionQuery is the builder for querying AgentSession entities.
@@ -34,7 +33,6 @@ type AgentSessionQuery struct {
 	inters             []Interceptor
 	predicates         []predicate.AgentSession
 	withTenant         *TenantQuery
-	withOwnerUser      *UserQuery
 	withSystemAnalysis *SystemAnalysisQuery
 	withTurns          *AgentTurnQuery
 	withMessages       *AgentMessageQuery
@@ -95,31 +93,6 @@ func (_q *AgentSessionQuery) QueryTenant() *TenantQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AgentSession
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryOwnerUser chains the current query on the "owner_user" edge.
-func (_q *AgentSessionQuery) QueryOwnerUser() *UserQuery {
-	query := (&UserClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentsession.Table, agentsession.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentsession.OwnerUserTable, agentsession.OwnerUserColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.AgentSession
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -445,7 +418,6 @@ func (_q *AgentSessionQuery) Clone() *AgentSessionQuery {
 		inters:             append([]Interceptor{}, _q.inters...),
 		predicates:         append([]predicate.AgentSession{}, _q.predicates...),
 		withTenant:         _q.withTenant.Clone(),
-		withOwnerUser:      _q.withOwnerUser.Clone(),
 		withSystemAnalysis: _q.withSystemAnalysis.Clone(),
 		withTurns:          _q.withTurns.Clone(),
 		withMessages:       _q.withMessages.Clone(),
@@ -466,17 +438,6 @@ func (_q *AgentSessionQuery) WithTenant(opts ...func(*TenantQuery)) *AgentSessio
 		opt(query)
 	}
 	_q.withTenant = query
-	return _q
-}
-
-// WithOwnerUser tells the query-builder to eager-load the nodes that are connected to
-// the "owner_user" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentSessionQuery) WithOwnerUser(opts ...func(*UserQuery)) *AgentSessionQuery {
-	query := (&UserClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withOwnerUser = query
 	return _q
 }
 
@@ -619,9 +580,8 @@ func (_q *AgentSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*AgentSession{}
 		_spec       = _q.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
-			_q.withOwnerUser != nil,
 			_q.withSystemAnalysis != nil,
 			_q.withTurns != nil,
 			_q.withMessages != nil,
@@ -655,12 +615,6 @@ func (_q *AgentSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *AgentSession, e *Tenant) { n.Edges.Tenant = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withOwnerUser; query != nil {
-		if err := _q.loadOwnerUser(ctx, query, nodes, nil,
-			func(n *AgentSession, e *User) { n.Edges.OwnerUser = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -723,38 +677,6 @@ func (_q *AgentSessionQuery) loadTenant(ctx context.Context, query *TenantQuery,
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *AgentSessionQuery) loadOwnerUser(ctx context.Context, query *UserQuery, nodes []*AgentSession, init func(*AgentSession), assign func(*AgentSession, *User)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*AgentSession)
-	for i := range nodes {
-		if nodes[i].OwnerUserID == nil {
-			continue
-		}
-		fk := *nodes[i].OwnerUserID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(user.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "owner_user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -947,9 +869,6 @@ func (_q *AgentSessionQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(agentsession.FieldTenantID)
-		}
-		if _q.withOwnerUser != nil {
-			_spec.Node.AddColumnOnce(agentsession.FieldOwnerUserID)
 		}
 		if _q.withSystemAnalysis != nil {
 			_spec.Node.AddColumnOnce(agentsession.FieldSystemAnalysisID)

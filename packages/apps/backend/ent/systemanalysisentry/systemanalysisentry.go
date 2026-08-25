@@ -110,8 +110,6 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// ReferenceValidator is a validator for the "reference" field. It is called by the builders before save.
-	ReferenceValidator func(string) error
 	// DefaultSequence holds the default value on creation for the "sequence" field.
 	DefaultSequence int
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.

@@ -77,11 +77,6 @@ func AgentName(v string) predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldEQ(FieldAgentName, v))
 }
 
-// OwnerUserID applies equality check predicate on the "owner_user_id" field. It's identical to OwnerUserIDEQ.
-func OwnerUserID(v uuid.UUID) predicate.AgentSession {
-	return predicate.AgentSession(sql.FieldEQ(FieldOwnerUserID, v))
-}
-
 // Input applies equality check predicate on the "input" field. It's identical to InputEQ.
 func Input(v []byte) predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldEQ(FieldInput, v))
@@ -257,36 +252,6 @@ func AgentNameContainsFold(v string) predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldContainsFold(FieldAgentName, v))
 }
 
-// OwnerUserIDEQ applies the EQ predicate on the "owner_user_id" field.
-func OwnerUserIDEQ(v uuid.UUID) predicate.AgentSession {
-	return predicate.AgentSession(sql.FieldEQ(FieldOwnerUserID, v))
-}
-
-// OwnerUserIDNEQ applies the NEQ predicate on the "owner_user_id" field.
-func OwnerUserIDNEQ(v uuid.UUID) predicate.AgentSession {
-	return predicate.AgentSession(sql.FieldNEQ(FieldOwnerUserID, v))
-}
-
-// OwnerUserIDIn applies the In predicate on the "owner_user_id" field.
-func OwnerUserIDIn(vs ...uuid.UUID) predicate.AgentSession {
-	return predicate.AgentSession(sql.FieldIn(FieldOwnerUserID, vs...))
-}
-
-// OwnerUserIDNotIn applies the NotIn predicate on the "owner_user_id" field.
-func OwnerUserIDNotIn(vs ...uuid.UUID) predicate.AgentSession {
-	return predicate.AgentSession(sql.FieldNotIn(FieldOwnerUserID, vs...))
-}
-
-// OwnerUserIDIsNil applies the IsNil predicate on the "owner_user_id" field.
-func OwnerUserIDIsNil() predicate.AgentSession {
-	return predicate.AgentSession(sql.FieldIsNull(FieldOwnerUserID))
-}
-
-// OwnerUserIDNotNil applies the NotNil predicate on the "owner_user_id" field.
-func OwnerUserIDNotNil() predicate.AgentSession {
-	return predicate.AgentSession(sql.FieldNotNull(FieldOwnerUserID))
-}
-
 // InputEQ applies the EQ predicate on the "input" field.
 func InputEQ(v []byte) predicate.AgentSession {
 	return predicate.AgentSession(sql.FieldEQ(FieldInput, v))
@@ -387,35 +352,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.AgentSession {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AgentSession
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasOwnerUser applies the HasEdge predicate on the "owner_user" edge.
-func HasOwnerUser() predicate.AgentSession {
-	return predicate.AgentSession(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, OwnerUserTable, OwnerUserColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.AgentSession
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasOwnerUserWith applies the HasEdge predicate on the "owner_user" edge with a given conditions (other predicates).
-func HasOwnerUserWith(preds ...predicate.User) predicate.AgentSession {
-	return predicate.AgentSession(func(s *sql.Selector) {
-		step := newOwnerUserStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.AgentSession
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

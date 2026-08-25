@@ -89,10 +89,9 @@ func (a *App) startBoundAgentThread(ctx context.Context, intg *ent.Integration, 
 		ResourceRef:   res.makeRef(),
 	}
 	createSessionParams := rez.CreateAgentSessionParams{
-		AgentName:   rezai.ChatAgent.Name,
-		OwnerUserID: &userId,
-		Input:       rezai.ChatAgentInput{UserId: userId, Message: msg},
-		Bindings:    []rez.AgentSessionBindingParams{bindingParams},
+		AgentName: rezai.ChatAgent.Name,
+		Input:     rezai.ChatAgentInput{UserId: userId, Message: msg},
+		Bindings:  []rez.AgentSessionBindingParams{bindingParams},
 		Metadata: map[string]any{
 			agentSessionMetadataIntegrationKey: integrationName,
 		},

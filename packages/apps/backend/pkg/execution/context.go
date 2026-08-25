@@ -178,7 +178,6 @@ func NewAiAgentContext(ctx context.Context, sess *ent.AgentSession, turn *ent.Ag
 	c.ActorKind = KindAiAgent
 	c.Auth = Auth{
 		TenantID:       &sess.TenantID,
-		UserID:         sess.OwnerUserID,
 		AgentSessionID: &sess.ID,
 		AgentTurnID:    &turn.ID,
 		Scopes:         sess.Scopes, // TODO: scopes for turn

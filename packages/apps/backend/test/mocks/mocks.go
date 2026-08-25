@@ -165,16 +165,24 @@ func (_c *MockMessageService_Publish_Call) RunAndReturn(run func(context1 contex
 }
 
 // Subscribe provides a mock function for the type MockMessageService
-func (_mock *MockMessageService) Subscribe(context1 context.Context, messageEventHandler rez.MessageEventHandler, messageEventSubscriptionOpts *rez.MessageEventSubscriptionOpts) error {
-	ret := _mock.Called(context1, messageEventHandler, messageEventSubscriptionOpts)
+func (_mock *MockMessageService) Subscribe(context1 context.Context, messageEventSubscriptionOpts *rez.MessageEventSubscriptionOpts, messageEventHandlers ...rez.MessageEventHandler) error {
+	// rez.MessageEventHandler
+	_va := make([]interface{}, len(messageEventHandlers))
+	for _i := range messageEventHandlers {
+		_va[_i] = messageEventHandlers[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, context1, messageEventSubscriptionOpts)
+	_ca = append(_ca, _va...)
+	ret := _mock.Called(_ca...)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Subscribe")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.MessageEventHandler, *rez.MessageEventSubscriptionOpts) error); ok {
-		r0 = returnFunc(context1, messageEventHandler, messageEventSubscriptionOpts)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *rez.MessageEventSubscriptionOpts, ...rez.MessageEventHandler) error); ok {
+		r0 = returnFunc(context1, messageEventSubscriptionOpts, messageEventHandlers...)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -188,30 +196,35 @@ type MockMessageService_Subscribe_Call struct {
 
 // Subscribe is a helper method to define mock.On call
 //   - context1 context.Context
-//   - messageEventHandler rez.MessageEventHandler
 //   - messageEventSubscriptionOpts *rez.MessageEventSubscriptionOpts
-func (_e *MockMessageService_Expecter) Subscribe(context1 interface{}, messageEventHandler interface{}, messageEventSubscriptionOpts interface{}) *MockMessageService_Subscribe_Call {
-	return &MockMessageService_Subscribe_Call{Call: _e.mock.On("Subscribe", context1, messageEventHandler, messageEventSubscriptionOpts)}
+//   - messageEventHandlers ...rez.MessageEventHandler
+func (_e *MockMessageService_Expecter) Subscribe(context1 interface{}, messageEventSubscriptionOpts interface{}, messageEventHandlers ...interface{}) *MockMessageService_Subscribe_Call {
+	return &MockMessageService_Subscribe_Call{Call: _e.mock.On("Subscribe",
+		append([]interface{}{context1, messageEventSubscriptionOpts}, messageEventHandlers...)...)}
 }
 
-func (_c *MockMessageService_Subscribe_Call) Run(run func(context1 context.Context, messageEventHandler rez.MessageEventHandler, messageEventSubscriptionOpts *rez.MessageEventSubscriptionOpts)) *MockMessageService_Subscribe_Call {
+func (_c *MockMessageService_Subscribe_Call) Run(run func(context1 context.Context, messageEventSubscriptionOpts *rez.MessageEventSubscriptionOpts, messageEventHandlers ...rez.MessageEventHandler)) *MockMessageService_Subscribe_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.MessageEventHandler
+		var arg1 *rez.MessageEventSubscriptionOpts
 		if args[1] != nil {
-			arg1 = args[1].(rez.MessageEventHandler)
+			arg1 = args[1].(*rez.MessageEventSubscriptionOpts)
 		}
-		var arg2 *rez.MessageEventSubscriptionOpts
-		if args[2] != nil {
-			arg2 = args[2].(*rez.MessageEventSubscriptionOpts)
+		var arg2 []rez.MessageEventHandler
+		variadicArgs := make([]rez.MessageEventHandler, len(args)-2)
+		for i, a := range args[2:] {
+			if a != nil {
+				variadicArgs[i] = a.(rez.MessageEventHandler)
+			}
 		}
+		arg2 = variadicArgs
 		run(
 			arg0,
 			arg1,
-			arg2,
+			arg2...,
 		)
 	})
 	return _c
@@ -222,7 +235,7 @@ func (_c *MockMessageService_Subscribe_Call) Return(err error) *MockMessageServi
 	return _c
 }
 
-func (_c *MockMessageService_Subscribe_Call) RunAndReturn(run func(context1 context.Context, messageEventHandler rez.MessageEventHandler, messageEventSubscriptionOpts *rez.MessageEventSubscriptionOpts) error) *MockMessageService_Subscribe_Call {
+func (_c *MockMessageService_Subscribe_Call) RunAndReturn(run func(context1 context.Context, messageEventSubscriptionOpts *rez.MessageEventSubscriptionOpts, messageEventHandlers ...rez.MessageEventHandler) error) *MockMessageService_Subscribe_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1945,6 +1958,74 @@ func (_c *MockSystemAnalysisService_ListSystemAnalysisRelationships_Call) Return
 }
 
 func (_c *MockSystemAnalysisService_ListSystemAnalysisRelationships_Call) RunAndReturn(run func(context1 context.Context, listSystemAnalysisRelationshipsParams rez.ListSystemAnalysisRelationshipsParams) (*ent.ListResult[ent.SystemAnalysisRelationship], error)) *MockSystemAnalysisService_ListSystemAnalysisRelationships_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// LookupSystemAnalysisEntry provides a mock function for the type MockSystemAnalysisService
+func (_mock *MockSystemAnalysisService) LookupSystemAnalysisEntry(context1 context.Context, systemAnalysisEntry predicate.SystemAnalysisEntry) (*ent.SystemAnalysisEntry, error) {
+	ret := _mock.Called(context1, systemAnalysisEntry)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LookupSystemAnalysisEntry")
+	}
+
+	var r0 *ent.SystemAnalysisEntry
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, predicate.SystemAnalysisEntry) (*ent.SystemAnalysisEntry, error)); ok {
+		return returnFunc(context1, systemAnalysisEntry)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, predicate.SystemAnalysisEntry) *ent.SystemAnalysisEntry); ok {
+		r0 = returnFunc(context1, systemAnalysisEntry)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.SystemAnalysisEntry)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, predicate.SystemAnalysisEntry) error); ok {
+		r1 = returnFunc(context1, systemAnalysisEntry)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSystemAnalysisService_LookupSystemAnalysisEntry_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LookupSystemAnalysisEntry'
+type MockSystemAnalysisService_LookupSystemAnalysisEntry_Call struct {
+	*mock.Call
+}
+
+// LookupSystemAnalysisEntry is a helper method to define mock.On call
+//   - context1 context.Context
+//   - systemAnalysisEntry predicate.SystemAnalysisEntry
+func (_e *MockSystemAnalysisService_Expecter) LookupSystemAnalysisEntry(context1 interface{}, systemAnalysisEntry interface{}) *MockSystemAnalysisService_LookupSystemAnalysisEntry_Call {
+	return &MockSystemAnalysisService_LookupSystemAnalysisEntry_Call{Call: _e.mock.On("LookupSystemAnalysisEntry", context1, systemAnalysisEntry)}
+}
+
+func (_c *MockSystemAnalysisService_LookupSystemAnalysisEntry_Call) Run(run func(context1 context.Context, systemAnalysisEntry predicate.SystemAnalysisEntry)) *MockSystemAnalysisService_LookupSystemAnalysisEntry_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 predicate.SystemAnalysisEntry
+		if args[1] != nil {
+			arg1 = args[1].(predicate.SystemAnalysisEntry)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_LookupSystemAnalysisEntry_Call) Return(systemAnalysisEntry1 *ent.SystemAnalysisEntry, err error) *MockSystemAnalysisService_LookupSystemAnalysisEntry_Call {
+	_c.Call.Return(systemAnalysisEntry1, err)
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_LookupSystemAnalysisEntry_Call) RunAndReturn(run func(context1 context.Context, systemAnalysisEntry predicate.SystemAnalysisEntry) (*ent.SystemAnalysisEntry, error)) *MockSystemAnalysisService_LookupSystemAnalysisEntry_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -4544,6 +4625,142 @@ func (_c *MockAgentSessionService_GetAgentTurn_Call) Return(agentTurn *ent.Agent
 }
 
 func (_c *MockAgentSessionService_GetAgentTurn_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error)) *MockAgentSessionService_GetAgentTurn_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListAgentArtifacts provides a mock function for the type MockAgentSessionService
+func (_mock *MockAgentSessionService) ListAgentArtifacts(context1 context.Context, listAgentArtifactsParams rez.ListAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error) {
+	ret := _mock.Called(context1, listAgentArtifactsParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListAgentArtifacts")
+	}
+
+	var r0 *ent.ListResult[ent.AgentArtifact]
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error)); ok {
+		return returnFunc(context1, listAgentArtifactsParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentArtifactsParams) *ent.ListResult[ent.AgentArtifact]); ok {
+		r0 = returnFunc(context1, listAgentArtifactsParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.ListResult[ent.AgentArtifact])
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAgentArtifactsParams) error); ok {
+		r1 = returnFunc(context1, listAgentArtifactsParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAgentSessionService_ListAgentArtifacts_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentArtifacts'
+type MockAgentSessionService_ListAgentArtifacts_Call struct {
+	*mock.Call
+}
+
+// ListAgentArtifacts is a helper method to define mock.On call
+//   - context1 context.Context
+//   - listAgentArtifactsParams rez.ListAgentArtifactsParams
+func (_e *MockAgentSessionService_Expecter) ListAgentArtifacts(context1 interface{}, listAgentArtifactsParams interface{}) *MockAgentSessionService_ListAgentArtifacts_Call {
+	return &MockAgentSessionService_ListAgentArtifacts_Call{Call: _e.mock.On("ListAgentArtifacts", context1, listAgentArtifactsParams)}
+}
+
+func (_c *MockAgentSessionService_ListAgentArtifacts_Call) Run(run func(context1 context.Context, listAgentArtifactsParams rez.ListAgentArtifactsParams)) *MockAgentSessionService_ListAgentArtifacts_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ListAgentArtifactsParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ListAgentArtifactsParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAgentSessionService_ListAgentArtifacts_Call) Return(listResult *ent.ListResult[ent.AgentArtifact], err error) *MockAgentSessionService_ListAgentArtifacts_Call {
+	_c.Call.Return(listResult, err)
+	return _c
+}
+
+func (_c *MockAgentSessionService_ListAgentArtifacts_Call) RunAndReturn(run func(context1 context.Context, listAgentArtifactsParams rez.ListAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error)) *MockAgentSessionService_ListAgentArtifacts_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListAgentMessages provides a mock function for the type MockAgentSessionService
+func (_mock *MockAgentSessionService) ListAgentMessages(context1 context.Context, listAgentMessagesParams rez.ListAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error) {
+	ret := _mock.Called(context1, listAgentMessagesParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListAgentMessages")
+	}
+
+	var r0 *ent.ListResult[ent.AgentMessage]
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error)); ok {
+		return returnFunc(context1, listAgentMessagesParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentMessagesParams) *ent.ListResult[ent.AgentMessage]); ok {
+		r0 = returnFunc(context1, listAgentMessagesParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.ListResult[ent.AgentMessage])
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAgentMessagesParams) error); ok {
+		r1 = returnFunc(context1, listAgentMessagesParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAgentSessionService_ListAgentMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentMessages'
+type MockAgentSessionService_ListAgentMessages_Call struct {
+	*mock.Call
+}
+
+// ListAgentMessages is a helper method to define mock.On call
+//   - context1 context.Context
+//   - listAgentMessagesParams rez.ListAgentMessagesParams
+func (_e *MockAgentSessionService_Expecter) ListAgentMessages(context1 interface{}, listAgentMessagesParams interface{}) *MockAgentSessionService_ListAgentMessages_Call {
+	return &MockAgentSessionService_ListAgentMessages_Call{Call: _e.mock.On("ListAgentMessages", context1, listAgentMessagesParams)}
+}
+
+func (_c *MockAgentSessionService_ListAgentMessages_Call) Run(run func(context1 context.Context, listAgentMessagesParams rez.ListAgentMessagesParams)) *MockAgentSessionService_ListAgentMessages_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ListAgentMessagesParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ListAgentMessagesParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAgentSessionService_ListAgentMessages_Call) Return(listResult *ent.ListResult[ent.AgentMessage], err error) *MockAgentSessionService_ListAgentMessages_Call {
+	_c.Call.Return(listResult, err)
+	return _c
+}
+
+func (_c *MockAgentSessionService_ListAgentMessages_Call) RunAndReturn(run func(context1 context.Context, listAgentMessagesParams rez.ListAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error)) *MockAgentSessionService_ListAgentMessages_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -19,11 +19,9 @@ CREATE INDEX "agentmessage_tenant_id_agent_session_id_created_at" ON "agent_mess
 -- create index "agentmessage_tenant_id_agent_turn_id_sequence" to table: "agent_messages"
 CREATE INDEX "agentmessage_tenant_id_agent_turn_id_sequence" ON "agent_messages" ("tenant_id", "agent_turn_id", "sequence");
 -- create "agent_sessions" table
-CREATE TABLE "agent_sessions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "agent_name" character varying NOT NULL, "scopes" jsonb NOT NULL, "input" bytea NOT NULL, "metadata" jsonb NULL, "tenant_id" bigint NOT NULL, "owner_user_id" uuid NULL, "system_analysis_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "agent_sessions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "agent_name" character varying NOT NULL, "scopes" jsonb NOT NULL, "input" bytea NOT NULL, "metadata" jsonb NULL, "tenant_id" bigint NOT NULL, "system_analysis_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "agentsession_tenant_id" to table: "agent_sessions"
 CREATE INDEX "agentsession_tenant_id" ON "agent_sessions" ("tenant_id");
--- create index "agentsession_tenant_id_owner_user_id_created_at" to table: "agent_sessions"
-CREATE INDEX "agentsession_tenant_id_owner_user_id_created_at" ON "agent_sessions" ("tenant_id", "owner_user_id", "created_at");
 -- create index "agentsession_tenant_id_agent_name_created_at" to table: "agent_sessions"
 CREATE INDEX "agentsession_tenant_id_agent_name_created_at" ON "agent_sessions" ("tenant_id", "agent_name", "created_at");
 -- create "agent_session_bindings" table
@@ -353,7 +351,7 @@ CREATE UNIQUE INDEX "systemanalysisentity_tenant_id_analysis_id_knowledge_entity
 -- create index "systemanalysisentity_tenant_id_knowledge_entity_id" to table: "system_analysis_entities"
 CREATE INDEX "systemanalysisentity_tenant_id_knowledge_entity_id" ON "system_analysis_entities" ("tenant_id", "knowledge_entity_id");
 -- create "system_analysis_entries" table
-CREATE TABLE "system_analysis_entries" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "reference" character varying NOT NULL, "kind" character varying NOT NULL, "occurred_at" timestamptz NULL, "sequence" bigint NOT NULL DEFAULT 0, "title" character varying NOT NULL, "body" text NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "system_analysis_entries" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "reference" character varying NULL, "kind" character varying NOT NULL, "occurred_at" timestamptz NULL, "sequence" bigint NOT NULL DEFAULT 0, "title" character varying NOT NULL, "body" text NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "systemanalysisentry_tenant_id" to table: "system_analysis_entries"
 CREATE INDEX "systemanalysisentry_tenant_id" ON "system_analysis_entries" ("tenant_id");
 -- create index "systemanalysisentry_tenant_id_analysis_id_reference" to table: "system_analysis_entries"
@@ -469,7 +467,7 @@ ALTER TABLE "agent_artifacts" ADD CONSTRAINT "agent_artifacts_tenants_tenant" FO
 -- modify "agent_messages" table
 ALTER TABLE "agent_messages" ADD CONSTRAINT "agent_messages_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_messages_agent_sessions_messages" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_messages_agent_turns_messages" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE NO ACTION;
 -- modify "agent_sessions" table
-ALTER TABLE "agent_sessions" ADD CONSTRAINT "agent_sessions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_sessions_users_owner_user" FOREIGN KEY ("owner_user_id") REFERENCES "users" ("id") ON DELETE SET NULL, ADD CONSTRAINT "agent_sessions_system_analyses_system_analysis" FOREIGN KEY ("system_analysis_id") REFERENCES "system_analyses" ("id") ON DELETE SET NULL;
+ALTER TABLE "agent_sessions" ADD CONSTRAINT "agent_sessions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_sessions_system_analyses_system_analysis" FOREIGN KEY ("system_analysis_id") REFERENCES "system_analyses" ("id") ON DELETE SET NULL;
 -- modify "agent_session_bindings" table
 ALTER TABLE "agent_session_bindings" ADD CONSTRAINT "agent_session_bindings_agent_sessions_bindings" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_session_bindings_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_session_bindings_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE SET NULL;
 -- modify "agent_turns" table

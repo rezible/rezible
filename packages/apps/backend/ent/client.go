@@ -1297,25 +1297,6 @@ func (c *AgentSessionClient) QueryTenant(_m *AgentSession) *TenantQuery {
 	return query
 }
 
-// QueryOwnerUser queries the owner_user edge of a AgentSession.
-func (c *AgentSessionClient) QueryOwnerUser(_m *AgentSession) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentsession.Table, agentsession.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentsession.OwnerUserTable, agentsession.OwnerUserColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.AgentSession
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QuerySystemAnalysis queries the system_analysis edge of a AgentSession.
 func (c *AgentSessionClient) QuerySystemAnalysis(_m *AgentSession) *SystemAnalysisQuery {
 	query := (&SystemAnalysisClient{config: c.config}).Query()

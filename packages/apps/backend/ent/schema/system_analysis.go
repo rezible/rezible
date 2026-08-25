@@ -203,7 +203,10 @@ func (SystemAnalysisEntry) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}).
 			Immutable(),
-		field.String("reference").NotEmpty().Immutable(),
+		field.String("reference").
+			Optional().
+			Nillable().
+			Immutable(),
 		field.Enum("kind").
 			Values("observation", "context", "decision", "action", "finding", "recommendation"),
 		field.Time("occurred_at").

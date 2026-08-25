@@ -13,7 +13,9 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	wotelfloss "github.com/dentech-floss/watermill-opentelemetry-go-extra/pkg/opentelemetry"
+	"github.com/google/uuid"
 	wotel "github.com/voi-oss/watermill-opentelemetry/pkg/opentelemetry"
+	"golang.org/x/sync/errgroup"
 
 	rez "github.com/rezible/rezible"
 )
@@ -170,13 +172,33 @@ func (ms *MessageService) matchesScopes(msg *message.Message, scopes []string) b
 	return false
 }
 
-func (ms *MessageService) Subscribe(ctx context.Context, handler rez.MessageEventHandler, opts *rez.MessageEventSubscriptionOpts) error {
+func (ms *MessageService) Subscribe(ctx context.Context, opts *rez.MessageEventSubscriptionOpts, handlers ...rez.MessageEventHandler) error {
+	if len(handlers) == 0 {
+		return fmt.Errorf("subscribe: at least one event handler is required")
+	}
+
+	var scopes []string
+	if opts != nil {
+		scopes = opts.Scopes
+	}
+
+	group, subscriptionCtx := errgroup.WithContext(ctx)
+	for _, handler := range handlers {
+		group.Go(func() error {
+			return ms.subscribe(subscriptionCtx, handler, scopes)
+		})
+	}
+	return group.Wait()
+}
+
+func (ms *MessageService) subscribe(ctx context.Context, handler rez.MessageEventHandler, scopes []string) error {
 	eventName := ms.marshaller.Name(handler.NewEvent())
 	topic := ms.eventTopic(eventName)
 
-	sub, subErr := ms.transport.AdhocSubscriber(handler.HandlerName())
+	subscriberName := handler.HandlerName() + "-" + uuid.NewString()
+	sub, subErr := ms.transport.AdhocSubscriber(subscriberName)
 	if subErr != nil {
-		return fmt.Errorf("subscriber %q: %w", handler.HandlerName(), subErr)
+		return fmt.Errorf("subscriber %q: %w", subscriberName, subErr)
 	}
 	defer func() {
 		if sub != nil {
@@ -189,11 +211,6 @@ func (ms *MessageService) Subscribe(ctx context.Context, handler rez.MessageEven
 	msgs, subscribeErr := sub.Subscribe(ctx, topic)
 	if subscribeErr != nil {
 		return fmt.Errorf("subscribe topic %q: %w", topic, subscribeErr)
-	}
-
-	var scopes []string
-	if opts != nil {
-		scopes = opts.Scopes
 	}
 
 	handleMsg := func(msg *message.Message) (err error) {
@@ -216,7 +233,14 @@ func (ms *MessageService) Subscribe(ctx context.Context, handler rez.MessageEven
 			return nil
 		}
 
-		return handler.Handle(msg.Context(), event)
+		handlerCtx, cancelHandler := context.WithCancel(msg.Context())
+		stopSubscriptionCancel := context.AfterFunc(ctx, cancelHandler)
+		defer func() {
+			stopSubscriptionCancel()
+			cancelHandler()
+		}()
+
+		return handler.Handle(handlerCtx, event)
 	}
 
 	for {
@@ -226,7 +250,10 @@ func (ms *MessageService) Subscribe(ctx context.Context, handler rez.MessageEven
 
 		case msg, ok := <-msgs:
 			if !ok {
-				return nil
+				if ctx.Err() != nil {
+					return nil
+				}
+				return fmt.Errorf("subscription topic %q closed unexpectedly", topic)
 			}
 			handlerErr := handleMsg(msg)
 

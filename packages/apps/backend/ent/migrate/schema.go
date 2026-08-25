@@ -141,7 +141,6 @@ var (
 		{Name: "input", Type: field.TypeBytes},
 		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "owner_user_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "system_analysis_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AgentSessionsTable holds the schema information for the "agent_sessions" table.
@@ -157,14 +156,8 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "agent_sessions_users_owner_user",
-				Columns:    []*schema.Column{AgentSessionsColumns[8]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "agent_sessions_system_analyses_system_analysis",
-				Columns:    []*schema.Column{AgentSessionsColumns[9]},
+				Columns:    []*schema.Column{AgentSessionsColumns[8]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -174,11 +167,6 @@ var (
 				Name:    "agentsession_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{AgentSessionsColumns[7]},
-			},
-			{
-				Name:    "agentsession_tenant_id_owner_user_id_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{AgentSessionsColumns[7], AgentSessionsColumns[8], AgentSessionsColumns[1]},
 			},
 			{
 				Name:    "agentsession_tenant_id_agent_name_created_at",
@@ -2561,7 +2549,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "reference", Type: field.TypeString},
+		{Name: "reference", Type: field.TypeString, Nullable: true},
 		{Name: "kind", Type: field.TypeEnum, Enums: []string{"observation", "context", "decision", "action", "finding", "recommendation"}},
 		{Name: "occurred_at", Type: field.TypeTime, Nullable: true},
 		{Name: "sequence", Type: field.TypeInt, Default: 0},
@@ -3546,8 +3534,7 @@ func init() {
 	AgentMessagesTable.ForeignKeys[1].RefTable = AgentSessionsTable
 	AgentMessagesTable.ForeignKeys[2].RefTable = AgentTurnsTable
 	AgentSessionsTable.ForeignKeys[0].RefTable = TenantsTable
-	AgentSessionsTable.ForeignKeys[1].RefTable = UsersTable
-	AgentSessionsTable.ForeignKeys[2].RefTable = SystemAnalysesTable
+	AgentSessionsTable.ForeignKeys[1].RefTable = SystemAnalysesTable
 	AgentSessionBindingsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	AgentSessionBindingsTable.ForeignKeys[1].RefTable = TenantsTable
 	AgentSessionBindingsTable.ForeignKeys[2].RefTable = IntegrationsTable

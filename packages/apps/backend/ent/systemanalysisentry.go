@@ -30,7 +30,7 @@ type SystemAnalysisEntry struct {
 	// AnalysisID holds the value of the "analysis_id" field.
 	AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
 	// Reference holds the value of the "reference" field.
-	Reference string `json:"reference,omitempty"`
+	Reference *string `json:"reference,omitempty"`
 	// Kind holds the value of the "kind" field.
 	Kind systemanalysisentry.Kind `json:"kind,omitempty"`
 	// Domain time for observations/actions/events; nil for timeless findings or context.
@@ -157,7 +157,8 @@ func (_m *SystemAnalysisEntry) assignValues(columns []string, values []any) erro
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field reference", values[i])
 			} else if value.Valid {
-				_m.Reference = value.String
+				_m.Reference = new(string)
+				*_m.Reference = value.String
 			}
 		case systemanalysisentry.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -261,8 +262,10 @@ func (_m *SystemAnalysisEntry) String() string {
 	builder.WriteString("analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AnalysisID))
 	builder.WriteString(", ")
-	builder.WriteString("reference=")
-	builder.WriteString(_m.Reference)
+	if v := _m.Reference; v != nil {
+		builder.WriteString("reference=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Kind))

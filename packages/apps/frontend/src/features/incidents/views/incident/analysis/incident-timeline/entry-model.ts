@@ -92,12 +92,12 @@ const systemContextFromSubject = (
 	subject: SystemAnalysisEntrySubject
 ): TimelineEntrySystemContext | undefined => {
 	const attrs = subject.attributes;
-	if (attrs.subjectKind !== "entity") return undefined;
+	if (!attrs.knowledgeEntityId) return undefined;
 
 	return {
 		id: subject.id,
 		attributes: {
-			knowledgeEntityId: attrs.subjectId,
+			knowledgeEntityId: attrs.knowledgeEntityId,
 			relationship: attrs.role,
 		},
 	};

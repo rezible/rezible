@@ -36,6 +36,7 @@ func NewHandler(
 	db rez.Database,
 	ai rez.AiService,
 	agents rez.AgentSessionService,
+	messages rez.MessageService,
 	alerts rez.AlertService,
 	orgs rez.OrganizationService,
 	users rez.UserService,
@@ -54,7 +55,7 @@ func NewHandler(
 ) (*Handler, error) {
 	h := &Handler{
 		alertsHandler:             newAlertsHandler(alerts),
-		aiHandler:                 newAiHandler(ai, agents),
+		aiHandler:                 newAiHandler(ai, agents, messages),
 		userSessionsHandler:       newUserSessionsHandler(orgs, users),
 		documentsHandler:          newDocumentsHandler(documents, users),
 		incidentDebriefsHandler:   newIncidentDebriefsHandler(db, users, debriefs),

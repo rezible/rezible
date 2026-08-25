@@ -142,7 +142,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			agentsession.FieldCreatedAt:        {Type: field.TypeTime, Column: agentsession.FieldCreatedAt},
 			agentsession.FieldUpdatedAt:        {Type: field.TypeTime, Column: agentsession.FieldUpdatedAt},
 			agentsession.FieldAgentName:        {Type: field.TypeString, Column: agentsession.FieldAgentName},
-			agentsession.FieldOwnerUserID:      {Type: field.TypeUUID, Column: agentsession.FieldOwnerUserID},
 			agentsession.FieldScopes:           {Type: field.TypeJSON, Column: agentsession.FieldScopes},
 			agentsession.FieldInput:            {Type: field.TypeBytes, Column: agentsession.FieldInput},
 			agentsession.FieldSystemAnalysisID: {Type: field.TypeUUID, Column: agentsession.FieldSystemAnalysisID},
@@ -1508,18 +1507,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"AgentSession",
 		"Tenant",
-	)
-	graph.MustAddE(
-		"owner_user",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentsession.OwnerUserTable,
-			Columns: []string{agentsession.OwnerUserColumn},
-			Bidi:    false,
-		},
-		"AgentSession",
-		"User",
 	)
 	graph.MustAddE(
 		"system_analysis",
@@ -4928,11 +4915,6 @@ func (f *AgentSessionFilter) WhereAgentName(p entql.StringP) {
 	f.Where(p.Field(agentsession.FieldAgentName))
 }
 
-// WhereOwnerUserID applies the entql [16]byte predicate on the owner_user_id field.
-func (f *AgentSessionFilter) WhereOwnerUserID(p entql.ValueP) {
-	f.Where(p.Field(agentsession.FieldOwnerUserID))
-}
-
 // WhereScopes applies the entql json.RawMessage predicate on the scopes field.
 func (f *AgentSessionFilter) WhereScopes(p entql.BytesP) {
 	f.Where(p.Field(agentsession.FieldScopes))
@@ -4961,20 +4943,6 @@ func (f *AgentSessionFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *AgentSessionFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasOwnerUser applies a predicate to check if query has an edge owner_user.
-func (f *AgentSessionFilter) WhereHasOwnerUser() {
-	f.Where(entql.HasEdge("owner_user"))
-}
-
-// WhereHasOwnerUserWith applies a predicate to check if query has an edge owner_user with a given conditions (other predicates).
-func (f *AgentSessionFilter) WhereHasOwnerUserWith(preds ...predicate.User) {
-	f.Where(entql.HasEdgeWith("owner_user", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

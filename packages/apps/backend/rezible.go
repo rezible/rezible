@@ -110,7 +110,7 @@ type (
 	MessageService interface {
 		AddHandlers(...MessageEventHandler) error
 		Publish(context.Context, any) error
-		Subscribe(context.Context, MessageEventHandler, *MessageEventSubscriptionOpts) error
+		Subscribe(context.Context, *MessageEventSubscriptionOpts, ...MessageEventHandler) error
 	}
 )
 
@@ -585,7 +585,6 @@ type (
 
 	CreateAgentSessionParams struct {
 		AgentName        string
-		OwnerUserID      *uuid.UUID
 		PermissionScopes []string
 		Input            ValidatingInput
 		SystemAnalysisID *uuid.UUID
@@ -615,14 +614,20 @@ type (
 		Predicates []predicate.AgentTurn
 	}
 
+	ListAgentMessagesParams struct {
+		ent.ListParams
+		Predicates []predicate.AgentMessage
+	}
+
+	ListAgentArtifactsParams struct {
+		ent.ListParams
+		Predicates []predicate.AgentArtifact
+	}
+
 	AgentSessionService interface {
 		ListAgentSessions(context.Context, ListAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error)
 		CreateAgentSession(context.Context, CreateAgentSessionParams) (*ent.AgentSession, error)
 		GetAgentSession(context.Context, uuid.UUID) (*ent.AgentSession, error)
-
-		ListAgentSessionBindings(context.Context, ListAgentSessionBindingsParams) (ent.AgentSessionBindings, error)
-		LookupAgentSessionBinding(context.Context, ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error)
-		SetAgentSessionBinding(context.Context, uuid.UUID, func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error)
 
 		RequestAgentTurn(context.Context, uuid.UUID, *RequestAgentTurnParams) (*ent.AgentTurn, error)
 
@@ -630,6 +635,13 @@ type (
 		GetAgentTurn(context.Context, uuid.UUID) (*ent.AgentTurn, error)
 		RetryAgentTurn(context.Context, uuid.UUID) (*ent.AgentTurn, error)
 		AbortAgentTurn(context.Context, uuid.UUID) (*ent.AgentTurn, error)
+
+		ListAgentMessages(context.Context, ListAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error)
+		ListAgentArtifacts(context.Context, ListAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error)
+
+		ListAgentSessionBindings(context.Context, ListAgentSessionBindingsParams) (ent.AgentSessionBindings, error)
+		LookupAgentSessionBinding(context.Context, ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error)
+		SetAgentSessionBinding(context.Context, uuid.UUID, func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error)
 	}
 )
 

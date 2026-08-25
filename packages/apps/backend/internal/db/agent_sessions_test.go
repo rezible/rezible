@@ -52,12 +52,15 @@ func (s *AgentSessionServiceSuite) newAgentSessionTestHarness() *agentSessionTes
 	jobService := mocks.NewMockJobService(s.T())
 	aiService := mocks.NewMockAiService(s.T())
 	messageService := mocks.NewMockMessageService(s.T())
+	messageService.EXPECT().
+		Publish(mock.Anything, mock.IsType(rezai.AgentTurnUpdated{})).Return(nil).Maybe()
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 
 	svc := &AgentSessionService{
 		logger: logger,
 		db:     tdb,
 		jobs:   jobService,
+		msgs:   messageService,
 	}
 
 	sessWorker := &StartAgentSessionWorker{
@@ -534,7 +537,11 @@ func (s *AgentSessionServiceSuite) TestWorkerTerminalizesRunningRedeliveryWithou
 	s.Equal(string(aix.AgentFinishReasonFailed), turn.FinishReason)
 	s.NotNil(turn.FinishedAt)
 	s.Empty(h.ai.Calls)
-	s.Empty(h.msgs.Calls)
+	s.Require().Len(h.msgs.Calls, 1)
+	updated, isTurnUpdate := h.msgs.Calls[0].Arguments.Get(1).(rezai.AgentTurnUpdated)
+	s.True(isTurnUpdate)
+	s.Equal(at.StatusFailed, updated.Status)
+	s.Equal(string(aix.AgentFinishReasonFailed), updated.FinishReason)
 }
 
 func (s *AgentSessionServiceSuite) TestAbortAgentTurnIsIdempotent() {
@@ -588,7 +595,10 @@ func (s *AgentSessionServiceSuite) TestRetryAgentTurnRequeuesSameTurnAndClearsTe
 		finishedAt:   new(time.Now().UTC().Add(-time.Minute)),
 	})
 
-	args := jobs.InvokeAgentTurn{AgentTurnID: turn.ID, AgentSessionID: session.ID}
+	args := jobs.InvokeAgentTurn{
+		AgentTurnID:    turn.ID,
+		AgentSessionID: session.ID,
+	}
 	h.jobs.EXPECT().
 		Insert(mock.Anything, args, mock.Anything).
 		Return(makeJobInsertResult(803), nil).

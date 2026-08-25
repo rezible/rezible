@@ -12,7 +12,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	sa "github.com/rezible/rezible/ent/systemanalysis"
-	saentity "github.com/rezible/rezible/ent/systemanalysisentity"
+	saent "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	sarel "github.com/rezible/rezible/ent/systemanalysisrelationship"
@@ -27,27 +27,12 @@ func NewSystemAnalysisService(db rez.Database, knowledge rez.KnowledgeGraphServi
 	return &SystemAnalysisService{db: db, knowledge: knowledge}, nil
 }
 
-func (s *SystemAnalysisService) systemAnalysisEntriesQuery(q *ent.SystemAnalysisEntryQuery) {
-	q.Order(ent.Asc(sae.FieldSequence), ent.Asc(sae.FieldOccurredAt), ent.Asc(sae.FieldID)).
-		WithSubjects(s.systemAnalysisEntrySubjectsQuery)
-}
-
 func (s *SystemAnalysisService) systemAnalysisEntrySubjectsQuery(q *ent.SystemAnalysisEntrySubjectQuery) {
-	q.Order(ent.Asc(saes.FieldCreatedAt), ent.Asc(saes.FieldID)).
-		WithKnowledgeEntity(func(eq *ent.KnowledgeEntityQuery) {
-			eq.WithAliases(knowledgeAliasWithEvidenceQuery())
-		}).
-		WithKnowledgeRelationship(func(rq *ent.KnowledgeRelationshipQuery) {
-			rq.WithAliases(knowledgeAliasWithEvidenceQuery())
-		}).
-		WithKnowledgeEvidence(func(eq *ent.KnowledgeEvidenceQuery) {
-			eq.WithEvent()
-			eq.WithSubjectAlias()
-		})
+	q.Order(ent.Asc(saes.FieldCreatedAt), ent.Asc(saes.FieldID))
 }
 
 func (s *SystemAnalysisService) systemAnalysisEntitiesQuery(q *ent.SystemAnalysisEntityQuery) {
-	q.Order(ent.Asc(saentity.FieldCreatedAt), ent.Asc(saentity.FieldID)).
+	q.Order(ent.Asc(saent.FieldCreatedAt), ent.Asc(saent.FieldID)).
 		WithKnowledgeEntity(func(eq *ent.KnowledgeEntityQuery) {
 			eq.WithAliases(knowledgeAliasWithEvidenceQuery())
 		})
@@ -76,7 +61,7 @@ func (s *SystemAnalysisService) HasSystemAnalysisEntity(ctx context.Context, ana
 		return false, fmt.Errorf("%w: analysis and knowledge entity IDs are required", rez.ErrInvalidInput)
 	}
 	query := s.db.Client(ctx).SystemAnalysisEntity.Query().
-		Where(saentity.AnalysisID(analysisID), saentity.KnowledgeEntityID(knowledgeEntityID))
+		Where(saent.AnalysisID(analysisID), saent.KnowledgeEntityID(knowledgeEntityID))
 	exists, queryErr := query.Exist(ctx)
 	if queryErr != nil {
 		return false, fmt.Errorf("query system analysis entity: %w", queryErr)
@@ -240,7 +225,7 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntity(ctx context.Context, id 
 	mut := mutator.Mutation()
 	setFn(mut)
 
-	if mutErr := s.validateMutationFields(mut, saentity.FieldAnalysisID, saentity.FieldKnowledgeEntityID); mutErr != nil {
+	if mutErr := s.validateMutationFields(mut, saent.FieldAnalysisID, saent.FieldKnowledgeEntityID); mutErr != nil {
 		return nil, mutErr
 	}
 
@@ -332,8 +317,8 @@ func (s *SystemAnalysisService) DeleteSystemAnalysisRelationship(ctx context.Con
 func (s *SystemAnalysisService) ListSystemAnalysisEntries(ctx context.Context, params rez.ListSystemAnalysisEntriesParams) (*ent.ListResult[ent.SystemAnalysisEntry], error) {
 	query := s.db.Client(ctx).SystemAnalysisEntry.Query().
 		Where(params.Predicates...).
-		Order(sae.ByCreatedAt())
-	s.systemAnalysisEntriesQuery(query)
+		Order(ent.Asc(sae.FieldOccurredAt), ent.Asc(sae.FieldSequence), ent.Asc(sae.FieldID)).
+		WithSubjects(s.systemAnalysisEntrySubjectsQuery)
 	return ent.DoListQuery[ent.SystemAnalysisEntry, *ent.SystemAnalysisEntryQuery](ctx, query, params.ListParams)
 }
 

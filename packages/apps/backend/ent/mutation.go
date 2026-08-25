@@ -2108,8 +2108,6 @@ type AgentSessionMutation struct {
 	clearedFields          map[string]struct{}
 	tenant                 *int
 	clearedtenant          bool
-	owner_user             *uuid.UUID
-	clearedowner_user      bool
 	system_analysis        *uuid.UUID
 	clearedsystem_analysis bool
 	turns                  map[uuid.UUID]struct{}
@@ -2377,55 +2375,6 @@ func (m *AgentSessionMutation) ResetAgentName() {
 	m.agent_name = nil
 }
 
-// SetOwnerUserID sets the "owner_user_id" field.
-func (m *AgentSessionMutation) SetOwnerUserID(u uuid.UUID) {
-	m.owner_user = &u
-}
-
-// OwnerUserID returns the value of the "owner_user_id" field in the mutation.
-func (m *AgentSessionMutation) OwnerUserID() (r uuid.UUID, exists bool) {
-	v := m.owner_user
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldOwnerUserID returns the old "owner_user_id" field's value of the AgentSession entity.
-// If the AgentSession object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentSessionMutation) OldOwnerUserID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldOwnerUserID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldOwnerUserID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldOwnerUserID: %w", err)
-	}
-	return oldValue.OwnerUserID, nil
-}
-
-// ClearOwnerUserID clears the value of the "owner_user_id" field.
-func (m *AgentSessionMutation) ClearOwnerUserID() {
-	m.owner_user = nil
-	m.clearedFields[agentsession.FieldOwnerUserID] = struct{}{}
-}
-
-// OwnerUserIDCleared returns if the "owner_user_id" field was cleared in this mutation.
-func (m *AgentSessionMutation) OwnerUserIDCleared() bool {
-	_, ok := m.clearedFields[agentsession.FieldOwnerUserID]
-	return ok
-}
-
-// ResetOwnerUserID resets all changes to the "owner_user_id" field.
-func (m *AgentSessionMutation) ResetOwnerUserID() {
-	m.owner_user = nil
-	delete(m.clearedFields, agentsession.FieldOwnerUserID)
-}
-
 // SetScopes sets the "scopes" field.
 func (m *AgentSessionMutation) SetScopes(s []string) {
 	m.scopes = &s
@@ -2636,33 +2585,6 @@ func (m *AgentSessionMutation) TenantIDs() (ids []int) {
 func (m *AgentSessionMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
-}
-
-// ClearOwnerUser clears the "owner_user" edge to the User entity.
-func (m *AgentSessionMutation) ClearOwnerUser() {
-	m.clearedowner_user = true
-	m.clearedFields[agentsession.FieldOwnerUserID] = struct{}{}
-}
-
-// OwnerUserCleared reports if the "owner_user" edge to the User entity was cleared.
-func (m *AgentSessionMutation) OwnerUserCleared() bool {
-	return m.OwnerUserIDCleared() || m.clearedowner_user
-}
-
-// OwnerUserIDs returns the "owner_user" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// OwnerUserID instead. It exists only for internal usage by the builders.
-func (m *AgentSessionMutation) OwnerUserIDs() (ids []uuid.UUID) {
-	if id := m.owner_user; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetOwnerUser resets all changes to the "owner_user" edge.
-func (m *AgentSessionMutation) ResetOwnerUser() {
-	m.owner_user = nil
-	m.clearedowner_user = false
 }
 
 // ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
@@ -2942,7 +2864,7 @@ func (m *AgentSessionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentSessionMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, agentsession.FieldTenantID)
 	}
@@ -2954,9 +2876,6 @@ func (m *AgentSessionMutation) Fields() []string {
 	}
 	if m.agent_name != nil {
 		fields = append(fields, agentsession.FieldAgentName)
-	}
-	if m.owner_user != nil {
-		fields = append(fields, agentsession.FieldOwnerUserID)
 	}
 	if m.scopes != nil {
 		fields = append(fields, agentsession.FieldScopes)
@@ -2986,8 +2905,6 @@ func (m *AgentSessionMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case agentsession.FieldAgentName:
 		return m.AgentName()
-	case agentsession.FieldOwnerUserID:
-		return m.OwnerUserID()
 	case agentsession.FieldScopes:
 		return m.Scopes()
 	case agentsession.FieldInput:
@@ -3013,8 +2930,6 @@ func (m *AgentSessionMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldUpdatedAt(ctx)
 	case agentsession.FieldAgentName:
 		return m.OldAgentName(ctx)
-	case agentsession.FieldOwnerUserID:
-		return m.OldOwnerUserID(ctx)
 	case agentsession.FieldScopes:
 		return m.OldScopes(ctx)
 	case agentsession.FieldInput:
@@ -3059,13 +2974,6 @@ func (m *AgentSessionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAgentName(v)
-		return nil
-	case agentsession.FieldOwnerUserID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetOwnerUserID(v)
 		return nil
 	case agentsession.FieldScopes:
 		v, ok := value.([]string)
@@ -3128,9 +3036,6 @@ func (m *AgentSessionMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AgentSessionMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(agentsession.FieldOwnerUserID) {
-		fields = append(fields, agentsession.FieldOwnerUserID)
-	}
 	if m.FieldCleared(agentsession.FieldSystemAnalysisID) {
 		fields = append(fields, agentsession.FieldSystemAnalysisID)
 	}
@@ -3151,9 +3056,6 @@ func (m *AgentSessionMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AgentSessionMutation) ClearField(name string) error {
 	switch name {
-	case agentsession.FieldOwnerUserID:
-		m.ClearOwnerUserID()
-		return nil
 	case agentsession.FieldSystemAnalysisID:
 		m.ClearSystemAnalysisID()
 		return nil
@@ -3180,9 +3082,6 @@ func (m *AgentSessionMutation) ResetField(name string) error {
 	case agentsession.FieldAgentName:
 		m.ResetAgentName()
 		return nil
-	case agentsession.FieldOwnerUserID:
-		m.ResetOwnerUserID()
-		return nil
 	case agentsession.FieldScopes:
 		m.ResetScopes()
 		return nil
@@ -3201,12 +3100,9 @@ func (m *AgentSessionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentSessionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, agentsession.EdgeTenant)
-	}
-	if m.owner_user != nil {
-		edges = append(edges, agentsession.EdgeOwnerUser)
 	}
 	if m.system_analysis != nil {
 		edges = append(edges, agentsession.EdgeSystemAnalysis)
@@ -3232,10 +3128,6 @@ func (m *AgentSessionMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case agentsession.EdgeTenant:
 		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case agentsession.EdgeOwnerUser:
-		if id := m.owner_user; id != nil {
 			return []ent.Value{*id}
 		}
 	case agentsession.EdgeSystemAnalysis:
@@ -3272,7 +3164,7 @@ func (m *AgentSessionMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentSessionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.removedturns != nil {
 		edges = append(edges, agentsession.EdgeTurns)
 	}
@@ -3322,12 +3214,9 @@ func (m *AgentSessionMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentSessionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, agentsession.EdgeTenant)
-	}
-	if m.clearedowner_user {
-		edges = append(edges, agentsession.EdgeOwnerUser)
 	}
 	if m.clearedsystem_analysis {
 		edges = append(edges, agentsession.EdgeSystemAnalysis)
@@ -3353,8 +3242,6 @@ func (m *AgentSessionMutation) EdgeCleared(name string) bool {
 	switch name {
 	case agentsession.EdgeTenant:
 		return m.clearedtenant
-	case agentsession.EdgeOwnerUser:
-		return m.clearedowner_user
 	case agentsession.EdgeSystemAnalysis:
 		return m.clearedsystem_analysis
 	case agentsession.EdgeTurns:
@@ -3376,9 +3263,6 @@ func (m *AgentSessionMutation) ClearEdge(name string) error {
 	case agentsession.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case agentsession.EdgeOwnerUser:
-		m.ClearOwnerUser()
-		return nil
 	case agentsession.EdgeSystemAnalysis:
 		m.ClearSystemAnalysis()
 		return nil
@@ -3392,9 +3276,6 @@ func (m *AgentSessionMutation) ResetEdge(name string) error {
 	switch name {
 	case agentsession.EdgeTenant:
 		m.ResetTenant()
-		return nil
-	case agentsession.EdgeOwnerUser:
-		m.ResetOwnerUser()
 		return nil
 	case agentsession.EdgeSystemAnalysis:
 		m.ResetSystemAnalysis()
@@ -51463,7 +51344,7 @@ func (m *SystemAnalysisEntryMutation) Reference() (r string, exists bool) {
 // OldReference returns the old "reference" field's value of the SystemAnalysisEntry entity.
 // If the SystemAnalysisEntry object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisEntryMutation) OldReference(ctx context.Context) (v string, err error) {
+func (m *SystemAnalysisEntryMutation) OldReference(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReference is only allowed on UpdateOne operations")
 	}
@@ -51477,9 +51358,22 @@ func (m *SystemAnalysisEntryMutation) OldReference(ctx context.Context) (v strin
 	return oldValue.Reference, nil
 }
 
+// ClearReference clears the value of the "reference" field.
+func (m *SystemAnalysisEntryMutation) ClearReference() {
+	m.reference = nil
+	m.clearedFields[systemanalysisentry.FieldReference] = struct{}{}
+}
+
+// ReferenceCleared returns if the "reference" field was cleared in this mutation.
+func (m *SystemAnalysisEntryMutation) ReferenceCleared() bool {
+	_, ok := m.clearedFields[systemanalysisentry.FieldReference]
+	return ok
+}
+
 // ResetReference resets all changes to the "reference" field.
 func (m *SystemAnalysisEntryMutation) ResetReference() {
 	m.reference = nil
+	delete(m.clearedFields, systemanalysisentry.FieldReference)
 }
 
 // SetKind sets the "kind" field.
@@ -52125,6 +52019,9 @@ func (m *SystemAnalysisEntryMutation) AddField(name string, value ent.Value) err
 // mutation.
 func (m *SystemAnalysisEntryMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(systemanalysisentry.FieldReference) {
+		fields = append(fields, systemanalysisentry.FieldReference)
+	}
 	if m.FieldCleared(systemanalysisentry.FieldOccurredAt) {
 		fields = append(fields, systemanalysisentry.FieldOccurredAt)
 	}
@@ -52148,6 +52045,9 @@ func (m *SystemAnalysisEntryMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *SystemAnalysisEntryMutation) ClearField(name string) error {
 	switch name {
+	case systemanalysisentry.FieldReference:
+		m.ClearReference()
+		return nil
 	case systemanalysisentry.FieldOccurredAt:
 		m.ClearOccurredAt()
 		return nil

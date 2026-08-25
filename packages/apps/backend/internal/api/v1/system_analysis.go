@@ -242,6 +242,9 @@ func (h *systemAnalysisHandler) CreateSystemAnalysisEntry(ctx context.Context, r
 	attrs := request.Body.Attributes
 	setFn := func(m *ent.SystemAnalysisEntryMutation) {
 		m.SetAnalysisID(request.Id)
+		if attrs.Reference != nil {
+			m.SetReference(*attrs.Reference)
+		}
 		m.SetKind(sae.Kind(attrs.Kind))
 		if attrs.OccurredAt != nil {
 			m.SetOccurredAt(*attrs.OccurredAt)

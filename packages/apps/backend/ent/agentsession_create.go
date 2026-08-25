@@ -20,7 +20,6 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
-	"github.com/rezible/rezible/ent/user"
 )
 
 // AgentSessionCreate is the builder for creating a AgentSession entity.
@@ -68,20 +67,6 @@ func (_c *AgentSessionCreate) SetNillableUpdatedAt(v *time.Time) *AgentSessionCr
 // SetAgentName sets the "agent_name" field.
 func (_c *AgentSessionCreate) SetAgentName(v string) *AgentSessionCreate {
 	_c.mutation.SetAgentName(v)
-	return _c
-}
-
-// SetOwnerUserID sets the "owner_user_id" field.
-func (_c *AgentSessionCreate) SetOwnerUserID(v uuid.UUID) *AgentSessionCreate {
-	_c.mutation.SetOwnerUserID(v)
-	return _c
-}
-
-// SetNillableOwnerUserID sets the "owner_user_id" field if the given value is not nil.
-func (_c *AgentSessionCreate) SetNillableOwnerUserID(v *uuid.UUID) *AgentSessionCreate {
-	if v != nil {
-		_c.SetOwnerUserID(*v)
-	}
 	return _c
 }
 
@@ -134,11 +119,6 @@ func (_c *AgentSessionCreate) SetNillableID(v *uuid.UUID) *AgentSessionCreate {
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *AgentSessionCreate) SetTenant(v *Tenant) *AgentSessionCreate {
 	return _c.SetTenantID(v.ID)
-}
-
-// SetOwnerUser sets the "owner_user" edge to the User entity.
-func (_c *AgentSessionCreate) SetOwnerUser(v *User) *AgentSessionCreate {
-	return _c.SetOwnerUserID(v.ID)
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
@@ -378,24 +358,6 @@ func (_c *AgentSessionCreate) createSpec() (*AgentSession, *sqlgraph.CreateSpec)
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.OwnerUserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentsession.OwnerUserTable,
-			Columns: []string{agentsession.OwnerUserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AgentSession
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.OwnerUserID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -570,24 +532,6 @@ func (u *AgentSessionUpsert) UpdateAgentName() *AgentSessionUpsert {
 	return u
 }
 
-// SetOwnerUserID sets the "owner_user_id" field.
-func (u *AgentSessionUpsert) SetOwnerUserID(v uuid.UUID) *AgentSessionUpsert {
-	u.Set(agentsession.FieldOwnerUserID, v)
-	return u
-}
-
-// UpdateOwnerUserID sets the "owner_user_id" field to the value that was provided on create.
-func (u *AgentSessionUpsert) UpdateOwnerUserID() *AgentSessionUpsert {
-	u.SetExcluded(agentsession.FieldOwnerUserID)
-	return u
-}
-
-// ClearOwnerUserID clears the value of the "owner_user_id" field.
-func (u *AgentSessionUpsert) ClearOwnerUserID() *AgentSessionUpsert {
-	u.SetNull(agentsession.FieldOwnerUserID)
-	return u
-}
-
 // SetScopes sets the "scopes" field.
 func (u *AgentSessionUpsert) SetScopes(v []string) *AgentSessionUpsert {
 	u.Set(agentsession.FieldScopes, v)
@@ -738,27 +682,6 @@ func (u *AgentSessionUpsertOne) SetAgentName(v string) *AgentSessionUpsertOne {
 func (u *AgentSessionUpsertOne) UpdateAgentName() *AgentSessionUpsertOne {
 	return u.Update(func(s *AgentSessionUpsert) {
 		s.UpdateAgentName()
-	})
-}
-
-// SetOwnerUserID sets the "owner_user_id" field.
-func (u *AgentSessionUpsertOne) SetOwnerUserID(v uuid.UUID) *AgentSessionUpsertOne {
-	return u.Update(func(s *AgentSessionUpsert) {
-		s.SetOwnerUserID(v)
-	})
-}
-
-// UpdateOwnerUserID sets the "owner_user_id" field to the value that was provided on create.
-func (u *AgentSessionUpsertOne) UpdateOwnerUserID() *AgentSessionUpsertOne {
-	return u.Update(func(s *AgentSessionUpsert) {
-		s.UpdateOwnerUserID()
-	})
-}
-
-// ClearOwnerUserID clears the value of the "owner_user_id" field.
-func (u *AgentSessionUpsertOne) ClearOwnerUserID() *AgentSessionUpsertOne {
-	return u.Update(func(s *AgentSessionUpsert) {
-		s.ClearOwnerUserID()
 	})
 }
 
@@ -1089,27 +1012,6 @@ func (u *AgentSessionUpsertBulk) SetAgentName(v string) *AgentSessionUpsertBulk 
 func (u *AgentSessionUpsertBulk) UpdateAgentName() *AgentSessionUpsertBulk {
 	return u.Update(func(s *AgentSessionUpsert) {
 		s.UpdateAgentName()
-	})
-}
-
-// SetOwnerUserID sets the "owner_user_id" field.
-func (u *AgentSessionUpsertBulk) SetOwnerUserID(v uuid.UUID) *AgentSessionUpsertBulk {
-	return u.Update(func(s *AgentSessionUpsert) {
-		s.SetOwnerUserID(v)
-	})
-}
-
-// UpdateOwnerUserID sets the "owner_user_id" field to the value that was provided on create.
-func (u *AgentSessionUpsertBulk) UpdateOwnerUserID() *AgentSessionUpsertBulk {
-	return u.Update(func(s *AgentSessionUpsert) {
-		s.UpdateOwnerUserID()
-	})
-}
-
-// ClearOwnerUserID clears the value of the "owner_user_id" field.
-func (u *AgentSessionUpsertBulk) ClearOwnerUserID() *AgentSessionUpsertBulk {
-	return u.Update(func(s *AgentSessionUpsert) {
-		s.ClearOwnerUserID()
 	})
 }
 

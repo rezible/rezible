@@ -21,7 +21,6 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/ent/user"
 )
 
 // AgentSessionUpdate is the builder for updating AgentSession entities.
@@ -69,26 +68,6 @@ func (_u *AgentSessionUpdate) SetNillableAgentName(v *string) *AgentSessionUpdat
 	if v != nil {
 		_u.SetAgentName(*v)
 	}
-	return _u
-}
-
-// SetOwnerUserID sets the "owner_user_id" field.
-func (_u *AgentSessionUpdate) SetOwnerUserID(v uuid.UUID) *AgentSessionUpdate {
-	_u.mutation.SetOwnerUserID(v)
-	return _u
-}
-
-// SetNillableOwnerUserID sets the "owner_user_id" field if the given value is not nil.
-func (_u *AgentSessionUpdate) SetNillableOwnerUserID(v *uuid.UUID) *AgentSessionUpdate {
-	if v != nil {
-		_u.SetOwnerUserID(*v)
-	}
-	return _u
-}
-
-// ClearOwnerUserID clears the value of the "owner_user_id" field.
-func (_u *AgentSessionUpdate) ClearOwnerUserID() *AgentSessionUpdate {
-	_u.mutation.ClearOwnerUserID()
 	return _u
 }
 
@@ -140,11 +119,6 @@ func (_u *AgentSessionUpdate) SetMetadata(v map[string]interface{}) *AgentSessio
 func (_u *AgentSessionUpdate) ClearMetadata() *AgentSessionUpdate {
 	_u.mutation.ClearMetadata()
 	return _u
-}
-
-// SetOwnerUser sets the "owner_user" edge to the User entity.
-func (_u *AgentSessionUpdate) SetOwnerUser(v *User) *AgentSessionUpdate {
-	return _u.SetOwnerUserID(v.ID)
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
@@ -215,12 +189,6 @@ func (_u *AgentSessionUpdate) AddBindings(v ...*AgentSessionBinding) *AgentSessi
 // Mutation returns the AgentSessionMutation object of the builder.
 func (_u *AgentSessionUpdate) Mutation() *AgentSessionMutation {
 	return _u.mutation
-}
-
-// ClearOwnerUser clears the "owner_user" edge to the User entity.
-func (_u *AgentSessionUpdate) ClearOwnerUser() *AgentSessionUpdate {
-	_u.mutation.ClearOwnerUser()
-	return _u
 }
 
 // ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
@@ -411,37 +379,6 @@ func (_u *AgentSessionUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if _u.mutation.MetadataCleared() {
 		_spec.ClearField(agentsession.FieldMetadata, field.TypeJSON)
-	}
-	if _u.mutation.OwnerUserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentsession.OwnerUserTable,
-			Columns: []string{agentsession.OwnerUserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentSession
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.OwnerUserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentsession.OwnerUserTable,
-			Columns: []string{agentsession.OwnerUserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentSession
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.SystemAnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -724,26 +661,6 @@ func (_u *AgentSessionUpdateOne) SetNillableAgentName(v *string) *AgentSessionUp
 	return _u
 }
 
-// SetOwnerUserID sets the "owner_user_id" field.
-func (_u *AgentSessionUpdateOne) SetOwnerUserID(v uuid.UUID) *AgentSessionUpdateOne {
-	_u.mutation.SetOwnerUserID(v)
-	return _u
-}
-
-// SetNillableOwnerUserID sets the "owner_user_id" field if the given value is not nil.
-func (_u *AgentSessionUpdateOne) SetNillableOwnerUserID(v *uuid.UUID) *AgentSessionUpdateOne {
-	if v != nil {
-		_u.SetOwnerUserID(*v)
-	}
-	return _u
-}
-
-// ClearOwnerUserID clears the value of the "owner_user_id" field.
-func (_u *AgentSessionUpdateOne) ClearOwnerUserID() *AgentSessionUpdateOne {
-	_u.mutation.ClearOwnerUserID()
-	return _u
-}
-
 // SetScopes sets the "scopes" field.
 func (_u *AgentSessionUpdateOne) SetScopes(v []string) *AgentSessionUpdateOne {
 	_u.mutation.SetScopes(v)
@@ -792,11 +709,6 @@ func (_u *AgentSessionUpdateOne) SetMetadata(v map[string]interface{}) *AgentSes
 func (_u *AgentSessionUpdateOne) ClearMetadata() *AgentSessionUpdateOne {
 	_u.mutation.ClearMetadata()
 	return _u
-}
-
-// SetOwnerUser sets the "owner_user" edge to the User entity.
-func (_u *AgentSessionUpdateOne) SetOwnerUser(v *User) *AgentSessionUpdateOne {
-	return _u.SetOwnerUserID(v.ID)
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
@@ -867,12 +779,6 @@ func (_u *AgentSessionUpdateOne) AddBindings(v ...*AgentSessionBinding) *AgentSe
 // Mutation returns the AgentSessionMutation object of the builder.
 func (_u *AgentSessionUpdateOne) Mutation() *AgentSessionMutation {
 	return _u.mutation
-}
-
-// ClearOwnerUser clears the "owner_user" edge to the User entity.
-func (_u *AgentSessionUpdateOne) ClearOwnerUser() *AgentSessionUpdateOne {
-	_u.mutation.ClearOwnerUser()
-	return _u
 }
 
 // ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
@@ -1093,37 +999,6 @@ func (_u *AgentSessionUpdateOne) sqlSave(ctx context.Context) (_node *AgentSessi
 	}
 	if _u.mutation.MetadataCleared() {
 		_spec.ClearField(agentsession.FieldMetadata, field.TypeJSON)
-	}
-	if _u.mutation.OwnerUserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentsession.OwnerUserTable,
-			Columns: []string{agentsession.OwnerUserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentSession
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.OwnerUserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   agentsession.OwnerUserTable,
-			Columns: []string{agentsession.OwnerUserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AgentSession
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.SystemAnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -191,7 +191,7 @@ func init() {
 	// agentsession.AgentNameValidator is a validator for the "agent_name" field. It is called by the builders before save.
 	agentsession.AgentNameValidator = agentsessionDescAgentName.Validators[0].(func(string) error)
 	// agentsessionDescScopes is the schema descriptor for scopes field.
-	agentsessionDescScopes := agentsessionFields[3].Descriptor()
+	agentsessionDescScopes := agentsessionFields[2].Descriptor()
 	// agentsession.DefaultScopes holds the default value on creation for the scopes field.
 	agentsession.DefaultScopes = agentsessionDescScopes.Default.([]string)
 	// agentsessionDescID is the schema descriptor for id field.
@@ -1459,10 +1459,6 @@ func init() {
 	systemanalysisentry.DefaultUpdatedAt = systemanalysisentryDescUpdatedAt.Default.(func() time.Time)
 	// systemanalysisentry.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysisentry.UpdateDefaultUpdatedAt = systemanalysisentryDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// systemanalysisentryDescReference is the schema descriptor for reference field.
-	systemanalysisentryDescReference := systemanalysisentryFields[2].Descriptor()
-	// systemanalysisentry.ReferenceValidator is a validator for the "reference" field. It is called by the builders before save.
-	systemanalysisentry.ReferenceValidator = systemanalysisentryDescReference.Validators[0].(func(string) error)
 	// systemanalysisentryDescSequence is the schema descriptor for sequence field.
 	systemanalysisentryDescSequence := systemanalysisentryFields[5].Descriptor()
 	// systemanalysisentry.DefaultSequence holds the default value on creation for the sequence field.

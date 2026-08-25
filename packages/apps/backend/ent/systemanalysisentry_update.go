@@ -281,6 +281,9 @@ func (_u *SystemAnalysisEntryUpdate) sqlSave(ctx context.Context) (_node int, er
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysisentry.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if _u.mutation.ReferenceCleared() {
+		_spec.ClearField(systemanalysisentry.FieldReference, field.TypeString)
+	}
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(systemanalysisentry.FieldKind, field.TypeEnum, value)
 	}
@@ -661,6 +664,9 @@ func (_u *SystemAnalysisEntryUpdateOne) sqlSave(ctx context.Context) (_node *Sys
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysisentry.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ReferenceCleared() {
+		_spec.ClearField(systemanalysisentry.FieldReference, field.TypeString)
 	}
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(systemanalysisentry.FieldKind, field.TypeEnum, value)

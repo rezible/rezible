@@ -277,6 +277,16 @@ func ReferenceHasSuffix(v string) predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.FieldHasSuffix(FieldReference, v))
 }
 
+// ReferenceIsNil applies the IsNil predicate on the "reference" field.
+func ReferenceIsNil() predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldIsNull(FieldReference))
+}
+
+// ReferenceNotNil applies the NotNil predicate on the "reference" field.
+func ReferenceNotNil() predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldNotNull(FieldReference))
+}
+
 // ReferenceEqualFold applies the EqualFold predicate on the "reference" field.
 func ReferenceEqualFold(v string) predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.FieldEqualFold(FieldReference, v))

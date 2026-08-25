@@ -75,7 +75,7 @@ export type AddSystemAnalysisNodeAttributes = {
     hidden?: boolean;
     knowledgeEntityId: string;
     labelOverride?: string;
-    position: SystemAnalysisDiagramPosition;
+    position: SystemAnalysisNodeDiagramPosition;
 };
 
 export type AddSystemAnalysisNodeRequestBody = {
@@ -94,6 +94,64 @@ export type AddSystemAnalysisNodeResponseBody = {
     data: SystemAnalysisNode;
 };
 
+export type AgentArtifact = {
+    attributes: AgentArtifactAttributes;
+    id: string;
+};
+
+export type AgentArtifactAttributes = {
+    createdAt: string;
+    lastAgentTurnId?: string;
+    name: string;
+    parts: Array<AgentMessagePart>;
+    updatedAt: string;
+};
+
+export type AgentArtifactChunk = {
+    name: string;
+    parts: Array<AgentMessagePart>;
+};
+
+export type AgentMessage = {
+    attributes: AgentMessageAttributes;
+    id: string;
+};
+
+export type AgentMessageAttributes = {
+    agentTurnId: string;
+    createdAt: string;
+    parts: Array<AgentMessagePart>;
+    role: string;
+    sequence: number;
+    updatedAt: string;
+    visible: boolean;
+};
+
+export type AgentMessagePart = {
+    content?: Array<AgentMessagePart>;
+    contentType?: string;
+    custom?: {
+        [key: string]: unknown;
+    };
+    data?: string;
+    input?: unknown;
+    kind: string;
+    name?: string;
+    output?: unknown;
+    partial?: boolean;
+    ref?: string;
+    text?: string;
+    uri?: string;
+    url?: string;
+};
+
+export type AgentModelChunk = {
+    aggregated: boolean;
+    index: number;
+    parts: Array<AgentMessagePart>;
+    role: string;
+};
+
 export type AgentSession = {
     attributes: AgentSessionAttributes;
     id: string;
@@ -102,8 +160,9 @@ export type AgentSession = {
 export type AgentSessionAttributes = {
     agentName: string;
     createdAt: string;
-    ownerUserId?: string;
     permissionScopes: Array<string>;
+    systemAnalysisId?: string;
+    updatedAt: string;
 };
 
 export type AgentTurn = {
@@ -130,6 +189,18 @@ export type AgentTurnAttributes = {
     updatedAt: string;
 };
 
+export type AgentTurnChunkEvent = {
+    artifact?: AgentArtifactChunk;
+    model?: AgentModelChunk;
+    sessionId: string;
+    turnEnd?: AgentTurnEndChunk;
+    turnId: string;
+};
+
+export type AgentTurnEndChunk = {
+    finishReason: string;
+};
+
 export type AgentTurnError = {
     code: string;
     message: string;
@@ -138,6 +209,13 @@ export type AgentTurnError = {
 export type AgentTurnResume = {
     respond?: Array<Part>;
     restart?: Array<Part>;
+};
+
+export type AgentTurnUpdatedEvent = {
+    finishReason?: string;
+    sessionId: string;
+    status: string;
+    turnId: string;
 };
 
 export type AiAgentConfig = {
@@ -566,6 +644,7 @@ export type CreateSystemAnalysisEntryAttributes = {
     properties?: {
         [key: string]: unknown;
     };
+    reference?: string;
     title: string;
 };
 
@@ -1056,14 +1135,6 @@ export type GetRetrospectiveResponseBody = {
     data: Retrospective;
 };
 
-export type GetSystemAnalysisGraphResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: KnowledgeGraphView;
-};
-
 export type GetSystemAnalysisResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1419,17 +1490,6 @@ export type KnowledgeGraphEntityAttributes = {
     updatedAt: string;
 };
 
-export type KnowledgeGraphEvidence = {
-    attributes: KnowledgeGraphEvidenceAttributes;
-    id: string;
-};
-
-export type KnowledgeGraphEvidenceAttributes = {
-    effectiveAt: string;
-    kind: 'observed' | 'deleted';
-    subjectState: KnowledgeGraphSubjectState;
-};
-
 export type KnowledgeGraphRelationship = {
     attributes: KnowledgeGraphRelationshipAttributes;
     id: string;
@@ -1471,6 +1531,24 @@ export type KnowledgeGraphView = {
     relationships: Array<KnowledgeGraphRelationship>;
     rootId: string;
     truncated: boolean;
+};
+
+export type ListResponseBodyAgentArtifact = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AgentArtifact>;
+    pagination: ResponsePagination;
+};
+
+export type ListResponseBodyAgentMessage = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AgentMessage>;
+    pagination: ResponsePagination;
 };
 
 export type ListResponseBodyAgentSession = {
@@ -2147,11 +2225,6 @@ export type SystemAnalysisAttributes = {
     subjectEntityId?: string;
 };
 
-export type SystemAnalysisDiagramPosition = {
-    x: number;
-    y: number;
-};
-
 export type SystemAnalysisEdge = {
     attributes: SystemAnalysisEdgeAttributes;
     id: string;
@@ -2162,8 +2235,6 @@ export type SystemAnalysisEdgeAttributes = {
     hidden: boolean;
     knowledgeRelationship: KnowledgeGraphRelationship;
     labelOverride?: string;
-    sourceNodeId: string;
-    targetNodeId: string;
 };
 
 export type SystemAnalysisEntry = {
@@ -2178,6 +2249,7 @@ export type SystemAnalysisEntryAttributes = {
     properties: {
         [key: string]: unknown;
     };
+    reference?: string;
     sequence: number;
     subjects: Array<SystemAnalysisEntrySubject>;
     title: string;
@@ -2189,12 +2261,10 @@ export type SystemAnalysisEntrySubject = {
 };
 
 export type SystemAnalysisEntrySubjectAttributes = {
-    knowledgeEntity?: KnowledgeGraphEntity;
-    knowledgeEvidence?: KnowledgeGraphEvidence;
-    knowledgeRelationship?: KnowledgeGraphRelationship;
+    knowledgeEntityId?: string;
+    knowledgeEvidenceId?: string;
+    knowledgeRelationshipId?: string;
     role: string;
-    subjectId: string;
-    subjectKind: 'entity' | 'relationship' | 'evidence';
 };
 
 export type SystemAnalysisNode = {
@@ -2207,7 +2277,12 @@ export type SystemAnalysisNodeAttributes = {
     hidden: boolean;
     knowledgeEntity: KnowledgeGraphEntity;
     labelOverride?: string;
-    position: SystemAnalysisDiagramPosition;
+    position: SystemAnalysisNodeDiagramPosition;
+};
+
+export type SystemAnalysisNodeDiagramPosition = {
+    x: number;
+    y: number;
 };
 
 export type Task = {
@@ -2769,7 +2844,7 @@ export type UpdateSystemAnalysisNodeAttributes = {
     descriptionOverride?: string;
     hidden?: boolean;
     labelOverride?: string;
-    position?: SystemAnalysisDiagramPosition;
+    position?: SystemAnalysisNodeDiagramPosition;
 };
 
 export type UpdateSystemAnalysisNodeRequestBody = {
@@ -3106,6 +3181,187 @@ export type GetAgentSessionResponses = {
 };
 
 export type GetAgentSessionResponse = GetAgentSessionResponses[keyof GetAgentSessionResponses];
+
+export type ListAgentArtifactsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/ai/agent_sessions/{id}/artifacts';
+};
+
+export type ListAgentArtifactsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAgentArtifactsError = ListAgentArtifactsErrors[keyof ListAgentArtifactsErrors];
+
+export type ListAgentArtifactsResponses = {
+    /**
+     * OK
+     */
+    200: ListResponseBodyAgentArtifact;
+};
+
+export type ListAgentArtifactsResponse = ListAgentArtifactsResponses[keyof ListAgentArtifactsResponses];
+
+export type StreamAgentSessionEventsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/ai/agent_sessions/{id}/events';
+};
+
+export type StreamAgentSessionEventsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type StreamAgentSessionEventsError = StreamAgentSessionEventsErrors[keyof StreamAgentSessionEventsErrors];
+
+export type StreamAgentSessionEventsResponses = {
+    /**
+     * Server Sent Events
+     *
+     * Each oneOf object in the array represents one possible Server Sent Events (SSE) message, serialized as UTF-8 text according to the SSE specification.
+     */
+    200: Array<{
+        data: AgentTurnChunkEvent;
+        /**
+         * The event name.
+         */
+        event: 'turn-chunk';
+        /**
+         * The event ID.
+         */
+        id?: number;
+        /**
+         * The retry time in milliseconds.
+         */
+        retry?: number;
+    } | {
+        data: AgentTurnUpdatedEvent;
+        /**
+         * The event name.
+         */
+        event: 'turn-updated';
+        /**
+         * The event ID.
+         */
+        id?: number;
+        /**
+         * The retry time in milliseconds.
+         */
+        retry?: number;
+    }>;
+};
+
+export type StreamAgentSessionEventsResponse = StreamAgentSessionEventsResponses[keyof StreamAgentSessionEventsResponses];
+
+export type ListAgentMessagesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/ai/agent_sessions/{id}/messages';
+};
+
+export type ListAgentMessagesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAgentMessagesError = ListAgentMessagesErrors[keyof ListAgentMessagesErrors];
+
+export type ListAgentMessagesResponses = {
+    /**
+     * OK
+     */
+    200: ListResponseBodyAgentMessage;
+};
+
+export type ListAgentMessagesResponse = ListAgentMessagesResponses[keyof ListAgentMessagesResponses];
 
 export type ListAgentTurnsData = {
     body?: never;
@@ -9533,56 +9789,6 @@ export type CreateSystemAnalysisEntryResponses = {
 };
 
 export type CreateSystemAnalysisEntryResponse = CreateSystemAnalysisEntryResponses[keyof CreateSystemAnalysisEntryResponses];
-
-export type GetSystemAnalysisGraphData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: {
-        depth?: number;
-        relationshipKind?: Array<string>;
-    };
-    url: '/system_analysis/{id}/graph';
-};
-
-export type GetSystemAnalysisGraphErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemAnalysisGraphError = GetSystemAnalysisGraphErrors[keyof GetSystemAnalysisGraphErrors];
-
-export type GetSystemAnalysisGraphResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemAnalysisGraphResponseBody;
-};
-
-export type GetSystemAnalysisGraphResponse = GetSystemAnalysisGraphResponses[keyof GetSystemAnalysisGraphResponses];
 
 export type ListSystemAnalysisNodesData = {
     body?: never;

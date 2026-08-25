@@ -55,6 +55,18 @@ func WithCommitHook(h CommitHook) TxOption {
 	}
 }
 
+func WithAfterCommitFunc(fn func()) TxOption {
+	return WithCommitHook(func(next Committer) Committer {
+		return CommitFunc(func(ctx context.Context, tx *Tx) error {
+			if err := next.Commit(ctx, tx); err != nil {
+				return err
+			}
+			fn()
+			return nil
+		})
+	})
+}
+
 func WithRollbackHook(h RollbackHook) TxOption {
 	return func(opts *TxOptions) {
 		opts.OnRollback = append(opts.OnRollback, h)

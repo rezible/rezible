@@ -155,7 +155,7 @@ ALTER TABLE "agent_turns" DROP CONSTRAINT "agent_turns_agent_messages_input_mess
 -- reverse: modify "agent_session_bindings" table
 ALTER TABLE "agent_session_bindings" DROP CONSTRAINT "agent_session_bindings_integrations_integration", DROP CONSTRAINT "agent_session_bindings_tenants_tenant", DROP CONSTRAINT "agent_session_bindings_agent_sessions_bindings";
 -- reverse: modify "agent_sessions" table
-ALTER TABLE "agent_sessions" DROP CONSTRAINT "agent_sessions_system_analyses_system_analysis", DROP CONSTRAINT "agent_sessions_users_owner_user", DROP CONSTRAINT "agent_sessions_tenants_tenant";
+ALTER TABLE "agent_sessions" DROP CONSTRAINT "agent_sessions_system_analyses_system_analysis", DROP CONSTRAINT "agent_sessions_tenants_tenant";
 -- reverse: modify "agent_messages" table
 ALTER TABLE "agent_messages" DROP CONSTRAINT "agent_messages_agent_turns_messages", DROP CONSTRAINT "agent_messages_agent_sessions_messages", DROP CONSTRAINT "agent_messages_tenants_tenant";
 -- reverse: modify "agent_artifacts" table
@@ -600,8 +600,6 @@ DROP INDEX "agentsessionbinding_tenant_id";
 DROP TABLE "agent_session_bindings";
 -- reverse: create index "agentsession_tenant_id_agent_name_created_at" to table: "agent_sessions"
 DROP INDEX "agentsession_tenant_id_agent_name_created_at";
--- reverse: create index "agentsession_tenant_id_owner_user_id_created_at" to table: "agent_sessions"
-DROP INDEX "agentsession_tenant_id_owner_user_id_created_at";
 -- reverse: create index "agentsession_tenant_id" to table: "agent_sessions"
 DROP INDEX "agentsession_tenant_id";
 -- reverse: create "agent_sessions" table

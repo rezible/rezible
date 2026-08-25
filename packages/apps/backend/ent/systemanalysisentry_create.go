@@ -73,6 +73,14 @@ func (_c *SystemAnalysisEntryCreate) SetReference(v string) *SystemAnalysisEntry
 	return _c
 }
 
+// SetNillableReference sets the "reference" field if the given value is not nil.
+func (_c *SystemAnalysisEntryCreate) SetNillableReference(v *string) *SystemAnalysisEntryCreate {
+	if v != nil {
+		_c.SetReference(*v)
+	}
+	return _c
+}
+
 // SetKind sets the "kind" field.
 func (_c *SystemAnalysisEntryCreate) SetKind(v systemanalysisentry.Kind) *SystemAnalysisEntryCreate {
 	_c.mutation.SetKind(v)
@@ -251,14 +259,6 @@ func (_c *SystemAnalysisEntryCreate) check() error {
 	if _, ok := _c.mutation.AnalysisID(); !ok {
 		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "SystemAnalysisEntry.analysis_id"`)}
 	}
-	if _, ok := _c.mutation.Reference(); !ok {
-		return &ValidationError{Name: "reference", err: errors.New(`ent: missing required field "SystemAnalysisEntry.reference"`)}
-	}
-	if v, ok := _c.mutation.Reference(); ok {
-		if err := systemanalysisentry.ReferenceValidator(v); err != nil {
-			return &ValidationError{Name: "reference", err: fmt.Errorf(`ent: validator failed for field "SystemAnalysisEntry.reference": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "SystemAnalysisEntry.kind"`)}
 	}
@@ -331,7 +331,7 @@ func (_c *SystemAnalysisEntryCreate) createSpec() (*SystemAnalysisEntry, *sqlgra
 	}
 	if value, ok := _c.mutation.Reference(); ok {
 		_spec.SetField(systemanalysisentry.FieldReference, field.TypeString, value)
-		_node.Reference = value
+		_node.Reference = &value
 	}
 	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(systemanalysisentry.FieldKind, field.TypeEnum, value)
