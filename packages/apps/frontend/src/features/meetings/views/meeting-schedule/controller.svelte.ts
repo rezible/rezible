@@ -7,7 +7,9 @@ export class MeetingScheduleViewController {
 
 	constructor(idFn: Getter<string>) {
 		this.scheduleId = idFn();
-		watch(idFn, id => {this.scheduleId = id});
+		watch(idFn, (id) => {
+			this.scheduleId = id;
+		});
 	}
 
 	query = createQuery(() => getMeetingScheduleOptions({ path: { id: this.scheduleId } }));
@@ -15,5 +17,6 @@ export class MeetingScheduleViewController {
 }
 
 const ctx = new Context<MeetingScheduleViewController>("MeetingScheduleViewController");
-export const initMeetingScheduleViewController = (idFn: Getter<string>) => ctx.set(new MeetingScheduleViewController(idFn));
+export const initMeetingScheduleViewController = (idFn: Getter<string>) =>
+	ctx.set(new MeetingScheduleViewController(idFn));
 export const useMeetingScheduleViewController = () => ctx.get();

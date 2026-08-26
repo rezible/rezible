@@ -7,7 +7,7 @@
 	import RosterActivityColumn from "./RosterActivityColumn.svelte";
 	import RosterShiftsColumn from "./RosterShiftsColumn.svelte";
 	import { useOncallRosterViewController } from "$features/oncall/views/roster";
-	
+
 	const view = useOncallRosterViewController();
 
 	let periodDays = $state(30);
@@ -18,13 +18,12 @@
 	const metrics = $derived(metricsQuery.data?.data);
 </script>
 
-
 <div class="w-full h-full grid grid-cols-4 gap-2">
 	<div class="col-span-2 h-full w-full overflow-y-auto pr-1 space-y-2">
 		<div class="p-2 flex flex-col gap-2 border border-surface-content/10 rounded p-2">
 			<Header title="Key Metrics" subheading="Last 30 days" classes={{ root: "text-lg font-medium" }}>
 				{#snippet avatar()}
-					<Icon data={mdiChartBar} size={38} classes={{root: "text-primary-300"}} />
+					<Icon data={mdiChartBar} size={38} classes={{ root: "text-primary-300" }} />
 				{/snippet}
 			</Header>
 

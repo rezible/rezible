@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { RangeCalendar as RangeCalendarPrimitive } from "bits-ui";
-	import RiArrowRightSLine from 'remixicon-svelte/icons/arrow-right-s-line';
+	import RiArrowRightSLine from "remixicon-svelte/icons/arrow-right-s-line";
 	import { buttonVariants, type ButtonVariant } from "$components/ui/button/index.js";
 	import { cn } from "$lib/utils.js";
 

@@ -9,9 +9,7 @@
 	import RosterCard from "$features/oncall/components/roster-card/RosterCard.svelte";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 
-	setPageBreadcrumbs(() => [
-		{ label: "Oncall Rosters", href: "/rosters" },
-	]);
+	setPageBreadcrumbs(() => [{ label: "Oncall Rosters", href: "/rosters" }]);
 
 	const paginator = new QueryPaginatorState();
 	let searchValue = $state<string>();

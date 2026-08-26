@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { RangeCalendar as RangeCalendarPrimitive } from "bits-ui";
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
-	import RiArrowDownSLine from 'remixicon-svelte/icons/arrow-down-s-line';
+	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
 
 	let {
 		ref = $bindable(null),

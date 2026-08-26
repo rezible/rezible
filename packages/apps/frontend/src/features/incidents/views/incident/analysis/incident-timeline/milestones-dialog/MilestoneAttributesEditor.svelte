@@ -12,12 +12,21 @@
 		type IncidentMilestoneAttributes,
 		type UpdateIncidentMilestoneAttributes,
 	} from "$lib/api";
-	import { type ZonedDateTime, fromAbsolute, getLocalTimeZone, parseAbsolute } from "@internationalized/date";
+	import {
+		type ZonedDateTime,
+		fromAbsolute,
+		getLocalTimeZone,
+		parseAbsolute,
+	} from "@internationalized/date";
 	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import DateTimePickerField from "$src/components/forms/date-time-field/DateTimePickerField.svelte";
 
 	import { createMentionEditor } from "$src/components/tiptap-editor/editors";
-	import { getIconForIncidentMilestoneKind, getNextOrderedMilestone, getPreviousOrderedMilestone } from "./milestones";
+	import {
+		getIconForIncidentMilestoneKind,
+		getNextOrderedMilestone,
+		getPreviousOrderedMilestone,
+	} from "./milestones";
 	import { useIncidentView } from "$features/incidents/views/incident";
 	import { watch } from "runed";
 	import { useIncidentTimelineController } from "../controller.svelte";
@@ -70,17 +79,22 @@
 			hint: "Impact is resolved",
 		},
 	];
-	const existingKinds = $derived(new Set(otherMilestones.map(m => m.attributes.kind)));
-	const validOptions = $derived(milestoneKindOptions.filter(o => (!o.unique || !existingKinds.has(o.value))));
+	const existingKinds = $derived(new Set(otherMilestones.map((m) => m.attributes.kind)));
+	const validOptions = $derived(
+		milestoneKindOptions.filter((o) => !o.unique || !existingKinds.has(o.value))
+	);
 
 	type DescriptionEditor = ReturnType<typeof createMentionEditor> | null;
 	type MilestoneKind = IncidentMilestoneAttributes["kind"];
 
 	let kind = $derived<MilestoneKind>(milestone?.attributes.kind ?? "impact");
-	watch(() => validOptions, v => {
-		const defaultOption = v.at(0);
-		if (defaultOption) kind = defaultOption.value;
-	});
+	watch(
+		() => validOptions,
+		(v) => {
+			const defaultOption = v.at(0);
+			if (defaultOption) kind = defaultOption.value;
+		}
+	);
 	let descriptionEditor = $state<DescriptionEditor>(null);
 
 	const timezone = $derived(incidentViewState.timezone);
@@ -149,7 +163,7 @@
 </script>
 
 <div class="flex flex-col min-h-0 max-h-full flex-1 gap-2 p-2">
-	<DateTimePickerField 
+	<DateTimePickerField
 		label="Time"
 		current={timestamp || incidentStart}
 		onChange={(ts) => (timestamp = ts)}

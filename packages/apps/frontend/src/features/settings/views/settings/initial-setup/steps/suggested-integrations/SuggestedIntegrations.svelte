@@ -12,10 +12,11 @@
 	<div class="space-y-1 max-w-xs">
 		<h2 class="text-lg font-semibold">Suggested integrations</h2>
 		<p class="text-sm text-muted-foreground">
-			Configure commonly useful integrations, or skip this for now and install them later in Settings > Integrations.
+			Configure commonly useful integrations, or skip this for now and install them later in Settings >
+			Integrations.
 		</p>
 	</div>
-	
+
 	<div class="flex flex-col gap-3 flex-1">
 		{#each ctrl.integrationSuggestions.entries() as [name, hasInstalls]}
 			{@const info = providerDisplays.get(name)}
@@ -23,14 +24,19 @@
 				<Card.Header class="p-0">
 					<Card.Title class="truncate">{info?.displayName || name}</Card.Title>
 					<Card.Description>{info?.description || ""}</Card.Description>
-						<Card.Action>
-							{#if hasInstalls}
-								<Badge>Installed</Badge>
-							{/if}
-							<Button variant={hasInstalls ? "secondary" : "outline"} onclick={() => {ctrl.openIntegrationProviderDialog(name)}}>
-								Configure
-							</Button>
-						</Card.Action>
+					<Card.Action>
+						{#if hasInstalls}
+							<Badge>Installed</Badge>
+						{/if}
+						<Button
+							variant={hasInstalls ? "secondary" : "outline"}
+							onclick={() => {
+								ctrl.openIntegrationProviderDialog(name);
+							}}
+						>
+							Configure
+						</Button>
+					</Card.Action>
 				</Card.Header>
 			</Card.Root>
 		{/each}

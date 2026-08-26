@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Pagination as PaginationPrimitive } from "bits-ui";
-	import RiArrowLeftSLine from 'remixicon-svelte/icons/arrow-left-s-line';
+	import RiArrowLeftSLine from "remixicon-svelte/icons/arrow-left-s-line";
 	import { cn } from "$lib/utils.js";
 	import { buttonVariants } from "../button/index.js";
 

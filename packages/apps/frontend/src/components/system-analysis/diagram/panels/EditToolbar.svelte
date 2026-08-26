@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { useSvelteFlow, ViewportPortal } from "@xyflow/svelte";
 	import { Button } from "$components/ui/button";
-	import { useSystemDiagram, type SystemTopologyNodeData, type SystemRelationshipEdgeData } from "./controller.svelte";
+	import {
+		useSystemDiagram,
+		type SystemTopologyNodeData,
+		type SystemRelationshipEdgeData,
+	} from "../diagramController.svelte";
 	import { IsMounted } from "runed";
-	import { useIncidentAnalysis } from "../controller.svelte";
+	import { useSystemAnalysisController } from "../../controller.svelte";
 
-	const analysis = useIncidentAnalysis();
+	const analysis = useSystemAnalysisController();
 	const diagram = useSystemDiagram();
+	
 	const { getNodesBounds } = useSvelteFlow();
 
 	const { node, edge } = $derived(diagram.selected);
@@ -25,10 +30,10 @@
 	const transform = $derived.by(() => {
 		if (!diagram.selectedLivePosition || !rect) return;
 		const { x, y } = diagram.selectedLivePosition;
-		const posX = (x + rect.width / 2);
+		const posX = x + rect.width / 2;
 		const offset = 10;
-		const posY = !!node ? (y + rect.height + offset) : (y + rect.height / 2) - offset;
-		return `translate(${posX}px, ${posY}px) translate(-50%, 0%)`
+		const posY = !!node ? y + rect.height + offset : y + rect.height / 2 - offset;
+		return `translate(${posX}px, ${posY}px) translate(-50%, 0%)`;
 	});
 
 	const confirmDelete = () => {

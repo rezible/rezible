@@ -9,12 +9,7 @@
 		dense?: boolean;
 		clearable?: boolean;
 	};
-	const {
-		onSelected,
-		selectedId,
-		dense,
-		clearable,
-	}: Props = $props();
+	const { onSelected, selectedId, dense, clearable }: Props = $props();
 
 	const userInfo = useUserOncallInformation();
 
@@ -24,14 +19,14 @@
 
 	let menuOpen = $state(false);
 	const queryEnabled = $derived(menuOpen);
-	let queryParams = $derived<ListOncallRostersData["query"]>({search: searchValue});
+	let queryParams = $derived<ListOncallRostersData["query"]>({ search: searchValue });
 	const query = createQuery(() => ({
-		...listOncallRostersOptions({query: queryParams}),
+		...listOncallRostersOptions({ query: queryParams }),
 		enabled: queryEnabled,
 	}));
 	const rosters = $derived(query.data?.data || userRosters);
 
-	const queryOptions = $derived(rosters.map(r => ({value: r.id, label: r.attributes.name})));
+	const queryOptions = $derived(rosters.map((r) => ({ value: r.id, label: r.attributes.name })));
 
 	/*
 	const rosterOptions = $derived.by(() => {

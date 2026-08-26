@@ -266,7 +266,9 @@ export class IncidentSettingsController {
 					archived: item.attributes.archived,
 					required: false,
 					options: optionValues.map((value) => {
-						const existing = item.attributes.options.find((opt) => opt.attributes.value === value);
+						const existing = item.attributes.options.find(
+							(opt) => opt.attributes.value === value
+						);
 						return {
 							id: existing?.id,
 							fieldOptionType: existing?.attributes.optionType ?? "custom",

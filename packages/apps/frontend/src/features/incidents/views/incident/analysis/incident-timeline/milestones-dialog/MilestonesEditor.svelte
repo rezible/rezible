@@ -5,7 +5,7 @@
 		listIncidentMilestonesOptions,
 		type IncidentMilestone,
 	} from "$lib/api";
-	
+
 	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 
 	import { useIncidentView } from "$features/incidents/views/incident";
@@ -63,7 +63,7 @@
 {#if milestonesDialog.editorOpen}
 	<MilestoneAttributesEditor
 		milestone={milestonesDialog.editingMilestone}
-		otherMilestones={milestones.filter(m => m.id !== milestonesDialog.editingMilestone?.id)}
+		otherMilestones={milestones.filter((m) => m.id !== milestonesDialog.editingMilestone?.id)}
 		onClose={onEditorClosed}
 		{onSaved}
 	/>
@@ -99,7 +99,7 @@
 						</div>
 					</ListItem> -->
 				{/each}
-		
+
 				<Button onclick={onAddClick}>
 					<span class="flex gap-2 items-center">
 						Add Milestone

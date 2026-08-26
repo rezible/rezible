@@ -1,8 +1,5 @@
 import { z } from "zod";
-import type {
-	CreateMeetingScheduleRequestBody,
-	CreateMeetingSessionRequestBody,
-} from "$lib/api";
+import type { CreateMeetingScheduleRequestBody, CreateMeetingSessionRequestBody } from "$lib/api";
 import { getLocalTimeZone, now, type ZonedDateTime } from "@internationalized/date";
 
 export const WeekdaysShort = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
@@ -45,9 +42,9 @@ export const getEmptyForm = (): CreateMeetingFormData => {
 		repetitionStep: 1,
 		monthlyOn: "same_day",
 		untilType: "indefinite",
-		untilDate: curTime.add({days: 1}),
+		untilDate: curTime.add({ days: 1 }),
 		numRepetitions: 2,
-	}
+	};
 };
 
 const refineZonedDateTimeString = (dateStr: string) => {
@@ -56,12 +53,11 @@ const refineZonedDateTimeString = (dateStr: string) => {
 		if (!datePart || !timezonePart?.endsWith("]")) return false;
 
 		const isoDateTimeRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/;
-		return isoDateTimeRegex.test(datePart) &&
-			/^[A-Za-z_/]+$/.test(timezonePart.slice(0, -1));
+		return isoDateTimeRegex.test(datePart) && /^[A-Za-z_/]+$/.test(timezonePart.slice(0, -1));
 	} catch {
 		return false;
 	}
-}
+};
 
 const ZodZonedDateTime = z.string().refine(refineZonedDateTimeString, "Invalid ZonedDateTime format");
 

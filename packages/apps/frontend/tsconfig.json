@@ -7,7 +7,7 @@
 		"module": "ESNext",
 		"moduleDetection": "force",
 		"allowJs": true,
-		"types": ["node"],
+		"types": ["node", "bun"],
 
 		"resolveJsonModule": true,
 

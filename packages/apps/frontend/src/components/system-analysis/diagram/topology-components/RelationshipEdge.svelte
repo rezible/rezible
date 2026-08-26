@@ -34,6 +34,9 @@
 	);
 
 	const animated = $derived(props.selected);
+	const hasAttachments = $derived(
+		Number((props.data as { attachmentCount?: number } | undefined)?.attachmentCount) > 0
+	);
 	const animatedPathProps = {
 		"stroke-width": "5",
 		"stroke-dasharray": "10",
@@ -52,6 +55,7 @@
 		fill="none"
 		style=""
 		class="svelte-flow__edge-path"
+		class:stroke-primary={hasAttachments}
 		marker-start={props.markerStart}
 		marker-end={props.markerEnd}
 		{...pathStrokeProps}

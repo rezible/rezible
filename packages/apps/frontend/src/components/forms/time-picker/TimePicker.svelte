@@ -1,16 +1,16 @@
 <!-- adapted from https://time-picker.nouro.app/ -->
 
 <script lang="ts">
-	import { Time } from '@internationalized/date';
-	import TimePickerInput from './TimePickerInput.svelte';
+	import { Time } from "@internationalized/date";
+	import TimePickerInput from "./TimePickerInput.svelte";
 	import TimePeriodSelect from "./TimePeriodSelect.svelte";
-	import { cn } from '$lib/utils';
-	import type { Period } from './utils';
+	import { cn } from "$lib/utils";
+	import type { Period } from "./utils";
 
 	type Props = {
 		time?: Time;
 		period?: Period;
-		view?: 'labels' | 'dotted';
+		view?: "labels" | "dotted";
 		rangeMin?: Time;
 		rangeMax?: Time;
 		setTime?: (time: Time) => void;
@@ -18,7 +18,7 @@
 	};
 
 	let {
-		time = $bindable(new Time(0, 0, 0)), 
+		time = $bindable(new Time(0, 0, 0)),
 		period = $bindable("AM"),
 		view = "labels",
 		setTime,
@@ -31,9 +31,9 @@
 	let periodRef = $state<HTMLInputElement | null>(null);
 </script>
 
-<div class={cn('flex items-center gap-2', view === 'dotted' && 'gap-1')}>
+<div class={cn("flex items-center gap-2", view === "dotted" && "gap-1")}>
 	<div class="grid gap-1 text-center">
-		{#if view === 'labels'}
+		{#if view === "labels"}
 			<label for="hours" class="text-xs">Hours</label>
 		{/if}
 
@@ -47,12 +47,12 @@
 		/>
 	</div>
 
-	{#if view === 'dotted'}
+	{#if view === "dotted"}
 		<span class="-translate-y-[2px]">:</span>
 	{/if}
 
 	<div class="grid gap-1 text-center">
-		{#if view === 'labels'}
+		{#if view === "labels"}
 			<label for="minutes" class="text-xs">Minutes</label>
 		{/if}
 
@@ -66,12 +66,12 @@
 		/>
 	</div>
 
-	{#if view === 'dotted'}
+	{#if view === "dotted"}
 		<span class="-translate-y-[2px]">:</span>
 	{/if}
 
 	<div class="grid gap-1 text-center">
-		{#if view === 'labels'}
+		{#if view === "labels"}
 			<label for="seconds" class="text-xs">Seconds</label>
 		{/if}
 
@@ -85,7 +85,7 @@
 	</div>
 
 	<div class="grid gap-1 text-center">
-		{#if view === 'labels'}
+		{#if view === "labels"}
 			<label for="seconds" class="text-xs">Period</label>
 		{/if}
 

@@ -1,10 +1,21 @@
 <script lang="ts">
-	import { Background, BackgroundVariant, Controls, MiniMap, Panel, SvelteFlow, type ColorMode, type SvelteFlowProps, type ControlsProps, type BackgroundProps, type MiniMapProps } from "@xyflow/svelte";
+	import {
+		Background,
+		BackgroundVariant,
+		Controls,
+		MiniMap,
+		Panel,
+		SvelteFlow,
+		type ColorMode,
+		type SvelteFlowProps,
+		type ControlsProps,
+		type BackgroundProps,
+		type MiniMapProps,
+	} from "@xyflow/svelte";
 	import "@xyflow/svelte/dist/style.css";
 	import * as Alert from "$components/ui/alert";
 	import * as Button from "$components/ui/button";
 	import { Spinner } from "$components/ui/spinner";
-	import RiHome4Line from "remixicon-svelte/icons/home-4-line";
 	import RiRestartLine from "remixicon-svelte/icons/restart-line";
 	import { initSystemMapViewController } from "./controller.svelte";
 	import SystemMapDetails from "./SystemMapDetails.svelte";

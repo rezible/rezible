@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Calendar as CalendarPrimitive } from "bits-ui";
-	import RiArrowLeftSLine from 'remixicon-svelte/icons/arrow-left-s-line';
+	import RiArrowLeftSLine from "remixicon-svelte/icons/arrow-left-s-line";
 	import { buttonVariants, type ButtonVariant } from "$components/ui/button/index.js";
 	import { cn } from "$lib/utils.js";
 

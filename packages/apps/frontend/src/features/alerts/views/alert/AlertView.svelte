@@ -17,12 +17,12 @@
 	]);
 </script>
 
-<TabbedViewContainer 
+<TabbedViewContainer
 	route="/alerts/[id]/[[view=alertView]]"
 	tabs={[
-		{ label: "Overview", component: AlertOverview, params: {id} },
-		{ label: "Recent Activity",  component: AlertEvents, params: {id, view: "events"} },
-		{ label: "Incidents",  component: AlertIncidents, params: {id, view: "incidents"} },
-		{ label: "Linked Playbooks",  component: AlertPlaybooks, params: {id, view: "playbooks"} },
+		{ label: "Overview", component: AlertOverview, params: { id } },
+		{ label: "Recent Activity", component: AlertEvents, params: { id, view: "events" } },
+		{ label: "Incidents", component: AlertIncidents, params: { id, view: "incidents" } },
+		{ label: "Linked Playbooks", component: AlertPlaybooks, params: { id, view: "playbooks" } },
 	]}
 />

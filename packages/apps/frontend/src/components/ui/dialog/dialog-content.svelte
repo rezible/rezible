@@ -6,7 +6,7 @@
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
 	import type { ComponentProps } from "svelte";
 	import { Button } from "$components/ui/button/index.js";
-	import RiCloseLine from 'remixicon-svelte/icons/close-line';
+	import RiCloseLine from "remixicon-svelte/icons/close-line";
 
 	let {
 		ref = $bindable(null),
@@ -38,7 +38,7 @@
 			<DialogPrimitive.Close data-slot="dialog-close">
 				{#snippet child({ props })}
 					<Button variant="ghost" class="absolute top-2 right-2" size="icon-sm" {...props}>
-						<RiCloseLine  />
+						<RiCloseLine />
 						<span class="sr-only">Close</span>
 					</Button>
 				{/snippet}

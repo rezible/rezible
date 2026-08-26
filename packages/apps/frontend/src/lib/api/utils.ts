@@ -7,15 +7,17 @@ export type ListQueryParameters = {
 	search?: string;
 	archived?: boolean;
 };
+
 export type ListFuncQueryOptions = Options<{
 	query?: ListQueryParameters;
 	url: string;
 }>;
 
-export type PaginatedResponse<T> = {
+export type ResponsePage<T> = {
 	readonly $schema?: string;
-	data: Array<T>;
+	data: T[];
 	pagination: ResponsePagination;
 };
-export type ListQueryOptionsFunc<T> = (o: ListFuncQueryOptions) 
-	=> CreateQueryOptions<PaginatedResponse<T>, Error, PaginatedResponse<T>, any>;
+
+export type ListQueryOptionsFunc<T> = (opts: ListFuncQueryOptions) => 
+	CreateQueryOptions<ResponsePage<T>, Error, ResponsePage<T>, any>;

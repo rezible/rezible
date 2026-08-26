@@ -2,11 +2,7 @@
 	import { Menubar as MenubarPrimitive } from "bits-ui";
 	import { cn } from "$lib/utils.js";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		...restProps
-	}: MenubarPrimitive.RootProps = $props();
+	let { ref = $bindable(null), class: className, ...restProps }: MenubarPrimitive.RootProps = $props();
 </script>
 
 <MenubarPrimitive.Root

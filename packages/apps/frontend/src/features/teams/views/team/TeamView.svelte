@@ -16,11 +16,11 @@
 	]);
 </script>
 
-<TabbedViewContainer 
-	route="/teams/[slug]/[[view=teamView]]" 
+<TabbedViewContainer
+	route="/teams/[slug]/[[view=teamView]]"
 	tabs={[
-		{label: "Overview", component: TeamOverview, params: {slug}},
-		{label: "Backlog",  component: TeamBacklogView, params: {slug, view: "backlog"}},
-		{label: "Meetings",  component: TeamMeetings, params: {slug, view: "meetings"}},
-	]} 
+		{ label: "Overview", component: TeamOverview, params: { slug } },
+		{ label: "Backlog", component: TeamBacklogView, params: { slug, view: "backlog" } },
+		{ label: "Meetings", component: TeamMeetings, params: { slug, view: "meetings" } },
+	]}
 />

@@ -7,7 +7,7 @@
 	const burdenGaugeData: echarts.GaugeSeriesOption["data"] = [
 		{
 			name: "Burden\nScore",
-			value: burdenGaugeValues.reduce((prev, curr) => (prev + curr)),
+			value: burdenGaugeValues.reduce((prev, curr) => prev + curr),
 			title: {
 				offsetCenter: ["0%", "-25%"],
 			},
@@ -17,7 +17,7 @@
 			progress: {
 				show: false,
 				width: 0,
-			}
+			},
 		},
 		{
 			name: "Event\nFrequency",
@@ -79,7 +79,7 @@
 				name: "Burden Score",
 				data: burdenGaugeData,
 				startAngle: 180,
-      			endAngle: 0,
+				endAngle: 0,
 				min: 0,
 				max: 100,
 				pointer: {
@@ -91,21 +91,21 @@
 					width: 18,
 					itemStyle: {
 						borderWidth: 0,
-					}
+					},
 				},
 				axisLine: {
 					show: true,
 					lineStyle: {
 						shadowBlur: 0,
-						opacity: .10,
+						opacity: 0.1,
 						width: 18,
-					}
+					},
 				},
 				tooltip: {
 					formatter: (p) => {
 						const val = burdenGaugeValues.at(p.dataIndex - 1);
 						return `${p.name}: ${val}`;
-					}
+					},
 				},
 				axisLabel: { color: "inherit" },
 				title: {
@@ -120,7 +120,7 @@
 					borderRadius: 3,
 					backgroundColor: "inherit",
 					color: "black",
-					formatter: (val: number) => `${val}`
+					formatter: (val: number) => `${val}`,
 				},
 			},
 		],

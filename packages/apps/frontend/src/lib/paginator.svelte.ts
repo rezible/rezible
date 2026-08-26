@@ -5,7 +5,7 @@ import type { ErrorModel, ResponsePagination } from "./api";
 type PaginatedData = {
 	data: any;
 	pagination: ResponsePagination;
-}
+};
 type PaginatedQuery<PData extends PaginatedData> = CreateQueryResult<PData, ErrorModel>;
 
 export class QueryPaginatorState {
@@ -14,17 +14,20 @@ export class QueryPaginatorState {
 
 	// page = $derived(this.paginationState.current.page as number);
 	// limit = $derived(this.paginationState.current.perPage);
-	page = $derived(1)
+	page = $derived(1);
 	limit = $derived(10);
 	offset = $derived(Math.max(0, (this.page - 1) * this.limit));
 
-	queryParams = $derived({limit: this.limit, offset: this.offset});
+	queryParams = $derived({ limit: this.limit, offset: this.offset });
 
 	watchQuery(query: PaginatedQuery<PaginatedData>) {
-		watch(() => query.data, d => {
-			if (!d) return;
-			//this.pagination.setTotal(d.pagination.total);
-		})
+		watch(
+			() => query.data,
+			(data) => {
+				if (!data) return;
+				//this.pagination.setTotal(data.pagination.total);
+			}
+		);
 	}
 
 	paginationProps = $derived({

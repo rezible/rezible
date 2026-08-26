@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Menubar as MenubarPrimitive } from "bits-ui";
 	import { cn, type WithoutChild } from "$lib/utils.js";
-	import RiCheckLine from 'remixicon-svelte/icons/check-line';
+	import RiCheckLine from "remixicon-svelte/icons/check-line";
 
 	let {
 		ref = $bindable(null),
@@ -29,7 +29,7 @@
 			class="left-1.5 size-4 [&_svg:not([class*='size-'])]:size-4 pointer-events-none absolute flex items-center justify-center"
 		>
 			{#if checked}
-				<RiCheckLine  />
+				<RiCheckLine />
 			{/if}
 		</span>
 		{@render childrenProp?.({ checked })}

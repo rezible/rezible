@@ -7,11 +7,11 @@
 
 	const view = useTeamViewController();
 	const paginator = new QueryPaginatorState();
-	
+
 	const params = $derived<ListUsersData["query"]>({
 		teamId: view.teamId,
 		...paginator.queryParams,
-	})
+	});
 	const usersQuery = createQuery(() => ({
 		...listUsersOptions({ query: params }),
 		enabled: !!view.teamId,
@@ -25,7 +25,10 @@
 
 	<div class="flex flex-col gap-2 min-h-0 flex-0 overflow-auto py-1">
 		{#each users ?? [] as user (user.id)}
-			<a class="flex gap-2 items-center rounded border border-surface-content/10 p-2" href="/users/{user.id}">
+			<a
+				class="flex gap-2 items-center rounded border border-surface-content/10 p-2"
+				href="/users/{user.id}"
+			>
 				<Avatar kind="user" size={20} id={user.id} />
 				<span>{user.attributes.name}</span>
 			</a>

@@ -5,7 +5,11 @@
 </script>
 
 <div class="flex flex-col h-fit border rounded-lg overflow-y-auto">
-	<Header title="Relevant & Upcoming" subheading="Items you may be interested in" classes={{root: "p-2 w-full"}} />
+	<Header
+		title="Relevant & Upcoming"
+		subheading="Items you may be interested in"
+		classes={{ root: "p-2 w-full" }}
+	/>
 
 	<div class="flex flex-col gap-2 overflow-y-auto border-t p-2">
 		<div class="grid place-items-center">

@@ -12,9 +12,26 @@
 
 <div class="self-end">
 	{#if view.editing}
-		<Button onclick={() => {view.cancelEditing()}} {disabled}>Cancel</Button>
-		<Button onclick={() => {view.saveEdit()}} {disabled} color="primary">Save</Button>
+		<Button
+			onclick={() => {
+				view.cancelEditing();
+			}}
+			{disabled}>Cancel</Button
+		>
+		<Button
+			onclick={() => {
+				view.saveEdit();
+			}}
+			{disabled}
+			color="primary">Save</Button
+		>
 	{:else}
-		<Button onclick={() => {view.editing = true}} {disabled} color="primary">Edit</Button>
+		<Button
+			onclick={() => {
+				view.editing = true;
+			}}
+			{disabled}
+			color="primary">Edit</Button
+		>
 	{/if}
 </div>

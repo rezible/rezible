@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { cn, type WithElementRef } from "$lib/utils.js";
 	import type { HTMLSelectAttributes } from "svelte/elements";
-	import RiArrowDownSLine from 'remixicon-svelte/icons/arrow-down-s-line';
+	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
 
 	type NativeSelectProps = Omit<WithElementRef<HTMLSelectAttributes>, "size"> & {
 		size?: "sm" | "default";
@@ -35,5 +35,9 @@
 	>
 		{@render children?.()}
 	</select>
-	<RiArrowDownSLine class="text-muted-foreground top-1/2 right-2.5 size-4 -translate-y-1/2 pointer-events-none absolute select-none" aria-hidden data-slot="native-select-icon" />
+	<RiArrowDownSLine
+		class="text-muted-foreground top-1/2 right-2.5 size-4 -translate-y-1/2 pointer-events-none absolute select-none"
+		aria-hidden
+		data-slot="native-select-icon"
+	/>
 </div>

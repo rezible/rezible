@@ -5,7 +5,7 @@
 
 	import { initInitialSetupController } from "./initialSetupController.svelte";
 	import ConfigureIntegrationDialog from "./steps/suggested-integrations/ConfigureIntegrationDialog.svelte";
-	
+
 	const ctrl = initInitialSetupController();
 </script>
 

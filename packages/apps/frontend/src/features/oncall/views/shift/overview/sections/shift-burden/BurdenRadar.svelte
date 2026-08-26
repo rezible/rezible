@@ -9,14 +9,16 @@
 	};
 	const { burdenStats, comparisonSetName = "Roster Average" }: Props = $props();
 
-	const indicators = $derived(burdenStats.map(v => ({
-		name: v.title.replaceAll(" ", "\n"),
-		min: 0,
-		max: 10,
-	})));
+	const indicators = $derived(
+		burdenStats.map((v) => ({
+			name: v.title.replaceAll(" ", "\n"),
+			min: 0,
+			max: 10,
+		}))
+	);
 
-	const comparisonStats = $derived(burdenStats.map(v => (v.comparison?.value || 0)));
-	const shiftStats = $derived(burdenStats.map(v => (v.value || 0)));
+	const comparisonStats = $derived(burdenStats.map((v) => v.comparison?.value || 0));
+	const shiftStats = $derived(burdenStats.map((v) => v.value || 0));
 
 	const radarAreaSplitColors = [
 		"rgb(30, 250, 30)",
@@ -31,7 +33,7 @@
 
 	const burdenRadarOptions = $derived<echarts.EChartsOption>({
 		color: [comparisonColor, shiftColor],
-		title: {show: false},
+		title: { show: false },
 		legend: {
 			show: true,
 			orient: "vertical",
@@ -39,7 +41,7 @@
 			left: 0,
 			textStyle: {
 				color: "white",
-			}
+			},
 		},
 		radar: [
 			{
@@ -61,18 +63,18 @@
 				axisLine: {
 					lineStyle: {
 						color: "rgb(124 144 154)",
-					}
+					},
 				},
 				splitLine: {
 					lineStyle: {
 						color: "rgb(124 144 154)",
-					}
+					},
 				},
 				splitArea: {
 					areaStyle: {
 						color: ["rgb(35 40 46)"],
 						opacity: 0.6,
-					}
+					},
 				},
 			},
 		],
@@ -96,9 +98,7 @@
 					{
 						value: shiftStats,
 						name: "This Shift",
-						areaStyle: {
-							
-						},
+						areaStyle: {},
 					},
 				],
 			},

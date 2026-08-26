@@ -14,7 +14,7 @@
 	} from "@rezible/tiptap-extensions";
 	import Collaboration from "@tiptap/extension-collaboration";
 	import CollaborationCaret from "@tiptap/extension-collaboration-caret";
-	
+
 	import { activeAnnotation, activeEditor } from "../activeEditor.svelte";
 	import BubbleMenu, { type AnnotationType } from "./BubbleMenu.svelte";
 	import MenuBar from "./MenuBar.svelte";
@@ -44,7 +44,6 @@
 			CollaborationCaret.configure({ provider, user }),
 		];
 	};
-
 
 	let editor = $state<SvelteEditor>();
 	const mountEditor = () => {

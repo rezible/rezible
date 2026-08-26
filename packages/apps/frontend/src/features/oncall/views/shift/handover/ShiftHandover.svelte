@@ -3,7 +3,10 @@
 	import { getOncallShiftHandoverOptions } from "$lib/api";
 	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
 
-	import { ShiftHandoverContent, ShiftHandoverEditorState } from "$src/features/oncall/components/shift-handover-content";
+	import {
+		ShiftHandoverContent,
+		ShiftHandoverEditorState,
+	} from "$src/features/oncall/components/shift-handover-content";
 
 	import AnnotatedEventsList from "./AnnotatedEventsList.svelte";
 	import ShiftReviewQuestionsDialog from "./ShiftReviewQuestionsDialog.svelte";
@@ -47,7 +50,7 @@
 
 	{#if handoverEditorState.editable}
 		<div class="border-t pt-2 flex items-center justify-end">
-			<SendHandoverButton handoverState={handoverEditorState} onSent={invalidateHandoverQuery}  />
+			<SendHandoverButton handoverState={handoverEditorState} onSent={invalidateHandoverQuery} />
 		</div>
 	{/if}
 </div>

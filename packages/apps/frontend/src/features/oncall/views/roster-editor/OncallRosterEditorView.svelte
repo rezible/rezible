@@ -17,7 +17,6 @@
 
 	const appShell = useAppShell();
 
-
 	const selectedSchedule = $derived(view.selectedSchedule);
 	const availableUsers = $derived(view.availableUsersForSelectedSchedule);
 </script>

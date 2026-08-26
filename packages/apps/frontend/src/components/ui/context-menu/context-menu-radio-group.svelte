@@ -8,9 +8,4 @@
 	}: ContextMenuPrimitive.RadioGroupProps = $props();
 </script>
 
-<ContextMenuPrimitive.RadioGroup
-	bind:ref
-	bind:value
-	data-slot="context-menu-radio-group"
-	{...restProps}
-/>
+<ContextMenuPrimitive.RadioGroup bind:ref bind:value data-slot="context-menu-radio-group" {...restProps} />

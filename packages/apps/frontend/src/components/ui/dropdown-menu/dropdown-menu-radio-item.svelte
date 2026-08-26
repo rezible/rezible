@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
-	import RiCheckLine from 'remixicon-svelte/icons/check-line';
+	import RiCheckLine from "remixicon-svelte/icons/check-line";
 	import { cn, type WithoutChild } from "$lib/utils.js";
 
 	let {
@@ -26,7 +26,7 @@
 			data-slot="dropdown-menu-radio-item-indicator"
 		>
 			{#if checked}
-				<RiCheckLine  />
+				<RiCheckLine />
 			{/if}
 		</span>
 		{@render childrenProp?.({ checked })}

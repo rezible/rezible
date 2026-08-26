@@ -10,7 +10,7 @@
 
 	type Props = {
 		discussion: RetrospectiveComment;
-	}
+	};
 	let { discussion }: Props = $props();
 
 	const setActiveDiscussion = () => activeDiscussion.set(discussion.id);
@@ -18,7 +18,7 @@
 	let editor = $state<SvelteEditor>();
 	onMount(() => {
 		const content = JSON.parse(discussion.attributes.content) as JSONContent;
-		editor = createDiscussionEditor({content, editable: false});
+		editor = createDiscussionEditor({ content, editable: false });
 		return () => {
 			if (editor) editor.destroy();
 		};

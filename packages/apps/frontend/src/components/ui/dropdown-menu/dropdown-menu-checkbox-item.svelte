@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
-	import RiSubtractLine from 'remixicon-svelte/icons/subtract-line';
-	import RiCheckLine from 'remixicon-svelte/icons/check-line';
+	import RiSubtractLine from "remixicon-svelte/icons/subtract-line";
+	import RiCheckLine from "remixicon-svelte/icons/check-line";
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
 	import type { Snippet } from "svelte";
 
@@ -34,9 +34,9 @@
 			data-slot="dropdown-menu-checkbox-item-indicator"
 		>
 			{#if indeterminate}
-				<RiSubtractLine  />
+				<RiSubtractLine />
 			{:else if checked}
-				<RiCheckLine  />
+				<RiCheckLine />
 			{/if}
 		</span>
 		{@render childrenProp?.()}

@@ -29,21 +29,14 @@
 </script>
 
 <div class="flex flex-row gap-2" class:justify-end={alignRight}>
-	<Button
-		onclick={onClose}
-		disabled={disabled || loading}
-	>
+	<Button onclick={onClose} disabled={disabled || loading}>
 		{#if closeButtonContent}
 			{@render closeButtonContent()}
 		{:else}
 			{closeText}
 		{/if}
 	</Button>
-	<Button
-		color="warning"
-		onclick={onConfirm}
-		disabled={!saveEnabled || disabled}
-	>
+	<Button color="warning" onclick={onConfirm} disabled={!saveEnabled || disabled}>
 		{#if confirmButtonContent}
 			{@render confirmButtonContent()}
 		{:else}

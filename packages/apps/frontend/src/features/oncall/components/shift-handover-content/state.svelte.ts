@@ -23,7 +23,7 @@ export type HandoverSection = HandoverEditorSection | HandoverAnnotationsSection
 export class ShiftHandoverEditorState {
 	handover = $state<OncallShiftHandover>();
 	private allowEditing = $state(false);
-	isSent = $derived(!!this.handover && (new Date(this.handover.attributes.sentAt).valueOf()) > 0);
+	isSent = $derived(!!this.handover && new Date(this.handover.attributes.sentAt).valueOf() > 0);
 	editable = $derived(this.allowEditing && !this.isSent);
 
 	isEmpty = $state(true);
@@ -32,10 +32,10 @@ export class ShiftHandoverEditorState {
 
 	canSend = $derived(!this.isSent && !this.isEmpty);
 
-	constructor(handoverFn: () => (OncallShiftHandover | undefined), allowEditing: boolean) {
+	constructor(handoverFn: () => OncallShiftHandover | undefined, allowEditing: boolean) {
 		this.allowEditing = allowEditing;
 
-		watch(handoverFn, h => {
+		watch(handoverFn, (h) => {
 			if (this.handover?.id === h?.id) return;
 			this.handover = h;
 			this.setup();
@@ -49,7 +49,7 @@ export class ShiftHandoverEditorState {
 		const handoverSections = this.handover?.attributes.content ?? [];
 		this.sections = handoverSections.map((sec, idx) => {
 			const { kind, header } = sec;
-			if (kind !== "regular") return { header, kind }
+			if (kind !== "regular") return { header, kind };
 
 			const content = !!sec.jsonContent ? JSON.parse(sec.jsonContent) : undefined;
 			const { editor, activeStatus, contentEmpty } = this.createEditor(idx, content);
@@ -59,7 +59,7 @@ export class ShiftHandoverEditorState {
 			}
 			return { header, kind, editor, activeStatus };
 		});
-	};
+	}
 
 	private updateEditorStatusFn = useDebounce((status: SvelteMap<string, boolean>, e: Editor) => {
 		status.set("bold", e.isActive("bold"));
@@ -73,7 +73,7 @@ export class ShiftHandoverEditorState {
 		const editor = createHandoverEditor({
 			content,
 			editable: this.editable,
-			autofocus: (this.editable && idx === 0) ? "end" : false,
+			autofocus: this.editable && idx === 0 ? "end" : false,
 			editorProps: {
 				attributes: {
 					class: "max-w-none focus:outline-none list-disc",
@@ -93,19 +93,19 @@ export class ShiftHandoverEditorState {
 		const contentEmpty = editor.getText().trim() == "";
 
 		return { editor, activeStatus, contentEmpty };
-	};
+	}
 
 	setEditorFocus(i: number, focus: boolean) {
 		if (i >= this.sections.length || this.sections[i].kind != "regular") return;
 		const editor = this.sections[i].editor;
 		if (!editor) return;
 		if (focus && !editor.isFocused) editor.commands.focus();
-	};
+	}
 
 	getSectionContent(): OncallShiftHandoverSection[] {
 		return this.sections.map((s) => {
 			const jsonContent = s.kind === "regular" ? JSON.stringify(s.editor?.getJSON()) : undefined;
 			return { header: s.header, kind: s.kind, jsonContent };
 		});
-	};
+	}
 }

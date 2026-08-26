@@ -2,7 +2,7 @@
 	import type { ComponentProps } from "svelte";
 	import { cn } from "$lib/utils.js";
 	import { PaginationLink } from "./index.js";
-	import RiArrowLeftSLine from 'remixicon-svelte/icons/arrow-left-s-line';
+	import RiArrowLeftSLine from "remixicon-svelte/icons/arrow-left-s-line";
 
 	type PaginationPreviousProps = ComponentProps<typeof PaginationLink>;
 

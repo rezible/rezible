@@ -11,13 +11,20 @@
 
 	let filtersVisible = $state(false);
 
-	watch(() => tableState.dateRangeOption, opt => {
-		if (opt === "custom" && !filtersVisible) filtersVisible = true;
-	});
+	watch(
+		() => tableState.dateRangeOption,
+		(opt) => {
+			if (opt === "custom" && !filtersVisible) filtersVisible = true;
+		}
+	);
 </script>
 
 <div class="w-full h-full overflow-y-auto border flex flex-col">
-	<Header title="Events" subheading="Recent oncall events" classes={{root: "p-2 w-full", title: "text-xl"}}>
+	<Header
+		title="Events"
+		subheading="Recent oncall events"
+		classes={{ root: "p-2 w-full", title: "text-xl" }}
+	>
 		{#snippet actions()}
 			<div class="justify-end flex gap-2 items-end">
 				<!--Field dense base classes={{root: "", container: "px-0 border-none py-0", input: "my-0 gap-2"}}>
@@ -32,10 +39,12 @@
 					</ToggleGroup>
 				</Field-->
 
-				<Button 
+				<Button
 					color={filtersVisible ? "accent" : "default"}
-					onclick={() => {filtersVisible = !filtersVisible}} 
-				>Filters</Button>
+					onclick={() => {
+						filtersVisible = !filtersVisible;
+					}}>Filters</Button
+				>
 			</div>
 		{/snippet}
 	</Header>

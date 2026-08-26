@@ -25,7 +25,7 @@
 		queryClient.setQueryData(queryKey, (data) => {
 			if (!data) return { data: [d], pagination: { total: 1 } };
 			const newData = structuredClone(data);
-			newData.data = (newData.data || []);
+			newData.data = newData.data || [];
 			newData.data.push(d);
 			return newData;
 		});

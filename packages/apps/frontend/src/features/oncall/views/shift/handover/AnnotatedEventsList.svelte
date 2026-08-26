@@ -23,11 +23,13 @@
 		// shiftId: handover.attributes.shiftId,
 		withEvents: true,
 	});
-	const annotationsQuery = createQuery(() => listEventAnnotationsOptions({ query: annotationsQueryOptions }));
+	const annotationsQuery = createQuery(() =>
+		listEventAnnotationsOptions({ query: annotationsQueryOptions })
+	);
 	const annotations = $derived(annotationsQuery.data?.data ?? []);
 
 	const pinnedAnnos = $derived(handover.attributes.pinnedAnnotations ?? []);
-	const pinnedEventIds = $derived(new Set(pinnedAnnos.map(a => a.attributes.event.id)));
+	const pinnedEventIds = $derived(new Set(pinnedAnnos.map((a) => a.attributes.event.id)));
 
 	let loadingId = $state<string>();
 	const updateHandoverMut = createMutation(() => ({
@@ -37,17 +39,17 @@
 		},
 		onSettled: () => {
 			loadingId = undefined;
-		}
+		},
 	}));
 	const togglePinned = (anno: EventAnnotation) => {
 		loadingId = $state.snapshot(anno.attributes.event.id);
-		const ids = new Set(pinnedAnnos.map(a => a.id));
+		const ids = new Set(pinnedAnnos.map((a) => a.id));
 
 		// toggle in set
 		if (!ids.delete(anno.id)) ids.add(anno.id);
 
 		const body: UpdateOncallShiftHandoverRequestBody = {
-			attributes: {pinnedAnnotationIds: ids.values().toArray()},
+			attributes: { pinnedAnnotationIds: ids.values().toArray() },
 		};
 		updateHandoverMut.mutate({ path: { id: handover.id }, body });
 	};

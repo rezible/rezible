@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Menubar as MenubarPrimitive } from "bits-ui";
 	import { cn, type WithoutChild } from "$lib/utils.js";
-	import RiArrowRightSLine from 'remixicon-svelte/icons/arrow-right-s-line';
+	import RiArrowRightSLine from "remixicon-svelte/icons/arrow-right-s-line";
 
 	let {
 		ref = $bindable(null),

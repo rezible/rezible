@@ -5,7 +5,7 @@ import { watch } from "runed";
 import { useUserOncallInformation } from "$lib/userOncall.svelte";
 import { QueryPaginatorState } from "$lib/paginator.svelte";
 
-export type DateRangeOption = { label: string, value: "shift" | "7d" | "30d" | "custom" };
+export type DateRangeOption = { label: string; value: "shift" | "7d" | "30d" | "custom" };
 
 export const dateRangeOptions: DateRangeOption[] = [
 	{ label: "Last 7 Days", value: "7d" },
@@ -30,22 +30,30 @@ export class EventsTableState {
 
 	activeShift = $derived(this.oncallInfo.activeShifts.at(0));
 
-	defaultShiftDateRange = $derived(this.activeShift && {
-		from: new Date(this.activeShift.attributes.startAt),
-		to: new Date(this.activeShift.attributes.endAt),
-		periodType: "day",
-	});
+	defaultShiftDateRange = $derived(
+		this.activeShift && {
+			from: new Date(this.activeShift.attributes.startAt),
+			to: new Date(this.activeShift.attributes.endAt),
+			periodType: "day",
+		}
+	);
 
 	dateRangeOption = $state<DateRangeOption["value"]>("7d");
 	customDateRangeValue = $state(last7Days());
-	shiftDateRange = $derived(!!this.defaultShiftDateRange ? this.defaultShiftDateRange : this.customDateRangeValue)
+	shiftDateRange = $derived(
+		!!this.defaultShiftDateRange ? this.defaultShiftDateRange : this.customDateRangeValue
+	);
 
 	dateRange = $derived.by(() => {
 		switch (this.dateRangeOption) {
-			case "7d": return last7Days();
-			case "30d": return lastMonth();
-			case "shift": return this.shiftDateRange;
-			case "custom": return this.customDateRangeValue;
+			case "7d":
+				return last7Days();
+			case "30d":
+				return lastMonth();
+			case "shift":
+				return this.shiftDateRange;
+			case "custom":
+				return this.customDateRangeValue;
 		}
 	});
 
@@ -63,12 +71,14 @@ export class EventsTableState {
 		to: this.dateRange.to?.toISOString(),
 		// rosterId: this.filters.rosterId,
 	});
-	private listShiftEventsQueryData = $derived<ListEventsData["query"]>({ 
+	private listShiftEventsQueryData = $derived<ListEventsData["query"]>({
 		from: this.dateRange.from?.toISOString(),
 		to: this.dateRange.to?.toISOString(),
 		// shiftId: this.activeShift?.id,
 	});
-	private listShiftEventsFinalQueryData = $derived(this.dateRangeOption === "shift" ? this.listShiftEventsQueryData : this.listRosterEventsQueryData);
+	private listShiftEventsFinalQueryData = $derived(
+		this.dateRangeOption === "shift" ? this.listShiftEventsQueryData : this.listRosterEventsQueryData
+	);
 
 	private listEventsQueryData = $derived<ListEventsData["query"]>({
 		...this.listShiftEventsFinalQueryData,
@@ -89,17 +99,23 @@ export class EventsTableState {
 		this.queryClient.invalidateQueries(this.listEventsQueryOptions);
 	}
 
-	loading = $derived(this.listEventsQuery.isLoading || !this.oncallInfo.loaded)
+	loading = $derived(this.listEventsQuery.isLoading || !this.oncallInfo.loaded);
 
 	constructor() {
-		watch(() => this.activeShift, s => {
-			this.dateRangeOption = !!s ? "shift" : this.dateRangeOption;
-		});
+		watch(
+			() => this.activeShift,
+			(s) => {
+				this.dateRangeOption = !!s ? "shift" : this.dateRangeOption;
+			}
+		);
 
-		watch(() => this.defaultRosterId, id => {
-			this.filters.rosterId = id;
-		});
+		watch(
+			() => this.defaultRosterId,
+			(id) => {
+				this.filters.rosterId = id;
+			}
+		);
 
 		this.paginator.watchQuery(this.listEventsQuery);
-	};
+	}
 }

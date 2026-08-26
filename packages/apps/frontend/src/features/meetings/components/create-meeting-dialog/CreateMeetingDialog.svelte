@@ -4,7 +4,7 @@
 	import {
 		CreateMeetingFormSchema,
 		getEmptyForm,
-		Weekdays, 
+		Weekdays,
 		type Weekday,
 		type CreateMeetingFormData,
 	} from "./form";
@@ -63,12 +63,12 @@
 	const onUntilDateChange = (d: Date) => {
 		console.log("onUntilDateChange", d);
 		const newUntilDate = formData.untilDate.copy().set({
-			day: d.getDate(), 
-			month: d.getMonth(), 
+			day: d.getDate(),
+			month: d.getMonth(),
 			year: d.getFullYear(),
 		});
 		formData.untilDate = newUntilDate;
-	}
+	};
 </script>
 
 <!--Dialog

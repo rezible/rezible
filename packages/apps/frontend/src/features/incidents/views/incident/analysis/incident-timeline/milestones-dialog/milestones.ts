@@ -1,19 +1,30 @@
 import type { IncidentMilestone, IncidentMilestoneAttributes } from "$lib/api";
 import { parseAbsolute, parseAbsoluteToLocal, type ZonedDateTime } from "@internationalized/date";
-import { mdiAlertDecagram, mdiAccountAlert, mdiAccountEye, mdiFireExtinguisher, mdiTimelineClock } from "@mdi/js";
+import {
+	mdiAlertDecagram,
+	mdiAccountAlert,
+	mdiAccountEye,
+	mdiFireExtinguisher,
+	mdiTimelineClock,
+} from "@mdi/js";
 
 const kindOrder = ["impact", "detection", "investigation", "mitigation", "resolution"] as const;
 
 type IncidentMilestoneKind = IncidentMilestoneAttributes["kind"];
 export const getIconForIncidentMilestoneKind = (kind: IncidentMilestoneKind) => {
 	switch (kind) {
-		case "impact": return mdiAlertDecagram;
-		case "detection": return mdiAccountAlert;
-		case "investigation": return mdiAccountEye;
-		case "mitigation": return mdiFireExtinguisher;
-		case "resolution": return mdiTimelineClock;
+		case "impact":
+			return mdiAlertDecagram;
+		case "detection":
+			return mdiAccountAlert;
+		case "investigation":
+			return mdiAccountEye;
+		case "mitigation":
+			return mdiFireExtinguisher;
+		case "resolution":
+			return mdiTimelineClock;
 	}
-}
+};
 
 export const orderedMilestones = (ms: IncidentMilestone[]): IncidentMilestone[] => {
 	return ms.toSorted((a, b) => {
@@ -22,11 +33,17 @@ export const orderedMilestones = (ms: IncidentMilestone[]): IncidentMilestone[] 
 		if (aKindIdx !== bKindIdx) {
 			return aKindIdx - bKindIdx;
 		}
-		return parseAbsoluteToLocal(a.attributes.timestamp).compare(parseAbsoluteToLocal(b.attributes.timestamp))
-	})
-}
+		return parseAbsoluteToLocal(a.attributes.timestamp).compare(
+			parseAbsoluteToLocal(b.attributes.timestamp)
+		);
+	});
+};
 
-export const getPreviousOrderedMilestone = (kind: IncidentMilestoneKind, others: IncidentMilestone[], tz: string) => {
+export const getPreviousOrderedMilestone = (
+	kind: IncidentMilestoneKind,
+	others: IncidentMilestone[],
+	tz: string
+) => {
 	const kindIndex = kindOrder.indexOf(kind);
 	if (kindIndex === 0) return null;
 
@@ -44,9 +61,13 @@ export const getPreviousOrderedMilestone = (kind: IncidentMilestoneKind, others:
 	}
 
 	return earliestIdx >= 0 ? others[earliestIdx] : undefined;
-}
+};
 
-export const getNextOrderedMilestone = (kind: IncidentMilestoneKind, others: IncidentMilestone[], tz: string) => {
+export const getNextOrderedMilestone = (
+	kind: IncidentMilestoneKind,
+	others: IncidentMilestone[],
+	tz: string
+) => {
 	const kindIndex = kindOrder.indexOf(kind);
 	if (kindIndex === kindOrder.length - 1) return undefined;
 
@@ -63,10 +84,14 @@ export const getNextOrderedMilestone = (kind: IncidentMilestoneKind, others: Inc
 		}
 	}
 	return latestIdx >= 0 ? others[latestIdx] : undefined;
-}
+};
 
 // check if the time is valid for the milestone kind in the context of the other milestones
-export const isNewMilestoneTimeValid = (kind: IncidentMilestoneKind, time: ZonedDateTime, others: IncidentMilestone[]) => {
+export const isNewMilestoneTimeValid = (
+	kind: IncidentMilestoneKind,
+	time: ZonedDateTime,
+	others: IncidentMilestone[]
+) => {
 	const tz = time.timeZone;
 	const prevMs = getPreviousOrderedMilestone(kind, others, tz);
 	if (prevMs && time.compare(parseAbsolute(prevMs.attributes.timestamp, tz)) < 0) return false;
@@ -75,4 +100,4 @@ export const isNewMilestoneTimeValid = (kind: IncidentMilestoneKind, time: Zoned
 	if (nextMs && time.compare(parseAbsolute(nextMs.attributes.timestamp, tz)) > 0) return false;
 
 	return true;
-}
+};

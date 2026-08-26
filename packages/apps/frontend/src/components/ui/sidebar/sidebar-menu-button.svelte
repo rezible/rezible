@@ -6,7 +6,8 @@
 		variants: {
 			variant: {
 				default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-				outline: "bg-background hover:bg-sidebar-accent hover:text-sidebar-accent-foreground shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
+				outline:
+					"bg-background hover:bg-sidebar-accent hover:text-sidebar-accent-foreground shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
 			},
 			size: {
 				default: "h-10 text-base",
@@ -20,9 +21,7 @@
 		},
 	});
 
-	export type SidebarMenuButtonVariant = VariantProps<
-		typeof sidebarMenuButtonVariants
-	>["variant"];
+	export type SidebarMenuButtonVariant = VariantProps<typeof sidebarMenuButtonVariants>["variant"];
 	export type SidebarMenuButtonSize = VariantProps<typeof sidebarMenuButtonVariants>["size"];
 </script>
 

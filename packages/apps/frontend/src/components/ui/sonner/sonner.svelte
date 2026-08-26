@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { Toaster as Sonner, type ToasterProps as SonnerProps } from "svelte-sonner";
 	import { mode } from "mode-watcher";
-	import RiLoaderLine from 'remixicon-svelte/icons/loader-line';
-	import RiCheckboxCircleLine from 'remixicon-svelte/icons/checkbox-circle-line';
-	import RiErrorWarningLine from 'remixicon-svelte/icons/error-warning-line';
-	import RiInformationLine from 'remixicon-svelte/icons/information-line';
-	import RiCloseCircleLine from 'remixicon-svelte/icons/close-circle-line';
+	import RiLoaderLine from "remixicon-svelte/icons/loader-line";
+	import RiCheckboxCircleLine from "remixicon-svelte/icons/checkbox-circle-line";
+	import RiErrorWarningLine from "remixicon-svelte/icons/error-warning-line";
+	import RiInformationLine from "remixicon-svelte/icons/information-line";
+	import RiCloseCircleLine from "remixicon-svelte/icons/close-circle-line";
 
 	let { ...restProps }: SonnerProps = $props();
 </script>

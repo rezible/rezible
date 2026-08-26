@@ -8,7 +8,7 @@
 	type Props = {
 		messages: IncidentDebriefMessage[];
 		waitingForResponse: boolean;
-	}
+	};
 	let { messages, waitingForResponse }: Props = $props();
 
 	const session = useUserSessionState();

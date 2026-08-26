@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { usePlaybookViewController } from "./controller.svelte"
+	import { usePlaybookViewController } from "./controller.svelte";
 	import { listAlertsOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 
 	const view = usePlaybookViewController();
-	
+
 	// TODO: filters etc
-	const query = createQuery(() => listAlertsOptions({query: {}}));
+	const query = createQuery(() => listAlertsOptions({ query: {} }));
 </script>

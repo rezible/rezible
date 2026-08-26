@@ -46,4 +46,3 @@
 
 	<!-- <Pagination {...paginator.paginationProps} /> -->
 </div>
-

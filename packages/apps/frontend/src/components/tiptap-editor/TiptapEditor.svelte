@@ -23,9 +23,9 @@
 		let el = e.options.element;
 		if (!el) return;
 		if (typeof el === "function") return;
-		if (el instanceof Element) return el; 
+		if (el instanceof Element) return el;
 		return el.mount;
-	}
+	};
 
 	const setupEditor = () => {
 		if (!editor?.options.element) return;
@@ -49,9 +49,11 @@
 		const newRef = document.createElement("div");
 		newRef.append(...Array.from(el.childNodes));
 		editor.setOptions({ element: newRef });
-	}
+	};
 
-	onMount(() => {tick().then(setupEditor)});
+	onMount(() => {
+		tick().then(setupEditor);
+	});
 	onDestroy(destroyEditor);
 </script>
 

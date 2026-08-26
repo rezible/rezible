@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { createQuery } from "@tanstack/svelte-query";
-	import { listSystemAnalysisNodesOptions, type SystemAnalysisNode } from "$lib/api";
+	import type { SystemAnalysisNode } from "$lib/api";
 	import { v4 as uuidv4 } from "uuid";
 	import { SvelteMap } from "svelte/reactivity";
 	import { Button } from "$components/ui/button";
@@ -8,19 +7,14 @@
 	import { mdiPlus } from "@mdi/js";
 	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import { useEventDialogAttributes } from "./attributes.svelte";
-	import { useIncidentAnalysis } from "$features/incidents/views/incident/analysis/controller.svelte";
+	
+	import { useSystemAnalysisController } from "$components/system-analysis";
 	import type { TimelineEntrySystemContext, TimelineEntrySystemContextAttributes } from "../../entry-model";
 
 	const attributes = useEventDialogAttributes();
 
-	const analysis = useIncidentAnalysis();
-	const analysisId = $derived(analysis.analysisId);
-
-	const analysisNodesQuery = createQuery(() => ({
-		...listSystemAnalysisNodesOptions({ path: { id: analysisId } }),
-		enabled: !!analysisId,
-	}));
-	const analysisNodes = $derived(analysisNodesQuery.data?.data ?? []);
+	const analysis = useSystemAnalysisController();
+	const analysisNodes = $derived(analysis.analysisNodes);
 	const analysisNodeMap = $derived(new SvelteMap(analysisNodes.map((node) => [node.id, node])));
 	const knowledgeEntityNodeMap = $derived(
 		new SvelteMap(analysisNodes.map((node) => [node.attributes.knowledgeEntity.id, node]))
@@ -47,16 +41,6 @@
 	const setEditing = (cx: TimelineEntrySystemContext) => {
 		editing = $state.snapshot(cx);
 		relationship = $state.snapshot(cx.attributes.relationship);
-	};
-
-	const _confirmDelete = (cx: TimelineEntrySystemContext) => {
-		const node = getContextNode(cx);
-		editing = undefined;
-		const nodeName =
-			node?.attributes.knowledgeEntity.attributes.latestState?.displayName ?? "this entity";
-		if (!node || !confirm(`Are you sure you want to remove ${nodeName}?`)) return;
-		const idx = attributes.systemContext.findIndex((c) => c.id === cx.id);
-		if (idx >= 0) attributes.systemContext.splice(idx, 1);
 	};
 
 	const resetState = () => {
@@ -117,7 +101,7 @@
 			>
 		{/each}
 
-		{#if analysisNodes.length === 0 && analysisNodesQuery.isFetched}
+		{#if analysisNodes.length === 0 && analysis.nodesQuery.isFetched}
 			<span>No topology nodes linked to this analysis</span>
 		{/if}
 	{/snippet}

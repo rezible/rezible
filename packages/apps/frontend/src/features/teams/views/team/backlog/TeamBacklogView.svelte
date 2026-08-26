@@ -22,11 +22,11 @@
 </script>
 
 {#snippet tasksView(tasks: Task[])}
-		{#each tasks as task}
-			{@const attr = task.attributes}
-			<a href="/tasks/{task.id}">
-				<span>task: {attr.name}</span>
-				<!-- <ListItem title={attr.name} classes={{ root: "hover:bg-surface-200", title: "text-lg" }}>
+	{#each tasks as task}
+		{@const attr = task.attributes}
+		<a href="/tasks/{task.id}">
+			<span>task: {attr.name}</span>
+			<!-- <ListItem title={attr.name} classes={{ root: "hover:bg-surface-200", title: "text-lg" }}>
 					<div slot="subheading">
 						<span class="text-surface-content/80">{attr.description}</span>
 					</div>
@@ -37,8 +37,8 @@
 						<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
 					</div>
 				</ListItem> -->
-			</a>
-		{/each}
+		</a>
+	{/each}
 {/snippet}
 
 <div class="flex flex-col w-full">

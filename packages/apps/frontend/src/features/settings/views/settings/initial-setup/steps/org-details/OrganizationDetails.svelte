@@ -15,9 +15,9 @@
 		<h2 class="text-lg font-semibold">{ctrl.orgName}</h2>
 		<p class="text-sm text-muted-foreground">Preferences can be changes later.</p>
 	</div>
-	
+
 	<div class="flex flex-col gap-3 flex-1 max-w-sm">
-		<CheckboxCard 
+		<CheckboxCard
 			bind:checked={ctrl.orgPrefs.enableIncidentManagement}
 			label="Enable Rezible Incident Management"
 			description="Use Rezible to declare and run incidents, using the web UI or Slack."

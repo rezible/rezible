@@ -30,7 +30,7 @@
 			alerts: 0,
 			incidents: 0,
 		}));
-		view.filteredEvents.forEach(({attributes: a}) => {
+		view.filteredEvents.forEach(({ attributes: a }) => {
 			const hour = new Date(a.occurredAt).getHours();
 			if (a.kind === "alert") hours[hour].alerts++;
 			if (a.kind === "incident") hours[hour].incidents++;
@@ -43,7 +43,9 @@
 		return counts;
 	});
 	const maxAlertCount = $derived(Math.max(...hourAlertCounts));
-	const peakAlertHours = $derived(hourlyDistribution.filter((d) => (d.alerts > 0 && d.alerts === maxAlertCount)));
+	const peakAlertHours = $derived(
+		hourlyDistribution.filter((d) => d.alerts > 0 && d.alerts === maxAlertCount)
+	);
 	const peakHoursText = $derived(peakAlertHours.map((v, hour) => hour12Label(v.hour)).join(", "));
 	const peakHourValueLabel = $derived(!!peakHoursText ? peakHoursText : "N/A");
 
@@ -54,7 +56,7 @@
 	};
 	const alertHourArcFillColor = (hour: number) => {
 		const count = hourAlertCounts[hour];
-		if (count === 0) return "rgba(100, 100, 100, .8)"
+		if (count === 0) return "rgba(100, 100, 100, .8)";
 		if (count === maxAlertCount) return "rgba(140, 80, 10, 1)";
 		if (isBusinessHours(hour)) return "rgba(100, 110, 120, 1)";
 		if (hour > 5 && hour < 22) return "rgba(230, 230, 80, .6)"; // off-hours alert
@@ -66,7 +68,11 @@
 		{ title: "Percent Annotated", subheading: `Number of alerts annotated with feedback`, value: "15%" },
 		{ title: "Actionability", subheading: `Alerts that required human intervention`, value: "" },
 		{ title: "Accuracy", subheading: `Alerts that correctly indicated an issue`, value: "" },
-		{ title: "Documentation", subheading: `Alerts that had sufficient accompanying information`, value: "" },
+		{
+			title: "Documentation",
+			subheading: `Alerts that had sufficient accompanying information`,
+			value: "",
+		},
 	]);
 
 	const hour12 = (hour: number) => {
@@ -76,7 +82,7 @@
 	};
 
 	const hour12Label = (hour: number): string => {
-		return `${hour12(hour)}${hour >= 12 ? 'PM' : 'AM'}`;
+		return `${hour12(hour)}${hour >= 12 ? "PM" : "AM"}`;
 	};
 
 	const MinRadius = 30;

@@ -9,7 +9,7 @@ export const clearQueryParams = async () => {
 	empty.search = "";
 	replaceState(empty, page.state);
 	await tick();
-}
+};
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));

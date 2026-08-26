@@ -2,16 +2,15 @@
 	import { Dialog as SheetPrimitive } from "bits-ui";
 	import { cn } from "$lib/utils.js";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		...restProps
-	}: SheetPrimitive.OverlayProps = $props();
+	let { ref = $bindable(null), class: className, ...restProps }: SheetPrimitive.OverlayProps = $props();
 </script>
 
 <SheetPrimitive.Overlay
 	bind:ref
 	data-slot="sheet-overlay"
-	class={cn("bg-black/10 text-sm/relaxed supports-backdrop-filter:backdrop-blur-xs fixed inset-0 z-50", className)}
+	class={cn(
+		"bg-black/10 text-sm/relaxed supports-backdrop-filter:backdrop-blur-xs fixed inset-0 z-50",
+		className
+	)}
 	{...restProps}
 />

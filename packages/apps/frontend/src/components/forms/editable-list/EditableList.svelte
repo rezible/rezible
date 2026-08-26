@@ -5,7 +5,7 @@
 		title: string;
 		addLabel?: string;
 		values: string[];
-	}
+	};
 
 	let { title, addLabel = "Add New", values = $bindable() }: Props = $props();
 
@@ -33,14 +33,14 @@
 		if (editIdx === undefined || editIdx < 0 || editIdx >= values.length || !editValue) return;
 		values[editIdx] = $state.snapshot(editValue);
 		clearEditing();
-	}
+	};
 
 	const confirmDelete = (idx: number) => {
-		const val = (idx >= 0 && idx < values.length) ? values[idx] : undefined;
+		const val = idx >= 0 && idx < values.length ? values[idx] : undefined;
 		if (val === undefined) return;
 		if (!confirm(`Are you sure you want to delete "${val}"?`)) return;
 		values.splice(idx, 1);
-	}
+	};
 </script>
 
 <!--div class="flex flex-col gap-2 border p-2">

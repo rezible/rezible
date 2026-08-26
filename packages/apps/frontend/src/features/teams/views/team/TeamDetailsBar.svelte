@@ -4,7 +4,5 @@
 </script>
 
 <div class="flex gap-4 h-14 max-h-14 overflow-y-hidden justify-between pb-2">
-	<Button>
-		Settings
-	</Button>
+	<Button>Settings</Button>
 </div>

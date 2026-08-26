@@ -21,7 +21,7 @@ export class PlaybookViewController {
 		onSuccess: (data) => {
 			// TODO: optimistic update
 			this.playbookQuery.refetch();
-		}
+		},
 	}));
 
 	loading = $derived(this.updatePlaybookMut.isPending || this.playbookQuery.isLoading);
@@ -30,7 +30,9 @@ export class PlaybookViewController {
 
 	constructor(idFn: () => string) {
 		this.playbookId = idFn();
-		watch(idFn, id => {this.playbookId = id});
+		watch(idFn, (id) => {
+			this.playbookId = id;
+		});
 	}
 
 	cancelEditing() {
@@ -46,7 +48,7 @@ export class PlaybookViewController {
 		const attributes: UpdatePlaybookAttributes = {
 			title: this.playbook.attributes.title,
 			content: this.editor.getHTML(),
-		}
+		};
 		this.updatePlaybookMut.mutateAsync({
 			body: { attributes },
 			path: { id },

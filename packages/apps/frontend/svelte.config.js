@@ -6,8 +6,8 @@ const getAdapter = () => {
 	const adapter = process.env.SVELTEKIT_ADAPTER;
 	if (adapter === "node") {
 		return adapterNode({
-			out: 'build',
-            precompress: true
+			out: "build",
+			precompress: true,
 		});
 	}
 	return adapterStatic({
@@ -16,8 +16,8 @@ const getAdapter = () => {
 		fallback: "index.html",
 		precompress: false,
 		strict: false,
-	})
-}
+	});
+};
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {

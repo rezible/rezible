@@ -8,7 +8,7 @@
 	import { useOncallShiftViewController } from "$features/oncall/views/shift";
 	import { ShiftHandoverEditorState } from "$features/oncall/components/shift-handover-content/state.svelte";
 
-	type Props = { 
+	type Props = {
 		handoverState: ShiftHandoverEditorState;
 		onSent: () => void;
 	};
@@ -30,7 +30,7 @@
 	const submitHandover = () => {
 		sendMutation.mutate({
 			path: { id: view.shiftId },
-			body: { attributes: {  } },
+			body: { attributes: {} },
 		});
 	};
 </script>

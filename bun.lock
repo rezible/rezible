@@ -95,6 +95,7 @@
         "@sveltejs/vite-plugin-svelte": "^7.2.0",
         "@tanstack/table-core": "^8.21.3",
         "@types/js-cookie": "^3.0.6",
+        "@types/bun": "catalog:tooling",
         "@types/node": "^24",
         "@typescript-eslint/eslint-plugin": "^8.64.0",
         "@typescript-eslint/parser": "^8.64.0",

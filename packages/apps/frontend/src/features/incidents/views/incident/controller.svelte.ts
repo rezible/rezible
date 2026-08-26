@@ -11,7 +11,7 @@ export class IncidentViewController {
 
 	constructor(slugFn: Getter<string>) {
 		initIncidentCollaborationController(() => this.documentId);
-		watch(slugFn, slug => {this.slug = slug});
+		watch(slugFn, (slug) => {this.slug = slug});
 	}
 
 	private incidentQueryOptions = $derived(getIncidentOptions({ path: { id: this.slug } }));
@@ -35,5 +35,6 @@ export class IncidentViewController {
 }
 
 const ctx = new Context<IncidentViewController>("IncidentViewController");
-export const initIncidentViewController = (slugFn: Getter<string>) => ctx.set(new IncidentViewController(slugFn));
+export const initIncidentViewController = (slugFn: Getter<string>) =>
+	ctx.set(new IncidentViewController(slugFn));
 export const useIncidentView = () => ctx.get();

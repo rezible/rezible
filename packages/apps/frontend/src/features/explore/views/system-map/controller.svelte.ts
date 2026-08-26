@@ -26,8 +26,15 @@ export type SystemMapSelection =
 	| { kind: "entity"; entity: KnowledgeGraphEntity }
 	| { kind: "relationship"; relationship: KnowledgeGraphRelationship };
 
+const makeEntityLabel = ({attributes: attrs}: KnowledgeGraphEntity) => {
+	return (
+		attrs.latestState?.displayName ||
+		attrs.aliases[0]?.attributes.providerSubjectRef ||
+		attrs.kind
+	);
+}
+
 export class SystemMapViewController {
-	private session = useUserSessionState();
 	private entities = new SvelteMap<string, KnowledgeGraphEntity>();
 	private relationships = new SvelteMap<string, KnowledgeGraphRelationship>();
 
@@ -122,22 +129,20 @@ export class SystemMapViewController {
 		this.searchOpen = false;
 	}
 
-	private mergeView(
-		entities: KnowledgeGraphEntity[],
-		relationships: KnowledgeGraphRelationship[],
-	) {
-		for (const entity of entities) {
-			if (this.entities.size >= maxEntities && !this.entities.has(entity.id)) break;
-			this.entities.set(entity.id, entity);
-		}
-		for (const relationship of relationships) {
-			if (this.relationships.size >= maxRelationships && !this.relationships.has(relationship.id))
+	private mergeView(entities: KnowledgeGraphEntity[], relationships: KnowledgeGraphRelationship[]) {
+		for (const ent of entities) {
+			if (this.entities.size >= maxEntities && !this.entities.has(ent.id)) {
 				break;
-			if (
-				this.entities.has(relationship.attributes.sourceEntityId) &&
-				this.entities.has(relationship.attributes.targetEntityId)
-			) {
-				this.relationships.set(relationship.id, relationship);
+			}
+			this.entities.set(ent.id, ent);
+		}
+		for (const rel of relationships) {
+			if (this.relationships.size >= maxRelationships && !this.relationships.has(rel.id)) {
+				break;
+			}
+			const { sourceEntityId, targetEntityId } = rel.attributes;
+			if (this.entities.has(sourceEntityId) && this.entities.has(targetEntityId)) {
+				this.relationships.set(rel.id, rel);
 			}
 		}
 		this.rebuildGraph(this.rootId);
@@ -160,7 +165,7 @@ export class SystemMapViewController {
 			}
 		}
 
-		const byLayer = new SvelteMap<number, KnowledgeGraphEntity[]>();
+		const byLayer = new Map<number, KnowledgeGraphEntity[]>();
 		for (const entity of this.entities.values()) {
 			const layer = distances.get(entity.id) ?? 5;
 			const entries = byLayer.get(layer) ?? [];
@@ -169,8 +174,9 @@ export class SystemMapViewController {
 		}
 
 		const nodes: Node<SystemMapNodeData>[] = [];
-		for (const [layer, entities] of [...byLayer.entries()].sort(([a], [b]) => a - b)) {
-			entities.sort((a, b) => this.entityLabel(a).localeCompare(this.entityLabel(b)));
+		const sortedLayers = [...byLayer.entries()].sort(([a], [b]) => a - b);
+		for (const [layer, entities] of sortedLayers) {
+			entities.sort((a, b) => makeEntityLabel(a).localeCompare(makeEntityLabel(b)));
 			const height = (entities.length - 1) * 120;
 			entities.forEach((entity, index) => {
 				nodes.push({
@@ -182,17 +188,23 @@ export class SystemMapViewController {
 			});
 		}
 		this.nodes = nodes;
-		this.edges = [...this.relationships.values()].map((relationship) => ({
-			id: relationship.id,
-			type: "default",
-			source: relationship.attributes.sourceEntityId,
-			target: relationship.attributes.targetEntityId,
-			label:
-				relationship.attributes.latestState?.displayName ||
-				relationship.attributes.kind.replaceAll("_", " "),
-			data: { relationship },
-			markerEnd: MarkerType.ArrowClosed,
-		}));
+
+		const edges: Edge<SystemMapEdgeData>[] = [];
+		for (const relationship of [...this.relationships.values()]) {
+			const { id, attributes: attrs } = relationship;
+			const label = attrs.latestState?.displayName || attrs.kind.replaceAll("_", " ");
+			edges.push({
+				id: id,
+				type: "default",
+				source: attrs.sourceEntityId,
+				target: attrs.targetEntityId,
+				label: label,
+				data: { relationship },
+				markerEnd: MarkerType.ArrowClosed,
+			});
+		}
+		this.edges = edges;
+
 		if (focusId) this.focusEntity(focusId);
 	}
 
@@ -204,14 +216,6 @@ export class SystemMapViewController {
 			y: 280 - node.position.y,
 			zoom: 1,
 		};
-	}
-
-	private entityLabel(entity: KnowledgeGraphEntity) {
-		return (
-			entity.attributes.latestState?.displayName ||
-			entity.attributes.aliases[0]?.attributes.providerSubjectRef ||
-			entity.attributes.kind
-		);
 	}
 }
 

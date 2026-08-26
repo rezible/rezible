@@ -12,7 +12,7 @@ const validateSlugParamOrRedirect = async (param: string, url: URL, qc: QueryCli
 	qc.setQueryData(getOncallRosterOptions({ path: { id: slug } }).queryKey, res);
 	const slugPath = url.pathname.replaceAll(slug, slug) + url.search;
 	throw redirect(301, slugPath);
-}
+};
 
 export const load = (async ({ params, parent, url }) => {
 	const { queryClient } = await parent();

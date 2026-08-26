@@ -7,7 +7,9 @@ export class MeetingSessionViewController {
 
 	constructor(idFn: Getter<string>) {
 		this.sessionId = idFn();
-		watch(idFn, id => {this.sessionId = id});
+		watch(idFn, (id) => {
+			this.sessionId = id;
+		});
 	}
 
 	query = createQuery(() => getMeetingSessionOptions({ path: { id: this.sessionId } }));
@@ -15,5 +17,6 @@ export class MeetingSessionViewController {
 }
 
 const ctx = new Context<MeetingSessionViewController>("MeetingSessionViewController");
-export const initMeetingSessionViewController = (idFn: Getter<string>) => ctx.set(new MeetingSessionViewController(idFn));
+export const initMeetingSessionViewController = (idFn: Getter<string>) =>
+	ctx.set(new MeetingSessionViewController(idFn));
 export const useMeetingSessionViewController = () => ctx.get();

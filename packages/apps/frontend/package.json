@@ -10,6 +10,7 @@
 		"sync": "svelte-kit sync",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test": "bun test",
 		"lint": "eslint .",
 		"format": "prettier --write ."
 	},
@@ -24,6 +25,7 @@
 		"@tanstack/table-core": "^8.21.3",
 		"@types/js-cookie": "^3.0.6",
 		"@types/node": "^24",
+		"@types/bun": "catalog:tooling",
 		"@typescript-eslint/eslint-plugin": "^8.64.0",
 		"@typescript-eslint/parser": "^8.64.0",
 		"bits-ui": "^2.18.1",

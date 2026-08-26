@@ -2,7 +2,7 @@
 	import { ContextMenu as ContextMenuPrimitive } from "bits-ui";
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
 	import type { Snippet } from "svelte";
-	import RiCheckLine from 'remixicon-svelte/icons/check-line';
+	import RiCheckLine from "remixicon-svelte/icons/check-line";
 
 	let {
 		ref = $bindable(null),
@@ -33,7 +33,7 @@
 	{#snippet children({ checked })}
 		<span class="absolute right-2 pointer-events-none">
 			{#if checked}
-				<RiCheckLine  />
+				<RiCheckLine />
 			{/if}
 		</span>
 		{@render childrenProp?.()}

@@ -10,10 +10,9 @@
 </script>
 
 <div class="w-full h-full grid place-items-center">
-
 	<Card.Root class="gap-4 p-4 min-w-xs w-96">
 		<Card.Header class="p-0">
-            <Card.Title class="capitalize">Error {status}</Card.Title>
+			<Card.Title class="capitalize">Error {status}</Card.Title>
 			<Card.Description>{message}</Card.Description>
 		</Card.Header>
 		<Card.Action>

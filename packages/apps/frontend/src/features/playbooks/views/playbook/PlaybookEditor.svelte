@@ -16,12 +16,8 @@
 					class: "max-w-none focus:outline-none min-h-20",
 				},
 			},
-			onFocus({ editor }) {
-
-			},
-			onBlur() {
-
-			},
+			onFocus({ editor }) {},
+			onBlur() {},
 		});
 		return () => {
 			if (!view.editor?.isDestroyed) view.editor?.destroy();

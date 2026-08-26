@@ -9,14 +9,10 @@ import {
 import { DataSet } from "vis-data";
 
 import { createQuery } from "@tanstack/svelte-query";
+
 import { Context, watch } from "runed";
 
-import {
-	listIncidentMilestonesOptions,
-	listSystemAnalysisEntriesOptions,
-	type Incident,
-	type IncidentMilestone,
-} from "$lib/api";
+import { listIncidentMilestonesOptions, type Incident, type IncidentMilestone } from "$lib/api";
 import { useIncidentView } from "$features/incidents/views/incident";
 
 import IncidentTimelineEventItemContent, {
@@ -29,6 +25,7 @@ import { SvelteSet } from "svelte/reactivity";
 import { initEventDialog } from "./event-dialog/controller.svelte";
 import { initMilestonesDialog } from "./milestones-dialog/controller.svelte";
 import { systemAnalysisEntryToTimelineEntry, type TimelineAnalysisEntry } from "./entry-model";
+import { useSystemAnalysisController } from "$src/components/system-analysis";
 
 const IncidentGroup = "incident";
 const EventsGroup = "events";
@@ -82,7 +79,6 @@ const createTimelineEventItem = (e: TimelineAnalysisEntry, ref: HTMLElement): Ti
 		start: new Date(e.attributes.timestamp),
 		type: "box",
 		group: EventsGroup,
-		// subgroup: "foo",
 		content: ref,
 	};
 };
@@ -178,16 +174,12 @@ export const isMilestoneItem = (item: TimelineItem) => {
 
 class TimelineEventsState {
 	items: DataSet<TimelineItem>;
-	analysisId = $state.raw("");
+	analysis = useSystemAnalysisController();
 	timeline = $state.raw<Timeline>();
 	timelineElements = new Map<string, TimelineEventElement>();
 
-	eventsQuery = createQuery(() => ({
-		...listSystemAnalysisEntriesOptions({ path: { id: this.analysisId } }),
-		enabled: !!this.analysisId,
-	}));
 	events = $derived(
-		(this.eventsQuery.data?.data ?? [])
+		this.analysis.entries
 			.map(systemAnalysisEntryToTimelineEntry)
 			.filter((event): event is TimelineAnalysisEntry => !!event)
 	);
@@ -200,10 +192,6 @@ class TimelineEventsState {
 				this.onEventsDataUpdated(evs);
 			}
 		);
-	}
-
-	setAnalysis(id?: string) {
-		this.analysisId = id ?? "";
 	}
 
 	setTimeline(t: Timeline) {
@@ -255,7 +243,7 @@ class TimelineEventsState {
 	}
 
 	onEventChanged() {
-		this.eventsQuery.refetch();
+		this.analysis.refreshEntries();
 	}
 
 	setSelected(id: string, selected: boolean) {
@@ -406,13 +394,6 @@ export class IncidentTimelineController {
 				this.onIncidentUpdate(inc);
 			}
 		);
-		watch(
-			() => this.view.systemAnalysisId,
-			(id) => {
-				this.events.setAnalysis(id);
-			}
-		);
-
 		onMount(() => {
 			return () => {
 				this.cleanup();
@@ -467,7 +448,6 @@ export class IncidentTimelineController {
 
 	onIncidentUpdate(inc?: Incident) {
 		if (!inc) return;
-		this.events.setAnalysis(this.view.systemAnalysisId);
 		this.milestones.setIncident(inc);
 		this.setIncidentWindow(inc);
 	}

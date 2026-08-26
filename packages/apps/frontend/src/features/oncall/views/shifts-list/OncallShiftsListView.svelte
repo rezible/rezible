@@ -13,11 +13,11 @@
 	setPageBreadcrumbs(() => [{ label: "Oncall Shifts", href: "/shifts" }]);
 
 	const statusOptions = [
-		{ label: 'Active', value: "active" },
-		{ label: 'Past', value: "past" },
-		{ label: 'Upcoming', value: "upcoming", disabled: true },
+		{ label: "Active", value: "active" },
+		{ label: "Past", value: "past" },
+		{ label: "Upcoming", value: "upcoming", disabled: true },
 	];
-	let selectedStatus = $state<string[]>(statusOptions.map(o => o.value));
+	let selectedStatus = $state<string[]>(statusOptions.map((o) => o.value));
 
 	const today = new Date();
 	let dateRange = $state({
@@ -41,7 +41,7 @@
 
 	const onRosterSelected = (id?: string) => {
 		if (!id) return;
-	}
+	};
 
 	// const formatShiftStatusField = (opts: MenuOption<string>[]) => {
 	// 	if (opts.length === 0) return "None";
@@ -55,12 +55,15 @@
 	};
 
 	const queryParams = $derived<ListOncallShiftsData["query"]>({});
-	const shiftsQuery = createQuery(() => listOncallShiftsOptions({query: queryParams}));
+	const shiftsQuery = createQuery(() => listOncallShiftsOptions({ query: queryParams }));
 	const queryPagination = $derived(shiftsQuery.data?.pagination);
-	watch(() => queryPagination, p => {
-		if (!p) return;
-		// pagination.setTotal(p.total)
-	})
+	watch(
+		() => queryPagination,
+		(p) => {
+			if (!p) return;
+			// pagination.setTotal(p.total)
+		}
+	);
 </script>
 
 {#snippet filters()}
@@ -100,7 +103,7 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox >
+	<PaginatedListBox>
 		<LoadingQueryWrapper query={shiftsQuery}>
 			{#snippet view(shifts: OncallShift[])}
 				{#each shifts as shift}

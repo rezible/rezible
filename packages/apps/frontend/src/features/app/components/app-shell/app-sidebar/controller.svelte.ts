@@ -18,6 +18,7 @@ import RiAlarmWarningLine from "remixicon-svelte/icons/alarm-warning-line";
 import RiUserLine from "remixicon-svelte/icons/user-line";
 import RiTeamLine from "remixicon-svelte/icons/team-line";
 import RiSettings3Line from "remixicon-svelte/icons/settings-3-line";
+import RiRobot2Line from "remixicon-svelte/icons/robot-2-line";
 
 const isActive = (href: string, pathname: string) => {
 	if (href === "/" || pathname === "/") return pathname === href;
@@ -81,6 +82,7 @@ const defaultSidebarModel: AppSidebarModel = {
 			items: [
 				{ label: "Explore", href: "/explore", icon: RiConnectorLine },
 				{ label: "Events", href: "/events", icon: RiRadarLine },
+				{ label: "Agent Sessions", href: "/ai/sessions", icon: RiRobot2Line },
 			],
 		},
 		{

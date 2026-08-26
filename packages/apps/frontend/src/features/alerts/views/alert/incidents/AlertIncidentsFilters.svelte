@@ -4,13 +4,11 @@
 	type Props = {
 		rosterId?: string;
 	};
-	let { 
-		rosterId = $bindable(),
-	}: Props = $props();
+	let { rosterId = $bindable() }: Props = $props();
 
 	const onRosterSelected = (id?: string) => {
 		rosterId = id;
-	}
+	};
 </script>
 
 <div class="flex gap-2">

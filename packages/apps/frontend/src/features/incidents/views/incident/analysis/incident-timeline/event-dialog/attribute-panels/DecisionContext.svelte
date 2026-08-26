@@ -6,13 +6,13 @@
 </script>
 
 <div class="flex flex-col gap-1 bg-surface-100">
-	<EditableList 
+	<EditableList
 		title="Options Considered"
 		addLabel="Add Option"
 		bind:values={attributes.decisionContext.optionsConsidered}
 	/>
 
-	<EditableList 
+	<EditableList
 		title="Constraints"
 		addLabel="Add Constraint"
 		bind:values={attributes.decisionContext.constraints}

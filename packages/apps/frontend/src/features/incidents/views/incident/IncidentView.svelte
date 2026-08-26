@@ -21,7 +21,7 @@
 	const incidentTitle = $derived(controller.incident?.attributes.title);
 
 	const breadcrumbs = $derived<PageBreadcrumb[]>([
-		{ label: "Incidents", path: "/incidents" }, 
+		{ label: "Incidents", path: "/incidents" },
 		{ label: incidentTitle, path: `/incidents/${slug}` },
 	]);
 
@@ -30,12 +30,12 @@
 	appShell.setPageActions(IncidentPageActions, true);
 </script>
 
-<TabbedViewContainer 
+<TabbedViewContainer
 	route="/incidents/[slug]/[[view=incidentView]]"
 	tabs={[
-		{label: "Overview", component: IncidentOverview, params: {slug}},
-		{label: "Analysis", component: IncidentAnalysis, params: {slug, view: "analysis"}},
-		{label: "Report", component: IncidentReport, params: {slug, view: "report"}},
+		{ label: "Overview", component: IncidentOverview, params: { slug } },
+		{ label: "Analysis", component: IncidentAnalysis, params: { slug, view: "analysis" } },
+		{ label: "Report", component: IncidentReport, params: { slug, view: "report" } },
 	]}
 />
 

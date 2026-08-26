@@ -12,24 +12,24 @@
 
 	type AnnotationOption = "no" | "any" | "has";
 	const annoOptions = [
-		{value: "any", label: "Any"},
-		{value: "has", label: "Yes"},
-		{value: "no", label: "No"},
+		{ value: "any", label: "Any" },
+		{ value: "has", label: "Yes" },
+		{ value: "no", label: "No" },
 	];
-	const annoValue = $derived(tableState.filters.annotated === undefined ? "any" : (tableState.filters.annotated ? "yes" : "no"));
+	const annoValue = $derived(
+		tableState.filters.annotated === undefined ? "any" : tableState.filters.annotated ? "yes" : "no"
+	);
 	const setAnnotated = (v: string | null | undefined) => {
 		if (v === "any") {
 			tableState.filters.annotated = undefined;
 		} else {
 			tableState.filters.annotated = v === "has";
 		}
-	}
+	};
 
 	let kindMenuOpen = $state(false);
 	const toggleKindMenu = () => (kindMenuOpen = !kindMenuOpen);
-	const eventKindOptions = [
-		{value: "alert", label: "Alerts"}
-	]
+	const eventKindOptions = [{ value: "alert", label: "Alerts" }];
 </script>
 
 <div class="flex flex-row items-center justify-end gap-2">

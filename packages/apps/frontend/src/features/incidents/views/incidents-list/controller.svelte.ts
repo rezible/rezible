@@ -9,7 +9,7 @@ import { QueryPaginatorState } from "$lib/paginator.svelte";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 
-type FilterOption = {label: string; value: any};
+type FilterOption = { label: string; value: any };
 
 type IncidentFilters = {
 	search?: string;
@@ -32,23 +32,22 @@ const getActiveFilterCount = (f: IncidentFilters) => {
 	if (!!f.search) count++;
 	// TODO
 	return count;
-}
+};
 
 type MetadataOption = {
 	id: string;
 	attributes: { name: string } | { value: string };
-}
-const mapNamedMetadataOptions = (values?: MetadataOption[]): FilterOption[] => 
-	(values ?? [])
-	.map(({id, attributes: a}) => ({
-		value: id, 
-		label: ("name" in a ? a.name : a.value)
+};
+const mapNamedMetadataOptions = (values?: MetadataOption[]): FilterOption[] =>
+	(values ?? []).map(({ id, attributes: a }) => ({
+		value: id,
+		label: "name" in a ? a.name : a.value,
 	}));
 
 const getLabel = (opts: FilterOption[], val?: any) => {
 	if (!val) return "Any";
-	return opts.find(o => (o.value === val))?.label || "Any";
-}
+	return opts.find((o) => o.value === val)?.label || "Any";
+};
 
 class IncidentsListViewController {
 	paginator = new QueryPaginatorState();

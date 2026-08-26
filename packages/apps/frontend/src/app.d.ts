@@ -1,7 +1,9 @@
 import { ApiError } from "./lib/api";
 
 declare global {
-	interface IdProp {id: string};
+	interface IdProp {
+		id: string;
+	}
 
 	namespace App {
 		interface Error {

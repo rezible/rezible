@@ -7,31 +7,31 @@
 	const pageBreadcrumbs = $derived(shell.breadcrumbs);
 	const pageActions = $derived(shell.pageActions);
 	const propsFn = $derived(pageActions?.propsFn ?? (() => ({})));
-	const pageActionsProps = $derived.by(() => (propsFn()));
+	const pageActionsProps = $derived.by(() => propsFn());
 </script>
 
 <div class="flex items-center gap-2 text-lg">
-    <!-- <Sidebar.Trigger size="icon-lg" />   -->
-    <Breadcrumb.Root>
-        <Breadcrumb.List>
-            {#each pageBreadcrumbs as crumb, i}
-                {#if i > 0}
-                    <Breadcrumb.Separator />
-                {/if}
-                <Breadcrumb.Item>
-                    {#if i < (pageBreadcrumbs.length - 1)}
-                        <Breadcrumb.Link href={crumb.path}>{crumb.label}</Breadcrumb.Link>
-                    {:else}
-                        <Breadcrumb.Page>{crumb.label}</Breadcrumb.Page>
-                    {/if}
-                </Breadcrumb.Item>
-            {/each}
-        </Breadcrumb.List>
-    </Breadcrumb.Root>
+	<!-- <Sidebar.Trigger size="icon-lg" />   -->
+	<Breadcrumb.Root>
+		<Breadcrumb.List>
+			{#each pageBreadcrumbs as crumb, i}
+				{#if i > 0}
+					<Breadcrumb.Separator />
+				{/if}
+				<Breadcrumb.Item>
+					{#if i < pageBreadcrumbs.length - 1}
+						<Breadcrumb.Link href={crumb.path}>{crumb.label}</Breadcrumb.Link>
+					{:else}
+						<Breadcrumb.Page>{crumb.label}</Breadcrumb.Page>
+					{/if}
+				</Breadcrumb.Item>
+			{/each}
+		</Breadcrumb.List>
+	</Breadcrumb.Root>
 </div>
 
 {#if pageActions}
-    <div class="flex items-center">
-        <pageActions.component {...pageActionsProps} />
-    </div>
+	<div class="flex items-center">
+		<pageActions.component {...pageActionsProps} />
+	</div>
 {/if}

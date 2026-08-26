@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { RadioGroup as RadioGroupPrimitive } from "bits-ui";
-	import RiCircleLine from 'remixicon-svelte/icons/circle-line';
+	import RiCircleLine from "remixicon-svelte/icons/circle-line";
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
 
 	let {
@@ -22,7 +22,9 @@
 	{#snippet children({ checked })}
 		<div data-slot="radio-group-indicator" class="flex size-4 items-center justify-center">
 			{#if checked}
-				<RiCircleLine class="bg-primary-foreground absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full" />
+				<RiCircleLine
+					class="bg-primary-foreground absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+				/>
 			{/if}
 		</div>
 	{/snippet}

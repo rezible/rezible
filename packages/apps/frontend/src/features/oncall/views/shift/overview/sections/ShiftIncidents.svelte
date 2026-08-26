@@ -17,10 +17,10 @@
 	let showFilters = $state(false);
 
 	const colors = [
-		'oklch(var(--color-danger))',
-		'oklch(var(--color-warning))',
-		'oklch(var(--color-success))',
-		'oklch(var(--color-info))',
+		"oklch(var(--color-danger))",
+		"oklch(var(--color-warning))",
+		"oklch(var(--color-success))",
+		"oklch(var(--color-info))",
 	];
 
 	// const incidentSeries = $derived(metrics.incidentActivity?.map((v, i) => ({key: v.incidentId, value: v.minutes, color: colors[i % colors.length]})));
@@ -32,21 +32,21 @@
 			title: "Average Incident Severity",
 			subheading: `Highest severity is 0`,
 			value: 0,
-			comparison: {value: 0, positive: true}
+			comparison: { value: 0, positive: true },
 		},
 		{
 			title: "Alert to Incident Rate",
 			subheading: `Alerts that became incidents`,
 			value: metrics?.events.alertIncidentRate || 0,
-			comparison: {value: comparison?.events.alertIncidentRate || 0, positive: true}
+			comparison: { value: comparison?.events.alertIncidentRate || 0, positive: true },
 		},
 		{
 			title: "Incidents Reviewed",
 			subheading: `From incident review meetings`,
 			value: 0,
-			comparison: {value: 0, positive: true}
+			comparison: { value: 0, positive: true },
 		},
-	])
+	]);
 </script>
 
 <SectionCard>
@@ -64,9 +64,7 @@
 
 	<ChartWithStats {stats}>
 		{#snippet chart()}
-			<div class="h-[250px] w-[300px] overflow-auto">
-				
-			</div>
+			<div class="h-[250px] w-[300px] overflow-auto"></div>
 		{/snippet}
 	</ChartWithStats>
 </SectionCard>

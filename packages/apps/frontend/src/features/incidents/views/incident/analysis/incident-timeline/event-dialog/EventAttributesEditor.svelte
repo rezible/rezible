@@ -60,8 +60,8 @@
 </div>
 
 {#snippet componentTraitPanel(title: string, subheading: string, icon: string, PanelComponent: Component)}
-<div class="p-2 border rounded">
-	<!-- <Collapse open classes={{ root: "overflow-x-hidden", content: "p-2" }}>
+	<div class="p-2 border rounded">
+		<!-- <Collapse open classes={{ root: "overflow-x-hidden", content: "p-2" }}>
 		<ListItem
 			slot="trigger"
 			{title}
@@ -76,5 +76,5 @@
 		/>
 		<PanelComponent></PanelComponent>
 	</Collapse> -->
-</div>
+	</div>
 {/snippet}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Select as SelectPrimitive } from "bits-ui";
 	import { cn, type WithoutChild } from "$lib/utils.js";
-	import RiArrowDownSLine from 'remixicon-svelte/icons/arrow-down-s-line';
+	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
 
 	let {
 		ref = $bindable(null),

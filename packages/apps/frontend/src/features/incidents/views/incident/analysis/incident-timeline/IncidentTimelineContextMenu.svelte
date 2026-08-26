@@ -4,7 +4,7 @@
 	import type { TimelineItem } from "vis-timeline";
 	import { useIncidentTimelineController } from "./controller.svelte";
 	import { Button } from "$components/ui/button";
-	import AnalysisContextMenu from "../ContextMenu.svelte";
+	import ContextMenu from "$components/common/context-menu/ContextMenu.svelte";
 
 	type Props = {
 		containerRect: DOMRect;
@@ -37,7 +37,7 @@
 	};
 </script>
 
-<AnalysisContextMenu title="Timeline Actions" {containerRect} {clickPos}>
+<ContextMenu title="Timeline Actions" {containerRect} {clickPos}>
 	<div id="timeline-ctx-container" onclick={onClicked} role="presentation">
 		{#if event}
 			<Button onclick={onEditEventClick}>Edit Event</Button>
@@ -45,4 +45,4 @@
 
 		<Button onclick={onAddEventClick}>Add New Event</Button>
 	</div>
-</AnalysisContextMenu>
+</ContextMenu>

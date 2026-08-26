@@ -5,17 +5,16 @@
 	import { Spinner } from "$src/components/ui/spinner";
 	import type { StepperController } from "./controller.svelte";
 
-    type Props = {
-        controller: StepperController;
-    }
+	type Props = {
+		controller: StepperController;
+	};
 	const { controller }: Props = $props();
-
 </script>
 
 <div class={cn("flex w-full gap-4 flex-col")}>
 	<div class={cn("flex flex-col gap-3 w-full")}>
 		<Progress value={controller.progress} />
-        
+
 		<ol class="flex flex-col gap-2 sm:flex-row" aria-label="Setup progress">
 			{#each controller.steps as step, i (step.key)}
 				{@const isActive = i === controller.currentIndex}
@@ -32,7 +31,7 @@
 								"grid size-8 shrink-0 place-items-center border text-sm font-medium",
 								isActive && "border-primary bg-primary text-primary-foreground",
 								isCompleted && "border-primary text-primary",
-								!isActive && !isCompleted && "border-border bg-muted text-muted-foreground",
+								!isActive && !isCompleted && "border-border bg-muted text-muted-foreground"
 							)}
 						>
 							{i + 1}
@@ -41,13 +40,15 @@
 							<span
 								class={cn(
 									"block truncate text-sm font-medium",
-									isActive ? "text-foreground" : "text-muted-foreground",
+									isActive ? "text-foreground" : "text-muted-foreground"
 								)}
 							>
 								{step.label}
 							</span>
 							{#if step.description}
-								<span class="block text-sm leading-snug text-muted-foreground">{step.description}</span>
+								<span class="block text-sm leading-snug text-muted-foreground"
+									>{step.description}</span
+								>
 							{/if}
 						</span>
 					</button>
@@ -56,25 +57,36 @@
 		</ol>
 	</div>
 
-    <div class="flex flex-col gap-4">
-        <section class="min-h-0 border border-border bg-card p-4 text-card-foreground">
-            {#if !!controller.currentComponent}
-                <controller.currentComponent />
-            {/if}
-        </section>
+	<div class="flex flex-col gap-4">
+		<section class="min-h-0 border border-border bg-card p-4 text-card-foreground">
+			{#if !!controller.currentComponent}
+				<controller.currentComponent />
+			{/if}
+		</section>
 
-        {#if controller.errorMessage}
-            <p class="text-sm text-destructive" role="alert">{controller.errorMessage}</p>
-        {/if}
+		{#if controller.errorMessage}
+			<p class="text-sm text-destructive" role="alert">{controller.errorMessage}</p>
+		{/if}
 
-        <div class="flex self-end items-center gap-2">
-            <Button variant="outline" onclick={() => {controller.back()}} disabled={!controller.canGoBack}>Back</Button>
-            <Button onclick={() => {controller.next()}} disabled={!controller.canContinue}>
-                {#if controller.pending}
-                    <Spinner />
-                {/if}
-                {controller.continueButtonText}
-            </Button>
-        </div>
-    </div>
+		<div class="flex self-end items-center gap-2">
+			<Button
+				variant="outline"
+				onclick={() => {
+					controller.back();
+				}}
+				disabled={!controller.canGoBack}>Back</Button
+			>
+			<Button
+				onclick={() => {
+					controller.next();
+				}}
+				disabled={!controller.canContinue}
+			>
+				{#if controller.pending}
+					<Spinner />
+				{/if}
+				{controller.continueButtonText}
+			</Button>
+		</div>
+	</div>
 </div>

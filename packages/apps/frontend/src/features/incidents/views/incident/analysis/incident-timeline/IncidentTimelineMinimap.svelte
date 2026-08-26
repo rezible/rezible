@@ -7,7 +7,7 @@
 
 	let eventItems = new SvelteMap<string, number>();
 	controller.items.on("*", (ev, p) => {
-		p.items.forEach(id => {
+		p.items.forEach((id) => {
 			const sId = id.toString();
 			if (ev === "remove") {
 				eventItems.delete(sId);
@@ -19,32 +19,38 @@
 			if (isEventItem(item)) {
 				eventItems.set(sId, new Date(item.start).valueOf());
 			} else if (isMilestoneItem(item)) {
-
 			}
 		});
 	});
 
 	const viewBounds = $derived(controller.viewBounds);
-	const viewBoundsLength = $derived((viewBounds.end - viewBounds.start) || 1);
+	const viewBoundsLength = $derived(viewBounds.end - viewBounds.start || 1);
 
 	let containerEl = $state<HTMLElement>(null!);
 	const containerSize = new ElementSize(() => containerEl);
 	const containerWidth = $derived(containerSize.width);
 
 	const viewWindow = $derived(controller.viewWindow);
-	const viewWindowLength = $derived((viewWindow.end - viewWindow.start) || 1);
+	const viewWindowLength = $derived(viewWindow.end - viewWindow.start || 1);
 
-	const windowHighlightX = $derived(((viewWindow.start - viewBounds.start) / viewBoundsLength) * containerWidth || 0);
+	const windowHighlightX = $derived(
+		((viewWindow.start - viewBounds.start) / viewBoundsLength) * containerWidth || 0
+	);
 	const windowHighlightWidth = $derived(containerWidth * Math.min(1, viewWindowLength / viewBoundsLength));
 
 	const onMinimapClicked = (e: MouseEvent) => {
 		const clickPosPct = e.offsetX / containerWidth;
-		const viewBoundsPoint = viewBounds.start + (viewBoundsLength * clickPosPct);
+		const viewBoundsPoint = viewBounds.start + viewBoundsLength * clickPosPct;
 		controller.timeline?.moveTo(viewBoundsPoint);
-	}
+	};
 
-	const incidentStartPct = $derived((controller.incidentWindow.start - viewBounds.start) / viewBoundsLength);
-	const incidentWidth = $derived(containerWidth * ((controller.incidentWindow.end - controller.incidentWindow.start) / viewBoundsLength));
+	const incidentStartPct = $derived(
+		(controller.incidentWindow.start - viewBounds.start) / viewBoundsLength
+	);
+	const incidentWidth = $derived(
+		containerWidth *
+			((controller.incidentWindow.end - controller.incidentWindow.start) / viewBoundsLength)
+	);
 
 	const incidentHighlightX = $derived(incidentStartPct * containerWidth);
 
@@ -56,28 +62,43 @@
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div class="w-full h-full" role="presentation" bind:this={containerEl} onclick={onMinimapClicked}>
 	<svg role="img" width="100%" height="100%" viewBox="0 0 100 100%">
-		<rect x={incidentHighlightX} y="0" width="{incidentWidth}" height="100%" 
+		<rect
+			x={incidentHighlightX}
+			y="0"
+			width={incidentWidth}
+			height="100%"
 			shape-rendering="crispEdges"
 			class="fill-secondary"
 			fill-opacity="10%"
-			style="stroke: transparent; stroke-width: 2;"></rect>
+			style="stroke: transparent; stroke-width: 2;"
+		></rect>
 
 		{#each eventItems.entries() as [id, start] (id)}
-			{@const xPos = Math.min(maxEventXPos, Math.round(((start - viewBounds.start) / viewBoundsLength) * containerWidth))}
-			<rect 
-				x={xPos} y="0"
-				width={eventRectWidth} height="100%" 
-				shape-rendering="crispEdges" 
+			{@const xPos = Math.min(
+				maxEventXPos,
+				Math.round(((start - viewBounds.start) / viewBoundsLength) * containerWidth)
+			)}
+			<rect
+				x={xPos}
+				y="0"
+				width={eventRectWidth}
+				height="100%"
+				shape-rendering="crispEdges"
 				class="cursor-pointer fill-accent"
 				fill-opacity="30%"
-				style="stroke: transparent; stroke-width: 2;"></rect>
+				style="stroke: transparent; stroke-width: 2;"
+			></rect>
 		{/each}
-		
-		<rect x={windowHighlightX} y="0"
-			width={windowHighlightWidth} height="100%" 
+
+		<rect
+			x={windowHighlightX}
+			y="0"
+			width={windowHighlightWidth}
+			height="100%"
 			shape-rendering="crispEdges"
 			class="fill-primary"
 			fill-opacity="25%"
-			style="stroke: transparent; stroke-width: 2;"></rect>
+			style="stroke: transparent; stroke-width: 2;"
+		></rect>
 	</svg>
 </div>

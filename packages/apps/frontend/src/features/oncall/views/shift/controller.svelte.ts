@@ -10,13 +10,15 @@ export class OncallShiftViewController {
 
 	constructor(idFn: () => string) {
 		this.shiftId = idFn();
-		watch(idFn, id => { this.shiftId = id });
+		watch(idFn, (id) => {
+			this.shiftId = id;
+		});
 	}
 
 	useShiftTimezone = $state(false);
 	timezone = $derived(this.useShiftTimezone ? "" : getLocalTimeZone());
 
-	private shiftQuery = createQuery(() => getOncallShiftOptions({ path: { id: this.shiftId } }))
+	private shiftQuery = createQuery(() => getOncallShiftOptions({ path: { id: this.shiftId } }));
 	shift = $derived(this.shiftQuery.data?.data);
 	roster = $derived(this.shift?.attributes.roster);
 
@@ -30,26 +32,33 @@ export class OncallShiftViewController {
 		return `${this.roster.attributes.name} - ${this.shiftStart} to ${this.shiftEnd}`;
 	});
 
-	private adjacentShiftsQuery = createQuery(() => getAdjacentOncallShiftsOptions({ path: { id: this.shiftId }}));
+	private adjacentShiftsQuery = createQuery(() =>
+		getAdjacentOncallShiftsOptions({ path: { id: this.shiftId } })
+	);
 	nextShift = $derived(this.adjacentShiftsQuery.data?.data.next);
 	previousShift = $derived(this.adjacentShiftsQuery.data?.data.previous);
 
-	private eventsQueryOptions = $derived(listEventsOptions({ query: {
-		// TODO
-		// shiftId: this.shiftId,
-		// withAnnotations: true,
-	}}));
-	eventsQuery = createQuery(() => (this.eventsQueryOptions));
+	private eventsQueryOptions = $derived(
+		listEventsOptions({
+			query: {
+				// TODO
+				// shiftId: this.shiftId,
+				// withAnnotations: true,
+			},
+		})
+	);
+	eventsQuery = createQuery(() => this.eventsQueryOptions);
 	events = $derived(this.eventsQuery.data?.data);
 
 	eventsFilter = $state<ShiftEventFilterKind>();
 	filteredEvents = $derived.by(() => {
 		if (!this.events) return [];
 		if (!this.eventsFilter) return this.events;
-		return this.events.filter(e => (!this.eventsFilter || shiftEventMatchesFilter(e, this.eventsFilter)));
+		return this.events.filter((e) => !this.eventsFilter || shiftEventMatchesFilter(e, this.eventsFilter));
 	});
 }
 
 const ctx = new Context<OncallShiftViewController>("OncallShiftViewController");
-export const initOncallShiftViewController = (idFn: Getter<string>) => ctx.set(new OncallShiftViewController(idFn));
+export const initOncallShiftViewController = (idFn: Getter<string>) =>
+	ctx.set(new OncallShiftViewController(idFn));
 export const useOncallShiftViewController = () => ctx.get();

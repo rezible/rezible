@@ -2,7 +2,7 @@
 	import type { OncallShiftMetrics } from "$lib/api";
 	import MetricComparisonLabel from "$components/viz/MetricComparisonLabel.svelte";
 	import Header from "$src/components/layout/header/Header.svelte";
-	
+
 	import SectionCard from "../SectionCard.svelte";
 	import BurdenRadar from "./BurdenRadar.svelte";
 
@@ -15,38 +15,42 @@
 	const burden = $derived(metrics?.burden);
 	const comp = $derived(comparison?.burden);
 
-	const burdenStats = $derived((!!burden && !!comp) ? [
-		{
-			title: "Event Frequency",
-			subheading: `How often interruptions occur during your shift.`,
-			value: burden.eventFrequency,
-			comparison: {value: comp.eventFrequency},
-		},
-		{
-			title: "Life Impact",
-			subheading: `Disruption to personal time and sleep.`,
-			value: burden.lifeImpact,
-			comparison: {value: comp.lifeImpact},
-		},
-		{
-			title: "Time Impact",
-			subheading: `Total time spent actively working on operational toil.`,
-			value: burden.timeImpact,
-			comparison: {value: comp.timeImpact},
-		},
-		{
-			title: "Response Requirements",
-			subheading: `Complexity and urgency of responses.`,
-			value: burden.responseRequirements,
-			comparison: {value: comp.responseRequirements},
-		},
-		{
-			title: "Isolation",
-			subheading: `Availability of support and documentation available.`,
-			value: burden.isolation,
-			comparison: {value: comp.isolation},
-		},
-	] : []);
+	const burdenStats = $derived(
+		!!burden && !!comp
+			? [
+					{
+						title: "Event Frequency",
+						subheading: `How often interruptions occur during your shift.`,
+						value: burden.eventFrequency,
+						comparison: { value: comp.eventFrequency },
+					},
+					{
+						title: "Life Impact",
+						subheading: `Disruption to personal time and sleep.`,
+						value: burden.lifeImpact,
+						comparison: { value: comp.lifeImpact },
+					},
+					{
+						title: "Time Impact",
+						subheading: `Total time spent actively working on operational toil.`,
+						value: burden.timeImpact,
+						comparison: { value: comp.timeImpact },
+					},
+					{
+						title: "Response Requirements",
+						subheading: `Complexity and urgency of responses.`,
+						value: burden.responseRequirements,
+						comparison: { value: comp.responseRequirements },
+					},
+					{
+						title: "Isolation",
+						subheading: `Availability of support and documentation available.`,
+						value: burden.isolation,
+						comparison: { value: comp.isolation },
+					},
+				]
+			: []
+	);
 </script>
 
 <SectionCard>

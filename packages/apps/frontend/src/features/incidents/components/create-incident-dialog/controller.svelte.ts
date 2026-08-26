@@ -5,21 +5,22 @@ import {
 	getIncidentMetadataQueryKey,
 	listIncidentsQueryKey,
 	type ErrorModel,
+	type Incident,
 	type IncidentField,
 	type IncidentSeverity,
 	type IncidentType,
 } from "$lib/api";
 import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
-import {
-	CreateIncidentFormSchema,
-	getEmptyCreateIncidentForm,
-	type CreateIncidentFormState,
-} from "./form";
+import { CreateIncidentFormSchema, getEmptyCreateIncidentForm, type CreateIncidentFormState } from "./form";
 
-const getNamedLabel = (items: IncidentSeverity[] | IncidentType[], id: string | undefined, fallback: string) => {
+const getNamedLabel = (
+	items: IncidentSeverity[] | IncidentType[],
+	id: string | undefined,
+	fallback: string
+) => {
 	return !id ? fallback : (items.find((item) => item.id === id)?.attributes.name ?? fallback);
-}
+};
 
 export class IncidentCreateDialogController {
 	private queryClient = useQueryClient();
@@ -35,45 +36,45 @@ export class IncidentCreateDialogController {
 	private metadata = $derived(this.metadataQuery.data?.data);
 	loading = $derived(this.metadataQuery.isLoading);
 
-	severities = $derived((this.metadata?.severities ?? []).sort((a, b) => a.attributes.rank - b.attributes.rank));
+	severities = $derived(
+		(this.metadata?.severities ?? []).sort((a, b) => a.attributes.rank - b.attributes.rank)
+	);
 	types = $derived(this.metadata?.types ?? []);
 	tags = $derived(this.metadata?.tags ?? []);
 	fields = $derived(this.metadata?.fields ?? []);
 
 	constructor() {
-		watch(() => this.metadata, md => {
-			if (!md) return;
-			// set default form
-		});
+		watch(
+			() => this.metadata,
+			(md) => {
+				if (!md) return;
+				// set default form
+			}
+		);
 	}
 
 	parsedForm = $derived(
-		this.open
-			? CreateIncidentFormSchema.safeParse({
-					title: this.form.title,
-					summary: this.form.summary,
-					severityId: this.form.severityId,
-					typeId: this.form.typeId,
-					tagIds: this.form.tagIds,
-					fieldSelections: this.form.fieldSelections,
-				})
-			: null,
+		this.open ? CreateIncidentFormSchema.safeParse(this.form) : null
 	);
 
 	fieldErrors = $derived(
-		this.parsedForm && !this.parsedForm.success ? this.parsedForm.error.flatten().fieldErrors : {},
+		this.parsedForm && !this.parsedForm.success ? this.parsedForm.error.flatten().fieldErrors : {}
 	);
+
+	private async onIncidentCreated(incident: Incident) {
+		this.error = undefined;
+		await Promise.all([
+			this.queryClient.invalidateQueries({ queryKey: listIncidentsQueryKey() }),
+			this.queryClient.invalidateQueries({ queryKey: getIncidentMetadataQueryKey() }),
+		]);
+		this.setOpen(false);
+		await goto(`/incidents/${incident.attributes.slug}`);
+	}
 
 	createMut = createMutation(() => ({
 		...createIncidentMutation(),
-		onSuccess: async ({ data: incident }) => {
-			this.error = undefined;
-			await Promise.all([
-				this.queryClient.invalidateQueries({ queryKey: listIncidentsQueryKey() }),
-				this.queryClient.invalidateQueries({ queryKey: getIncidentMetadataQueryKey() }),
-			]);
-			this.setOpen(false);
-			await goto(`/incidents/${incident.attributes.slug}`);
+		onSuccess: async ({ data }) => {
+			await this.onIncidentCreated(data);
 		},
 		onError: (err) => {
 			this.error = err as ErrorModel;

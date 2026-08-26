@@ -23,14 +23,16 @@
 	{#snippet header()}
 		<Header title="Filters">
 			{#snippet subheading()}
-				<span class="text-xs text-muted-foreground uppercase">{controller.activeFilterCount} active</span>
+				<span class="text-xs text-muted-foreground uppercase"
+					>{controller.activeFilterCount} active</span
+				>
 			{/snippet}
 
 			{#snippet actions()}
 				<Button
 					variant="ghost"
 					size="sm"
-					onclick={controller.resetFilters}
+					onclick={() => {controller.resetFilters()}}
 					disabled={controller.activeFilterCount === 0}
 				>
 					Clear Filters

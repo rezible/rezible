@@ -1,7 +1,14 @@
 <script lang="ts">
 	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import type { OncallShift } from "$lib/api";
-	import { formatDistanceToNowStrict, isFuture, isPast, formatDuration, minutesToHours, differenceInMinutes } from "date-fns";
+	import {
+		formatDistanceToNowStrict,
+		isFuture,
+		isPast,
+		formatDuration,
+		minutesToHours,
+		differenceInMinutes,
+	} from "date-fns";
 	import ShiftProgressCircle from "./ShiftProgressCircle.svelte";
 	import Icon from "$components/common/icon/Icon.svelte";
 	import { mdiChevronRight } from "@mdi/js";
@@ -12,10 +19,7 @@
 		shift: OncallShift;
 		hideRoster?: boolean;
 	};
-	const {
-		shift,
-		hideRoster = false,
-	}: Props = $props();
+	const { shift, hideRoster = false }: Props = $props();
 
 	const attr = $derived(shift.attributes);
 	const roster = $derived(attr.roster);
@@ -44,7 +48,8 @@
 	};
 
 	const defaultClasses = "";
-	const activeClasses = "bg-success-900/20 border-success-100/10 hover:bg-success-900/30 hover:border-success-100/20";
+	const activeClasses =
+		"bg-success-900/20 border-success-100/10 hover:bg-success-900/30 hover:border-success-100/20";
 </script>
 
 <div class={cn("p-2 flex flex-col gap-2 rounded border", isActive ? activeClasses : defaultClasses)}>
@@ -66,7 +71,12 @@
 
 		<div class="flex flex-col items-end">
 			<div class="flex gap-2 items-center">
-				<span class={cn("text-sm uppercase font-bold text-surface-content/60", isActive && "text-success-600")}>
+				<span
+					class={cn(
+						"text-sm uppercase font-bold text-surface-content/60",
+						isActive && "text-success-600"
+					)}
+				>
 					{#if isActive}
 						Active
 					{:else if isUpcoming}

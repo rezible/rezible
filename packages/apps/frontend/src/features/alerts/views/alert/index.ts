@@ -1,2 +1,2 @@
 export { default } from "./AlertView.svelte";
-export { useAlertViewController } from "./controller.svelte"; 
+export { useAlertViewController } from "./controller.svelte";

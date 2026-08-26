@@ -26,7 +26,6 @@ export class IncidentSidebarController {
 	connectionError = $derived(this.collab.error);
 
 	incidentId = $derived(this.view.incidentId);
-
 }
 
 const ctx = new Context<IncidentSidebarController>("IncidentSidebarController");

@@ -4,9 +4,7 @@
 
 	const controller = initGeneralSettingsController();
 
-	setPageBreadcrumbs(() => ([
-		{ label: "Settings", path: "/settings" },
-	]));
+	setPageBreadcrumbs(() => [{ label: "Settings", path: "/settings" }]);
 </script>
 
 <div class="flex flex-col gap-2">

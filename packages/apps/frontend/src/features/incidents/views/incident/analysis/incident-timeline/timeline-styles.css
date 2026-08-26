@@ -6,15 +6,15 @@
 
 /* horizontal timeline line (item dots connect to this) */
 .vis-panel.vis-center {
-	border-color: oklch(var(--color-surface-content) / .25);
+	border-color: oklch(var(--color-surface-content) / 0.25);
 }
 
 /* vertical grid lines */
 .vis-time-axis .vis-grid.vis-minor {
-	border-color: oklch(var(--color-surface-content) / .25);
+	border-color: oklch(var(--color-surface-content) / 0.25);
 }
 .vis-time-axis .vis-grid.vis-major {
-	border-color: oklch(var(--color-surface-content) / .75);
+	border-color: oklch(var(--color-surface-content) / 0.75);
 }
 
 /* item dot connecting to horizontal timeline line */

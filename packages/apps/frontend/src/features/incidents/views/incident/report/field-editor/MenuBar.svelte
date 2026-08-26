@@ -75,10 +75,7 @@
 	</Toggle-->
 
 	{#snippet markButton(tooltip: string, active: boolean, icon: string, cmd: VoidFunction)}
-		<Button
-			color={active ? "secondary" : "default"}
-			onclick={() => cmd()}
-		>{tooltip}</Button>
+		<Button color={active ? "secondary" : "default"} onclick={() => cmd()}>{tooltip}</Button>
 	{/snippet}
 
 	<div class="px-2">

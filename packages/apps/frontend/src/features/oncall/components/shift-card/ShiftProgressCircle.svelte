@@ -11,7 +11,7 @@
 
 	const start = $derived(new Date(shift.attributes.startAt));
 	const end = $derived(new Date(shift.attributes.endAt));
-	const progress = $derived(100 * (Date.now() - start.valueOf()) / (end.valueOf() - start.valueOf()));
+	const progress = $derived((100 * (Date.now() - start.valueOf())) / (end.valueOf() - start.valueOf()));
 	const timeLeft = $derived(formatDistanceToNow(end));
 </script>
 

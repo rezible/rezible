@@ -5,69 +5,76 @@ import type { ErrorModel } from "$lib/api";
 import { page } from "$app/state";
 
 const authSessionErrorDisplay = new Map<ApiAuthErrorCategory, ErrorModel>([
-    [ApiAuthErrorCategory.SessionExpired, {title: "Session Expired", detail: "Your session has expired"}],
-    [ApiAuthErrorCategory.SessionInvalid, {title: "Invalid Session", detail: "Your session is invalid"}],
-    [ApiAuthErrorCategory.ServerError, {title: "Server Error", detail: "Something went wrong while authenticating you"}],
-    [ApiAuthErrorCategory.Unknown, {title: "Server Error", detail: "Something went wrong while authenticating you"}],
+	[ApiAuthErrorCategory.SessionExpired, { title: "Session Expired", detail: "Your session has expired" }],
+	[ApiAuthErrorCategory.SessionInvalid, { title: "Invalid Session", detail: "Your session is invalid" }],
+	[
+		ApiAuthErrorCategory.ServerError,
+		{ title: "Server Error", detail: "Something went wrong while authenticating you" },
+	],
+	[
+		ApiAuthErrorCategory.Unknown,
+		{ title: "Server Error", detail: "Something went wrong while authenticating you" },
+	],
 ]);
 
 const transformAuthSessionError = (cat?: ApiAuthErrorCategory) => {
-    if (!cat || cat === ApiAuthErrorCategory.NoSession) return;
-    const display = authSessionErrorDisplay.get(cat);
-    if (!display) {
-        // log?
-        return authSessionErrorDisplay.get(ApiAuthErrorCategory.Unknown);
-    }
-    return display;
+	if (!cat || cat === ApiAuthErrorCategory.NoSession) return;
+	const display = authSessionErrorDisplay.get(cat);
+	if (!display) {
+		// log?
+		return authSessionErrorDisplay.get(ApiAuthErrorCategory.Unknown);
+	}
+	return display;
 };
 
 const loginErrorDisplayText: Record<string, string> = {
-    ["create_redirect"]: "Failed to redirect to identity provider",
-    ["write_auth_session"]: "Failed to write auth session",
-    ["write_auth_state"]: "Failed to write auth state",
-    ["read_auth_state"]: "Failed to read auth state",
-    ["callback_exchange"]: "Failed to perform callback exchange with identity provider",
-    ["identity_sync"]: "Failed to sync user & organization information",
+	["create_redirect"]: "Failed to redirect to identity provider",
+	["write_auth_session"]: "Failed to write auth session",
+	["write_auth_state"]: "Failed to write auth state",
+	["read_auth_state"]: "Failed to read auth state",
+	["callback_exchange"]: "Failed to perform callback exchange with identity provider",
+	["identity_sync"]: "Failed to sync user & organization information",
 };
 const transformLoginErrorCode = (code: string | null) => {
-    if (!code) return;
-    const title = "Login Error";
-    const detail = loginErrorDisplayText[code] || "An unknown problem occurred";
-    return {title, detail} as ErrorModel;
+	if (!code) return;
+	const title = "Login Error";
+	const detail = loginErrorDisplayText[code] || "An unknown problem occurred";
+	return { title, detail } as ErrorModel;
 };
 
 export class LoginViewController {
-    private session = useUserSessionState();
+	private session = useUserSessionState();
 
-    loaded = $state(false);
+	loaded = $state(false);
 	inFlow = $state(false);
 
 	authSessionError = $derived(transformAuthSessionError(this.session.error));
 	showLogout = $derived(this.session.error === ApiAuthErrorCategory.SessionInvalid);
 
 	loginError = $state<ErrorModel>();
-    constructor() {
-        const params = page.url.searchParams;
+	constructor() {
+		const params = page.url.searchParams;
 
-        this.loginError = transformLoginErrorCode(params.get("error"));
+		this.loginError = transformLoginErrorCode(params.get("error"));
 
-        if (!this.loginError && params.has("flow", "true")) {
-            this.doLogin();
-        } else {
-            goto(window.location.pathname, { replaceState: true, noScroll: true })
-                .then(() => {this.loaded = true});
-        }
-    }
+		if (!this.loginError && params.has("flow", "true")) {
+			this.doLogin();
+		} else {
+			goto(window.location.pathname, { replaceState: true, noScroll: true }).then(() => {
+				this.loaded = true;
+			});
+		}
+	}
 
-    async doLogin() {
-        this.inFlow = true;
-        await goto("/api/auth/login");
-    }
+	async doLogin() {
+		this.inFlow = true;
+		await goto("/api/auth/login");
+	}
 
-    async doLogout() {
-        this.inFlow = true;
-        await this.session.logout();
-    }
+	async doLogout() {
+		this.inFlow = true;
+		await this.session.logout();
+	}
 
 	titleText = $derived("Authentication Required");
 	descriptionText = $derived("Continue with your identity provider");

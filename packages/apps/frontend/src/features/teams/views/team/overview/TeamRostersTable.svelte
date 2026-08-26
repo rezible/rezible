@@ -7,7 +7,7 @@
 
 	const view = useTeamViewController();
 	const paginator = new QueryPaginatorState();
-	
+
 	const params = $derived<ListOncallRostersData["query"]>({
 		teamId: view.teamId,
 		...paginator.queryParams,
@@ -17,7 +17,7 @@
 		enabled: !!view.teamId,
 	}));
 	paginator.watchQuery(rostersQuery);
-	
+
 	const rosters = $derived(rostersQuery.data?.data ?? []);
 </script>
 
@@ -26,7 +26,10 @@
 
 	<div class="flex flex-col gap-2 min-h-0 flex-0 overflow-auto py-1">
 		{#each rosters ?? [] as roster (roster.id)}
-			<a class="flex gap-2 items-center rounded border border-surface-content/10 p-2" href="/rosters/{roster.id}">
+			<a
+				class="flex gap-2 items-center rounded border border-surface-content/10 p-2"
+				href="/rosters/{roster.id}"
+			>
 				<Avatar kind="roster" size={20} id={roster.id} />
 				<span>{roster.attributes.name}</span>
 			</a>

@@ -7,26 +7,26 @@ import type { Pathname } from "$app/types";
 import type { RouteId } from "$app/types";
 
 export type AppSidebarItem = {
-    label: string;
-    icon?: Component;
-    href: string;
-    subItems?: AppSidebarItem[];
+	label: string;
+	icon?: Component;
+	href: string;
+	subItems?: AppSidebarItem[];
 };
 
 export type AppSidebarGroup = {
-    label?: string;
-    items: AppSidebarItem[];
+	label?: string;
+	items: AppSidebarItem[];
 };
 
 export type AppSidebarSearch = {
-    placeholder: string;
+	placeholder: string;
 };
 
 export type AppSidebarModel = {
-    isDefault?: boolean;
-    search?: AppSidebarSearch;
-    groups: AppSidebarGroup[];
-    footerItems?: AppSidebarItem[];
+	isDefault?: boolean;
+	search?: AppSidebarSearch;
+	groups: AppSidebarGroup[];
+	footerItems?: AppSidebarItem[];
 };
 
 export type PageBreadcrumb = {
@@ -40,14 +40,14 @@ export type PageActions<PComponent extends Component<any>> = {
 	propsFn?: () => ComponentProps<PComponent>;
 	allowChildren: boolean;
 	pathBase: string;
-}
+};
 
 export class AppShellController {
-	pageTitle = $state("Rezible")
+	pageTitle = $state("Rezible");
 	childSidebar = $state.raw<AppSidebarModel>();
 
 	constructor() {
-		afterNavigate(nav => {
+		afterNavigate((nav) => {
 			this.checkPageActions(nav.to?.route.id);
 		});
 	}
@@ -56,16 +56,29 @@ export class AppShellController {
 	private checkPageActions(newRouteId?: RouteId | null) {
 		if (!this.pageActions) return;
 		const isChild = !!newRouteId && newRouteId.startsWith(this.pageActions.pathBase);
-		if (!isChild || !this.pageActions.allowChildren) {this.pageActions = undefined}
+		if (!isChild || !this.pageActions.allowChildren) {
+			this.pageActions = undefined;
+		}
 	}
 
-	setPageActions<PComponent extends Component<any>>(component: PComponent, allowChildren: boolean, propsFn?: () => ComponentProps<PComponent>) {
-		this.pageActions = {component, allowChildren, propsFn, pathBase: $state.snapshot(page.route.id) ?? ""};
+	setPageActions<PComponent extends Component<any>>(
+		component: PComponent,
+		allowChildren: boolean,
+		propsFn?: () => ComponentProps<PComponent>
+	) {
+		this.pageActions = {
+			component,
+			allowChildren,
+			propsFn,
+			pathBase: $state.snapshot(page.route.id) ?? "",
+		};
 	}
 
 	breadcrumbs = $state<PageBreadcrumb[]>([]);
 	setPageBreadcrumbs(crumbsFn: Getter<PageBreadcrumb[]>) {
-		watch(crumbsFn, crumbs => {this.breadcrumbs = crumbs});
+		watch(crumbsFn, (crumbs) => {
+			this.breadcrumbs = crumbs;
+		});
 	}
 
 	setChildSidebar(model: AppSidebarModel) {
@@ -83,4 +96,4 @@ export const useAppShell = () => ctx.get();
 
 export const setPageBreadcrumbs = (crumbsFn: Getter<PageBreadcrumb[]>) => {
 	useAppShell().setPageBreadcrumbs(crumbsFn);
-}
+};

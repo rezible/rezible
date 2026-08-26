@@ -13,7 +13,7 @@
 		{ label: "Playbooks", path: "/playbooks" },
 		{ label: view.playbookTitle, path: `/playbooks/${view.playbookId}` },
 	]);
-	appShell.setPageActions(PlaybookPageActions, false, () => ({view}));
+	appShell.setPageActions(PlaybookPageActions, false, () => ({ view }));
 </script>
 
 <div class="flex gap-4 h-full w-full justify-between">

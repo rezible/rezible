@@ -87,8 +87,8 @@
 			<EventProjectionDetails projection={attrs.projection} />
 
 			<div class="mt-4 rounded-md border border-dashed p-3 text-xs text-muted-foreground">
-				Event annotations are not shown yet. Correct annotation display requires the annotations API to
-				support filtering by event id.
+				Event annotations are not shown yet. Correct annotation display requires the annotations API
+				to support filtering by event id.
 			</div>
 
 			<div class="mt-3">

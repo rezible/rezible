@@ -13,19 +13,18 @@
 
 	let search = $state<string>();
 	const rostersQuery = createQuery(() => ({
-		...listOncallRostersOptions({query: {search}}),
+		...listOncallRostersOptions({ query: { search } }),
 		enabled: open,
 	}));
 	const rosters = $derived(rostersQuery.data?.data ?? []);
 
 	const optionsLoading = $derived(rostersQuery.isFetching);
-	const options = $derived(rosters
-		.filter(r => (!currentMap.has(r.id)))
-		.map((r) => ({ value: r.id, label: r.attributes.name }))
+	const options = $derived(
+		rosters.filter((r) => !currentMap.has(r.id)).map((r) => ({ value: r.id, label: r.attributes.name }))
 	);
 
 	let value = $state<string>();
-	const valueRoster = $derived(options.find(o => (o.value === value)));
+	const valueRoster = $derived(options.find((o) => o.value === value));
 	const saveEnabled = $derived(!!value);
 	const confirmText = $derived(!!valueRoster ? `Watch ${valueRoster.label}` : "Watch");
 
@@ -40,11 +39,11 @@
 		onSuccess: () => {
 			onClose();
 			onUpdated();
-		}
-	}))
+		},
+	}));
 	const onConfirm = () => {
 		if (!value) return;
-		watchRosterMutation.mutate({path: {id: value}});
+		watchRosterMutation.mutate({ path: { id: value } });
 	};
 </script>
 

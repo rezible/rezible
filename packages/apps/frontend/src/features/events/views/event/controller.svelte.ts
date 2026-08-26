@@ -7,7 +7,9 @@ export class EventViewController {
 
 	constructor(idFn: Getter<string>) {
 		this.eventId = idFn();
-		watch(idFn, id => {this.eventId = id});
+		watch(idFn, (id) => {
+			this.eventId = id;
+		});
 	}
 
 	private eventQuery = createQuery(() => getEventOptions({ path: { id: this.eventId } }));

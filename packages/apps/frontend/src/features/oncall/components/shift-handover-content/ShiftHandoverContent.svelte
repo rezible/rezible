@@ -75,14 +75,16 @@
 				<Button
 					size="sm"
 					disabled={!isActive}
-					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}
-				>bold</Button> <!-- variant={isActive && section.activeStatus?.get("bold") ? "fill" : "fill-light"} -->
+					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}>bold</Button
+				>
+				<!-- variant={isActive && section.activeStatus?.get("bold") ? "fill" : "fill-light"} -->
 
 				<Button
 					size="sm"
 					disabled={!isActive}
-					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}
-				>bold</Button> <!-- variant={isActive && section.activeStatus?.get("bulletList") ? "fill" : "fill-light"} -->
+					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}>bold</Button
+				>
+				<!-- variant={isActive && section.activeStatus?.get("bulletList") ? "fill" : "fill-light"} -->
 			</div>
 
 			<TiptapEditor bind:editor={section.editor} class="p-2" />

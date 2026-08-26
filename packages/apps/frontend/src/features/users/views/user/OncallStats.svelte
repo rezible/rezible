@@ -33,7 +33,7 @@
 </script>
 
 <div class="flex flex-col gap-1 p-2">
-	<Header title="Oncall" classes={{title: "text-2xl", root: ""}} />
+	<Header title="Oncall" classes={{ title: "text-2xl", root: "" }} />
 
 	<div class="flex gap-2 flex-wrap">
 		<MetricCard title="Total Shifts" icon={mdiPhone} metric={totalShifts} />
@@ -43,8 +43,8 @@
 	<div class="w-full h-0 border-b mt-2 mb-1"></div>
 
 	<div class="flex flex-col">
-		<Header title="Recent Shifts" classes={{title: "text-xl"}} />
-		
+		<Header title="Recent Shifts" classes={{ title: "text-xl" }} />
+
 		<div class="flex flex-col gap-2">
 			{#each shifts as shift}
 				{@render shiftListItem(shift)}
@@ -52,7 +52,6 @@
 		</div>
 	</div>
 </div>
-
 
 {#snippet shiftListItem(shift: OncallShift)}
 	{@const roster = shift.attributes.roster}

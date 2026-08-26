@@ -13,7 +13,7 @@
 	const rosterId = $derived(view.rosterId);
 
 	// TODO: use correct query
-	const shiftsQuery = createQuery(() => listOncallShiftsOptions({ query: {userId: rosterId} }));
+	const shiftsQuery = createQuery(() => listOncallShiftsOptions({ query: { userId: rosterId } }));
 
 	const currentShifts = $derived<OncallShift[]>([]);
 	const pastShifts = $derived<OncallShift[]>([]);
@@ -23,7 +23,7 @@
 
 	const isActive = (s: OncallShift) => {
 		return isPast(s.attributes.startAt) && isFuture(s.attributes.endAt);
-	}
+	};
 
 	const coverRequests: string[] = [];
 </script>
@@ -33,7 +33,10 @@
 		<div class="flex flex-col p-2">
 			<Header title="Schedule Details" classes={{ root: "text-lg font-medium" }} />
 
-			<span>Every <span class="font-bold">Monday</span> at <span class="font-bold">9AM</span> in <span class="font-bold">{getLocalTimeZone()}</span></span>
+			<span
+				>Every <span class="font-bold">Monday</span> at <span class="font-bold">9AM</span> in
+				<span class="font-bold">{getLocalTimeZone()}</span></span
+			>
 		</div>
 
 		<div class="py-2 border-y">

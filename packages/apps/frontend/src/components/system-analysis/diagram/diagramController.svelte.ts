@@ -12,19 +12,23 @@ import {
 
 import { type SystemAnalysisNode, type SystemAnalysisEdge, type KnowledgeGraphEntity } from "$lib/api";
 
-import { useIncidentAnalysis } from "../controller.svelte";
+import { useSystemAnalysisController } from "../controller.svelte";
 
 export type SystemTopologyNodeData = {
 	analysisNode: SystemAnalysisNode;
+	attachmentCount: number;
 };
 
 export type SystemRelationshipEdgeData = {
 	edge: SystemAnalysisEdge;
+	attachmentCount: number;
 };
 
 const translateSystemAnalysis = (
 	analysisNodes: SystemAnalysisNode[],
-	analysisEdges: SystemAnalysisEdge[]
+	analysisEdges: SystemAnalysisEdge[],
+	nodeAttachmentCount: (id: string) => number,
+	edgeAttachmentCount: (id: string) => number
 ) => {
 	let nodes: Node[] = [];
 	const nodeIdsByEntityId = new SvelteMap<string, string>();
@@ -35,7 +39,10 @@ const translateSystemAnalysis = (
 			id: analysisNode.id,
 			type: "component",
 			position,
-			data: { analysisNode } as SystemTopologyNodeData,
+			data: {
+				analysisNode,
+				attachmentCount: nodeAttachmentCount(analysisNode.id),
+			} as SystemTopologyNodeData,
 		});
 	});
 
@@ -51,17 +58,26 @@ const translateSystemAnalysis = (
 			type: "relationship",
 			source,
 			target,
-			data: { edge: sr } as SystemRelationshipEdgeData,
+			data: { edge: sr, attachmentCount: edgeAttachmentCount(id) } as SystemRelationshipEdgeData,
 		});
 	});
 
 	return { nodes, edges };
 };
 
+export type DiagramContextMenuState = {
+	nodeId?: string;
+	edgeId?: string;
+	containerRect: DOMRect;
+	clickPos: XYPosition;
+};
+
 type DiagramSelectionState = { node?: Node; edge?: Edge };
 
 export class SystemDiagramState {
-	analysis = useIncidentAnalysis();
+	analysis = useSystemAnalysisController();
+
+	contextMenu = $state.raw<DiagramContextMenuState>();
 
 	selected = $state<DiagramSelectionState>({});
 	selectedLivePosition = $state<XYPosition>();
@@ -74,7 +90,12 @@ export class SystemDiagramState {
 			this.containerEl = ref;
 		});
 		watch(
-			() => [this.analysis.analysisNodes, this.analysis.analysisEdges] as const,
+			() =>
+				[
+					this.analysis.analysisNodes,
+					this.analysis.analysisEdges,
+					this.analysis.attachments,
+				] as const,
 			([nodes, edges]) => {
 				this.onAnalysisGraphUpdate(nodes, edges);
 			}
@@ -85,7 +106,12 @@ export class SystemDiagramState {
 	edges = $state.raw<Edge[]>([]);
 
 	onAnalysisGraphUpdate(nodes: SystemAnalysisNode[], edges: SystemAnalysisEdge[]) {
-		const translated = translateSystemAnalysis($state.snapshot(nodes), $state.snapshot(edges));
+		const translated = translateSystemAnalysis(
+			$state.snapshot(nodes),
+			$state.snapshot(edges),
+			(id) => this.analysis.attachments.byNodeId.get(id)?.length ?? 0,
+			(id) => this.analysis.attachments.byEdgeId.get(id)?.length ?? 0
+		);
 		this.nodes = translated.nodes;
 		this.edges = translated.edges;
 	}
@@ -114,7 +140,7 @@ export class SystemDiagramState {
 	}
 
 	setSelected(state: DiagramSelectionState) {
-		this.analysis.contextMenu = {};
+		this.closeContextMenu();
 		this.selected = state;
 		this.updateSelectedPosition(state);
 	}
@@ -182,18 +208,16 @@ export class SystemDiagramState {
 
 		const containerRect = this.containerEl.getBoundingClientRect();
 
-		this.analysis.contextMenu = {
-			diagram: {
-				nodeId: e.node?.id,
-				edgeId: e.edge?.id,
-				clickPos: { x: e.event.pageX, y: e.event.pageY },
-				containerRect,
-			},
+		this.contextMenu = {
+			nodeId: e.node?.id,
+			edgeId: e.edge?.id,
+			clickPos: { x: e.event.pageX, y: e.event.pageY },
+			containerRect,
 		};
 	}
 
 	closeContextMenu() {
-		this.analysis.contextMenu = {};
+		this.contextMenu = undefined;
 	}
 
 	onEdgeConnect({ source, target }: Connection) {

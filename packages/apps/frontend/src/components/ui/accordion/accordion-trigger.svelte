@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Accordion as AccordionPrimitive } from "bits-ui";
 	import { cn, type WithoutChild } from "$lib/utils.js";
-	import RiArrowDownSLine from 'remixicon-svelte/icons/arrow-down-s-line';
-	import RiArrowUpSLine from 'remixicon-svelte/icons/arrow-up-s-line';
+	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
+	import RiArrowUpSLine from "remixicon-svelte/icons/arrow-up-s-line";
 
 	let {
 		ref = $bindable(null),
@@ -26,7 +26,13 @@
 		{...restProps}
 	>
 		{@render children?.()}
-		<RiArrowDownSLine data-slot="accordion-trigger-icon" class="cn-accordion-trigger-icon pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden" />
-		<RiArrowUpSLine data-slot="accordion-trigger-icon" class="cn-accordion-trigger-icon pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline" />
+		<RiArrowDownSLine
+			data-slot="accordion-trigger-icon"
+			class="cn-accordion-trigger-icon pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden"
+		/>
+		<RiArrowUpSLine
+			data-slot="accordion-trigger-icon"
+			class="cn-accordion-trigger-icon pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline"
+		/>
 	</AccordionPrimitive.Trigger>
 </AccordionPrimitive.Header>

@@ -4,11 +4,9 @@
 	type Props = {
 		value: string | undefined;
 	};
-	let {
-		value = $bindable(),
-	}: Props = $props();
+	let { value = $bindable() }: Props = $props();
 
-	const coerceValue = (v: string | number | null) => ((!!v && typeof v === "string") ? v : undefined);
+	const coerceValue = (v: string | number | null) => (!!v && typeof v === "string" ? v : undefined);
 </script>
 
 <span>search field</span>

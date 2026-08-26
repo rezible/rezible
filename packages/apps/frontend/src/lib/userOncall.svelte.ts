@@ -8,17 +8,19 @@ export class UserOncallInformationState {
 	private queryClient = useQueryClient();
 
 	private userId = $derived(this.session.user?.id || "");
-	private infoQueryOptions = $derived(getUserOncallInformationOptions({
-		query: {
-			userId: this.userId,
-			activeShifts: true,
-		}}
-	));
-	infoQuery = createQuery(() => ({...this.infoQueryOptions, enabled: !!this.userId}));
+	private infoQueryOptions = $derived(
+		getUserOncallInformationOptions({
+			query: {
+				userId: this.userId,
+				activeShifts: true,
+			},
+		})
+	);
+	infoQuery = createQuery(() => ({ ...this.infoQueryOptions, enabled: !!this.userId }));
 	current = $derived(this.infoQuery.data?.data);
 
 	rosters = $derived(this.current?.rosters ?? []);
-	rosterIds = $derived(this.rosters.map(r => r.id));
+	rosterIds = $derived(this.rosters.map((r) => r.id));
 
 	activeShifts = $derived(this.current?.activeShifts ?? []);
 

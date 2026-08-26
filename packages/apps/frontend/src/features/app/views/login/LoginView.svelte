@@ -27,7 +27,6 @@
 			</Card.Content>
 		{:else}
 			<Card.Content class="flex flex-col gap-2">
-			
 				{#if isError}
 					{#if !!view.authSessionError}
 						<InlineAlert bind:error={view.authSessionError} />
@@ -36,17 +35,26 @@
 					{#if !!view.loginError}
 						<InlineAlert bind:error={view.loginError} />
 					{/if}
-					
+
 					{#if view.showLogout}
-						<Button onclick={() => {view.doLogout()}} color="primary">
+						<Button
+							onclick={() => {
+								view.doLogout();
+							}}
+							color="primary"
+						>
 							Logout
 						</Button>
 					{/if}
 				{:else}
-					<Button color="primary" onclick={() => {view.doLogin()}} class="cursor-pointer w-full">
-						<span class="flex items-center gap-2">
-							Continue
-						</span>
+					<Button
+						color="primary"
+						onclick={() => {
+							view.doLogin();
+						}}
+						class="cursor-pointer w-full"
+					>
+						<span class="flex items-center gap-2"> Continue </span>
 					</Button>
 				{/if}
 			</Card.Content>

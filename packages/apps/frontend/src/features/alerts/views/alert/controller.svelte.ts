@@ -8,10 +8,12 @@ export class AlertViewController {
 	private alertQuery = createQuery(() => getAlertOptions({ path: { id: this.alertId } }));
 	alert = $derived(this.alertQuery.data?.data);
 	alertTitle = $derived(this.alert?.attributes.title ?? "");
-	
+
 	constructor(idFn: Getter<string>) {
 		this.alertId = idFn();
-		watch(idFn, id => {this.alertId = id});
+		watch(idFn, (id) => {
+			this.alertId = id;
+		});
 	}
 }
 

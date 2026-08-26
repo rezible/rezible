@@ -29,9 +29,13 @@
 		<div class="min-w-0">
 			<div class="truncate text-sm font-medium">{alert.attributes.title}</div>
 			{#if alert.attributes.description}
-				<div class="mt-1 line-clamp-2 text-xs text-muted-foreground">{alert.attributes.description}</div>
+				<div class="mt-1 line-clamp-2 text-xs text-muted-foreground">
+					{alert.attributes.description}
+				</div>
 			{:else if alert.attributes.definition}
-				<div class="mt-1 line-clamp-2 text-xs text-muted-foreground">{alert.attributes.definition}</div>
+				<div class="mt-1 line-clamp-2 text-xs text-muted-foreground">
+					{alert.attributes.definition}
+				</div>
 			{/if}
 		</div>
 	</a>

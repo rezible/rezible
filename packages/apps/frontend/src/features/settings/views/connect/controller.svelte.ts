@@ -23,7 +23,7 @@ export class ConnectIntegrationController {
 	name = $derived(this.currentName);
 
 	constructor(nameFn: Getter<string>) {
-		watch(nameFn, name => {
+		watch(nameFn, (name) => {
 			this.currentName = name;
 		});
 		onMount(() => {
@@ -32,7 +32,7 @@ export class ConnectIntegrationController {
 	}
 
 	private finish(result?: IntegrationOAuthInstallResult, error?: ErrorModel) {
-		postIntegrationOAuthCompleteMessage({ name: this.name, result, error })
+		postIntegrationOAuthCompleteMessage({ name: this.name, result, error });
 		setTimeout(() => window.close(), 50);
 	}
 

@@ -36,5 +36,5 @@ export const CreateIncidentFormSchema = createIncidentFormSchema.transform(
 		summary: form.summary ? form.summary : undefined,
 		tagIds: form.tagIds,
 		fieldSelectionIds: Object.values(form.fieldSelections),
-	}),
+	})
 );

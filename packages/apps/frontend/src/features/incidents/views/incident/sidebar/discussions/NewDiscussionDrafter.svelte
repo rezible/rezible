@@ -42,7 +42,7 @@
 	};
 
 	onMount(() => {
-		draftEditor = createDiscussionEditor({editable: true});
+		draftEditor = createDiscussionEditor({ editable: true });
 		draftEditor.on("update", ({ editor }) => {
 			contentSize = editor.$doc.content.size;
 		});

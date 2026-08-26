@@ -17,14 +17,20 @@
 
 <div class="grid grid-flow-col gap-2">
 	{#if user && roster}
-		<a href="/users/{user.id}" class="flex items-center gap-2 bg-surface-100 rounded-lg hover:bg-accent-800/40 p-1 px-3">
+		<a
+			href="/users/{user.id}"
+			class="flex items-center gap-2 bg-surface-100 rounded-lg hover:bg-accent-800/40 p-1 px-3"
+		>
 			<Avatar kind="user" size={24} id={user.id} />
 			<div class="flex flex-col">
 				<span class="text-lg">{user.attributes.name}</span>
 			</div>
 		</a>
 
-		<a href="/rosters/{roster.id}" class="flex items-center gap-2 bg-surface-100 rounded-lg hover:bg-accent-800/40 p-1 px-3">
+		<a
+			href="/rosters/{roster.id}"
+			class="flex items-center gap-2 bg-surface-100 rounded-lg hover:bg-accent-800/40 p-1 px-3"
+		>
 			<Avatar kind="roster" size={24} id={roster.id} />
 			<span class="text-lg">{roster.attributes.name}</span>
 		</a>

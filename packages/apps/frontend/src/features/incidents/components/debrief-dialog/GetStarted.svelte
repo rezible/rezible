@@ -62,14 +62,7 @@
 <div class="border-t h-0 my-2"></div>
 
 <div class="w-fit mx-auto">
-	<Button
-		size="lg"
-		color="primary"
-		disabled={start.isPending}
-		onclick={startDebrief}
-	>
-		Start Debrief
-	</Button>
+	<Button size="lg" color="primary" disabled={start.isPending} onclick={startDebrief}>Start Debrief</Button>
 </div>
 
 {#if start.isPending}

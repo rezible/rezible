@@ -11,15 +11,15 @@
 
 	setPageBreadcrumbs(() => [
 		{ label: "Users", href: "/users" },
-		{ label: view.userName, href: `/users/${view.userId}`, avatar: {kind: "user", id: view.userId}},
+		{ label: view.userName, href: `/users/${view.userId}`, avatar: { kind: "user", id: view.userId } },
 	]);
 </script>
 
 <div class="grid grid-cols-3 gap-2 h-full">
 	<div class="flex flex-col gap-2">
 		<div class="border p-2">
-			<Header title="Information" classes={{title: "text-xl"}} />
-		
+			<Header title="Information" classes={{ title: "text-xl" }} />
+
 			<div class="">
 				<div class="">
 					<span class="">🌐</span>
@@ -35,8 +35,8 @@
 
 		<div class="flex-1 grid grid-cols-2 gap-2">
 			<div class="flex flex-col p-2 border">
-				<Header title="Teams" classes={{title: "text-xl"}} />
-			
+				<Header title="Teams" classes={{ title: "text-xl" }} />
+
 				<div class="flex flex-col gap-2">
 					{#if !view.teams}
 						<span>loading</span>
@@ -57,8 +57,8 @@
 			</div>
 
 			<div class="flex flex-col p-2 border">
-				<Header title="Rosters" classes={{title: "text-xl"}} />
-			
+				<Header title="Rosters" classes={{ title: "text-xl" }} />
+
 				<div class="flex flex-col gap-2">
 					{#if !view.rosters}
 						<span>loading</span>

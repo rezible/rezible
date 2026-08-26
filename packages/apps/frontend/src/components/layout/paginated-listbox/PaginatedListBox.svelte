@@ -4,13 +4,9 @@
 	type Props = {
 		children: Snippet;
 		dense?: boolean;
-		pagination?: any;//ComponentProps<Pagination>["pagination"];
+		pagination?: any; //ComponentProps<Pagination>["pagination"];
 	};
-	const { 
-		children,
-		dense,
-		pagination,
-	}: Props = $props();
+	const { children, dense, pagination }: Props = $props();
 </script>
 
 <div class="flex flex-col max-h-full" class:max-w-xl={dense}>

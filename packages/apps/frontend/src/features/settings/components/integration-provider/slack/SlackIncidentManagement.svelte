@@ -26,7 +26,7 @@
 			if (settings && typeof settings === "object") {
 				incidentSettings = { ...incidentSettings, ...(settings as typeof incidentSettings) };
 			}
-		},
+		}
 	);
 
 	const saveIncidentSettings = () => {
@@ -77,10 +77,7 @@
 				</div>
 				<div class="flex items-center justify-between gap-3">
 					<Label for="slack-auto-video">Auto-create video conference</Label>
-					<Switch
-						id="slack-auto-video"
-						bind:checked={incidentSettings.AutoCreateVideoConference}
-					/>
+					<Switch id="slack-auto-video" bind:checked={incidentSettings.AutoCreateVideoConference} />
 				</div>
 			</div>
 			<Button class="w-fit" onclick={saveIncidentSettings}>Save settings</Button>

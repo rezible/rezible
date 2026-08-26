@@ -2,18 +2,25 @@
 	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import ShiftProgressCircle from "$features/oncall/components/shift-card/ShiftProgressCircle.svelte";
 	import { type OncallRosterViewController } from "./controller.svelte";
-	
+
 	const { view }: { view: OncallRosterViewController } = $props();
 
 	// TODO: include this
 	const teamId = $derived(view.rosterId ?? "");
 	const shift = $derived(view.activeShift);
 
-	const userLocalTime = new Date(Date.now()).toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit", hour12: true})
+	const userLocalTime = new Date(Date.now()).toLocaleTimeString(undefined, {
+		hour: "2-digit",
+		minute: "2-digit",
+		hour12: true,
+	});
 </script>
 
 {#if shift}
-	<a href="/shifts/{shift.id}" class="flex items-center gap-4 px-4 bg-success-900/50 rounded-lg hover:bg-success-900/40">
+	<a
+		href="/shifts/{shift.id}"
+		class="flex items-center gap-4 px-4 bg-success-900/50 rounded-lg hover:bg-success-900/40"
+	>
 		<div class="flex flex-col">
 			<span class="text-xs">Currently Oncall</span>
 			<div class="flex items-center align-middle gap-2">
@@ -28,7 +35,10 @@
 	</a>
 {/if}
 
-<a href="/teams/{teamId}" class="flex items-center gap-4 px-4 bg-accent-900/50 rounded-lg hover:bg-accent-900/40 h-full">
+<a
+	href="/teams/{teamId}"
+	class="flex items-center gap-4 px-4 bg-accent-900/50 rounded-lg hover:bg-accent-900/40 h-full"
+>
 	<div class="flex flex-col">
 		<span class="text-xs">Team</span>
 		<div class="flex items-center gap-2">

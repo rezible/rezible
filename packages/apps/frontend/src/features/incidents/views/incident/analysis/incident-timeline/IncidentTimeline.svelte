@@ -1,10 +1,10 @@
 <script lang="ts">
-	import "vis-timeline/styles/vis-timeline-graph2d.css"
+	import "vis-timeline/styles/vis-timeline-graph2d.css";
 	import "./timeline-styles.css";
 
 	import { watch } from "runed";
 	import { initIncidentTimeline } from "./controller.svelte";
-	
+
 	import { fromAbsolute } from "@internationalized/date";
 	import type { TimelineItem } from "vis-timeline";
 
@@ -16,16 +16,21 @@
 	import { useIncidentAnalysis } from "../controller.svelte";
 
 	const analysis = useIncidentAnalysis();
-	
+
 	const controller = initIncidentTimeline();
 
 	let containerRef = $state<HTMLElement>(null!);
-	watch(() => containerRef, ref => {controller.mountTimeline(ref)});
+	watch(
+		() => containerRef,
+		(ref) => {
+			controller.mountTimeline(ref);
+		}
+	);
 
 	const onContextMenu = (e: MouseEvent | PointerEvent) => {
 		e.preventDefault();
 
-		const clickPos = {x: e.x, y: e.y};
+		const clickPos = { x: e.x, y: e.y };
 
 		let item: TimelineItem | undefined = undefined;
 		let wasTimeline = true;
@@ -48,7 +53,7 @@
 
 		const pct = (e.x - containerRect.x) / containerRect.width;
 
-		const timeRange = (wasTimeline && controller.timeline) ? controller.viewWindow : controller.viewBounds;
+		const timeRange = wasTimeline && controller.timeline ? controller.viewWindow : controller.viewBounds;
 		const timestampMs = timeRange.start + (timeRange.end - timeRange.start) * pct;
 
 		const timestamp = fromAbsolute(timestampMs, controller.view.timezone);
@@ -60,9 +65,9 @@
 				item,
 				containerRect,
 				close: closeContextMenu,
-			}
+			},
 		});
-	}
+	};
 
 	const closeContextMenu = () => {
 		analysis.clearContextMenu();
@@ -72,17 +77,12 @@
 <div
 	id="timeline-minimap-container"
 	class="w-full h-full overflow-hidden border relative"
-	role="presentation" 
+	role="presentation"
 	oncontextmenu={onContextMenu}
 	onclickcapture={closeContextMenu}
 >
-	<div 
-		class="w-full"
-		style="height: 95%"
-		bind:this={containerRef}></div>
-	<div
-		class="w-full border-t"
-		style="height: 5%">
+	<div class="w-full" style="height: 95%" bind:this={containerRef}></div>
+	<div class="w-full border-t" style="height: 5%">
 		<IncidentTimelineMinimap />
 	</div>
 </div>

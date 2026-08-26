@@ -14,8 +14,11 @@
 <div class="flex gap-2">
 	<Button
 		color="primary"
-		onclick={() => {createOpen = true}}
-	> <!-- classes={{ root: "w-fit h-fit" }} -->
+		onclick={() => {
+			createOpen = true;
+		}}
+	>
+		<!-- classes={{ root: "w-fit h-fit" }} -->
 		Create New Meeting
 		<Icon data={mdiChevronDown} />
 	</Button>

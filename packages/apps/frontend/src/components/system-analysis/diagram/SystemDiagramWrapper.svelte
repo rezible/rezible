@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { SvelteFlowProvider } from "@xyflow/svelte";
 
-	import { SystemDiagramState, setSystemDiagram } from "./controller.svelte";
+	import { SystemDiagramState, setSystemDiagram } from "./diagramController.svelte";
 	import SystemDiagram from "./SystemDiagram.svelte";
 
 	let containerEl = $state<HTMLElement>(null!);

@@ -8,7 +8,11 @@
 </script>
 
 <div class="flex gap-2">
-	<Button onclick={() => {incidentDialog.openCreate()}}>
+	<Button
+		onclick={() => {
+			incidentDialog.openCreate();
+		}}
+	>
 		Create Incident
 		<Icon data={mdiPlus} />
 	</Button>

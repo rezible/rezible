@@ -2,7 +2,6 @@
 	import { mdiChevronDown, mdiCalendar, mdiPresentationPlay } from "@mdi/js";
 	import { Button } from "$components/ui/button";
 	import Icon from "$components/common/icon/Icon.svelte";
-    
 </script>
 
 <div class="flex gap-2">

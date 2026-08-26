@@ -7,7 +7,9 @@ class TeamViewController {
 
 	constructor(slugFn: Getter<string>) {
 		this.teamSlug = slugFn();
-		watch(slugFn, id => {this.teamSlug = id});
+		watch(slugFn, (id) => {
+			this.teamSlug = id;
+		});
 	}
 
 	private teamQuery = createQuery(() => ({

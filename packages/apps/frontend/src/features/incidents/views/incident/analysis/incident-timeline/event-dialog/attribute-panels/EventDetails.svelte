@@ -5,7 +5,7 @@
 	import { useEventDialogAttributes } from "./attributes.svelte";
 
 	const attributes = useEventDialogAttributes();
-	
+
 	const eventKindOptions = [
 		{
 			label: "Observation",
@@ -43,7 +43,7 @@
 	<DateTimePickerField
 		label="Time"
 		current={attributes.timestamp}
-		onChange={ts => (attributes.timestamp = ts)}
+		onChange={(ts) => (attributes.timestamp = ts)}
 		exactTime
 	/>
 

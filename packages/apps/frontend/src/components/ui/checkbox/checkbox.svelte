@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Checkbox as CheckboxPrimitive } from "bits-ui";
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
-	import RiCheckLine from 'remixicon-svelte/icons/check-line';
-	import RiSubtractLine from 'remixicon-svelte/icons/subtract-line';
+	import RiCheckLine from "remixicon-svelte/icons/check-line";
+	import RiSubtractLine from "remixicon-svelte/icons/subtract-line";
 
 	let {
 		ref = $bindable(null),
@@ -30,9 +30,9 @@
 			class="[&>svg]:size-3.5 grid place-content-center text-current transition-none"
 		>
 			{#if checked}
-				<RiCheckLine  />
+				<RiCheckLine />
 			{:else if indeterminate}
-				<RiSubtractLine  />
+				<RiSubtractLine />
 			{/if}
 		</div>
 	{/snippet}

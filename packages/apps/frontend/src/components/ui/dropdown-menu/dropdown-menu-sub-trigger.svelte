@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
-	import RiArrowRightSLine from 'remixicon-svelte/icons/arrow-right-s-line';
+	import RiArrowRightSLine from "remixicon-svelte/icons/arrow-right-s-line";
 	import { cn } from "$lib/utils.js";
 
 	let {

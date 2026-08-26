@@ -1,7 +1,3 @@
-{#snippet defaultHeader()}
-	<Header title="Filters" />
-{/snippet}
-
 <script lang="ts">
 	import type { Snippet } from "svelte";
 	import Header from "../header/Header.svelte";
@@ -13,6 +9,10 @@
 	};
 	const { filters, header = defaultHeader, children }: Props = $props();
 </script>
+
+{#snippet defaultHeader()}
+	<Header title="Filters" />
+{/snippet}
 
 <div class="flex gap-3 h-full max-h-full flex-1">
 	<div class="w-full h-full max-h-full overflow-y-auto max-w-md flex flex-col gap-1">

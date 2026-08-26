@@ -12,11 +12,15 @@
 
 	let searchValue = $state<string>();
 	const paginator = new QueryPaginatorState();
-	const params = $derived(listTeamsOptions({ query: {
-		limit: paginator.limit,
-		offset: paginator.offset,
-		search: searchValue,
-	}}));
+	const params = $derived(
+		listTeamsOptions({
+			query: {
+				limit: paginator.limit,
+				offset: paginator.offset,
+				search: searchValue,
+			},
+		})
+	);
 	const query = createQuery(() => params);
 	paginator.watchQuery(query);
 </script>

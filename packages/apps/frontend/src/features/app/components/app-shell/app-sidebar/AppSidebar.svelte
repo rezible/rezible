@@ -1,27 +1,27 @@
 <script lang="ts">
-    import type { ComponentProps } from "svelte";
-    import * as Sidebar from "$components/ui/sidebar";
+	import type { ComponentProps } from "svelte";
+	import * as Sidebar from "$components/ui/sidebar";
 	import { cn } from "$lib/utils";
 	import NavMenuItem from "./NavMenuItem.svelte";
 	import NavUserMenu from "./NavUserMenu.svelte";
 	import RiArrowLeftLine from "remixicon-svelte/icons/arrow-left-line";
 	import Button from "$src/components/ui/button/button.svelte";
 	import { initAppSidebarController } from "./controller.svelte";
-    
-    let {
-        ref = $bindable(null),
-        collapsible = "icon",
-        ...restProps
-    }: ComponentProps<typeof Sidebar.Root> = $props();
+
+	let {
+		ref = $bindable(null),
+		collapsible = "icon",
+		...restProps
+	}: ComponentProps<typeof Sidebar.Root> = $props();
 
 	const controller = initAppSidebarController();
 </script>
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
 	<Sidebar.Header>
-        <Sidebar.Menu>
-            <Sidebar.MenuItem 
-				data-sveltekit-preload-data={controller.preloadHome} 
+		<Sidebar.Menu>
+			<Sidebar.MenuItem
+				data-sveltekit-preload-data={controller.preloadHome}
 				data-sveltekit-preload-code={controller.preloadHome}
 			>
 				{#if controller.isDefault}
@@ -29,7 +29,10 @@
 						{#snippet child({ props })}
 							<a {...props} href="/" class="text-2xl text-base flex items-center gap-2">
 								<img src="/images/logo.svg" alt="logo" class={cn("fill-neutral size-10")} />
-								<span data-open={controller.isOpen ? true : undefined} class="hidden data-open:inline">
+								<span
+									data-open={controller.isOpen ? true : undefined}
+									class="hidden data-open:inline"
+								>
 									Rezible
 								</span>
 							</a>
@@ -40,8 +43,8 @@
 						<RiArrowLeftLine /> Back to app
 					</Button>
 				{/if}
-            </Sidebar.MenuItem>
-        </Sidebar.Menu>
+			</Sidebar.MenuItem>
+		</Sidebar.Menu>
 
 		{#if controller.showSearch}
 			<Sidebar.Input

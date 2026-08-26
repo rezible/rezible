@@ -29,7 +29,7 @@
 	const startDate = $derived(view.shiftStart?.toDate());
 	const endDate = $derived(view.shiftEnd?.toDate());
 
-	const numDays = $derived((!!startDate && !!endDate) ? differenceInCalendarDays(endDate, startDate) : 0);
+	const numDays = $derived(!!startDate && !!endDate ? differenceInCalendarDays(endDate, startDate) : 0);
 
 	const eventDayKey = (day: number, hour: number) => `${day}-${hour}`;
 	const hourlyEventCount = $derived.by(() => {
@@ -51,7 +51,7 @@
 			]);
 		});
 	});
-	
+
 	const weekdayLabels = $derived.by(() => {
 		return Array.from({ length: numDays }, (_, day) => {
 			const start = view.shiftStart;
@@ -65,8 +65,8 @@
 	const vertical = true;
 
 	type DayHourCountData = [number, number, number | string];
-	const mapDataHorizontalFn = (d: number[]): DayHourCountData => ([d[1], d[0], d[2] || "-"]);
-	const mapDataVerticalFn = (d: number[]): DayHourCountData => ([d[0], d[1], d[2] || "-"]);
+	const mapDataHorizontalFn = (d: number[]): DayHourCountData => [d[1], d[0], d[2] || "-"];
+	const mapDataVerticalFn = (d: number[]): DayHourCountData => [d[0], d[1], d[2] || "-"];
 	const nonZeroData = $derived(hourlyEventCount.map(vertical ? mapDataVerticalFn : mapDataHorizontalFn));
 
 	const weekdaysXAxis = $derived<XAXisOption>({
@@ -77,14 +77,34 @@
 		type: "category",
 		inverse: false,
 		data: weekdayLabels,
-		splitArea: {show: true},
+		splitArea: { show: true },
 	});
 
 	const DayHours = [
-		'12am', '1am', '2am', '3am', '4am', '5am', '6am',
-		'7am', '8am', '9am', '10am', '11am',
-		'12pm', '1pm', '2pm', '3pm', '4pm', '5pm',
-		'6pm', '7pm', '8pm', '9pm', '10pm', '11pm'
+		"12am",
+		"1am",
+		"2am",
+		"3am",
+		"4am",
+		"5am",
+		"6am",
+		"7am",
+		"8am",
+		"9am",
+		"10am",
+		"11am",
+		"12pm",
+		"1pm",
+		"2pm",
+		"3pm",
+		"4pm",
+		"5pm",
+		"6pm",
+		"7pm",
+		"8pm",
+		"9pm",
+		"10pm",
+		"11pm",
 	];
 
 	const hoursYAxis = $derived<YAXisOption>({
@@ -95,14 +115,14 @@
 		nameTextStyle: {
 			fontSize: 24,
 		},
-	})
+	});
 
 	const options = $derived<ChartProps["options"]>({
 		tooltip: {
 			position: "top",
 			formatter(params) {
 				// TODO
-				return "day hour - count"
+				return "day hour - count";
 			},
 		},
 		grid: {
@@ -144,7 +164,7 @@
 
 	const onClicked = (e: ECMouseEvent) => {
 		const [day, hour] = nonZeroData[e.dataIndex];
-		onHourClicked(day, hour)
+		onHourClicked(day, hour);
 	};
 </script>
 

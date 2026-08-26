@@ -15,8 +15,8 @@
 
 	const comparisonQuery = createQuery(() => getOncallShiftMetricsOptions());
 	const comparison = $derived(comparisonQuery.data?.data);
-	
-	const metricsQuery = createQuery(() => getOncallShiftMetricsOptions({query: {shiftId}}));
+
+	const metricsQuery = createQuery(() => getOncallShiftMetricsOptions({ query: { shiftId } }));
 	const metrics = $derived(metricsQuery.data?.data);
 </script>
 

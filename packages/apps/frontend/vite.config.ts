@@ -4,23 +4,23 @@ import { defineConfig, loadEnv } from "vite";
 
 const envPrefix = "";
 
-export default defineConfig(({mode}) => {
-    const env = loadEnv(mode, process.cwd(), envPrefix);
-    const host = "0.0.0.0";
-    const port = Number(env.PORT ?? env.APP_PORT ?? "7000");
-    return {
-        plugins: [tailwindcss(), sveltekit()],
-        server: {
-            host,
-            port,
-            strictPort: true,
-            allowedHosts: ["app.dev.rezible.com"],
-            proxy: {
-                "/api": {
-                    target: `http://localhost:${env.BACKEND_PORT}`,
-                    rewrite: (path) => path.replace(/^\/api/, ""),
-                }
-            },
-        },
-    }
+export default defineConfig(({ mode }) => {
+	const env = loadEnv(mode, process.cwd(), envPrefix);
+	const host = "0.0.0.0";
+	const port = Number(env.PORT ?? env.APP_PORT ?? "7000");
+	return {
+		plugins: [tailwindcss(), sveltekit()],
+		server: {
+			host,
+			port,
+			strictPort: true,
+			allowedHosts: ["app.dev.rezible.com"],
+			proxy: {
+				"/api": {
+					target: `http://localhost:${env.BACKEND_PORT}`,
+					rewrite: (path) => path.replace(/^\/api/, ""),
+				},
+			},
+		},
+	};
 });

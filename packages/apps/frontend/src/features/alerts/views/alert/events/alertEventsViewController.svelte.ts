@@ -7,12 +7,12 @@ import { getLocalTimeZone, now } from "@internationalized/date";
 export type EventKind = EventAttributes["kind"];
 
 const defaultDateRange = () => {
-	return { 
-		from: now(getLocalTimeZone()).subtract({days: 7}).toDate(),
+	return {
+		from: now(getLocalTimeZone()).subtract({ days: 7 }).toDate(),
 		to: now(getLocalTimeZone()).toDate(),
 		periodType: "day",
-	}
-}
+	};
+};
 
 export class AlertEventsViewController {
 	view = useAlertViewController();
@@ -32,4 +32,4 @@ export class AlertEventsViewController {
 	constructor() {
 		this.paginator.watchQuery(this.query);
 	}
-};
+}

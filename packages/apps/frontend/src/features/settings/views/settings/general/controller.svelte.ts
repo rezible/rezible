@@ -2,11 +2,9 @@ import { useUserSessionState } from "$src/lib/user-session.svelte";
 import { Context } from "runed";
 
 export class GeneralSettingsController {
-    session = useUserSessionState();
+	session = useUserSessionState();
 
-    constructor() {
-
-    }
+	constructor() {}
 }
 
 const ctx = new Context<GeneralSettingsController>("GeneralSettingsController");

@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { CalendarDateTime, parseAbsolute, parseZonedDateTime, toZoned, ZonedDateTime } from "@internationalized/date";
+	import {
+		CalendarDateTime,
+		parseAbsolute,
+		parseZonedDateTime,
+		toZoned,
+		ZonedDateTime,
+	} from "@internationalized/date";
 	import { convertTime } from "./format.svelte";
 	import { differenceInCalendarDays } from "date-fns/differenceInCalendarDays";
 	import { isSameDay } from "date-fns";
@@ -23,7 +29,14 @@
 	const onConfirm = () => {
 		const d = value.date;
 		const t = value.time;
-		const val = new CalendarDateTime(d.getFullYear(), d.getMonth() + 1, d.getDate(), t.hour, t.minute, t.second);
+		const val = new CalendarDateTime(
+			d.getFullYear(),
+			d.getMonth() + 1,
+			d.getDate(),
+			t.hour,
+			t.minute,
+			t.second
+		);
 		const newValue = toZoned(val, value.timezone);
 		// const valStr = `${value.date.getFullYear()}T${value.time}[${value.timezone}]`;
 		// const newValue = parseAbsolute(valStr, value.timezone);
@@ -53,7 +66,7 @@
 		if (rangeMinDate && differenceInCalendarDays(date, rangeMinDate) < 0) return true;
 		if (rangeMaxDate && differenceInCalendarDays(date, rangeMaxDate) > 0) return true;
 		return false;
-	}
+	};
 </script>
 
 <!--div>

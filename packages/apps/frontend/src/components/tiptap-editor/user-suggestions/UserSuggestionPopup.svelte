@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { SuggestionKeyDownProps, SuggestionProps } from "@tiptap/suggestion";
-	import { cn } from '$lib/utils';
+	import { cn } from "$lib/utils";
 
 	const { items, command }: SuggestionProps<string, any> = $props();
 

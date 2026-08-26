@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mdiMagicStaff } from "@mdi/js";
-	
+
 	import Icon from "$components/common/icon/Icon.svelte";
 	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import EventAttributesEditor from "./EventAttributesEditor.svelte";

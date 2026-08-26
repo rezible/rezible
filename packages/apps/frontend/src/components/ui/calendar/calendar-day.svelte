@@ -2,11 +2,7 @@
 	import { cn } from "$lib/utils.js";
 	import { Calendar as CalendarPrimitive } from "bits-ui";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		...restProps
-	}: CalendarPrimitive.DayProps = $props();
+	let { ref = $bindable(null), class: className, ...restProps }: CalendarPrimitive.DayProps = $props();
 </script>
 
 <CalendarPrimitive.Day

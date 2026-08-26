@@ -6,7 +6,7 @@
 		chart: Snippet;
 		stats: InlineStatProps[];
 		reverse?: boolean;
-	}
+	};
 
 	const { chart, stats, reverse }: Props = $props();
 </script>

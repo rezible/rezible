@@ -5,12 +5,12 @@ import { createQuery } from "@tanstack/svelte-query";
 import { getLocalTimeZone, now } from "@internationalized/date";
 
 const defaultDateRange = () => {
-	return { 
-		from: now(getLocalTimeZone()).subtract({days: 7}).toDate(),
+	return {
+		from: now(getLocalTimeZone()).subtract({ days: 7 }).toDate(),
 		to: now(getLocalTimeZone()).toDate(),
 		periodType: "day",
-	}
-}
+	};
+};
 
 export class AlertIncidentsViewController {
 	view = useAlertViewController();
@@ -23,9 +23,11 @@ export class AlertIncidentsViewController {
 	queryParams = $derived<ListIncidentsData["query"]>({
 		...this.paginator.queryParams,
 	});
-	query = createQuery(() => listAlertIncidentLinksOptions({ path: {id: this.view.alertId}, query: this.queryParams }));
+	query = createQuery(() =>
+		listAlertIncidentLinksOptions({ path: { id: this.view.alertId }, query: this.queryParams })
+	);
 
 	constructor() {
 		this.paginator.watchQuery(this.query);
 	}
-};
+}

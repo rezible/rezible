@@ -1,9 +1,16 @@
 import { Context, watch } from "runed";
 import { createMutation } from "@tanstack/svelte-query";
 
-import { updateOrganizationPreferencesMutation, type IntegrationInstallation, type OrganizationPreferences } from "$lib/api";
+import {
+	updateOrganizationPreferencesMutation,
+	type IntegrationInstallation,
+	type OrganizationPreferences,
+} from "$lib/api";
 import { useUserSessionState } from "$src/lib/user-session.svelte";
-import { type IntegrationProvider, useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
+import {
+	type IntegrationProvider,
+	useIntegrationsController,
+} from "$features/settings/lib/integrationsController.svelte";
 
 import { StepperController } from "$components/layout/stepper/controller.svelte";
 
@@ -15,15 +22,15 @@ const makeSuggestedIntegrations = (prefs: OrganizationPreferences, installed: In
 
 	if (!prefs.enableIncidentManagement) {
 		// suggestions.add();
-	};
+	}
 
-	const installedNames = new Set(installed.map(intg => intg.attributes.integrationName));
-	return new Map(suggestions.map(name => ([name, installedNames.has(name)])));
-}
+	const installedNames = new Set(installed.map((intg) => intg.attributes.integrationName));
+	return new Map(suggestions.map((name) => [name, installedNames.has(name)]));
+};
 
 export type ConfigureOrganizationOptions = {
 	enableIncidentManagement: boolean;
-}
+};
 
 export class InitialSetupController {
 	private session = useUserSessionState();
@@ -33,21 +40,24 @@ export class InitialSetupController {
 	private orgId = $derived(this.session.org?.id);
 
 	private currOrgPrefs = $derived(this.session.orgPreferences);
-	orgPrefs = $state<ConfigureOrganizationOptions>({enableIncidentManagement: false});
-	
+	orgPrefs = $state<ConfigureOrganizationOptions>({ enableIncidentManagement: false });
+
 	constructor() {
-		watch(() => this.currOrgPrefs, prefs => {
-			this.orgPrefs = {
-				enableIncidentManagement: !!prefs?.enableIncidentManagement,
+		watch(
+			() => this.currOrgPrefs,
+			(prefs) => {
+				this.orgPrefs = {
+					enableIncidentManagement: !!prefs?.enableIncidentManagement,
+				};
 			}
-		});
+		);
 	}
 
 	private updateOrgPrefsMut = createMutation(() => ({
 		...updateOrganizationPreferencesMutation(),
 		onSuccess: () => {
 			this.session.refetch();
-		}
+		},
 	}));
 
 	orgPrefsValid = $state(false);
@@ -56,10 +66,11 @@ export class InitialSetupController {
 	async onOrgNext() {
 		const id = $state.snapshot(this.orgId);
 		if (!id || !this.orgPrefsValid) return;
-		
+
 		// check if anything changed
 		if (!!this.currOrgPrefs) {
-			if (!!this.currOrgPrefs.enableIncidentManagement === !!this.orgPrefs.enableIncidentManagement) return;
+			if (!!this.currOrgPrefs.enableIncidentManagement === !!this.orgPrefs.enableIncidentManagement)
+				return;
 		}
 
 		await this.updateOrgPrefsMut.mutateAsync({
@@ -67,23 +78,21 @@ export class InitialSetupController {
 			body: {
 				attributes: {
 					enableIncidentManagement: this.orgPrefs.enableIncidentManagement,
-				}
-			}
-		})
-	};
+				},
+			},
+		});
+	}
 
 	integrationSuggestions = $derived(makeSuggestedIntegrations(this.orgPrefs, this.integrations.installed));
 	anySuggestedInstalled = $derived(this.integrationSuggestions.values().some(Boolean));
 
 	configureProvider = $state.raw<IntegrationProvider>();
 	openIntegrationProviderDialog(name: string) {
-		this.configureProvider = this.integrations.providers.find(prov => prov.name === name);
+		this.configureProvider = this.integrations.providers.find((prov) => prov.name === name);
 	}
 
 	canContinueIntegrations = $derived(true);
-	integrationsContinueButtonText = $derived(
-		this.anySuggestedInstalled ? "Finish setup" : "Install later"
-	);
+	integrationsContinueButtonText = $derived(this.anySuggestedInstalled ? "Finish setup" : "Install later");
 
 	canFinish = $derived(this.canContinueOrg && this.canContinueIntegrations);
 
@@ -91,7 +100,7 @@ export class InitialSetupController {
 		// if (this.integrationSuggestions.length === 0) return 1;
 		if (!!this.currOrgPrefs) return 1;
 		return 0;
-	})
+	});
 
 	stepper = new StepperController({
 		initialStepIndex: () => this.lastCompletedStepIdx,
@@ -120,9 +129,9 @@ export class InitialSetupController {
 		if (!id) return;
 		this.finishing = true;
 		try {
-			await this.updateOrgPrefsMut.mutateAsync({ 
+			await this.updateOrgPrefsMut.mutateAsync({
 				path: { id },
-				body: { attributes: { initialSetupComplete: true }},
+				body: { attributes: { initialSetupComplete: true } },
 			});
 			this.session.refetch();
 		} catch (e) {

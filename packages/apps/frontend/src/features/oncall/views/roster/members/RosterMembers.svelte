@@ -16,8 +16,9 @@
 	<div class="flex flex-col gap-2 w-96">
 		{#each users as usr}
 			{@const userTz = getLocalTimeZone()}
-			
-			<div class="border-surface-content/20 bg-neutral/30"
+
+			<div
+				class="border-surface-content/20 bg-neutral/30"
 				role="group"
 				onmouseenter={() => (hoveringTimezone = userTz)}
 				onmouseleave={() => (hoveringTimezone = undefined)}
@@ -36,27 +37,21 @@
 				{/snippet}
 
 				{#snippet contents()}
-					<div class="w-full p-2 border">
-						info
-					</div>
+					<div class="w-full p-2 border">info</div>
 				{/snippet}
 
 				{#snippet actions()}
 					<div class="flex-1 grid justify-items-end">
-						<Button href="/users/{usr.id}">
-							View
-						</Button>
+						<Button href="/users/{usr.id}">View</Button>
 					</div>
 				{/snippet}
-				</div>
+			</div>
 		{:else}
 			<div class="text-surface-600 italic p-2">No users assigned to this roster</div>
 		{/each}
 	</div>
 
 	<div class="col-span-2">
-		<div class="h-[420px] w-[862px] m-2">
-			timezone map
-		</div>
+		<div class="h-[420px] w-[862px] m-2">timezone map</div>
 	</div>
 </div>

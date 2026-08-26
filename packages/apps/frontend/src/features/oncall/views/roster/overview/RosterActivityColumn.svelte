@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { 
+	import {
 		mdiFilter,
 		mdiFire,
 		mdiClipboardList,
@@ -14,7 +14,7 @@
 	import type { User } from "$lib/api";
 	import { formatRelative } from "date-fns";
 	import { useOncallRosterViewController } from "$features/oncall/views/roster";
-	
+
 	const view = useOncallRosterViewController();
 	const rosterId = $derived(view.rosterId);
 
@@ -56,7 +56,7 @@
 			default:
 				return "text-gray-500";
 		}
-	}
+	};
 
 	const formatDateRelative = (date: Date): string => {
 		const now = new Date();
@@ -67,16 +67,16 @@
 		if (diffDays === 1) return "Yesterday";
 		if (diffDays < 7) return `${diffDays} days ago`;
 		return formatRelative(date, Date.now());
-	}
+	};
 </script>
 
 <div class="flex flex-col h-full border border-surface-content/10 rounded">
 	<div class="h-fit p-2 flex flex-col gap-2">
-		<Header title="Recent Activity" classes={{root: "", title: "text-xl"}}>
+		<Header title="Recent Activity" classes={{ root: "", title: "text-xl" }}>
 			{#snippet actions()}
 				<Button href={`/rosters/${rosterId}/activity`}>
 					View All
-					<Icon data={mdiArrowRight} classes={{root: "ml-1 h-4 w-4"}} />
+					<Icon data={mdiArrowRight} classes={{ root: "ml-1 h-4 w-4" }} />
 				</Button>
 			{/snippet}
 		</Header>
@@ -88,7 +88,7 @@
 				<div class="mt-1">
 					<Icon
 						data={getActivityIcon(activity.type)}
-						classes={{root: `h-5 w-5 ${getActivityColor(activity.type)}`}}
+						classes={{ root: `h-5 w-5 ${getActivityColor(activity.type)}` }}
 					/>
 				</div>
 

@@ -11,7 +11,7 @@
 	const userId = $derived(session.user?.id);
 	const oncallInfo = useUserOncallInformation();
 
-	const watchedRosterIds = $derived(oncallInfo.current?.watchingRosters.map(r => r.id) ?? []);
+	const watchedRosterIds = $derived(oncallInfo.current?.watchingRosters.map((r) => r.id) ?? []);
 	const userRosterIds = $derived(oncallInfo.rosterIds);
 	const rosterIds = $derived([...userRosterIds, ...watchedRosterIds]);
 
@@ -21,7 +21,7 @@
 		let rosterShifts: OncallShift[] = [];
 
 		// const watchedRosterIdsSet = $derived(new Set(watchedRosterIds));
-		shifts.forEach(s => {
+		shifts.forEach((s) => {
 			if (s.attributes.user.id === userId) {
 				userShifts.push(s);
 			} else {
@@ -42,7 +42,7 @@
 			<ActiveShiftCard {shift} isUser />
 		{/each}
 		{#each rosterShifts as shift, i}
-			<ActiveShiftCard {shift}  />
+			<ActiveShiftCard {shift} />
 		{/each}
 	</div>
 </div>

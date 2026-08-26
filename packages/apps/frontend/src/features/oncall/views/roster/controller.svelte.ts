@@ -6,7 +6,9 @@ export class OncallRosterViewController {
 	rosterSlug = $state<string>(null!);
 	constructor(slugFn: () => string) {
 		this.rosterSlug = slugFn();
-		watch(slugFn, id => {this.rosterSlug = id});
+		watch(slugFn, (id) => {
+			this.rosterSlug = id;
+		});
 	}
 
 	private rosterQuery = createQuery(() => ({
@@ -22,5 +24,6 @@ export class OncallRosterViewController {
 }
 
 const ctx = new Context<OncallRosterViewController>("OncallRosterViewController");
-export const initOncallRosterViewController = (slugFn: Getter<string>) => ctx.set(new OncallRosterViewController(slugFn));
+export const initOncallRosterViewController = (slugFn: Getter<string>) =>
+	ctx.set(new OncallRosterViewController(slugFn));
 export const useOncallRosterViewController = () => ctx.get();

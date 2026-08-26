@@ -9,7 +9,7 @@ import { createMutation } from "@tanstack/svelte-query";
 import { Context } from "runed";
 
 import { useIncidentView } from "$features/incidents/views/incident";
-import { useIncidentAnalysis } from "$features/incidents/views/incident/analysis/controller.svelte";
+import { useSystemAnalysisController } from "$src/components/system-analysis";
 import {
 	initEventDialogAttributes,
 	type TimelineEventDialogAttributes,
@@ -26,7 +26,7 @@ export type OnEventChangedCallbackFn = () => void;
 
 export class IncidentEventDialogController {
 	incidentViewController = useIncidentView();
-	analysisController = useIncidentAnalysis();
+	analysisController = useSystemAnalysisController();
 	incident = $derived(this.incidentViewController.incident);
 	analysisId = $derived(this.analysisController.analysisId);
 
