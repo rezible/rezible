@@ -2,19 +2,20 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/rezible/rezible/internal/genkit"
-	"github.com/rezible/rezible/pkg/ai/evals"
-	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/internal/genkit"
 	"github.com/rezible/rezible/internal/http"
+	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/ai/evals"
 	"github.com/rezible/rezible/pkg/execution"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -46,14 +47,7 @@ func makeServerCli() *cli.Command {
 				Name:  "serve",
 				Usage: "Run rezible server",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return runServicesFor[*http.Server](ctx, i)
-				},
-			},
-			{
-				Name:  "genkit-server",
-				Usage: "Run genkit dev server",
-				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return runServicesFor[*genkit.DevServer](ctx, i)
+					return runLifecycleServices[*http.Server](ctx, i)
 				},
 			},
 			{
@@ -128,46 +122,60 @@ func makeServerCli() *cli.Command {
 				},
 			},
 			{
-				Name:  "evals",
-				Usage: "list and run AI agent evaluation scenarios",
+				Name:  "ai",
+				Usage: "commands for working with rezible ai",
 				Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
 					useTestDatabase(i)
 					return ctx, nil
 				},
 				Commands: []*cli.Command{
 					{
-						Name:  "list",
-						Usage: "List available evaluation scenarios",
+						Name:  "dev",
+						Usage: "Run ai dev server",
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							for _, definition := range evals.List() {
-								fmt.Printf("%s\t%s\t%s\n", definition.Name, definition.AgentName, definition.Description)
-							}
-							return nil
+							return runLifecycleServices[*genkit.DevServer](ctx, i)
 						},
 					},
 					{
-						Name:  "run",
-						Usage: "Run a named evaluation scenario",
-						Arguments: []cli.Argument{&cli.StringArg{
-							Name:      "name",
-							UsageText: "scenario name",
-							Config:    cli.StringConfig{TrimSpace: true},
-						}},
-						Action: func(ctx context.Context, cmd *cli.Command) error {
-							scenario, lookupErr := evals.Lookup(cmd.StringArg("name"))
-							if lookupErr != nil {
-								return lookupErr
-							}
-							svc, svcErr := do.Invoke[*genkit.EvaluationService](i)
-							if svcErr != nil {
-								return svcErr
-							}
-							runner, runnerErr := svc.MakeRunner(scenario)
-							if runnerErr != nil {
-								return runnerErr
-							}
-							report := runner.RunEvaluation(ctx)
-							return report.Write(cmd.Writer)
+						Name:  "evals",
+						Usage: "ai evals",
+						Commands: []*cli.Command{
+							{
+								Name:  "list",
+								Usage: "List available evaluation scenarios",
+								Action: func(ctx context.Context, cmd *cli.Command) error {
+									for _, definition := range evals.List() {
+										fmt.Printf("%s\t%s\t%s\n", definition.Name, definition.AgentName, definition.Description)
+									}
+									return nil
+								},
+							},
+							{
+								Name:  "run",
+								Usage: "Run a named evaluation scenario",
+								Arguments: []cli.Argument{&cli.StringArg{
+									Name:      "name",
+									UsageText: "scenario name",
+									Config:    cli.StringConfig{TrimSpace: true},
+								}},
+								Action: func(ctx context.Context, cmd *cli.Command) error {
+									return withAiEvaluationService(i, func(svc rezai.EvalScenarioRunner) error {
+										result, runErr := svc.RunNamedScenario(ctx, cmd.StringArg("name"))
+										if runErr != nil || result == nil {
+											return fmt.Errorf("failed to run scenario: %w", runErr)
+										}
+										encoder := json.NewEncoder(cmd.Writer)
+										encoder.SetIndent("", "  ")
+										if jsonErr := encoder.Encode(result); jsonErr != nil {
+											return fmt.Errorf("encode evaluation result: %w", jsonErr)
+										}
+										if result.Status != rezai.EvalRunStatusPassed {
+											return fmt.Errorf("evaluation %s", result.Status)
+										}
+										return nil
+									})
+								},
+							},
 						},
 					},
 				},

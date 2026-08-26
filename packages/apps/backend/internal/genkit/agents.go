@@ -10,6 +10,7 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/core"
+	"github.com/firebase/genkit/go/genkit"
 	genkitx "github.com/firebase/genkit/go/genkit/exp"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -65,9 +66,17 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 		aix.WithStreamTransform[S](runner.transformStreamChunk),
 	}
 
-	withModel := ai.WithModel(svc.getDefaultModel())
+	var modelName string
 	if d.Model != "" {
-		withModel = ai.WithModelName(d.Model)
+		if model := genkit.LookupModel(svc.gk, d.Model); model != nil {
+			modelName = model.Name()
+		} else {
+			return nil, fmt.Errorf("invalid model '%s'", d.Model)
+		}
+	} else if defaultModel := svc.getDefaultModel(); defaultModel != nil {
+		modelName = defaultModel.Name()
+	} else {
+		return nil, fmt.Errorf("no model defined")
 	}
 
 	middleware := []ai.Middleware{
@@ -80,7 +89,6 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 	if mwRunner, ok := runner.(runnerWithMiddleware); ok {
 		middleware = append(middleware, mwRunner.makeMiddleware()...)
 	}
-	withMiddleware := ai.WithUse(middleware...)
 
 	withSystemPrompt := ai.WithSystem(d.SystemPrompt)
 	if spr, hasPromptFn := runner.(systemPromptFuncAgentRunner[I]); hasPromptFn {
@@ -97,24 +105,31 @@ func makeAgentWrapper[I rezai.AgentInput, S rezai.SessionState](svc *AiService, 
 	if cr, ok := runner.(customAgentRunner[I, S]); ok {
 		agent = genkitx.DefineCustomAgent(svc.gk, d.Name, cr.makeAgentFunc(middleware), opts...)
 	} else {
-		prompt := aix.InlinePrompt{withModel, withSystemPrompt, withMiddleware}
+		prompt := aix.InlinePrompt{
+			ai.WithModelName(modelName),
+			ai.WithUse(middleware...),
+			withSystemPrompt,
+		}
 		agent = genkitx.DefineAgent(svc.gk, d.Name, prompt, opts...)
 	}
-	return &agentWrapper[I, S]{agent: agent, runner: runner}, nil
+
+	cfg := rez.AiAgentConfig{
+		Name:        d.Name,
+		DisplayName: d.Name,
+		Model:       modelName,
+	}
+
+	return &agentWrapper[I, S]{agent: agent, runner: runner, config: cfg}, nil
 }
 
 type agentWrapper[I rezai.AgentInput, S rezai.SessionState] struct {
 	agent  *aix.Agent[S]
+	config rez.AiAgentConfig
 	runner agentRunner[I, S]
 }
 
 func (w *agentWrapper[I, S]) Config() rez.AiAgentConfig {
-	d := w.runner.agentDefinition()
-	return rez.AiAgentConfig{
-		Name:        d.Name,
-		DisplayName: d.Name,
-		Model:       d.Model,
-	}
+	return w.config
 }
 
 func (w *agentWrapper[I, S]) ValidateInput(raw []byte) (rez.ValidatingInput, error) {

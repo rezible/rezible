@@ -105,17 +105,12 @@ func (a AppConfig) GetFrontendUrl(paths ...string) (*url.URL, error) {
 
 type (
 	AiConfig struct {
-		DevServer AiDevServerConfig      `cfg:"dev_server"`
-		Agents    AiAgentsConfig         `cfg:"agents"`
-		Gemini    AiProviderConfigGemini `cfg:"gemini"`
+		Agents AiAgentsConfig         `cfg:"agents"`
+		Gemini AiProviderConfigGemini `cfg:"gemini"`
 	}
 	AiAgentsConfig struct {
 		MaxWorkers    int           `cfg:"max_workers" validate:"min=1"`
 		WorkerTimeout time.Duration `cfg:"worker_timeout" validate:"gt=0"`
-	}
-	AiDevServerConfig struct {
-		Enabled bool   `cfg:"enabled"`
-		Port    string `cfg:"port"`
 	}
 	AiProviderConfigGemini struct {
 		Enabled bool   `cfg:"enabled"`

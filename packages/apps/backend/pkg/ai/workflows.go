@@ -95,8 +95,8 @@ If in doubt, err on the side of caution (set should_reply=false) - users can dir
 				b.WriteString(fmt.Sprintf(" %s\n", strings.TrimSpace(msg)))
 			}
 			b.WriteString("\n")
-			b.WriteString("")
 		}
-		return fmt.Sprintf("Message to classify: [%s]", strings.TrimSpace(input.UserMessage))
+		b.WriteString(fmt.Sprintf("Message to classify: [%s]", strings.TrimSpace(input.UserMessage)))
+		return b.String()
 	},
 }

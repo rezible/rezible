@@ -50,11 +50,6 @@ format:
 @run *ARGS:
     go run ./cmd/rezible {{ARGS}}
 
-[env("GENKIT_ENV", "dev")]
-[env("GENKIT_REFLECTION_V2_SERVER", "true")]
-@run-genkit-dev:
-    bunx genkit-cli start --experimental-reflection-v2 -- go run ./cmd/rezible genkit-server
-
 @test *ARGS:
     POSTGRES_HOST='{{testPostgresHost}}' \
       POSTGRES_PORT='{{testPostgresPort}}' \
@@ -75,14 +70,13 @@ exclude_test_packages_pattern := "/ent/"
 @test-pattern PATTERN:
     just test $(go list ./... | grep -v '{{exclude_test_packages_pattern}}') -run {{PATTERN}}
 
-@evals *ARGS:
-    POSTGRES_HOST='{{testPostgresHost}}' \
-      POSTGRES_PORT='{{testPostgresPort}}' \
-      POSTGRES_APP_DB='{{testPostgresDatabase}}' \
-      POSTGRES__HOST='{{testPostgresHost}}' \
-      POSTGRES__PORT='{{testPostgresPort}}' \
-      POSTGRES__DATABASE='{{testPostgresDatabase}}' \
-      go run ./cmd/rezible evals {{ARGS}}
+@genkit *ARGS:
+    bunx genkit-cli@1.42.0 --no-update-notification {{ARGS}}
+
+[env("GENKIT_ENV", "dev")]
+[env("GENKIT_REFLECTION_V2_SERVER", "true")]
+@run-genkit-dev:
+    just genkit start --experimental-reflection-v2 -- go run ./cmd/rezible ai dev
 
 @send-demo-webhook KIND="alert":
     curl -i -X POST "http://localhost:{{HTTP__PORT}}{{HTTP__BASE_PATH}}/webhooks/demo" \

@@ -4,118 +4,198 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"strings"
 	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/firebase/genkit/go/ai"
-	aix "github.com/firebase/genkit/go/ai/exp"
+	"github.com/firebase/genkit/go/core"
+	"github.com/firebase/genkit/go/core/api"
+	"github.com/firebase/genkit/go/genkit"
 	"github.com/google/uuid"
 
+	"github.com/firebase/genkit/go/ai"
+	aix "github.com/firebase/genkit/go/ai/exp"
+	"github.com/firebase/genkit/go/core/tracing"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/ai/evals"
 	"github.com/rezible/rezible/pkg/execution"
 )
 
-type EvaluationReport struct {
-	RunID                uuid.UUID                    `json:"runId"`
-	Scenario             rezai.EvalScenarioDefinition `json:"scenario"`
-	StartedAt            time.Time                    `json:"startedAt"`
-	DurationMilliseconds int64                        `json:"durationMilliseconds"`
-	Complete             bool                         `json:"complete"`
-	Passed               bool                         `json:"passed"`
-	FailureStage         string                       `json:"failureStage,omitempty"`
-	Error                string                       `json:"error,omitempty"`
-	Result               *EvaluationResult            `json:"result,omitempty"`
-	Scores               []ai.Score                   `json:"scores,omitempty"`
-}
-
-type EvaluationResult struct {
-	DurationMilliseconds int64                 `json:"durationMilliseconds"`
-	FinishReason         aix.AgentFinishReason `json:"finishReason,omitempty"`
-	Response             *ai.Message           `json:"response,omitempty"`
-	Messages             []*ai.Message         `json:"messages,omitempty"`
-	Artifacts            []*aix.Artifact       `json:"artifacts,omitempty"`
-	Error                string                `json:"error,omitempty"`
-}
-
 type EvaluationService struct {
 	db rez.Database
-	ai rez.AiService
+	ai *AiService
+
+	evaluateScenarioFlow *core.Flow[EvaluationFlowInput, rezai.EvalScenarioRunResult, struct{}]
+	evaluatorAction      *ai.EvaluatorAction
 }
 
-type EvaluationRunner struct {
-	db       rez.Database
-	ai       rez.AiService
-	scenario rezai.EvalScenario
+var scenarioChecksActionName = api.NewName("rezible", "scenario_checks")
 
-	report     *EvaluationReport
-	agent      *rez.AiAgentConfig
+func NewEvaluationService(db rez.Database, aiSvc *AiService) *EvaluationService {
+	s := &EvaluationService{db: db, ai: aiSvc}
+
+	s.evaluateScenarioFlow = genkit.DefineFlow(aiSvc.gk, "evaluate_agent_scenario", s.runEvalScenarioFlow)
+	options := &ai.EvaluatorOptions{
+		DisplayName: "Scenario Check",
+		Definition:  "Presents scenario grading checks as Genkit metrics.",
+		IsBilled:    false,
+	}
+	s.evaluatorAction = genkit.DefineEvaluatorAction(aiSvc.gk, scenarioChecksActionName, options, evaluateScenarioChecks)
+
+	return s
+}
+
+func (s *EvaluationService) RunScenarioEvalFlow(ctx context.Context, name string) (*rezai.EvalScenarioRunResult, error) {
+	input := EvaluationFlowInput{ScenarioName: name}
+	fmt.Printf("running scenario eval %s\n", name)
+	output, flowErr := s.evaluateScenarioFlow.Run(ctx, input)
+	if flowErr != nil {
+		return nil, fmt.Errorf("run flow: %w", flowErr)
+	}
+	fmt.Printf("output %+v\n", output)
+	scenarioExample := &ai.Example{
+		TestCaseId: uuid.NewString(),
+		Input:      input,
+		Output:     output,
+	}
+	evalReq := &ai.EvaluatorRequest{
+		Dataset:      []*ai.Example{scenarioExample},
+		EvaluationId: uuid.New().String(),
+		Options:      struct{}{},
+	}
+	evalResp, evalErr := s.evaluatorAction.Evaluate(ctx, evalReq)
+	if evalErr != nil {
+		return nil, fmt.Errorf("evaluator action: %w", evalErr)
+	}
+	fmt.Printf("evaluator resp: %+v\n", evalResp)
+	return &output, nil
+}
+
+func (s *EvaluationService) RunNamedScenario(ctx context.Context, name string) (*rezai.EvalScenarioRunResult, error) {
+	scenario, lookupErr := evals.Lookup(strings.TrimSpace(name))
+	if lookupErr != nil {
+		return nil, lookupErr
+	}
+	result := s.RunScenario(ctx, scenario)
+	return &result, nil
+}
+
+func (s *EvaluationService) RunScenario(ctx context.Context, scenario rezai.EvalScenario) rezai.EvalScenarioRunResult {
+	return s.executeEvaluationRun(ctx, &evaluationRun{service: s, scenario: scenario})
+}
+
+type EvaluationFlowInput struct {
+	ScenarioName string `json:"scenario_name" jsonschema:"description=Registered evaluation scenario name,minLength=1"`
+}
+
+func (s *EvaluationService) runEvalScenarioFlow(ctx context.Context, input EvaluationFlowInput) (rezai.EvalScenarioRunResult, error) {
+	res, resErr := s.RunNamedScenario(ctx, input.ScenarioName)
+	if resErr != nil {
+		return rezai.EvalScenarioRunResult{}, resErr
+	}
+	return *res, nil
+}
+
+func evaluateScenarioChecks(ctx context.Context, req *ai.EvaluatorCallbackRequest, cfg struct{}) (*ai.EvaluatorCallbackResponse, error) {
+	if req == nil || req.Input.Output == nil {
+		return nil, fmt.Errorf("evaluation output is required")
+	}
+	e := &scenarioChecksEvaluator{}
+	return e.evaluate(req.Input)
+}
+
+type evaluationRun struct {
+	service    *EvaluationService
+	scenario   rezai.EvalScenario
+	result     rezai.EvalScenarioRunResult
 	session    *ent.AgentSession
 	turn       *ent.AgentTurn
 	invocation *rez.AiAgentInvocationResult
 }
 
-func NewEvaluationService(db rez.Database, ai rez.AiService) *EvaluationService {
-	return &EvaluationService{db: db, ai: ai}
-}
-
-func (s *EvaluationService) MakeRunner(scenario rezai.EvalScenario) (*EvaluationRunner, error) {
-	if scenario == nil {
-		return nil, fmt.Errorf("evaluation scenario is required")
+func (s *EvaluationService) executeEvaluationRun(ctx context.Context, r *evaluationRun) rezai.EvalScenarioRunResult {
+	r.result = rezai.EvalScenarioRunResult{
+		Status: rezai.EvalRunStatusError,
 	}
-
-	scd := scenario.Definition()
-	runner := &EvaluationRunner{
-		db:       s.db,
-		ai:       s.ai,
-		scenario: scenario,
-		report: &EvaluationReport{
-			RunID:     uuid.New(),
-			StartedAt: time.Now().UTC(),
-			Scenario:  scd,
-		},
+	if r.scenario == nil {
+		return r.fail(rezai.EvalRunStageSetup, "evaluation scenario is required")
 	}
+	r.result.Scenario = r.scenario.Definition()
+	d := r.result.Scenario
+	if strings.TrimSpace(d.Name) == "" || strings.TrimSpace(d.Description) == "" || strings.TrimSpace(d.AgentName) == "" {
+		return r.fail(rezai.EvalRunStageSetup, "scenario definition requires name, description, and agent name")
+	}
+	found := false
 	for _, agent := range s.ai.GetAgents() {
-		if agent.Name == scd.AgentName {
-			runner.agent = &agent
+		if agent.Name == d.AgentName {
+			r.result.Agent = agent
+			found = true
 			break
 		}
 	}
-	if runner.agent == nil {
-		return nil, fmt.Errorf("agent %s not found", scd.AgentName)
+	if !found {
+		return r.fail(rezai.EvalRunStageSetup, fmt.Sprintf("agent %q not found", d.AgentName))
 	}
-	return runner, nil
-}
 
-func (r *EvaluationRunner) RunEvaluation(ctx context.Context) EvaluationReport {
-	tenantCtx, seedErr := r.seedEvaluationSession(ctx)
+	seedCtx, seedErr := traceStep(ctx, "seed", func(ctx context.Context) (context.Context, error) {
+		return r.seed(ctx)
+	})
 	if seedErr != nil {
-		return r.report.fail("database", seedErr)
+		return r.fail(rezai.EvalRunStageSeed, seedErr.Error())
 	}
-	ctx = tenantCtx
+	ctx = seedCtx
 
-	input, inputErr := r.ai.MakeInitialAgentTurnInput(ctx, r.session)
-	if inputErr != nil {
-		return r.report.fail("prepare", inputErr)
-	}
-
-	if invokeErr := r.invokeAgent(ctx, input); invokeErr != nil {
-		return r.report.fail("invoke", invokeErr)
-	}
-
-	r.report.addExecutionScore(r.invocation)
-	if judgeErr := r.judgeScenario(ctx); judgeErr != nil {
-		return r.report.fail("judge", judgeErr)
+	input, prepareErr := traceStep(ctx, "prepare", func(ctx context.Context) (*rez.AiAgentTurnInput, error) {
+		return s.ai.MakeInitialAgentTurnInput(ctx, r.session)
+	})
+	if prepareErr != nil || input == nil {
+		if prepareErr == nil {
+			prepareErr = fmt.Errorf("agent returned no initial turn input")
+		}
+		return r.fail(rezai.EvalRunStagePrepare, prepareErr.Error())
 	}
 
-	return r.report.complete()
+	started := time.Now()
+	invocation, invokeErr := traceStep(ctx, "invoke", func(ctx context.Context) (*rez.AiAgentInvocationResult, error) {
+		return s.ai.InvokeAgentTurn(ctx, rez.InvokeAgentTurnParams{Session: r.session, Turn: r.turn, Input: input})
+	})
+	r.invocation = invocation
+	r.result.Execution = r.summarizeExecution(invocation, invokeErr, time.Since(started).Milliseconds())
+	if invokeErr != nil {
+		return r.fail(rezai.EvalRunStageInvoke, invokeErr.Error())
+	}
+	if invocation == nil {
+		return r.fail(rezai.EvalRunStageInvoke, "agent returned no invocation result")
+	}
+	if !r.result.Execution.Succeeded {
+		r.result.Status = rezai.EvalRunStatusFailed
+		return r.result
+	}
+
+	grade, gradeErr := traceStep(ctx, "grade", func(ctx context.Context) (rezai.EvalScenarioGrade, error) {
+		return r.scenario.Grade(ctx, s.db.Client(ctx), invocation)
+	})
+	if gradeErr != nil {
+		return r.fail(rezai.EvalRunStageGrade, gradeErr.Error())
+	}
+	if gradeErr = r.validateGrade(grade); gradeErr != nil {
+		return r.fail(rezai.EvalRunStageGrade, gradeErr.Error())
+	}
+	r.result.Output, r.result.Checks = grade.Output, grade.Checks
+	r.result.Status = rezai.EvalRunStatusPassed
+	for _, check := range grade.Checks {
+		if !check.Passed {
+			r.result.Status = rezai.EvalRunStatusFailed
+			break
+		}
+	}
+	return r.result
 }
 
-func (r *EvaluationRunner) seedEvaluationSession(ctx context.Context) (context.Context, error) {
-	client := r.db.Client(ctx)
+func (r *evaluationRun) seed(ctx context.Context) (context.Context, error) {
+	client := r.service.db.Client(ctx)
 	tenant, tenantErr := client.Tenant.Create().Save(execution.NewSystemContext(ctx))
 	if tenantErr != nil {
 		return nil, fmt.Errorf("create evaluation tenant: %w", tenantErr)
@@ -125,24 +205,23 @@ func (r *EvaluationRunner) seedEvaluationSession(ctx context.Context) (context.C
 	seed, seedErr := r.scenario.Seed(ctx, client)
 	if seedErr != nil {
 		return nil, seedErr
-	}
-	if seed.Input == nil {
+	} else if seed.Input == nil {
 		return nil, fmt.Errorf("scenario returned nil agent input")
 	}
 
-	inputJSON, inputJSONErr := json.Marshal(seed.Input)
-	if inputJSONErr != nil {
-		return nil, fmt.Errorf("marshal agent input: %w", inputJSONErr)
+	raw, inputErr := json.Marshal(seed.Input)
+	if inputErr != nil {
+		return nil, fmt.Errorf("marshal agent input: %w", inputErr)
 	}
-	if _, validationErr := r.ai.ValidateAgentSessionInput(r.agent.Name, inputJSON); validationErr != nil {
-		return nil, fmt.Errorf("validate agent input: %w", validationErr)
+	if _, inputErr = r.service.ai.ValidateAgentSessionInput(r.result.Agent.Name, raw); inputErr != nil {
+		return nil, fmt.Errorf("validate agent input: %w", inputErr)
 	}
 
 	r.session = &ent.AgentSession{
 		ID:               uuid.New(),
 		TenantID:         tenant.ID,
-		AgentName:        r.agent.Name,
-		Input:            inputJSON,
+		AgentName:        r.result.Agent.Name,
+		Input:            raw,
 		SystemAnalysisID: seed.SystemAnalysisID,
 	}
 	r.turn = &ent.AgentTurn{
@@ -151,113 +230,209 @@ func (r *EvaluationRunner) seedEvaluationSession(ctx context.Context) (context.C
 		AgentSessionID: r.session.ID,
 		Sequence:       1,
 	}
+
 	return ctx, nil
 }
 
-func (r *EvaluationRunner) invokeAgent(ctx context.Context, input *rez.AiAgentTurnInput) error {
-	startedAt := time.Now()
-	invocation, invocationErr := r.ai.InvokeAgentTurn(ctx, rez.InvokeAgentTurnParams{
-		Session: r.session,
-		Turn:    r.turn,
-		Input:   input,
-	})
-	r.invocation = invocation
-
-	result := &EvaluationResult{
-		DurationMilliseconds: time.Since(startedAt).Milliseconds(),
-	}
-	if invocation == nil {
-		if invocationErr == nil {
-			invocationErr = fmt.Errorf("agent returned no invocation result")
-		}
-	} else {
-		result.FinishReason = invocation.FinishReason
-		result.Response = invocation.Response
-		result.Messages = invocation.State.Messages
-		result.Artifacts = invocation.State.Artifacts
-		if invocation.Error != nil {
-			result.Error = invocation.Error.Error()
-		}
-	}
-	r.report.Result = result
-
-	return invocationErr
+func (r *evaluationRun) fail(stage rezai.EvalRunStage, message string) rezai.EvalScenarioRunResult {
+	r.result.Status = rezai.EvalRunStatusError
+	r.result.Output = nil
+	r.result.Checks = nil
+	r.result.Error = &rezai.EvalRunError{Stage: stage, Message: message}
+	return r.result
 }
 
-func (r *EvaluationReport) addExecutionScore(invocation *rez.AiAgentInvocationResult) {
-	executionPassed := invocation.Error == nil && invocation.FinishReason != aix.AgentFinishReasonFailed
-	executionStatus := ai.ScoreStatusFail.String()
-	executionDetail := "agent execution completed"
-	if executionPassed {
-		executionStatus = ai.ScoreStatusPass.String()
-	} else if invocation.Error != nil {
-		executionDetail = invocation.Error.Error()
-	} else {
-		executionDetail = "agent reported a failed finish reason"
+func (r *evaluationRun) summarizeExecution(inv *rez.AiAgentInvocationResult, callErr error, duration int64) *rezai.EvalAgentExecution {
+	e := &rezai.EvalAgentExecution{
+		DurationMilliseconds: duration,
 	}
-
-	r.Scores = append(r.Scores, ai.Score{
-		Id:      "agent_execution",
-		Score:   executionPassed,
-		Status:  executionStatus,
-		Details: map[string]any{"detail": executionDetail},
-	})
+	if inv != nil {
+		e.FinishReason = string(inv.FinishReason)
+	}
+	switch {
+	case callErr != nil:
+		e.Error = callErr.Error()
+	case inv == nil:
+		e.Error = "agent returned no invocation result"
+	case inv.Error != nil:
+		e.Error = inv.Error.Error()
+	case inv.FinishReason != aix.AgentFinishReasonStop:
+		e.Error = fmt.Sprintf("agent finished with reason %q", string(inv.FinishReason))
+	default:
+		e.Succeeded = true
+	}
+	return e
 }
 
-func (r *EvaluationRunner) judgeScenario(ctx context.Context) error {
-	scores, judgeErr := r.scenario.Judge(ctx, r.db.Client(ctx), r.invocation)
-	if judgeErr != nil {
-		return judgeErr
+func (r *evaluationRun) validateGrade(g rezai.EvalScenarioGrade) error {
+	if len(g.Checks) == 0 {
+		return fmt.Errorf("scenario returned no checks")
 	}
-	if len(scores) == 0 {
-		return fmt.Errorf("scenario returned no scores")
+	if _, jsonErr := json.Marshal(g.Output); jsonErr != nil {
+		return fmt.Errorf("serialize grade output: %w", jsonErr)
 	}
-
-	seen := mapset.NewSet("agent_execution")
-	for _, score := range scores {
-		if strings.TrimSpace(score.Id) == "" {
-			return fmt.Errorf("scenario returned a score without an ID")
+	seenChecks := mapset.NewSet("scenario_completed", "agent_execution")
+	for _, c := range g.Checks {
+		id := strings.TrimSpace(c.ID)
+		if id == "" {
+			return fmt.Errorf("scenario returned a check without an ID")
 		}
-		if seen.Contains(score.Id) {
-			return fmt.Errorf("scenario returned duplicate score ID %q", score.Id)
+		if !seenChecks.Add(id) {
+			return fmt.Errorf("scenario returned duplicate or reserved check ID %q", id)
 		}
-		if score.Status != ai.ScoreStatusPass.String() && score.Status != ai.ScoreStatusFail.String() {
-			return fmt.Errorf("scenario score %q has invalid status %q", score.Id, score.Status)
+		if strings.TrimSpace(c.Summary) == "" {
+			return fmt.Errorf("scenario check %q has a blank summary", id)
 		}
-		seen.Add(score.Id)
-	}
-	r.report.Scores = append(r.report.Scores, scores...)
-	return nil
-}
-
-func (r *EvaluationReport) complete() EvaluationReport {
-	r.Complete = true
-	r.Passed = true
-	for _, score := range r.Scores {
-		if score.Status != ai.ScoreStatusPass.String() {
-			r.Passed = false
-			break
+		if _, expectedErr := json.Marshal(c.Expected); expectedErr != nil {
+			return fmt.Errorf("serialize check %q expected value: %w", id, expectedErr)
 		}
-	}
-	r.DurationMilliseconds = time.Since(r.StartedAt).Milliseconds()
-	return *r
-}
-
-func (r *EvaluationReport) Write(reportWriter io.Writer) error {
-	if reportWriter == nil {
-		reportWriter = io.Discard
-	}
-	encoder := json.NewEncoder(reportWriter)
-	encoder.SetIndent("", "  ")
-	if reportErr := encoder.Encode(r); reportErr != nil {
-		return fmt.Errorf("encode evaluation report: %w", reportErr)
+		if _, observedErr := json.Marshal(c.Observed); observedErr != nil {
+			return fmt.Errorf("serialize check %q observed value: %w", id, observedErr)
+		}
 	}
 	return nil
 }
 
-func (r *EvaluationReport) fail(stage string, runErr error) EvaluationReport {
-	r.DurationMilliseconds = time.Since(r.StartedAt).Milliseconds()
-	r.FailureStage = stage
-	r.Error = runErr.Error()
-	return *r
+func traceStep[I any](ctx context.Context, name string, fn func(context.Context) (I, error)) (I, error) {
+	metadata := &tracing.SpanMetadata{
+		Name:    name,
+		Type:    "action",
+		Subtype: "util",
+	}
+	return tracing.RunInNewSpan(ctx, metadata, struct{}{}, func(ctx context.Context, _ struct{}) (I, error) {
+		return fn(ctx)
+	})
+}
+
+type scenarioChecksEvaluator struct{}
+
+func (e *scenarioChecksEvaluator) evaluate(example ai.Example) (*ai.EvaluatorCallbackResponse, error) {
+	raw, marshalErr := json.Marshal(example.Output)
+	if marshalErr != nil {
+		return nil, fmt.Errorf("marshal evaluation output: %w", marshalErr)
+	}
+
+	var result rezai.EvalScenarioRunResult
+	if decodeErr := json.Unmarshal(raw, &result); decodeErr != nil {
+		return nil, fmt.Errorf("decode evaluation output: %w", decodeErr)
+	}
+
+	if validationErr := e.validateScenarioResult(result); validationErr != nil {
+		return nil, validationErr
+	}
+
+	var evalScores []ai.Score
+	addScore := func(id string, passed bool, summary string, expected, observed any) {
+		status := ai.ScoreStatusFail.String()
+		if passed {
+			status = ai.ScoreStatusPass.String()
+		}
+		details := map[string]any{"summary": summary}
+		if expected != nil {
+			details["expected"] = expected
+		}
+		if observed != nil {
+			details["observed"] = observed
+		}
+		evalScores = append(evalScores, ai.Score{Id: id, Score: passed, Status: status, Details: details})
+	}
+
+	addScore(
+		"scenario_completed",
+		result.Status != rezai.EvalRunStatusError,
+		"Scenario run completed without a framework error.",
+		result.Error,
+		result.Status,
+	)
+
+	executionPassed := result.Execution != nil && result.Execution.Succeeded
+	executionSummary := "Agent execution did not produce a result."
+	if result.Execution != nil {
+		executionSummary = result.Execution.Error
+		if result.Execution.Succeeded {
+			executionSummary = "Agent execution succeeded."
+		}
+	}
+
+	addScore("agent_execution", executionPassed, executionSummary, nil, result.Execution)
+
+	for _, check := range result.Checks {
+		addScore(check.ID, check.Passed, check.Summary, check.Expected, check.Observed)
+	}
+
+	return &ai.EvaluatorCallbackResponse{
+		TestCaseId: example.TestCaseId,
+		Evaluation: evalScores,
+	}, nil
+}
+
+func (e *scenarioChecksEvaluator) validateScenarioResult(result rezai.EvalScenarioRunResult) error {
+	if result.Execution != nil {
+		if result.Execution.DurationMilliseconds < 0 {
+			return fmt.Errorf("execution duration must be non-negative")
+		}
+		if result.Execution.Succeeded && (result.Execution.FinishReason != "stop" || strings.TrimSpace(result.Execution.Error) != "") {
+			return fmt.Errorf("successful execution has invalid finish reason or error")
+		}
+		if !result.Execution.Succeeded && strings.TrimSpace(result.Execution.Error) == "" {
+			return fmt.Errorf("unsuccessful execution requires an error")
+		}
+	}
+
+	switch result.Status {
+	case rezai.EvalRunStatusPassed:
+		if result.Error != nil || result.Execution == nil || !result.Execution.Succeeded || len(result.Checks) == 0 {
+			return fmt.Errorf("invalid passed result shape")
+		}
+		for _, check := range result.Checks {
+			if !check.Passed {
+				return fmt.Errorf("passed result contains failed check %q", check.ID)
+			}
+		}
+	case rezai.EvalRunStatusFailed:
+		if result.Error != nil || result.Execution == nil {
+			return fmt.Errorf("invalid failed result shape")
+		}
+		if !result.Execution.Succeeded {
+			if len(result.Checks) != 0 {
+				return fmt.Errorf("failed execution must not contain checks")
+			}
+			return nil
+		}
+		if len(result.Checks) == 0 {
+			return fmt.Errorf("graded failure requires checks")
+		}
+		for _, check := range result.Checks {
+			if !check.Passed {
+				return nil
+			}
+		}
+		return fmt.Errorf("failed result has no failed check")
+	case rezai.EvalRunStatusError:
+		if result.Error == nil || len(result.Checks) != 0 || result.Output != nil {
+			return fmt.Errorf("invalid error result shape")
+		}
+		if strings.TrimSpace(result.Error.Message) == "" {
+			return fmt.Errorf("error result requires a message")
+		}
+		switch result.Error.Stage {
+		case rezai.EvalRunStageSetup, rezai.EvalRunStageSeed, rezai.EvalRunStagePrepare:
+			if result.Execution != nil {
+				return fmt.Errorf("%s error must not contain execution", result.Error.Stage)
+			}
+		case rezai.EvalRunStageInvoke:
+			if result.Execution == nil || result.Execution.Succeeded {
+				return fmt.Errorf("invoke error requires unsuccessful execution")
+			}
+		case rezai.EvalRunStageGrade:
+			if result.Execution == nil || !result.Execution.Succeeded {
+				return fmt.Errorf("grade error requires successful execution")
+			}
+		default:
+			return fmt.Errorf("unknown error stage %q", result.Error.Stage)
+		}
+	default:
+		return fmt.Errorf("unknown evaluation status %q", result.Status)
+	}
+	return nil
 }

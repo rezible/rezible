@@ -13,25 +13,32 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type evaluationScenario struct {
+type testEvalScenario struct {
 	agentName string
-	status    string
-	judgeErr  error
+	passed    bool
+	gradeErr  error
 }
 
-func (s evaluationScenario) Definition() rezai.EvalScenarioDefinition {
-	return rezai.EvalScenarioDefinition{Name: "test/scenario", AgentName: s.agentName}
+func (s testEvalScenario) Definition() rezai.EvalScenarioDefinition {
+	return rezai.EvalScenarioDefinition{
+		Name:        "test/scenario",
+		Description: "test scenario",
+		AgentName:   s.agentName,
+	}
 }
 
-func (evaluationScenario) Seed(context.Context, *ent.Client) (rezai.EvalScenarioSeed, error) {
+func (testEvalScenario) Seed(context.Context, *ent.Client) (rezai.EvalScenarioSeed, error) {
 	return rezai.EvalScenarioSeed{Input: testAgentInput{}}, nil
 }
 
-func (s evaluationScenario) Judge(context.Context, *ent.Client, *rez.AiAgentInvocationResult) ([]ai.Score, error) {
-	if s.judgeErr != nil {
-		return nil, s.judgeErr
+func (s testEvalScenario) Grade(context.Context, *ent.Client, *rez.AiAgentInvocationResult) (rezai.EvalScenarioGrade, error) {
+	if s.gradeErr != nil {
+		return rezai.EvalScenarioGrade{}, s.gradeErr
 	}
-	return []ai.Score{{Id: "scenario_check", Score: s.status == ai.ScoreStatusPass.String(), Status: s.status}}, nil
+	checks := []rezai.EvalCheck{
+		{ID: "scenario_check", Passed: s.passed, Summary: "Scenario check."},
+	}
+	return rezai.EvalScenarioGrade{Output: "hello", Checks: checks}, nil
 }
 
 type EvaluationServiceSuite struct {
@@ -45,45 +52,48 @@ func TestEvaluationServiceSuite(t *testing.T) {
 func (s *EvaluationServiceSuite) TestRunsAgentAndProducesPassingReport() {
 	ctx := s.SeedTenantContext()
 	database := s.CreateTestDatabase()
-	response := &ai.ModelResponse{Message: ai.NewModelTextMessage("hello")}
+	response := &ai.ModelResponse{
+		Message:      ai.NewModelTextMessage("hello"),
+		FinishReason: ai.FinishReasonStop,
+	}
 	agent := makeTestAgent[testAgentState](ai.NewUserTextMessage("say hello"))
 	agent.def.Model = "test/model"
 	aiService := NewAiService(s.Config())
 	s.Require().NoError(aiService.Init(ctx, withTestModel(response), WithAgent(agent)))
 
 	service := NewEvaluationService(database, aiService)
-	runner, runnerErr := service.MakeRunner(evaluationScenario{
+	result := service.RunScenario(ctx, testEvalScenario{
 		agentName: agent.def.Name,
-		status:    ai.ScoreStatusPass.String(),
+		passed:    true,
 	})
-	s.Require().NoError(runnerErr)
-
-	report := runner.RunEvaluation(ctx)
-	s.True(report.Complete)
-	s.True(report.Passed)
-	s.Require().NotNil(report.Result)
-	s.Equal("hello", report.Result.Response.Text())
-	s.Len(report.Scores, 2)
+	s.Equal(rezai.EvalRunStatusPassed, result.Status)
+	s.Require().NotNil(result.Execution)
+	s.True(result.Execution.Succeeded)
+	s.Equal("test/model", result.Agent.Model)
+	s.Len(result.Checks, 1)
 }
 
-func (s *EvaluationServiceSuite) TestReportsJudgeErrorsAtJudgeStage() {
+func (s *EvaluationServiceSuite) TestReportsGradeErrorsAtGradeStage() {
 	ctx := s.SeedTenantContext()
 	database := s.CreateTestDatabase()
-	response := &ai.ModelResponse{Message: ai.NewModelTextMessage("hello")}
+	response := &ai.ModelResponse{
+		Message:      ai.NewModelTextMessage("hello"),
+		FinishReason: ai.FinishReasonStop,
+	}
 	agent := makeTestAgent[testAgentState](ai.NewUserTextMessage("say hello"))
 	agent.def.Model = "test/model"
 	aiService := NewAiService(s.Config())
 	s.Require().NoError(aiService.Init(ctx, withTestModel(response), WithAgent(agent)))
-	expectedErr := errors.New("judge unavailable")
+	expectedErr := errors.New("grading unavailable")
 
 	service := NewEvaluationService(database, aiService)
-	runner, runnerErr := service.MakeRunner(evaluationScenario{
+	result := service.RunScenario(ctx, testEvalScenario{
 		agentName: agent.def.Name,
-		judgeErr:  expectedErr,
+		gradeErr:  expectedErr,
 	})
-	s.Require().NoError(runnerErr)
-
-	report := runner.RunEvaluation(ctx)
-	s.False(report.Complete)
-	s.Equal("judge", report.FailureStage)
+	s.Equal(rezai.EvalRunStatusError, result.Status)
+	s.Require().NotNil(result.Error)
+	s.Equal(rezai.EvalRunStageGrade, result.Error.Stage)
+	s.Require().NotNil(result.Execution)
+	s.True(result.Execution.Succeeded)
 }

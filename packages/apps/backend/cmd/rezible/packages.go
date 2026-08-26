@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rezible/rezible/internal/koanf"
-	"github.com/rezible/rezible/internal/postgres/pgtestdb"
-	"github.com/rezible/rezible/pkg/execution"
 	"github.com/samber/do/v2"
 
 	rez "github.com/rezible/rezible"
@@ -21,8 +18,10 @@ import (
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/internal/integrations/slack/slackagent"
 	"github.com/rezible/rezible/internal/integrations/slack/slackincidents"
+	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/opentelemetry"
 	"github.com/rezible/rezible/internal/postgres"
+	"github.com/rezible/rezible/internal/postgres/pgtestdb"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -120,11 +119,12 @@ func makeGenkitProvider(ctx context.Context) Provider {
 				do.MustInvoke[rez.KnowledgeGraphService](i),
 			)
 			alertSvc := do.MustInvoke[rez.AlertService](i)
-			return []genkit.AiServiceOption{
+			opts := []genkit.AiServiceOption{
 				genkit.WithAgent(genkit.NewChatAgent()),
 				genkit.WithAgent(genkit.NewAlertsAgent(alertSvc), analysisMw),
 				genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
-			}, nil
+			}
+			return opts, nil
 		}),
 
 		do.Lazy(func(i do.Injector) (*genkit.AiService, error) {
@@ -134,15 +134,13 @@ func makeGenkitProvider(ctx context.Context) Provider {
 		}),
 		do.Bind[*genkit.AiService, rez.AiService](),
 
-		do.Lazy(func(i do.Injector) (*genkit.DevServer, error) {
-			svc := genkit.NewAiService(do.MustInvoke[rez.Config](i))
-			opts := do.MustInvoke[[]genkit.AiServiceOption](i)
-			devCtx := execution.NewTenantContext(ctx, 1)
-			return svc.MakeDevServer(), svc.Init(devCtx, opts...)
-		}),
-
 		do.Lazy(func(i do.Injector) (*genkit.EvaluationService, error) {
-			return genkit.NewEvaluationService(do.MustInvoke[rez.Database](i), do.MustInvoke[rez.AiService](i)), nil
+			return genkit.NewEvaluationService(do.MustInvoke[rez.Database](i), do.MustInvoke[*genkit.AiService](i)), nil
+		}),
+		do.Bind[*genkit.EvaluationService, rezai.EvalScenarioRunner](),
+
+		do.Lazy(func(i do.Injector) (*genkit.DevServer, error) {
+			return genkit.NewDevServer(do.MustInvoke[*genkit.AiService](i), do.MustInvoke[*genkit.EvaluationService](i))
 		}),
 	)
 }

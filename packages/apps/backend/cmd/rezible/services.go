@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/riverqueue/river"
 	"github.com/samber/do/v2"
@@ -32,7 +33,15 @@ func withMigrationService(i do.Injector, fn func(rez.MigrationService) error) er
 	return fn(ms)
 }
 
-func runServicesFor[Entrypoint rez.LifecycleService](ctx context.Context, i do.Injector) error {
+func withAiEvaluationService(i do.Injector, fn func(rezai.EvalScenarioRunner) error) error {
+	svc, svcErr := do.Invoke[rezai.EvalScenarioRunner](i)
+	if svcErr != nil {
+		return fmt.Errorf("invoke evaluation service: %w", svcErr)
+	}
+	return fn(svc)
+}
+
+func runLifecycleServices[Entrypoint rez.LifecycleService](ctx context.Context, i do.Injector) error {
 	if regErr := registerBackgroundServicePackages(i); regErr != nil {
 		return fmt.Errorf("register background services: %w", regErr)
 	}

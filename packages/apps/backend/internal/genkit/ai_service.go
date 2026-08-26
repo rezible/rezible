@@ -3,16 +3,15 @@ package genkit
 import (
 	"cmp"
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
-	"net"
-	"net/http"
 	"slices"
+	"time"
 
 	"github.com/firebase/genkit/go/ai"
 	gkapi "github.com/firebase/genkit/go/core/api"
 	"github.com/firebase/genkit/go/genkit"
+	"github.com/firebase/genkit/go/plugins/evaluators"
 	"github.com/firebase/genkit/go/plugins/googlegenai"
 
 	rez "github.com/rezible/rezible"
@@ -40,9 +39,9 @@ func NewAiService(cfg rez.Config) *AiService {
 }
 
 func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
-	var plugins []gkapi.Plugin
-	if geminiCfg := s.cfg.Gemini; geminiCfg.Enabled {
-		plugins = append(plugins, &googlegenai.GoogleAI{APIKey: geminiCfg.APIKey})
+	plugins, pluginsErr := s.makePlugins()
+	if pluginsErr != nil {
+		return fmt.Errorf("plugins: %w", pluginsErr)
 	}
 
 	defaultModel := s.getDefaultModel()
@@ -61,6 +60,25 @@ func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
 	}
 
 	return nil
+}
+
+func (s *AiService) makePlugins() ([]gkapi.Plugin, error) {
+	var plugins []gkapi.Plugin
+	if geminiCfg := s.cfg.Gemini; geminiCfg.Enabled {
+		plugins = append(plugins, &googlegenai.GoogleAI{APIKey: geminiCfg.APIKey})
+	}
+
+	if IsDevMode() {
+		plugins = append(plugins, &evaluators.GenkitEval{
+			Metrics: []evaluators.MetricConfig{{MetricType: evaluators.EvaluatorDeepEqual}},
+		})
+	}
+
+	return plugins, nil
+}
+
+func IsDevMode() bool {
+	return gkapi.CurrentEnvironment() == gkapi.EnvironmentDev
 }
 
 func (s *AiService) applyOptions(opts []AiServiceOption) error {
@@ -140,42 +158,29 @@ func (s *AiService) GetWorkflowRunner(name string) (rez.AiWorkflowRunner, error)
 }
 
 type DevServer struct {
-	svc *AiService
+	aiSvc   *AiService
+	evalSvc *EvaluationService
 }
 
-func (s *AiService) MakeDevServer() *DevServer {
-	return &DevServer{svc: s}
+func NewDevServer(ai *AiService, evalSvc *EvaluationService) (*DevServer, error) {
+	if !IsDevMode() {
+		return nil, fmt.Errorf("dev mode not enabled")
+	}
+	return &DevServer{aiSvc: ai, evalSvc: evalSvc}, nil
 }
 
 func (s *DevServer) Lifecycle() *rez.ServiceLifecycle {
-	cfg := s.svc.cfg
-	if !cfg.DevServer.Enabled {
-		return nil
-	}
-
-	mux := http.NewServeMux()
-	srv := &http.Server{
-		Addr:    net.JoinHostPort("localhost", cfg.DevServer.Port),
-		Handler: mux,
-	}
-
-	runFn := func(context.Context) error {
-		slog.Info("Genkit dev server HTTP server listening", "addr", srv.Addr)
-		if srvErr := srv.ListenAndServe(); !errors.Is(srvErr, http.ErrServerClosed) {
-			return fmt.Errorf("genkit dev server HTTP server: %w", srvErr)
-		}
-		return nil
-	}
-	stopFn := func(ctx context.Context) error {
-		slog.Info("Genkit dev server HTTP server shutting down")
-		if shutdownErr := srv.Shutdown(ctx); shutdownErr != nil {
-			return errors.Join(fmt.Errorf("shutdown Genkit dev server: %w", shutdownErr), srv.Close())
-		}
-		return nil
-	}
-
 	return &rez.ServiceLifecycle{
-		StartFns: []rez.LifecycleFunc{runFn},
-		StopFn:   stopFn,
+		StartFns: []rez.LifecycleFunc{
+			func(ctx context.Context) error {
+				slog.Info("starting genkit dev server")
+				<-ctx.Done()
+				return nil
+			},
+		},
+		StopFn: func(ctx context.Context) error {
+			time.Sleep(time.Millisecond * 100)
+			return nil
+		},
 	}
 }
