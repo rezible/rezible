@@ -38,14 +38,7 @@ func (i *Integration) processTeamObservedEvent(ev rez.ProviderEvent) (ent.Normal
 	if jsonErr := json.Unmarshal(ev.Payload, &payload); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal teamObservedPayload: %w", jsonErr)
 	}
-	attrs := projections.TeamSubjectAttributes{
-		ExternalRef:        payload.ExternalRef,
-		Name:               payload.Name,
-		Slug:               payload.Slug,
-		ChatChannelId:      payload.ChatChannelID,
-		MemberExternalRefs: payload.MemberExternalRefs,
-	}
-	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	encodedAttrs, encodeErr := projections.EncodeAttributes(payload.makeSubjectAttributes())
 	if encodeErr != nil {
 		return nil, fmt.Errorf("encode team observed attributes: %w", encodeErr)
 	}
@@ -72,26 +65,15 @@ func (i *Integration) processTeamMembershipObservedEvent(ev rez.ProviderEvent) (
 		return nil, fmt.Errorf("unmarshal teamMembershipObservedPayload: %w", jsonErr)
 	}
 	attrs := projections.TeamMembershipSubjectAttributes{
-		Team: projections.TeamSubjectAttributes{
-			ExternalRef:        payload.Team.ExternalRef,
-			Name:               payload.Team.Name,
-			Slug:               payload.Team.Slug,
-			ChatChannelId:      payload.Team.ChatChannelID,
-			MemberExternalRefs: payload.Team.MemberExternalRefs,
-		},
-		User: projections.UserSubjectAttributes{
-			Name:     payload.User.Name,
-			Email:    payload.User.Email,
-			ChatId:   payload.User.SlackID,
-			Timezone: payload.User.Timezone,
-		},
-		UserExternalRef: fmt.Sprintf("slack:%s", payload.User.SlackID),
-		Role:            "member",
+		Team: payload.Team.makeSubjectAttributes(),
+		User: payload.User.makeSubjectAttributes(),
+		Role: "member",
 	}
-	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
-	if encodeErr != nil {
-		return nil, fmt.Errorf("encode team membership attributes: %w", encodeErr)
+	encodedAttrs, encodeAttrsErr := projections.EncodeAttributes(attrs)
+	if encodeAttrsErr != nil {
+		return nil, fmt.Errorf("encode team membership attributes: %w", encodeAttrsErr)
 	}
+
 	return ent.NormalizedEvents{{
 		Provider:           integrationName,
 		ProviderSource:     sourceTeamMemberships,
@@ -111,13 +93,7 @@ func (i *Integration) processUserObservedEvent(ev rez.ProviderEvent) (ent.Normal
 		return nil, fmt.Errorf("unmarshal userObservedPayload: %w", jsonErr)
 	}
 
-	attrs := projections.UserSubjectAttributes{
-		Name:     payload.Name,
-		Email:    payload.Email,
-		ChatId:   payload.SlackID,
-		Timezone: payload.Timezone,
-	}
-	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	encodedAttrs, encodeErr := projections.EncodeAttributes(payload.makeSubjectAttributes())
 	if encodeErr != nil {
 		return nil, fmt.Errorf("encode user observed attributes: %w", encodeErr)
 	}

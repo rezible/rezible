@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -54,98 +55,105 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 	tdb := s.CreateTestDatabase()
 	service := s.knowledgeService(tdb)
 	now := time.Now().UTC()
-	sourceAlias := ent.KnowledgeAliasRef{
+
+	apiSubjectRef := "service:api"
+	apiAliasRef := ent.KnowledgeSubjectAliasRef{
 		Provider:           "test",
 		ProviderSource:     "knowledge-graph-tests",
-		ProviderSubjectRef: "service:api",
+		ProviderSubjectRef: apiSubjectRef,
 	}
-	targetAlias := ent.KnowledgeAliasRef{
-		Provider:           "test",
-		ProviderSource:     "knowledge-graph-tests",
-		ProviderSubjectRef: "service:database",
+	apiEntityRef := ent.KnowledgeEntityRef{
+		Kind:            kne.KindContainer,
+		Subkind:         "service",
+		SubjectAliasRef: apiAliasRef,
 	}
 
-	sourceEvent := s.createEvent(tdb, projections.SubjectKindSystemComponent, ne.KindObserved, sourceAlias.ProviderSubjectRef, now.Add(-2*time.Hour), struct{}{})
-	source, ingestErr := service.IngestEntityEvidence(ctx, sourceEvent, ent.KnowledgeEvidenceRef{
+	apiEvent := s.createEvent(tdb, projections.SubjectKindSystemComponent, ne.KindObserved, apiSubjectRef, now.Add(-2*time.Hour), struct{}{})
+	apiEvidenceRef := ent.KnowledgeEvidenceRef{
 		Kind:        ke.KindObserved,
 		Assertion:   "component_exists",
 		EffectiveAt: now.Add(-2 * time.Hour),
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: "Old API name",
 		},
-		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:    kne.KindContainer,
-			Subkind: "service",
-			Alias:   sourceAlias,
-		},
-	})
-	s.Require().NoError(ingestErr)
+		SubjectEntity: &apiEntityRef,
+	}
+	apiAlias, ingestApiErr := service.IngestSubjectEvidence(ctx, apiEvent, apiEvidenceRef)
+	s.Require().NoError(ingestApiErr)
+	s.Require().NotNil(apiAlias.EntityID)
+	apiEntityId := *apiAlias.EntityID
 
-	latestEvent := s.createEvent(tdb, projections.SubjectKindSystemComponent, ne.KindObserved, sourceAlias.ProviderSubjectRef, now.Add(-time.Hour), struct{}{})
-	_, ingestErr = service.IngestEntityEvidence(ctx, latestEvent, ent.KnowledgeEvidenceRef{
+	latestEvent := s.createEvent(tdb, projections.SubjectKindSystemComponent, ne.KindObserved, apiSubjectRef, now.Add(-time.Hour), struct{}{})
+	apiUpdateEvidenceRef := ent.KnowledgeEvidenceRef{
 		Kind:        ke.KindObserved,
 		Assertion:   "component_exists",
 		EffectiveAt: now.Add(-time.Hour),
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: "API",
 		},
-		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:    kne.KindContainer,
-			Subkind: "service",
-			Alias:   sourceAlias,
-		},
-	})
-	s.Require().NoError(ingestErr)
+		SubjectEntity: &apiEntityRef,
+	}
+	s.Require().NoError(service.IngestEvidence(ctx, latestEvent, apiUpdateEvidenceRef))
 
-	targetEvent := s.createEvent(tdb, projections.SubjectKindSystemComponent, ne.KindObserved, targetAlias.ProviderSubjectRef, now.Add(-time.Hour), struct{}{})
-	_, ingestErr = service.IngestEntityEvidence(ctx, targetEvent, ent.KnowledgeEvidenceRef{
-		Kind:         ke.KindObserved,
-		Assertion:    "component_exists",
-		EffectiveAt:  now.Add(-time.Hour),
-		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "Database"},
-		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:    kne.KindContainer,
-			Subkind: "database",
-			Alias:   targetAlias,
-		},
-	})
-	s.Require().NoError(ingestErr)
-
-	relationshipAlias := ent.KnowledgeAliasRef{
+	databaseSubjectRef := "service:database"
+	databaseEntityAlias := ent.KnowledgeSubjectAliasRef{
 		Provider:           "test",
 		ProviderSource:     "knowledge-graph-tests",
-		ProviderSubjectRef: "api-uses-database",
+		ProviderSubjectRef: databaseSubjectRef,
 	}
-	relationshipEvent := s.createEvent(tdb, projections.SubjectKindSystemRelationship, ne.KindObserved, relationshipAlias.ProviderSubjectRef, now, struct{}{})
-	_, ingestErr = service.IngestEvidenceBulk(ctx, relationshipEvent, ent.KnowledgeEvidenceRef{
-		Kind:         ke.KindObserved,
-		Assertion:    "relationship_exists",
-		EffectiveAt:  now,
-		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "uses"},
-		SubjectRelationship: &ent.KnowledgeRelationshipRef{
-			Kind:    knr.KindInteractsWith,
-			Subkind: "uses",
-			Alias:   relationshipAlias,
-			Source:  ent.KnowledgeEntityRef{Kind: kne.KindContainer, Subkind: "service", Alias: sourceAlias},
-			Target:  ent.KnowledgeEntityRef{Kind: kne.KindContainer, Subkind: "database", Alias: targetAlias},
-		},
-	})
-	s.Require().NoError(ingestErr)
+	databaseEntity := ent.KnowledgeEntityRef{
+		Kind:            kne.KindContainer,
+		Subkind:         "database",
+		SubjectAliasRef: databaseEntityAlias,
+	}
 
-	current, getErr := service.GetEntity(ctx, source.ID)
-	s.Require().NoError(getErr)
+	databaseEvent := s.createEvent(tdb, projections.SubjectKindSystemComponent, ne.KindObserved, databaseSubjectRef, now.Add(-time.Hour), struct{}{})
+	databaseEvidenceRef := ent.KnowledgeEvidenceRef{
+		Kind:          ke.KindObserved,
+		Assertion:     "component_exists",
+		EffectiveAt:   now.Add(-time.Hour),
+		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "Database"},
+		SubjectEntity: &databaseEntity,
+	}
+	s.Require().NoError(service.IngestEvidence(ctx, databaseEvent, databaseEvidenceRef))
 
-	currEv := current.LatestEvidence()
+	apiDbSubjectRef := "api-uses-database"
+	apiDbRelationshipAlias := ent.KnowledgeSubjectAliasRef{
+		Provider:           "test",
+		ProviderSource:     "knowledge-graph-tests",
+		ProviderSubjectRef: apiDbSubjectRef,
+	}
+	apiDbRelationshipRef := ent.KnowledgeRelationshipRef{
+		Kind:            knr.KindInteractsWith,
+		SubjectAliasRef: apiDbRelationshipAlias,
+		Source:          apiEntityRef,
+		Subkind:         "uses",
+		Target:          databaseEntity,
+	}
+	relEvidenceRef := ent.KnowledgeEvidenceRef{
+		Kind:                ke.KindObserved,
+		Assertion:           "relationship_exists",
+		EffectiveAt:         now,
+		SubjectState:        schematypes.KnowledgeGraphSubjectState{DisplayName: "uses"},
+		SubjectRelationship: &apiDbRelationshipRef,
+	}
+	relationshipEvent := s.createEvent(tdb, projections.SubjectKindSystemRelationship, ne.KindObserved, apiDbSubjectRef, now, struct{}{})
+	s.Require().NoError(service.IngestEvidence(ctx, relationshipEvent, relEvidenceRef))
+
+	apiEntity, getApiEntityErr := service.GetEntity(ctx, apiEntityId)
+	s.Require().NoError(getApiEntityErr)
+
+	currEv := apiEntity.LatestEvidence()
 	s.Require().NotNil(currEv)
 	s.Require().NotNil(currEv.SubjectState)
-	s.Equal("API", currEv.SubjectState.DisplayName)
+	s.Equal(apiUpdateEvidenceRef.SubjectState.DisplayName, currEv.SubjectState.DisplayName)
 
-	viewParams := rez.GetKnowledgeGraphViewParams{Depth: 1, EntityID: source.ID}
+	viewParams := rez.GetKnowledgeGraphViewParams{Depth: 1, EntityID: apiEntity.ID}
 	view, viewErr := service.GetView(ctx, viewParams)
 	s.Require().NoError(viewErr)
 	s.Len(view.Entities, 2)
 	s.Len(view.Relationships, 1)
-	s.Equal(source.ID, view.RootID)
+	s.Equal(apiEntity.ID, view.RootID)
 }
 
 func (s *KnowledgeGraphServiceSuite) TestBoundedViewIncludesIsolatedRootEntity() {
@@ -153,31 +161,53 @@ func (s *KnowledgeGraphServiceSuite) TestBoundedViewIncludesIsolatedRootEntity()
 	tdb := s.CreateTestDatabase()
 	service := s.knowledgeService(tdb)
 	now := time.Now().UTC()
-	alias := ent.KnowledgeAliasRef{
+	apiAliasRef := ent.KnowledgeSubjectAliasRef{
 		Provider:           "test",
 		ProviderSource:     "knowledge-graph-tests",
 		ProviderSubjectRef: "service:api",
 	}
-
-	event := s.createEvent(tdb, projections.SubjectKindSystemComponent, ne.KindObserved, alias.ProviderSubjectRef, now, struct{}{})
-	evidenceRef := ent.KnowledgeEvidenceRef{
-		Kind:         ke.KindObserved,
-		Assertion:    "component_exists",
-		EffectiveAt:  now,
-		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "API"},
-		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:    kne.KindContainer,
-			Subkind: "service",
-			Alias:   alias,
-		},
+	apiEntityRef := ent.KnowledgeEntityRef{
+		Kind:            kne.KindContainer,
+		Subkind:         "service",
+		SubjectAliasRef: apiAliasRef,
 	}
-	root, ingestErr := service.IngestEntityEvidence(ctx, event, evidenceRef)
-	s.Require().NoError(ingestErr)
 
-	view, viewErr := service.GetView(ctx, rez.GetKnowledgeGraphViewParams{Depth: 1, EntityID: root.ID})
-	s.Require().NoError(viewErr)
-	s.Equal(root.ID, view.RootID)
-	s.Len(view.Entities, 1)
-	s.Len(view.Relationships, 0)
-	s.Equal(root.ID, view.Entities[0].ID)
+	event := s.createEvent(tdb, projections.SubjectKindSystemComponent, ne.KindObserved, apiAliasRef.ProviderSubjectRef, now, struct{}{})
+	evidenceRef := ent.KnowledgeEvidenceRef{
+		Kind:        ke.KindObserved,
+		Assertion:   "component_exists",
+		EffectiveAt: now,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
+			DisplayName: "API",
+		},
+		SubjectEntity: &apiEntityRef,
+	}
+
+	r := s.Require()
+	alias, ingestErr := service.IngestSubjectEvidence(ctx, event, evidenceRef)
+	r.NoError(ingestErr)
+	r.NotNil(alias.EntityID)
+
+	rootEntityId := *alias.EntityID
+
+	fmt.Println("entities:")
+	for _, e := range tdb.Client(ctx).KnowledgeEntity.Query().AllX(ctx) {
+		fmt.Printf("  %+v\n", e)
+	}
+
+	fmt.Println("relationships:")
+	for _, rel := range tdb.Client(ctx).KnowledgeRelationship.Query().AllX(ctx) {
+		fmt.Printf("  %+v\n", rel)
+	}
+
+	viewParams := rez.GetKnowledgeGraphViewParams{
+		Depth:    1,
+		EntityID: rootEntityId,
+	}
+	view, viewErr := service.GetView(ctx, viewParams)
+	r.NoError(viewErr)
+	r.Equal(rootEntityId, view.RootID)
+	r.Len(view.Entities, 1)
+	r.Len(view.Relationships, 0)
+	r.Equal(rootEntityId, view.Entities[0].ID)
 }

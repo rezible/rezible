@@ -805,82 +805,8 @@ func (_c *MockKnowledgeGraphService_GetView_Call) RunAndReturn(run func(context1
 	return _c
 }
 
-// IngestEntityEvidence provides a mock function for the type MockKnowledgeGraphService
-func (_mock *MockKnowledgeGraphService) IngestEntityEvidence(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRef ent.KnowledgeEvidenceRef) (*ent.KnowledgeEntity, error) {
-	ret := _mock.Called(context1, normalizedEvent, knowledgeEvidenceRef)
-
-	if len(ret) == 0 {
-		panic("no return value specified for IngestEntityEvidence")
-	}
-
-	var r0 *ent.KnowledgeEntity
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (*ent.KnowledgeEntity, error)); ok {
-		return returnFunc(context1, normalizedEvent, knowledgeEvidenceRef)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) *ent.KnowledgeEntity); ok {
-		r0 = returnFunc(context1, normalizedEvent, knowledgeEvidenceRef)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.KnowledgeEntity)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) error); ok {
-		r1 = returnFunc(context1, normalizedEvent, knowledgeEvidenceRef)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockKnowledgeGraphService_IngestEntityEvidence_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IngestEntityEvidence'
-type MockKnowledgeGraphService_IngestEntityEvidence_Call struct {
-	*mock.Call
-}
-
-// IngestEntityEvidence is a helper method to define mock.On call
-//   - context1 context.Context
-//   - normalizedEvent *ent.NormalizedEvent
-//   - knowledgeEvidenceRef ent.KnowledgeEvidenceRef
-func (_e *MockKnowledgeGraphService_Expecter) IngestEntityEvidence(context1 interface{}, normalizedEvent interface{}, knowledgeEvidenceRef interface{}) *MockKnowledgeGraphService_IngestEntityEvidence_Call {
-	return &MockKnowledgeGraphService_IngestEntityEvidence_Call{Call: _e.mock.On("IngestEntityEvidence", context1, normalizedEvent, knowledgeEvidenceRef)}
-}
-
-func (_c *MockKnowledgeGraphService_IngestEntityEvidence_Call) Run(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRef ent.KnowledgeEvidenceRef)) *MockKnowledgeGraphService_IngestEntityEvidence_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 *ent.NormalizedEvent
-		if args[1] != nil {
-			arg1 = args[1].(*ent.NormalizedEvent)
-		}
-		var arg2 ent.KnowledgeEvidenceRef
-		if args[2] != nil {
-			arg2 = args[2].(ent.KnowledgeEvidenceRef)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockKnowledgeGraphService_IngestEntityEvidence_Call) Return(knowledgeEntity *ent.KnowledgeEntity, err error) *MockKnowledgeGraphService_IngestEntityEvidence_Call {
-	_c.Call.Return(knowledgeEntity, err)
-	return _c
-}
-
-func (_c *MockKnowledgeGraphService_IngestEntityEvidence_Call) RunAndReturn(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRef ent.KnowledgeEvidenceRef) (*ent.KnowledgeEntity, error)) *MockKnowledgeGraphService_IngestEntityEvidence_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// IngestEvidenceBulk provides a mock function for the type MockKnowledgeGraphService
-func (_mock *MockKnowledgeGraphService) IngestEvidenceBulk(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...ent.KnowledgeEvidenceRef) (ent.KnowledgeSubjectAliasSlice, error) {
+// IngestEvidence provides a mock function for the type MockKnowledgeGraphService
+func (_mock *MockKnowledgeGraphService) IngestEvidence(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...ent.KnowledgeEvidenceRef) error {
 	// ent.KnowledgeEvidenceRef
 	_va := make([]interface{}, len(knowledgeEvidenceRefs))
 	for _i := range knowledgeEvidenceRefs {
@@ -892,44 +818,33 @@ func (_mock *MockKnowledgeGraphService) IngestEvidenceBulk(context1 context.Cont
 	ret := _mock.Called(_ca...)
 
 	if len(ret) == 0 {
-		panic("no return value specified for IngestEvidenceBulk")
+		panic("no return value specified for IngestEvidence")
 	}
 
-	var r0 ent.KnowledgeSubjectAliasSlice
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) (ent.KnowledgeSubjectAliasSlice, error)); ok {
-		return returnFunc(context1, normalizedEvent, knowledgeEvidenceRefs...)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) ent.KnowledgeSubjectAliasSlice); ok {
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) error); ok {
 		r0 = returnFunc(context1, normalizedEvent, knowledgeEvidenceRefs...)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(ent.KnowledgeSubjectAliasSlice)
-		}
+		r0 = ret.Error(0)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) error); ok {
-		r1 = returnFunc(context1, normalizedEvent, knowledgeEvidenceRefs...)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
+	return r0
 }
 
-// MockKnowledgeGraphService_IngestEvidenceBulk_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IngestEvidenceBulk'
-type MockKnowledgeGraphService_IngestEvidenceBulk_Call struct {
+// MockKnowledgeGraphService_IngestEvidence_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IngestEvidence'
+type MockKnowledgeGraphService_IngestEvidence_Call struct {
 	*mock.Call
 }
 
-// IngestEvidenceBulk is a helper method to define mock.On call
+// IngestEvidence is a helper method to define mock.On call
 //   - context1 context.Context
 //   - normalizedEvent *ent.NormalizedEvent
 //   - knowledgeEvidenceRefs ...ent.KnowledgeEvidenceRef
-func (_e *MockKnowledgeGraphService_Expecter) IngestEvidenceBulk(context1 interface{}, normalizedEvent interface{}, knowledgeEvidenceRefs ...interface{}) *MockKnowledgeGraphService_IngestEvidenceBulk_Call {
-	return &MockKnowledgeGraphService_IngestEvidenceBulk_Call{Call: _e.mock.On("IngestEvidenceBulk",
+func (_e *MockKnowledgeGraphService_Expecter) IngestEvidence(context1 interface{}, normalizedEvent interface{}, knowledgeEvidenceRefs ...interface{}) *MockKnowledgeGraphService_IngestEvidence_Call {
+	return &MockKnowledgeGraphService_IngestEvidence_Call{Call: _e.mock.On("IngestEvidence",
 		append([]interface{}{context1, normalizedEvent}, knowledgeEvidenceRefs...)...)}
 }
 
-func (_c *MockKnowledgeGraphService_IngestEvidenceBulk_Call) Run(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...ent.KnowledgeEvidenceRef)) *MockKnowledgeGraphService_IngestEvidenceBulk_Call {
+func (_c *MockKnowledgeGraphService_IngestEvidence_Call) Run(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...ent.KnowledgeEvidenceRef)) *MockKnowledgeGraphService_IngestEvidence_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -956,12 +871,86 @@ func (_c *MockKnowledgeGraphService_IngestEvidenceBulk_Call) Run(run func(contex
 	return _c
 }
 
-func (_c *MockKnowledgeGraphService_IngestEvidenceBulk_Call) Return(knowledgeSubjectAliasSlice ent.KnowledgeSubjectAliasSlice, err error) *MockKnowledgeGraphService_IngestEvidenceBulk_Call {
-	_c.Call.Return(knowledgeSubjectAliasSlice, err)
+func (_c *MockKnowledgeGraphService_IngestEvidence_Call) Return(err error) *MockKnowledgeGraphService_IngestEvidence_Call {
+	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockKnowledgeGraphService_IngestEvidenceBulk_Call) RunAndReturn(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...ent.KnowledgeEvidenceRef) (ent.KnowledgeSubjectAliasSlice, error)) *MockKnowledgeGraphService_IngestEvidenceBulk_Call {
+func (_c *MockKnowledgeGraphService_IngestEvidence_Call) RunAndReturn(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...ent.KnowledgeEvidenceRef) error) *MockKnowledgeGraphService_IngestEvidence_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// IngestSubjectEvidence provides a mock function for the type MockKnowledgeGraphService
+func (_mock *MockKnowledgeGraphService) IngestSubjectEvidence(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRef ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error) {
+	ret := _mock.Called(context1, normalizedEvent, knowledgeEvidenceRef)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IngestSubjectEvidence")
+	}
+
+	var r0 *ent.KnowledgeSubjectAlias
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error)); ok {
+		return returnFunc(context1, normalizedEvent, knowledgeEvidenceRef)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) *ent.KnowledgeSubjectAlias); ok {
+		r0 = returnFunc(context1, normalizedEvent, knowledgeEvidenceRef)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.KnowledgeSubjectAlias)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) error); ok {
+		r1 = returnFunc(context1, normalizedEvent, knowledgeEvidenceRef)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockKnowledgeGraphService_IngestSubjectEvidence_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IngestSubjectEvidence'
+type MockKnowledgeGraphService_IngestSubjectEvidence_Call struct {
+	*mock.Call
+}
+
+// IngestSubjectEvidence is a helper method to define mock.On call
+//   - context1 context.Context
+//   - normalizedEvent *ent.NormalizedEvent
+//   - knowledgeEvidenceRef ent.KnowledgeEvidenceRef
+func (_e *MockKnowledgeGraphService_Expecter) IngestSubjectEvidence(context1 interface{}, normalizedEvent interface{}, knowledgeEvidenceRef interface{}) *MockKnowledgeGraphService_IngestSubjectEvidence_Call {
+	return &MockKnowledgeGraphService_IngestSubjectEvidence_Call{Call: _e.mock.On("IngestSubjectEvidence", context1, normalizedEvent, knowledgeEvidenceRef)}
+}
+
+func (_c *MockKnowledgeGraphService_IngestSubjectEvidence_Call) Run(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRef ent.KnowledgeEvidenceRef)) *MockKnowledgeGraphService_IngestSubjectEvidence_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *ent.NormalizedEvent
+		if args[1] != nil {
+			arg1 = args[1].(*ent.NormalizedEvent)
+		}
+		var arg2 ent.KnowledgeEvidenceRef
+		if args[2] != nil {
+			arg2 = args[2].(ent.KnowledgeEvidenceRef)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockKnowledgeGraphService_IngestSubjectEvidence_Call) Return(knowledgeSubjectAlias *ent.KnowledgeSubjectAlias, err error) *MockKnowledgeGraphService_IngestSubjectEvidence_Call {
+	_c.Call.Return(knowledgeSubjectAlias, err)
+	return _c
+}
+
+func (_c *MockKnowledgeGraphService_IngestSubjectEvidence_Call) RunAndReturn(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRef ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error)) *MockKnowledgeGraphService_IngestSubjectEvidence_Call {
 	_c.Call.Return(run)
 	return _c
 }

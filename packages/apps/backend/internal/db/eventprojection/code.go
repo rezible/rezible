@@ -33,13 +33,13 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 			Properties:  properties,
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:    kne.KindCode,
-			Subkind: knowledgeEntitySubkindRepository,
-			Alias:   event.Event.KnowledgeAliasRef(),
+			Kind:            kne.KindCode,
+			Subkind:         knowledgeEntitySubkindRepository,
+			SubjectAliasRef: event.Event.KnowledgeSubjectAliasRef(),
 		},
 	}
 
-	if _, ingestErr := s.knowledge.IngestEntityEvidence(ctx, event.Event, evidence); ingestErr != nil {
+	if ingestErr := s.knowledge.IngestEvidence(ctx, event.Event, evidence); ingestErr != nil {
 		return nil, fmt.Errorf("ingest code repository evidence: %w", ingestErr)
 	}
 	return nil, nil
@@ -51,9 +51,9 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 	evidenceKind := projectionEvidenceKind(event.Event)
 
 	changeRef := ent.KnowledgeEntityRef{
-		Kind:    kne.KindEvent,
-		Subkind: knowledgeEntitySubkindCodeChange,
-		Alias:   event.Event.KnowledgeAliasRef(),
+		Kind:            kne.KindEvent,
+		Subkind:         knowledgeEntitySubkindCodeChange,
+		SubjectAliasRef: event.Event.KnowledgeSubjectAliasRef(),
 	}
 	codeChangeEvidence := ent.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
@@ -65,12 +65,12 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		SubjectEntity: &changeRef,
 	}
 
-	repoAlias := event.Event.KnowledgeAliasRef()
+	repoAlias := event.Event.KnowledgeSubjectAliasRef()
 	repoAlias.ProviderSubjectRef = attributes.RepositoryExternalRef
 	repositoryRef := ent.KnowledgeEntityRef{
-		Kind:    kne.KindCode,
-		Subkind: knowledgeEntitySubkindRepository,
-		Alias:   repoAlias,
+		Kind:            kne.KindCode,
+		Subkind:         knowledgeEntitySubkindRepository,
+		SubjectAliasRef: repoAlias,
 	}
 	repoEntityEvidence := ent.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
@@ -89,7 +89,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		SubjectRelationship: &ent.KnowledgeRelationshipRef{
 			Kind:    knr.KindImpacts,
 			Subkind: knowledgeRelationshipSubkindTouchedRepository,
-			Alias: ent.KnowledgeAliasRef{
+			SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
 				Provider:           event.Event.Provider,
 				ProviderSource:     event.Event.ProviderSource,
 				ProviderSubjectRef: fmt.Sprintf("change:%s:%s", event.Event.ProviderSubjectRef, attributes.RepositoryExternalRef),
@@ -117,7 +117,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 			SubjectRelationship: &ent.KnowledgeRelationshipRef{
 				Kind:    knr.KindImpacts,
 				Subkind: knowledgeRelationshipSubkindCodeChangeImpacted,
-				Alias: ent.KnowledgeAliasRef{
+				SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
 					Provider:           event.Event.Provider,
 					ProviderSource:     event.Event.ProviderSource,
 					ProviderSubjectRef: fmt.Sprintf("impacted:%s:%s", event.Event.ProviderSubjectRef, related.ExternalRef),
@@ -126,7 +126,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 				Target: ent.KnowledgeEntityRef{
 					Kind:    related.Kind,
 					Subkind: related.Subkind,
-					Alias: ent.KnowledgeAliasRef{
+					SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
 						Provider:           event.Event.Provider,
 						ProviderSource:     event.Event.ProviderSource,
 						ProviderSubjectRef: related.ExternalRef,
@@ -136,7 +136,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		})
 	}
 
-	if _, ingestErr := s.knowledge.IngestEvidenceBulk(ctx, event.Event, evidence...); ingestErr != nil {
+	if ingestErr := s.knowledge.IngestEvidence(ctx, event.Event, evidence...); ingestErr != nil {
 		return nil, fmt.Errorf("ingest code change evidence: %w", ingestErr)
 	}
 	return nil, nil

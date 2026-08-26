@@ -11,23 +11,25 @@ import (
 	"github.com/rezible/rezible/pkg/projections"
 )
 
-func (s *ProjectionServiceSuite) createUserProjectionEvent(tdb rez.Database, subjectRef string, attrs projections.UserSubjectAttributes) *ent.NormalizedEvent {
+func (s *ProjectionServiceSuite) createUserProjectionEvent(tdb rez.Database, attrs projections.UserSubjectAttributes) *ent.NormalizedEvent {
 	ctx := s.SeedTenantContext()
-	encoded, err := projections.EncodeAttributes(attrs)
-	s.Require().NoError(err)
+	r := s.Require()
+	encoded, attrsErr := projections.EncodeAttributes(attrs)
+	r.NoError(attrsErr)
 	occurredAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
-	ev, err := tdb.Client(ctx).NormalizedEvent.Create().
+	createEvent := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider("test").
 		SetProviderSource("users").
 		SetProviderEventRef("user-event-" + uuid.NewString()).
-		SetProviderSubjectRef(subjectRef).
+		SetProviderSubjectRef(attrs.ExternalRef).
 		SetKind(ne.KindObserved).
 		SetSubjectKind(projections.SubjectKindUser.String()).
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
-		SetAttributes(encoded).
-		Save(ctx)
-	s.Require().NoError(err)
+		SetAttributes(encoded)
+
+	ev, eventErr := createEvent.Save(ctx)
+	r.NoError(eventErr)
 	return ev
 }
 
@@ -37,87 +39,102 @@ func (s *ProjectionServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntit
 
 	projector := s.projectionService(tdb)
 
-	email := "projected+" + uuid.NewString() + "@example.com"
 	attrs := projections.UserSubjectAttributes{
-		Name:     "Projected User",
-		Email:    email,
-		ChatId:   "U123",
-		Timezone: "Australia/Perth",
+		ExternalRef: "user-1",
+		Name:        "Projected User",
+		Email:       "projected+" + uuid.NewString() + "@example.com",
+		ChatId:      "U123",
+		Timezone:    "Australia/Sydney",
 	}
-	ev := s.createUserProjectionEvent(tdb, "user-1", attrs)
+	ev := s.createUserProjectionEvent(tdb, attrs)
+
+	r := s.Require()
 
 	_, projErr := runProjection(ctx, projector, ev)
-	s.Require().NoError(projErr)
+	r.NoError(projErr)
 
-	created, err := tdb.Client(ctx).User.Query().
-		Where(entuser.Email(email)).
-		Only(ctx)
-	s.Require().NoError(err)
-	s.NotNil(created.KnowledgeEntityID)
-	s.Equal("Projected User", created.Name)
-	s.Equal("U123", created.ChatID)
+	findUser := tdb.Client(ctx).User.Query().
+		Where(entuser.Email(attrs.Email))
+	created, err := findUser.Only(ctx)
+	r.NoError(err)
+	r.NotNil(created.KnowledgeEntityID)
+	r.Equal("Projected User", created.Name)
+	r.Equal("U123", created.ChatID)
 }
 
 func (s *ProjectionServiceSuite) TestUserProjectionReusesExistingEmailUser() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
+
+	r := s.Require()
+
+	userId := uuid.New()
+	email := "existing+" + uuid.NewString() + "@example.com"
+	createUser := tdb.Client(ctx).User.Create().
+		SetID(userId).
+		SetEmail(email).
+		SetName("Existing")
+	r.NoError(createUser.Exec(ctx))
+
 	projector := s.projectionService(tdb)
 
-	email := "existing+" + uuid.NewString() + "@example.com"
-	existing, err := tdb.Client(ctx).User.Create().
-		SetEmail(email).
-		SetName("Existing").
-		Save(ctx)
-	s.Require().NoError(err)
-	ev := s.createUserProjectionEvent(tdb, "user-2", projections.UserSubjectAttributes{
-		Name:  "Existing Updated",
-		Email: email,
-	})
+	attrs := projections.UserSubjectAttributes{
+		ExternalRef: "user-2",
+		Name:        "Existing Updated",
+		Email:       email,
+	}
+	ev := s.createUserProjectionEvent(tdb, attrs)
 
 	_, projErr := runProjection(ctx, projector, ev)
-	s.Require().NoError(projErr)
+	r.NoError(projErr)
 
-	users, err := tdb.Client(ctx).User.Query().
-		Where(entuser.Email(email)).
-		All(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(users, 1)
-	s.Equal(existing.ID, users[0].ID)
-	s.NotNil(users[0].KnowledgeEntityID)
-	s.Equal("Existing Updated", users[0].Name)
+	queryUser := tdb.Client(ctx).User.Query().
+		Where(entuser.Email(email))
+	emailUser, lookupUserErr := queryUser.Only(ctx)
+	r.NoError(lookupUserErr)
+	r.Equal(userId, emailUser.ID)
+	r.NotNil(emailUser.KnowledgeEntityID)
+	r.Equal("Existing Updated", emailUser.Name)
 }
 
 func (s *ProjectionServiceSuite) TestUserProjectionFailsWhenKnowledgeLinkConflictsWithEmailOwner() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
+
+	r := s.Require()
+
+	userRef := "user-3"
+	firstAttrs := projections.UserSubjectAttributes{
+		ExternalRef: userRef,
+		Name:        "Linked User",
+		Email:       "linked+" + uuid.NewString() + "@example.com",
+	}
+	first := s.createUserProjectionEvent(tdb, firstAttrs)
+
 	projector := s.projectionService(tdb)
 
-	firstEmail := "linked+" + uuid.NewString() + "@example.com"
-	first := s.createUserProjectionEvent(tdb, "user-3", projections.UserSubjectAttributes{
-		Name:  "Linked User",
-		Email: firstEmail,
-	})
-
 	_, projErr := runProjection(ctx, projector, first)
-	s.Require().NoError(projErr)
+	r.NoError(projErr)
 
 	conflictEmail := "conflict+" + uuid.NewString() + "@example.com"
 	createUser := tdb.Client(ctx).User.Create().
 		SetEmail(conflictEmail).
 		SetName("Email Owner")
-	s.Require().NoError(createUser.Exec(ctx))
+	r.NoError(createUser.Exec(ctx))
 
-	conflict := s.createUserProjectionEvent(tdb, "user-3", projections.UserSubjectAttributes{
-		Name:  "Linked User",
-		Email: conflictEmail,
-	})
+	secondAttrs := projections.UserSubjectAttributes{
+		ExternalRef: userRef,
+		Name:        "Linked User",
+		Email:       conflictEmail,
+	}
+	second := s.createUserProjectionEvent(tdb, secondAttrs)
 	evidenceBefore, queryEvidenceErr := tdb.Client(ctx).KnowledgeEvidence.Query().Count(ctx)
-	s.Require().NoError(queryEvidenceErr)
+	r.NoError(queryEvidenceErr)
 
-	_, projConfErr := runProjection(ctx, projector, conflict)
-	s.Require().Error(projConfErr)
+	_, projConfErr := runProjection(ctx, projector, second)
+	r.Error(projConfErr)
 
 	evidenceAfter, queryEvidenceAfterErr := tdb.Client(ctx).KnowledgeEvidence.Query().Count(ctx)
-	s.Require().NoError(queryEvidenceAfterErr)
-	s.Equal(evidenceBefore, evidenceAfter)
+	r.NoError(queryEvidenceAfterErr)
+	r.Equal(evidenceBefore, evidenceAfter)
 }

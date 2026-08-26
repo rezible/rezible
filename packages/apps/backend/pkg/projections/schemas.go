@@ -58,10 +58,11 @@ type (
 
 	// UserSubjectAttributes are the provider-neutral attributes persisted for user observations.
 	UserSubjectAttributes struct {
-		Name     string `json:"name" validate:"required"`
-		Email    string `json:"email" validate:"required"`
-		ChatId   string `json:"chat_id"`
-		Timezone string `json:"timezone"`
+		ExternalRef string `json:"external_ref" validate:"required"`
+		Name        string `json:"name" validate:"required"`
+		Email       string `json:"email" validate:"required"`
+		ChatId      string `json:"chat_id"`
+		Timezone    string `json:"timezone"`
 	}
 )
 
@@ -93,10 +94,9 @@ type (
 	TeamMembershipEvent = Event[TeamMembershipSubjectAttributes]
 
 	TeamMembershipSubjectAttributes struct {
-		Team            TeamSubjectAttributes `json:"team" validate:"required"`
-		User            UserSubjectAttributes `json:"user" validate:"required"`
-		UserExternalRef string                `json:"user_external_ref" validate:"required"`
-		Role            string                `json:"role" validate:"oneof=admin member"`
+		Team TeamSubjectAttributes `json:"team" validate:"required"`
+		User UserSubjectAttributes `json:"user" validate:"required"`
+		Role string                `json:"role" validate:"oneof=admin member"`
 	}
 )
 

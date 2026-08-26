@@ -58,21 +58,21 @@ func (ie IncidentEdges) GetPrimaryVideoConference() *VideoConference {
 	return VideoConferences(conferences).GetPrimary()
 }
 
-func (ev *NormalizedEvent) KnowledgeAliasRef() KnowledgeAliasRef {
-	return KnowledgeAliasRef{
+func (ev *NormalizedEvent) KnowledgeSubjectAliasRef() KnowledgeSubjectAliasRef {
+	return KnowledgeSubjectAliasRef{
 		Provider:           ev.Provider,
 		ProviderSource:     ev.ProviderSource,
 		ProviderSubjectRef: ev.ProviderSubjectRef,
 	}
 }
 
-type KnowledgeAliasRef struct {
+type KnowledgeSubjectAliasRef struct {
 	Provider           string
 	ProviderSource     string
 	ProviderSubjectRef string
 }
 
-func (a KnowledgeAliasRef) SubjectPredicate(kind ksa.SubjectKind) predicate.KnowledgeSubjectAlias {
+func (a KnowledgeSubjectAliasRef) SubjectPredicate(kind ksa.SubjectKind) predicate.KnowledgeSubjectAlias {
 	return ksa.And(
 		ksa.SubjectKindEQ(kind),
 		ksa.Provider(a.Provider),
@@ -80,23 +80,23 @@ func (a KnowledgeAliasRef) SubjectPredicate(kind ksa.SubjectKind) predicate.Know
 		ksa.ProviderSubjectRef(a.ProviderSubjectRef))
 }
 
-func (a KnowledgeAliasRef) LockKey(kind ksa.SubjectKind) string {
+func (a KnowledgeSubjectAliasRef) LockKey(kind ksa.SubjectKind) string {
 	return fmt.Sprintf("%s:%s:%s:%s", kind, a.Provider, a.ProviderSource, a.ProviderSubjectRef)
 }
 
 type (
 	KnowledgeEntityRef struct {
-		Kind    kne.Kind
-		Subkind string
-		Alias   KnowledgeAliasRef
+		Kind            kne.Kind
+		Subkind         string
+		SubjectAliasRef KnowledgeSubjectAliasRef
 	}
 
 	KnowledgeRelationshipRef struct {
-		Kind    knr.Kind
-		Subkind string
-		Alias   KnowledgeAliasRef
-		Source  KnowledgeEntityRef
-		Target  KnowledgeEntityRef
+		Kind            knr.Kind
+		Subkind         string
+		SubjectAliasRef KnowledgeSubjectAliasRef
+		Source          KnowledgeEntityRef
+		Target          KnowledgeEntityRef
 	}
 
 	KnowledgeEvidenceRef struct {

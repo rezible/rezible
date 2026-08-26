@@ -5,23 +5,20 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	entschema "github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
-	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 const (
-	knowledgeAssertionTeamObserved = "team_profile_observed"
-	knowledgeAssertionMembership   = "team_membership_observed"
+	knowledgeAssertionTeamObserved           = "team_profile_observed"
+	knowledgeAssertionTeamMembershipObserved = "team_membership_observed"
 )
 
 func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.TeamEvent) ([]rez.ProjectedEntityRef, error) {
@@ -38,199 +35,188 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 			},
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:    kne.KindActor,
-			Subkind: knowledgeEntitySubkindTeam,
-			Alias:   e.Event.KnowledgeAliasRef(),
+			Kind:            kne.KindActor,
+			Subkind:         knowledgeEntitySubkindTeam,
+			SubjectAliasRef: e.Event.KnowledgeSubjectAliasRef(),
 		},
 	}
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		entity, ingestErr := s.knowledge.IngestEntityEvidence(ctx, e.Event, evidence)
+		subj, ingestErr := s.knowledge.IngestSubjectEvidence(ctx, e.Event, evidence)
 		if ingestErr != nil {
-			return fmt.Errorf("ingest team evidence: %w", ingestErr)
+			return fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
+		} else if subj.EntityID == nil {
+			return fmt.Errorf("nil subject entity")
 		}
 
-		lookupTeam := tx.Team.Query().
-			Where(team.Or(team.KnowledgeEntityID(entity.ID), team.Slug(attrs.Slug)))
-		existing, queryErr := lookupTeam.Only(entschema.IncludeArchived(ctx))
-		if queryErr != nil && !ent.IsNotFound(queryErr) {
-			return fmt.Errorf("query team: %w", queryErr)
+		teamId, saveTeamErr := s.setTeamFromProjection(ctx, *subj.EntityID, attrs)
+		if saveTeamErr != nil {
+			return fmt.Errorf("create team from projection: %w", saveTeamErr)
 		}
 
-		if e.Event.Kind == ne.KindDeleted {
-			if existing != nil {
-				if deleteErr := tx.Team.DeleteOne(existing).Exec(ctx); deleteErr != nil {
-					return fmt.Errorf("archive team: %w", deleteErr)
-				}
-			}
-			return nil
-		}
-
-		var upsert ent.EntityMutator[*ent.Team, *ent.TeamMutation]
-		if existing == nil {
-			upsert = tx.Team.Create()
-		} else {
-			upsert = existing.Update().ClearArchiveTime()
-		}
-		m := upsert.Mutation()
-		m.SetKnowledgeEntityID(entity.ID)
-		m.SetSlug(attrs.Slug)
-		m.SetName(attrs.Name)
-		m.SetChatChannelID(attrs.ChatChannelId)
-
-		saved, saveErr := upsert.Save(ctx)
-		if saveErr != nil {
-			return fmt.Errorf("save team: %w", saveErr)
-		}
-		projected = append(projected, rez.ProjectedEntityRef{Kind: knowledgeEntitySubkindTeam, Id: saved.ID})
+		projected = append(projected, rez.ProjectedEntityRef{
+			Kind: knowledgeEntitySubkindTeam,
+			Id:   teamId,
+		})
 		return nil
 	})
 }
 
-func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, event *projections.TeamMembershipEvent) ([]rez.ProjectedEntityRef, error) {
-	attributes := event.Attributes
-	userAlias := ent.KnowledgeAliasRef{
-		Provider:           event.Event.Provider,
-		ProviderSource:     "users",
-		ProviderSubjectRef: attributes.UserExternalRef,
+func (s *ProjectionService) setTeamFromProjection(ctx context.Context, knowledgeEntityId uuid.UUID, attrs projections.TeamSubjectAttributes) (uuid.UUID, error) {
+	client := s.db.Client(ctx)
+	lookupTeam := client.Team.Query().
+		Where(team.Or(team.KnowledgeEntityID(knowledgeEntityId), team.Slug(attrs.Slug)))
+	existing, queryErr := lookupTeam.Only(entschema.IncludeArchived(ctx))
+	if queryErr != nil && !ent.IsNotFound(queryErr) {
+		return uuid.Nil, fmt.Errorf("query team: %w", queryErr)
 	}
-	teamAlias := ent.KnowledgeAliasRef{
-		Provider:           event.Event.Provider,
-		ProviderSource:     "teams",
-		ProviderSubjectRef: attributes.Team.ExternalRef,
+
+	var upsert ent.EntityMutator[*ent.Team, *ent.TeamMutation]
+	if existing == nil {
+		upsert = client.Team.Create()
+	} else {
+		upsert = existing.Update().ClearArchiveTime()
 	}
-	kind := projectionEvidenceKind(event.Event)
-	refs := []ent.KnowledgeEvidenceRef{
-		{
-			Kind:        kind,
-			Assertion:   knowledgeAssertionUserProfileObserved,
-			EffectiveAt: event.Event.OccurredAt,
-			SubjectState: schematypes.KnowledgeGraphSubjectState{
-				DisplayName: attributes.User.Name,
-			},
-			SubjectEntity: &ent.KnowledgeEntityRef{Kind: kne.KindActor, Subkind: knowledgeEntitySubkindUser, Alias: userAlias},
+	m := upsert.Mutation()
+	m.SetKnowledgeEntityID(knowledgeEntityId)
+	m.SetSlug(attrs.Slug)
+	m.SetName(attrs.Name)
+	m.SetChatChannelID(attrs.ChatChannelId)
+
+	saved, saveErr := upsert.Save(ctx)
+	if saveErr != nil {
+		return uuid.Nil, fmt.Errorf("save team: %w", saveErr)
+	}
+	return saved.ID, nil
+}
+
+func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *projections.TeamMembershipEvent) ([]rez.ProjectedEntityRef, error) {
+	attrs := e.Attributes
+	event := e.Event
+
+	kind := projectionEvidenceKind(event)
+
+	userEntity := ent.KnowledgeEntityRef{
+		Kind:    kne.KindActor,
+		Subkind: knowledgeEntitySubkindUser,
+		SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
+			Provider:           event.Provider,
+			ProviderSource:     "users",
+			ProviderSubjectRef: attrs.User.ExternalRef,
 		},
-		{
-			Kind:        kind,
-			Assertion:   knowledgeAssertionTeamObserved,
-			EffectiveAt: event.Event.OccurredAt,
-			SubjectState: schematypes.KnowledgeGraphSubjectState{
-				DisplayName: attributes.Team.Name,
-			},
-			SubjectEntity: &ent.KnowledgeEntityRef{Kind: kne.KindActor, Subkind: knowledgeEntitySubkindTeam, Alias: teamAlias},
+	}
+
+	teamEntity := ent.KnowledgeEntityRef{
+		Kind:    kne.KindActor,
+		Subkind: knowledgeEntitySubkindTeam,
+		SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
+			Provider:           event.Provider,
+			ProviderSource:     "teams",
+			ProviderSubjectRef: attrs.Team.ExternalRef,
 		},
-		{
-			Kind:        kind,
-			Assertion:   knowledgeAssertionMembership,
-			EffectiveAt: event.Event.OccurredAt,
-			SubjectState: schematypes.KnowledgeGraphSubjectState{
-				DisplayName: "Member of " + attributes.Team.Name,
-				Properties:  map[string]any{"role": attributes.Role},
-			},
-			SubjectRelationship: &ent.KnowledgeRelationshipRef{
-				Kind:    knr.KindParticipatesIn,
-				Subkind: knowledgeRelationshipSubkindMemberOf,
-				Alias:   event.Event.KnowledgeAliasRef(),
-				Source:  ent.KnowledgeEntityRef{Kind: kne.KindActor, Subkind: knowledgeEntitySubkindUser, Alias: userAlias},
-				Target:  ent.KnowledgeEntityRef{Kind: kne.KindActor, Subkind: knowledgeEntitySubkindTeam, Alias: teamAlias},
-			},
+	}
+
+	membershipRelationship := ent.KnowledgeRelationshipRef{
+		Kind:            knr.KindParticipatesIn,
+		SubjectAliasRef: event.KnowledgeSubjectAliasRef(),
+		Source:          userEntity,
+		Subkind:         knowledgeRelationshipSubkindMemberOf,
+		Target:          teamEntity,
+	}
+	membershipEvidenceRef := ent.KnowledgeEvidenceRef{
+		Kind:        kind,
+		Assertion:   knowledgeAssertionTeamMembershipObserved,
+		EffectiveAt: event.OccurredAt,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
+			DisplayName: "Member of " + attrs.Team.Name,
+			Properties:  map[string]any{"role": attrs.Role},
 		},
+		SubjectRelationship: &membershipRelationship,
 	}
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		aliases, ingestErr := s.knowledge.IngestEvidenceBulk(ctx, event.Event, refs...)
+		subj, ingestErr := s.knowledge.IngestSubjectEvidence(ctx, event, membershipEvidenceRef)
 		if ingestErr != nil {
-			return fmt.Errorf("ingest membership evidence: %w", ingestErr)
-		}
-		if len(aliases) != 3 || aliases[0].EntityID == nil || aliases[1].EntityID == nil {
-			return fmt.Errorf("membership evidence did not resolve its entities")
-		}
-
-		usr, userErr := tx.User.Query().
-			Where(user.Or(user.KnowledgeEntityID(*aliases[0].EntityID), user.Email(attributes.User.Email))).
-			Only(ctx)
-		if userErr != nil && !ent.IsNotFound(userErr) {
-			return fmt.Errorf("query membership user: %w", userErr)
-		}
-		userID := uuid.Nil
-		if usr == nil {
-			usr, userErr = tx.User.Create().
-				SetKnowledgeEntityID(*aliases[0].EntityID).
-				SetName(attributes.User.Name).
-				SetEmail(attributes.User.Email).
-				SetChatID(attributes.User.ChatId).
-				SetTimezone(attributes.User.Timezone).
-				Save(ctx)
-		} else {
-			usr, userErr = usr.Update().
-				SetKnowledgeEntityID(*aliases[0].EntityID).
-				SetName(attributes.User.Name).
-				SetEmail(attributes.User.Email).
-				SetChatID(attributes.User.ChatId).
-				SetTimezone(attributes.User.Timezone).
-				Save(ctx)
-		}
-		if userErr != nil {
-			return fmt.Errorf("save membership user: %w", userErr)
-		}
-		userID = usr.ID
-
-		teamRecord, teamErr := tx.Team.Query().
-			Where(team.Or(team.KnowledgeEntityID(*aliases[1].EntityID), team.Slug(attributes.Team.Slug))).
-			Only(entschema.IncludeArchived(ctx))
-		if teamErr != nil && !ent.IsNotFound(teamErr) {
-			return fmt.Errorf("query membership team: %w", teamErr)
-		}
-		if teamRecord == nil {
-			teamRecord, teamErr = tx.Team.Create().
-				SetKnowledgeEntityID(*aliases[1].EntityID).
-				SetSlug(attributes.Team.Slug).
-				SetName(attributes.Team.Name).
-				SetChatChannelID(attributes.Team.ChatChannelId).
-				Save(ctx)
-		} else {
-			teamRecord, teamErr = teamRecord.Update().
-				SetKnowledgeEntityID(*aliases[1].EntityID).
-				SetSlug(attributes.Team.Slug).
-				SetName(attributes.Team.Name).
-				SetChatChannelID(attributes.Team.ChatChannelId).
-				ClearArchiveTime().
-				Save(ctx)
-		}
-		if teamErr != nil {
-			return fmt.Errorf("save membership team: %w", teamErr)
+			return fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
+		} else if subj.RelationshipID == nil {
+			return fmt.Errorf("nil subject relationship")
 		}
 
-		membership, membershipErr := tx.TeamMembership.Query().
-			Where(teammembership.TeamID(teamRecord.ID), teammembership.UserID(userID)).
-			Only(ctx)
-		if membershipErr != nil && !ent.IsNotFound(membershipErr) {
-			return fmt.Errorf("query membership: %w", membershipErr)
-		}
-		if event.Event.Kind == ne.KindDeleted {
-			if membership != nil {
-				if deleteErr := tx.TeamMembership.DeleteOne(membership).Exec(ctx); deleteErr != nil {
-					return fmt.Errorf("delete membership: %w", deleteErr)
-				}
-			}
-			return nil
-		}
-		role := teammembership.Role(attributes.Role)
-		if membership == nil {
-			membership, membershipErr = tx.TeamMembership.Create().
-				SetTeamID(teamRecord.ID).
-				SetUserID(userID).
-				SetRole(role).
-				Save(ctx)
-		} else {
-			membership, membershipErr = membership.Update().SetRole(role).Save(ctx)
-		}
+		membershipId, membershipErr := s.setTeamMembershipFromProjection(ctx, *subj.RelationshipID, attrs)
 		if membershipErr != nil {
-			return fmt.Errorf("save membership: %w", membershipErr)
+			return fmt.Errorf("set membership: %w", membershipErr)
 		}
-		projected = append(projected, rez.ProjectedEntityRef{Kind: "team_membership", Id: membership.ID})
+
+		projected = append(projected, rez.ProjectedEntityRef{
+			Kind: "team_membership",
+			Id:   membershipId,
+		})
 		return nil
 	})
+}
+
+func (s *ProjectionService) setTeamMembershipFromProjection(ctx context.Context, relId uuid.UUID, attrs projections.TeamMembershipSubjectAttributes) (uuid.UUID, error) {
+	rel, relErr := s.knowledge.GetRelationship(ctx, relId)
+	if relErr != nil {
+		return uuid.Nil, fmt.Errorf("get knowledge relationship: %w", relErr)
+	}
+
+	userEntityId := rel.SourceEntityID
+	teamEntityId := rel.TargetEntityID
+	if rel.Edges.TargetEntity != nil && rel.Edges.TargetEntity.Subkind == knowledgeEntitySubkindUser {
+		userEntityId = rel.TargetEntityID
+		teamEntityId = rel.SourceEntityID
+	}
+
+	userId, userErr := s.setUserFromProjection(ctx, userEntityId, attrs.User)
+	if userErr != nil {
+		return uuid.Nil, fmt.Errorf("save membership user: %w", userErr)
+	}
+
+	teamId, teamErr := s.setTeamFromProjection(ctx, teamEntityId, attrs.Team)
+	if teamErr != nil {
+		return uuid.Nil, fmt.Errorf("save membership team: %w", teamErr)
+	}
+
+	role := teammembership.Role(attrs.Role)
+
+	client := s.db.Client(ctx)
+	lookupExisting := client.TeamMembership.Query().
+		Where(teammembership.TeamID(teamId), teammembership.UserID(userId))
+	existing, queryErr := lookupExisting.Only(entschema.IncludeArchived(ctx))
+	if queryErr != nil && !ent.IsNotFound(queryErr) {
+		return uuid.Nil, fmt.Errorf("query existing: %w", queryErr)
+	}
+
+	var upsert ent.EntityMutator[*ent.TeamMembership, *ent.TeamMembershipMutation]
+	if existing == nil {
+		upsert = client.TeamMembership.Create()
+	} else {
+		if existing.Role == role {
+			return existing.ID, nil
+		}
+		upsert = existing.Update()
+	}
+
+	//if e.Event.Kind == ne.KindDeleted {
+	//	if membership != nil {
+	//		if deleteErr := tx.TeamMembership.DeleteOne(membership).Exec(ctx); deleteErr != nil {
+	//			return uuid.Nil, fmt.Errorf("delete membership: %w", deleteErr)
+	//		}
+	//	}
+	//	return nil
+	//}
+
+	m := upsert.Mutation()
+	m.SetTeamID(teamId)
+	m.SetUserID(userId)
+	m.SetRole(role)
+
+	saved, saveErr := upsert.Save(ctx)
+	if saveErr != nil {
+		return uuid.Nil, fmt.Errorf("save team: %w", saveErr)
+	}
+	return saved.ID, nil
 }

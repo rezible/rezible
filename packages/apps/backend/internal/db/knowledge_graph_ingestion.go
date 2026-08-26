@@ -3,9 +3,10 @@ package db
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
@@ -13,35 +14,39 @@ import (
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 )
 
-var (
-	knowledgeRelationshipUniqueColumns = sql.ConflictColumns(knr.FieldTenantID, knr.FieldKind, knr.FieldSubkind, knr.FieldSourceEntityID, knr.FieldTargetEntityID)
-	knowledgeSubjectAliasUniqueColumns = sql.ConflictColumns(ksa.FieldTenantID, ksa.FieldSubjectKind, ksa.FieldProvider, ksa.FieldProviderSource, ksa.FieldProviderSubjectRef)
-	knowledgeEvidenceUniqueColumns     = sql.ConflictColumns(ke.FieldTenantID, ke.FieldEventID, ke.FieldSubjectAliasID)
-)
-
-func (s *KnowledgeGraphService) createSubjectAlias(ctx context.Context, ref ent.KnowledgeAliasRef) *ent.KnowledgeSubjectAliasCreate {
-	return s.db.Client(ctx).KnowledgeSubjectAlias.Create().
-		SetProvider(ref.Provider).
-		SetProviderSource(ref.ProviderSource).
-		SetProviderSubjectRef(ref.ProviderSubjectRef)
+type resolvedSubjectAlias struct {
+	aliasId   uuid.UUID
+	subjectId uuid.UUID
 }
 
-func (s *KnowledgeGraphService) setEntityFromRef(ctx context.Context, ref ent.KnowledgeEntityRef) (*ent.KnowledgeSubjectAlias, error) {
+func (s *KnowledgeGraphService) lookupExistingEntityByRef(ctx context.Context, ref ent.KnowledgeEntityRef) (*resolvedSubjectAlias, error) {
 	queryAlias := s.db.Client(ctx).KnowledgeSubjectAlias.Query().
-		Where(ref.Alias.SubjectPredicate(ksa.SubjectKindEntity)).
+		Where(ref.SubjectAliasRef.SubjectPredicate(ksa.SubjectKindEntity)).
 		WithEntity()
 	alias, queryErr := queryAlias.Only(ctx)
 	if queryErr != nil && !ent.IsNotFound(queryErr) {
 		return nil, fmt.Errorf("query entity alias: %w", queryErr)
-	} else if alias != nil {
-		entity, entityErr := alias.Edges.EntityOrErr()
-		if entityErr != nil {
-			return nil, fmt.Errorf("load alias entity: %w", entityErr)
-		}
-		if entity.Kind != ref.Kind || entity.Subkind != ref.Subkind {
-			return nil, fmt.Errorf("%w: alias identifies %q/%q, evidence expects %q/%q", rez.ErrConflict, entity.Kind, entity.Subkind, ref.Kind, ref.Subkind)
-		}
-		return alias, nil
+	}
+	if alias == nil {
+		return nil, nil
+	}
+	entity, entityErr := alias.Edges.EntityOrErr()
+	if entityErr != nil || entity == nil {
+		return nil, fmt.Errorf("load alias entity: %w", entityErr)
+	} else if entity.Kind != ref.Kind || entity.Subkind != ref.Subkind {
+		return nil, fmt.Errorf("%w: alias identifies %q/%q, evidence expects %q/%q", rez.ErrConflict, entity.Kind, entity.Subkind, ref.Kind, ref.Subkind)
+	}
+	return &resolvedSubjectAlias{aliasId: alias.ID, subjectId: entity.ID}, nil
+}
+
+var knowledgeEntityAliasUniqueColumns = sql.ConflictColumns(ksa.FieldTenantID, ksa.FieldSubjectKind, ksa.FieldProvider, ksa.FieldProviderSource, ksa.FieldProviderSubjectRef)
+
+func (s *KnowledgeGraphService) resolveEntityFromRef(ctx context.Context, ref ent.KnowledgeEntityRef) (*resolvedSubjectAlias, error) {
+	existing, existingErr := s.lookupExistingEntityByRef(ctx, ref)
+	if existingErr != nil {
+		return nil, fmt.Errorf("lookup existing: %w", existingErr)
+	} else if existing != nil {
+		return existing, nil
 	}
 
 	createEntity := s.db.Client(ctx).KnowledgeEntity.Create().
@@ -49,162 +54,151 @@ func (s *KnowledgeGraphService) setEntityFromRef(ctx context.Context, ref ent.Kn
 		SetSubkind(ref.Subkind)
 	createdEntity, createEntityErr := createEntity.Save(ctx)
 	if createEntityErr != nil {
-		return nil, fmt.Errorf("create knowledge entity: %w", createEntityErr)
+		return nil, fmt.Errorf("create entity: %w", createEntityErr)
 	}
 
-	createAlias := s.createSubjectAlias(ctx, ref.Alias).
+	createAlias := s.db.Client(ctx).KnowledgeSubjectAlias.Create().
+		SetProvider(ref.SubjectAliasRef.Provider).
+		SetProviderSource(ref.SubjectAliasRef.ProviderSource).
+		SetProviderSubjectRef(ref.SubjectAliasRef.ProviderSubjectRef).
 		SetSubjectKind(ksa.SubjectKindEntity).
-		SetEntityID(createdEntity.ID)
-	createdAlias, createAliasErr := createAlias.Save(ctx)
+		SetEntityID(createdEntity.ID).
+		OnConflict(knowledgeEntityAliasUniqueColumns).
+		Ignore()
+	aliasId, createAliasErr := createAlias.ID(ctx)
 	if createAliasErr != nil {
-		return nil, fmt.Errorf("create entity alias: %w", createAliasErr)
+		return nil, fmt.Errorf("create alias: %w", createAliasErr)
 	}
-	return createdAlias, nil
+	return &resolvedSubjectAlias{aliasId: aliasId, subjectId: createdEntity.ID}, nil
 }
 
-func (s *KnowledgeGraphService) setRelationshipFromRef(ctx context.Context, ref ent.KnowledgeRelationshipRef) (*ent.KnowledgeSubjectAlias, error) {
-	sourceAlias, sourceErr := s.setEntityFromRef(ctx, ref.Source)
-	if sourceErr != nil {
-		return nil, fmt.Errorf("resolve source entity: %w", sourceErr)
-	} else if sourceAlias.EntityID == nil {
-		return nil, fmt.Errorf("nil source alias entity id")
-	}
-	sourceId := *sourceAlias.EntityID
-
-	targetAlias, targetErr := s.setEntityFromRef(ctx, ref.Target)
-	if targetErr != nil {
-		return nil, fmt.Errorf("resolve target entity: %w", targetErr)
-	} else if targetAlias.EntityID == nil {
-		return nil, fmt.Errorf("nil target alias entity id")
-	}
-	targetId := *targetAlias.EntityID
-
-	queryExisting := s.db.Client(ctx).KnowledgeSubjectAlias.Query().
-		Where(ref.Alias.SubjectPredicate(ksa.SubjectKindRelationship)).
+func (s *KnowledgeGraphService) lookupExistingRelationshipByRef(ctx context.Context, ref ent.KnowledgeRelationshipRef) (*resolvedSubjectAlias, error) {
+	queryAlias := s.db.Client(ctx).KnowledgeSubjectAlias.Query().
+		Where(ref.SubjectAliasRef.SubjectPredicate(ksa.SubjectKindRelationship)).
 		WithRelationship()
-	existingAlias, queryExistingErr := queryExisting.Only(ctx)
+	existingAlias, queryExistingErr := queryAlias.Only(ctx)
 	if queryExistingErr != nil && !ent.IsNotFound(queryExistingErr) {
 		return nil, fmt.Errorf("query existing relationship alias: %w", queryExistingErr)
-	} else if existingAlias != nil {
-		rel, edgeErr := existingAlias.Edges.RelationshipOrErr()
-		if edgeErr != nil {
-			return nil, fmt.Errorf("load aliased relationship: %w", edgeErr)
-		}
-		if rel.Kind != ref.Kind || rel.Subkind != ref.Subkind || rel.SourceEntityID != sourceId || rel.TargetEntityID != targetId {
-			return nil, fmt.Errorf("%w: relationship alias identifies different topology", rez.ErrConflict)
-		}
-		return existingAlias, nil
+	}
+	if existingAlias == nil {
+		return nil, nil
+	}
+	rel, edgeErr := existingAlias.Edges.RelationshipOrErr()
+	if edgeErr != nil {
+		return nil, fmt.Errorf("load aliased relationship: %w", edgeErr)
+	}
+	if rel.Kind != ref.Kind || rel.Subkind != ref.Subkind {
+		return nil, fmt.Errorf("%w: relationship alias identifies different topology", rez.ErrConflict)
+	}
+	return &resolvedSubjectAlias{aliasId: existingAlias.ID, subjectId: rel.ID}, nil
+}
+
+var knowledgeRelationshipUniqueColumns = sql.ConflictColumns(knr.FieldTenantID, knr.FieldKind, knr.FieldSubkind, knr.FieldSourceEntityID, knr.FieldTargetEntityID)
+
+func (s *KnowledgeGraphService) resolveRelationshipFromRef(ctx context.Context, ref ent.KnowledgeRelationshipRef) (*resolvedSubjectAlias, error) {
+	source, sourceErr := s.resolveEntityFromRef(ctx, ref.Source)
+	if sourceErr != nil || source == nil {
+		return nil, fmt.Errorf("resolve source: %w", sourceErr)
+	}
+
+	target, targetErr := s.resolveEntityFromRef(ctx, ref.Target)
+	if targetErr != nil || target == nil {
+		return nil, fmt.Errorf("resolve target: %w", targetErr)
+	}
+
+	existing, lookupExistingErr := s.lookupExistingRelationshipByRef(ctx, ref)
+	if lookupExistingErr != nil {
+		return nil, fmt.Errorf("lookup existing: %w", lookupExistingErr)
+	}
+	if existing != nil {
+		//if existing.SourceEntityID != source.ID || existing.TargetEntityID != target.ID {
+		//	return nil, fmt.Errorf("existing source and target incorrect")
+		//}
+		return existing, nil
 	}
 
 	upsertRel := s.db.Client(ctx).KnowledgeRelationship.Create().
 		SetKind(ref.Kind).
 		SetSubkind(ref.Subkind).
-		SetSourceEntityID(sourceId).
-		SetTargetEntityID(targetId).
+		SetSourceEntityID(source.subjectId).
+		SetTargetEntityID(target.subjectId).
 		OnConflict(knowledgeRelationshipUniqueColumns).
-		SetUpdatedAt(time.Now().UTC())
-	relId, upsertRelErr := upsertRel.ID(ctx)
+		Ignore()
+	relationshipId, upsertRelErr := upsertRel.ID(ctx)
 	if upsertRelErr != nil {
 		return nil, fmt.Errorf("upsert relationship: %w", upsertRelErr)
 	}
-	createAlias := s.createSubjectAlias(ctx, ref.Alias).
+
+	createAlias := s.db.Client(ctx).KnowledgeSubjectAlias.Create().
+		SetProvider(ref.SubjectAliasRef.Provider).
+		SetProviderSource(ref.SubjectAliasRef.ProviderSource).
+		SetProviderSubjectRef(ref.SubjectAliasRef.ProviderSubjectRef).
 		SetSubjectKind(ksa.SubjectKindRelationship).
-		SetRelationshipID(relId)
-	createdAlias, createAliasErr := createAlias.Save(ctx)
+		SetRelationshipID(relationshipId).
+		OnConflict(knowledgeEntityAliasUniqueColumns).
+		Ignore()
+	aliasId, createAliasErr := createAlias.ID(ctx)
 	if createAliasErr != nil {
 		return nil, fmt.Errorf("create alias: %w", createAliasErr)
 	}
-	return createdAlias, nil
+	return &resolvedSubjectAlias{aliasId: aliasId, subjectId: relationshipId}, nil
 }
 
-func (s *KnowledgeGraphService) setEvidenceSubjectAlias(ctx context.Context, ref ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error) {
+func (s *KnowledgeGraphService) resolveEvidenceSubjectAlias(ctx context.Context, ref ent.KnowledgeEvidenceRef) (*resolvedSubjectAlias, error) {
 	switch {
 	case ref.SubjectEntity != nil && ref.SubjectRelationship == nil:
-		return s.setEntityFromRef(ctx, *ref.SubjectEntity)
+		return s.resolveEntityFromRef(ctx, *ref.SubjectEntity)
 	case ref.SubjectRelationship != nil && ref.SubjectEntity == nil:
-		return s.setRelationshipFromRef(ctx, *ref.SubjectRelationship)
+		return s.resolveRelationshipFromRef(ctx, *ref.SubjectRelationship)
 	default:
 		return nil, fmt.Errorf("evidence must contain exactly one entity or relationship")
 	}
 }
 
-func (s *KnowledgeGraphService) getRefTransactionLocks(refs []ent.KnowledgeEvidenceRef) ([]string, error) {
+var knowledgeEvidenceUniqueColumns = sql.ConflictColumns(ke.FieldTenantID, ke.FieldEventID, ke.FieldSubjectAliasID)
+
+func (s *KnowledgeGraphService) makeEvidenceBuilderFromRef(client *ent.Client, eventId uuid.UUID, aliasId uuid.UUID, ref ent.KnowledgeEvidenceRef) *ent.KnowledgeEvidenceCreate {
+	return client.KnowledgeEvidence.Create().
+		SetEventID(eventId).
+		SetSubjectAliasID(aliasId).
+		SetKind(ref.Kind).
+		SetAssertion(ref.Assertion).
+		SetEffectiveAt(ref.EffectiveAt).
+		SetSubjectState(ref.SubjectState)
+}
+
+func (s *KnowledgeGraphService) acquireRefTransactionLocks(ctx context.Context, refs []ent.KnowledgeEvidenceRef) error {
 	locks := make([]string, len(refs))
 	for i, ref := range refs {
 		if ref.SubjectEntity != nil && ref.SubjectRelationship == nil {
-			locks[i] = ref.SubjectEntity.Alias.LockKey(ksa.SubjectKindEntity)
+			locks[i] = ref.SubjectEntity.SubjectAliasRef.LockKey(ksa.SubjectKindEntity)
 		} else if ref.SubjectRelationship != nil && ref.SubjectEntity == nil {
-			locks[i] = ref.SubjectRelationship.Alias.LockKey(ksa.SubjectKindRelationship)
+			locks[i] = ref.SubjectRelationship.SubjectAliasRef.LockKey(ksa.SubjectKindRelationship)
 		} else {
-			return nil, fmt.Errorf("evidence must contain exactly one entity or relationship")
+			return fmt.Errorf("evidence must contain exactly one entity or relationship")
 		}
 	}
-	return locks, nil
-}
-
-func (s *KnowledgeGraphService) IngestEntityEvidence(ctx context.Context, event *ent.NormalizedEvent, ref ent.KnowledgeEvidenceRef) (*ent.KnowledgeEntity, error) {
-	locks, locksErr := s.getRefTransactionLocks([]ent.KnowledgeEvidenceRef{ref})
-	if locksErr != nil {
-		return nil, fmt.Errorf("make transaction locks: %w", locksErr)
+	if lockErr := s.db.AcquireTxLocks(ctx, "knowledge_evidence", locks...); lockErr != nil {
+		return fmt.Errorf("failed to acquire tx locks: %w", lockErr)
 	}
-
-	var entity *ent.KnowledgeEntity
-	return entity, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if lockErr := s.db.AcquireTxLocks(ctx, "knowledge_subject_alias", locks...); lockErr != nil {
-			return fmt.Errorf("failed to acquire tx locks: %w", lockErr)
-		}
-		alias, aliasErr := s.setEvidenceSubjectAlias(ctx, ref)
-		if aliasErr != nil {
-			return fmt.Errorf("set subject alias: %w", aliasErr)
-		}
-		createEvidence := tx.KnowledgeEvidence.Create().
-			SetEventID(event.ID).
-			SetSubjectAliasID(alias.ID).
-			SetKind(ref.Kind).
-			SetAssertion(ref.Assertion).
-			SetEffectiveAt(ref.EffectiveAt).
-			SetSubjectState(ref.SubjectState).
-			OnConflict(knowledgeEvidenceUniqueColumns).
-			Ignore()
-		if createErr := createEvidence.Exec(ctx); createErr != nil {
-			return fmt.Errorf("create knowledge evidence: %w", createErr)
-		}
-		aliasEntity, aliasEntityErr := alias.QueryEntity().Only(ctx)
-		if aliasEntityErr != nil {
-			return fmt.Errorf("load alias entity: %w", aliasEntityErr)
-		}
-		entity = aliasEntity.Unwrap()
-		return nil
-	})
+	return nil
 }
 
-func (s *KnowledgeGraphService) IngestEvidenceBulk(ctx context.Context, event *ent.NormalizedEvent, refs ...ent.KnowledgeEvidenceRef) (ent.KnowledgeSubjectAliasSlice, error) {
+func (s *KnowledgeGraphService) IngestEvidence(ctx context.Context, event *ent.NormalizedEvent, refs ...ent.KnowledgeEvidenceRef) error {
 	if len(refs) == 0 {
-		return nil, nil
+		return nil
 	}
-	locks, locksErr := s.getRefTransactionLocks(refs)
-	if locksErr != nil {
-		return nil, fmt.Errorf("make transaction locks: %w", locksErr)
-	}
-	aliases := make(ent.KnowledgeSubjectAliasSlice, len(refs))
-	builders := make([]*ent.KnowledgeEvidenceCreate, len(refs))
-	return aliases, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if lockErr := s.db.AcquireTxLocks(ctx, "knowledge_subject_alias", locks...); lockErr != nil {
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.acquireRefTransactionLocks(ctx, refs); lockErr != nil {
 			return fmt.Errorf("failed to acquire tx locks: %w", lockErr)
 		}
+		builders := make([]*ent.KnowledgeEvidenceCreate, len(refs))
 		for i, ref := range refs {
-			alias, aliasErr := s.setEvidenceSubjectAlias(ctx, ref)
+			ra, aliasErr := s.resolveEvidenceSubjectAlias(ctx, ref)
 			if aliasErr != nil {
 				return fmt.Errorf("set subject alias: %w", aliasErr)
 			}
-			aliases[i] = alias.Unwrap()
-			builders[i] = tx.KnowledgeEvidence.Create().
-				SetEventID(event.ID).
-				SetSubjectAliasID(alias.ID).
-				SetKind(ref.Kind).
-				SetAssertion(ref.Assertion).
-				SetEffectiveAt(ref.EffectiveAt).
-				SetSubjectState(ref.SubjectState)
+			builders[i] = s.makeEvidenceBuilderFromRef(tx, event.ID, ra.aliasId, ref)
 		}
 		createEvidence := tx.KnowledgeEvidence.CreateBulk(builders...).
 			OnConflict(knowledgeEvidenceUniqueColumns).
@@ -212,6 +206,34 @@ func (s *KnowledgeGraphService) IngestEvidenceBulk(ctx context.Context, event *e
 		if createErr := createEvidence.Exec(ctx); createErr != nil {
 			return fmt.Errorf("create knowledge evidence: %w", createErr)
 		}
+		return nil
+	})
+}
+
+func (s *KnowledgeGraphService) IngestSubjectEvidence(ctx context.Context, event *ent.NormalizedEvent, ref ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error) {
+	var alias *ent.KnowledgeSubjectAlias
+	return alias, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.acquireRefTransactionLocks(ctx, []ent.KnowledgeEvidenceRef{ref}); lockErr != nil {
+			return fmt.Errorf("failed to acquire tx locks: %w", lockErr)
+		}
+
+		sa, saErr := s.resolveEvidenceSubjectAlias(ctx, ref)
+		if saErr != nil {
+			return fmt.Errorf("set subject alias: %w", saErr)
+		}
+
+		createEvidence := s.makeEvidenceBuilderFromRef(tx, event.ID, sa.aliasId, ref).
+			OnConflict(knowledgeEvidenceUniqueColumns).
+			Ignore()
+		if createErr := createEvidence.Exec(ctx); createErr != nil {
+			return fmt.Errorf("create knowledge evidence: %w", createErr)
+		}
+
+		subjAlias, subjAliasErr := tx.KnowledgeSubjectAlias.Get(ctx, sa.aliasId)
+		if subjAliasErr != nil {
+			return fmt.Errorf("load subject alias: %w", subjAliasErr)
+		}
+		alias = subjAlias.Unwrap()
 		return nil
 	})
 }

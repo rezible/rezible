@@ -20,9 +20,9 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 	attributes := event.Attributes
 
 	alertEntityRef := ent.KnowledgeEntityRef{
-		Kind:    kne.KindSignal,
-		Subkind: knowledgeEntitySubkindAlert,
-		Alias:   event.Event.KnowledgeAliasRef(),
+		Kind:            kne.KindSignal,
+		Subkind:         knowledgeEntitySubkindAlert,
+		SubjectAliasRef: event.Event.KnowledgeSubjectAliasRef(),
 	}
 	alertEntityEvidence := ent.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event.Event),
@@ -41,13 +41,15 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		alertKe, definitionErr := s.knowledge.IngestEntityEvidence(ctx, event.Event, alertEntityEvidence)
-		if definitionErr != nil {
-			return fmt.Errorf("alert knowledge evidence: %w", definitionErr)
+		subj, ingestErr := s.knowledge.IngestSubjectEvidence(ctx, event.Event, alertEntityEvidence)
+		if ingestErr != nil {
+			return fmt.Errorf("alert knowledge evidence: %w", ingestErr)
+		} else if subj.EntityID == nil {
+			return fmt.Errorf("nil subject entity")
 		}
 
 		upsertAlert := tx.Alert.Create().
-			SetKnowledgeEntity(alertKe).
+			SetKnowledgeEntityID(*subj.EntityID).
 			SetTitle(attributes.Title).
 			SetDescription(attributes.Description).
 			SetDefinition(attributes.Definition).
@@ -57,7 +59,11 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 		if alertErr != nil {
 			return fmt.Errorf("upsert alert: %w", alertErr)
 		}
-		projected = append(projected, rez.ProjectedEntityRef{Kind: knowledgeEntitySubkindAlert, Id: alertID})
+
+		projected = append(projected, rez.ProjectedEntityRef{
+			Kind: knowledgeEntitySubkindAlert,
+			Id:   alertID,
+		})
 
 		return nil
 	})

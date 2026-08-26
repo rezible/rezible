@@ -36,17 +36,27 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 			Description: attributes.Summary,
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:    kne.KindEvent,
-			Subkind: knowledgeEntitySubkindIncident,
-			Alias:   event.Event.KnowledgeAliasRef(),
+			Kind:            kne.KindEvent,
+			Subkind:         knowledgeEntitySubkindIncident,
+			SubjectAliasRef: event.Event.KnowledgeSubjectAliasRef(),
 		},
 	}
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		incidentKe, evidenceErr := s.knowledge.IngestEntityEvidence(ctx, event.Event, incidentObservedEvidence)
-		if evidenceErr != nil {
-			return fmt.Errorf("resolve incident knowledge entity: %w", evidenceErr)
+		subj, ingestErr := s.knowledge.IngestSubjectEvidence(ctx, event.Event, incidentObservedEvidence)
+		if ingestErr != nil {
+			return fmt.Errorf("incident knowledge evidence: %w", ingestErr)
+		} else if subj.EntityID == nil {
+			return fmt.Errorf("nil subject entity")
+		}
+		knowledgeEntityId := *subj.EntityID
+
+		queryExisting := tx.Incident.Query().
+			Where(incident.KnowledgeEntityID(knowledgeEntityId))
+		existing, existingErr := queryExisting.Only(ctx)
+		if existingErr != nil && !ent.IsNotFound(existingErr) {
+			return fmt.Errorf("query existing incident: %w", existingErr)
 		}
 
 		severityID, severityErr := s.saveProjectedIncidentSeverity(ctx, attributes)
@@ -57,13 +67,6 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 		typeID, typeErr := s.saveProjectedIncidentType(ctx, attributes)
 		if typeErr != nil {
 			return fmt.Errorf("upsert incident type: %w", typeErr)
-		}
-
-		queryExisting := tx.Incident.Query().
-			Where(incident.KnowledgeEntityID(incidentKe.ID))
-		existing, existingErr := queryExisting.Only(ctx)
-		if existingErr != nil && !ent.IsNotFound(existingErr) {
-			return fmt.Errorf("query existing incident: %w", existingErr)
 		}
 
 		id := uuid.Nil
@@ -78,7 +81,7 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 		}
 
 		setFn := func(m *ent.IncidentMutation) {
-			m.SetKnowledgeEntityID(incidentKe.ID)
+			m.SetKnowledgeEntityID(knowledgeEntityId)
 			m.SetTitle(attributes.Title)
 			m.SetSummary(attributes.Summary)
 			m.SetSeverityID(severityID)

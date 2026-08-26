@@ -143,12 +143,12 @@ func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() 
 			Slug:        "platform-" + suffix,
 		},
 		User: projections.UserSubjectAttributes{
-			Name:   "Avery",
-			Email:  suffix + "@example.com",
-			ChatId: "user-" + suffix,
+			ExternalRef: "slack:user-" + suffix,
+			Name:        "Avery",
+			Email:       suffix + "@example.com",
+			ChatId:      "user-" + suffix,
 		},
-		UserExternalRef: "slack:user-" + suffix,
-		Role:            "member",
+		Role: "member",
 	}
 	event := s.createNormalizedEvent(
 		tdb,

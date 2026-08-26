@@ -195,8 +195,8 @@ type (
 
 		GetView(context.Context, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
 
-		IngestEntityEvidence(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (*ent.KnowledgeEntity, error)
-		IngestEvidenceBulk(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) (ent.KnowledgeSubjectAliasSlice, error)
+		IngestEvidence(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) error
+		IngestSubjectEvidence(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error)
 	}
 )
 
