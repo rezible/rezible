@@ -156,19 +156,19 @@ func (m *systemAnalysisMiddleware) exploreSystemEntityNeighborhoodToolFunc(ctx c
 	}
 
 	params := rez.QueryKnowledgeEntityNeighborhoodParams{
-		EntityID:            &entityId,
-		SourceEntityID:      nil,
-		TargetEntityID:      nil,
-		NeighborEntityKinds: nil,
-		RelationshipKinds:   nil,
-		Depth:               1,
-		Offset:              offset,
+		EntityID:                 &entityId,
+		SourceEntityID:           nil,
+		TargetEntityID:           nil,
+		NeighborEntityCategories: nil,
+		RelationshipPredicates:   nil,
+		Depth:                    1,
+		Offset:                   offset,
 	}
-	if input.NeighborKind != nil {
-		params.NeighborEntityKinds = []string{*input.NeighborKind}
+	if input.NeighborCategory != nil {
+		params.NeighborEntityCategories = []string{*input.NeighborCategory}
 	}
-	if input.RelationshipKind != nil {
-		params.RelationshipKinds = []string{*input.RelationshipKind}
+	if input.RelationshipPredicate != nil {
+		params.RelationshipPredicates = []string{*input.RelationshipPredicate}
 	}
 
 	neighborhood, neighborhoodErr := m.knowledge.QueryEntityNeighborhood(ctx, params)
@@ -394,27 +394,26 @@ func (m *systemAnalysisMiddleware) makeSubjectSetters(subjects []rezai.AnalysisF
 	return setSubjects, nil
 }
 
-func subjectDisplayName(kind, subkind string, id uuid.UUID, evidence *ent.KnowledgeEvidence) string {
+func subjectDisplayName(classification string, id uuid.UUID, evidence *ent.KnowledgeEvidence) string {
 	if evidence != nil && strings.TrimSpace(evidence.SubjectState.DisplayName) != "" {
 		return evidence.SubjectState.DisplayName
 	}
-	return fmt.Sprintf("%s:%s:%s", kind, subkind, id)
+	return fmt.Sprintf("%s:%s", classification, id)
 }
 
 func entitySummary(entity *ent.KnowledgeEntity) rezai.KnowledgeEntitySummary {
 	return rezai.KnowledgeEntitySummary{
 		ID:          entity.ID,
-		Kind:        entity.Kind.String(),
-		Subkind:     entity.Subkind,
-		DisplayName: subjectDisplayName(entity.Kind.String(), entity.Subkind, entity.ID, entity.LatestEvidence()),
+		Category:    entity.Category.String(),
+		Kind:        entity.Kind,
+		DisplayName: subjectDisplayName(fmt.Sprintf("%s:%s", entity.Category, entity.Kind), entity.ID, entity.LatestEvidence()),
 	}
 }
 func relationshipSummary(relationship *ent.KnowledgeRelationship) rezai.KnowledgeRelationshipSummary {
 	return rezai.KnowledgeRelationshipSummary{
 		ID:          relationship.ID,
-		Kind:        relationship.Kind.String(),
-		Subkind:     relationship.Subkind,
-		DisplayName: subjectDisplayName(relationship.Kind.String(), relationship.Subkind, relationship.ID, relationship.LatestEvidence()),
+		Predicate:   relationship.Predicate.String(),
+		DisplayName: subjectDisplayName(relationship.Predicate.String(), relationship.ID, relationship.LatestEvidence()),
 	}
 }
 func subjectAliasSummary(alias *ent.KnowledgeSubjectAlias) rezai.KnowledgeSubjectAliasSummary {

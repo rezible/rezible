@@ -716,8 +716,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgeentity.FieldTenantID:  {Type: field.TypeInt, Column: knowledgeentity.FieldTenantID},
 			knowledgeentity.FieldCreatedAt: {Type: field.TypeTime, Column: knowledgeentity.FieldCreatedAt},
 			knowledgeentity.FieldUpdatedAt: {Type: field.TypeTime, Column: knowledgeentity.FieldUpdatedAt},
-			knowledgeentity.FieldKind:      {Type: field.TypeEnum, Column: knowledgeentity.FieldKind},
-			knowledgeentity.FieldSubkind:   {Type: field.TypeString, Column: knowledgeentity.FieldSubkind},
+			knowledgeentity.FieldCategory:  {Type: field.TypeEnum, Column: knowledgeentity.FieldCategory},
+			knowledgeentity.FieldKind:      {Type: field.TypeString, Column: knowledgeentity.FieldKind},
 		},
 	}
 	graph.Nodes[33] = &sqlgraph.Node{
@@ -755,8 +755,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgerelationship.FieldTenantID:       {Type: field.TypeInt, Column: knowledgerelationship.FieldTenantID},
 			knowledgerelationship.FieldCreatedAt:      {Type: field.TypeTime, Column: knowledgerelationship.FieldCreatedAt},
 			knowledgerelationship.FieldUpdatedAt:      {Type: field.TypeTime, Column: knowledgerelationship.FieldUpdatedAt},
-			knowledgerelationship.FieldKind:           {Type: field.TypeEnum, Column: knowledgerelationship.FieldKind},
-			knowledgerelationship.FieldSubkind:        {Type: field.TypeString, Column: knowledgerelationship.FieldSubkind},
+			knowledgerelationship.FieldPredicate:      {Type: field.TypeEnum, Column: knowledgerelationship.FieldPredicate},
 			knowledgerelationship.FieldSourceEntityID: {Type: field.TypeUUID, Column: knowledgerelationship.FieldSourceEntityID},
 			knowledgerelationship.FieldTargetEntityID: {Type: field.TypeUUID, Column: knowledgerelationship.FieldTargetEntityID},
 		},
@@ -8575,14 +8574,14 @@ func (f *KnowledgeEntityFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgeentity.FieldUpdatedAt))
 }
 
+// WhereCategory applies the entql string predicate on the category field.
+func (f *KnowledgeEntityFilter) WhereCategory(p entql.StringP) {
+	f.Where(p.Field(knowledgeentity.FieldCategory))
+}
+
 // WhereKind applies the entql string predicate on the kind field.
 func (f *KnowledgeEntityFilter) WhereKind(p entql.StringP) {
 	f.Where(p.Field(knowledgeentity.FieldKind))
-}
-
-// WhereSubkind applies the entql string predicate on the subkind field.
-func (f *KnowledgeEntityFilter) WhereSubkind(p entql.StringP) {
-	f.Where(p.Field(knowledgeentity.FieldSubkind))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -8818,14 +8817,9 @@ func (f *KnowledgeRelationshipFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgerelationship.FieldUpdatedAt))
 }
 
-// WhereKind applies the entql string predicate on the kind field.
-func (f *KnowledgeRelationshipFilter) WhereKind(p entql.StringP) {
-	f.Where(p.Field(knowledgerelationship.FieldKind))
-}
-
-// WhereSubkind applies the entql string predicate on the subkind field.
-func (f *KnowledgeRelationshipFilter) WhereSubkind(p entql.StringP) {
-	f.Where(p.Field(knowledgerelationship.FieldSubkind))
+// WherePredicate applies the entql string predicate on the predicate field.
+func (f *KnowledgeRelationshipFilter) WherePredicate(p entql.StringP) {
+	f.Where(p.Field(knowledgerelationship.FieldPredicate))
 }
 
 // WhereSourceEntityID applies the entql [16]byte predicate on the source_entity_id field.

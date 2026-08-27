@@ -26,9 +26,9 @@ type KnowledgeEntity struct {
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Stable semantic category used by graph queries, generated views, and agent reasoning.
-	Kind knowledgeentity.Kind `json:"kind,omitempty"`
-	// Provider or domain subtype used for filtering, legends, and display; not product control flow.
-	Subkind string `json:"subkind,omitempty"`
+	Category knowledgeentity.Category `json:"category,omitempty"`
+	// Canonical domain type within the entity category.
+	Kind string `json:"kind,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEntityQuery when eager-loading is set.
 	Edges        KnowledgeEntityEdges `json:"edges"`
@@ -95,7 +95,7 @@ func (*KnowledgeEntity) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case knowledgeentity.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgeentity.FieldKind, knowledgeentity.FieldSubkind:
+		case knowledgeentity.FieldCategory, knowledgeentity.FieldKind:
 			values[i] = new(sql.NullString)
 		case knowledgeentity.FieldCreatedAt, knowledgeentity.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -140,17 +140,17 @@ func (_m *KnowledgeEntity) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
+		case knowledgeentity.FieldCategory:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field category", values[i])
+			} else if value.Valid {
+				_m.Category = knowledgeentity.Category(value.String)
+			}
 		case knowledgeentity.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				_m.Kind = knowledgeentity.Kind(value.String)
-			}
-		case knowledgeentity.FieldSubkind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field subkind", values[i])
-			} else if value.Valid {
-				_m.Subkind = value.String
+				_m.Kind = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -217,11 +217,11 @@ func (_m *KnowledgeEntity) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
+	builder.WriteString("category=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Category))
 	builder.WriteString(", ")
-	builder.WriteString("subkind=")
-	builder.WriteString(_m.Subkind)
+	builder.WriteString("kind=")
+	builder.WriteString(_m.Kind)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -72,28 +72,26 @@ type KnowledgeSubjectAliasRef struct {
 	ProviderSubjectRef string
 }
 
-func (a KnowledgeSubjectAliasRef) SubjectPredicate(kind ksa.SubjectKind) predicate.KnowledgeSubjectAlias {
+func (a KnowledgeSubjectAliasRef) ResourcePredicate() predicate.KnowledgeSubjectAlias {
 	return ksa.And(
-		ksa.SubjectKindEQ(kind),
 		ksa.Provider(a.Provider),
 		ksa.ProviderSource(a.ProviderSource),
 		ksa.ProviderSubjectRef(a.ProviderSubjectRef))
 }
 
-func (a KnowledgeSubjectAliasRef) LockKey(kind ksa.SubjectKind) string {
-	return fmt.Sprintf("%s:%s:%s:%s", kind, a.Provider, a.ProviderSource, a.ProviderSubjectRef)
+func (a KnowledgeSubjectAliasRef) LockKey() string {
+	return fmt.Sprintf("%s:%s:%s", a.Provider, a.ProviderSource, a.ProviderSubjectRef)
 }
 
 type (
 	KnowledgeEntityRef struct {
-		Kind            kne.Kind
-		Subkind         string
+		Category        kne.Category
+		Kind            string
 		SubjectAliasRef KnowledgeSubjectAliasRef
 	}
 
 	KnowledgeRelationshipRef struct {
-		Kind            knr.Kind
-		Subkind         string
+		Predicate       knr.Predicate
 		SubjectAliasRef KnowledgeSubjectAliasRef
 		Source          KnowledgeEntityRef
 		Target          KnowledgeEntityRef

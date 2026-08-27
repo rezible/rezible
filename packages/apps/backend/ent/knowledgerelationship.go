@@ -26,10 +26,8 @@ type KnowledgeRelationship struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Kind holds the value of the "kind" field.
-	Kind knowledgerelationship.Kind `json:"kind,omitempty"`
-	// Provider or domain subtype
-	Subkind string `json:"subkind,omitempty"`
+	// Canonical directional meaning from source entity to target entity.
+	Predicate knowledgerelationship.Predicate `json:"predicate,omitempty"`
 	// SourceEntityID holds the value of the "source_entity_id" field.
 	SourceEntityID uuid.UUID `json:"source_entity_id,omitempty"`
 	// TargetEntityID holds the value of the "target_entity_id" field.
@@ -104,7 +102,7 @@ func (*KnowledgeRelationship) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case knowledgerelationship.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgerelationship.FieldKind, knowledgerelationship.FieldSubkind:
+		case knowledgerelationship.FieldPredicate:
 			values[i] = new(sql.NullString)
 		case knowledgerelationship.FieldCreatedAt, knowledgerelationship.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -149,17 +147,11 @@ func (_m *KnowledgeRelationship) assignValues(columns []string, values []any) er
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case knowledgerelationship.FieldKind:
+		case knowledgerelationship.FieldPredicate:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field kind", values[i])
+				return fmt.Errorf("unexpected type %T for field predicate", values[i])
 			} else if value.Valid {
-				_m.Kind = knowledgerelationship.Kind(value.String)
-			}
-		case knowledgerelationship.FieldSubkind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field subkind", values[i])
-			} else if value.Valid {
-				_m.Subkind = value.String
+				_m.Predicate = knowledgerelationship.Predicate(value.String)
 			}
 		case knowledgerelationship.FieldSourceEntityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -238,11 +230,8 @@ func (_m *KnowledgeRelationship) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
-	builder.WriteString(", ")
-	builder.WriteString("subkind=")
-	builder.WriteString(_m.Subkind)
+	builder.WriteString("predicate=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Predicate))
 	builder.WriteString(", ")
 	builder.WriteString("source_entity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SourceEntityID))

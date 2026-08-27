@@ -101,10 +101,10 @@ func validateAttributes[A any](attrs A) error {
 }
 
 type RelatedEntityRef struct {
-	ExternalRef string   `json:"external_ref" validate:"required"`
-	Kind        kne.Kind `json:"kind" validate:"required"`
-	Subkind     string   `json:"subkind" validate:"required"`
-	DisplayName string   `json:"display_name" validate:"required"`
+	ExternalRef string       `json:"external_ref" validate:"required"`
+	Category    kne.Category `json:"category" validate:"required"`
+	Kind        string       `json:"kind" validate:"required"`
+	DisplayName string       `json:"display_name" validate:"required"`
 }
 
 func SortRelatedEntityRefs(refs []RelatedEntityRef) []RelatedEntityRef {
@@ -113,11 +113,11 @@ func SortRelatedEntityRefs(refs []RelatedEntityRef) []RelatedEntityRef {
 		if left.ExternalRef != right.ExternalRef {
 			return strings.Compare(left.ExternalRef, right.ExternalRef)
 		}
-		if left.Kind != right.Kind {
-			return strings.Compare(left.Kind.String(), right.Kind.String())
+		if left.Category != right.Category {
+			return strings.Compare(left.Category.String(), right.Category.String())
 		}
-		if left.Subkind != right.Subkind {
-			return strings.Compare(left.Subkind, right.Subkind)
+		if left.Kind != right.Kind {
+			return strings.Compare(left.Kind, right.Kind)
 		}
 		return strings.Compare(left.DisplayName, right.DisplayName)
 	})

@@ -70,11 +70,11 @@ func (p codeChangeObservedPayload) subjectRef() string {
 	return "demo:code_change:" + p.ExternalID
 }
 
-func relatedComponent(id string, kind kne.Kind, subkind string, displayName string) projections.RelatedEntityRef {
+func relatedComponent(id string, category kne.Category, kind string, displayName string) projections.RelatedEntityRef {
 	return projections.RelatedEntityRef{
 		ExternalRef: componentRef(id),
+		Category:    category,
 		Kind:        kind,
-		Subkind:     subkind,
 		DisplayName: displayName,
 	}
 }
@@ -86,8 +86,8 @@ var demoCodeChangeEvents = []codeChangeObservedPayload{
 		Title:                 "PR #1842 Tune search enrichment retry policy",
 		MergedAt:              time.Date(2026, 5, 12, 8, 42, 0, 0, time.UTC),
 		RelatedEntities: []projections.RelatedEntityRef{
-			relatedComponent("search_api", kne.KindContainer, "service", "Search API"),
-			relatedComponent("elasticsearch_catalog", kne.KindContainer, "search_cluster", "Elasticsearch Catalog"),
+			relatedComponent("search_api", kne.CategoryContainer, "service", "Search API"),
+			relatedComponent("elasticsearch_catalog", kne.CategoryContainer, "search_cluster", "Elasticsearch Catalog"),
 		},
 	},
 }
@@ -159,8 +159,8 @@ var demoAlertEvents = []alertObservedPayload{
 		OccurredAt:  time.Date(2026, 5, 12, 9, 15, 0, 0, time.UTC),
 		InstanceRef: "search-api-latency-20260512T091500Z",
 		RelatedEntities: []projections.RelatedEntityRef{
-			relatedComponent("search_api", kne.KindContainer, "service", "Search API"),
-			relatedComponent("checkout_service", kne.KindContainer, "service", "Checkout Listener"),
+			relatedComponent("search_api", kne.CategoryContainer, "service", "Search API"),
+			relatedComponent("checkout_service", kne.CategoryContainer, "service", "Checkout Listener"),
 		},
 	},
 	{
@@ -171,8 +171,8 @@ var demoAlertEvents = []alertObservedPayload{
 		OccurredAt:  time.Date(2026, 5, 12, 9, 28, 0, 0, time.UTC),
 		InstanceRef: "elasticsearch-cpu-critical-20260512T092800Z",
 		RelatedEntities: []projections.RelatedEntityRef{
-			relatedComponent("elasticsearch_catalog", kne.KindContainer, "search_cluster", "Elasticsearch Catalog"),
-			relatedComponent("search_api", kne.KindContainer, "service", "Search API"),
+			relatedComponent("elasticsearch_catalog", kne.CategoryContainer, "search_cluster", "Elasticsearch Catalog"),
+			relatedComponent("search_api", kne.CategoryContainer, "service", "Search API"),
 		},
 	},
 	{

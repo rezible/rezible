@@ -31,8 +31,8 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 			Properties:  nil,
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:            kne.KindActor,
-			Subkind:         knowledgeEntitySubkindUser,
+			Category:        kne.CategoryActor,
+			Kind:            knowledgeEntityKindUser,
 			SubjectAliasRef: event.KnowledgeSubjectAliasRef(),
 		},
 	}
@@ -52,7 +52,7 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 		}
 
 		projected = append(projected, rez.ProjectedEntityRef{
-			Kind: knowledgeEntitySubkindUser,
+			Kind: knowledgeEntityKindUser,
 			Id:   userId,
 		})
 

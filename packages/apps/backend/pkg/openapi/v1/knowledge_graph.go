@@ -56,8 +56,8 @@ type (
 		Attributes KnowledgeGraphEntityAttributes `json:"attributes"`
 	}
 	KnowledgeGraphEntityAttributes struct {
+		Category    string                       `json:"category"`
 		Kind        string                       `json:"kind"`
-		Subkind     string                       `json:"subkind"`
 		Aliases     []KnowledgeGraphSubjectAlias `json:"aliases"`
 		LatestState *KnowledgeGraphSubjectState  `json:"latestState,omitempty"`
 		CreatedAt   time.Time                    `json:"createdAt"`
@@ -69,8 +69,7 @@ type (
 		Attributes KnowledgeGraphRelationshipAttributes `json:"attributes"`
 	}
 	KnowledgeGraphRelationshipAttributes struct {
-		Kind           string                       `json:"kind"`
-		Subkind        string                       `json:"subkind"`
+		Predicate      string                       `json:"predicate"`
 		SourceEntityId uuid.UUID                    `json:"sourceEntityId"`
 		TargetEntityId uuid.UUID                    `json:"targetEntityId"`
 		Aliases        []KnowledgeGraphSubjectAlias `json:"aliases"`
@@ -100,8 +99,8 @@ type (
 
 func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
 	attr := KnowledgeGraphEntityAttributes{
-		Kind:      e.Kind.String(),
-		Subkind:   e.Subkind,
+		Category:  e.Category.String(),
+		Kind:      e.Kind,
 		Aliases:   make([]KnowledgeGraphSubjectAlias, len(e.Edges.Aliases)),
 		CreatedAt: e.CreatedAt,
 		UpdatedAt: e.UpdatedAt,
@@ -119,8 +118,7 @@ func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
 
 func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) KnowledgeGraphRelationship {
 	attr := KnowledgeGraphRelationshipAttributes{
-		Kind:           rel.Kind.String(),
-		Subkind:        rel.Subkind,
+		Predicate:      rel.Predicate.String(),
 		SourceEntityId: rel.SourceEntityID,
 		TargetEntityId: rel.TargetEntityID,
 		CreatedAt:      rel.CreatedAt,
@@ -185,8 +183,8 @@ var ListKnowledgeGraphEntities = huma.Operation{
 
 type ListKnowledgeGraphEntitiesRequest struct {
 	ListRequest
+	Category       []string `query:"category" required:"false"`
 	Kind           []string `query:"kind" required:"false"`
-	Subkind        []string `query:"subkind" required:"false"`
 	Provider       string   `query:"provider" required:"false"`
 	ProviderSource string   `query:"providerSource" required:"false"`
 	SubjectKind    string   `query:"subjectKind" required:"false"`
@@ -216,8 +214,7 @@ var ListKnowledgeGraphRelationships = huma.Operation{
 
 type ListKnowledgeGraphRelationshipsRequest struct {
 	ListRequest
-	Kind           []string  `query:"kind" required:"false"`
-	Subkind        []string  `query:"subkind" required:"false"`
+	Predicate      []string  `query:"predicate" required:"false"`
 	EntityId       uuid.UUID `query:"entityId" required:"false"`
 	SourceEntityId uuid.UUID `query:"sourceEntityId" required:"false"`
 	TargetEntityId uuid.UUID `query:"targetEntityId" required:"false"`
@@ -246,8 +243,8 @@ var GetKnowledgeGraphView = huma.Operation{
 }
 
 type GetKnowledgeGraphViewRequest struct {
-	EntityId         uuid.UUID `query:"entityId" required:"false"`
-	Depth            int       `query:"depth" default:"1" minimum:"1" maximum:"4" required:"false"`
-	RelationshipKind []string  `query:"relationshipKind" required:"false"`
+	EntityId              uuid.UUID `query:"entityId" required:"false"`
+	Depth                 int       `query:"depth" default:"1" minimum:"1" maximum:"4" required:"false"`
+	RelationshipPredicate []string  `query:"relationshipPredicate" required:"false"`
 }
 type GetKnowledgeGraphViewResponse ItemResponse[KnowledgeGraphView]

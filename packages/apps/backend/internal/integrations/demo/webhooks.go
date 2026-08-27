@@ -76,7 +76,7 @@ func (h *webhookHandler) handleDemoAlertEvent(ctx context.Context, body []byte) 
 		OccurredAt:  now,
 		InstanceRef: fmt.Sprintf("search-api-latency-%s", now.String()),
 		RelatedEntities: []projections.RelatedEntityRef{
-			relatedComponent("search_api", kne.KindContainer, "service", "Search API"),
+			relatedComponent("search_api", kne.CategoryContainer, "service", "Search API"),
 		},
 	}
 	fmt.Printf("todo: ingest demo alert payload %+v\n", payload)

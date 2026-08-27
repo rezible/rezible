@@ -81,18 +81,17 @@ func (s *SystemAnalysisServiceSuite) createGraphFixture(tdb rez.Database) system
 	now := time.Now().UTC()
 
 	createSource := client.KnowledgeEntity.Create().
-		SetKind(kne.KindContainer).
-		SetSubkind("service")
+		SetCategory(kne.CategoryContainer).
+		SetKind("service")
 	source, sourceErr := createSource.Save(ctx)
 	s.Require().NoError(sourceErr)
 	createTarget := client.KnowledgeEntity.Create().
-		SetKind(kne.KindContainer).
-		SetSubkind("database")
+		SetCategory(kne.CategoryContainer).
+		SetKind("database")
 	target, targetErr := createTarget.Save(ctx)
 	s.Require().NoError(targetErr)
 	createRelationship := client.KnowledgeRelationship.Create().
-		SetKind(knr.KindInteractsWith).
-		SetSubkind("uses").
+		SetPredicate(knr.PredicateUses).
 		SetSourceEntityID(source.ID).
 		SetTargetEntityID(target.ID)
 	relationship, relationshipErr := createRelationship.Save(ctx)
@@ -416,13 +415,13 @@ func (s *SystemAnalysisServiceSuite) TestGetGraphUsesSubjectBeforeScope() {
 	tdb := s.CreateTestDatabase()
 	client := tdb.Client(ctx)
 	createScope := client.KnowledgeEntity.Create().
-		SetKind(kne.KindSystem).
-		SetSubkind("system")
+		SetCategory(kne.CategorySystem).
+		SetKind("system")
 	scope, scopeErr := createScope.Save(ctx)
 	s.Require().NoError(scopeErr)
 	createSubject := client.KnowledgeEntity.Create().
-		SetKind(kne.KindContainer).
-		SetSubkind("service")
+		SetCategory(kne.CategoryContainer).
+		SetKind("service")
 	subject, subjectErr := createSubject.Save(ctx)
 	s.Require().NoError(subjectErr)
 	createAnalysis := client.SystemAnalysis.Create().
@@ -433,9 +432,9 @@ func (s *SystemAnalysisServiceSuite) TestGetGraphUsesSubjectBeforeScope() {
 
 	knowledge := mocks.NewMockKnowledgeGraphService(s.T())
 	expectedParams := rez.GetKnowledgeGraphViewParams{
-		EntityID:          subject.ID,
-		Depth:             2,
-		RelationshipKinds: []string{"interacts_with"},
+		EntityID:               subject.ID,
+		Depth:                  2,
+		RelationshipPredicates: []string{"uses"},
 	}
 	knowledge.EXPECT().
 		GetView(mock.Anything, expectedParams).
@@ -444,8 +443,8 @@ func (s *SystemAnalysisServiceSuite) TestGetGraphUsesSubjectBeforeScope() {
 	svc := s.service(tdb, knowledge)
 
 	view, viewErr := svc.GetSystemAnalysisGraph(ctx, analysis.ID, rez.GetKnowledgeGraphViewParams{
-		Depth:             2,
-		RelationshipKinds: []string{"interacts_with"},
+		Depth:                  2,
+		RelationshipPredicates: []string{"uses"},
 	})
 	s.Require().NoError(viewErr)
 	s.Equal(subject.ID, view.RootID)
@@ -456,8 +455,8 @@ func (s *SystemAnalysisServiceSuite) TestGetGraphDoesNotUseScope() {
 	tdb := s.CreateTestDatabase()
 	client := tdb.Client(ctx)
 	createScope := client.KnowledgeEntity.Create().
-		SetKind(kne.KindSystem).
-		SetSubkind("system")
+		SetCategory(kne.CategorySystem).
+		SetKind("system")
 	scope, scopeErr := createScope.Save(ctx)
 	s.Require().NoError(scopeErr)
 	createAnalysis := client.SystemAnalysis.Create().

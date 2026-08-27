@@ -23,10 +23,10 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldCategory holds the string denoting the category field in the database.
+	FieldCategory = "category"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
-	// FieldSubkind holds the string denoting the subkind field in the database.
-	FieldSubkind = "subkind"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAliases holds the string denoting the aliases edge name in mutations.
@@ -73,8 +73,8 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldCategory,
 	FieldKind,
-	FieldSubkind,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -101,42 +101,42 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// SubkindValidator is a validator for the "subkind" field. It is called by the builders before save.
-	SubkindValidator func(string) error
+	// KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	KindValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
 
-// Kind defines the type for the "kind" enum field.
-type Kind string
+// Category defines the type for the "category" enum field.
+type Category string
 
-// Kind values.
+// Category values.
 const (
-	KindActor          Kind = "actor"
-	KindSystem         Kind = "system"
-	KindContainer      Kind = "container"
-	KindComponent      Kind = "component"
-	KindInfrastructure Kind = "infrastructure"
-	KindCode           Kind = "code"
-	KindProcess        Kind = "process"
-	KindDomainObject   Kind = "domain_object"
-	KindConcern        Kind = "concern"
-	KindDecision       Kind = "decision"
-	KindEvent          Kind = "event"
-	KindSignal         Kind = "signal"
+	CategoryActor          Category = "actor"
+	CategorySystem         Category = "system"
+	CategoryContainer      Category = "container"
+	CategoryComponent      Category = "component"
+	CategoryInfrastructure Category = "infrastructure"
+	CategoryCode           Category = "code"
+	CategoryProcess        Category = "process"
+	CategoryDomainObject   Category = "domain_object"
+	CategoryConcern        Category = "concern"
+	CategoryDecision       Category = "decision"
+	CategoryEvent          Category = "event"
+	CategorySignal         Category = "signal"
 )
 
-func (k Kind) String() string {
-	return string(k)
+func (c Category) String() string {
+	return string(c)
 }
 
-// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
-func KindValidator(k Kind) error {
-	switch k {
-	case KindActor, KindSystem, KindContainer, KindComponent, KindInfrastructure, KindCode, KindProcess, KindDomainObject, KindConcern, KindDecision, KindEvent, KindSignal:
+// CategoryValidator is a validator for the "category" field enum values. It is called by the builders before save.
+func CategoryValidator(c Category) error {
+	switch c {
+	case CategoryActor, CategorySystem, CategoryContainer, CategoryComponent, CategoryInfrastructure, CategoryCode, CategoryProcess, CategoryDomainObject, CategoryConcern, CategoryDecision, CategoryEvent, CategorySignal:
 		return nil
 	default:
-		return fmt.Errorf("knowledgeentity: invalid enum value for kind field: %q", k)
+		return fmt.Errorf("knowledgeentity: invalid enum value for category field: %q", c)
 	}
 }
 
@@ -163,14 +163,14 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByCategory orders the results by the category field.
+func ByCategory(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCategory, opts...).ToFunc()
+}
+
 // ByKind orders the results by the kind field.
 func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
-}
-
-// BySubkind orders the results by the subkind field.
-func BySubkind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSubkind, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

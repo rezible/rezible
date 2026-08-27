@@ -139,12 +139,12 @@ type (
 	}
 
 	QueryKnowledgeEntityNeighborhoodParams struct {
-		EntityID            *uuid.UUID
-		SourceEntityID      *uuid.UUID
-		TargetEntityID      *uuid.UUID
-		NeighborEntityKinds []string
-		RelationshipKinds   []string
-		Depth               int
+		EntityID                 *uuid.UUID
+		SourceEntityID           *uuid.UUID
+		TargetEntityID           *uuid.UUID
+		NeighborEntityCategories []string
+		RelationshipPredicates   []string
+		Depth                    int
 
 		Offset int
 		Limit  int
@@ -159,9 +159,9 @@ type (
 	}
 
 	GetKnowledgeGraphViewParams struct {
-		EntityID          uuid.UUID
-		Depth             int
-		RelationshipKinds []string
+		EntityID               uuid.UUID
+		Depth                  int
+		RelationshipPredicates []string
 	}
 
 	KnowledgeGraphView struct {

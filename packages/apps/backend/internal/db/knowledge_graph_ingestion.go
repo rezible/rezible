@@ -21,7 +21,7 @@ type resolvedSubjectAlias struct {
 
 func (s *KnowledgeGraphService) lookupExistingEntityByRef(ctx context.Context, ref ent.KnowledgeEntityRef) (*resolvedSubjectAlias, error) {
 	queryAlias := s.db.Client(ctx).KnowledgeSubjectAlias.Query().
-		Where(ref.SubjectAliasRef.SubjectPredicate(ksa.SubjectKindEntity)).
+		Where(ref.SubjectAliasRef.ResourcePredicate()).
 		WithEntity()
 	alias, queryErr := queryAlias.Only(ctx)
 	if queryErr != nil && !ent.IsNotFound(queryErr) {
@@ -29,17 +29,19 @@ func (s *KnowledgeGraphService) lookupExistingEntityByRef(ctx context.Context, r
 	}
 	if alias == nil {
 		return nil, nil
+	} else if alias.SubjectKind != ksa.SubjectKindEntity {
+		return nil, fmt.Errorf("%w: resource already identifies a relationship", rez.ErrConflict)
 	}
 	entity, entityErr := alias.Edges.EntityOrErr()
 	if entityErr != nil || entity == nil {
 		return nil, fmt.Errorf("load alias entity: %w", entityErr)
-	} else if entity.Kind != ref.Kind || entity.Subkind != ref.Subkind {
-		return nil, fmt.Errorf("%w: alias identifies %q/%q, evidence expects %q/%q", rez.ErrConflict, entity.Kind, entity.Subkind, ref.Kind, ref.Subkind)
+	} else if entity.Category != ref.Category || entity.Kind != ref.Kind {
+		return nil, fmt.Errorf("%w: alias identifies %q/%q, evidence expects %q/%q", rez.ErrConflict, entity.Category, entity.Kind, ref.Category, ref.Kind)
 	}
 	return &resolvedSubjectAlias{aliasId: alias.ID, subjectId: entity.ID}, nil
 }
 
-var knowledgeEntityAliasUniqueColumns = sql.ConflictColumns(ksa.FieldTenantID, ksa.FieldSubjectKind, ksa.FieldProvider, ksa.FieldProviderSource, ksa.FieldProviderSubjectRef)
+var knowledgeSubjectAliasUniqueColumns = sql.ConflictColumns(ksa.FieldTenantID, ksa.FieldProvider, ksa.FieldProviderSource, ksa.FieldProviderSubjectRef)
 
 func (s *KnowledgeGraphService) resolveEntityFromRef(ctx context.Context, ref ent.KnowledgeEntityRef) (*resolvedSubjectAlias, error) {
 	existing, existingErr := s.lookupExistingEntityByRef(ctx, ref)
@@ -50,8 +52,8 @@ func (s *KnowledgeGraphService) resolveEntityFromRef(ctx context.Context, ref en
 	}
 
 	createEntity := s.db.Client(ctx).KnowledgeEntity.Create().
-		SetKind(ref.Kind).
-		SetSubkind(ref.Subkind)
+		SetCategory(ref.Category).
+		SetKind(ref.Kind)
 	createdEntity, createEntityErr := createEntity.Save(ctx)
 	if createEntityErr != nil {
 		return nil, fmt.Errorf("create entity: %w", createEntityErr)
@@ -63,7 +65,7 @@ func (s *KnowledgeGraphService) resolveEntityFromRef(ctx context.Context, ref en
 		SetProviderSubjectRef(ref.SubjectAliasRef.ProviderSubjectRef).
 		SetSubjectKind(ksa.SubjectKindEntity).
 		SetEntityID(createdEntity.ID).
-		OnConflict(knowledgeEntityAliasUniqueColumns).
+		OnConflict(knowledgeSubjectAliasUniqueColumns).
 		Ignore()
 	aliasId, createAliasErr := createAlias.ID(ctx)
 	if createAliasErr != nil {
@@ -72,9 +74,9 @@ func (s *KnowledgeGraphService) resolveEntityFromRef(ctx context.Context, ref en
 	return &resolvedSubjectAlias{aliasId: aliasId, subjectId: createdEntity.ID}, nil
 }
 
-func (s *KnowledgeGraphService) lookupExistingRelationshipByRef(ctx context.Context, ref ent.KnowledgeRelationshipRef) (*resolvedSubjectAlias, error) {
+func (s *KnowledgeGraphService) lookupExistingRelationshipByRef(ctx context.Context, ref ent.KnowledgeRelationshipRef, sourceEntityID, targetEntityID uuid.UUID) (*resolvedSubjectAlias, error) {
 	queryAlias := s.db.Client(ctx).KnowledgeSubjectAlias.Query().
-		Where(ref.SubjectAliasRef.SubjectPredicate(ksa.SubjectKindRelationship)).
+		Where(ref.SubjectAliasRef.ResourcePredicate()).
 		WithRelationship()
 	existingAlias, queryExistingErr := queryAlias.Only(ctx)
 	if queryExistingErr != nil && !ent.IsNotFound(queryExistingErr) {
@@ -82,18 +84,20 @@ func (s *KnowledgeGraphService) lookupExistingRelationshipByRef(ctx context.Cont
 	}
 	if existingAlias == nil {
 		return nil, nil
+	} else if existingAlias.SubjectKind != ksa.SubjectKindRelationship {
+		return nil, fmt.Errorf("%w: resource already identifies an entity", rez.ErrConflict)
 	}
 	rel, edgeErr := existingAlias.Edges.RelationshipOrErr()
 	if edgeErr != nil {
 		return nil, fmt.Errorf("load aliased relationship: %w", edgeErr)
 	}
-	if rel.Kind != ref.Kind || rel.Subkind != ref.Subkind {
+	if rel.Predicate != ref.Predicate || rel.SourceEntityID != sourceEntityID || rel.TargetEntityID != targetEntityID {
 		return nil, fmt.Errorf("%w: relationship alias identifies different topology", rez.ErrConflict)
 	}
 	return &resolvedSubjectAlias{aliasId: existingAlias.ID, subjectId: rel.ID}, nil
 }
 
-var knowledgeRelationshipUniqueColumns = sql.ConflictColumns(knr.FieldTenantID, knr.FieldKind, knr.FieldSubkind, knr.FieldSourceEntityID, knr.FieldTargetEntityID)
+var knowledgeRelationshipUniqueColumns = sql.ConflictColumns(knr.FieldTenantID, knr.FieldPredicate, knr.FieldSourceEntityID, knr.FieldTargetEntityID)
 
 func (s *KnowledgeGraphService) resolveRelationshipFromRef(ctx context.Context, ref ent.KnowledgeRelationshipRef) (*resolvedSubjectAlias, error) {
 	source, sourceErr := s.resolveEntityFromRef(ctx, ref.Source)
@@ -106,20 +110,16 @@ func (s *KnowledgeGraphService) resolveRelationshipFromRef(ctx context.Context, 
 		return nil, fmt.Errorf("resolve target: %w", targetErr)
 	}
 
-	existing, lookupExistingErr := s.lookupExistingRelationshipByRef(ctx, ref)
+	existing, lookupExistingErr := s.lookupExistingRelationshipByRef(ctx, ref, source.subjectId, target.subjectId)
 	if lookupExistingErr != nil {
 		return nil, fmt.Errorf("lookup existing: %w", lookupExistingErr)
 	}
 	if existing != nil {
-		//if existing.SourceEntityID != source.ID || existing.TargetEntityID != target.ID {
-		//	return nil, fmt.Errorf("existing source and target incorrect")
-		//}
 		return existing, nil
 	}
 
 	upsertRel := s.db.Client(ctx).KnowledgeRelationship.Create().
-		SetKind(ref.Kind).
-		SetSubkind(ref.Subkind).
+		SetPredicate(ref.Predicate).
 		SetSourceEntityID(source.subjectId).
 		SetTargetEntityID(target.subjectId).
 		OnConflict(knowledgeRelationshipUniqueColumns).
@@ -135,7 +135,7 @@ func (s *KnowledgeGraphService) resolveRelationshipFromRef(ctx context.Context, 
 		SetProviderSubjectRef(ref.SubjectAliasRef.ProviderSubjectRef).
 		SetSubjectKind(ksa.SubjectKindRelationship).
 		SetRelationshipID(relationshipId).
-		OnConflict(knowledgeEntityAliasUniqueColumns).
+		OnConflict(knowledgeSubjectAliasUniqueColumns).
 		Ignore()
 	aliasId, createAliasErr := createAlias.ID(ctx)
 	if createAliasErr != nil {
@@ -171,9 +171,9 @@ func (s *KnowledgeGraphService) acquireRefTransactionLocks(ctx context.Context, 
 	locks := make([]string, len(refs))
 	for i, ref := range refs {
 		if ref.SubjectEntity != nil && ref.SubjectRelationship == nil {
-			locks[i] = ref.SubjectEntity.SubjectAliasRef.LockKey(ksa.SubjectKindEntity)
+			locks[i] = ref.SubjectEntity.SubjectAliasRef.LockKey()
 		} else if ref.SubjectRelationship != nil && ref.SubjectEntity == nil {
-			locks[i] = ref.SubjectRelationship.SubjectAliasRef.LockKey(ksa.SubjectKindRelationship)
+			locks[i] = ref.SubjectRelationship.SubjectAliasRef.LockKey()
 		} else {
 			return fmt.Errorf("evidence must contain exactly one entity or relationship")
 		}

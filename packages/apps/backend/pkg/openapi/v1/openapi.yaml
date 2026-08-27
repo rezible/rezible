@@ -3174,6 +3174,8 @@ components:
           items:
             $ref: "#/components/schemas/KnowledgeGraphSubjectAlias"
           type: array
+        category:
+          type: string
         createdAt:
           format: date-time
           type: string
@@ -3181,14 +3183,12 @@ components:
           type: string
         latestState:
           $ref: "#/components/schemas/KnowledgeGraphSubjectState"
-        subkind:
-          type: string
         updatedAt:
           format: date-time
           type: string
       required:
+        - category
         - kind
-        - subkind
         - aliases
         - createdAt
         - updatedAt
@@ -3214,13 +3214,11 @@ components:
         createdAt:
           format: date-time
           type: string
-        kind:
-          type: string
         latestState:
           $ref: "#/components/schemas/KnowledgeGraphSubjectState"
-        sourceEntityId:
+        predicate:
           type: string
-        subkind:
+        sourceEntityId:
           type: string
         targetEntityId:
           type: string
@@ -3228,8 +3226,7 @@ components:
           format: date-time
           type: string
       required:
-        - kind
-        - subkind
+        - predicate
         - sourceEntityId
         - targetEntityId
         - aliases
@@ -11712,14 +11709,14 @@ paths:
             type: boolean
         - explode: false
           in: query
-          name: kind
+          name: category
           schema:
             items:
               type: string
             type: array
         - explode: false
           in: query
-          name: subkind
+          name: kind
           schema:
             items:
               type: string
@@ -11874,14 +11871,7 @@ paths:
             type: boolean
         - explode: false
           in: query
-          name: kind
-          schema:
-            items:
-              type: string
-            type: array
-        - explode: false
-          in: query
-          name: subkind
+          name: predicate
           schema:
             items:
               type: string
@@ -12022,7 +12012,7 @@ paths:
             type: integer
         - explode: false
           in: query
-          name: relationshipKind
+          name: relationshipPredicate
           schema:
             items:
               type: string

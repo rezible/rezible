@@ -33,8 +33,8 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 			Properties:  properties,
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:            kne.KindCode,
-			Subkind:         knowledgeEntitySubkindRepository,
+			Category:        kne.CategoryCode,
+			Kind:            knowledgeEntityKindRepository,
 			SubjectAliasRef: event.Event.KnowledgeSubjectAliasRef(),
 		},
 	}
@@ -51,8 +51,8 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 	evidenceKind := projectionEvidenceKind(event.Event)
 
 	changeRef := ent.KnowledgeEntityRef{
-		Kind:            kne.KindEvent,
-		Subkind:         knowledgeEntitySubkindCodeChange,
+		Category:        kne.CategoryEvent,
+		Kind:            knowledgeEntityKindCodeChange,
 		SubjectAliasRef: event.Event.KnowledgeSubjectAliasRef(),
 	}
 	codeChangeEvidence := ent.KnowledgeEvidenceRef{
@@ -68,8 +68,8 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 	repoAlias := event.Event.KnowledgeSubjectAliasRef()
 	repoAlias.ProviderSubjectRef = attributes.RepositoryExternalRef
 	repositoryRef := ent.KnowledgeEntityRef{
-		Kind:            kne.KindCode,
-		Subkind:         knowledgeEntitySubkindRepository,
+		Category:        kne.CategoryCode,
+		Kind:            knowledgeEntityKindRepository,
 		SubjectAliasRef: repoAlias,
 	}
 	repoEntityEvidence := ent.KnowledgeEvidenceRef{
@@ -87,8 +87,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		Assertion:   knowledgeAssertionCodeChangeRepository,
 		EffectiveAt: event.Event.OccurredAt,
 		SubjectRelationship: &ent.KnowledgeRelationshipRef{
-			Kind:    knr.KindImpacts,
-			Subkind: knowledgeRelationshipSubkindTouchedRepository,
+			Predicate: knr.PredicateTouches,
 			SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
 				Provider:           event.Event.Provider,
 				ProviderSource:     event.Event.ProviderSource,
@@ -112,11 +111,10 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 			EffectiveAt: event.Event.OccurredAt,
 			SubjectState: schematypes.KnowledgeGraphSubjectState{
 				DisplayName: related.DisplayName,
-				Properties:  map[string]any{"entity_subkind": related.Subkind},
+				Properties:  map[string]any{"entity_kind": related.Kind},
 			},
 			SubjectRelationship: &ent.KnowledgeRelationshipRef{
-				Kind:    knr.KindImpacts,
-				Subkind: knowledgeRelationshipSubkindCodeChangeImpacted,
+				Predicate: knr.PredicateImpacts,
 				SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
 					Provider:           event.Event.Provider,
 					ProviderSource:     event.Event.ProviderSource,
@@ -124,8 +122,8 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 				},
 				Source: changeRef,
 				Target: ent.KnowledgeEntityRef{
-					Kind:    related.Kind,
-					Subkind: related.Subkind,
+					Category: related.Category,
+					Kind:     related.Kind,
 					SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
 						Provider:           event.Event.Provider,
 						ProviderSource:     event.Event.ProviderSource,

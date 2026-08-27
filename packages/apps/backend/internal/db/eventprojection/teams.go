@@ -35,8 +35,8 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 			},
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:            kne.KindActor,
-			Subkind:         knowledgeEntitySubkindTeam,
+			Category:        kne.CategoryActor,
+			Kind:            knowledgeEntityKindTeam,
 			SubjectAliasRef: e.Event.KnowledgeSubjectAliasRef(),
 		},
 	}
@@ -56,7 +56,7 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 		}
 
 		projected = append(projected, rez.ProjectedEntityRef{
-			Kind: knowledgeEntitySubkindTeam,
+			Kind: knowledgeEntityKindTeam,
 			Id:   teamId,
 		})
 		return nil
@@ -98,8 +98,8 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 	kind := projectionEvidenceKind(event)
 
 	userEntity := ent.KnowledgeEntityRef{
-		Kind:    kne.KindActor,
-		Subkind: knowledgeEntitySubkindUser,
+		Category: kne.CategoryActor,
+		Kind:     knowledgeEntityKindUser,
 		SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
 			Provider:           event.Provider,
 			ProviderSource:     "users",
@@ -108,8 +108,8 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 	}
 
 	teamEntity := ent.KnowledgeEntityRef{
-		Kind:    kne.KindActor,
-		Subkind: knowledgeEntitySubkindTeam,
+		Category: kne.CategoryActor,
+		Kind:     knowledgeEntityKindTeam,
 		SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
 			Provider:           event.Provider,
 			ProviderSource:     "teams",
@@ -118,10 +118,9 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 	}
 
 	membershipRelationship := ent.KnowledgeRelationshipRef{
-		Kind:            knr.KindParticipatesIn,
+		Predicate:       knr.PredicateMemberOf,
 		SubjectAliasRef: event.KnowledgeSubjectAliasRef(),
 		Source:          userEntity,
-		Subkind:         knowledgeRelationshipSubkindMemberOf,
 		Target:          teamEntity,
 	}
 	membershipEvidenceRef := ent.KnowledgeEvidenceRef{
@@ -165,7 +164,7 @@ func (s *ProjectionService) setTeamMembershipFromProjection(ctx context.Context,
 
 	userEntityId := rel.SourceEntityID
 	teamEntityId := rel.TargetEntityID
-	if rel.Edges.TargetEntity != nil && rel.Edges.TargetEntity.Subkind == knowledgeEntitySubkindUser {
+	if rel.Edges.TargetEntity != nil && rel.Edges.TargetEntity.Kind == knowledgeEntityKindUser {
 		userEntityId = rel.TargetEntityID
 		teamEntityId = rel.SourceEntityID
 	}

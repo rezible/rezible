@@ -36,8 +36,8 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 			Description: attributes.Summary,
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
-			Kind:            kne.KindEvent,
-			Subkind:         knowledgeEntitySubkindIncident,
+			Category:        kne.CategoryEvent,
+			Kind:            knowledgeEntityKindIncident,
 			SubjectAliasRef: event.Event.KnowledgeSubjectAliasRef(),
 		},
 	}
@@ -95,7 +95,7 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 			return fmt.Errorf("set incident: %w", setErr)
 		}
 		projected = append(projected, rez.ProjectedEntityRef{
-			Kind: knowledgeEntitySubkindIncident,
+			Kind: knowledgeEntityKindIncident,
 			Id:   inc.ID,
 		})
 

@@ -34,15 +34,15 @@ func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsId
 	client := tdb.Client(ctx)
 	queryEntities := client.KnowledgeEntity.Query().
 		Where(kne.Or(
-			kne.And(kne.KindEQ(kne.KindEvent), kne.Subkind(knowledgeEntitySubkindCodeChange)),
-			kne.And(kne.KindEQ(kne.KindCode), kne.Subkind(knowledgeEntitySubkindRepository)),
+			kne.And(kne.CategoryEQ(kne.CategoryEvent), kne.Kind(knowledgeEntityKindCodeChange)),
+			kne.And(kne.CategoryEQ(kne.CategoryCode), kne.Kind(knowledgeEntityKindRepository)),
 		))
 	entityCount, entityErr := queryEntities.Count(ctx)
 	s.Require().NoError(entityErr)
 	s.Equal(2, entityCount)
 
 	queryRelations := client.KnowledgeRelationship.Query().
-		Where(knr.KindEQ(knr.KindImpacts), knr.Subkind(knowledgeRelationshipSubkindTouchedRepository))
+		Where(knr.PredicateEQ(knr.PredicateTouches))
 	relationshipCount, relationshipErr := queryRelations.Count(ctx)
 	s.Require().NoError(relationshipErr)
 	s.Equal(1, relationshipCount)

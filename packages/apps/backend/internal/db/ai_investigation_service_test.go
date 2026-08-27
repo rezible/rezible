@@ -89,8 +89,8 @@ func (s *InvestigationServiceSuite) TestCreateAlertInvestigationCreatesAnalysisA
 	client := tdb.Client(ctx)
 	h := s.newHarness(tdb)
 	createEntity := client.KnowledgeEntity.Create().
-		SetKind(kne.KindSignal).
-		SetSubkind("alert")
+		SetCategory(kne.CategorySignal).
+		SetKind("alert")
 	entity := createEntity.SaveX(ctx)
 	instance := s.createAlertInstance(ctx, client, &entity.ID)
 
@@ -144,8 +144,8 @@ func (s *InvestigationServiceSuite) TestCreateAlertInvestigationRollsBackWhenSta
 	client := tdb.Client(ctx)
 	h := s.newHarness(tdb)
 	createEntity := client.KnowledgeEntity.Create().
-		SetKind(kne.KindSignal).
-		SetSubkind("alert")
+		SetCategory(kne.CategorySignal).
+		SetKind("alert")
 	entity := createEntity.SaveX(ctx)
 	instance := s.createAlertInstance(ctx, client, &entity.ID)
 

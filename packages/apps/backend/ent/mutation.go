@@ -27960,8 +27960,8 @@ type KnowledgeEntityMutation struct {
 	id                          *uuid.UUID
 	created_at                  *time.Time
 	updated_at                  *time.Time
-	kind                        *knowledgeentity.Kind
-	subkind                     *string
+	category                    *knowledgeentity.Category
+	kind                        *string
 	clearedFields               map[string]struct{}
 	tenant                      *int
 	clearedtenant               bool
@@ -28191,13 +28191,49 @@ func (m *KnowledgeEntityMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetCategory sets the "category" field.
+func (m *KnowledgeEntityMutation) SetCategory(k knowledgeentity.Category) {
+	m.category = &k
+}
+
+// Category returns the value of the "category" field in the mutation.
+func (m *KnowledgeEntityMutation) Category() (r knowledgeentity.Category, exists bool) {
+	v := m.category
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCategory returns the old "category" field's value of the KnowledgeEntity entity.
+// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityMutation) OldCategory(ctx context.Context) (v knowledgeentity.Category, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCategory is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCategory requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCategory: %w", err)
+	}
+	return oldValue.Category, nil
+}
+
+// ResetCategory resets all changes to the "category" field.
+func (m *KnowledgeEntityMutation) ResetCategory() {
+	m.category = nil
+}
+
 // SetKind sets the "kind" field.
-func (m *KnowledgeEntityMutation) SetKind(k knowledgeentity.Kind) {
-	m.kind = &k
+func (m *KnowledgeEntityMutation) SetKind(s string) {
+	m.kind = &s
 }
 
 // Kind returns the value of the "kind" field in the mutation.
-func (m *KnowledgeEntityMutation) Kind() (r knowledgeentity.Kind, exists bool) {
+func (m *KnowledgeEntityMutation) Kind() (r string, exists bool) {
 	v := m.kind
 	if v == nil {
 		return
@@ -28208,7 +28244,7 @@ func (m *KnowledgeEntityMutation) Kind() (r knowledgeentity.Kind, exists bool) {
 // OldKind returns the old "kind" field's value of the KnowledgeEntity entity.
 // If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldKind(ctx context.Context) (v knowledgeentity.Kind, err error) {
+func (m *KnowledgeEntityMutation) OldKind(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldKind is only allowed on UpdateOne operations")
 	}
@@ -28225,42 +28261,6 @@ func (m *KnowledgeEntityMutation) OldKind(ctx context.Context) (v knowledgeentit
 // ResetKind resets all changes to the "kind" field.
 func (m *KnowledgeEntityMutation) ResetKind() {
 	m.kind = nil
-}
-
-// SetSubkind sets the "subkind" field.
-func (m *KnowledgeEntityMutation) SetSubkind(s string) {
-	m.subkind = &s
-}
-
-// Subkind returns the value of the "subkind" field in the mutation.
-func (m *KnowledgeEntityMutation) Subkind() (r string, exists bool) {
-	v := m.subkind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSubkind returns the old "subkind" field's value of the KnowledgeEntity entity.
-// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldSubkind(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSubkind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSubkind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubkind: %w", err)
-	}
-	return oldValue.Subkind, nil
-}
-
-// ResetSubkind resets all changes to the "subkind" field.
-func (m *KnowledgeEntityMutation) ResetSubkind() {
-	m.subkind = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -28496,11 +28496,11 @@ func (m *KnowledgeEntityMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, knowledgeentity.FieldUpdatedAt)
 	}
+	if m.category != nil {
+		fields = append(fields, knowledgeentity.FieldCategory)
+	}
 	if m.kind != nil {
 		fields = append(fields, knowledgeentity.FieldKind)
-	}
-	if m.subkind != nil {
-		fields = append(fields, knowledgeentity.FieldSubkind)
 	}
 	return fields
 }
@@ -28516,10 +28516,10 @@ func (m *KnowledgeEntityMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case knowledgeentity.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case knowledgeentity.FieldCategory:
+		return m.Category()
 	case knowledgeentity.FieldKind:
 		return m.Kind()
-	case knowledgeentity.FieldSubkind:
-		return m.Subkind()
 	}
 	return nil, false
 }
@@ -28535,10 +28535,10 @@ func (m *KnowledgeEntityMutation) OldField(ctx context.Context, name string) (en
 		return m.OldCreatedAt(ctx)
 	case knowledgeentity.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case knowledgeentity.FieldCategory:
+		return m.OldCategory(ctx)
 	case knowledgeentity.FieldKind:
 		return m.OldKind(ctx)
-	case knowledgeentity.FieldSubkind:
-		return m.OldSubkind(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeEntity field %s", name)
 }
@@ -28569,19 +28569,19 @@ func (m *KnowledgeEntityMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case knowledgeentity.FieldKind:
-		v, ok := value.(knowledgeentity.Kind)
+	case knowledgeentity.FieldCategory:
+		v, ok := value.(knowledgeentity.Category)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetKind(v)
+		m.SetCategory(v)
 		return nil
-	case knowledgeentity.FieldSubkind:
+	case knowledgeentity.FieldKind:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSubkind(v)
+		m.SetKind(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity field %s", name)
@@ -28644,11 +28644,11 @@ func (m *KnowledgeEntityMutation) ResetField(name string) error {
 	case knowledgeentity.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
+	case knowledgeentity.FieldCategory:
+		m.ResetCategory()
+		return nil
 	case knowledgeentity.FieldKind:
 		m.ResetKind()
-		return nil
-	case knowledgeentity.FieldSubkind:
-		m.ResetSubkind()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity field %s", name)
@@ -29675,8 +29675,7 @@ type KnowledgeRelationshipMutation struct {
 	id                   *uuid.UUID
 	created_at           *time.Time
 	updated_at           *time.Time
-	kind                 *knowledgerelationship.Kind
-	subkind              *string
+	predicate            *knowledgerelationship.Predicate
 	clearedFields        map[string]struct{}
 	tenant               *int
 	clearedtenant        bool
@@ -29904,76 +29903,40 @@ func (m *KnowledgeRelationshipMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetKind sets the "kind" field.
-func (m *KnowledgeRelationshipMutation) SetKind(k knowledgerelationship.Kind) {
-	m.kind = &k
+// SetPredicate sets the "predicate" field.
+func (m *KnowledgeRelationshipMutation) SetPredicate(k knowledgerelationship.Predicate) {
+	m.predicate = &k
 }
 
-// Kind returns the value of the "kind" field in the mutation.
-func (m *KnowledgeRelationshipMutation) Kind() (r knowledgerelationship.Kind, exists bool) {
-	v := m.kind
+// Predicate returns the value of the "predicate" field in the mutation.
+func (m *KnowledgeRelationshipMutation) Predicate() (r knowledgerelationship.Predicate, exists bool) {
+	v := m.predicate
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldKind returns the old "kind" field's value of the KnowledgeRelationship entity.
+// OldPredicate returns the old "predicate" field's value of the KnowledgeRelationship entity.
 // If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldKind(ctx context.Context) (v knowledgerelationship.Kind, err error) {
+func (m *KnowledgeRelationshipMutation) OldPredicate(ctx context.Context) (v knowledgerelationship.Predicate, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+		return v, errors.New("OldPredicate is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKind requires an ID field in the mutation")
+		return v, errors.New("OldPredicate requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+		return v, fmt.Errorf("querying old value for OldPredicate: %w", err)
 	}
-	return oldValue.Kind, nil
+	return oldValue.Predicate, nil
 }
 
-// ResetKind resets all changes to the "kind" field.
-func (m *KnowledgeRelationshipMutation) ResetKind() {
-	m.kind = nil
-}
-
-// SetSubkind sets the "subkind" field.
-func (m *KnowledgeRelationshipMutation) SetSubkind(s string) {
-	m.subkind = &s
-}
-
-// Subkind returns the value of the "subkind" field in the mutation.
-func (m *KnowledgeRelationshipMutation) Subkind() (r string, exists bool) {
-	v := m.subkind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSubkind returns the old "subkind" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldSubkind(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSubkind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSubkind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubkind: %w", err)
-	}
-	return oldValue.Subkind, nil
-}
-
-// ResetSubkind resets all changes to the "subkind" field.
-func (m *KnowledgeRelationshipMutation) ResetSubkind() {
-	m.subkind = nil
+// ResetPredicate resets all changes to the "predicate" field.
+func (m *KnowledgeRelationshipMutation) ResetPredicate() {
+	m.predicate = nil
 }
 
 // SetSourceEntityID sets the "source_entity_id" field.
@@ -30217,7 +30180,7 @@ func (m *KnowledgeRelationshipMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeRelationshipMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, knowledgerelationship.FieldTenantID)
 	}
@@ -30227,11 +30190,8 @@ func (m *KnowledgeRelationshipMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, knowledgerelationship.FieldUpdatedAt)
 	}
-	if m.kind != nil {
-		fields = append(fields, knowledgerelationship.FieldKind)
-	}
-	if m.subkind != nil {
-		fields = append(fields, knowledgerelationship.FieldSubkind)
+	if m.predicate != nil {
+		fields = append(fields, knowledgerelationship.FieldPredicate)
 	}
 	if m.source_entity != nil {
 		fields = append(fields, knowledgerelationship.FieldSourceEntityID)
@@ -30253,10 +30213,8 @@ func (m *KnowledgeRelationshipMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case knowledgerelationship.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case knowledgerelationship.FieldKind:
-		return m.Kind()
-	case knowledgerelationship.FieldSubkind:
-		return m.Subkind()
+	case knowledgerelationship.FieldPredicate:
+		return m.Predicate()
 	case knowledgerelationship.FieldSourceEntityID:
 		return m.SourceEntityID()
 	case knowledgerelationship.FieldTargetEntityID:
@@ -30276,10 +30234,8 @@ func (m *KnowledgeRelationshipMutation) OldField(ctx context.Context, name strin
 		return m.OldCreatedAt(ctx)
 	case knowledgerelationship.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case knowledgerelationship.FieldKind:
-		return m.OldKind(ctx)
-	case knowledgerelationship.FieldSubkind:
-		return m.OldSubkind(ctx)
+	case knowledgerelationship.FieldPredicate:
+		return m.OldPredicate(ctx)
 	case knowledgerelationship.FieldSourceEntityID:
 		return m.OldSourceEntityID(ctx)
 	case knowledgerelationship.FieldTargetEntityID:
@@ -30314,19 +30270,12 @@ func (m *KnowledgeRelationshipMutation) SetField(name string, value ent.Value) e
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case knowledgerelationship.FieldKind:
-		v, ok := value.(knowledgerelationship.Kind)
+	case knowledgerelationship.FieldPredicate:
+		v, ok := value.(knowledgerelationship.Predicate)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetKind(v)
-		return nil
-	case knowledgerelationship.FieldSubkind:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSubkind(v)
+		m.SetPredicate(v)
 		return nil
 	case knowledgerelationship.FieldSourceEntityID:
 		v, ok := value.(uuid.UUID)
@@ -30403,11 +30352,8 @@ func (m *KnowledgeRelationshipMutation) ResetField(name string) error {
 	case knowledgerelationship.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case knowledgerelationship.FieldKind:
-		m.ResetKind()
-		return nil
-	case knowledgerelationship.FieldSubkind:
-		m.ResetSubkind()
+	case knowledgerelationship.FieldPredicate:
+		m.ResetPredicate()
 		return nil
 	case knowledgerelationship.FieldSourceEntityID:
 		m.ResetSourceEntityID()

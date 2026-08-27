@@ -26,18 +26,18 @@ func newKnowledgeGraphHandler(knowledge rez.KnowledgeGraphService) *knowledgeGra
 func (h *knowledgeGraphHandler) ListKnowledgeGraphEntities(ctx context.Context, request *oapi.ListKnowledgeGraphEntitiesRequest) (*oapi.ListKnowledgeGraphEntitiesResponse, error) {
 	var response oapi.ListKnowledgeGraphEntitiesResponse
 	var preds []predicate.KnowledgeEntity
-	if len(request.Kind) > 0 {
-		kinds := make([]kne.Kind, len(request.Kind))
-		for i, kind := range request.Kind {
-			kinds[i] = kne.Kind(kind)
-			if kindErr := kne.KindValidator(kinds[i]); kindErr != nil {
-				return nil, oapi.Error(ctx, "invalid knowledge graph entity kind", kindErr)
+	if len(request.Category) > 0 {
+		categories := make([]kne.Category, len(request.Category))
+		for i, value := range request.Category {
+			categories[i] = kne.Category(value)
+			if categoryErr := kne.CategoryValidator(categories[i]); categoryErr != nil {
+				return nil, oapi.Error(ctx, "invalid knowledge graph entity category", categoryErr)
 			}
 		}
-		preds = append(preds, kne.KindIn(kinds...))
+		preds = append(preds, kne.CategoryIn(categories...))
 	}
-	if len(request.Subkind) > 0 {
-		preds = append(preds, kne.SubkindIn(request.Subkind...))
+	if len(request.Kind) > 0 {
+		preds = append(preds, kne.KindIn(request.Kind...))
 	}
 	if request.Provider != "" {
 		preds = append(preds, kne.HasAliasesWith(ksa.Provider(request.Provider)))
@@ -73,18 +73,15 @@ func (h *knowledgeGraphHandler) GetKnowledgeGraphEntity(ctx context.Context, req
 func (h *knowledgeGraphHandler) ListKnowledgeGraphRelationships(ctx context.Context, request *oapi.ListKnowledgeGraphRelationshipsRequest) (*oapi.ListKnowledgeGraphRelationshipsResponse, error) {
 	var response oapi.ListKnowledgeGraphRelationshipsResponse
 	var preds []predicate.KnowledgeRelationship
-	if len(request.Kind) > 0 {
-		kinds := make([]kr.Kind, len(request.Kind))
-		for i, kind := range request.Kind {
-			kinds[i] = kr.Kind(kind)
-			if kindErr := kr.KindValidator(kinds[i]); kindErr != nil {
-				return nil, oapi.Error(ctx, "invalid knowledge graph relationship kind", kindErr)
+	if len(request.Predicate) > 0 {
+		predicates := make([]kr.Predicate, len(request.Predicate))
+		for i, value := range request.Predicate {
+			predicates[i] = kr.Predicate(value)
+			if predicateErr := kr.PredicateValidator(predicates[i]); predicateErr != nil {
+				return nil, oapi.Error(ctx, "invalid knowledge graph relationship predicate", predicateErr)
 			}
 		}
-		preds = append(preds, kr.KindIn(kinds...))
-	}
-	if len(request.Subkind) > 0 {
-		preds = append(preds, kr.SubkindIn(request.Subkind...))
+		preds = append(preds, kr.PredicateIn(predicates...))
 	}
 	if request.EntityId != uuid.Nil {
 		preds = append(preds, kr.Or(kr.SourceEntityID(request.EntityId), kr.TargetEntityID(request.EntityId)))
@@ -119,9 +116,9 @@ func (h *knowledgeGraphHandler) GetKnowledgeGraphRelationship(ctx context.Contex
 
 func (h *knowledgeGraphHandler) GetKnowledgeGraphView(ctx context.Context, request *oapi.GetKnowledgeGraphViewRequest) (*oapi.GetKnowledgeGraphViewResponse, error) {
 	params := rez.GetKnowledgeGraphViewParams{
-		EntityID:          request.EntityId,
-		Depth:             request.Depth,
-		RelationshipKinds: request.RelationshipKind,
+		EntityID:               request.EntityId,
+		Depth:                  request.Depth,
+		RelationshipPredicates: request.RelationshipPredicate,
 	}
 	view, viewErr := h.knowledge.GetView(ctx, params)
 	if viewErr != nil {

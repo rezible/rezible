@@ -44,7 +44,7 @@ func (s *KnowledgeGraphService) ListEntities(ctx context.Context, params rez.Lis
 		WithAliases(knowledgeAliasWithEvidenceQuery())
 
 	if search := strings.TrimSpace(params.Search); search != "" {
-		query.Where(kne.SubkindContainsFold(search))
+		query.Where(kne.KindContainsFold(search))
 	}
 	if len(params.Predicates) > 0 {
 		query.Where(params.Predicates...)
@@ -121,16 +121,16 @@ func (s *KnowledgeGraphService) QueryEntityNeighborhood(ctx context.Context, par
 
 	query.Where(entityPreds)
 
-	relKinds := mapset.NewSet[knr.Kind]()
-	for _, rk := range params.RelationshipKinds {
-		relKind := knr.Kind(strings.TrimSpace(rk))
-		if rkErr := knr.KindValidator(relKind); rkErr != nil {
-			return nil, fmt.Errorf("invalid relationship kind: %s", rkErr)
+	relationshipPredicates := mapset.NewSet[knr.Predicate]()
+	for _, value := range params.RelationshipPredicates {
+		rp := knr.Predicate(strings.TrimSpace(value))
+		if predicateErr := knr.PredicateValidator(rp); predicateErr != nil {
+			return nil, fmt.Errorf("invalid relationship predicate: %s", predicateErr)
 		}
-		relKinds.Add(relKind)
+		relationshipPredicates.Add(rp)
 	}
-	if !relKinds.IsEmpty() {
-		query.Where(knr.KindIn(relKinds.ToSlice()...))
+	if !relationshipPredicates.IsEmpty() {
+		query.Where(knr.PredicateIn(relationshipPredicates.ToSlice()...))
 	}
 
 	numRels, numRelsErr := query.Count(ctx)
@@ -176,15 +176,15 @@ func (s *KnowledgeGraphService) QueryEntityNeighborhood(ctx context.Context, par
 }
 
 func (s *KnowledgeGraphService) getRelationshipEntityPredicate(params rez.QueryKnowledgeEntityNeighborhoodParams) (uuid.UUID, predicate.KnowledgeRelationship, error) {
-	neighborKinds := mapset.NewSet[kne.Kind]()
-	for _, nk := range params.NeighborEntityKinds {
-		neKind := kne.Kind(strings.TrimSpace(nk))
-		if nkErr := kne.KindValidator(neKind); nkErr != nil {
-			return uuid.Nil, nil, fmt.Errorf("invalid neighbor entity kind: %s", nkErr)
+	neighborCategories := mapset.NewSet[kne.Category]()
+	for _, value := range params.NeighborEntityCategories {
+		category := kne.Category(strings.TrimSpace(value))
+		if categoryErr := kne.CategoryValidator(category); categoryErr != nil {
+			return uuid.Nil, nil, fmt.Errorf("invalid neighbor entity category: %s", categoryErr)
 		}
-		neighborKinds.Add(neKind)
+		neighborCategories.Add(category)
 	}
-	neighborKindsPred := kne.KindIn(neighborKinds.ToSlice()...)
+	neighborCategoriesPred := kne.CategoryIn(neighborCategories.ToSlice()...)
 
 	sourceId := params.SourceEntityID
 	targetId := params.TargetEntityID
@@ -196,14 +196,14 @@ func (s *KnowledgeGraphService) getRelationshipEntityPredicate(params rez.QueryK
 	var targetPreds []predicate.KnowledgeEntity
 	if sourceId != nil {
 		sourcePreds = append(sourcePreds, kne.ID(*sourceId))
-		if !neighborKinds.IsEmpty() {
-			sourcePreds = append(sourcePreds, neighborKindsPred)
+		if !neighborCategories.IsEmpty() {
+			sourcePreds = append(sourcePreds, neighborCategoriesPred)
 		}
 	}
 	if targetId != nil {
 		targetPreds = append(targetPreds, kne.ID(*targetId))
-		if !neighborKinds.IsEmpty() {
-			targetPreds = append(targetPreds, neighborKindsPred)
+		if !neighborCategories.IsEmpty() {
+			targetPreds = append(targetPreds, neighborCategoriesPred)
 		}
 	}
 
@@ -219,19 +219,19 @@ func (s *KnowledgeGraphService) getRelationshipEntityPredicate(params rez.QueryK
 
 func (s *KnowledgeGraphService) queryNeighborhoodGroupSummary(ctx context.Context, p predicate.KnowledgeRelationship) (map[string]rez.KnowledgeGraphNeighborhoodGroupSummary, error) {
 	var rows []struct {
-		Kind  knr.Kind `json:"kind"`
-		Count int      `json:"count"`
+		Predicate knr.Predicate `json:"predicate"`
+		Count     int           `json:"count"`
 	}
 	query := s.db.Client(ctx).KnowledgeRelationship.Query().
 		Where(p).
-		GroupBy(knr.FieldKind).
+		GroupBy(knr.FieldPredicate).
 		Aggregate(ent.Count())
 	if scanErr := query.Scan(ctx, &rows); scanErr != nil {
 		return nil, scanErr
 	}
 	groups := map[string]rez.KnowledgeGraphNeighborhoodGroupSummary{}
 	for _, row := range rows {
-		groups[row.Kind.String()] = rez.KnowledgeGraphNeighborhoodGroupSummary{
+		groups[row.Predicate.String()] = rez.KnowledgeGraphNeighborhoodGroupSummary{
 			Count: row.Count,
 		}
 	}
@@ -295,15 +295,15 @@ func (s *KnowledgeGraphService) GetView(ctx context.Context, params rez.GetKnowl
 			Where(knr.Or(knr.SourceEntityIDIn(ids...), knr.TargetEntityIDIn(ids...))).
 			WithAliases(knowledgeAliasWithEvidenceQuery()).
 			Limit(maxKnowledgeViewRelationships + 1)
-		if len(params.RelationshipKinds) > 0 {
-			relationshipKinds := make([]knr.Kind, len(params.RelationshipKinds))
-			for i, kind := range params.RelationshipKinds {
-				relationshipKinds[i] = knr.Kind(kind)
-				if kindErr := knr.KindValidator(relationshipKinds[i]); kindErr != nil {
-					return nil, kindErr
+		if len(params.RelationshipPredicates) > 0 {
+			predicates := make([]knr.Predicate, len(params.RelationshipPredicates))
+			for i, value := range params.RelationshipPredicates {
+				predicates[i] = knr.Predicate(value)
+				if predicateErr := knr.PredicateValidator(predicates[i]); predicateErr != nil {
+					return nil, predicateErr
 				}
 			}
-			queryRels.Where(knr.KindIn(relationshipKinds...))
+			queryRels.Where(knr.PredicateIn(predicates...))
 		}
 		matchedRelationships, queryErr := queryRels.All(ctx)
 		if queryErr != nil {

@@ -400,20 +400,20 @@ DROP TABLE "meeting_schedules";
 DROP INDEX "knowledgesubjectalias_tenant_id_relationship_id";
 -- reverse: create index "knowledgesubjectalias_tenant_id_entity_id" to table: "knowledge_subject_alias"
 DROP INDEX "knowledgesubjectalias_tenant_id_entity_id";
--- reverse: create index "knowledgesubjectalias_tenant_i_6f09432e3199d3a39c8b228b817d4d1b" to table: "knowledge_subject_alias"
-DROP INDEX "knowledgesubjectalias_tenant_i_6f09432e3199d3a39c8b228b817d4d1b";
+-- reverse: create index "knowledgesubjectalias_tenant_i_855375c347ac09b9e29dbdf061830b81" to table: "knowledge_subject_alias"
+DROP INDEX "knowledgesubjectalias_tenant_i_855375c347ac09b9e29dbdf061830b81";
 -- reverse: create index "knowledgesubjectalias_tenant_id" to table: "knowledge_subject_alias"
 DROP INDEX "knowledgesubjectalias_tenant_id";
 -- reverse: create "knowledge_subject_alias" table
 DROP TABLE "knowledge_subject_alias";
--- reverse: create index "knowledgerelationship_tenant_id_kind_subkind" to table: "knowledge_relationships"
-DROP INDEX "knowledgerelationship_tenant_id_kind_subkind";
+-- reverse: create index "knowledgerelationship_tenant_id_predicate" to table: "knowledge_relationships"
+DROP INDEX "knowledgerelationship_tenant_id_predicate";
 -- reverse: create index "knowledgerelationship_tenant_id_target_entity_id" to table: "knowledge_relationships"
 DROP INDEX "knowledgerelationship_tenant_id_target_entity_id";
 -- reverse: create index "knowledgerelationship_tenant_id_source_entity_id" to table: "knowledge_relationships"
 DROP INDEX "knowledgerelationship_tenant_id_source_entity_id";
--- reverse: create index "knowledgerelationship_tenant_i_76ca0509ef63b512682a477cd94166d2" to table: "knowledge_relationships"
-DROP INDEX "knowledgerelationship_tenant_i_76ca0509ef63b512682a477cd94166d2";
+-- reverse: create index "knowledgerelationship_tenant_i_370206a4e66194249f2742322d3eefc0" to table: "knowledge_relationships"
+DROP INDEX "knowledgerelationship_tenant_i_370206a4e66194249f2742322d3eefc0";
 -- reverse: create index "knowledgerelationship_tenant_id" to table: "knowledge_relationships"
 DROP INDEX "knowledgerelationship_tenant_id";
 -- reverse: create "knowledge_relationships" table
@@ -428,8 +428,8 @@ DROP INDEX "knowledgeevidence_tenant_id_event_id_subject_alias_id";
 DROP INDEX "knowledgeevidence_tenant_id";
 -- reverse: create "knowledge_evidences" table
 DROP TABLE "knowledge_evidences";
--- reverse: create index "knowledgeentity_tenant_id_kind_subkind" to table: "knowledge_entities"
-DROP INDEX "knowledgeentity_tenant_id_kind_subkind";
+-- reverse: create index "knowledgeentity_tenant_id_category_kind" to table: "knowledge_entities"
+DROP INDEX "knowledgeentity_tenant_id_category_kind";
 -- reverse: create index "knowledgeentity_tenant_id" to table: "knowledge_entities"
 DROP INDEX "knowledgeentity_tenant_id";
 -- reverse: create "knowledge_entities" table

@@ -27,15 +27,14 @@ func defineTool[D ToolDefinition[I, O], I any, O any](name, description string) 
 type (
 	KnowledgeEntitySummary struct {
 		ID          uuid.UUID `json:"id"`
+		Category    string    `json:"category"`
 		Kind        string    `json:"kind"`
-		Subkind     string    `json:"subkind"`
 		DisplayName string    `json:"display_name"`
 	}
 
 	KnowledgeRelationshipSummary struct {
 		ID          uuid.UUID `json:"id"`
-		Kind        string    `json:"kind"`
-		Subkind     string    `json:"subkind"`
+		Predicate   string    `json:"predicate"`
 		DisplayName string    `json:"display_name"`
 	}
 
@@ -70,15 +69,15 @@ type (
 
 var SummarizeSystemNeighborhoodTool = defineTool[ToolDefinition[SummarizeSystemNeighborhoodToolInput, SummarizeSystemNeighborhoodToolOutput]](
 	"summarize_system_neighborhood",
-	"Summarize the one-hop knowledge graph neighborhood of the system analysis subject or an included entity, grouped by direction and relationship kind.",
+	"Summarize the one-hop knowledge graph neighborhood of the system analysis subject or an included entity, grouped by direction and relationship predicate.",
 )
 
 type (
 	ExploreSystemNeighborhoodToolInput struct {
-		EntityID         *string `json:"entity_id,omitempty" jsonschema:"description=Knowledge entity to explore. Omit to use the default analysis subject"`
-		RelationshipKind *string `json:"relationship_kind,omitempty" jsonschema:"description=Optional exact relationship kind,minLength=1"`
-		NeighborKind     *string `json:"neighbor_kind,omitempty" jsonschema:"description=Optional exact kind of the entity at the opposite endpoint,minLength=1"`
-		Offset           *int    `json:"offset,omitempty" jsonschema:"description=Zero-based result offset,minimum=0"`
+		EntityID              *string `json:"entity_id,omitempty" jsonschema:"description=Knowledge entity to explore. Omit to use the default analysis subject"`
+		RelationshipPredicate *string `json:"relationship_predicate,omitempty" jsonschema:"description=Optional exact relationship predicate,minLength=1"`
+		NeighborCategory      *string `json:"neighbor_category,omitempty" jsonschema:"description=Optional category of the entity at the opposite endpoint,minLength=1"`
+		Offset                *int    `json:"offset,omitempty" jsonschema:"description=Zero-based result offset,minimum=0"`
 	}
 
 	ExploreSystemNeighborhoodToolOutput struct {

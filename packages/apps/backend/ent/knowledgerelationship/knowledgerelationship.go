@@ -23,10 +23,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldKind holds the string denoting the kind field in the database.
-	FieldKind = "kind"
-	// FieldSubkind holds the string denoting the subkind field in the database.
-	FieldSubkind = "subkind"
+	// FieldPredicate holds the string denoting the predicate field in the database.
+	FieldPredicate = "predicate"
 	// FieldSourceEntityID holds the string denoting the source_entity_id field in the database.
 	FieldSourceEntityID = "source_entity_id"
 	// FieldTargetEntityID holds the string denoting the target_entity_id field in the database.
@@ -77,8 +75,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldKind,
-	FieldSubkind,
+	FieldPredicate,
 	FieldSourceEntityID,
 	FieldTargetEntityID,
 }
@@ -107,43 +104,56 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// SubkindValidator is a validator for the "subkind" field. It is called by the builders before save.
-	SubkindValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
 
-// Kind defines the type for the "kind" enum field.
-type Kind string
+// Predicate defines the type for the "predicate" enum field.
+type Predicate string
 
-// Kind values.
+// Predicate values.
 const (
-	KindContains       Kind = "contains"
-	KindInteractsWith  Kind = "interacts_with"
-	KindDependsOn      Kind = "depends_on"
-	KindRunsOn         Kind = "runs_on"
-	KindOwns           Kind = "owns"
-	KindSupports       Kind = "supports"
-	KindParticipatesIn Kind = "participates_in"
-	KindControls       Kind = "controls"
-	KindObserves       Kind = "observes"
-	KindInfluences     Kind = "influences"
-	KindConstrains     Kind = "constrains"
-	KindAddresses      Kind = "addresses"
-	KindImpacts        Kind = "impacts"
+	PredicateContains       Predicate = "contains"
+	PredicateInteractsWith  Predicate = "interacts_with"
+	PredicateCalls          Predicate = "calls"
+	PredicateReadsFrom      Predicate = "reads_from"
+	PredicateWritesTo       Predicate = "writes_to"
+	PredicatePublishesTo    Predicate = "publishes_to"
+	PredicateConsumesFrom   Predicate = "consumes_from"
+	PredicateDependsOn      Predicate = "depends_on"
+	PredicateRunsOn         Predicate = "runs_on"
+	PredicateOwns           Predicate = "owns"
+	PredicateSupports       Predicate = "supports"
+	PredicateParticipatesIn Predicate = "participates_in"
+	PredicateMemberOf       Predicate = "member_of"
+	PredicateControls       Predicate = "controls"
+	PredicateObserves       Predicate = "observes"
+	PredicateInfluences     Predicate = "influences"
+	PredicateConstrains     Predicate = "constrains"
+	PredicateAddresses      Predicate = "addresses"
+	PredicateImpacts        Predicate = "impacts"
+	PredicateTouches        Predicate = "touches"
+	PredicateUses           Predicate = "uses"
+	PredicateProcesses      Predicate = "processes"
+	PredicateIndexes        Predicate = "indexes"
+	PredicateStores         Predicate = "stores"
+	PredicateIndicates      Predicate = "indicates"
+	PredicateClassifiedAs   Predicate = "classified_as"
+	PredicateRespondsTo     Predicate = "responds_to"
+	PredicateMitigates      Predicate = "mitigates"
 )
 
-func (k Kind) String() string {
-	return string(k)
+func (pr Predicate) String() string {
+	return string(pr)
 }
 
-// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
-func KindValidator(k Kind) error {
-	switch k {
-	case KindContains, KindInteractsWith, KindDependsOn, KindRunsOn, KindOwns, KindSupports, KindParticipatesIn, KindControls, KindObserves, KindInfluences, KindConstrains, KindAddresses, KindImpacts:
+// PredicateValidator is a validator for the "predicate" field enum values. It is called by the builders before save.
+func PredicateValidator(pr Predicate) error {
+	switch pr {
+	case PredicateContains, PredicateInteractsWith, PredicateCalls, PredicateReadsFrom, PredicateWritesTo, PredicatePublishesTo, PredicateConsumesFrom, PredicateDependsOn, PredicateRunsOn, PredicateOwns, PredicateSupports, PredicateParticipatesIn, PredicateMemberOf, PredicateControls, PredicateObserves, PredicateInfluences, PredicateConstrains, PredicateAddresses, PredicateImpacts, PredicateTouches, PredicateUses, PredicateProcesses, PredicateIndexes, PredicateStores, PredicateIndicates, PredicateClassifiedAs, PredicateRespondsTo, PredicateMitigates:
 		return nil
 	default:
-		return fmt.Errorf("knowledgerelationship: invalid enum value for kind field: %q", k)
+		return fmt.Errorf("knowledgerelationship: invalid enum value for predicate field: %q", pr)
 	}
 }
 
@@ -170,14 +180,9 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByKind orders the results by the kind field.
-func ByKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKind, opts...).ToFunc()
-}
-
-// BySubkind orders the results by the subkind field.
-func BySubkind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSubkind, opts...).ToFunc()
+// ByPredicate orders the results by the predicate field.
+func ByPredicate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPredicate, opts...).ToFunc()
 }
 
 // BySourceEntityID orders the results by the source_entity_id field.

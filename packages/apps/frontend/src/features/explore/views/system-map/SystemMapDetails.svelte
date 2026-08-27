@@ -13,9 +13,11 @@
 	);
 	const attributes = $derived(entity?.attributes ?? relationship?.attributes);
 	const state = $derived(attributes?.latestState);
+	const classification = $derived(entity?.attributes.kind ?? relationship?.attributes.predicate);
 	const title = $derived(
 		state?.displayName ||
-			(entity?.attributes.aliases[0]?.attributes.providerSubjectRef ?? relationship?.attributes.kind) ||
+			(entity?.attributes.aliases[0]?.attributes.providerSubjectRef ??
+				relationship?.attributes.predicate) ||
 			"Knowledge detail"
 	);
 </script>
@@ -27,7 +29,7 @@
 				<div class="min-w-0">
 					<Card.Title class="truncate text-base">{title}</Card.Title>
 					<Card.Description>
-						{entity ? "Entity" : "Relationship"} · {attributes?.kind.replaceAll("_", " ")}
+						{entity ? "Entity" : "Relationship"} · {classification?.replaceAll("_", " ")}
 					</Card.Description>
 				</div>
 				<Button.Root

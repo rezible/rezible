@@ -13,6 +13,7 @@ import (
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
@@ -63,8 +64,8 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 		ProviderSubjectRef: apiSubjectRef,
 	}
 	apiEntityRef := ent.KnowledgeEntityRef{
-		Kind:            kne.KindContainer,
-		Subkind:         "service",
+		Category:        kne.CategoryContainer,
+		Kind:            "service",
 		SubjectAliasRef: apiAliasRef,
 	}
 
@@ -102,8 +103,8 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 		ProviderSubjectRef: databaseSubjectRef,
 	}
 	databaseEntity := ent.KnowledgeEntityRef{
-		Kind:            kne.KindContainer,
-		Subkind:         "database",
+		Category:        kne.CategoryContainer,
+		Kind:            "database",
 		SubjectAliasRef: databaseEntityAlias,
 	}
 
@@ -124,10 +125,9 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 		ProviderSubjectRef: apiDbSubjectRef,
 	}
 	apiDbRelationshipRef := ent.KnowledgeRelationshipRef{
-		Kind:            knr.KindInteractsWith,
+		Predicate:       knr.PredicateUses,
 		SubjectAliasRef: apiDbRelationshipAlias,
 		Source:          apiEntityRef,
-		Subkind:         "uses",
 		Target:          databaseEntity,
 	}
 	relEvidenceRef := ent.KnowledgeEvidenceRef{
@@ -167,8 +167,8 @@ func (s *KnowledgeGraphServiceSuite) TestBoundedViewIncludesIsolatedRootEntity()
 		ProviderSubjectRef: "service:api",
 	}
 	apiEntityRef := ent.KnowledgeEntityRef{
-		Kind:            kne.KindContainer,
-		Subkind:         "service",
+		Category:        kne.CategoryContainer,
+		Kind:            "service",
 		SubjectAliasRef: apiAliasRef,
 	}
 
@@ -210,4 +210,79 @@ func (s *KnowledgeGraphServiceSuite) TestBoundedViewIncludesIsolatedRootEntity()
 	r.Len(view.Entities, 1)
 	r.Len(view.Relationships, 0)
 	r.Equal(rootEntityId, view.Entities[0].ID)
+}
+
+func (s *KnowledgeGraphServiceSuite) TestKnowledgeSubjectAliasIntegrity() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+	service := s.knowledgeService(tdb)
+
+	source := client.KnowledgeEntity.Create().
+		SetCategory(kne.CategoryActor).
+		SetKind("team").
+		SaveX(ctx)
+	target := client.KnowledgeEntity.Create().
+		SetCategory(kne.CategoryContainer).
+		SetKind("service").
+		SaveX(ctx)
+	relationship := client.KnowledgeRelationship.Create().
+		SetPredicate(knr.PredicateOwns).
+		SetSourceEntityID(source.ID).
+		SetTargetEntityID(target.ID).
+		SaveX(ctx)
+
+	_, invalidSubjectErr := client.KnowledgeSubjectAlias.Create().
+		SetSubjectKind(ksa.SubjectKindEntity).
+		SetProvider("test").
+		SetProviderSource("aliases").
+		SetProviderSubjectRef("invalid-subject").
+		SetEntityID(source.ID).
+		SetRelationshipID(relationship.ID).
+		Save(ctx)
+	s.Require().Error(invalidSubjectErr)
+
+	client.KnowledgeSubjectAlias.Create().
+		SetSubjectKind(ksa.SubjectKindEntity).
+		SetProvider("test").
+		SetProviderSource("aliases").
+		SetProviderSubjectRef("shared-resource").
+		SetEntityID(source.ID).
+		SaveX(ctx)
+	_, duplicateResourceErr := client.KnowledgeSubjectAlias.Create().
+		SetSubjectKind(ksa.SubjectKindRelationship).
+		SetProvider("test").
+		SetProviderSource("aliases").
+		SetProviderSubjectRef("shared-resource").
+		SetRelationshipID(relationship.ID).
+		Save(ctx)
+	s.Require().Error(duplicateResourceErr)
+
+	ref := ent.KnowledgeRelationshipRef{
+		Predicate: knr.PredicateOwns,
+		SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
+			Provider:           "test",
+			ProviderSource:     "aliases",
+			ProviderSubjectRef: "shared-resource",
+		},
+	}
+	_, wrongSubjectKindErr := service.lookupExistingRelationshipByRef(ctx, ref, source.ID, target.ID)
+	s.Require().ErrorIs(wrongSubjectKindErr, rez.ErrConflict)
+
+	client.KnowledgeSubjectAlias.Create().
+		SetSubjectKind(ksa.SubjectKindRelationship).
+		SetProvider("test").
+		SetProviderSource("aliases").
+		SetProviderSubjectRef("relationship-resource").
+		SetRelationshipID(relationship.ID).
+		SaveX(ctx)
+	ref.SubjectAliasRef.ProviderSubjectRef = "relationship-resource"
+	_, wrongTopologyErr := service.lookupExistingRelationshipByRef(ctx, ref, target.ID, source.ID)
+	s.Require().ErrorIs(wrongTopologyErr, rez.ErrConflict)
+
+	client.KnowledgeRelationship.DeleteOneID(relationship.ID).ExecX(ctx)
+	remainingRelationshipAliases := client.KnowledgeSubjectAlias.Query().
+		Where(ksa.ProviderSubjectRef("relationship-resource")).
+		CountX(ctx)
+	s.Zero(remainingRelationshipAliases)
 }

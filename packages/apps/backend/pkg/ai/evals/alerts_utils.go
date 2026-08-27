@@ -40,8 +40,8 @@ type subjectObservation struct {
 
 func seedBaseAlert(ctx context.Context, client *ent.Client, referenceTime time.Time) (alertFixture, rezai.EvalScenarioSeed, error) {
 	alertEntity, entityErr := client.KnowledgeEntity.Create().
-		SetKind(kne.KindSignal).
-		SetSubkind("alert").
+		SetCategory(kne.CategorySignal).
+		SetKind("alert").
 		Save(ctx)
 	if entityErr != nil {
 		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create alert knowledge entity: %w", entityErr)

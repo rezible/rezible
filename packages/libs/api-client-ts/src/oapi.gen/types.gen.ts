@@ -1483,10 +1483,10 @@ export type KnowledgeGraphEntity = {
 
 export type KnowledgeGraphEntityAttributes = {
     aliases: Array<KnowledgeGraphSubjectAlias>;
+    category: string;
     createdAt: string;
     kind: string;
     latestState?: KnowledgeGraphSubjectState;
-    subkind: string;
     updatedAt: string;
 };
 
@@ -1498,10 +1498,9 @@ export type KnowledgeGraphRelationship = {
 export type KnowledgeGraphRelationshipAttributes = {
     aliases: Array<KnowledgeGraphSubjectAlias>;
     createdAt: string;
-    kind: string;
     latestState?: KnowledgeGraphSubjectState;
+    predicate: string;
     sourceEntityId: string;
-    subkind: string;
     targetEntityId: string;
     updatedAt: string;
 };
@@ -7010,8 +7009,8 @@ export type ListKnowledgeGraphEntitiesData = {
         offset?: number;
         search?: string;
         archived?: boolean;
+        category?: Array<string>;
         kind?: Array<string>;
-        subkind?: Array<string>;
         provider?: string;
         providerSource?: string;
         subjectKind?: string;
@@ -7112,8 +7111,7 @@ export type ListKnowledgeGraphRelationshipsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
-        kind?: Array<string>;
-        subkind?: Array<string>;
+        predicate?: Array<string>;
         entityId?: string;
         sourceEntityId?: string;
         targetEntityId?: string;
@@ -7212,7 +7210,7 @@ export type GetKnowledgeGraphViewData = {
     query?: {
         entityId?: string;
         depth?: number;
-        relationshipKind?: Array<string>;
+        relationshipPredicate?: Array<string>;
     };
     url: '/knowledge_graph/view';
 };

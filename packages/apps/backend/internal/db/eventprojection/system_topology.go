@@ -22,7 +22,7 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, e *p
 
 	properties := make(map[string]any, len(attrs.Properties)+1)
 	maps.Copy(properties, attrs.Properties)
-	properties["component_subkind"] = attrs.Subkind
+	properties["component_kind"] = attrs.Kind
 
 	evidence := ent.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event),
@@ -34,8 +34,8 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, e *p
 			Properties:  properties,
 		},
 		SubjectEntity: &ent.KnowledgeEntityRef{
+			Category:        attrs.Category,
 			Kind:            attrs.Kind,
-			Subkind:         attrs.Subkind,
 			SubjectAliasRef: event.KnowledgeSubjectAliasRef(),
 		},
 	}
@@ -51,8 +51,8 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 	attrs := e.Attributes
 
 	sourceEntityRef := ent.KnowledgeEntityRef{
-		Kind:    attrs.SourceKind,
-		Subkind: attrs.SourceSubkind,
+		Category: attrs.SourceCategory,
+		Kind:     attrs.SourceKind,
 		SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
 			Provider:           event.Provider,
 			ProviderSource:     event.ProviderSource,
@@ -61,8 +61,8 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 	}
 
 	targetEntityRef := ent.KnowledgeEntityRef{
-		Kind:    attrs.TargetKind,
-		Subkind: attrs.TargetSubkind,
+		Category: attrs.TargetCategory,
+		Kind:     attrs.TargetKind,
 		SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
 			Provider:           event.Provider,
 			ProviderSource:     event.ProviderSource,
@@ -75,8 +75,7 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 		Assertion:   knowledgeAssertionSystemRelationshipExists,
 		EffectiveAt: event.OccurredAt,
 		SubjectRelationship: &ent.KnowledgeRelationshipRef{
-			Kind:            attrs.Kind,
-			Subkind:         attrs.Subkind,
+			Predicate:       attrs.Predicate,
 			SubjectAliasRef: event.KnowledgeSubjectAliasRef(),
 			Source:          sourceEntityRef,
 			Target:          targetEntityRef,

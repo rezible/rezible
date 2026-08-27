@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	entschema "entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -12,7 +14,7 @@ import (
 )
 
 var (
-	knowledgeEntityKinds = []string{
+	knowledgeEntityCategories = []string{
 		"actor",          // Human or organizational participant; e.g. customer, on-call team.
 		"system",         // Top-level software or business system; e.g. ecommerce platform, billing system.
 		"container",      // Independently deployable or runnable unit; e.g. service, database.
@@ -27,20 +29,35 @@ var (
 		"signal",         // Observable telemetry or notification; e.g. alert, metric.
 	}
 
-	knowledgeRelationshipKinds = []string{
+	knowledgeRelationshipPredicates = []string{
 		"contains",        // Structural containment; e.g. system contains service or namespace contains pod.
 		"interacts_with",  // Runtime or logical interaction; e.g. service calls API or worker reads queue.
+		"calls",           // Request interaction; e.g. frontend calls API.
+		"reads_from",      // Data read; e.g. service reads from database.
+		"writes_to",       // Data write; e.g. service writes to database.
+		"publishes_to",    // Message publication; e.g. service publishes to queue.
+		"consumes_from",   // Message consumption; e.g. worker consumes from queue.
 		"depends_on",      // Required dependency; e.g. service depends on database or provider.
 		"runs_on",         // Runtime placement; e.g. service runs on cluster or pod runs on node.
 		"owns",            // Accountability or stewardship; e.g. team owns service or group owns process.
 		"supports",        // Capability or dependency support; e.g. service supports checkout flow.
 		"participates_in", // Actor or object participation; e.g. user in team or service in process.
+		"member_of",       // Membership; e.g. user is a member of team.
 		"controls",        // Control exerted over another subject; e.g. runbook controls recovery or rate limit controls API.
 		"observes",        // Telemetry or observation path; e.g. alert observes service or dashboard observes queue.
 		"influences",      // Non-binding causal pressure; e.g. regulation influences decision.
 		"constrains",      // Hard limit or rule; e.g. SLO constrains design or policy constrains access.
 		"addresses",       // Response to concern or risk; e.g. decision addresses hazard.
 		"impacts",         // Effect or consequence; e.g. incident impacts customer or deploy impacts service.
+		"touches",         // Change contact; e.g. code change touches repository.
+		"uses",            // General use when a more precise interaction predicate is unavailable.
+		"processes",       // Domain processing; e.g. service processes order.
+		"indexes",         // Indexing; e.g. worker indexes product.
+		"stores",          // Storage; e.g. database stores customer.
+		"indicates",       // Evidence signal; e.g. alert episode indicates operational situation.
+		"classified_as",   // Classification; e.g. operational situation is classified as hazard.
+		"responds_to",     // Response linkage; e.g. incident responds to operational situation.
+		"mitigates",       // Risk reduction; e.g. control mitigates hazard.
 	}
 )
 
@@ -59,11 +76,13 @@ func (KnowledgeEntity) Mixin() []ent.Mixin {
 func (KnowledgeEntity) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.Enum("kind").
-			Values(knowledgeEntityKinds...).
-			Comment("Stable semantic category used by graph queries, generated views, and agent reasoning."),
-		field.String("subkind").NotEmpty().
-			Comment("Provider or domain subtype used for filtering, legends, and display; not product control flow."),
+		field.Enum("category").
+			Values(knowledgeEntityCategories...).
+			Comment("Stable semantic category used by graph queries, generated views, and agent reasoning.").
+			Immutable(),
+		field.String("kind").NotEmpty().
+			Comment("Canonical domain type within the entity category.").
+			Immutable(),
 	}
 }
 
@@ -80,7 +99,7 @@ func (KnowledgeEntity) Edges() []ent.Edge {
 
 func (KnowledgeEntity) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "kind", "subkind"),
+		index.Fields("tenant_id", "category", "kind"),
 	}
 }
 
@@ -99,11 +118,9 @@ func (KnowledgeRelationship) Mixin() []ent.Mixin {
 func (KnowledgeRelationship) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.Enum("kind").
-			Values(knowledgeRelationshipKinds...).
-			Immutable(),
-		field.String("subkind").NotEmpty().
-			Comment("Provider or domain subtype").
+		field.Enum("predicate").
+			Values(knowledgeRelationshipPredicates...).
+			Comment("Canonical directional meaning from source entity to target entity.").
 			Immutable(),
 		field.UUID("source_entity_id", uuid.UUID{}).Immutable(),
 		field.UUID("target_entity_id", uuid.UUID{}).Immutable(),
@@ -129,15 +146,23 @@ func (KnowledgeRelationship) Edges() []ent.Edge {
 
 func (KnowledgeRelationship) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "kind", "subkind", "source_entity_id", "target_entity_id").Unique(),
+		index.Fields("tenant_id", "predicate", "source_entity_id", "target_entity_id").Unique(),
 		index.Fields("tenant_id", "source_entity_id"),
 		index.Fields("tenant_id", "target_entity_id"),
-		index.Fields("tenant_id", "kind", "subkind"),
+		index.Fields("tenant_id", "predicate"),
 	}
 }
 
 type KnowledgeSubjectAlias struct {
 	ent.Schema
+}
+
+func (KnowledgeSubjectAlias) Annotations() []entschema.Annotation {
+	return []entschema.Annotation{
+		entsql.Annotation{Checks: map[string]string{
+			"knowledge_subject_alias_exactly_one_subject": "(subject_kind = 'entity' AND entity_id IS NOT NULL AND relationship_id IS NULL) OR (subject_kind = 'relationship' AND relationship_id IS NOT NULL AND entity_id IS NULL)",
+		}},
+	}
 }
 
 func (KnowledgeSubjectAlias) Mixin() []ent.Mixin {
@@ -172,7 +197,6 @@ func (KnowledgeSubjectAlias) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields(
 			"tenant_id",
-			"subject_kind",
 			"provider",
 			"provider_source",
 			"provider_subject_ref",
@@ -182,28 +206,16 @@ func (KnowledgeSubjectAlias) Indexes() []ent.Index {
 	}
 }
 
-/* TODO: annotation/db check
-CHECK (
-    (
-      subject_kind = 'entity'
-      AND entity_id IS NOT NULL
-      AND relationship_id IS NULL
-    )
-    OR
-    (
-      subject_kind = 'relationship'
-      AND relationship_id IS NOT NULL
-      AND entity_id IS NULL
-    )
-  )
-*/
-
 func (KnowledgeSubjectAlias) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("entity", KnowledgeEntity.Type).
-			Unique().Field("entity_id"),
+			Unique().
+			Field("entity_id").
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("relationship", KnowledgeRelationship.Type).
-			Unique().Field("relationship_id"),
+			Unique().
+			Field("relationship_id").
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 
 		edge.From("evidence", KnowledgeEvidence.Type).
 			Ref("subject_alias"),

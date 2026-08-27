@@ -165,7 +165,7 @@ export class SystemMapViewController {
 			}
 		}
 
-		const byLayer = new Map<number, KnowledgeGraphEntity[]>();
+		const byLayer = new SvelteMap<number, KnowledgeGraphEntity[]>();
 		for (const entity of this.entities.values()) {
 			const layer = distances.get(entity.id) ?? 5;
 			const entries = byLayer.get(layer) ?? [];
@@ -192,7 +192,7 @@ export class SystemMapViewController {
 		const edges: Edge<SystemMapEdgeData>[] = [];
 		for (const relationship of [...this.relationships.values()]) {
 			const { id, attributes: attrs } = relationship;
-			const label = attrs.latestState?.displayName || attrs.kind.replaceAll("_", " ");
+			const label = attrs.latestState?.displayName || attrs.predicate.replaceAll("_", " ");
 			edges.push({
 				id: id,
 				type: "default",

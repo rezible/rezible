@@ -155,8 +155,8 @@ type (
 	// SystemComponentSubjectAttributes are the provider-neutral attributes persisted for system component observations.
 	SystemComponentSubjectAttributes struct {
 		ExternalRef string         `json:"external_ref" validate:"required"`
-		Kind        kne.Kind       `json:"kind" validate:"required"`
-		Subkind     string         `json:"subkind" validate:"required"`
+		Category    kne.Category   `json:"category" validate:"required"`
+		Kind        string         `json:"kind" validate:"required"`
 		DisplayName string         `json:"display_name" validate:"required"`
 		Description string         `json:"description"`
 		Properties  map[string]any `json:"properties"`
@@ -176,17 +176,16 @@ type (
 	// SystemRelationshipSubjectAttributes are the provider-neutral attributes persisted for system relationship observations.
 	SystemRelationshipSubjectAttributes struct {
 		ExternalRef       string         `json:"external_ref" validate:"required"`
-		Kind              knr.Kind       `json:"kind" validate:"required"`
-		Subkind           string         `json:"subkind" validate:"required"`
+		Predicate         knr.Predicate  `json:"predicate" validate:"required"`
 		DisplayName       string         `json:"display_name"`
 		Description       string         `json:"description"`
 		SourceExternalRef string         `json:"source_external_ref" validate:"required"`
-		SourceKind        kne.Kind       `json:"source_kind" validate:"required"`
-		SourceSubkind     string         `json:"source_subkind" validate:"required"`
+		SourceCategory    kne.Category   `json:"source_category" validate:"required"`
+		SourceKind        string         `json:"source_kind" validate:"required"`
 		SourceDisplayName string         `json:"source_display_name" validate:"required"`
 		TargetExternalRef string         `json:"target_external_ref" validate:"required"`
-		TargetKind        kne.Kind       `json:"target_kind" validate:"required"`
-		TargetSubkind     string         `json:"target_subkind" validate:"required"`
+		TargetCategory    kne.Category   `json:"target_category" validate:"required"`
+		TargetKind        string         `json:"target_kind" validate:"required"`
 		TargetDisplayName string         `json:"target_display_name" validate:"required"`
 		Properties        map[string]any `json:"properties"`
 	}

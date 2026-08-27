@@ -1520,7 +1520,7 @@ export const requestIntegrationEventSync = <ThrowOnError extends boolean = false
  * List Knowledge Graph Entities
  */
 export const listKnowledgeGraphEntities = <ThrowOnError extends boolean = false>(options?: Options<ListKnowledgeGraphEntitiesData, ThrowOnError>): RequestResult<ListKnowledgeGraphEntitiesResponses, ListKnowledgeGraphEntitiesErrors, ThrowOnError> => (options?.client ?? client).get<ListKnowledgeGraphEntitiesResponses, ListKnowledgeGraphEntitiesErrors, ThrowOnError>({
-    querySerializer: { parameters: { kind: { array: { explode: false } }, subkind: { array: { explode: false } } } },
+    querySerializer: { parameters: { category: { array: { explode: false } }, kind: { array: { explode: false } } } },
     security: [{
             key: 'app-cookie',
             scheme: 'bearer',
@@ -1555,7 +1555,7 @@ export const getKnowledgeGraphEntity = <ThrowOnError extends boolean = false>(op
  * List Knowledge Graph Relationships
  */
 export const listKnowledgeGraphRelationships = <ThrowOnError extends boolean = false>(options?: Options<ListKnowledgeGraphRelationshipsData, ThrowOnError>): RequestResult<ListKnowledgeGraphRelationshipsResponses, ListKnowledgeGraphRelationshipsErrors, ThrowOnError> => (options?.client ?? client).get<ListKnowledgeGraphRelationshipsResponses, ListKnowledgeGraphRelationshipsErrors, ThrowOnError>({
-    querySerializer: { parameters: { kind: { array: { explode: false } }, subkind: { array: { explode: false } } } },
+    querySerializer: { parameters: { predicate: { array: { explode: false } } } },
     security: [{
             key: 'app-cookie',
             scheme: 'bearer',
@@ -1590,7 +1590,7 @@ export const getKnowledgeGraphRelationship = <ThrowOnError extends boolean = fal
  * Get Knowledge Graph View
  */
 export const getKnowledgeGraphView = <ThrowOnError extends boolean = false>(options?: Options<GetKnowledgeGraphViewData, ThrowOnError>): RequestResult<GetKnowledgeGraphViewResponses, GetKnowledgeGraphViewErrors, ThrowOnError> => (options?.client ?? client).get<GetKnowledgeGraphViewResponses, GetKnowledgeGraphViewErrors, ThrowOnError>({
-    querySerializer: { parameters: { relationshipKind: { array: { explode: false } } } },
+    querySerializer: { parameters: { relationshipPredicate: { array: { explode: false } } } },
     security: [{
             key: 'app-cookie',
             scheme: 'bearer',

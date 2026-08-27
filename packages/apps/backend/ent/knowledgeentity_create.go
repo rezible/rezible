@@ -61,15 +61,15 @@ func (_c *KnowledgeEntityCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeEn
 	return _c
 }
 
-// SetKind sets the "kind" field.
-func (_c *KnowledgeEntityCreate) SetKind(v knowledgeentity.Kind) *KnowledgeEntityCreate {
-	_c.mutation.SetKind(v)
+// SetCategory sets the "category" field.
+func (_c *KnowledgeEntityCreate) SetCategory(v knowledgeentity.Category) *KnowledgeEntityCreate {
+	_c.mutation.SetCategory(v)
 	return _c
 }
 
-// SetSubkind sets the "subkind" field.
-func (_c *KnowledgeEntityCreate) SetSubkind(v string) *KnowledgeEntityCreate {
-	_c.mutation.SetSubkind(v)
+// SetKind sets the "kind" field.
+func (_c *KnowledgeEntityCreate) SetKind(v string) *KnowledgeEntityCreate {
+	_c.mutation.SetKind(v)
 	return _c
 }
 
@@ -209,20 +209,20 @@ func (_c *KnowledgeEntityCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeEntity.updated_at"`)}
 	}
+	if _, ok := _c.mutation.Category(); !ok {
+		return &ValidationError{Name: "category", err: errors.New(`ent: missing required field "KnowledgeEntity.category"`)}
+	}
+	if v, ok := _c.mutation.Category(); ok {
+		if err := knowledgeentity.CategoryValidator(v); err != nil {
+			return &ValidationError{Name: "category", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.category": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "KnowledgeEntity.kind"`)}
 	}
 	if v, ok := _c.mutation.Kind(); ok {
 		if err := knowledgeentity.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.kind": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.Subkind(); !ok {
-		return &ValidationError{Name: "subkind", err: errors.New(`ent: missing required field "KnowledgeEntity.subkind"`)}
-	}
-	if v, ok := _c.mutation.Subkind(); ok {
-		if err := knowledgeentity.SubkindValidator(v); err != nil {
-			return &ValidationError{Name: "subkind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.subkind": %w`, err)}
 		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
@@ -273,13 +273,13 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		_spec.SetField(knowledgeentity.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.Kind(); ok {
-		_spec.SetField(knowledgeentity.FieldKind, field.TypeEnum, value)
-		_node.Kind = value
+	if value, ok := _c.mutation.Category(); ok {
+		_spec.SetField(knowledgeentity.FieldCategory, field.TypeEnum, value)
+		_node.Category = value
 	}
-	if value, ok := _c.mutation.Subkind(); ok {
-		_spec.SetField(knowledgeentity.FieldSubkind, field.TypeString, value)
-		_node.Subkind = value
+	if value, ok := _c.mutation.Kind(); ok {
+		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
+		_node.Kind = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -426,30 +426,6 @@ func (u *KnowledgeEntityUpsert) UpdateUpdatedAt() *KnowledgeEntityUpsert {
 	return u
 }
 
-// SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsert) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldKind, v)
-	return u
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateKind() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldKind)
-	return u
-}
-
-// SetSubkind sets the "subkind" field.
-func (u *KnowledgeEntityUpsert) SetSubkind(v string) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldSubkind, v)
-	return u
-}
-
-// UpdateSubkind sets the "subkind" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateSubkind() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldSubkind)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -469,6 +445,12 @@ func (u *KnowledgeEntityUpsertOne) UpdateNewValues() *KnowledgeEntityUpsertOne {
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(knowledgeentity.FieldTenantID)
+		}
+		if _, exists := u.create.mutation.Category(); exists {
+			s.SetIgnore(knowledgeentity.FieldCategory)
+		}
+		if _, exists := u.create.mutation.Kind(); exists {
+			s.SetIgnore(knowledgeentity.FieldKind)
 		}
 	}))
 	return u
@@ -526,34 +508,6 @@ func (u *KnowledgeEntityUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeEntityUps
 func (u *KnowledgeEntityUpsertOne) UpdateUpdatedAt() *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsertOne) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetKind(v)
-	})
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateKind() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateKind()
-	})
-}
-
-// SetSubkind sets the "subkind" field.
-func (u *KnowledgeEntityUpsertOne) SetSubkind(v string) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetSubkind(v)
-	})
-}
-
-// UpdateSubkind sets the "subkind" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateSubkind() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateSubkind()
 	})
 }
 
@@ -743,6 +697,12 @@ func (u *KnowledgeEntityUpsertBulk) UpdateNewValues() *KnowledgeEntityUpsertBulk
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(knowledgeentity.FieldTenantID)
 			}
+			if _, exists := b.mutation.Category(); exists {
+				s.SetIgnore(knowledgeentity.FieldCategory)
+			}
+			if _, exists := b.mutation.Kind(); exists {
+				s.SetIgnore(knowledgeentity.FieldKind)
+			}
 		}
 	}))
 	return u
@@ -800,34 +760,6 @@ func (u *KnowledgeEntityUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeEntityUp
 func (u *KnowledgeEntityUpsertBulk) UpdateUpdatedAt() *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsertBulk) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetKind(v)
-	})
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateKind() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateKind()
-	})
-}
-
-// SetSubkind sets the "subkind" field.
-func (u *KnowledgeEntityUpsertBulk) SetSubkind(v string) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetSubkind(v)
-	})
-}
-
-// UpdateSubkind sets the "subkind" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateSubkind() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateSubkind()
 	})
 }
 

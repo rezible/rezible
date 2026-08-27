@@ -20,8 +20,8 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 	attributes := event.Attributes
 
 	alertEntityRef := ent.KnowledgeEntityRef{
-		Kind:            kne.KindSignal,
-		Subkind:         knowledgeEntitySubkindAlert,
+		Category:        kne.CategorySignal,
+		Kind:            knowledgeEntityKindAlert,
 		SubjectAliasRef: event.Event.KnowledgeSubjectAliasRef(),
 	}
 	alertEntityEvidence := ent.KnowledgeEvidenceRef{
@@ -61,7 +61,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 		}
 
 		projected = append(projected, rez.ProjectedEntityRef{
-			Kind: knowledgeEntitySubkindAlert,
+			Kind: knowledgeEntityKindAlert,
 			Id:   alertID,
 		})
 

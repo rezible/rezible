@@ -884,10 +884,10 @@ func init() {
 	knowledgeentity.DefaultUpdatedAt = knowledgeentityDescUpdatedAt.Default.(func() time.Time)
 	// knowledgeentity.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	knowledgeentity.UpdateDefaultUpdatedAt = knowledgeentityDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// knowledgeentityDescSubkind is the schema descriptor for subkind field.
-	knowledgeentityDescSubkind := knowledgeentityFields[2].Descriptor()
-	// knowledgeentity.SubkindValidator is a validator for the "subkind" field. It is called by the builders before save.
-	knowledgeentity.SubkindValidator = knowledgeentityDescSubkind.Validators[0].(func(string) error)
+	// knowledgeentityDescKind is the schema descriptor for kind field.
+	knowledgeentityDescKind := knowledgeentityFields[2].Descriptor()
+	// knowledgeentity.KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	knowledgeentity.KindValidator = knowledgeentityDescKind.Validators[0].(func(string) error)
 	// knowledgeentityDescID is the schema descriptor for id field.
 	knowledgeentityDescID := knowledgeentityFields[0].Descriptor()
 	// knowledgeentity.DefaultID holds the default value on creation for the id field.
@@ -940,10 +940,6 @@ func init() {
 	knowledgerelationship.DefaultUpdatedAt = knowledgerelationshipDescUpdatedAt.Default.(func() time.Time)
 	// knowledgerelationship.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	knowledgerelationship.UpdateDefaultUpdatedAt = knowledgerelationshipDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// knowledgerelationshipDescSubkind is the schema descriptor for subkind field.
-	knowledgerelationshipDescSubkind := knowledgerelationshipFields[2].Descriptor()
-	// knowledgerelationship.SubkindValidator is a validator for the "subkind" field. It is called by the builders before save.
-	knowledgerelationship.SubkindValidator = knowledgerelationshipDescSubkind.Validators[0].(func(string) error)
 	// knowledgerelationshipDescID is the schema descriptor for id field.
 	knowledgerelationshipDescID := knowledgerelationshipFields[0].Descriptor()
 	// knowledgerelationship.DefaultID holds the default value on creation for the id field.
