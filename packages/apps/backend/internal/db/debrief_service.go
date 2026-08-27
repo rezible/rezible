@@ -419,17 +419,16 @@ func makeDebriefQuestionMatcher(inc *ent.Incident) func(question *ent.IncidentDe
 	}
 }
 
-func (s *DebriefService) RegisterJobs(registry *jobs.Registry) error {
-	if registerErr := registry.AddWorkerFunc(s.handleSendDebriefRequests); registerErr != nil {
-		return fmt.Errorf("send debrief requests: %w", registerErr)
-	}
-	if registerErr := registry.AddWorkerFunc(s.handleGenerateDebriefResponse); registerErr != nil {
-		return fmt.Errorf("generate debrief response: %w", registerErr)
-	}
-	if registerErr := registry.AddWorkerFunc(s.handleGenerateSuggestions); registerErr != nil {
-		return fmt.Errorf("generate debrief suggestions: %w", registerErr)
-	}
-	return nil
+func NewSendIncidentDebriefRequestsWorker(service *DebriefService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.handleSendDebriefRequests)
+}
+
+func NewGenerateIncidentDebriefResponseWorker(service *DebriefService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.handleGenerateDebriefResponse)
+}
+
+func NewGenerateIncidentDebriefSuggestionsWorker(service *DebriefService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.handleGenerateSuggestions)
 }
 
 func (s *DebriefService) handleSendDebriefRequests(ctx context.Context, args jobs.SendIncidentDebriefRequests) error {

@@ -8,7 +8,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/integrations/slack"
-	"github.com/rezible/rezible/pkg/jobs"
 	"golang.org/x/oauth2"
 )
 
@@ -20,10 +19,6 @@ func MakeIntegration(appSvc *slackintegration.AppService[*App]) *Integration {
 
 type Integration struct {
 	appSvc *slackintegration.AppService[*App]
-}
-
-func (i *Integration) RegisterJobs(registry *jobs.Registry) error {
-	return i.appSvc.App().RegisterJobs(registry)
 }
 
 func (i *Integration) Lifecycle() *rez.ServiceLifecycle {

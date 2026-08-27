@@ -10,7 +10,6 @@ import (
 
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
-	"github.com/riverqueue/river"
 	"github.com/samber/do/v2"
 	"golang.org/x/sync/errgroup"
 
@@ -134,16 +133,6 @@ func getServiceLifecyclesFor[Entrypoint rez.LifecycleService](i do.Injector) (se
 		},
 	})
 
-	jobsRegistry := do.MustInvoke[*jobs.Registry](i)
-
-	b.addInvokeHook("registerJobs", func(svcName string, r jobs.JobRegistrar) error {
-		return r.RegisterJobs(jobsRegistry)
-	})
-
-	b.addInvokeHook("registerWorkers", func(svcName string, r jobs.WorkerRegistrar) error {
-		return r.RegisterWorkers(jobsRegistry)
-	})
-
 	services := make(serviceLifecycles)
 	b.addInvokeHook("getServiceLifecycles", func(svcName string, ls rez.LifecycleService) error {
 		if lifecycle := ls.Lifecycle(); lifecycle != nil {
@@ -152,31 +141,11 @@ func getServiceLifecyclesFor[Entrypoint rez.LifecycleService](i do.Injector) (se
 		return nil
 	})
 
-	finalizers := map[string]finalizer{}
-	b.addInvokeHook("addFinalizers", func(svcName string, f finalizer) error {
-		finalizers[svcName] = f
-		return nil
-	})
-
-	b.addRunHook("addWorkers", func() error {
-		r := do.MustInvoke[jobs.WorkerRegistrar](i)
-		return r.RegisterWorkers(jobsRegistry)
-	})
-
-	b.addRunHook("finalizers", func() error {
-		for svcName, f := range finalizers {
-			if finErr := f.Finalize(); finErr != nil {
-				return fmt.Errorf("finalize %s: %w", svcName, finErr)
-			}
-		}
-		return nil
+	b.addInitHook("initJobs", func(r jobs.Registrar) error {
+		return r.Init(do.MustInvoke[jobs.Definition](i))
 	})
 
 	return services, b.runFor[Entrypoint]()
-}
-
-type finalizer interface {
-	Finalize() error
 }
 
 type (
@@ -193,7 +162,6 @@ type (
 		setupHooks  []setupHook[any]
 		invokeHooks []invokeHook[any]
 		initHooks   []func() error
-		runHooks    []func() error
 	}
 )
 
@@ -230,10 +198,14 @@ func (b *bootstrapper) addInvokeHook[S any](hookName string, hookFn invokeHook[S
 	})
 }
 
-func (b *bootstrapper) addRunHook(hookName string, hookFn func() error) {
-	b.runHooks = append(b.runHooks, func() error {
-		if fnErr := hookFn(); fnErr != nil {
-			return fmt.Errorf("[run hook %s]: %w", hookName, fnErr)
+func (b *bootstrapper) addInitHook[S any](hookName string, hookFn func(S) error) {
+	b.initHooks = append(b.initHooks, func() error {
+		s, invokeErr := do.Invoke[S](b.i)
+		if invokeErr != nil {
+			return fmt.Errorf("[init hook %s]: %w", hookName, invokeErr)
+		}
+		if fnErr := hookFn(s); fnErr != nil {
+			return fmt.Errorf("[init hook %s]: %w", hookName, fnErr)
 		}
 		return nil
 	})
@@ -260,6 +232,12 @@ func (b *bootstrapper) runFor[Entrypoint any]() error {
 		return fmt.Errorf("invoke entrypoint %T: %w", entrySvc, srvErr)
 	}
 
+	for _, hookFn := range b.initHooks {
+		if hookErr := hookFn(); hookErr != nil {
+			return fmt.Errorf("bootstrap: %w", hookErr)
+		}
+	}
+
 	for _, desc := range b.i.ListInvokedServices() {
 		svc, invErr := do.InvokeNamed[any](b.i, desc.Service)
 		if invErr != nil {
@@ -272,41 +250,5 @@ func (b *bootstrapper) runFor[Entrypoint any]() error {
 		}
 	}
 
-	for _, hookFn := range b.runHooks {
-		if hookErr := hookFn(); hookErr != nil {
-			return fmt.Errorf("bootstrap: %w", hookErr)
-		}
-	}
-
-	return nil
-}
-
-type defaultJobWorkers struct {
-	i do.Injector
-}
-
-func newDefaultWorkerRegistrar(i do.Injector) *defaultJobWorkers {
-	return &defaultJobWorkers{i: i}
-}
-
-func (r *defaultJobWorkers) RegisterWorkers(reg *jobs.Registry) error {
-	return errors.Join(
-		r.register[jobs.StartAgentSession](reg),
-		r.register[jobs.InvokeAgentTurn](reg),
-		r.register[jobs.SyncIntegrationSourceEvents](reg),
-	)
-}
-
-func (r *defaultJobWorkers) register[A river.JobArgs](reg *jobs.Registry) error {
-	kind := (*new(A)).Kind()
-	slog.Debug("registered job worker", "kind", kind)
-
-	worker, workerErr := do.Invoke[jobs.Worker[A]](r.i)
-	if workerErr != nil {
-		return fmt.Errorf("invoke worker for %q: %w", kind, workerErr)
-	}
-	if registerErr := reg.AddWorker(worker); registerErr != nil {
-		return fmt.Errorf("register worker for %q: %w", kind, registerErr)
-	}
 	return nil
 }

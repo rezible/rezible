@@ -62,7 +62,7 @@ func (s *ProviderEventPipelineService) queueIngest(ctx context.Context, ev rez.P
 		return false, fmt.Errorf("event provider_delivery_ref is required")
 	}
 
-	args := processProviderEventArgs{Event: ev}
+	args := ProcessProviderEventArgs{Event: ev}
 	insertOpts := args.InsertOpts()
 	jobRes, insertErr := s.jobs.Insert(ctx, args, &insertOpts)
 	if insertErr != nil {
@@ -89,7 +89,7 @@ func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier r
 		params := make([]river.InsertManyParams, len(batch))
 		for i, item := range batch {
 			params[i] = river.InsertManyParams{
-				Args:       processProviderEventArgs{Event: item.Event},
+				Args:       ProcessProviderEventArgs{Event: item.Event},
 				InsertOpts: &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}},
 			}
 		}

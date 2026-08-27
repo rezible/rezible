@@ -99,7 +99,7 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 
 	ev := s.makeTestEvent()
 
-	var capturedProcessArgs processProviderEventArgs
+	var capturedProcessArgs ProcessProviderEventArgs
 	jobSvc.EXPECT().
 		Insert(mock.Anything, mock.Anything, mock.Anything).
 		Run(func(_ context.Context, args river.JobArgs, opts *river.InsertOpts) {
@@ -107,7 +107,7 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 			s.True(opts.UniqueOpts.ByArgs)
 
 			var ok bool
-			capturedProcessArgs, ok = args.(processProviderEventArgs)
+			capturedProcessArgs, ok = args.(ProcessProviderEventArgs)
 			s.Require().True(ok)
 		}).
 		Return(&rivertype.JobInsertResult{}, nil).
@@ -168,7 +168,7 @@ func (s *ProviderEventPipelineServiceSuite) TestProcessProviderEventDoesNotReins
 
 	svc := s.newPipelineService(tdb, jobSvc, nil)
 
-	args := processProviderEventArgs{Event: s.makeTestEvent()}
+	args := ProcessProviderEventArgs{Event: s.makeTestEvent()}
 
 	s.Require().NoError(svc.HandleProcessEventJob(ctx, args))
 	s.Require().NoError(svc.HandleProcessEventJob(ctx, args))

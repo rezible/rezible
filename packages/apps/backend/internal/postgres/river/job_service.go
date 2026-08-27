@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"sort"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -25,17 +26,15 @@ const SchemaName = "river"
 type riverClient = river.Client[pgx.Tx]
 
 type JobService struct {
-	logger   *slog.Logger
-	pool     *pgxpool.Pool
-	registry *jobs.Registry
-	config   *river.Config
-	client   *riverClient
+	logger *slog.Logger
+	pool   *pgxpool.Pool
+	config *river.Config
+	client *riverClient
 }
 
-func NewJobService(cfg rez.Config, pool *pgxpool.Pool, tel rez.TelemetryService, reg *jobs.Registry) (*JobService, error) {
+func NewJobService(cfg rez.Config, pool *pgxpool.Pool, tel rez.TelemetryService) (*JobService, error) {
 	s := &JobService{
-		pool:     pool,
-		registry: reg,
+		pool: pool,
 		logger: tel.NewLogger(rez.NewLoggerOptions{
 			Name:  "river",
 			Level: slog.LevelInfo,
@@ -67,32 +66,38 @@ func NewJobService(cfg rez.Config, pool *pgxpool.Pool, tel rez.TelemetryService,
 	return s, nil
 }
 
-func (s *JobService) Finalize() error {
-	defs, sealErr := s.registry.Seal()
-	if sealErr != nil {
-		return fmt.Errorf("seal registry: %w", sealErr)
-	}
+func (s *JobService) Init(def jobs.Definition) error {
 	if s.client != nil {
-		return fmt.Errorf("job service is already finalized")
+		return fmt.Errorf("job service is already initialized")
 	}
 
-	s.config.Workers = defs.Workers
-	s.config.PeriodicJobs = defs.PeriodicJobs
+	workers := river.NewWorkers()
+	kinds := make([]string, 0, len(def.Workers))
+	for _, d := range def.Workers {
+		if addErr := d.Register(workers); addErr != nil {
+			return fmt.Errorf("register worker %q: %w", d.Kind(), addErr)
+		}
+		kinds = append(kinds, d.Kind())
+	}
+	sort.Strings(kinds)
+
+	s.config.Workers = workers
+	s.config.PeriodicJobs = def.PeriodicJobs
 
 	client, clientErr := river.NewClient(riverpgxv5.New(s.pool), s.config)
 	if clientErr != nil {
 		return fmt.Errorf("create river client: %w", clientErr)
 	}
 	s.client = client
-	s.logger.Info("finalized job service", "kinds", defs.Kinds)
+	s.logger.Info("initialized job service", "kinds", kinds)
 	return nil
 }
 
-var ErrNotFinalized = fmt.Errorf("job service is not finalized")
+var ErrNotInitialized = fmt.Errorf("job service is not initialized")
 
 func (s *JobService) getClient() (*riverClient, error) {
 	if s.client == nil {
-		return nil, ErrNotFinalized
+		return nil, ErrNotInitialized
 	}
 	return s.client, nil
 }

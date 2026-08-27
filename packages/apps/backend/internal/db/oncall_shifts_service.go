@@ -367,17 +367,16 @@ func (s *OncallShiftsService) sendShiftHandover(ctx context.Context, ho *ent.Onc
 	return nil, fmt.Errorf("not implemented")
 }
 
-func (s *OncallShiftsService) RegisterJobs(registry *jobs.Registry) error {
-	if registerErr := registry.AddWorkerFunc(s.ensureShiftHandoverReminderSent); registerErr != nil {
-		return fmt.Errorf("ensure shift handover reminder sent: %w", registerErr)
-	}
-	if registerErr := registry.AddWorkerFunc(s.ensureShiftHandoverSent); registerErr != nil {
-		return fmt.Errorf("ensure shift handover sent: %w", registerErr)
-	}
-	if registerErr := registry.AddWorkerFunc(s.periodicScanShifts); registerErr != nil {
-		return fmt.Errorf("scan on-call shifts: %w", registerErr)
-	}
-	return nil
+func NewEnsureShiftHandoverReminderSentWorker(service *OncallShiftsService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.ensureShiftHandoverReminderSent)
+}
+
+func NewEnsureShiftHandoverSentWorker(service *OncallShiftsService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.ensureShiftHandoverSent)
+}
+
+func NewScanOncallShiftsWorker(service *OncallShiftsService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.periodicScanShifts)
 }
 
 func (s *OncallShiftsService) periodicScanShifts(ctx context.Context, _ jobs.ScanOncallShifts) error {

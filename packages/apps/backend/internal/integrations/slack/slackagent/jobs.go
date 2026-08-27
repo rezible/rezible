@@ -57,14 +57,12 @@ func (HandleBoundAgentThreadMessagedArgs) InsertOpts() river.InsertOpts {
 	}
 }
 
-func (a *App) RegisterJobs(registry *jobs.Registry) error {
-	if registerErr := registry.AddWorkerFunc(a.handleSendMessageJob); registerErr != nil {
-		return fmt.Errorf("send Slack Agent message: %w", registerErr)
-	}
-	if registerErr := registry.AddWorkerFunc(a.handleBoundAgentThreadMessagedJob); registerErr != nil {
-		return fmt.Errorf("handle bound Slack Agent thread message: %w", registerErr)
-	}
-	return nil
+func NewSendMessageWorker(app *App) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(app.handleSendMessageJob)
+}
+
+func NewHandleBoundAgentThreadMessagedWorker(app *App) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(app.handleBoundAgentThreadMessagedJob)
 }
 
 func (a *App) handleSendMessageJob(ctx context.Context, args SendMessageJobArgs) error {

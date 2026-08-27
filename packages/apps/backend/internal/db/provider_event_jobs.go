@@ -10,29 +10,27 @@ import (
 	"github.com/riverqueue/river"
 )
 
-func (s *ProviderEventPipelineService) RegisterJobs(registry *jobs.Registry) error {
-	if registerErr := registry.AddWorkerFunc(s.HandleProcessEventJob); registerErr != nil {
-		return fmt.Errorf("process provider events: %w", registerErr)
-	}
-	if registerErr := registry.AddWorkerFunc(s.HandleEventProjectionJob); registerErr != nil {
-		return fmt.Errorf("project normalized events: %w", registerErr)
-	}
-	return nil
+func NewProcessProviderEventWorker(service *ProviderEventPipelineService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.HandleProcessEventJob)
 }
 
-type processProviderEventArgs struct {
+func NewProjectNormalizedEventWorker(service *ProviderEventPipelineService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.HandleEventProjectionJob)
+}
+
+type ProcessProviderEventArgs struct {
 	Event rez.ProviderEvent
 }
 
-func (processProviderEventArgs) Kind() string {
+func (ProcessProviderEventArgs) Kind() string {
 	return "process-provider-event"
 }
 
-func (processProviderEventArgs) InsertOpts() river.InsertOpts {
+func (ProcessProviderEventArgs) InsertOpts() river.InsertOpts {
 	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
 }
 
-func (s *ProviderEventPipelineService) HandleProcessEventJob(ctx context.Context, args processProviderEventArgs) error {
+func (s *ProviderEventPipelineService) HandleProcessEventJob(ctx context.Context, args ProcessProviderEventArgs) error {
 	res := s.processProviderEvent(ctx, args.Event)
 	s.telemetry.recordProcessed(ctx, args.Event, res)
 	return res.error

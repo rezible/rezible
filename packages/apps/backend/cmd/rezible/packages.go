@@ -22,7 +22,7 @@ import (
 	"github.com/rezible/rezible/internal/opentelemetry"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/pgtestdb"
-	"github.com/rezible/rezible/internal/postgres/river"
+	postgresriver "github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/integrations"
@@ -53,8 +53,8 @@ func makePackageProvider(ctx context.Context) Provider {
 		provideWatermillMessageService,
 		provideDatabaseServices,
 		provideIntegrations,
-		provideJobWorkers,
-		provideHttpApiServer,
+		provideJobsDefinition,
+		provideHttpServer,
 	)
 }
 
@@ -71,14 +71,6 @@ var provideRegistries = do.Package(
 
 	do.Lazy(func(i do.Injector) (rez.ProviderEventProcessorRegistry, error) {
 		return rez.ProviderEventProcessorRegistry{}, nil
-	}),
-
-	do.Lazy(func(i do.Injector) (*jobs.Registry, error) {
-		return jobs.NewRegistry(), nil
-	}),
-
-	do.Lazy(func(i do.Injector) (jobs.WorkerRegistrar, error) {
-		return newDefaultWorkerRegistrar(i), nil
 	}),
 )
 
@@ -165,15 +157,15 @@ func makeGenkitProvider(ctx context.Context) Provider {
 }
 
 var provideRiverJobService = do.Package(
-	do.Lazy(func(i do.Injector) (*river.JobService, error) {
-		return river.NewJobService(
+	do.Lazy(func(i do.Injector) (*postgresriver.JobService, error) {
+		return postgresriver.NewJobService(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[*postgres.ConnectionPool](i),
 			do.MustInvoke[rez.TelemetryService](i),
-			do.MustInvoke[*jobs.Registry](i),
 		)
 	}),
-	do.Bind[*river.JobService, rez.JobService](),
+	do.Bind[*postgresriver.JobService, rez.JobService](),
+	do.Bind[*postgresriver.JobService, jobs.Registrar](),
 )
 
 var provideWatermillMessageService = do.Package(
@@ -223,8 +215,8 @@ var provideIntegrations = do.Package(
 		)
 	}),
 
-	do.Lazy(func(i do.Injector) (*slackagent.Integration, error) {
-		app, appErr := slackagent.MakeApp(
+	do.Lazy(func(i do.Injector) (*slackagent.App, error) {
+		return slackagent.MakeApp(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
@@ -234,36 +226,40 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.EventsService](i),
 			do.MustInvoke[rezai.ClassifyAgentThreadResponseWorkflowRunner](i),
 		)
-		if appErr != nil {
-			return nil, fmt.Errorf("making slackagent app: %w", appErr)
-		}
-		svc, svcErr := slackintegration.NewAppService(app,
+	}),
+
+	do.Lazy(func(i do.Injector) (*slackagent.Integration, error) {
+		svc, svcErr := slackintegration.NewAppService(
+			do.MustInvoke[*slackagent.App](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i))
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
+		)
 		if svcErr != nil {
 			return nil, fmt.Errorf("making slackagent app service: %w", svcErr)
 		}
 		return slackagent.MakeIntegration(svc), nil
 	}),
 
-	do.Lazy(func(i do.Injector) (*slackincidents.Integration, error) {
-		app, appErr := slackincidents.MakeApp(
+	do.Lazy(func(i do.Injector) (*slackincidents.App, error) {
+		return slackincidents.MakeApp(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.IncidentService](i),
 		)
-		if appErr != nil {
-			return nil, fmt.Errorf("making slackincidents app: %w", appErr)
-		}
-		svc, svcErr := slackintegration.NewAppService(app,
+	}),
+
+	do.Lazy(func(i do.Injector) (*slackincidents.Integration, error) {
+		svc, svcErr := slackintegration.NewAppService(
+			do.MustInvoke[*slackincidents.App](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i))
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
+		)
 		if svcErr != nil {
 			return nil, fmt.Errorf("making slackincidents app service: %w", svcErr)
 		}
@@ -272,7 +268,7 @@ var provideIntegrations = do.Package(
 )
 
 var provideDatabaseServices = do.Package(
-	do.Lazy(func(i do.Injector) (rez.ProviderEventPipelineService, error) {
+	do.Lazy(func(i do.Injector) (*db.ProviderEventPipelineService, error) {
 		return db.NewProviderEventPipelineService(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
@@ -281,6 +277,7 @@ var provideDatabaseServices = do.Package(
 			do.MustInvoke[rez.EventProjectionService](i),
 		)
 	}),
+	do.Bind[*db.ProviderEventPipelineService, rez.ProviderEventPipelineService](),
 
 	do.Lazy(func(i do.Injector) (rez.IntegrationService, error) {
 		return db.NewIntegrationsService(
@@ -335,20 +332,22 @@ var provideDatabaseServices = do.Package(
 		)
 	}),
 
-	do.Lazy(func(i do.Injector) (rez.OncallShiftsService, error) {
+	do.Lazy(func(i do.Injector) (*db.OncallShiftsService, error) {
 		return db.NewOncallShiftsService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 		)
 	}),
+	do.Bind[*db.OncallShiftsService, rez.OncallShiftsService](),
 
-	do.Lazy(func(i do.Injector) (rez.OncallMetricsService, error) {
+	do.Lazy(func(i do.Injector) (*db.OncallMetricsService, error) {
 		return db.NewOncallMetricsService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.OncallShiftsService](i),
 		)
 	}),
+	do.Bind[*db.OncallMetricsService, rez.OncallMetricsService](),
 
 	do.Lazy(func(i do.Injector) (rez.KnowledgeGraphService, error) {
 		return db.NewKnowledgeGraphService(do.MustInvoke[rez.Database](i))
@@ -361,12 +360,13 @@ var provideDatabaseServices = do.Package(
 		)
 	}),
 
-	do.Lazy(func(i do.Injector) (rez.DebriefService, error) {
+	do.Lazy(func(i do.Injector) (*db.DebriefService, error) {
 		return db.NewDebriefService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 		)
 	}),
+	do.Bind[*db.DebriefService, rez.DebriefService](),
 
 	do.Lazy(func(i do.Injector) (rez.RetrospectiveService, error) {
 		return db.NewRetrospectiveService(
@@ -411,40 +411,7 @@ var provideDatabaseServices = do.Package(
 	}),
 )
 
-var provideJobWorkers = do.Package(
-	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.InvokeAgentTurn], error) {
-		return db.NewInvokeAgentTurnWorker(
-			do.MustInvoke[rez.Config](i).AI,
-			do.MustInvoke[rez.TelemetryService](i),
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.AiService](i),
-			do.MustInvoke[rez.AgentSessionService](i),
-		)
-	}),
-	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.StartAgentSession], error) {
-		return db.NewStartAgentSessionWorker(
-			do.MustInvoke[rez.Config](i).AI,
-			do.MustInvoke[rez.TelemetryService](i),
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.AiService](i),
-			do.MustInvoke[rez.AgentSessionService](i),
-		)
-	}),
-	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.SyncIntegrationSourceEvents], error) {
-		return db.NewIntegrationEventsSyncWorker(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.TelemetryService](i),
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.IntegrationPackageRegistry](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i),
-		)
-	}),
-)
-
-var provideHttpApiServer = do.Package(
+var provideHttpServer = do.Package(
 	do.Lazy(func(i do.Injector) (oapiv1.Handler, error) {
 		return apiv1.NewHandler(
 			do.MustInvoke[rez.Database](i),
@@ -485,24 +452,89 @@ var provideHttpApiServer = do.Package(
 	}),
 )
 
-//var provideRootServices = do.Package(
-//	do.Bind[*db.ProviderEventPipelineService, rez.ProviderEventPipelineService](),
-//	do.Bind[*db.IntegrationsService, rez.IntegrationService](),
-//	do.Bind[*db.OrganizationService, rez.OrganizationService](),
-//	do.Bind[*db.UserService, rez.UserService](),
-//	do.Bind[*db.TeamService, rez.TeamService](),
-//	do.Bind[*db.EventService, rez.EventsService](),
-//	do.Bind[*db.AuthSessionService, rez.AuthSessionService](),
-//	do.Bind[*db.IncidentService, rez.IncidentService](),
-//	do.Bind[*db.OncallRostersService, rez.OncallRostersService](),
-//	do.Bind[*db.OncallShiftsService, rez.OncallShiftsService](),
-//	do.Bind[*db.OncallMetricsService, rez.OncallMetricsService](),
-//	do.Bind[*db.KnowledgeGraphService, rez.KnowledgeGraphService](),
-//	do.Bind[*db.DebriefService, rez.DebriefService](),
-//	do.Bind[*db.RetrospectiveService, rez.RetrospectiveService](),
-//	do.Bind[*db.AlertService, rez.AlertService](),
-//	do.Bind[*db.PlaybookService, rez.PlaybookService](),
-//	do.Bind[*db.DocumentsService, rez.DocumentsService](),
-//	do.Bind[*db.AgentSessionService, rez.AgentSessionService](),
-//	do.Bind[*db.InvestigationService, rez.InvestigationService](),
-//)
+func makeJobWorkerProvider[A jobs.JobArgs]() do.Provider[jobs.WorkerDefinition] {
+	return func(i do.Injector) (jobs.WorkerDefinition, error) {
+		return jobs.DefineWorker[A](do.MustInvoke[jobs.Worker[A]](i)), nil
+	}
+}
+
+func makeServiceFuncJobWorkerProvider[S any](fn func(S) jobs.WorkerDefinition) do.Provider[jobs.WorkerDefinition] {
+	return func(i do.Injector) (jobs.WorkerDefinition, error) {
+		return fn(do.MustInvoke[S](i)), nil
+	}
+}
+
+var defaultJobWorkerProviders = []do.Provider[jobs.WorkerDefinition]{
+	makeJobWorkerProvider[jobs.StartAgentSession](),
+	makeJobWorkerProvider[jobs.InvokeAgentTurn](),
+	makeJobWorkerProvider[jobs.SyncIntegrationSourceEvents](),
+
+	// TODO: convert these to regular workers
+	makeServiceFuncJobWorkerProvider(db.NewProcessProviderEventWorker),
+	makeServiceFuncJobWorkerProvider(db.NewProjectNormalizedEventWorker),
+	makeServiceFuncJobWorkerProvider(db.NewSendIncidentDebriefRequestsWorker),
+	makeServiceFuncJobWorkerProvider(db.NewGenerateIncidentDebriefResponseWorker),
+	makeServiceFuncJobWorkerProvider(db.NewGenerateIncidentDebriefSuggestionsWorker),
+	makeServiceFuncJobWorkerProvider(db.NewScanOncallShiftsWorker),
+	makeServiceFuncJobWorkerProvider(db.NewEnsureShiftHandoverSentWorker),
+	makeServiceFuncJobWorkerProvider(db.NewEnsureShiftHandoverReminderSentWorker),
+	makeServiceFuncJobWorkerProvider(db.NewGenerateShiftMetricsWorker),
+	makeServiceFuncJobWorkerProvider(slackagent.NewSendMessageWorker),
+	makeServiceFuncJobWorkerProvider(slackagent.NewHandleBoundAgentThreadMessagedWorker),
+	makeServiceFuncJobWorkerProvider(slackincidents.NewCreateIncidentChannelWorker),
+	makeServiceFuncJobWorkerProvider(slackincidents.NewSendIncidentMilestoneMessageWorker),
+}
+
+var provideJobsDefinition = do.Package(
+	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.StartAgentSession], error) {
+		return db.NewStartAgentSessionWorker(
+			do.MustInvoke[rez.Config](i).AI,
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.AiService](i),
+			do.MustInvoke[rez.AgentSessionService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.InvokeAgentTurn], error) {
+		return db.NewInvokeAgentTurnWorker(
+			do.MustInvoke[rez.Config](i).AI,
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.AiService](i),
+			do.MustInvoke[rez.AgentSessionService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.SyncIntegrationSourceEvents], error) {
+		return db.NewIntegrationEventsSyncWorker(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.IntegrationPackageRegistry](i),
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
+		)
+	}),
+
+	do.Lazy(func(i do.Injector) ([]jobs.WorkerDefinition, error) {
+		defs := make([]jobs.WorkerDefinition, len(defaultJobWorkerProviders))
+		for idx, provider := range defaultJobWorkerProviders {
+			def, provideErr := provider(i)
+			if provideErr != nil {
+				return nil, fmt.Errorf("provide job worker: %w", provideErr)
+			}
+			defs[idx] = def
+		}
+		return defs, nil
+	}),
+	do.Lazy(func(i do.Injector) ([]*jobs.PeriodicJob, error) {
+		return []*jobs.PeriodicJob{}, nil
+	}),
+	do.Lazy(func(i do.Injector) (jobs.Definition, error) {
+		return jobs.Definition{
+			Workers:      do.MustInvoke[[]jobs.WorkerDefinition](i),
+			PeriodicJobs: do.MustInvoke[[]*jobs.PeriodicJob](i),
+		}, nil
+	}),
+)

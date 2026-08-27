@@ -131,11 +131,8 @@ func (s *OncallMetricsService) GetComparisonShiftMetrics(ctx context.Context, fr
 	}, nil
 }
 
-func (s *OncallMetricsService) RegisterJobs(registry *jobs.Registry) error {
-	if registerErr := registry.AddWorkerFunc(s.handleGenerateShiftMetrics); registerErr != nil {
-		return fmt.Errorf("generate shift metrics: %w", registerErr)
-	}
-	return nil
+func NewGenerateShiftMetricsWorker(service *OncallMetricsService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.handleGenerateShiftMetrics)
 }
 
 func (s *OncallMetricsService) handleGenerateShiftMetrics(ctx context.Context, args jobs.GenerateShiftMetrics) error {
