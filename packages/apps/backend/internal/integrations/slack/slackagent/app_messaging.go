@@ -12,10 +12,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	asb "github.com/rezible/rezible/ent/agentsessionbinding"
-	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/jobs"
-	"github.com/riverqueue/river"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
@@ -144,25 +141,6 @@ func (a *App) onBoundAgentThreadUserMessage(ctx context.Context, binding *ent.Ag
 	return nil
 }
 
-type HandleBoundAgentThreadMessagedArgs struct {
-	BindingId uuid.UUID `json:"binding_id" river:"unique"`
-	MessageTs string    `json:"message_ts" river:"unique"`
-}
-
-func (a HandleBoundAgentThreadMessagedArgs) Kind() string {
-	return "slack-agent-handle-bound-thread-response"
-}
-
-func (HandleBoundAgentThreadMessagedArgs) InsertOpts() river.InsertOpts {
-	return river.InsertOpts{
-		MaxAttempts: 2,
-		UniqueOpts: river.UniqueOpts{
-			ByArgs:  true,
-			ByState: jobs.UniqueStateNonCompleted,
-		},
-	}
-}
-
 func (a *App) getThreadMessageContext(ctx context.Context, client *slack.Client, res *agentThreadBindingResource, msgTs string, limit int) ([]slack.Message, error) {
 	params := &slack.GetConversationRepliesParameters{
 		ChannelID: res.ChannelId,
@@ -218,74 +196,4 @@ func (a *App) getUserNames(ctx context.Context, client *slack.Client, msgs []sla
 		}
 	}
 	return profiles, nil
-}
-
-func (a *App) handleBoundAgentThreadMessagedJob(ctx context.Context, args HandleBoundAgentThreadMessagedArgs) error {
-	binding, bindingErr := a.agents.LookupAgentSessionBinding(ctx, asb.ID(args.BindingId))
-	if bindingErr != nil {
-		return fmt.Errorf("lookup slack agent session binding: %w", bindingErr)
-	}
-
-	res, resErr := a.getBoundThreadResource(binding)
-	if resErr != nil {
-		return fmt.Errorf("bound thread resource: %w", resErr)
-	}
-
-	intg, intgErr := binding.Edges.IntegrationOrErr()
-	if intgErr != nil {
-		return fmt.Errorf("no integration for binding: %w", intgErr)
-	}
-
-	cw, cwErr := slackintegration.NewClientWrapper(intg)
-	if cwErr != nil {
-		return fmt.Errorf("failed to create client wrapper: %w", cwErr)
-	}
-
-	client := cw.Client()
-	msgs, msgsErr := a.getThreadMessageContext(ctx, client, res, args.MessageTs, 3)
-	if msgsErr != nil {
-		return fmt.Errorf("failed to get thread message context: %w", msgsErr)
-	}
-	if len(msgs) == 0 {
-		return fmt.Errorf("no messages")
-	}
-
-	usernamesMap, usernamesErr := a.getUserNames(ctx, client, msgs)
-	if usernamesErr != nil {
-		return fmt.Errorf("failed to get user profiles: %w", usernamesErr)
-	}
-
-	usrMsg := msgs[len(msgs)-1]
-
-	workflowInput := rezai.ClassifyAgentThreadResponseInput{
-		PreviousMessages: make([]string, max(0, len(msgs)-1)),
-	}
-	for i, msg := range msgs {
-		name := msg.User
-		if username, ok := usernamesMap[msg.User]; ok {
-			name = username
-		}
-		msgText := fmt.Sprintf("%s: %s", name, msg.Text)
-		if i < len(msgs)-1 {
-			workflowInput.PreviousMessages[i] = msgText
-		} else {
-			workflowInput.UserMessage = msgText
-		}
-	}
-
-	output, workflowErr := a.responseClassifier.Run(ctx, workflowInput)
-	if workflowErr != nil {
-		return fmt.Errorf("check response required: %w", workflowErr)
-	}
-	if !output.ShouldReply {
-		return nil
-	}
-	params := &rez.RequestAgentTurnParams{
-		Input: &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(usrMsg.Text)},
-	}
-	if _, requestErr := a.agents.RequestAgentTurn(ctx, binding.AgentSessionID, params); requestErr != nil {
-		return fmt.Errorf("request agent turn: %w", requestErr)
-	}
-
-	return nil
 }

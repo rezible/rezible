@@ -27,23 +27,7 @@ func NewDebriefService(db rez.Database, jobSvc rez.JobService) (*DebriefService,
 		jobs: jobSvc,
 	}
 
-	jobs.RegisterWorkerFunc(svc.handleSendDebriefRequests)
-	jobs.RegisterWorkerFunc(svc.handleGenerateDebriefResponse)
-	jobs.RegisterWorkerFunc(svc.handleGenerateSuggestions)
-
 	return svc, nil
-}
-
-func (s *DebriefService) handleSendDebriefRequests(ctx context.Context, args jobs.SendIncidentDebriefRequests) error {
-	return s.sendDebriefRequests(ctx, args.IncidentId)
-}
-
-func (s *DebriefService) handleGenerateDebriefResponse(ctx context.Context, args jobs.GenerateIncidentDebriefResponse) error {
-	return s.generateDebriefResponse(ctx, args.DebriefId)
-}
-
-func (s *DebriefService) handleGenerateSuggestions(ctx context.Context, args jobs.GenerateIncidentDebriefSuggestions) error {
-	return nil
 }
 
 func (s *DebriefService) CreateDebrief(ctx context.Context, incidentId uuid.UUID, userId uuid.UUID) (*ent.IncidentDebrief, error) {
@@ -433,4 +417,29 @@ func makeDebriefQuestionMatcher(inc *ent.Incident) func(question *ent.IncidentDe
 		}
 		return true
 	}
+}
+
+func (s *DebriefService) RegisterJobs(registry *jobs.Registry) error {
+	if registerErr := registry.AddWorkerFunc(s.handleSendDebriefRequests); registerErr != nil {
+		return fmt.Errorf("send debrief requests: %w", registerErr)
+	}
+	if registerErr := registry.AddWorkerFunc(s.handleGenerateDebriefResponse); registerErr != nil {
+		return fmt.Errorf("generate debrief response: %w", registerErr)
+	}
+	if registerErr := registry.AddWorkerFunc(s.handleGenerateSuggestions); registerErr != nil {
+		return fmt.Errorf("generate debrief suggestions: %w", registerErr)
+	}
+	return nil
+}
+
+func (s *DebriefService) handleSendDebriefRequests(ctx context.Context, args jobs.SendIncidentDebriefRequests) error {
+	return s.sendDebriefRequests(ctx, args.IncidentId)
+}
+
+func (s *DebriefService) handleGenerateDebriefResponse(ctx context.Context, args jobs.GenerateIncidentDebriefResponse) error {
+	return s.generateDebriefResponse(ctx, args.DebriefId)
+}
+
+func (s *DebriefService) handleGenerateSuggestions(context.Context, jobs.GenerateIncidentDebriefSuggestions) error {
+	return nil
 }

@@ -116,7 +116,6 @@ type (
 
 type (
 	JobService interface {
-		RegisterPeriodicJob(*river.PeriodicJob)
 		Insert(context.Context, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
 		InsertMany(context.Context, []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
 		Cancel(context.Context, int64) error

@@ -324,6 +324,50 @@ func (_c *MockJobService_Cancel_Call) RunAndReturn(run func(context1 context.Con
 	return _c
 }
 
+// Finalize provides a mock function for the type MockJobService
+func (_mock *MockJobService) Finalize() error {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for Finalize")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func() error); ok {
+		r0 = returnFunc()
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockJobService_Finalize_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Finalize'
+type MockJobService_Finalize_Call struct {
+	*mock.Call
+}
+
+// Finalize is a helper method to define mock.On call
+func (_e *MockJobService_Expecter) Finalize() *MockJobService_Finalize_Call {
+	return &MockJobService_Finalize_Call{Call: _e.mock.On("Finalize")}
+}
+
+func (_c *MockJobService_Finalize_Call) Run(run func()) *MockJobService_Finalize_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockJobService_Finalize_Call) Return(err error) *MockJobService_Finalize_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockJobService_Finalize_Call) RunAndReturn(run func() error) *MockJobService_Finalize_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Insert provides a mock function for the type MockJobService
 func (_mock *MockJobService) Insert(context1 context.Context, jobArgs river.JobArgs, insertOpts *river.InsertOpts) (*rivertype.JobInsertResult, error) {
 	ret := _mock.Called(context1, jobArgs, insertOpts)
@@ -463,46 +507,6 @@ func (_c *MockJobService_InsertMany_Call) Return(jobInsertResults []*rivertype.J
 
 func (_c *MockJobService_InsertMany_Call) RunAndReturn(run func(context1 context.Context, insertManyParamss []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)) *MockJobService_InsertMany_Call {
 	_c.Call.Return(run)
-	return _c
-}
-
-// RegisterPeriodicJob provides a mock function for the type MockJobService
-func (_mock *MockJobService) RegisterPeriodicJob(periodicJob *river.PeriodicJob) {
-	_mock.Called(periodicJob)
-	return
-}
-
-// MockJobService_RegisterPeriodicJob_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegisterPeriodicJob'
-type MockJobService_RegisterPeriodicJob_Call struct {
-	*mock.Call
-}
-
-// RegisterPeriodicJob is a helper method to define mock.On call
-//   - periodicJob *river.PeriodicJob
-func (_e *MockJobService_Expecter) RegisterPeriodicJob(periodicJob interface{}) *MockJobService_RegisterPeriodicJob_Call {
-	return &MockJobService_RegisterPeriodicJob_Call{Call: _e.mock.On("RegisterPeriodicJob", periodicJob)}
-}
-
-func (_c *MockJobService_RegisterPeriodicJob_Call) Run(run func(periodicJob *river.PeriodicJob)) *MockJobService_RegisterPeriodicJob_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 *river.PeriodicJob
-		if args[0] != nil {
-			arg0 = args[0].(*river.PeriodicJob)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *MockJobService_RegisterPeriodicJob_Call) Return() *MockJobService_RegisterPeriodicJob_Call {
-	_c.Call.Return()
-	return _c
-}
-
-func (_c *MockJobService_RegisterPeriodicJob_Call) RunAndReturn(run func(periodicJob *river.PeriodicJob)) *MockJobService_RegisterPeriodicJob_Call {
-	_c.Run(run)
 	return _c
 }
 

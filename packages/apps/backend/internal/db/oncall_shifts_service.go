@@ -34,37 +34,7 @@ func NewOncallShiftsService(db rez.Database, jobSvc rez.JobService, intgs rez.In
 		jobs:         jobSvc,
 		integrations: intgs,
 	}
-
-	s.registerJobs()
-
 	return s, nil
-}
-
-func (s *OncallShiftsService) registerJobs() {
-	jobs.RegisterWorkerFunc(s.ensureShiftHandoverReminderSent)
-	jobs.RegisterWorkerFunc(s.ensureShiftHandoverSent)
-
-	jobs.RegisterWorkerFunc(s.periodicScanShifts)
-	//s.jobs.RegisterPeriodicJob(river.NewPeriodicJob(
-	//	river.PeriodicInterval(time.Hour),
-	//	func() (river.JobArgs, *river.InsertOpts) {
-	//		return &jobs.ScanOncallShifts{}, nil
-	//	},
-	//	&river.PeriodicJobOpts{RunOnStart: true},
-	//))
-}
-
-func (s *OncallShiftsService) periodicScanShifts(ctx context.Context, _ jobs.ScanOncallShifts) error {
-	return s.scanShifts(ctx)
-}
-
-func (s *OncallShiftsService) ensureShiftHandoverSent(ctx context.Context, args jobs.EnsureShiftHandoverSent) error {
-	_, err := s.SendShiftHandover(ctx, args.ShiftId)
-	return err
-}
-
-func (s *OncallShiftsService) ensureShiftHandoverReminderSent(ctx context.Context, args jobs.EnsureShiftHandoverReminderSent) error {
-	return s.sendShiftHandoverReminder(ctx, args.ShiftId)
 }
 
 func (s *OncallShiftsService) GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error) {
@@ -395,4 +365,30 @@ func (s *OncallShiftsService) sendShiftHandover(ctx context.Context, ho *ent.Onc
 		return updated, nil
 	*/
 	return nil, fmt.Errorf("not implemented")
+}
+
+func (s *OncallShiftsService) RegisterJobs(registry *jobs.Registry) error {
+	if registerErr := registry.AddWorkerFunc(s.ensureShiftHandoverReminderSent); registerErr != nil {
+		return fmt.Errorf("ensure shift handover reminder sent: %w", registerErr)
+	}
+	if registerErr := registry.AddWorkerFunc(s.ensureShiftHandoverSent); registerErr != nil {
+		return fmt.Errorf("ensure shift handover sent: %w", registerErr)
+	}
+	if registerErr := registry.AddWorkerFunc(s.periodicScanShifts); registerErr != nil {
+		return fmt.Errorf("scan on-call shifts: %w", registerErr)
+	}
+	return nil
+}
+
+func (s *OncallShiftsService) periodicScanShifts(ctx context.Context, _ jobs.ScanOncallShifts) error {
+	return s.scanShifts(ctx)
+}
+
+func (s *OncallShiftsService) ensureShiftHandoverSent(ctx context.Context, args jobs.EnsureShiftHandoverSent) error {
+	_, err := s.SendShiftHandover(ctx, args.ShiftId)
+	return err
+}
+
+func (s *OncallShiftsService) ensureShiftHandoverReminderSent(ctx context.Context, args jobs.EnsureShiftHandoverReminderSent) error {
+	return s.sendShiftHandoverReminder(ctx, args.ShiftId)
 }

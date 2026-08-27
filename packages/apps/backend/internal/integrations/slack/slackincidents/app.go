@@ -9,9 +9,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
-	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/messages"
-	"github.com/riverqueue/river"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
@@ -32,8 +30,6 @@ func MakeApp(cfg rez.Config, db rez.Database, msgs rez.MessageService, js rez.Jo
 		jobs:      js,
 		incidents: incidents,
 	}
-	jobs.RegisterWorkerFunc(h.handleCreateIncidentChannelJob)
-	jobs.RegisterWorkerFunc(h.handleSendIncidentMilestoneMessageJob)
 	if msgsErr := h.registerMessageHandlers(); msgsErr != nil {
 		return nil, fmt.Errorf("message handlers: %w", msgsErr)
 	}
@@ -143,54 +139,5 @@ func (a *App) onIncidentUpdated(ctx context.Context, ev *rez.EventOnIncidentUpda
 func (a *App) onIncidentMilestoneUpdated(ctx context.Context, ev *rez.EventOnIncidentMilestoneUpdated) error {
 	return a.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
 		return p.processIncidentMilestoneUpdate(ctx, ev.MilestoneId)
-	})
-}
-
-type createIncidentChannelJobArgs struct {
-	IncidentId uuid.UUID
-}
-
-func (a createIncidentChannelJobArgs) Kind() string {
-	return "slackincidents-create-incident-channel"
-}
-
-func (createIncidentChannelJobArgs) InsertOpts() river.InsertOpts {
-	return river.InsertOpts{
-		MaxAttempts: 2,
-		UniqueOpts: river.UniqueOpts{
-			ByArgs:  true,
-			ByState: jobs.UniqueStateNonCompleted,
-		},
-	}
-}
-
-func (a *App) handleCreateIncidentChannelJob(ctx context.Context, args createIncidentChannelJobArgs) error {
-	return a.withIncidentUpdateProcessor(ctx, args.IncidentId, func(p *incidentUpdateProcessor) error {
-		return p.createIncidentChannel(ctx)
-	})
-}
-
-type sendMilestoneMessageJobArgs struct {
-	IncidentId  uuid.UUID
-	MilestoneId uuid.UUID
-}
-
-func (a sendMilestoneMessageJobArgs) Kind() string {
-	return "slackincidents-send-milestone-message"
-}
-
-func (sendMilestoneMessageJobArgs) InsertOpts() river.InsertOpts {
-	return river.InsertOpts{
-		MaxAttempts: 2,
-		UniqueOpts: river.UniqueOpts{
-			ByArgs:  true,
-			ByState: jobs.UniqueStateNonCompleted,
-		},
-	}
-}
-
-func (a *App) handleSendIncidentMilestoneMessageJob(ctx context.Context, args sendMilestoneMessageJobArgs) error {
-	return a.withIncidentUpdateProcessor(ctx, args.IncidentId, func(p *incidentUpdateProcessor) error {
-		return p.sendIncidentMilestoneMessage(ctx, args.MilestoneId)
 	})
 }

@@ -24,14 +24,7 @@ func NewOncallMetricsService(db rez.Database, shifts rez.OncallShiftsService) (*
 		shifts: shifts,
 	}
 
-	jobs.RegisterWorkerFunc(s.handleGenerateShiftMetrics)
-
 	return s, nil
-}
-
-func (s *OncallMetricsService) handleGenerateShiftMetrics(ctx context.Context, args jobs.GenerateShiftMetrics) error {
-	_, genErr := s.generateMetricsForShift(ctx, args.ShiftId)
-	return genErr
 }
 
 func (s *OncallMetricsService) queryShiftMetrics(ctx context.Context, shiftId uuid.UUID) (*ent.OncallShiftMetrics, error) {
@@ -136,4 +129,16 @@ func (s *OncallMetricsService) GetComparisonShiftMetrics(ctx context.Context, fr
 		InterruptsNight:         4,
 		InterruptsBusinessHours: 8,
 	}, nil
+}
+
+func (s *OncallMetricsService) RegisterJobs(registry *jobs.Registry) error {
+	if registerErr := registry.AddWorkerFunc(s.handleGenerateShiftMetrics); registerErr != nil {
+		return fmt.Errorf("generate shift metrics: %w", registerErr)
+	}
+	return nil
+}
+
+func (s *OncallMetricsService) handleGenerateShiftMetrics(ctx context.Context, args jobs.GenerateShiftMetrics) error {
+	_, genErr := s.generateMetricsForShift(ctx, args.ShiftId)
+	return genErr
 }

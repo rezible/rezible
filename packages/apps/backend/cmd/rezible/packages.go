@@ -45,6 +45,7 @@ type Provider = func(do.Injector)
 func makePackageProvider(ctx context.Context) Provider {
 	return do.Package(
 		makeConfigProvider(ctx),
+		provideRegistries,
 		makeOpenTelemetryProvider(ctx),
 		makePostgresProvider(ctx),
 		makeGenkitProvider(ctx),
@@ -62,6 +63,24 @@ func makeConfigProvider(ctx context.Context) Provider {
 		return koanf.LoadConfig(ctx, koanf.Options{LoadEnvironment: true})
 	})
 }
+
+var provideRegistries = do.Package(
+	do.Lazy(func(i do.Injector) (rez.IntegrationPackageRegistry, error) {
+		return integrations.NewPackageRegistry(), nil
+	}),
+
+	do.Lazy(func(i do.Injector) (rez.ProviderEventProcessorRegistry, error) {
+		return rez.ProviderEventProcessorRegistry{}, nil
+	}),
+
+	do.Lazy(func(i do.Injector) (*jobs.Registry, error) {
+		return jobs.NewRegistry(), nil
+	}),
+
+	do.Lazy(func(i do.Injector) (jobs.WorkerRegistrar, error) {
+		return newDefaultWorkerRegistrar(i), nil
+	}),
+)
 
 func makeOpenTelemetryProvider(ctx context.Context) Provider {
 	return do.Lazy(func(i do.Injector) (rez.TelemetryService, error) {
@@ -146,13 +165,15 @@ func makeGenkitProvider(ctx context.Context) Provider {
 }
 
 var provideRiverJobService = do.Package(
-	do.Lazy(func(i do.Injector) (rez.JobService, error) {
+	do.Lazy(func(i do.Injector) (*river.JobService, error) {
 		return river.NewJobService(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[*postgres.ConnectionPool](i),
 			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[*jobs.Registry](i),
 		)
 	}),
+	do.Bind[*river.JobService, rez.JobService](),
 )
 
 var provideWatermillMessageService = do.Package(
@@ -168,14 +189,6 @@ var provideWatermillMessageService = do.Package(
 )
 
 var provideIntegrations = do.Package(
-	do.Lazy(func(i do.Injector) (rez.IntegrationPackageRegistry, error) {
-		return integrations.NewPackageRegistry(), nil
-	}),
-
-	do.Lazy(func(i do.Injector) (rez.ProviderEventProcessorRegistry, error) {
-		return rez.ProviderEventProcessorRegistry{}, nil
-	}),
-
 	do.Lazy(func(i do.Injector) (rez.EventProjectionService, error) {
 		return eventprojection.NewProjectionService(
 			do.MustInvoke[rez.Database](i),

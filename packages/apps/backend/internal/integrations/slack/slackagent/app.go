@@ -3,15 +3,11 @@ package slackagent
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	asb "github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/pkg/messages"
-	"github.com/riverqueue/river"
-
-	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 
 	rez "github.com/rezible/rezible"
@@ -19,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/jobs"
 )
 
 type App struct {
@@ -45,9 +40,6 @@ func MakeApp(cfg rez.Config, jobSvc rez.JobService, msgs rez.MessageService, int
 		events:             events,
 		responseClassifier: responseClassifier,
 	}
-
-	jobs.RegisterWorkerFunc(h.handleSendMessageJob)
-	jobs.RegisterWorkerFunc(h.handleBoundAgentThreadMessagedJob)
 
 	if msgsErr := h.registerMessageHandlers(); msgsErr != nil {
 		return nil, fmt.Errorf("message handlers: %w", msgsErr)
@@ -150,42 +142,4 @@ func (a *App) onAiAgentTurnFinished(ctx context.Context, ev *rezai.EventOnAgentT
 		return nil
 	}
 	return a.onSlackAgentResponseEvent(ctx, ev)
-}
-
-type SendMessageJobArgs struct {
-	IntegrationID uuid.UUID `json:"integration_id" river:"unique"`
-	Message       string    `json:"message" river:"unique"`
-	Channel       string    `json:"channel"`
-	ReplyTs       string    `json:"reply_ts" river:"unique"`
-}
-
-func (a SendMessageJobArgs) Kind() string {
-	return "slack-agent-send-message"
-}
-
-func (SendMessageJobArgs) InsertOpts() river.InsertOpts {
-	return river.InsertOpts{
-		MaxAttempts: 2,
-		UniqueOpts: river.UniqueOpts{
-			ByArgs:  true,
-			ByState: jobs.UniqueStateNonCompleted,
-		},
-	}
-}
-
-func (a *App) handleSendMessageJob(ctx context.Context, args SendMessageJobArgs) error {
-	cw, wrapperErr := a.GetIntegrationClientWrapper(ctx, in.ID(args.IntegrationID))
-	if wrapperErr != nil {
-		slog.Warn("failed to get slack integration client wrapper", "err", wrapperErr)
-		return fmt.Errorf("get integration client wrapper: %w", wrapperErr)
-	}
-
-	_, _, msgErr := cw.Client().PostMessageContext(ctx, args.Channel,
-		slack.MsgOptionMarkdownText(args.Message),
-		slack.MsgOptionTS(args.ReplyTs))
-	if msgErr != nil {
-		return fmt.Errorf("post message: %w", msgErr)
-	}
-
-	return nil
 }
