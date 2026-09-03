@@ -3,7 +3,7 @@ import { useUserSessionState, ApiAuthErrorCategory } from "$src/lib/user-session
 import type { ErrorModel } from "$lib/api";
 import { page } from "$app/state";
 
-const authSessionErrorDisplay = new Map<ApiAuthErrorCategory, ErrorModel>([
+const errorCategoryDisplays = new Map<ApiAuthErrorCategory, ErrorModel>([
 	[ApiAuthErrorCategory.SessionExpired, { title: "Session Expired", detail: "Your session has expired" }],
 	[ApiAuthErrorCategory.SessionInvalid, { title: "Invalid Session", detail: "Your session is invalid" }],
 	[
@@ -18,12 +18,12 @@ const authSessionErrorDisplay = new Map<ApiAuthErrorCategory, ErrorModel>([
 
 const transformAuthSessionError = (cat?: ApiAuthErrorCategory) => {
 	if (!cat || cat === ApiAuthErrorCategory.NoSession) return;
-	const display = authSessionErrorDisplay.get(cat);
-	if (!display) {
+	const displayErr = errorCategoryDisplays.get(cat);
+	if (!displayErr) {
 		// log?
-		return authSessionErrorDisplay.get(ApiAuthErrorCategory.Unknown);
+		return errorCategoryDisplays.get(ApiAuthErrorCategory.Unknown);
 	}
-	return display;
+	return displayErr;
 };
 
 const loginErrorDisplayText: Record<string, string> = {

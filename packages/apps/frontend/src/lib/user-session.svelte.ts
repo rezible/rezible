@@ -22,7 +22,7 @@ export enum ApiAuthErrorCategory {
 }
 const authErrCategories = Object.values(ApiAuthErrorCategory);
 
-const parseUserSessionResponseError = (err: ErrorModel): ApiAuthErrorCategory => {
+const parseAuthSessionResponseError = (err: ErrorModel): ApiAuthErrorCategory => {
 	if (err.status === 401) {
 		const mappedCategory = err.detail as ApiAuthErrorCategory;
 		if (authErrCategories.includes(mappedCategory)) {
@@ -39,13 +39,13 @@ type ParsedAuthSessionQueryResult = {
 	session?: Omit<UserSession, "expiresAt"> & { expiresAt: ZonedDateTime };
 	error?: ApiAuthErrorCategory;
 };
-const parseUserSessionQueryResponse = ({
+const parseAuthSessionQueryResponse = ({
 	data: body,
 	error,
 }: AuthSessionQueryResult): ParsedAuthSessionQueryResult => {
 	let res: ParsedAuthSessionQueryResult = {};
 	if (!!error) {
-		res.error = parseUserSessionResponseError(error);
+		res.error = parseAuthSessionResponseError(error);
 	} else if (!!body) {
 		res.session = {
 			user: body.data.user,
@@ -59,17 +59,23 @@ const parseUserSessionQueryResponse = ({
 
 const LoginRoute = resolve("/login");
 const InitialSetupRouteId = resolve("/settings/initial-setup");
-const ConnectRoutePrefix = resolve("/connect");
+const ConnectIntegrationRoutePrefix = resolve("/(integrations)/connect");
 const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSetup: boolean) => {
 	if (!routeId) return null;
 
-	const isLoginRoute = routeId?.startsWith(LoginRoute);
-	if (!isAuthenticated) return isLoginRoute ? null : LoginRoute;
+	const isLoginRoute = routeId.startsWith(LoginRoute);
+	if (!isAuthenticated) {
+		return isLoginRoute ? null : LoginRoute;
+	}
 
-	const isInitialSetupRoute = routeId?.startsWith(InitialSetupRouteId);
-	const isConnectRoute = routeId?.startsWith(ConnectRoutePrefix);
-	if (!isSetup) return isInitialSetupRoute || isConnectRoute ? null : InitialSetupRouteId;
-	if (isSetup && isInitialSetupRoute) return "/settings";
+	const isInitialSetupRoute = routeId.startsWith(InitialSetupRouteId);
+	const isConnectIntegrationRoute = routeId.startsWith(ConnectIntegrationRoutePrefix);
+	if (!isSetup) {
+		return isInitialSetupRoute || isConnectIntegrationRoute ? null : InitialSetupRouteId;
+	}
+	if (isSetup && isInitialSetupRoute) {
+		return "/settings";
+	}
 
 	return isLoginRoute ? "/" : null;
 };
@@ -78,7 +84,7 @@ export class UserSessionState {
 	private query = createQuery(() => getUserSessionOptions());
 	private loaded = $derived(this.query.isFetched);
 
-	private parsedResponse = $derived(parseUserSessionQueryResponse(this.query));
+	private parsedResponse = $derived(parseAuthSessionQueryResponse(this.query));
 
 	error = $derived(this.parsedResponse.error);
 

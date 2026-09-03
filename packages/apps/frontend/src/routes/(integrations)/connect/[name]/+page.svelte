@@ -1,6 +1,6 @@
 <script lang="ts">
-	import ConnectIntegrationView from "$features/settings/views/connect/ConnectIntegrationView.svelte";
 	import type { PageProps } from "./$types";
+	import ConnectIntegrationView from "$features/settings/views/connect/ConnectIntegrationView.svelte";
 
 	const { params }: PageProps = $props();
 </script>
