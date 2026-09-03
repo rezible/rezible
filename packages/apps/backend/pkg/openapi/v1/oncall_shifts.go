@@ -182,11 +182,11 @@ var ListOncallShifts = huma.Operation{
 }
 
 type ListOncallShiftsRequest struct {
-	ListRequest
+	PaginationRequest
 	UserId uuid.UUID `query:"userId" required:"false" nullable:"false"`
 	Active bool      `query:"active" required:"false" nullable:"false"`
 }
-type ListOncallShiftsResponse ListResponse[OncallShift]
+type ListOncallShiftsResponse PaginatedResponse[OncallShift]
 
 var GetOncallShift = huma.Operation{
 	OperationID: "get-oncall-shift",

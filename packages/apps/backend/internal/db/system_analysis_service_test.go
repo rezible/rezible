@@ -158,12 +158,12 @@ func (s *SystemAnalysisServiceSuite) TestAnalysisEntityMutationsAndDelete() {
 	s.Equal(40.0, *updated.PosY)
 
 	params := rez.ListSystemAnalysisEntitiesParams{
-		ListParams: ent.ListParams{Count: true},
+		ListParams: ent.ListParams{},
 		Predicates: []predicate.SystemAnalysisEntity{saentity.AnalysisID(analysis.ID)},
 	}
 	nodes, listErr := svc.ListSystemAnalysisEntities(ctx, params)
 	s.Require().NoError(listErr)
-	s.Equal(1, nodes.Count)
+	s.Equal(1, nodes.Total)
 	s.Require().Len(nodes.Data, 1)
 	s.Equal(node.ID, nodes.Data[0].ID)
 
@@ -189,21 +189,21 @@ func (s *SystemAnalysisServiceSuite) TestAnalysisRelationshipDerivesEndpointEnti
 	s.Equal(fixture.Relationship.ID, relationship.KnowledgeRelationshipID)
 
 	entityParams := rez.ListSystemAnalysisEntitiesParams{
-		ListParams: ent.ListParams{Count: true, Limit: 1, Offset: 1},
+		ListParams: ent.ListParams{Page: 2, PageSize: 1},
 		Predicates: []predicate.SystemAnalysisEntity{saentity.AnalysisID(analysis.ID)},
 	}
 	nodes, listNodesErr := svc.ListSystemAnalysisEntities(ctx, entityParams)
 	s.Require().NoError(listNodesErr)
-	s.Equal(2, nodes.Count)
+	s.Equal(2, nodes.Total)
 	s.Require().Len(nodes.Data, 1)
 
 	relsParams := rez.ListSystemAnalysisRelationshipsParams{
-		ListParams: ent.ListParams{Count: true},
+		ListParams: ent.ListParams{},
 		Predicates: []predicate.SystemAnalysisRelationship{sarel.AnalysisID(analysis.ID)},
 	}
 	relationships, listRelationshipsErr := svc.ListSystemAnalysisRelationships(ctx, relsParams)
 	s.Require().NoError(listRelationshipsErr)
-	s.Equal(1, relationships.Count)
+	s.Equal(1, relationships.Total)
 	s.Require().Len(relationships.Data, 1)
 	s.Require().NotNil(relationships.Data[0].Edges.KnowledgeRelationship)
 
@@ -281,13 +281,11 @@ func (s *SystemAnalysisServiceSuite) TestListEntriesOrdersAndLoadsSubjects() {
 
 	params2 := rez.ListSystemAnalysisEntriesParams{
 		Predicates: []predicate.SystemAnalysisEntry{sae.AnalysisID(analysis.ID)},
-		Count:      true,
-		Limit:      1,
-		Offset:     1,
+		ListParams: ent.ListParams{Page: 2, PageSize: 1},
 	}
 	page, pageErr := svc.ListSystemAnalysisEntries(ctx, params2)
 	s.Require().NoError(pageErr)
-	s.Equal(2, page.Count)
+	s.Equal(2, page.Total)
 	s.Require().Len(page.Data, 1)
 	s.Equal(second.ID, page.Data[0].ID)
 }

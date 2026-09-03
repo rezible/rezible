@@ -6,6 +6,7 @@
 	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
 	import { EventsTableState } from "./eventsTableState.svelte";
 	import EventsFilters from "./EventsFilters.svelte";
+	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 
 	const tableState = new EventsTableState();
 
@@ -55,25 +56,19 @@
 		</div>
 	{/if}
 
-	<div class="flex-1 flex flex-col overflow-y-auto border-t">
-		{#if tableState.loading}
-			<LoadingIndicator />
-		{:else}
-			{#each tableState.events as event (event.id)}
-				<EventRow {event} />
+	<div class="flex-1 min-h-0 border-t p-1">
+		<PaginatedQueryListBox {...tableState.paginatedEventsQuery}>
+			{#if tableState.loading}
+				<LoadingIndicator />
 			{:else}
-				<div class="grid place-items-center flex-1">
-					<span class="text-surface-content/80">No Events</span>
-				</div>
-			{/each}
-		{/if}
+				{#each tableState.events as event (event.id)}
+					<EventRow {event} />
+				{:else}
+					<div class="grid place-items-center flex-1">
+						<span class="text-surface-content/80">No Events</span>
+					</div>
+				{/each}
+			{/if}
+		</PaginatedQueryListBox>
 	</div>
-
-	<!-- <Pagination {...tableState.paginator.paginationProps}
-		classes={{
-			root: "border-t py-1",
-			perPage: "flex-1 text-right",
-			pagination: "px-8",
-		}}
-	/> -->
 </div>

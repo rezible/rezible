@@ -1,5 +1,6 @@
-import { getOncallRosterOptions, listUsersOptions, type OncallRoster, type User } from "$lib/api";
-import { createQuery } from "@tanstack/svelte-query";
+import { getOncallRosterOptions, listUsersInfiniteOptions, type OncallRoster, type User } from "$lib/api";
+import { getNextPageParam } from "$lib/api/utils";
+import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 import {
 	createEmptyRosterEditorDraft,
@@ -51,6 +52,11 @@ export class OncallRosterEditorViewController {
 				}
 			}
 		);
+		$effect(() => {
+			if (this.usersQuery.hasNextPage && !this.usersQuery.isFetchingNextPage) {
+				this.usersQuery.fetchNextPage();
+			}
+		});
 	}
 
 	private rosterQuery = createQuery(() => ({
@@ -58,18 +64,15 @@ export class OncallRosterEditorViewController {
 		enabled: !!this.rosterSlug,
 	}));
 
-	private usersQuery = createQuery(() =>
-		listUsersOptions({
-			query: {
-				archived: false,
-				limit: 200,
-			},
-		})
-	);
+	private usersQuery = createInfiniteQuery(() => ({
+		...listUsersInfiniteOptions({ query: { pageSize: 50 } }),
+		initialPageParam: 1,
+		getNextPageParam,
+	}));
 
 	mode = $derived<"create" | "edit">(this.rosterSlug ? "edit" : "create");
 	roster = $derived(this.rosterQuery.data?.data);
-	users = $derived(this.usersQuery.data?.data ?? []);
+	users = $derived(this.usersQuery.data?.pages.flatMap(({ data }) => data) ?? []);
 	loading = $derived(this.mode === "edit" && this.rosterQuery.isLoading);
 	rosterId = $derived(this.roster?.id);
 

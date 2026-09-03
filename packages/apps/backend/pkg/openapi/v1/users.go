@@ -63,10 +63,11 @@ var ListUsers = huma.Operation{
 }
 
 type ListUsersRequest struct {
-	ListRequest
+	PaginationRequest
+	Search string    `query:"search" required:"false" nullable:"false"`
 	TeamId uuid.UUID `query:"teamId" required:"false"`
 }
-type ListUsersResponse ListResponse[User]
+type ListUsersResponse PaginatedResponse[User]
 
 var GetUser = huma.Operation{
 	OperationID: "get-user",

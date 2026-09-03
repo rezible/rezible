@@ -26,13 +26,9 @@ export type SystemMapSelection =
 	| { kind: "entity"; entity: KnowledgeGraphEntity }
 	| { kind: "relationship"; relationship: KnowledgeGraphRelationship };
 
-const makeEntityLabel = ({attributes: attrs}: KnowledgeGraphEntity) => {
-	return (
-		attrs.latestState?.displayName ||
-		attrs.aliases[0]?.attributes.providerSubjectRef ||
-		attrs.kind
-	);
-}
+const makeEntityLabel = ({ attributes: attrs }: KnowledgeGraphEntity) => {
+	return attrs.latestState?.displayName || attrs.aliases[0]?.attributes.providerSubjectRef || attrs.kind;
+};
 
 export class SystemMapViewController {
 	private entities = new SvelteMap<string, KnowledgeGraphEntity>();
@@ -56,8 +52,8 @@ export class SystemMapViewController {
 		...listKnowledgeGraphEntitiesOptions({
 			query: {
 				search: this.search.trim(),
-				limit: 20,
-				offset: 0,
+				page: 1,
+				pageSize: 20,
 			},
 		}),
 		enabled: this.search.trim().length >= 2,

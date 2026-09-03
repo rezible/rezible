@@ -138,13 +138,14 @@ func (s *RetrospectiveService) SetComment(ctx context.Context, cmt *ent.Retrospe
 	return updated, nil
 }
 
-func (s *RetrospectiveService) ListComments(ctx context.Context, params rez.ListRetrospectiveCommentsParams) ([]*ent.RetrospectiveComment, error) {
+func (s *RetrospectiveService) ListComments(ctx context.Context, params rez.ListRetrospectiveCommentsParams) (*ent.ListResult[ent.RetrospectiveComment], error) {
 	query := s.db.Client(ctx).RetrospectiveComment.Query().
-		Where(retrospectivecomment.RetrospectiveID(params.RetrospectiveID))
+		Where(retrospectivecomment.RetrospectiveID(params.RetrospectiveID)).
+		Order(retrospectivecomment.ByID(params.GetOrder()))
 
 	if params.WithReplies {
 		query = query.WithReplies()
 	}
 
-	return query.All(ctx)
+	return ent.DoListQuery[ent.RetrospectiveComment, *ent.RetrospectiveCommentQuery](ctx, query, params.ListParams)
 }

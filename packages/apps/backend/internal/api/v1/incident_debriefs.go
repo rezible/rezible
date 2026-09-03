@@ -92,17 +92,14 @@ func (h *incidentDebriefsHandler) ListIncidentDebriefMessages(ctx context.Contex
 		return nil, oapi.Error(ctx, "failed to get debrief", debriefErr)
 	}
 
-	msgs, msgsErr := debrief.QueryMessages().
-		Order(incidentdebriefmessage.ByCreatedAt()).
-		All(ctx)
+	query := debrief.QueryMessages().
+		Order(incidentdebriefmessage.ByCreatedAt(), incidentdebriefmessage.ByID())
+	msgs, msgsErr := ent.DoListQuery[ent.IncidentDebriefMessage, *ent.IncidentDebriefMessageQuery](ctx, query, request.ListParams())
 	if msgsErr != nil {
 		return nil, oapi.Error(ctx, "failed to query debrief messages", msgsErr)
 	}
 
-	resp.Body.Data = make([]oapi.IncidentDebriefMessage, len(msgs))
-	for i, msg := range msgs {
-		resp.Body.Data[i] = oapi.IncidentDebriefMessageFromEnt(msg)
-	}
+	resp.Body = oapi.ConvertPaginatedResultBody(msgs, oapi.IncidentDebriefMessageFromEnt)
 
 	return &resp, nil
 }

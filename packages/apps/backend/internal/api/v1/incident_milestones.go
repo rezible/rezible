@@ -19,10 +19,9 @@ func newIncidentMilestonesHandler(db rez.Database) *incidentMilestonesHandler {
 func (h *incidentMilestonesHandler) ListIncidentMilestones(ctx context.Context, request *oapi.ListIncidentMilestonesRequest) (*oapi.ListIncidentMilestonesResponse, error) {
 	var resp oapi.ListIncidentMilestonesResponse
 
-	query := h.db.Client(ctx).IncidentMilestone.Query()
-
-	query.Limit(10)
-	query.Offset(0)
+	query := h.db.Client(ctx).IncidentMilestone.Query().
+		Where(incidentmilestone.IncidentID(request.Id)).
+		Order(incidentmilestone.ByTimestamp(), incidentmilestone.ByID())
 
 	results, queryErr := query.All(ctx)
 	if queryErr != nil {

@@ -10,10 +10,7 @@
 	};
 	const { schedule }: Props = $props();
 
-	const queryOptions = () =>
-		listMeetingSessionsOptions({
-			query: { meetingScheduleId: schedule.id },
-		});
+	const queryOptions = () => listMeetingSessionsOptions();
 	const query = createQuery(queryOptions);
 </script>
 
@@ -28,7 +25,7 @@
 	<Header title="Past Sessions" classes={{ title: "text-lg" }}></Header>
 	<LoadingQueryWrapper {query}>
 		{#snippet view(sessions: MeetingSession[])}
-			{#each sessions as session}
+			{#each sessions as session (session.id)}
 				<MeetingSessionCard {session} />
 			{/each}
 		{/snippet}

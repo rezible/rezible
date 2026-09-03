@@ -15,7 +15,8 @@ import {
 	type UpdateSystemAnalysisEdgeAttributes,
 	type UpdateSystemAnalysisNodeAttributes,
 } from "$lib/api";
-import { flattenPages, mapEntryAttachments, nextPageOffset } from "./lib";
+import { getNextPageParam } from "$lib/api/utils";
+import { flattenPages, mapEntryAttachments } from "./lib";
 
 const pageSize = 50;
 
@@ -25,29 +26,29 @@ export class SystemAnalysisController {
 	nodesQuery = createInfiniteQuery(() => ({
 		...listSystemAnalysisNodesInfiniteOptions({
 			path: { id: this.analysisId },
-			query: { limit: pageSize },
+			query: { pageSize },
 		}),
 		enabled: !!this.analysisId,
-		initialPageParam: 0,
-		getNextPageParam: (_last, pages) => nextPageOffset(pages),
+		initialPageParam: 1,
+		getNextPageParam,
 	}));
 	edgesQuery = createInfiniteQuery(() => ({
 		...listSystemAnalysisEdgesInfiniteOptions({
 			path: { id: this.analysisId },
-			query: { limit: pageSize },
+			query: { pageSize },
 		}),
 		enabled: !!this.analysisId,
-		initialPageParam: 0,
-		getNextPageParam: (_last, pages) => nextPageOffset(pages),
+		initialPageParam: 1,
+		getNextPageParam,
 	}));
 	entriesQuery = createInfiniteQuery(() => ({
 		...listSystemAnalysisEntriesInfiniteOptions({
 			path: { id: this.analysisId },
-			query: { limit: pageSize },
+			query: { pageSize },
 		}),
 		enabled: !!this.analysisId,
-		initialPageParam: 0,
-		getNextPageParam: (_last, pages) => nextPageOffset(pages),
+		initialPageParam: 1,
+		getNextPageParam,
 	}));
 
 	analysisNodes = $derived(flattenPages(this.nodesQuery.data?.pages));
@@ -82,10 +83,7 @@ export class SystemAnalysisController {
 	private refreshEdges = () => this.edgesQuery.refetch();
 
 	async refreshAll() {
-		return Promise.all([
-			this.refreshNodes(),
-			this.refreshEdges(),
-		])
+		return Promise.all([this.refreshNodes(), this.refreshEdges()]);
 	}
 
 	private addNodeMutation = createMutation(() => ({

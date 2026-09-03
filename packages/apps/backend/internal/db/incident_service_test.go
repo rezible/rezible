@@ -3,12 +3,14 @@ package db
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	ifo "github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
 	"github.com/stretchr/testify/mock"
@@ -121,4 +123,80 @@ func (s *IncidentServiceSuite) TestCreateIncidentWithMetadataRoundTrips() {
 	s.Require().Len(metadata.Fields, 1)
 	s.Require().Len(metadata.Fields[0].Edges.Options, 1)
 	s.Equal(option.ID, metadata.Fields[0].Edges.Options[0].ID)
+}
+
+func (s *IncidentServiceSuite) TestListIncidentsUsesFilteredTotalsAndStablePages() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	svc := s.newService(tdb)
+	client := tdb.Client(ctx)
+	openedAt := time.Now().UTC()
+
+	incidents := make([]*ent.Incident, 2)
+	for i := range incidents {
+		incidents[i] = s.createBasicIncident(ctx, client, svc, "Matching incident")
+		updated, updateErr := svc.Set(ctx, incidents[i].ID, func(m *ent.IncidentMutation) {
+			m.SetOpenedAt(openedAt)
+		})
+		s.Require().NoError(updateErr)
+		incidents[i] = updated
+	}
+	s.createBasicIncident(ctx, client, svc, "Unrelated incident")
+
+	params := rez.ListIncidentsParams{Search: "matching", PageSize: 1}
+	firstPage, firstErr := svc.ListIncidents(ctx, params)
+	s.Require().NoError(firstErr)
+	s.Equal(2, firstPage.Total)
+	s.Equal(1, firstPage.Page)
+	s.Equal(1, firstPage.PageSize)
+	s.Require().Len(firstPage.Data, 1)
+
+	params.Page = 2
+	secondPage, secondErr := svc.ListIncidents(ctx, params)
+	s.Require().NoError(secondErr)
+	s.Equal(2, secondPage.Total)
+	s.Require().Len(secondPage.Data, 1)
+	s.NotEqual(firstPage.Data[0].ID, secondPage.Data[0].ID)
+
+	repeatedFirstPage, repeatedErr := svc.ListIncidents(ctx, rez.ListIncidentsParams{
+		Search: "matching", PageSize: 1,
+	})
+	s.Require().NoError(repeatedErr)
+	s.Equal(firstPage.Data[0].ID, repeatedFirstPage.Data[0].ID)
+
+}
+
+func (s *IncidentServiceSuite) TestDoListQueryUsesSameArchiveContextForTotalAndPage() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+
+	active := client.IncidentSeverity.Create().
+		SetName("Active").
+		SetRank(1).
+		SaveX(ctx)
+	archived := client.IncidentSeverity.Create().
+		SetName("Archived").
+		SetRank(2).
+		SaveX(ctx)
+	client.IncidentSeverity.DeleteOneID(archived.ID).ExecX(ctx)
+
+	activeOnly, activeErr := ent.DoListQuery[ent.IncidentSeverity, *ent.IncidentSeverityQuery](
+		ctx,
+		client.IncidentSeverity.Query().Order(incidentseverity.ByID()),
+		ent.ListParams{},
+	)
+	s.Require().NoError(activeErr)
+	s.Equal(1, activeOnly.Total)
+	s.Require().Len(activeOnly.Data, 1)
+	s.Equal(active.ID, activeOnly.Data[0].ID)
+
+	withArchived, archivedErr := ent.DoListQuery[ent.IncidentSeverity, *ent.IncidentSeverityQuery](
+		ctx,
+		client.IncidentSeverity.Query().Order(incidentseverity.ByID()),
+		ent.ListParams{IncludeArchived: true},
+	)
+	s.Require().NoError(archivedErr)
+	s.Equal(2, withArchived.Total)
+	s.Require().Len(withArchived.Data, 2)
 }

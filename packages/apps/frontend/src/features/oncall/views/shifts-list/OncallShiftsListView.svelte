@@ -1,30 +1,16 @@
 <script lang="ts">
-	import { subDays } from "date-fns";
-	import { createQuery } from "@tanstack/svelte-query";
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
-	import { listOncallShiftsOptions, type ListOncallShiftsData, type OncallShift } from "$lib/api";
+	import type { OncallShift } from "$lib/api";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import ShiftCard from "$features/oncall/components/shift-card/ShiftCard.svelte";
 	import RosterSelectField from "$src/components/forms/roster-select-field/RosterSelectField.svelte";
-	import { watch } from "runed";
-	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
+	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
+	import { initOncallShiftsListController } from "./controller.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Oncall Shifts", href: "/shifts" }]);
+	setPageBreadcrumbs(() => [{ label: "Oncall Shifts", path: "/oncall/shifts" }]);
 
-	const statusOptions = [
-		{ label: "Active", value: "active" },
-		{ label: "Past", value: "past" },
-		{ label: "Upcoming", value: "upcoming", disabled: true },
-	];
-	let selectedStatus = $state<string[]>(statusOptions.map((o) => o.value));
-
-	const today = new Date();
-	let dateRange = $state({
-		from: subDays(today, 3),
-		to: today,
-		periodType: "day",
-	});
+	const controller = initOncallShiftsListController();
 
 	const periodTypes: string[] = [
 		// PeriodType.Day,
@@ -35,35 +21,12 @@
 		// PeriodType.CalendarYear,
 	];
 
-	const updateDateRange = (newRange: any) => {
-		console.log(newRange);
-	};
-
-	const onRosterSelected = (id?: string) => {
-		if (!id) return;
-	};
-
 	// const formatShiftStatusField = (opts: MenuOption<string>[]) => {
 	// 	if (opts.length === 0) return "None";
 	// 	if (opts.length === statusOptions.length) return "Any";
 	// 	return opts.map((o) => o.label).join(", ");
 	// };
 
-	const setShiftStatus = (value?: string[]) => {
-		if (!value || value.length === 0) return;
-		selectedStatus = value;
-	};
-
-	const queryParams = $derived<ListOncallShiftsData["query"]>({});
-	const shiftsQuery = createQuery(() => listOncallShiftsOptions({ query: queryParams }));
-	const queryPagination = $derived(shiftsQuery.data?.pagination);
-	watch(
-		() => queryPagination,
-		(p) => {
-			if (!p) return;
-			// pagination.setTotal(p.total)
-		}
-	);
 </script>
 
 {#snippet filters()}
@@ -86,7 +49,7 @@
 			</div>
 		</MultiSelectField-->
 
-		<RosterSelectField onSelected={onRosterSelected} />
+		<RosterSelectField onSelected={controller.onRosterSelected} />
 
 		<span>date range</span>
 		<!--DateRangeField
@@ -103,10 +66,10 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox>
-		<LoadingQueryWrapper query={shiftsQuery}>
+	<PaginatedQueryListBox {...controller.paginatedShiftsQuery}>
+		<LoadingQueryWrapper query={controller.query}>
 			{#snippet view(shifts: OncallShift[])}
-				{#each shifts as shift}
+				{#each shifts as shift (shift.id)}
 					<ShiftCard {shift} />
 				{:else}
 					<div class="grid place-items-center flex-1">
@@ -115,5 +78,5 @@
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>
-	</PaginatedListBox>
+	</PaginatedQueryListBox>
 </FilterPage>

@@ -580,6 +580,261 @@ components:
         - docsAvailable
         - docsNeedsUpdate
       type: object
+    CollectionResponseBodyAiAgentConfig:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyAiAgentConfig.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/AiAgentConfig"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyAlertIncidentLink:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyAlertIncidentLink.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/AlertIncidentLink"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyIncidentDebriefQuestion:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyIncidentDebriefQuestion.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentDebriefQuestion"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyIncidentDebriefSuggestion:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyIncidentDebriefSuggestion.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentDebriefSuggestion"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyIncidentField:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyIncidentField.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentField"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyIncidentMilestone:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyIncidentMilestone.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentMilestone"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyIncidentRole:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyIncidentRole.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentRole"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyInstallableIntegration:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyInstallableIntegration.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/InstallableIntegration"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyIntegrationEventSyncRun:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyIntegrationEventSyncRun.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IntegrationEventSyncRun"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyIntegrationInstallTarget:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyIntegrationInstallTarget.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IntegrationInstallTarget"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyIntegrationInstallation:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyIntegrationInstallation.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IntegrationInstallation"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyMeetingSchedule:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyMeetingSchedule.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/MeetingSchedule"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyMeetingSession:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyMeetingSession.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/MeetingSession"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyOncallRoster:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyOncallRoster.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/OncallRoster"
+          type: array
+      required:
+        - data
+      type: object
+    CollectionResponseBodyRetrospectiveReview:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CollectionResponseBodyRetrospectiveReview.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/RetrospectiveReview"
+          type: array
+      required:
+        - data
+      type: object
     CompleteIntegrationOAuthFlowRequestAttributes:
       additionalProperties: false
       properties:
@@ -2053,23 +2308,6 @@ components:
       required:
         - data
       type: object
-    GetInstallableIntegrationsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetInstallableIntegrationsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/InstallableIntegration"
-          type: array
-      required:
-        - data
-      type: object
     GetIntegrationInstallationResponseBody:
       additionalProperties: false
       properties:
@@ -3300,806 +3538,6 @@ components:
         - relationships
         - truncated
       type: object
-    ListResponseBodyAgentArtifact:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyAgentArtifact.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/AgentArtifact"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyAgentMessage:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyAgentMessage.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/AgentMessage"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyAgentSession:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyAgentSession.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/AgentSession"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyAgentTurn:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyAgentTurn.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/AgentTurn"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyAiAgentConfig:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyAiAgentConfig.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/AiAgentConfig"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyAlert:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyAlert.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/Alert"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyAlertIncidentLink:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyAlertIncidentLink.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/AlertIncidentLink"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyEvent:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyEvent.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/Event"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyEventAnnotation:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyEventAnnotation.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/EventAnnotation"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIncident:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIncident.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/Incident"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIncidentDebriefMessage:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIncidentDebriefMessage.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentDebriefMessage"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIncidentDebriefQuestion:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIncidentDebriefQuestion.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentDebriefQuestion"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIncidentDebriefSuggestion:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIncidentDebriefSuggestion.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentDebriefSuggestion"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIncidentField:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIncidentField.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentField"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIncidentMilestone:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIncidentMilestone.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentMilestone"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIncidentRole:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIncidentRole.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentRole"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIncidentSeverity:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIncidentSeverity.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentSeverity"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIncidentTag:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIncidentTag.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentTag"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIncidentType:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIncidentType.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentType"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIntegrationEventSyncRun:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIntegrationEventSyncRun.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IntegrationEventSyncRun"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIntegrationInstallTarget:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIntegrationInstallTarget.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IntegrationInstallTarget"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyIntegrationInstallation:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyIntegrationInstallation.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IntegrationInstallation"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyKnowledgeGraphEntity:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyKnowledgeGraphEntity.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/KnowledgeGraphEntity"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyKnowledgeGraphRelationship:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyKnowledgeGraphRelationship.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/KnowledgeGraphRelationship"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyMeetingSchedule:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyMeetingSchedule.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/MeetingSchedule"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyMeetingSession:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyMeetingSession.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/MeetingSession"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyOncallRoster:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyOncallRoster.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/OncallRoster"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyOncallShift:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyOncallShift.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/OncallShift"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyPlaybook:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyPlaybook.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/Playbook"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyRetrospective:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyRetrospective.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/Retrospective"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyRetrospectiveComment:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyRetrospectiveComment.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/RetrospectiveComment"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyRetrospectiveReview:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyRetrospectiveReview.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/RetrospectiveReview"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodySystemAnalysisEdge:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodySystemAnalysisEdge.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/SystemAnalysisEdge"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodySystemAnalysisEntry:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodySystemAnalysisEntry.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/SystemAnalysisEntry"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodySystemAnalysisNode:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodySystemAnalysisNode.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/SystemAnalysisNode"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyTask:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyTask.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/Task"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyTeam:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyTeam.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/Team"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyTeamMembership:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyTeamMembership.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/TeamMembership"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyUser:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyUser.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/User"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListResponseBodyUserNotification:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListResponseBodyUserNotification.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/UserNotification"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
     MeetingAttendees:
       additionalProperties: false
       properties:
@@ -4564,6 +4002,583 @@ components:
       required:
         - enableIncidentManagement
       type: object
+    PaginatedResponseBodyAgentArtifact:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyAgentArtifact.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/AgentArtifact"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyAgentMessage:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyAgentMessage.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/AgentMessage"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyAgentSession:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyAgentSession.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/AgentSession"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyAgentTurn:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyAgentTurn.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/AgentTurn"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyAlert:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyAlert.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/Alert"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyEvent:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyEvent.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/Event"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyEventAnnotation:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyEventAnnotation.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/EventAnnotation"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyIncident:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyIncident.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/Incident"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyIncidentDebriefMessage:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyIncidentDebriefMessage.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentDebriefMessage"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyIncidentSeverity:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyIncidentSeverity.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentSeverity"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyIncidentTag:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyIncidentTag.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentTag"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyIncidentType:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyIncidentType.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentType"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyIntegrationInstallation:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyIntegrationInstallation.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IntegrationInstallation"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyKnowledgeGraphEntity:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyKnowledgeGraphEntity.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphEntity"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyKnowledgeGraphRelationship:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyKnowledgeGraphRelationship.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphRelationship"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyOncallRoster:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyOncallRoster.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/OncallRoster"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyOncallShift:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyOncallShift.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/OncallShift"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyPlaybook:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyPlaybook.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/Playbook"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyRetrospective:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyRetrospective.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/Retrospective"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyRetrospectiveComment:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyRetrospectiveComment.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/RetrospectiveComment"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodySystemAnalysisEdge:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodySystemAnalysisEdge.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/SystemAnalysisEdge"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodySystemAnalysisEntry:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodySystemAnalysisEntry.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/SystemAnalysisEntry"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodySystemAnalysisNode:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodySystemAnalysisNode.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/SystemAnalysisNode"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyTask:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyTask.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/Task"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyTeam:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyTeam.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/Team"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyTeamMembership:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyTeamMembership.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/TeamMembership"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyUser:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyUser.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/User"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyUserNotification:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyUserNotification.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/UserNotification"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    Pagination:
+      additionalProperties: false
+      properties:
+        page:
+          format: int64
+          type: integer
+        pageSize:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+      required:
+        - page
+        - pageSize
+        - total
+      type: object
     Part:
       additionalProperties: false
       properties:
@@ -4690,19 +4705,6 @@ components:
       properties:
         uri:
           type: string
-      type: object
-    ResponsePagination:
-      additionalProperties: false
-      properties:
-        next:
-          type: string
-        previous:
-          type: string
-        total:
-          format: int64
-          type: integer
-      required:
-        - total
       type: object
     Retrospective:
       additionalProperties: false
@@ -6513,38 +6515,27 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyAgentSession"
+                $ref: "#/components/schemas/PaginatedResponseBodyAgentSession"
           description: OK
         "400":
           content:
@@ -6711,38 +6702,27 @@ paths:
             type: string
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyAgentArtifact"
+                $ref: "#/components/schemas/PaginatedResponseBodyAgentArtifact"
           description: OK
         "400":
           content:
@@ -6889,38 +6869,27 @@ paths:
             type: string
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyAgentMessage"
+                $ref: "#/components/schemas/PaginatedResponseBodyAgentMessage"
           description: OK
         "400":
           content:
@@ -6972,38 +6941,27 @@ paths:
             type: string
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyAgentTurn"
+                $ref: "#/components/schemas/PaginatedResponseBodyAgentTurn"
           description: OK
         "400":
           content:
@@ -7240,7 +7198,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyAiAgentConfig"
+                $ref: "#/components/schemas/CollectionResponseBodyAiAgentConfig"
           description: OK
         "400":
           content:
@@ -7287,35 +7245,24 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
             format: int64
             maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
           name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-        - explode: false
-          in: query
-          name: rosterId
           schema:
             type: string
       responses:
@@ -7323,7 +7270,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyAlert"
+                $ref: "#/components/schemas/PaginatedResponseBodyAlert"
           description: OK
         "400":
           content:
@@ -7428,40 +7375,12 @@ paths:
           required: true
           schema:
             type: string
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyAlertIncidentLink"
+                $ref: "#/components/schemas/CollectionResponseBodyAlertIncidentLink"
           description: OK
         "400":
           content:
@@ -7582,38 +7501,27 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyUserNotification"
+                $ref: "#/components/schemas/PaginatedResponseBodyUserNotification"
           description: OK
         "400":
           content:
@@ -7660,28 +7568,6 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
           name: archived
           schema:
             default: false
@@ -7691,7 +7577,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIncidentDebriefQuestion"
+                $ref: "#/components/schemas/CollectionResponseBodyIncidentDebriefQuestion"
           description: OK
         "400":
           content:
@@ -8070,32 +7956,21 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
         - explode: false
           in: query
           name: from
@@ -8128,7 +8003,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyEventAnnotation"
+                $ref: "#/components/schemas/PaginatedResponseBodyEventAnnotation"
           description: OK
         "400":
           content:
@@ -8340,32 +8215,21 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
         - explode: false
           in: query
           name: from
@@ -8388,7 +8252,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyEvent"
+                $ref: "#/components/schemas/PaginatedResponseBodyEvent"
           description: OK
         "400":
           content:
@@ -8615,38 +8479,27 @@ paths:
             type: string
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIncidentDebriefMessage"
+                $ref: "#/components/schemas/PaginatedResponseBodyIncidentDebriefMessage"
           description: OK
         "400":
           content:
@@ -8756,40 +8609,12 @@ paths:
           required: true
           schema:
             type: string
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIncidentDebriefSuggestion"
+                $ref: "#/components/schemas/CollectionResponseBodyIncidentDebriefSuggestion"
           description: OK
         "400":
           content:
@@ -8892,28 +8717,6 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
           name: archived
           schema:
             default: false
@@ -8923,7 +8726,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIncidentField"
+                $ref: "#/components/schemas/CollectionResponseBodyIncidentField"
           description: OK
         "400":
           content:
@@ -9186,41 +8989,12 @@ paths:
   /incident_metadata/roles:
     get:
       operationId: list-incident-roles
-      parameters:
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIncidentRole"
+                $ref: "#/components/schemas/CollectionResponseBodyIncidentRole"
           description: OK
         "400":
           content:
@@ -9486,20 +9260,20 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
         - explode: false
           in: query
@@ -9517,7 +9291,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIncidentSeverity"
+                $ref: "#/components/schemas/PaginatedResponseBodyIncidentSeverity"
           description: OK
         "400":
           content:
@@ -9783,20 +9557,20 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
         - explode: false
           in: query
@@ -9814,7 +9588,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIncidentTag"
+                $ref: "#/components/schemas/PaginatedResponseBodyIncidentTag"
           description: OK
         "400":
           content:
@@ -10080,20 +9854,20 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
         - explode: false
           in: query
@@ -10111,7 +9885,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIncidentType"
+                $ref: "#/components/schemas/PaginatedResponseBodyIncidentType"
           description: OK
         "400":
           content:
@@ -10488,35 +10262,24 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
             format: int64
             maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
           name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-        - explode: false
-          in: query
-          name: teamId
           schema:
             type: string
       responses:
@@ -10524,7 +10287,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIncident"
+                $ref: "#/components/schemas/PaginatedResponseBodyIncident"
           description: OK
         "400":
           content:
@@ -10853,7 +10616,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIncidentMilestone"
+                $ref: "#/components/schemas/CollectionResponseBodyIncidentMilestone"
           description: OK
         "400":
           content:
@@ -10958,41 +10721,12 @@ paths:
   /integrations:
     get:
       operationId: get-installable-integrations
-      parameters:
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetInstallableIntegrationsResponseBody"
+                $ref: "#/components/schemas/CollectionResponseBodyInstallableIntegration"
           description: OK
         "400":
           content:
@@ -11230,7 +10964,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIntegrationInstallation"
+                $ref: "#/components/schemas/CollectionResponseBodyIntegrationInstallation"
           description: OK
         "400":
           content:
@@ -11279,7 +11013,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIntegrationInstallTarget"
+                $ref: "#/components/schemas/CollectionResponseBodyIntegrationInstallTarget"
           description: OK
         "400":
           content:
@@ -11326,38 +11060,27 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIntegrationInstallation"
+                $ref: "#/components/schemas/PaginatedResponseBodyIntegrationInstallation"
           description: OK
         "400":
           content:
@@ -11577,7 +11300,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyIntegrationEventSyncRun"
+                $ref: "#/components/schemas/CollectionResponseBodyIntegrationEventSyncRun"
           description: OK
         "400":
           content:
@@ -11681,32 +11404,26 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
             format: int64
             maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
           name: search
           schema:
             type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
         - explode: false
           in: query
           name: category
@@ -11741,7 +11458,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyKnowledgeGraphEntity"
+                $ref: "#/components/schemas/PaginatedResponseBodyKnowledgeGraphEntity"
           description: OK
         "400":
           content:
@@ -11843,32 +11560,21 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
         - explode: false
           in: query
           name: predicate
@@ -11896,7 +11602,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyKnowledgeGraphRelationship"
+                $ref: "#/components/schemas/PaginatedResponseBodyKnowledgeGraphRelationship"
           description: OK
         "400":
           content:
@@ -12066,41 +11772,12 @@ paths:
   /meeting_schedules:
     get:
       operationId: list-meeting-schedules
-      parameters:
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyMeetingSchedule"
+                $ref: "#/components/schemas/CollectionResponseBodyMeetingSchedule"
           description: OK
         "400":
           content:
@@ -12363,66 +12040,12 @@ paths:
   /meeting_sessions:
     get:
       operationId: list-meeting-sessions
-      parameters:
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-        - explode: false
-          in: query
-          name: meetingScheduleId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: userId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: teamId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: from
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: to
-          schema:
-            type: string
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyMeetingSession"
+                $ref: "#/components/schemas/CollectionResponseBodyMeetingSession"
           description: OK
         "400":
           content:
@@ -13030,32 +12653,26 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
             format: int64
             maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
           name: search
           schema:
             type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
         - explode: false
           in: query
           name: teamId
@@ -13066,17 +12683,12 @@ paths:
           name: userId
           schema:
             type: string
-        - explode: false
-          in: query
-          name: pinned
-          schema:
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyOncallRoster"
+                $ref: "#/components/schemas/PaginatedResponseBodyOncallRoster"
           description: OK
         "400":
           content:
@@ -13178,32 +12790,21 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
         - explode: false
           in: query
           name: userId
@@ -13219,7 +12820,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyOncallShift"
+                $ref: "#/components/schemas/PaginatedResponseBodyOncallShift"
           description: OK
         "400":
           content:
@@ -13509,7 +13110,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyOncallRoster"
+                $ref: "#/components/schemas/CollectionResponseBodyOncallRoster"
           description: OK
         "400":
           content:
@@ -13564,7 +13165,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyOncallRoster"
+                $ref: "#/components/schemas/CollectionResponseBodyOncallRoster"
           description: OK
         "400":
           content:
@@ -13618,7 +13219,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyOncallRoster"
+                $ref: "#/components/schemas/CollectionResponseBodyOncallRoster"
           description: OK
         "400":
           content:
@@ -13940,40 +13541,29 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
             format: int64
             maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: alertId
           schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
+            type: string
         - explode: false
           in: query
           name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-        - explode: false
-          in: query
-          name: teamId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: alertId
           schema:
             type: string
       responses:
@@ -13981,7 +13571,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyPlaybook"
+                $ref: "#/components/schemas/PaginatedResponseBodyPlaybook"
           description: OK
         "400":
           content:
@@ -14250,34 +13840,6 @@ paths:
           required: true
           schema:
             type: string
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
@@ -14501,38 +14063,27 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyRetrospective"
+                $ref: "#/components/schemas/PaginatedResponseBodyRetrospective"
           description: OK
         "400":
           content:
@@ -14699,38 +14250,27 @@ paths:
             type: string
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyRetrospectiveComment"
+                $ref: "#/components/schemas/PaginatedResponseBodyRetrospectiveComment"
           description: OK
         "400":
           content:
@@ -14834,41 +14374,12 @@ paths:
   /retrospectives/{id}/reviews:
     get:
       operationId: list-retrospective-reviews
-      parameters:
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyRetrospectiveReview"
+                $ref: "#/components/schemas/CollectionResponseBodyRetrospectiveReview"
           description: OK
         "400":
           content:
@@ -15095,38 +14606,27 @@ paths:
             type: string
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodySystemAnalysisEdge"
+                $ref: "#/components/schemas/PaginatedResponseBodySystemAnalysisEdge"
           description: OK
         "400":
           content:
@@ -15238,38 +14738,27 @@ paths:
             type: string
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodySystemAnalysisEntry"
+                $ref: "#/components/schemas/PaginatedResponseBodySystemAnalysisEntry"
           description: OK
         "400":
           content:
@@ -15381,38 +14870,27 @@ paths:
             type: string
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodySystemAnalysisNode"
+                $ref: "#/components/schemas/PaginatedResponseBodySystemAnalysisNode"
           description: OK
         "400":
           content:
@@ -16024,43 +15502,33 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
             format: int64
             maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
           name: archived
           schema:
             default: false
             type: boolean
-        - explode: false
-          in: query
-          name: teamId
-          schema:
-            type: string
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyTask"
+                $ref: "#/components/schemas/PaginatedResponseBodyTask"
           description: OK
         "400":
           content:
@@ -16326,32 +15794,21 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
         - explode: false
           in: query
           name: teamId
@@ -16367,7 +15824,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyTeamMembership"
+                $ref: "#/components/schemas/PaginatedResponseBodyTeamMembership"
           description: OK
         "400":
           content:
@@ -16579,20 +16036,20 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
             format: int64
-            maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
+          name: pageSize
           schema:
-            default: 0
+            default: 25
             format: int64
-            minimum: 0
+            maximum: 50
+            minimum: 1
             type: integer
         - explode: false
           in: query
@@ -16610,7 +16067,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyTeam"
+                $ref: "#/components/schemas/PaginatedResponseBodyTeam"
           description: OK
         "400":
           content:
@@ -17079,32 +16536,26 @@ paths:
       parameters:
         - explode: false
           in: query
-          name: limit
+          name: page
           schema:
-            default: 10
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
             format: int64
             maximum: 50
             minimum: 1
             type: integer
         - explode: false
           in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
           name: search
           schema:
             type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
         - explode: false
           in: query
           name: teamId
@@ -17115,7 +16566,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListResponseBodyUser"
+                $ref: "#/components/schemas/PaginatedResponseBodyUser"
           description: OK
         "400":
           content:

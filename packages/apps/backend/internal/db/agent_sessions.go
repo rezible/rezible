@@ -325,7 +325,7 @@ func (s *AgentSessionService) GetAgentTurn(ctx context.Context, id uuid.UUID) (*
 func (s *AgentSessionService) ListAgentTurns(ctx context.Context, params rez.ListAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error) {
 	query := s.queryAgentTurns(ctx).
 		Where(params.Predicates...).
-		Order(at.BySequence(sql.OrderDesc()))
+		Order(at.BySequence(sql.OrderDesc()), at.ByID(sql.OrderDesc()))
 	return ent.DoListQuery[ent.AgentTurn, *ent.AgentTurnQuery](ctx, query, params.ListParams)
 }
 

@@ -1,13 +1,13 @@
-<script lang="ts" generics="QueryResultData">
+<script lang="ts" generics="QueryData">
 	import type { Snippet } from "svelte";
 	import type { CreateQueryResult } from "@tanstack/svelte-query";
 	import type { ErrorModel } from "$lib/api";
-	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
-	import InlineAlert from "../error-alert/ErrorAlert.svelte";
+	import LoadingIndicator from "$components/layout/loading-indicator/LoadingIndicator.svelte";
+	import InlineAlert from "$components/layout/error-alert/ErrorAlert.svelte";
 
 	type Props = {
-		query: CreateQueryResult<{ data: QueryResultData }, ErrorModel>;
-		view: Snippet<[QueryResultData]>;
+		query: CreateQueryResult<{ data: QueryData }, ErrorModel>;
+		view: Snippet<[QueryData]>;
 		loading?: Snippet;
 		error?: Snippet<[ErrorModel]>;
 	};

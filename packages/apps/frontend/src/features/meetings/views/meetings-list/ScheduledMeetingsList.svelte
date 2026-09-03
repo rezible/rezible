@@ -1,17 +1,12 @@
 <script lang="ts">
-	import {
-		listMeetingSchedulesOptions,
-		type ListMeetingSchedulesData,
-		type MeetingSchedule,
-		type MeetingScheduleTiming,
-	} from "$lib/api";
+	import { listMeetingSchedulesOptions, type MeetingSchedule, type MeetingScheduleTiming } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import { addMinutes } from "date-fns";
 	import Header from "$src/components/layout/header/Header.svelte";
+	import { resolve } from "$app/paths";
 
-	let queryParams = $state<ListMeetingSchedulesData["query"]>({});
-	const query = createQuery(() => listMeetingSchedulesOptions({ query: { ...queryParams } }));
+	const query = createQuery(() => listMeetingSchedulesOptions());
 
 	const getScheduleTimeDisplay = (m: MeetingScheduleTiming) => {
 		// TODO: Implement this
@@ -25,8 +20,8 @@
 	<div class="flex-1 flex flex-col gap-2 overflow-y-auto">
 		<LoadingQueryWrapper {query}>
 			{#snippet view(schedules: MeetingSchedule[])}
-				{#each schedules as sched}
-					<a href="/meetings/scheduled/{sched.id}">
+				{#each schedules as sched (sched.id)}
+					<a href={resolve(`/meetings/scheduled/${sched.id}`)}>
 						<span>scheduled list item</span>
 						<!-- <ListItem
 							title={sched.attributes.name}

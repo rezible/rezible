@@ -260,6 +260,126 @@ export type AlertMetrics = {
     triggers: number;
 };
 
+export type CollectionResponseBodyAiAgentConfig = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AiAgentConfig>;
+};
+
+export type CollectionResponseBodyAlertIncidentLink = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AlertIncidentLink>;
+};
+
+export type CollectionResponseBodyIncidentDebriefQuestion = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentDebriefQuestion>;
+};
+
+export type CollectionResponseBodyIncidentDebriefSuggestion = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentDebriefSuggestion>;
+};
+
+export type CollectionResponseBodyIncidentField = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentField>;
+};
+
+export type CollectionResponseBodyIncidentMilestone = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentMilestone>;
+};
+
+export type CollectionResponseBodyIncidentRole = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentRole>;
+};
+
+export type CollectionResponseBodyInstallableIntegration = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<InstallableIntegration>;
+};
+
+export type CollectionResponseBodyIntegrationEventSyncRun = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IntegrationEventSyncRun>;
+};
+
+export type CollectionResponseBodyIntegrationInstallTarget = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IntegrationInstallTarget>;
+};
+
+export type CollectionResponseBodyIntegrationInstallation = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IntegrationInstallation>;
+};
+
+export type CollectionResponseBodyMeetingSchedule = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<MeetingSchedule>;
+};
+
+export type CollectionResponseBodyMeetingSession = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<MeetingSession>;
+};
+
+export type CollectionResponseBodyOncallRoster = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<OncallRoster>;
+};
+
+export type CollectionResponseBodyRetrospectiveReview = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<RetrospectiveReview>;
+};
+
 export type CompleteIntegrationOAuthFlowRequestAttributes = {
     client_verifier?: string;
     code: string;
@@ -991,14 +1111,6 @@ export type GetIncidentUserDebriefResponseBody = {
     data: IncidentDebrief;
 };
 
-export type GetInstallableIntegrationsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<InstallableIntegration>;
-};
-
 export type GetIntegrationInstallationResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1532,366 +1644,6 @@ export type KnowledgeGraphView = {
     truncated: boolean;
 };
 
-export type ListResponseBodyAgentArtifact = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<AgentArtifact>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyAgentMessage = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<AgentMessage>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyAgentSession = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<AgentSession>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyAgentTurn = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<AgentTurn>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyAiAgentConfig = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<AiAgentConfig>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyAlert = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Alert>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyAlertIncidentLink = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<AlertIncidentLink>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyEvent = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Event>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyEventAnnotation = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<EventAnnotation>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIncident = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Incident>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIncidentDebriefMessage = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentDebriefMessage>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIncidentDebriefQuestion = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentDebriefQuestion>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIncidentDebriefSuggestion = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentDebriefSuggestion>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIncidentField = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentField>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIncidentMilestone = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentMilestone>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIncidentRole = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentRole>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIncidentSeverity = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentSeverity>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIncidentTag = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentTag>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIncidentType = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentType>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIntegrationEventSyncRun = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IntegrationEventSyncRun>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIntegrationInstallTarget = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IntegrationInstallTarget>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyIntegrationInstallation = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IntegrationInstallation>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyKnowledgeGraphEntity = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<KnowledgeGraphEntity>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyKnowledgeGraphRelationship = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<KnowledgeGraphRelationship>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyMeetingSchedule = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<MeetingSchedule>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyMeetingSession = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<MeetingSession>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyOncallRoster = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<OncallRoster>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyOncallShift = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<OncallShift>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyPlaybook = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Playbook>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyRetrospective = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Retrospective>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyRetrospectiveComment = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<RetrospectiveComment>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyRetrospectiveReview = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<RetrospectiveReview>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodySystemAnalysisEdge = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<SystemAnalysisEdge>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodySystemAnalysisEntry = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<SystemAnalysisEntry>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodySystemAnalysisNode = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<SystemAnalysisNode>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyTask = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Task>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyTeam = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Team>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyTeamMembership = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<TeamMembership>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyUser = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<User>;
-    pagination: ResponsePagination;
-};
-
-export type ListResponseBodyUserNotification = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<UserNotification>;
-    pagination: ResponsePagination;
-};
-
 export type MeetingAttendees = {
     private: boolean;
     teams: Array<string>;
@@ -2067,6 +1819,264 @@ export type OrganizationPreferences = {
     enableIncidentManagement: boolean;
 };
 
+export type PaginatedResponseBodyAgentArtifact = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AgentArtifact>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyAgentMessage = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AgentMessage>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyAgentSession = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AgentSession>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyAgentTurn = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AgentTurn>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyAlert = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Alert>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyEvent = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Event>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyEventAnnotation = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<EventAnnotation>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyIncident = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Incident>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyIncidentDebriefMessage = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentDebriefMessage>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyIncidentSeverity = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentSeverity>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyIncidentTag = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentTag>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyIncidentType = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentType>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyIntegrationInstallation = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IntegrationInstallation>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyKnowledgeGraphEntity = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<KnowledgeGraphEntity>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyKnowledgeGraphRelationship = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<KnowledgeGraphRelationship>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyOncallRoster = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<OncallRoster>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyOncallShift = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<OncallShift>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyPlaybook = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Playbook>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyRetrospective = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Retrospective>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyRetrospectiveComment = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<RetrospectiveComment>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodySystemAnalysisEdge = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<SystemAnalysisEdge>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodySystemAnalysisEntry = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<SystemAnalysisEntry>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodySystemAnalysisNode = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<SystemAnalysisNode>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyTask = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Task>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyTeam = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Team>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyTeamMembership = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<TeamMembership>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyUser = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<User>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyUserNotification = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<UserNotification>;
+    pagination: Pagination;
+};
+
+export type Pagination = {
+    page: number;
+    pageSize: number;
+    total: number;
+};
+
 export type Part = {
     contentType?: string;
     custom?: {
@@ -2135,12 +2145,6 @@ export type RequestIntegrationEventSyncRequestBody = {
 
 export type ResourcePart = {
     uri?: string;
-};
-
-export type ResponsePagination = {
-    next?: string;
-    previous?: string;
-    total: number;
 };
 
 export type Retrospective = {
@@ -3039,10 +3043,8 @@ export type ListAgentSessionsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/ai/agent_sessions';
 };
@@ -3080,7 +3082,7 @@ export type ListAgentSessionsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyAgentSession;
+    200: PaginatedResponseBodyAgentSession;
 };
 
 export type ListAgentSessionsResponse = ListAgentSessionsResponses[keyof ListAgentSessionsResponses];
@@ -3187,10 +3189,8 @@ export type ListAgentArtifactsData = {
         id: string;
     };
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/ai/agent_sessions/{id}/artifacts';
 };
@@ -3228,7 +3228,7 @@ export type ListAgentArtifactsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyAgentArtifact;
+    200: PaginatedResponseBodyAgentArtifact;
 };
 
 export type ListAgentArtifactsResponse = ListAgentArtifactsResponses[keyof ListAgentArtifactsResponses];
@@ -3316,10 +3316,8 @@ export type ListAgentMessagesData = {
         id: string;
     };
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/ai/agent_sessions/{id}/messages';
 };
@@ -3357,7 +3355,7 @@ export type ListAgentMessagesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyAgentMessage;
+    200: PaginatedResponseBodyAgentMessage;
 };
 
 export type ListAgentMessagesResponse = ListAgentMessagesResponses[keyof ListAgentMessagesResponses];
@@ -3368,10 +3366,8 @@ export type ListAgentTurnsData = {
         id: string;
     };
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/ai/agent_sessions/{id}/turns';
 };
@@ -3409,7 +3405,7 @@ export type ListAgentTurnsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyAgentTurn;
+    200: PaginatedResponseBodyAgentTurn;
 };
 
 export type ListAgentTurnsResponse = ListAgentTurnsResponses[keyof ListAgentTurnsResponses];
@@ -3607,7 +3603,7 @@ export type ListAiAgentsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyAiAgentConfig;
+    200: CollectionResponseBodyAiAgentConfig;
 };
 
 export type ListAiAgentsResponse = ListAiAgentsResponses[keyof ListAiAgentsResponses];
@@ -3616,11 +3612,9 @@ export type ListAlertsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
+        page?: number;
+        pageSize?: number;
         search?: string;
-        archived?: boolean;
-        rosterId?: string;
     };
     url: '/alerts';
 };
@@ -3658,7 +3652,7 @@ export type ListAlertsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyAlert;
+    200: PaginatedResponseBodyAlert;
 };
 
 export type ListAlertsResponse = ListAlertsResponses[keyof ListAlertsResponses];
@@ -3715,12 +3709,7 @@ export type ListAlertIncidentLinksData = {
     path: {
         id: string;
     };
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
+    query?: never;
     url: '/alerts/{id}/incident_links';
 };
 
@@ -3757,7 +3746,7 @@ export type ListAlertIncidentLinksResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyAlertIncidentLink;
+    200: CollectionResponseBodyAlertIncidentLink;
 };
 
 export type ListAlertIncidentLinksResponse = ListAlertIncidentLinksResponses[keyof ListAlertIncidentLinksResponses];
@@ -3817,10 +3806,8 @@ export type ListUserNotificationsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/auth_session/notifications';
 };
@@ -3858,7 +3845,7 @@ export type ListUserNotificationsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyUserNotification;
+    200: PaginatedResponseBodyUserNotification;
 };
 
 export type ListUserNotificationsResponse = ListUserNotificationsResponses[keyof ListUserNotificationsResponses];
@@ -3867,9 +3854,6 @@ export type ListDebriefQuestionsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
         archived?: boolean;
     };
     url: '/debrief_questions';
@@ -3908,7 +3892,7 @@ export type ListDebriefQuestionsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIncidentDebriefQuestion;
+    200: CollectionResponseBodyIncidentDebriefQuestion;
 };
 
 export type ListDebriefQuestionsResponse = ListDebriefQuestionsResponses[keyof ListDebriefQuestionsResponses];
@@ -4197,10 +4181,8 @@ export type ListEventAnnotationsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
         from?: string;
         to?: string;
         userIds?: string;
@@ -4243,7 +4225,7 @@ export type ListEventAnnotationsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyEventAnnotation;
+    200: PaginatedResponseBodyEventAnnotation;
 };
 
 export type ListEventAnnotationsResponse = ListEventAnnotationsResponses[keyof ListEventAnnotationsResponses];
@@ -4391,10 +4373,8 @@ export type ListEventsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
         from?: string;
         to?: string;
         withProjection?: boolean;
@@ -4435,7 +4415,7 @@ export type ListEventsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyEvent;
+    200: PaginatedResponseBodyEvent;
 };
 
 export type ListEventsResponse = ListEventsResponses[keyof ListEventsResponses];
@@ -4589,10 +4569,8 @@ export type ListDebriefMessagesData = {
         id: string;
     };
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/incident_debriefs/{id}/messages';
 };
@@ -4630,7 +4608,7 @@ export type ListDebriefMessagesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIncidentDebriefMessage;
+    200: PaginatedResponseBodyIncidentDebriefMessage;
 };
 
 export type ListDebriefMessagesResponse = ListDebriefMessagesResponses[keyof ListDebriefMessagesResponses];
@@ -4687,12 +4665,7 @@ export type ListDebriefSuggestionsData = {
     path: {
         id: string;
     };
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
+    query?: never;
     url: '/incident_debriefs/{id}/suggestions';
 };
 
@@ -4729,7 +4702,7 @@ export type ListDebriefSuggestionsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIncidentDebriefSuggestion;
+    200: CollectionResponseBodyIncidentDebriefSuggestion;
 };
 
 export type ListDebriefSuggestionsResponse = ListDebriefSuggestionsResponses[keyof ListDebriefSuggestionsResponses];
@@ -4785,9 +4758,6 @@ export type ListIncidentFieldsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
         archived?: boolean;
     };
     url: '/incident_metadata/fields';
@@ -4826,7 +4796,7 @@ export type ListIncidentFieldsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIncidentField;
+    200: CollectionResponseBodyIncidentField;
 };
 
 export type ListIncidentFieldsResponse = ListIncidentFieldsResponses[keyof ListIncidentFieldsResponses];
@@ -5020,12 +4990,7 @@ export type UpdateIncidentFieldResponse = UpdateIncidentFieldResponses[keyof Upd
 export type ListIncidentRolesData = {
     body?: never;
     path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
+    query?: never;
     url: '/incident_metadata/roles';
 };
 
@@ -5062,7 +5027,7 @@ export type ListIncidentRolesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIncidentRole;
+    200: CollectionResponseBodyIncidentRole;
 };
 
 export type ListIncidentRolesResponse = ListIncidentRolesResponses[keyof ListIncidentRolesResponses];
@@ -5257,8 +5222,8 @@ export type ListIncidentSeveritiesData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
+        page?: number;
+        pageSize?: number;
         search?: string;
         archived?: boolean;
     };
@@ -5298,7 +5263,7 @@ export type ListIncidentSeveritiesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIncidentSeverity;
+    200: PaginatedResponseBodyIncidentSeverity;
 };
 
 export type ListIncidentSeveritiesResponse = ListIncidentSeveritiesResponses[keyof ListIncidentSeveritiesResponses];
@@ -5493,8 +5458,8 @@ export type ListIncidentTagsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
+        page?: number;
+        pageSize?: number;
         search?: string;
         archived?: boolean;
     };
@@ -5534,7 +5499,7 @@ export type ListIncidentTagsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIncidentTag;
+    200: PaginatedResponseBodyIncidentTag;
 };
 
 export type ListIncidentTagsResponse = ListIncidentTagsResponses[keyof ListIncidentTagsResponses];
@@ -5729,8 +5694,8 @@ export type ListIncidentTypesData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
+        page?: number;
+        pageSize?: number;
         search?: string;
         archived?: boolean;
     };
@@ -5770,7 +5735,7 @@ export type ListIncidentTypesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIncidentType;
+    200: PaginatedResponseBodyIncidentType;
 };
 
 export type ListIncidentTypesResponse = ListIncidentTypesResponses[keyof ListIncidentTypesResponses];
@@ -6059,11 +6024,9 @@ export type ListIncidentsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
+        page?: number;
+        pageSize?: number;
         search?: string;
-        archived?: boolean;
-        teamId?: string;
     };
     url: '/incidents';
 };
@@ -6101,7 +6064,7 @@ export type ListIncidentsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIncident;
+    200: PaginatedResponseBodyIncident;
 };
 
 export type ListIncidentsResponse = ListIncidentsResponses[keyof ListIncidentsResponses];
@@ -6381,7 +6344,7 @@ export type ListIncidentMilestonesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIncidentMilestone;
+    200: CollectionResponseBodyIncidentMilestone;
 };
 
 export type ListIncidentMilestonesResponse = ListIncidentMilestonesResponses[keyof ListIncidentMilestonesResponses];
@@ -6436,12 +6399,7 @@ export type CreateIncidentMilestoneResponse = CreateIncidentMilestoneResponses[k
 export type GetInstallableIntegrationsData = {
     body?: never;
     path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
+    query?: never;
     url: '/integrations';
 };
 
@@ -6478,7 +6436,7 @@ export type GetInstallableIntegrationsResponses = {
     /**
      * OK
      */
-    200: GetInstallableIntegrationsResponseBody;
+    200: CollectionResponseBodyInstallableIntegration;
 };
 
 export type GetInstallableIntegrationsResponse = GetInstallableIntegrationsResponses[keyof GetInstallableIntegrationsResponses];
@@ -6666,7 +6624,7 @@ export type InstallIntegrationFromTargetsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIntegrationInstallation;
+    200: CollectionResponseBodyIntegrationInstallation;
 };
 
 export type InstallIntegrationFromTargetsResponse = InstallIntegrationFromTargetsResponses[keyof InstallIntegrationFromTargetsResponses];
@@ -6711,7 +6669,7 @@ export type ListIntegrationInstallTargetsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIntegrationInstallTarget;
+    200: CollectionResponseBodyIntegrationInstallTarget;
 };
 
 export type ListIntegrationInstallTargetsResponse = ListIntegrationInstallTargetsResponses[keyof ListIntegrationInstallTargetsResponses];
@@ -6720,10 +6678,8 @@ export type ListIntegrationInstallationsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/integrations/installations';
 };
@@ -6761,7 +6717,7 @@ export type ListIntegrationInstallationsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIntegrationInstallation;
+    200: PaginatedResponseBodyIntegrationInstallation;
 };
 
 export type ListIntegrationInstallationsResponse = ListIntegrationInstallationsResponses[keyof ListIntegrationInstallationsResponses];
@@ -6949,7 +6905,7 @@ export type ListIntegrationEventSyncRunsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyIntegrationEventSyncRun;
+    200: CollectionResponseBodyIntegrationEventSyncRun;
 };
 
 export type ListIntegrationEventSyncRunsResponse = ListIntegrationEventSyncRunsResponses[keyof ListIntegrationEventSyncRunsResponses];
@@ -7005,10 +6961,9 @@ export type ListKnowledgeGraphEntitiesData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
+        page?: number;
+        pageSize?: number;
         search?: string;
-        archived?: boolean;
         category?: Array<string>;
         kind?: Array<string>;
         provider?: string;
@@ -7051,7 +7006,7 @@ export type ListKnowledgeGraphEntitiesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyKnowledgeGraphEntity;
+    200: PaginatedResponseBodyKnowledgeGraphEntity;
 };
 
 export type ListKnowledgeGraphEntitiesResponse = ListKnowledgeGraphEntitiesResponses[keyof ListKnowledgeGraphEntitiesResponses];
@@ -7107,10 +7062,8 @@ export type ListKnowledgeGraphRelationshipsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
         predicate?: Array<string>;
         entityId?: string;
         sourceEntityId?: string;
@@ -7152,7 +7105,7 @@ export type ListKnowledgeGraphRelationshipsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyKnowledgeGraphRelationship;
+    200: PaginatedResponseBodyKnowledgeGraphRelationship;
 };
 
 export type ListKnowledgeGraphRelationshipsResponse = ListKnowledgeGraphRelationshipsResponses[keyof ListKnowledgeGraphRelationshipsResponses];
@@ -7256,12 +7209,7 @@ export type GetKnowledgeGraphViewResponse = GetKnowledgeGraphViewResponses[keyof
 export type ListMeetingSchedulesData = {
     body?: never;
     path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
+    query?: never;
     url: '/meeting_schedules';
 };
 
@@ -7298,7 +7246,7 @@ export type ListMeetingSchedulesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyMeetingSchedule;
+    200: CollectionResponseBodyMeetingSchedule;
 };
 
 export type ListMeetingSchedulesResponse = ListMeetingSchedulesResponses[keyof ListMeetingSchedulesResponses];
@@ -7492,17 +7440,7 @@ export type UpdateMeetingScheduleResponse = UpdateMeetingScheduleResponses[keyof
 export type ListMeetingSessionsData = {
     body?: never;
     path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-        meetingScheduleId?: string;
-        userId?: string;
-        teamId?: string;
-        from?: string;
-        to?: string;
-    };
+    query?: never;
     url: '/meeting_sessions';
 };
 
@@ -7539,7 +7477,7 @@ export type ListMeetingSessionsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyMeetingSession;
+    200: CollectionResponseBodyMeetingSession;
 };
 
 export type ListMeetingSessionsResponse = ListMeetingSessionsResponses[keyof ListMeetingSessionsResponses];
@@ -8014,13 +7952,11 @@ export type ListOncallRostersData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
+        page?: number;
+        pageSize?: number;
         search?: string;
-        archived?: boolean;
         teamId?: string;
         userId?: string;
-        pinned?: boolean;
     };
     url: '/oncall/rosters';
 };
@@ -8058,7 +7994,7 @@ export type ListOncallRostersResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyOncallRoster;
+    200: PaginatedResponseBodyOncallRoster;
 };
 
 export type ListOncallRostersResponse = ListOncallRostersResponses[keyof ListOncallRostersResponses];
@@ -8114,10 +8050,8 @@ export type ListOncallShiftsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
         userId?: string;
         active?: boolean;
     };
@@ -8157,7 +8091,7 @@ export type ListOncallShiftsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyOncallShift;
+    200: PaginatedResponseBodyOncallShift;
 };
 
 export type ListOncallShiftsResponse = ListOncallShiftsResponses[keyof ListOncallShiftsResponses];
@@ -8393,7 +8327,7 @@ export type ListWatchedOncallRostersResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyOncallRoster;
+    200: CollectionResponseBodyOncallRoster;
 };
 
 export type ListWatchedOncallRostersResponse = ListWatchedOncallRostersResponses[keyof ListWatchedOncallRostersResponses];
@@ -8440,7 +8374,7 @@ export type RemoveWatchedOncallRosterResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyOncallRoster;
+    200: CollectionResponseBodyOncallRoster;
 };
 
 export type RemoveWatchedOncallRosterResponse = RemoveWatchedOncallRosterResponses[keyof RemoveWatchedOncallRosterResponses];
@@ -8487,7 +8421,7 @@ export type AddWatchedOncallRosterResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyOncallRoster;
+    200: CollectionResponseBodyOncallRoster;
 };
 
 export type AddWatchedOncallRosterResponse = AddWatchedOncallRosterResponses[keyof AddWatchedOncallRosterResponses];
@@ -8729,12 +8663,10 @@ export type ListPlaybooksData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-        teamId?: string;
+        page?: number;
+        pageSize?: number;
         alertId?: string;
+        search?: string;
     };
     url: '/playbooks';
 };
@@ -8772,7 +8704,7 @@ export type ListPlaybooksResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyPlaybook;
+    200: PaginatedResponseBodyPlaybook;
 };
 
 export type ListPlaybooksResponse = ListPlaybooksResponses[keyof ListPlaybooksResponses];
@@ -8968,12 +8900,7 @@ export type GetRetrospectiveCommentData = {
     path: {
         id: string;
     };
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
+    query?: never;
     url: '/retrospective_comments/{id}';
 };
 
@@ -9160,10 +9087,8 @@ export type ListRetrospectivesData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/retrospectives';
 };
@@ -9201,7 +9126,7 @@ export type ListRetrospectivesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyRetrospective;
+    200: PaginatedResponseBodyRetrospective;
 };
 
 export type ListRetrospectivesResponse = ListRetrospectivesResponses[keyof ListRetrospectivesResponses];
@@ -9306,10 +9231,8 @@ export type ListRetrospectiveCommentsData = {
         id: string;
     };
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/retrospectives/{id}/comments';
 };
@@ -9347,7 +9270,7 @@ export type ListRetrospectiveCommentsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyRetrospectiveComment;
+    200: PaginatedResponseBodyRetrospectiveComment;
 };
 
 export type ListRetrospectiveCommentsResponse = ListRetrospectiveCommentsResponses[keyof ListRetrospectiveCommentsResponses];
@@ -9402,12 +9325,7 @@ export type CreateRetrospectiveCommentResponse = CreateRetrospectiveCommentRespo
 export type ListRetrospectiveReviewsData = {
     body?: never;
     path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
+    query?: never;
     url: '/retrospectives/{id}/reviews';
 };
 
@@ -9444,7 +9362,7 @@ export type ListRetrospectiveReviewsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyRetrospectiveReview;
+    200: CollectionResponseBodyRetrospectiveReview;
 };
 
 export type ListRetrospectiveReviewsResponse = ListRetrospectiveReviewsResponses[keyof ListRetrospectiveReviewsResponses];
@@ -9596,10 +9514,8 @@ export type ListSystemAnalysisEdgesData = {
         id: string;
     };
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/system_analysis/{id}/edges';
 };
@@ -9637,7 +9553,7 @@ export type ListSystemAnalysisEdgesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodySystemAnalysisEdge;
+    200: PaginatedResponseBodySystemAnalysisEdge;
 };
 
 export type ListSystemAnalysisEdgesResponse = ListSystemAnalysisEdgesResponses[keyof ListSystemAnalysisEdgesResponses];
@@ -9695,10 +9611,8 @@ export type ListSystemAnalysisEntriesData = {
         id: string;
     };
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/system_analysis/{id}/entries';
 };
@@ -9736,7 +9650,7 @@ export type ListSystemAnalysisEntriesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodySystemAnalysisEntry;
+    200: PaginatedResponseBodySystemAnalysisEntry;
 };
 
 export type ListSystemAnalysisEntriesResponse = ListSystemAnalysisEntriesResponses[keyof ListSystemAnalysisEntriesResponses];
@@ -9794,10 +9708,8 @@ export type ListSystemAnalysisNodesData = {
         id: string;
     };
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
     };
     url: '/system_analysis/{id}/nodes';
 };
@@ -9835,7 +9747,7 @@ export type ListSystemAnalysisNodesResponses = {
     /**
      * OK
      */
-    200: ListResponseBodySystemAnalysisNode;
+    200: PaginatedResponseBodySystemAnalysisNode;
 };
 
 export type ListSystemAnalysisNodesResponse = ListSystemAnalysisNodesResponses[keyof ListSystemAnalysisNodesResponses];
@@ -10314,11 +10226,9 @@ export type ListTasksData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
+        page?: number;
+        pageSize?: number;
         archived?: boolean;
-        teamId?: string;
     };
     url: '/tasks';
 };
@@ -10356,7 +10266,7 @@ export type ListTasksResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyTask;
+    200: PaginatedResponseBodyTask;
 };
 
 export type ListTasksResponse = ListTasksResponses[keyof ListTasksResponses];
@@ -10551,10 +10461,8 @@ export type ListTeamMembershipsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
+        page?: number;
+        pageSize?: number;
         teamId?: string;
         userId?: string;
     };
@@ -10594,7 +10502,7 @@ export type ListTeamMembershipsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyTeamMembership;
+    200: PaginatedResponseBodyTeamMembership;
 };
 
 export type ListTeamMembershipsResponse = ListTeamMembershipsResponses[keyof ListTeamMembershipsResponses];
@@ -10742,8 +10650,8 @@ export type ListTeamsData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
+        page?: number;
+        pageSize?: number;
         search?: string;
         archived?: boolean;
     };
@@ -10783,7 +10691,7 @@ export type ListTeamsResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyTeam;
+    200: PaginatedResponseBodyTeam;
 };
 
 export type ListTeamsResponse = ListTeamsResponses[keyof ListTeamsResponses];
@@ -11160,10 +11068,9 @@ export type ListUsersData = {
     body?: never;
     path?: never;
     query?: {
-        limit?: number;
-        offset?: number;
+        page?: number;
+        pageSize?: number;
         search?: string;
-        archived?: boolean;
         teamId?: string;
     };
     url: '/users';
@@ -11202,7 +11109,7 @@ export type ListUsersResponses = {
     /**
      * OK
      */
-    200: ListResponseBodyUser;
+    200: PaginatedResponseBodyUser;
 };
 
 export type ListUsersResponse = ListUsersResponses[keyof ListUsersResponses];

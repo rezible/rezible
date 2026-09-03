@@ -2,11 +2,13 @@ package db
 
 import (
 	"context"
-	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/playbook"
 )
 
 type PlaybookService struct {
@@ -21,23 +23,16 @@ func NewPlaybookService(db rez.Database) (*PlaybookService, error) {
 	return s, nil
 }
 
-func (s *PlaybookService) ListPlaybooks(ctx context.Context, params rez.ListPlaybooksParams) ([]*ent.Playbook, int, error) {
+func (s *PlaybookService) ListPlaybooks(ctx context.Context, params rez.ListPlaybooksParams) (*ent.ListResult[ent.Playbook], error) {
 	query := s.db.Client(ctx).Playbook.Query().
-		Where()
-
-	qCtx := params.GetQueryContext(ctx)
-	count, queryErr := query.Count(qCtx)
-	if queryErr != nil {
-		return nil, 0, fmt.Errorf("count: %w", queryErr)
+		Order(playbook.ByID(params.GetOrder()))
+	if search := strings.TrimSpace(params.Search); search != "" {
+		query.Where(playbook.TitleContainsFold(search))
 	}
-	playbooks := make([]*ent.Playbook, 0)
-	if count > 0 {
-		playbooks, queryErr = query.All(qCtx)
+	if params.AlertID != uuid.Nil {
+		query.Where(playbook.HasAlertsWith(alert.ID(params.AlertID)))
 	}
-	if queryErr != nil {
-		return nil, 0, fmt.Errorf("query: %w", queryErr)
-	}
-	return playbooks, count, nil
+	return ent.DoListQuery[ent.Playbook, *ent.PlaybookQuery](ctx, query, params.ListParams)
 }
 
 func (s *PlaybookService) GetPlaybook(ctx context.Context, id uuid.UUID) (*ent.Playbook, error) {

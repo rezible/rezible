@@ -40,7 +40,7 @@ func (s *EventsService) GetEvent(ctx context.Context, id uuid.UUID, params rez.G
 func (s *EventsService) ListEvents(ctx context.Context, params rez.ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error) {
 	query := s.db.Client(ctx).NormalizedEvent.Query()
 
-	query.Order(ne.ByOccurredAt(params.GetOrder()))
+	query.Order(ne.ByOccurredAt(params.GetOrder()), ne.ByID(params.GetOrder()))
 	query.Where(params.Predicates...)
 
 	if params.WithAnnotations {
@@ -61,6 +61,7 @@ func (s *EventsService) ListEvents(ctx context.Context, params rez.ListEventsPar
 
 func (s *EventsService) ListAnnotations(ctx context.Context, params rez.ListAnnotationsParams) (*ent.ListResult[ent.EventAnnotation], error) {
 	query := s.db.Client(ctx).EventAnnotation.Query()
+	query.Order(ea.ByCreatedAt(params.GetOrder()), ea.ByID(params.GetOrder()))
 
 	if !params.From.IsZero() {
 		query.Where(ea.CreatedAtGTE(params.From))

@@ -124,10 +124,10 @@ var ListAlerts = openapi.Operation{
 }
 
 type ListAlertsRequest struct {
-	ListRequest
-	RosterId uuid.UUID `query:"rosterId" required:"false"`
+	PaginationRequest
+	Search string `query:"search" required:"false" nullable:"false"`
 }
-type ListAlertsResponse ListResponse[Alert]
+type ListAlertsResponse PaginatedResponse[Alert]
 
 var GetAlert = openapi.Operation{
 	OperationID: "get-alert",
@@ -170,6 +170,6 @@ var ListAlertIncidentLinks = openapi.Operation{
 }
 
 type ListAlertIncidentLinksRequest struct {
-	ListIdRequest
+	IdRequest
 }
-type ListAlertIncidentLinksResponse ListResponse[AlertIncidentLink]
+type ListAlertIncidentLinksResponse CollectionResponse[AlertIncidentLink]

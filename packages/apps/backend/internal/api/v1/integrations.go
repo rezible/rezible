@@ -51,19 +51,25 @@ func (h *integrationsHandler) InstallIntegration(ctx context.Context, req *oapi.
 func (h *integrationsHandler) ListIntegrationInstallations(ctx context.Context, req *oapi.ListIntegrationInstallationsRequest) (*oapi.ListIntegrationInstallationsResponse, error) {
 	var resp oapi.ListIntegrationInstallationsResponse
 
-	params := rez.ListIntegrationsParams{}
+	// TODO: don't paginate this
+	params := rez.ListIntegrationsParams{ListParams: req.ListParams()}
 	results, listErr := h.integrations.ListInstalled(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "failed to list integrations", listErr)
 	}
 
-	resp.Body.Data = make([]oapi.IntegrationInstallation, len(results))
-	for i, intg := range results {
-		resp.Body.Data[i] = oapi.IntegrationInstallationFromRez(intg)
+	body, bodyErr := oapi.MaybeConvertPaginatedResultBody(results, func(intg *ent.Integration) (*oapi.IntegrationInstallation, error) {
+		installed, installedErr := h.integrations.AsInstalledIntegration(intg)
+		if installedErr != nil {
+			return nil, installedErr
+		}
+		converted := oapi.IntegrationInstallationFromRez(installed)
+		return &converted, nil
+	})
+	if bodyErr != nil {
+		return nil, oapi.Error(ctx, "failed to convert integration", bodyErr)
 	}
-	resp.Body.Pagination = oapi.ResponsePagination{
-		Total: len(results),
-	}
+	resp.Body = *body
 
 	return &resp, nil
 }
@@ -207,8 +213,8 @@ func (h *integrationsHandler) ListIntegrationEventSyncRun(ctx context.Context, r
 	if completeErr != nil {
 		return nil, oapi.Error(ctx, "failed to complete integration", completeErr)
 	}
-	resp.Body.Data = make([]oapi.IntegrationEventSyncRun, len(result.Data))
-	for i, r := range result.Data {
+	resp.Body.Data = make([]oapi.IntegrationEventSyncRun, len(result))
+	for i, r := range result {
 		resp.Body.Data[i] = oapi.IntegrationEventSyncRunFromEnt(r)
 	}
 

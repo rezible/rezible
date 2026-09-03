@@ -1,19 +1,16 @@
 import {
 	getIncidentMetadataOptions,
 	listIncidentsOptions,
-	type Incident,
 	type IncidentAttributes,
-	type ListIncidentsData,
 } from "$lib/api";
-import { QueryPaginatorState } from "$lib/paginator.svelte";
-import { createQuery } from "@tanstack/svelte-query";
-import { Context } from "runed";
+import { QueryPaginator, createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
+import { createQuery, keepPreviousData } from "@tanstack/svelte-query";
+import { Context, watch } from "runed";
 
 type FilterOption = { label: string; value: any };
 
 type IncidentFilters = {
 	search?: string;
-	includeArchived?: boolean;
 	status?: IncidentAttributes["currentStatus"];
 	severity?: string;
 	type?: string;
@@ -50,35 +47,35 @@ const getLabel = (opts: FilterOption[], val?: any) => {
 };
 
 class IncidentsListViewController {
-	paginator = new QueryPaginatorState();
+	filters = $state<IncidentFilters>({});
 
 	private incidentMetadataQuery = createQuery(() => getIncidentMetadataOptions());
 	private incidentMetadata = $derived(this.incidentMetadataQuery.data?.data);
-
-	severityOptions = $derived(mapNamedMetadataOptions(this.incidentMetadata?.severities));
-	typeOptions = $derived(mapNamedMetadataOptions(this.incidentMetadata?.types));
-	tagOptions = $derived(mapNamedMetadataOptions(this.incidentMetadata?.tags));
-
-	filters = $state<IncidentFilters>({});
+	
 	statusFilterLabel = $derived(getLabel(incidentStatusOptions, this.filters.status));
+	
+	severityOptions = $derived(mapNamedMetadataOptions(this.incidentMetadata?.severities));
 	severityFilterLabel = $derived(getLabel(this.severityOptions, this.filters.severity));
+	
+	typeOptions = $derived(mapNamedMetadataOptions(this.incidentMetadata?.types));
 	typeFilterLabel = $derived(getLabel(this.typeOptions, this.filters.type));
+	
+	tagOptions = $derived(mapNamedMetadataOptions(this.incidentMetadata?.tags));
 	tagFilterLabel = $derived(getLabel(this.tagOptions, this.filters.tag));
 
 	activeFilterCount = $derived(getActiveFilterCount(this.filters));
 
-	private queryParams = $derived<ListIncidentsData["query"]>({
-		search: this.filters.search,
-		archived: this.filters.includeArchived,
-		...this.paginator.queryParams,
+	paginatedIncidentsQuery = createPaginatedQuery({
+		queryOptions: (pagination) => listIncidentsOptions({ 
+			query: {
+				search: this.filters.search,
+				...pagination,
+			},
+		}),
+		resetWhen: () => $state.snapshot(this.filters),
 	});
-
-	incidentsQuery = createQuery(() => listIncidentsOptions({ query: this.queryParams }));
+	incidentsQuery = $derived(this.paginatedIncidentsQuery.query);
 	incidents = $derived(this.incidentsQuery.data?.data ?? []);
-
-	constructor() {
-		this.paginator.watchQuery(this.incidentsQuery);
-	}
 
 	resetFilters = () => {
 		this.filters = {};

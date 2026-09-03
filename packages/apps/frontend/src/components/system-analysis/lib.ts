@@ -9,16 +9,6 @@ export const flattenPages = <T extends { id: string }>(pages: ResponsePage<T>[] 
 	return [...items.values()];
 };
 
-const loadedPageCount = <T>(pages: ResponsePage<T>[] | undefined) => {
-	if (!pages) return 0;
-	return pages.reduce((count, {data}) => count + data.length, 0);
-}
-
-export const nextPageOffset = <T>(pages: ResponsePage<T>[]) => {
-	const loaded = loadedPageCount(pages);
-	return loaded < (pages.at(-1)?.pagination.total ?? 0) ? loaded : undefined;
-};
-
 export type EntryAttachments = {
 	byNodeId: Map<string, SystemAnalysisEntry[]>;
 	byEdgeId: Map<string, SystemAnalysisEntry[]>;

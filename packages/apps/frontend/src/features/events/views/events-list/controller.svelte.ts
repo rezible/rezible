@@ -1,8 +1,7 @@
-import { createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { type ListEventsData, type EventAttributes, listEventsOptions } from "$lib/api";
 import { subMonths, subWeeks } from "date-fns";
-import { QueryPaginatorState } from "$src/lib/paginator.svelte";
+import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
 
 export type DateRangeOption = { label: string; value: "shift" | "7d" | "30d" | "custom" };
 
@@ -44,26 +43,20 @@ export class EventsListFiltersState {
 
 export class EventsListController {
 	filters = new EventsListFiltersState();
-	paginator = new QueryPaginatorState();
-	private queryOptions = $derived(
-		listEventsOptions({
-			query: {
-				...this.filters.queryData,
-				limit: this.paginator.limit,
-				offset: this.paginator.offset,
-			},
-		})
-	);
-	query = createQuery(() => ({
-		...this.queryOptions,
-		enabled: this.filters.queryEnabled,
-	}));
 
-	constructor() {
-		this.paginator.watchQuery(this.query);
-	}
+	paginatedEventsQuery = createPaginatedQuery({
+		queryOptions: (pagination) => ({
+			...listEventsOptions({ query: {...this.filters.queryData, ...pagination} }),
+			enabled: this.filters.queryEnabled,
+		}),
+		resetWhen: () => [
+			$state.snapshot(this.filters.queryData),
+		],
+	});
 
+	private query = $derived(this.paginatedEventsQuery.query);
 	events = $derived(this.query.data?.data ?? []);
+	isLoading = $derived(this.query.isLoading);
 }
 
 const ctx = new Context<EventsListController>("EventsListController");

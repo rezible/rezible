@@ -1,28 +1,27 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import { useAlertViewController } from "$features/alerts/views/alert";
 	import { listPlaybooksOptions, type ListPlaybooksData, type Playbook } from "$lib/api";
-	import { QueryPaginatorState } from "$lib/paginator.svelte";
-	import { createQuery } from "@tanstack/svelte-query";
-	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	import RosterSelectField from "$src/components/forms/roster-select-field/RosterSelectField.svelte";
+	import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
+	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import RosterSelectField from "$components/forms/roster-select-field/RosterSelectField.svelte";
+	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 
-	const view = useAlertViewController();
-
-	const paginator = new QueryPaginatorState();
+	const controller = useAlertViewController();
 
 	let rosterId = $state<string>();
 	const onRosterSelected = (id?: string) => (rosterId = id);
 
 	const queryParams = $derived<ListPlaybooksData["query"]>({
-		alertId: view.alertId,
-		...paginator.queryParams,
+		alertId: controller.alertId,
 	});
-	const query = createQuery(() => listPlaybooksOptions({ query: queryParams }));
-	paginator.watchQuery(query);
+	const paginatedPlaybooksQuery = createPaginatedQuery({
+		queryOptions: (pagination) => listPlaybooksOptions({ query: {...queryParams, ...pagination} }),
+	});
 </script>
 
 {#snippet playbookListItem(pb: Playbook)}
-	<a href="/playbooks/{pb.id}">
+	<a href={resolve(`/playbooks/${pb.id}`)}>
 		<span>{pb.attributes.title}</span>
 	</a>
 {/snippet}
@@ -32,17 +31,17 @@
 		<RosterSelectField onSelected={onRosterSelected} selectedId={rosterId} />
 	</div>
 
-	<div class="flex-1 flex flex-col gap-1 border">
-		<LoadingQueryWrapper {query}>
-			{#snippet view(playbooks: Playbook[])}
-				{#each playbooks as pb}
-					{@render playbookListItem(pb)}
-				{:else}
-					<span>No results</span>
-				{/each}
-			{/snippet}
-		</LoadingQueryWrapper>
+	<div class="flex-1 min-h-0 border p-1">
+		<PaginatedQueryListBox {...paginatedPlaybooksQuery}>
+			<LoadingQueryWrapper query={paginatedPlaybooksQuery.query}>
+				{#snippet view(playbooks: Playbook[])}
+					{#each playbooks as pb (pb.id)}
+						{@render playbookListItem(pb)}
+					{:else}
+						<span>No results</span>
+					{/each}
+				{/snippet}
+			</LoadingQueryWrapper>
+		</PaginatedQueryListBox>
 	</div>
-
-	<!-- <Pagination {...paginator.paginationProps} /> -->
 </div>

@@ -1,36 +1,24 @@
 <script lang="ts">
-	import { createQuery } from "@tanstack/svelte-query";
-	import { listTeamsOptions, type Team } from "$lib/api";
+	import type { Team } from "$lib/api";
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
-	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
-	import { QueryPaginatorState } from "$lib/paginator.svelte";
+	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
+	import { resolve } from "$app/paths";
+	import { initTeamsListController } from "./controller.svelte";
 
 	setPageBreadcrumbs(() => [{ label: "Teams" }]);
 
-	let searchValue = $state<string>();
-	const paginator = new QueryPaginatorState();
-	const params = $derived(
-		listTeamsOptions({
-			query: {
-				limit: paginator.limit,
-				offset: paginator.offset,
-				search: searchValue,
-			},
-		})
-	);
-	const query = createQuery(() => params);
-	paginator.watchQuery(query);
+	const controller = initTeamsListController();
 </script>
 
 {#snippet filters()}
-	<SearchInput bind:value={searchValue} />
+	<SearchInput bind:value={controller.search} />
 {/snippet}
 
 {#snippet teamCard(team: Team)}
-	<a href="/teams/{team.attributes.slug}">
+	<a href={resolve(`/teams/${team.attributes.slug}`)}>
 		<span>team card</span>
 		<!--ListItem title={team.attributes.name} classes={{ root: "hover:bg-secondary-900" }}>
 			<svelte:fragment slot="avatar">
@@ -44,8 +32,8 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox>
-		<LoadingQueryWrapper {query}>
+	<PaginatedQueryListBox {...controller.paginatedTeamsQuery}>
+		<LoadingQueryWrapper query={controller.query}>
 			{#snippet view(teams: Team[])}
 				{#each teams as team (team.id)}
 					{@render teamCard(team)}
@@ -56,5 +44,5 @@
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>
-	</PaginatedListBox>
+	</PaginatedQueryListBox>
 </FilterPage>

@@ -1,12 +1,9 @@
-import { listMeetingSessionsOptions, type ListMeetingSessionsData } from "$lib/api";
+import { listMeetingSessionsOptions } from "$lib/api";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 
 export class MeetingsListViewController {
-	searchValue = $state<string>();
-
-	queryParams = $state<ListMeetingSessionsData["query"]>({});
-	query = createQuery(() => listMeetingSessionsOptions({ query: this.queryParams }));
+	query = createQuery(() => listMeetingSessionsOptions());
 
 	monthStart = $state<Date>();
 }

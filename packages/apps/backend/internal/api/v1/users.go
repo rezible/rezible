@@ -17,28 +17,28 @@ func newUsersHandler(users rez.UserService) *usersHandler {
 	return &usersHandler{users}
 }
 
-func (h *usersHandler) ListUsers(ctx context.Context, request *oapi.ListUsersRequest) (*oapi.ListUsersResponse, error) {
+func (h *usersHandler) ListUsers(ctx context.Context, req *oapi.ListUsersRequest) (*oapi.ListUsersResponse, error) {
 	var resp oapi.ListUsersResponse
 
 	users, usersErr := h.users.List(ctx, rez.ListUsersParams{
-		ListParams: request.ListParams(),
+		Page:     req.Page,
+		PageSize: req.PageSize,
+		Search:   req.Search,
+		TeamID:   req.TeamId,
 	})
 	if usersErr != nil {
 		return nil, oapi.Error(ctx, "failed to list users", usersErr)
 	}
 
-	resp.Body.Data = make([]oapi.User, len(users))
-	for i, u := range users {
-		resp.Body.Data[i] = oapi.UserFromEnt(u)
-	}
+	resp.Body = oapi.ConvertPaginatedResultBody(users, oapi.UserFromEnt)
 
 	return &resp, nil
 }
 
-func (h *usersHandler) GetUser(ctx context.Context, input *oapi.GetUserRequest) (*oapi.GetUserResponse, error) {
+func (h *usersHandler) GetUser(ctx context.Context, req *oapi.GetUserRequest) (*oapi.GetUserResponse, error) {
 	var resp oapi.GetUserResponse
 
-	u, getErr := h.users.Get(ctx, user.ID(input.Id))
+	u, getErr := h.users.Get(ctx, user.ID(req.Id))
 	if getErr != nil {
 		return nil, oapi.Error(ctx, "Failed to get user", getErr)
 	}

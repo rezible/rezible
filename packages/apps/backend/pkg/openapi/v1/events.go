@@ -107,12 +107,12 @@ var ListEvents = huma.Operation{
 }
 
 type ListEventsRequest struct {
-	ListRequest
+	PaginationRequest
 	From           time.Time `query:"from"`
 	To             time.Time `query:"to"`
 	WithProjection bool      `query:"withProjection"`
 }
-type ListEventsResponse ListResponse[Event]
+type ListEventsResponse PaginatedResponse[Event]
 
 var GetEvent = huma.Operation{
 	OperationID: "get-event",

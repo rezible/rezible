@@ -2,14 +2,15 @@
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import AlertIncidentsFilters from "./AlertIncidentsFilters.svelte";
 	import { AlertIncidentsViewController } from "./alertIncidentsViewController.svelte";
-	import type { Incident } from "$lib/api";
+	import type { AlertIncidentLink } from "$lib/api";
+	import { resolve } from "$app/paths";
 
 	const incState = new AlertIncidentsViewController();
 </script>
 
-{#snippet incidentListItem(inc: Incident)}
-	<a href="/incidents/{inc.id}">
-		<span>{inc.attributes.title}</span>
+{#snippet incidentListItem(link: AlertIncidentLink)}
+	<a href={resolve(`/incidents/${link.attributes.incidentId}`)}>
+		<span>{link.attributes.description || link.attributes.incidentId}</span>
 	</a>
 {/snippet}
 
@@ -17,18 +18,16 @@
 	<AlertIncidentsFilters bind:rosterId={incState.rosterId} />
 
 	<div class="flex-1 flex flex-col gap-1 border">
-		<!--LoadingQueryWrapper query={incState.query}>
-			{#snippet view(incidents: Incident[])}
-				{#each incidents as inc}
-					{@render incidentListItem(inc)}
+		<LoadingQueryWrapper query={incState.query}>
+			{#snippet view(links: AlertIncidentLink[])}
+				{#each links as link (link.id)}
+					{@render incidentListItem(link)}
 				{:else}
 					<div class="p-2">
 						<span>No results</span>
 					</div>
 				{/each}
 			{/snippet}
-		</LoadingQueryWrapper-->
+		</LoadingQueryWrapper>
 	</div>
-
-	<!-- <Pagination {...incState.paginator.paginationProps} /> -->
 </div>

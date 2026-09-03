@@ -6,9 +6,6 @@ export dbAppUser := env("POSTGRES_APP_USER")
 
 workspace_env_file := join(parent_directory(source_directory()), ".env.workspace")
 postgresContainerId := `docker compose ps -q postgres`
-workspace_setup := path_exists(workspace_env_file)
-
-alreadySetupErr := "workspace already set up - run with --force to override"
 
 branchId := replace_regex(`git branch --show-current`, "[^a-z0-9]", "")
 dbName := "rezible-"+branchId
@@ -18,8 +15,7 @@ dbName := "rezible-"+branchId
 @setup:
     just backend::install
     bun install
-    -just dev::setup-workspace --force
-    just backend::apply-migrations
+    just dev::setup-workspace --force
 
 [default]
 [doc("Run all services & dependencies using process-compose")]
@@ -27,23 +23,34 @@ dbName := "rezible-"+branchId
 @start:
     process-compose -f {{source_dir() / "process-compose.yaml"}}
 
+workspace_already_setup := path_exists(workspace_env_file)
+error_workspace_already_setup := "workspace already set up - run with --force to override"
+
 [doc("Setup development environment")]
 [arg("force", long="force", value="true")]
 [arg("no-migrate", long="no-migrate", value="false")]
 @setup-workspace force="false" no-migrate="false":
-    if [[ "{{workspace_setup}}" == "true" ]]; then \
-      if [[ "{{force}}" == "false" ]]; then echo "{{alreadySetupErr}}"; exit 1; fi; \
+    if [[ "{{workspace_already_setup}}" == "true" ]]; then \
+      if [[ "{{force}}" == "false" ]]; then \
+        echo "{{error_workspace_already_setup}}"; \
+        exit 1; \
+      fi; \
       rm "{{workspace_env_file}}"; \
       docker compose down --remove-orphans -v postgres; \
     fi
     just _write-workspace-env
-    docker compose up --wait
-    sleep 1
+    docker compose up --wait && sleep 1
     just setup-workspace-db
-    if [[ "{{no-migrate}}" == "true" ]]; then \
-      cd .. && just backend::apply-migrations; \
+    if [[ "{{no-migrate}}" == "false" ]]; then \
+      just migrate-workspace-db; \
     fi
     just set-domains
+
+[working-directory("..")]
+@migrate-workspace-db:
+    just backend::gen-schema
+    just backend::create-initial-migration
+    just backend::apply-migrations
 
 _write-workspace-env:
     #!/usr/bin/env bun

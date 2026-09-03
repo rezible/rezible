@@ -51,33 +51,19 @@ func (h *incidentMetadataHandler) ListIncidentSeverities(ctx context.Context, re
 	var resp oapi.ListIncidentSeveritiesResponse
 
 	query := h.db.Client(ctx).IncidentSeverity.Query()
-	if request.IncludeArchived {
-		ctx = schema.IncludeArchived(ctx)
-	}
 	if len(request.Search) > 0 {
 		query = query.Where(incidentseverity.NameContainsFold(request.Search))
 	}
-
-	limitedQuery := query.Clone().
-		Limit(request.Limit).
-		Offset(request.Offset).
-		Order(incidentseverity.ByID())
-
-	res, queryErr := limitedQuery.All(ctx)
+	query.Order(incidentseverity.ByID())
+	params := request.ListParams()
+	params.Search = request.Search
+	params.IncludeArchived = request.IncludeArchived
+	res, queryErr := ent.DoListQuery[ent.IncidentSeverity, *ent.IncidentSeverityQuery](ctx, query, params)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "Failed to query incident severities", queryErr)
 	}
 
-	resp.Body.Data = make([]oapi.IncidentSeverity, len(res))
-	for i, tag := range res {
-		resp.Body.Data[i] = oapi.IncidentSeverityFromEnt(tag)
-	}
-
-	count, countErr := query.Count(ctx)
-	if countErr != nil {
-		return nil, oapi.Error(ctx, "Failed to query incident severity count", countErr)
-	}
-	resp.Body.Pagination.Total = count
+	resp.Body = oapi.ConvertPaginatedResultBody(res, oapi.IncidentSeverityFromEnt)
 
 	return &resp, nil
 }
@@ -155,33 +141,19 @@ func (h *incidentMetadataHandler) ListIncidentTypes(ctx context.Context, request
 	var resp oapi.ListIncidentTypesResponse
 
 	query := h.db.Client(ctx).IncidentType.Query()
-	if request.IncludeArchived {
-		ctx = schema.IncludeArchived(ctx)
-	}
 	if len(request.Search) > 0 {
 		query = query.Where(incidenttype.NameContainsFold(request.Search))
 	}
-
-	limitedQuery := query.Clone().
-		Limit(request.Limit).
-		Offset(request.Offset).
-		Order(incidenttype.ByID())
-
-	res, queryErr := limitedQuery.All(ctx)
+	query.Order(incidenttype.ByID())
+	params := request.ListParams()
+	params.Search = request.Search
+	params.IncludeArchived = request.IncludeArchived
+	res, queryErr := ent.DoListQuery[ent.IncidentType, *ent.IncidentTypeQuery](ctx, query, params)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "Failed to query incident types", queryErr)
 	}
 
-	resp.Body.Data = make([]oapi.IncidentType, len(res))
-	for i, t := range res {
-		resp.Body.Data[i] = oapi.IncidentTypeFromEnt(t)
-	}
-
-	count, countErr := query.Count(ctx)
-	if countErr != nil {
-		return nil, oapi.Error(ctx, "Failed to query incident type count", countErr)
-	}
-	resp.Body.Pagination.Total = count
+	resp.Body = oapi.ConvertPaginatedResultBody(res, oapi.IncidentTypeFromEnt)
 
 	return &resp, nil
 }
@@ -340,33 +312,19 @@ func (h *incidentMetadataHandler) ListIncidentTags(ctx context.Context, request 
 	var resp oapi.ListIncidentTagsResponse
 
 	query := h.db.Client(ctx).IncidentTag.Query()
-	if request.IncludeArchived {
-		ctx = schema.IncludeArchived(ctx)
-	}
 	if len(request.Search) > 0 {
 		query = query.Where(incidenttag.ValueContainsFold(request.Search))
 	}
-
-	limitedQuery := query.Clone().
-		Limit(request.Limit).
-		Offset(request.Offset).
-		Order(incidenttag.ByID())
-
-	res, queryErr := limitedQuery.All(ctx)
+	query.Order(incidenttag.ByID())
+	params := request.ListParams()
+	params.Search = request.Search
+	params.IncludeArchived = request.IncludeArchived
+	res, queryErr := ent.DoListQuery[ent.IncidentTag, *ent.IncidentTagQuery](ctx, query, params)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "Failed to query incident tags", queryErr)
 	}
 
-	resp.Body.Data = make([]oapi.IncidentTag, len(res))
-	for i, tag := range res {
-		resp.Body.Data[i] = oapi.IncidentTagFromEnt(tag)
-	}
-
-	count, countErr := query.Count(ctx)
-	if countErr != nil {
-		return nil, oapi.Error(ctx, "Failed to query incident tag count", countErr)
-	}
-	resp.Body.Pagination.Total = count
+	resp.Body = oapi.ConvertPaginatedResultBody(res, oapi.IncidentTagFromEnt)
 
 	return &resp, nil
 }

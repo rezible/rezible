@@ -7,7 +7,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
-	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/pkg/messages"
 )
 
@@ -32,10 +31,7 @@ func (i *Integration) registerMessageHandlers() error {
 }
 
 func (h *eventHandler) withInstallation(ctx context.Context, fn func(*InstalledIntegration) error) error {
-	listParams := rez.ListIntegrationsParams{
-		Predicates: []predicate.Integration{integration.IntegrationName(integrationName)},
-	}
-	intgs, lookupErr := h.integrations.ListInstalled(ctx, listParams)
+	intgs, lookupErr := h.integrations.ListAllInstalled(ctx, integration.IntegrationName(integrationName))
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
 			return nil

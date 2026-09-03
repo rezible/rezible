@@ -35,8 +35,6 @@ func (h *eventsHandler) GetEvent(ctx context.Context, req *oapi.GetEventRequest)
 }
 
 func (h *eventsHandler) ListEvents(ctx context.Context, req *oapi.ListEventsRequest) (*oapi.ListEventsResponse, error) {
-	var resp oapi.ListEventsResponse
-
 	params := rez.ListEventsParams{
 		ListParams:     req.ListParams(),
 		WithProjection: req.WithProjection,
@@ -48,25 +46,17 @@ func (h *eventsHandler) ListEvents(ctx context.Context, req *oapi.ListEventsRequ
 		params.Predicates = append(params.Predicates, ne.OccurredAtLTE(req.To))
 	}
 
-	listRes, eventsErr := h.events.ListEvents(ctx, params)
+	results, eventsErr := h.events.ListEvents(ctx, params)
 	if eventsErr != nil {
 		return nil, oapi.Error(ctx, "failed to query events", eventsErr)
 	}
 
-	resp.Body.Data = make([]oapi.Event, len(listRes.Data))
-	for i, event := range listRes.Data {
-		resp.Body.Data[i] = oapi.EventFromEnt(event)
-	}
-	resp.Body.Pagination = oapi.ResponsePagination{
-		Total: listRes.Count,
-	}
-
-	return &resp, nil
+	return &oapi.ListEventsResponse{
+		Body: oapi.ConvertPaginatedResultBody(results, oapi.EventFromEnt),
+	}, nil
 }
 
 func (h *eventsHandler) ListEventAnnotations(ctx context.Context, req *oapi.ListEventAnnotationsRequest) (*oapi.ListEventAnnotationsResponse, error) {
-	var resp oapi.ListEventAnnotationsResponse
-
 	var uids []uuid.UUID
 	var eventIds []uuid.UUID
 
@@ -81,21 +71,14 @@ func (h *eventsHandler) ListEventAnnotations(ctx context.Context, req *oapi.List
 		},
 	}
 
-	listRes, annosErr := h.events.ListAnnotations(ctx, params)
+	results, annosErr := h.events.ListAnnotations(ctx, params)
 	if annosErr != nil {
 		return nil, oapi.Error(ctx, "query shift annotations", annosErr)
 	}
 
-	resp.Body.Data = make([]oapi.EventAnnotation, len(listRes.Data))
-	for i, anno := range listRes.Data {
-		resp.Body.Data[i] = oapi.EventAnnotationFromEnt(anno)
-	}
-
-	resp.Body.Pagination = oapi.ResponsePagination{
-		Total: listRes.Count,
-	}
-
-	return &resp, nil
+	return &oapi.ListEventAnnotationsResponse{
+		Body: oapi.ConvertPaginatedResultBody(results, oapi.EventAnnotationFromEnt),
+	}, nil
 }
 
 func (h *eventsHandler) CreateEventAnnotation(ctx context.Context, request *oapi.CreateEventAnnotationRequest) (*oapi.CreateEventAnnotationResponse, error) {

@@ -1,23 +1,29 @@
 import type { CreateQueryOptions } from "@tanstack/svelte-query";
-import type { Options, ResponsePagination } from "@rezible/api-client-ts";
+import type { Options, Pagination } from "@rezible/api-client-ts";
 
-export type ListQueryParameters = {
-	limit?: number;
-	offset?: number;
+export type PaginatedQueryParameters = {
+	page?: number;
+	pageSize?: number;
 	search?: string;
 	archived?: boolean;
 };
 
-export type ListFuncQueryOptions = Options<{
-	query?: ListQueryParameters;
+export type PaginatedFuncQueryOptions = Options<{
+	query?: PaginatedQueryParameters;
 	url: string;
 }>;
 
 export type ResponsePage<T> = {
 	readonly $schema?: string;
 	data: T[];
-	pagination: ResponsePagination;
+	pagination: Pagination;
 };
 
-export type ListQueryOptionsFunc<T> = (opts: ListFuncQueryOptions) => 
-	CreateQueryOptions<ResponsePage<T>, Error, ResponsePage<T>, any>;
+export type PaginatedQueryOptionsFunc<T> = (
+	opts: PaginatedFuncQueryOptions
+) => CreateQueryOptions<ResponsePage<T>, Error, ResponsePage<T>, any>;
+
+export const getNextPageParam = (lastPage: unknown) => {
+	const { page, pageSize, total } = (lastPage as ResponsePage<unknown>).pagination;
+	return page * pageSize < total ? page + 1 : undefined;
+};

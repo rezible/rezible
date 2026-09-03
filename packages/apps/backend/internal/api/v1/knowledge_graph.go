@@ -48,15 +48,17 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphEntities(ctx context.Context, 
 	if request.SubjectKind != "" {
 		preds = append(preds, kne.HasAliasesWith(ksa.HasEvidenceWith(knev.HasEventWith(ne.SubjectKind(request.SubjectKind)))))
 	}
+	listParams := request.ListParams()
+	listParams.Search = request.Search
 	params := rez.ListKnowledgeGraphEntitiesParams{
-		ListParams: request.ListParams(),
+		ListParams: listParams,
 		Predicates: preds,
 	}
 	result, listErr := h.knowledge.ListEntities(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "failed to list knowledge graph entities", listErr)
 	}
-	response.Body = oapi.ConvertListResultBody(result, oapi.KnowledgeGraphEntityFromEnt)
+	response.Body = oapi.ConvertPaginatedResultBody(result, oapi.KnowledgeGraphEntityFromEnt)
 	return &response, nil
 }
 
@@ -100,7 +102,7 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphRelationships(ctx context.Cont
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to list knowledge graph relationships", queryErr)
 	}
-	response.Body = oapi.ConvertListResultBody(result, oapi.KnowledgeGraphRelationshipFromEnt)
+	response.Body = oapi.ConvertPaginatedResultBody(result, oapi.KnowledgeGraphRelationshipFromEnt)
 	return &response, nil
 }
 

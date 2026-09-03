@@ -41,7 +41,8 @@ func knowledgeAliasWithEvidenceQuery(evP ...predicate.KnowledgeEvidence) func(*e
 
 func (s *KnowledgeGraphService) ListEntities(ctx context.Context, params rez.ListKnowledgeGraphEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error) {
 	query := s.db.Client(ctx).KnowledgeEntity.Query().
-		WithAliases(knowledgeAliasWithEvidenceQuery())
+		WithAliases(knowledgeAliasWithEvidenceQuery()).
+		Order(kne.ByID(params.GetOrder()))
 
 	if search := strings.TrimSpace(params.Search); search != "" {
 		query.Where(kne.KindContainsFold(search))

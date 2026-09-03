@@ -7,6 +7,7 @@
 	import { Label } from "$components/ui/label";
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import { initMembersSettingsController } from "./controller.svelte";
+	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 
 	const view = initMembersSettingsController();
 
@@ -35,29 +36,31 @@
 				<Card.Title>Members</Card.Title>
 			</Card.Header>
 			<Card.Content class="p-0">
-				<div class="divide-y">
-					{#each view.users as user (user.id)}
-						<div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-6 py-3">
-							<div class="min-w-0">
-								<div class="truncate font-medium">
-									{user.attributes.name || user.attributes.email}
+				<PaginatedQueryListBox {...view.paginatedUsersQuery}>
+					<div class="divide-y">
+						{#each view.users as user (user.id)}
+							<div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-6 py-3">
+								<div class="min-w-0">
+									<div class="truncate font-medium">
+										{user.attributes.name || user.attributes.email}
+									</div>
+									<div class="truncate text-sm text-muted-foreground">
+										{user.attributes.email}
+									</div>
 								</div>
-								<div class="truncate text-sm text-muted-foreground">
-									{user.attributes.email}
-								</div>
+								<Badge
+									variant={user.attributes.organizationRole === "admin"
+										? "default"
+										: "secondary"}
+								>
+									{user.attributes.organizationRole}
+								</Badge>
 							</div>
-							<Badge
-								variant={user.attributes.organizationRole === "admin"
-									? "default"
-									: "secondary"}
-							>
-								{user.attributes.organizationRole}
-							</Badge>
-						</div>
-					{:else}
-						<div class="px-6 py-8 text-sm text-muted-foreground">No members found.</div>
-					{/each}
-				</div>
+						{:else}
+							<div class="px-6 py-8 text-sm text-muted-foreground">No members found.</div>
+						{/each}
+					</div>
+				</PaginatedQueryListBox>
 			</Card.Content>
 		</Card.Root>
 	{/if}

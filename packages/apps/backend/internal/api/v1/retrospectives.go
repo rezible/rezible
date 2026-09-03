@@ -24,6 +24,13 @@ func newRetrospectivesHandler(users rez.UserService, incidents rez.IncidentServi
 func (h *retrospectivesHandler) ListRetrospectives(ctx context.Context, input *oapi.ListRetrospectivesRequest) (*oapi.ListRetrospectivesResponse, error) {
 	var resp oapi.ListRetrospectivesResponse
 
+	results := &ent.ListResult[ent.Retrospective]{
+		Data:     make(ent.Retrospectives, 0),
+		Page:     input.Page,
+		PageSize: input.PageSize,
+	}
+	resp.Body = oapi.ConvertPaginatedResultBody(results, oapi.RetrospectiveFromEnt)
+
 	return &resp, nil
 }
 
@@ -79,19 +86,17 @@ func (h *retrospectivesHandler) ArchiveRetrospectiveReview(ctx context.Context, 
 func (h *retrospectivesHandler) ListRetrospectiveComments(ctx context.Context, request *oapi.ListRetrospectiveCommentsRequest) (*oapi.ListRetrospectiveCommentsResponse, error) {
 	var resp oapi.ListRetrospectiveCommentsResponse
 
-	comments, listErr := h.retros.ListComments(ctx, rez.ListRetrospectiveCommentsParams{
+	params := rez.ListRetrospectiveCommentsParams{
 		ListParams:      request.ListParams(),
 		RetrospectiveID: request.Id,
 		WithReplies:     true,
-	})
+	}
+	comments, listErr := h.retros.ListComments(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list retrospective comments", listErr)
 	}
 
-	resp.Body.Data = make([]oapi.RetrospectiveComment, len(comments))
-	for i, disc := range comments {
-		resp.Body.Data[i] = oapi.RetrospectiveCommentFromEnt(disc)
-	}
+	resp.Body = oapi.ConvertPaginatedResultBody(comments, oapi.RetrospectiveCommentFromEnt)
 
 	return &resp, nil
 }

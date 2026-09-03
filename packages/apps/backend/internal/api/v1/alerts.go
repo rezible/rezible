@@ -18,18 +18,16 @@ func newAlertsHandler(alerts rez.AlertService) *alertsHandler {
 func (h *alertsHandler) ListAlerts(ctx context.Context, req *oapi.ListAlertsRequest) (*oapi.ListAlertsResponse, error) {
 	var resp oapi.ListAlertsResponse
 
-	alerts, count, alertsErr := h.alerts.ListAlerts(ctx, rez.ListAlertsParams{})
+	params := rez.ListAlertsParams{
+		ListParams: req.ListParams(),
+	}
+	params.Search = req.Search
+	alerts, alertsErr := h.alerts.ListAlerts(ctx, params)
 	if alertsErr != nil {
 		return nil, oapi.Error(ctx, "failed to list alerts", alertsErr)
 	}
 
-	resp.Body.Data = make([]oapi.Alert, len(alerts))
-	for i, a := range alerts {
-		resp.Body.Data[i] = oapi.AlertFromEnt(a)
-	}
-	resp.Body.Pagination = oapi.ResponsePagination{
-		Total: count,
-	}
+	resp.Body = oapi.ConvertPaginatedResultBody(alerts, oapi.AlertFromEnt)
 
 	return &resp, nil
 }

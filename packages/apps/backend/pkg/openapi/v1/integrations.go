@@ -182,8 +182,8 @@ var GetInstallableIntegrations = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetInstallableIntegrationsRequest ListRequest
-type GetInstallableIntegrationsResponse ItemResponse[[]InstallableIntegration]
+type GetInstallableIntegrationsRequest EmptyRequest
+type GetInstallableIntegrationsResponse CollectionResponse[InstallableIntegration]
 
 var InstallIntegration = huma.Operation{
 	OperationID: "install-integration",
@@ -210,7 +210,7 @@ var ListIntegrationInstallTargets = huma.Operation{
 }
 
 type ListIntegrationInstallTargetsRequest EmptyRequest
-type ListIntegrationInstallTargetsResponse ListResponse[IntegrationInstallTarget]
+type ListIntegrationInstallTargetsResponse CollectionResponse[IntegrationInstallTarget]
 
 var InstallIntegrationFromTargets = huma.Operation{
 	OperationID: "install-integration-from-targets",
@@ -225,7 +225,7 @@ type InstallIntegrationFromTargetsRequestAttributes struct {
 	ExternalRefs []string `json:"externalRefs"`
 }
 type InstallIntegrationFromTargetsRequest NameRequest[InstallIntegrationFromTargetsRequestAttributes]
-type InstallIntegrationFromTargetsResponse ListResponse[IntegrationInstallation]
+type InstallIntegrationFromTargetsResponse CollectionResponse[IntegrationInstallation]
 
 var StartIntegrationOAuthFlow = huma.Operation{
 	OperationID: "start-integration-oauth-flow",
@@ -265,8 +265,10 @@ var ListIntegrationInstallations = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIntegrationInstallationsRequest ListRequest
-type ListIntegrationInstallationsResponse ListResponse[IntegrationInstallation]
+type ListIntegrationInstallationsRequest struct {
+	PaginationRequest
+}
+type ListIntegrationInstallationsResponse PaginatedResponse[IntegrationInstallation]
 
 var GetIntegrationInstallation = huma.Operation{
 	OperationID: "get-integration-installation",
@@ -332,4 +334,4 @@ var ListIntegrationEventSyncRuns = huma.Operation{
 }
 
 type ListIntegrationEventSyncRunRequest IdRequest
-type ListIntegrationEventSyncRunResponse ListResponse[IntegrationEventSyncRun]
+type ListIntegrationEventSyncRunResponse CollectionResponse[IntegrationEventSyncRun]

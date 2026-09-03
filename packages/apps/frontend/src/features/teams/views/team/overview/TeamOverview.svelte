@@ -2,6 +2,9 @@
 	import { mdiSlack } from "@mdi/js";
 	import TeamUsersTable from "./TeamUsersTable.svelte";
 	import TeamRostersTable from "./TeamRostersTable.svelte";
+	import { initTeamOverviewController } from "./controller.svelte";
+
+	initTeamOverviewController();
 
 	const slackChannelOptions = [{ label: "team-channel", value: "foo" }];
 	const slackChannel = slackChannelOptions[0].value;

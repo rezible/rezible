@@ -146,8 +146,8 @@ var ListNotifications = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListNotificationsRequest ListRequest
-type ListNotificationsResponse ListResponse[UserNotification]
+type ListNotificationsRequest PaginationRequest
+type ListNotificationsResponse PaginatedResponse[UserNotification]
 
 var DeleteNotification = huma.Operation{
 	OperationID: "delete-user-notification",

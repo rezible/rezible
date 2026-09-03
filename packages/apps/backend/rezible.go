@@ -381,7 +381,8 @@ type (
 		InstallFromTarget(context.Context, IntegrationInstallationTarget) (InstalledIntegration, error)
 
 		LookupInstallation(context.Context, predicate.Integration) (*ent.Integration, error)
-		ListInstalled(ctx context.Context, params ListIntegrationsParams) ([]InstalledIntegration, error)
+		ListInstalled(ctx context.Context, params ListIntegrationsParams) (*ent.ListResult[ent.Integration], error)
+		ListAllInstalled(ctx context.Context, predicates ...predicate.Integration) ([]InstalledIntegration, error)
 		UpdateInstallation(ctx context.Context, id uuid.UUID, setFn func(*ent.IntegrationMutation)) (InstalledIntegration, error)
 		DeleteInstalled(ctx context.Context, id uuid.UUID) error
 
@@ -392,7 +393,7 @@ type (
 		CompleteOAuth2Flow(ctx context.Context, integrationName string, params CompleteIntegrationOAuth2FlowParams) (*CompleteIntegrationOAuth2FlowResult, error)
 
 		RequestIntegrationEventSync(ctx context.Context, id uuid.UUID, sources []string) error
-		ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error)
+		ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) ([]*ent.IntegrationEventSyncRun, error)
 	}
 )
 
@@ -456,7 +457,7 @@ type (
 	UserService interface {
 		Get(context.Context, predicate.User) (*ent.User, error)
 		Set(context.Context, uuid.UUID, func(*ent.UserMutation)) (*ent.User, error)
-		List(context.Context, ListUsersParams) ([]*ent.User, error)
+		List(context.Context, ListUsersParams) (*ent.ListResult[ent.User], error)
 	}
 )
 
@@ -657,7 +658,7 @@ type (
 	}
 
 	AlertService interface {
-		ListAlerts(context.Context, ListAlertsParams) ([]*ent.Alert, int, error)
+		ListAlerts(context.Context, ListAlertsParams) (*ent.ListResult[ent.Alert], error)
 		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
 		GetAlertInstance(context.Context, uuid.UUID) (*ent.AlertInstance, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
@@ -673,10 +674,11 @@ type (
 type (
 	ListPlaybooksParams struct {
 		ent.ListParams
+		AlertID uuid.UUID
 	}
 
 	PlaybookService interface {
-		ListPlaybooks(context.Context, ListPlaybooksParams) ([]*ent.Playbook, int, error)
+		ListPlaybooks(context.Context, ListPlaybooksParams) (*ent.ListResult[ent.Playbook], error)
 		GetPlaybook(context.Context, uuid.UUID) (*ent.Playbook, error)
 		SetPlaybook(context.Context, *ent.Playbook) (*ent.Playbook, error)
 	}
@@ -763,7 +765,7 @@ type (
 		Get(context.Context, predicate.Retrospective) (*ent.Retrospective, error)
 		Set(context.Context, uuid.UUID, func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error)
 
-		ListComments(context.Context, ListRetrospectiveCommentsParams) ([]*ent.RetrospectiveComment, error)
+		ListComments(context.Context, ListRetrospectiveCommentsParams) (*ent.ListResult[ent.RetrospectiveComment], error)
 		GetComment(context.Context, uuid.UUID) (*ent.RetrospectiveComment, error)
 		SetComment(context.Context, *ent.RetrospectiveComment) (*ent.RetrospectiveComment, error)
 	}
@@ -772,6 +774,7 @@ type (
 type (
 	ListOncallRostersParams = struct {
 		ent.ListParams
+		TeamID uuid.UUID
 		UserID uuid.UUID
 	}
 

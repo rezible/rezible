@@ -1,30 +1,16 @@
 <script lang="ts">
-	import { createQuery } from "@tanstack/svelte-query";
-	import { listTasksOptions, type ListTasksData, type Task } from "$lib/api";
-	import { mdiChevronRight } from "@mdi/js";
-	import { Button } from "$components/ui/button";
+	import type { Task } from "$lib/api";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	import { useTeamViewController } from "$features/teams/views/team";
-	import { QueryPaginatorState } from "$lib/paginator.svelte";
+	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
+	import { initTeamBacklogController } from "./controller.svelte";
 
-	const view = useTeamViewController();
-
-	const paginator = new QueryPaginatorState();
-	const queryParams = $derived<ListTasksData["query"]>({
-		teamId: view.teamId,
-		...paginator.queryParams,
-	});
-	const query = createQuery(() => ({
-		...listTasksOptions({ query: queryParams }),
-		enabled: !!view.teamId,
-	}));
-	paginator.watchQuery(query);
+	const controller = initTeamBacklogController();
 </script>
 
 {#snippet tasksView(tasks: Task[])}
-	{#each tasks as task}
+	{#each tasks as task (task.id)}
 		{@const attr = task.attributes}
-		<a href="/tasks/{task.id}">
+		<div>
 			<span>task: {attr.name}</span>
 			<!-- <ListItem title={attr.name} classes={{ root: "hover:bg-surface-200", title: "text-lg" }}>
 					<div slot="subheading">
@@ -37,10 +23,12 @@
 						<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
 					</div>
 				</ListItem> -->
-		</a>
+		</div>
 	{/each}
 {/snippet}
 
 <div class="flex flex-col w-full">
-	<LoadingQueryWrapper {query} view={tasksView} />
+	<PaginatedQueryListBox {...controller.paginatedTasksQuery}>
+		<LoadingQueryWrapper query={controller.query} view={tasksView} />
+	</PaginatedQueryListBox>
 </div>

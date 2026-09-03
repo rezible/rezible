@@ -1,9 +1,9 @@
 import { listEventsOptions, type ListEventsData, type EventAttributes } from "$lib/api";
-import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
+import { useQueryClient } from "@tanstack/svelte-query";
 import { subMonths, subWeeks } from "date-fns";
 import { watch } from "runed";
 import { useUserOncallInformation } from "$lib/userOncall.svelte";
-import { QueryPaginatorState } from "$lib/paginator.svelte";
 
 export type DateRangeOption = { label: string; value: "shift" | "7d" | "30d" | "custom" };
 
@@ -63,7 +63,6 @@ export class EventsTableState {
 		if (this.oncallInfo.rosterIds.length > 0) return this.oncallInfo.rosterIds.at(0);
 	});
 
-	paginator = new QueryPaginatorState();
 	queryEnabled = $derived(!!this.oncallInfo && !!this.defaultRosterId);
 
 	private listRosterEventsQueryData = $derived<ListEventsData["query"]>({
@@ -80,23 +79,31 @@ export class EventsTableState {
 		this.dateRangeOption === "shift" ? this.listShiftEventsQueryData : this.listRosterEventsQueryData
 	);
 
-	private listEventsQueryData = $derived<ListEventsData["query"]>({
+	private listEventsQueryParams = $derived<ListEventsData["query"]>({
 		...this.listShiftEventsFinalQueryData,
-		limit: this.paginator.limit,
-		offset: this.paginator.offset,
 		// withAnnotations: true,
 	});
-	private listEventsQueryOptions = $derived(listEventsOptions({ query: this.listEventsQueryData }));
 
-	private listEventsQuery = createQuery(() => ({
-		...this.listEventsQueryOptions,
-		enabled: this.queryEnabled,
-	}));
-	private listEventsQueryDataResult = $derived(this.listEventsQuery.data);
-	events = $derived(this.listEventsQueryDataResult?.data ?? []);
+	paginatedEventsQuery = createPaginatedQuery({
+		queryOptions: (pagination) => ({
+			...listEventsOptions({ query: {...this.listEventsQueryParams, ...pagination} }),
+			enabled: this.queryEnabled,
+		}),
+		resetWhen: () => [
+			this.dateRangeOption,
+			this.customDateRangeValue,
+			$state.snapshot(this.filters),
+		],
+	});
+	private listEventsQuery = $derived(this.paginatedEventsQuery.query);
+	private listEventsQueryData = $derived(this.listEventsQuery.data);
+	events = $derived(this.listEventsQueryData?.data ?? []);
+	pagination = $derived(this.listEventsQueryData?.pagination);
+	isFetching = $derived(this.listEventsQuery.isFetching);
+	isPlaceholderData = $derived(this.listEventsQuery.isPlaceholderData);
 
 	invalidateQuery() {
-		this.queryClient.invalidateQueries(this.listEventsQueryOptions);
+		this.queryClient.invalidateQueries(this.listEventsQuery);
 	}
 
 	loading = $derived(this.listEventsQuery.isLoading || !this.oncallInfo.loaded);
@@ -115,7 +122,5 @@ export class EventsTableState {
 				this.filters.rosterId = id;
 			}
 		);
-
-		this.paginator.watchQuery(this.listEventsQuery);
 	}
 }

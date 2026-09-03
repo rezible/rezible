@@ -2,7 +2,7 @@
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import ListFilters from "./ListFilters.svelte";
-	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
+	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
 	import { initEventsListController } from "./controller.svelte";
 	import EventListRow from "./EventListRow.svelte";
@@ -16,8 +16,8 @@
 	{#snippet filters()}
 		<ListFilters />
 	{/snippet}
-	<PaginatedListBox>
-		{#if controller.query.isLoading}
+	<PaginatedQueryListBox {...controller.paginatedEventsQuery}>
+		{#if controller.isLoading}
 			<LoadingIndicator />
 		{:else}
 			{#each controller.events as event (event.id)}
@@ -28,5 +28,5 @@
 				</div>
 			{/each}
 		{/if}
-	</PaginatedListBox>
+	</PaginatedQueryListBox>
 </FilterPage>

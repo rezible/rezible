@@ -60,7 +60,7 @@ var ListIncidentMilestones = huma.Operation{
 }
 
 type ListIncidentMilestonesRequest IdRequest
-type ListIncidentMilestonesResponse ListResponse[IncidentMilestone]
+type ListIncidentMilestonesResponse CollectionResponse[IncidentMilestone]
 
 var CreateIncidentMilestone = huma.Operation{
 	OperationID: "create-incident-milestone",

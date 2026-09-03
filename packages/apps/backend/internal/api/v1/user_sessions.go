@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
@@ -136,20 +135,8 @@ func (h *userSessionsHandler) UpdateUserSessionPreferences(ctx context.Context, 
 func (h *userSessionsHandler) ListNotifications(ctx context.Context, req *oapi.ListNotificationsRequest) (*oapi.ListNotificationsResponse, error) {
 	var resp oapi.ListNotificationsResponse
 
-	// TODO: fetch from db
-	notifs := []oapi.UserNotification{
-		{
-			Id: uuid.New(),
-			Attributes: oapi.UserNotificationAttributes{
-				Text: "bleh",
-			},
-		},
-	}
-
-	resp.Body.Data = make([]oapi.UserNotification, len(notifs))
-	for i, notif := range notifs {
-		resp.Body.Data[i] = notif
-	}
+	resp.Body.Data = make([]oapi.UserNotification, 0)
+	resp.Body.Pagination = oapi.Pagination{Page: req.Page, PageSize: req.PageSize, Total: 0}
 
 	return &resp, nil
 }

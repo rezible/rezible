@@ -68,10 +68,10 @@ var ListTasks = huma.Operation{
 }
 
 type ListTasksRequest struct {
-	ListRequest
-	TeamId uuid.UUID `query:"teamId" required:"false"`
+	PaginationRequest
+	IncludeArchived bool `query:"archived" required:"false" nullable:"false" default:"false"`
 }
-type ListTasksResponse ListResponse[Task]
+type ListTasksResponse PaginatedResponse[Task]
 
 var GetTask = huma.Operation{
 	OperationID: "get-task",

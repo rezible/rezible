@@ -4,8 +4,6 @@
 	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
 	import { useAppShell } from "$lib/app-shell.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
-	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
-	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
 	import MeetingsPageActions from "./MeetingsListPageActions.svelte";
 	import { initMeetingsListViewController } from "./controller.svelte";
 
@@ -18,8 +16,6 @@
 </script>
 
 {#snippet filters()}
-	<SearchInput bind:value={view.searchValue} />
-
 	<div class="pb-2 border">
 		<span>month</span>
 		<!-- <Month bind:startOfMonth={viewState.monthStart} showOutsideDays /> -->
@@ -27,10 +23,10 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox>
+	<div class="flex min-h-0 flex-col gap-1 overflow-auto">
 		<LoadingQueryWrapper {query}>
 			{#snippet view(sessions: MeetingSession[])}
-				{#each sessions as session}
+				{#each sessions as session (session.id)}
 					<MeetingSessionCard {session} />
 				{:else}
 					<div class="grid place-items-center flex-1">
@@ -39,5 +35,5 @@
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>
-	</PaginatedListBox>
+	</div>
 </FilterPage>

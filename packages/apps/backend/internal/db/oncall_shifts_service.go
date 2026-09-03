@@ -88,7 +88,7 @@ func (s *OncallShiftsService) GetAdjacentShifts(ctx context.Context, id uuid.UUI
 
 func (s *OncallShiftsService) ListShifts(ctx context.Context, params rez.ListOncallShiftsParams) (*ent.ListResult[ent.OncallShift], error) {
 	query := s.db.Client(ctx).OncallShift.Query().
-		Order(ocs.ByEndAt(sql.OrderDesc())).
+		Order(ocs.ByEndAt(sql.OrderDesc()), ocs.ByID(sql.OrderDesc())).
 		WithRoster().
 		WithUser()
 

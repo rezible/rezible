@@ -1,7 +1,6 @@
 import { useAlertViewController } from "$features/alerts/views/alert";
-import { listEventsOptions, type ListEventsData, type Event, type EventAttributes } from "$lib/api";
-import { QueryPaginatorState } from "$lib/paginator.svelte";
-import { createQuery } from "@tanstack/svelte-query";
+import { listEventsOptions, type ListEventsData, type EventAttributes } from "$lib/api";
+import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
 import { getLocalTimeZone, now } from "@internationalized/date";
 
 export type EventKind = EventAttributes["kind"];
@@ -17,19 +16,19 @@ const defaultDateRange = () => {
 export class AlertEventsViewController {
 	view = useAlertViewController();
 
-	paginator = new QueryPaginatorState();
-
 	rosterId = $state<string>();
 	eventKind = $state<EventKind>();
 	dateRange = $state(defaultDateRange());
 
 	queryParams = $derived<ListEventsData["query"]>({
 		// alertId: this.viewState.alertId,
-		...this.paginator.queryParams,
 	});
-	query = createQuery(() => listEventsOptions({ query: this.queryParams }));
-
-	constructor() {
-		this.paginator.watchQuery(this.query);
-	}
+	paginatedEventsQuery = createPaginatedQuery({
+		queryOptions: (pagination) => listEventsOptions({ 
+			query: {
+				...this.queryParams,
+				...pagination,
+			},
+		}),
+	});
 }

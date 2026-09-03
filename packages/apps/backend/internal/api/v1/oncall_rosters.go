@@ -27,21 +27,18 @@ func newOncallRostersHandler(users rez.UserService, inc rez.IncidentService, ros
 func (h *oncallRostersHandler) ListOncallRosters(ctx context.Context, request *oapi.ListOncallRostersRequest) (*oapi.ListOncallRostersResponse, error) {
 	var resp oapi.ListOncallRostersResponse
 
+	listParams := request.ListParams()
+	listParams.Search = request.Search
 	listRes, rostersErr := h.rosters.ListRosters(ctx, rez.ListOncallRostersParams{
-		ListParams: request.ListParams(),
+		ListParams: listParams,
+		TeamID:     request.TeamId,
 		UserID:     request.UserId,
 	})
 	if rostersErr != nil {
 		return nil, oapi.Error(ctx, "failed to list rosters", rostersErr)
 	}
 
-	resp.Body.Data = make([]oapi.OncallRoster, len(listRes.Data))
-	for i, r := range listRes.Data {
-		resp.Body.Data[i] = oapi.OncallRosterFromEnt(r)
-	}
-	resp.Body.Pagination = oapi.ResponsePagination{
-		Total: listRes.Count,
-	}
+	resp.Body = oapi.ConvertPaginatedResultBody(listRes, oapi.OncallRosterFromEnt)
 
 	return &resp, nil
 }
@@ -187,7 +184,7 @@ func (h *oncallRostersHandler) GetUserOncallInformation(ctx context.Context, req
 		Anchor: time.Now(),
 		Window: oneWeek,
 		ListParams: ent.ListParams{
-			Limit: 20,
+			PageSize: 20,
 		},
 	})
 	if shiftsErr != nil {

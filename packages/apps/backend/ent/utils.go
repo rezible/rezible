@@ -14,18 +14,24 @@ import (
 
 type ListParams struct {
 	Search          string
-	Offset          int
-	Limit           int
-	Count           bool
+	Page            int
+	PageSize        int
 	IncludeArchived bool
 	OrderAsc        bool
 }
 
-func (p ListParams) GetLimit() int {
-	if p.Limit == 0 {
-		return 10
+func (p ListParams) GetPage() int {
+	if p.Page < 1 {
+		return 1
 	}
-	return p.Limit
+	return p.Page
+}
+
+func (p ListParams) GetPageSize() int {
+	if p.PageSize < 1 {
+		return 25
+	}
+	return p.PageSize
 }
 
 func (p ListParams) GetOrder() entsql.OrderTermOption {
@@ -104,8 +110,10 @@ func ExecTx(ctx context.Context, query string, args ...any) error {
 }
 
 type ListResult[T any] struct {
-	Data  []*T
-	Count int
+	Data     []*T
+	Page     int
+	PageSize int
+	Total    int
 }
 
 type listQuery[T any, Q any] interface {
@@ -116,26 +124,28 @@ type listQuery[T any, Q any] interface {
 }
 
 func DoListQuery[T any, Q any](ctx context.Context, query listQuery[T, Q], p ListParams) (*ListResult[T], error) {
+	page := p.GetPage()
+	pageSize := p.GetPageSize()
 	res := &ListResult[T]{
-		Data:  make([]*T, 0),
-		Count: 0,
+		Data:     make([]*T, 0),
+		Page:     page,
+		PageSize: pageSize,
 	}
 	ctx = p.GetQueryContext(ctx)
-	if p.Count {
-		count, queryErr := query.Count(ctx)
-		if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
-			return nil, fmt.Errorf("count: %w", queryErr)
-		}
-		res.Count = count
+	count, queryErr := query.Count(ctx)
+	if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
+		return nil, fmt.Errorf("count: %w", queryErr)
 	}
-	if !p.Count || res.Count > 0 {
-		query.Offset(p.Offset)
-		query.Limit(p.GetLimit())
-		results, queryErr := query.All(ctx)
-		if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
-			return nil, fmt.Errorf("list: %w", queryErr)
-		}
-		res.Data = results
+	res.Total = count
+	if res.Total == 0 {
+		return res, nil
 	}
+	query.Offset((page - 1) * pageSize)
+	query.Limit(pageSize)
+	results, queryErr := query.All(ctx)
+	if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
+		return nil, fmt.Errorf("list: %w", queryErr)
+	}
+	res.Data = results
 	return res, nil
 }

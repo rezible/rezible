@@ -331,7 +331,7 @@ var ListAiAgents = openapi.Operation{
 }
 
 type ListAiAgentsRequest EmptyRequest
-type ListAiAgentsResponse ListResponse[AiAgentConfig]
+type ListAiAgentsResponse CollectionResponse[AiAgentConfig]
 
 var CreateAgentSession = openapi.Operation{
 	OperationID:   "create-agent-session",
@@ -361,9 +361,9 @@ var ListAgentSessions = openapi.Operation{
 }
 
 type ListAgentSessionsRequest struct {
-	ListRequest
+	PaginationRequest
 }
-type ListAgentSessionsResponse ListResponse[AgentSession]
+type ListAgentSessionsResponse PaginatedResponse[AgentSession]
 
 var GetAgentSession = openapi.Operation{
 	OperationID: "get-agent-session",
@@ -386,8 +386,8 @@ var ListAgentMessages = openapi.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListAgentMessagesRequest ListIdRequest
-type ListAgentMessagesResponse ListResponse[AgentMessage]
+type ListAgentMessagesRequest PaginatedIdRequest
+type ListAgentMessagesResponse PaginatedResponse[AgentMessage]
 
 var ListAgentArtifacts = openapi.Operation{
 	OperationID: "list-agent-artifacts",
@@ -398,8 +398,8 @@ var ListAgentArtifacts = openapi.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListAgentArtifactsRequest ListIdRequest
-type ListAgentArtifactsResponse ListResponse[AgentArtifact]
+type ListAgentArtifactsRequest PaginatedIdRequest
+type ListAgentArtifactsResponse PaginatedResponse[AgentArtifact]
 
 var ListAgentTurns = openapi.Operation{
 	OperationID: "list-agent-turns",
@@ -411,9 +411,9 @@ var ListAgentTurns = openapi.Operation{
 }
 
 type ListAgentTurnsRequest struct {
-	ListIdRequest
+	PaginatedIdRequest
 }
-type ListAgentTurnsResponse ListResponse[AgentTurn]
+type ListAgentTurnsResponse PaginatedResponse[AgentTurn]
 
 type AgentTurnResume struct {
 	Respond []*ai.Part `json:"respond,omitempty"`

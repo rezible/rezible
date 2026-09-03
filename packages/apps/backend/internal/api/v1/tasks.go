@@ -4,7 +4,8 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent/schema"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/task"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -19,23 +20,15 @@ func newTasksHandler(db rez.Database) *tasksHandler {
 func (h *tasksHandler) ListTasks(ctx context.Context, request *oapi.ListTasksRequest) (*oapi.ListTasksResponse, error) {
 	var resp oapi.ListTasksResponse
 
-	query := h.db.Client(ctx).Task.Query().
-		Limit(request.Limit).
-		Offset(request.Offset)
-
-	if request.IncludeArchived {
-		ctx = schema.IncludeArchived(ctx)
-	}
-
-	tasks, queryErr := query.All(ctx)
+	query := h.db.Client(ctx).Task.Query().Order(task.ByID())
+	params := request.ListParams()
+	params.IncludeArchived = request.IncludeArchived
+	tasks, queryErr := ent.DoListQuery[ent.Task, *ent.TaskQuery](ctx, query, params)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to fetch tasks", queryErr)
 	}
 
-	resp.Body.Data = make([]oapi.Task, len(tasks))
-	for i, task := range tasks {
-		resp.Body.Data[i] = oapi.TaskFromEnt(task)
-	}
+	resp.Body = oapi.ConvertPaginatedResultBody(tasks, oapi.TaskFromEnt)
 
 	return &resp, nil
 }

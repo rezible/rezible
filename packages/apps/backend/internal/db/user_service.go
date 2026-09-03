@@ -52,12 +52,10 @@ func (s *UserService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.Use
 	})
 }
 
-func (s *UserService) List(ctx context.Context, params rez.ListUsersParams) ([]*ent.User, error) {
+func (s *UserService) List(ctx context.Context, params rez.ListUsersParams) (*ent.ListResult[ent.User], error) {
 	query := s.db.Client(ctx).User.Query().
 		WithOrganizationRole().
-		Order(user.ByID()).
-		Limit(params.GetLimit()).
-		Offset(params.Offset)
+		Order(user.ByID())
 
 	if len(params.Search) > 0 {
 		query = query.Where(user.NameContainsFold(params.Search))
@@ -65,10 +63,5 @@ func (s *UserService) List(ctx context.Context, params rez.ListUsersParams) ([]*
 	if params.TeamID != uuid.Nil {
 		query = query.Where(user.HasTeamsWith(team.ID(params.TeamID)))
 	}
-
-	res, queryErr := query.All(params.GetQueryContext(ctx))
-	if queryErr != nil {
-		return nil, fmt.Errorf("query users: %w", queryErr)
-	}
-	return res, nil
+	return ent.DoListQuery[ent.User, *ent.UserQuery](ctx, query, params.ListParams)
 }

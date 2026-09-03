@@ -274,8 +274,12 @@ var ListIncidentSeverities = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIncidentSeveritiesRequest ListRequest
-type ListIncidentSeveritiesResponse ListResponse[IncidentSeverity]
+type ListIncidentSeveritiesRequest struct {
+	PaginationRequest
+	Search          string `query:"search" required:"false" nullable:"false"`
+	IncludeArchived bool   `query:"archived" required:"false" nullable:"false" default:"false"`
+}
+type ListIncidentSeveritiesResponse PaginatedResponse[IncidentSeverity]
 
 var GetIncidentSeverity = huma.Operation{
 	OperationID: "get-incident-severity",
@@ -351,8 +355,12 @@ var ListIncidentTypes = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIncidentTypesRequest ListRequest
-type ListIncidentTypesResponse ListResponse[IncidentType]
+type ListIncidentTypesRequest struct {
+	PaginationRequest
+	Search          string `query:"search" required:"false" nullable:"false"`
+	IncludeArchived bool   `query:"archived" required:"false" nullable:"false" default:"false"`
+}
+type ListIncidentTypesResponse PaginatedResponse[IncidentType]
 
 var GetIncidentType = huma.Operation{
 	OperationID: "get-incident-type",
@@ -421,8 +429,8 @@ var ListIncidentRoles = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIncidentRolesRequest ListRequest
-type ListIncidentRolesResponse ListResponse[IncidentRole]
+type ListIncidentRolesRequest EmptyRequest
+type ListIncidentRolesResponse CollectionResponse[IncidentRole]
 
 var GetIncidentRole = huma.Operation{
 	OperationID: "get-incident-role",
@@ -495,8 +503,12 @@ var ListIncidentTags = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIncidentTagsRequest ListRequest
-type ListIncidentTagsResponse ListResponse[IncidentTag]
+type ListIncidentTagsRequest struct {
+	PaginationRequest
+	Search          string `query:"search" required:"false" nullable:"false"`
+	IncludeArchived bool   `query:"archived" required:"false" nullable:"false" default:"false"`
+}
+type ListIncidentTagsResponse PaginatedResponse[IncidentTag]
 
 var GetIncidentTag = huma.Operation{
 	OperationID: "get-incident-tag",
@@ -566,8 +578,10 @@ var ListIncidentFields = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIncidentFieldsRequest ListRequest
-type ListIncidentFieldsResponse ListResponse[IncidentField]
+type ListIncidentFieldsRequest struct {
+	IncludeArchived bool `query:"archived" required:"false" nullable:"false" default:"false"`
+}
+type ListIncidentFieldsResponse CollectionResponse[IncidentField]
 
 var GetIncidentField = huma.Operation{
 	OperationID: "get-incident-field",

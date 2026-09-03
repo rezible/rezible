@@ -182,14 +182,15 @@ var ListKnowledgeGraphEntities = huma.Operation{
 }
 
 type ListKnowledgeGraphEntitiesRequest struct {
-	ListRequest
+	PaginationRequest
+	Search         string   `query:"search" required:"false" nullable:"false"`
 	Category       []string `query:"category" required:"false"`
 	Kind           []string `query:"kind" required:"false"`
 	Provider       string   `query:"provider" required:"false"`
 	ProviderSource string   `query:"providerSource" required:"false"`
 	SubjectKind    string   `query:"subjectKind" required:"false"`
 }
-type ListKnowledgeGraphEntitiesResponse ListResponse[KnowledgeGraphEntity]
+type ListKnowledgeGraphEntitiesResponse PaginatedResponse[KnowledgeGraphEntity]
 
 var GetKnowledgeGraphEntity = huma.Operation{
 	OperationID: "get-knowledge-graph-entity",
@@ -213,13 +214,13 @@ var ListKnowledgeGraphRelationships = huma.Operation{
 }
 
 type ListKnowledgeGraphRelationshipsRequest struct {
-	ListRequest
+	PaginationRequest
 	Predicate      []string  `query:"predicate" required:"false"`
 	EntityId       uuid.UUID `query:"entityId" required:"false"`
 	SourceEntityId uuid.UUID `query:"sourceEntityId" required:"false"`
 	TargetEntityId uuid.UUID `query:"targetEntityId" required:"false"`
 }
-type ListKnowledgeGraphRelationshipsResponse ListResponse[KnowledgeGraphRelationship]
+type ListKnowledgeGraphRelationshipsResponse PaginatedResponse[KnowledgeGraphRelationship]
 
 var GetKnowledgeGraphRelationship = huma.Operation{
 	OperationID: "get-knowledge-graph-relationship",

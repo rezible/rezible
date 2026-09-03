@@ -237,8 +237,8 @@ var ListSystemAnalysisNodes = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListSystemAnalysisNodesRequest ListIdRequest
-type ListSystemAnalysisNodesResponse ListResponse[SystemAnalysisNode]
+type ListSystemAnalysisNodesRequest PaginatedIdRequest
+type ListSystemAnalysisNodesResponse PaginatedResponse[SystemAnalysisNode]
 
 var AddSystemAnalysisNode = huma.Operation{
 	OperationID: "add-system-analysis-node",
@@ -298,8 +298,8 @@ var ListSystemAnalysisEdges = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListSystemAnalysisEdgesRequest ListIdRequest
-type ListSystemAnalysisEdgesResponse ListResponse[SystemAnalysisEdge]
+type ListSystemAnalysisEdgesRequest PaginatedIdRequest
+type ListSystemAnalysisEdgesResponse PaginatedResponse[SystemAnalysisEdge]
 
 var AddSystemAnalysisEdge = huma.Operation{
 	OperationID: "add-system-analysis-edge",
@@ -357,8 +357,8 @@ var ListSystemAnalysisEntries = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListSystemAnalysisEntriesRequest ListIdRequest
-type ListSystemAnalysisEntriesResponse ListResponse[SystemAnalysisEntry]
+type ListSystemAnalysisEntriesRequest PaginatedIdRequest
+type ListSystemAnalysisEntriesResponse PaginatedResponse[SystemAnalysisEntry]
 
 var CreateSystemAnalysisEntry = huma.Operation{
 	OperationID: "create-system-analysis-entry",

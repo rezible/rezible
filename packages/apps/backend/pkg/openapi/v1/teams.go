@@ -102,8 +102,12 @@ var ListTeams = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListTeamsRequest ListRequest
-type ListTeamsResponse ListResponse[Team]
+type ListTeamsRequest struct {
+	PaginationRequest
+	Search          string `query:"search" required:"false" nullable:"false"`
+	IncludeArchived bool   `query:"archived" required:"false" nullable:"false" default:"false"`
+}
+type ListTeamsResponse PaginatedResponse[Team]
 
 var CreateTeam = huma.Operation{
 	OperationID: "create-team",
@@ -169,11 +173,11 @@ var ListTeamMemberships = huma.Operation{
 }
 
 type ListTeamMembershipsRequest struct {
-	ListRequest
+	PaginationRequest
 	TeamId uuid.UUID `query:"teamId" required:"false"`
 	UserId uuid.UUID `query:"userId" required:"false"`
 }
-type ListTeamMembershipsResponse ListResponse[TeamMembership]
+type ListTeamMembershipsResponse PaginatedResponse[TeamMembership]
 
 var CreateTeamMembership = huma.Operation{
 	OperationID: "create-team-membership",

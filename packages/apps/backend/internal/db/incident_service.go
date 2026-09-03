@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -88,7 +89,10 @@ func (s *IncidentService) incidentQuery(ctx context.Context, pred predicate.Inci
 
 func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) (*ent.ListResult[ent.Incident], error) {
 	query := s.db.Client(ctx).Incident.Query()
-	query.Order(incident.ByOpenedAt(params.GetOrder()))
+	query.Order(incident.ByOpenedAt(params.GetOrder()), incident.ByID(params.GetOrder()))
+	if search := strings.TrimSpace(params.Search); search != "" {
+		query.Where(incident.Or(incident.TitleContainsFold(search), incident.SummaryContainsFold(search)))
+	}
 	if !params.OpenedAfter.IsZero() {
 		query.Where(incident.OpenedAtGT(params.OpenedAfter))
 	}

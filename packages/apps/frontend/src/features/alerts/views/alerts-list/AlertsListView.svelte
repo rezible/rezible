@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { createQuery } from "@tanstack/svelte-query";
-	import { QueryPaginatorState } from "$lib/paginator.svelte";
+	import { resolve } from "$app/paths";
+	import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
 	import { listAlertsOptions, type Alert, type ListAlertsData } from "$lib/api";
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
-	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
+	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 
 	setPageBreadcrumbs(() => [{ label: "Alerts" }]);
 
-	const paginator = new QueryPaginatorState();
 	let searchValue = $state<string>();
 	const params = $derived<ListAlertsData["query"]>({
 		search: searchValue,
-		...paginator.queryParams,
 	});
-	const query = createQuery(() => listAlertsOptions({ query: params }));
-	paginator.watchQuery(query);
+	const paginatedAlertsQuery = createPaginatedQuery({
+		queryOptions: (pagination) => listAlertsOptions({ query: {...params, ...pagination} }),
+		resetWhen: () => [searchValue],
+	});
 </script>
 
 {#snippet filters()}
@@ -25,15 +25,15 @@
 {/snippet}
 
 {#snippet alertListItem(a: Alert)}
-	<a href="/alerts/{a.id}">
+	<a href={resolve(`/alerts/${a.id}`)}>
 		<span>{a.attributes.title}</span>
 		<!-- <ListItem title={a.attributes.title} subheading={a.attributes.description} /> -->
 	</a>
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox>
-		<LoadingQueryWrapper {query}>
+	<PaginatedQueryListBox {...paginatedAlertsQuery}>
+		<LoadingQueryWrapper query={paginatedAlertsQuery.query}>
 			{#snippet view(alerts: Alert[])}
 				{#each alerts as a (a.id)}
 					{@render alertListItem(a)}
@@ -44,5 +44,5 @@
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>
-	</PaginatedListBox>
+	</PaginatedQueryListBox>
 </FilterPage>

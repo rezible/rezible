@@ -51,7 +51,7 @@
         "@rezible/api-client-ts": "workspace:*",
         "@rezible/tiptap-extensions": "workspace:*",
         "@tailwindcss/vite": "^4.3.3",
-        "@tanstack/svelte-query": "^6.1.36",
+        "@tanstack/svelte-query": "^6.1.48",
         "@tiptap/core": "catalog:documents",
         "@tiptap/extension-bold": "catalog:documents",
         "@tiptap/extension-bubble-menu": "catalog:documents",
@@ -94,8 +94,8 @@
         "@sveltejs/kit": "^2.69.3",
         "@sveltejs/vite-plugin-svelte": "^7.2.0",
         "@tanstack/table-core": "^8.21.3",
-        "@types/js-cookie": "^3.0.6",
         "@types/bun": "catalog:tooling",
+        "@types/js-cookie": "^3.0.6",
         "@types/node": "^24",
         "@typescript-eslint/eslint-plugin": "^8.64.0",
         "@typescript-eslint/parser": "^8.64.0",
@@ -128,6 +128,7 @@
         "typescript": "catalog:tooling",
       },
       "peerDependencies": {
+        "@tanstack/svelte-query": "^6.1.48",
         "typescript": "^5 || ^6",
       },
     },
@@ -485,9 +486,9 @@
 
     "@tailwindcss/vite": ["@tailwindcss/vite@4.3.3", "", { "dependencies": { "@tailwindcss/node": "4.3.3", "@tailwindcss/oxide": "4.3.3", "tailwindcss": "4.3.3" }, "peerDependencies": { "vite": "^5.2.0 || ^6 || ^7 || ^8" } }, "sha512-yYU8cogLeSh/ms2jh8Fj7jaba/EWa7Ja6GoUqYZaraEuCI5YS6ms6ObZgjjedm+jm6XZjdNRWBpPP6Z86oOxcw=="],
 
-    "@tanstack/query-core": ["@tanstack/query-core@5.101.2", "", {}, "sha512-hH5MLoJhF7KaIGd7q3xTXGXvslI+GYlM1Z/35aSHHWaCJWB7XvTSHYuV3eM7tw+aE0mT/xMro4M4Q9rCGHT0lw=="],
+    "@tanstack/query-core": ["@tanstack/query-core@5.102.8", "", {}, "sha512-ZNjkJ33CqvPNec/6lZBnHqLc3EVGPZ9ySLhYahU9TcuRFdmwXewuj0c4hwSWcGHqEUwcSrKeZ+oGcvPBqXcQcg=="],
 
-    "@tanstack/svelte-query": ["@tanstack/svelte-query@6.1.36", "", { "dependencies": { "@tanstack/query-core": "5.101.2" }, "peerDependencies": { "svelte": "^5.25.0" } }, "sha512-AVyvXPzBh5OQnWFB7rk9gskciPouayAhU9Vm24uMai+Imf+ZfBEbjOAEtdM41oexFK/cdXmpAIySDSVaAzy9zw=="],
+    "@tanstack/svelte-query": ["@tanstack/svelte-query@6.1.48", "", { "dependencies": { "@tanstack/query-core": "5.102.8" }, "peerDependencies": { "svelte": "^5.25.0" } }, "sha512-X+d2LvUImIf1OQiNIlJ5AfHcXrVwKMMvuC1a/6VZclkgg7Td9mSnvZrbpWowR3TFHrzFY80PHVwm+u8End7c3Q=="],
 
     "@tanstack/table-core": ["@tanstack/table-core@8.21.3", "", {}, "sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg=="],
 

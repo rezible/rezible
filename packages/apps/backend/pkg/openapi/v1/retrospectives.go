@@ -140,8 +140,10 @@ var ListRetrospectives = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListRetrospectivesRequest ListRequest
-type ListRetrospectivesResponse ListResponse[Retrospective]
+type ListRetrospectivesRequest struct {
+	PaginationRequest
+}
+type ListRetrospectivesResponse PaginatedResponse[Retrospective]
 
 var GetRetrospective = huma.Operation{
 	OperationID: "get-retrospective",
@@ -180,8 +182,8 @@ var ListRetrospectiveReviews = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListRetrospectiveReviewsRequest ListRequest
-type ListRetrospectiveReviewsResponse ListResponse[RetrospectiveReview]
+type ListRetrospectiveReviewsRequest EmptyRequest
+type ListRetrospectiveReviewsResponse CollectionResponse[RetrospectiveReview]
 
 var CreateRetrospectiveReview = huma.Operation{
 	OperationID: "create-retrospective-review",
@@ -230,8 +232,8 @@ var ListRetrospectiveComments = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListRetrospectiveCommentsRequest ListIdRequest
-type ListRetrospectiveCommentsResponse ListResponse[RetrospectiveComment]
+type ListRetrospectiveCommentsRequest PaginatedIdRequest
+type ListRetrospectiveCommentsResponse PaginatedResponse[RetrospectiveComment]
 
 var CreateRetrospectiveComment = huma.Operation{
 	OperationID: "create-retrospective-comment",
@@ -257,7 +259,7 @@ var GetRetrospectiveComment = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetRetrospectiveCommentRequest ListIdRequest
+type GetRetrospectiveCommentRequest IdRequest
 type GetRetrospectiveCommentResponse ItemResponse[RetrospectiveComment]
 
 var UpdateRetrospectiveComment = huma.Operation{

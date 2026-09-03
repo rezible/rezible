@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 
-	"github.com/rezible/rezible/ent/schema"
 	entteam "github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
@@ -25,34 +25,19 @@ func (h *teamsHandler) ListTeams(ctx context.Context, request *oapi.ListTeamsReq
 
 	query := h.db.Client(ctx).Team.Query()
 
-	if request.IncludeArchived {
-		ctx = schema.IncludeArchived(ctx)
-	}
-
 	if len(request.Search) > 0 {
 		query = query.Where(entteam.NameContainsFold(request.Search))
 	}
-
-	limitedQuery := query.Clone().
-		Limit(request.Limit).
-		Offset(request.Offset).
-		Order(entteam.ByID())
-
-	res, queryErr := limitedQuery.All(ctx)
+	query.Order(entteam.ByID())
+	params := request.ListParams()
+	params.Search = request.Search
+	params.IncludeArchived = request.IncludeArchived
+	res, queryErr := ent.DoListQuery[ent.Team, *ent.TeamQuery](ctx, query, params)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "Failed to query teams", queryErr)
 	}
 
-	resp.Body.Data = make([]oapi.Team, len(res))
-	for i, team := range res {
-		resp.Body.Data[i] = oapi.TeamFromEnt(team)
-	}
-
-	count, countErr := query.Count(ctx)
-	if countErr != nil {
-		return nil, oapi.Error(ctx, "Failed to query teams count", countErr)
-	}
-	resp.Body.Pagination.Total = count
+	resp.Body = oapi.ConvertPaginatedResultBody(res, oapi.TeamFromEnt)
 
 	return &resp, nil
 }
@@ -129,25 +114,13 @@ func (h *teamsHandler) ListTeamMemberships(ctx context.Context, request *oapi.Li
 		query = query.Where(teammembership.UserID(request.UserId))
 	}
 
-	limitedQuery := query.Clone().
-		Limit(request.Limit).
-		Offset(request.Offset).
-		Order(teammembership.ByID())
-	res, queryErr := limitedQuery.All(ctx)
+	query.Order(teammembership.ByID())
+	res, queryErr := ent.DoListQuery[ent.TeamMembership, *ent.TeamMembershipQuery](ctx, query, request.ListParams())
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to query team memberships", queryErr)
 	}
 
-	resp.Body.Data = make([]oapi.TeamMembership, len(res))
-	for i, m := range res {
-		resp.Body.Data[i] = oapi.TeamMembershipFromEnt(m)
-	}
-
-	count, countErr := query.Count(ctx)
-	if countErr != nil {
-		return nil, oapi.Error(ctx, "failed to query team memberships count", countErr)
-	}
-	resp.Body.Pagination.Total = count
+	resp.Body = oapi.ConvertPaginatedResultBody(res, oapi.TeamMembershipFromEnt)
 
 	return &resp, nil
 }

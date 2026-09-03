@@ -2991,24 +2991,105 @@ func (_c *MockIntegrationService_InstallNew_Call) RunAndReturn(run func(context1
 	return _c
 }
 
+// ListAllInstalled provides a mock function for the type MockIntegrationService
+func (_mock *MockIntegrationService) ListAllInstalled(ctx context.Context, predicates ...predicate.Integration) ([]rez.InstalledIntegration, error) {
+	// predicate.Integration
+	_va := make([]interface{}, len(predicates))
+	for _i := range predicates {
+		_va[_i] = predicates[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx)
+	_ca = append(_ca, _va...)
+	ret := _mock.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListAllInstalled")
+	}
+
+	var r0 []rez.InstalledIntegration
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...predicate.Integration) ([]rez.InstalledIntegration, error)); ok {
+		return returnFunc(ctx, predicates...)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...predicate.Integration) []rez.InstalledIntegration); ok {
+		r0 = returnFunc(ctx, predicates...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]rez.InstalledIntegration)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ...predicate.Integration) error); ok {
+		r1 = returnFunc(ctx, predicates...)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockIntegrationService_ListAllInstalled_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAllInstalled'
+type MockIntegrationService_ListAllInstalled_Call struct {
+	*mock.Call
+}
+
+// ListAllInstalled is a helper method to define mock.On call
+//   - ctx context.Context
+//   - predicates ...predicate.Integration
+func (_e *MockIntegrationService_Expecter) ListAllInstalled(ctx interface{}, predicates ...interface{}) *MockIntegrationService_ListAllInstalled_Call {
+	return &MockIntegrationService_ListAllInstalled_Call{Call: _e.mock.On("ListAllInstalled",
+		append([]interface{}{ctx}, predicates...)...)}
+}
+
+func (_c *MockIntegrationService_ListAllInstalled_Call) Run(run func(ctx context.Context, predicates ...predicate.Integration)) *MockIntegrationService_ListAllInstalled_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []predicate.Integration
+		variadicArgs := make([]predicate.Integration, len(args)-1)
+		for i, a := range args[1:] {
+			if a != nil {
+				variadicArgs[i] = a.(predicate.Integration)
+			}
+		}
+		arg1 = variadicArgs
+		run(
+			arg0,
+			arg1...,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIntegrationService_ListAllInstalled_Call) Return(installedIntegrations []rez.InstalledIntegration, err error) *MockIntegrationService_ListAllInstalled_Call {
+	_c.Call.Return(installedIntegrations, err)
+	return _c
+}
+
+func (_c *MockIntegrationService_ListAllInstalled_Call) RunAndReturn(run func(ctx context.Context, predicates ...predicate.Integration) ([]rez.InstalledIntegration, error)) *MockIntegrationService_ListAllInstalled_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListInstalled provides a mock function for the type MockIntegrationService
-func (_mock *MockIntegrationService) ListInstalled(ctx context.Context, params rez.ListIntegrationsParams) ([]rez.InstalledIntegration, error) {
+func (_mock *MockIntegrationService) ListInstalled(ctx context.Context, params rez.ListIntegrationsParams) (*ent.ListResult[ent.Integration], error) {
 	ret := _mock.Called(ctx, params)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListInstalled")
 	}
 
-	var r0 []rez.InstalledIntegration
+	var r0 *ent.ListResult[ent.Integration]
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListIntegrationsParams) ([]rez.InstalledIntegration, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListIntegrationsParams) (*ent.ListResult[ent.Integration], error)); ok {
 		return returnFunc(ctx, params)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListIntegrationsParams) []rez.InstalledIntegration); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListIntegrationsParams) *ent.ListResult[ent.Integration]); ok {
 		r0 = returnFunc(ctx, params)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]rez.InstalledIntegration)
+			r0 = ret.Get(0).(*ent.ListResult[ent.Integration])
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListIntegrationsParams) error); ok {
@@ -3049,34 +3130,34 @@ func (_c *MockIntegrationService_ListInstalled_Call) Run(run func(ctx context.Co
 	return _c
 }
 
-func (_c *MockIntegrationService_ListInstalled_Call) Return(installedIntegrations []rez.InstalledIntegration, err error) *MockIntegrationService_ListInstalled_Call {
-	_c.Call.Return(installedIntegrations, err)
+func (_c *MockIntegrationService_ListInstalled_Call) Return(listResult *ent.ListResult[ent.Integration], err error) *MockIntegrationService_ListInstalled_Call {
+	_c.Call.Return(listResult, err)
 	return _c
 }
 
-func (_c *MockIntegrationService_ListInstalled_Call) RunAndReturn(run func(ctx context.Context, params rez.ListIntegrationsParams) ([]rez.InstalledIntegration, error)) *MockIntegrationService_ListInstalled_Call {
+func (_c *MockIntegrationService_ListInstalled_Call) RunAndReturn(run func(ctx context.Context, params rez.ListIntegrationsParams) (*ent.ListResult[ent.Integration], error)) *MockIntegrationService_ListInstalled_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // ListIntegrationEventSyncRuns provides a mock function for the type MockIntegrationService
-func (_mock *MockIntegrationService) ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error) {
+func (_mock *MockIntegrationService) ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) ([]*ent.IntegrationEventSyncRun, error) {
 	ret := _mock.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListIntegrationEventSyncRuns")
 	}
 
-	var r0 *ent.ListResult[ent.IntegrationEventSyncRun]
+	var r0 []*ent.IntegrationEventSyncRun
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.IntegrationEventSyncRun, error)); ok {
 		return returnFunc(ctx, id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.ListResult[ent.IntegrationEventSyncRun]); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.IntegrationEventSyncRun); ok {
 		r0 = returnFunc(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.ListResult[ent.IntegrationEventSyncRun])
+			r0 = ret.Get(0).([]*ent.IntegrationEventSyncRun)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
@@ -3117,12 +3198,12 @@ func (_c *MockIntegrationService_ListIntegrationEventSyncRuns_Call) Run(run func
 	return _c
 }
 
-func (_c *MockIntegrationService_ListIntegrationEventSyncRuns_Call) Return(listResult *ent.ListResult[ent.IntegrationEventSyncRun], err error) *MockIntegrationService_ListIntegrationEventSyncRuns_Call {
-	_c.Call.Return(listResult, err)
+func (_c *MockIntegrationService_ListIntegrationEventSyncRuns_Call) Return(integrationEventSyncRuns []*ent.IntegrationEventSyncRun, err error) *MockIntegrationService_ListIntegrationEventSyncRuns_Call {
+	_c.Call.Return(integrationEventSyncRuns, err)
 	return _c
 }
 
-func (_c *MockIntegrationService_ListIntegrationEventSyncRuns_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error)) *MockIntegrationService_ListIntegrationEventSyncRuns_Call {
+func (_c *MockIntegrationService_ListIntegrationEventSyncRuns_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) ([]*ent.IntegrationEventSyncRun, error)) *MockIntegrationService_ListIntegrationEventSyncRuns_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -3799,23 +3880,23 @@ func (_c *MockUserService_Get_Call) RunAndReturn(run func(context1 context.Conte
 }
 
 // List provides a mock function for the type MockUserService
-func (_mock *MockUserService) List(context1 context.Context, v rez.ListUsersParams) ([]*ent.User, error) {
+func (_mock *MockUserService) List(context1 context.Context, v rez.ListUsersParams) (*ent.ListResult[ent.User], error) {
 	ret := _mock.Called(context1, v)
 
 	if len(ret) == 0 {
 		panic("no return value specified for List")
 	}
 
-	var r0 []*ent.User
+	var r0 *ent.ListResult[ent.User]
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListUsersParams) ([]*ent.User, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListUsersParams) (*ent.ListResult[ent.User], error)); ok {
 		return returnFunc(context1, v)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListUsersParams) []*ent.User); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListUsersParams) *ent.ListResult[ent.User]); ok {
 		r0 = returnFunc(context1, v)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*ent.User)
+			r0 = ret.Get(0).(*ent.ListResult[ent.User])
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListUsersParams) error); ok {
@@ -3856,12 +3937,12 @@ func (_c *MockUserService_List_Call) Run(run func(context1 context.Context, v re
 	return _c
 }
 
-func (_c *MockUserService_List_Call) Return(users []*ent.User, err error) *MockUserService_List_Call {
-	_c.Call.Return(users, err)
+func (_c *MockUserService_List_Call) Return(listResult *ent.ListResult[ent.User], err error) *MockUserService_List_Call {
+	_c.Call.Return(listResult, err)
 	return _c
 }
 
-func (_c *MockUserService_List_Call) RunAndReturn(run func(context1 context.Context, v rez.ListUsersParams) ([]*ent.User, error)) *MockUserService_List_Call {
+func (_c *MockUserService_List_Call) RunAndReturn(run func(context1 context.Context, v rez.ListUsersParams) (*ent.ListResult[ent.User], error)) *MockUserService_List_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -5447,37 +5528,31 @@ func (_c *MockAlertService_GetAlertMetrics_Call) RunAndReturn(run func(context1 
 }
 
 // ListAlerts provides a mock function for the type MockAlertService
-func (_mock *MockAlertService) ListAlerts(context1 context.Context, listAlertsParams rez.ListAlertsParams) ([]*ent.Alert, int, error) {
+func (_mock *MockAlertService) ListAlerts(context1 context.Context, listAlertsParams rez.ListAlertsParams) (*ent.ListResult[ent.Alert], error) {
 	ret := _mock.Called(context1, listAlertsParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListAlerts")
 	}
 
-	var r0 []*ent.Alert
-	var r1 int
-	var r2 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAlertsParams) ([]*ent.Alert, int, error)); ok {
+	var r0 *ent.ListResult[ent.Alert]
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAlertsParams) (*ent.ListResult[ent.Alert], error)); ok {
 		return returnFunc(context1, listAlertsParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAlertsParams) []*ent.Alert); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAlertsParams) *ent.ListResult[ent.Alert]); ok {
 		r0 = returnFunc(context1, listAlertsParams)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*ent.Alert)
+			r0 = ret.Get(0).(*ent.ListResult[ent.Alert])
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAlertsParams) int); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAlertsParams) error); ok {
 		r1 = returnFunc(context1, listAlertsParams)
 	} else {
-		r1 = ret.Get(1).(int)
+		r1 = ret.Error(1)
 	}
-	if returnFunc, ok := ret.Get(2).(func(context.Context, rez.ListAlertsParams) error); ok {
-		r2 = returnFunc(context1, listAlertsParams)
-	} else {
-		r2 = ret.Error(2)
-	}
-	return r0, r1, r2
+	return r0, r1
 }
 
 // MockAlertService_ListAlerts_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAlerts'
@@ -5510,12 +5585,12 @@ func (_c *MockAlertService_ListAlerts_Call) Run(run func(context1 context.Contex
 	return _c
 }
 
-func (_c *MockAlertService_ListAlerts_Call) Return(alerts []*ent.Alert, n int, err error) *MockAlertService_ListAlerts_Call {
-	_c.Call.Return(alerts, n, err)
+func (_c *MockAlertService_ListAlerts_Call) Return(listResult *ent.ListResult[ent.Alert], err error) *MockAlertService_ListAlerts_Call {
+	_c.Call.Return(listResult, err)
 	return _c
 }
 
-func (_c *MockAlertService_ListAlerts_Call) RunAndReturn(run func(context1 context.Context, listAlertsParams rez.ListAlertsParams) ([]*ent.Alert, int, error)) *MockAlertService_ListAlerts_Call {
+func (_c *MockAlertService_ListAlerts_Call) RunAndReturn(run func(context1 context.Context, listAlertsParams rez.ListAlertsParams) (*ent.ListResult[ent.Alert], error)) *MockAlertService_ListAlerts_Call {
 	_c.Call.Return(run)
 	return _c
 }

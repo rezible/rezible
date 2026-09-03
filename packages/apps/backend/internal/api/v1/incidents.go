@@ -32,17 +32,12 @@ func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListInci
 	params := rez.ListIncidentsParams{
 		ListParams: req.ListParams(),
 	}
+	params.Search = req.Search
 	incs, listErr := h.incidents.ListIncidents(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list incidents", listErr)
 	}
-	resp.Body.Data = make([]oapi.Incident, len(incs.Data))
-	for i, inc := range incs.Data {
-		resp.Body.Data[i] = oapi.IncidentFromEnt(inc)
-	}
-	resp.Body.Pagination = oapi.ResponsePagination{
-		Total: incs.Count,
-	}
+	resp.Body = oapi.ConvertPaginatedResultBody(incs, oapi.IncidentFromEnt)
 
 	return &resp, nil
 }

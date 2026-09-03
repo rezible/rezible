@@ -1,25 +1,26 @@
 import { listUsersOptions, type ErrorModel } from "$lib/api";
+import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
 import { useUserSessionState } from "$lib/user-session.svelte";
-import { createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 
 export class MembersSettingsController {
 	session = useUserSessionState();
 	search = $state("");
 
-	private usersQueryOptions = $derived(
-		listUsersOptions({
-			query: {
-				search: this.search.trim() || undefined,
-				limit: 100,
-			},
-		})
-	);
-	private usersQuery = createQuery(() => ({
-		...this.usersQueryOptions,
-		enabled: this.session.isAdmin,
-	}));
+	paginatedUsersQuery = createPaginatedQuery({
+		queryOptions: (pagination) => ({
+			...listUsersOptions({
+				query: {
+					search: this.search.trim() || undefined,
+					...pagination,
+				},
+			}),
+			enabled: this.session.isAdmin,
+		}),
+		resetWhen: () => this.search,
+	});
 
+	private usersQuery = $derived(this.paginatedUsersQuery.query);
 	users = $derived(this.usersQuery.data?.data ?? []);
 	loading = $derived(this.usersQuery.isPending);
 	error = $derived(this.usersQuery.error as ErrorModel | null);

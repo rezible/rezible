@@ -76,11 +76,7 @@ func (h *aiHandler) ListAgentSessions(ctx context.Context, req *oapi.ListAgentSe
 	}
 
 	var resp oapi.ListAgentSessionsResponse
-	resp.Body.Data = make([]oapi.AgentSession, len(sessions.Data))
-	for i, session := range sessions.Data {
-		resp.Body.Data[i] = oapi.AgentSessionFromEnt(session)
-	}
-	resp.Body.Pagination.Total = sessions.Count
+	resp.Body = oapi.ConvertPaginatedResultBody(sessions, oapi.AgentSessionFromEnt)
 	return &resp, nil
 }
 
@@ -103,7 +99,7 @@ func (h *aiHandler) ListAgentMessages(ctx context.Context, req *oapi.ListAgentMe
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list agent session messages", listErr)
 	}
-	body, bodyErr := oapi.MaybeConvertListResultBody(msgs, oapi.AgentMessageFromEnt)
+	body, bodyErr := oapi.MaybeConvertPaginatedResultBody(msgs, oapi.AgentMessageFromEnt)
 	if bodyErr != nil {
 		return nil, oapi.Error(ctx, "convert agent session messages", bodyErr)
 	}
@@ -119,7 +115,7 @@ func (h *aiHandler) ListAgentArtifacts(ctx context.Context, req *oapi.ListAgentA
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list agent session artifacts", listErr)
 	}
-	body, bodyErr := oapi.MaybeConvertListResultBody(artifacts, oapi.AgentArtifactFromEnt)
+	body, bodyErr := oapi.MaybeConvertPaginatedResultBody(artifacts, oapi.AgentArtifactFromEnt)
 	if bodyErr != nil {
 		return nil, oapi.Error(ctx, "convert agent session artifacts", bodyErr)
 	}
@@ -135,7 +131,7 @@ func (h *aiHandler) ListAgentTurns(ctx context.Context, req *oapi.ListAgentTurns
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list agent turns", listErr)
 	}
-	body := oapi.ConvertListResultBody(turns, oapi.AgentTurnFromEnt)
+	body := oapi.ConvertPaginatedResultBody(turns, oapi.AgentTurnFromEnt)
 	return &oapi.ListAgentTurnsResponse{Body: body}, nil
 }
 

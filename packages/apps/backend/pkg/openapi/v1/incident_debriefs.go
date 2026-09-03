@@ -182,8 +182,8 @@ var ListIncidentDebriefMessages = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIncidentDebriefMessagesRequest ListIdRequest
-type ListIncidentDebriefMessagesResponse ListResponse[IncidentDebriefMessage]
+type ListIncidentDebriefMessagesRequest PaginatedIdRequest
+type ListIncidentDebriefMessagesResponse PaginatedResponse[IncidentDebriefMessage]
 
 var AddIncidentDebriefUserMessage = huma.Operation{
 	OperationID: "add-incident-debrief-user-message",
@@ -209,8 +209,8 @@ var ListIncidentDebriefSuggestions = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIncidentDebriefSuggestionsRequest ListIdRequest
-type ListIncidentDebriefSuggestionsResponse ListResponse[IncidentDebriefSuggestion]
+type ListIncidentDebriefSuggestionsRequest IdRequest
+type ListIncidentDebriefSuggestionsResponse CollectionResponse[IncidentDebriefSuggestion]
 
 var ListIncidentDebriefQuestions = huma.Operation{
 	OperationID: "list-debrief-questions",
@@ -221,8 +221,10 @@ var ListIncidentDebriefQuestions = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIncidentDebriefQuestionsRequest ListRequest
-type ListIncidentDebriefQuestionsResponse ListResponse[IncidentDebriefQuestion]
+type ListIncidentDebriefQuestionsRequest struct {
+	IncludeArchived bool `query:"archived" required:"false" nullable:"false" default:"false"`
+}
+type ListIncidentDebriefQuestionsResponse CollectionResponse[IncidentDebriefQuestion]
 
 var GetIncidentDebriefQuestion = huma.Operation{
 	OperationID: "get-debrief-question",

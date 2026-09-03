@@ -41,13 +41,7 @@ func (h *oncallShiftsHandler) ListOncallShifts(ctx context.Context, request *oap
 		return nil, oapi.Error(ctx, "failed to list oncall shifts", shiftsErr)
 	}
 
-	resp.Body.Data = make([]oapi.OncallShift, len(listRes.Data))
-	for i, s := range listRes.Data {
-		resp.Body.Data[i] = oapi.OncallShiftFromEnt(s)
-	}
-	resp.Body.Pagination = oapi.ResponsePagination{
-		Total: listRes.Count,
-	}
+	resp.Body = oapi.ConvertPaginatedResultBody(listRes, oapi.OncallShiftFromEnt)
 
 	return &resp, nil
 }

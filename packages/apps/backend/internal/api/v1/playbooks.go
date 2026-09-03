@@ -19,18 +19,15 @@ func newPlaybooksHandler(pb rez.PlaybookService) *playbooksHandler {
 func (h *playbooksHandler) ListPlaybooks(ctx context.Context, request *oapi.ListPlaybooksRequest) (*oapi.ListPlaybooksResponse, error) {
 	var resp oapi.ListPlaybooksResponse
 
-	playbooks, count, playbooksErr := h.playbooks.ListPlaybooks(ctx, rez.ListPlaybooksParams{})
+	listParams := request.ListParams()
+	listParams.Search = request.Search
+	params := rez.ListPlaybooksParams{ListParams: listParams, AlertID: request.AlertId}
+	playbooks, playbooksErr := h.playbooks.ListPlaybooks(ctx, params)
 	if playbooksErr != nil {
 		return nil, oapi.Error(ctx, "failed to list playbooks", playbooksErr)
 	}
 
-	resp.Body.Data = make([]oapi.Playbook, len(playbooks))
-	for i, pb := range playbooks {
-		resp.Body.Data[i] = oapi.PlaybookFromEnt(pb)
-	}
-	resp.Body.Pagination = oapi.ResponsePagination{
-		Total: count,
-	}
+	resp.Body = oapi.ConvertPaginatedResultBody(playbooks, oapi.PlaybookFromEnt)
 
 	return &resp, nil
 }

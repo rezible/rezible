@@ -99,7 +99,7 @@ export const listAgentSessionsInfiniteOptions = (options?: Options<ListAgentSess
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListAgentSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -182,7 +182,7 @@ export const listAgentArtifactsInfiniteOptions = (options: Options<ListAgentArti
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListAgentArtifactsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -230,7 +230,7 @@ export const listAgentMessagesInfiniteOptions = (options: Options<ListAgentMessa
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListAgentMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -278,7 +278,7 @@ export const listAgentTurnsInfiniteOptions = (options: Options<ListAgentTurnsDat
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListAgentTurnsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -395,7 +395,7 @@ export const listAlertsInfiniteOptions = (options?: Options<ListAlertsData>) => 
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -448,36 +448,6 @@ export const listAlertIncidentLinksOptions = (options: Options<ListAlertIncident
     queryKey: listAlertIncidentLinksQueryKey(options)
 });
 
-export const listAlertIncidentLinksInfiniteQueryKey = (options: Options<ListAlertIncidentLinksData>): QueryKey<Options<ListAlertIncidentLinksData>> => createQueryKey('listAlertIncidentLinks', options, true);
-
-/**
- * List Incident Links for an Alert
- */
-export const listAlertIncidentLinksInfiniteOptions = (options: Options<ListAlertIncidentLinksData>) => {
-    const opts = infiniteQueryOptions<ListAlertIncidentLinksResponse, ListAlertIncidentLinksError, InfiniteData<ListAlertIncidentLinksResponse>, QueryKey<Options<ListAlertIncidentLinksData>>, number | Pick<QueryKey<Options<ListAlertIncidentLinksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListAlertIncidentLinksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listAlertIncidentLinks({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listAlertIncidentLinksInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
-
 export const getAlertMetricsQueryKey = (options: Options<GetAlertMetricsData>) => createQueryKey('getAlertMetrics', options);
 
 /**
@@ -527,7 +497,7 @@ export const listUserNotificationsInfiniteOptions = (options?: Options<ListUserN
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -561,36 +531,6 @@ export const listDebriefQuestionsOptions = (options?: Options<ListDebriefQuestio
     },
     queryKey: listDebriefQuestionsQueryKey(options)
 });
-
-export const listDebriefQuestionsInfiniteQueryKey = (options?: Options<ListDebriefQuestionsData>): QueryKey<Options<ListDebriefQuestionsData>> => createQueryKey('listDebriefQuestions', options, true);
-
-/**
- * List Incident Debrief Questions
- */
-export const listDebriefQuestionsInfiniteOptions = (options?: Options<ListDebriefQuestionsData>) => {
-    const opts = infiniteQueryOptions<ListDebriefQuestionsResponse, ListDebriefQuestionsError, InfiniteData<ListDebriefQuestionsResponse>, QueryKey<Options<ListDebriefQuestionsData>>, number | Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listDebriefQuestions({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listDebriefQuestionsInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
 
 /**
  * Create an Incident Debrief Question
@@ -727,7 +667,7 @@ export const listEventAnnotationsInfiniteOptions = (options?: Options<ListEventA
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListEventAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -826,7 +766,7 @@ export const listEventsInfiniteOptions = (options?: Options<ListEventsData>) => 
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListEventsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -927,7 +867,7 @@ export const listDebriefMessagesInfiniteOptions = (options: Options<ListDebriefM
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -979,36 +919,6 @@ export const listDebriefSuggestionsOptions = (options: Options<ListDebriefSugges
     queryKey: listDebriefSuggestionsQueryKey(options)
 });
 
-export const listDebriefSuggestionsInfiniteQueryKey = (options: Options<ListDebriefSuggestionsData>): QueryKey<Options<ListDebriefSuggestionsData>> => createQueryKey('listDebriefSuggestions', options, true);
-
-/**
- * List Incident Debrief Suggestions
- */
-export const listDebriefSuggestionsInfiniteOptions = (options: Options<ListDebriefSuggestionsData>) => {
-    const opts = infiniteQueryOptions<ListDebriefSuggestionsResponse, ListDebriefSuggestionsError, InfiniteData<ListDebriefSuggestionsResponse>, QueryKey<Options<ListDebriefSuggestionsData>>, number | Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listDebriefSuggestions({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listDebriefSuggestionsInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
-
 export const getIncidentMetadataQueryKey = (options?: Options<GetIncidentMetadataData>) => createQueryKey('getIncidentMetadata', options);
 
 /**
@@ -1044,36 +954,6 @@ export const listIncidentFieldsOptions = (options?: Options<ListIncidentFieldsDa
     },
     queryKey: listIncidentFieldsQueryKey(options)
 });
-
-export const listIncidentFieldsInfiniteQueryKey = (options?: Options<ListIncidentFieldsData>): QueryKey<Options<ListIncidentFieldsData>> => createQueryKey('listIncidentFields', options, true);
-
-/**
- * List Incident Fields
- */
-export const listIncidentFieldsInfiniteOptions = (options?: Options<ListIncidentFieldsData>) => {
-    const opts = infiniteQueryOptions<ListIncidentFieldsResponse, ListIncidentFieldsError, InfiniteData<ListIncidentFieldsResponse>, QueryKey<Options<ListIncidentFieldsData>>, number | Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIncidentFields({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentFieldsInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
 
 /**
  * Create an Incident Field
@@ -1161,36 +1041,6 @@ export const listIncidentRolesOptions = (options?: Options<ListIncidentRolesData
     },
     queryKey: listIncidentRolesQueryKey(options)
 });
-
-export const listIncidentRolesInfiniteQueryKey = (options?: Options<ListIncidentRolesData>): QueryKey<Options<ListIncidentRolesData>> => createQueryKey('listIncidentRoles', options, true);
-
-/**
- * List Incident Roles
- */
-export const listIncidentRolesInfiniteOptions = (options?: Options<ListIncidentRolesData>) => {
-    const opts = infiniteQueryOptions<ListIncidentRolesResponse, ListIncidentRolesError, InfiniteData<ListIncidentRolesResponse>, QueryKey<Options<ListIncidentRolesData>>, number | Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIncidentRoles({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentRolesInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
 
 /**
  * Create an Incident Role
@@ -1292,7 +1142,7 @@ export const listIncidentSeveritiesInfiniteOptions = (options?: Options<ListInci
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -1409,7 +1259,7 @@ export const listIncidentTagsInfiniteOptions = (options?: Options<ListIncidentTa
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -1526,7 +1376,7 @@ export const listIncidentTypesInfiniteOptions = (options?: Options<ListIncidentT
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -1677,7 +1527,7 @@ export const listIncidentsInfiniteOptions = (options?: Options<ListIncidentsData
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -1834,36 +1684,6 @@ export const getInstallableIntegrationsOptions = (options?: Options<GetInstallab
     queryKey: getInstallableIntegrationsQueryKey(options)
 });
 
-export const getInstallableIntegrationsInfiniteQueryKey = (options?: Options<GetInstallableIntegrationsData>): QueryKey<Options<GetInstallableIntegrationsData>> => createQueryKey('getInstallableIntegrations', options, true);
-
-/**
- * Get Installable Integrations
- */
-export const getInstallableIntegrationsInfiniteOptions = (options?: Options<GetInstallableIntegrationsData>) => {
-    const opts = infiniteQueryOptions<GetInstallableIntegrationsResponse, GetInstallableIntegrationsError, InfiniteData<GetInstallableIntegrationsResponse>, QueryKey<Options<GetInstallableIntegrationsData>>, number | Pick<QueryKey<Options<GetInstallableIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<GetInstallableIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await getInstallableIntegrations({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getInstallableIntegrationsInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
-
 /**
  * Install an Integration
  */
@@ -1981,7 +1801,7 @@ export const listIntegrationInstallationsInfiniteOptions = (options?: Options<Li
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListIntegrationInstallationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -2116,7 +1936,7 @@ export const listKnowledgeGraphEntitiesInfiniteOptions = (options?: Options<List
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListKnowledgeGraphEntitiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -2182,7 +2002,7 @@ export const listKnowledgeGraphRelationshipsInfiniteOptions = (options?: Options
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListKnowledgeGraphRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -2252,36 +2072,6 @@ export const listMeetingSchedulesOptions = (options?: Options<ListMeetingSchedul
     },
     queryKey: listMeetingSchedulesQueryKey(options)
 });
-
-export const listMeetingSchedulesInfiniteQueryKey = (options?: Options<ListMeetingSchedulesData>): QueryKey<Options<ListMeetingSchedulesData>> => createQueryKey('listMeetingSchedules', options, true);
-
-/**
- * List Meeting Schedules
- */
-export const listMeetingSchedulesInfiniteOptions = (options?: Options<ListMeetingSchedulesData>) => {
-    const opts = infiniteQueryOptions<ListMeetingSchedulesResponse, ListMeetingSchedulesError, InfiniteData<ListMeetingSchedulesResponse>, QueryKey<Options<ListMeetingSchedulesData>>, number | Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listMeetingSchedules({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listMeetingSchedulesInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
 
 /**
  * Create a Meeting Schedule
@@ -2369,36 +2159,6 @@ export const listMeetingSessionsOptions = (options?: Options<ListMeetingSessions
     },
     queryKey: listMeetingSessionsQueryKey(options)
 });
-
-export const listMeetingSessionsInfiniteQueryKey = (options?: Options<ListMeetingSessionsData>): QueryKey<Options<ListMeetingSessionsData>> => createQueryKey('listMeetingSessions', options, true);
-
-/**
- * List Sessions
- */
-export const listMeetingSessionsInfiniteOptions = (options?: Options<ListMeetingSessionsData>) => {
-    const opts = infiniteQueryOptions<ListMeetingSessionsResponse, ListMeetingSessionsError, InfiniteData<ListMeetingSessionsResponse>, QueryKey<Options<ListMeetingSessionsData>>, number | Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listMeetingSessions({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listMeetingSessionsInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
 
 /**
  * Create a Meeting Session
@@ -2603,7 +2363,7 @@ export const listOncallRostersInfiniteOptions = (options?: Options<ListOncallRos
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -2669,7 +2429,7 @@ export const listOncallShiftsInfiniteOptions = (options?: Options<ListOncallShif
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -2930,7 +2690,7 @@ export const listPlaybooksInfiniteOptions = (options?: Options<ListPlaybooksData
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListPlaybooksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -3034,36 +2794,6 @@ export const getRetrospectiveCommentOptions = (options: Options<GetRetrospective
     queryKey: getRetrospectiveCommentQueryKey(options)
 });
 
-export const getRetrospectiveCommentInfiniteQueryKey = (options: Options<GetRetrospectiveCommentData>): QueryKey<Options<GetRetrospectiveCommentData>> => createQueryKey('getRetrospectiveComment', options, true);
-
-/**
- * Get a Retrospective Comment
- */
-export const getRetrospectiveCommentInfiniteOptions = (options: Options<GetRetrospectiveCommentData>) => {
-    const opts = infiniteQueryOptions<GetRetrospectiveCommentResponse, GetRetrospectiveCommentError, InfiniteData<GetRetrospectiveCommentResponse>, QueryKey<Options<GetRetrospectiveCommentData>>, number | Pick<QueryKey<Options<GetRetrospectiveCommentData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<GetRetrospectiveCommentData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await getRetrospectiveComment({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getRetrospectiveCommentInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
-
 /**
  * Update a Retrospective Comment
  */
@@ -3146,7 +2876,7 @@ export const listRetrospectivesInfiniteOptions = (options?: Options<ListRetrospe
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -3229,7 +2959,7 @@ export const listRetrospectiveCommentsInfiniteOptions = (options: Options<ListRe
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListRetrospectiveCommentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -3280,36 +3010,6 @@ export const listRetrospectiveReviewsOptions = (options?: Options<ListRetrospect
     },
     queryKey: listRetrospectiveReviewsQueryKey(options)
 });
-
-export const listRetrospectiveReviewsInfiniteQueryKey = (options?: Options<ListRetrospectiveReviewsData>): QueryKey<Options<ListRetrospectiveReviewsData>> => createQueryKey('listRetrospectiveReviews', options, true);
-
-/**
- * List Retrospective Reviews
- */
-export const listRetrospectiveReviewsInfiniteOptions = (options?: Options<ListRetrospectiveReviewsData>) => {
-    const opts = infiniteQueryOptions<ListRetrospectiveReviewsResponse, ListRetrospectiveReviewsError, InfiniteData<ListRetrospectiveReviewsResponse>, QueryKey<Options<ListRetrospectiveReviewsData>>, number | Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listRetrospectiveReviews({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listRetrospectiveReviewsInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
 
 /**
  * Create a Retrospective Review
@@ -3394,7 +3094,7 @@ export const listSystemAnalysisEdgesInfiniteOptions = (options: Options<ListSyst
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListSystemAnalysisEdgesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -3459,7 +3159,7 @@ export const listSystemAnalysisEntriesInfiniteOptions = (options: Options<ListSy
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListSystemAnalysisEntriesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -3524,7 +3224,7 @@ export const listSystemAnalysisNodesInfiniteOptions = (options: Options<ListSyst
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListSystemAnalysisNodesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -3742,7 +3442,7 @@ export const listTasksInfiniteOptions = (options?: Options<ListTasksData>) => {
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -3859,7 +3559,7 @@ export const listTeamMembershipsInfiniteOptions = (options?: Options<ListTeamMem
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListTeamMembershipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -3958,7 +3658,7 @@ export const listTeamsInfiniteOptions = (options?: Options<ListTeamsData>) => {
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
@@ -4145,7 +3845,7 @@ export const listUsersInfiniteOptions = (options?: Options<ListUsersData>) => {
             // @ts-ignore
             const page: Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
-                    offset: pageParam
+                    page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);

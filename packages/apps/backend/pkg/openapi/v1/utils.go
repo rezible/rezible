@@ -21,13 +21,10 @@ type Expandable[Attrs any] struct {
 
 // Requests
 type (
-	EmptyRequest struct{}
-	ListRequest  struct {
-		Limit           int    `query:"limit" maximum:"50" minimum:"1" default:"10" required:"false" nullable:"false"`
-		Offset          int    `query:"offset" minimum:"0" default:"0" required:"false" nullable:"false"`
-		Search          string `query:"search" required:"false" nullable:"false"`
-		IncludeArchived bool   `query:"archived" required:"false" nullable:"false" default:"false"`
-		// Sort   string  `query:"sort" enum:"asc,desc" default:"asc" required:"false" nullable:"false"`
+	EmptyRequest      struct{}
+	PaginationRequest struct {
+		Page     int `query:"page" minimum:"1" default:"1" required:"false" nullable:"false"`
+		PageSize int `query:"pageSize" maximum:"50" minimum:"1" default:"25" required:"false" nullable:"false"`
 	}
 	RequestWithBodyAttributes[T any] struct {
 		Body struct {
@@ -42,9 +39,9 @@ type (
 		Id uuid.UUID `path:"id"`
 		RequestWithBodyAttributes[T]
 	}
-	ListIdRequest struct {
+	PaginatedIdRequest struct {
 		Id uuid.UUID `path:"id"`
-		ListRequest
+		PaginationRequest
 	}
 
 	FlexibleIdRequest struct {
@@ -61,13 +58,10 @@ type (
 	}
 )
 
-func (l ListRequest) ListParams() ent.ListParams {
+func (p PaginationRequest) ListParams() ent.ListParams {
 	return ent.ListParams{
-		Search:          l.Search,
-		Offset:          l.Offset,
-		Limit:           l.Limit,
-		IncludeArchived: l.IncludeArchived,
-		Count:           true,
+		Page:     p.Page,
+		PageSize: p.PageSize,
 	}
 }
 
@@ -82,17 +76,23 @@ type (
 			Data T `json:"data"`
 		}
 	}
-	ListResponse[T any] struct {
-		Body ListResponseBody[T]
+	PaginatedResponse[T any] struct {
+		Body PaginatedResponseBody[T]
 	}
-	ListResponseBody[T any] struct {
-		Data       []T                `json:"data" nullable:"false"`
-		Pagination ResponsePagination `json:"pagination"`
+	PaginatedResponseBody[T any] struct {
+		Data       []T        `json:"data" nullable:"false"`
+		Pagination Pagination `json:"pagination"`
 	}
-	ResponsePagination struct {
-		Next     *string `json:"next,omitempty"`
-		Previous *string `json:"previous,omitempty"`
-		Total    int     `json:"total"`
+	Pagination struct {
+		Page     int `json:"page"`
+		PageSize int `json:"pageSize"`
+		Total    int `json:"total"`
+	}
+	CollectionResponse[T any] struct {
+		Body CollectionResponseBody[T]
+	}
+	CollectionResponseBody[T any] struct {
+		Data []T `json:"data" nullable:"false"`
 	}
 )
 
@@ -104,14 +104,19 @@ func ConvertSlice[D any, O any](data []D, fn func(D) O) []O {
 	return res
 }
 
-func ConvertListResultBody[T any, R any](result *ent.ListResult[R], fn func(*R) T) ListResponseBody[T] {
-	data := ConvertSlice(result.Data, fn)
-	pagination := ResponsePagination{
-		Next:     nil,
-		Previous: nil,
-		Total:    result.Count,
+func ConvertResultPagination[T any](r *ent.ListResult[T]) Pagination {
+	return Pagination{
+		Page:     r.Page,
+		PageSize: r.PageSize,
+		Total:    r.Total,
 	}
-	return ListResponseBody[T]{Data: data, Pagination: pagination}
+}
+
+func ConvertPaginatedResultBody[T any, R any](result *ent.ListResult[R], fn func(*R) T) PaginatedResponseBody[T] {
+	return PaginatedResponseBody[T]{
+		Data:       ConvertSlice(result.Data, fn),
+		Pagination: ConvertResultPagination(result),
+	}
 }
 
 func MaybeConvertSlice[D any, O any](data []D, fn func(D) (*O, error)) ([]O, error) {
@@ -126,17 +131,12 @@ func MaybeConvertSlice[D any, O any](data []D, fn func(D) (*O, error)) ([]O, err
 	return res, nil
 }
 
-func MaybeConvertListResultBody[T any, R any](result *ent.ListResult[R], fn func(*R) (*T, error)) (*ListResponseBody[T], error) {
+func MaybeConvertPaginatedResultBody[T any, R any](result *ent.ListResult[R], fn func(*R) (*T, error)) (*PaginatedResponseBody[T], error) {
 	data, dataErr := MaybeConvertSlice(result.Data, fn)
 	if dataErr != nil {
 		return nil, dataErr
 	}
-	pagination := ResponsePagination{
-		Next:     nil,
-		Previous: nil,
-		Total:    result.Count,
-	}
-	return &ListResponseBody[T]{Data: data, Pagination: pagination}, nil
+	return &PaginatedResponseBody[T]{Data: data, Pagination: ConvertResultPagination(result)}, nil
 }
 
 type CalendarDate string

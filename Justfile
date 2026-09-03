@@ -22,6 +22,4 @@ mod packages 'packages'
 
 @regenerate-and-apply-db-schema:
     just backend::gen-schema
-    just dev setup-workspace --force --no-migrate
-    just backend::create-initial-migration
-    just backend::apply-migrations
+    just dev setup-workspace --force

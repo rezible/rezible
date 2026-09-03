@@ -80,14 +80,14 @@ var ListEventAnnotations = huma.Operation{
 }
 
 type ListEventAnnotationsRequest struct {
-	ListRequest
+	PaginationRequest
 	From       time.Time `query:"from"`
 	To         time.Time `query:"to"`
 	UserIds    uuid.UUID `query:"userIds"`
 	ShiftIds   uuid.UUID `query:"shiftIds"`
 	WithEvents bool      `query:"withEvents"`
 }
-type ListEventAnnotationsResponse ListResponse[EventAnnotation]
+type ListEventAnnotationsResponse PaginatedResponse[EventAnnotation]
 
 var CreateEventAnnotation = huma.Operation{
 	OperationID: "create-event-annotation",

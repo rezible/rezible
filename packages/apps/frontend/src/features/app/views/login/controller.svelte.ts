@@ -1,4 +1,3 @@
-import z from "zod";
 import { goto } from "$app/navigation";
 import { useUserSessionState, ApiAuthErrorCategory } from "$src/lib/user-session.svelte";
 import type { ErrorModel } from "$lib/api";

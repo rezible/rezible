@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -21,23 +21,13 @@ func NewAlertService(db rez.Database) (*AlertService, error) {
 	return s, nil
 }
 
-func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsParams) ([]*ent.Alert, int, error) {
+func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsParams) (*ent.ListResult[ent.Alert], error) {
 	query := s.db.Client(ctx).Alert.Query().
-		Where()
-
-	qCtx := params.GetQueryContext(ctx)
-	count, queryErr := query.Count(qCtx)
-	if queryErr != nil {
-		return nil, 0, fmt.Errorf("count: %w", queryErr)
+		Order(alert.ByID(params.GetOrder()))
+	if search := strings.TrimSpace(params.Search); search != "" {
+		query.Where(alert.TitleContainsFold(search))
 	}
-	alerts := make([]*ent.Alert, 0)
-	if count > 0 {
-		alerts, queryErr = query.All(qCtx)
-	}
-	if queryErr != nil {
-		return nil, 0, fmt.Errorf("query: %w", queryErr)
-	}
-	return alerts, count, nil
+	return ent.DoListQuery[ent.Alert, *ent.AlertQuery](ctx, query, params.ListParams)
 }
 
 func (s *AlertService) GetAlert(ctx context.Context, id uuid.UUID) (*ent.Alert, error) {

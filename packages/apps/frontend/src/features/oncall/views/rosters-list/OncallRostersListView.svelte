@@ -1,35 +1,27 @@
 <script lang="ts">
-	import { createQuery } from "@tanstack/svelte-query";
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
-	import { listOncallRostersOptions, type ListOncallRostersData, type OncallRoster } from "$lib/api";
+	import type { OncallRoster } from "$lib/api";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
-	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
+	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 	import RosterCard from "$features/oncall/components/roster-card/RosterCard.svelte";
-	import { QueryPaginatorState } from "$lib/paginator.svelte";
+	import { initOncallRostersListController } from "./controller.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Oncall Rosters", href: "/rosters" }]);
+	setPageBreadcrumbs(() => [{ label: "Oncall Rosters", path: "/oncall/rosters" }]);
 
-	const paginator = new QueryPaginatorState();
-	let searchValue = $state<string>();
-	const params = $derived<ListOncallRostersData["query"]>({
-		search: searchValue,
-		...paginator.queryParams,
-	});
-	const query = createQuery(() => listOncallRostersOptions({ query: params }));
-	paginator.watchQuery(query);
+	const controller = initOncallRostersListController();
 </script>
 
 {#snippet filters()}
-	<SearchInput bind:value={searchValue} />
+	<SearchInput bind:value={controller.search} />
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox>
-		<LoadingQueryWrapper {query}>
+	<PaginatedQueryListBox {...controller.paginatedRostersQuery}>
+		<LoadingQueryWrapper query={controller.query}>
 			{#snippet view(rosters: OncallRoster[])}
-				{#each rosters as roster}
+				{#each rosters as roster (roster.id)}
 					<RosterCard {roster} />
 				{:else}
 					<div class="grid place-items-center flex-1">
@@ -38,5 +30,5 @@
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>
-	</PaginatedListBox>
+	</PaginatedQueryListBox>
 </FilterPage>

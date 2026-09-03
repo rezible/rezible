@@ -57,7 +57,7 @@
 		"@rezible/api-client-ts": "workspace:*",
 		"@rezible/tiptap-extensions": "workspace:*",
 		"@tailwindcss/vite": "^4.3.3",
-		"@tanstack/svelte-query": "^6.1.36",
+		"@tanstack/svelte-query": "^6.1.48",
 		"@tiptap/core": "catalog:documents",
 		"@tiptap/extension-bold": "catalog:documents",
 		"@tiptap/extension-bubble-menu": "catalog:documents",

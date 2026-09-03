@@ -146,10 +146,8 @@ var ListMeetingSchedules = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListMeetingSchedulesRequest struct {
-	ListRequest
-}
-type ListMeetingSchedulesResponse ListResponse[MeetingSchedule]
+type ListMeetingSchedulesRequest EmptyRequest
+type ListMeetingSchedulesResponse CollectionResponse[MeetingSchedule]
 
 var GetMeetingSchedule = huma.Operation{
 	OperationID: "get-meeting-schedule",
@@ -224,15 +222,8 @@ var ListMeetingSessions = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListMeetingSessionsRequest struct {
-	ListRequest
-	MeetingScheduleId uuid.UUID `query:"meetingScheduleId" required:"false"`
-	UserId            uuid.UUID `query:"userId" required:"false"`
-	TeamId            uuid.UUID `query:"teamId" required:"false"`
-	From              string    `query:"from" required:"false"`
-	To                string    `query:"to" required:"false"`
-}
-type ListMeetingSessionsResponse ListResponse[MeetingSession]
+type ListMeetingSessionsRequest EmptyRequest
+type ListMeetingSessionsResponse CollectionResponse[MeetingSession]
 
 var GetMeetingSession = huma.Operation{
 	OperationID: "get-meeting-session",

@@ -65,7 +65,7 @@ func (h *systemAnalysisHandler) ListSystemAnalysisNodes(ctx context.Context, req
 		return nil, oapi.Error(ctx, "list system analysis nodes", listErr)
 	}
 
-	body, bodyErr := oapi.MaybeConvertListResultBody(nodes, oapi.SystemAnalysisNodeFromEnt)
+	body, bodyErr := oapi.MaybeConvertPaginatedResultBody(nodes, oapi.SystemAnalysisNodeFromEnt)
 	if bodyErr != nil {
 		return nil, oapi.Error(ctx, "list system analysis nodes", bodyErr)
 	}
@@ -152,7 +152,7 @@ func (h *systemAnalysisHandler) ListSystemAnalysisEdges(ctx context.Context, req
 	}
 
 	var resp oapi.ListSystemAnalysisEdgesResponse
-	body, bodyErr := oapi.MaybeConvertListResultBody(edges, oapi.SystemAnalysisEdgeFromEnt)
+	body, bodyErr := oapi.MaybeConvertPaginatedResultBody(edges, oapi.SystemAnalysisEdgeFromEnt)
 	if bodyErr != nil {
 		return nil, oapi.Error(ctx, "list system analysis edges", bodyErr)
 	}
@@ -233,7 +233,7 @@ func (h *systemAnalysisHandler) ListSystemAnalysisEntries(ctx context.Context, r
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list system analysis entries", listErr)
 	}
-	resp.Body = oapi.ConvertListResultBody(entries, oapi.SystemAnalysisEntryFromEnt)
+	resp.Body = oapi.ConvertPaginatedResultBody(entries, oapi.SystemAnalysisEntryFromEnt)
 	return &resp, nil
 }
 

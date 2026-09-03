@@ -53,8 +53,13 @@ func (s *IntegrationsService) GetAvailable() []rez.IntegrationPackage {
 	return s.reg.GetAvailable()
 }
 
-func (s *IntegrationsService) ListInstalled(ctx context.Context, params rez.ListIntegrationsParams) ([]rez.InstalledIntegration, error) {
-	intgs, listErr := s.listIntegrations(ctx, params)
+func (s *IntegrationsService) ListInstalled(ctx context.Context, params rez.ListIntegrationsParams) (*ent.ListResult[ent.Integration], error) {
+	query := s.listQuery(ctx, params).Order(in.ByID(params.GetOrder()))
+	return ent.DoListQuery[ent.Integration, *ent.IntegrationQuery](ctx, query, params.ListParams)
+}
+
+func (s *IntegrationsService) ListAllInstalled(ctx context.Context, predicates ...predicate.Integration) ([]rez.InstalledIntegration, error) {
+	intgs, listErr := s.listIntegrations(ctx, rez.ListIntegrationsParams{Predicates: predicates})
 	if listErr != nil {
 		return nil, fmt.Errorf("query: %w", listErr)
 	}
@@ -70,7 +75,7 @@ func (s *IntegrationsService) ListInstalled(ctx context.Context, params rez.List
 }
 
 func (s *IntegrationsService) GetAvailableAgentTools(ctx context.Context, params rez.GetAvailableAgentToolsParams) ([]ai.Tool, error) {
-	installed, listErr := s.ListInstalled(ctx, rez.ListIntegrationsParams{})
+	installed, listErr := s.ListAllInstalled(ctx)
 	if listErr != nil {
 		return nil, fmt.Errorf("list installed: %w", listErr)
 	}
@@ -548,10 +553,10 @@ func (s *IntegrationsService) RequestIntegrationEventSync(ctx context.Context, i
 	return insertErr
 }
 
-func (s *IntegrationsService) ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error) {
+func (s *IntegrationsService) ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) ([]*ent.IntegrationEventSyncRun, error) {
 	query := s.db.Client(ctx).IntegrationEventSyncRun.Query().
 		Where(iesr.IntegrationID(id)).
-		Order(iesr.ByStartedAt(sql.OrderDesc())).
+		Order(iesr.ByStartedAt(sql.OrderDesc()), iesr.ByID(sql.OrderDesc())).
 		Limit(5)
-	return ent.DoListQuery[ent.IntegrationEventSyncRun, *ent.IntegrationEventSyncRunQuery](ctx, query, ent.ListParams{Limit: 5})
+	return query.All(ctx)
 }
