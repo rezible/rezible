@@ -116,14 +116,14 @@ func shutdownInjector(ctx context.Context, i do.Injector) error {
 func getServiceLifecyclesFor[Entrypoint rez.LifecycleService](i do.Injector) (serviceLifecycles, error) {
 	b := newServiceBootstrapper(i)
 
-	intgReg := do.MustInvoke[rez.IntegrationPackageRegistry](i)
+	intgReg := do.MustInvoke[rez.IntegrationRegistry](i)
 	eventProcessors := do.MustInvoke[rez.ProviderEventProcessorRegistry](i)
-	b.addSetupHook("integrationPackages", setupHook[rez.IntegrationPackage]{
+	b.addSetupHook("integrationPackages", setupHook[rez.IntegrationDefinition]{
 		matchFn: func(d do.ServiceDescription) bool {
 			return strings.Contains(d.Service, "internal/integrations")
 		},
-		serviceFn: func(pkg rez.IntegrationPackage) error {
-			if regErr := intgReg.RegisterPackage(pkg); regErr != nil {
+		serviceFn: func(pkg rez.IntegrationDefinition) error {
+			if regErr := intgReg.Register(pkg); regErr != nil {
 				return fmt.Errorf("failed to register integration package: %w", regErr)
 			}
 			if procPkg, isEventProcessor := pkg.(rez.ProviderEventProcessor); isEventProcessor {

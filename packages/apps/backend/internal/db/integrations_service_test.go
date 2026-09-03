@@ -24,15 +24,15 @@ func TestIntegrationsServiceSuite(t *testing.T) {
 	suite.Run(t, &IntegrationsServiceSuite{Suite: test.NewSuite()})
 }
 
-func (s *IntegrationsServiceSuite) newRegistry(pkgs ...rez.IntegrationPackage) rez.IntegrationPackageRegistry {
-	reg := integrations.NewPackageRegistry()
+func (s *IntegrationsServiceSuite) newRegistry(pkgs ...rez.IntegrationDefinition) rez.IntegrationRegistry {
+	reg := integrations.NewRegistry()
 	for _, pkg := range pkgs {
-		s.Require().NoError(reg.RegisterPackage(pkg))
+		s.Require().NoError(reg.Register(pkg))
 	}
 	return reg
 }
 
-func (s *IntegrationsServiceSuite) newService(tdb rez.Database, reg rez.IntegrationPackageRegistry) *IntegrationsService {
+func (s *IntegrationsServiceSuite) newService(tdb rez.Database, reg rez.IntegrationRegistry) *IntegrationsService {
 	jobs := mocks.NewMockJobService(s.T())
 	jobs.EXPECT().Insert(mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, nil)
@@ -43,7 +43,7 @@ func (s *IntegrationsServiceSuite) newService(tdb rez.Database, reg rez.Integrat
 	return svc
 }
 
-func (s *IntegrationsServiceSuite) installTestIntegration(ctx context.Context, svc *IntegrationsService, i rez.IntegrationPackage, ref string) rez.InstalledIntegration {
+func (s *IntegrationsServiceSuite) installTestIntegration(ctx context.Context, svc *IntegrationsService, i rez.IntegrationDefinition, ref string) rez.InstalledIntegration {
 	target := rez.IntegrationInstallationTarget{
 		IntegrationName: i.Name(),
 		DisplayName:     i.DisplayName(),

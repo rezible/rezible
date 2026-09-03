@@ -1788,36 +1788,6 @@ export const listIntegrationInstallationsOptions = (options?: Options<ListIntegr
     queryKey: listIntegrationInstallationsQueryKey(options)
 });
 
-export const listIntegrationInstallationsInfiniteQueryKey = (options?: Options<ListIntegrationInstallationsData>): QueryKey<Options<ListIntegrationInstallationsData>> => createQueryKey('listIntegrationInstallations', options, true);
-
-/**
- * List Installed Integrations
- */
-export const listIntegrationInstallationsInfiniteOptions = (options?: Options<ListIntegrationInstallationsData>) => {
-    const opts = infiniteQueryOptions<ListIntegrationInstallationsResponse, ListIntegrationInstallationsError, InfiniteData<ListIntegrationInstallationsResponse>, QueryKey<Options<ListIntegrationInstallationsData>>, number | Pick<QueryKey<Options<ListIntegrationInstallationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIntegrationInstallationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    page: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIntegrationInstallations({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIntegrationInstallationsInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
-
 /**
  * Delete an Integration
  */

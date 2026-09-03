@@ -51,25 +51,11 @@ func (h *integrationsHandler) InstallIntegration(ctx context.Context, req *oapi.
 func (h *integrationsHandler) ListIntegrationInstallations(ctx context.Context, req *oapi.ListIntegrationInstallationsRequest) (*oapi.ListIntegrationInstallationsResponse, error) {
 	var resp oapi.ListIntegrationInstallationsResponse
 
-	// TODO: don't paginate this
-	params := rez.ListIntegrationsParams{ListParams: req.ListParams()}
-	results, listErr := h.integrations.ListInstalled(ctx, params)
+	results, listErr := h.integrations.ListAllInstalled(ctx)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "failed to list integrations", listErr)
 	}
-
-	body, bodyErr := oapi.MaybeConvertPaginatedResultBody(results, func(intg *ent.Integration) (*oapi.IntegrationInstallation, error) {
-		installed, installedErr := h.integrations.AsInstalledIntegration(intg)
-		if installedErr != nil {
-			return nil, installedErr
-		}
-		converted := oapi.IntegrationInstallationFromRez(installed)
-		return &converted, nil
-	})
-	if bodyErr != nil {
-		return nil, oapi.Error(ctx, "failed to convert integration", bodyErr)
-	}
-	resp.Body = *body
+	resp.Body.Data = oapi.ConvertSlice(results, oapi.IntegrationInstallationFromRez)
 
 	return &resp, nil
 }

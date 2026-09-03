@@ -105,7 +105,7 @@ type (
 	}
 )
 
-func InstallableIntegrationFromPackage(p rez.IntegrationPackage) InstallableIntegration {
+func InstallableIntegrationFromPackage(p rez.IntegrationDefinition) InstallableIntegration {
 	return InstallableIntegration{
 		Name:         p.Name(),
 		DisplayName:  p.DisplayName(),
@@ -265,10 +265,8 @@ var ListIntegrationInstallations = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListIntegrationInstallationsRequest struct {
-	PaginationRequest
-}
-type ListIntegrationInstallationsResponse PaginatedResponse[IntegrationInstallation]
+type ListIntegrationInstallationsRequest EmptyRequest
+type ListIntegrationInstallationsResponse ItemResponse[[]IntegrationInstallation]
 
 var GetIntegrationInstallation = huma.Operation{
 	OperationID: "get-integration-installation",

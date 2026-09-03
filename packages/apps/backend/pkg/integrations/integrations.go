@@ -18,19 +18,19 @@ func GetSourceQueryCursor(cursors map[string]string, source string) (string, boo
 	return sc, ok || len(cursors) == 0
 }
 
-type PackageRegistry struct {
+type Registry struct {
 	pkgsMu            sync.RWMutex
-	nameMap           map[string]rez.IntegrationPackage
-	availablePackages []rez.IntegrationPackage
+	nameMap           map[string]rez.IntegrationDefinition
+	availablePackages []rez.IntegrationDefinition
 }
 
-func NewPackageRegistry() *PackageRegistry {
-	return &PackageRegistry{
-		nameMap: make(map[string]rez.IntegrationPackage),
+func NewRegistry() *Registry {
+	return &Registry{
+		nameMap: make(map[string]rez.IntegrationDefinition),
 	}
 }
 
-func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
+func (r *Registry) Register(pkg rez.IntegrationDefinition) error {
 	r.pkgsMu.Lock()
 	defer r.pkgsMu.Unlock()
 
@@ -49,11 +49,11 @@ func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
 	return nil
 }
 
-func (r *PackageRegistry) GetAvailable() []rez.IntegrationPackage {
+func (r *Registry) GetAvailable() []rez.IntegrationDefinition {
 	return r.availablePackages
 }
 
-func (r *PackageRegistry) GetPackage(name string) (rez.IntegrationPackage, error) {
+func (r *Registry) Get(name string) (rez.IntegrationDefinition, error) {
 	p, valid := r.nameMap[name]
 	if !valid {
 		return nil, fmt.Errorf("unknown integration: %s", name)
@@ -65,7 +65,7 @@ type IntegrationWithWebhookHandler interface {
 	WebhookHandler() http.Handler
 }
 
-func (r *PackageRegistry) GetAvailableWebhookHandlers() map[string]http.Handler {
+func (r *Registry) GetAvailableWebhookHandlers() map[string]http.Handler {
 	whs := make(map[string]http.Handler)
 	for _, pkg := range r.availablePackages {
 		if whPkg, hasWebhook := pkg.(IntegrationWithWebhookHandler); hasWebhook {
@@ -79,7 +79,7 @@ type IntegrationWithProviderEventQuerier interface {
 	MakeProviderEventQuerier(*ent.Integration) (rez.ProviderEventQuerier, error)
 }
 
-func (r *PackageRegistry) GetProviderEventQuerier(ii rez.InstalledIntegration) (rez.ProviderEventQuerier, error) {
+func (r *Registry) GetProviderEventQuerier(ii rez.InstalledIntegration) (rez.ProviderEventQuerier, error) {
 	intg := ii.Integration()
 	pkg, valid := r.nameMap[intg.IntegrationName]
 	if !valid {
@@ -91,8 +91,8 @@ func (r *PackageRegistry) GetProviderEventQuerier(ii rez.InstalledIntegration) (
 	return nil, fmt.Errorf("integration does not provide an event querier")
 }
 
-func (r *PackageRegistry) GetOAuth2FlowIntegration(name string) (rez.OAuth2FlowIntegration, error) {
-	ip, ipErr := r.GetPackage(name)
+func (r *Registry) GetOAuth2FlowIntegration(name string) (rez.OAuth2FlowIntegration, error) {
+	ip, ipErr := r.Get(name)
 	if ipErr != nil {
 		return nil, fmt.Errorf("invalid integration %s: %w", name, ipErr)
 	}
@@ -110,16 +110,16 @@ type IntegrationWithAgentToolProvider interface {
 	GetAvailableAgentTools(context.Context, []rez.InstalledIntegration, rez.GetAvailableAgentToolsParams) ([]ai.Tool, error)
 }
 
-func (r *PackageRegistry) GetAvailableAgentTools(ctx context.Context, intgs []rez.InstalledIntegration, params rez.GetAvailableAgentToolsParams) (map[rez.IntegrationPackage][]ai.Tool, error) {
+func (r *Registry) GetAvailableAgentTools(ctx context.Context, intgs []rez.InstalledIntegration, params rez.GetAvailableAgentToolsParams) (map[rez.IntegrationDefinition][]ai.Tool, error) {
 	packageMap := make(map[string][]rez.InstalledIntegration)
 	for _, ii := range intgs {
 		pkgName := ii.Integration().IntegrationName
 		packageMap[pkgName] = append(packageMap[pkgName], ii)
 	}
 
-	pkgToolsMap := make(map[rez.IntegrationPackage][]ai.Tool)
+	pkgToolsMap := make(map[rez.IntegrationDefinition][]ai.Tool)
 	for pkgName, installations := range packageMap {
-		pkg, pkgErr := r.GetPackage(pkgName)
+		pkg, pkgErr := r.Get(pkgName)
 		if pkgErr != nil {
 			slog.ErrorContext(ctx, "failed to get integration package",
 				"integration", pkgName,

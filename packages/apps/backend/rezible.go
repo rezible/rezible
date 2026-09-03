@@ -306,7 +306,7 @@ type (
 )
 
 type (
-	IntegrationPackage interface {
+	IntegrationDefinition interface {
 		Name() string
 		Provider() string
 		DisplayName() string
@@ -320,15 +320,15 @@ type (
 		GetInstalledIntegration(*ent.Integration) (InstalledIntegration, error)
 	}
 
+	IntegrationInstallationConfig interface {
+		Encode() ([]byte, error)
+		ExternalRef() string
+	}
+
 	InstalledIntegration interface {
 		Integration() *ent.Integration
 		Config() IntegrationInstallationConfig
 		Capabilities() []string
-	}
-
-	IntegrationInstallationConfig interface {
-		Encode() ([]byte, error)
-		ExternalRef() string
 	}
 
 	OAuth2FlowIntegration interface {
@@ -336,14 +336,14 @@ type (
 		RetrieveInstallationTargetOptions(context.Context, *oauth2.Token) ([]IntegrationInstallationTarget, error)
 	}
 
-	IntegrationPackageRegistry interface {
-		RegisterPackage(IntegrationPackage) error
-		GetAvailable() []IntegrationPackage
+	IntegrationRegistry interface {
+		Register(IntegrationDefinition) error
+		GetAvailable() []IntegrationDefinition
+		Get(string) (IntegrationDefinition, error)
 		GetAvailableWebhookHandlers() map[string]http.Handler
-		GetPackage(string) (IntegrationPackage, error)
 		GetOAuth2FlowIntegration(string) (OAuth2FlowIntegration, error)
 		GetProviderEventQuerier(InstalledIntegration) (ProviderEventQuerier, error)
-		GetAvailableAgentTools(context.Context, []InstalledIntegration, GetAvailableAgentToolsParams) (map[IntegrationPackage][]ai.Tool, error)
+		GetAvailableAgentTools(context.Context, []InstalledIntegration, GetAvailableAgentToolsParams) (map[IntegrationDefinition][]ai.Tool, error)
 	}
 
 	ListIntegrationsParams struct {
@@ -374,14 +374,13 @@ type (
 	}
 
 	IntegrationService interface {
-		GetAvailable() []IntegrationPackage
+		GetAvailable() []IntegrationDefinition
 
 		InstallNew(context.Context, string, []byte) (InstalledIntegration, error)
 		ListUserInstallationTargets(ctx context.Context) ([]IntegrationInstallationTarget, error)
 		InstallFromTarget(context.Context, IntegrationInstallationTarget) (InstalledIntegration, error)
 
 		LookupInstallation(context.Context, predicate.Integration) (*ent.Integration, error)
-		ListInstalled(ctx context.Context, params ListIntegrationsParams) (*ent.ListResult[ent.Integration], error)
 		ListAllInstalled(ctx context.Context, predicates ...predicate.Integration) ([]InstalledIntegration, error)
 		UpdateInstallation(ctx context.Context, id uuid.UUID, setFn func(*ent.IntegrationMutation)) (InstalledIntegration, error)
 		DeleteInstalled(ctx context.Context, id uuid.UUID) error

@@ -1644,6 +1644,14 @@ export type KnowledgeGraphView = {
     truncated: boolean;
 };
 
+export type ListIntegrationInstallationsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IntegrationInstallation>;
+};
+
 export type MeetingAttendees = {
     private: boolean;
     teams: Array<string>;
@@ -1924,15 +1932,6 @@ export type PaginatedResponseBodyIncidentType = {
      */
     readonly $schema?: string;
     data: Array<IncidentType>;
-    pagination: Pagination;
-};
-
-export type PaginatedResponseBodyIntegrationInstallation = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IntegrationInstallation>;
     pagination: Pagination;
 };
 
@@ -6677,10 +6676,7 @@ export type ListIntegrationInstallTargetsResponse = ListIntegrationInstallTarget
 export type ListIntegrationInstallationsData = {
     body?: never;
     path?: never;
-    query?: {
-        page?: number;
-        pageSize?: number;
-    };
+    query?: never;
     url: '/integrations/installations';
 };
 
@@ -6717,7 +6713,7 @@ export type ListIntegrationInstallationsResponses = {
     /**
      * OK
      */
-    200: PaginatedResponseBodyIntegrationInstallation;
+    200: ListIntegrationInstallationsResponseBody;
 };
 
 export type ListIntegrationInstallationsResponse = ListIntegrationInstallationsResponses[keyof ListIntegrationInstallationsResponses];

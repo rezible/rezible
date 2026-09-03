@@ -2736,19 +2736,19 @@ func (_c *MockIntegrationService_DeleteInstalled_Call) RunAndReturn(run func(ctx
 }
 
 // GetAvailable provides a mock function for the type MockIntegrationService
-func (_mock *MockIntegrationService) GetAvailable() []rez.IntegrationPackage {
+func (_mock *MockIntegrationService) GetAvailable() []rez.IntegrationDefinition {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAvailable")
 	}
 
-	var r0 []rez.IntegrationPackage
-	if returnFunc, ok := ret.Get(0).(func() []rez.IntegrationPackage); ok {
+	var r0 []rez.IntegrationDefinition
+	if returnFunc, ok := ret.Get(0).(func() []rez.IntegrationDefinition); ok {
 		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]rez.IntegrationPackage)
+			r0 = ret.Get(0).([]rez.IntegrationDefinition)
 		}
 	}
 	return r0
@@ -2771,12 +2771,12 @@ func (_c *MockIntegrationService_GetAvailable_Call) Run(run func()) *MockIntegra
 	return _c
 }
 
-func (_c *MockIntegrationService_GetAvailable_Call) Return(integrationPackages []rez.IntegrationPackage) *MockIntegrationService_GetAvailable_Call {
-	_c.Call.Return(integrationPackages)
+func (_c *MockIntegrationService_GetAvailable_Call) Return(integrationDefinitions []rez.IntegrationDefinition) *MockIntegrationService_GetAvailable_Call {
+	_c.Call.Return(integrationDefinitions)
 	return _c
 }
 
-func (_c *MockIntegrationService_GetAvailable_Call) RunAndReturn(run func() []rez.IntegrationPackage) *MockIntegrationService_GetAvailable_Call {
+func (_c *MockIntegrationService_GetAvailable_Call) RunAndReturn(run func() []rez.IntegrationDefinition) *MockIntegrationService_GetAvailable_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -3068,74 +3068,6 @@ func (_c *MockIntegrationService_ListAllInstalled_Call) Return(installedIntegrat
 }
 
 func (_c *MockIntegrationService_ListAllInstalled_Call) RunAndReturn(run func(ctx context.Context, predicates ...predicate.Integration) ([]rez.InstalledIntegration, error)) *MockIntegrationService_ListAllInstalled_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// ListInstalled provides a mock function for the type MockIntegrationService
-func (_mock *MockIntegrationService) ListInstalled(ctx context.Context, params rez.ListIntegrationsParams) (*ent.ListResult[ent.Integration], error) {
-	ret := _mock.Called(ctx, params)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ListInstalled")
-	}
-
-	var r0 *ent.ListResult[ent.Integration]
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListIntegrationsParams) (*ent.ListResult[ent.Integration], error)); ok {
-		return returnFunc(ctx, params)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListIntegrationsParams) *ent.ListResult[ent.Integration]); ok {
-		r0 = returnFunc(ctx, params)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.ListResult[ent.Integration])
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListIntegrationsParams) error); ok {
-		r1 = returnFunc(ctx, params)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockIntegrationService_ListInstalled_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListInstalled'
-type MockIntegrationService_ListInstalled_Call struct {
-	*mock.Call
-}
-
-// ListInstalled is a helper method to define mock.On call
-//   - ctx context.Context
-//   - params rez.ListIntegrationsParams
-func (_e *MockIntegrationService_Expecter) ListInstalled(ctx interface{}, params interface{}) *MockIntegrationService_ListInstalled_Call {
-	return &MockIntegrationService_ListInstalled_Call{Call: _e.mock.On("ListInstalled", ctx, params)}
-}
-
-func (_c *MockIntegrationService_ListInstalled_Call) Run(run func(ctx context.Context, params rez.ListIntegrationsParams)) *MockIntegrationService_ListInstalled_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 rez.ListIntegrationsParams
-		if args[1] != nil {
-			arg1 = args[1].(rez.ListIntegrationsParams)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockIntegrationService_ListInstalled_Call) Return(listResult *ent.ListResult[ent.Integration], err error) *MockIntegrationService_ListInstalled_Call {
-	_c.Call.Return(listResult, err)
-	return _c
-}
-
-func (_c *MockIntegrationService_ListInstalled_Call) RunAndReturn(run func(ctx context.Context, params rez.ListIntegrationsParams) (*ent.ListResult[ent.Integration], error)) *MockIntegrationService_ListInstalled_Call {
 	_c.Call.Return(run)
 	return _c
 }

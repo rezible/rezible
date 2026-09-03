@@ -32,15 +32,13 @@ func (i *Integration) registerMessageHandlers() error {
 
 func (h *eventHandler) withInstallation(ctx context.Context, fn func(*InstalledIntegration) error) error {
 	intgs, lookupErr := h.integrations.ListAllInstalled(ctx, integration.IntegrationName(integrationName))
-	if lookupErr != nil {
-		if ent.IsNotFound(lookupErr) {
-			return nil
-		}
+	if lookupErr != nil && !ent.IsNotFound(lookupErr) {
 		return fmt.Errorf("error looking up Integration: %w", lookupErr)
 	}
 	if len(intgs) == 0 {
 		return nil
-	} else if len(intgs) > 1 {
+	}
+	if len(intgs) > 1 {
 		return fmt.Errorf("found multiple Integrations with name %q", integrationName)
 	}
 	ii, ok := intgs[0].(*InstalledIntegration)

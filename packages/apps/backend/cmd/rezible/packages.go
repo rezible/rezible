@@ -65,8 +65,8 @@ func makeConfigProvider(ctx context.Context) Provider {
 }
 
 var provideRegistries = do.Package(
-	do.Lazy(func(i do.Injector) (rez.IntegrationPackageRegistry, error) {
-		return integrations.NewPackageRegistry(), nil
+	do.Lazy(func(i do.Injector) (rez.IntegrationRegistry, error) {
+		return integrations.NewRegistry(), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.ProviderEventProcessorRegistry, error) {
@@ -284,7 +284,7 @@ var provideDatabaseServices = do.Package(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.IntegrationPackageRegistry](i),
+			do.MustInvoke[rez.IntegrationRegistry](i),
 		)
 	}),
 
@@ -437,7 +437,7 @@ var provideHttpServer = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) (http.WebhookHandlers, error) {
-		reg := do.MustInvoke[rez.IntegrationPackageRegistry](i)
+		reg := do.MustInvoke[rez.IntegrationRegistry](i)
 		return reg.GetAvailableWebhookHandlers(), nil
 	}),
 
@@ -512,7 +512,7 @@ var provideJobsDefinition = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.IntegrationPackageRegistry](i),
+			do.MustInvoke[rez.IntegrationRegistry](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
 		)
 	}),

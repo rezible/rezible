@@ -22,14 +22,14 @@ type IntegrationEventsSyncWorker struct {
 	db       rez.Database
 	msgs     rez.MessageService
 	intgs    rez.IntegrationService
-	registry rez.IntegrationPackageRegistry
+	registry rez.IntegrationRegistry
 	pipeline rez.ProviderEventPipelineService
 
 	logger  *slog.Logger
 	timeout time.Duration
 }
 
-func NewIntegrationEventsSyncWorker(cfg rez.Config, tel rez.TelemetryService, db rez.Database, msgs rez.MessageService, intgs rez.IntegrationService, reg rez.IntegrationPackageRegistry, pipeline rez.ProviderEventPipelineService) (*IntegrationEventsSyncWorker, error) {
+func NewIntegrationEventsSyncWorker(cfg rez.Config, tel rez.TelemetryService, db rez.Database, msgs rez.MessageService, intgs rez.IntegrationService, reg rez.IntegrationRegistry, pipeline rez.ProviderEventPipelineService) (*IntegrationEventsSyncWorker, error) {
 	w := &IntegrationEventsSyncWorker{
 		db:       db,
 		msgs:     msgs,

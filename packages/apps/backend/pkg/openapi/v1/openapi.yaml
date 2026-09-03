@@ -3538,6 +3538,23 @@ components:
         - relationships
         - truncated
       type: object
+    ListIntegrationInstallationsResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListIntegrationInstallationsResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IntegrationInstallation"
+          type: array
+      required:
+        - data
+      type: object
     MeetingAttendees:
       additionalProperties: false
       properties:
@@ -4235,26 +4252,6 @@ components:
         data:
           items:
             $ref: "#/components/schemas/IncidentType"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/Pagination"
-      required:
-        - data
-        - pagination
-      type: object
-    PaginatedResponseBodyIntegrationInstallation:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/PaginatedResponseBodyIntegrationInstallation.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IntegrationInstallation"
           type: array
         pagination:
           $ref: "#/components/schemas/Pagination"
@@ -11057,30 +11054,12 @@ paths:
   /integrations/installations:
     get:
       operationId: list-integration-installations
-      parameters:
-        - explode: false
-          in: query
-          name: page
-          schema:
-            default: 1
-            format: int64
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: pageSize
-          schema:
-            default: 25
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedResponseBodyIntegrationInstallation"
+                $ref: "#/components/schemas/ListIntegrationInstallationsResponseBody"
           description: OK
         "400":
           content:

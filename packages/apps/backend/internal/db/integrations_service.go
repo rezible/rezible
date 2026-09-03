@@ -28,12 +28,12 @@ import (
 type IntegrationsService struct {
 	db   rez.Database
 	jobs rez.JobService
-	reg  rez.IntegrationPackageRegistry
+	reg  rez.IntegrationRegistry
 
 	oauthRedirectUrlBase *url.URL
 }
 
-func NewIntegrationsService(cfg rez.Config, db rez.Database, jobSvc rez.JobService, reg rez.IntegrationPackageRegistry) (*IntegrationsService, error) {
+func NewIntegrationsService(cfg rez.Config, db rez.Database, jobSvc rez.JobService, reg rez.IntegrationRegistry) (*IntegrationsService, error) {
 	redirectUrl, redirectUrlErr := cfg.App.GetFrontendUrl("/connect")
 	if redirectUrlErr != nil {
 		return nil, fmt.Errorf("invalid oauth callback url: %w", redirectUrlErr)
@@ -49,7 +49,7 @@ func NewIntegrationsService(cfg rez.Config, db rez.Database, jobSvc rez.JobServi
 	return s, nil
 }
 
-func (s *IntegrationsService) GetAvailable() []rez.IntegrationPackage {
+func (s *IntegrationsService) GetAvailable() []rez.IntegrationDefinition {
 	return s.reg.GetAvailable()
 }
 
@@ -114,7 +114,7 @@ func (s *IntegrationsService) LookupInstallation(ctx context.Context, pred predi
 }
 
 func (s *IntegrationsService) InstallNew(ctx context.Context, name string, rawCfg []byte) (rez.InstalledIntegration, error) {
-	p, pErr := s.reg.GetPackage(name)
+	p, pErr := s.reg.Get(name)
 	if pErr != nil {
 		return nil, fmt.Errorf("get integration package %s: %w", name, pErr)
 	}
@@ -130,7 +130,7 @@ func (s *IntegrationsService) InstallNew(ctx context.Context, name string, rawCf
 }
 
 func (s *IntegrationsService) InstallFromTarget(ctx context.Context, target rez.IntegrationInstallationTarget) (rez.InstalledIntegration, error) {
-	p, pErr := s.reg.GetPackage(target.IntegrationName)
+	p, pErr := s.reg.Get(target.IntegrationName)
 	if pErr != nil {
 		return nil, fmt.Errorf("get integration package %s: %w", target.IntegrationName, pErr)
 	}
@@ -169,7 +169,7 @@ func (s *IntegrationsService) UpdateInstallation(ctx context.Context, id uuid.UU
 	if currErr != nil {
 		return nil, fmt.Errorf("failed to get integration: %w", currErr)
 	}
-	p, pErr := s.reg.GetPackage(curr.IntegrationName)
+	p, pErr := s.reg.Get(curr.IntegrationName)
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get package for integration %s: %w", curr.IntegrationName, pErr)
 	}
@@ -226,7 +226,7 @@ func (s *IntegrationsService) listQuery(ctx context.Context, p rez.ListIntegrati
 }
 
 func (s *IntegrationsService) AsInstalledIntegration(i *ent.Integration) (rez.InstalledIntegration, error) {
-	p, pErr := s.reg.GetPackage(i.IntegrationName)
+	p, pErr := s.reg.Get(i.IntegrationName)
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get integration package: %w", pErr)
 	}
@@ -449,7 +449,7 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, integratio
 func (s *IntegrationsService) decodeStateInstallationTargets(state *ent.IntegrationUserInstallState) ([]rez.IntegrationInstallationTarget, error) {
 	targets := make([]rez.IntegrationInstallationTarget, len(state.InstallationTargetConfigs))
 	for displayName, rawCfg := range state.InstallationTargetConfigs {
-		p, pErr := s.reg.GetPackage(state.IntegrationName)
+		p, pErr := s.reg.Get(state.IntegrationName)
 		if pErr != nil {
 			return nil, fmt.Errorf("get integration: %w", pErr)
 		}
