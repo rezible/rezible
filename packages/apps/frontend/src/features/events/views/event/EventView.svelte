@@ -1,15 +1,16 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initEventViewController } from "./controller.svelte";
 
 	const { id }: IdProp = $props();
 
 	const view = initEventViewController(() => id);
 
-	setPageBreadcrumbs(() => [
-		{ label: "Events" },
-		{ label: view.eventTitle, href: `/events/${view.eventId}` },
-	]);
+	registerPageDescriptor(() => ({
+		title: view.eventTitle || "Event",
+		parents: [{ label: "Events", path: resolve("/events") }],
+	}));
 </script>
 
 <div class="flex gap-2 p-2">

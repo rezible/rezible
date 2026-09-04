@@ -1,7 +1,11 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Meetings", href: "/meetings" }, { label: "Scheduled" }]);
+	registerPageDescriptor(() => ({
+		title: "Scheduled",
+		parents: [{ label: "Meetings", path: resolve("/meetings") }],
+	}));
 </script>
 
 <span>scheduled meetings</span>

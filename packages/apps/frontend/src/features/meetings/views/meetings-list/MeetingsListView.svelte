@@ -2,7 +2,7 @@
 	import { type MeetingSession } from "$lib/api";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
-	import { useAppShell } from "$lib/app-shell.svelte";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import MeetingsPageActions from "./MeetingsListPageActions.svelte";
 	import { initMeetingsListViewController } from "./controller.svelte";
@@ -10,9 +10,10 @@
 	const view = initMeetingsListViewController();
 	const query = $derived(view.query);
 
-	const appShell = useAppShell();
-	appShell.setPageBreadcrumbs(() => [{ label: "Meetings" }]);
-	appShell.setPageActions(MeetingsPageActions, true);
+	registerPageDescriptor(() => ({
+		title: "Meetings",
+		actions: { component: MeetingsPageActions },
+	}));
 </script>
 
 {#snippet filters()}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import type { OncallShift } from "$lib/api";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
@@ -8,7 +8,7 @@
 	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 	import { initOncallShiftsListController } from "./controller.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Oncall Shifts", path: "/oncall/shifts" }]);
+	registerPageDescriptor(() => ({ title: "Oncall Shifts" }));
 
 	const controller = initOncallShiftsListController();
 
@@ -26,7 +26,6 @@
 	// 	if (opts.length === statusOptions.length) return "Any";
 	// 	return opts.map((o) => o.label).join(", ");
 	// };
-
 </script>
 
 {#snippet filters()}

@@ -1,10 +1,8 @@
 import { Context, watch, type Getter } from "runed";
-import type Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
-import type { Component, ComponentProps } from "svelte";
-import { page } from "$app/state";
-import { afterNavigate } from "$app/navigation";
-import type { Pathname } from "$app/types";
-import type { RouteId } from "$app/types";
+import { onDestroy, type Component, type ComponentProps } from "svelte";
+import type { ResolvedPathname } from "$app/types";
+
+type AnyComponent = Component<any>;
 
 export type AppSidebarItem = {
 	label: string;
@@ -30,54 +28,40 @@ export type AppSidebarModel = {
 };
 
 export type PageBreadcrumb = {
-	label?: string;
-	path?: Pathname;
-	avatar?: ComponentProps<typeof Avatar>;
+	label: string;
+	path: ResolvedPathname;
 };
 
-export type PageActions<PComponent extends Component<any>> = {
-	component: Component;
-	propsFn?: () => ComponentProps<PComponent>;
-	allowChildren: boolean;
-	pathBase: string;
+export type PageDescriptor<C extends AnyComponent = Component> = {
+	title: string;
+	parents?: readonly PageBreadcrumb[];
+	actions?: {
+		component: C;
+		props?: ComponentProps<C>;
+	};
 };
 
 export class AppShellController {
-	pageTitle = $state("Rezible");
 	childSidebar = $state.raw<AppSidebarModel>();
+	pageDescriptor = $state.raw<PageDescriptor<AnyComponent>>();
+	private pageDescriptorOwner?: object;
 
-	constructor() {
-		afterNavigate((nav) => {
-			this.checkPageActions(nav.to?.route.id);
+	registerPageDescriptor<C extends AnyComponent>(getDescriptor: Getter<PageDescriptor<C>>) {
+		const owner = {};
+		this.pageDescriptorOwner = owner;
+		this.pageDescriptor = getDescriptor();
+
+		watch(getDescriptor, (descriptor) => {
+			if (this.pageDescriptorOwner === owner) {
+				this.pageDescriptor = descriptor;
+			}
 		});
-	}
 
-	pageActions = $state<PageActions<any>>();
-	private checkPageActions(newRouteId?: RouteId | null) {
-		if (!this.pageActions) return;
-		const isChild = !!newRouteId && newRouteId.startsWith(this.pageActions.pathBase);
-		if (!isChild || !this.pageActions.allowChildren) {
-			this.pageActions = undefined;
-		}
-	}
-
-	setPageActions<PComponent extends Component<any>>(
-		component: PComponent,
-		allowChildren: boolean,
-		propsFn?: () => ComponentProps<PComponent>
-	) {
-		this.pageActions = {
-			component,
-			allowChildren,
-			propsFn,
-			pathBase: $state.snapshot(page.route.id) ?? "",
-		};
-	}
-
-	breadcrumbs = $state<PageBreadcrumb[]>([]);
-	setPageBreadcrumbs(crumbsFn: Getter<PageBreadcrumb[]>) {
-		watch(crumbsFn, (crumbs) => {
-			this.breadcrumbs = crumbs;
+		onDestroy(() => {
+			if (this.pageDescriptorOwner === owner) {
+				this.pageDescriptor = undefined;
+				this.pageDescriptorOwner = undefined;
+			}
 		});
 	}
 
@@ -94,6 +78,6 @@ const ctx = new Context<AppShellController>("AppShellController");
 export const initAppShell = () => ctx.set(new AppShellController());
 export const useAppShell = () => ctx.get();
 
-export const setPageBreadcrumbs = (crumbsFn: Getter<PageBreadcrumb[]>) => {
-	useAppShell().setPageBreadcrumbs(crumbsFn);
+export const registerPageDescriptor = <C extends AnyComponent>(getDescriptor: Getter<PageDescriptor<C>>) => {
+	useAppShell().registerPageDescriptor(getDescriptor);
 };

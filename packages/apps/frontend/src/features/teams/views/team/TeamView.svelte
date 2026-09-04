@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import TabbedViewContainer from "$src/components/layout/tabbed-view-container/TabbedViewContainer.svelte";
 	import TeamOverview from "./overview/TeamOverview.svelte";
 	import TeamBacklogView from "./backlog/TeamBacklogView.svelte";
@@ -10,10 +11,10 @@
 
 	const view = initTeamViewController(() => slug);
 
-	setPageBreadcrumbs(() => [
-		{ label: "Teams", href: "/teams" },
-		{ label: view.teamName, href: `/teams/${slug}` },
-	]);
+	registerPageDescriptor(() => ({
+		title: view.teamName || "Team",
+		parents: [{ label: "Teams", path: resolve("/teams") }],
+	}));
 </script>
 
 <TabbedViewContainer

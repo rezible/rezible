@@ -2,20 +2,20 @@
 	import { resolve } from "$app/paths";
 	import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
 	import { listAlertsOptions, type Alert, type ListAlertsData } from "$lib/api";
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
 	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Alerts" }]);
+	registerPageDescriptor(() => ({ title: "Alerts" }));
 
 	let searchValue = $state<string>();
 	const params = $derived<ListAlertsData["query"]>({
 		search: searchValue,
 	});
 	const paginatedAlertsQuery = createPaginatedQuery({
-		queryOptions: (pagination) => listAlertsOptions({ query: {...params, ...pagination} }),
+		queryOptions: (pagination) => listAlertsOptions({ query: { ...params, ...pagination } }),
 		resetWhen: () => [searchValue],
 	});
 </script>

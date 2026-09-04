@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Team } from "$lib/api";
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
@@ -8,7 +8,7 @@
 	import { resolve } from "$app/paths";
 	import { initTeamsListController } from "./controller.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Teams" }]);
+	registerPageDescriptor(() => ({ title: "Teams" }));
 
 	const controller = initTeamsListController();
 </script>

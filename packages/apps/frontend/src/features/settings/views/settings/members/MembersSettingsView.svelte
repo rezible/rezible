@@ -5,16 +5,17 @@
 	import * as Card from "$components/ui/card";
 	import { Input } from "$components/ui/input";
 	import { Label } from "$components/ui/label";
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initMembersSettingsController } from "./controller.svelte";
 	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 
 	const view = initMembersSettingsController();
 
-	setPageBreadcrumbs(() => [
-		{ label: "Settings", path: "/settings" },
-		{ label: "Members", path: "/settings/organization/members" },
-	]);
+	registerPageDescriptor(() => ({
+		title: "Members",
+		parents: [{ label: "Settings", path: resolve("/settings") }],
+	}));
 </script>
 
 <div class="flex max-w-4xl flex-col gap-4">

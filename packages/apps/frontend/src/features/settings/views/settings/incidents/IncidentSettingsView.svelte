@@ -9,15 +9,16 @@
 	import { Label } from "$components/ui/label";
 	import { Switch } from "$components/ui/switch";
 	import { Textarea } from "$components/ui/textarea";
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initIncidentSettingsController } from "./controller.svelte";
 
 	const view = initIncidentSettingsController();
 
-	setPageBreadcrumbs(() => [
-		{ label: "Settings", path: "/settings" },
-		{ label: "Incidents", path: "/settings/incidents" },
-	]);
+	registerPageDescriptor(() => ({
+		title: "Incidents",
+		parents: [{ label: "Settings", path: resolve("/settings") }],
+	}));
 </script>
 
 <div class="flex max-w-5xl flex-col gap-4">

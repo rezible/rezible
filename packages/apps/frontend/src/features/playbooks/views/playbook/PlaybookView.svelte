@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { useAppShell } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initPlaybookViewController } from "./controller.svelte";
 	import PlaybookEditor from "./PlaybookEditor.svelte";
 	import PlaybookPageActions from "./PlaybookPageActions.svelte";
@@ -8,12 +9,11 @@
 
 	const view = initPlaybookViewController(() => id);
 
-	const appShell = useAppShell();
-	appShell.setPageBreadcrumbs(() => [
-		{ label: "Playbooks", path: "/playbooks" },
-		{ label: view.playbookTitle, path: `/playbooks/${view.playbookId}` },
-	]);
-	appShell.setPageActions(PlaybookPageActions, false, () => ({ view }));
+	registerPageDescriptor(() => ({
+		title: view.playbookTitle || "Playbook",
+		parents: [{ label: "Playbooks", path: resolve("/playbooks") }],
+		actions: { component: PlaybookPageActions, props: { view } },
+	}));
 </script>
 
 <div class="flex gap-4 h-full w-full justify-between">

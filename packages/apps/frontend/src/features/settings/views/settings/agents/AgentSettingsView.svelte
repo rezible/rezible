@@ -3,15 +3,16 @@
 	import LoadingIndicator from "$components/layout/loading-indicator/LoadingIndicator.svelte";
 	import { Badge } from "$components/ui/badge";
 	import * as Card from "$components/ui/card";
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initAgentSettingsController } from "./controller.svelte";
 
 	const view = initAgentSettingsController();
 
-	setPageBreadcrumbs(() => [
-		{ label: "Settings", path: "/settings" },
-		{ label: "Agents", path: "/settings/agents" },
-	]);
+	registerPageDescriptor(() => ({
+		title: "Agents",
+		parents: [{ label: "Settings", path: resolve("/settings") }],
+	}));
 </script>
 
 {#if view.session.isAdmin}

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { useAppShell, type PageBreadcrumb } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import type { IncidentViewRouteParam } from "$params/incidentView";
 	import { initIncidentViewController } from "./controller.svelte";
 
@@ -18,16 +19,11 @@
 
 	const controller = initIncidentViewController(() => slug);
 
-	const incidentTitle = $derived(controller.incident?.attributes.title);
-
-	const breadcrumbs = $derived<PageBreadcrumb[]>([
-		{ label: "Incidents", path: "/incidents" },
-		{ label: incidentTitle, path: `/incidents/${slug}` },
-	]);
-
-	const appShell = useAppShell();
-	appShell.setPageBreadcrumbs(() => breadcrumbs);
-	appShell.setPageActions(IncidentPageActions, true);
+	registerPageDescriptor(() => ({
+		title: controller.incident?.attributes.title ?? "Incident",
+		parents: [{ label: "Incidents", path: resolve("/incidents") }],
+		actions: { component: IncidentPageActions },
+	}));
 </script>
 
 <TabbedViewContainer

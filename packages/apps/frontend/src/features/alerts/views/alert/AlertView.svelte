@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import TabbedViewContainer from "$src/components/layout/tabbed-view-container/TabbedViewContainer.svelte";
 	import { initAlertViewController } from "./controller.svelte";
 	import AlertOverview from "./overview/AlertOverview.svelte";
@@ -11,10 +12,10 @@
 
 	const view = initAlertViewController(() => id);
 
-	setPageBreadcrumbs(() => [
-		{ label: "Alerts", path: "/alerts" },
-		{ label: view.alertTitle, path: `/alerts/${view.alertId}` },
-	]);
+	registerPageDescriptor(() => ({
+		title: view.alertTitle || "Alert",
+		parents: [{ label: "Alerts", path: resolve("/alerts") }],
+	}));
 </script>
 
 <TabbedViewContainer

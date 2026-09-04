@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Incident } from "$lib/api";
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
-	import { useAppShell } from "$lib/app-shell.svelte";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initIncidentsListViewController } from "./controller.svelte";
 
 	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
@@ -14,11 +13,12 @@
 	import IncidentsListViewFilters from "./IncidentsListViewFilters.svelte";
 	import PageActions from "./PageActions.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Incidents" }]);
-
 	const controller = initIncidentsListViewController();
-	const appShell = useAppShell();
-	appShell.setPageActions(PageActions, true);
+
+	registerPageDescriptor(() => ({
+		title: "Incidents",
+		actions: { component: PageActions },
+	}));
 </script>
 
 <FilterPage>
@@ -49,7 +49,7 @@
 		<IncidentsListViewFilters />
 	{/snippet}
 
-	<PaginatedQueryListBox {...controller.paginatedIncidentsQuery} >
+	<PaginatedQueryListBox {...controller.paginatedIncidentsQuery}>
 		<LoadingQueryWrapper query={controller.incidentsQuery}>
 			{#snippet view(incidents: Incident[])}
 				{#each incidents as incident (incident.id)}

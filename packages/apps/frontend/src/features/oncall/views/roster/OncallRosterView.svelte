@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { useAppShell } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import TabbedViewContainer from "$src/components/layout/tabbed-view-container/TabbedViewContainer.svelte";
 
 	import { initOncallRosterViewController } from "./controller.svelte";
@@ -15,12 +16,11 @@
 
 	const view = initOncallRosterViewController(() => slug);
 
-	const appShell = useAppShell();
-	appShell.setPageBreadcrumbs(() => [
-		{ label: "Oncall Rosters", path: "/oncall/rosters" },
-		{ label: view.rosterName, path: `/oncall/rosters/${slug}` },
-	]);
-	appShell.setPageActions(PageActions, true);
+	registerPageDescriptor(() => ({
+		title: view.rosterName || "Roster",
+		parents: [{ label: "Oncall Rosters", path: resolve("/oncall/rosters") }],
+		actions: { component: PageActions },
+	}));
 </script>
 
 {#snippet infoBar()}

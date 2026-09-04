@@ -4,34 +4,31 @@
 
 	const shell = useAppShell();
 
-	const pageBreadcrumbs = $derived(shell.breadcrumbs);
-	const pageActions = $derived(shell.pageActions);
-	const propsFn = $derived(pageActions?.propsFn ?? (() => ({})));
-	const pageActionsProps = $derived.by(() => propsFn());
+	const descriptor = $derived(shell.pageDescriptor);
+	const pageActions = $derived(descriptor?.actions);
 </script>
 
-<div class="flex items-center gap-2 text-lg">
-	<!-- <Sidebar.Trigger size="icon-lg" />   -->
-	<Breadcrumb.Root>
-		<Breadcrumb.List>
-			{#each pageBreadcrumbs as crumb, i}
-				{#if i > 0}
+{#if descriptor}
+	<div class="flex items-center gap-2 text-lg">
+		<!-- <Sidebar.Trigger size="icon-lg" />   -->
+		<Breadcrumb.Root>
+			<Breadcrumb.List>
+				{#each descriptor.parents ?? [] as parent (parent.path)}
+					<Breadcrumb.Item>
+						<Breadcrumb.Link href={parent.path}>{parent.label}</Breadcrumb.Link>
+					</Breadcrumb.Item>
 					<Breadcrumb.Separator />
-				{/if}
+				{/each}
 				<Breadcrumb.Item>
-					{#if i < pageBreadcrumbs.length - 1}
-						<Breadcrumb.Link href={crumb.path}>{crumb.label}</Breadcrumb.Link>
-					{:else}
-						<Breadcrumb.Page>{crumb.label}</Breadcrumb.Page>
-					{/if}
+					<h1><Breadcrumb.Page>{descriptor.title}</Breadcrumb.Page></h1>
 				</Breadcrumb.Item>
-			{/each}
-		</Breadcrumb.List>
-	</Breadcrumb.Root>
-</div>
+			</Breadcrumb.List>
+		</Breadcrumb.Root>
+	</div>
+{/if}
 
 {#if pageActions}
 	<div class="flex items-center">
-		<pageActions.component {...pageActionsProps} />
+		<pageActions.component {...pageActions.props} />
 	</div>
 {/if}

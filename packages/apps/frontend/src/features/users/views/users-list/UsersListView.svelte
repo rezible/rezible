@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Users" }]);
+	registerPageDescriptor(() => ({ title: "Users" }));
 </script>
 
 <span>todo</span>

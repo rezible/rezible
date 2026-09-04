@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import Header from "$src/components/layout/header/Header.svelte";
 	import OncallStats from "./OncallStats.svelte";
@@ -9,10 +10,10 @@
 
 	const view = initUserViewController(() => id);
 
-	setPageBreadcrumbs(() => [
-		{ label: "Users", href: "/users" },
-		{ label: view.userName, href: `/users/${view.userId}`, avatar: { kind: "user", id: view.userId } },
-	]);
+	registerPageDescriptor(() => ({
+		title: view.userName || "User",
+		parents: [{ label: "Users", path: resolve("/users") }],
+	}));
 </script>
 
 <div class="grid grid-cols-3 gap-2 h-full">

@@ -22,7 +22,7 @@
 </script>
 
 <svelte:head>
-	<title>{shell.pageTitle}</title>
+	<title>{shell.pageDescriptor ? `${shell.pageDescriptor.title} · Rezible` : "Rezible"}</title>
 </svelte:head>
 
 <ModeWatcher />

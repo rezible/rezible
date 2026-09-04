@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Playbook } from "$lib/api";
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
 	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
@@ -8,7 +8,7 @@
 	import { resolve } from "$app/paths";
 	import { initPlaybooksListController } from "./controller.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Playbooks" }]);
+	registerPageDescriptor(() => ({ title: "Playbooks" }));
 
 	const controller = initPlaybooksListController();
 </script>

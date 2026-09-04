@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { type MeetingSchedule as MeetingScheduleType } from "$lib/api";
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import { initMeetingScheduleViewController } from "./controller.svelte";
 	import MeetingSchedule from "./MeetingSchedule.svelte";
@@ -10,11 +11,13 @@
 	const view = initMeetingScheduleViewController(() => id);
 	const query = $derived(view.query);
 
-	setPageBreadcrumbs(() => [
-		{ label: "Meetings", href: "/meetings" },
-		{ label: "Scheduled", href: "/meetings/scheduled" },
-		{ label: view.title, href: `/meetings/scheduled/${id}` },
-	]);
+	registerPageDescriptor(() => ({
+		title: view.title ?? "Meeting schedule",
+		parents: [
+			{ label: "Meetings", path: resolve("/meetings") },
+			{ label: "Scheduled", path: resolve("/meetings/scheduled") },
+		],
+	}));
 </script>
 
 <LoadingQueryWrapper {query}>

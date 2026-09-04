@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import type { OncallRoster } from "$lib/api";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
@@ -8,7 +8,7 @@
 	import RosterCard from "$features/oncall/components/roster-card/RosterCard.svelte";
 	import { initOncallRostersListController } from "./controller.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Oncall Rosters", path: "/oncall/rosters" }]);
+	registerPageDescriptor(() => ({ title: "Oncall Rosters" }));
 
 	const controller = initOncallRostersListController();
 </script>

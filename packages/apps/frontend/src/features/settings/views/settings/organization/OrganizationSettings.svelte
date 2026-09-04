@@ -1,14 +1,15 @@
 <script lang="ts">
 	import * as Card from "$components/ui/card";
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initOrganizationSettingsViewController } from "./organizationSettingsController.svelte";
 
 	const view = initOrganizationSettingsViewController();
 
-	setPageBreadcrumbs(() => [
-		{ label: "Settings", path: "/settings" },
-		{ label: "Organization", path: "/settings/organization" },
-	]);
+	registerPageDescriptor(() => ({
+		title: "Organization",
+		parents: [{ label: "Settings", path: resolve("/settings") }],
+	}));
 </script>
 
 <Card.Root class="max-w-2xl">

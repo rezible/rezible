@@ -7,7 +7,8 @@
 	import { Label } from "$components/ui/label";
 	import * as NativeSelect from "$components/ui/native-select";
 	import { Switch } from "$components/ui/switch";
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initUserSettingsController } from "./controller.svelte";
 
 	const view = initUserSettingsController();
@@ -19,10 +20,10 @@
 		{ key: "integrationSyncFailures", label: "Integration sync failures" },
 	] as const;
 
-	setPageBreadcrumbs(() => [
-		{ label: "Settings", path: "/settings" },
-		{ label: "User", path: "/settings/user" },
-	]);
+	registerPageDescriptor(() => ({
+		title: "User",
+		parents: [{ label: "Settings", path: resolve("/settings") }],
+	}));
 </script>
 
 <div class="flex max-w-3xl flex-col gap-4">

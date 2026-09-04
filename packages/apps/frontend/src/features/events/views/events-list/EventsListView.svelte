@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import ListFilters from "./ListFilters.svelte";
 	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
@@ -9,7 +9,7 @@
 
 	const controller = initEventsListController();
 
-	setPageBreadcrumbs(() => [{ label: "Events" }]);
+	registerPageDescriptor(() => ({ title: "Events" }));
 </script>
 
 <FilterPage>

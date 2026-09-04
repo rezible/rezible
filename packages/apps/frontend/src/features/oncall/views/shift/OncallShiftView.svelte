@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { useAppShell } from "$lib/app-shell.svelte";
+	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 
 	import TabbedViewContainer from "$src/components/layout/tabbed-view-container/TabbedViewContainer.svelte";
 	import { initOncallShiftViewController } from "./controller.svelte";
@@ -13,12 +14,11 @@
 
 	const view = initOncallShiftViewController(() => id);
 
-	const appShell = useAppShell();
-	appShell.setPageBreadcrumbs(() => [
-		{ label: "Oncall Shifts", path: "/oncall/shifts" },
-		{ label: view.shiftTitle, path: `/oncall/shifts/${view.shiftId}` },
-	]);
-	appShell.setPageActions(PageActions, true);
+	registerPageDescriptor(() => ({
+		title: view.shiftTitle || "Shift",
+		parents: [{ label: "Oncall Shifts", path: resolve("/oncall/shifts") }],
+		actions: { component: PageActions },
+	}));
 </script>
 
 {#snippet infoBar()}

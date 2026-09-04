@@ -6,17 +6,17 @@
 
 	import * as Card from "$components/ui/card";
 
-	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { Badge } from "$src/components/ui/badge";
 	import { Button } from "$src/components/ui/button";
 	import { resolve } from "$app/paths";
 
 	const controller = useIntegrationsController();
 
-	setPageBreadcrumbs(() => [
-		{ label: "Settings", path: "/settings" },
-		{ label: "Integrations", path: "/settings/integrations" },
-	]);
+	registerPageDescriptor(() => ({
+		title: "Integrations",
+		parents: [{ label: "Settings", path: resolve("/settings") }],
+	}));
 </script>
 
 <div class="flex flex-col gap-4">
