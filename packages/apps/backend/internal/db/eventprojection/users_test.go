@@ -60,6 +60,32 @@ func (s *ProjectionServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntit
 	r.Equal("U123", created.ChatID)
 }
 
+func (s *ProjectionServiceSuite) TestUserProjectionMatchesAliasesByEmail() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	projector := s.projectionService(tdb)
+	email := "same-user+" + uuid.NewString() + "@example.com"
+	initialUserCount := tdb.Client(ctx).User.Query().CountX(ctx)
+
+	first := s.createUserProjectionEvent(tdb, "provider-user-1", projections.UserEventAttributes{
+		Name:  "Alice",
+		Email: email,
+	})
+	second := s.createUserProjectionEvent(tdb, "provider-user-2", projections.UserEventAttributes{
+		Name:  "Alice Smith",
+		Email: email,
+	})
+
+	_, firstErr := runProjection(ctx, projector, first)
+	s.Require().NoError(firstErr)
+	_, secondErr := runProjection(ctx, projector, second)
+	s.Require().NoError(secondErr)
+
+	s.Equal(1, tdb.Client(ctx).KnowledgeEntity.Query().CountX(ctx))
+	s.Equal(2, tdb.Client(ctx).KnowledgeSubjectAlias.Query().CountX(ctx))
+	s.Equal(initialUserCount+1, tdb.Client(ctx).User.Query().CountX(ctx))
+}
+
 func (s *ProjectionServiceSuite) TestUserProjectionReusesExistingEmailUser() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()

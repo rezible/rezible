@@ -21,6 +21,12 @@ type KnowledgeGraphServiceSuite struct {
 	test.Suite
 }
 
+type testEntityLinkingAttributes map[string]string
+
+func (a testEntityLinkingAttributes) Values() map[string]string {
+	return a
+}
+
 func TestKnowledgeGraphServiceSuite(t *testing.T) {
 	suite.Run(t, &KnowledgeGraphServiceSuite{Suite: test.NewSuite()})
 }
@@ -46,8 +52,8 @@ func (s *KnowledgeGraphServiceSuite) createEvent(tdb rez.Database, resourceRef s
 	return event
 }
 
-func (s *KnowledgeGraphServiceSuite) testProviderRef(resourceRef string) ent.ProviderResourceRef {
-	return ent.ProviderResourceRef{
+func (s *KnowledgeGraphServiceSuite) testProviderRef(resourceRef string) rez.ProviderResourceRef {
+	return rez.ProviderResourceRef{
 		Provider:          "test",
 		ProviderNamespace: "knowledge-graph-tests",
 		ResourceRef:       resourceRef,
@@ -61,13 +67,13 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 	now := time.Now().UTC()
 
 	apiRef := s.testProviderRef("service:api")
-	apiEntityRef := ent.KnowledgeEntityRef{
+	apiEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryContainer,
 		Kind:                "service",
 		ProviderResourceRef: apiRef,
 	}
 	apiEvent := s.createEvent(tdb, apiRef.ResourceRef, now.Add(-2*time.Hour))
-	oldEvidence := ent.KnowledgeEvidenceRef{
+	oldEvidence := rez.KnowledgeEvidenceRef{
 		Kind:        ke.KindObserved,
 		Assertion:   "component_exists",
 		EffectiveAt: now.Add(-2 * time.Hour),
@@ -89,12 +95,12 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 	s.Require().NoError(service.IngestEvidence(ctx, latestEvent, latestEvidence))
 
 	databaseRef := s.testProviderRef("service:database")
-	databaseEntityRef := ent.KnowledgeEntityRef{
+	databaseEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryContainer,
 		Kind:                "database",
 		ProviderResourceRef: databaseRef,
 	}
-	databaseEvidence := ent.KnowledgeEvidenceRef{
+	databaseEvidence := rez.KnowledgeEvidenceRef{
 		Kind:          ke.KindObserved,
 		Assertion:     "component_exists",
 		EffectiveAt:   now.Add(-time.Hour),
@@ -105,13 +111,13 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 	s.Require().NoError(service.IngestEvidence(ctx, databaseEvent, databaseEvidence))
 
 	relRef := s.testProviderRef("api-uses-database")
-	relationshipRef := ent.KnowledgeRelationshipRef{
+	relationshipRef := rez.KnowledgeRelationshipRef{
 		Predicate:           knr.PredicateUses,
 		ProviderResourceRef: relRef,
 		Source:              apiEntityRef,
 		Target:              databaseEntityRef,
 	}
-	relEvidence := ent.KnowledgeEvidenceRef{
+	relEvidence := rez.KnowledgeEvidenceRef{
 		Kind:                ke.KindObserved,
 		Assertion:           "relationship_exists",
 		EffectiveAt:         now,
@@ -141,12 +147,12 @@ func (s *KnowledgeGraphServiceSuite) TestBoundedViewIncludesIsolatedRootEntity()
 	service := s.knowledgeService(tdb)
 	now := time.Now().UTC()
 	ref := s.testProviderRef("service:api")
-	entityRef := ent.KnowledgeEntityRef{
+	entityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryContainer,
 		Kind:                "service",
 		ProviderResourceRef: ref,
 	}
-	evidence := ent.KnowledgeEvidenceRef{
+	evidence := rez.KnowledgeEvidenceRef{
 		Kind:          ke.KindObserved,
 		Assertion:     "component_exists",
 		EffectiveAt:   now,
@@ -197,12 +203,12 @@ func (s *KnowledgeGraphServiceSuite) TestKnowledgeSubjectAliasCannotMapOneResour
 	_, secondAliasErr := createSecondAlias.Save(ctx)
 
 	sharedRef := s.testProviderRef("shared-resource")
-	entityRef := ent.KnowledgeEntityRef{
+	entityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryActor,
 		Kind:                "user",
 		ProviderResourceRef: sharedRef,
 	}
-	evidence := ent.KnowledgeEvidenceRef{
+	evidence := rez.KnowledgeEvidenceRef{
 		Kind:          ke.KindObserved,
 		Assertion:     "user_observed",
 		EffectiveAt:   time.Now().UTC(),
@@ -217,6 +223,156 @@ func (s *KnowledgeGraphServiceSuite) TestKnowledgeSubjectAliasCannotMapOneResour
 	s.Equal(1, evidenceQuery.CountX(ctx))
 }
 
+func (s *KnowledgeGraphServiceSuite) TestEntityAliasesMatchLinkingAttributes() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	svc := s.knowledgeService(tdb)
+	now := time.Now().UTC()
+
+	firstRef := rez.KnowledgeEntityRef{
+		Category:            kne.CategoryActor,
+		Kind:                "user",
+		ProviderResourceRef: s.testProviderRef("slack-user"),
+		LinkingAttributes: testEntityLinkingAttributes{
+			"user.email": "alice@example.com",
+		},
+	}
+	secondRef := rez.KnowledgeEntityRef{
+		Category: kne.CategoryActor,
+		Kind:     "user",
+		ProviderResourceRef: rez.ProviderResourceRef{
+			Provider:          "github",
+			ProviderNamespace: "acme",
+			ResourceRef:       "42",
+		},
+		LinkingAttributes: testEntityLinkingAttributes{
+			"user.email": "alice@example.com",
+		},
+	}
+	firstEvidence := rez.KnowledgeEvidenceRef{
+		Kind:          ke.KindObserved,
+		Assertion:     "user_observed",
+		EffectiveAt:   now,
+		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "Alice"},
+		SubjectEntity: &firstRef,
+	}
+	secondEvidence := firstEvidence
+	secondEvidence.SubjectEntity = &secondRef
+	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(tdb, "event:first", now), firstEvidence))
+	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(tdb, "event:second", now.Add(time.Minute)), secondEvidence))
+
+	client := tdb.Client(ctx)
+	s.Equal(1, client.KnowledgeEntity.Query().Where(kne.CategoryEQ(kne.CategoryActor), kne.KindEQ("user")).CountX(ctx))
+	s.Equal(2, client.KnowledgeSubjectAlias.Query().CountX(ctx))
+	s.Equal(1, client.KnowledgeEntityLinkingAttribute.Query().CountX(ctx))
+	s.Equal(2, client.KnowledgeEvidence.Query().CountX(ctx))
+}
+
+func (s *KnowledgeGraphServiceSuite) TestEntityLinkingAttributeConflictRollsBackEvidence() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	svc := s.knowledgeService(tdb)
+	now := time.Now().UTC()
+	makeRef := func(resourceRef string, values map[string]string) rez.KnowledgeEntityRef {
+		return rez.KnowledgeEntityRef{
+			Category:            kne.CategoryActor,
+			Kind:                "user",
+			ProviderResourceRef: s.testProviderRef(resourceRef),
+			LinkingAttributes:   testEntityLinkingAttributes(values),
+		}
+	}
+	makeEvidence := func(ref *rez.KnowledgeEntityRef) rez.KnowledgeEvidenceRef {
+		return rez.KnowledgeEvidenceRef{
+			Kind:          ke.KindObserved,
+			Assertion:     "user_observed",
+			EffectiveAt:   now,
+			SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "User"},
+			SubjectEntity: ref,
+		}
+	}
+	firstRef := makeRef("first", map[string]string{"user.email": "first@example.com"})
+	secondRef := makeRef("second", map[string]string{"user.employee_id": "second"})
+	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(tdb, "event:first", now), makeEvidence(&firstRef)))
+	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(tdb, "event:second", now), makeEvidence(&secondRef)))
+
+	conflictRef := makeRef("third", map[string]string{
+		"user.email":       "first@example.com",
+		"user.employee_id": "second",
+	})
+	conflictEvent := s.createEvent(tdb, "event:third", now.Add(time.Minute))
+	conflictErr := svc.IngestEvidence(ctx, conflictEvent, makeEvidence(&conflictRef))
+	s.Require().ErrorIs(conflictErr, rez.ErrConflict)
+	s.Equal(2, tdb.Client(ctx).KnowledgeEntity.Query().CountX(ctx))
+	s.Equal(2, tdb.Client(ctx).KnowledgeSubjectAlias.Query().CountX(ctx))
+	s.Equal(2, tdb.Client(ctx).KnowledgeEntityLinkingAttribute.Query().CountX(ctx))
+	s.Equal(2, tdb.Client(ctx).KnowledgeEvidence.Query().CountX(ctx))
+}
+
+func (s *KnowledgeGraphServiceSuite) TestRelationshipAliasesConvergeThroughLinkedEndpointEntities() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	service := s.knowledgeService(tdb)
+	now := time.Now().UTC()
+	targetRef := rez.KnowledgeEntityRef{
+		Category:            kne.CategoryContainer,
+		Kind:                "service",
+		ProviderResourceRef: s.testProviderRef("service:api"),
+	}
+	firstSourceRef := rez.KnowledgeEntityRef{
+		Category:            kne.CategoryActor,
+		Kind:                "user",
+		ProviderResourceRef: s.testProviderRef("slack:alice"),
+		LinkingAttributes:   testEntityLinkingAttributes{"user.email": "alice@example.com"},
+	}
+	firstRelationshipRef := rez.KnowledgeRelationshipRef{
+		Predicate:           knr.PredicateUses,
+		ProviderResourceRef: s.testProviderRef("relationship:one"),
+		Source:              firstSourceRef,
+		Target:              targetRef,
+	}
+	entityEvidence := func(ref *rez.KnowledgeEntityRef, name string) rez.KnowledgeEvidenceRef {
+		return rez.KnowledgeEvidenceRef{
+			Kind:          ke.KindObserved,
+			Assertion:     "entity_observed",
+			EffectiveAt:   now,
+			SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: name},
+			SubjectEntity: ref,
+		}
+	}
+	relationshipEvidence := func(ref *rez.KnowledgeRelationshipRef) rez.KnowledgeEvidenceRef {
+		return rez.KnowledgeEvidenceRef{
+			Kind:                ke.KindObserved,
+			Assertion:           "relationship_observed",
+			EffectiveAt:         now,
+			SubjectRelationship: ref,
+		}
+	}
+	s.Require().NoError(service.IngestEvidence(ctx, s.createEvent(tdb, "event:relationship:one", now),
+		entityEvidence(&firstSourceRef, "Alice"),
+		entityEvidence(&targetRef, "API"),
+		relationshipEvidence(&firstRelationshipRef),
+	))
+
+	secondSourceRef := firstSourceRef
+	secondSourceRef.ProviderResourceRef = rez.ProviderResourceRef{
+		Provider:          "github",
+		ProviderNamespace: "acme",
+		ResourceRef:       "42",
+	}
+	secondRelationshipRef := firstRelationshipRef
+	secondRelationshipRef.ProviderResourceRef = s.testProviderRef("relationship:two")
+	secondRelationshipRef.Source = secondSourceRef
+	s.Require().NoError(service.IngestEvidence(ctx, s.createEvent(tdb, "event:relationship:two", now.Add(time.Minute)),
+		entityEvidence(&secondSourceRef, "Alice"),
+		relationshipEvidence(&secondRelationshipRef),
+	))
+
+	s.Equal(2, tdb.Client(ctx).KnowledgeEntity.Query().CountX(ctx))
+	s.Equal(1, tdb.Client(ctx).KnowledgeRelationship.Query().CountX(ctx))
+	s.Equal(5, tdb.Client(ctx).KnowledgeSubjectAlias.Query().CountX(ctx))
+	s.Equal(5, tdb.Client(ctx).KnowledgeEvidence.Query().CountX(ctx))
+}
+
 func (s *KnowledgeGraphServiceSuite) TestRelationshipIngestionRollsBackWhenEndpointHasNoEvidence() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
@@ -224,30 +380,30 @@ func (s *KnowledgeGraphServiceSuite) TestRelationshipIngestionRollsBackWhenEndpo
 	service := s.knowledgeService(tdb)
 	now := time.Now().UTC()
 
-	sourceRef := ent.KnowledgeEntityRef{
+	sourceRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryContainer,
 		Kind:                "service",
 		ProviderResourceRef: s.testProviderRef("service:api"),
 	}
-	targetRef := ent.KnowledgeEntityRef{
+	targetRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryContainer,
 		Kind:                "database",
 		ProviderResourceRef: s.testProviderRef("database:primary"),
 	}
-	relationshipRef := ent.KnowledgeRelationshipRef{
+	relationshipRef := rez.KnowledgeRelationshipRef{
 		Predicate:           knr.PredicateUses,
 		ProviderResourceRef: s.testProviderRef("api-uses-primary"),
 		Source:              sourceRef,
 		Target:              targetRef,
 	}
-	sourceEvidence := ent.KnowledgeEvidenceRef{
+	sourceEvidence := rez.KnowledgeEvidenceRef{
 		Kind:          ke.KindObserved,
 		Assertion:     "source_observed",
 		EffectiveAt:   now,
 		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "API"},
 		SubjectEntity: &sourceRef,
 	}
-	relationshipEvidence := ent.KnowledgeEvidenceRef{
+	relationshipEvidence := rez.KnowledgeEvidenceRef{
 		Kind:                ke.KindObserved,
 		Assertion:           "relationship_observed",
 		EffectiveAt:         now,
@@ -271,37 +427,37 @@ func (s *KnowledgeGraphServiceSuite) TestRelationshipIngestionEvidenceBacksEndpo
 	service := s.knowledgeService(tdb)
 	now := time.Now().UTC()
 
-	sourceRef := ent.KnowledgeEntityRef{
+	sourceRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryContainer,
 		Kind:                "service",
 		ProviderResourceRef: s.testProviderRef("service:api"),
 	}
-	targetRef := ent.KnowledgeEntityRef{
+	targetRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryContainer,
 		Kind:                "database",
 		ProviderResourceRef: s.testProviderRef("database:primary"),
 	}
-	relationshipRef := ent.KnowledgeRelationshipRef{
+	relationshipRef := rez.KnowledgeRelationshipRef{
 		Predicate:           knr.PredicateUses,
 		ProviderResourceRef: s.testProviderRef("api-uses-primary"),
 		Source:              sourceRef,
 		Target:              targetRef,
 	}
-	sourceEvidence := ent.KnowledgeEvidenceRef{
+	sourceEvidence := rez.KnowledgeEvidenceRef{
 		Kind:          ke.KindObserved,
 		Assertion:     "source_observed",
 		EffectiveAt:   now,
 		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "API"},
 		SubjectEntity: &sourceRef,
 	}
-	targetEvidence := ent.KnowledgeEvidenceRef{
+	targetEvidence := rez.KnowledgeEvidenceRef{
 		Kind:          ke.KindObserved,
 		Assertion:     "target_observed",
 		EffectiveAt:   now,
 		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "Primary database"},
 		SubjectEntity: &targetRef,
 	}
-	relationshipEvidence := ent.KnowledgeEvidenceRef{
+	relationshipEvidence := rez.KnowledgeEvidenceRef{
 		Kind:                ke.KindObserved,
 		Assertion:           "relationship_observed",
 		EffectiveAt:         now,

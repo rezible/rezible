@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
@@ -66,6 +67,21 @@ func (_u *KnowledgeEntityUpdate) AddAliases(v ...*KnowledgeSubjectAlias) *Knowle
 		ids[i] = v[i].ID
 	}
 	return _u.AddAliasIDs(ids...)
+}
+
+// AddLinkingAttributeIDs adds the "linking_attributes" edge to the KnowledgeEntityLinkingAttribute entity by IDs.
+func (_u *KnowledgeEntityUpdate) AddLinkingAttributeIDs(ids ...uuid.UUID) *KnowledgeEntityUpdate {
+	_u.mutation.AddLinkingAttributeIDs(ids...)
+	return _u
+}
+
+// AddLinkingAttributes adds the "linking_attributes" edges to the KnowledgeEntityLinkingAttribute entity.
+func (_u *KnowledgeEntityUpdate) AddLinkingAttributes(v ...*KnowledgeEntityLinkingAttribute) *KnowledgeEntityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLinkingAttributeIDs(ids...)
 }
 
 // AddSourceRelationshipIDs adds the "source_relationships" edge to the KnowledgeRelationship entity by IDs.
@@ -122,6 +138,27 @@ func (_u *KnowledgeEntityUpdate) RemoveAliases(v ...*KnowledgeSubjectAlias) *Kno
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAliasIDs(ids...)
+}
+
+// ClearLinkingAttributes clears all "linking_attributes" edges to the KnowledgeEntityLinkingAttribute entity.
+func (_u *KnowledgeEntityUpdate) ClearLinkingAttributes() *KnowledgeEntityUpdate {
+	_u.mutation.ClearLinkingAttributes()
+	return _u
+}
+
+// RemoveLinkingAttributeIDs removes the "linking_attributes" edge to KnowledgeEntityLinkingAttribute entities by IDs.
+func (_u *KnowledgeEntityUpdate) RemoveLinkingAttributeIDs(ids ...uuid.UUID) *KnowledgeEntityUpdate {
+	_u.mutation.RemoveLinkingAttributeIDs(ids...)
+	return _u
+}
+
+// RemoveLinkingAttributes removes "linking_attributes" edges to KnowledgeEntityLinkingAttribute entities.
+func (_u *KnowledgeEntityUpdate) RemoveLinkingAttributes(v ...*KnowledgeEntityLinkingAttribute) *KnowledgeEntityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLinkingAttributeIDs(ids...)
 }
 
 // ClearSourceRelationships clears all "source_relationships" edges to the KnowledgeRelationship entity.
@@ -288,6 +325,54 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.LinkingAttributesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeentity.LinkingAttributesTable,
+			Columns: []string{knowledgeentity.LinkingAttributesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentitylinkingattribute.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLinkingAttributesIDs(); len(nodes) > 0 && !_u.mutation.LinkingAttributesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeentity.LinkingAttributesTable,
+			Columns: []string{knowledgeentity.LinkingAttributesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentitylinkingattribute.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LinkingAttributesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeentity.LinkingAttributesTable,
+			Columns: []string{knowledgeentity.LinkingAttributesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentitylinkingattribute.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.SourceRelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -443,6 +528,21 @@ func (_u *KnowledgeEntityUpdateOne) AddAliases(v ...*KnowledgeSubjectAlias) *Kno
 	return _u.AddAliasIDs(ids...)
 }
 
+// AddLinkingAttributeIDs adds the "linking_attributes" edge to the KnowledgeEntityLinkingAttribute entity by IDs.
+func (_u *KnowledgeEntityUpdateOne) AddLinkingAttributeIDs(ids ...uuid.UUID) *KnowledgeEntityUpdateOne {
+	_u.mutation.AddLinkingAttributeIDs(ids...)
+	return _u
+}
+
+// AddLinkingAttributes adds the "linking_attributes" edges to the KnowledgeEntityLinkingAttribute entity.
+func (_u *KnowledgeEntityUpdateOne) AddLinkingAttributes(v ...*KnowledgeEntityLinkingAttribute) *KnowledgeEntityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLinkingAttributeIDs(ids...)
+}
+
 // AddSourceRelationshipIDs adds the "source_relationships" edge to the KnowledgeRelationship entity by IDs.
 func (_u *KnowledgeEntityUpdateOne) AddSourceRelationshipIDs(ids ...uuid.UUID) *KnowledgeEntityUpdateOne {
 	_u.mutation.AddSourceRelationshipIDs(ids...)
@@ -497,6 +597,27 @@ func (_u *KnowledgeEntityUpdateOne) RemoveAliases(v ...*KnowledgeSubjectAlias) *
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAliasIDs(ids...)
+}
+
+// ClearLinkingAttributes clears all "linking_attributes" edges to the KnowledgeEntityLinkingAttribute entity.
+func (_u *KnowledgeEntityUpdateOne) ClearLinkingAttributes() *KnowledgeEntityUpdateOne {
+	_u.mutation.ClearLinkingAttributes()
+	return _u
+}
+
+// RemoveLinkingAttributeIDs removes the "linking_attributes" edge to KnowledgeEntityLinkingAttribute entities by IDs.
+func (_u *KnowledgeEntityUpdateOne) RemoveLinkingAttributeIDs(ids ...uuid.UUID) *KnowledgeEntityUpdateOne {
+	_u.mutation.RemoveLinkingAttributeIDs(ids...)
+	return _u
+}
+
+// RemoveLinkingAttributes removes "linking_attributes" edges to KnowledgeEntityLinkingAttribute entities.
+func (_u *KnowledgeEntityUpdateOne) RemoveLinkingAttributes(v ...*KnowledgeEntityLinkingAttribute) *KnowledgeEntityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLinkingAttributeIDs(ids...)
 }
 
 // ClearSourceRelationships clears all "source_relationships" edges to the KnowledgeRelationship entity.
@@ -688,6 +809,54 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 			},
 		}
 		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LinkingAttributesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeentity.LinkingAttributesTable,
+			Columns: []string{knowledgeentity.LinkingAttributesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentitylinkingattribute.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLinkingAttributesIDs(); len(nodes) > 0 && !_u.mutation.LinkingAttributesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeentity.LinkingAttributesTable,
+			Columns: []string{knowledgeentity.LinkingAttributesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentitylinkingattribute.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LinkingAttributesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeentity.LinkingAttributesTable,
+			Columns: []string{knowledgeentity.LinkingAttributesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentitylinkingattribute.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

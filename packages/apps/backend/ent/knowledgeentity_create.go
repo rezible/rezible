@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/tenant"
@@ -105,6 +106,21 @@ func (_c *KnowledgeEntityCreate) AddAliases(v ...*KnowledgeSubjectAlias) *Knowle
 		ids[i] = v[i].ID
 	}
 	return _c.AddAliasIDs(ids...)
+}
+
+// AddLinkingAttributeIDs adds the "linking_attributes" edge to the KnowledgeEntityLinkingAttribute entity by IDs.
+func (_c *KnowledgeEntityCreate) AddLinkingAttributeIDs(ids ...uuid.UUID) *KnowledgeEntityCreate {
+	_c.mutation.AddLinkingAttributeIDs(ids...)
+	return _c
+}
+
+// AddLinkingAttributes adds the "linking_attributes" edges to the KnowledgeEntityLinkingAttribute entity.
+func (_c *KnowledgeEntityCreate) AddLinkingAttributes(v ...*KnowledgeEntityLinkingAttribute) *KnowledgeEntityCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddLinkingAttributeIDs(ids...)
 }
 
 // AddSourceRelationshipIDs adds the "source_relationships" edge to the KnowledgeRelationship entity by IDs.
@@ -311,6 +327,23 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 			},
 		}
 		edge.Schema = _c.schemaConfig.KnowledgeSubjectAlias
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.LinkingAttributesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeentity.LinkingAttributesTable,
+			Columns: []string{knowledgeentity.LinkingAttributesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentitylinkingattribute.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.KnowledgeEntityLinkingAttribute
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -95,7 +95,7 @@ func (i *Integration) processTeamMembershipObservedEvent(ev rez.ProviderEvent) (
 	result := &ent.NormalizedEvent{
 		Provider:            slackintegration.ProviderName,
 		ProviderNamespace:   ev.ProviderNamespace,
-		ProviderResourceRef: fmt.Sprintf("slack:%s:%s", payload.Team.SlackID, payload.User.SlackID),
+		ProviderResourceRef: fmt.Sprintf("membership:%s:%s", payload.Team.SlackID, payload.User.SlackID),
 		ProviderEventSource: ev.ProviderEventSource,
 		Kind:                projections.KindTeamMembership,
 		ProviderEventRef:    ev.ProviderEventRef,
@@ -118,7 +118,7 @@ func (i *Integration) processUserObservedEvent(ev rez.ProviderEvent) (ent.Normal
 	result := &ent.NormalizedEvent{
 		Provider:            slackintegration.ProviderName,
 		ProviderNamespace:   ev.ProviderNamespace,
-		ProviderResourceRef: fmt.Sprintf("slack:%s", payload.SlackID),
+		ProviderResourceRef: payload.SlackID,
 		ProviderEventSource: ev.ProviderEventSource,
 		Kind:                projections.KindUser,
 		ProviderEventRef:    ev.ProviderEventRef,

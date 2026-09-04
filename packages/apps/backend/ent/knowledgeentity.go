@@ -41,13 +41,15 @@ type KnowledgeEntityEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Aliases holds the value of the aliases edge.
 	Aliases []*KnowledgeSubjectAlias `json:"aliases,omitempty"`
+	// LinkingAttributes holds the value of the linking_attributes edge.
+	LinkingAttributes []*KnowledgeEntityLinkingAttribute `json:"linking_attributes,omitempty"`
 	// SourceRelationships holds the value of the source_relationships edge.
 	SourceRelationships []*KnowledgeRelationship `json:"source_relationships,omitempty"`
 	// TargetRelationships holds the value of the target_relationships edge.
 	TargetRelationships []*KnowledgeRelationship `json:"target_relationships,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -70,10 +72,19 @@ func (e KnowledgeEntityEdges) AliasesOrErr() ([]*KnowledgeSubjectAlias, error) {
 	return nil, &NotLoadedError{edge: "aliases"}
 }
 
+// LinkingAttributesOrErr returns the LinkingAttributes value or an error if the edge
+// was not loaded in eager-loading.
+func (e KnowledgeEntityEdges) LinkingAttributesOrErr() ([]*KnowledgeEntityLinkingAttribute, error) {
+	if e.loadedTypes[2] {
+		return e.LinkingAttributes, nil
+	}
+	return nil, &NotLoadedError{edge: "linking_attributes"}
+}
+
 // SourceRelationshipsOrErr returns the SourceRelationships value or an error if the edge
 // was not loaded in eager-loading.
 func (e KnowledgeEntityEdges) SourceRelationshipsOrErr() ([]*KnowledgeRelationship, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.SourceRelationships, nil
 	}
 	return nil, &NotLoadedError{edge: "source_relationships"}
@@ -82,7 +93,7 @@ func (e KnowledgeEntityEdges) SourceRelationshipsOrErr() ([]*KnowledgeRelationsh
 // TargetRelationshipsOrErr returns the TargetRelationships value or an error if the edge
 // was not loaded in eager-loading.
 func (e KnowledgeEntityEdges) TargetRelationshipsOrErr() ([]*KnowledgeRelationship, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.TargetRelationships, nil
 	}
 	return nil, &NotLoadedError{edge: "target_relationships"}
@@ -173,6 +184,11 @@ func (_m *KnowledgeEntity) QueryTenant() *TenantQuery {
 // QueryAliases queries the "aliases" edge of the KnowledgeEntity entity.
 func (_m *KnowledgeEntity) QueryAliases() *KnowledgeSubjectAliasQuery {
 	return NewKnowledgeEntityClient(_m.config).QueryAliases(_m)
+}
+
+// QueryLinkingAttributes queries the "linking_attributes" edge of the KnowledgeEntity entity.
+func (_m *KnowledgeEntity) QueryLinkingAttributes() *KnowledgeEntityLinkingAttributeQuery {
+	return NewKnowledgeEntityClient(_m.config).QueryLinkingAttributes(_m)
 }
 
 // QuerySourceRelationships queries the "source_relationships" edge of the KnowledgeEntity entity.

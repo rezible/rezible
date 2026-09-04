@@ -891,6 +891,30 @@ func (f KnowledgeEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEntityMutation", m)
 }
 
+// The KnowledgeEntityLinkingAttributeQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type KnowledgeEntityLinkingAttributeQueryRuleFunc func(context.Context, *ent.KnowledgeEntityLinkingAttributeQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f KnowledgeEntityLinkingAttributeQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeEntityLinkingAttributeQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeEntityLinkingAttributeQuery", q)
+}
+
+// The KnowledgeEntityLinkingAttributeMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type KnowledgeEntityLinkingAttributeMutationRuleFunc func(context.Context, *ent.KnowledgeEntityLinkingAttributeMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f KnowledgeEntityLinkingAttributeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.KnowledgeEntityLinkingAttributeMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEntityLinkingAttributeMutation", m)
+}
+
 // The KnowledgeEvidenceQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type KnowledgeEvidenceQueryRuleFunc func(context.Context, *ent.KnowledgeEvidenceQuery) error
@@ -1856,6 +1880,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.KnowledgeEntityQuery:
 		return q.Filter(), nil
+	case *ent.KnowledgeEntityLinkingAttributeQuery:
+		return q.Filter(), nil
 	case *ent.KnowledgeEvidenceQuery:
 		return q.Filter(), nil
 	case *ent.KnowledgeRelationshipQuery:
@@ -1998,6 +2024,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.IntegrationUserInstallStateMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeEntityMutation:
+		return m.Filter(), nil
+	case *ent.KnowledgeEntityLinkingAttributeMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeEvidenceMutation:
 		return m.Filter(), nil

@@ -47,6 +47,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -128,6 +129,7 @@ const (
 	TypeIntegrationEventSyncRun         = "IntegrationEventSyncRun"
 	TypeIntegrationUserInstallState     = "IntegrationUserInstallState"
 	TypeKnowledgeEntity                 = "KnowledgeEntity"
+	TypeKnowledgeEntityLinkingAttribute = "KnowledgeEntityLinkingAttribute"
 	TypeKnowledgeEvidence               = "KnowledgeEvidence"
 	TypeKnowledgeRelationship           = "KnowledgeRelationship"
 	TypeKnowledgeSubjectAlias           = "KnowledgeSubjectAlias"
@@ -27968,6 +27970,9 @@ type KnowledgeEntityMutation struct {
 	aliases                     map[uuid.UUID]struct{}
 	removedaliases              map[uuid.UUID]struct{}
 	clearedaliases              bool
+	linking_attributes          map[uuid.UUID]struct{}
+	removedlinking_attributes   map[uuid.UUID]struct{}
+	clearedlinking_attributes   bool
 	source_relationships        map[uuid.UUID]struct{}
 	removedsource_relationships map[uuid.UUID]struct{}
 	clearedsource_relationships bool
@@ -28344,6 +28349,60 @@ func (m *KnowledgeEntityMutation) ResetAliases() {
 	m.removedaliases = nil
 }
 
+// AddLinkingAttributeIDs adds the "linking_attributes" edge to the KnowledgeEntityLinkingAttribute entity by ids.
+func (m *KnowledgeEntityMutation) AddLinkingAttributeIDs(ids ...uuid.UUID) {
+	if m.linking_attributes == nil {
+		m.linking_attributes = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.linking_attributes[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLinkingAttributes clears the "linking_attributes" edge to the KnowledgeEntityLinkingAttribute entity.
+func (m *KnowledgeEntityMutation) ClearLinkingAttributes() {
+	m.clearedlinking_attributes = true
+}
+
+// LinkingAttributesCleared reports if the "linking_attributes" edge to the KnowledgeEntityLinkingAttribute entity was cleared.
+func (m *KnowledgeEntityMutation) LinkingAttributesCleared() bool {
+	return m.clearedlinking_attributes
+}
+
+// RemoveLinkingAttributeIDs removes the "linking_attributes" edge to the KnowledgeEntityLinkingAttribute entity by IDs.
+func (m *KnowledgeEntityMutation) RemoveLinkingAttributeIDs(ids ...uuid.UUID) {
+	if m.removedlinking_attributes == nil {
+		m.removedlinking_attributes = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.linking_attributes, ids[i])
+		m.removedlinking_attributes[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLinkingAttributes returns the removed IDs of the "linking_attributes" edge to the KnowledgeEntityLinkingAttribute entity.
+func (m *KnowledgeEntityMutation) RemovedLinkingAttributesIDs() (ids []uuid.UUID) {
+	for id := range m.removedlinking_attributes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LinkingAttributesIDs returns the "linking_attributes" edge IDs in the mutation.
+func (m *KnowledgeEntityMutation) LinkingAttributesIDs() (ids []uuid.UUID) {
+	for id := range m.linking_attributes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLinkingAttributes resets all changes to the "linking_attributes" edge.
+func (m *KnowledgeEntityMutation) ResetLinkingAttributes() {
+	m.linking_attributes = nil
+	m.clearedlinking_attributes = false
+	m.removedlinking_attributes = nil
+}
+
 // AddSourceRelationshipIDs adds the "source_relationships" edge to the KnowledgeRelationship entity by ids.
 func (m *KnowledgeEntityMutation) AddSourceRelationshipIDs(ids ...uuid.UUID) {
 	if m.source_relationships == nil {
@@ -28656,12 +28715,15 @@ func (m *KnowledgeEntityMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *KnowledgeEntityMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.tenant != nil {
 		edges = append(edges, knowledgeentity.EdgeTenant)
 	}
 	if m.aliases != nil {
 		edges = append(edges, knowledgeentity.EdgeAliases)
+	}
+	if m.linking_attributes != nil {
+		edges = append(edges, knowledgeentity.EdgeLinkingAttributes)
 	}
 	if m.source_relationships != nil {
 		edges = append(edges, knowledgeentity.EdgeSourceRelationships)
@@ -28686,6 +28748,12 @@ func (m *KnowledgeEntityMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case knowledgeentity.EdgeLinkingAttributes:
+		ids := make([]ent.Value, 0, len(m.linking_attributes))
+		for id := range m.linking_attributes {
+			ids = append(ids, id)
+		}
+		return ids
 	case knowledgeentity.EdgeSourceRelationships:
 		ids := make([]ent.Value, 0, len(m.source_relationships))
 		for id := range m.source_relationships {
@@ -28704,9 +28772,12 @@ func (m *KnowledgeEntityMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *KnowledgeEntityMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedaliases != nil {
 		edges = append(edges, knowledgeentity.EdgeAliases)
+	}
+	if m.removedlinking_attributes != nil {
+		edges = append(edges, knowledgeentity.EdgeLinkingAttributes)
 	}
 	if m.removedsource_relationships != nil {
 		edges = append(edges, knowledgeentity.EdgeSourceRelationships)
@@ -28724,6 +28795,12 @@ func (m *KnowledgeEntityMutation) RemovedIDs(name string) []ent.Value {
 	case knowledgeentity.EdgeAliases:
 		ids := make([]ent.Value, 0, len(m.removedaliases))
 		for id := range m.removedaliases {
+			ids = append(ids, id)
+		}
+		return ids
+	case knowledgeentity.EdgeLinkingAttributes:
+		ids := make([]ent.Value, 0, len(m.removedlinking_attributes))
+		for id := range m.removedlinking_attributes {
 			ids = append(ids, id)
 		}
 		return ids
@@ -28745,12 +28822,15 @@ func (m *KnowledgeEntityMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *KnowledgeEntityMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedtenant {
 		edges = append(edges, knowledgeentity.EdgeTenant)
 	}
 	if m.clearedaliases {
 		edges = append(edges, knowledgeentity.EdgeAliases)
+	}
+	if m.clearedlinking_attributes {
+		edges = append(edges, knowledgeentity.EdgeLinkingAttributes)
 	}
 	if m.clearedsource_relationships {
 		edges = append(edges, knowledgeentity.EdgeSourceRelationships)
@@ -28769,6 +28849,8 @@ func (m *KnowledgeEntityMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case knowledgeentity.EdgeAliases:
 		return m.clearedaliases
+	case knowledgeentity.EdgeLinkingAttributes:
+		return m.clearedlinking_attributes
 	case knowledgeentity.EdgeSourceRelationships:
 		return m.clearedsource_relationships
 	case knowledgeentity.EdgeTargetRelationships:
@@ -28798,6 +28880,9 @@ func (m *KnowledgeEntityMutation) ResetEdge(name string) error {
 	case knowledgeentity.EdgeAliases:
 		m.ResetAliases()
 		return nil
+	case knowledgeentity.EdgeLinkingAttributes:
+		m.ResetLinkingAttributes()
+		return nil
 	case knowledgeentity.EdgeSourceRelationships:
 		m.ResetSourceRelationships()
 		return nil
@@ -28806,6 +28891,603 @@ func (m *KnowledgeEntityMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity edge %s", name)
+}
+
+// KnowledgeEntityLinkingAttributeMutation represents an operation that mutates the KnowledgeEntityLinkingAttribute nodes in the graph.
+type KnowledgeEntityLinkingAttributeMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	attribute     *string
+	value         *string
+	clearedFields map[string]struct{}
+	tenant        *int
+	clearedtenant bool
+	entity        *uuid.UUID
+	clearedentity bool
+	done          bool
+	oldValue      func(context.Context) (*KnowledgeEntityLinkingAttribute, error)
+	predicates    []predicate.KnowledgeEntityLinkingAttribute
+}
+
+var _ ent.Mutation = (*KnowledgeEntityLinkingAttributeMutation)(nil)
+
+// knowledgeentitylinkingattributeOption allows management of the mutation configuration using functional options.
+type knowledgeentitylinkingattributeOption func(*KnowledgeEntityLinkingAttributeMutation)
+
+// newKnowledgeEntityLinkingAttributeMutation creates new mutation for the KnowledgeEntityLinkingAttribute entity.
+func newKnowledgeEntityLinkingAttributeMutation(c config, op Op, opts ...knowledgeentitylinkingattributeOption) *KnowledgeEntityLinkingAttributeMutation {
+	m := &KnowledgeEntityLinkingAttributeMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeKnowledgeEntityLinkingAttribute,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withKnowledgeEntityLinkingAttributeID sets the ID field of the mutation.
+func withKnowledgeEntityLinkingAttributeID(id uuid.UUID) knowledgeentitylinkingattributeOption {
+	return func(m *KnowledgeEntityLinkingAttributeMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *KnowledgeEntityLinkingAttribute
+		)
+		m.oldValue = func(ctx context.Context) (*KnowledgeEntityLinkingAttribute, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().KnowledgeEntityLinkingAttribute.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withKnowledgeEntityLinkingAttribute sets the old KnowledgeEntityLinkingAttribute of the mutation.
+func withKnowledgeEntityLinkingAttribute(node *KnowledgeEntityLinkingAttribute) knowledgeentitylinkingattributeOption {
+	return func(m *KnowledgeEntityLinkingAttributeMutation) {
+		m.oldValue = func(context.Context) (*KnowledgeEntityLinkingAttribute, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m KnowledgeEntityLinkingAttributeMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m KnowledgeEntityLinkingAttributeMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of KnowledgeEntityLinkingAttribute entities.
+func (m *KnowledgeEntityLinkingAttributeMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *KnowledgeEntityLinkingAttributeMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().KnowledgeEntityLinkingAttribute.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *KnowledgeEntityLinkingAttributeMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the KnowledgeEntityLinkingAttribute entity.
+// If the KnowledgeEntityLinkingAttribute object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityLinkingAttributeMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *KnowledgeEntityLinkingAttributeMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetEntityID sets the "entity_id" field.
+func (m *KnowledgeEntityLinkingAttributeMutation) SetEntityID(u uuid.UUID) {
+	m.entity = &u
+}
+
+// EntityID returns the value of the "entity_id" field in the mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) EntityID() (r uuid.UUID, exists bool) {
+	v := m.entity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEntityID returns the old "entity_id" field's value of the KnowledgeEntityLinkingAttribute entity.
+// If the KnowledgeEntityLinkingAttribute object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityLinkingAttributeMutation) OldEntityID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEntityID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEntityID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEntityID: %w", err)
+	}
+	return oldValue.EntityID, nil
+}
+
+// ResetEntityID resets all changes to the "entity_id" field.
+func (m *KnowledgeEntityLinkingAttributeMutation) ResetEntityID() {
+	m.entity = nil
+}
+
+// SetAttribute sets the "attribute" field.
+func (m *KnowledgeEntityLinkingAttributeMutation) SetAttribute(s string) {
+	m.attribute = &s
+}
+
+// Attribute returns the value of the "attribute" field in the mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) Attribute() (r string, exists bool) {
+	v := m.attribute
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAttribute returns the old "attribute" field's value of the KnowledgeEntityLinkingAttribute entity.
+// If the KnowledgeEntityLinkingAttribute object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityLinkingAttributeMutation) OldAttribute(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAttribute is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAttribute requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAttribute: %w", err)
+	}
+	return oldValue.Attribute, nil
+}
+
+// ResetAttribute resets all changes to the "attribute" field.
+func (m *KnowledgeEntityLinkingAttributeMutation) ResetAttribute() {
+	m.attribute = nil
+}
+
+// SetValue sets the "value" field.
+func (m *KnowledgeEntityLinkingAttributeMutation) SetValue(s string) {
+	m.value = &s
+}
+
+// Value returns the value of the "value" field in the mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) Value() (r string, exists bool) {
+	v := m.value
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldValue returns the old "value" field's value of the KnowledgeEntityLinkingAttribute entity.
+// If the KnowledgeEntityLinkingAttribute object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityLinkingAttributeMutation) OldValue(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldValue is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldValue requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldValue: %w", err)
+	}
+	return oldValue.Value, nil
+}
+
+// ResetValue resets all changes to the "value" field.
+func (m *KnowledgeEntityLinkingAttributeMutation) ResetValue() {
+	m.value = nil
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *KnowledgeEntityLinkingAttributeMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[knowledgeentitylinkingattribute.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *KnowledgeEntityLinkingAttributeMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeEntityLinkingAttributeMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *KnowledgeEntityLinkingAttributeMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearEntity clears the "entity" edge to the KnowledgeEntity entity.
+func (m *KnowledgeEntityLinkingAttributeMutation) ClearEntity() {
+	m.clearedentity = true
+	m.clearedFields[knowledgeentitylinkingattribute.FieldEntityID] = struct{}{}
+}
+
+// EntityCleared reports if the "entity" edge to the KnowledgeEntity entity was cleared.
+func (m *KnowledgeEntityLinkingAttributeMutation) EntityCleared() bool {
+	return m.clearedentity
+}
+
+// EntityIDs returns the "entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// EntityID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeEntityLinkingAttributeMutation) EntityIDs() (ids []uuid.UUID) {
+	if id := m.entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetEntity resets all changes to the "entity" edge.
+func (m *KnowledgeEntityLinkingAttributeMutation) ResetEntity() {
+	m.entity = nil
+	m.clearedentity = false
+}
+
+// Where appends a list predicates to the KnowledgeEntityLinkingAttributeMutation builder.
+func (m *KnowledgeEntityLinkingAttributeMutation) Where(ps ...predicate.KnowledgeEntityLinkingAttribute) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the KnowledgeEntityLinkingAttributeMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *KnowledgeEntityLinkingAttributeMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.KnowledgeEntityLinkingAttribute, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *KnowledgeEntityLinkingAttributeMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *KnowledgeEntityLinkingAttributeMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (KnowledgeEntityLinkingAttribute).
+func (m *KnowledgeEntityLinkingAttributeMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *KnowledgeEntityLinkingAttributeMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.tenant != nil {
+		fields = append(fields, knowledgeentitylinkingattribute.FieldTenantID)
+	}
+	if m.entity != nil {
+		fields = append(fields, knowledgeentitylinkingattribute.FieldEntityID)
+	}
+	if m.attribute != nil {
+		fields = append(fields, knowledgeentitylinkingattribute.FieldAttribute)
+	}
+	if m.value != nil {
+		fields = append(fields, knowledgeentitylinkingattribute.FieldValue)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *KnowledgeEntityLinkingAttributeMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case knowledgeentitylinkingattribute.FieldTenantID:
+		return m.TenantID()
+	case knowledgeentitylinkingattribute.FieldEntityID:
+		return m.EntityID()
+	case knowledgeentitylinkingattribute.FieldAttribute:
+		return m.Attribute()
+	case knowledgeentitylinkingattribute.FieldValue:
+		return m.Value()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *KnowledgeEntityLinkingAttributeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case knowledgeentitylinkingattribute.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case knowledgeentitylinkingattribute.FieldEntityID:
+		return m.OldEntityID(ctx)
+	case knowledgeentitylinkingattribute.FieldAttribute:
+		return m.OldAttribute(ctx)
+	case knowledgeentitylinkingattribute.FieldValue:
+		return m.OldValue(ctx)
+	}
+	return nil, fmt.Errorf("unknown KnowledgeEntityLinkingAttribute field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KnowledgeEntityLinkingAttributeMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case knowledgeentitylinkingattribute.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case knowledgeentitylinkingattribute.FieldEntityID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEntityID(v)
+		return nil
+	case knowledgeentitylinkingattribute.FieldAttribute:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAttribute(v)
+		return nil
+	case knowledgeentitylinkingattribute.FieldValue:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetValue(v)
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityLinkingAttribute field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *KnowledgeEntityLinkingAttributeMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KnowledgeEntityLinkingAttributeMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown KnowledgeEntityLinkingAttribute numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *KnowledgeEntityLinkingAttributeMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown KnowledgeEntityLinkingAttribute nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *KnowledgeEntityLinkingAttributeMutation) ResetField(name string) error {
+	switch name {
+	case knowledgeentitylinkingattribute.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case knowledgeentitylinkingattribute.FieldEntityID:
+		m.ResetEntityID()
+		return nil
+	case knowledgeentitylinkingattribute.FieldAttribute:
+		m.ResetAttribute()
+		return nil
+	case knowledgeentitylinkingattribute.FieldValue:
+		m.ResetValue()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityLinkingAttribute field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.tenant != nil {
+		edges = append(edges, knowledgeentitylinkingattribute.EdgeTenant)
+	}
+	if m.entity != nil {
+		edges = append(edges, knowledgeentitylinkingattribute.EdgeEntity)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case knowledgeentitylinkingattribute.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case knowledgeentitylinkingattribute.EdgeEntity:
+		if id := m.entity; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedtenant {
+		edges = append(edges, knowledgeentitylinkingattribute.EdgeTenant)
+	}
+	if m.clearedentity {
+		edges = append(edges, knowledgeentitylinkingattribute.EdgeEntity)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *KnowledgeEntityLinkingAttributeMutation) EdgeCleared(name string) bool {
+	switch name {
+	case knowledgeentitylinkingattribute.EdgeTenant:
+		return m.clearedtenant
+	case knowledgeentitylinkingattribute.EdgeEntity:
+		return m.clearedentity
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *KnowledgeEntityLinkingAttributeMutation) ClearEdge(name string) error {
+	switch name {
+	case knowledgeentitylinkingattribute.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case knowledgeentitylinkingattribute.EdgeEntity:
+		m.ClearEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityLinkingAttribute unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *KnowledgeEntityLinkingAttributeMutation) ResetEdge(name string) error {
+	switch name {
+	case knowledgeentitylinkingattribute.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case knowledgeentitylinkingattribute.EdgeEntity:
+		m.ResetEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityLinkingAttribute edge %s", name)
 }
 
 // KnowledgeEvidenceMutation represents an operation that mutates the KnowledgeEvidence nodes in the graph.

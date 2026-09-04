@@ -40,6 +40,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -902,6 +903,30 @@ func init() {
 	knowledgeentityDescID := knowledgeentityFields[0].Descriptor()
 	// knowledgeentity.DefaultID holds the default value on creation for the id field.
 	knowledgeentity.DefaultID = knowledgeentityDescID.Default.(func() uuid.UUID)
+	knowledgeentitylinkingattributeMixin := schema.KnowledgeEntityLinkingAttribute{}.Mixin()
+	knowledgeentitylinkingattribute.Policy = privacy.NewPolicies(knowledgeentitylinkingattributeMixin[0], knowledgeentitylinkingattributeMixin[1], schema.KnowledgeEntityLinkingAttribute{})
+	knowledgeentitylinkingattribute.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := knowledgeentitylinkingattribute.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	knowledgeentitylinkingattributeFields := schema.KnowledgeEntityLinkingAttribute{}.Fields()
+	_ = knowledgeentitylinkingattributeFields
+	// knowledgeentitylinkingattributeDescAttribute is the schema descriptor for attribute field.
+	knowledgeentitylinkingattributeDescAttribute := knowledgeentitylinkingattributeFields[2].Descriptor()
+	// knowledgeentitylinkingattribute.AttributeValidator is a validator for the "attribute" field. It is called by the builders before save.
+	knowledgeentitylinkingattribute.AttributeValidator = knowledgeentitylinkingattributeDescAttribute.Validators[0].(func(string) error)
+	// knowledgeentitylinkingattributeDescValue is the schema descriptor for value field.
+	knowledgeentitylinkingattributeDescValue := knowledgeentitylinkingattributeFields[3].Descriptor()
+	// knowledgeentitylinkingattribute.ValueValidator is a validator for the "value" field. It is called by the builders before save.
+	knowledgeentitylinkingattribute.ValueValidator = knowledgeentitylinkingattributeDescValue.Validators[0].(func(string) error)
+	// knowledgeentitylinkingattributeDescID is the schema descriptor for id field.
+	knowledgeentitylinkingattributeDescID := knowledgeentitylinkingattributeFields[0].Descriptor()
+	// knowledgeentitylinkingattribute.DefaultID holds the default value on creation for the id field.
+	knowledgeentitylinkingattribute.DefaultID = knowledgeentitylinkingattributeDescID.Default.(func() uuid.UUID)
 	knowledgeevidenceMixin := schema.KnowledgeEvidence{}.Mixin()
 	knowledgeevidence.Policy = privacy.NewPolicies(knowledgeevidenceMixin[0], knowledgeevidenceMixin[1], schema.KnowledgeEvidence{})
 	knowledgeevidence.Hooks[0] = func(next ent.Mutator) ent.Mutator {

@@ -6,7 +6,6 @@ import (
 	"maps"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
 )
@@ -30,12 +29,12 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, e *p
 		ProviderNamespace: event.ProviderNamespace,
 		ResourceRef:       event.ProviderResourceRef,
 	}
-	componentEntityRef := ent.KnowledgeEntityRef{
+	componentEntityRef := rez.KnowledgeEntityRef{
 		Category:            attrs.Category,
 		Kind:                attrs.Kind,
 		ProviderResourceRef: componentResourceRef,
 	}
-	evidence := ent.KnowledgeEvidenceRef{
+	evidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event),
 		Assertion:   knowledgeAssertionSystemComponentExists,
 		EffectiveAt: event.OccurredAt,
@@ -57,19 +56,19 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 	event := e.Event
 	attrs := e.Attributes
 
-	sourceEntityRef := ent.KnowledgeEntityRef{
+	sourceEntityRef := rez.KnowledgeEntityRef{
 		Category:            attrs.Source.Category,
 		Kind:                attrs.Source.Kind,
 		ProviderResourceRef: attrs.Source.Ref,
 	}
 
-	targetEntityRef := ent.KnowledgeEntityRef{
+	targetEntityRef := rez.KnowledgeEntityRef{
 		Category:            attrs.Target.Category,
 		Kind:                attrs.Target.Kind,
 		ProviderResourceRef: attrs.Target.Ref,
 	}
 	evidenceKind := projectionEvidenceKind(event)
-	sourceEvidenceRef := ent.KnowledgeEvidenceRef{
+	sourceEvidenceRef := rez.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionSystemEndpointObserved,
 		EffectiveAt: event.OccurredAt,
@@ -80,7 +79,7 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 		},
 		SubjectEntity: &sourceEntityRef,
 	}
-	targetEvidenceRef := ent.KnowledgeEvidenceRef{
+	targetEvidenceRef := rez.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionSystemEndpointObserved,
 		EffectiveAt: event.OccurredAt,
@@ -97,13 +96,13 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 		ProviderNamespace: event.ProviderNamespace,
 		ResourceRef:       event.ProviderResourceRef,
 	}
-	relationshipRef := ent.KnowledgeRelationshipRef{
+	relationshipRef := rez.KnowledgeRelationshipRef{
 		Predicate:           attrs.Predicate,
 		ProviderResourceRef: relationshipResourceRef,
 		Source:              sourceEntityRef,
 		Target:              targetEntityRef,
 	}
-	relationshipEvidenceRef := ent.KnowledgeEvidenceRef{
+	relationshipEvidenceRef := rez.KnowledgeEvidenceRef{
 		Kind:                evidenceKind,
 		Assertion:           knowledgeAssertionSystemRelationshipExists,
 		EffectiveAt:         event.OccurredAt,

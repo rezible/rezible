@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
@@ -31,6 +32,7 @@ type KnowledgeEntityQuery struct {
 	predicates              []predicate.KnowledgeEntity
 	withTenant              *TenantQuery
 	withAliases             *KnowledgeSubjectAliasQuery
+	withLinkingAttributes   *KnowledgeEntityLinkingAttributeQuery
 	withSourceRelationships *KnowledgeRelationshipQuery
 	withTargetRelationships *KnowledgeRelationshipQuery
 	modifiers               []func(*sql.Selector)
@@ -114,6 +116,31 @@ func (_q *KnowledgeEntityQuery) QueryAliases() *KnowledgeSubjectAliasQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
 		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLinkingAttributes chains the current query on the "linking_attributes" edge.
+func (_q *KnowledgeEntityQuery) QueryLinkingAttributes() *KnowledgeEntityLinkingAttributeQuery {
+	query := (&KnowledgeEntityLinkingAttributeClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentity.Table, knowledgeentity.FieldID, selector),
+			sqlgraph.To(knowledgeentitylinkingattribute.Table, knowledgeentitylinkingattribute.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgeentity.LinkingAttributesTable, knowledgeentity.LinkingAttributesColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntityLinkingAttribute
+		step.Edge.Schema = schemaConfig.KnowledgeEntityLinkingAttribute
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -364,6 +391,7 @@ func (_q *KnowledgeEntityQuery) Clone() *KnowledgeEntityQuery {
 		predicates:              append([]predicate.KnowledgeEntity{}, _q.predicates...),
 		withTenant:              _q.withTenant.Clone(),
 		withAliases:             _q.withAliases.Clone(),
+		withLinkingAttributes:   _q.withLinkingAttributes.Clone(),
 		withSourceRelationships: _q.withSourceRelationships.Clone(),
 		withTargetRelationships: _q.withTargetRelationships.Clone(),
 		// clone intermediate query.
@@ -392,6 +420,17 @@ func (_q *KnowledgeEntityQuery) WithAliases(opts ...func(*KnowledgeSubjectAliasQ
 		opt(query)
 	}
 	_q.withAliases = query
+	return _q
+}
+
+// WithLinkingAttributes tells the query-builder to eager-load the nodes that are connected to
+// the "linking_attributes" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeEntityQuery) WithLinkingAttributes(opts ...func(*KnowledgeEntityLinkingAttributeQuery)) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityLinkingAttributeClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withLinkingAttributes = query
 	return _q
 }
 
@@ -501,9 +540,10 @@ func (_q *KnowledgeEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*KnowledgeEntity{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withAliases != nil,
+			_q.withLinkingAttributes != nil,
 			_q.withSourceRelationships != nil,
 			_q.withTargetRelationships != nil,
 		}
@@ -541,6 +581,15 @@ func (_q *KnowledgeEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := _q.loadAliases(ctx, query, nodes,
 			func(n *KnowledgeEntity) { n.Edges.Aliases = []*KnowledgeSubjectAlias{} },
 			func(n *KnowledgeEntity, e *KnowledgeSubjectAlias) { n.Edges.Aliases = append(n.Edges.Aliases, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withLinkingAttributes; query != nil {
+		if err := _q.loadLinkingAttributes(ctx, query, nodes,
+			func(n *KnowledgeEntity) { n.Edges.LinkingAttributes = []*KnowledgeEntityLinkingAttribute{} },
+			func(n *KnowledgeEntity, e *KnowledgeEntityLinkingAttribute) {
+				n.Edges.LinkingAttributes = append(n.Edges.LinkingAttributes, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -622,6 +671,36 @@ func (_q *KnowledgeEntityQuery) loadAliases(ctx context.Context, query *Knowledg
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "entity_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *KnowledgeEntityQuery) loadLinkingAttributes(ctx context.Context, query *KnowledgeEntityLinkingAttributeQuery, nodes []*KnowledgeEntity, init func(*KnowledgeEntity), assign func(*KnowledgeEntity, *KnowledgeEntityLinkingAttribute)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*KnowledgeEntity)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(knowledgeentitylinkingattribute.FieldEntityID)
+	}
+	query.Where(predicate.KnowledgeEntityLinkingAttribute(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(knowledgeentity.LinkingAttributesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.EntityID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "entity_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

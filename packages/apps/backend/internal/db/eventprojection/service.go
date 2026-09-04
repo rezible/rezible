@@ -72,7 +72,7 @@ func projectionEvidenceKind(event *ent.NormalizedEvent) ke.Kind {
 	return ke.KindObserved
 }
 
-func (s *ProjectionService) ingestSubjectEvidence(ctx context.Context, event *ent.NormalizedEvent, evidence ent.KnowledgeEvidenceRef, supportingEvidence ...ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error) {
+func (s *ProjectionService) ingestSubjectEvidence(ctx context.Context, event *ent.NormalizedEvent, evidence rez.KnowledgeEvidenceRef, supportingEvidence ...rez.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error) {
 	refs := append(supportingEvidence, evidence)
 	if err := s.knowledge.IngestEvidence(ctx, event, refs...); err != nil {
 		return nil, err

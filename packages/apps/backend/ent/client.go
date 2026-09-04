@@ -48,6 +48,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -159,6 +160,8 @@ type Client struct {
 	IntegrationUserInstallState *IntegrationUserInstallStateClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
 	KnowledgeEntity *KnowledgeEntityClient
+	// KnowledgeEntityLinkingAttribute is the client for interacting with the KnowledgeEntityLinkingAttribute builders.
+	KnowledgeEntityLinkingAttribute *KnowledgeEntityLinkingAttributeClient
 	// KnowledgeEvidence is the client for interacting with the KnowledgeEvidence builders.
 	KnowledgeEvidence *KnowledgeEvidenceClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
@@ -275,6 +278,7 @@ func (c *Client) init() {
 	c.IntegrationEventSyncRun = NewIntegrationEventSyncRunClient(c.config)
 	c.IntegrationUserInstallState = NewIntegrationUserInstallStateClient(c.config)
 	c.KnowledgeEntity = NewKnowledgeEntityClient(c.config)
+	c.KnowledgeEntityLinkingAttribute = NewKnowledgeEntityLinkingAttributeClient(c.config)
 	c.KnowledgeEvidence = NewKnowledgeEvidenceClient(c.config)
 	c.KnowledgeRelationship = NewKnowledgeRelationshipClient(c.config)
 	c.KnowledgeSubjectAlias = NewKnowledgeSubjectAliasClient(c.config)
@@ -439,6 +443,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IntegrationEventSyncRun:         NewIntegrationEventSyncRunClient(cfg),
 		IntegrationUserInstallState:     NewIntegrationUserInstallStateClient(cfg),
 		KnowledgeEntity:                 NewKnowledgeEntityClient(cfg),
+		KnowledgeEntityLinkingAttribute: NewKnowledgeEntityLinkingAttributeClient(cfg),
 		KnowledgeEvidence:               NewKnowledgeEvidenceClient(cfg),
 		KnowledgeRelationship:           NewKnowledgeRelationshipClient(cfg),
 		KnowledgeSubjectAlias:           NewKnowledgeSubjectAliasClient(cfg),
@@ -527,6 +532,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IntegrationEventSyncRun:         NewIntegrationEventSyncRunClient(cfg),
 		IntegrationUserInstallState:     NewIntegrationUserInstallStateClient(cfg),
 		KnowledgeEntity:                 NewKnowledgeEntityClient(cfg),
+		KnowledgeEntityLinkingAttribute: NewKnowledgeEntityLinkingAttributeClient(cfg),
 		KnowledgeEvidence:               NewKnowledgeEvidenceClient(cfg),
 		KnowledgeRelationship:           NewKnowledgeRelationshipClient(cfg),
 		KnowledgeSubjectAlias:           NewKnowledgeSubjectAliasClient(cfg),
@@ -600,7 +606,8 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
 		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
 		c.Integration, c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
-		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEvidence,
+		c.IntegrationUserInstallState, c.KnowledgeEntity,
+		c.KnowledgeEntityLinkingAttribute, c.KnowledgeEvidence,
 		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
 		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
 		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
@@ -628,7 +635,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
 		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
 		c.Integration, c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
-		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEvidence,
+		c.IntegrationUserInstallState, c.KnowledgeEntity,
+		c.KnowledgeEntityLinkingAttribute, c.KnowledgeEvidence,
 		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
 		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
 		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
@@ -711,6 +719,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IntegrationUserInstallState.mutate(ctx, m)
 	case *KnowledgeEntityMutation:
 		return c.KnowledgeEntity.mutate(ctx, m)
+	case *KnowledgeEntityLinkingAttributeMutation:
+		return c.KnowledgeEntityLinkingAttribute.mutate(ctx, m)
 	case *KnowledgeEvidenceMutation:
 		return c.KnowledgeEvidence.mutate(ctx, m)
 	case *KnowledgeRelationshipMutation:
@@ -7328,6 +7338,25 @@ func (c *KnowledgeEntityClient) QueryAliases(_m *KnowledgeEntity) *KnowledgeSubj
 	return query
 }
 
+// QueryLinkingAttributes queries the linking_attributes edge of a KnowledgeEntity.
+func (c *KnowledgeEntityClient) QueryLinkingAttributes(_m *KnowledgeEntity) *KnowledgeEntityLinkingAttributeQuery {
+	query := (&KnowledgeEntityLinkingAttributeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentity.Table, knowledgeentity.FieldID, id),
+			sqlgraph.To(knowledgeentitylinkingattribute.Table, knowledgeentitylinkingattribute.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgeentity.LinkingAttributesTable, knowledgeentity.LinkingAttributesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntityLinkingAttribute
+		step.Edge.Schema = schemaConfig.KnowledgeEntityLinkingAttribute
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QuerySourceRelationships queries the source_relationships edge of a KnowledgeEntity.
 func (c *KnowledgeEntityClient) QuerySourceRelationships(_m *KnowledgeEntity) *KnowledgeRelationshipQuery {
 	query := (&KnowledgeRelationshipClient{config: c.config}).Query()
@@ -7389,6 +7418,178 @@ func (c *KnowledgeEntityClient) mutate(ctx context.Context, m *KnowledgeEntityMu
 		return (&KnowledgeEntityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown KnowledgeEntity mutation op: %q", m.Op())
+	}
+}
+
+// KnowledgeEntityLinkingAttributeClient is a client for the KnowledgeEntityLinkingAttribute schema.
+type KnowledgeEntityLinkingAttributeClient struct {
+	config
+}
+
+// NewKnowledgeEntityLinkingAttributeClient returns a client for the KnowledgeEntityLinkingAttribute from the given config.
+func NewKnowledgeEntityLinkingAttributeClient(c config) *KnowledgeEntityLinkingAttributeClient {
+	return &KnowledgeEntityLinkingAttributeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `knowledgeentitylinkingattribute.Hooks(f(g(h())))`.
+func (c *KnowledgeEntityLinkingAttributeClient) Use(hooks ...Hook) {
+	c.hooks.KnowledgeEntityLinkingAttribute = append(c.hooks.KnowledgeEntityLinkingAttribute, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `knowledgeentitylinkingattribute.Intercept(f(g(h())))`.
+func (c *KnowledgeEntityLinkingAttributeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KnowledgeEntityLinkingAttribute = append(c.inters.KnowledgeEntityLinkingAttribute, interceptors...)
+}
+
+// Create returns a builder for creating a KnowledgeEntityLinkingAttribute entity.
+func (c *KnowledgeEntityLinkingAttributeClient) Create() *KnowledgeEntityLinkingAttributeCreate {
+	mutation := newKnowledgeEntityLinkingAttributeMutation(c.config, OpCreate)
+	return &KnowledgeEntityLinkingAttributeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KnowledgeEntityLinkingAttribute entities.
+func (c *KnowledgeEntityLinkingAttributeClient) CreateBulk(builders ...*KnowledgeEntityLinkingAttributeCreate) *KnowledgeEntityLinkingAttributeCreateBulk {
+	return &KnowledgeEntityLinkingAttributeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KnowledgeEntityLinkingAttributeClient) MapCreateBulk(slice any, setFunc func(*KnowledgeEntityLinkingAttributeCreate, int)) *KnowledgeEntityLinkingAttributeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KnowledgeEntityLinkingAttributeCreateBulk{err: fmt.Errorf("calling to KnowledgeEntityLinkingAttributeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KnowledgeEntityLinkingAttributeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KnowledgeEntityLinkingAttributeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KnowledgeEntityLinkingAttribute.
+func (c *KnowledgeEntityLinkingAttributeClient) Update() *KnowledgeEntityLinkingAttributeUpdate {
+	mutation := newKnowledgeEntityLinkingAttributeMutation(c.config, OpUpdate)
+	return &KnowledgeEntityLinkingAttributeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KnowledgeEntityLinkingAttributeClient) UpdateOne(_m *KnowledgeEntityLinkingAttribute) *KnowledgeEntityLinkingAttributeUpdateOne {
+	mutation := newKnowledgeEntityLinkingAttributeMutation(c.config, OpUpdateOne, withKnowledgeEntityLinkingAttribute(_m))
+	return &KnowledgeEntityLinkingAttributeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KnowledgeEntityLinkingAttributeClient) UpdateOneID(id uuid.UUID) *KnowledgeEntityLinkingAttributeUpdateOne {
+	mutation := newKnowledgeEntityLinkingAttributeMutation(c.config, OpUpdateOne, withKnowledgeEntityLinkingAttributeID(id))
+	return &KnowledgeEntityLinkingAttributeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KnowledgeEntityLinkingAttribute.
+func (c *KnowledgeEntityLinkingAttributeClient) Delete() *KnowledgeEntityLinkingAttributeDelete {
+	mutation := newKnowledgeEntityLinkingAttributeMutation(c.config, OpDelete)
+	return &KnowledgeEntityLinkingAttributeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KnowledgeEntityLinkingAttributeClient) DeleteOne(_m *KnowledgeEntityLinkingAttribute) *KnowledgeEntityLinkingAttributeDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KnowledgeEntityLinkingAttributeClient) DeleteOneID(id uuid.UUID) *KnowledgeEntityLinkingAttributeDeleteOne {
+	builder := c.Delete().Where(knowledgeentitylinkingattribute.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KnowledgeEntityLinkingAttributeDeleteOne{builder}
+}
+
+// Query returns a query builder for KnowledgeEntityLinkingAttribute.
+func (c *KnowledgeEntityLinkingAttributeClient) Query() *KnowledgeEntityLinkingAttributeQuery {
+	return &KnowledgeEntityLinkingAttributeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKnowledgeEntityLinkingAttribute},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KnowledgeEntityLinkingAttribute entity by its id.
+func (c *KnowledgeEntityLinkingAttributeClient) Get(ctx context.Context, id uuid.UUID) (*KnowledgeEntityLinkingAttribute, error) {
+	return c.Query().Where(knowledgeentitylinkingattribute.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KnowledgeEntityLinkingAttributeClient) GetX(ctx context.Context, id uuid.UUID) *KnowledgeEntityLinkingAttribute {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a KnowledgeEntityLinkingAttribute.
+func (c *KnowledgeEntityLinkingAttributeClient) QueryTenant(_m *KnowledgeEntityLinkingAttribute) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentitylinkingattribute.Table, knowledgeentitylinkingattribute.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeentitylinkingattribute.TenantTable, knowledgeentitylinkingattribute.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.KnowledgeEntityLinkingAttribute
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEntity queries the entity edge of a KnowledgeEntityLinkingAttribute.
+func (c *KnowledgeEntityLinkingAttributeClient) QueryEntity(_m *KnowledgeEntityLinkingAttribute) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentitylinkingattribute.Table, knowledgeentitylinkingattribute.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeentitylinkingattribute.EntityTable, knowledgeentitylinkingattribute.EntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.KnowledgeEntityLinkingAttribute
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KnowledgeEntityLinkingAttributeClient) Hooks() []Hook {
+	hooks := c.hooks.KnowledgeEntityLinkingAttribute
+	return append(hooks[:len(hooks):len(hooks)], knowledgeentitylinkingattribute.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *KnowledgeEntityLinkingAttributeClient) Interceptors() []Interceptor {
+	return c.inters.KnowledgeEntityLinkingAttribute
+}
+
+func (c *KnowledgeEntityLinkingAttributeClient) mutate(ctx context.Context, m *KnowledgeEntityLinkingAttributeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KnowledgeEntityLinkingAttributeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KnowledgeEntityLinkingAttributeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KnowledgeEntityLinkingAttributeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KnowledgeEntityLinkingAttributeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KnowledgeEntityLinkingAttribute mutation op: %q", m.Op())
 	}
 }
 
@@ -14986,13 +15187,14 @@ type (
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentType, Integration, IntegrationEventSyncCursor,
 		IntegrationEventSyncRun, IntegrationUserInstallState, KnowledgeEntity,
-		KnowledgeEvidence, KnowledgeRelationship, KnowledgeSubjectAlias,
-		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
-		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
-		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
-		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
-		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
-		RetrospectiveReview, SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeRelationship,
+		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
+		NormalizedEventProjection, NormalizedEventProjectionEntity,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
+		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
+		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
 		SystemAnalysisEntrySubject, SystemAnalysisRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, UserAuthSession,
 		VideoConference []ent.Hook
@@ -15006,13 +15208,14 @@ type (
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentType, Integration, IntegrationEventSyncCursor,
 		IntegrationEventSyncRun, IntegrationUserInstallState, KnowledgeEntity,
-		KnowledgeEvidence, KnowledgeRelationship, KnowledgeSubjectAlias,
-		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
-		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
-		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
-		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
-		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
-		RetrospectiveReview, SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeRelationship,
+		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
+		NormalizedEventProjection, NormalizedEventProjectionEntity,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
+		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
+		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
 		SystemAnalysisEntrySubject, SystemAnalysisRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, UserAuthSession,
 		VideoConference []ent.Interceptor
@@ -15063,6 +15266,7 @@ var (
 		IntegrationEventSyncRun:                   tableSchemas[0],
 		IntegrationUserInstallState:               tableSchemas[0],
 		KnowledgeEntity:                           tableSchemas[0],
+		KnowledgeEntityLinkingAttribute:           tableSchemas[0],
 		KnowledgeEvidence:                         tableSchemas[0],
 		KnowledgeRelationship:                     tableSchemas[0],
 		KnowledgeSubjectAlias:                     tableSchemas[0],

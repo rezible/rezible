@@ -105,6 +105,9 @@ type IntegrationUserInstallState func(*sql.Selector)
 // KnowledgeEntity is the predicate function for knowledgeentity builders.
 type KnowledgeEntity func(*sql.Selector)
 
+// KnowledgeEntityLinkingAttribute is the predicate function for knowledgeentitylinkingattribute builders.
+type KnowledgeEntityLinkingAttribute func(*sql.Selector)
+
 // KnowledgeEvidence is the predicate function for knowledgeevidence builders.
 type KnowledgeEvidence func(*sql.Selector)
 

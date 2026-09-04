@@ -36,6 +36,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -82,7 +83,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 69)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 70)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   agentartifact.Table,
@@ -722,6 +723,23 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[33] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   knowledgeentitylinkingattribute.Table,
+			Columns: knowledgeentitylinkingattribute.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: knowledgeentitylinkingattribute.FieldID,
+			},
+		},
+		Type: "KnowledgeEntityLinkingAttribute",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			knowledgeentitylinkingattribute.FieldTenantID:  {Type: field.TypeInt, Column: knowledgeentitylinkingattribute.FieldTenantID},
+			knowledgeentitylinkingattribute.FieldEntityID:  {Type: field.TypeUUID, Column: knowledgeentitylinkingattribute.FieldEntityID},
+			knowledgeentitylinkingattribute.FieldAttribute: {Type: field.TypeString, Column: knowledgeentitylinkingattribute.FieldAttribute},
+			knowledgeentitylinkingattribute.FieldValue:     {Type: field.TypeString, Column: knowledgeentitylinkingattribute.FieldValue},
+		},
+	}
+	graph.Nodes[34] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   knowledgeevidence.Table,
 			Columns: knowledgeevidence.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -741,7 +759,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgeevidence.FieldSubjectState:   {Type: field.TypeJSON, Column: knowledgeevidence.FieldSubjectState},
 		},
 	}
-	graph.Nodes[34] = &sqlgraph.Node{
+	graph.Nodes[35] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   knowledgerelationship.Table,
 			Columns: knowledgerelationship.Columns,
@@ -760,7 +778,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgerelationship.FieldTargetEntityID: {Type: field.TypeUUID, Column: knowledgerelationship.FieldTargetEntityID},
 		},
 	}
-	graph.Nodes[35] = &sqlgraph.Node{
+	graph.Nodes[36] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   knowledgesubjectalias.Table,
 			Columns: knowledgesubjectalias.Columns,
@@ -780,7 +798,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgesubjectalias.FieldRelationshipID:      {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldRelationshipID},
 		},
 	}
-	graph.Nodes[36] = &sqlgraph.Node{
+	graph.Nodes[37] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   meetingschedule.Table,
 			Columns: meetingschedule.Columns,
@@ -806,7 +824,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			meetingschedule.FieldNumRepetitions:  {Type: field.TypeInt, Column: meetingschedule.FieldNumRepetitions},
 		},
 	}
-	graph.Nodes[37] = &sqlgraph.Node{
+	graph.Nodes[38] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   meetingsession.Table,
 			Columns: meetingsession.Columns,
@@ -824,7 +842,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			meetingsession.FieldDocumentName: {Type: field.TypeString, Column: meetingsession.FieldDocumentName},
 		},
 	}
-	graph.Nodes[38] = &sqlgraph.Node{
+	graph.Nodes[39] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   normalizedevent.Table,
 			Columns: normalizedevent.Columns,
@@ -849,7 +867,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			normalizedevent.FieldReceivedAt:          {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
 		},
 	}
-	graph.Nodes[39] = &sqlgraph.Node{
+	graph.Nodes[40] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   normalizedeventprojection.Table,
 			Columns: normalizedeventprojection.Columns,
@@ -865,7 +883,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			normalizedeventprojection.FieldCompletedAt: {Type: field.TypeTime, Column: normalizedeventprojection.FieldCompletedAt},
 		},
 	}
-	graph.Nodes[40] = &sqlgraph.Node{
+	graph.Nodes[41] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   normalizedeventprojectionentity.Table,
 			Columns: normalizedeventprojectionentity.Columns,
@@ -882,7 +900,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			normalizedeventprojectionentity.FieldDomainEntityID:   {Type: field.TypeUUID, Column: normalizedeventprojectionentity.FieldDomainEntityID},
 		},
 	}
-	graph.Nodes[41] = &sqlgraph.Node{
+	graph.Nodes[42] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallhandovertemplate.Table,
 			Columns: oncallhandovertemplate.Columns,
@@ -900,7 +918,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallhandovertemplate.FieldIsDefault: {Type: field.TypeBool, Column: oncallhandovertemplate.FieldIsDefault},
 		},
 	}
-	graph.Nodes[42] = &sqlgraph.Node{
+	graph.Nodes[43] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallroster.Table,
 			Columns: oncallroster.Columns,
@@ -921,7 +939,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallroster.FieldHandoverTemplateID: {Type: field.TypeUUID, Column: oncallroster.FieldHandoverTemplateID},
 		},
 	}
-	graph.Nodes[43] = &sqlgraph.Node{
+	graph.Nodes[44] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallrostermetrics.Table,
 			Columns: oncallrostermetrics.Columns,
@@ -936,7 +954,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallrostermetrics.FieldRosterID: {Type: field.TypeUUID, Column: oncallrostermetrics.FieldRosterID},
 		},
 	}
-	graph.Nodes[44] = &sqlgraph.Node{
+	graph.Nodes[45] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallschedule.Table,
 			Columns: oncallschedule.Columns,
@@ -954,7 +972,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallschedule.FieldTimezone:    {Type: field.TypeString, Column: oncallschedule.FieldTimezone},
 		},
 	}
-	graph.Nodes[45] = &sqlgraph.Node{
+	graph.Nodes[46] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallscheduleparticipant.Table,
 			Columns: oncallscheduleparticipant.Columns,
@@ -971,7 +989,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallscheduleparticipant.FieldIndex:      {Type: field.TypeInt, Column: oncallscheduleparticipant.FieldIndex},
 		},
 	}
-	graph.Nodes[46] = &sqlgraph.Node{
+	graph.Nodes[47] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallshift.Table,
 			Columns: oncallshift.Columns,
@@ -991,7 +1009,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallshift.FieldEndAt:          {Type: field.TypeTime, Column: oncallshift.FieldEndAt},
 		},
 	}
-	graph.Nodes[47] = &sqlgraph.Node{
+	graph.Nodes[48] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallshifthandover.Table,
 			Columns: oncallshifthandover.Columns,
@@ -1011,7 +1029,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallshifthandover.FieldContents:     {Type: field.TypeBytes, Column: oncallshifthandover.FieldContents},
 		},
 	}
-	graph.Nodes[48] = &sqlgraph.Node{
+	graph.Nodes[49] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   oncallshiftmetrics.Table,
 			Columns: oncallshiftmetrics.Columns,
@@ -1040,7 +1058,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallshiftmetrics.FieldInterruptsBusinessHours: {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldInterruptsBusinessHours},
 		},
 	}
-	graph.Nodes[49] = &sqlgraph.Node{
+	graph.Nodes[50] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   organization.Table,
 			Columns: organization.Columns,
@@ -1056,7 +1074,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			organization.FieldName:           {Type: field.TypeString, Column: organization.FieldName},
 		},
 	}
-	graph.Nodes[50] = &sqlgraph.Node{
+	graph.Nodes[51] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   organizationpreferences.Table,
 			Columns: organizationpreferences.Columns,
@@ -1073,7 +1091,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			organizationpreferences.FieldEnableIncidentManagement: {Type: field.TypeBool, Column: organizationpreferences.FieldEnableIncidentManagement},
 		},
 	}
-	graph.Nodes[51] = &sqlgraph.Node{
+	graph.Nodes[52] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   organizationrole.Table,
 			Columns: organizationrole.Columns,
@@ -1090,7 +1108,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			organizationrole.FieldRole:           {Type: field.TypeEnum, Column: organizationrole.FieldRole},
 		},
 	}
-	graph.Nodes[52] = &sqlgraph.Node{
+	graph.Nodes[53] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   playbook.Table,
 			Columns: playbook.Columns,
@@ -1106,7 +1124,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			playbook.FieldContent:  {Type: field.TypeBytes, Column: playbook.FieldContent},
 		},
 	}
-	graph.Nodes[53] = &sqlgraph.Node{
+	graph.Nodes[54] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   retrospective.Table,
 			Columns: retrospective.Columns,
@@ -1125,7 +1143,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			retrospective.FieldState:            {Type: field.TypeEnum, Column: retrospective.FieldState},
 		},
 	}
-	graph.Nodes[54] = &sqlgraph.Node{
+	graph.Nodes[55] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   retrospectivecomment.Table,
 			Columns: retrospectivecomment.Columns,
@@ -1144,7 +1162,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			retrospectivecomment.FieldContent:               {Type: field.TypeBytes, Column: retrospectivecomment.FieldContent},
 		},
 	}
-	graph.Nodes[55] = &sqlgraph.Node{
+	graph.Nodes[56] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   retrospectivereview.Table,
 			Columns: retrospectivereview.Columns,
@@ -1163,7 +1181,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			retrospectivereview.FieldState:           {Type: field.TypeEnum, Column: retrospectivereview.FieldState},
 		},
 	}
-	graph.Nodes[56] = &sqlgraph.Node{
+	graph.Nodes[57] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemanalysis.Table,
 			Columns: systemanalysis.Columns,
@@ -1182,7 +1200,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysis.FieldReferenceTime:   {Type: field.TypeTime, Column: systemanalysis.FieldReferenceTime},
 		},
 	}
-	graph.Nodes[57] = &sqlgraph.Node{
+	graph.Nodes[58] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemanalysisentity.Table,
 			Columns: systemanalysisentity.Columns,
@@ -1206,7 +1224,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysisentity.FieldProperties:          {Type: field.TypeJSON, Column: systemanalysisentity.FieldProperties},
 		},
 	}
-	graph.Nodes[58] = &sqlgraph.Node{
+	graph.Nodes[59] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemanalysisentry.Table,
 			Columns: systemanalysisentry.Columns,
@@ -1230,7 +1248,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysisentry.FieldProperties: {Type: field.TypeJSON, Column: systemanalysisentry.FieldProperties},
 		},
 	}
-	graph.Nodes[59] = &sqlgraph.Node{
+	graph.Nodes[60] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemanalysisentrysubject.Table,
 			Columns: systemanalysisentrysubject.Columns,
@@ -1251,7 +1269,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysisentrysubject.FieldRole:                    {Type: field.TypeString, Column: systemanalysisentrysubject.FieldRole},
 		},
 	}
-	graph.Nodes[60] = &sqlgraph.Node{
+	graph.Nodes[61] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemanalysisrelationship.Table,
 			Columns: systemanalysisrelationship.Columns,
@@ -1274,7 +1292,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysisrelationship.FieldProperties:              {Type: field.TypeJSON, Column: systemanalysisrelationship.FieldProperties},
 		},
 	}
-	graph.Nodes[61] = &sqlgraph.Node{
+	graph.Nodes[62] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   task.Table,
 			Columns: task.Columns,
@@ -1293,7 +1311,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			task.FieldCreatorID:  {Type: field.TypeUUID, Column: task.FieldCreatorID},
 		},
 	}
-	graph.Nodes[62] = &sqlgraph.Node{
+	graph.Nodes[63] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   team.Table,
 			Columns: team.Columns,
@@ -1313,7 +1331,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			team.FieldTimezone:          {Type: field.TypeString, Column: team.FieldTimezone},
 		},
 	}
-	graph.Nodes[63] = &sqlgraph.Node{
+	graph.Nodes[64] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   teammembership.Table,
 			Columns: teammembership.Columns,
@@ -1331,7 +1349,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			teammembership.FieldRole:                    {Type: field.TypeEnum, Column: teammembership.FieldRole},
 		},
 	}
-	graph.Nodes[64] = &sqlgraph.Node{
+	graph.Nodes[65] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   tenant.Table,
 			Columns: tenant.Columns,
@@ -1343,7 +1361,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type:   "Tenant",
 		Fields: map[string]*sqlgraph.FieldSpec{},
 	}
-	graph.Nodes[65] = &sqlgraph.Node{
+	graph.Nodes[66] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   ticket.Table,
 			Columns: ticket.Columns,
@@ -1358,7 +1376,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			ticket.FieldTitle:    {Type: field.TypeString, Column: ticket.FieldTitle},
 		},
 	}
-	graph.Nodes[66] = &sqlgraph.Node{
+	graph.Nodes[67] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -1379,7 +1397,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldAuthProviderID:          {Type: field.TypeString, Column: user.FieldAuthProviderID},
 		},
 	}
-	graph.Nodes[67] = &sqlgraph.Node{
+	graph.Nodes[68] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   userauthsession.Table,
 			Columns: userauthsession.Columns,
@@ -1397,7 +1415,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			userauthsession.FieldScopes:         {Type: field.TypeJSON, Column: userauthsession.FieldScopes},
 		},
 	}
-	graph.Nodes[68] = &sqlgraph.Node{
+	graph.Nodes[69] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   videoconference.Table,
 			Columns: videoconference.Columns,
@@ -2841,6 +2859,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"KnowledgeSubjectAlias",
 	)
 	graph.MustAddE(
+		"linking_attributes",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeentity.LinkingAttributesTable,
+			Columns: []string{knowledgeentity.LinkingAttributesColumn},
+			Bidi:    false,
+		},
+		"KnowledgeEntity",
+		"KnowledgeEntityLinkingAttribute",
+	)
+	graph.MustAddE(
 		"source_relationships",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -2863,6 +2893,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"KnowledgeEntity",
 		"KnowledgeRelationship",
+	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgeentitylinkingattribute.TenantTable,
+			Columns: []string{knowledgeentitylinkingattribute.TenantColumn},
+			Bidi:    false,
+		},
+		"KnowledgeEntityLinkingAttribute",
+		"Tenant",
+	)
+	graph.MustAddE(
+		"entity",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgeentitylinkingattribute.EntityTable,
+			Columns: []string{knowledgeentitylinkingattribute.EntityColumn},
+			Bidi:    false,
+		},
+		"KnowledgeEntityLinkingAttribute",
+		"KnowledgeEntity",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -8625,6 +8679,20 @@ func (f *KnowledgeEntityFilter) WhereHasAliasesWith(preds ...predicate.Knowledge
 	})))
 }
 
+// WhereHasLinkingAttributes applies a predicate to check if query has an edge linking_attributes.
+func (f *KnowledgeEntityFilter) WhereHasLinkingAttributes() {
+	f.Where(entql.HasEdge("linking_attributes"))
+}
+
+// WhereHasLinkingAttributesWith applies a predicate to check if query has an edge linking_attributes with a given conditions (other predicates).
+func (f *KnowledgeEntityFilter) WhereHasLinkingAttributesWith(preds ...predicate.KnowledgeEntityLinkingAttribute) {
+	f.Where(entql.HasEdgeWith("linking_attributes", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // WhereHasSourceRelationships applies a predicate to check if query has an edge source_relationships.
 func (f *KnowledgeEntityFilter) WhereHasSourceRelationships() {
 	f.Where(entql.HasEdge("source_relationships"))
@@ -8647,6 +8715,94 @@ func (f *KnowledgeEntityFilter) WhereHasTargetRelationships() {
 // WhereHasTargetRelationshipsWith applies a predicate to check if query has an edge target_relationships with a given conditions (other predicates).
 func (f *KnowledgeEntityFilter) WhereHasTargetRelationshipsWith(preds ...predicate.KnowledgeRelationship) {
 	f.Where(entql.HasEdgeWith("target_relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *KnowledgeEntityLinkingAttributeQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the KnowledgeEntityLinkingAttributeQuery builder.
+func (_q *KnowledgeEntityLinkingAttributeQuery) Filter() *KnowledgeEntityLinkingAttributeFilter {
+	return &KnowledgeEntityLinkingAttributeFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *KnowledgeEntityLinkingAttributeMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the KnowledgeEntityLinkingAttributeMutation builder.
+func (m *KnowledgeEntityLinkingAttributeMutation) Filter() *KnowledgeEntityLinkingAttributeFilter {
+	return &KnowledgeEntityLinkingAttributeFilter{config: m.config, predicateAdder: m}
+}
+
+// KnowledgeEntityLinkingAttributeFilter provides a generic filtering capability at runtime for KnowledgeEntityLinkingAttributeQuery.
+type KnowledgeEntityLinkingAttributeFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *KnowledgeEntityLinkingAttributeFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[33].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *KnowledgeEntityLinkingAttributeFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(knowledgeentitylinkingattribute.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *KnowledgeEntityLinkingAttributeFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(knowledgeentitylinkingattribute.FieldTenantID))
+}
+
+// WhereEntityID applies the entql [16]byte predicate on the entity_id field.
+func (f *KnowledgeEntityLinkingAttributeFilter) WhereEntityID(p entql.ValueP) {
+	f.Where(p.Field(knowledgeentitylinkingattribute.FieldEntityID))
+}
+
+// WhereAttribute applies the entql string predicate on the attribute field.
+func (f *KnowledgeEntityLinkingAttributeFilter) WhereAttribute(p entql.StringP) {
+	f.Where(p.Field(knowledgeentitylinkingattribute.FieldAttribute))
+}
+
+// WhereValue applies the entql string predicate on the value field.
+func (f *KnowledgeEntityLinkingAttributeFilter) WhereValue(p entql.StringP) {
+	f.Where(p.Field(knowledgeentitylinkingattribute.FieldValue))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *KnowledgeEntityLinkingAttributeFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *KnowledgeEntityLinkingAttributeFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasEntity applies a predicate to check if query has an edge entity.
+func (f *KnowledgeEntityLinkingAttributeFilter) WhereHasEntity() {
+	f.Where(entql.HasEdge("entity"))
+}
+
+// WhereHasEntityWith applies a predicate to check if query has an edge entity with a given conditions (other predicates).
+func (f *KnowledgeEntityLinkingAttributeFilter) WhereHasEntityWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -8682,7 +8838,7 @@ type KnowledgeEvidenceFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *KnowledgeEvidenceFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[33].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[34].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -8804,7 +8960,7 @@ type KnowledgeRelationshipFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *KnowledgeRelationshipFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[34].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[35].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -8930,7 +9086,7 @@ type KnowledgeSubjectAliasFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *KnowledgeSubjectAliasFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[35].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[36].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9061,7 +9217,7 @@ type MeetingScheduleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *MeetingScheduleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[36].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[37].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9208,7 +9364,7 @@ type MeetingSessionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *MeetingSessionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[37].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[38].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9329,7 +9485,7 @@ type NormalizedEventFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *NormalizedEventFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[38].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[39].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9471,7 +9627,7 @@ type NormalizedEventProjectionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *NormalizedEventProjectionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[39].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[40].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9568,7 +9724,7 @@ type NormalizedEventProjectionEntityFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *NormalizedEventProjectionEntityFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[40].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[41].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9656,7 +9812,7 @@ type OncallHandoverTemplateFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallHandoverTemplateFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[41].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[42].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9749,7 +9905,7 @@ type OncallRosterFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallRosterFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[42].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[43].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9927,7 +10083,7 @@ type OncallRosterMetricsFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallRosterMetricsFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[43].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[44].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10005,7 +10161,7 @@ type OncallScheduleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallScheduleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[44].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[45].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10112,7 +10268,7 @@ type OncallScheduleParticipantFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallScheduleParticipantFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[45].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[46].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10214,7 +10370,7 @@ type OncallShiftFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallShiftFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[46].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[47].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10373,7 +10529,7 @@ type OncallShiftHandoverFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallShiftHandoverFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[47].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[48].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10490,7 +10646,7 @@ type OncallShiftMetricsFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OncallShiftMetricsFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[48].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[49].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10638,7 +10794,7 @@ type OrganizationFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OrganizationFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[49].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[50].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10735,7 +10891,7 @@ type OrganizationPreferencesFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OrganizationPreferencesFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[50].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[51].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10823,7 +10979,7 @@ type OrganizationRoleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OrganizationRoleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[51].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[52].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10925,7 +11081,7 @@ type PlaybookFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *PlaybookFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[52].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[53].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11008,7 +11164,7 @@ type RetrospectiveFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RetrospectiveFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[53].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[54].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11148,7 +11304,7 @@ type RetrospectiveCommentFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RetrospectiveCommentFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[54].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[55].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11302,7 +11458,7 @@ type RetrospectiveReviewFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RetrospectiveReviewFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[55].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[56].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11442,7 +11598,7 @@ type SystemAnalysisFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemAnalysisFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[56].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[57].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11610,7 +11766,7 @@ type SystemAnalysisEntityFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemAnalysisEntityFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[57].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[58].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11747,7 +11903,7 @@ type SystemAnalysisEntryFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemAnalysisEntryFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[58].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[59].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11884,7 +12040,7 @@ type SystemAnalysisEntrySubjectFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemAnalysisEntrySubjectFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[59].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[60].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12034,7 +12190,7 @@ type SystemAnalysisRelationshipFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemAnalysisRelationshipFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[60].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[61].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12166,7 +12322,7 @@ type TaskFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TaskFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[61].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[62].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12306,7 +12462,7 @@ type TeamFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TeamFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[62].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[63].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12479,7 +12635,7 @@ type TeamMembershipFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TeamMembershipFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[63].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[64].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12600,7 +12756,7 @@ type TenantFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TenantFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[64].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[65].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12640,7 +12796,7 @@ type TicketFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TicketFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[65].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[66].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -12718,7 +12874,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[66].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[67].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -13078,7 +13234,7 @@ type UserAuthSessionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserAuthSessionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[67].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[68].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -13185,7 +13341,7 @@ type VideoConferenceFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *VideoConferenceFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[68].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[69].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

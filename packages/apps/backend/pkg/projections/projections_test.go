@@ -78,6 +78,12 @@ func TestSortEntityObservations(t *testing.T) {
 	assert.Equal(t, "demo:component:search_api", refs[0].Ref.ResourceRef)
 }
 
+func TestUserEntityLinkingAttributesNormalizeEmail(t *testing.T) {
+	attrs := UserEntityLinkingAttributes{Email: "  Alice@Example.COM "}
+	assert.Equal(t, map[string]string{"user.email": "alice@example.com"}, attrs.Values())
+	assert.Nil(t, (UserEntityLinkingAttributes{Email: "   "}).Values())
+}
+
 func TestDerivedRelationshipRefUsesCompleteDirectionalIdentity(t *testing.T) {
 	source := rez.ProviderResourceRef{Provider: "github", ProviderNamespace: "org-1", ResourceRef: "change-1"}
 	target := rez.ProviderResourceRef{Provider: "github", ProviderNamespace: "org-1", ResourceRef: "repo-1"}

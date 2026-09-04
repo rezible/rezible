@@ -45,6 +45,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -174,6 +175,7 @@ func checkColumn(t, c string) error {
 			integrationeventsyncrun.Table:         integrationeventsyncrun.ValidColumn,
 			integrationuserinstallstate.Table:     integrationuserinstallstate.ValidColumn,
 			knowledgeentity.Table:                 knowledgeentity.ValidColumn,
+			knowledgeentitylinkingattribute.Table: knowledgeentitylinkingattribute.ValidColumn,
 			knowledgeevidence.Table:               knowledgeevidence.ValidColumn,
 			knowledgerelationship.Table:           knowledgerelationship.ValidColumn,
 			knowledgesubjectalias.Table:           knowledgesubjectalias.ValidColumn,

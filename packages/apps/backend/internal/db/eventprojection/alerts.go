@@ -27,12 +27,12 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 		ProviderNamespace: event.Event.ProviderNamespace,
 		ResourceRef:       event.Event.ProviderResourceRef,
 	}
-	alertEntityRef := ent.KnowledgeEntityRef{
+	alertEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategorySignal,
 		Kind:                knowledgeEntityKindAlert,
 		ProviderResourceRef: alertResourceRef,
 	}
-	alertEntityEvidence := ent.KnowledgeEvidenceRef{
+	alertEntityEvidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event.Event),
 		Assertion:   knowledgeAssertionAlertDefinitionObserved,
 		EffectiveAt: event.Event.OccurredAt,
@@ -47,14 +47,14 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 	}
 
 	evidenceKind := projectionEvidenceKind(event.Event)
-	supportingEvidence := make([]ent.KnowledgeEvidenceRef, 0, len(attributes.ObservedEntities)*2)
+	supportingEvidence := make([]rez.KnowledgeEvidenceRef, 0, len(attributes.ObservedEntities)*2)
 	for _, observed := range projections.SortEntityObservations(attributes.ObservedEntities) {
-		observedEntityRef := ent.KnowledgeEntityRef{
+		observedEntityRef := rez.KnowledgeEntityRef{
 			Category:            observed.Category,
 			Kind:                observed.Kind,
 			ProviderResourceRef: observed.Ref,
 		}
-		entityEvidence := ent.KnowledgeEvidenceRef{
+		entityEvidence := rez.KnowledgeEvidenceRef{
 			Kind:        evidenceKind,
 			Assertion:   knowledgeAssertionAlertEntityObserved,
 			EffectiveAt: event.Event.OccurredAt,
@@ -65,13 +65,13 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 			},
 			SubjectEntity: &observedEntityRef,
 		}
-		relationshipRef := ent.KnowledgeRelationshipRef{
+		relationshipRef := rez.KnowledgeRelationshipRef{
 			Predicate:           knr.PredicateObserves,
 			ProviderResourceRef: projections.DerivedRelationshipRef(knr.PredicateObserves, alertResourceRef, observed.Ref),
 			Source:              alertEntityRef,
 			Target:              observedEntityRef,
 		}
-		relationshipEvidence := ent.KnowledgeEvidenceRef{
+		relationshipEvidence := rez.KnowledgeEvidenceRef{
 			Kind:                evidenceKind,
 			Assertion:           knowledgeAssertionAlertObservesEntity,
 			EffectiveAt:         event.Event.OccurredAt,

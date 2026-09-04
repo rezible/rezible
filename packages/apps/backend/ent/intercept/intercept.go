@@ -41,6 +41,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -1025,6 +1026,33 @@ func (f TraverseKnowledgeEntity) Traverse(ctx context.Context, q ent.Query) erro
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityQuery", q)
+}
+
+// The KnowledgeEntityLinkingAttributeFunc type is an adapter to allow the use of ordinary function as a Querier.
+type KnowledgeEntityLinkingAttributeFunc func(context.Context, *ent.KnowledgeEntityLinkingAttributeQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f KnowledgeEntityLinkingAttributeFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.KnowledgeEntityLinkingAttributeQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityLinkingAttributeQuery", q)
+}
+
+// The TraverseKnowledgeEntityLinkingAttribute type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseKnowledgeEntityLinkingAttribute func(context.Context, *ent.KnowledgeEntityLinkingAttributeQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseKnowledgeEntityLinkingAttribute) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseKnowledgeEntityLinkingAttribute) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeEntityLinkingAttributeQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityLinkingAttributeQuery", q)
 }
 
 // The KnowledgeEvidenceFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2068,6 +2096,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IntegrationUserInstallStateQuery, predicate.IntegrationUserInstallState, integrationuserinstallstate.OrderOption]{typ: ent.TypeIntegrationUserInstallState, tq: q}, nil
 	case *ent.KnowledgeEntityQuery:
 		return &query[*ent.KnowledgeEntityQuery, predicate.KnowledgeEntity, knowledgeentity.OrderOption]{typ: ent.TypeKnowledgeEntity, tq: q}, nil
+	case *ent.KnowledgeEntityLinkingAttributeQuery:
+		return &query[*ent.KnowledgeEntityLinkingAttributeQuery, predicate.KnowledgeEntityLinkingAttribute, knowledgeentitylinkingattribute.OrderOption]{typ: ent.TypeKnowledgeEntityLinkingAttribute, tq: q}, nil
 	case *ent.KnowledgeEvidenceQuery:
 		return &query[*ent.KnowledgeEvidenceQuery, predicate.KnowledgeEvidence, knowledgeevidence.OrderOption]{typ: ent.TypeKnowledgeEvidence, tq: q}, nil
 	case *ent.KnowledgeRelationshipQuery:

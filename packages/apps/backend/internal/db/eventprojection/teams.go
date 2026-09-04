@@ -28,12 +28,12 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 		ProviderNamespace: e.Event.ProviderNamespace,
 		ResourceRef:       e.Event.ProviderResourceRef,
 	}
-	teamEntityRef := ent.KnowledgeEntityRef{
+	teamEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryActor,
 		Kind:                knowledgeEntityKindTeam,
 		ProviderResourceRef: teamResourceRef,
 	}
-	evidence := ent.KnowledgeEvidenceRef{
+	evidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(e.Event),
 		Assertion:   knowledgeAssertionTeamObserved,
 		EffectiveAt: e.Event.OccurredAt,
@@ -103,18 +103,19 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 
 	kind := projectionEvidenceKind(event)
 
-	userEntity := ent.KnowledgeEntityRef{
+	userEntity := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryActor,
 		Kind:                knowledgeEntityKindUser,
 		ProviderResourceRef: attrs.User.ProviderResourceRef,
+		LinkingAttributes:   projections.UserEntityLinkingAttributes{Email: attrs.User.Email},
 	}
 
-	teamEntity := ent.KnowledgeEntityRef{
+	teamEntity := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryActor,
 		Kind:                knowledgeEntityKindTeam,
 		ProviderResourceRef: attrs.Team.ProviderResourceRef,
 	}
-	userEvidenceRef := ent.KnowledgeEvidenceRef{
+	userEvidenceRef := rez.KnowledgeEvidenceRef{
 		Kind:        kind,
 		Assertion:   knowledgeAssertionUserProfileObserved,
 		EffectiveAt: event.OccurredAt,
@@ -123,7 +124,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 		},
 		SubjectEntity: &userEntity,
 	}
-	teamEvidenceRef := ent.KnowledgeEvidenceRef{
+	teamEvidenceRef := rez.KnowledgeEvidenceRef{
 		Kind:        kind,
 		Assertion:   knowledgeAssertionTeamObserved,
 		EffectiveAt: event.OccurredAt,
@@ -142,13 +143,13 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 		ProviderNamespace: event.ProviderNamespace,
 		ResourceRef:       event.ProviderResourceRef,
 	}
-	membershipRelationship := ent.KnowledgeRelationshipRef{
+	membershipRelationship := rez.KnowledgeRelationshipRef{
 		Predicate:           knr.PredicateMemberOf,
 		ProviderResourceRef: membershipResourceRef,
 		Source:              userEntity,
 		Target:              teamEntity,
 	}
-	membershipEvidenceRef := ent.KnowledgeEvidenceRef{
+	membershipEvidenceRef := rez.KnowledgeEvidenceRef{
 		Kind:        kind,
 		Assertion:   knowledgeAssertionTeamMembershipObserved,
 		EffectiveAt: event.OccurredAt,

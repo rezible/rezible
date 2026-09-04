@@ -78,6 +78,8 @@ type Tx struct {
 	IntegrationUserInstallState *IntegrationUserInstallStateClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
 	KnowledgeEntity *KnowledgeEntityClient
+	// KnowledgeEntityLinkingAttribute is the client for interacting with the KnowledgeEntityLinkingAttribute builders.
+	KnowledgeEntityLinkingAttribute *KnowledgeEntityLinkingAttributeClient
 	// KnowledgeEvidence is the client for interacting with the KnowledgeEvidence builders.
 	KnowledgeEvidence *KnowledgeEvidenceClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
@@ -314,6 +316,7 @@ func (tx *Tx) init() {
 	tx.IntegrationEventSyncRun = NewIntegrationEventSyncRunClient(tx.config)
 	tx.IntegrationUserInstallState = NewIntegrationUserInstallStateClient(tx.config)
 	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
+	tx.KnowledgeEntityLinkingAttribute = NewKnowledgeEntityLinkingAttributeClient(tx.config)
 	tx.KnowledgeEvidence = NewKnowledgeEvidenceClient(tx.config)
 	tx.KnowledgeRelationship = NewKnowledgeRelationshipClient(tx.config)
 	tx.KnowledgeSubjectAlias = NewKnowledgeSubjectAliasClient(tx.config)

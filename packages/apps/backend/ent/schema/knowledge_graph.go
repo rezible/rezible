@@ -90,6 +90,8 @@ func (KnowledgeEntity) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("aliases", KnowledgeSubjectAlias.Type).
 			Ref("entity"),
+		edge.From("linking_attributes", KnowledgeEntityLinkingAttribute.Type).
+			Ref("entity"),
 		edge.From("source_relationships", KnowledgeRelationship.Type).
 			Ref("source_entity"),
 		edge.From("target_relationships", KnowledgeRelationship.Type).
@@ -100,6 +102,41 @@ func (KnowledgeEntity) Edges() []ent.Edge {
 func (KnowledgeEntity) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "category", "kind"),
+	}
+}
+
+type KnowledgeEntityLinkingAttribute struct {
+	ent.Schema
+}
+
+func (KnowledgeEntityLinkingAttribute) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (KnowledgeEntityLinkingAttribute) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("entity_id", uuid.UUID{}).Immutable(),
+		field.String("attribute").NotEmpty().Immutable(),
+		field.String("value").NotEmpty().Immutable(),
+	}
+}
+
+func (KnowledgeEntityLinkingAttribute) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("entity", KnowledgeEntity.Type).
+			Required().Unique().Immutable().Field("entity_id").
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+	}
+}
+
+func (KnowledgeEntityLinkingAttribute) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "attribute", "value").Unique(),
+		index.Fields("tenant_id", "entity_id"),
 	}
 }
 

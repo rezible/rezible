@@ -32,12 +32,12 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 		ProviderNamespace: event.Event.ProviderNamespace,
 		ResourceRef:       event.Event.ProviderResourceRef,
 	}
-	incidentEntityRef := ent.KnowledgeEntityRef{
+	incidentEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryEvent,
 		Kind:                knowledgeEntityKindIncident,
 		ProviderResourceRef: incidentResourceRef,
 	}
-	incidentObservedEvidence := ent.KnowledgeEvidenceRef{
+	incidentObservedEvidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event.Event),
 		Assertion:   knowledgeAssertionIncidentObserved,
 		EffectiveAt: openedAt,

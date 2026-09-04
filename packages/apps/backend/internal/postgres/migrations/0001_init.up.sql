@@ -190,6 +190,14 @@ CREATE TABLE "knowledge_entities" ("id" uuid NOT NULL, "created_at" timestamptz 
 CREATE INDEX "knowledgeentity_tenant_id" ON "knowledge_entities" ("tenant_id");
 -- create index "knowledgeentity_tenant_id_category_kind" to table: "knowledge_entities"
 CREATE INDEX "knowledgeentity_tenant_id_category_kind" ON "knowledge_entities" ("tenant_id", "category", "kind");
+-- create "knowledge_entity_linking_attributes" table
+CREATE TABLE "knowledge_entity_linking_attributes" ("id" uuid NOT NULL, "attribute" character varying NOT NULL, "value" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "knowledgeentitylinkingattribute_tenant_id" to table: "knowledge_entity_linking_attributes"
+CREATE INDEX "knowledgeentitylinkingattribute_tenant_id" ON "knowledge_entity_linking_attributes" ("tenant_id");
+-- create index "knowledgeentitylinkingattribute_tenant_id_attribute_value" to table: "knowledge_entity_linking_attributes"
+CREATE UNIQUE INDEX "knowledgeentitylinkingattribute_tenant_id_attribute_value" ON "knowledge_entity_linking_attributes" ("tenant_id", "attribute", "value");
+-- create index "knowledgeentitylinkingattribute_tenant_id_entity_id" to table: "knowledge_entity_linking_attributes"
+CREATE INDEX "knowledgeentitylinkingattribute_tenant_id_entity_id" ON "knowledge_entity_linking_attributes" ("tenant_id", "entity_id");
 -- create "knowledge_evidences" table
 CREATE TABLE "knowledge_evidences" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "assertion" character varying NOT NULL, "created_at" timestamptz NOT NULL, "effective_at" timestamptz NOT NULL, "subject_state" jsonb NOT NULL, "tenant_id" bigint NOT NULL, "event_id" uuid NOT NULL, "subject_alias_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeevidence_tenant_id" to table: "knowledge_evidences"
@@ -522,6 +530,8 @@ ALTER TABLE "integration_event_sync_runs" ADD CONSTRAINT "integration_event_sync
 ALTER TABLE "integration_user_install_states" ADD CONSTRAINT "integration_user_install_states_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "integration_user_install_states_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "knowledge_entities" table
 ALTER TABLE "knowledge_entities" ADD CONSTRAINT "knowledge_entities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "knowledge_entity_linking_attributes" table
+ALTER TABLE "knowledge_entity_linking_attributes" ADD CONSTRAINT "knowledge_entity_linking_attributes_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_entity_linking_attributes_knowledge_entities_entity" FOREIGN KEY ("entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE CASCADE;
 -- modify "knowledge_evidences" table
 ALTER TABLE "knowledge_evidences" ADD CONSTRAINT "knowledge_evidences_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_evidences_normalized_events_event" FOREIGN KEY ("event_id") REFERENCES "normalized_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_evidences_knowledge_subject_alias_subject_alias" FOREIGN KEY ("subject_alias_id") REFERENCES "knowledge_subject_alias" ("id") ON DELETE NO ACTION;
 -- modify "knowledge_relationships" table

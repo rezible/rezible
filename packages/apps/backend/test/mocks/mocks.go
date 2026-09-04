@@ -766,8 +766,8 @@ func (_c *MockKnowledgeGraphService_GetView_Call) RunAndReturn(run func(context1
 }
 
 // IngestEvidence provides a mock function for the type MockKnowledgeGraphService
-func (_mock *MockKnowledgeGraphService) IngestEvidence(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...ent.KnowledgeEvidenceRef) error {
-	// ent.KnowledgeEvidenceRef
+func (_mock *MockKnowledgeGraphService) IngestEvidence(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...rez.KnowledgeEvidenceRef) error {
+	// rez.KnowledgeEvidenceRef
 	_va := make([]interface{}, len(knowledgeEvidenceRefs))
 	for _i := range knowledgeEvidenceRefs {
 		_va[_i] = knowledgeEvidenceRefs[_i]
@@ -782,7 +782,7 @@ func (_mock *MockKnowledgeGraphService) IngestEvidence(context1 context.Context,
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.NormalizedEvent, ...rez.KnowledgeEvidenceRef) error); ok {
 		r0 = returnFunc(context1, normalizedEvent, knowledgeEvidenceRefs...)
 	} else {
 		r0 = ret.Error(0)
@@ -798,13 +798,13 @@ type MockKnowledgeGraphService_IngestEvidence_Call struct {
 // IngestEvidence is a helper method to define mock.On call
 //   - context1 context.Context
 //   - normalizedEvent *ent.NormalizedEvent
-//   - knowledgeEvidenceRefs ...ent.KnowledgeEvidenceRef
+//   - knowledgeEvidenceRefs ...rez.KnowledgeEvidenceRef
 func (_e *MockKnowledgeGraphService_Expecter) IngestEvidence(context1 interface{}, normalizedEvent interface{}, knowledgeEvidenceRefs ...interface{}) *MockKnowledgeGraphService_IngestEvidence_Call {
 	return &MockKnowledgeGraphService_IngestEvidence_Call{Call: _e.mock.On("IngestEvidence",
 		append([]interface{}{context1, normalizedEvent}, knowledgeEvidenceRefs...)...)}
 }
 
-func (_c *MockKnowledgeGraphService_IngestEvidence_Call) Run(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...ent.KnowledgeEvidenceRef)) *MockKnowledgeGraphService_IngestEvidence_Call {
+func (_c *MockKnowledgeGraphService_IngestEvidence_Call) Run(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...rez.KnowledgeEvidenceRef)) *MockKnowledgeGraphService_IngestEvidence_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -814,11 +814,11 @@ func (_c *MockKnowledgeGraphService_IngestEvidence_Call) Run(run func(context1 c
 		if args[1] != nil {
 			arg1 = args[1].(*ent.NormalizedEvent)
 		}
-		var arg2 []ent.KnowledgeEvidenceRef
-		variadicArgs := make([]ent.KnowledgeEvidenceRef, len(args)-2)
+		var arg2 []rez.KnowledgeEvidenceRef
+		variadicArgs := make([]rez.KnowledgeEvidenceRef, len(args)-2)
 		for i, a := range args[2:] {
 			if a != nil {
-				variadicArgs[i] = a.(ent.KnowledgeEvidenceRef)
+				variadicArgs[i] = a.(rez.KnowledgeEvidenceRef)
 			}
 		}
 		arg2 = variadicArgs
@@ -836,7 +836,7 @@ func (_c *MockKnowledgeGraphService_IngestEvidence_Call) Return(err error) *Mock
 	return _c
 }
 
-func (_c *MockKnowledgeGraphService_IngestEvidence_Call) RunAndReturn(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...ent.KnowledgeEvidenceRef) error) *MockKnowledgeGraphService_IngestEvidence_Call {
+func (_c *MockKnowledgeGraphService_IngestEvidence_Call) RunAndReturn(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRefs ...rez.KnowledgeEvidenceRef) error) *MockKnowledgeGraphService_IngestEvidence_Call {
 	_c.Call.Return(run)
 	return _c
 }

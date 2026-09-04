@@ -1412,6 +1412,51 @@ var (
 			},
 		},
 	}
+	// KnowledgeEntityLinkingAttributesColumns holds the columns for the "knowledge_entity_linking_attributes" table.
+	KnowledgeEntityLinkingAttributesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "attribute", Type: field.TypeString},
+		{Name: "value", Type: field.TypeString},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "entity_id", Type: field.TypeUUID},
+	}
+	// KnowledgeEntityLinkingAttributesTable holds the schema information for the "knowledge_entity_linking_attributes" table.
+	KnowledgeEntityLinkingAttributesTable = &schema.Table{
+		Name:       "knowledge_entity_linking_attributes",
+		Columns:    KnowledgeEntityLinkingAttributesColumns,
+		PrimaryKey: []*schema.Column{KnowledgeEntityLinkingAttributesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "knowledge_entity_linking_attributes_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeEntityLinkingAttributesColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_entity_linking_attributes_knowledge_entities_entity",
+				Columns:    []*schema.Column{KnowledgeEntityLinkingAttributesColumns[4]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "knowledgeentitylinkingattribute_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEntityLinkingAttributesColumns[3]},
+			},
+			{
+				Name:    "knowledgeentitylinkingattribute_tenant_id_attribute_value",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeEntityLinkingAttributesColumns[3], KnowledgeEntityLinkingAttributesColumns[1], KnowledgeEntityLinkingAttributesColumns[2]},
+			},
+			{
+				Name:    "knowledgeentitylinkingattribute_tenant_id_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEntityLinkingAttributesColumns[3], KnowledgeEntityLinkingAttributesColumns[4]},
+			},
+		},
+	}
 	// KnowledgeEvidencesColumns holds the columns for the "knowledge_evidences" table.
 	KnowledgeEvidencesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -3463,6 +3508,7 @@ var (
 		IntegrationEventSyncRunsTable,
 		IntegrationUserInstallStatesTable,
 		KnowledgeEntitiesTable,
+		KnowledgeEntityLinkingAttributesTable,
 		KnowledgeEvidencesTable,
 		KnowledgeRelationshipsTable,
 		KnowledgeSubjectAliasTable,
@@ -3589,6 +3635,8 @@ func init() {
 	IntegrationUserInstallStatesTable.ForeignKeys[0].RefTable = TenantsTable
 	IntegrationUserInstallStatesTable.ForeignKeys[1].RefTable = UsersTable
 	KnowledgeEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeEntityLinkingAttributesTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeEntityLinkingAttributesTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	KnowledgeEvidencesTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeEvidencesTable.ForeignKeys[1].RefTable = NormalizedEventsTable
 	KnowledgeEvidencesTable.ForeignKeys[2].RefTable = KnowledgeSubjectAliasTable

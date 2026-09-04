@@ -320,6 +320,35 @@ func HasAliasesWith(preds ...predicate.KnowledgeSubjectAlias) predicate.Knowledg
 	})
 }
 
+// HasLinkingAttributes applies the HasEdge predicate on the "linking_attributes" edge.
+func HasLinkingAttributes() predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, LinkingAttributesTable, LinkingAttributesColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntityLinkingAttribute
+		step.Edge.Schema = schemaConfig.KnowledgeEntityLinkingAttribute
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLinkingAttributesWith applies the HasEdge predicate on the "linking_attributes" edge with a given conditions (other predicates).
+func HasLinkingAttributesWith(preds ...predicate.KnowledgeEntityLinkingAttribute) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(func(s *sql.Selector) {
+		step := newLinkingAttributesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntityLinkingAttribute
+		step.Edge.Schema = schemaConfig.KnowledgeEntityLinkingAttribute
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasSourceRelationships applies the HasEdge predicate on the "source_relationships" edge.
 func HasSourceRelationships() predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(func(s *sql.Selector) {

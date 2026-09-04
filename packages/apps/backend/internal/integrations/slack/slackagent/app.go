@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/test"
 )
 
 type App struct {
@@ -27,6 +28,10 @@ type App struct {
 	events   rez.EventsService
 
 	responseClassifier rezai.ClassifyAgentThreadResponseWorkflowRunner
+}
+
+type AppSuite struct {
+	test.Suite
 }
 
 func MakeApp(cfg rez.Config, jobSvc rez.JobService, msgs rez.MessageService, intgs rez.IntegrationService, users rez.UserService, agents rez.AgentSessionService, events rez.EventsService, responseClassifier rezai.ClassifyAgentThreadResponseWorkflowRunner) (*App, error) {

@@ -26,12 +26,13 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 		ProviderNamespace: event.ProviderNamespace,
 		ResourceRef:       event.ProviderResourceRef,
 	}
-	userEntityRef := ent.KnowledgeEntityRef{
+	userEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryActor,
 		Kind:                knowledgeEntityKindUser,
 		ProviderResourceRef: userResourceRef,
+		LinkingAttributes:   projections.UserEntityLinkingAttributes{Email: attributes.Email},
 	}
-	userObservedEvidence := ent.KnowledgeEvidenceRef{
+	userObservedEvidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event),
 		Assertion:   knowledgeAssertionUserProfileObserved,
 		EffectiveAt: event.OccurredAt,
@@ -67,15 +68,34 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 }
 
 func (s *ProjectionService) setUserFromProjection(ctx context.Context, knowledgeEntityId uuid.UUID, attrs projections.UserEventAttributes) (uuid.UUID, error) {
-	linkedPred := user.KnowledgeEntityID(knowledgeEntityId)
-	if attrs.Email != "" {
-		linkedPred = user.Or(linkedPred, user.Email(attrs.Email))
-	}
-	queryLinked := s.db.Client(ctx).User.Query().
-		Where(linkedPred)
-	linked, linkedErr := queryLinked.Only(ctx)
+	client := s.db.Client(ctx)
+	linked, linkedErr := client.User.Query().Where(user.KnowledgeEntityID(knowledgeEntityId)).Only(ctx)
 	if linkedErr != nil && !ent.IsNotFound(linkedErr) {
 		return uuid.Nil, fmt.Errorf("query user by knowledge entity: %w", linkedErr)
+	}
+	if ent.IsNotFound(linkedErr) {
+		linked = nil
+	}
+
+	if attrs.Email != "" {
+		emailOwner, emailErr := client.User.Query().Where(user.Email(attrs.Email)).Only(ctx)
+		if emailErr != nil && !ent.IsNotFound(emailErr) {
+			return uuid.Nil, fmt.Errorf("query user by email: %w", emailErr)
+		}
+		if ent.IsNotFound(emailErr) {
+			emailOwner = nil
+		}
+		if emailOwner != nil {
+			if linked != nil && emailOwner.ID != linked.ID {
+				return uuid.Nil, fmt.Errorf("%w: email is already assigned to another user", rez.ErrConflict)
+			}
+			if emailOwner.KnowledgeEntityID != nil && *emailOwner.KnowledgeEntityID != knowledgeEntityId {
+				return uuid.Nil, fmt.Errorf("%w: email user is linked to another knowledge entity", rez.ErrConflict)
+			}
+			if linked == nil {
+				linked = emailOwner
+			}
+		}
 	}
 
 	var userID uuid.UUID

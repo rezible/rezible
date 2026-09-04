@@ -158,7 +158,7 @@ func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() 
 	event := s.createNormalizedEvent(
 		tdb,
 		projections.KindTeamMembership,
-		"slack:group-"+suffix+":user-"+suffix,
+		"membership:group-"+suffix+":user-"+suffix,
 		time.Now().UTC(),
 		attributes,
 	)

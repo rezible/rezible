@@ -393,6 +393,18 @@ func (f KnowledgeEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityMutation", m)
 }
 
+// The KnowledgeEntityLinkingAttributeFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeEntityLinkingAttribute mutator.
+type KnowledgeEntityLinkingAttributeFunc func(context.Context, *ent.KnowledgeEntityLinkingAttributeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KnowledgeEntityLinkingAttributeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeEntityLinkingAttributeMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityLinkingAttributeMutation", m)
+}
+
 // The KnowledgeEvidenceFunc type is an adapter to allow the use of ordinary
 // function as KnowledgeEvidence mutator.
 type KnowledgeEvidenceFunc func(context.Context, *ent.KnowledgeEvidenceMutation) (ent.Value, error)

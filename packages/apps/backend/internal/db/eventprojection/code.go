@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
@@ -30,12 +29,12 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 		ProviderNamespace: event.Event.ProviderNamespace,
 		ResourceRef:       event.Event.ProviderResourceRef,
 	}
-	repositoryEntityRef := ent.KnowledgeEntityRef{
+	repositoryEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryCode,
 		Kind:                knowledgeEntityKindRepository,
 		ProviderResourceRef: repositoryResourceRef,
 	}
-	evidence := ent.KnowledgeEvidenceRef{
+	evidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event.Event),
 		Assertion:   knowledgeAssertionCodeRepositoryObserved,
 		EffectiveAt: event.Event.OccurredAt,
@@ -61,12 +60,12 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		ProviderNamespace: event.Event.ProviderNamespace,
 		ResourceRef:       event.Event.ProviderResourceRef,
 	}
-	changeRef := ent.KnowledgeEntityRef{
+	changeRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryEvent,
 		Kind:                knowledgeEntityKindCodeChange,
 		ProviderResourceRef: changeResourceRef,
 	}
-	codeChangeEvidence := ent.KnowledgeEvidenceRef{
+	codeChangeEvidence := rez.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionCodeChangeObserved,
 		EffectiveAt: event.Event.OccurredAt,
@@ -76,12 +75,12 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		SubjectEntity: &changeRef,
 	}
 
-	repositoryRef := ent.KnowledgeEntityRef{
+	repositoryRef := rez.KnowledgeEntityRef{
 		Category:            attributes.Repository.Category,
 		Kind:                attributes.Repository.Kind,
 		ProviderResourceRef: attributes.Repository.Ref,
 	}
-	repoEntityEvidence := ent.KnowledgeEvidenceRef{
+	repoEntityEvidence := rez.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionCodeRepositoryObserved,
 		EffectiveAt: event.Event.OccurredAt,
@@ -94,28 +93,28 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 	}
 
 	changeRepositoryResourceRef := projections.DerivedRelationshipRef(knr.PredicateTouches, changeResourceRef, attributes.Repository.Ref)
-	changeRepositoryRelationship := ent.KnowledgeRelationshipRef{
+	changeRepositoryRelationship := rez.KnowledgeRelationshipRef{
 		Predicate:           knr.PredicateTouches,
 		ProviderResourceRef: changeRepositoryResourceRef,
 		Source:              changeRef,
 		Target:              repositoryRef,
 	}
-	codeChangeRepoEvidence := ent.KnowledgeEvidenceRef{
+	codeChangeRepoEvidence := rez.KnowledgeEvidenceRef{
 		Kind:                evidenceKind,
 		Assertion:           knowledgeAssertionCodeChangeRepository,
 		EffectiveAt:         event.Event.OccurredAt,
 		SubjectRelationship: &changeRepositoryRelationship,
 	}
 
-	evidence := []ent.KnowledgeEvidenceRef{codeChangeEvidence, repoEntityEvidence, codeChangeRepoEvidence}
+	evidence := []rez.KnowledgeEvidenceRef{codeChangeEvidence, repoEntityEvidence, codeChangeRepoEvidence}
 
 	for _, related := range projections.SortEntityObservations(attributes.ImpactedEntities) {
-		relatedEntityRef := ent.KnowledgeEntityRef{
+		relatedEntityRef := rez.KnowledgeEntityRef{
 			Category:            related.Category,
 			Kind:                related.Kind,
 			ProviderResourceRef: related.Ref,
 		}
-		relatedEntityEvidence := ent.KnowledgeEvidenceRef{
+		relatedEntityEvidence := rez.KnowledgeEvidenceRef{
 			Kind:        evidenceKind,
 			Assertion:   knowledgeAssertionCodeEntityObserved,
 			EffectiveAt: event.Event.OccurredAt,
@@ -127,13 +126,13 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 			SubjectEntity: &relatedEntityRef,
 		}
 		impactResourceRef := projections.DerivedRelationshipRef(knr.PredicateImpacts, changeResourceRef, related.Ref)
-		impactRelationship := ent.KnowledgeRelationshipRef{
+		impactRelationship := rez.KnowledgeRelationshipRef{
 			Predicate:           knr.PredicateImpacts,
 			ProviderResourceRef: impactResourceRef,
 			Source:              changeRef,
 			Target:              relatedEntityRef,
 		}
-		impactEvidence := ent.KnowledgeEvidenceRef{
+		impactEvidence := rez.KnowledgeEvidenceRef{
 			Kind:        evidenceKind,
 			Assertion:   knowledgeAssertionCodeChangeImpact,
 			EffectiveAt: event.Event.OccurredAt,

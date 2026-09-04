@@ -1,6 +1,7 @@
 package projections
 
 import (
+	"strings"
 	"time"
 
 	rez "github.com/rezible/rezible"
@@ -55,6 +56,20 @@ type (
 		Timezone string `json:"timezone"`
 	}
 )
+
+// UserEntityLinkingAttributes contains the stable user identity values that
+// can be shared by aliases from different providers.
+type UserEntityLinkingAttributes struct {
+	Email string
+}
+
+func (a UserEntityLinkingAttributes) Values() map[string]string {
+	email := strings.ToLower(strings.TrimSpace(a.Email))
+	if email == "" {
+		return nil
+	}
+	return map[string]string{"user.email": email}
+}
 
 const KindUser = "user"
 

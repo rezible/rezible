@@ -31,6 +31,8 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeAliases holds the string denoting the aliases edge name in mutations.
 	EdgeAliases = "aliases"
+	// EdgeLinkingAttributes holds the string denoting the linking_attributes edge name in mutations.
+	EdgeLinkingAttributes = "linking_attributes"
 	// EdgeSourceRelationships holds the string denoting the source_relationships edge name in mutations.
 	EdgeSourceRelationships = "source_relationships"
 	// EdgeTargetRelationships holds the string denoting the target_relationships edge name in mutations.
@@ -51,6 +53,13 @@ const (
 	AliasesInverseTable = "knowledge_subject_alias"
 	// AliasesColumn is the table column denoting the aliases relation/edge.
 	AliasesColumn = "entity_id"
+	// LinkingAttributesTable is the table that holds the linking_attributes relation/edge.
+	LinkingAttributesTable = "knowledge_entity_linking_attributes"
+	// LinkingAttributesInverseTable is the table name for the KnowledgeEntityLinkingAttribute entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeentitylinkingattribute" package.
+	LinkingAttributesInverseTable = "knowledge_entity_linking_attributes"
+	// LinkingAttributesColumn is the table column denoting the linking_attributes relation/edge.
+	LinkingAttributesColumn = "entity_id"
 	// SourceRelationshipsTable is the table that holds the source_relationships relation/edge.
 	SourceRelationshipsTable = "knowledge_relationships"
 	// SourceRelationshipsInverseTable is the table name for the KnowledgeRelationship entity.
@@ -194,6 +203,20 @@ func ByAliases(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByLinkingAttributesCount orders the results by linking_attributes count.
+func ByLinkingAttributesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLinkingAttributesStep(), opts...)
+	}
+}
+
+// ByLinkingAttributes orders the results by linking_attributes terms.
+func ByLinkingAttributes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLinkingAttributesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // BySourceRelationshipsCount orders the results by source_relationships count.
 func BySourceRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -233,6 +256,13 @@ func newAliasesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AliasesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, AliasesTable, AliasesColumn),
+	)
+}
+func newLinkingAttributesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LinkingAttributesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, LinkingAttributesTable, LinkingAttributesColumn),
 	)
 }
 func newSourceRelationshipsStep() *sqlgraph.Step {

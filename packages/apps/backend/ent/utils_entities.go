@@ -1,15 +1,7 @@
 package ent
 
 import (
-	"fmt"
-	"strings"
-	"time"
-
 	"github.com/firebase/genkit/go/ai"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
-	kev "github.com/rezible/rezible/ent/knowledgeevidence"
-	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 	vc "github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -55,49 +47,6 @@ func (ie IncidentEdges) GetPrimaryVideoConference() *VideoConference {
 		return nil
 	}
 	return VideoConferences(conferences).GetPrimary()
-}
-
-type (
-	ProviderResourceRef struct {
-		Provider          string `json:"provider"`
-		ProviderNamespace string `json:"provider_namespace"`
-		ResourceRef       string `json:"resource_ref"`
-	}
-
-	KnowledgeEntityRef struct {
-		Category            kne.Category
-		Kind                string
-		ProviderResourceRef ProviderResourceRef
-	}
-
-	KnowledgeRelationshipRef struct {
-		Predicate           knr.Predicate
-		ProviderResourceRef ProviderResourceRef
-		Source              KnowledgeEntityRef
-		Target              KnowledgeEntityRef
-	}
-
-	KnowledgeEvidenceRef struct {
-		Kind                kev.Kind
-		Assertion           string
-		EffectiveAt         time.Time
-		SubjectState        schematypes.KnowledgeGraphSubjectState
-		SubjectEntity       *KnowledgeEntityRef
-		SubjectRelationship *KnowledgeRelationshipRef
-	}
-)
-
-func (ref ProviderResourceRef) Validate() error {
-	if strings.TrimSpace(ref.Provider) == "" {
-		return fmt.Errorf("provider is required")
-	}
-	if strings.TrimSpace(ref.ResourceRef) == "" {
-		return fmt.Errorf("resource_ref is required")
-	}
-	if ref.Provider != "rezible" && strings.TrimSpace(ref.ProviderNamespace) == "" {
-		return fmt.Errorf("provider_namespace is required for provider %q", ref.Provider)
-	}
-	return nil
 }
 
 func (aliases KnowledgeSubjectAliasSlice) LatestEvidence() *KnowledgeEvidence {

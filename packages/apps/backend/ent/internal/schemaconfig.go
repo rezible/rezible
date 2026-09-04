@@ -49,6 +49,7 @@ type SchemaConfig struct {
 	IntegrationEventSyncRun                   string // IntegrationEventSyncRun table.
 	IntegrationUserInstallState               string // IntegrationUserInstallState table.
 	KnowledgeEntity                           string // KnowledgeEntity table.
+	KnowledgeEntityLinkingAttribute           string // KnowledgeEntityLinkingAttribute table.
 	KnowledgeEvidence                         string // KnowledgeEvidence table.
 	KnowledgeRelationship                     string // KnowledgeRelationship table.
 	KnowledgeSubjectAlias                     string // KnowledgeSubjectAlias table.
