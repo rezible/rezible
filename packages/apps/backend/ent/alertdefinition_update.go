@@ -11,36 +11,36 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/alertdefinition"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
-// AlertUpdate is the builder for updating Alert entities.
-type AlertUpdate struct {
+// AlertDefinitionUpdate is the builder for updating AlertDefinition entities.
+type AlertDefinitionUpdate struct {
 	config
 	hooks     []Hook
-	mutation  *AlertMutation
+	mutation  *AlertDefinitionMutation
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// Where appends a list predicates to the AlertUpdate builder.
-func (_u *AlertUpdate) Where(ps ...predicate.Alert) *AlertUpdate {
+// Where appends a list predicates to the AlertDefinitionUpdate builder.
+func (_u *AlertDefinitionUpdate) Where(ps ...predicate.AlertDefinition) *AlertDefinitionUpdate {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *AlertUpdate) SetKnowledgeEntityID(v uuid.UUID) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) SetKnowledgeEntityID(v uuid.UUID) *AlertDefinitionUpdate {
 	_u.mutation.SetKnowledgeEntityID(v)
 	return _u
 }
 
 // SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *AlertUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertDefinitionUpdate {
 	if v != nil {
 		_u.SetKnowledgeEntityID(*v)
 	}
@@ -48,19 +48,19 @@ func (_u *AlertUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertUpdate {
 }
 
 // ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *AlertUpdate) ClearKnowledgeEntityID() *AlertUpdate {
+func (_u *AlertDefinitionUpdate) ClearKnowledgeEntityID() *AlertDefinitionUpdate {
 	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
 // SetTitle sets the "title" field.
-func (_u *AlertUpdate) SetTitle(v string) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) SetTitle(v string) *AlertDefinitionUpdate {
 	_u.mutation.SetTitle(v)
 	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (_u *AlertUpdate) SetNillableTitle(v *string) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) SetNillableTitle(v *string) *AlertDefinitionUpdate {
 	if v != nil {
 		_u.SetTitle(*v)
 	}
@@ -68,13 +68,13 @@ func (_u *AlertUpdate) SetNillableTitle(v *string) *AlertUpdate {
 }
 
 // SetDescription sets the "description" field.
-func (_u *AlertUpdate) SetDescription(v string) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) SetDescription(v string) *AlertDefinitionUpdate {
 	_u.mutation.SetDescription(v)
 	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (_u *AlertUpdate) SetNillableDescription(v *string) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) SetNillableDescription(v *string) *AlertDefinitionUpdate {
 	if v != nil {
 		_u.SetDescription(*v)
 	}
@@ -82,19 +82,19 @@ func (_u *AlertUpdate) SetNillableDescription(v *string) *AlertUpdate {
 }
 
 // ClearDescription clears the value of the "description" field.
-func (_u *AlertUpdate) ClearDescription() *AlertUpdate {
+func (_u *AlertDefinitionUpdate) ClearDescription() *AlertDefinitionUpdate {
 	_u.mutation.ClearDescription()
 	return _u
 }
 
 // SetDefinition sets the "definition" field.
-func (_u *AlertUpdate) SetDefinition(v string) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) SetDefinition(v string) *AlertDefinitionUpdate {
 	_u.mutation.SetDefinition(v)
 	return _u
 }
 
 // SetNillableDefinition sets the "definition" field if the given value is not nil.
-func (_u *AlertUpdate) SetNillableDefinition(v *string) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) SetNillableDefinition(v *string) *AlertDefinitionUpdate {
 	if v != nil {
 		_u.SetDefinition(*v)
 	}
@@ -102,24 +102,24 @@ func (_u *AlertUpdate) SetNillableDefinition(v *string) *AlertUpdate {
 }
 
 // ClearDefinition clears the value of the "definition" field.
-func (_u *AlertUpdate) ClearDefinition() *AlertUpdate {
+func (_u *AlertDefinitionUpdate) ClearDefinition() *AlertDefinitionUpdate {
 	_u.mutation.ClearDefinition()
 	return _u
 }
 
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertDefinitionUpdate {
 	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
-func (_u *AlertUpdate) AddPlaybookIDs(ids ...uuid.UUID) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) AddPlaybookIDs(ids ...uuid.UUID) *AlertDefinitionUpdate {
 	_u.mutation.AddPlaybookIDs(ids...)
 	return _u
 }
 
 // AddPlaybooks adds the "playbooks" edges to the Playbook entity.
-func (_u *AlertUpdate) AddPlaybooks(v ...*Playbook) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) AddPlaybooks(v ...*Playbook) *AlertDefinitionUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -127,46 +127,46 @@ func (_u *AlertUpdate) AddPlaybooks(v ...*Playbook) *AlertUpdate {
 	return _u.AddPlaybookIDs(ids...)
 }
 
-// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
-func (_u *AlertUpdate) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
-	_u.mutation.AddInstanceIDs(ids...)
+// AddEpisodeIDs adds the "episodes" edge to the AlertEpisode entity by IDs.
+func (_u *AlertDefinitionUpdate) AddEpisodeIDs(ids ...uuid.UUID) *AlertDefinitionUpdate {
+	_u.mutation.AddEpisodeIDs(ids...)
 	return _u
 }
 
-// AddInstances adds the "instances" edges to the AlertInstance entity.
-func (_u *AlertUpdate) AddInstances(v ...*AlertInstance) *AlertUpdate {
+// AddEpisodes adds the "episodes" edges to the AlertEpisode entity.
+func (_u *AlertDefinitionUpdate) AddEpisodes(v ...*AlertEpisode) *AlertDefinitionUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddInstanceIDs(ids...)
+	return _u.AddEpisodeIDs(ids...)
 }
 
-// Mutation returns the AlertMutation object of the builder.
-func (_u *AlertUpdate) Mutation() *AlertMutation {
+// Mutation returns the AlertDefinitionMutation object of the builder.
+func (_u *AlertDefinitionUpdate) Mutation() *AlertDefinitionMutation {
 	return _u.mutation
 }
 
 // ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertUpdate) ClearKnowledgeEntity() *AlertUpdate {
+func (_u *AlertDefinitionUpdate) ClearKnowledgeEntity() *AlertDefinitionUpdate {
 	_u.mutation.ClearKnowledgeEntity()
 	return _u
 }
 
 // ClearPlaybooks clears all "playbooks" edges to the Playbook entity.
-func (_u *AlertUpdate) ClearPlaybooks() *AlertUpdate {
+func (_u *AlertDefinitionUpdate) ClearPlaybooks() *AlertDefinitionUpdate {
 	_u.mutation.ClearPlaybooks()
 	return _u
 }
 
 // RemovePlaybookIDs removes the "playbooks" edge to Playbook entities by IDs.
-func (_u *AlertUpdate) RemovePlaybookIDs(ids ...uuid.UUID) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) RemovePlaybookIDs(ids ...uuid.UUID) *AlertDefinitionUpdate {
 	_u.mutation.RemovePlaybookIDs(ids...)
 	return _u
 }
 
 // RemovePlaybooks removes "playbooks" edges to Playbook entities.
-func (_u *AlertUpdate) RemovePlaybooks(v ...*Playbook) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) RemovePlaybooks(v ...*Playbook) *AlertDefinitionUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -174,34 +174,34 @@ func (_u *AlertUpdate) RemovePlaybooks(v ...*Playbook) *AlertUpdate {
 	return _u.RemovePlaybookIDs(ids...)
 }
 
-// ClearInstances clears all "instances" edges to the AlertInstance entity.
-func (_u *AlertUpdate) ClearInstances() *AlertUpdate {
-	_u.mutation.ClearInstances()
+// ClearEpisodes clears all "episodes" edges to the AlertEpisode entity.
+func (_u *AlertDefinitionUpdate) ClearEpisodes() *AlertDefinitionUpdate {
+	_u.mutation.ClearEpisodes()
 	return _u
 }
 
-// RemoveInstanceIDs removes the "instances" edge to AlertInstance entities by IDs.
-func (_u *AlertUpdate) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
-	_u.mutation.RemoveInstanceIDs(ids...)
+// RemoveEpisodeIDs removes the "episodes" edge to AlertEpisode entities by IDs.
+func (_u *AlertDefinitionUpdate) RemoveEpisodeIDs(ids ...uuid.UUID) *AlertDefinitionUpdate {
+	_u.mutation.RemoveEpisodeIDs(ids...)
 	return _u
 }
 
-// RemoveInstances removes "instances" edges to AlertInstance entities.
-func (_u *AlertUpdate) RemoveInstances(v ...*AlertInstance) *AlertUpdate {
+// RemoveEpisodes removes "episodes" edges to AlertEpisode entities.
+func (_u *AlertDefinitionUpdate) RemoveEpisodes(v ...*AlertEpisode) *AlertDefinitionUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveInstanceIDs(ids...)
+	return _u.RemoveEpisodeIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (_u *AlertUpdate) Save(ctx context.Context) (int, error) {
+func (_u *AlertDefinitionUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *AlertUpdate) SaveX(ctx context.Context) int {
+func (_u *AlertDefinitionUpdate) SaveX(ctx context.Context) int {
 	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -210,37 +210,37 @@ func (_u *AlertUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (_u *AlertUpdate) Exec(ctx context.Context) error {
+func (_u *AlertDefinitionUpdate) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *AlertUpdate) ExecX(ctx context.Context) {
+func (_u *AlertDefinitionUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_u *AlertUpdate) check() error {
+func (_u *AlertDefinitionUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Alert.tenant"`)
+		return errors.New(`ent: clearing a required unique edge "AlertDefinition.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AlertUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertUpdate {
+func (_u *AlertDefinitionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertDefinitionUpdate {
 	_u.modifiers = append(_u.modifiers, modifiers...)
 	return _u
 }
 
-func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+func (_u *AlertDefinitionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(alert.Table, alert.Columns, sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(alertdefinition.Table, alertdefinition.Columns, sqlgraph.NewFieldSpec(alertdefinition.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -249,46 +249,46 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 	}
 	if value, ok := _u.mutation.Title(); ok {
-		_spec.SetField(alert.FieldTitle, field.TypeString, value)
+		_spec.SetField(alertdefinition.FieldTitle, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Description(); ok {
-		_spec.SetField(alert.FieldDescription, field.TypeString, value)
+		_spec.SetField(alertdefinition.FieldDescription, field.TypeString, value)
 	}
 	if _u.mutation.DescriptionCleared() {
-		_spec.ClearField(alert.FieldDescription, field.TypeString)
+		_spec.ClearField(alertdefinition.FieldDescription, field.TypeString)
 	}
 	if value, ok := _u.mutation.Definition(); ok {
-		_spec.SetField(alert.FieldDefinition, field.TypeString, value)
+		_spec.SetField(alertdefinition.FieldDefinition, field.TypeString, value)
 	}
 	if _u.mutation.DefinitionCleared() {
-		_spec.ClearField(alert.FieldDefinition, field.TypeString)
+		_spec.ClearField(alertdefinition.FieldDefinition, field.TypeString)
 	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.KnowledgeEntityTable,
-			Columns: []string{alert.KnowledgeEntityColumn},
+			Table:   alertdefinition.KnowledgeEntityTable,
+			Columns: []string{alertdefinition.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.Alert
+		edge.Schema = _u.schemaConfig.AlertDefinition
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.KnowledgeEntityTable,
-			Columns: []string{alert.KnowledgeEntityColumn},
+			Table:   alertdefinition.KnowledgeEntityTable,
+			Columns: []string{alertdefinition.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.Alert
+		edge.Schema = _u.schemaConfig.AlertDefinition
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -298,28 +298,28 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   alert.PlaybooksTable,
-			Columns: alert.PlaybooksPrimaryKey,
+			Table:   alertdefinition.PlaybooksTable,
+			Columns: alertdefinition.PlaybooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedPlaybooksIDs(); len(nodes) > 0 && !_u.mutation.PlaybooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   alert.PlaybooksTable,
-			Columns: alert.PlaybooksPrimaryKey,
+			Table:   alertdefinition.PlaybooksTable,
+			Columns: alertdefinition.PlaybooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -329,73 +329,73 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   alert.PlaybooksTable,
-			Columns: alert.PlaybooksPrimaryKey,
+			Table:   alertdefinition.PlaybooksTable,
+			Columns: alertdefinition.PlaybooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.InstancesCleared() {
+	if _u.mutation.EpisodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Table:   alertdefinition.EpisodesTable,
+			Columns: []string{alertdefinition.EpisodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertEpisode
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !_u.mutation.InstancesCleared() {
+	if nodes := _u.mutation.RemovedEpisodesIDs(); len(nodes) > 0 && !_u.mutation.EpisodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Table:   alertdefinition.EpisodesTable,
+			Columns: []string{alertdefinition.EpisodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertEpisode
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.InstancesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EpisodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Table:   alertdefinition.EpisodesTable,
+			Columns: []string{alertdefinition.EpisodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertEpisode
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.Node.Schema = _u.schemaConfig.Alert
+	_spec.Node.Schema = _u.schemaConfig.AlertDefinition
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{alert.Label}
+			err = &NotFoundError{alertdefinition.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -405,23 +405,23 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	return _node, nil
 }
 
-// AlertUpdateOne is the builder for updating a single Alert entity.
-type AlertUpdateOne struct {
+// AlertDefinitionUpdateOne is the builder for updating a single AlertDefinition entity.
+type AlertDefinitionUpdateOne struct {
 	config
 	fields    []string
 	hooks     []Hook
-	mutation  *AlertMutation
+	mutation  *AlertDefinitionMutation
 	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *AlertUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *AlertDefinitionUpdateOne {
 	_u.mutation.SetKnowledgeEntityID(v)
 	return _u
 }
 
 // SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *AlertUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertDefinitionUpdateOne {
 	if v != nil {
 		_u.SetKnowledgeEntityID(*v)
 	}
@@ -429,19 +429,19 @@ func (_u *AlertUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertUpdat
 }
 
 // ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *AlertUpdateOne) ClearKnowledgeEntityID() *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) ClearKnowledgeEntityID() *AlertDefinitionUpdateOne {
 	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
 // SetTitle sets the "title" field.
-func (_u *AlertUpdateOne) SetTitle(v string) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) SetTitle(v string) *AlertDefinitionUpdateOne {
 	_u.mutation.SetTitle(v)
 	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (_u *AlertUpdateOne) SetNillableTitle(v *string) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) SetNillableTitle(v *string) *AlertDefinitionUpdateOne {
 	if v != nil {
 		_u.SetTitle(*v)
 	}
@@ -449,13 +449,13 @@ func (_u *AlertUpdateOne) SetNillableTitle(v *string) *AlertUpdateOne {
 }
 
 // SetDescription sets the "description" field.
-func (_u *AlertUpdateOne) SetDescription(v string) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) SetDescription(v string) *AlertDefinitionUpdateOne {
 	_u.mutation.SetDescription(v)
 	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (_u *AlertUpdateOne) SetNillableDescription(v *string) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) SetNillableDescription(v *string) *AlertDefinitionUpdateOne {
 	if v != nil {
 		_u.SetDescription(*v)
 	}
@@ -463,19 +463,19 @@ func (_u *AlertUpdateOne) SetNillableDescription(v *string) *AlertUpdateOne {
 }
 
 // ClearDescription clears the value of the "description" field.
-func (_u *AlertUpdateOne) ClearDescription() *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) ClearDescription() *AlertDefinitionUpdateOne {
 	_u.mutation.ClearDescription()
 	return _u
 }
 
 // SetDefinition sets the "definition" field.
-func (_u *AlertUpdateOne) SetDefinition(v string) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) SetDefinition(v string) *AlertDefinitionUpdateOne {
 	_u.mutation.SetDefinition(v)
 	return _u
 }
 
 // SetNillableDefinition sets the "definition" field if the given value is not nil.
-func (_u *AlertUpdateOne) SetNillableDefinition(v *string) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) SetNillableDefinition(v *string) *AlertDefinitionUpdateOne {
 	if v != nil {
 		_u.SetDefinition(*v)
 	}
@@ -483,24 +483,24 @@ func (_u *AlertUpdateOne) SetNillableDefinition(v *string) *AlertUpdateOne {
 }
 
 // ClearDefinition clears the value of the "definition" field.
-func (_u *AlertUpdateOne) ClearDefinition() *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) ClearDefinition() *AlertDefinitionUpdateOne {
 	_u.mutation.ClearDefinition()
 	return _u
 }
 
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *AlertDefinitionUpdateOne {
 	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
-func (_u *AlertUpdateOne) AddPlaybookIDs(ids ...uuid.UUID) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) AddPlaybookIDs(ids ...uuid.UUID) *AlertDefinitionUpdateOne {
 	_u.mutation.AddPlaybookIDs(ids...)
 	return _u
 }
 
 // AddPlaybooks adds the "playbooks" edges to the Playbook entity.
-func (_u *AlertUpdateOne) AddPlaybooks(v ...*Playbook) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) AddPlaybooks(v ...*Playbook) *AlertDefinitionUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -508,46 +508,46 @@ func (_u *AlertUpdateOne) AddPlaybooks(v ...*Playbook) *AlertUpdateOne {
 	return _u.AddPlaybookIDs(ids...)
 }
 
-// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
-func (_u *AlertUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	_u.mutation.AddInstanceIDs(ids...)
+// AddEpisodeIDs adds the "episodes" edge to the AlertEpisode entity by IDs.
+func (_u *AlertDefinitionUpdateOne) AddEpisodeIDs(ids ...uuid.UUID) *AlertDefinitionUpdateOne {
+	_u.mutation.AddEpisodeIDs(ids...)
 	return _u
 }
 
-// AddInstances adds the "instances" edges to the AlertInstance entity.
-func (_u *AlertUpdateOne) AddInstances(v ...*AlertInstance) *AlertUpdateOne {
+// AddEpisodes adds the "episodes" edges to the AlertEpisode entity.
+func (_u *AlertDefinitionUpdateOne) AddEpisodes(v ...*AlertEpisode) *AlertDefinitionUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddInstanceIDs(ids...)
+	return _u.AddEpisodeIDs(ids...)
 }
 
-// Mutation returns the AlertMutation object of the builder.
-func (_u *AlertUpdateOne) Mutation() *AlertMutation {
+// Mutation returns the AlertDefinitionMutation object of the builder.
+func (_u *AlertDefinitionUpdateOne) Mutation() *AlertDefinitionMutation {
 	return _u.mutation
 }
 
 // ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertUpdateOne) ClearKnowledgeEntity() *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) ClearKnowledgeEntity() *AlertDefinitionUpdateOne {
 	_u.mutation.ClearKnowledgeEntity()
 	return _u
 }
 
 // ClearPlaybooks clears all "playbooks" edges to the Playbook entity.
-func (_u *AlertUpdateOne) ClearPlaybooks() *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) ClearPlaybooks() *AlertDefinitionUpdateOne {
 	_u.mutation.ClearPlaybooks()
 	return _u
 }
 
 // RemovePlaybookIDs removes the "playbooks" edge to Playbook entities by IDs.
-func (_u *AlertUpdateOne) RemovePlaybookIDs(ids ...uuid.UUID) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) RemovePlaybookIDs(ids ...uuid.UUID) *AlertDefinitionUpdateOne {
 	_u.mutation.RemovePlaybookIDs(ids...)
 	return _u
 }
 
 // RemovePlaybooks removes "playbooks" edges to Playbook entities.
-func (_u *AlertUpdateOne) RemovePlaybooks(v ...*Playbook) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) RemovePlaybooks(v ...*Playbook) *AlertDefinitionUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -555,47 +555,47 @@ func (_u *AlertUpdateOne) RemovePlaybooks(v ...*Playbook) *AlertUpdateOne {
 	return _u.RemovePlaybookIDs(ids...)
 }
 
-// ClearInstances clears all "instances" edges to the AlertInstance entity.
-func (_u *AlertUpdateOne) ClearInstances() *AlertUpdateOne {
-	_u.mutation.ClearInstances()
+// ClearEpisodes clears all "episodes" edges to the AlertEpisode entity.
+func (_u *AlertDefinitionUpdateOne) ClearEpisodes() *AlertDefinitionUpdateOne {
+	_u.mutation.ClearEpisodes()
 	return _u
 }
 
-// RemoveInstanceIDs removes the "instances" edge to AlertInstance entities by IDs.
-func (_u *AlertUpdateOne) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	_u.mutation.RemoveInstanceIDs(ids...)
+// RemoveEpisodeIDs removes the "episodes" edge to AlertEpisode entities by IDs.
+func (_u *AlertDefinitionUpdateOne) RemoveEpisodeIDs(ids ...uuid.UUID) *AlertDefinitionUpdateOne {
+	_u.mutation.RemoveEpisodeIDs(ids...)
 	return _u
 }
 
-// RemoveInstances removes "instances" edges to AlertInstance entities.
-func (_u *AlertUpdateOne) RemoveInstances(v ...*AlertInstance) *AlertUpdateOne {
+// RemoveEpisodes removes "episodes" edges to AlertEpisode entities.
+func (_u *AlertDefinitionUpdateOne) RemoveEpisodes(v ...*AlertEpisode) *AlertDefinitionUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveInstanceIDs(ids...)
+	return _u.RemoveEpisodeIDs(ids...)
 }
 
-// Where appends a list predicates to the AlertUpdate builder.
-func (_u *AlertUpdateOne) Where(ps ...predicate.Alert) *AlertUpdateOne {
+// Where appends a list predicates to the AlertDefinitionUpdate builder.
+func (_u *AlertDefinitionUpdateOne) Where(ps ...predicate.AlertDefinition) *AlertDefinitionUpdateOne {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (_u *AlertUpdateOne) Select(field string, fields ...string) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) Select(field string, fields ...string) *AlertDefinitionUpdateOne {
 	_u.fields = append([]string{field}, fields...)
 	return _u
 }
 
-// Save executes the query and returns the updated Alert entity.
-func (_u *AlertUpdateOne) Save(ctx context.Context) (*Alert, error) {
+// Save executes the query and returns the updated AlertDefinition entity.
+func (_u *AlertDefinitionUpdateOne) Save(ctx context.Context) (*AlertDefinition, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *AlertUpdateOne) SaveX(ctx context.Context) *Alert {
+func (_u *AlertDefinitionUpdateOne) SaveX(ctx context.Context) *AlertDefinition {
 	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -604,50 +604,50 @@ func (_u *AlertUpdateOne) SaveX(ctx context.Context) *Alert {
 }
 
 // Exec executes the query on the entity.
-func (_u *AlertUpdateOne) Exec(ctx context.Context) error {
+func (_u *AlertDefinitionUpdateOne) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *AlertUpdateOne) ExecX(ctx context.Context) {
+func (_u *AlertDefinitionUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_u *AlertUpdateOne) check() error {
+func (_u *AlertDefinitionUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Alert.tenant"`)
+		return errors.New(`ent: clearing a required unique edge "AlertDefinition.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AlertUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertUpdateOne {
+func (_u *AlertDefinitionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertDefinitionUpdateOne {
 	_u.modifiers = append(_u.modifiers, modifiers...)
 	return _u
 }
 
-func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error) {
+func (_u *AlertDefinitionUpdateOne) sqlSave(ctx context.Context) (_node *AlertDefinition, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(alert.Table, alert.Columns, sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(alertdefinition.Table, alertdefinition.Columns, sqlgraph.NewFieldSpec(alertdefinition.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Alert.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "AlertDefinition.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, alert.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, alertdefinition.FieldID)
 		for _, f := range fields {
-			if !alert.ValidColumn(f) {
+			if !alertdefinition.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != alert.FieldID {
+			if f != alertdefinition.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)
 			}
 		}
@@ -660,46 +660,46 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 		}
 	}
 	if value, ok := _u.mutation.Title(); ok {
-		_spec.SetField(alert.FieldTitle, field.TypeString, value)
+		_spec.SetField(alertdefinition.FieldTitle, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Description(); ok {
-		_spec.SetField(alert.FieldDescription, field.TypeString, value)
+		_spec.SetField(alertdefinition.FieldDescription, field.TypeString, value)
 	}
 	if _u.mutation.DescriptionCleared() {
-		_spec.ClearField(alert.FieldDescription, field.TypeString)
+		_spec.ClearField(alertdefinition.FieldDescription, field.TypeString)
 	}
 	if value, ok := _u.mutation.Definition(); ok {
-		_spec.SetField(alert.FieldDefinition, field.TypeString, value)
+		_spec.SetField(alertdefinition.FieldDefinition, field.TypeString, value)
 	}
 	if _u.mutation.DefinitionCleared() {
-		_spec.ClearField(alert.FieldDefinition, field.TypeString)
+		_spec.ClearField(alertdefinition.FieldDefinition, field.TypeString)
 	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.KnowledgeEntityTable,
-			Columns: []string{alert.KnowledgeEntityColumn},
+			Table:   alertdefinition.KnowledgeEntityTable,
+			Columns: []string{alertdefinition.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.Alert
+		edge.Schema = _u.schemaConfig.AlertDefinition
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.KnowledgeEntityTable,
-			Columns: []string{alert.KnowledgeEntityColumn},
+			Table:   alertdefinition.KnowledgeEntityTable,
+			Columns: []string{alertdefinition.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.Alert
+		edge.Schema = _u.schemaConfig.AlertDefinition
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -709,28 +709,28 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   alert.PlaybooksTable,
-			Columns: alert.PlaybooksPrimaryKey,
+			Table:   alertdefinition.PlaybooksTable,
+			Columns: alertdefinition.PlaybooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedPlaybooksIDs(); len(nodes) > 0 && !_u.mutation.PlaybooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   alert.PlaybooksTable,
-			Columns: alert.PlaybooksPrimaryKey,
+			Table:   alertdefinition.PlaybooksTable,
+			Columns: alertdefinition.PlaybooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -740,76 +740,76 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   alert.PlaybooksTable,
-			Columns: alert.PlaybooksPrimaryKey,
+			Table:   alertdefinition.PlaybooksTable,
+			Columns: alertdefinition.PlaybooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.InstancesCleared() {
+	if _u.mutation.EpisodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Table:   alertdefinition.EpisodesTable,
+			Columns: []string{alertdefinition.EpisodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertEpisode
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !_u.mutation.InstancesCleared() {
+	if nodes := _u.mutation.RemovedEpisodesIDs(); len(nodes) > 0 && !_u.mutation.EpisodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Table:   alertdefinition.EpisodesTable,
+			Columns: []string{alertdefinition.EpisodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertEpisode
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.InstancesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EpisodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Table:   alertdefinition.EpisodesTable,
+			Columns: []string{alertdefinition.EpisodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertEpisode
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.Node.Schema = _u.schemaConfig.Alert
+	_spec.Node.Schema = _u.schemaConfig.AlertDefinition
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
-	_node = &Alert{config: _u.config}
+	_node = &AlertDefinition{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{alert.Label}
+			err = &NotFoundError{alertdefinition.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}

@@ -51,17 +51,44 @@ func seedBaseAlert(ctx context.Context, client *ent.Client, referenceTime time.T
 		"The production Checkout API 5xx error rate exceeded its warning threshold at %s.",
 		referenceTime.Format(time.RFC3339),
 	)
-	createAlert := client.Alert.Create().
+	createAlert := client.AlertDefinition.Create().
 		SetTitle("Checkout API error rate is high").
 		SetDescription(description).
 		SetDefinition(`sum(rate(checkout_http_requests_total{environment="production",status=~"5.."}[5m])) > 1`).
 		SetKnowledgeEntityID(alertEntity.ID)
-	alert, alertErr := createAlert.Save(ctx)
+	definition, alertErr := createAlert.Save(ctx)
 	if alertErr != nil {
 		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create alert: %w", alertErr)
 	}
 
-	instance, instanceErr := client.AlertInstance.Create().SetAlertID(alert.ID).Save(ctx)
+	event, eventErr := client.NormalizedEvent.Create().
+		SetProvider("test").
+		SetProviderNamespace("alert-evals").
+		SetProviderResourceRef("checkout-alert").
+		SetProviderEventSource("alerts").
+		SetProviderEventRef("alert-event-" + uuid.NewString()).
+		SetKind("alert_instance").
+		SetAttributes([]byte("{}")).
+		SetOccurredAt(referenceTime).
+		SetReceivedAt(referenceTime).
+		Save(ctx)
+	if eventErr != nil {
+		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create normalized event: %w", eventErr)
+	}
+
+	episode, episodeErr := client.AlertEpisode.Create().
+		SetAlertDefinitionID(definition.ID).
+		SetStartedAt(referenceTime).
+		SetLastObservedAt(referenceTime).
+		Save(ctx)
+	if episodeErr != nil {
+		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create alert episode: %w", episodeErr)
+	}
+
+	instance, instanceErr := client.AlertInstance.Create().
+		SetAlertEpisodeID(episode.ID).
+		SetNormalizedEventID(event.ID).
+		Save(ctx)
 	if instanceErr != nil {
 		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create alert instance: %w", instanceErr)
 	}

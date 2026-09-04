@@ -82,7 +82,7 @@ type (
 	}
 )
 
-func AlertFromEnt(a *ent.Alert) Alert {
+func AlertFromEnt(a *ent.AlertDefinition) Alert {
 	attrs := AlertAttributes{
 		Title:       a.Title,
 		Description: a.Description,

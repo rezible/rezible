@@ -16,12 +16,16 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldAlertID holds the string denoting the alert_id field in the database.
-	FieldAlertID = "alert_id"
+	// FieldAlertEpisodeID holds the string denoting the alert_episode_id field in the database.
+	FieldAlertEpisodeID = "alert_episode_id"
+	// FieldNormalizedEventID holds the string denoting the normalized_event_id field in the database.
+	FieldNormalizedEventID = "normalized_event_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeAlert holds the string denoting the alert edge name in mutations.
-	EdgeAlert = "alert"
+	// EdgeEpisode holds the string denoting the episode edge name in mutations.
+	EdgeEpisode = "episode"
+	// EdgeEvent holds the string denoting the event edge name in mutations.
+	EdgeEvent = "event"
 	// EdgeFeedback holds the string denoting the feedback edge name in mutations.
 	EdgeFeedback = "feedback"
 	// Table holds the table name of the alertinstance in the database.
@@ -33,13 +37,20 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// AlertTable is the table that holds the alert relation/edge.
-	AlertTable = "alert_instances"
-	// AlertInverseTable is the table name for the Alert entity.
-	// It exists in this package in order to avoid circular dependency with the "alert" package.
-	AlertInverseTable = "alerts"
-	// AlertColumn is the table column denoting the alert relation/edge.
-	AlertColumn = "alert_id"
+	// EpisodeTable is the table that holds the episode relation/edge.
+	EpisodeTable = "alert_instances"
+	// EpisodeInverseTable is the table name for the AlertEpisode entity.
+	// It exists in this package in order to avoid circular dependency with the "alertepisode" package.
+	EpisodeInverseTable = "alert_episodes"
+	// EpisodeColumn is the table column denoting the episode relation/edge.
+	EpisodeColumn = "alert_episode_id"
+	// EventTable is the table that holds the event relation/edge.
+	EventTable = "alert_instances"
+	// EventInverseTable is the table name for the NormalizedEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
+	EventInverseTable = "normalized_events"
+	// EventColumn is the table column denoting the event relation/edge.
+	EventColumn = "normalized_event_id"
 	// FeedbackTable is the table that holds the feedback relation/edge.
 	FeedbackTable = "alert_feedbacks"
 	// FeedbackInverseTable is the table name for the AlertFeedback entity.
@@ -53,7 +64,8 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldAlertID,
+	FieldAlertEpisodeID,
+	FieldNormalizedEventID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -91,9 +103,14 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByAlertID orders the results by the alert_id field.
-func ByAlertID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAlertID, opts...).ToFunc()
+// ByAlertEpisodeID orders the results by the alert_episode_id field.
+func ByAlertEpisodeID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAlertEpisodeID, opts...).ToFunc()
+}
+
+// ByNormalizedEventID orders the results by the normalized_event_id field.
+func ByNormalizedEventID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNormalizedEventID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -103,10 +120,17 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByAlertField orders the results by alert field.
-func ByAlertField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByEpisodeField orders the results by episode field.
+func ByEpisodeField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAlertStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newEpisodeStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByEventField orders the results by event field.
+func ByEventField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEventStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -130,11 +154,18 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newAlertStep() *sqlgraph.Step {
+func newEpisodeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AlertInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, AlertTable, AlertColumn),
+		sqlgraph.To(EpisodeInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, EpisodeTable, EpisodeColumn),
+	)
+}
+func newEventStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EventInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
 	)
 }
 func newFeedbackStep() *sqlgraph.Step {

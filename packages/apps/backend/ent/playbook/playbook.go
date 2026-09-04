@@ -22,8 +22,8 @@ const (
 	FieldContent = "content"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeAlerts holds the string denoting the alerts edge name in mutations.
-	EdgeAlerts = "alerts"
+	// EdgeAlertDefinitions holds the string denoting the alert_definitions edge name in mutations.
+	EdgeAlertDefinitions = "alert_definitions"
 	// Table holds the table name of the playbook in the database.
 	Table = "playbooks"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -33,11 +33,11 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// AlertsTable is the table that holds the alerts relation/edge. The primary key declared below.
-	AlertsTable = "playbook_alerts"
-	// AlertsInverseTable is the table name for the Alert entity.
-	// It exists in this package in order to avoid circular dependency with the "alert" package.
-	AlertsInverseTable = "alerts"
+	// AlertDefinitionsTable is the table that holds the alert_definitions relation/edge. The primary key declared below.
+	AlertDefinitionsTable = "playbook_alert_definitions"
+	// AlertDefinitionsInverseTable is the table name for the AlertDefinition entity.
+	// It exists in this package in order to avoid circular dependency with the "alertdefinition" package.
+	AlertDefinitionsInverseTable = "alert_definitions"
 )
 
 // Columns holds all SQL columns for playbook fields.
@@ -49,9 +49,9 @@ var Columns = []string{
 }
 
 var (
-	// AlertsPrimaryKey and AlertsColumn2 are the table columns denoting the
-	// primary key for the alerts relation (M2M).
-	AlertsPrimaryKey = []string{"playbook_id", "alert_id"}
+	// AlertDefinitionsPrimaryKey and AlertDefinitionsColumn2 are the table columns denoting the
+	// primary key for the alert_definitions relation (M2M).
+	AlertDefinitionsPrimaryKey = []string{"playbook_id", "alert_definition_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -101,17 +101,17 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByAlertsCount orders the results by alerts count.
-func ByAlertsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByAlertDefinitionsCount orders the results by alert_definitions count.
+func ByAlertDefinitionsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAlertsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newAlertDefinitionsStep(), opts...)
 	}
 }
 
-// ByAlerts orders the results by alerts terms.
-func ByAlerts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByAlertDefinitions orders the results by alert_definitions terms.
+func ByAlertDefinitions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAlertsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newAlertDefinitionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -121,10 +121,10 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newAlertsStep() *sqlgraph.Step {
+func newAlertDefinitionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AlertsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, AlertsTable, AlertsPrimaryKey...),
+		sqlgraph.To(AlertDefinitionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, AlertDefinitionsTable, AlertDefinitionsPrimaryKey...),
 	)
 }

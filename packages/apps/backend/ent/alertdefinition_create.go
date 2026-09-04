@@ -12,35 +12,35 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/alertdefinition"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// AlertCreate is the builder for creating a Alert entity.
-type AlertCreate struct {
+// AlertDefinitionCreate is the builder for creating a AlertDefinition entity.
+type AlertDefinitionCreate struct {
 	config
-	mutation *AlertMutation
+	mutation *AlertDefinitionMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (_c *AlertCreate) SetTenantID(v int) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetTenantID(v int) *AlertDefinitionCreate {
 	_c.mutation.SetTenantID(v)
 	return _c
 }
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_c *AlertCreate) SetKnowledgeEntityID(v uuid.UUID) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetKnowledgeEntityID(v uuid.UUID) *AlertDefinitionCreate {
 	_c.mutation.SetKnowledgeEntityID(v)
 	return _c
 }
 
 // SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_c *AlertCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertDefinitionCreate {
 	if v != nil {
 		_c.SetKnowledgeEntityID(*v)
 	}
@@ -48,19 +48,19 @@ func (_c *AlertCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertCreate {
 }
 
 // SetTitle sets the "title" field.
-func (_c *AlertCreate) SetTitle(v string) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetTitle(v string) *AlertDefinitionCreate {
 	_c.mutation.SetTitle(v)
 	return _c
 }
 
 // SetDescription sets the "description" field.
-func (_c *AlertCreate) SetDescription(v string) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetDescription(v string) *AlertDefinitionCreate {
 	_c.mutation.SetDescription(v)
 	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (_c *AlertCreate) SetNillableDescription(v *string) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetNillableDescription(v *string) *AlertDefinitionCreate {
 	if v != nil {
 		_c.SetDescription(*v)
 	}
@@ -68,13 +68,13 @@ func (_c *AlertCreate) SetNillableDescription(v *string) *AlertCreate {
 }
 
 // SetDefinition sets the "definition" field.
-func (_c *AlertCreate) SetDefinition(v string) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetDefinition(v string) *AlertDefinitionCreate {
 	_c.mutation.SetDefinition(v)
 	return _c
 }
 
 // SetNillableDefinition sets the "definition" field if the given value is not nil.
-func (_c *AlertCreate) SetNillableDefinition(v *string) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetNillableDefinition(v *string) *AlertDefinitionCreate {
 	if v != nil {
 		_c.SetDefinition(*v)
 	}
@@ -82,13 +82,13 @@ func (_c *AlertCreate) SetNillableDefinition(v *string) *AlertCreate {
 }
 
 // SetID sets the "id" field.
-func (_c *AlertCreate) SetID(v uuid.UUID) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetID(v uuid.UUID) *AlertDefinitionCreate {
 	_c.mutation.SetID(v)
 	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (_c *AlertCreate) SetNillableID(v *uuid.UUID) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetNillableID(v *uuid.UUID) *AlertDefinitionCreate {
 	if v != nil {
 		_c.SetID(*v)
 	}
@@ -96,23 +96,23 @@ func (_c *AlertCreate) SetNillableID(v *uuid.UUID) *AlertCreate {
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (_c *AlertCreate) SetTenant(v *Tenant) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetTenant(v *Tenant) *AlertDefinitionCreate {
 	return _c.SetTenantID(v.ID)
 }
 
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_c *AlertCreate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertCreate {
+func (_c *AlertDefinitionCreate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertDefinitionCreate {
 	return _c.SetKnowledgeEntityID(v.ID)
 }
 
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
-func (_c *AlertCreate) AddPlaybookIDs(ids ...uuid.UUID) *AlertCreate {
+func (_c *AlertDefinitionCreate) AddPlaybookIDs(ids ...uuid.UUID) *AlertDefinitionCreate {
 	_c.mutation.AddPlaybookIDs(ids...)
 	return _c
 }
 
 // AddPlaybooks adds the "playbooks" edges to the Playbook entity.
-func (_c *AlertCreate) AddPlaybooks(v ...*Playbook) *AlertCreate {
+func (_c *AlertDefinitionCreate) AddPlaybooks(v ...*Playbook) *AlertDefinitionCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -120,28 +120,28 @@ func (_c *AlertCreate) AddPlaybooks(v ...*Playbook) *AlertCreate {
 	return _c.AddPlaybookIDs(ids...)
 }
 
-// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
-func (_c *AlertCreate) AddInstanceIDs(ids ...uuid.UUID) *AlertCreate {
-	_c.mutation.AddInstanceIDs(ids...)
+// AddEpisodeIDs adds the "episodes" edge to the AlertEpisode entity by IDs.
+func (_c *AlertDefinitionCreate) AddEpisodeIDs(ids ...uuid.UUID) *AlertDefinitionCreate {
+	_c.mutation.AddEpisodeIDs(ids...)
 	return _c
 }
 
-// AddInstances adds the "instances" edges to the AlertInstance entity.
-func (_c *AlertCreate) AddInstances(v ...*AlertInstance) *AlertCreate {
+// AddEpisodes adds the "episodes" edges to the AlertEpisode entity.
+func (_c *AlertDefinitionCreate) AddEpisodes(v ...*AlertEpisode) *AlertDefinitionCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddInstanceIDs(ids...)
+	return _c.AddEpisodeIDs(ids...)
 }
 
-// Mutation returns the AlertMutation object of the builder.
-func (_c *AlertCreate) Mutation() *AlertMutation {
+// Mutation returns the AlertDefinitionMutation object of the builder.
+func (_c *AlertDefinitionCreate) Mutation() *AlertDefinitionMutation {
 	return _c.mutation
 }
 
-// Save creates the Alert in the database.
-func (_c *AlertCreate) Save(ctx context.Context) (*Alert, error) {
+// Save creates the AlertDefinition in the database.
+func (_c *AlertDefinitionCreate) Save(ctx context.Context) (*AlertDefinition, error) {
 	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func (_c *AlertCreate) Save(ctx context.Context) (*Alert, error) {
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (_c *AlertCreate) SaveX(ctx context.Context) *Alert {
+func (_c *AlertDefinitionCreate) SaveX(ctx context.Context) *AlertDefinition {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -158,45 +158,45 @@ func (_c *AlertCreate) SaveX(ctx context.Context) *Alert {
 }
 
 // Exec executes the query.
-func (_c *AlertCreate) Exec(ctx context.Context) error {
+func (_c *AlertDefinitionCreate) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *AlertCreate) ExecX(ctx context.Context) {
+func (_c *AlertDefinitionCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *AlertCreate) defaults() error {
+func (_c *AlertDefinitionCreate) defaults() error {
 	if _, ok := _c.mutation.ID(); !ok {
-		if alert.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized alert.DefaultID (forgotten import ent/runtime?)")
+		if alertdefinition.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized alertdefinition.DefaultID (forgotten import ent/runtime?)")
 		}
-		v := alert.DefaultID()
+		v := alertdefinition.DefaultID()
 		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_c *AlertCreate) check() error {
+func (_c *AlertDefinitionCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
-		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Alert.tenant_id"`)}
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "AlertDefinition.tenant_id"`)}
 	}
 	if _, ok := _c.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Alert.title"`)}
+		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "AlertDefinition.title"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
-		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Alert.tenant"`)}
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertDefinition.tenant"`)}
 	}
 	return nil
 }
 
-func (_c *AlertCreate) sqlSave(ctx context.Context) (*Alert, error) {
+func (_c *AlertDefinitionCreate) sqlSave(ctx context.Context) (*AlertDefinition, error) {
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
@@ -219,41 +219,41 @@ func (_c *AlertCreate) sqlSave(ctx context.Context) (*Alert, error) {
 	return _node, nil
 }
 
-func (_c *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
+func (_c *AlertDefinitionCreate) createSpec() (*AlertDefinition, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Alert{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(alert.Table, sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID))
+		_node = &AlertDefinition{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(alertdefinition.Table, sqlgraph.NewFieldSpec(alertdefinition.FieldID, field.TypeUUID))
 	)
-	_spec.Schema = _c.schemaConfig.Alert
+	_spec.Schema = _c.schemaConfig.AlertDefinition
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := _c.mutation.Title(); ok {
-		_spec.SetField(alert.FieldTitle, field.TypeString, value)
+		_spec.SetField(alertdefinition.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
 	if value, ok := _c.mutation.Description(); ok {
-		_spec.SetField(alert.FieldDescription, field.TypeString, value)
+		_spec.SetField(alertdefinition.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
 	if value, ok := _c.mutation.Definition(); ok {
-		_spec.SetField(alert.FieldDefinition, field.TypeString, value)
+		_spec.SetField(alertdefinition.FieldDefinition, field.TypeString, value)
 		_node.Definition = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.TenantTable,
-			Columns: []string{alert.TenantColumn},
+			Table:   alertdefinition.TenantTable,
+			Columns: []string{alertdefinition.TenantColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
-		edge.Schema = _c.schemaConfig.Alert
+		edge.Schema = _c.schemaConfig.AlertDefinition
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -264,14 +264,14 @@ func (_c *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.KnowledgeEntityTable,
-			Columns: []string{alert.KnowledgeEntityColumn},
+			Table:   alertdefinition.KnowledgeEntityTable,
+			Columns: []string{alertdefinition.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.Alert
+		edge.Schema = _c.schemaConfig.AlertDefinition
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -282,31 +282,31 @@ func (_c *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   alert.PlaybooksTable,
-			Columns: alert.PlaybooksPrimaryKey,
+			Table:   alertdefinition.PlaybooksTable,
+			Columns: alertdefinition.PlaybooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.PlaybookAlerts
+		edge.Schema = _c.schemaConfig.PlaybookAlertDefinitions
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.InstancesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EpisodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Table:   alertdefinition.EpisodesTable,
+			Columns: []string{alertdefinition.EpisodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.AlertInstance
+		edge.Schema = _c.schemaConfig.AlertEpisode
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -318,7 +318,7 @@ func (_c *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
 // of the `INSERT` statement. For example:
 //
-//	client.Alert.Create().
+//	client.AlertDefinition.Create().
 //		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
@@ -327,13 +327,13 @@ func (_c *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 //		).
 //		// Override some of the fields with custom
 //		// update values.
-//		Update(func(u *ent.AlertUpsert) {
+//		Update(func(u *ent.AlertDefinitionUpsert) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (_c *AlertCreate) OnConflict(opts ...sql.ConflictOption) *AlertUpsertOne {
+func (_c *AlertDefinitionCreate) OnConflict(opts ...sql.ConflictOption) *AlertDefinitionUpsertOne {
 	_c.conflict = opts
-	return &AlertUpsertOne{
+	return &AlertDefinitionUpsertOne{
 		create: _c,
 	}
 }
@@ -341,114 +341,114 @@ func (_c *AlertCreate) OnConflict(opts ...sql.ConflictOption) *AlertUpsertOne {
 // OnConflictColumns calls `OnConflict` and configures the columns
 // as conflict target. Using this option is equivalent to using:
 //
-//	client.Alert.Create().
+//	client.AlertDefinition.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (_c *AlertCreate) OnConflictColumns(columns ...string) *AlertUpsertOne {
+func (_c *AlertDefinitionCreate) OnConflictColumns(columns ...string) *AlertDefinitionUpsertOne {
 	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
-	return &AlertUpsertOne{
+	return &AlertDefinitionUpsertOne{
 		create: _c,
 	}
 }
 
 type (
-	// AlertUpsertOne is the builder for "upsert"-ing
-	//  one Alert node.
-	AlertUpsertOne struct {
-		create *AlertCreate
+	// AlertDefinitionUpsertOne is the builder for "upsert"-ing
+	//  one AlertDefinition node.
+	AlertDefinitionUpsertOne struct {
+		create *AlertDefinitionCreate
 	}
 
-	// AlertUpsert is the "OnConflict" setter.
-	AlertUpsert struct {
+	// AlertDefinitionUpsert is the "OnConflict" setter.
+	AlertDefinitionUpsert struct {
 		*sql.UpdateSet
 	}
 )
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *AlertUpsert) SetKnowledgeEntityID(v uuid.UUID) *AlertUpsert {
-	u.Set(alert.FieldKnowledgeEntityID, v)
+func (u *AlertDefinitionUpsert) SetKnowledgeEntityID(v uuid.UUID) *AlertDefinitionUpsert {
+	u.Set(alertdefinition.FieldKnowledgeEntityID, v)
 	return u
 }
 
 // UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *AlertUpsert) UpdateKnowledgeEntityID() *AlertUpsert {
-	u.SetExcluded(alert.FieldKnowledgeEntityID)
+func (u *AlertDefinitionUpsert) UpdateKnowledgeEntityID() *AlertDefinitionUpsert {
+	u.SetExcluded(alertdefinition.FieldKnowledgeEntityID)
 	return u
 }
 
 // ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *AlertUpsert) ClearKnowledgeEntityID() *AlertUpsert {
-	u.SetNull(alert.FieldKnowledgeEntityID)
+func (u *AlertDefinitionUpsert) ClearKnowledgeEntityID() *AlertDefinitionUpsert {
+	u.SetNull(alertdefinition.FieldKnowledgeEntityID)
 	return u
 }
 
 // SetTitle sets the "title" field.
-func (u *AlertUpsert) SetTitle(v string) *AlertUpsert {
-	u.Set(alert.FieldTitle, v)
+func (u *AlertDefinitionUpsert) SetTitle(v string) *AlertDefinitionUpsert {
+	u.Set(alertdefinition.FieldTitle, v)
 	return u
 }
 
 // UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *AlertUpsert) UpdateTitle() *AlertUpsert {
-	u.SetExcluded(alert.FieldTitle)
+func (u *AlertDefinitionUpsert) UpdateTitle() *AlertDefinitionUpsert {
+	u.SetExcluded(alertdefinition.FieldTitle)
 	return u
 }
 
 // SetDescription sets the "description" field.
-func (u *AlertUpsert) SetDescription(v string) *AlertUpsert {
-	u.Set(alert.FieldDescription, v)
+func (u *AlertDefinitionUpsert) SetDescription(v string) *AlertDefinitionUpsert {
+	u.Set(alertdefinition.FieldDescription, v)
 	return u
 }
 
 // UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *AlertUpsert) UpdateDescription() *AlertUpsert {
-	u.SetExcluded(alert.FieldDescription)
+func (u *AlertDefinitionUpsert) UpdateDescription() *AlertDefinitionUpsert {
+	u.SetExcluded(alertdefinition.FieldDescription)
 	return u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (u *AlertUpsert) ClearDescription() *AlertUpsert {
-	u.SetNull(alert.FieldDescription)
+func (u *AlertDefinitionUpsert) ClearDescription() *AlertDefinitionUpsert {
+	u.SetNull(alertdefinition.FieldDescription)
 	return u
 }
 
 // SetDefinition sets the "definition" field.
-func (u *AlertUpsert) SetDefinition(v string) *AlertUpsert {
-	u.Set(alert.FieldDefinition, v)
+func (u *AlertDefinitionUpsert) SetDefinition(v string) *AlertDefinitionUpsert {
+	u.Set(alertdefinition.FieldDefinition, v)
 	return u
 }
 
 // UpdateDefinition sets the "definition" field to the value that was provided on create.
-func (u *AlertUpsert) UpdateDefinition() *AlertUpsert {
-	u.SetExcluded(alert.FieldDefinition)
+func (u *AlertDefinitionUpsert) UpdateDefinition() *AlertDefinitionUpsert {
+	u.SetExcluded(alertdefinition.FieldDefinition)
 	return u
 }
 
 // ClearDefinition clears the value of the "definition" field.
-func (u *AlertUpsert) ClearDefinition() *AlertUpsert {
-	u.SetNull(alert.FieldDefinition)
+func (u *AlertDefinitionUpsert) ClearDefinition() *AlertDefinitionUpsert {
+	u.SetNull(alertdefinition.FieldDefinition)
 	return u
 }
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
-//	client.Alert.Create().
+//	client.AlertDefinition.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
 //			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(alert.FieldID)
+//				u.SetIgnore(alertdefinition.FieldID)
 //			}),
 //		).
 //		Exec(ctx)
-func (u *AlertUpsertOne) UpdateNewValues() *AlertUpsertOne {
+func (u *AlertDefinitionUpsertOne) UpdateNewValues() *AlertDefinitionUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
-			s.SetIgnore(alert.FieldID)
+			s.SetIgnore(alertdefinition.FieldID)
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
-			s.SetIgnore(alert.FieldTenantID)
+			s.SetIgnore(alertdefinition.FieldTenantID)
 		}
 	}))
 	return u
@@ -457,128 +457,128 @@ func (u *AlertUpsertOne) UpdateNewValues() *AlertUpsertOne {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//	client.Alert.Create().
+//	client.AlertDefinition.Create().
 //	    OnConflict(sql.ResolveWithIgnore()).
 //	    Exec(ctx)
-func (u *AlertUpsertOne) Ignore() *AlertUpsertOne {
+func (u *AlertDefinitionUpsertOne) Ignore() *AlertDefinitionUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
 }
 
 // DoNothing configures the conflict_action to `DO NOTHING`.
 // Supported only by SQLite and PostgreSQL.
-func (u *AlertUpsertOne) DoNothing() *AlertUpsertOne {
+func (u *AlertDefinitionUpsertOne) DoNothing() *AlertDefinitionUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.DoNothing())
 	return u
 }
 
-// Update allows overriding fields `UPDATE` values. See the AlertCreate.OnConflict
+// Update allows overriding fields `UPDATE` values. See the AlertDefinitionCreate.OnConflict
 // documentation for more info.
-func (u *AlertUpsertOne) Update(set func(*AlertUpsert)) *AlertUpsertOne {
+func (u *AlertDefinitionUpsertOne) Update(set func(*AlertDefinitionUpsert)) *AlertDefinitionUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&AlertUpsert{UpdateSet: update})
+		set(&AlertDefinitionUpsert{UpdateSet: update})
 	}))
 	return u
 }
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *AlertUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.SetKnowledgeEntityID(v)
 	})
 }
 
 // UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *AlertUpsertOne) UpdateKnowledgeEntityID() *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertOne) UpdateKnowledgeEntityID() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.UpdateKnowledgeEntityID()
 	})
 }
 
 // ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *AlertUpsertOne) ClearKnowledgeEntityID() *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertOne) ClearKnowledgeEntityID() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.ClearKnowledgeEntityID()
 	})
 }
 
 // SetTitle sets the "title" field.
-func (u *AlertUpsertOne) SetTitle(v string) *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertOne) SetTitle(v string) *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.SetTitle(v)
 	})
 }
 
 // UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *AlertUpsertOne) UpdateTitle() *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertOne) UpdateTitle() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.UpdateTitle()
 	})
 }
 
 // SetDescription sets the "description" field.
-func (u *AlertUpsertOne) SetDescription(v string) *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertOne) SetDescription(v string) *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.SetDescription(v)
 	})
 }
 
 // UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *AlertUpsertOne) UpdateDescription() *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertOne) UpdateDescription() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.UpdateDescription()
 	})
 }
 
 // ClearDescription clears the value of the "description" field.
-func (u *AlertUpsertOne) ClearDescription() *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertOne) ClearDescription() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.ClearDescription()
 	})
 }
 
 // SetDefinition sets the "definition" field.
-func (u *AlertUpsertOne) SetDefinition(v string) *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertOne) SetDefinition(v string) *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.SetDefinition(v)
 	})
 }
 
 // UpdateDefinition sets the "definition" field to the value that was provided on create.
-func (u *AlertUpsertOne) UpdateDefinition() *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertOne) UpdateDefinition() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.UpdateDefinition()
 	})
 }
 
 // ClearDefinition clears the value of the "definition" field.
-func (u *AlertUpsertOne) ClearDefinition() *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertOne) ClearDefinition() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.ClearDefinition()
 	})
 }
 
 // Exec executes the query.
-func (u *AlertUpsertOne) Exec(ctx context.Context) error {
+func (u *AlertDefinitionUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for AlertCreate.OnConflict")
+		return errors.New("ent: missing options for AlertDefinitionCreate.OnConflict")
 	}
 	return u.create.Exec(ctx)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (u *AlertUpsertOne) ExecX(ctx context.Context) {
+func (u *AlertDefinitionUpsertOne) ExecX(ctx context.Context) {
 	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *AlertUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+func (u *AlertDefinitionUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
 	if u.create.driver.Dialect() == dialect.MySQL {
 		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
 		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: AlertUpsertOne.ID is not supported by MySQL driver. Use AlertUpsertOne.Exec instead")
+		return id, errors.New("ent: AlertDefinitionUpsertOne.ID is not supported by MySQL driver. Use AlertDefinitionUpsertOne.Exec instead")
 	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
@@ -588,7 +588,7 @@ func (u *AlertUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *AlertUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *AlertDefinitionUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -596,28 +596,28 @@ func (u *AlertUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// AlertCreateBulk is the builder for creating many Alert entities in bulk.
-type AlertCreateBulk struct {
+// AlertDefinitionCreateBulk is the builder for creating many AlertDefinition entities in bulk.
+type AlertDefinitionCreateBulk struct {
 	config
 	err      error
-	builders []*AlertCreate
+	builders []*AlertDefinitionCreate
 	conflict []sql.ConflictOption
 }
 
-// Save creates the Alert entities in the database.
-func (_c *AlertCreateBulk) Save(ctx context.Context) ([]*Alert, error) {
+// Save creates the AlertDefinition entities in the database.
+func (_c *AlertDefinitionCreateBulk) Save(ctx context.Context) ([]*AlertDefinition, error) {
 	if _c.err != nil {
 		return nil, _c.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
-	nodes := make([]*Alert, len(_c.builders))
+	nodes := make([]*AlertDefinition, len(_c.builders))
 	mutators := make([]Mutator, len(_c.builders))
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*AlertMutation)
+				mutation, ok := m.(*AlertDefinitionMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -661,7 +661,7 @@ func (_c *AlertCreateBulk) Save(ctx context.Context) ([]*Alert, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_c *AlertCreateBulk) SaveX(ctx context.Context) []*Alert {
+func (_c *AlertDefinitionCreateBulk) SaveX(ctx context.Context) []*AlertDefinition {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -670,13 +670,13 @@ func (_c *AlertCreateBulk) SaveX(ctx context.Context) []*Alert {
 }
 
 // Exec executes the query.
-func (_c *AlertCreateBulk) Exec(ctx context.Context) error {
+func (_c *AlertDefinitionCreateBulk) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *AlertCreateBulk) ExecX(ctx context.Context) {
+func (_c *AlertDefinitionCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
@@ -685,7 +685,7 @@ func (_c *AlertCreateBulk) ExecX(ctx context.Context) {
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
 // of the `INSERT` statement. For example:
 //
-//	client.Alert.CreateBulk(builders...).
+//	client.AlertDefinition.CreateBulk(builders...).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -693,13 +693,13 @@ func (_c *AlertCreateBulk) ExecX(ctx context.Context) {
 //		).
 //		// Override some of the fields with custom
 //		// update values.
-//		Update(func(u *ent.AlertUpsert) {
+//		Update(func(u *ent.AlertDefinitionUpsert) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (_c *AlertCreateBulk) OnConflict(opts ...sql.ConflictOption) *AlertUpsertBulk {
+func (_c *AlertDefinitionCreateBulk) OnConflict(opts ...sql.ConflictOption) *AlertDefinitionUpsertBulk {
 	_c.conflict = opts
-	return &AlertUpsertBulk{
+	return &AlertDefinitionUpsertBulk{
 		create: _c,
 	}
 }
@@ -707,42 +707,42 @@ func (_c *AlertCreateBulk) OnConflict(opts ...sql.ConflictOption) *AlertUpsertBu
 // OnConflictColumns calls `OnConflict` and configures the columns
 // as conflict target. Using this option is equivalent to using:
 //
-//	client.Alert.Create().
+//	client.AlertDefinition.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (_c *AlertCreateBulk) OnConflictColumns(columns ...string) *AlertUpsertBulk {
+func (_c *AlertDefinitionCreateBulk) OnConflictColumns(columns ...string) *AlertDefinitionUpsertBulk {
 	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
-	return &AlertUpsertBulk{
+	return &AlertDefinitionUpsertBulk{
 		create: _c,
 	}
 }
 
-// AlertUpsertBulk is the builder for "upsert"-ing
-// a bulk of Alert nodes.
-type AlertUpsertBulk struct {
-	create *AlertCreateBulk
+// AlertDefinitionUpsertBulk is the builder for "upsert"-ing
+// a bulk of AlertDefinition nodes.
+type AlertDefinitionUpsertBulk struct {
+	create *AlertDefinitionCreateBulk
 }
 
 // UpdateNewValues updates the mutable fields using the new values that
 // were set on create. Using this option is equivalent to using:
 //
-//	client.Alert.Create().
+//	client.AlertDefinition.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
 //			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(alert.FieldID)
+//				u.SetIgnore(alertdefinition.FieldID)
 //			}),
 //		).
 //		Exec(ctx)
-func (u *AlertUpsertBulk) UpdateNewValues() *AlertUpsertBulk {
+func (u *AlertDefinitionUpsertBulk) UpdateNewValues() *AlertDefinitionUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
-				s.SetIgnore(alert.FieldID)
+				s.SetIgnore(alertdefinition.FieldID)
 			}
 			if _, exists := b.mutation.TenantID(); exists {
-				s.SetIgnore(alert.FieldTenantID)
+				s.SetIgnore(alertdefinition.FieldTenantID)
 			}
 		}
 	}))
@@ -752,125 +752,125 @@ func (u *AlertUpsertBulk) UpdateNewValues() *AlertUpsertBulk {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//	client.Alert.Create().
+//	client.AlertDefinition.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-func (u *AlertUpsertBulk) Ignore() *AlertUpsertBulk {
+func (u *AlertDefinitionUpsertBulk) Ignore() *AlertDefinitionUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
 }
 
 // DoNothing configures the conflict_action to `DO NOTHING`.
 // Supported only by SQLite and PostgreSQL.
-func (u *AlertUpsertBulk) DoNothing() *AlertUpsertBulk {
+func (u *AlertDefinitionUpsertBulk) DoNothing() *AlertDefinitionUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.DoNothing())
 	return u
 }
 
-// Update allows overriding fields `UPDATE` values. See the AlertCreateBulk.OnConflict
+// Update allows overriding fields `UPDATE` values. See the AlertDefinitionCreateBulk.OnConflict
 // documentation for more info.
-func (u *AlertUpsertBulk) Update(set func(*AlertUpsert)) *AlertUpsertBulk {
+func (u *AlertDefinitionUpsertBulk) Update(set func(*AlertDefinitionUpsert)) *AlertDefinitionUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&AlertUpsert{UpdateSet: update})
+		set(&AlertDefinitionUpsert{UpdateSet: update})
 	}))
 	return u
 }
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *AlertUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.SetKnowledgeEntityID(v)
 	})
 }
 
 // UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *AlertUpsertBulk) UpdateKnowledgeEntityID() *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertBulk) UpdateKnowledgeEntityID() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.UpdateKnowledgeEntityID()
 	})
 }
 
 // ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *AlertUpsertBulk) ClearKnowledgeEntityID() *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertBulk) ClearKnowledgeEntityID() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.ClearKnowledgeEntityID()
 	})
 }
 
 // SetTitle sets the "title" field.
-func (u *AlertUpsertBulk) SetTitle(v string) *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertBulk) SetTitle(v string) *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.SetTitle(v)
 	})
 }
 
 // UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *AlertUpsertBulk) UpdateTitle() *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertBulk) UpdateTitle() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.UpdateTitle()
 	})
 }
 
 // SetDescription sets the "description" field.
-func (u *AlertUpsertBulk) SetDescription(v string) *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertBulk) SetDescription(v string) *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.SetDescription(v)
 	})
 }
 
 // UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *AlertUpsertBulk) UpdateDescription() *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertBulk) UpdateDescription() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.UpdateDescription()
 	})
 }
 
 // ClearDescription clears the value of the "description" field.
-func (u *AlertUpsertBulk) ClearDescription() *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertBulk) ClearDescription() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.ClearDescription()
 	})
 }
 
 // SetDefinition sets the "definition" field.
-func (u *AlertUpsertBulk) SetDefinition(v string) *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertBulk) SetDefinition(v string) *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.SetDefinition(v)
 	})
 }
 
 // UpdateDefinition sets the "definition" field to the value that was provided on create.
-func (u *AlertUpsertBulk) UpdateDefinition() *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertBulk) UpdateDefinition() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.UpdateDefinition()
 	})
 }
 
 // ClearDefinition clears the value of the "definition" field.
-func (u *AlertUpsertBulk) ClearDefinition() *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
+func (u *AlertDefinitionUpsertBulk) ClearDefinition() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.ClearDefinition()
 	})
 }
 
 // Exec executes the query.
-func (u *AlertUpsertBulk) Exec(ctx context.Context) error {
+func (u *AlertDefinitionUpsertBulk) Exec(ctx context.Context) error {
 	if u.create.err != nil {
 		return u.create.err
 	}
 	for i, b := range u.create.builders {
 		if len(b.conflict) != 0 {
-			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the AlertCreateBulk instead", i)
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the AlertDefinitionCreateBulk instead", i)
 		}
 	}
 	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for AlertCreateBulk.OnConflict")
+		return errors.New("ent: missing options for AlertDefinitionCreateBulk.OnConflict")
 	}
 	return u.create.Exec(ctx)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (u *AlertUpsertBulk) ExecX(ctx context.Context) {
+func (u *AlertDefinitionUpsertBulk) ExecX(ctx context.Context) {
 	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}

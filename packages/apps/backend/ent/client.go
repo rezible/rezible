@@ -21,7 +21,8 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertdefinition"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinvestigation"
@@ -104,8 +105,10 @@ type Client struct {
 	AgentSessionBinding *AgentSessionBindingClient
 	// AgentTurn is the client for interacting with the AgentTurn builders.
 	AgentTurn *AgentTurnClient
-	// Alert is the client for interacting with the Alert builders.
-	Alert *AlertClient
+	// AlertDefinition is the client for interacting with the AlertDefinition builders.
+	AlertDefinition *AlertDefinitionClient
+	// AlertEpisode is the client for interacting with the AlertEpisode builders.
+	AlertEpisode *AlertEpisodeClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
 	// AlertInstance is the client for interacting with the AlertInstance builders.
@@ -250,7 +253,8 @@ func (c *Client) init() {
 	c.AgentSession = NewAgentSessionClient(c.config)
 	c.AgentSessionBinding = NewAgentSessionBindingClient(c.config)
 	c.AgentTurn = NewAgentTurnClient(c.config)
-	c.Alert = NewAlertClient(c.config)
+	c.AlertDefinition = NewAlertDefinitionClient(c.config)
+	c.AlertEpisode = NewAlertEpisodeClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
 	c.AlertInstance = NewAlertInstanceClient(c.config)
 	c.AlertInvestigation = NewAlertInvestigationClient(c.config)
@@ -415,7 +419,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AgentSession:                    NewAgentSessionClient(cfg),
 		AgentSessionBinding:             NewAgentSessionBindingClient(cfg),
 		AgentTurn:                       NewAgentTurnClient(cfg),
-		Alert:                           NewAlertClient(cfg),
+		AlertDefinition:                 NewAlertDefinitionClient(cfg),
+		AlertEpisode:                    NewAlertEpisodeClient(cfg),
 		AlertFeedback:                   NewAlertFeedbackClient(cfg),
 		AlertInstance:                   NewAlertInstanceClient(cfg),
 		AlertInvestigation:              NewAlertInvestigationClient(cfg),
@@ -504,7 +509,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AgentSession:                    NewAgentSessionClient(cfg),
 		AgentSessionBinding:             NewAgentSessionBindingClient(cfg),
 		AgentTurn:                       NewAgentTurnClient(cfg),
-		Alert:                           NewAlertClient(cfg),
+		AlertDefinition:                 NewAlertDefinitionClient(cfg),
+		AlertEpisode:                    NewAlertEpisodeClient(cfg),
 		AlertFeedback:                   NewAlertFeedbackClient(cfg),
 		AlertInstance:                   NewAlertInstanceClient(cfg),
 		AlertInvestigation:              NewAlertInvestigationClient(cfg),
@@ -599,14 +605,14 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentSessionBinding,
-		c.AgentTurn, c.Alert, c.AlertFeedback, c.AlertInstance, c.AlertInvestigation,
-		c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
-		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
-		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
-		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
-		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
-		c.Integration, c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
-		c.IntegrationUserInstallState, c.KnowledgeEntity,
+		c.AgentTurn, c.AlertDefinition, c.AlertEpisode, c.AlertFeedback,
+		c.AlertInstance, c.AlertInvestigation, c.Document, c.DocumentAccess,
+		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
+		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
+		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
+		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.IncidentType, c.Integration, c.IntegrationEventSyncCursor,
+		c.IntegrationEventSyncRun, c.IntegrationUserInstallState, c.KnowledgeEntity,
 		c.KnowledgeEntityLinkingAttribute, c.KnowledgeEvidence,
 		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
 		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
@@ -628,9 +634,10 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentSessionBinding,
-		c.AgentTurn, c.Alert, c.AlertFeedback, c.AlertInstance, c.AlertInvestigation,
-		c.AlertMetrics, c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident,
-		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.AgentTurn, c.AlertDefinition, c.AlertEpisode, c.AlertFeedback,
+		c.AlertInstance, c.AlertInvestigation, c.AlertMetrics, c.Document,
+		c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
 		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
@@ -665,8 +672,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AgentSessionBinding.mutate(ctx, m)
 	case *AgentTurnMutation:
 		return c.AgentTurn.mutate(ctx, m)
-	case *AlertMutation:
-		return c.Alert.mutate(ctx, m)
+	case *AlertDefinitionMutation:
+		return c.AlertDefinition.mutate(ctx, m)
+	case *AlertEpisodeMutation:
+		return c.AlertEpisode.mutate(ctx, m)
 	case *AlertFeedbackMutation:
 		return c.AlertFeedback.mutate(ctx, m)
 	case *AlertInstanceMutation:
@@ -1848,107 +1857,107 @@ func (c *AgentTurnClient) mutate(ctx context.Context, m *AgentTurnMutation) (Val
 	}
 }
 
-// AlertClient is a client for the Alert schema.
-type AlertClient struct {
+// AlertDefinitionClient is a client for the AlertDefinition schema.
+type AlertDefinitionClient struct {
 	config
 }
 
-// NewAlertClient returns a client for the Alert from the given config.
-func NewAlertClient(c config) *AlertClient {
-	return &AlertClient{config: c}
+// NewAlertDefinitionClient returns a client for the AlertDefinition from the given config.
+func NewAlertDefinitionClient(c config) *AlertDefinitionClient {
+	return &AlertDefinitionClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `alert.Hooks(f(g(h())))`.
-func (c *AlertClient) Use(hooks ...Hook) {
-	c.hooks.Alert = append(c.hooks.Alert, hooks...)
+// A call to `Use(f, g, h)` equals to `alertdefinition.Hooks(f(g(h())))`.
+func (c *AlertDefinitionClient) Use(hooks ...Hook) {
+	c.hooks.AlertDefinition = append(c.hooks.AlertDefinition, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `alert.Intercept(f(g(h())))`.
-func (c *AlertClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Alert = append(c.inters.Alert, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `alertdefinition.Intercept(f(g(h())))`.
+func (c *AlertDefinitionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AlertDefinition = append(c.inters.AlertDefinition, interceptors...)
 }
 
-// Create returns a builder for creating a Alert entity.
-func (c *AlertClient) Create() *AlertCreate {
-	mutation := newAlertMutation(c.config, OpCreate)
-	return &AlertCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a AlertDefinition entity.
+func (c *AlertDefinitionClient) Create() *AlertDefinitionCreate {
+	mutation := newAlertDefinitionMutation(c.config, OpCreate)
+	return &AlertDefinitionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Alert entities.
-func (c *AlertClient) CreateBulk(builders ...*AlertCreate) *AlertCreateBulk {
-	return &AlertCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of AlertDefinition entities.
+func (c *AlertDefinitionClient) CreateBulk(builders ...*AlertDefinitionCreate) *AlertDefinitionCreateBulk {
+	return &AlertDefinitionCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *AlertClient) MapCreateBulk(slice any, setFunc func(*AlertCreate, int)) *AlertCreateBulk {
+func (c *AlertDefinitionClient) MapCreateBulk(slice any, setFunc func(*AlertDefinitionCreate, int)) *AlertDefinitionCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &AlertCreateBulk{err: fmt.Errorf("calling to AlertClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &AlertDefinitionCreateBulk{err: fmt.Errorf("calling to AlertDefinitionClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*AlertCreate, rv.Len())
+	builders := make([]*AlertDefinitionCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &AlertCreateBulk{config: c.config, builders: builders}
+	return &AlertDefinitionCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Alert.
-func (c *AlertClient) Update() *AlertUpdate {
-	mutation := newAlertMutation(c.config, OpUpdate)
-	return &AlertUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for AlertDefinition.
+func (c *AlertDefinitionClient) Update() *AlertDefinitionUpdate {
+	mutation := newAlertDefinitionMutation(c.config, OpUpdate)
+	return &AlertDefinitionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *AlertClient) UpdateOne(_m *Alert) *AlertUpdateOne {
-	mutation := newAlertMutation(c.config, OpUpdateOne, withAlert(_m))
-	return &AlertUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *AlertDefinitionClient) UpdateOne(_m *AlertDefinition) *AlertDefinitionUpdateOne {
+	mutation := newAlertDefinitionMutation(c.config, OpUpdateOne, withAlertDefinition(_m))
+	return &AlertDefinitionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *AlertClient) UpdateOneID(id uuid.UUID) *AlertUpdateOne {
-	mutation := newAlertMutation(c.config, OpUpdateOne, withAlertID(id))
-	return &AlertUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *AlertDefinitionClient) UpdateOneID(id uuid.UUID) *AlertDefinitionUpdateOne {
+	mutation := newAlertDefinitionMutation(c.config, OpUpdateOne, withAlertDefinitionID(id))
+	return &AlertDefinitionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Alert.
-func (c *AlertClient) Delete() *AlertDelete {
-	mutation := newAlertMutation(c.config, OpDelete)
-	return &AlertDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for AlertDefinition.
+func (c *AlertDefinitionClient) Delete() *AlertDefinitionDelete {
+	mutation := newAlertDefinitionMutation(c.config, OpDelete)
+	return &AlertDefinitionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *AlertClient) DeleteOne(_m *Alert) *AlertDeleteOne {
+func (c *AlertDefinitionClient) DeleteOne(_m *AlertDefinition) *AlertDefinitionDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *AlertClient) DeleteOneID(id uuid.UUID) *AlertDeleteOne {
-	builder := c.Delete().Where(alert.ID(id))
+func (c *AlertDefinitionClient) DeleteOneID(id uuid.UUID) *AlertDefinitionDeleteOne {
+	builder := c.Delete().Where(alertdefinition.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &AlertDeleteOne{builder}
+	return &AlertDefinitionDeleteOne{builder}
 }
 
-// Query returns a query builder for Alert.
-func (c *AlertClient) Query() *AlertQuery {
-	return &AlertQuery{
+// Query returns a query builder for AlertDefinition.
+func (c *AlertDefinitionClient) Query() *AlertDefinitionQuery {
+	return &AlertDefinitionQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeAlert},
+		ctx:    &QueryContext{Type: TypeAlertDefinition},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a Alert entity by its id.
-func (c *AlertClient) Get(ctx context.Context, id uuid.UUID) (*Alert, error) {
-	return c.Query().Where(alert.ID(id)).Only(ctx)
+// Get returns a AlertDefinition entity by its id.
+func (c *AlertDefinitionClient) Get(ctx context.Context, id uuid.UUID) (*AlertDefinition, error) {
+	return c.Query().Where(alertdefinition.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *AlertClient) GetX(ctx context.Context, id uuid.UUID) *Alert {
+func (c *AlertDefinitionClient) GetX(ctx context.Context, id uuid.UUID) *AlertDefinition {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1956,72 +1965,263 @@ func (c *AlertClient) GetX(ctx context.Context, id uuid.UUID) *Alert {
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a Alert.
-func (c *AlertClient) QueryTenant(_m *Alert) *TenantQuery {
+// QueryTenant queries the tenant edge of a AlertDefinition.
+func (c *AlertDefinitionClient) QueryTenant(_m *AlertDefinition) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, id),
+			sqlgraph.From(alertdefinition.Table, alertdefinition.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alert.TenantTable, alert.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertdefinition.TenantTable, alertdefinition.TenantColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.AlertDefinition
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryKnowledgeEntity queries the knowledge_entity edge of a Alert.
-func (c *AlertClient) QueryKnowledgeEntity(_m *Alert) *KnowledgeEntityQuery {
+// QueryKnowledgeEntity queries the knowledge_entity edge of a AlertDefinition.
+func (c *AlertDefinitionClient) QueryKnowledgeEntity(_m *AlertDefinition) *KnowledgeEntityQuery {
 	query := (&KnowledgeEntityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, id),
+			sqlgraph.From(alertdefinition.Table, alertdefinition.FieldID, id),
 			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alert.KnowledgeEntityTable, alert.KnowledgeEntityColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertdefinition.KnowledgeEntityTable, alertdefinition.KnowledgeEntityColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.AlertDefinition
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryPlaybooks queries the playbooks edge of a Alert.
-func (c *AlertClient) QueryPlaybooks(_m *Alert) *PlaybookQuery {
+// QueryPlaybooks queries the playbooks edge of a AlertDefinition.
+func (c *AlertDefinitionClient) QueryPlaybooks(_m *AlertDefinition) *PlaybookQuery {
 	query := (&PlaybookClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, id),
+			sqlgraph.From(alertdefinition.Table, alertdefinition.FieldID, id),
 			sqlgraph.To(playbook.Table, playbook.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, alert.PlaybooksTable, alert.PlaybooksPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, alertdefinition.PlaybooksTable, alertdefinition.PlaybooksPrimaryKey...),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Playbook
-		step.Edge.Schema = schemaConfig.PlaybookAlerts
+		step.Edge.Schema = schemaConfig.PlaybookAlertDefinitions
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryInstances queries the instances edge of a Alert.
-func (c *AlertClient) QueryInstances(_m *Alert) *AlertInstanceQuery {
+// QueryEpisodes queries the episodes edge of a AlertDefinition.
+func (c *AlertDefinitionClient) QueryEpisodes(_m *AlertDefinition) *AlertEpisodeQuery {
+	query := (&AlertEpisodeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertdefinition.Table, alertdefinition.FieldID, id),
+			sqlgraph.To(alertepisode.Table, alertepisode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, alertdefinition.EpisodesTable, alertdefinition.EpisodesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AlertEpisode
+		step.Edge.Schema = schemaConfig.AlertEpisode
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AlertDefinitionClient) Hooks() []Hook {
+	hooks := c.hooks.AlertDefinition
+	return append(hooks[:len(hooks):len(hooks)], alertdefinition.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *AlertDefinitionClient) Interceptors() []Interceptor {
+	return c.inters.AlertDefinition
+}
+
+func (c *AlertDefinitionClient) mutate(ctx context.Context, m *AlertDefinitionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AlertDefinitionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AlertDefinitionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AlertDefinitionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AlertDefinitionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AlertDefinition mutation op: %q", m.Op())
+	}
+}
+
+// AlertEpisodeClient is a client for the AlertEpisode schema.
+type AlertEpisodeClient struct {
+	config
+}
+
+// NewAlertEpisodeClient returns a client for the AlertEpisode from the given config.
+func NewAlertEpisodeClient(c config) *AlertEpisodeClient {
+	return &AlertEpisodeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `alertepisode.Hooks(f(g(h())))`.
+func (c *AlertEpisodeClient) Use(hooks ...Hook) {
+	c.hooks.AlertEpisode = append(c.hooks.AlertEpisode, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `alertepisode.Intercept(f(g(h())))`.
+func (c *AlertEpisodeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AlertEpisode = append(c.inters.AlertEpisode, interceptors...)
+}
+
+// Create returns a builder for creating a AlertEpisode entity.
+func (c *AlertEpisodeClient) Create() *AlertEpisodeCreate {
+	mutation := newAlertEpisodeMutation(c.config, OpCreate)
+	return &AlertEpisodeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AlertEpisode entities.
+func (c *AlertEpisodeClient) CreateBulk(builders ...*AlertEpisodeCreate) *AlertEpisodeCreateBulk {
+	return &AlertEpisodeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AlertEpisodeClient) MapCreateBulk(slice any, setFunc func(*AlertEpisodeCreate, int)) *AlertEpisodeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AlertEpisodeCreateBulk{err: fmt.Errorf("calling to AlertEpisodeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AlertEpisodeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AlertEpisodeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AlertEpisode.
+func (c *AlertEpisodeClient) Update() *AlertEpisodeUpdate {
+	mutation := newAlertEpisodeMutation(c.config, OpUpdate)
+	return &AlertEpisodeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AlertEpisodeClient) UpdateOne(_m *AlertEpisode) *AlertEpisodeUpdateOne {
+	mutation := newAlertEpisodeMutation(c.config, OpUpdateOne, withAlertEpisode(_m))
+	return &AlertEpisodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AlertEpisodeClient) UpdateOneID(id uuid.UUID) *AlertEpisodeUpdateOne {
+	mutation := newAlertEpisodeMutation(c.config, OpUpdateOne, withAlertEpisodeID(id))
+	return &AlertEpisodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AlertEpisode.
+func (c *AlertEpisodeClient) Delete() *AlertEpisodeDelete {
+	mutation := newAlertEpisodeMutation(c.config, OpDelete)
+	return &AlertEpisodeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AlertEpisodeClient) DeleteOne(_m *AlertEpisode) *AlertEpisodeDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AlertEpisodeClient) DeleteOneID(id uuid.UUID) *AlertEpisodeDeleteOne {
+	builder := c.Delete().Where(alertepisode.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AlertEpisodeDeleteOne{builder}
+}
+
+// Query returns a query builder for AlertEpisode.
+func (c *AlertEpisodeClient) Query() *AlertEpisodeQuery {
+	return &AlertEpisodeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAlertEpisode},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AlertEpisode entity by its id.
+func (c *AlertEpisodeClient) Get(ctx context.Context, id uuid.UUID) (*AlertEpisode, error) {
+	return c.Query().Where(alertepisode.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AlertEpisodeClient) GetX(ctx context.Context, id uuid.UUID) *AlertEpisode {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a AlertEpisode.
+func (c *AlertEpisodeClient) QueryTenant(_m *AlertEpisode) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertepisode.Table, alertepisode.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertepisode.TenantTable, alertepisode.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.AlertEpisode
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAlertDefinition queries the alert_definition edge of a AlertEpisode.
+func (c *AlertEpisodeClient) QueryAlertDefinition(_m *AlertEpisode) *AlertDefinitionQuery {
+	query := (&AlertDefinitionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertepisode.Table, alertepisode.FieldID, id),
+			sqlgraph.To(alertdefinition.Table, alertdefinition.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, alertepisode.AlertDefinitionTable, alertepisode.AlertDefinitionColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AlertDefinition
+		step.Edge.Schema = schemaConfig.AlertEpisode
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInstances queries the instances edge of a AlertEpisode.
+func (c *AlertEpisodeClient) QueryInstances(_m *AlertEpisode) *AlertInstanceQuery {
 	query := (&AlertInstanceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, id),
+			sqlgraph.From(alertepisode.Table, alertepisode.FieldID, id),
 			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, alert.InstancesTable, alert.InstancesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, alertepisode.InstancesTable, alertepisode.InstancesColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AlertInstance
@@ -2033,28 +2233,28 @@ func (c *AlertClient) QueryInstances(_m *Alert) *AlertInstanceQuery {
 }
 
 // Hooks returns the client hooks.
-func (c *AlertClient) Hooks() []Hook {
-	hooks := c.hooks.Alert
-	return append(hooks[:len(hooks):len(hooks)], alert.Hooks[:]...)
+func (c *AlertEpisodeClient) Hooks() []Hook {
+	hooks := c.hooks.AlertEpisode
+	return append(hooks[:len(hooks):len(hooks)], alertepisode.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *AlertClient) Interceptors() []Interceptor {
-	return c.inters.Alert
+func (c *AlertEpisodeClient) Interceptors() []Interceptor {
+	return c.inters.AlertEpisode
 }
 
-func (c *AlertClient) mutate(ctx context.Context, m *AlertMutation) (Value, error) {
+func (c *AlertEpisodeClient) mutate(ctx context.Context, m *AlertEpisodeMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&AlertCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&AlertEpisodeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&AlertUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&AlertEpisodeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&AlertUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&AlertEpisodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&AlertDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&AlertEpisodeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown Alert mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown AlertEpisode mutation op: %q", m.Op())
 	}
 }
 
@@ -2357,18 +2557,37 @@ func (c *AlertInstanceClient) QueryTenant(_m *AlertInstance) *TenantQuery {
 	return query
 }
 
-// QueryAlert queries the alert edge of a AlertInstance.
-func (c *AlertInstanceClient) QueryAlert(_m *AlertInstance) *AlertQuery {
-	query := (&AlertClient{config: c.config}).Query()
+// QueryEpisode queries the episode edge of a AlertInstance.
+func (c *AlertInstanceClient) QueryEpisode(_m *AlertInstance) *AlertEpisodeQuery {
+	query := (&AlertEpisodeClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
-			sqlgraph.To(alert.Table, alert.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, alertinstance.AlertTable, alertinstance.AlertColumn),
+			sqlgraph.To(alertepisode.Table, alertepisode.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, alertinstance.EpisodeTable, alertinstance.EpisodeColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Alert
+		step.To.Schema = schemaConfig.AlertEpisode
+		step.Edge.Schema = schemaConfig.AlertInstance
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvent queries the event edge of a AlertInstance.
+func (c *AlertInstanceClient) QueryEvent(_m *AlertInstance) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.EventTable, alertinstance.EventColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.AlertInstance
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -11447,19 +11666,19 @@ func (c *PlaybookClient) QueryTenant(_m *Playbook) *TenantQuery {
 	return query
 }
 
-// QueryAlerts queries the alerts edge of a Playbook.
-func (c *PlaybookClient) QueryAlerts(_m *Playbook) *AlertQuery {
-	query := (&AlertClient{config: c.config}).Query()
+// QueryAlertDefinitions queries the alert_definitions edge of a Playbook.
+func (c *PlaybookClient) QueryAlertDefinitions(_m *Playbook) *AlertDefinitionQuery {
+	query := (&AlertDefinitionClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(playbook.Table, playbook.FieldID, id),
-			sqlgraph.To(alert.Table, alert.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, playbook.AlertsTable, playbook.AlertsPrimaryKey...),
+			sqlgraph.To(alertdefinition.Table, alertdefinition.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, playbook.AlertDefinitionsTable, playbook.AlertDefinitionsPrimaryKey...),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Alert
-		step.Edge.Schema = schemaConfig.PlaybookAlerts
+		step.To.Schema = schemaConfig.AlertDefinition
+		step.Edge.Schema = schemaConfig.PlaybookAlertDefinitions
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -15180,42 +15399,42 @@ func (c *VideoConferenceClient) mutate(ctx context.Context, m *VideoConferenceMu
 type (
 	hooks struct {
 		AgentArtifact, AgentMessage, AgentSession, AgentSessionBinding, AgentTurn,
-		Alert, AlertFeedback, AlertInstance, AlertInvestigation, Document,
-		DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
-		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
-		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
-		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentType, Integration, IntegrationEventSyncCursor,
-		IntegrationEventSyncRun, IntegrationUserInstallState, KnowledgeEntity,
-		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeRelationship,
-		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
-		NormalizedEventProjection, NormalizedEventProjectionEntity,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
-		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		AlertDefinition, AlertEpisode, AlertFeedback, AlertInstance,
+		AlertInvestigation, Document, DocumentAccess, EventAnnotation, Incident,
+		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
+		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
+		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
+		IncidentSeverity, IncidentTag, IncidentType, Integration,
+		IntegrationEventSyncCursor, IntegrationEventSyncRun,
+		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityLinkingAttribute,
+		KnowledgeEvidence, KnowledgeRelationship, KnowledgeSubjectAlias,
+		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
+		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
+		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
 		SystemAnalysisEntrySubject, SystemAnalysisRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, UserAuthSession,
 		VideoConference []ent.Hook
 	}
 	inters struct {
 		AgentArtifact, AgentMessage, AgentSession, AgentSessionBinding, AgentTurn,
-		Alert, AlertFeedback, AlertInstance, AlertInvestigation, AlertMetrics,
-		Document, DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
-		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
-		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
-		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentType, Integration, IntegrationEventSyncCursor,
-		IntegrationEventSyncRun, IntegrationUserInstallState, KnowledgeEntity,
-		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeRelationship,
-		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
-		NormalizedEventProjection, NormalizedEventProjectionEntity,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
-		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		AlertDefinition, AlertEpisode, AlertFeedback, AlertInstance,
+		AlertInvestigation, AlertMetrics, Document, DocumentAccess, EventAnnotation,
+		Incident, IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
+		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
+		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
+		IncidentSeverity, IncidentTag, IncidentType, Integration,
+		IntegrationEventSyncCursor, IntegrationEventSyncRun,
+		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityLinkingAttribute,
+		KnowledgeEvidence, KnowledgeRelationship, KnowledgeSubjectAlias,
+		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
+		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
+		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
 		SystemAnalysisEntrySubject, SystemAnalysisRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, UserAuthSession,
 		VideoConference []ent.Interceptor
@@ -15230,7 +15449,8 @@ var (
 		AgentSession:                          tableSchemas[0],
 		AgentSessionBinding:                   tableSchemas[0],
 		AgentTurn:                             tableSchemas[0],
-		Alert:                                 tableSchemas[0],
+		AlertDefinition:                       tableSchemas[0],
+		AlertEpisode:                          tableSchemas[0],
 		AlertFeedback:                         tableSchemas[0],
 		AlertInstance:                         tableSchemas[0],
 		AlertInvestigation:                    tableSchemas[0],
@@ -15289,7 +15509,7 @@ var (
 		OrganizationPreferences:                   tableSchemas[0],
 		OrganizationRole:                          tableSchemas[0],
 		Playbook:                                  tableSchemas[0],
-		PlaybookAlerts:                            tableSchemas[0],
+		PlaybookAlertDefinitions:                  tableSchemas[0],
 		Retrospective:                             tableSchemas[0],
 		RetrospectiveComment:                      tableSchemas[0],
 		RetrospectiveReview:                       tableSchemas[0],

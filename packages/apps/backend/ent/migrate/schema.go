@@ -308,8 +308,8 @@ var (
 			},
 		},
 	}
-	// AlertsColumns holds the columns for the "alerts" table.
-	AlertsColumns = []*schema.Column{
+	// AlertDefinitionsColumns holds the columns for the "alert_definitions" table.
+	AlertDefinitionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "title", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
@@ -317,35 +317,82 @@ var (
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 	}
-	// AlertsTable holds the schema information for the "alerts" table.
-	AlertsTable = &schema.Table{
-		Name:       "alerts",
-		Columns:    AlertsColumns,
-		PrimaryKey: []*schema.Column{AlertsColumns[0]},
+	// AlertDefinitionsTable holds the schema information for the "alert_definitions" table.
+	AlertDefinitionsTable = &schema.Table{
+		Name:       "alert_definitions",
+		Columns:    AlertDefinitionsColumns,
+		PrimaryKey: []*schema.Column{AlertDefinitionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "alerts_tenants_tenant",
-				Columns:    []*schema.Column{AlertsColumns[4]},
+				Symbol:     "alert_definitions_tenants_tenant",
+				Columns:    []*schema.Column{AlertDefinitionsColumns[4]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "alerts_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{AlertsColumns[5]},
+				Symbol:     "alert_definitions_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{AlertDefinitionsColumns[5]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "alert_tenant_id",
+				Name:    "alertdefinition_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AlertsColumns[4]},
+				Columns: []*schema.Column{AlertDefinitionsColumns[4]},
 			},
 			{
-				Name:    "alert_tenant_id_knowledge_entity_id",
+				Name:    "alertdefinition_tenant_id_knowledge_entity_id",
 				Unique:  true,
-				Columns: []*schema.Column{AlertsColumns[4], AlertsColumns[5]},
+				Columns: []*schema.Column{AlertDefinitionsColumns[4], AlertDefinitionsColumns[5]},
+			},
+		},
+	}
+	// AlertEpisodesColumns holds the columns for the "alert_episodes" table.
+	AlertEpisodesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"open", "closed"}, Default: "open"},
+		{Name: "started_at", Type: field.TypeTime},
+		{Name: "last_observed_at", Type: field.TypeTime},
+		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "alert_definition_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// AlertEpisodesTable holds the schema information for the "alert_episodes" table.
+	AlertEpisodesTable = &schema.Table{
+		Name:       "alert_episodes",
+		Columns:    AlertEpisodesColumns,
+		PrimaryKey: []*schema.Column{AlertEpisodesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "alert_episodes_alert_definitions_episodes",
+				Columns:    []*schema.Column{AlertEpisodesColumns[7]},
+				RefColumns: []*schema.Column{AlertDefinitionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "alert_episodes_tenants_tenant",
+				Columns:    []*schema.Column{AlertEpisodesColumns[8]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "alertepisode_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AlertEpisodesColumns[8]},
+			},
+			{
+				Name:    "alertepisode_tenant_id_alert_definition_id",
+				Unique:  true,
+				Columns: []*schema.Column{AlertEpisodesColumns[8], AlertEpisodesColumns[7]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "status = 'open'",
+				},
 			},
 		},
 	}
@@ -389,8 +436,9 @@ var (
 	// AlertInstancesColumns holds the columns for the "alert_instances" table.
 	AlertInstancesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "alert_id", Type: field.TypeUUID},
+		{Name: "alert_episode_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "normalized_event_id", Type: field.TypeUUID},
 	}
 	// AlertInstancesTable holds the schema information for the "alert_instances" table.
 	AlertInstancesTable = &schema.Table{
@@ -399,9 +447,9 @@ var (
 		PrimaryKey: []*schema.Column{AlertInstancesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "alert_instances_alerts_instances",
+				Symbol:     "alert_instances_alert_episodes_instances",
 				Columns:    []*schema.Column{AlertInstancesColumns[1]},
-				RefColumns: []*schema.Column{AlertsColumns[0]},
+				RefColumns: []*schema.Column{AlertEpisodesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
@@ -410,12 +458,23 @@ var (
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "alert_instances_normalized_events_event",
+				Columns:    []*schema.Column{AlertInstancesColumns[3]},
+				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "alertinstance_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{AlertInstancesColumns[2]},
+			},
+			{
+				Name:    "alertinstance_tenant_id_normalized_event_id",
+				Unique:  true,
+				Columns: []*schema.Column{AlertInstancesColumns[2], AlertInstancesColumns[3]},
 			},
 		},
 	}
@@ -3374,27 +3433,27 @@ var (
 			},
 		},
 	}
-	// PlaybookAlertsColumns holds the columns for the "playbook_alerts" table.
-	PlaybookAlertsColumns = []*schema.Column{
+	// PlaybookAlertDefinitionsColumns holds the columns for the "playbook_alert_definitions" table.
+	PlaybookAlertDefinitionsColumns = []*schema.Column{
 		{Name: "playbook_id", Type: field.TypeUUID},
-		{Name: "alert_id", Type: field.TypeUUID},
+		{Name: "alert_definition_id", Type: field.TypeUUID},
 	}
-	// PlaybookAlertsTable holds the schema information for the "playbook_alerts" table.
-	PlaybookAlertsTable = &schema.Table{
-		Name:       "playbook_alerts",
-		Columns:    PlaybookAlertsColumns,
-		PrimaryKey: []*schema.Column{PlaybookAlertsColumns[0], PlaybookAlertsColumns[1]},
+	// PlaybookAlertDefinitionsTable holds the schema information for the "playbook_alert_definitions" table.
+	PlaybookAlertDefinitionsTable = &schema.Table{
+		Name:       "playbook_alert_definitions",
+		Columns:    PlaybookAlertDefinitionsColumns,
+		PrimaryKey: []*schema.Column{PlaybookAlertDefinitionsColumns[0], PlaybookAlertDefinitionsColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "playbook_alerts_playbook_id",
-				Columns:    []*schema.Column{PlaybookAlertsColumns[0]},
+				Symbol:     "playbook_alert_definitions_playbook_id",
+				Columns:    []*schema.Column{PlaybookAlertDefinitionsColumns[0]},
 				RefColumns: []*schema.Column{PlaybooksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "playbook_alerts_alert_id",
-				Columns:    []*schema.Column{PlaybookAlertsColumns[1]},
-				RefColumns: []*schema.Column{AlertsColumns[0]},
+				Symbol:     "playbook_alert_definitions_alert_definition_id",
+				Columns:    []*schema.Column{PlaybookAlertDefinitionsColumns[1]},
+				RefColumns: []*schema.Column{AlertDefinitionsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -3481,7 +3540,8 @@ var (
 		AgentSessionsTable,
 		AgentSessionBindingsTable,
 		AgentTurnsTable,
-		AlertsTable,
+		AlertDefinitionsTable,
+		AlertEpisodesTable,
 		AlertFeedbacksTable,
 		AlertInstancesTable,
 		AlertInvestigationsTable,
@@ -3555,7 +3615,7 @@ var (
 		IncidentDebriefQuestionIncidentTypesTable,
 		MeetingScheduleOwningTeamTable,
 		OncallShiftHandoverPinnedAnnotationsTable,
-		PlaybookAlertsTable,
+		PlaybookAlertDefinitionsTable,
 		TaskTicketsTable,
 		TeamOncallRostersTable,
 		UserWatchedOncallRostersTable,
@@ -3577,12 +3637,15 @@ func init() {
 	AgentTurnsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	AgentTurnsTable.ForeignKeys[1].RefTable = TenantsTable
 	AgentTurnsTable.ForeignKeys[2].RefTable = AgentMessagesTable
-	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
-	AlertsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
+	AlertDefinitionsTable.ForeignKeys[0].RefTable = TenantsTable
+	AlertDefinitionsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
+	AlertEpisodesTable.ForeignKeys[0].RefTable = AlertDefinitionsTable
+	AlertEpisodesTable.ForeignKeys[1].RefTable = TenantsTable
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertFeedbacksTable.ForeignKeys[1].RefTable = AlertInstancesTable
-	AlertInstancesTable.ForeignKeys[0].RefTable = AlertsTable
+	AlertInstancesTable.ForeignKeys[0].RefTable = AlertEpisodesTable
 	AlertInstancesTable.ForeignKeys[1].RefTable = TenantsTable
+	AlertInstancesTable.ForeignKeys[2].RefTable = NormalizedEventsTable
 	AlertInvestigationsTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertInvestigationsTable.ForeignKeys[1].RefTable = AlertInstancesTable
 	AlertInvestigationsTable.ForeignKeys[2].RefTable = AgentSessionsTable
@@ -3758,8 +3821,8 @@ func init() {
 	MeetingScheduleOwningTeamTable.ForeignKeys[1].RefTable = TeamsTable
 	OncallShiftHandoverPinnedAnnotationsTable.ForeignKeys[0].RefTable = OncallShiftHandoversTable
 	OncallShiftHandoverPinnedAnnotationsTable.ForeignKeys[1].RefTable = EventAnnotationsTable
-	PlaybookAlertsTable.ForeignKeys[0].RefTable = PlaybooksTable
-	PlaybookAlertsTable.ForeignKeys[1].RefTable = AlertsTable
+	PlaybookAlertDefinitionsTable.ForeignKeys[0].RefTable = PlaybooksTable
+	PlaybookAlertDefinitionsTable.ForeignKeys[1].RefTable = AlertDefinitionsTable
 	TaskTicketsTable.ForeignKeys[0].RefTable = TasksTable
 	TaskTicketsTable.ForeignKeys[1].RefTable = TicketsTable
 	TeamOncallRostersTable.ForeignKeys[0].RefTable = TeamsTable

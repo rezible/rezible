@@ -44,20 +44,28 @@ CREATE UNIQUE INDEX "agent_turn_one_active_per_session" ON "agent_turns" ("agent
 CREATE UNIQUE INDEX "agent_turn_input_message_unique" ON "agent_turns" ("input_message_id") WHERE input_message_id IS NOT NULL;
 -- create index "agentturn_tenant_id_agent_session_id_created_at" to table: "agent_turns"
 CREATE INDEX "agentturn_tenant_id_agent_session_id_created_at" ON "agent_turns" ("tenant_id", "agent_session_id", "created_at");
--- create "alerts" table
-CREATE TABLE "alerts" ("id" uuid NOT NULL, "title" character varying NOT NULL, "description" character varying NULL, "definition" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "alert_tenant_id" to table: "alerts"
-CREATE INDEX "alert_tenant_id" ON "alerts" ("tenant_id");
--- create index "alert_tenant_id_knowledge_entity_id" to table: "alerts"
-CREATE UNIQUE INDEX "alert_tenant_id_knowledge_entity_id" ON "alerts" ("tenant_id", "knowledge_entity_id");
+-- create "alert_definitions" table
+CREATE TABLE "alert_definitions" ("id" uuid NOT NULL, "title" character varying NOT NULL, "description" character varying NULL, "definition" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "alertdefinition_tenant_id" to table: "alert_definitions"
+CREATE INDEX "alertdefinition_tenant_id" ON "alert_definitions" ("tenant_id");
+-- create index "alertdefinition_tenant_id_knowledge_entity_id" to table: "alert_definitions"
+CREATE UNIQUE INDEX "alertdefinition_tenant_id_knowledge_entity_id" ON "alert_definitions" ("tenant_id", "knowledge_entity_id");
+-- create "alert_episodes" table
+CREATE TABLE "alert_episodes" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "status" character varying NOT NULL DEFAULT 'open', "started_at" timestamptz NOT NULL, "last_observed_at" timestamptz NOT NULL, "closed_at" timestamptz NULL, "alert_definition_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+-- create index "alertepisode_tenant_id" to table: "alert_episodes"
+CREATE INDEX "alertepisode_tenant_id" ON "alert_episodes" ("tenant_id");
+-- create index "alertepisode_tenant_id_alert_definition_id" to table: "alert_episodes"
+CREATE UNIQUE INDEX "alertepisode_tenant_id_alert_definition_id" ON "alert_episodes" ("tenant_id", "alert_definition_id") WHERE status = 'open';
 -- create "alert_feedbacks" table
 CREATE TABLE "alert_feedbacks" ("id" uuid NOT NULL, "actionable" boolean NOT NULL, "accurate" character varying NOT NULL, "documentation_available" boolean NOT NULL, "documentation_needs_update" boolean NOT NULL, "tenant_id" bigint NOT NULL, "alert_instance_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "alertfeedback_tenant_id" to table: "alert_feedbacks"
 CREATE INDEX "alertfeedback_tenant_id" ON "alert_feedbacks" ("tenant_id");
 -- create "alert_instances" table
-CREATE TABLE "alert_instances" ("id" uuid NOT NULL, "alert_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "alert_instances" ("id" uuid NOT NULL, "alert_episode_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "normalized_event_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "alertinstance_tenant_id" to table: "alert_instances"
 CREATE INDEX "alertinstance_tenant_id" ON "alert_instances" ("tenant_id");
+-- create index "alertinstance_tenant_id_normalized_event_id" to table: "alert_instances"
+CREATE UNIQUE INDEX "alertinstance_tenant_id_normalized_event_id" ON "alert_instances" ("tenant_id", "normalized_event_id");
 -- create "alert_investigations" table
 CREATE TABLE "alert_investigations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "report" jsonb NULL, "tenant_id" bigint NOT NULL, "alert_instance_id" uuid NOT NULL, "agent_session_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "alertinvestigation_tenant_id" to table: "alert_investigations"
@@ -458,8 +466,8 @@ CREATE TABLE "incident_debrief_question_incident_types" ("incident_debrief_quest
 CREATE TABLE "meeting_schedule_owning_team" ("meeting_schedule_id" uuid NOT NULL, "team_id" uuid NOT NULL, PRIMARY KEY ("meeting_schedule_id", "team_id"));
 -- create "oncall_shift_handover_pinned_annotations" table
 CREATE TABLE "oncall_shift_handover_pinned_annotations" ("oncall_shift_handover_id" uuid NOT NULL, "event_annotation_id" uuid NOT NULL, PRIMARY KEY ("oncall_shift_handover_id", "event_annotation_id"));
--- create "playbook_alerts" table
-CREATE TABLE "playbook_alerts" ("playbook_id" uuid NOT NULL, "alert_id" uuid NOT NULL, PRIMARY KEY ("playbook_id", "alert_id"));
+-- create "playbook_alert_definitions" table
+CREATE TABLE "playbook_alert_definitions" ("playbook_id" uuid NOT NULL, "alert_definition_id" uuid NOT NULL, PRIMARY KEY ("playbook_id", "alert_definition_id"));
 -- create "task_tickets" table
 CREATE TABLE "task_tickets" ("task_id" uuid NOT NULL, "ticket_id" uuid NOT NULL, PRIMARY KEY ("task_id", "ticket_id"));
 -- create "team_oncall_rosters" table
@@ -476,12 +484,14 @@ ALTER TABLE "agent_sessions" ADD CONSTRAINT "agent_sessions_tenants_tenant" FORE
 ALTER TABLE "agent_session_bindings" ADD CONSTRAINT "agent_session_bindings_agent_sessions_bindings" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_session_bindings_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_session_bindings_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE SET NULL;
 -- modify "agent_turns" table
 ALTER TABLE "agent_turns" ADD CONSTRAINT "agent_turns_agent_sessions_turns" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turns_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_turns_agent_messages_input_message" FOREIGN KEY ("input_message_id") REFERENCES "agent_messages" ("id") ON DELETE SET NULL;
--- modify "alerts" table
-ALTER TABLE "alerts" ADD CONSTRAINT "alerts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alerts_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
+-- modify "alert_definitions" table
+ALTER TABLE "alert_definitions" ADD CONSTRAINT "alert_definitions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_definitions_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
+-- modify "alert_episodes" table
+ALTER TABLE "alert_episodes" ADD CONSTRAINT "alert_episodes_alert_definitions_episodes" FOREIGN KEY ("alert_definition_id") REFERENCES "alert_definitions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_episodes_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "alert_feedbacks" table
 ALTER TABLE "alert_feedbacks" ADD CONSTRAINT "alert_feedbacks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_feedbacks_alert_instances_alert_instance" FOREIGN KEY ("alert_instance_id") REFERENCES "alert_instances" ("id") ON DELETE NO ACTION;
 -- modify "alert_instances" table
-ALTER TABLE "alert_instances" ADD CONSTRAINT "alert_instances_alerts_instances" FOREIGN KEY ("alert_id") REFERENCES "alerts" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+ALTER TABLE "alert_instances" ADD CONSTRAINT "alert_instances_alert_episodes_instances" FOREIGN KEY ("alert_episode_id") REFERENCES "alert_episodes" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_normalized_events_event" FOREIGN KEY ("normalized_event_id") REFERENCES "normalized_events" ("id") ON DELETE NO ACTION;
 -- modify "alert_investigations" table
 ALTER TABLE "alert_investigations" ADD CONSTRAINT "alert_investigations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_investigations_alert_instances_alert_instance" FOREIGN KEY ("alert_instance_id") REFERENCES "alert_instances" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_investigations_agent_sessions_agent_session" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION;
 -- modify "documents" table
@@ -622,8 +632,8 @@ ALTER TABLE "incident_debrief_question_incident_types" ADD CONSTRAINT "incident_
 ALTER TABLE "meeting_schedule_owning_team" ADD CONSTRAINT "meeting_schedule_owning_team_meeting_schedule_id" FOREIGN KEY ("meeting_schedule_id") REFERENCES "meeting_schedules" ("id") ON DELETE CASCADE, ADD CONSTRAINT "meeting_schedule_owning_team_team_id" FOREIGN KEY ("team_id") REFERENCES "teams" ("id") ON DELETE CASCADE;
 -- modify "oncall_shift_handover_pinned_annotations" table
 ALTER TABLE "oncall_shift_handover_pinned_annotations" ADD CONSTRAINT "oncall_shift_handover_pinned_a_ea6451c95975edb633f05ea5a22d6958" FOREIGN KEY ("oncall_shift_handover_id") REFERENCES "oncall_shift_handovers" ("id") ON DELETE CASCADE, ADD CONSTRAINT "oncall_shift_handover_pinned_annotations_event_annotation_id" FOREIGN KEY ("event_annotation_id") REFERENCES "event_annotations" ("id") ON DELETE CASCADE;
--- modify "playbook_alerts" table
-ALTER TABLE "playbook_alerts" ADD CONSTRAINT "playbook_alerts_playbook_id" FOREIGN KEY ("playbook_id") REFERENCES "playbooks" ("id") ON DELETE CASCADE, ADD CONSTRAINT "playbook_alerts_alert_id" FOREIGN KEY ("alert_id") REFERENCES "alerts" ("id") ON DELETE CASCADE;
+-- modify "playbook_alert_definitions" table
+ALTER TABLE "playbook_alert_definitions" ADD CONSTRAINT "playbook_alert_definitions_playbook_id" FOREIGN KEY ("playbook_id") REFERENCES "playbooks" ("id") ON DELETE CASCADE, ADD CONSTRAINT "playbook_alert_definitions_alert_definition_id" FOREIGN KEY ("alert_definition_id") REFERENCES "alert_definitions" ("id") ON DELETE CASCADE;
 -- modify "task_tickets" table
 ALTER TABLE "task_tickets" ADD CONSTRAINT "task_tickets_task_id" FOREIGN KEY ("task_id") REFERENCES "tasks" ("id") ON DELETE CASCADE, ADD CONSTRAINT "task_tickets_ticket_id" FOREIGN KEY ("ticket_id") REFERENCES "tickets" ("id") ON DELETE CASCADE;
 -- modify "team_oncall_rosters" table

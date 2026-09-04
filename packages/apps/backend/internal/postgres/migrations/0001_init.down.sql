@@ -4,8 +4,8 @@ ALTER TABLE "user_watched_oncall_rosters" DROP CONSTRAINT "user_watched_oncall_r
 ALTER TABLE "team_oncall_rosters" DROP CONSTRAINT "team_oncall_rosters_oncall_roster_id", DROP CONSTRAINT "team_oncall_rosters_team_id";
 -- reverse: modify "task_tickets" table
 ALTER TABLE "task_tickets" DROP CONSTRAINT "task_tickets_ticket_id", DROP CONSTRAINT "task_tickets_task_id";
--- reverse: modify "playbook_alerts" table
-ALTER TABLE "playbook_alerts" DROP CONSTRAINT "playbook_alerts_alert_id", DROP CONSTRAINT "playbook_alerts_playbook_id";
+-- reverse: modify "playbook_alert_definitions" table
+ALTER TABLE "playbook_alert_definitions" DROP CONSTRAINT "playbook_alert_definitions_alert_definition_id", DROP CONSTRAINT "playbook_alert_definitions_playbook_id";
 -- reverse: modify "oncall_shift_handover_pinned_annotations" table
 ALTER TABLE "oncall_shift_handover_pinned_annotations" DROP CONSTRAINT "oncall_shift_handover_pinned_annotations_event_annotation_id", DROP CONSTRAINT "oncall_shift_handover_pinned_a_ea6451c95975edb633f05ea5a22d6958";
 -- reverse: modify "meeting_schedule_owning_team" table
@@ -147,11 +147,13 @@ ALTER TABLE "documents" DROP CONSTRAINT "documents_tenants_tenant";
 -- reverse: modify "alert_investigations" table
 ALTER TABLE "alert_investigations" DROP CONSTRAINT "alert_investigations_agent_sessions_agent_session", DROP CONSTRAINT "alert_investigations_alert_instances_alert_instance", DROP CONSTRAINT "alert_investigations_tenants_tenant";
 -- reverse: modify "alert_instances" table
-ALTER TABLE "alert_instances" DROP CONSTRAINT "alert_instances_tenants_tenant", DROP CONSTRAINT "alert_instances_alerts_instances";
+ALTER TABLE "alert_instances" DROP CONSTRAINT "alert_instances_normalized_events_event", DROP CONSTRAINT "alert_instances_tenants_tenant", DROP CONSTRAINT "alert_instances_alert_episodes_instances";
 -- reverse: modify "alert_feedbacks" table
 ALTER TABLE "alert_feedbacks" DROP CONSTRAINT "alert_feedbacks_alert_instances_alert_instance", DROP CONSTRAINT "alert_feedbacks_tenants_tenant";
--- reverse: modify "alerts" table
-ALTER TABLE "alerts" DROP CONSTRAINT "alerts_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alerts_tenants_tenant";
+-- reverse: modify "alert_episodes" table
+ALTER TABLE "alert_episodes" DROP CONSTRAINT "alert_episodes_tenants_tenant", DROP CONSTRAINT "alert_episodes_alert_definitions_episodes";
+-- reverse: modify "alert_definitions" table
+ALTER TABLE "alert_definitions" DROP CONSTRAINT "alert_definitions_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alert_definitions_tenants_tenant";
 -- reverse: modify "agent_turns" table
 ALTER TABLE "agent_turns" DROP CONSTRAINT "agent_turns_agent_messages_input_message", DROP CONSTRAINT "agent_turns_tenants_tenant", DROP CONSTRAINT "agent_turns_agent_sessions_turns";
 -- reverse: modify "agent_session_bindings" table
@@ -168,8 +170,8 @@ DROP TABLE "user_watched_oncall_rosters";
 DROP TABLE "team_oncall_rosters";
 -- reverse: create "task_tickets" table
 DROP TABLE "task_tickets";
--- reverse: create "playbook_alerts" table
-DROP TABLE "playbook_alerts";
+-- reverse: create "playbook_alert_definitions" table
+DROP TABLE "playbook_alert_definitions";
 -- reverse: create "oncall_shift_handover_pinned_annotations" table
 DROP TABLE "oncall_shift_handover_pinned_annotations";
 -- reverse: create "meeting_schedule_owning_team" table
@@ -570,6 +572,8 @@ DROP INDEX "alertinvestigation_tenant_id_alert_instance_id_created_at";
 DROP INDEX "alertinvestigation_tenant_id";
 -- reverse: create "alert_investigations" table
 DROP TABLE "alert_investigations";
+-- reverse: create index "alertinstance_tenant_id_normalized_event_id" to table: "alert_instances"
+DROP INDEX "alertinstance_tenant_id_normalized_event_id";
 -- reverse: create index "alertinstance_tenant_id" to table: "alert_instances"
 DROP INDEX "alertinstance_tenant_id";
 -- reverse: create "alert_instances" table
@@ -578,12 +582,18 @@ DROP TABLE "alert_instances";
 DROP INDEX "alertfeedback_tenant_id";
 -- reverse: create "alert_feedbacks" table
 DROP TABLE "alert_feedbacks";
--- reverse: create index "alert_tenant_id_knowledge_entity_id" to table: "alerts"
-DROP INDEX "alert_tenant_id_knowledge_entity_id";
--- reverse: create index "alert_tenant_id" to table: "alerts"
-DROP INDEX "alert_tenant_id";
--- reverse: create "alerts" table
-DROP TABLE "alerts";
+-- reverse: create index "alertepisode_tenant_id_alert_definition_id" to table: "alert_episodes"
+DROP INDEX "alertepisode_tenant_id_alert_definition_id";
+-- reverse: create index "alertepisode_tenant_id" to table: "alert_episodes"
+DROP INDEX "alertepisode_tenant_id";
+-- reverse: create "alert_episodes" table
+DROP TABLE "alert_episodes";
+-- reverse: create index "alertdefinition_tenant_id_knowledge_entity_id" to table: "alert_definitions"
+DROP INDEX "alertdefinition_tenant_id_knowledge_entity_id";
+-- reverse: create index "alertdefinition_tenant_id" to table: "alert_definitions"
+DROP INDEX "alertdefinition_tenant_id";
+-- reverse: create "alert_definitions" table
+DROP TABLE "alert_definitions";
 -- reverse: create index "agentturn_tenant_id_agent_session_id_created_at" to table: "agent_turns"
 DROP INDEX "agentturn_tenant_id_agent_session_id_created_at";
 -- reverse: create index "agent_turn_input_message_unique" to table: "agent_turns"

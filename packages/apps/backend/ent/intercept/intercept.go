@@ -13,7 +13,8 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertdefinition"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinvestigation"
@@ -272,31 +273,58 @@ func (f TraverseAgentTurn) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.AgentTurnQuery", q)
 }
 
-// The AlertFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AlertFunc func(context.Context, *ent.AlertQuery) (ent.Value, error)
+// The AlertDefinitionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AlertDefinitionFunc func(context.Context, *ent.AlertDefinitionQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f AlertFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AlertQuery); ok {
+func (f AlertDefinitionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AlertDefinitionQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AlertQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AlertDefinitionQuery", q)
 }
 
-// The TraverseAlert type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAlert func(context.Context, *ent.AlertQuery) error
+// The TraverseAlertDefinition type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAlertDefinition func(context.Context, *ent.AlertDefinitionQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAlert) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseAlertDefinition) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseAlert) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AlertQuery); ok {
+func (f TraverseAlertDefinition) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertDefinitionQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AlertQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.AlertDefinitionQuery", q)
+}
+
+// The AlertEpisodeFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AlertEpisodeFunc func(context.Context, *ent.AlertEpisodeQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AlertEpisodeFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AlertEpisodeQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AlertEpisodeQuery", q)
+}
+
+// The TraverseAlertEpisode type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAlertEpisode func(context.Context, *ent.AlertEpisodeQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAlertEpisode) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAlertEpisode) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertEpisodeQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AlertEpisodeQuery", q)
 }
 
 // The AlertFeedbackFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2040,8 +2068,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AgentSessionBindingQuery, predicate.AgentSessionBinding, agentsessionbinding.OrderOption]{typ: ent.TypeAgentSessionBinding, tq: q}, nil
 	case *ent.AgentTurnQuery:
 		return &query[*ent.AgentTurnQuery, predicate.AgentTurn, agentturn.OrderOption]{typ: ent.TypeAgentTurn, tq: q}, nil
-	case *ent.AlertQuery:
-		return &query[*ent.AlertQuery, predicate.Alert, alert.OrderOption]{typ: ent.TypeAlert, tq: q}, nil
+	case *ent.AlertDefinitionQuery:
+		return &query[*ent.AlertDefinitionQuery, predicate.AlertDefinition, alertdefinition.OrderOption]{typ: ent.TypeAlertDefinition, tq: q}, nil
+	case *ent.AlertEpisodeQuery:
+		return &query[*ent.AlertEpisodeQuery, predicate.AlertEpisode, alertepisode.OrderOption]{typ: ent.TypeAlertEpisode, tq: q}, nil
 	case *ent.AlertFeedbackQuery:
 		return &query[*ent.AlertFeedbackQuery, predicate.AlertFeedback, alertfeedback.OrderOption]{typ: ent.TypeAlertFeedback, tq: q}, nil
 	case *ent.AlertInstanceQuery:

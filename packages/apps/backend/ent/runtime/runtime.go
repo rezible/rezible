@@ -12,7 +12,8 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertdefinition"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinvestigation"
@@ -269,22 +270,50 @@ func init() {
 	agentturnDescFinishReason := agentturnFields[9].Descriptor()
 	// agentturn.DefaultFinishReason holds the default value on creation for the finish_reason field.
 	agentturn.DefaultFinishReason = agentturnDescFinishReason.Default.(string)
-	alertMixin := schema.Alert{}.Mixin()
-	alert.Policy = privacy.NewPolicies(alertMixin[0], alertMixin[1], schema.Alert{})
-	alert.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	alertdefinitionMixin := schema.AlertDefinition{}.Mixin()
+	alertdefinition.Policy = privacy.NewPolicies(alertdefinitionMixin[0], alertdefinitionMixin[1], schema.AlertDefinition{})
+	alertdefinition.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := alert.Policy.EvalMutation(ctx, m); err != nil {
+			if err := alertdefinition.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	alertFields := schema.Alert{}.Fields()
-	_ = alertFields
-	// alertDescID is the schema descriptor for id field.
-	alertDescID := alertFields[0].Descriptor()
-	// alert.DefaultID holds the default value on creation for the id field.
-	alert.DefaultID = alertDescID.Default.(func() uuid.UUID)
+	alertdefinitionFields := schema.AlertDefinition{}.Fields()
+	_ = alertdefinitionFields
+	// alertdefinitionDescID is the schema descriptor for id field.
+	alertdefinitionDescID := alertdefinitionFields[0].Descriptor()
+	// alertdefinition.DefaultID holds the default value on creation for the id field.
+	alertdefinition.DefaultID = alertdefinitionDescID.Default.(func() uuid.UUID)
+	alertepisodeMixin := schema.AlertEpisode{}.Mixin()
+	alertepisode.Policy = privacy.NewPolicies(alertepisodeMixin[0], alertepisodeMixin[1], schema.AlertEpisode{})
+	alertepisode.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := alertepisode.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	alertepisodeMixinFields2 := alertepisodeMixin[2].Fields()
+	_ = alertepisodeMixinFields2
+	alertepisodeFields := schema.AlertEpisode{}.Fields()
+	_ = alertepisodeFields
+	// alertepisodeDescCreatedAt is the schema descriptor for created_at field.
+	alertepisodeDescCreatedAt := alertepisodeMixinFields2[0].Descriptor()
+	// alertepisode.DefaultCreatedAt holds the default value on creation for the created_at field.
+	alertepisode.DefaultCreatedAt = alertepisodeDescCreatedAt.Default.(func() time.Time)
+	// alertepisodeDescUpdatedAt is the schema descriptor for updated_at field.
+	alertepisodeDescUpdatedAt := alertepisodeMixinFields2[1].Descriptor()
+	// alertepisode.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	alertepisode.DefaultUpdatedAt = alertepisodeDescUpdatedAt.Default.(func() time.Time)
+	// alertepisode.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	alertepisode.UpdateDefaultUpdatedAt = alertepisodeDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// alertepisodeDescID is the schema descriptor for id field.
+	alertepisodeDescID := alertepisodeFields[0].Descriptor()
+	// alertepisode.DefaultID holds the default value on creation for the id field.
+	alertepisode.DefaultID = alertepisodeDescID.Default.(func() uuid.UUID)
 	alertfeedbackMixin := schema.AlertFeedback{}.Mixin()
 	alertfeedback.Policy = privacy.NewPolicies(alertfeedbackMixin[0], alertfeedbackMixin[1], schema.AlertFeedback{})
 	alertfeedback.Hooks[0] = func(next ent.Mutator) ent.Mutator {

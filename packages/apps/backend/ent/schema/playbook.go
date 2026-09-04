@@ -32,6 +32,6 @@ func (Playbook) Fields() []ent.Field {
 // Edges of the Playbook.
 func (Playbook) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("alerts", Alert.Type),
+		edge.To("alert_definitions", AlertDefinition.Type),
 	}
 }

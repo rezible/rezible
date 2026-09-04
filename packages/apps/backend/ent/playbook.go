@@ -34,8 +34,8 @@ type Playbook struct {
 type PlaybookEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// Alerts holds the value of the alerts edge.
-	Alerts []*Alert `json:"alerts,omitempty"`
+	// AlertDefinitions holds the value of the alert_definitions edge.
+	AlertDefinitions []*AlertDefinition `json:"alert_definitions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -52,13 +52,13 @@ func (e PlaybookEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AlertsOrErr returns the Alerts value or an error if the edge
+// AlertDefinitionsOrErr returns the AlertDefinitions value or an error if the edge
 // was not loaded in eager-loading.
-func (e PlaybookEdges) AlertsOrErr() ([]*Alert, error) {
+func (e PlaybookEdges) AlertDefinitionsOrErr() ([]*AlertDefinition, error) {
 	if e.loadedTypes[1] {
-		return e.Alerts, nil
+		return e.AlertDefinitions, nil
 	}
-	return nil, &NotLoadedError{edge: "alerts"}
+	return nil, &NotLoadedError{edge: "alert_definitions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -131,9 +131,9 @@ func (_m *Playbook) QueryTenant() *TenantQuery {
 	return NewPlaybookClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAlerts queries the "alerts" edge of the Playbook entity.
-func (_m *Playbook) QueryAlerts() *AlertQuery {
-	return NewPlaybookClient(_m.config).QueryAlerts(_m)
+// QueryAlertDefinitions queries the "alert_definitions" edge of the Playbook entity.
+func (_m *Playbook) QueryAlertDefinitions() *AlertDefinitionQuery {
+	return NewPlaybookClient(_m.config).QueryAlertDefinitions(_m)
 }
 
 // Update returns a builder for updating this Playbook.

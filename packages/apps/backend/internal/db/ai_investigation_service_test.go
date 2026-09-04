@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"testing"
+	"time"
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
@@ -63,14 +64,32 @@ func (s *InvestigationServiceSuite) newHarness(tdb rez.Database) *investigationS
 }
 
 func (s *InvestigationServiceSuite) createAlertInstance(ctx context.Context, client *ent.Client, knowledgeEntityID *uuid.UUID) *ent.AlertInstance {
-	createAlert := client.Alert.Create().
+	createAlert := client.AlertDefinition.Create().
 		SetTitle("Checkout alert").
 		SetDescription("High error rate").
 		SetDefinition("sum(rate(errors[5m])) > 1").
 		SetNillableKnowledgeEntityID(knowledgeEntityID)
-	alert := createAlert.SaveX(ctx)
+	definition := createAlert.SaveX(ctx)
+	observedAt := time.Now()
+	event := client.NormalizedEvent.Create().
+		SetProvider("test").
+		SetProviderNamespace("investigation-tests").
+		SetProviderResourceRef("checkout-alert").
+		SetProviderEventSource("alerts").
+		SetProviderEventRef("alert-event-" + uuid.NewString()).
+		SetKind("alert_instance").
+		SetAttributes([]byte("{}")).
+		SetOccurredAt(observedAt).
+		SetReceivedAt(observedAt).
+		SaveX(ctx)
+	episode := client.AlertEpisode.Create().
+		SetAlertDefinitionID(definition.ID).
+		SetStartedAt(observedAt).
+		SetLastObservedAt(observedAt).
+		SaveX(ctx)
 	return client.AlertInstance.Create().
-		SetAlertID(alert.ID).
+		SetAlertEpisodeID(episode.ID).
+		SetNormalizedEventID(event.ID).
 		SaveX(ctx)
 }
 

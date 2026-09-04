@@ -69,16 +69,28 @@ func (f AgentTurnFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentTurnMutation", m)
 }
 
-// The AlertFunc type is an adapter to allow the use of ordinary
-// function as Alert mutator.
-type AlertFunc func(context.Context, *ent.AlertMutation) (ent.Value, error)
+// The AlertDefinitionFunc type is an adapter to allow the use of ordinary
+// function as AlertDefinition mutator.
+type AlertDefinitionFunc func(context.Context, *ent.AlertDefinitionMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AlertFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AlertMutation); ok {
+func (f AlertDefinitionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AlertDefinitionMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertDefinitionMutation", m)
+}
+
+// The AlertEpisodeFunc type is an adapter to allow the use of ordinary
+// function as AlertEpisode mutator.
+type AlertEpisodeFunc func(context.Context, *ent.AlertEpisodeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AlertEpisodeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AlertEpisodeMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertEpisodeMutation", m)
 }
 
 // The AlertFeedbackFunc type is an adapter to allow the use of ordinary

@@ -6,7 +6,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/alert"
+	ad "github.com/rezible/rezible/ent/alertdefinition"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
@@ -92,12 +92,12 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 			return fmt.Errorf("nil subject entity")
 		}
 
-		upsertAlert := tx.Alert.Create().
+		upsertAlert := tx.AlertDefinition.Create().
 			SetKnowledgeEntityID(*subj.EntityID).
 			SetTitle(attributes.Title).
 			SetDescription(attributes.Description).
 			SetDefinition(attributes.Definition).
-			OnConflictColumns(alert.FieldTenantID, alert.FieldKnowledgeEntityID).
+			OnConflictColumns(ad.FieldTenantID, ad.FieldKnowledgeEntityID).
 			UpdateNewValues()
 		alertID, alertErr := upsertAlert.ID(ctx)
 		if alertErr != nil {

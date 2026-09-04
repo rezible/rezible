@@ -15,60 +15,62 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alertdefinition"
+	"github.com/rezible/rezible/ent/alertepisode"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// PlaybookQuery is the builder for querying Playbook entities.
-type PlaybookQuery struct {
+// AlertEpisodeQuery is the builder for querying AlertEpisode entities.
+type AlertEpisodeQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []playbook.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.Playbook
-	withTenant           *TenantQuery
-	withAlertDefinitions *AlertDefinitionQuery
-	modifiers            []func(*sql.Selector)
+	ctx                 *QueryContext
+	order               []alertepisode.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.AlertEpisode
+	withTenant          *TenantQuery
+	withAlertDefinition *AlertDefinitionQuery
+	withInstances       *AlertInstanceQuery
+	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the PlaybookQuery builder.
-func (_q *PlaybookQuery) Where(ps ...predicate.Playbook) *PlaybookQuery {
+// Where adds a new predicate for the AlertEpisodeQuery builder.
+func (_q *AlertEpisodeQuery) Where(ps ...predicate.AlertEpisode) *AlertEpisodeQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *PlaybookQuery) Limit(limit int) *PlaybookQuery {
+func (_q *AlertEpisodeQuery) Limit(limit int) *AlertEpisodeQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *PlaybookQuery) Offset(offset int) *PlaybookQuery {
+func (_q *AlertEpisodeQuery) Offset(offset int) *AlertEpisodeQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *PlaybookQuery) Unique(unique bool) *PlaybookQuery {
+func (_q *AlertEpisodeQuery) Unique(unique bool) *AlertEpisodeQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *PlaybookQuery) Order(o ...playbook.OrderOption) *PlaybookQuery {
+func (_q *AlertEpisodeQuery) Order(o ...alertepisode.OrderOption) *AlertEpisodeQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *PlaybookQuery) QueryTenant() *TenantQuery {
+func (_q *AlertEpisodeQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -79,21 +81,21 @@ func (_q *PlaybookQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(playbook.Table, playbook.FieldID, selector),
+			sqlgraph.From(alertepisode.Table, alertepisode.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, playbook.TenantTable, playbook.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertepisode.TenantTable, alertepisode.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.Playbook
+		step.Edge.Schema = schemaConfig.AlertEpisode
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryAlertDefinitions chains the current query on the "alert_definitions" edge.
-func (_q *PlaybookQuery) QueryAlertDefinitions() *AlertDefinitionQuery {
+// QueryAlertDefinition chains the current query on the "alert_definition" edge.
+func (_q *AlertEpisodeQuery) QueryAlertDefinition() *AlertDefinitionQuery {
 	query := (&AlertDefinitionClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -104,34 +106,59 @@ func (_q *PlaybookQuery) QueryAlertDefinitions() *AlertDefinitionQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(playbook.Table, playbook.FieldID, selector),
+			sqlgraph.From(alertepisode.Table, alertepisode.FieldID, selector),
 			sqlgraph.To(alertdefinition.Table, alertdefinition.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, playbook.AlertDefinitionsTable, playbook.AlertDefinitionsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, alertepisode.AlertDefinitionTable, alertepisode.AlertDefinitionColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AlertDefinition
-		step.Edge.Schema = schemaConfig.PlaybookAlertDefinitions
+		step.Edge.Schema = schemaConfig.AlertEpisode
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// First returns the first Playbook entity from the query.
-// Returns a *NotFoundError when no Playbook was found.
-func (_q *PlaybookQuery) First(ctx context.Context) (*Playbook, error) {
+// QueryInstances chains the current query on the "instances" edge.
+func (_q *AlertEpisodeQuery) QueryInstances() *AlertInstanceQuery {
+	query := (&AlertInstanceClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertepisode.Table, alertepisode.FieldID, selector),
+			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, alertepisode.InstancesTable, alertepisode.InstancesColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AlertInstance
+		step.Edge.Schema = schemaConfig.AlertInstance
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// First returns the first AlertEpisode entity from the query.
+// Returns a *NotFoundError when no AlertEpisode was found.
+func (_q *AlertEpisodeQuery) First(ctx context.Context) (*AlertEpisode, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{playbook.Label}
+		return nil, &NotFoundError{alertepisode.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *PlaybookQuery) FirstX(ctx context.Context) *Playbook {
+func (_q *AlertEpisodeQuery) FirstX(ctx context.Context) *AlertEpisode {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -139,22 +166,22 @@ func (_q *PlaybookQuery) FirstX(ctx context.Context) *Playbook {
 	return node
 }
 
-// FirstID returns the first Playbook ID from the query.
-// Returns a *NotFoundError when no Playbook ID was found.
-func (_q *PlaybookQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first AlertEpisode ID from the query.
+// Returns a *NotFoundError when no AlertEpisode ID was found.
+func (_q *AlertEpisodeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{playbook.Label}
+		err = &NotFoundError{alertepisode.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *PlaybookQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *AlertEpisodeQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -162,10 +189,10 @@ func (_q *PlaybookQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single Playbook entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one Playbook entity is found.
-// Returns a *NotFoundError when no Playbook entities are found.
-func (_q *PlaybookQuery) Only(ctx context.Context) (*Playbook, error) {
+// Only returns a single AlertEpisode entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one AlertEpisode entity is found.
+// Returns a *NotFoundError when no AlertEpisode entities are found.
+func (_q *AlertEpisodeQuery) Only(ctx context.Context) (*AlertEpisode, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -174,14 +201,14 @@ func (_q *PlaybookQuery) Only(ctx context.Context) (*Playbook, error) {
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{playbook.Label}
+		return nil, &NotFoundError{alertepisode.Label}
 	default:
-		return nil, &NotSingularError{playbook.Label}
+		return nil, &NotSingularError{alertepisode.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *PlaybookQuery) OnlyX(ctx context.Context) *Playbook {
+func (_q *AlertEpisodeQuery) OnlyX(ctx context.Context) *AlertEpisode {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -189,10 +216,10 @@ func (_q *PlaybookQuery) OnlyX(ctx context.Context) *Playbook {
 	return node
 }
 
-// OnlyID is like Only, but returns the only Playbook ID in the query.
-// Returns a *NotSingularError when more than one Playbook ID is found.
+// OnlyID is like Only, but returns the only AlertEpisode ID in the query.
+// Returns a *NotSingularError when more than one AlertEpisode ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *PlaybookQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *AlertEpisodeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -201,15 +228,15 @@ func (_q *PlaybookQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{playbook.Label}
+		err = &NotFoundError{alertepisode.Label}
 	default:
-		err = &NotSingularError{playbook.Label}
+		err = &NotSingularError{alertepisode.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *PlaybookQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *AlertEpisodeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -217,18 +244,18 @@ func (_q *PlaybookQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of Playbooks.
-func (_q *PlaybookQuery) All(ctx context.Context) ([]*Playbook, error) {
+// All executes the query and returns a list of AlertEpisodes.
+func (_q *AlertEpisodeQuery) All(ctx context.Context) ([]*AlertEpisode, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*Playbook, *PlaybookQuery]()
-	return withInterceptors[[]*Playbook](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*AlertEpisode, *AlertEpisodeQuery]()
+	return withInterceptors[[]*AlertEpisode](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *PlaybookQuery) AllX(ctx context.Context) []*Playbook {
+func (_q *AlertEpisodeQuery) AllX(ctx context.Context) []*AlertEpisode {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -236,20 +263,20 @@ func (_q *PlaybookQuery) AllX(ctx context.Context) []*Playbook {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Playbook IDs.
-func (_q *PlaybookQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of AlertEpisode IDs.
+func (_q *AlertEpisodeQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(playbook.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(alertepisode.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *PlaybookQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *AlertEpisodeQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -258,16 +285,16 @@ func (_q *PlaybookQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *PlaybookQuery) Count(ctx context.Context) (int, error) {
+func (_q *AlertEpisodeQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*PlaybookQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*AlertEpisodeQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *PlaybookQuery) CountX(ctx context.Context) int {
+func (_q *AlertEpisodeQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -276,7 +303,7 @@ func (_q *PlaybookQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *PlaybookQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *AlertEpisodeQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -289,7 +316,7 @@ func (_q *PlaybookQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *PlaybookQuery) ExistX(ctx context.Context) bool {
+func (_q *AlertEpisodeQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -297,20 +324,21 @@ func (_q *PlaybookQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the PlaybookQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the AlertEpisodeQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *PlaybookQuery) Clone() *PlaybookQuery {
+func (_q *AlertEpisodeQuery) Clone() *AlertEpisodeQuery {
 	if _q == nil {
 		return nil
 	}
-	return &PlaybookQuery{
-		config:               _q.config,
-		ctx:                  _q.ctx.Clone(),
-		order:                append([]playbook.OrderOption{}, _q.order...),
-		inters:               append([]Interceptor{}, _q.inters...),
-		predicates:           append([]predicate.Playbook{}, _q.predicates...),
-		withTenant:           _q.withTenant.Clone(),
-		withAlertDefinitions: _q.withAlertDefinitions.Clone(),
+	return &AlertEpisodeQuery{
+		config:              _q.config,
+		ctx:                 _q.ctx.Clone(),
+		order:               append([]alertepisode.OrderOption{}, _q.order...),
+		inters:              append([]Interceptor{}, _q.inters...),
+		predicates:          append([]predicate.AlertEpisode{}, _q.predicates...),
+		withTenant:          _q.withTenant.Clone(),
+		withAlertDefinition: _q.withAlertDefinition.Clone(),
+		withInstances:       _q.withInstances.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -320,7 +348,7 @@ func (_q *PlaybookQuery) Clone() *PlaybookQuery {
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *PlaybookQuery) WithTenant(opts ...func(*TenantQuery)) *PlaybookQuery {
+func (_q *AlertEpisodeQuery) WithTenant(opts ...func(*TenantQuery)) *AlertEpisodeQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -329,14 +357,25 @@ func (_q *PlaybookQuery) WithTenant(opts ...func(*TenantQuery)) *PlaybookQuery {
 	return _q
 }
 
-// WithAlertDefinitions tells the query-builder to eager-load the nodes that are connected to
-// the "alert_definitions" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *PlaybookQuery) WithAlertDefinitions(opts ...func(*AlertDefinitionQuery)) *PlaybookQuery {
+// WithAlertDefinition tells the query-builder to eager-load the nodes that are connected to
+// the "alert_definition" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AlertEpisodeQuery) WithAlertDefinition(opts ...func(*AlertDefinitionQuery)) *AlertEpisodeQuery {
 	query := (&AlertDefinitionClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withAlertDefinitions = query
+	_q.withAlertDefinition = query
+	return _q
+}
+
+// WithInstances tells the query-builder to eager-load the nodes that are connected to
+// the "instances" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AlertEpisodeQuery) WithInstances(opts ...func(*AlertInstanceQuery)) *AlertEpisodeQuery {
+	query := (&AlertInstanceClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withInstances = query
 	return _q
 }
 
@@ -350,15 +389,15 @@ func (_q *PlaybookQuery) WithAlertDefinitions(opts ...func(*AlertDefinitionQuery
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.Playbook.Query().
-//		GroupBy(playbook.FieldTenantID).
+//	client.AlertEpisode.Query().
+//		GroupBy(alertepisode.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *PlaybookQuery) GroupBy(field string, fields ...string) *PlaybookGroupBy {
+func (_q *AlertEpisodeQuery) GroupBy(field string, fields ...string) *AlertEpisodeGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &PlaybookGroupBy{build: _q}
+	grbuild := &AlertEpisodeGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = playbook.Label
+	grbuild.label = alertepisode.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -372,23 +411,23 @@ func (_q *PlaybookQuery) GroupBy(field string, fields ...string) *PlaybookGroupB
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.Playbook.Query().
-//		Select(playbook.FieldTenantID).
+//	client.AlertEpisode.Query().
+//		Select(alertepisode.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *PlaybookQuery) Select(fields ...string) *PlaybookSelect {
+func (_q *AlertEpisodeQuery) Select(fields ...string) *AlertEpisodeSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &PlaybookSelect{PlaybookQuery: _q}
-	sbuild.label = playbook.Label
+	sbuild := &AlertEpisodeSelect{AlertEpisodeQuery: _q}
+	sbuild.label = alertepisode.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a PlaybookSelect configured with the given aggregations.
-func (_q *PlaybookQuery) Aggregate(fns ...AggregateFunc) *PlaybookSelect {
+// Aggregate returns a AlertEpisodeSelect configured with the given aggregations.
+func (_q *AlertEpisodeQuery) Aggregate(fns ...AggregateFunc) *AlertEpisodeSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *PlaybookQuery) prepareQuery(ctx context.Context) error {
+func (_q *AlertEpisodeQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -400,7 +439,7 @@ func (_q *PlaybookQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !playbook.ValidColumn(f) {
+		if !alertepisode.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -411,34 +450,35 @@ func (_q *PlaybookQuery) prepareQuery(ctx context.Context) error {
 		}
 		_q.sql = prev
 	}
-	if playbook.Policy == nil {
-		return errors.New("ent: uninitialized playbook.Policy (forgotten import ent/runtime?)")
+	if alertepisode.Policy == nil {
+		return errors.New("ent: uninitialized alertepisode.Policy (forgotten import ent/runtime?)")
 	}
-	if err := playbook.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := alertepisode.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *PlaybookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Playbook, error) {
+func (_q *AlertEpisodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AlertEpisode, error) {
 	var (
-		nodes       = []*Playbook{}
+		nodes       = []*AlertEpisode{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
-			_q.withAlertDefinitions != nil,
+			_q.withAlertDefinition != nil,
+			_q.withInstances != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*Playbook).scanValues(nil, columns)
+		return (*AlertEpisode).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Playbook{config: _q.config}
+		node := &AlertEpisode{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.Playbook
+	_spec.Node.Schema = _q.schemaConfig.AlertEpisode
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -454,23 +494,29 @@ func (_q *PlaybookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pla
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *Playbook, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *AlertEpisode, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withAlertDefinitions; query != nil {
-		if err := _q.loadAlertDefinitions(ctx, query, nodes,
-			func(n *Playbook) { n.Edges.AlertDefinitions = []*AlertDefinition{} },
-			func(n *Playbook, e *AlertDefinition) { n.Edges.AlertDefinitions = append(n.Edges.AlertDefinitions, e) }); err != nil {
+	if query := _q.withAlertDefinition; query != nil {
+		if err := _q.loadAlertDefinition(ctx, query, nodes, nil,
+			func(n *AlertEpisode, e *AlertDefinition) { n.Edges.AlertDefinition = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withInstances; query != nil {
+		if err := _q.loadInstances(ctx, query, nodes,
+			func(n *AlertEpisode) { n.Edges.Instances = []*AlertInstance{} },
+			func(n *AlertEpisode, e *AlertInstance) { n.Edges.Instances = append(n.Edges.Instances, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *PlaybookQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Playbook, init func(*Playbook), assign func(*Playbook, *Tenant)) error {
+func (_q *AlertEpisodeQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*AlertEpisode, init func(*AlertEpisode), assign func(*AlertEpisode, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Playbook)
+	nodeids := make(map[int][]*AlertEpisode)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -497,72 +543,69 @@ func (_q *PlaybookQuery) loadTenant(ctx context.Context, query *TenantQuery, nod
 	}
 	return nil
 }
-func (_q *PlaybookQuery) loadAlertDefinitions(ctx context.Context, query *AlertDefinitionQuery, nodes []*Playbook, init func(*Playbook), assign func(*Playbook, *AlertDefinition)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Playbook)
-	nids := make(map[uuid.UUID]map[*Playbook]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
+func (_q *AlertEpisodeQuery) loadAlertDefinition(ctx context.Context, query *AlertDefinitionQuery, nodes []*AlertEpisode, init func(*AlertEpisode), assign func(*AlertEpisode, *AlertDefinition)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*AlertEpisode)
+	for i := range nodes {
+		fk := nodes[i].AlertDefinitionID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
 		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(playbook.AlertDefinitionsTable)
-		joinT.Schema(_q.schemaConfig.PlaybookAlertDefinitions)
-		s.Join(joinT).On(s.C(alertdefinition.FieldID), joinT.C(playbook.AlertDefinitionsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(playbook.AlertDefinitionsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(playbook.AlertDefinitionsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
+	if len(ids) == 0 {
+		return nil
 	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*Playbook]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*AlertDefinition](ctx, query, qr, query.inters)
+	query.Where(alertdefinition.IDIn(ids...))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "alert_definitions" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "alert_definition_id" returned %v`, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil
 }
+func (_q *AlertEpisodeQuery) loadInstances(ctx context.Context, query *AlertInstanceQuery, nodes []*AlertEpisode, init func(*AlertEpisode), assign func(*AlertEpisode, *AlertInstance)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*AlertEpisode)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(alertinstance.FieldAlertEpisodeID)
+	}
+	query.Where(predicate.AlertInstance(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(alertepisode.InstancesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AlertEpisodeID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "alert_episode_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
-func (_q *PlaybookQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *AlertEpisodeQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.Playbook
+	_spec.Node.Schema = _q.schemaConfig.AlertEpisode
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -574,8 +617,8 @@ func (_q *PlaybookQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *PlaybookQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(playbook.Table, playbook.Columns, sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID))
+func (_q *AlertEpisodeQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(alertepisode.Table, alertepisode.Columns, sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -584,14 +627,17 @@ func (_q *PlaybookQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, playbook.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, alertepisode.FieldID)
 		for i := range fields {
-			if fields[i] != playbook.FieldID {
+			if fields[i] != alertepisode.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(playbook.FieldTenantID)
+			_spec.Node.AddColumnOnce(alertepisode.FieldTenantID)
+		}
+		if _q.withAlertDefinition != nil {
+			_spec.Node.AddColumnOnce(alertepisode.FieldAlertDefinitionID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -617,12 +663,12 @@ func (_q *PlaybookQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *PlaybookQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *AlertEpisodeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(playbook.Table)
+	t1 := builder.Table(alertepisode.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = playbook.Columns
+		columns = alertepisode.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -632,7 +678,7 @@ func (_q *PlaybookQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.Playbook)
+	t1.Schema(_q.schemaConfig.AlertEpisode)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -656,33 +702,33 @@ func (_q *PlaybookQuery) sqlQuery(ctx context.Context) *sql.Selector {
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *PlaybookQuery) Modify(modifiers ...func(s *sql.Selector)) *PlaybookSelect {
+func (_q *AlertEpisodeQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertEpisodeSelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// PlaybookGroupBy is the group-by builder for Playbook entities.
-type PlaybookGroupBy struct {
+// AlertEpisodeGroupBy is the group-by builder for AlertEpisode entities.
+type AlertEpisodeGroupBy struct {
 	selector
-	build *PlaybookQuery
+	build *AlertEpisodeQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *PlaybookGroupBy) Aggregate(fns ...AggregateFunc) *PlaybookGroupBy {
+func (_g *AlertEpisodeGroupBy) Aggregate(fns ...AggregateFunc) *AlertEpisodeGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *PlaybookGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *AlertEpisodeGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*PlaybookQuery, *PlaybookGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*AlertEpisodeQuery, *AlertEpisodeGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *PlaybookGroupBy) sqlScan(ctx context.Context, root *PlaybookQuery, v any) error {
+func (_g *AlertEpisodeGroupBy) sqlScan(ctx context.Context, root *AlertEpisodeQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -709,28 +755,28 @@ func (_g *PlaybookGroupBy) sqlScan(ctx context.Context, root *PlaybookQuery, v a
 	return sql.ScanSlice(rows, v)
 }
 
-// PlaybookSelect is the builder for selecting fields of Playbook entities.
-type PlaybookSelect struct {
-	*PlaybookQuery
+// AlertEpisodeSelect is the builder for selecting fields of AlertEpisode entities.
+type AlertEpisodeSelect struct {
+	*AlertEpisodeQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *PlaybookSelect) Aggregate(fns ...AggregateFunc) *PlaybookSelect {
+func (_s *AlertEpisodeSelect) Aggregate(fns ...AggregateFunc) *AlertEpisodeSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *PlaybookSelect) Scan(ctx context.Context, v any) error {
+func (_s *AlertEpisodeSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*PlaybookQuery, *PlaybookSelect](ctx, _s.PlaybookQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*AlertEpisodeQuery, *AlertEpisodeSelect](ctx, _s.AlertEpisodeQuery, _s, _s.inters, v)
 }
 
-func (_s *PlaybookSelect) sqlScan(ctx context.Context, root *PlaybookQuery, v any) error {
+func (_s *AlertEpisodeSelect) sqlScan(ctx context.Context, root *AlertEpisodeQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -752,7 +798,7 @@ func (_s *PlaybookSelect) sqlScan(ctx context.Context, root *PlaybookQuery, v an
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *PlaybookSelect) Modify(modifiers ...func(s *sql.Selector)) *PlaybookSelect {
+func (_s *AlertEpisodeSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertEpisodeSelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

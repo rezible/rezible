@@ -710,8 +710,8 @@ type (
 	}
 
 	AlertService interface {
-		ListAlerts(context.Context, ListAlertsParams) (*ent.ListResult[ent.Alert], error)
-		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
+		ListAlerts(context.Context, ListAlertsParams) (*ent.ListResult[ent.AlertDefinition], error)
+		GetAlert(context.Context, uuid.UUID) (*ent.AlertDefinition, error)
 		GetAlertInstance(context.Context, uuid.UUID) (*ent.AlertInstance, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
 	}

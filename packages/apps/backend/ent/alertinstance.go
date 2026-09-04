@@ -9,8 +9,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -21,8 +22,10 @@ type AlertInstance struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// AlertID holds the value of the "alert_id" field.
-	AlertID uuid.UUID `json:"alert_id,omitempty"`
+	// AlertEpisodeID holds the value of the "alert_episode_id" field.
+	AlertEpisodeID uuid.UUID `json:"alert_episode_id,omitempty"`
+	// NormalizedEventID holds the value of the "normalized_event_id" field.
+	NormalizedEventID uuid.UUID `json:"normalized_event_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlertInstanceQuery when eager-loading is set.
 	Edges        AlertInstanceEdges `json:"edges"`
@@ -33,13 +36,15 @@ type AlertInstance struct {
 type AlertInstanceEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// Alert holds the value of the alert edge.
-	Alert *Alert `json:"alert,omitempty"`
+	// Episode holds the value of the episode edge.
+	Episode *AlertEpisode `json:"episode,omitempty"`
+	// Event holds the value of the event edge.
+	Event *NormalizedEvent `json:"event,omitempty"`
 	// Feedback holds the value of the feedback edge.
 	Feedback []*AlertFeedback `json:"feedback,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -53,21 +58,32 @@ func (e AlertInstanceEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AlertOrErr returns the Alert value or an error if the edge
+// EpisodeOrErr returns the Episode value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AlertInstanceEdges) AlertOrErr() (*Alert, error) {
-	if e.Alert != nil {
-		return e.Alert, nil
+func (e AlertInstanceEdges) EpisodeOrErr() (*AlertEpisode, error) {
+	if e.Episode != nil {
+		return e.Episode, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: alert.Label}
+		return nil, &NotFoundError{label: alertepisode.Label}
 	}
-	return nil, &NotLoadedError{edge: "alert"}
+	return nil, &NotLoadedError{edge: "episode"}
+}
+
+// EventOrErr returns the Event value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AlertInstanceEdges) EventOrErr() (*NormalizedEvent, error) {
+	if e.Event != nil {
+		return e.Event, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: normalizedevent.Label}
+	}
+	return nil, &NotLoadedError{edge: "event"}
 }
 
 // FeedbackOrErr returns the Feedback value or an error if the edge
 // was not loaded in eager-loading.
 func (e AlertInstanceEdges) FeedbackOrErr() ([]*AlertFeedback, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Feedback, nil
 	}
 	return nil, &NotLoadedError{edge: "feedback"}
@@ -80,7 +96,7 @@ func (*AlertInstance) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case alertinstance.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case alertinstance.FieldID, alertinstance.FieldAlertID:
+		case alertinstance.FieldID, alertinstance.FieldAlertEpisodeID, alertinstance.FieldNormalizedEventID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -109,11 +125,17 @@ func (_m *AlertInstance) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case alertinstance.FieldAlertID:
+		case alertinstance.FieldAlertEpisodeID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field alert_id", values[i])
+				return fmt.Errorf("unexpected type %T for field alert_episode_id", values[i])
 			} else if value != nil {
-				_m.AlertID = *value
+				_m.AlertEpisodeID = *value
+			}
+		case alertinstance.FieldNormalizedEventID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field normalized_event_id", values[i])
+			} else if value != nil {
+				_m.NormalizedEventID = *value
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -133,9 +155,14 @@ func (_m *AlertInstance) QueryTenant() *TenantQuery {
 	return NewAlertInstanceClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAlert queries the "alert" edge of the AlertInstance entity.
-func (_m *AlertInstance) QueryAlert() *AlertQuery {
-	return NewAlertInstanceClient(_m.config).QueryAlert(_m)
+// QueryEpisode queries the "episode" edge of the AlertInstance entity.
+func (_m *AlertInstance) QueryEpisode() *AlertEpisodeQuery {
+	return NewAlertInstanceClient(_m.config).QueryEpisode(_m)
+}
+
+// QueryEvent queries the "event" edge of the AlertInstance entity.
+func (_m *AlertInstance) QueryEvent() *NormalizedEventQuery {
+	return NewAlertInstanceClient(_m.config).QueryEvent(_m)
 }
 
 // QueryFeedback queries the "feedback" edge of the AlertInstance entity.
@@ -169,8 +196,11 @@ func (_m *AlertInstance) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("alert_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.AlertID))
+	builder.WriteString("alert_episode_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AlertEpisodeID))
+	builder.WriteString(", ")
+	builder.WriteString("normalized_event_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NormalizedEventID))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -45,14 +45,20 @@ func (s *InvestigationService) CreateAlertInvestigation(ctx context.Context, ins
 	return investigation, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		queryInstance := tx.AlertInstance.Query().
 			Where(alertinstance.ID(instanceId)).
-			WithAlert()
+			WithEpisode(func(query *ent.AlertEpisodeQuery) {
+				query.WithAlertDefinition()
+			})
 		instance, instanceErr := queryInstance.Only(ctx)
 		if instanceErr != nil {
 			return fmt.Errorf("get alert instance: %w", instanceErr)
 		}
-		alrt, alertErr := instance.Edges.AlertOrErr()
+		episode, episodeErr := instance.Edges.EpisodeOrErr()
+		if episodeErr != nil {
+			return fmt.Errorf("get alert episode: %w", episodeErr)
+		}
+		alrt, alertErr := episode.Edges.AlertDefinitionOrErr()
 		if alertErr != nil {
-			return fmt.Errorf("get alert: %w", alertErr)
+			return fmt.Errorf("get alert definition: %w", alertErr)
 		}
 		if alrt.KnowledgeEntityID == nil || *alrt.KnowledgeEntityID == uuid.Nil {
 			return fmt.Errorf("%w: alert has no knowledge entity", rez.ErrInvalidInput)

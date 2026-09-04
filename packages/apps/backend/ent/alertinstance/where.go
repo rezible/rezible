@@ -60,9 +60,14 @@ func TenantID(v int) predicate.AlertInstance {
 	return predicate.AlertInstance(sql.FieldEQ(FieldTenantID, v))
 }
 
-// AlertID applies equality check predicate on the "alert_id" field. It's identical to AlertIDEQ.
-func AlertID(v uuid.UUID) predicate.AlertInstance {
-	return predicate.AlertInstance(sql.FieldEQ(FieldAlertID, v))
+// AlertEpisodeID applies equality check predicate on the "alert_episode_id" field. It's identical to AlertEpisodeIDEQ.
+func AlertEpisodeID(v uuid.UUID) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldAlertEpisodeID, v))
+}
+
+// NormalizedEventID applies equality check predicate on the "normalized_event_id" field. It's identical to NormalizedEventIDEQ.
+func NormalizedEventID(v uuid.UUID) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldNormalizedEventID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -85,24 +90,44 @@ func TenantIDNotIn(vs ...int) predicate.AlertInstance {
 	return predicate.AlertInstance(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
-// AlertIDEQ applies the EQ predicate on the "alert_id" field.
-func AlertIDEQ(v uuid.UUID) predicate.AlertInstance {
-	return predicate.AlertInstance(sql.FieldEQ(FieldAlertID, v))
+// AlertEpisodeIDEQ applies the EQ predicate on the "alert_episode_id" field.
+func AlertEpisodeIDEQ(v uuid.UUID) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldAlertEpisodeID, v))
 }
 
-// AlertIDNEQ applies the NEQ predicate on the "alert_id" field.
-func AlertIDNEQ(v uuid.UUID) predicate.AlertInstance {
-	return predicate.AlertInstance(sql.FieldNEQ(FieldAlertID, v))
+// AlertEpisodeIDNEQ applies the NEQ predicate on the "alert_episode_id" field.
+func AlertEpisodeIDNEQ(v uuid.UUID) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldAlertEpisodeID, v))
 }
 
-// AlertIDIn applies the In predicate on the "alert_id" field.
-func AlertIDIn(vs ...uuid.UUID) predicate.AlertInstance {
-	return predicate.AlertInstance(sql.FieldIn(FieldAlertID, vs...))
+// AlertEpisodeIDIn applies the In predicate on the "alert_episode_id" field.
+func AlertEpisodeIDIn(vs ...uuid.UUID) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldAlertEpisodeID, vs...))
 }
 
-// AlertIDNotIn applies the NotIn predicate on the "alert_id" field.
-func AlertIDNotIn(vs ...uuid.UUID) predicate.AlertInstance {
-	return predicate.AlertInstance(sql.FieldNotIn(FieldAlertID, vs...))
+// AlertEpisodeIDNotIn applies the NotIn predicate on the "alert_episode_id" field.
+func AlertEpisodeIDNotIn(vs ...uuid.UUID) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldAlertEpisodeID, vs...))
+}
+
+// NormalizedEventIDEQ applies the EQ predicate on the "normalized_event_id" field.
+func NormalizedEventIDEQ(v uuid.UUID) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldNormalizedEventID, v))
+}
+
+// NormalizedEventIDNEQ applies the NEQ predicate on the "normalized_event_id" field.
+func NormalizedEventIDNEQ(v uuid.UUID) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldNormalizedEventID, v))
+}
+
+// NormalizedEventIDIn applies the In predicate on the "normalized_event_id" field.
+func NormalizedEventIDIn(vs ...uuid.UUID) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldNormalizedEventID, vs...))
+}
+
+// NormalizedEventIDNotIn applies the NotIn predicate on the "normalized_event_id" field.
+func NormalizedEventIDNotIn(vs ...uuid.UUID) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldNormalizedEventID, vs...))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -134,26 +159,55 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.AlertInstance {
 	})
 }
 
-// HasAlert applies the HasEdge predicate on the "alert" edge.
-func HasAlert() predicate.AlertInstance {
+// HasEpisode applies the HasEdge predicate on the "episode" edge.
+func HasEpisode() predicate.AlertInstance {
 	return predicate.AlertInstance(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, AlertTable, AlertColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, EpisodeTable, EpisodeColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Alert
+		step.To.Schema = schemaConfig.AlertEpisode
 		step.Edge.Schema = schemaConfig.AlertInstance
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAlertWith applies the HasEdge predicate on the "alert" edge with a given conditions (other predicates).
-func HasAlertWith(preds ...predicate.Alert) predicate.AlertInstance {
+// HasEpisodeWith applies the HasEdge predicate on the "episode" edge with a given conditions (other predicates).
+func HasEpisodeWith(preds ...predicate.AlertEpisode) predicate.AlertInstance {
 	return predicate.AlertInstance(func(s *sql.Selector) {
-		step := newAlertStep()
+		step := newEpisodeStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Alert
+		step.To.Schema = schemaConfig.AlertEpisode
+		step.Edge.Schema = schemaConfig.AlertInstance
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasEvent applies the HasEdge predicate on the "event" edge.
+func HasEvent() predicate.AlertInstance {
+	return predicate.AlertInstance(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.AlertInstance
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEventWith applies the HasEdge predicate on the "event" edge with a given conditions (other predicates).
+func HasEventWith(preds ...predicate.NormalizedEvent) predicate.AlertInstance {
+	return predicate.AlertInstance(func(s *sql.Selector) {
+		step := newEventStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.AlertInstance
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

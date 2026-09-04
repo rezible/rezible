@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/internal"
@@ -32,25 +31,6 @@ func (_u *AlertInstanceUpdate) Where(ps ...predicate.AlertInstance) *AlertInstan
 	return _u
 }
 
-// SetAlertID sets the "alert_id" field.
-func (_u *AlertInstanceUpdate) SetAlertID(v uuid.UUID) *AlertInstanceUpdate {
-	_u.mutation.SetAlertID(v)
-	return _u
-}
-
-// SetNillableAlertID sets the "alert_id" field if the given value is not nil.
-func (_u *AlertInstanceUpdate) SetNillableAlertID(v *uuid.UUID) *AlertInstanceUpdate {
-	if v != nil {
-		_u.SetAlertID(*v)
-	}
-	return _u
-}
-
-// SetAlert sets the "alert" edge to the Alert entity.
-func (_u *AlertInstanceUpdate) SetAlert(v *Alert) *AlertInstanceUpdate {
-	return _u.SetAlertID(v.ID)
-}
-
 // AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
 func (_u *AlertInstanceUpdate) AddFeedbackIDs(ids ...uuid.UUID) *AlertInstanceUpdate {
 	_u.mutation.AddFeedbackIDs(ids...)
@@ -69,12 +49,6 @@ func (_u *AlertInstanceUpdate) AddFeedback(v ...*AlertFeedback) *AlertInstanceUp
 // Mutation returns the AlertInstanceMutation object of the builder.
 func (_u *AlertInstanceUpdate) Mutation() *AlertInstanceMutation {
 	return _u.mutation
-}
-
-// ClearAlert clears the "alert" edge to the Alert entity.
-func (_u *AlertInstanceUpdate) ClearAlert() *AlertInstanceUpdate {
-	_u.mutation.ClearAlert()
-	return _u
 }
 
 // ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
@@ -130,8 +104,11 @@ func (_u *AlertInstanceUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.tenant"`)
 	}
-	if _u.mutation.AlertCleared() && len(_u.mutation.AlertIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AlertInstance.alert"`)
+	if _u.mutation.EpisodeCleared() && len(_u.mutation.EpisodeIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertInstance.episode"`)
+	}
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertInstance.event"`)
 	}
 	return nil
 }
@@ -153,37 +130,6 @@ func (_u *AlertInstanceUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				ps[i](selector)
 			}
 		}
-	}
-	if _u.mutation.AlertCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alertinstance.AlertTable,
-			Columns: []string{alertinstance.AlertColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertInstance
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AlertIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alertinstance.AlertTable,
-			Columns: []string{alertinstance.AlertColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertInstance
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -257,25 +203,6 @@ type AlertInstanceUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetAlertID sets the "alert_id" field.
-func (_u *AlertInstanceUpdateOne) SetAlertID(v uuid.UUID) *AlertInstanceUpdateOne {
-	_u.mutation.SetAlertID(v)
-	return _u
-}
-
-// SetNillableAlertID sets the "alert_id" field if the given value is not nil.
-func (_u *AlertInstanceUpdateOne) SetNillableAlertID(v *uuid.UUID) *AlertInstanceUpdateOne {
-	if v != nil {
-		_u.SetAlertID(*v)
-	}
-	return _u
-}
-
-// SetAlert sets the "alert" edge to the Alert entity.
-func (_u *AlertInstanceUpdateOne) SetAlert(v *Alert) *AlertInstanceUpdateOne {
-	return _u.SetAlertID(v.ID)
-}
-
 // AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
 func (_u *AlertInstanceUpdateOne) AddFeedbackIDs(ids ...uuid.UUID) *AlertInstanceUpdateOne {
 	_u.mutation.AddFeedbackIDs(ids...)
@@ -294,12 +221,6 @@ func (_u *AlertInstanceUpdateOne) AddFeedback(v ...*AlertFeedback) *AlertInstanc
 // Mutation returns the AlertInstanceMutation object of the builder.
 func (_u *AlertInstanceUpdateOne) Mutation() *AlertInstanceMutation {
 	return _u.mutation
-}
-
-// ClearAlert clears the "alert" edge to the Alert entity.
-func (_u *AlertInstanceUpdateOne) ClearAlert() *AlertInstanceUpdateOne {
-	_u.mutation.ClearAlert()
-	return _u
 }
 
 // ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
@@ -368,8 +289,11 @@ func (_u *AlertInstanceUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.tenant"`)
 	}
-	if _u.mutation.AlertCleared() && len(_u.mutation.AlertIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AlertInstance.alert"`)
+	if _u.mutation.EpisodeCleared() && len(_u.mutation.EpisodeIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertInstance.episode"`)
+	}
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertInstance.event"`)
 	}
 	return nil
 }
@@ -408,37 +332,6 @@ func (_u *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertInst
 				ps[i](selector)
 			}
 		}
-	}
-	if _u.mutation.AlertCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alertinstance.AlertTable,
-			Columns: []string{alertinstance.AlertColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertInstance
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AlertIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alertinstance.AlertTable,
-			Columns: []string{alertinstance.AlertColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertInstance
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{

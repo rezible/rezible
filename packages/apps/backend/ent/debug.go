@@ -44,12 +44,20 @@ func (c *AgentTurnClient) Debug() *AgentTurnClient {
 	return &AgentTurnClient{config: cfg}
 }
 
-func (c *AlertClient) Debug() *AlertClient {
+func (c *AlertDefinitionClient) Debug() *AlertDefinitionClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AlertClient{config: cfg}
+	return &AlertDefinitionClient{config: cfg}
+}
+
+func (c *AlertEpisodeClient) Debug() *AlertEpisodeClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AlertEpisodeClient{config: cfg}
 }
 
 func (c *AlertFeedbackClient) Debug() *AlertFeedbackClient {

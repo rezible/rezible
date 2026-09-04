@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/alertinstance"
 )
 
@@ -21,25 +21,27 @@ func NewAlertService(db rez.Database) (*AlertService, error) {
 	return s, nil
 }
 
-func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsParams) (*ent.ListResult[ent.Alert], error) {
-	query := s.db.Client(ctx).Alert.Query().
-		Order(alert.ByID(params.GetOrder()))
+func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsParams) (*ent.ListResult[ent.AlertDefinition], error) {
+	query := s.db.Client(ctx).AlertDefinition.Query().
+		Order(alertdefinition.ByID(params.GetOrder()))
 	if search := strings.TrimSpace(params.Search); search != "" {
-		query.Where(alert.TitleContainsFold(search))
+		query.Where(alertdefinition.TitleContainsFold(search))
 	}
-	return ent.DoListQuery[ent.Alert, *ent.AlertQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[ent.AlertDefinition, *ent.AlertDefinitionQuery](ctx, query, params.ListParams)
 }
 
-func (s *AlertService) GetAlert(ctx context.Context, id uuid.UUID) (*ent.Alert, error) {
-	query := s.db.Client(ctx).Alert.Query().
-		Where(alert.ID(id))
+func (s *AlertService) GetAlert(ctx context.Context, id uuid.UUID) (*ent.AlertDefinition, error) {
+	query := s.db.Client(ctx).AlertDefinition.Query().
+		Where(alertdefinition.ID(id))
 	return query.Only(ctx)
 }
 
 func (s *AlertService) GetAlertInstance(ctx context.Context, id uuid.UUID) (*ent.AlertInstance, error) {
 	query := s.db.Client(ctx).AlertInstance.Query().
 		Where(alertinstance.ID(id)).
-		WithAlert()
+		WithEpisode(func(query *ent.AlertEpisodeQuery) {
+			query.WithAlertDefinition()
+		})
 	return query.Only(ctx)
 }
 

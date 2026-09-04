@@ -12,9 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -32,9 +33,15 @@ func (_c *AlertInstanceCreate) SetTenantID(v int) *AlertInstanceCreate {
 	return _c
 }
 
-// SetAlertID sets the "alert_id" field.
-func (_c *AlertInstanceCreate) SetAlertID(v uuid.UUID) *AlertInstanceCreate {
-	_c.mutation.SetAlertID(v)
+// SetAlertEpisodeID sets the "alert_episode_id" field.
+func (_c *AlertInstanceCreate) SetAlertEpisodeID(v uuid.UUID) *AlertInstanceCreate {
+	_c.mutation.SetAlertEpisodeID(v)
+	return _c
+}
+
+// SetNormalizedEventID sets the "normalized_event_id" field.
+func (_c *AlertInstanceCreate) SetNormalizedEventID(v uuid.UUID) *AlertInstanceCreate {
+	_c.mutation.SetNormalizedEventID(v)
 	return _c
 }
 
@@ -57,9 +64,26 @@ func (_c *AlertInstanceCreate) SetTenant(v *Tenant) *AlertInstanceCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetAlert sets the "alert" edge to the Alert entity.
-func (_c *AlertInstanceCreate) SetAlert(v *Alert) *AlertInstanceCreate {
-	return _c.SetAlertID(v.ID)
+// SetEpisodeID sets the "episode" edge to the AlertEpisode entity by ID.
+func (_c *AlertInstanceCreate) SetEpisodeID(id uuid.UUID) *AlertInstanceCreate {
+	_c.mutation.SetEpisodeID(id)
+	return _c
+}
+
+// SetEpisode sets the "episode" edge to the AlertEpisode entity.
+func (_c *AlertInstanceCreate) SetEpisode(v *AlertEpisode) *AlertInstanceCreate {
+	return _c.SetEpisodeID(v.ID)
+}
+
+// SetEventID sets the "event" edge to the NormalizedEvent entity by ID.
+func (_c *AlertInstanceCreate) SetEventID(id uuid.UUID) *AlertInstanceCreate {
+	_c.mutation.SetEventID(id)
+	return _c
+}
+
+// SetEvent sets the "event" edge to the NormalizedEvent entity.
+func (_c *AlertInstanceCreate) SetEvent(v *NormalizedEvent) *AlertInstanceCreate {
+	return _c.SetEventID(v.ID)
 }
 
 // AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
@@ -129,14 +153,20 @@ func (_c *AlertInstanceCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "AlertInstance.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.AlertID(); !ok {
-		return &ValidationError{Name: "alert_id", err: errors.New(`ent: missing required field "AlertInstance.alert_id"`)}
+	if _, ok := _c.mutation.AlertEpisodeID(); !ok {
+		return &ValidationError{Name: "alert_episode_id", err: errors.New(`ent: missing required field "AlertInstance.alert_episode_id"`)}
+	}
+	if _, ok := _c.mutation.NormalizedEventID(); !ok {
+		return &ValidationError{Name: "normalized_event_id", err: errors.New(`ent: missing required field "AlertInstance.normalized_event_id"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertInstance.tenant"`)}
 	}
-	if len(_c.mutation.AlertIDs()) == 0 {
-		return &ValidationError{Name: "alert", err: errors.New(`ent: missing required edge "AlertInstance.alert"`)}
+	if len(_c.mutation.EpisodeIDs()) == 0 {
+		return &ValidationError{Name: "episode", err: errors.New(`ent: missing required edge "AlertInstance.episode"`)}
+	}
+	if len(_c.mutation.EventIDs()) == 0 {
+		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "AlertInstance.event"`)}
 	}
 	return nil
 }
@@ -193,22 +223,40 @@ func (_c *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSpe
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AlertIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EpisodeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   alertinstance.AlertTable,
-			Columns: []string{alertinstance.AlertColumn},
+			Table:   alertinstance.EpisodeTable,
+			Columns: []string{alertinstance.EpisodeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.AlertID = nodes[0]
+		_node.AlertEpisodeID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.EventIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertinstance.EventTable,
+			Columns: []string{alertinstance.EventColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AlertInstance
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.NormalizedEventID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.FeedbackIDs(); len(nodes) > 0 {
@@ -280,18 +328,6 @@ type (
 	}
 )
 
-// SetAlertID sets the "alert_id" field.
-func (u *AlertInstanceUpsert) SetAlertID(v uuid.UUID) *AlertInstanceUpsert {
-	u.Set(alertinstance.FieldAlertID, v)
-	return u
-}
-
-// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
-func (u *AlertInstanceUpsert) UpdateAlertID() *AlertInstanceUpsert {
-	u.SetExcluded(alertinstance.FieldAlertID)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -311,6 +347,12 @@ func (u *AlertInstanceUpsertOne) UpdateNewValues() *AlertInstanceUpsertOne {
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(alertinstance.FieldTenantID)
+		}
+		if _, exists := u.create.mutation.AlertEpisodeID(); exists {
+			s.SetIgnore(alertinstance.FieldAlertEpisodeID)
+		}
+		if _, exists := u.create.mutation.NormalizedEventID(); exists {
+			s.SetIgnore(alertinstance.FieldNormalizedEventID)
 		}
 	}))
 	return u
@@ -341,20 +383,6 @@ func (u *AlertInstanceUpsertOne) Update(set func(*AlertInstanceUpsert)) *AlertIn
 		set(&AlertInstanceUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetAlertID sets the "alert_id" field.
-func (u *AlertInstanceUpsertOne) SetAlertID(v uuid.UUID) *AlertInstanceUpsertOne {
-	return u.Update(func(s *AlertInstanceUpsert) {
-		s.SetAlertID(v)
-	})
-}
-
-// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
-func (u *AlertInstanceUpsertOne) UpdateAlertID() *AlertInstanceUpsertOne {
-	return u.Update(func(s *AlertInstanceUpsert) {
-		s.UpdateAlertID()
-	})
 }
 
 // Exec executes the query.
@@ -543,6 +571,12 @@ func (u *AlertInstanceUpsertBulk) UpdateNewValues() *AlertInstanceUpsertBulk {
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(alertinstance.FieldTenantID)
 			}
+			if _, exists := b.mutation.AlertEpisodeID(); exists {
+				s.SetIgnore(alertinstance.FieldAlertEpisodeID)
+			}
+			if _, exists := b.mutation.NormalizedEventID(); exists {
+				s.SetIgnore(alertinstance.FieldNormalizedEventID)
+			}
 		}
 	}))
 	return u
@@ -573,20 +607,6 @@ func (u *AlertInstanceUpsertBulk) Update(set func(*AlertInstanceUpsert)) *AlertI
 		set(&AlertInstanceUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetAlertID sets the "alert_id" field.
-func (u *AlertInstanceUpsertBulk) SetAlertID(v uuid.UUID) *AlertInstanceUpsertBulk {
-	return u.Update(func(s *AlertInstanceUpsert) {
-		s.SetAlertID(v)
-	})
-}
-
-// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
-func (u *AlertInstanceUpsertBulk) UpdateAlertID() *AlertInstanceUpsertBulk {
-	return u.Update(func(s *AlertInstanceUpsert) {
-		s.UpdateAlertID()
-	})
 }
 
 // Exec executes the query.

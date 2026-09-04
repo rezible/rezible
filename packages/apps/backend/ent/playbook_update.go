@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
@@ -51,19 +51,19 @@ func (_u *PlaybookUpdate) SetContent(v []byte) *PlaybookUpdate {
 	return _u
 }
 
-// AddAlertIDs adds the "alerts" edge to the Alert entity by IDs.
-func (_u *PlaybookUpdate) AddAlertIDs(ids ...uuid.UUID) *PlaybookUpdate {
-	_u.mutation.AddAlertIDs(ids...)
+// AddAlertDefinitionIDs adds the "alert_definitions" edge to the AlertDefinition entity by IDs.
+func (_u *PlaybookUpdate) AddAlertDefinitionIDs(ids ...uuid.UUID) *PlaybookUpdate {
+	_u.mutation.AddAlertDefinitionIDs(ids...)
 	return _u
 }
 
-// AddAlerts adds the "alerts" edges to the Alert entity.
-func (_u *PlaybookUpdate) AddAlerts(v ...*Alert) *PlaybookUpdate {
+// AddAlertDefinitions adds the "alert_definitions" edges to the AlertDefinition entity.
+func (_u *PlaybookUpdate) AddAlertDefinitions(v ...*AlertDefinition) *PlaybookUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddAlertIDs(ids...)
+	return _u.AddAlertDefinitionIDs(ids...)
 }
 
 // Mutation returns the PlaybookMutation object of the builder.
@@ -71,25 +71,25 @@ func (_u *PlaybookUpdate) Mutation() *PlaybookMutation {
 	return _u.mutation
 }
 
-// ClearAlerts clears all "alerts" edges to the Alert entity.
-func (_u *PlaybookUpdate) ClearAlerts() *PlaybookUpdate {
-	_u.mutation.ClearAlerts()
+// ClearAlertDefinitions clears all "alert_definitions" edges to the AlertDefinition entity.
+func (_u *PlaybookUpdate) ClearAlertDefinitions() *PlaybookUpdate {
+	_u.mutation.ClearAlertDefinitions()
 	return _u
 }
 
-// RemoveAlertIDs removes the "alerts" edge to Alert entities by IDs.
-func (_u *PlaybookUpdate) RemoveAlertIDs(ids ...uuid.UUID) *PlaybookUpdate {
-	_u.mutation.RemoveAlertIDs(ids...)
+// RemoveAlertDefinitionIDs removes the "alert_definitions" edge to AlertDefinition entities by IDs.
+func (_u *PlaybookUpdate) RemoveAlertDefinitionIDs(ids ...uuid.UUID) *PlaybookUpdate {
+	_u.mutation.RemoveAlertDefinitionIDs(ids...)
 	return _u
 }
 
-// RemoveAlerts removes "alerts" edges to Alert entities.
-func (_u *PlaybookUpdate) RemoveAlerts(v ...*Alert) *PlaybookUpdate {
+// RemoveAlertDefinitions removes "alert_definitions" edges to AlertDefinition entities.
+func (_u *PlaybookUpdate) RemoveAlertDefinitions(v ...*AlertDefinition) *PlaybookUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveAlertIDs(ids...)
+	return _u.RemoveAlertDefinitionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -151,49 +151,49 @@ func (_u *PlaybookUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(playbook.FieldContent, field.TypeBytes, value)
 	}
-	if _u.mutation.AlertsCleared() {
+	if _u.mutation.AlertDefinitionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   playbook.AlertsTable,
-			Columns: playbook.AlertsPrimaryKey,
+			Table:   playbook.AlertDefinitionsTable,
+			Columns: playbook.AlertDefinitionsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertdefinition.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !_u.mutation.AlertsCleared() {
+	if nodes := _u.mutation.RemovedAlertDefinitionsIDs(); len(nodes) > 0 && !_u.mutation.AlertDefinitionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   playbook.AlertsTable,
-			Columns: playbook.AlertsPrimaryKey,
+			Table:   playbook.AlertDefinitionsTable,
+			Columns: playbook.AlertDefinitionsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertdefinition.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AlertsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AlertDefinitionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   playbook.AlertsTable,
-			Columns: playbook.AlertsPrimaryKey,
+			Table:   playbook.AlertDefinitionsTable,
+			Columns: playbook.AlertDefinitionsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertdefinition.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -243,19 +243,19 @@ func (_u *PlaybookUpdateOne) SetContent(v []byte) *PlaybookUpdateOne {
 	return _u
 }
 
-// AddAlertIDs adds the "alerts" edge to the Alert entity by IDs.
-func (_u *PlaybookUpdateOne) AddAlertIDs(ids ...uuid.UUID) *PlaybookUpdateOne {
-	_u.mutation.AddAlertIDs(ids...)
+// AddAlertDefinitionIDs adds the "alert_definitions" edge to the AlertDefinition entity by IDs.
+func (_u *PlaybookUpdateOne) AddAlertDefinitionIDs(ids ...uuid.UUID) *PlaybookUpdateOne {
+	_u.mutation.AddAlertDefinitionIDs(ids...)
 	return _u
 }
 
-// AddAlerts adds the "alerts" edges to the Alert entity.
-func (_u *PlaybookUpdateOne) AddAlerts(v ...*Alert) *PlaybookUpdateOne {
+// AddAlertDefinitions adds the "alert_definitions" edges to the AlertDefinition entity.
+func (_u *PlaybookUpdateOne) AddAlertDefinitions(v ...*AlertDefinition) *PlaybookUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddAlertIDs(ids...)
+	return _u.AddAlertDefinitionIDs(ids...)
 }
 
 // Mutation returns the PlaybookMutation object of the builder.
@@ -263,25 +263,25 @@ func (_u *PlaybookUpdateOne) Mutation() *PlaybookMutation {
 	return _u.mutation
 }
 
-// ClearAlerts clears all "alerts" edges to the Alert entity.
-func (_u *PlaybookUpdateOne) ClearAlerts() *PlaybookUpdateOne {
-	_u.mutation.ClearAlerts()
+// ClearAlertDefinitions clears all "alert_definitions" edges to the AlertDefinition entity.
+func (_u *PlaybookUpdateOne) ClearAlertDefinitions() *PlaybookUpdateOne {
+	_u.mutation.ClearAlertDefinitions()
 	return _u
 }
 
-// RemoveAlertIDs removes the "alerts" edge to Alert entities by IDs.
-func (_u *PlaybookUpdateOne) RemoveAlertIDs(ids ...uuid.UUID) *PlaybookUpdateOne {
-	_u.mutation.RemoveAlertIDs(ids...)
+// RemoveAlertDefinitionIDs removes the "alert_definitions" edge to AlertDefinition entities by IDs.
+func (_u *PlaybookUpdateOne) RemoveAlertDefinitionIDs(ids ...uuid.UUID) *PlaybookUpdateOne {
+	_u.mutation.RemoveAlertDefinitionIDs(ids...)
 	return _u
 }
 
-// RemoveAlerts removes "alerts" edges to Alert entities.
-func (_u *PlaybookUpdateOne) RemoveAlerts(v ...*Alert) *PlaybookUpdateOne {
+// RemoveAlertDefinitions removes "alert_definitions" edges to AlertDefinition entities.
+func (_u *PlaybookUpdateOne) RemoveAlertDefinitions(v ...*AlertDefinition) *PlaybookUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveAlertIDs(ids...)
+	return _u.RemoveAlertDefinitionIDs(ids...)
 }
 
 // Where appends a list predicates to the PlaybookUpdate builder.
@@ -373,49 +373,49 @@ func (_u *PlaybookUpdateOne) sqlSave(ctx context.Context) (_node *Playbook, err 
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(playbook.FieldContent, field.TypeBytes, value)
 	}
-	if _u.mutation.AlertsCleared() {
+	if _u.mutation.AlertDefinitionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   playbook.AlertsTable,
-			Columns: playbook.AlertsPrimaryKey,
+			Table:   playbook.AlertDefinitionsTable,
+			Columns: playbook.AlertDefinitionsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertdefinition.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !_u.mutation.AlertsCleared() {
+	if nodes := _u.mutation.RemovedAlertDefinitionsIDs(); len(nodes) > 0 && !_u.mutation.AlertDefinitionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   playbook.AlertsTable,
-			Columns: playbook.AlertsPrimaryKey,
+			Table:   playbook.AlertDefinitionsTable,
+			Columns: playbook.AlertDefinitionsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertdefinition.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AlertsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AlertDefinitionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   playbook.AlertsTable,
-			Columns: playbook.AlertsPrimaryKey,
+			Table:   playbook.AlertDefinitionsTable,
+			Columns: playbook.AlertDefinitionsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertdefinition.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.PlaybookAlerts
+		edge.Schema = _u.schemaConfig.PlaybookAlertDefinitions
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

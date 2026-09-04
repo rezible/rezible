@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -9,11 +10,11 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
-type Alert struct {
+type AlertDefinition struct {
 	ent.Schema
 }
 
-func (Alert) Mixin() []ent.Mixin {
+func (AlertDefinition) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
@@ -21,7 +22,7 @@ func (Alert) Mixin() []ent.Mixin {
 	}
 }
 
-func (Alert) Fields() []ent.Field {
+func (AlertDefinition) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("title"),
@@ -30,11 +31,10 @@ func (Alert) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Alert.
-func (Alert) Edges() []ent.Edge {
+func (AlertDefinition) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("playbooks", Playbook.Type).Ref("alerts"),
-		edge.To("instances", AlertInstance.Type),
+		edge.From("playbooks", Playbook.Type).Ref("alert_definitions"),
+		edge.To("episodes", AlertEpisode.Type),
 	}
 }
 
@@ -52,19 +52,75 @@ func (AlertInstance) Mixin() []ent.Mixin {
 func (AlertInstance) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.UUID("alert_id", uuid.UUID{}),
+		field.UUID("alert_episode_id", uuid.UUID{}).Immutable(),
+		field.UUID("normalized_event_id", uuid.UUID{}).Immutable(),
 	}
 }
 
 func (AlertInstance) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("alert", Alert.Type).
+		edge.From("episode", AlertEpisode.Type).
 			Required().
 			Unique().
-			Field("alert_id").
+			Immutable().
+			Field("alert_episode_id").
 			Ref("instances"),
+		edge.To("event", NormalizedEvent.Type).
+			Required().
+			Unique().
+			Immutable().
+			Field("normalized_event_id"),
 		edge.From("feedback", AlertFeedback.Type).
 			Ref("alert_instance"),
+	}
+}
+
+func (AlertInstance) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "normalized_event_id").Unique(),
+	}
+}
+
+type AlertEpisode struct {
+	ent.Schema
+}
+
+func (AlertEpisode) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+		TimestampsMixin{},
+	}
+}
+
+func (AlertEpisode) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.New()).Default(uuid.New),
+		field.UUID("alert_definition_id", uuid.UUID{}).Immutable(),
+		field.Enum("status").Values("open", "closed").Default("open"),
+		field.Time("started_at"),
+		field.Time("last_observed_at"),
+		field.Time("closed_at").Optional().Nillable(),
+	}
+}
+
+func (AlertEpisode) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("alert_definition", AlertDefinition.Type).
+			Ref("episodes").
+			Required().
+			Unique().
+			Immutable().
+			Field("alert_definition_id"),
+		edge.To("instances", AlertInstance.Type),
+	}
+}
+
+func (AlertEpisode) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "alert_definition_id").
+			Unique().
+			Annotations(entsql.IndexWhere("status = 'open'")),
 	}
 }
 

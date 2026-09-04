@@ -5182,23 +5182,23 @@ func (_m *MockAlertService) EXPECT() *MockAlertService_Expecter {
 }
 
 // GetAlert provides a mock function for the type MockAlertService
-func (_mock *MockAlertService) GetAlert(context1 context.Context, uUID uuid.UUID) (*ent.Alert, error) {
+func (_mock *MockAlertService) GetAlert(context1 context.Context, uUID uuid.UUID) (*ent.AlertDefinition, error) {
 	ret := _mock.Called(context1, uUID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAlert")
 	}
 
-	var r0 *ent.Alert
+	var r0 *ent.AlertDefinition
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.Alert, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.AlertDefinition, error)); ok {
 		return returnFunc(context1, uUID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.Alert); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.AlertDefinition); ok {
 		r0 = returnFunc(context1, uUID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.Alert)
+			r0 = ret.Get(0).(*ent.AlertDefinition)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
@@ -5239,12 +5239,12 @@ func (_c *MockAlertService_GetAlert_Call) Run(run func(context1 context.Context,
 	return _c
 }
 
-func (_c *MockAlertService_GetAlert_Call) Return(alert *ent.Alert, err error) *MockAlertService_GetAlert_Call {
-	_c.Call.Return(alert, err)
+func (_c *MockAlertService_GetAlert_Call) Return(alertDefinition *ent.AlertDefinition, err error) *MockAlertService_GetAlert_Call {
+	_c.Call.Return(alertDefinition, err)
 	return _c
 }
 
-func (_c *MockAlertService_GetAlert_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.Alert, error)) *MockAlertService_GetAlert_Call {
+func (_c *MockAlertService_GetAlert_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.AlertDefinition, error)) *MockAlertService_GetAlert_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -5386,23 +5386,23 @@ func (_c *MockAlertService_GetAlertMetrics_Call) RunAndReturn(run func(context1 
 }
 
 // ListAlerts provides a mock function for the type MockAlertService
-func (_mock *MockAlertService) ListAlerts(context1 context.Context, listAlertsParams rez.ListAlertsParams) (*ent.ListResult[ent.Alert], error) {
+func (_mock *MockAlertService) ListAlerts(context1 context.Context, listAlertsParams rez.ListAlertsParams) (*ent.ListResult[ent.AlertDefinition], error) {
 	ret := _mock.Called(context1, listAlertsParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListAlerts")
 	}
 
-	var r0 *ent.ListResult[ent.Alert]
+	var r0 *ent.ListResult[ent.AlertDefinition]
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAlertsParams) (*ent.ListResult[ent.Alert], error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAlertsParams) (*ent.ListResult[ent.AlertDefinition], error)); ok {
 		return returnFunc(context1, listAlertsParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAlertsParams) *ent.ListResult[ent.Alert]); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAlertsParams) *ent.ListResult[ent.AlertDefinition]); ok {
 		r0 = returnFunc(context1, listAlertsParams)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.ListResult[ent.Alert])
+			r0 = ret.Get(0).(*ent.ListResult[ent.AlertDefinition])
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAlertsParams) error); ok {
@@ -5443,12 +5443,12 @@ func (_c *MockAlertService_ListAlerts_Call) Run(run func(context1 context.Contex
 	return _c
 }
 
-func (_c *MockAlertService_ListAlerts_Call) Return(listResult *ent.ListResult[ent.Alert], err error) *MockAlertService_ListAlerts_Call {
+func (_c *MockAlertService_ListAlerts_Call) Return(listResult *ent.ListResult[ent.AlertDefinition], err error) *MockAlertService_ListAlerts_Call {
 	_c.Call.Return(listResult, err)
 	return _c
 }
 
-func (_c *MockAlertService_ListAlerts_Call) RunAndReturn(run func(context1 context.Context, listAlertsParams rez.ListAlertsParams) (*ent.ListResult[ent.Alert], error)) *MockAlertService_ListAlerts_Call {
+func (_c *MockAlertService_ListAlerts_Call) RunAndReturn(run func(context1 context.Context, listAlertsParams rez.ListAlertsParams) (*ent.ListResult[ent.AlertDefinition], error)) *MockAlertService_ListAlerts_Call {
 	_c.Call.Return(run)
 	return _c
 }

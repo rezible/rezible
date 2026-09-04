@@ -39,9 +39,13 @@ func (a *AlertsAgent) updateInitialTurnMessage(ctx context.Context, input rezai.
 		return "", fmt.Errorf("get alert instance: %w", instErr)
 	}
 
-	alrt, alrtErr := inst.Edges.AlertOrErr()
+	episode, episodeErr := inst.Edges.EpisodeOrErr()
+	if episodeErr != nil {
+		return "", fmt.Errorf("get alert episode: %w", episodeErr)
+	}
+	alrt, alrtErr := episode.Edges.AlertDefinitionOrErr()
 	if alrtErr != nil {
-		return "", fmt.Errorf("get alert: %w", alrtErr)
+		return "", fmt.Errorf("get alert definition: %w", alrtErr)
 	}
 
 	seed := fmt.Sprintf(`Title: %s

@@ -7,7 +7,7 @@ import (
 	rez "github.com/rezible/rezible"
 
 	"github.com/rezible/rezible/ent"
-	entalert "github.com/rezible/rezible/ent/alert"
+	ad "github.com/rezible/rezible/ent/alertdefinition"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/pkg/projections"
@@ -61,7 +61,7 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 	_, projectErr = runProjection(ctx, service, first)
 	s.Require().NoError(projectErr)
 
-	alerts, err := client.Alert.Query().All(ctx)
+	alerts, err := client.AlertDefinition.Query().All(ctx)
 	s.Require().NoError(err)
 	s.Require().Len(alerts, 1)
 	s.Equal(attrs.Title, alerts[0].Title)
@@ -72,8 +72,8 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 	_, projectErr = runProjection(ctx, service, second)
 	s.Require().NoError(projectErr)
 
-	updated, err := client.Alert.Query().
-		Where(entalert.KnowledgeEntityID(*alerts[0].KnowledgeEntityID)).
+	updated, err := client.AlertDefinition.Query().
+		Where(ad.KnowledgeEntityID(*alerts[0].KnowledgeEntityID)).
 		Only(ctx)
 	s.Require().NoError(err)
 	s.Equal("Search latency critical", updated.Title)

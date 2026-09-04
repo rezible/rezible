@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -62,19 +62,19 @@ func (_c *PlaybookCreate) SetTenant(v *Tenant) *PlaybookCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// AddAlertIDs adds the "alerts" edge to the Alert entity by IDs.
-func (_c *PlaybookCreate) AddAlertIDs(ids ...uuid.UUID) *PlaybookCreate {
-	_c.mutation.AddAlertIDs(ids...)
+// AddAlertDefinitionIDs adds the "alert_definitions" edge to the AlertDefinition entity by IDs.
+func (_c *PlaybookCreate) AddAlertDefinitionIDs(ids ...uuid.UUID) *PlaybookCreate {
+	_c.mutation.AddAlertDefinitionIDs(ids...)
 	return _c
 }
 
-// AddAlerts adds the "alerts" edges to the Alert entity.
-func (_c *PlaybookCreate) AddAlerts(v ...*Alert) *PlaybookCreate {
+// AddAlertDefinitions adds the "alert_definitions" edges to the AlertDefinition entity.
+func (_c *PlaybookCreate) AddAlertDefinitions(v ...*AlertDefinition) *PlaybookCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddAlertIDs(ids...)
+	return _c.AddAlertDefinitionIDs(ids...)
 }
 
 // Mutation returns the PlaybookMutation object of the builder.
@@ -201,18 +201,18 @@ func (_c *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AlertsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AlertDefinitionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   playbook.AlertsTable,
-			Columns: playbook.AlertsPrimaryKey,
+			Table:   playbook.AlertDefinitionsTable,
+			Columns: playbook.AlertDefinitionsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertdefinition.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.PlaybookAlerts
+		edge.Schema = _c.schemaConfig.PlaybookAlertDefinitions
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

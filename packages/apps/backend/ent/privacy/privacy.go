@@ -231,28 +231,52 @@ func (f AgentTurnMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutat
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentTurnMutation", m)
 }
 
-// The AlertQueryRuleFunc type is an adapter to allow the use of ordinary
+// The AlertDefinitionQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type AlertQueryRuleFunc func(context.Context, *ent.AlertQuery) error
+type AlertDefinitionQueryRuleFunc func(context.Context, *ent.AlertDefinitionQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f AlertQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AlertQuery); ok {
+func (f AlertDefinitionQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertDefinitionQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlertQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlertDefinitionQuery", q)
 }
 
-// The AlertMutationRuleFunc type is an adapter to allow the use of ordinary
+// The AlertDefinitionMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type AlertMutationRuleFunc func(context.Context, *ent.AlertMutation) error
+type AlertDefinitionMutationRuleFunc func(context.Context, *ent.AlertDefinitionMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f AlertMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.AlertMutation); ok {
+func (f AlertDefinitionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AlertDefinitionMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertDefinitionMutation", m)
+}
+
+// The AlertEpisodeQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AlertEpisodeQueryRuleFunc func(context.Context, *ent.AlertEpisodeQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AlertEpisodeQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertEpisodeQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlertEpisodeQuery", q)
+}
+
+// The AlertEpisodeMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AlertEpisodeMutationRuleFunc func(context.Context, *ent.AlertEpisodeMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AlertEpisodeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AlertEpisodeMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertEpisodeMutation", m)
 }
 
 // The AlertFeedbackQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1824,7 +1848,9 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AgentTurnQuery:
 		return q.Filter(), nil
-	case *ent.AlertQuery:
+	case *ent.AlertDefinitionQuery:
+		return q.Filter(), nil
+	case *ent.AlertEpisodeQuery:
 		return q.Filter(), nil
 	case *ent.AlertFeedbackQuery:
 		return q.Filter(), nil
@@ -1971,7 +1997,9 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.AgentTurnMutation:
 		return m.Filter(), nil
-	case *ent.AlertMutation:
+	case *ent.AlertDefinitionMutation:
+		return m.Filter(), nil
+	case *ent.AlertEpisodeMutation:
 		return m.Filter(), nil
 	case *ent.AlertFeedbackMutation:
 		return m.Filter(), nil

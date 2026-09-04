@@ -12,7 +12,8 @@ type SchemaConfig struct {
 	AgentSession                              string // AgentSession table.
 	AgentSessionBinding                       string // AgentSessionBinding table.
 	AgentTurn                                 string // AgentTurn table.
-	Alert                                     string // Alert table.
+	AlertDefinition                           string // AlertDefinition table.
+	AlertEpisode                              string // AlertEpisode table.
 	AlertFeedback                             string // AlertFeedback table.
 	AlertInstance                             string // AlertInstance table.
 	AlertInvestigation                        string // AlertInvestigation table.
@@ -72,7 +73,7 @@ type SchemaConfig struct {
 	OrganizationPreferences                   string // OrganizationPreferences table.
 	OrganizationRole                          string // OrganizationRole table.
 	Playbook                                  string // Playbook table.
-	PlaybookAlerts                            string // Playbook-alerts->Alert table.
+	PlaybookAlertDefinitions                  string // Playbook-alert_definitions->AlertDefinition table.
 	Retrospective                             string // Retrospective table.
 	RetrospectiveComment                      string // RetrospectiveComment table.
 	RetrospectiveReview                       string // RetrospectiveReview table.

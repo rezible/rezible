@@ -8,31 +8,31 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
-// AlertDelete is the builder for deleting a Alert entity.
-type AlertDelete struct {
+// AlertEpisodeDelete is the builder for deleting a AlertEpisode entity.
+type AlertEpisodeDelete struct {
 	config
 	hooks    []Hook
-	mutation *AlertMutation
+	mutation *AlertEpisodeMutation
 }
 
-// Where appends a list predicates to the AlertDelete builder.
-func (_d *AlertDelete) Where(ps ...predicate.Alert) *AlertDelete {
+// Where appends a list predicates to the AlertEpisodeDelete builder.
+func (_d *AlertEpisodeDelete) Where(ps ...predicate.AlertEpisode) *AlertEpisodeDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *AlertDelete) Exec(ctx context.Context) (int, error) {
+func (_d *AlertEpisodeDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *AlertDelete) ExecX(ctx context.Context) int {
+func (_d *AlertEpisodeDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -40,9 +40,9 @@ func (_d *AlertDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *AlertDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(alert.Table, sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID))
-	_spec.Node.Schema = _d.schemaConfig.Alert
+func (_d *AlertEpisodeDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(alertepisode.Table, sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.AlertEpisode
 	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -59,32 +59,32 @@ func (_d *AlertDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// AlertDeleteOne is the builder for deleting a single Alert entity.
-type AlertDeleteOne struct {
-	_d *AlertDelete
+// AlertEpisodeDeleteOne is the builder for deleting a single AlertEpisode entity.
+type AlertEpisodeDeleteOne struct {
+	_d *AlertEpisodeDelete
 }
 
-// Where appends a list predicates to the AlertDelete builder.
-func (_d *AlertDeleteOne) Where(ps ...predicate.Alert) *AlertDeleteOne {
+// Where appends a list predicates to the AlertEpisodeDelete builder.
+func (_d *AlertEpisodeDeleteOne) Where(ps ...predicate.AlertEpisode) *AlertEpisodeDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *AlertDeleteOne) Exec(ctx context.Context) error {
+func (_d *AlertEpisodeDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{alert.Label}
+		return &NotFoundError{alertepisode.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *AlertDeleteOne) ExecX(ctx context.Context) {
+func (_d *AlertEpisodeDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

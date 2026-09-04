@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/playbook"
 )
 
@@ -30,7 +30,7 @@ func (s *PlaybookService) ListPlaybooks(ctx context.Context, params rez.ListPlay
 		query.Where(playbook.TitleContainsFold(search))
 	}
 	if params.AlertID != uuid.Nil {
-		query.Where(playbook.HasAlertsWith(alert.ID(params.AlertID)))
+		query.Where(playbook.HasAlertDefinitionsWith(alertdefinition.ID(params.AlertID)))
 	}
 	return ent.DoListQuery[ent.Playbook, *ent.PlaybookQuery](ctx, query, params.ListParams)
 }

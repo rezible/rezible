@@ -9,13 +9,13 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// Alert is the model entity for the Alert schema.
-type Alert struct {
+// AlertDefinition is the model entity for the AlertDefinition schema.
+type AlertDefinition struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -30,21 +30,21 @@ type Alert struct {
 	// Definition holds the value of the "definition" field.
 	Definition string `json:"definition,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the AlertQuery when eager-loading is set.
-	Edges        AlertEdges `json:"edges"`
+	// The values are being populated by the AlertDefinitionQuery when eager-loading is set.
+	Edges        AlertDefinitionEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// AlertEdges holds the relations/edges for other nodes in the graph.
-type AlertEdges struct {
+// AlertDefinitionEdges holds the relations/edges for other nodes in the graph.
+type AlertDefinitionEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// KnowledgeEntity holds the value of the knowledge_entity edge.
 	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// Playbooks holds the value of the playbooks edge.
 	Playbooks []*Playbook `json:"playbooks,omitempty"`
-	// Instances holds the value of the instances edge.
-	Instances []*AlertInstance `json:"instances,omitempty"`
+	// Episodes holds the value of the episodes edge.
+	Episodes []*AlertEpisode `json:"episodes,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -52,7 +52,7 @@ type AlertEdges struct {
 
 // TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AlertEdges) TenantOrErr() (*Tenant, error) {
+func (e AlertDefinitionEdges) TenantOrErr() (*Tenant, error) {
 	if e.Tenant != nil {
 		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
@@ -63,7 +63,7 @@ func (e AlertEdges) TenantOrErr() (*Tenant, error) {
 
 // KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AlertEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
+func (e AlertDefinitionEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
 	if e.KnowledgeEntity != nil {
 		return e.KnowledgeEntity, nil
 	} else if e.loadedTypes[1] {
@@ -74,34 +74,34 @@ func (e AlertEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
 
 // PlaybooksOrErr returns the Playbooks value or an error if the edge
 // was not loaded in eager-loading.
-func (e AlertEdges) PlaybooksOrErr() ([]*Playbook, error) {
+func (e AlertDefinitionEdges) PlaybooksOrErr() ([]*Playbook, error) {
 	if e.loadedTypes[2] {
 		return e.Playbooks, nil
 	}
 	return nil, &NotLoadedError{edge: "playbooks"}
 }
 
-// InstancesOrErr returns the Instances value or an error if the edge
+// EpisodesOrErr returns the Episodes value or an error if the edge
 // was not loaded in eager-loading.
-func (e AlertEdges) InstancesOrErr() ([]*AlertInstance, error) {
+func (e AlertDefinitionEdges) EpisodesOrErr() ([]*AlertEpisode, error) {
 	if e.loadedTypes[3] {
-		return e.Instances, nil
+		return e.Episodes, nil
 	}
-	return nil, &NotLoadedError{edge: "instances"}
+	return nil, &NotLoadedError{edge: "episodes"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Alert) scanValues(columns []string) ([]any, error) {
+func (*AlertDefinition) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case alert.FieldKnowledgeEntityID:
+		case alertdefinition.FieldKnowledgeEntityID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case alert.FieldTenantID:
+		case alertdefinition.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case alert.FieldTitle, alert.FieldDescription, alert.FieldDefinition:
+		case alertdefinition.FieldTitle, alertdefinition.FieldDescription, alertdefinition.FieldDefinition:
 			values[i] = new(sql.NullString)
-		case alert.FieldID:
+		case alertdefinition.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -111,45 +111,45 @@ func (*Alert) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the Alert fields.
-func (_m *Alert) assignValues(columns []string, values []any) error {
+// to the AlertDefinition fields.
+func (_m *AlertDefinition) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case alert.FieldID:
+		case alertdefinition.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case alert.FieldTenantID:
+		case alertdefinition.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case alert.FieldKnowledgeEntityID:
+		case alertdefinition.FieldKnowledgeEntityID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field knowledge_entity_id", values[i])
 			} else if value.Valid {
 				_m.KnowledgeEntityID = new(uuid.UUID)
 				*_m.KnowledgeEntityID = *value.S.(*uuid.UUID)
 			}
-		case alert.FieldTitle:
+		case alertdefinition.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
 				_m.Title = value.String
 			}
-		case alert.FieldDescription:
+		case alertdefinition.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				_m.Description = value.String
 			}
-		case alert.FieldDefinition:
+		case alertdefinition.FieldDefinition:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field definition", values[i])
 			} else if value.Valid {
@@ -162,54 +162,54 @@ func (_m *Alert) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the Alert.
+// Value returns the ent.Value that was dynamically selected and assigned to the AlertDefinition.
 // This includes values selected through modifiers, order, etc.
-func (_m *Alert) Value(name string) (ent.Value, error) {
+func (_m *AlertDefinition) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryTenant queries the "tenant" edge of the Alert entity.
-func (_m *Alert) QueryTenant() *TenantQuery {
-	return NewAlertClient(_m.config).QueryTenant(_m)
+// QueryTenant queries the "tenant" edge of the AlertDefinition entity.
+func (_m *AlertDefinition) QueryTenant() *TenantQuery {
+	return NewAlertDefinitionClient(_m.config).QueryTenant(_m)
 }
 
-// QueryKnowledgeEntity queries the "knowledge_entity" edge of the Alert entity.
-func (_m *Alert) QueryKnowledgeEntity() *KnowledgeEntityQuery {
-	return NewAlertClient(_m.config).QueryKnowledgeEntity(_m)
+// QueryKnowledgeEntity queries the "knowledge_entity" edge of the AlertDefinition entity.
+func (_m *AlertDefinition) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	return NewAlertDefinitionClient(_m.config).QueryKnowledgeEntity(_m)
 }
 
-// QueryPlaybooks queries the "playbooks" edge of the Alert entity.
-func (_m *Alert) QueryPlaybooks() *PlaybookQuery {
-	return NewAlertClient(_m.config).QueryPlaybooks(_m)
+// QueryPlaybooks queries the "playbooks" edge of the AlertDefinition entity.
+func (_m *AlertDefinition) QueryPlaybooks() *PlaybookQuery {
+	return NewAlertDefinitionClient(_m.config).QueryPlaybooks(_m)
 }
 
-// QueryInstances queries the "instances" edge of the Alert entity.
-func (_m *Alert) QueryInstances() *AlertInstanceQuery {
-	return NewAlertClient(_m.config).QueryInstances(_m)
+// QueryEpisodes queries the "episodes" edge of the AlertDefinition entity.
+func (_m *AlertDefinition) QueryEpisodes() *AlertEpisodeQuery {
+	return NewAlertDefinitionClient(_m.config).QueryEpisodes(_m)
 }
 
-// Update returns a builder for updating this Alert.
-// Note that you need to call Alert.Unwrap() before calling this method if this Alert
+// Update returns a builder for updating this AlertDefinition.
+// Note that you need to call AlertDefinition.Unwrap() before calling this method if this AlertDefinition
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *Alert) Update() *AlertUpdateOne {
-	return NewAlertClient(_m.config).UpdateOne(_m)
+func (_m *AlertDefinition) Update() *AlertDefinitionUpdateOne {
+	return NewAlertDefinitionClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the Alert entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the AlertDefinition entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *Alert) Unwrap() *Alert {
+func (_m *AlertDefinition) Unwrap() *AlertDefinition {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: Alert is not a transactional entity")
+		panic("ent: AlertDefinition is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *Alert) String() string {
+func (_m *AlertDefinition) String() string {
 	var builder strings.Builder
-	builder.WriteString("Alert(")
+	builder.WriteString("AlertDefinition(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
@@ -231,5 +231,5 @@ func (_m *Alert) String() string {
 	return builder.String()
 }
 
-// Alerts is a parsable slice of Alert.
-type Alerts []*Alert
+// AlertDefinitions is a parsable slice of AlertDefinition.
+type AlertDefinitions []*AlertDefinition

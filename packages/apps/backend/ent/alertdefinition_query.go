@@ -14,8 +14,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/alertdefinition"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/playbook"
@@ -23,56 +23,56 @@ import (
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// AlertQuery is the builder for querying Alert entities.
-type AlertQuery struct {
+// AlertDefinitionQuery is the builder for querying AlertDefinition entities.
+type AlertDefinitionQuery struct {
 	config
 	ctx                 *QueryContext
-	order               []alert.OrderOption
+	order               []alertdefinition.OrderOption
 	inters              []Interceptor
-	predicates          []predicate.Alert
+	predicates          []predicate.AlertDefinition
 	withTenant          *TenantQuery
 	withKnowledgeEntity *KnowledgeEntityQuery
 	withPlaybooks       *PlaybookQuery
-	withInstances       *AlertInstanceQuery
+	withEpisodes        *AlertEpisodeQuery
 	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the AlertQuery builder.
-func (_q *AlertQuery) Where(ps ...predicate.Alert) *AlertQuery {
+// Where adds a new predicate for the AlertDefinitionQuery builder.
+func (_q *AlertDefinitionQuery) Where(ps ...predicate.AlertDefinition) *AlertDefinitionQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *AlertQuery) Limit(limit int) *AlertQuery {
+func (_q *AlertDefinitionQuery) Limit(limit int) *AlertDefinitionQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *AlertQuery) Offset(offset int) *AlertQuery {
+func (_q *AlertDefinitionQuery) Offset(offset int) *AlertDefinitionQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *AlertQuery) Unique(unique bool) *AlertQuery {
+func (_q *AlertDefinitionQuery) Unique(unique bool) *AlertDefinitionQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *AlertQuery) Order(o ...alert.OrderOption) *AlertQuery {
+func (_q *AlertDefinitionQuery) Order(o ...alertdefinition.OrderOption) *AlertDefinitionQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *AlertQuery) QueryTenant() *TenantQuery {
+func (_q *AlertDefinitionQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -83,13 +83,13 @@ func (_q *AlertQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, selector),
+			sqlgraph.From(alertdefinition.Table, alertdefinition.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alert.TenantTable, alert.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertdefinition.TenantTable, alertdefinition.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.AlertDefinition
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -97,7 +97,7 @@ func (_q *AlertQuery) QueryTenant() *TenantQuery {
 }
 
 // QueryKnowledgeEntity chains the current query on the "knowledge_entity" edge.
-func (_q *AlertQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+func (_q *AlertDefinitionQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 	query := (&KnowledgeEntityClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -108,13 +108,13 @@ func (_q *AlertQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, selector),
+			sqlgraph.From(alertdefinition.Table, alertdefinition.FieldID, selector),
 			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alert.KnowledgeEntityTable, alert.KnowledgeEntityColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertdefinition.KnowledgeEntityTable, alertdefinition.KnowledgeEntityColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.AlertDefinition
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -122,7 +122,7 @@ func (_q *AlertQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 }
 
 // QueryPlaybooks chains the current query on the "playbooks" edge.
-func (_q *AlertQuery) QueryPlaybooks() *PlaybookQuery {
+func (_q *AlertDefinitionQuery) QueryPlaybooks() *PlaybookQuery {
 	query := (&PlaybookClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -133,22 +133,22 @@ func (_q *AlertQuery) QueryPlaybooks() *PlaybookQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, selector),
+			sqlgraph.From(alertdefinition.Table, alertdefinition.FieldID, selector),
 			sqlgraph.To(playbook.Table, playbook.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, alert.PlaybooksTable, alert.PlaybooksPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, alertdefinition.PlaybooksTable, alertdefinition.PlaybooksPrimaryKey...),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Playbook
-		step.Edge.Schema = schemaConfig.PlaybookAlerts
+		step.Edge.Schema = schemaConfig.PlaybookAlertDefinitions
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryInstances chains the current query on the "instances" edge.
-func (_q *AlertQuery) QueryInstances() *AlertInstanceQuery {
-	query := (&AlertInstanceClient{config: _q.config}).Query()
+// QueryEpisodes chains the current query on the "episodes" edge.
+func (_q *AlertDefinitionQuery) QueryEpisodes() *AlertEpisodeQuery {
+	query := (&AlertEpisodeClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -158,34 +158,34 @@ func (_q *AlertQuery) QueryInstances() *AlertInstanceQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, selector),
-			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, alert.InstancesTable, alert.InstancesColumn),
+			sqlgraph.From(alertdefinition.Table, alertdefinition.FieldID, selector),
+			sqlgraph.To(alertepisode.Table, alertepisode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, alertdefinition.EpisodesTable, alertdefinition.EpisodesColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AlertInstance
-		step.Edge.Schema = schemaConfig.AlertInstance
+		step.To.Schema = schemaConfig.AlertEpisode
+		step.Edge.Schema = schemaConfig.AlertEpisode
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// First returns the first Alert entity from the query.
-// Returns a *NotFoundError when no Alert was found.
-func (_q *AlertQuery) First(ctx context.Context) (*Alert, error) {
+// First returns the first AlertDefinition entity from the query.
+// Returns a *NotFoundError when no AlertDefinition was found.
+func (_q *AlertDefinitionQuery) First(ctx context.Context) (*AlertDefinition, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{alert.Label}
+		return nil, &NotFoundError{alertdefinition.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *AlertQuery) FirstX(ctx context.Context) *Alert {
+func (_q *AlertDefinitionQuery) FirstX(ctx context.Context) *AlertDefinition {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -193,22 +193,22 @@ func (_q *AlertQuery) FirstX(ctx context.Context) *Alert {
 	return node
 }
 
-// FirstID returns the first Alert ID from the query.
-// Returns a *NotFoundError when no Alert ID was found.
-func (_q *AlertQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first AlertDefinition ID from the query.
+// Returns a *NotFoundError when no AlertDefinition ID was found.
+func (_q *AlertDefinitionQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{alert.Label}
+		err = &NotFoundError{alertdefinition.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *AlertQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *AlertDefinitionQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -216,10 +216,10 @@ func (_q *AlertQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single Alert entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one Alert entity is found.
-// Returns a *NotFoundError when no Alert entities are found.
-func (_q *AlertQuery) Only(ctx context.Context) (*Alert, error) {
+// Only returns a single AlertDefinition entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one AlertDefinition entity is found.
+// Returns a *NotFoundError when no AlertDefinition entities are found.
+func (_q *AlertDefinitionQuery) Only(ctx context.Context) (*AlertDefinition, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -228,14 +228,14 @@ func (_q *AlertQuery) Only(ctx context.Context) (*Alert, error) {
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{alert.Label}
+		return nil, &NotFoundError{alertdefinition.Label}
 	default:
-		return nil, &NotSingularError{alert.Label}
+		return nil, &NotSingularError{alertdefinition.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *AlertQuery) OnlyX(ctx context.Context) *Alert {
+func (_q *AlertDefinitionQuery) OnlyX(ctx context.Context) *AlertDefinition {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -243,10 +243,10 @@ func (_q *AlertQuery) OnlyX(ctx context.Context) *Alert {
 	return node
 }
 
-// OnlyID is like Only, but returns the only Alert ID in the query.
-// Returns a *NotSingularError when more than one Alert ID is found.
+// OnlyID is like Only, but returns the only AlertDefinition ID in the query.
+// Returns a *NotSingularError when more than one AlertDefinition ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *AlertQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *AlertDefinitionQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -255,15 +255,15 @@ func (_q *AlertQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{alert.Label}
+		err = &NotFoundError{alertdefinition.Label}
 	default:
-		err = &NotSingularError{alert.Label}
+		err = &NotSingularError{alertdefinition.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *AlertQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *AlertDefinitionQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -271,18 +271,18 @@ func (_q *AlertQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of Alerts.
-func (_q *AlertQuery) All(ctx context.Context) ([]*Alert, error) {
+// All executes the query and returns a list of AlertDefinitions.
+func (_q *AlertDefinitionQuery) All(ctx context.Context) ([]*AlertDefinition, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*Alert, *AlertQuery]()
-	return withInterceptors[[]*Alert](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*AlertDefinition, *AlertDefinitionQuery]()
+	return withInterceptors[[]*AlertDefinition](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *AlertQuery) AllX(ctx context.Context) []*Alert {
+func (_q *AlertDefinitionQuery) AllX(ctx context.Context) []*AlertDefinition {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -290,20 +290,20 @@ func (_q *AlertQuery) AllX(ctx context.Context) []*Alert {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Alert IDs.
-func (_q *AlertQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of AlertDefinition IDs.
+func (_q *AlertDefinitionQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(alert.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(alertdefinition.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *AlertQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *AlertDefinitionQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -312,16 +312,16 @@ func (_q *AlertQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *AlertQuery) Count(ctx context.Context) (int, error) {
+func (_q *AlertDefinitionQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*AlertQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*AlertDefinitionQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *AlertQuery) CountX(ctx context.Context) int {
+func (_q *AlertDefinitionQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -330,7 +330,7 @@ func (_q *AlertQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *AlertQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *AlertDefinitionQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -343,7 +343,7 @@ func (_q *AlertQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *AlertQuery) ExistX(ctx context.Context) bool {
+func (_q *AlertDefinitionQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -351,22 +351,22 @@ func (_q *AlertQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the AlertQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the AlertDefinitionQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *AlertQuery) Clone() *AlertQuery {
+func (_q *AlertDefinitionQuery) Clone() *AlertDefinitionQuery {
 	if _q == nil {
 		return nil
 	}
-	return &AlertQuery{
+	return &AlertDefinitionQuery{
 		config:              _q.config,
 		ctx:                 _q.ctx.Clone(),
-		order:               append([]alert.OrderOption{}, _q.order...),
+		order:               append([]alertdefinition.OrderOption{}, _q.order...),
 		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.Alert{}, _q.predicates...),
+		predicates:          append([]predicate.AlertDefinition{}, _q.predicates...),
 		withTenant:          _q.withTenant.Clone(),
 		withKnowledgeEntity: _q.withKnowledgeEntity.Clone(),
 		withPlaybooks:       _q.withPlaybooks.Clone(),
-		withInstances:       _q.withInstances.Clone(),
+		withEpisodes:        _q.withEpisodes.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -376,7 +376,7 @@ func (_q *AlertQuery) Clone() *AlertQuery {
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertQuery) WithTenant(opts ...func(*TenantQuery)) *AlertQuery {
+func (_q *AlertDefinitionQuery) WithTenant(opts ...func(*TenantQuery)) *AlertDefinitionQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -387,7 +387,7 @@ func (_q *AlertQuery) WithTenant(opts ...func(*TenantQuery)) *AlertQuery {
 
 // WithKnowledgeEntity tells the query-builder to eager-load the nodes that are connected to
 // the "knowledge_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *AlertQuery {
+func (_q *AlertDefinitionQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *AlertDefinitionQuery {
 	query := (&KnowledgeEntityClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -398,7 +398,7 @@ func (_q *AlertQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *
 
 // WithPlaybooks tells the query-builder to eager-load the nodes that are connected to
 // the "playbooks" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertQuery) WithPlaybooks(opts ...func(*PlaybookQuery)) *AlertQuery {
+func (_q *AlertDefinitionQuery) WithPlaybooks(opts ...func(*PlaybookQuery)) *AlertDefinitionQuery {
 	query := (&PlaybookClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -407,14 +407,14 @@ func (_q *AlertQuery) WithPlaybooks(opts ...func(*PlaybookQuery)) *AlertQuery {
 	return _q
 }
 
-// WithInstances tells the query-builder to eager-load the nodes that are connected to
-// the "instances" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertQuery) WithInstances(opts ...func(*AlertInstanceQuery)) *AlertQuery {
-	query := (&AlertInstanceClient{config: _q.config}).Query()
+// WithEpisodes tells the query-builder to eager-load the nodes that are connected to
+// the "episodes" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AlertDefinitionQuery) WithEpisodes(opts ...func(*AlertEpisodeQuery)) *AlertDefinitionQuery {
+	query := (&AlertEpisodeClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withInstances = query
+	_q.withEpisodes = query
 	return _q
 }
 
@@ -428,15 +428,15 @@ func (_q *AlertQuery) WithInstances(opts ...func(*AlertInstanceQuery)) *AlertQue
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.Alert.Query().
-//		GroupBy(alert.FieldTenantID).
+//	client.AlertDefinition.Query().
+//		GroupBy(alertdefinition.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *AlertQuery) GroupBy(field string, fields ...string) *AlertGroupBy {
+func (_q *AlertDefinitionQuery) GroupBy(field string, fields ...string) *AlertDefinitionGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &AlertGroupBy{build: _q}
+	grbuild := &AlertDefinitionGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = alert.Label
+	grbuild.label = alertdefinition.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -450,23 +450,23 @@ func (_q *AlertQuery) GroupBy(field string, fields ...string) *AlertGroupBy {
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.Alert.Query().
-//		Select(alert.FieldTenantID).
+//	client.AlertDefinition.Query().
+//		Select(alertdefinition.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *AlertQuery) Select(fields ...string) *AlertSelect {
+func (_q *AlertDefinitionQuery) Select(fields ...string) *AlertDefinitionSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &AlertSelect{AlertQuery: _q}
-	sbuild.label = alert.Label
+	sbuild := &AlertDefinitionSelect{AlertDefinitionQuery: _q}
+	sbuild.label = alertdefinition.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a AlertSelect configured with the given aggregations.
-func (_q *AlertQuery) Aggregate(fns ...AggregateFunc) *AlertSelect {
+// Aggregate returns a AlertDefinitionSelect configured with the given aggregations.
+func (_q *AlertDefinitionQuery) Aggregate(fns ...AggregateFunc) *AlertDefinitionSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *AlertQuery) prepareQuery(ctx context.Context) error {
+func (_q *AlertDefinitionQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -478,7 +478,7 @@ func (_q *AlertQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !alert.ValidColumn(f) {
+		if !alertdefinition.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -489,36 +489,36 @@ func (_q *AlertQuery) prepareQuery(ctx context.Context) error {
 		}
 		_q.sql = prev
 	}
-	if alert.Policy == nil {
-		return errors.New("ent: uninitialized alert.Policy (forgotten import ent/runtime?)")
+	if alertdefinition.Policy == nil {
+		return errors.New("ent: uninitialized alertdefinition.Policy (forgotten import ent/runtime?)")
 	}
-	if err := alert.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := alertdefinition.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert, error) {
+func (_q *AlertDefinitionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AlertDefinition, error) {
 	var (
-		nodes       = []*Alert{}
+		nodes       = []*AlertDefinition{}
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withPlaybooks != nil,
-			_q.withInstances != nil,
+			_q.withEpisodes != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*Alert).scanValues(nil, columns)
+		return (*AlertDefinition).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Alert{config: _q.config}
+		node := &AlertDefinition{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.Alert
+	_spec.Node.Schema = _q.schemaConfig.AlertDefinition
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -534,36 +534,36 @@ func (_q *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *Alert, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *AlertDefinition, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := _q.withKnowledgeEntity; query != nil {
 		if err := _q.loadKnowledgeEntity(ctx, query, nodes, nil,
-			func(n *Alert, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
+			func(n *AlertDefinition, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := _q.withPlaybooks; query != nil {
 		if err := _q.loadPlaybooks(ctx, query, nodes,
-			func(n *Alert) { n.Edges.Playbooks = []*Playbook{} },
-			func(n *Alert, e *Playbook) { n.Edges.Playbooks = append(n.Edges.Playbooks, e) }); err != nil {
+			func(n *AlertDefinition) { n.Edges.Playbooks = []*Playbook{} },
+			func(n *AlertDefinition, e *Playbook) { n.Edges.Playbooks = append(n.Edges.Playbooks, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withInstances; query != nil {
-		if err := _q.loadInstances(ctx, query, nodes,
-			func(n *Alert) { n.Edges.Instances = []*AlertInstance{} },
-			func(n *Alert, e *AlertInstance) { n.Edges.Instances = append(n.Edges.Instances, e) }); err != nil {
+	if query := _q.withEpisodes; query != nil {
+		if err := _q.loadEpisodes(ctx, query, nodes,
+			func(n *AlertDefinition) { n.Edges.Episodes = []*AlertEpisode{} },
+			func(n *AlertDefinition, e *AlertEpisode) { n.Edges.Episodes = append(n.Edges.Episodes, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *AlertQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *Tenant)) error {
+func (_q *AlertDefinitionQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*AlertDefinition, init func(*AlertDefinition), assign func(*AlertDefinition, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Alert)
+	nodeids := make(map[int][]*AlertDefinition)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -590,9 +590,9 @@ func (_q *AlertQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes 
 	}
 	return nil
 }
-func (_q *AlertQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *KnowledgeEntity)) error {
+func (_q *AlertDefinitionQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*AlertDefinition, init func(*AlertDefinition), assign func(*AlertDefinition, *KnowledgeEntity)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Alert)
+	nodeids := make(map[uuid.UUID][]*AlertDefinition)
 	for i := range nodes {
 		if nodes[i].KnowledgeEntityID == nil {
 			continue
@@ -622,10 +622,10 @@ func (_q *AlertQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeE
 	}
 	return nil
 }
-func (_q *AlertQuery) loadPlaybooks(ctx context.Context, query *PlaybookQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *Playbook)) error {
+func (_q *AlertDefinitionQuery) loadPlaybooks(ctx context.Context, query *PlaybookQuery, nodes []*AlertDefinition, init func(*AlertDefinition), assign func(*AlertDefinition, *Playbook)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Alert)
-	nids := make(map[uuid.UUID]map[*Alert]struct{})
+	byID := make(map[uuid.UUID]*AlertDefinition)
+	nids := make(map[uuid.UUID]map[*AlertDefinition]struct{})
 	for i, node := range nodes {
 		edgeIDs[i] = node.ID
 		byID[node.ID] = node
@@ -634,12 +634,12 @@ func (_q *AlertQuery) loadPlaybooks(ctx context.Context, query *PlaybookQuery, n
 		}
 	}
 	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(alert.PlaybooksTable)
-		joinT.Schema(_q.schemaConfig.PlaybookAlerts)
-		s.Join(joinT).On(s.C(playbook.FieldID), joinT.C(alert.PlaybooksPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(alert.PlaybooksPrimaryKey[1]), edgeIDs...))
+		joinT := sql.Table(alertdefinition.PlaybooksTable)
+		joinT.Schema(_q.schemaConfig.PlaybookAlertDefinitions)
+		s.Join(joinT).On(s.C(playbook.FieldID), joinT.C(alertdefinition.PlaybooksPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(alertdefinition.PlaybooksPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
-		s.Select(joinT.C(alert.PlaybooksPrimaryKey[1]))
+		s.Select(joinT.C(alertdefinition.PlaybooksPrimaryKey[1]))
 		s.AppendSelect(columns...)
 		s.SetDistinct(false)
 	})
@@ -661,7 +661,7 @@ func (_q *AlertQuery) loadPlaybooks(ctx context.Context, query *PlaybookQuery, n
 				outValue := *values[0].(*uuid.UUID)
 				inValue := *values[1].(*uuid.UUID)
 				if nids[inValue] == nil {
-					nids[inValue] = map[*Alert]struct{}{byID[outValue]: {}}
+					nids[inValue] = map[*AlertDefinition]struct{}{byID[outValue]: {}}
 					return assign(columns[1:], values[1:])
 				}
 				nids[inValue][byID[outValue]] = struct{}{}
@@ -684,9 +684,9 @@ func (_q *AlertQuery) loadPlaybooks(ctx context.Context, query *PlaybookQuery, n
 	}
 	return nil
 }
-func (_q *AlertQuery) loadInstances(ctx context.Context, query *AlertInstanceQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *AlertInstance)) error {
+func (_q *AlertDefinitionQuery) loadEpisodes(ctx context.Context, query *AlertEpisodeQuery, nodes []*AlertDefinition, init func(*AlertDefinition), assign func(*AlertDefinition, *AlertEpisode)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Alert)
+	nodeids := make(map[uuid.UUID]*AlertDefinition)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -695,29 +695,29 @@ func (_q *AlertQuery) loadInstances(ctx context.Context, query *AlertInstanceQue
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(alertinstance.FieldAlertID)
+		query.ctx.AppendFieldOnce(alertepisode.FieldAlertDefinitionID)
 	}
-	query.Where(predicate.AlertInstance(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(alert.InstancesColumn), fks...))
+	query.Where(predicate.AlertEpisode(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(alertdefinition.EpisodesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.AlertID
+		fk := n.AlertDefinitionID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "alert_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "alert_definition_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
 	return nil
 }
 
-func (_q *AlertQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *AlertDefinitionQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.Alert
+	_spec.Node.Schema = _q.schemaConfig.AlertDefinition
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -729,8 +729,8 @@ func (_q *AlertQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *AlertQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(alert.Table, alert.Columns, sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID))
+func (_q *AlertDefinitionQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(alertdefinition.Table, alertdefinition.Columns, sqlgraph.NewFieldSpec(alertdefinition.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -739,17 +739,17 @@ func (_q *AlertQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, alert.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, alertdefinition.FieldID)
 		for i := range fields {
-			if fields[i] != alert.FieldID {
+			if fields[i] != alertdefinition.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(alert.FieldTenantID)
+			_spec.Node.AddColumnOnce(alertdefinition.FieldTenantID)
 		}
 		if _q.withKnowledgeEntity != nil {
-			_spec.Node.AddColumnOnce(alert.FieldKnowledgeEntityID)
+			_spec.Node.AddColumnOnce(alertdefinition.FieldKnowledgeEntityID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -775,12 +775,12 @@ func (_q *AlertQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *AlertQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *AlertDefinitionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(alert.Table)
+	t1 := builder.Table(alertdefinition.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = alert.Columns
+		columns = alertdefinition.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -790,7 +790,7 @@ func (_q *AlertQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.Alert)
+	t1.Schema(_q.schemaConfig.AlertDefinition)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -814,33 +814,33 @@ func (_q *AlertQuery) sqlQuery(ctx context.Context) *sql.Selector {
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *AlertQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertSelect {
+func (_q *AlertDefinitionQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertDefinitionSelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// AlertGroupBy is the group-by builder for Alert entities.
-type AlertGroupBy struct {
+// AlertDefinitionGroupBy is the group-by builder for AlertDefinition entities.
+type AlertDefinitionGroupBy struct {
 	selector
-	build *AlertQuery
+	build *AlertDefinitionQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *AlertGroupBy) Aggregate(fns ...AggregateFunc) *AlertGroupBy {
+func (_g *AlertDefinitionGroupBy) Aggregate(fns ...AggregateFunc) *AlertDefinitionGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *AlertGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *AlertDefinitionGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*AlertQuery, *AlertGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*AlertDefinitionQuery, *AlertDefinitionGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *AlertGroupBy) sqlScan(ctx context.Context, root *AlertQuery, v any) error {
+func (_g *AlertDefinitionGroupBy) sqlScan(ctx context.Context, root *AlertDefinitionQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -867,28 +867,28 @@ func (_g *AlertGroupBy) sqlScan(ctx context.Context, root *AlertQuery, v any) er
 	return sql.ScanSlice(rows, v)
 }
 
-// AlertSelect is the builder for selecting fields of Alert entities.
-type AlertSelect struct {
-	*AlertQuery
+// AlertDefinitionSelect is the builder for selecting fields of AlertDefinition entities.
+type AlertDefinitionSelect struct {
+	*AlertDefinitionQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *AlertSelect) Aggregate(fns ...AggregateFunc) *AlertSelect {
+func (_s *AlertDefinitionSelect) Aggregate(fns ...AggregateFunc) *AlertDefinitionSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *AlertSelect) Scan(ctx context.Context, v any) error {
+func (_s *AlertDefinitionSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*AlertQuery, *AlertSelect](ctx, _s.AlertQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*AlertDefinitionQuery, *AlertDefinitionSelect](ctx, _s.AlertDefinitionQuery, _s, _s.inters, v)
 }
 
-func (_s *AlertSelect) sqlScan(ctx context.Context, root *AlertQuery, v any) error {
+func (_s *AlertDefinitionSelect) sqlScan(ctx context.Context, root *AlertDefinitionQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -910,7 +910,7 @@ func (_s *AlertSelect) sqlScan(ctx context.Context, root *AlertQuery, v any) err
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *AlertSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertSelect {
+func (_s *AlertDefinitionSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertDefinitionSelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }
