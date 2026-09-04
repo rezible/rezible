@@ -46,6 +46,8 @@ const (
 	EdgeOncallShifts = "oncall_shifts"
 	// EdgeEventAnnotations holds the string denoting the event_annotations edge name in mutations.
 	EdgeEventAnnotations = "event_annotations"
+	// EdgeSituationHazardAssessments holds the string denoting the situation_hazard_assessments edge name in mutations.
+	EdgeSituationHazardAssessments = "situation_hazard_assessments"
 	// EdgeIntegrationOauthStates holds the string denoting the integration_oauth_states edge name in mutations.
 	EdgeIntegrationOauthStates = "integration_oauth_states"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
@@ -124,6 +126,13 @@ const (
 	EventAnnotationsInverseTable = "event_annotations"
 	// EventAnnotationsColumn is the table column denoting the event_annotations relation/edge.
 	EventAnnotationsColumn = "creator_id"
+	// SituationHazardAssessmentsTable is the table that holds the situation_hazard_assessments relation/edge.
+	SituationHazardAssessmentsTable = "situation_hazard_assessments"
+	// SituationHazardAssessmentsInverseTable is the table name for the SituationHazardAssessment entity.
+	// It exists in this package in order to avoid circular dependency with the "situationhazardassessment" package.
+	SituationHazardAssessmentsInverseTable = "situation_hazard_assessments"
+	// SituationHazardAssessmentsColumn is the table column denoting the situation_hazard_assessments relation/edge.
+	SituationHazardAssessmentsColumn = "user_id"
 	// IntegrationOauthStatesTable is the table that holds the integration_oauth_states relation/edge.
 	IntegrationOauthStatesTable = "integration_user_install_states"
 	// IntegrationOauthStatesInverseTable is the table name for the IntegrationUserInstallState entity.
@@ -391,6 +400,20 @@ func ByEventAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption 
 	}
 }
 
+// BySituationHazardAssessmentsCount orders the results by situation_hazard_assessments count.
+func BySituationHazardAssessmentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSituationHazardAssessmentsStep(), opts...)
+	}
+}
+
+// BySituationHazardAssessments orders the results by situation_hazard_assessments terms.
+func BySituationHazardAssessments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSituationHazardAssessmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByIntegrationOauthStatesCount orders the results by integration_oauth_states count.
 func ByIntegrationOauthStatesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -612,6 +635,13 @@ func newEventAnnotationsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EventAnnotationsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, EventAnnotationsTable, EventAnnotationsColumn),
+	)
+}
+func newSituationHazardAssessmentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SituationHazardAssessmentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SituationHazardAssessmentsTable, SituationHazardAssessmentsColumn),
 	)
 }
 func newIntegrationOauthStatesStep() *sqlgraph.Step {

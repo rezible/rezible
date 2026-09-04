@@ -52,6 +52,8 @@ const (
 	EdgeMessages = "messages"
 	// EdgeArtifacts holds the string denoting the artifacts edge name in mutations.
 	EdgeArtifacts = "artifacts"
+	// EdgeSituationHazardAssessments holds the string denoting the situation_hazard_assessments edge name in mutations.
+	EdgeSituationHazardAssessments = "situation_hazard_assessments"
 	// Table holds the table name of the agentturn in the database.
 	Table = "agent_turns"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -89,6 +91,13 @@ const (
 	ArtifactsInverseTable = "agent_artifacts"
 	// ArtifactsColumn is the table column denoting the artifacts relation/edge.
 	ArtifactsColumn = "last_agent_turn_id"
+	// SituationHazardAssessmentsTable is the table that holds the situation_hazard_assessments relation/edge.
+	SituationHazardAssessmentsTable = "situation_hazard_assessments"
+	// SituationHazardAssessmentsInverseTable is the table name for the SituationHazardAssessment entity.
+	// It exists in this package in order to avoid circular dependency with the "situationhazardassessment" package.
+	SituationHazardAssessmentsInverseTable = "situation_hazard_assessments"
+	// SituationHazardAssessmentsColumn is the table column denoting the situation_hazard_assessments relation/edge.
+	SituationHazardAssessmentsColumn = "agent_turn_id"
 )
 
 // Columns holds all SQL columns for agentturn fields.
@@ -281,6 +290,20 @@ func ByArtifacts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newArtifactsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySituationHazardAssessmentsCount orders the results by situation_hazard_assessments count.
+func BySituationHazardAssessmentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSituationHazardAssessmentsStep(), opts...)
+	}
+}
+
+// BySituationHazardAssessments orders the results by situation_hazard_assessments terms.
+func BySituationHazardAssessments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSituationHazardAssessmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -314,5 +337,12 @@ func newArtifactsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ArtifactsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ArtifactsTable, ArtifactsColumn),
+	)
+}
+func newSituationHazardAssessmentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SituationHazardAssessmentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SituationHazardAssessmentsTable, SituationHazardAssessmentsColumn),
 	)
 }

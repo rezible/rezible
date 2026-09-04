@@ -757,6 +757,35 @@ func HasArtifactsWith(preds ...predicate.AgentArtifact) predicate.AgentTurn {
 	})
 }
 
+// HasSituationHazardAssessments applies the HasEdge predicate on the "situation_hazard_assessments" edge.
+func HasSituationHazardAssessments() predicate.AgentTurn {
+	return predicate.AgentTurn(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, SituationHazardAssessmentsTable, SituationHazardAssessmentsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationHazardAssessment
+		step.Edge.Schema = schemaConfig.SituationHazardAssessment
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSituationHazardAssessmentsWith applies the HasEdge predicate on the "situation_hazard_assessments" edge with a given conditions (other predicates).
+func HasSituationHazardAssessmentsWith(preds ...predicate.SituationHazardAssessment) predicate.AgentTurn {
+	return predicate.AgentTurn(func(s *sql.Selector) {
+		step := newSituationHazardAssessmentsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationHazardAssessment
+		step.Edge.Schema = schemaConfig.SituationHazardAssessment
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.AgentTurn) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.AndPredicates(predicates...))

@@ -16,7 +16,6 @@ import (
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
-	"github.com/rezible/rezible/ent/alertinvestigation"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
@@ -66,11 +65,16 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/schema"
+	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationhazardassessment"
+	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
+	"github.com/rezible/rezible/ent/systemhazard"
+	"github.com/rezible/rezible/ent/systemhazardriskassessment"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -346,34 +350,6 @@ func init() {
 	alertinstanceDescID := alertinstanceFields[0].Descriptor()
 	// alertinstance.DefaultID holds the default value on creation for the id field.
 	alertinstance.DefaultID = alertinstanceDescID.Default.(func() uuid.UUID)
-	alertinvestigationMixin := schema.AlertInvestigation{}.Mixin()
-	alertinvestigation.Policy = privacy.NewPolicies(alertinvestigationMixin[0], alertinvestigationMixin[1], schema.AlertInvestigation{})
-	alertinvestigation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := alertinvestigation.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	alertinvestigationMixinFields2 := alertinvestigationMixin[2].Fields()
-	_ = alertinvestigationMixinFields2
-	alertinvestigationFields := schema.AlertInvestigation{}.Fields()
-	_ = alertinvestigationFields
-	// alertinvestigationDescCreatedAt is the schema descriptor for created_at field.
-	alertinvestigationDescCreatedAt := alertinvestigationMixinFields2[0].Descriptor()
-	// alertinvestigation.DefaultCreatedAt holds the default value on creation for the created_at field.
-	alertinvestigation.DefaultCreatedAt = alertinvestigationDescCreatedAt.Default.(func() time.Time)
-	// alertinvestigationDescUpdatedAt is the schema descriptor for updated_at field.
-	alertinvestigationDescUpdatedAt := alertinvestigationMixinFields2[1].Descriptor()
-	// alertinvestigation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	alertinvestigation.DefaultUpdatedAt = alertinvestigationDescUpdatedAt.Default.(func() time.Time)
-	// alertinvestigation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	alertinvestigation.UpdateDefaultUpdatedAt = alertinvestigationDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// alertinvestigationDescID is the schema descriptor for id field.
-	alertinvestigationDescID := alertinvestigationFields[0].Descriptor()
-	// alertinvestigation.DefaultID holds the default value on creation for the id field.
-	alertinvestigation.DefaultID = alertinvestigationDescID.Default.(func() uuid.UUID)
 	alertmetricsMixin := schema.AlertMetrics{}.Mixin()
 	alertmetrics.Policy = privacy.NewPolicies(alertmetricsMixin[0], schema.AlertMetrics{})
 	alertmetrics.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1439,6 +1415,102 @@ func init() {
 	retrospectivereviewDescID := retrospectivereviewFields[0].Descriptor()
 	// retrospectivereview.DefaultID holds the default value on creation for the id field.
 	retrospectivereview.DefaultID = retrospectivereviewDescID.Default.(func() uuid.UUID)
+	situationMixin := schema.Situation{}.Mixin()
+	situation.Policy = privacy.NewPolicies(situationMixin[0], situationMixin[1], schema.Situation{})
+	situation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := situation.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	situationMixinFields2 := situationMixin[2].Fields()
+	_ = situationMixinFields2
+	situationFields := schema.Situation{}.Fields()
+	_ = situationFields
+	// situationDescCreatedAt is the schema descriptor for created_at field.
+	situationDescCreatedAt := situationMixinFields2[0].Descriptor()
+	// situation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	situation.DefaultCreatedAt = situationDescCreatedAt.Default.(func() time.Time)
+	// situationDescUpdatedAt is the schema descriptor for updated_at field.
+	situationDescUpdatedAt := situationMixinFields2[1].Descriptor()
+	// situation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	situation.DefaultUpdatedAt = situationDescUpdatedAt.Default.(func() time.Time)
+	// situation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	situation.UpdateDefaultUpdatedAt = situationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// situationDescTitle is the schema descriptor for title field.
+	situationDescTitle := situationFields[2].Descriptor()
+	// situation.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	situation.TitleValidator = situationDescTitle.Validators[0].(func(string) error)
+	// situationDescID is the schema descriptor for id field.
+	situationDescID := situationFields[0].Descriptor()
+	// situation.DefaultID holds the default value on creation for the id field.
+	situation.DefaultID = situationDescID.Default.(func() uuid.UUID)
+	situationhazardassessmentMixin := schema.SituationHazardAssessment{}.Mixin()
+	situationhazardassessment.Policy = privacy.NewPolicies(situationhazardassessmentMixin[0], situationhazardassessmentMixin[1], schema.SituationHazardAssessment{})
+	situationhazardassessment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := situationhazardassessment.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	situationhazardassessmentMixinFields2 := situationhazardassessmentMixin[2].Fields()
+	_ = situationhazardassessmentMixinFields2
+	situationhazardassessmentFields := schema.SituationHazardAssessment{}.Fields()
+	_ = situationhazardassessmentFields
+	// situationhazardassessmentDescCreatedAt is the schema descriptor for created_at field.
+	situationhazardassessmentDescCreatedAt := situationhazardassessmentMixinFields2[0].Descriptor()
+	// situationhazardassessment.DefaultCreatedAt holds the default value on creation for the created_at field.
+	situationhazardassessment.DefaultCreatedAt = situationhazardassessmentDescCreatedAt.Default.(func() time.Time)
+	// situationhazardassessmentDescUpdatedAt is the schema descriptor for updated_at field.
+	situationhazardassessmentDescUpdatedAt := situationhazardassessmentMixinFields2[1].Descriptor()
+	// situationhazardassessment.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	situationhazardassessment.DefaultUpdatedAt = situationhazardassessmentDescUpdatedAt.Default.(func() time.Time)
+	// situationhazardassessment.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	situationhazardassessment.UpdateDefaultUpdatedAt = situationhazardassessmentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// situationhazardassessmentDescRevision is the schema descriptor for revision field.
+	situationhazardassessmentDescRevision := situationhazardassessmentFields[3].Descriptor()
+	// situationhazardassessment.RevisionValidator is a validator for the "revision" field. It is called by the builders before save.
+	situationhazardassessment.RevisionValidator = situationhazardassessmentDescRevision.Validators[0].(func(int) error)
+	// situationhazardassessmentDescSummary is the schema descriptor for summary field.
+	situationhazardassessmentDescSummary := situationhazardassessmentFields[5].Descriptor()
+	// situationhazardassessment.SummaryValidator is a validator for the "summary" field. It is called by the builders before save.
+	situationhazardassessment.SummaryValidator = situationhazardassessmentDescSummary.Validators[0].(func(string) error)
+	// situationhazardassessmentDescID is the schema descriptor for id field.
+	situationhazardassessmentDescID := situationhazardassessmentFields[0].Descriptor()
+	// situationhazardassessment.DefaultID holds the default value on creation for the id field.
+	situationhazardassessment.DefaultID = situationhazardassessmentDescID.Default.(func() uuid.UUID)
+	situationinvestigationMixin := schema.SituationInvestigation{}.Mixin()
+	situationinvestigation.Policy = privacy.NewPolicies(situationinvestigationMixin[0], situationinvestigationMixin[1], schema.SituationInvestigation{})
+	situationinvestigation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := situationinvestigation.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	situationinvestigationMixinFields2 := situationinvestigationMixin[2].Fields()
+	_ = situationinvestigationMixinFields2
+	situationinvestigationFields := schema.SituationInvestigation{}.Fields()
+	_ = situationinvestigationFields
+	// situationinvestigationDescCreatedAt is the schema descriptor for created_at field.
+	situationinvestigationDescCreatedAt := situationinvestigationMixinFields2[0].Descriptor()
+	// situationinvestigation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	situationinvestigation.DefaultCreatedAt = situationinvestigationDescCreatedAt.Default.(func() time.Time)
+	// situationinvestigationDescUpdatedAt is the schema descriptor for updated_at field.
+	situationinvestigationDescUpdatedAt := situationinvestigationMixinFields2[1].Descriptor()
+	// situationinvestigation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	situationinvestigation.DefaultUpdatedAt = situationinvestigationDescUpdatedAt.Default.(func() time.Time)
+	// situationinvestigation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	situationinvestigation.UpdateDefaultUpdatedAt = situationinvestigationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// situationinvestigationDescID is the schema descriptor for id field.
+	situationinvestigationDescID := situationinvestigationFields[0].Descriptor()
+	// situationinvestigation.DefaultID holds the default value on creation for the id field.
+	situationinvestigation.DefaultID = situationinvestigationDescID.Default.(func() uuid.UUID)
 	systemanalysisMixin := schema.SystemAnalysis{}.Mixin()
 	systemanalysis.Policy = privacy.NewPolicies(systemanalysisMixin[0], systemanalysisMixin[1], schema.SystemAnalysis{})
 	systemanalysis.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1599,6 +1671,82 @@ func init() {
 	systemanalysisrelationshipDescID := systemanalysisrelationshipFields[0].Descriptor()
 	// systemanalysisrelationship.DefaultID holds the default value on creation for the id field.
 	systemanalysisrelationship.DefaultID = systemanalysisrelationshipDescID.Default.(func() uuid.UUID)
+	systemhazardMixin := schema.SystemHazard{}.Mixin()
+	systemhazard.Policy = privacy.NewPolicies(systemhazardMixin[0], systemhazardMixin[1], schema.SystemHazard{})
+	systemhazard.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := systemhazard.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	systemhazardMixinFields2 := systemhazardMixin[2].Fields()
+	_ = systemhazardMixinFields2
+	systemhazardFields := schema.SystemHazard{}.Fields()
+	_ = systemhazardFields
+	// systemhazardDescCreatedAt is the schema descriptor for created_at field.
+	systemhazardDescCreatedAt := systemhazardMixinFields2[0].Descriptor()
+	// systemhazard.DefaultCreatedAt holds the default value on creation for the created_at field.
+	systemhazard.DefaultCreatedAt = systemhazardDescCreatedAt.Default.(func() time.Time)
+	// systemhazardDescUpdatedAt is the schema descriptor for updated_at field.
+	systemhazardDescUpdatedAt := systemhazardMixinFields2[1].Descriptor()
+	// systemhazard.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	systemhazard.DefaultUpdatedAt = systemhazardDescUpdatedAt.Default.(func() time.Time)
+	// systemhazard.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	systemhazard.UpdateDefaultUpdatedAt = systemhazardDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// systemhazardDescTitle is the schema descriptor for title field.
+	systemhazardDescTitle := systemhazardFields[1].Descriptor()
+	// systemhazard.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	systemhazard.TitleValidator = systemhazardDescTitle.Validators[0].(func(string) error)
+	// systemhazardDescID is the schema descriptor for id field.
+	systemhazardDescID := systemhazardFields[0].Descriptor()
+	// systemhazard.DefaultID holds the default value on creation for the id field.
+	systemhazard.DefaultID = systemhazardDescID.Default.(func() uuid.UUID)
+	systemhazardriskassessmentMixin := schema.SystemHazardRiskAssessment{}.Mixin()
+	systemhazardriskassessment.Policy = privacy.NewPolicies(systemhazardriskassessmentMixin[0], systemhazardriskassessmentMixin[1], schema.SystemHazardRiskAssessment{})
+	systemhazardriskassessment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := systemhazardriskassessment.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	systemhazardriskassessmentMixinFields2 := systemhazardriskassessmentMixin[2].Fields()
+	_ = systemhazardriskassessmentMixinFields2
+	systemhazardriskassessmentFields := schema.SystemHazardRiskAssessment{}.Fields()
+	_ = systemhazardriskassessmentFields
+	// systemhazardriskassessmentDescCreatedAt is the schema descriptor for created_at field.
+	systemhazardriskassessmentDescCreatedAt := systemhazardriskassessmentMixinFields2[0].Descriptor()
+	// systemhazardriskassessment.DefaultCreatedAt holds the default value on creation for the created_at field.
+	systemhazardriskassessment.DefaultCreatedAt = systemhazardriskassessmentDescCreatedAt.Default.(func() time.Time)
+	// systemhazardriskassessmentDescUpdatedAt is the schema descriptor for updated_at field.
+	systemhazardriskassessmentDescUpdatedAt := systemhazardriskassessmentMixinFields2[1].Descriptor()
+	// systemhazardriskassessment.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	systemhazardriskassessment.DefaultUpdatedAt = systemhazardriskassessmentDescUpdatedAt.Default.(func() time.Time)
+	// systemhazardriskassessment.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	systemhazardriskassessment.UpdateDefaultUpdatedAt = systemhazardriskassessmentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// systemhazardriskassessmentDescRevision is the schema descriptor for revision field.
+	systemhazardriskassessmentDescRevision := systemhazardriskassessmentFields[2].Descriptor()
+	// systemhazardriskassessment.RevisionValidator is a validator for the "revision" field. It is called by the builders before save.
+	systemhazardriskassessment.RevisionValidator = systemhazardriskassessmentDescRevision.Validators[0].(func(int) error)
+	// systemhazardriskassessmentDescLikelihood is the schema descriptor for likelihood field.
+	systemhazardriskassessmentDescLikelihood := systemhazardriskassessmentFields[3].Descriptor()
+	// systemhazardriskassessment.LikelihoodValidator is a validator for the "likelihood" field. It is called by the builders before save.
+	systemhazardriskassessment.LikelihoodValidator = systemhazardriskassessmentDescLikelihood.Validators[0].(func(string) error)
+	// systemhazardriskassessmentDescConsequence is the schema descriptor for consequence field.
+	systemhazardriskassessmentDescConsequence := systemhazardriskassessmentFields[4].Descriptor()
+	// systemhazardriskassessment.ConsequenceValidator is a validator for the "consequence" field. It is called by the builders before save.
+	systemhazardriskassessment.ConsequenceValidator = systemhazardriskassessmentDescConsequence.Validators[0].(func(string) error)
+	// systemhazardriskassessmentDescRiskLevel is the schema descriptor for risk_level field.
+	systemhazardriskassessmentDescRiskLevel := systemhazardriskassessmentFields[5].Descriptor()
+	// systemhazardriskassessment.RiskLevelValidator is a validator for the "risk_level" field. It is called by the builders before save.
+	systemhazardriskassessment.RiskLevelValidator = systemhazardriskassessmentDescRiskLevel.Validators[0].(func(string) error)
+	// systemhazardriskassessmentDescID is the schema descriptor for id field.
+	systemhazardriskassessmentDescID := systemhazardriskassessmentFields[0].Descriptor()
+	// systemhazardriskassessment.DefaultID holds the default value on creation for the id field.
+	systemhazardriskassessment.DefaultID = systemhazardriskassessmentDescID.Default.(func() uuid.UUID)
 	taskMixin := schema.Task{}.Mixin()
 	task.Policy = privacy.NewPolicies(taskMixin[0], taskMixin[1], schema.Task{})
 	task.Hooks[0] = func(next ent.Mutator) ent.Mutator {

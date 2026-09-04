@@ -25,6 +25,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldAlertDefinitionID holds the string denoting the alert_definition_id field in the database.
 	FieldAlertDefinitionID = "alert_definition_id"
+	// FieldSituationID holds the string denoting the situation_id field in the database.
+	FieldSituationID = "situation_id"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldStartedAt holds the string denoting the started_at field in the database.
@@ -39,6 +41,8 @@ const (
 	EdgeAlertDefinition = "alert_definition"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
 	EdgeInstances = "instances"
+	// EdgeSituation holds the string denoting the situation edge name in mutations.
+	EdgeSituation = "situation"
 	// Table holds the table name of the alertepisode in the database.
 	Table = "alert_episodes"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -62,6 +66,13 @@ const (
 	InstancesInverseTable = "alert_instances"
 	// InstancesColumn is the table column denoting the instances relation/edge.
 	InstancesColumn = "alert_episode_id"
+	// SituationTable is the table that holds the situation relation/edge.
+	SituationTable = "alert_episodes"
+	// SituationInverseTable is the table name for the Situation entity.
+	// It exists in this package in order to avoid circular dependency with the "situation" package.
+	SituationInverseTable = "situations"
+	// SituationColumn is the table column denoting the situation relation/edge.
+	SituationColumn = "situation_id"
 )
 
 // Columns holds all SQL columns for alertepisode fields.
@@ -71,6 +82,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldAlertDefinitionID,
+	FieldSituationID,
 	FieldStatus,
 	FieldStartedAt,
 	FieldLastObservedAt,
@@ -159,6 +171,11 @@ func ByAlertDefinitionID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAlertDefinitionID, opts...).ToFunc()
 }
 
+// BySituationID orders the results by the situation_id field.
+func BySituationID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSituationID, opts...).ToFunc()
+}
+
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
@@ -206,6 +223,13 @@ func ByInstances(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newInstancesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySituationField orders the results by situation field.
+func BySituationField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSituationStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -225,5 +249,12 @@ func newInstancesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(InstancesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
+	)
+}
+func newSituationStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SituationInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, SituationTable, SituationColumn),
 	)
 }

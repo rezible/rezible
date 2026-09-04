@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentsession"
+	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -57,9 +58,11 @@ type AgentSessionEdges struct {
 	Artifacts []*AgentArtifact `json:"artifacts,omitempty"`
 	// Bindings holds the value of the bindings edge.
 	Bindings []*AgentSessionBinding `json:"bindings,omitempty"`
+	// SituationInvestigation holds the value of the situation_investigation edge.
+	SituationInvestigation *SituationInvestigation `json:"situation_investigation,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -118,6 +121,17 @@ func (e AgentSessionEdges) BindingsOrErr() ([]*AgentSessionBinding, error) {
 		return e.Bindings, nil
 	}
 	return nil, &NotLoadedError{edge: "bindings"}
+}
+
+// SituationInvestigationOrErr returns the SituationInvestigation value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AgentSessionEdges) SituationInvestigationOrErr() (*SituationInvestigation, error) {
+	if e.SituationInvestigation != nil {
+		return e.SituationInvestigation, nil
+	} else if e.loadedTypes[6] {
+		return nil, &NotFoundError{label: situationinvestigation.Label}
+	}
+	return nil, &NotLoadedError{edge: "situation_investigation"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -252,6 +266,11 @@ func (_m *AgentSession) QueryArtifacts() *AgentArtifactQuery {
 // QueryBindings queries the "bindings" edge of the AgentSession entity.
 func (_m *AgentSession) QueryBindings() *AgentSessionBindingQuery {
 	return NewAgentSessionClient(_m.config).QueryBindings(_m)
+}
+
+// QuerySituationInvestigation queries the "situation_investigation" edge of the AgentSession entity.
+func (_m *AgentSession) QuerySituationInvestigation() *SituationInvestigationQuery {
+	return NewAgentSessionClient(_m.config).QuerySituationInvestigation(_m)
 }
 
 // Update returns a builder for updating this AgentSession.

@@ -27,6 +27,8 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationhazardassessment"
 )
 
 var (
@@ -718,8 +720,100 @@ type (
 )
 
 type (
-	InvestigationService interface {
-		CreateAlertInvestigation(ctx context.Context, instanceId uuid.UUID) (*ent.AlertInvestigation, error)
+	ListSituationsParams struct {
+		ent.ListParams
+	}
+
+	CreateSituationParams struct {
+		Title    string
+		Summary  string
+		OpenedAt time.Time
+	}
+
+	CloseSituationParams struct {
+		SituationID uuid.UUID
+		Reason      situation.CloseReason
+	}
+
+	LinkAlertEpisodeToSituationParams struct {
+		AlertEpisodeID uuid.UUID
+		SituationID    uuid.UUID
+	}
+
+	CreateSituationInvestigationParams struct {
+		SituationID uuid.UUID
+	}
+
+	SetSituationInvestigationReportParams struct {
+		AgentSessionID uuid.UUID
+		Report         schematypes.SituationInvestigationReport
+	}
+
+	ListSituationHazardAssessmentsParams struct {
+		ent.ListParams
+		SituationID    uuid.UUID
+		SystemHazardID uuid.UUID
+	}
+
+	AddSituationHazardAssessmentParams struct {
+		SituationID    uuid.UUID
+		SystemHazardID uuid.UUID
+		Status         situationhazardassessment.Status
+		Summary        string
+		AssessedAt     time.Time
+		UserID         *uuid.UUID
+		AgentTurnID    *uuid.UUID
+	}
+
+	SituationService interface {
+		ListSituations(context.Context, ListSituationsParams) (*ent.ListResult[ent.Situation], error)
+		CreateSituation(context.Context, CreateSituationParams) (*ent.Situation, error)
+		GetSituation(context.Context, uuid.UUID) (*ent.Situation, error)
+		CloseSituation(context.Context, CloseSituationParams) (*ent.Situation, error)
+		LinkAlertEpisodeToSituation(context.Context, LinkAlertEpisodeToSituationParams) (*ent.AlertEpisode, error)
+
+		CreateSituationInvestigation(context.Context, CreateSituationInvestigationParams) (*ent.SituationInvestigation, error)
+		GetSituationInvestigation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)
+		SetSituationInvestigationReport(context.Context, SetSituationInvestigationReportParams) (*ent.SituationInvestigation, error)
+
+		ListSituationHazardAssessments(context.Context, ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error)
+		AddSituationHazardAssessment(context.Context, AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error)
+	}
+)
+
+type (
+	CreateSystemHazardParams struct {
+		Title                 string
+		Description           string
+		PotentialConsequences string
+	}
+
+	RetireSystemHazardParams struct {
+		SystemHazardID uuid.UUID
+	}
+
+	AddSystemHazardRiskAssessmentParams struct {
+		SystemHazardID uuid.UUID
+		Likelihood     string
+		Consequence    string
+		RiskLevel      string
+		Rationale      string
+		AssessedAt     time.Time
+	}
+
+	ListSystemHazardRiskAssessmentsParams struct {
+		ent.ListParams
+		SystemHazardID uuid.UUID
+	}
+
+	SystemHazardService interface {
+		CreateSystemHazard(context.Context, CreateSystemHazardParams) (*ent.SystemHazard, error)
+		GetSystemHazard(context.Context, uuid.UUID) (*ent.SystemHazard, error)
+		RetireSystemHazard(context.Context, RetireSystemHazardParams) (*ent.SystemHazard, error)
+
+		AddSystemHazardRiskAssessment(context.Context, AddSystemHazardRiskAssessmentParams) (*ent.SystemHazardRiskAssessment, error)
+		ListSystemHazardRiskAssessments(context.Context, ListSystemHazardRiskAssessmentsParams) (*ent.ListResult[ent.SystemHazardRiskAssessment], error)
+		GetLatestSystemHazardRiskAssessment(context.Context, uuid.UUID) (*ent.SystemHazardRiskAssessment, error)
 	}
 )
 

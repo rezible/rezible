@@ -44,6 +44,8 @@ const (
 	EdgeArtifacts = "artifacts"
 	// EdgeBindings holds the string denoting the bindings edge name in mutations.
 	EdgeBindings = "bindings"
+	// EdgeSituationInvestigation holds the string denoting the situation_investigation edge name in mutations.
+	EdgeSituationInvestigation = "situation_investigation"
 	// Table holds the table name of the agentsession in the database.
 	Table = "agent_sessions"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -88,6 +90,13 @@ const (
 	BindingsInverseTable = "agent_session_bindings"
 	// BindingsColumn is the table column denoting the bindings relation/edge.
 	BindingsColumn = "agent_session_id"
+	// SituationInvestigationTable is the table that holds the situation_investigation relation/edge.
+	SituationInvestigationTable = "situation_investigations"
+	// SituationInvestigationInverseTable is the table name for the SituationInvestigation entity.
+	// It exists in this package in order to avoid circular dependency with the "situationinvestigation" package.
+	SituationInvestigationInverseTable = "situation_investigations"
+	// SituationInvestigationColumn is the table column denoting the situation_investigation relation/edge.
+	SituationInvestigationColumn = "agent_session_id"
 )
 
 // Columns holds all SQL columns for agentsession fields.
@@ -237,6 +246,13 @@ func ByBindings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newBindingsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySituationInvestigationField orders the results by situation_investigation field.
+func BySituationInvestigationField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSituationInvestigationStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -277,5 +293,12 @@ func newBindingsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(BindingsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, BindingsTable, BindingsColumn),
+	)
+}
+func newSituationInvestigationStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SituationInvestigationInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, SituationInvestigationTable, SituationInvestigationColumn),
 	)
 }

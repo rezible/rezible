@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/alertepisode"
+	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -28,6 +29,8 @@ type AlertEpisode struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AlertDefinitionID holds the value of the "alert_definition_id" field.
 	AlertDefinitionID uuid.UUID `json:"alert_definition_id,omitempty"`
+	// SituationID holds the value of the "situation_id" field.
+	SituationID *uuid.UUID `json:"situation_id,omitempty"`
 	// Status holds the value of the "status" field.
 	Status alertepisode.Status `json:"status,omitempty"`
 	// StartedAt holds the value of the "started_at" field.
@@ -50,9 +53,11 @@ type AlertEpisodeEdges struct {
 	AlertDefinition *AlertDefinition `json:"alert_definition,omitempty"`
 	// Instances holds the value of the instances edge.
 	Instances []*AlertInstance `json:"instances,omitempty"`
+	// Situation holds the value of the situation edge.
+	Situation *Situation `json:"situation,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -86,11 +91,24 @@ func (e AlertEpisodeEdges) InstancesOrErr() ([]*AlertInstance, error) {
 	return nil, &NotLoadedError{edge: "instances"}
 }
 
+// SituationOrErr returns the Situation value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AlertEpisodeEdges) SituationOrErr() (*Situation, error) {
+	if e.Situation != nil {
+		return e.Situation, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: situation.Label}
+	}
+	return nil, &NotLoadedError{edge: "situation"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*AlertEpisode) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case alertepisode.FieldSituationID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case alertepisode.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case alertepisode.FieldStatus:
@@ -143,6 +161,13 @@ func (_m *AlertEpisode) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field alert_definition_id", values[i])
 			} else if value != nil {
 				_m.AlertDefinitionID = *value
+			}
+		case alertepisode.FieldSituationID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field situation_id", values[i])
+			} else if value.Valid {
+				_m.SituationID = new(uuid.UUID)
+				*_m.SituationID = *value.S.(*uuid.UUID)
 			}
 		case alertepisode.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -197,6 +222,11 @@ func (_m *AlertEpisode) QueryInstances() *AlertInstanceQuery {
 	return NewAlertEpisodeClient(_m.config).QueryInstances(_m)
 }
 
+// QuerySituation queries the "situation" edge of the AlertEpisode entity.
+func (_m *AlertEpisode) QuerySituation() *SituationQuery {
+	return NewAlertEpisodeClient(_m.config).QuerySituation(_m)
+}
+
 // Update returns a builder for updating this AlertEpisode.
 // Note that you need to call AlertEpisode.Unwrap() before calling this method if this AlertEpisode
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -231,6 +261,11 @@ func (_m *AlertEpisode) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("alert_definition_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AlertDefinitionID))
+	builder.WriteString(", ")
+	if v := _m.SituationID; v != nil {
+		builder.WriteString("situation_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))

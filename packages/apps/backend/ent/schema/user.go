@@ -48,6 +48,7 @@ func (User) Edges() []ent.Edge {
 		edge.From("oncall_shifts", OncallShift.Type).Ref("user"),
 
 		edge.From("event_annotations", EventAnnotation.Type).Ref("creator"),
+		edge.From("situation_hazard_assessments", SituationHazardAssessment.Type).Ref("user"),
 
 		edge.From("integration_oauth_states", IntegrationUserInstallState.Type).Ref("user"),
 

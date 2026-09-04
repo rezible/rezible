@@ -9,21 +9,21 @@ import (
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
-type AlertsInsufficientContext struct {
-	fixture alertFixture
+type InvestigationInsufficientContext struct {
+	fixture investigationFixture
 }
 
-func (*AlertsInsufficientContext) Definition() rezai.EvalScenarioDefinition {
+func (*InvestigationInsufficientContext) Definition() rezai.EvalScenarioDefinition {
 	return rezai.EvalScenarioDefinition{
-		Name:        "alerts/insufficient-context",
-		AgentName:   rezai.AlertsAgent.Name,
-		Description: "The alerts agent should acknowledge missing evidence and recommend useful next checks without recording unsupported findings.",
+		Name:        "investigation/insufficient-context",
+		AgentName:   rezai.InvestigationAgent.Name,
+		Description: "The investigation agent should acknowledge missing evidence and recommend useful next checks without recording unsupported findings.",
 	}
 }
 
-func (s *AlertsInsufficientContext) Seed(ctx context.Context, client *ent.Client) (rezai.EvalScenarioSeed, error) {
+func (s *InvestigationInsufficientContext) Seed(ctx context.Context, client *ent.Client) (rezai.EvalScenarioSeed, error) {
 	referenceTime := time.Now().UTC().Truncate(time.Second)
-	fixture, seed, seedErr := seedBaseAlert(ctx, client, referenceTime)
+	fixture, seed, seedErr := seedBaseInvestigation(ctx, client, referenceTime)
 	if seedErr != nil {
 		return rezai.EvalScenarioSeed{}, seedErr
 	}
@@ -31,8 +31,8 @@ func (s *AlertsInsufficientContext) Seed(ctx context.Context, client *ent.Client
 	return seed, nil
 }
 
-func (s *AlertsInsufficientContext) Grade(ctx context.Context, client *ent.Client, result *rez.AiAgentInvocationResult) (rezai.EvalScenarioGrade, error) {
-	report, artifactCheck := decodeInvestigationReport(result)
+func (s *InvestigationInsufficientContext) Grade(ctx context.Context, client *ent.Client, result *rez.AiAgentInvocationResult) (rezai.EvalScenarioGrade, error) {
+	report, artifactCheck := decodeSituationInvestigationReport(result)
 	if report == nil {
 		return rezai.EvalScenarioGrade{Checks: []rezai.EvalCheck{artifactCheck}}, nil
 	}

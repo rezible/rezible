@@ -54,28 +54,28 @@ func (d AgentDefinition[I, S]) ValidateInput(raw []byte) (*I, error) {
 }
 
 type (
-	AlertAgentInput struct {
-		AlertInstanceID uuid.UUID `json:"alert_instance_id"`
+	InvestigationAgentInput struct {
+		SituationID uuid.UUID `json:"situation_id"`
 	}
 
-	AlertAgentState struct {
+	InvestigationAgentState struct {
 		ReportReady bool `json:"report_ready"`
 	}
 
-	AlertsAgentDefinition = AgentDefinition[AlertAgentInput, AlertAgentState]
+	InvestigationAgentDefinition = AgentDefinition[InvestigationAgentInput, InvestigationAgentState]
 )
 
-func (i AlertAgentInput) Validate() error {
-	if i.AlertInstanceID == uuid.Nil {
-		return fmt.Errorf("invalid alert instance id %s", i.AlertInstanceID)
+func (i InvestigationAgentInput) Validate() error {
+	if i.SituationID == uuid.Nil {
+		return fmt.Errorf("invalid situation id %s", i.SituationID)
 	}
 	return nil
 }
 
-var AlertsAgent = AlertsAgentDefinition{
-	Name:        "alerts",
-	Description: "an alert investigation agent",
-	SystemPrompt: `You are Rezible's alerts agent. You help software engineering teams quickly understand an alert, identify likely causes, assess impact, and decide the next action.
+var InvestigationAgent = InvestigationAgentDefinition{
+	Name:        "investigation",
+	Description: "an operational investigation agent",
+	SystemPrompt: `You are Rezible's investigation agent. You help software engineering teams understand an operational situation, identify likely causes, assess impact, and decide the next action.
 
 Work like an experienced on-call engineer:
 - Be concise, direct, and evidence-led.
@@ -86,8 +86,8 @@ Work like an experienced on-call engineer:
 - Do not recommend risky remediation unless the evidence supports it and the operator has enough context to execute it safely.
 
 Investigation flow:
-1. Establish the alert scope: title, description, definition/query, severity, service, environment, tenant/customer impact, firing time, current state, labels, annotations, and raw payload.
-2. Build a short timeline around the firing window, including deploys, config changes, incidents, alerts, metric changes, log errors, trace anomalies, dependency issues, and infrastructure events.
+1. Establish the situation scope: title, summary, status, opening time, affected systems, environment, tenant/customer impact, and current signals.
+2. Build a short timeline around the situation, including deploys, config changes, incidents, alerts, metric changes, log errors, trace anomalies, dependency issues, and infrastructure events.
 3. Identify blast radius: affected systems, customer/user impact, duration, saturation/error/latency symptoms, and whether the condition is worsening, stable, or recovering.
 4. Form one or more hypotheses. For each, name the evidence that supports it and the evidence that would disprove it.
 5. Recommend the next checks and actions in priority order. Prefer reversible, low-risk checks before mitigation. Include escalation guidance when ownership or severity warrants it.
@@ -106,7 +106,7 @@ When responding during investigation, use this structure when it fits:
 - Missing context: specific questions or needed tool outputs.
 - Recommended next actions: ordered, actionable checks or mitigations.
 
-When the investigation is ready for a final report, call save_alert_investigation_report. The report text must be concise enough to fit in a Slack message.`,
+When the investigation is ready for a final report, call save_situation_investigation_report. The report text must be concise enough to fit in a Slack message.`,
 }
 
 type (

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -54,9 +55,11 @@ type SystemAnalysisEdges struct {
 	Entries []*SystemAnalysisEntry `json:"entries,omitempty"`
 	// AgentSessions holds the value of the agent_sessions edge.
 	AgentSessions []*AgentSession `json:"agent_sessions,omitempty"`
+	// SituationInvestigation holds the value of the situation_investigation edge.
+	SituationInvestigation *SituationInvestigation `json:"situation_investigation,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -126,6 +129,17 @@ func (e SystemAnalysisEdges) AgentSessionsOrErr() ([]*AgentSession, error) {
 		return e.AgentSessions, nil
 	}
 	return nil, &NotLoadedError{edge: "agent_sessions"}
+}
+
+// SituationInvestigationOrErr returns the SituationInvestigation value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemAnalysisEdges) SituationInvestigationOrErr() (*SituationInvestigation, error) {
+	if e.SituationInvestigation != nil {
+		return e.SituationInvestigation, nil
+	} else if e.loadedTypes[7] {
+		return nil, &NotFoundError{label: situationinvestigation.Label}
+	}
+	return nil, &NotLoadedError{edge: "situation_investigation"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -247,6 +261,11 @@ func (_m *SystemAnalysis) QueryEntries() *SystemAnalysisEntryQuery {
 // QueryAgentSessions queries the "agent_sessions" edge of the SystemAnalysis entity.
 func (_m *SystemAnalysis) QueryAgentSessions() *AgentSessionQuery {
 	return NewSystemAnalysisClient(_m.config).QueryAgentSessions(_m)
+}
+
+// QuerySituationInvestigation queries the "situation_investigation" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QuerySituationInvestigation() *SituationInvestigationQuery {
+	return NewSystemAnalysisClient(_m.config).QuerySituationInvestigation(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysis.

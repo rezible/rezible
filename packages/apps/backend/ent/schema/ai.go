@@ -47,6 +47,7 @@ func (AgentSession) Edges() []ent.Edge {
 		edge.To("messages", AgentMessage.Type),
 		edge.To("artifacts", AgentArtifact.Type),
 		edge.To("bindings", AgentSessionBinding.Type),
+		edge.To("situation_investigation", SituationInvestigation.Type).Unique(),
 	}
 }
 
@@ -156,6 +157,7 @@ func (AgentTurn) Edges() []ent.Edge {
 
 		edge.To("messages", AgentMessage.Type),
 		edge.To("artifacts", AgentArtifact.Type),
+		edge.From("situation_hazard_assessments", SituationHazardAssessment.Type).Ref("agent_turn"),
 	}
 }
 

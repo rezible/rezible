@@ -30,8 +30,6 @@ type Tx struct {
 	AlertFeedback *AlertFeedbackClient
 	// AlertInstance is the client for interacting with the AlertInstance builders.
 	AlertInstance *AlertInstanceClient
-	// AlertInvestigation is the client for interacting with the AlertInvestigation builders.
-	AlertInvestigation *AlertInvestigationClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
@@ -128,6 +126,12 @@ type Tx struct {
 	RetrospectiveComment *RetrospectiveCommentClient
 	// RetrospectiveReview is the client for interacting with the RetrospectiveReview builders.
 	RetrospectiveReview *RetrospectiveReviewClient
+	// Situation is the client for interacting with the Situation builders.
+	Situation *SituationClient
+	// SituationHazardAssessment is the client for interacting with the SituationHazardAssessment builders.
+	SituationHazardAssessment *SituationHazardAssessmentClient
+	// SituationInvestigation is the client for interacting with the SituationInvestigation builders.
+	SituationInvestigation *SituationInvestigationClient
 	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
 	SystemAnalysis *SystemAnalysisClient
 	// SystemAnalysisEntity is the client for interacting with the SystemAnalysisEntity builders.
@@ -138,6 +142,10 @@ type Tx struct {
 	SystemAnalysisEntrySubject *SystemAnalysisEntrySubjectClient
 	// SystemAnalysisRelationship is the client for interacting with the SystemAnalysisRelationship builders.
 	SystemAnalysisRelationship *SystemAnalysisRelationshipClient
+	// SystemHazard is the client for interacting with the SystemHazard builders.
+	SystemHazard *SystemHazardClient
+	// SystemHazardRiskAssessment is the client for interacting with the SystemHazardRiskAssessment builders.
+	SystemHazardRiskAssessment *SystemHazardRiskAssessmentClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -294,7 +302,6 @@ func (tx *Tx) init() {
 	tx.AlertEpisode = NewAlertEpisodeClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertInstance = NewAlertInstanceClient(tx.config)
-	tx.AlertInvestigation = NewAlertInvestigationClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
 	tx.DocumentAccess = NewDocumentAccessClient(tx.config)
@@ -343,11 +350,16 @@ func (tx *Tx) init() {
 	tx.Retrospective = NewRetrospectiveClient(tx.config)
 	tx.RetrospectiveComment = NewRetrospectiveCommentClient(tx.config)
 	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)
+	tx.Situation = NewSituationClient(tx.config)
+	tx.SituationHazardAssessment = NewSituationHazardAssessmentClient(tx.config)
+	tx.SituationInvestigation = NewSituationInvestigationClient(tx.config)
 	tx.SystemAnalysis = NewSystemAnalysisClient(tx.config)
 	tx.SystemAnalysisEntity = NewSystemAnalysisEntityClient(tx.config)
 	tx.SystemAnalysisEntry = NewSystemAnalysisEntryClient(tx.config)
 	tx.SystemAnalysisEntrySubject = NewSystemAnalysisEntrySubjectClient(tx.config)
 	tx.SystemAnalysisRelationship = NewSystemAnalysisRelationshipClient(tx.config)
+	tx.SystemHazard = NewSystemHazardClient(tx.config)
+	tx.SystemHazardRiskAssessment = NewSystemHazardRiskAssessmentClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
 	tx.TeamMembership = NewTeamMembershipClient(tx.config)

@@ -67,9 +67,11 @@ type AgentTurnEdges struct {
 	Messages []*AgentMessage `json:"messages,omitempty"`
 	// Artifacts holds the value of the artifacts edge.
 	Artifacts []*AgentArtifact `json:"artifacts,omitempty"`
+	// SituationHazardAssessments holds the value of the situation_hazard_assessments edge.
+	SituationHazardAssessments []*SituationHazardAssessment `json:"situation_hazard_assessments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -121,6 +123,15 @@ func (e AgentTurnEdges) ArtifactsOrErr() ([]*AgentArtifact, error) {
 		return e.Artifacts, nil
 	}
 	return nil, &NotLoadedError{edge: "artifacts"}
+}
+
+// SituationHazardAssessmentsOrErr returns the SituationHazardAssessments value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentTurnEdges) SituationHazardAssessmentsOrErr() ([]*SituationHazardAssessment, error) {
+	if e.loadedTypes[5] {
+		return e.SituationHazardAssessments, nil
+	}
+	return nil, &NotLoadedError{edge: "situation_hazard_assessments"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -281,6 +292,11 @@ func (_m *AgentTurn) QueryMessages() *AgentMessageQuery {
 // QueryArtifacts queries the "artifacts" edge of the AgentTurn entity.
 func (_m *AgentTurn) QueryArtifacts() *AgentArtifactQuery {
 	return NewAgentTurnClient(_m.config).QueryArtifacts(_m)
+}
+
+// QuerySituationHazardAssessments queries the "situation_hazard_assessments" edge of the AgentTurn entity.
+func (_m *AgentTurn) QuerySituationHazardAssessments() *SituationHazardAssessmentQuery {
+	return NewAgentTurnClient(_m.config).QuerySituationHazardAssessments(_m)
 }
 
 // Update returns a builder for updating this AgentTurn.

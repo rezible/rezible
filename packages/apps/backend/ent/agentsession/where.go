@@ -506,6 +506,35 @@ func HasBindingsWith(preds ...predicate.AgentSessionBinding) predicate.AgentSess
 	})
 }
 
+// HasSituationInvestigation applies the HasEdge predicate on the "situation_investigation" edge.
+func HasSituationInvestigation() predicate.AgentSession {
+	return predicate.AgentSession(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, SituationInvestigationTable, SituationInvestigationColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationInvestigation
+		step.Edge.Schema = schemaConfig.SituationInvestigation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSituationInvestigationWith applies the HasEdge predicate on the "situation_investigation" edge with a given conditions (other predicates).
+func HasSituationInvestigationWith(preds ...predicate.SituationInvestigation) predicate.AgentSession {
+	return predicate.AgentSession(func(s *sql.Selector) {
+		step := newSituationInvestigationStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationInvestigation
+		step.Edge.Schema = schemaConfig.SituationInvestigation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.AgentSession) predicate.AgentSession {
 	return predicate.AgentSession(sql.AndPredicates(predicates...))

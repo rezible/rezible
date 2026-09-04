@@ -7,7 +7,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 type AlertDefinition struct {
@@ -97,6 +96,7 @@ func (AlertEpisode) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("alert_definition_id", uuid.UUID{}).Immutable(),
+		field.UUID("situation_id", uuid.UUID{}).Optional().Nillable(),
 		field.Enum("status").Values("open", "closed").Default("open"),
 		field.Time("started_at"),
 		field.Time("last_observed_at"),
@@ -113,6 +113,10 @@ func (AlertEpisode) Edges() []ent.Edge {
 			Immutable().
 			Field("alert_definition_id"),
 		edge.To("instances", AlertInstance.Type),
+		edge.From("situation", Situation.Type).
+			Ref("alert_episodes").
+			Unique().
+			Field("situation_id"),
 	}
 }
 
@@ -121,49 +125,7 @@ func (AlertEpisode) Indexes() []ent.Index {
 		index.Fields("tenant_id", "alert_definition_id").
 			Unique().
 			Annotations(entsql.IndexWhere("status = 'open'")),
-	}
-}
-
-type AlertInvestigation struct {
-	ent.Schema
-}
-
-func (AlertInvestigation) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-		TimestampsMixin{},
-	}
-}
-
-func (AlertInvestigation) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("alert_instance_id", uuid.UUID{}),
-		field.UUID("agent_session_id", uuid.UUID{}),
-		field.JSON("report", schematypes.AlertInvestigationReport{}).
-			SchemaType(schemaTypeJsonB).
-			Optional(),
-	}
-}
-
-func (AlertInvestigation) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("alert_instance", AlertInstance.Type).
-			Unique().
-			Required().
-			Field("alert_instance_id"),
-		edge.To("agent_session", AgentSession.Type).
-			Unique().
-			Required().
-			Field("agent_session_id"),
-	}
-}
-
-func (AlertInvestigation) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "alert_instance_id", "created_at"),
-		index.Fields("tenant_id", "agent_session_id").Unique(),
+		index.Fields("tenant_id", "situation_id"),
 	}
 }
 

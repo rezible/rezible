@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
@@ -193,6 +194,25 @@ func (_c *SystemAnalysisCreate) AddAgentSessions(v ...*AgentSession) *SystemAnal
 		ids[i] = v[i].ID
 	}
 	return _c.AddAgentSessionIDs(ids...)
+}
+
+// SetSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by ID.
+func (_c *SystemAnalysisCreate) SetSituationInvestigationID(id uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.SetSituationInvestigationID(id)
+	return _c
+}
+
+// SetNillableSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by ID if the given value is not nil.
+func (_c *SystemAnalysisCreate) SetNillableSituationInvestigationID(id *uuid.UUID) *SystemAnalysisCreate {
+	if id != nil {
+		_c = _c.SetSituationInvestigationID(*id)
+	}
+	return _c
+}
+
+// SetSituationInvestigation sets the "situation_investigation" edge to the SituationInvestigation entity.
+func (_c *SystemAnalysisCreate) SetSituationInvestigation(v *SituationInvestigation) *SystemAnalysisCreate {
+	return _c.SetSituationInvestigationID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisMutation object of the builder.
@@ -436,6 +456,23 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentSession
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SituationInvestigationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   systemanalysis.SituationInvestigationTable,
+			Columns: []string{systemanalysis.SituationInvestigationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationinvestigation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationInvestigation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

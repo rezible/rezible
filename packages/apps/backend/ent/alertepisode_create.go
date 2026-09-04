@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -64,6 +65,20 @@ func (_c *AlertEpisodeCreate) SetNillableUpdatedAt(v *time.Time) *AlertEpisodeCr
 // SetAlertDefinitionID sets the "alert_definition_id" field.
 func (_c *AlertEpisodeCreate) SetAlertDefinitionID(v uuid.UUID) *AlertEpisodeCreate {
 	_c.mutation.SetAlertDefinitionID(v)
+	return _c
+}
+
+// SetSituationID sets the "situation_id" field.
+func (_c *AlertEpisodeCreate) SetSituationID(v uuid.UUID) *AlertEpisodeCreate {
+	_c.mutation.SetSituationID(v)
+	return _c
+}
+
+// SetNillableSituationID sets the "situation_id" field if the given value is not nil.
+func (_c *AlertEpisodeCreate) SetNillableSituationID(v *uuid.UUID) *AlertEpisodeCreate {
+	if v != nil {
+		_c.SetSituationID(*v)
+	}
 	return _c
 }
 
@@ -144,6 +159,11 @@ func (_c *AlertEpisodeCreate) AddInstances(v ...*AlertInstance) *AlertEpisodeCre
 		ids[i] = v[i].ID
 	}
 	return _c.AddInstanceIDs(ids...)
+}
+
+// SetSituation sets the "situation" edge to the Situation entity.
+func (_c *AlertEpisodeCreate) SetSituation(v *Situation) *AlertEpisodeCreate {
+	return _c.SetSituationID(v.ID)
 }
 
 // Mutation returns the AlertEpisodeMutation object of the builder.
@@ -359,6 +379,24 @@ func (_c *AlertEpisodeCreate) createSpec() (*AlertEpisode, *sqlgraph.CreateSpec)
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.SituationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alertepisode.SituationTable,
+			Columns: []string{alertepisode.SituationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AlertEpisode
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.SituationID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -432,6 +470,24 @@ func (u *AlertEpisodeUpsert) SetUpdatedAt(v time.Time) *AlertEpisodeUpsert {
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
 func (u *AlertEpisodeUpsert) UpdateUpdatedAt() *AlertEpisodeUpsert {
 	u.SetExcluded(alertepisode.FieldUpdatedAt)
+	return u
+}
+
+// SetSituationID sets the "situation_id" field.
+func (u *AlertEpisodeUpsert) SetSituationID(v uuid.UUID) *AlertEpisodeUpsert {
+	u.Set(alertepisode.FieldSituationID, v)
+	return u
+}
+
+// UpdateSituationID sets the "situation_id" field to the value that was provided on create.
+func (u *AlertEpisodeUpsert) UpdateSituationID() *AlertEpisodeUpsert {
+	u.SetExcluded(alertepisode.FieldSituationID)
+	return u
+}
+
+// ClearSituationID clears the value of the "situation_id" field.
+func (u *AlertEpisodeUpsert) ClearSituationID() *AlertEpisodeUpsert {
+	u.SetNull(alertepisode.FieldSituationID)
 	return u
 }
 
@@ -568,6 +624,27 @@ func (u *AlertEpisodeUpsertOne) SetUpdatedAt(v time.Time) *AlertEpisodeUpsertOne
 func (u *AlertEpisodeUpsertOne) UpdateUpdatedAt() *AlertEpisodeUpsertOne {
 	return u.Update(func(s *AlertEpisodeUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetSituationID sets the "situation_id" field.
+func (u *AlertEpisodeUpsertOne) SetSituationID(v uuid.UUID) *AlertEpisodeUpsertOne {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.SetSituationID(v)
+	})
+}
+
+// UpdateSituationID sets the "situation_id" field to the value that was provided on create.
+func (u *AlertEpisodeUpsertOne) UpdateSituationID() *AlertEpisodeUpsertOne {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.UpdateSituationID()
+	})
+}
+
+// ClearSituationID clears the value of the "situation_id" field.
+func (u *AlertEpisodeUpsertOne) ClearSituationID() *AlertEpisodeUpsertOne {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.ClearSituationID()
 	})
 }
 
@@ -880,6 +957,27 @@ func (u *AlertEpisodeUpsertBulk) SetUpdatedAt(v time.Time) *AlertEpisodeUpsertBu
 func (u *AlertEpisodeUpsertBulk) UpdateUpdatedAt() *AlertEpisodeUpsertBulk {
 	return u.Update(func(s *AlertEpisodeUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetSituationID sets the "situation_id" field.
+func (u *AlertEpisodeUpsertBulk) SetSituationID(v uuid.UUID) *AlertEpisodeUpsertBulk {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.SetSituationID(v)
+	})
+}
+
+// UpdateSituationID sets the "situation_id" field to the value that was provided on create.
+func (u *AlertEpisodeUpsertBulk) UpdateSituationID() *AlertEpisodeUpsertBulk {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.UpdateSituationID()
+	})
+}
+
+// ClearSituationID clears the value of the "situation_id" field.
+func (u *AlertEpisodeUpsertBulk) ClearSituationID() *AlertEpisodeUpsertBulk {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.ClearSituationID()
 	})
 }
 

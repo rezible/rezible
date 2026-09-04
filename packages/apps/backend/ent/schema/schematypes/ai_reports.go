@@ -1,7 +1,7 @@
 package schematypes
 
 type (
-	AlertInvestigationReport struct {
+	SituationInvestigationReport struct {
 		Text               string   `json:"text"`
 		Limitations        []string `json:"limitations,omitempty"`
 		LikelyCause        string   `json:"likely_cause,omitempty"`

@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
+	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -212,6 +213,21 @@ func (_c *AgentTurnCreate) AddArtifacts(v ...*AgentArtifact) *AgentTurnCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddArtifactIDs(ids...)
+}
+
+// AddSituationHazardAssessmentIDs adds the "situation_hazard_assessments" edge to the SituationHazardAssessment entity by IDs.
+func (_c *AgentTurnCreate) AddSituationHazardAssessmentIDs(ids ...uuid.UUID) *AgentTurnCreate {
+	_c.mutation.AddSituationHazardAssessmentIDs(ids...)
+	return _c
+}
+
+// AddSituationHazardAssessments adds the "situation_hazard_assessments" edges to the SituationHazardAssessment entity.
+func (_c *AgentTurnCreate) AddSituationHazardAssessments(v ...*SituationHazardAssessment) *AgentTurnCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSituationHazardAssessmentIDs(ids...)
 }
 
 // Mutation returns the AgentTurnMutation object of the builder.
@@ -474,6 +490,23 @@ func (_c *AgentTurnCreate) createSpec() (*AgentTurn, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SituationHazardAssessmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentturn.SituationHazardAssessmentsTable,
+			Columns: []string{agentturn.SituationHazardAssessmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationHazardAssessment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

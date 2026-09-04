@@ -129,10 +129,10 @@ func makeGenkitProvider(ctx context.Context) Provider {
 				do.MustInvoke[rez.SystemAnalysisService](i),
 				do.MustInvoke[rez.KnowledgeGraphService](i),
 			)
-			alertSvc := do.MustInvoke[rez.AlertService](i)
+			situationSvc := do.MustInvoke[rez.SituationService](i)
 			opts := []genkit.AiServiceOption{
 				genkit.WithAgent(genkit.NewChatAgent()),
-				genkit.WithAgent(genkit.NewAlertsAgent(alertSvc), analysisMw),
+				genkit.WithAgent(genkit.NewInvestigationAgent(situationSvc), analysisMw),
 				genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
 			}
 			return opts, nil
@@ -401,13 +401,16 @@ var provideDatabaseServices = do.Package(
 		)
 	}),
 
-	do.Lazy(func(i do.Injector) (rez.InvestigationService, error) {
-		return db.NewInvestigationService(
+	do.Lazy(func(i do.Injector) (rez.SituationService, error) {
+		return db.NewSituationService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.AlertService](i),
 			do.MustInvoke[rez.AgentSessionService](i),
 		)
+	}),
+
+	do.Lazy(func(i do.Injector) (rez.SystemHazardService, error) {
+		return db.NewSystemHazardService(do.MustInvoke[rez.Database](i))
 	}),
 )
 

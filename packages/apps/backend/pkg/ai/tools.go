@@ -184,16 +184,16 @@ var RecordAnalysisFindingTool = defineTool[ToolDefinition[RecordAnalysisFindingT
 )
 
 type (
-	SaveAlertInvestigationReportToolInput struct {
-		Report schematypes.AlertInvestigationReport `json:"report" jsonschema:"description=Completed alert investigation report"`
+	SaveSituationInvestigationReportToolInput struct {
+		Report schematypes.SituationInvestigationReport `json:"report" jsonschema:"description=Completed situation investigation report"`
 	}
 
-	SaveAlertInvestigationReportToolOutput struct {
+	SaveSituationInvestigationReportToolOutput struct {
 		Saved bool `json:"saved"`
 	}
 )
 
-var SaveAlertInvestigationReportTool = defineTool[ToolDefinition[SaveAlertInvestigationReportToolInput, SaveAlertInvestigationReportToolOutput]](
-	"save_alert_investigation_report",
-	"Save the alert investigation report for this agent session.",
+var SaveSituationInvestigationReportTool = defineTool[ToolDefinition[SaveSituationInvestigationReportToolInput, SaveSituationInvestigationReportToolOutput]](
+	"save_situation_investigation_report",
+	"Save the situation investigation report for this agent session.",
 )

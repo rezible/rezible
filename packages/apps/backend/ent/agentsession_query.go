@@ -21,6 +21,7 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -28,17 +29,18 @@ import (
 // AgentSessionQuery is the builder for querying AgentSession entities.
 type AgentSessionQuery struct {
 	config
-	ctx                *QueryContext
-	order              []agentsession.OrderOption
-	inters             []Interceptor
-	predicates         []predicate.AgentSession
-	withTenant         *TenantQuery
-	withSystemAnalysis *SystemAnalysisQuery
-	withTurns          *AgentTurnQuery
-	withMessages       *AgentMessageQuery
-	withArtifacts      *AgentArtifactQuery
-	withBindings       *AgentSessionBindingQuery
-	modifiers          []func(*sql.Selector)
+	ctx                        *QueryContext
+	order                      []agentsession.OrderOption
+	inters                     []Interceptor
+	predicates                 []predicate.AgentSession
+	withTenant                 *TenantQuery
+	withSystemAnalysis         *SystemAnalysisQuery
+	withTurns                  *AgentTurnQuery
+	withMessages               *AgentMessageQuery
+	withArtifacts              *AgentArtifactQuery
+	withBindings               *AgentSessionBindingQuery
+	withSituationInvestigation *SituationInvestigationQuery
+	modifiers                  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -219,6 +221,31 @@ func (_q *AgentSessionQuery) QueryBindings() *AgentSessionBindingQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentSessionBinding
 		step.Edge.Schema = schemaConfig.AgentSessionBinding
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySituationInvestigation chains the current query on the "situation_investigation" edge.
+func (_q *AgentSessionQuery) QuerySituationInvestigation() *SituationInvestigationQuery {
+	query := (&SituationInvestigationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentsession.Table, agentsession.FieldID, selector),
+			sqlgraph.To(situationinvestigation.Table, situationinvestigation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, agentsession.SituationInvestigationTable, agentsession.SituationInvestigationColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SituationInvestigation
+		step.Edge.Schema = schemaConfig.SituationInvestigation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -412,17 +439,18 @@ func (_q *AgentSessionQuery) Clone() *AgentSessionQuery {
 		return nil
 	}
 	return &AgentSessionQuery{
-		config:             _q.config,
-		ctx:                _q.ctx.Clone(),
-		order:              append([]agentsession.OrderOption{}, _q.order...),
-		inters:             append([]Interceptor{}, _q.inters...),
-		predicates:         append([]predicate.AgentSession{}, _q.predicates...),
-		withTenant:         _q.withTenant.Clone(),
-		withSystemAnalysis: _q.withSystemAnalysis.Clone(),
-		withTurns:          _q.withTurns.Clone(),
-		withMessages:       _q.withMessages.Clone(),
-		withArtifacts:      _q.withArtifacts.Clone(),
-		withBindings:       _q.withBindings.Clone(),
+		config:                     _q.config,
+		ctx:                        _q.ctx.Clone(),
+		order:                      append([]agentsession.OrderOption{}, _q.order...),
+		inters:                     append([]Interceptor{}, _q.inters...),
+		predicates:                 append([]predicate.AgentSession{}, _q.predicates...),
+		withTenant:                 _q.withTenant.Clone(),
+		withSystemAnalysis:         _q.withSystemAnalysis.Clone(),
+		withTurns:                  _q.withTurns.Clone(),
+		withMessages:               _q.withMessages.Clone(),
+		withArtifacts:              _q.withArtifacts.Clone(),
+		withBindings:               _q.withBindings.Clone(),
+		withSituationInvestigation: _q.withSituationInvestigation.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -493,6 +521,17 @@ func (_q *AgentSessionQuery) WithBindings(opts ...func(*AgentSessionBindingQuery
 		opt(query)
 	}
 	_q.withBindings = query
+	return _q
+}
+
+// WithSituationInvestigation tells the query-builder to eager-load the nodes that are connected to
+// the "situation_investigation" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentSessionQuery) WithSituationInvestigation(opts ...func(*SituationInvestigationQuery)) *AgentSessionQuery {
+	query := (&SituationInvestigationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSituationInvestigation = query
 	return _q
 }
 
@@ -580,13 +619,14 @@ func (_q *AgentSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*AgentSession{}
 		_spec       = _q.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [7]bool{
 			_q.withTenant != nil,
 			_q.withSystemAnalysis != nil,
 			_q.withTurns != nil,
 			_q.withMessages != nil,
 			_q.withArtifacts != nil,
 			_q.withBindings != nil,
+			_q.withSituationInvestigation != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -649,6 +689,12 @@ func (_q *AgentSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		if err := _q.loadBindings(ctx, query, nodes,
 			func(n *AgentSession) { n.Edges.Bindings = []*AgentSessionBinding{} },
 			func(n *AgentSession, e *AgentSessionBinding) { n.Edges.Bindings = append(n.Edges.Bindings, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSituationInvestigation; query != nil {
+		if err := _q.loadSituationInvestigation(ctx, query, nodes, nil,
+			func(n *AgentSession, e *SituationInvestigation) { n.Edges.SituationInvestigation = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -821,6 +867,33 @@ func (_q *AgentSessionQuery) loadBindings(ctx context.Context, query *AgentSessi
 	}
 	query.Where(predicate.AgentSessionBinding(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(agentsession.BindingsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AgentSessionID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "agent_session_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *AgentSessionQuery) loadSituationInvestigation(ctx context.Context, query *SituationInvestigationQuery, nodes []*AgentSession, init func(*AgentSession), assign func(*AgentSession, *SituationInvestigation)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*AgentSession)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(situationinvestigation.FieldAgentSessionID)
+	}
+	query.Where(predicate.SituationInvestigation(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(agentsession.SituationInvestigationColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

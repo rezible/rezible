@@ -21,7 +21,6 @@ import (
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
-	"github.com/rezible/rezible/ent/alertinvestigation"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
@@ -70,11 +69,16 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationhazardassessment"
+	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
+	"github.com/rezible/rezible/ent/systemhazard"
+	"github.com/rezible/rezible/ent/systemhazardriskassessment"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -152,7 +156,6 @@ func checkColumn(t, c string) error {
 			alertepisode.Table:                    alertepisode.ValidColumn,
 			alertfeedback.Table:                   alertfeedback.ValidColumn,
 			alertinstance.Table:                   alertinstance.ValidColumn,
-			alertinvestigation.Table:              alertinvestigation.ValidColumn,
 			alertmetrics.Table:                    alertmetrics.ValidColumn,
 			document.Table:                        document.ValidColumn,
 			documentaccess.Table:                  documentaccess.ValidColumn,
@@ -201,11 +204,16 @@ func checkColumn(t, c string) error {
 			retrospective.Table:                   retrospective.ValidColumn,
 			retrospectivecomment.Table:            retrospectivecomment.ValidColumn,
 			retrospectivereview.Table:             retrospectivereview.ValidColumn,
+			situation.Table:                       situation.ValidColumn,
+			situationhazardassessment.Table:       situationhazardassessment.ValidColumn,
+			situationinvestigation.Table:          situationinvestigation.ValidColumn,
 			systemanalysis.Table:                  systemanalysis.ValidColumn,
 			systemanalysisentity.Table:            systemanalysisentity.ValidColumn,
 			systemanalysisentry.Table:             systemanalysisentry.ValidColumn,
 			systemanalysisentrysubject.Table:      systemanalysisentrysubject.ValidColumn,
 			systemanalysisrelationship.Table:      systemanalysisrelationship.ValidColumn,
+			systemhazard.Table:                    systemhazard.ValidColumn,
+			systemhazardriskassessment.Table:      systemhazardriskassessment.ValidColumn,
 			task.Table:                            task.ValidColumn,
 			team.Table:                            team.ValidColumn,
 			teammembership.Table:                  teammembership.ValidColumn,

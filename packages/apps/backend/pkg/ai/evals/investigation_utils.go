@@ -12,6 +12,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	"github.com/rezible/rezible/ent/situation"
 	sae "github.com/rezible/rezible/ent/systemanalysisentity"
 	saentry "github.com/rezible/rezible/ent/systemanalysisentry"
 	saentries "github.com/rezible/rezible/ent/systemanalysisentrysubject"
@@ -19,9 +20,9 @@ import (
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
-type alertFixture struct {
+type investigationFixture struct {
 	analysisID  uuid.UUID
-	alertEntity *ent.KnowledgeEntity
+	situationID uuid.UUID
 }
 
 type analysisState struct {
@@ -38,88 +39,57 @@ type subjectObservation struct {
 	ID          uuid.UUID `json:"id"`
 }
 
-func seedBaseAlert(ctx context.Context, client *ent.Client, referenceTime time.Time) (alertFixture, rezai.EvalScenarioSeed, error) {
-	alertEntity, entityErr := client.KnowledgeEntity.Create().
-		SetCategory(kne.CategorySignal).
-		SetKind("alert").
+func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTime time.Time) (investigationFixture, rezai.EvalScenarioSeed, error) {
+	situationEntity, entityErr := client.KnowledgeEntity.Create().
+		SetCategory(kne.CategoryEvent).
+		SetKind("situation").
 		Save(ctx)
 	if entityErr != nil {
-		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create alert knowledge entity: %w", entityErr)
+		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create situation knowledge entity: %w", entityErr)
 	}
 
 	description := fmt.Sprintf(
 		"The production Checkout API 5xx error rate exceeded its warning threshold at %s.",
 		referenceTime.Format(time.RFC3339),
 	)
-	createAlert := client.AlertDefinition.Create().
-		SetTitle("Checkout API error rate is high").
-		SetDescription(description).
-		SetDefinition(`sum(rate(checkout_http_requests_total{environment="production",status=~"5.."}[5m])) > 1`).
-		SetKnowledgeEntityID(alertEntity.ID)
-	definition, alertErr := createAlert.Save(ctx)
-	if alertErr != nil {
-		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create alert: %w", alertErr)
-	}
-
-	event, eventErr := client.NormalizedEvent.Create().
-		SetProvider("test").
-		SetProviderNamespace("alert-evals").
-		SetProviderResourceRef("checkout-alert").
-		SetProviderEventSource("alerts").
-		SetProviderEventRef("alert-event-" + uuid.NewString()).
-		SetKind("alert_instance").
-		SetAttributes([]byte("{}")).
-		SetOccurredAt(referenceTime).
-		SetReceivedAt(referenceTime).
-		Save(ctx)
-	if eventErr != nil {
-		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create normalized event: %w", eventErr)
-	}
-
-	episode, episodeErr := client.AlertEpisode.Create().
-		SetAlertDefinitionID(definition.ID).
-		SetStartedAt(referenceTime).
-		SetLastObservedAt(referenceTime).
-		Save(ctx)
-	if episodeErr != nil {
-		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create alert episode: %w", episodeErr)
-	}
-
-	instance, instanceErr := client.AlertInstance.Create().
-		SetAlertEpisodeID(episode.ID).
-		SetNormalizedEventID(event.ID).
-		Save(ctx)
-	if instanceErr != nil {
-		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create alert instance: %w", instanceErr)
+	createSituation := client.Situation.Create().
+		SetKnowledgeEntityID(situationEntity.ID).
+		SetTitle("Checkout API degradation").
+		SetSummary(description).
+		SetStatus(situation.StatusOpen).
+		SetOpenedAt(referenceTime)
+	createdSituation, situationErr := createSituation.Save(ctx)
+	if situationErr != nil {
+		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create situation: %w", situationErr)
 	}
 
 	createAnalysis := client.SystemAnalysis.Create().
-		SetSubjectEntityID(alertEntity.ID).
+		SetSubjectEntityID(situationEntity.ID).
 		SetReferenceTime(referenceTime)
 	analysis, analysisErr := createAnalysis.Save(ctx)
 	if analysisErr != nil {
-		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create system analysis: %w", analysisErr)
+		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create system analysis: %w", analysisErr)
 	}
 
 	createAnalysisEntity := client.SystemAnalysisEntity.Create().
 		SetAnalysisID(analysis.ID).
-		SetKnowledgeEntityID(alertEntity.ID)
+		SetKnowledgeEntityID(situationEntity.ID)
 	if analysisEntityErr := createAnalysisEntity.Exec(ctx); analysisEntityErr != nil {
-		return alertFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("include alert entity: %w", analysisEntityErr)
+		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("include situation entity: %w", analysisEntityErr)
 	}
 
-	fixture := alertFixture{analysisID: analysis.ID, alertEntity: alertEntity}
+	fixture := investigationFixture{analysisID: analysis.ID, situationID: createdSituation.ID}
 	seed := rezai.EvalScenarioSeed{
-		Input:            rezai.AlertAgentInput{AlertInstanceID: instance.ID},
+		Input:            rezai.InvestigationAgentInput{SituationID: fixture.situationID},
 		SystemAnalysisID: &analysis.ID,
 	}
 	return fixture, seed, nil
 }
 
-func decodeInvestigationReport(result *rez.AiAgentInvocationResult) (*schematypes.AlertInvestigationReport, rezai.EvalCheck) {
+func decodeSituationInvestigationReport(result *rez.AiAgentInvocationResult) (*schematypes.SituationInvestigationReport, rezai.EvalCheck) {
 	check := rezai.EvalCheck{
 		ID:       "report_artifact",
-		Expected: "valid investigation_report JSON artifact",
+		Expected: "valid situation_investigation_report JSON artifact",
 	}
 	if result == nil {
 		check.Summary = "The agent returned no invocation result."
@@ -127,7 +97,7 @@ func decodeInvestigationReport(result *rez.AiAgentInvocationResult) (*schematype
 	}
 
 	for _, artifact := range result.State.Artifacts {
-		if artifact == nil || artifact.Name != "investigation_report" {
+		if artifact == nil || artifact.Name != "situation_investigation_report" {
 			continue
 		}
 		for _, part := range artifact.Parts {
@@ -135,26 +105,26 @@ func decodeInvestigationReport(result *rez.AiAgentInvocationResult) (*schematype
 				continue
 			}
 			rawReport := strings.TrimSpace(part.Text)
-			var report schematypes.AlertInvestigationReport
+			var report schematypes.SituationInvestigationReport
 			if decodeErr := json.Unmarshal([]byte(rawReport), &report); decodeErr != nil {
-				check.Summary = "The investigation_report artifact contains malformed JSON."
+				check.Summary = "The situation investigation report artifact contains malformed JSON."
 				check.Observed = rawReport
 				return nil, check
 			}
 			normalizeReport(&report)
 			check.Passed = true
-			check.Summary = "The investigation_report artifact contains valid JSON."
+			check.Summary = "The situation investigation report artifact contains valid JSON."
 			return &report, check
 		}
-		check.Summary = "The investigation_report artifact contains no nonblank content."
+		check.Summary = "The situation investigation report artifact contains no nonblank content."
 		return nil, check
 	}
 
-	check.Summary = "The investigation_report artifact was not created."
+	check.Summary = "The situation investigation report artifact was not created."
 	return nil, check
 }
 
-func normalizeReport(report *schematypes.AlertInvestigationReport) {
+func normalizeReport(report *schematypes.SituationInvestigationReport) {
 	report.Text = strings.TrimSpace(report.Text)
 	report.LikelyCause = strings.TrimSpace(report.LikelyCause)
 	report.BestNextStep = strings.TrimSpace(report.BestNextStep)
@@ -173,7 +143,7 @@ func nonblankStrings(values []string) []string {
 	return trimmed
 }
 
-func reportTextCheck(report *schematypes.AlertInvestigationReport) rezai.EvalCheck {
+func reportTextCheck(report *schematypes.SituationInvestigationReport) rezai.EvalCheck {
 	passed := report.Text != ""
 	summary := "The investigation report contains user-facing text."
 	if !passed {
@@ -182,7 +152,7 @@ func reportTextCheck(report *schematypes.AlertInvestigationReport) rezai.EvalChe
 	return rezai.EvalCheck{ID: "report_text", Passed: passed, Summary: summary, Expected: "nonblank text", Observed: report.Text}
 }
 
-func nextActionCheck(report *schematypes.AlertInvestigationReport) rezai.EvalCheck {
+func nextActionCheck(report *schematypes.SituationInvestigationReport) rezai.EvalCheck {
 	observed := map[string]any{
 		"suggestedChecks":    report.SuggestedChecks,
 		"recommendedActions": report.RecommendedActions,

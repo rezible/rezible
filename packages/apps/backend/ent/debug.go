@@ -76,14 +76,6 @@ func (c *AlertInstanceClient) Debug() *AlertInstanceClient {
 	return &AlertInstanceClient{config: cfg}
 }
 
-func (c *AlertInvestigationClient) Debug() *AlertInvestigationClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AlertInvestigationClient{config: cfg}
-}
-
 func (c *AlertMetricsClient) Debug() *AlertMetricsClient {
 	if c.debug {
 		return c
@@ -468,6 +460,30 @@ func (c *RetrospectiveReviewClient) Debug() *RetrospectiveReviewClient {
 	return &RetrospectiveReviewClient{config: cfg}
 }
 
+func (c *SituationClient) Debug() *SituationClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationClient{config: cfg}
+}
+
+func (c *SituationHazardAssessmentClient) Debug() *SituationHazardAssessmentClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationHazardAssessmentClient{config: cfg}
+}
+
+func (c *SituationInvestigationClient) Debug() *SituationInvestigationClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationInvestigationClient{config: cfg}
+}
+
 func (c *SystemAnalysisClient) Debug() *SystemAnalysisClient {
 	if c.debug {
 		return c
@@ -506,6 +522,22 @@ func (c *SystemAnalysisRelationshipClient) Debug() *SystemAnalysisRelationshipCl
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &SystemAnalysisRelationshipClient{config: cfg}
+}
+
+func (c *SystemHazardClient) Debug() *SystemHazardClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemHazardClient{config: cfg}
+}
+
+func (c *SystemHazardRiskAssessmentClient) Debug() *SystemHazardRiskAssessmentClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemHazardRiskAssessmentClient{config: cfg}
 }
 
 func (c *TaskClient) Debug() *TaskClient {

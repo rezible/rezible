@@ -117,18 +117,6 @@ func (f AlertInstanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertInstanceMutation", m)
 }
 
-// The AlertInvestigationFunc type is an adapter to allow the use of ordinary
-// function as AlertInvestigation mutator.
-type AlertInvestigationFunc func(context.Context, *ent.AlertInvestigationMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AlertInvestigationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AlertInvestigationMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertInvestigationMutation", m)
-}
-
 // The DocumentFunc type is an adapter to allow the use of ordinary
 // function as Document mutator.
 type DocumentFunc func(context.Context, *ent.DocumentMutation) (ent.Value, error)
@@ -693,6 +681,42 @@ func (f RetrospectiveReviewFunc) Mutate(ctx context.Context, m ent.Mutation) (en
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RetrospectiveReviewMutation", m)
 }
 
+// The SituationFunc type is an adapter to allow the use of ordinary
+// function as Situation mutator.
+type SituationFunc func(context.Context, *ent.SituationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SituationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SituationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationMutation", m)
+}
+
+// The SituationHazardAssessmentFunc type is an adapter to allow the use of ordinary
+// function as SituationHazardAssessment mutator.
+type SituationHazardAssessmentFunc func(context.Context, *ent.SituationHazardAssessmentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SituationHazardAssessmentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SituationHazardAssessmentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationHazardAssessmentMutation", m)
+}
+
+// The SituationInvestigationFunc type is an adapter to allow the use of ordinary
+// function as SituationInvestigation mutator.
+type SituationInvestigationFunc func(context.Context, *ent.SituationInvestigationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SituationInvestigationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SituationInvestigationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationInvestigationMutation", m)
+}
+
 // The SystemAnalysisFunc type is an adapter to allow the use of ordinary
 // function as SystemAnalysis mutator.
 type SystemAnalysisFunc func(context.Context, *ent.SystemAnalysisMutation) (ent.Value, error)
@@ -751,6 +775,30 @@ func (f SystemAnalysisRelationshipFunc) Mutate(ctx context.Context, m ent.Mutati
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemAnalysisRelationshipMutation", m)
+}
+
+// The SystemHazardFunc type is an adapter to allow the use of ordinary
+// function as SystemHazard mutator.
+type SystemHazardFunc func(context.Context, *ent.SystemHazardMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemHazardFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemHazardMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemHazardMutation", m)
+}
+
+// The SystemHazardRiskAssessmentFunc type is an adapter to allow the use of ordinary
+// function as SystemHazardRiskAssessment mutator.
+type SystemHazardRiskAssessmentFunc func(context.Context, *ent.SystemHazardRiskAssessmentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemHazardRiskAssessmentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemHazardRiskAssessmentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemHazardRiskAssessmentMutation", m)
 }
 
 // The TaskFunc type is an adapter to allow the use of ordinary

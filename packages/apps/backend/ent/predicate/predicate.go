@@ -33,9 +33,6 @@ type AlertFeedback func(*sql.Selector)
 // AlertInstance is the predicate function for alertinstance builders.
 type AlertInstance func(*sql.Selector)
 
-// AlertInvestigation is the predicate function for alertinvestigation builders.
-type AlertInvestigation func(*sql.Selector)
-
 // AlertMetrics is the predicate function for alertmetrics builders.
 type AlertMetrics func(*sql.Selector)
 
@@ -180,6 +177,15 @@ type RetrospectiveComment func(*sql.Selector)
 // RetrospectiveReview is the predicate function for retrospectivereview builders.
 type RetrospectiveReview func(*sql.Selector)
 
+// Situation is the predicate function for situation builders.
+type Situation func(*sql.Selector)
+
+// SituationHazardAssessment is the predicate function for situationhazardassessment builders.
+type SituationHazardAssessment func(*sql.Selector)
+
+// SituationInvestigation is the predicate function for situationinvestigation builders.
+type SituationInvestigation func(*sql.Selector)
+
 // SystemAnalysis is the predicate function for systemanalysis builders.
 type SystemAnalysis func(*sql.Selector)
 
@@ -194,6 +200,12 @@ type SystemAnalysisEntrySubject func(*sql.Selector)
 
 // SystemAnalysisRelationship is the predicate function for systemanalysisrelationship builders.
 type SystemAnalysisRelationship func(*sql.Selector)
+
+// SystemHazard is the predicate function for systemhazard builders.
+type SystemHazard func(*sql.Selector)
+
+// SystemHazardRiskAssessment is the predicate function for systemhazardriskassessment builders.
+type SystemHazardRiskAssessment func(*sql.Selector)
 
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)

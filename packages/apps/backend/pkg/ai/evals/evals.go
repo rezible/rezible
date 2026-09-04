@@ -23,7 +23,7 @@ func defineScenario[T any, PT scenarioPtr[T]]() scenarioFn {
 }
 
 var scenarioFuncs = []scenarioFn{
-	defineScenario[AlertsInsufficientContext](),
+	defineScenario[InvestigationInsufficientContext](),
 }
 
 func List() []rezai.EvalScenarioDefinition {

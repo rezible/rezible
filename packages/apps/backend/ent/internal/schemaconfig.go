@@ -16,7 +16,6 @@ type SchemaConfig struct {
 	AlertEpisode                              string // AlertEpisode table.
 	AlertFeedback                             string // AlertFeedback table.
 	AlertInstance                             string // AlertInstance table.
-	AlertInvestigation                        string // AlertInvestigation table.
 	AlertMetrics                              string // AlertMetrics table.
 	Document                                  string // Document table.
 	DocumentAccess                            string // DocumentAccess table.
@@ -77,11 +76,16 @@ type SchemaConfig struct {
 	Retrospective                             string // Retrospective table.
 	RetrospectiveComment                      string // RetrospectiveComment table.
 	RetrospectiveReview                       string // RetrospectiveReview table.
+	Situation                                 string // Situation table.
+	SituationHazardAssessment                 string // SituationHazardAssessment table.
+	SituationInvestigation                    string // SituationInvestigation table.
 	SystemAnalysis                            string // SystemAnalysis table.
 	SystemAnalysisEntity                      string // SystemAnalysisEntity table.
 	SystemAnalysisEntry                       string // SystemAnalysisEntry table.
 	SystemAnalysisEntrySubject                string // SystemAnalysisEntrySubject table.
 	SystemAnalysisRelationship                string // SystemAnalysisRelationship table.
+	SystemHazard                              string // SystemHazard table.
+	SystemHazardRiskAssessment                string // SystemHazardRiskAssessment table.
 	Task                                      string // Task table.
 	TaskTickets                               string // Task-tickets->Ticket table.
 	Team                                      string // Team table.
