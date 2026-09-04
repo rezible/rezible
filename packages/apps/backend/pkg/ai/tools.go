@@ -39,10 +39,10 @@ type (
 	}
 
 	KnowledgeSubjectAliasSummary struct {
-		ID                       uuid.UUID `json:"id"`
-		Provider                 string    `json:"provider"`
-		ProviderSource           string    `json:"provider_source"`
-		ProviderSubjectReference string    `json:"provider_subject_reference"`
+		ID                uuid.UUID `json:"id"`
+		Provider          string    `json:"provider"`
+		ProviderNamespace string    `json:"provider_namespace"`
+		ResourceRef       string    `json:"resource_ref"`
 	}
 
 	KnowledgeEvidenceSummary struct {

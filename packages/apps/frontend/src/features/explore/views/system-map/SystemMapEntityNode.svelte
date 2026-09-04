@@ -9,7 +9,7 @@
 	const entityState = $derived(data.entity.attributes.latestState);
 	const aliases = $derived(data.entity.attributes.aliases);
 	const label = $derived(
-		entityState?.displayName || aliases[0]?.attributes.providerSubjectRef || "Unknown entity"
+		entityState?.displayName || aliases[0]?.attributes.resourceRef.resourceRef || "Unknown entity"
 	);
 </script>
 

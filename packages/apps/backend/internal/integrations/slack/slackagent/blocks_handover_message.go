@@ -156,17 +156,14 @@ func (b *handoverMessageBuilder) createPinnedAnnotationsBlocks() ([]slack.Block,
 		if evErr != nil {
 			return nil, fmt.Errorf("annotation event not loaded: %w", evErr)
 		}
-		disp, dispErr := projections.GetEventDisplay(ev)
-		if dispErr != nil {
-			return nil, fmt.Errorf("annotation event display err: %w", dispErr)
-		}
+		dispTitle := "TODO"
 
 		var eventEls []slack.RichTextSectionElement
-		if projections.SubjectKindIncident.Matches(ev) {
+		if ev.Kind == projections.KindIncident {
 			link := fmt.Sprintf("%s/incidents/%s", b.appUrl, ev.ID)
-			eventEls = append(eventEls, slack.NewRichTextSectionLinkElement(link, disp.Title, nil))
+			eventEls = append(eventEls, slack.NewRichTextSectionLinkElement(link, dispTitle, nil))
 		} else {
-			eventEls = append(eventEls, slack.NewRichTextSectionTextElement(disp.Title, nil))
+			eventEls = append(eventEls, slack.NewRichTextSectionTextElement(dispTitle, nil))
 		}
 
 		eventList := slack.NewRichTextList(slack.RTEListBullet, 0)

@@ -23,6 +23,16 @@ const (
 
 func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.TeamEvent) ([]rez.ProjectedEntityRef, error) {
 	attrs := e.Attributes
+	teamResourceRef := rez.ProviderResourceRef{
+		Provider:          e.Event.Provider,
+		ProviderNamespace: e.Event.ProviderNamespace,
+		ResourceRef:       e.Event.ProviderResourceRef,
+	}
+	teamEntityRef := ent.KnowledgeEntityRef{
+		Category:            kne.CategoryActor,
+		Kind:                knowledgeEntityKindTeam,
+		ProviderResourceRef: teamResourceRef,
+	}
 	evidence := ent.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(e.Event),
 		Assertion:   knowledgeAssertionTeamObserved,
@@ -34,16 +44,12 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 				"chat_channel_id": attrs.ChatChannelId,
 			},
 		},
-		SubjectEntity: &ent.KnowledgeEntityRef{
-			Category:        kne.CategoryActor,
-			Kind:            knowledgeEntityKindTeam,
-			SubjectAliasRef: e.Event.KnowledgeSubjectAliasRef(),
-		},
+		SubjectEntity: &teamEntityRef,
 	}
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		subj, ingestErr := s.knowledge.IngestSubjectEvidence(ctx, e.Event, evidence)
+		subj, ingestErr := s.ingestSubjectEvidence(ctx, e.Event, evidence)
 		if ingestErr != nil {
 			return fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
 		} else if subj.EntityID == nil {
@@ -63,7 +69,7 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 	})
 }
 
-func (s *ProjectionService) setTeamFromProjection(ctx context.Context, knowledgeEntityId uuid.UUID, attrs projections.TeamSubjectAttributes) (uuid.UUID, error) {
+func (s *ProjectionService) setTeamFromProjection(ctx context.Context, knowledgeEntityId uuid.UUID, attrs projections.TeamEventAttributes) (uuid.UUID, error) {
 	client := s.db.Client(ctx)
 	lookupTeam := client.Team.Query().
 		Where(team.Or(team.KnowledgeEntityID(knowledgeEntityId), team.Slug(attrs.Slug)))
@@ -98,30 +104,49 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 	kind := projectionEvidenceKind(event)
 
 	userEntity := ent.KnowledgeEntityRef{
-		Category: kne.CategoryActor,
-		Kind:     knowledgeEntityKindUser,
-		SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
-			Provider:           event.Provider,
-			ProviderSource:     "users",
-			ProviderSubjectRef: attrs.User.ExternalRef,
-		},
+		Category:            kne.CategoryActor,
+		Kind:                knowledgeEntityKindUser,
+		ProviderResourceRef: attrs.User.ProviderResourceRef,
 	}
 
 	teamEntity := ent.KnowledgeEntityRef{
-		Category: kne.CategoryActor,
-		Kind:     knowledgeEntityKindTeam,
-		SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
-			Provider:           event.Provider,
-			ProviderSource:     "teams",
-			ProviderSubjectRef: attrs.Team.ExternalRef,
+		Category:            kne.CategoryActor,
+		Kind:                knowledgeEntityKindTeam,
+		ProviderResourceRef: attrs.Team.ProviderResourceRef,
+	}
+	userEvidenceRef := ent.KnowledgeEvidenceRef{
+		Kind:        kind,
+		Assertion:   knowledgeAssertionUserProfileObserved,
+		EffectiveAt: event.OccurredAt,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
+			DisplayName: attrs.User.Name,
 		},
+		SubjectEntity: &userEntity,
+	}
+	teamEvidenceRef := ent.KnowledgeEvidenceRef{
+		Kind:        kind,
+		Assertion:   knowledgeAssertionTeamObserved,
+		EffectiveAt: event.OccurredAt,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
+			DisplayName: attrs.Team.Name,
+			Properties: map[string]any{
+				"slug":            attrs.Team.Slug,
+				"chat_channel_id": attrs.Team.ChatChannelId,
+			},
+		},
+		SubjectEntity: &teamEntity,
 	}
 
+	membershipResourceRef := rez.ProviderResourceRef{
+		Provider:          event.Provider,
+		ProviderNamespace: event.ProviderNamespace,
+		ResourceRef:       event.ProviderResourceRef,
+	}
 	membershipRelationship := ent.KnowledgeRelationshipRef{
-		Predicate:       knr.PredicateMemberOf,
-		SubjectAliasRef: event.KnowledgeSubjectAliasRef(),
-		Source:          userEntity,
-		Target:          teamEntity,
+		Predicate:           knr.PredicateMemberOf,
+		ProviderResourceRef: membershipResourceRef,
+		Source:              userEntity,
+		Target:              teamEntity,
 	}
 	membershipEvidenceRef := ent.KnowledgeEvidenceRef{
 		Kind:        kind,
@@ -136,7 +161,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		subj, ingestErr := s.knowledge.IngestSubjectEvidence(ctx, event, membershipEvidenceRef)
+		subj, ingestErr := s.ingestSubjectEvidence(ctx, event, membershipEvidenceRef, userEvidenceRef, teamEvidenceRef)
 		if ingestErr != nil {
 			return fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
 		} else if subj.RelationshipID == nil {
@@ -156,7 +181,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 	})
 }
 
-func (s *ProjectionService) setTeamMembershipFromProjection(ctx context.Context, relId uuid.UUID, attrs projections.TeamMembershipSubjectAttributes) (uuid.UUID, error) {
+func (s *ProjectionService) setTeamMembershipFromProjection(ctx context.Context, relId uuid.UUID, attrs projections.TeamMembershipEventAttributes) (uuid.UUID, error) {
 	rel, relErr := s.knowledge.GetRelationship(ctx, relId)
 	if relErr != nil {
 		return uuid.Nil, fmt.Errorf("get knowledge relationship: %w", relErr)
@@ -169,12 +194,23 @@ func (s *ProjectionService) setTeamMembershipFromProjection(ctx context.Context,
 		teamEntityId = rel.SourceEntityID
 	}
 
-	userId, userErr := s.setUserFromProjection(ctx, userEntityId, attrs.User)
+	userAttributes := projections.UserEventAttributes{
+		Name:     attrs.User.Name,
+		Email:    attrs.User.Email,
+		ChatId:   attrs.User.ChatId,
+		Timezone: attrs.User.Timezone,
+	}
+	userId, userErr := s.setUserFromProjection(ctx, userEntityId, userAttributes)
 	if userErr != nil {
 		return uuid.Nil, fmt.Errorf("save membership user: %w", userErr)
 	}
 
-	teamId, teamErr := s.setTeamFromProjection(ctx, teamEntityId, attrs.Team)
+	teamAttributes := projections.TeamEventAttributes{
+		Name:          attrs.Team.Name,
+		Slug:          attrs.Team.Slug,
+		ChatChannelId: attrs.Team.ChatChannelId,
+	}
+	teamId, teamErr := s.setTeamFromProjection(ctx, teamEntityId, teamAttributes)
 	if teamErr != nil {
 		return uuid.Nil, fmt.Errorf("save membership team: %w", teamErr)
 	}

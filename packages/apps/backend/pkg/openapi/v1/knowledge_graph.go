@@ -83,10 +83,8 @@ type (
 		Attributes KnowledgeGraphSubjectAliasAttributes `json:"attributes"`
 	}
 	KnowledgeGraphSubjectAliasAttributes struct {
-		Kind               string `json:"kind" enum:"entity,relationship"`
-		Provider           string `json:"provider"`
-		ProviderSource     string `json:"providerSource"`
-		ProviderSubjectRef string `json:"providerSubjectRef"`
+		Kind        string              `json:"kind" enum:"entity,relationship"`
+		ResourceRef ProviderResourceRef `json:"resourceRef"`
 	}
 
 	KnowledgeGraphView struct {
@@ -136,10 +134,12 @@ func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) Knowledge
 
 func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) KnowledgeGraphSubjectAlias {
 	attrs := KnowledgeGraphSubjectAliasAttributes{
-		Kind:               alias.SubjectKind.String(),
-		Provider:           alias.Provider,
-		ProviderSource:     alias.ProviderSource,
-		ProviderSubjectRef: alias.ProviderSubjectRef,
+		Kind: alias.SubjectKind.String(),
+		ResourceRef: ProviderResourceRefFromRez(rez.ProviderResourceRef{
+			Provider:          alias.Provider,
+			ProviderNamespace: alias.ProviderNamespace,
+			ResourceRef:       alias.ProviderResourceRef,
+		}),
 	}
 	return KnowledgeGraphSubjectAlias{Id: alias.ID, Attributes: attrs}
 }
@@ -183,12 +183,11 @@ var ListKnowledgeGraphEntities = huma.Operation{
 
 type ListKnowledgeGraphEntitiesRequest struct {
 	PaginationRequest
-	Search         string   `query:"search" required:"false" nullable:"false"`
-	Category       []string `query:"category" required:"false"`
-	Kind           []string `query:"kind" required:"false"`
-	Provider       string   `query:"provider" required:"false"`
-	ProviderSource string   `query:"providerSource" required:"false"`
-	SubjectKind    string   `query:"subjectKind" required:"false"`
+	Search            string   `query:"search" required:"false" nullable:"false"`
+	Category          []string `query:"category" required:"false"`
+	Kind              []string `query:"kind" required:"false"`
+	Provider          string   `query:"provider" required:"false"`
+	ProviderNamespace string   `query:"providerNamespace" required:"false"`
 }
 type ListKnowledgeGraphEntitiesResponse PaginatedResponse[KnowledgeGraphEntity]
 

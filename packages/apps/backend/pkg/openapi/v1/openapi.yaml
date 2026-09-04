@@ -1946,6 +1946,8 @@ components:
         attributes:
           contentEncoding: base64
           type: string
+        integrationId:
+          type: string
         kind:
           type: string
         occurredAt:
@@ -1953,25 +1955,22 @@ components:
           type: string
         projection:
           $ref: "#/components/schemas/EventProjection"
-        provider:
+        providerEventRef:
           type: string
-        providerSource:
-          type: string
-        providerSubjectRef:
+        providerEventSource:
           type: string
         receivedAt:
           format: date-time
           type: string
-        subjectKind:
-          type: string
+        resourceRef:
+          $ref: "#/components/schemas/ProviderResourceRef"
       required:
         - kind
         - occurredAt
         - receivedAt
-        - provider
-        - providerSource
-        - providerSubjectRef
-        - subjectKind
+        - resourceRef
+        - providerEventSource
+        - providerEventRef
         - attributes
       type: object
     EventProjection:
@@ -3192,12 +3191,12 @@ components:
     InstallIntegrationFromTargetsRequestAttributes:
       additionalProperties: false
       properties:
-        externalRefs:
+        resourceRefs:
           items:
             type: string
           type: array
       required:
-        - externalRefs
+        - resourceRefs
       type: object
     InstallIntegrationFromTargetsRequestBody:
       additionalProperties: false
@@ -3320,13 +3319,10 @@ components:
       properties:
         displayName:
           type: string
-        externalRef:
-          type: string
-        integrationName:
-          type: string
+        resourceRef:
+          $ref: "#/components/schemas/ProviderResourceRef"
       required:
-        - integrationName
-        - externalRef
+        - resourceRef
         - displayName
       type: object
     IntegrationInstallation:
@@ -3349,11 +3345,11 @@ components:
           type: array
         displayName:
           type: string
-        externalRef:
+        name:
           type: string
-        integrationName:
+        provider:
           type: string
-        providerName:
+        providerInstallationRef:
           type: string
         sanitizedConfig:
           additionalProperties: {}
@@ -3362,10 +3358,10 @@ components:
           additionalProperties: {}
           type: object
       required:
-        - integrationName
-        - providerName
+        - provider
+        - name
         - displayName
-        - externalRef
+        - providerInstallationRef
         - sanitizedConfig
         - userSettings
         - capabilities
@@ -3490,17 +3486,11 @@ components:
             - entity
             - relationship
           type: string
-        provider:
-          type: string
-        providerSource:
-          type: string
-        providerSubjectRef:
-          type: string
+        resourceRef:
+          $ref: "#/components/schemas/ProviderResourceRef"
       required:
         - kind
-        - provider
-        - providerSource
-        - providerSubjectRef
+        - resourceRef
       type: object
     KnowledgeGraphSubjectState:
       additionalProperties: false
@@ -4620,6 +4610,20 @@ components:
       required:
         - title
         - content
+      type: object
+    ProviderResourceRef:
+      additionalProperties: false
+      properties:
+        provider:
+          type: string
+        providerNamespace:
+          type: string
+        resourceRef:
+          type: string
+      required:
+        - provider
+        - providerNamespace
+        - resourceRef
       type: object
     RequestAgentTurnRequestAttributes:
       additionalProperties: false
@@ -11424,12 +11428,7 @@ paths:
             type: string
         - explode: false
           in: query
-          name: providerSource
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: subjectKind
+          name: providerNamespace
           schema:
             type: string
       responses:

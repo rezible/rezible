@@ -929,14 +929,14 @@ export type EventAnnotationAttributes = {
 
 export type EventAttributes = {
     attributes: string;
+    integrationId?: string;
     kind: string;
     occurredAt: string;
     projection?: EventProjection;
-    provider: string;
-    providerSource: string;
-    providerSubjectRef: string;
+    providerEventRef: string;
+    providerEventSource: string;
     receivedAt: string;
-    subjectKind: string;
+    resourceRef: ProviderResourceRef;
 };
 
 export type EventProjection = {
@@ -1499,7 +1499,7 @@ export type IncidentTypeAttributes = {
 };
 
 export type InstallIntegrationFromTargetsRequestAttributes = {
-    externalRefs: Array<string>;
+    resourceRefs: Array<string>;
 };
 
 export type InstallIntegrationFromTargetsRequestBody = {
@@ -1555,8 +1555,7 @@ export type IntegrationEventSyncRunAttributes = {
 
 export type IntegrationInstallTarget = {
     displayName: string;
-    externalRef: string;
-    integrationName: string;
+    resourceRef: ProviderResourceRef;
 };
 
 export type IntegrationInstallation = {
@@ -1567,9 +1566,9 @@ export type IntegrationInstallation = {
 export type IntegrationInstallationAttributes = {
     capabilities: Array<string>;
     displayName: string;
-    externalRef: string;
-    integrationName: string;
-    providerName: string;
+    name: string;
+    provider: string;
+    providerInstallationRef: string;
     sanitizedConfig: {
         [key: string]: unknown;
     };
@@ -1624,9 +1623,7 @@ export type KnowledgeGraphSubjectAlias = {
 
 export type KnowledgeGraphSubjectAliasAttributes = {
     kind: 'entity' | 'relationship';
-    provider: string;
-    providerSource: string;
-    providerSubjectRef: string;
+    resourceRef: ProviderResourceRef;
 };
 
 export type KnowledgeGraphSubjectState = {
@@ -2099,6 +2096,12 @@ export type Playbook = {
 export type PlaybookAttributes = {
     content: string;
     title: string;
+};
+
+export type ProviderResourceRef = {
+    provider: string;
+    providerNamespace: string;
+    resourceRef: string;
 };
 
 export type RequestAgentTurnRequestAttributes = {
@@ -6963,8 +6966,7 @@ export type ListKnowledgeGraphEntitiesData = {
         category?: Array<string>;
         kind?: Array<string>;
         provider?: string;
-        providerSource?: string;
-        subjectKind?: string;
+        providerNamespace?: string;
     };
     url: '/knowledge_graph/entities';
 };

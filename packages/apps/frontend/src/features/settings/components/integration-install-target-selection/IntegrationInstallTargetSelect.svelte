@@ -28,16 +28,18 @@
 		<span class="text-sm text-muted-foreground">Choose which accounts to connect.</span>
 	</div>
 	<div class="flex flex-col gap-2">
-		{#each options as option (option.externalRef)}
+		{#each options as option (option.resourceRef.resourceRef)}
 			<label class="flex items-center gap-3 rounded-md border p-3 text-sm">
 				<Checkbox
-					checked={selectedRefs.has(option.externalRef)}
+					checked={selectedRefs.has(option.resourceRef.resourceRef)}
 					onCheckedChange={(checked) =>
-						toggleInstallationTargetSelection(option.externalRef, !!checked)}
+						toggleInstallationTargetSelection(option.resourceRef.resourceRef, !!checked)}
 				/>
 				<span class="flex flex-col">
 					<span class="font-medium">{option.displayName}</span>
-					<span class="text-muted-foreground">{option.externalRef}</span>
+					<span class="text-muted-foreground"
+						>{option.resourceRef.providerNamespace} · {option.resourceRef.resourceRef}</span
+					>
 				</span>
 			</label>
 		{/each}

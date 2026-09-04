@@ -27,6 +27,16 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 		openedAt = event.Event.OccurredAt
 	}
 
+	incidentResourceRef := rez.ProviderResourceRef{
+		Provider:          event.Event.Provider,
+		ProviderNamespace: event.Event.ProviderNamespace,
+		ResourceRef:       event.Event.ProviderResourceRef,
+	}
+	incidentEntityRef := ent.KnowledgeEntityRef{
+		Category:            kne.CategoryEvent,
+		Kind:                knowledgeEntityKindIncident,
+		ProviderResourceRef: incidentResourceRef,
+	}
 	incidentObservedEvidence := ent.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event.Event),
 		Assertion:   knowledgeAssertionIncidentObserved,
@@ -35,16 +45,12 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 			DisplayName: attributes.Title,
 			Description: attributes.Summary,
 		},
-		SubjectEntity: &ent.KnowledgeEntityRef{
-			Category:        kne.CategoryEvent,
-			Kind:            knowledgeEntityKindIncident,
-			SubjectAliasRef: event.Event.KnowledgeSubjectAliasRef(),
-		},
+		SubjectEntity: &incidentEntityRef,
 	}
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		subj, ingestErr := s.knowledge.IngestSubjectEvidence(ctx, event.Event, incidentObservedEvidence)
+		subj, ingestErr := s.ingestSubjectEvidence(ctx, event.Event, incidentObservedEvidence)
 		if ingestErr != nil {
 			return fmt.Errorf("incident knowledge evidence: %w", ingestErr)
 		} else if subj.EntityID == nil {
@@ -103,7 +109,7 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 	})
 }
 
-func (s *ProjectionService) saveProjectedIncidentSeverity(ctx context.Context, attributes projections.IncidentSubjectAttributes) (uuid.UUID, error) {
+func (s *ProjectionService) saveProjectedIncidentSeverity(ctx context.Context, attributes projections.IncidentEventAttributes) (uuid.UUID, error) {
 	existing, queryErr := s.db.Client(ctx).IncidentSeverity.Query().
 		Where(incsev.Name(attributes.SeverityRef)).
 		Only(ctx)
@@ -124,7 +130,7 @@ func (s *ProjectionService) saveProjectedIncidentSeverity(ctx context.Context, a
 	return created.ID, nil
 }
 
-func (s *ProjectionService) saveProjectedIncidentType(ctx context.Context, attributes projections.IncidentSubjectAttributes) (uuid.UUID, error) {
+func (s *ProjectionService) saveProjectedIncidentType(ctx context.Context, attributes projections.IncidentEventAttributes) (uuid.UUID, error) {
 	existing, queryErr := s.db.Client(ctx).IncidentType.Query().
 		Where(incidenttype.Name(attributes.TypeRef)).
 		Only(ctx)

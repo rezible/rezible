@@ -38,9 +38,9 @@ func (_c *IntegrationEventSyncRunCreate) SetIntegrationID(v uuid.UUID) *Integrat
 	return _c
 }
 
-// SetSourceCursors sets the "source_cursors" field.
-func (_c *IntegrationEventSyncRunCreate) SetSourceCursors(v map[string]string) *IntegrationEventSyncRunCreate {
-	_c.mutation.SetSourceCursors(v)
+// SetProviderEventSourceCursors sets the "provider_event_source_cursors" field.
+func (_c *IntegrationEventSyncRunCreate) SetProviderEventSourceCursors(v map[string]string) *IntegrationEventSyncRunCreate {
+	_c.mutation.SetProviderEventSourceCursors(v)
 	return _c
 }
 
@@ -316,9 +316,9 @@ func (_c *IntegrationEventSyncRunCreate) createSpec() (*IntegrationEventSyncRun,
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.SourceCursors(); ok {
-		_spec.SetField(integrationeventsyncrun.FieldSourceCursors, field.TypeJSON, value)
-		_node.SourceCursors = value
+	if value, ok := _c.mutation.ProviderEventSourceCursors(); ok {
+		_spec.SetField(integrationeventsyncrun.FieldProviderEventSourceCursors, field.TypeJSON, value)
+		_node.ProviderEventSourceCursors = value
 	}
 	if value, ok := _c.mutation.SyncReason(); ok {
 		_spec.SetField(integrationeventsyncrun.FieldSyncReason, field.TypeString, value)
@@ -452,21 +452,21 @@ func (u *IntegrationEventSyncRunUpsert) UpdateIntegrationID() *IntegrationEventS
 	return u
 }
 
-// SetSourceCursors sets the "source_cursors" field.
-func (u *IntegrationEventSyncRunUpsert) SetSourceCursors(v map[string]string) *IntegrationEventSyncRunUpsert {
-	u.Set(integrationeventsyncrun.FieldSourceCursors, v)
+// SetProviderEventSourceCursors sets the "provider_event_source_cursors" field.
+func (u *IntegrationEventSyncRunUpsert) SetProviderEventSourceCursors(v map[string]string) *IntegrationEventSyncRunUpsert {
+	u.Set(integrationeventsyncrun.FieldProviderEventSourceCursors, v)
 	return u
 }
 
-// UpdateSourceCursors sets the "source_cursors" field to the value that was provided on create.
-func (u *IntegrationEventSyncRunUpsert) UpdateSourceCursors() *IntegrationEventSyncRunUpsert {
-	u.SetExcluded(integrationeventsyncrun.FieldSourceCursors)
+// UpdateProviderEventSourceCursors sets the "provider_event_source_cursors" field to the value that was provided on create.
+func (u *IntegrationEventSyncRunUpsert) UpdateProviderEventSourceCursors() *IntegrationEventSyncRunUpsert {
+	u.SetExcluded(integrationeventsyncrun.FieldProviderEventSourceCursors)
 	return u
 }
 
-// ClearSourceCursors clears the value of the "source_cursors" field.
-func (u *IntegrationEventSyncRunUpsert) ClearSourceCursors() *IntegrationEventSyncRunUpsert {
-	u.SetNull(integrationeventsyncrun.FieldSourceCursors)
+// ClearProviderEventSourceCursors clears the value of the "provider_event_source_cursors" field.
+func (u *IntegrationEventSyncRunUpsert) ClearProviderEventSourceCursors() *IntegrationEventSyncRunUpsert {
+	u.SetNull(integrationeventsyncrun.FieldProviderEventSourceCursors)
 	return u
 }
 
@@ -661,24 +661,24 @@ func (u *IntegrationEventSyncRunUpsertOne) UpdateIntegrationID() *IntegrationEve
 	})
 }
 
-// SetSourceCursors sets the "source_cursors" field.
-func (u *IntegrationEventSyncRunUpsertOne) SetSourceCursors(v map[string]string) *IntegrationEventSyncRunUpsertOne {
+// SetProviderEventSourceCursors sets the "provider_event_source_cursors" field.
+func (u *IntegrationEventSyncRunUpsertOne) SetProviderEventSourceCursors(v map[string]string) *IntegrationEventSyncRunUpsertOne {
 	return u.Update(func(s *IntegrationEventSyncRunUpsert) {
-		s.SetSourceCursors(v)
+		s.SetProviderEventSourceCursors(v)
 	})
 }
 
-// UpdateSourceCursors sets the "source_cursors" field to the value that was provided on create.
-func (u *IntegrationEventSyncRunUpsertOne) UpdateSourceCursors() *IntegrationEventSyncRunUpsertOne {
+// UpdateProviderEventSourceCursors sets the "provider_event_source_cursors" field to the value that was provided on create.
+func (u *IntegrationEventSyncRunUpsertOne) UpdateProviderEventSourceCursors() *IntegrationEventSyncRunUpsertOne {
 	return u.Update(func(s *IntegrationEventSyncRunUpsert) {
-		s.UpdateSourceCursors()
+		s.UpdateProviderEventSourceCursors()
 	})
 }
 
-// ClearSourceCursors clears the value of the "source_cursors" field.
-func (u *IntegrationEventSyncRunUpsertOne) ClearSourceCursors() *IntegrationEventSyncRunUpsertOne {
+// ClearProviderEventSourceCursors clears the value of the "provider_event_source_cursors" field.
+func (u *IntegrationEventSyncRunUpsertOne) ClearProviderEventSourceCursors() *IntegrationEventSyncRunUpsertOne {
 	return u.Update(func(s *IntegrationEventSyncRunUpsert) {
-		s.ClearSourceCursors()
+		s.ClearProviderEventSourceCursors()
 	})
 }
 
@@ -1061,24 +1061,24 @@ func (u *IntegrationEventSyncRunUpsertBulk) UpdateIntegrationID() *IntegrationEv
 	})
 }
 
-// SetSourceCursors sets the "source_cursors" field.
-func (u *IntegrationEventSyncRunUpsertBulk) SetSourceCursors(v map[string]string) *IntegrationEventSyncRunUpsertBulk {
+// SetProviderEventSourceCursors sets the "provider_event_source_cursors" field.
+func (u *IntegrationEventSyncRunUpsertBulk) SetProviderEventSourceCursors(v map[string]string) *IntegrationEventSyncRunUpsertBulk {
 	return u.Update(func(s *IntegrationEventSyncRunUpsert) {
-		s.SetSourceCursors(v)
+		s.SetProviderEventSourceCursors(v)
 	})
 }
 
-// UpdateSourceCursors sets the "source_cursors" field to the value that was provided on create.
-func (u *IntegrationEventSyncRunUpsertBulk) UpdateSourceCursors() *IntegrationEventSyncRunUpsertBulk {
+// UpdateProviderEventSourceCursors sets the "provider_event_source_cursors" field to the value that was provided on create.
+func (u *IntegrationEventSyncRunUpsertBulk) UpdateProviderEventSourceCursors() *IntegrationEventSyncRunUpsertBulk {
 	return u.Update(func(s *IntegrationEventSyncRunUpsert) {
-		s.UpdateSourceCursors()
+		s.UpdateProviderEventSourceCursors()
 	})
 }
 
-// ClearSourceCursors clears the value of the "source_cursors" field.
-func (u *IntegrationEventSyncRunUpsertBulk) ClearSourceCursors() *IntegrationEventSyncRunUpsertBulk {
+// ClearProviderEventSourceCursors clears the value of the "provider_event_source_cursors" field.
+func (u *IntegrationEventSyncRunUpsertBulk) ClearProviderEventSourceCursors() *IntegrationEventSyncRunUpsertBulk {
 	return u.Update(func(s *IntegrationEventSyncRunUpsert) {
-		s.ClearSourceCursors()
+		s.ClearProviderEventSourceCursors()
 	})
 }
 

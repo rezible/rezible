@@ -3,13 +3,14 @@ package demoprovider
 import (
 	"fmt"
 
+	rez "github.com/rezible/rezible"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 type topologyComponentObservedPayload struct {
-	ExternalRef string         `json:"external_ref"`
+	ResourceRef string         `json:"resource_ref"`
 	Category    kne.Category   `json:"category"`
 	Kind        string         `json:"kind"`
 	DisplayName string         `json:"display_name"`
@@ -17,13 +18,12 @@ type topologyComponentObservedPayload struct {
 	Properties  map[string]any `json:"properties,omitempty"`
 }
 
-func (p topologyComponentObservedPayload) subjectRef() string {
-	return p.ExternalRef
+func (p topologyComponentObservedPayload) resourceRef() string {
+	return p.ResourceRef
 }
 
-func (p topologyComponentObservedPayload) getAttributes() projections.SystemComponentSubjectAttributes {
-	return projections.SystemComponentSubjectAttributes{
-		ExternalRef: p.ExternalRef,
+func (p topologyComponentObservedPayload) getAttributes() projections.SystemComponentEventAttributes {
+	return projections.SystemComponentEventAttributes{
 		Category:    p.Category,
 		Kind:        p.Kind,
 		DisplayName: p.DisplayName,
@@ -43,7 +43,7 @@ func makeDemoTopologyComponents() []topologyComponentObservedPayload {
 			props[k] = v
 		}
 		return topologyComponentObservedPayload{
-			ExternalRef: componentRef(id),
+			ResourceRef: componentRef(id),
 			Category:    category,
 			Kind:        kind,
 			DisplayName: displayName,
@@ -53,20 +53,20 @@ func makeDemoTopologyComponents() []topologyComponentObservedPayload {
 	}
 
 	return []topologyComponentObservedPayload{
-		component("web_app", kne.CategoryContainer, "user_surface", "Customer Web App", "Primary customer-facing storefront and account experience.", map[string]any{"tier": "edge", "criticality": "high", "lifecycle": "production", "runtime": "sveltekit", "region": "global", "owner_team": "commerce_team", "repository_external_ref": "rezible-commerce/web-app", "tags": []string{"customer-facing", "frontend"}, "business_domain": "commerce"}),
-		component("admin_console", kne.CategoryContainer, "user_surface", "Admin Console", "Internal operations interface for catalog, search, and order support.", map[string]any{"tier": "internal", "criticality": "medium", "lifecycle": "production", "runtime": "sveltekit", "region": "global", "owner_team": "platform_team", "repository_external_ref": "rezible-commerce/admin-console", "tags": []string{"internal", "operations"}, "business_domain": "operations"}),
+		component("web_app", kne.CategoryContainer, "user_surface", "Customer Web App", "Primary customer-facing storefront and account experience.", map[string]any{"tier": "edge", "criticality": "high", "lifecycle": "production", "runtime": "sveltekit", "region": "global", "owner_team": "commerce_team", "repository_ref": "rezible-commerce/web-app", "tags": []string{"customer-facing", "frontend"}, "business_domain": "commerce"}),
+		component("admin_console", kne.CategoryContainer, "user_surface", "Admin Console", "Internal operations interface for catalog, search, and order support.", map[string]any{"tier": "internal", "criticality": "medium", "lifecycle": "production", "runtime": "sveltekit", "region": "global", "owner_team": "platform_team", "repository_ref": "rezible-commerce/admin-console", "tags": []string{"internal", "operations"}, "business_domain": "operations"}),
 		component("public_api_gateway", kne.CategoryContainer, "gateway", "Public API Gateway", "Ingress gateway for public REST and partner API traffic.", map[string]any{"tier": "edge", "criticality": "high", "lifecycle": "production", "runtime": "envoy", "region": "us-east-1", "owner_team": "platform_team", "tags": []string{"api", "ingress"}, "business_domain": "platform"}),
-		component("auth_service", kne.CategoryContainer, "service", "Auth Listener", "Authentication, sessions, and customer identity service.", map[string]any{"tier": "core", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "identity_team", "repository_external_ref": "rezible-commerce/auth-service", "tags": []string{"identity", "sessions"}, "business_domain": "identity"}),
-		component("catalog_service", kne.CategoryContainer, "service", "Catalog Listener", "Product catalog read and write API.", map[string]any{"tier": "core", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_external_ref": "rezible-commerce/catalog-service", "tags": []string{"products"}, "business_domain": "catalog"}),
-		component("search_api", kne.CategoryContainer, "service", "Search API", "Product search query API used by storefront and checkout enrichment.", map[string]any{"tier": "core", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_external_ref": "rezible-commerce/search-api", "tags": []string{"search", "customer-facing"}, "business_domain": "catalog"}),
-		component("checkout_service", kne.CategoryContainer, "service", "Checkout Listener", "Cart checkout orchestration and payment initiation.", map[string]any{"tier": "core", "criticality": "critical", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_external_ref": "rezible-commerce/checkout-service", "tags": []string{"checkout", "revenue"}, "business_domain": "checkout"}),
-		component("orders_service", kne.CategoryContainer, "service", "Orders Listener", "Order lifecycle and order history service.", map[string]any{"tier": "core", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_external_ref": "rezible-commerce/orders-service", "tags": []string{"orders"}, "business_domain": "orders"}),
-		component("payments_service", kne.CategoryContainer, "service", "Payments Listener", "Payment capture, refunds, and ledger Integration.", map[string]any{"tier": "core", "criticality": "critical", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_external_ref": "rezible-commerce/payments-service", "tags": []string{"payments", "pci"}, "business_domain": "payments"}),
-		component("inventory_service", kne.CategoryContainer, "service", "Inventory Listener", "Stock availability and reservation service.", map[string]any{"tier": "core", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_external_ref": "rezible-commerce/inventory-service", "tags": []string{"inventory"}, "business_domain": "fulfillment"}),
-		component("notifications_service", kne.CategoryContainer, "service", "Notifications Listener", "Customer email and transactional notification API.", map[string]any{"tier": "supporting", "criticality": "medium", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "platform_team", "repository_external_ref": "rezible-commerce/notifications-service", "tags": []string{"email"}, "business_domain": "communications"}),
-		component("search_indexer", kne.CategoryContainer, "worker", "Search Indexer", "Builds and refreshes catalog search indexes.", map[string]any{"tier": "async", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_external_ref": "rezible-commerce/search-indexer", "tags": []string{"search", "batch"}, "business_domain": "catalog"}),
-		component("order_fulfillment_worker", kne.CategoryContainer, "worker", "Order Fulfillment Worker", "Consumes order events and coordinates fulfillment handoff.", map[string]any{"tier": "async", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_external_ref": "rezible-commerce/order-fulfillment-worker", "tags": []string{"orders", "fulfillment"}, "business_domain": "fulfillment"}),
-		component("email_dispatch_worker", kne.CategoryContainer, "worker", "Email Dispatch Worker", "Sends queued transactional customer email.", map[string]any{"tier": "async", "criticality": "medium", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "platform_team", "repository_external_ref": "rezible-commerce/email-dispatch-worker", "tags": []string{"email", "async"}, "business_domain": "communications"}),
+		component("auth_service", kne.CategoryContainer, "service", "Auth Listener", "Authentication, sessions, and customer identity service.", map[string]any{"tier": "core", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "identity_team", "repository_ref": "rezible-commerce/auth-service", "tags": []string{"identity", "sessions"}, "business_domain": "identity"}),
+		component("catalog_service", kne.CategoryContainer, "service", "Catalog Listener", "Product catalog read and write API.", map[string]any{"tier": "core", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_ref": "rezible-commerce/catalog-service", "tags": []string{"products"}, "business_domain": "catalog"}),
+		component("search_api", kne.CategoryContainer, "service", "Search API", "Product search query API used by storefront and checkout enrichment.", map[string]any{"tier": "core", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_ref": "rezible-commerce/search-api", "tags": []string{"search", "customer-facing"}, "business_domain": "catalog"}),
+		component("checkout_service", kne.CategoryContainer, "service", "Checkout Listener", "Cart checkout orchestration and payment initiation.", map[string]any{"tier": "core", "criticality": "critical", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_ref": "rezible-commerce/checkout-service", "tags": []string{"checkout", "revenue"}, "business_domain": "checkout"}),
+		component("orders_service", kne.CategoryContainer, "service", "Orders Listener", "Order lifecycle and order history service.", map[string]any{"tier": "core", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_ref": "rezible-commerce/orders-service", "tags": []string{"orders"}, "business_domain": "orders"}),
+		component("payments_service", kne.CategoryContainer, "service", "Payments Listener", "Payment capture, refunds, and ledger Integration.", map[string]any{"tier": "core", "criticality": "critical", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_ref": "rezible-commerce/payments-service", "tags": []string{"payments", "pci"}, "business_domain": "payments"}),
+		component("inventory_service", kne.CategoryContainer, "service", "Inventory Listener", "Stock availability and reservation service.", map[string]any{"tier": "core", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_ref": "rezible-commerce/inventory-service", "tags": []string{"inventory"}, "business_domain": "fulfillment"}),
+		component("notifications_service", kne.CategoryContainer, "service", "Notifications Listener", "Customer email and transactional notification API.", map[string]any{"tier": "supporting", "criticality": "medium", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "platform_team", "repository_ref": "rezible-commerce/notifications-service", "tags": []string{"email"}, "business_domain": "communications"}),
+		component("search_indexer", kne.CategoryContainer, "worker", "Search Indexer", "Builds and refreshes catalog search indexes.", map[string]any{"tier": "async", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_ref": "rezible-commerce/search-indexer", "tags": []string{"search", "batch"}, "business_domain": "catalog"}),
+		component("order_fulfillment_worker", kne.CategoryContainer, "worker", "Order Fulfillment Worker", "Consumes order events and coordinates fulfillment handoff.", map[string]any{"tier": "async", "criticality": "high", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "commerce_team", "repository_ref": "rezible-commerce/order-fulfillment-worker", "tags": []string{"orders", "fulfillment"}, "business_domain": "fulfillment"}),
+		component("email_dispatch_worker", kne.CategoryContainer, "worker", "Email Dispatch Worker", "Sends queued transactional customer email.", map[string]any{"tier": "async", "criticality": "medium", "lifecycle": "production", "runtime": "go", "region": "us-east-1", "owner_team": "platform_team", "repository_ref": "rezible-commerce/email-dispatch-worker", "tags": []string{"email", "async"}, "business_domain": "communications"}),
 		component("users_postgres", kne.CategoryContainer, "database", "Users Postgres", "Primary user identity database.", map[string]any{"tier": "data", "criticality": "high", "engine": "postgres", "region": "us-east-1", "owner_team": "identity_team", "tags": []string{"identity", "postgres"}}),
 		component("catalog_postgres", kne.CategoryContainer, "database", "Catalog Postgres", "System of record for product catalog data.", map[string]any{"tier": "data", "criticality": "high", "engine": "postgres", "region": "us-east-1", "owner_team": "commerce_team", "tags": []string{"catalog", "postgres"}}),
 		component("orders_postgres", kne.CategoryContainer, "database", "Orders Postgres", "System of record for carts, orders, and invoices.", map[string]any{"tier": "data", "criticality": "critical", "engine": "postgres", "region": "us-east-1", "owner_team": "commerce_team", "tags": []string{"orders", "postgres"}}),
@@ -92,7 +92,7 @@ func makeDemoTopologyComponents() []topologyComponentObservedPayload {
 }
 
 type topologyRelationshipObservedPayload struct {
-	ExternalRef string                                       `json:"external_ref"`
+	ResourceRef string                                       `json:"resource_ref"`
 	Predicate   knr.Predicate                                `json:"predicate"`
 	DisplayName string                                       `json:"display_name,omitempty"`
 	Description string                                       `json:"description,omitempty"`
@@ -102,31 +102,44 @@ type topologyRelationshipObservedPayload struct {
 }
 
 type topologyRelationshipObservedPayloadComponent struct {
-	ExternalRef string       `json:"external_ref"`
+	ResourceRef string       `json:"resource_ref"`
 	Category    kne.Category `json:"category"`
 	Kind        string       `json:"kind"`
 	DisplayName string       `json:"display_name"`
 }
 
-func (p topologyRelationshipObservedPayload) subjectRef() string {
-	return p.ExternalRef
+func (p topologyRelationshipObservedPayload) resourceRef() string {
+	return p.ResourceRef
 }
 
-func (p topologyRelationshipObservedPayload) getAttributes() projections.SystemRelationshipSubjectAttributes {
-	return projections.SystemRelationshipSubjectAttributes{
-		ExternalRef:       p.ExternalRef,
-		Predicate:         p.Predicate,
-		DisplayName:       p.DisplayName,
-		Description:       p.Description,
-		SourceExternalRef: p.Source.ExternalRef,
-		SourceCategory:    p.Source.Category,
-		SourceKind:        p.Source.Kind,
-		SourceDisplayName: p.Source.DisplayName,
-		TargetExternalRef: p.Target.ExternalRef,
-		TargetCategory:    p.Target.Category,
-		TargetKind:        p.Target.Kind,
-		TargetDisplayName: p.Target.DisplayName,
-		Properties:        p.Properties,
+func (p topologyRelationshipObservedPayload) getAttributes(namespace string) projections.SystemRelationshipEventAttributes {
+	sourceRef := rez.ProviderResourceRef{
+		Provider:          providerName,
+		ProviderNamespace: namespace,
+		ResourceRef:       p.Source.ResourceRef,
+	}
+	targetRef := rez.ProviderResourceRef{
+		Provider:          providerName,
+		ProviderNamespace: namespace,
+		ResourceRef:       p.Target.ResourceRef,
+	}
+	return projections.SystemRelationshipEventAttributes{
+		Predicate:   p.Predicate,
+		DisplayName: p.DisplayName,
+		Description: p.Description,
+		Source: projections.EntityObservation{
+			Ref:         sourceRef,
+			Category:    p.Source.Category,
+			Kind:        p.Source.Kind,
+			DisplayName: p.Source.DisplayName,
+		},
+		Target: projections.EntityObservation{
+			Ref:         targetRef,
+			Category:    p.Target.Category,
+			Kind:        p.Target.Kind,
+			DisplayName: p.Target.DisplayName,
+		},
+		Properties: p.Properties,
 	}
 }
 
@@ -134,9 +147,9 @@ func makeDemoTopologyRelationships(cmps []topologyComponentObservedPayload) []to
 	mustTopologyComponent := func(id string) topologyRelationshipObservedPayloadComponent {
 		ref := componentRef(id)
 		for _, c := range cmps {
-			if c.ExternalRef == ref {
+			if c.ResourceRef == ref {
 				return topologyRelationshipObservedPayloadComponent{
-					ExternalRef: c.ExternalRef,
+					ResourceRef: c.ResourceRef,
 					Category:    c.Category,
 					Kind:        c.Kind,
 					DisplayName: c.DisplayName,
@@ -149,15 +162,15 @@ func makeDemoTopologyRelationships(cmps []topologyComponentObservedPayload) []to
 	rel := func(sourceID string, predicate knr.Predicate, targetID string, displayName string) topologyRelationshipObservedPayload {
 		source := mustTopologyComponent(sourceID)
 		target := mustTopologyComponent(targetID)
-		externalRef := fmt.Sprintf("demo:relationship:%s:%s:%s", sourceID, predicate, targetID)
+		resourceRef := fmt.Sprintf("demo:relationship:%s:%s:%s", sourceID, predicate, targetID)
 		return topologyRelationshipObservedPayload{
-			ExternalRef: externalRef,
+			ResourceRef: resourceRef,
 			Predicate:   predicate,
 			DisplayName: displayName,
 			Source:      source,
 			Target:      target,
 			Properties: map[string]any{
-				"external_ref": externalRef,
+				"resource_ref": resourceRef,
 				"source":       sourceID,
 				"target":       targetID,
 			},

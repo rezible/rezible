@@ -22,14 +22,14 @@ type KnowledgeSubjectAlias struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// SubjectKind holds the value of the "subject_kind" field.
-	SubjectKind knowledgesubjectalias.SubjectKind `json:"subject_kind,omitempty"`
 	// Provider holds the value of the "provider" field.
 	Provider string `json:"provider,omitempty"`
-	// ProviderSource holds the value of the "provider_source" field.
-	ProviderSource string `json:"provider_source,omitempty"`
-	// ProviderSubjectRef holds the value of the "provider_subject_ref" field.
-	ProviderSubjectRef string `json:"provider_subject_ref,omitempty"`
+	// ProviderNamespace holds the value of the "provider_namespace" field.
+	ProviderNamespace string `json:"provider_namespace,omitempty"`
+	// ProviderResourceRef holds the value of the "provider_resource_ref" field.
+	ProviderResourceRef string `json:"provider_resource_ref,omitempty"`
+	// SubjectKind holds the value of the "subject_kind" field.
+	SubjectKind knowledgesubjectalias.SubjectKind `json:"subject_kind,omitempty"`
 	// EntityID holds the value of the "entity_id" field.
 	EntityID *uuid.UUID `json:"entity_id,omitempty"`
 	// RelationshipID holds the value of the "relationship_id" field.
@@ -106,7 +106,7 @@ func (*KnowledgeSubjectAlias) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case knowledgesubjectalias.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgesubjectalias.FieldSubjectKind, knowledgesubjectalias.FieldProvider, knowledgesubjectalias.FieldProviderSource, knowledgesubjectalias.FieldProviderSubjectRef:
+		case knowledgesubjectalias.FieldProvider, knowledgesubjectalias.FieldProviderNamespace, knowledgesubjectalias.FieldProviderResourceRef, knowledgesubjectalias.FieldSubjectKind:
 			values[i] = new(sql.NullString)
 		case knowledgesubjectalias.FieldID:
 			values[i] = new(uuid.UUID)
@@ -137,29 +137,29 @@ func (_m *KnowledgeSubjectAlias) assignValues(columns []string, values []any) er
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case knowledgesubjectalias.FieldSubjectKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field subject_kind", values[i])
-			} else if value.Valid {
-				_m.SubjectKind = knowledgesubjectalias.SubjectKind(value.String)
-			}
 		case knowledgesubjectalias.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider", values[i])
 			} else if value.Valid {
 				_m.Provider = value.String
 			}
-		case knowledgesubjectalias.FieldProviderSource:
+		case knowledgesubjectalias.FieldProviderNamespace:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_source", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_namespace", values[i])
 			} else if value.Valid {
-				_m.ProviderSource = value.String
+				_m.ProviderNamespace = value.String
 			}
-		case knowledgesubjectalias.FieldProviderSubjectRef:
+		case knowledgesubjectalias.FieldProviderResourceRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_subject_ref", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_resource_ref", values[i])
 			} else if value.Valid {
-				_m.ProviderSubjectRef = value.String
+				_m.ProviderResourceRef = value.String
+			}
+		case knowledgesubjectalias.FieldSubjectKind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field subject_kind", values[i])
+			} else if value.Valid {
+				_m.SubjectKind = knowledgesubjectalias.SubjectKind(value.String)
 			}
 		case knowledgesubjectalias.FieldEntityID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -234,17 +234,17 @@ func (_m *KnowledgeSubjectAlias) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("subject_kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.SubjectKind))
-	builder.WriteString(", ")
 	builder.WriteString("provider=")
 	builder.WriteString(_m.Provider)
 	builder.WriteString(", ")
-	builder.WriteString("provider_source=")
-	builder.WriteString(_m.ProviderSource)
+	builder.WriteString("provider_namespace=")
+	builder.WriteString(_m.ProviderNamespace)
 	builder.WriteString(", ")
-	builder.WriteString("provider_subject_ref=")
-	builder.WriteString(_m.ProviderSubjectRef)
+	builder.WriteString("provider_resource_ref=")
+	builder.WriteString(_m.ProviderResourceRef)
+	builder.WriteString(", ")
+	builder.WriteString("subject_kind=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SubjectKind))
 	builder.WriteString(", ")
 	if v := _m.EntityID; v != nil {
 		builder.WriteString("entity_id=")

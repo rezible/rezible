@@ -34,7 +34,8 @@
 								<div class="min-w-0">
 									<div class="truncate text-sm font-medium">
 										{entity.attributes.latestState?.displayName ||
-											entity.attributes.aliases[0]?.attributes.providerSubjectRef ||
+											entity.attributes.aliases[0]?.attributes.resourceRef
+												.resourceRef ||
 											"Unknown entity"}
 									</div>
 									<div class="text-muted-foreground truncate text-xs">

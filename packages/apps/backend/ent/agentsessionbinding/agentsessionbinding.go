@@ -22,16 +22,16 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldProvider holds the string denoting the provider field in the database.
+	FieldProvider = "provider"
+	// FieldProviderNamespace holds the string denoting the provider_namespace field in the database.
+	FieldProviderNamespace = "provider_namespace"
+	// FieldProviderResourceRef holds the string denoting the provider_resource_ref field in the database.
+	FieldProviderResourceRef = "provider_resource_ref"
 	// FieldAgentSessionID holds the string denoting the agent_session_id field in the database.
 	FieldAgentSessionID = "agent_session_id"
 	// FieldIntegrationID holds the string denoting the integration_id field in the database.
 	FieldIntegrationID = "integration_id"
-	// FieldSource holds the string denoting the source field in the database.
-	FieldSource = "source"
-	// FieldResourceKind holds the string denoting the resource_kind field in the database.
-	FieldResourceKind = "resource_kind"
-	// FieldResourceRef holds the string denoting the resource_ref field in the database.
-	FieldResourceRef = "resource_ref"
 	// FieldClosedAt holds the string denoting the closed_at field in the database.
 	FieldClosedAt = "closed_at"
 	// FieldMetadata holds the string denoting the metadata field in the database.
@@ -73,11 +73,11 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldProvider,
+	FieldProviderNamespace,
+	FieldProviderResourceRef,
 	FieldAgentSessionID,
 	FieldIntegrationID,
-	FieldSource,
-	FieldResourceKind,
-	FieldResourceRef,
 	FieldClosedAt,
 	FieldMetadata,
 }
@@ -106,12 +106,10 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// SourceValidator is a validator for the "source" field. It is called by the builders before save.
-	SourceValidator func(string) error
-	// ResourceKindValidator is a validator for the "resource_kind" field. It is called by the builders before save.
-	ResourceKindValidator func(string) error
-	// ResourceRefValidator is a validator for the "resource_ref" field. It is called by the builders before save.
-	ResourceRefValidator func(string) error
+	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
+	ProviderValidator func(string) error
+	// ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
+	ProviderResourceRefValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -139,6 +137,21 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByProvider orders the results by the provider field.
+func ByProvider(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProvider, opts...).ToFunc()
+}
+
+// ByProviderNamespace orders the results by the provider_namespace field.
+func ByProviderNamespace(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderNamespace, opts...).ToFunc()
+}
+
+// ByProviderResourceRef orders the results by the provider_resource_ref field.
+func ByProviderResourceRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderResourceRef, opts...).ToFunc()
+}
+
 // ByAgentSessionID orders the results by the agent_session_id field.
 func ByAgentSessionID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentSessionID, opts...).ToFunc()
@@ -147,21 +160,6 @@ func ByAgentSessionID(opts ...sql.OrderTermOption) OrderOption {
 // ByIntegrationID orders the results by the integration_id field.
 func ByIntegrationID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIntegrationID, opts...).ToFunc()
-}
-
-// BySource orders the results by the source field.
-func BySource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSource, opts...).ToFunc()
-}
-
-// ByResourceKind orders the results by the resource_kind field.
-func ByResourceKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldResourceKind, opts...).ToFunc()
-}
-
-// ByResourceRef orders the results by the resource_ref field.
-func ByResourceRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldResourceRef, opts...).ToFunc()
 }
 
 // ByClosedAt orders the results by the closed_at field.

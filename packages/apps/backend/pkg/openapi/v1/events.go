@@ -7,6 +7,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
@@ -27,15 +28,15 @@ type (
 	}
 
 	EventAttributes struct {
-		Kind               string           `json:"kind"`
-		OccurredAt         time.Time        `json:"occurredAt"`
-		ReceivedAt         time.Time        `json:"receivedAt"`
-		Provider           string           `json:"provider"`
-		ProviderSource     string           `json:"providerSource"`
-		ProviderSubjectRef string           `json:"providerSubjectRef"`
-		SubjectKind        string           `json:"subjectKind"`
-		Attributes         []byte           `json:"attributes"`
-		Projection         *EventProjection `json:"projection,omitempty"`
+		Kind                string              `json:"kind"`
+		OccurredAt          time.Time           `json:"occurredAt"`
+		ReceivedAt          time.Time           `json:"receivedAt"`
+		ResourceRef         ProviderResourceRef `json:"resourceRef"`
+		ProviderEventSource string              `json:"providerEventSource"`
+		ProviderEventRef    string              `json:"providerEventRef"`
+		IntegrationId       *uuid.UUID          `json:"integrationId,omitempty"`
+		Attributes          []byte              `json:"attributes"`
+		Projection          *EventProjection    `json:"projection,omitempty"`
 	}
 
 	EventProjection struct {
@@ -56,14 +57,18 @@ type (
 
 func EventFromEnt(e *ent.NormalizedEvent) Event {
 	attr := EventAttributes{
-		Kind:               e.Kind.String(),
-		OccurredAt:         e.OccurredAt,
-		ReceivedAt:         e.ReceivedAt,
-		Provider:           e.Provider,
-		ProviderSource:     e.ProviderSource,
-		ProviderSubjectRef: e.ProviderSubjectRef,
-		SubjectKind:        e.SubjectKind,
-		Attributes:         e.Attributes,
+		Kind:       e.Kind,
+		OccurredAt: e.OccurredAt,
+		ReceivedAt: e.ReceivedAt,
+		ResourceRef: ProviderResourceRefFromRez(rez.ProviderResourceRef{
+			Provider:          e.Provider,
+			ProviderNamespace: e.ProviderNamespace,
+			ResourceRef:       e.ProviderResourceRef,
+		}),
+		ProviderEventSource: e.ProviderEventSource,
+		ProviderEventRef:    e.ProviderEventRef,
+		IntegrationId:       e.IntegrationID,
+		Attributes:          e.Attributes,
 	}
 	if e.Edges.Projection != nil {
 		projection := EventProjectionFromEnt(e.Edges.Projection)

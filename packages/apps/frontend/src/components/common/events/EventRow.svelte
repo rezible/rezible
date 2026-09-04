@@ -52,13 +52,15 @@
 			<span class="text-xs uppercase font-normal text-surface-content/50">{attrs.kind}</span>
 		</div>
 		<a href="/events/{event.id}" class="anchor link w-full truncate text-left align-baseline"
-			>{attrs.provider} {attrs.providerSubjectRef}</a
+			>{attrs.resourceRef.provider}
+			{attrs.resourceRef.providerNamespace}
+			{attrs.resourceRef.resourceRef}</a
 		>
 	</div>
 
 	<div class="flex w-full h-full items-center justify-end gap-2">
 		<div class="flex-1 h-full items-center justify-end flex gap-2">
-			{#each annotations as anno}
+			{#each annotations as anno (anno.id)}
 				{@render annotationBox(anno)}
 			{/each}
 		</div>

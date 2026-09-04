@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -18,25 +19,20 @@ func (NormalizedEvent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		ProviderResourceReferenceMixin{},
 	}
 }
 
 func (NormalizedEvent) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.Enum("kind").Immutable().
-			Values("received", "observed", "deleted").
-			Comment("Kind of activity represented by the event."),
-		field.String("provider").Immutable().NotEmpty().
-			Comment("Integration provider that produced the event, such as slack or github."),
-		field.String("provider_source").Immutable().NotEmpty().
+		field.UUID("integration_id", uuid.UUID{}).Optional().Nillable(),
+		field.String("kind").Immutable().NotEmpty().
+			Comment("Normalized kind of the primary subject this event is about."),
+		field.String("provider_event_source").Immutable().NotEmpty().
 			Comment("Provider-specific event stream or webhook source the event came from."),
 		field.String("provider_event_ref").Immutable().NotEmpty().
 			Comment("Stable provider reference for the source event, used with the provider fields for idempotency."),
-		field.String("provider_subject_ref").Immutable().NotEmpty().
-			Comment("Stable provider reference for the primary subject this event is about."),
-		field.String("subject_kind").Immutable().
-			Comment("Provider-neutral type of the primary subject this event is about."),
 		field.Bytes("attributes").Immutable().
 			Comment("Normalized JSON attributes for this event kind."),
 		field.Time("created_at").Immutable().Default(time.Now),
@@ -47,15 +43,19 @@ func (NormalizedEvent) Fields() []ent.Field {
 
 func (NormalizedEvent) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("integration", Integration.Type).
+			Unique().
+			Field("integration_id").
+			Annotations(entsql.OnDelete(entsql.SetNull)),
 		edge.To("projection", NormalizedEventProjection.Type).Unique(),
 	}
 }
 
 func (NormalizedEvent) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "provider", "provider_source", "provider_event_ref", "provider_subject_ref").
+		index.Fields("tenant_id", "provider", "provider_namespace", "provider_event_source", "provider_event_ref", "provider_resource_ref").
 			Unique(),
-		index.Fields("tenant_id", "provider", "provider_source", "occurred_at"),
+		index.Fields("tenant_id", "provider", "provider_namespace", "provider_event_source", "occurred_at"),
 	}
 }
 

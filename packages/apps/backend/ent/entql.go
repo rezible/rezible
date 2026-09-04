@@ -159,16 +159,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "AgentSessionBinding",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			agentsessionbinding.FieldTenantID:       {Type: field.TypeInt, Column: agentsessionbinding.FieldTenantID},
-			agentsessionbinding.FieldCreatedAt:      {Type: field.TypeTime, Column: agentsessionbinding.FieldCreatedAt},
-			agentsessionbinding.FieldUpdatedAt:      {Type: field.TypeTime, Column: agentsessionbinding.FieldUpdatedAt},
-			agentsessionbinding.FieldAgentSessionID: {Type: field.TypeUUID, Column: agentsessionbinding.FieldAgentSessionID},
-			agentsessionbinding.FieldIntegrationID:  {Type: field.TypeUUID, Column: agentsessionbinding.FieldIntegrationID},
-			agentsessionbinding.FieldSource:         {Type: field.TypeString, Column: agentsessionbinding.FieldSource},
-			agentsessionbinding.FieldResourceKind:   {Type: field.TypeString, Column: agentsessionbinding.FieldResourceKind},
-			agentsessionbinding.FieldResourceRef:    {Type: field.TypeString, Column: agentsessionbinding.FieldResourceRef},
-			agentsessionbinding.FieldClosedAt:       {Type: field.TypeTime, Column: agentsessionbinding.FieldClosedAt},
-			agentsessionbinding.FieldMetadata:       {Type: field.TypeJSON, Column: agentsessionbinding.FieldMetadata},
+			agentsessionbinding.FieldTenantID:            {Type: field.TypeInt, Column: agentsessionbinding.FieldTenantID},
+			agentsessionbinding.FieldCreatedAt:           {Type: field.TypeTime, Column: agentsessionbinding.FieldCreatedAt},
+			agentsessionbinding.FieldUpdatedAt:           {Type: field.TypeTime, Column: agentsessionbinding.FieldUpdatedAt},
+			agentsessionbinding.FieldProvider:            {Type: field.TypeString, Column: agentsessionbinding.FieldProvider},
+			agentsessionbinding.FieldProviderNamespace:   {Type: field.TypeString, Column: agentsessionbinding.FieldProviderNamespace},
+			agentsessionbinding.FieldProviderResourceRef: {Type: field.TypeString, Column: agentsessionbinding.FieldProviderResourceRef},
+			agentsessionbinding.FieldAgentSessionID:      {Type: field.TypeUUID, Column: agentsessionbinding.FieldAgentSessionID},
+			agentsessionbinding.FieldIntegrationID:       {Type: field.TypeUUID, Column: agentsessionbinding.FieldIntegrationID},
+			agentsessionbinding.FieldClosedAt:            {Type: field.TypeTime, Column: agentsessionbinding.FieldClosedAt},
+			agentsessionbinding.FieldMetadata:            {Type: field.TypeJSON, Column: agentsessionbinding.FieldMetadata},
 		},
 	}
 	graph.Nodes[4] = &sqlgraph.Node{
@@ -628,15 +628,15 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Integration",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			integration.FieldTenantID:           {Type: field.TypeInt, Column: integration.FieldTenantID},
-			integration.FieldCreatedAt:          {Type: field.TypeTime, Column: integration.FieldCreatedAt},
-			integration.FieldUpdatedAt:          {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
-			integration.FieldProviderName:       {Type: field.TypeString, Column: integration.FieldProviderName},
-			integration.FieldIntegrationName:    {Type: field.TypeString, Column: integration.FieldIntegrationName},
-			integration.FieldDisplayName:        {Type: field.TypeString, Column: integration.FieldDisplayName},
-			integration.FieldExternalRef:        {Type: field.TypeString, Column: integration.FieldExternalRef},
-			integration.FieldInstallationConfig: {Type: field.TypeJSON, Column: integration.FieldInstallationConfig},
-			integration.FieldUserSettings:       {Type: field.TypeJSON, Column: integration.FieldUserSettings},
+			integration.FieldTenantID:                {Type: field.TypeInt, Column: integration.FieldTenantID},
+			integration.FieldCreatedAt:               {Type: field.TypeTime, Column: integration.FieldCreatedAt},
+			integration.FieldUpdatedAt:               {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
+			integration.FieldProvider:                {Type: field.TypeString, Column: integration.FieldProvider},
+			integration.FieldName:                    {Type: field.TypeString, Column: integration.FieldName},
+			integration.FieldDisplayName:             {Type: field.TypeString, Column: integration.FieldDisplayName},
+			integration.FieldProviderInstallationRef: {Type: field.TypeString, Column: integration.FieldProviderInstallationRef},
+			integration.FieldInstallationConfig:      {Type: field.TypeJSON, Column: integration.FieldInstallationConfig},
+			integration.FieldUserSettings:            {Type: field.TypeJSON, Column: integration.FieldUserSettings},
 		},
 	}
 	graph.Nodes[29] = &sqlgraph.Node{
@@ -650,13 +650,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "IntegrationEventSyncCursor",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			integrationeventsynccursor.FieldTenantID:       {Type: field.TypeInt, Column: integrationeventsynccursor.FieldTenantID},
-			integrationeventsynccursor.FieldCreatedAt:      {Type: field.TypeTime, Column: integrationeventsynccursor.FieldCreatedAt},
-			integrationeventsynccursor.FieldUpdatedAt:      {Type: field.TypeTime, Column: integrationeventsynccursor.FieldUpdatedAt},
-			integrationeventsynccursor.FieldIntegrationID:  {Type: field.TypeUUID, Column: integrationeventsynccursor.FieldIntegrationID},
-			integrationeventsynccursor.FieldProviderSource: {Type: field.TypeString, Column: integrationeventsynccursor.FieldProviderSource},
-			integrationeventsynccursor.FieldCursor:         {Type: field.TypeString, Column: integrationeventsynccursor.FieldCursor},
-			integrationeventsynccursor.FieldLastSyncedAt:   {Type: field.TypeTime, Column: integrationeventsynccursor.FieldLastSyncedAt},
+			integrationeventsynccursor.FieldTenantID:            {Type: field.TypeInt, Column: integrationeventsynccursor.FieldTenantID},
+			integrationeventsynccursor.FieldCreatedAt:           {Type: field.TypeTime, Column: integrationeventsynccursor.FieldCreatedAt},
+			integrationeventsynccursor.FieldUpdatedAt:           {Type: field.TypeTime, Column: integrationeventsynccursor.FieldUpdatedAt},
+			integrationeventsynccursor.FieldIntegrationID:       {Type: field.TypeUUID, Column: integrationeventsynccursor.FieldIntegrationID},
+			integrationeventsynccursor.FieldProviderEventSource: {Type: field.TypeString, Column: integrationeventsynccursor.FieldProviderEventSource},
+			integrationeventsynccursor.FieldCursor:              {Type: field.TypeString, Column: integrationeventsynccursor.FieldCursor},
+			integrationeventsynccursor.FieldLastSyncedAt:        {Type: field.TypeTime, Column: integrationeventsynccursor.FieldLastSyncedAt},
 		},
 	}
 	graph.Nodes[30] = &sqlgraph.Node{
@@ -670,17 +670,17 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "IntegrationEventSyncRun",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			integrationeventsyncrun.FieldTenantID:       {Type: field.TypeInt, Column: integrationeventsyncrun.FieldTenantID},
-			integrationeventsyncrun.FieldIntegrationID:  {Type: field.TypeUUID, Column: integrationeventsyncrun.FieldIntegrationID},
-			integrationeventsyncrun.FieldSourceCursors:  {Type: field.TypeJSON, Column: integrationeventsyncrun.FieldSourceCursors},
-			integrationeventsyncrun.FieldSyncReason:     {Type: field.TypeString, Column: integrationeventsyncrun.FieldSyncReason},
-			integrationeventsyncrun.FieldStartedAt:      {Type: field.TypeTime, Column: integrationeventsyncrun.FieldStartedAt},
-			integrationeventsyncrun.FieldFinishedAt:     {Type: field.TypeTime, Column: integrationeventsyncrun.FieldFinishedAt},
-			integrationeventsyncrun.FieldStatus:         {Type: field.TypeEnum, Column: integrationeventsyncrun.FieldStatus},
-			integrationeventsyncrun.FieldEventsPulled:   {Type: field.TypeInt, Column: integrationeventsyncrun.FieldEventsPulled},
-			integrationeventsyncrun.FieldEventsIngested: {Type: field.TypeInt, Column: integrationeventsyncrun.FieldEventsIngested},
-			integrationeventsyncrun.FieldDuplicates:     {Type: field.TypeInt, Column: integrationeventsyncrun.FieldDuplicates},
-			integrationeventsyncrun.FieldFailureMessage: {Type: field.TypeString, Column: integrationeventsyncrun.FieldFailureMessage},
+			integrationeventsyncrun.FieldTenantID:                   {Type: field.TypeInt, Column: integrationeventsyncrun.FieldTenantID},
+			integrationeventsyncrun.FieldIntegrationID:              {Type: field.TypeUUID, Column: integrationeventsyncrun.FieldIntegrationID},
+			integrationeventsyncrun.FieldProviderEventSourceCursors: {Type: field.TypeJSON, Column: integrationeventsyncrun.FieldProviderEventSourceCursors},
+			integrationeventsyncrun.FieldSyncReason:                 {Type: field.TypeString, Column: integrationeventsyncrun.FieldSyncReason},
+			integrationeventsyncrun.FieldStartedAt:                  {Type: field.TypeTime, Column: integrationeventsyncrun.FieldStartedAt},
+			integrationeventsyncrun.FieldFinishedAt:                 {Type: field.TypeTime, Column: integrationeventsyncrun.FieldFinishedAt},
+			integrationeventsyncrun.FieldStatus:                     {Type: field.TypeEnum, Column: integrationeventsyncrun.FieldStatus},
+			integrationeventsyncrun.FieldEventsPulled:               {Type: field.TypeInt, Column: integrationeventsyncrun.FieldEventsPulled},
+			integrationeventsyncrun.FieldEventsIngested:             {Type: field.TypeInt, Column: integrationeventsyncrun.FieldEventsIngested},
+			integrationeventsyncrun.FieldDuplicates:                 {Type: field.TypeInt, Column: integrationeventsyncrun.FieldDuplicates},
+			integrationeventsyncrun.FieldFailureMessage:             {Type: field.TypeString, Column: integrationeventsyncrun.FieldFailureMessage},
 		},
 	}
 	graph.Nodes[31] = &sqlgraph.Node{
@@ -771,13 +771,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "KnowledgeSubjectAlias",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			knowledgesubjectalias.FieldTenantID:           {Type: field.TypeInt, Column: knowledgesubjectalias.FieldTenantID},
-			knowledgesubjectalias.FieldSubjectKind:        {Type: field.TypeEnum, Column: knowledgesubjectalias.FieldSubjectKind},
-			knowledgesubjectalias.FieldProvider:           {Type: field.TypeString, Column: knowledgesubjectalias.FieldProvider},
-			knowledgesubjectalias.FieldProviderSource:     {Type: field.TypeString, Column: knowledgesubjectalias.FieldProviderSource},
-			knowledgesubjectalias.FieldProviderSubjectRef: {Type: field.TypeString, Column: knowledgesubjectalias.FieldProviderSubjectRef},
-			knowledgesubjectalias.FieldEntityID:           {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldEntityID},
-			knowledgesubjectalias.FieldRelationshipID:     {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldRelationshipID},
+			knowledgesubjectalias.FieldTenantID:            {Type: field.TypeInt, Column: knowledgesubjectalias.FieldTenantID},
+			knowledgesubjectalias.FieldProvider:            {Type: field.TypeString, Column: knowledgesubjectalias.FieldProvider},
+			knowledgesubjectalias.FieldProviderNamespace:   {Type: field.TypeString, Column: knowledgesubjectalias.FieldProviderNamespace},
+			knowledgesubjectalias.FieldProviderResourceRef: {Type: field.TypeString, Column: knowledgesubjectalias.FieldProviderResourceRef},
+			knowledgesubjectalias.FieldSubjectKind:         {Type: field.TypeEnum, Column: knowledgesubjectalias.FieldSubjectKind},
+			knowledgesubjectalias.FieldEntityID:            {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldEntityID},
+			knowledgesubjectalias.FieldRelationshipID:      {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldRelationshipID},
 		},
 	}
 	graph.Nodes[36] = &sqlgraph.Node{
@@ -835,17 +835,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "NormalizedEvent",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			normalizedevent.FieldTenantID:           {Type: field.TypeInt, Column: normalizedevent.FieldTenantID},
-			normalizedevent.FieldKind:               {Type: field.TypeEnum, Column: normalizedevent.FieldKind},
-			normalizedevent.FieldProvider:           {Type: field.TypeString, Column: normalizedevent.FieldProvider},
-			normalizedevent.FieldProviderSource:     {Type: field.TypeString, Column: normalizedevent.FieldProviderSource},
-			normalizedevent.FieldProviderEventRef:   {Type: field.TypeString, Column: normalizedevent.FieldProviderEventRef},
-			normalizedevent.FieldProviderSubjectRef: {Type: field.TypeString, Column: normalizedevent.FieldProviderSubjectRef},
-			normalizedevent.FieldSubjectKind:        {Type: field.TypeString, Column: normalizedevent.FieldSubjectKind},
-			normalizedevent.FieldAttributes:         {Type: field.TypeBytes, Column: normalizedevent.FieldAttributes},
-			normalizedevent.FieldCreatedAt:          {Type: field.TypeTime, Column: normalizedevent.FieldCreatedAt},
-			normalizedevent.FieldOccurredAt:         {Type: field.TypeTime, Column: normalizedevent.FieldOccurredAt},
-			normalizedevent.FieldReceivedAt:         {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
+			normalizedevent.FieldTenantID:            {Type: field.TypeInt, Column: normalizedevent.FieldTenantID},
+			normalizedevent.FieldProvider:            {Type: field.TypeString, Column: normalizedevent.FieldProvider},
+			normalizedevent.FieldProviderNamespace:   {Type: field.TypeString, Column: normalizedevent.FieldProviderNamespace},
+			normalizedevent.FieldProviderResourceRef: {Type: field.TypeString, Column: normalizedevent.FieldProviderResourceRef},
+			normalizedevent.FieldIntegrationID:       {Type: field.TypeUUID, Column: normalizedevent.FieldIntegrationID},
+			normalizedevent.FieldKind:                {Type: field.TypeString, Column: normalizedevent.FieldKind},
+			normalizedevent.FieldProviderEventSource: {Type: field.TypeString, Column: normalizedevent.FieldProviderEventSource},
+			normalizedevent.FieldProviderEventRef:    {Type: field.TypeString, Column: normalizedevent.FieldProviderEventRef},
+			normalizedevent.FieldAttributes:          {Type: field.TypeBytes, Column: normalizedevent.FieldAttributes},
+			normalizedevent.FieldCreatedAt:           {Type: field.TypeTime, Column: normalizedevent.FieldCreatedAt},
+			normalizedevent.FieldOccurredAt:          {Type: field.TypeTime, Column: normalizedevent.FieldOccurredAt},
+			normalizedevent.FieldReceivedAt:          {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
 		},
 	}
 	graph.Nodes[39] = &sqlgraph.Node{
@@ -3092,6 +3093,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Tenant",
 	)
 	graph.MustAddE(
+		"integration",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   normalizedevent.IntegrationTable,
+			Columns: []string{normalizedevent.IntegrationColumn},
+			Bidi:    false,
+		},
+		"NormalizedEvent",
+		"Integration",
+	)
+	graph.MustAddE(
 		"projection",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -5073,6 +5086,21 @@ func (f *AgentSessionBindingFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(agentsessionbinding.FieldUpdatedAt))
 }
 
+// WhereProvider applies the entql string predicate on the provider field.
+func (f *AgentSessionBindingFilter) WhereProvider(p entql.StringP) {
+	f.Where(p.Field(agentsessionbinding.FieldProvider))
+}
+
+// WhereProviderNamespace applies the entql string predicate on the provider_namespace field.
+func (f *AgentSessionBindingFilter) WhereProviderNamespace(p entql.StringP) {
+	f.Where(p.Field(agentsessionbinding.FieldProviderNamespace))
+}
+
+// WhereProviderResourceRef applies the entql string predicate on the provider_resource_ref field.
+func (f *AgentSessionBindingFilter) WhereProviderResourceRef(p entql.StringP) {
+	f.Where(p.Field(agentsessionbinding.FieldProviderResourceRef))
+}
+
 // WhereAgentSessionID applies the entql [16]byte predicate on the agent_session_id field.
 func (f *AgentSessionBindingFilter) WhereAgentSessionID(p entql.ValueP) {
 	f.Where(p.Field(agentsessionbinding.FieldAgentSessionID))
@@ -5081,21 +5109,6 @@ func (f *AgentSessionBindingFilter) WhereAgentSessionID(p entql.ValueP) {
 // WhereIntegrationID applies the entql [16]byte predicate on the integration_id field.
 func (f *AgentSessionBindingFilter) WhereIntegrationID(p entql.ValueP) {
 	f.Where(p.Field(agentsessionbinding.FieldIntegrationID))
-}
-
-// WhereSource applies the entql string predicate on the source field.
-func (f *AgentSessionBindingFilter) WhereSource(p entql.StringP) {
-	f.Where(p.Field(agentsessionbinding.FieldSource))
-}
-
-// WhereResourceKind applies the entql string predicate on the resource_kind field.
-func (f *AgentSessionBindingFilter) WhereResourceKind(p entql.StringP) {
-	f.Where(p.Field(agentsessionbinding.FieldResourceKind))
-}
-
-// WhereResourceRef applies the entql string predicate on the resource_ref field.
-func (f *AgentSessionBindingFilter) WhereResourceRef(p entql.StringP) {
-	f.Where(p.Field(agentsessionbinding.FieldResourceRef))
 }
 
 // WhereClosedAt applies the entql time.Time predicate on the closed_at field.
@@ -8151,14 +8164,14 @@ func (f *IntegrationFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(integration.FieldUpdatedAt))
 }
 
-// WhereProviderName applies the entql string predicate on the provider_name field.
-func (f *IntegrationFilter) WhereProviderName(p entql.StringP) {
-	f.Where(p.Field(integration.FieldProviderName))
+// WhereProvider applies the entql string predicate on the provider field.
+func (f *IntegrationFilter) WhereProvider(p entql.StringP) {
+	f.Where(p.Field(integration.FieldProvider))
 }
 
-// WhereIntegrationName applies the entql string predicate on the integration_name field.
-func (f *IntegrationFilter) WhereIntegrationName(p entql.StringP) {
-	f.Where(p.Field(integration.FieldIntegrationName))
+// WhereName applies the entql string predicate on the name field.
+func (f *IntegrationFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(integration.FieldName))
 }
 
 // WhereDisplayName applies the entql string predicate on the display_name field.
@@ -8166,9 +8179,9 @@ func (f *IntegrationFilter) WhereDisplayName(p entql.StringP) {
 	f.Where(p.Field(integration.FieldDisplayName))
 }
 
-// WhereExternalRef applies the entql string predicate on the external_ref field.
-func (f *IntegrationFilter) WhereExternalRef(p entql.StringP) {
-	f.Where(p.Field(integration.FieldExternalRef))
+// WhereProviderInstallationRef applies the entql string predicate on the provider_installation_ref field.
+func (f *IntegrationFilter) WhereProviderInstallationRef(p entql.StringP) {
+	f.Where(p.Field(integration.FieldProviderInstallationRef))
 }
 
 // WhereInstallationConfig applies the entql json.RawMessage predicate on the installation_config field.
@@ -8255,9 +8268,9 @@ func (f *IntegrationEventSyncCursorFilter) WhereIntegrationID(p entql.ValueP) {
 	f.Where(p.Field(integrationeventsynccursor.FieldIntegrationID))
 }
 
-// WhereProviderSource applies the entql string predicate on the provider_source field.
-func (f *IntegrationEventSyncCursorFilter) WhereProviderSource(p entql.StringP) {
-	f.Where(p.Field(integrationeventsynccursor.FieldProviderSource))
+// WhereProviderEventSource applies the entql string predicate on the provider_event_source field.
+func (f *IntegrationEventSyncCursorFilter) WhereProviderEventSource(p entql.StringP) {
+	f.Where(p.Field(integrationeventsynccursor.FieldProviderEventSource))
 }
 
 // WhereCursor applies the entql string predicate on the cursor field.
@@ -8348,9 +8361,9 @@ func (f *IntegrationEventSyncRunFilter) WhereIntegrationID(p entql.ValueP) {
 	f.Where(p.Field(integrationeventsyncrun.FieldIntegrationID))
 }
 
-// WhereSourceCursors applies the entql json.RawMessage predicate on the source_cursors field.
-func (f *IntegrationEventSyncRunFilter) WhereSourceCursors(p entql.BytesP) {
-	f.Where(p.Field(integrationeventsyncrun.FieldSourceCursors))
+// WhereProviderEventSourceCursors applies the entql json.RawMessage predicate on the provider_event_source_cursors field.
+func (f *IntegrationEventSyncRunFilter) WhereProviderEventSourceCursors(p entql.BytesP) {
+	f.Where(p.Field(integrationeventsyncrun.FieldProviderEventSourceCursors))
 }
 
 // WhereSyncReason applies the entql string predicate on the sync_reason field.
@@ -8933,24 +8946,24 @@ func (f *KnowledgeSubjectAliasFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(knowledgesubjectalias.FieldTenantID))
 }
 
-// WhereSubjectKind applies the entql string predicate on the subject_kind field.
-func (f *KnowledgeSubjectAliasFilter) WhereSubjectKind(p entql.StringP) {
-	f.Where(p.Field(knowledgesubjectalias.FieldSubjectKind))
-}
-
 // WhereProvider applies the entql string predicate on the provider field.
 func (f *KnowledgeSubjectAliasFilter) WhereProvider(p entql.StringP) {
 	f.Where(p.Field(knowledgesubjectalias.FieldProvider))
 }
 
-// WhereProviderSource applies the entql string predicate on the provider_source field.
-func (f *KnowledgeSubjectAliasFilter) WhereProviderSource(p entql.StringP) {
-	f.Where(p.Field(knowledgesubjectalias.FieldProviderSource))
+// WhereProviderNamespace applies the entql string predicate on the provider_namespace field.
+func (f *KnowledgeSubjectAliasFilter) WhereProviderNamespace(p entql.StringP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldProviderNamespace))
 }
 
-// WhereProviderSubjectRef applies the entql string predicate on the provider_subject_ref field.
-func (f *KnowledgeSubjectAliasFilter) WhereProviderSubjectRef(p entql.StringP) {
-	f.Where(p.Field(knowledgesubjectalias.FieldProviderSubjectRef))
+// WhereProviderResourceRef applies the entql string predicate on the provider_resource_ref field.
+func (f *KnowledgeSubjectAliasFilter) WhereProviderResourceRef(p entql.StringP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldProviderResourceRef))
+}
+
+// WhereSubjectKind applies the entql string predicate on the subject_kind field.
+func (f *KnowledgeSubjectAliasFilter) WhereSubjectKind(p entql.StringP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldSubjectKind))
 }
 
 // WhereEntityID applies the entql [16]byte predicate on the entity_id field.
@@ -9332,34 +9345,39 @@ func (f *NormalizedEventFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(normalizedevent.FieldTenantID))
 }
 
-// WhereKind applies the entql string predicate on the kind field.
-func (f *NormalizedEventFilter) WhereKind(p entql.StringP) {
-	f.Where(p.Field(normalizedevent.FieldKind))
-}
-
 // WhereProvider applies the entql string predicate on the provider field.
 func (f *NormalizedEventFilter) WhereProvider(p entql.StringP) {
 	f.Where(p.Field(normalizedevent.FieldProvider))
 }
 
-// WhereProviderSource applies the entql string predicate on the provider_source field.
-func (f *NormalizedEventFilter) WhereProviderSource(p entql.StringP) {
-	f.Where(p.Field(normalizedevent.FieldProviderSource))
+// WhereProviderNamespace applies the entql string predicate on the provider_namespace field.
+func (f *NormalizedEventFilter) WhereProviderNamespace(p entql.StringP) {
+	f.Where(p.Field(normalizedevent.FieldProviderNamespace))
+}
+
+// WhereProviderResourceRef applies the entql string predicate on the provider_resource_ref field.
+func (f *NormalizedEventFilter) WhereProviderResourceRef(p entql.StringP) {
+	f.Where(p.Field(normalizedevent.FieldProviderResourceRef))
+}
+
+// WhereIntegrationID applies the entql [16]byte predicate on the integration_id field.
+func (f *NormalizedEventFilter) WhereIntegrationID(p entql.ValueP) {
+	f.Where(p.Field(normalizedevent.FieldIntegrationID))
+}
+
+// WhereKind applies the entql string predicate on the kind field.
+func (f *NormalizedEventFilter) WhereKind(p entql.StringP) {
+	f.Where(p.Field(normalizedevent.FieldKind))
+}
+
+// WhereProviderEventSource applies the entql string predicate on the provider_event_source field.
+func (f *NormalizedEventFilter) WhereProviderEventSource(p entql.StringP) {
+	f.Where(p.Field(normalizedevent.FieldProviderEventSource))
 }
 
 // WhereProviderEventRef applies the entql string predicate on the provider_event_ref field.
 func (f *NormalizedEventFilter) WhereProviderEventRef(p entql.StringP) {
 	f.Where(p.Field(normalizedevent.FieldProviderEventRef))
-}
-
-// WhereProviderSubjectRef applies the entql string predicate on the provider_subject_ref field.
-func (f *NormalizedEventFilter) WhereProviderSubjectRef(p entql.StringP) {
-	f.Where(p.Field(normalizedevent.FieldProviderSubjectRef))
-}
-
-// WhereSubjectKind applies the entql string predicate on the subject_kind field.
-func (f *NormalizedEventFilter) WhereSubjectKind(p entql.StringP) {
-	f.Where(p.Field(normalizedevent.FieldSubjectKind))
 }
 
 // WhereAttributes applies the entql []byte predicate on the attributes field.
@@ -9390,6 +9408,20 @@ func (f *NormalizedEventFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *NormalizedEventFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasIntegration applies a predicate to check if query has an edge integration.
+func (f *NormalizedEventFilter) WhereHasIntegration() {
+	f.Where(entql.HasEdge("integration"))
+}
+
+// WhereHasIntegrationWith applies a predicate to check if query has an edge integration with a given conditions (other predicates).
+func (f *NormalizedEventFilter) WhereHasIntegrationWith(preds ...predicate.Integration) {
+	f.Where(entql.HasEdgeWith("integration", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

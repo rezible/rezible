@@ -16,7 +16,11 @@
 
 	const attrs = $derived(event.attributes);
 	const occurredAtLabel = $derived(formatDateTime(attrs.occurredAt));
-	const providerLabel = $derived([attrs.provider, attrs.providerSource].filter(Boolean).join(" / "));
+	const providerLabel = $derived(
+		[attrs.resourceRef.provider, attrs.resourceRef.providerNamespace, attrs.providerEventSource]
+			.filter(Boolean)
+			.join(" / ")
+	);
 	const projected = $derived(Boolean(attrs.projection));
 
 	function formatDateTime(value: string | undefined) {
@@ -50,9 +54,6 @@
 		<span class="flex min-w-0 flex-col gap-2">
 			<span class="flex flex-wrap items-center gap-2">
 				<Badge variant="secondary" class="capitalize">{attrs.kind}</Badge>
-				{#if attrs.subjectKind}
-					<Badge variant="outline" class="capitalize">{attrs.subjectKind}</Badge>
-				{/if}
 				{#if projected}
 					<Badge variant="outline">Projected</Badge>
 				{/if}
@@ -60,7 +61,7 @@
 
 			<span class="grid min-w-0 gap-1">
 				<span class="truncate text-sm font-medium">
-					{attrs.providerSubjectRef || event.id}
+					{attrs.resourceRef.resourceRef || event.id}
 				</span>
 				<span class="truncate text-xs text-muted-foreground">
 					{providerLabel || "Unknown provider"}

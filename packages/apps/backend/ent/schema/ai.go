@@ -3,7 +3,6 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -66,14 +65,7 @@ func (AgentSessionBinding) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
-	}
-}
-
-func (AgentSessionBinding) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entsql.Checks(map[string]string{
-			"agent_session_binding_source_integration_consistency": "(source = 'rezible' AND integration_id IS NULL) OR (source <> 'rezible' AND integration_id IS NOT NULL)",
-		}),
+		ProviderResourceReferenceMixin{},
 	}
 }
 
@@ -85,9 +77,6 @@ func (AgentSessionBinding) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Immutable(),
-		field.String("source").NotEmpty().Immutable(),
-		field.String("resource_kind").NotEmpty().Immutable(),
-		field.String("resource_ref").NotEmpty().Immutable(),
 		field.Time("closed_at").
 			Optional().
 			Nillable(),
@@ -108,21 +97,15 @@ func (AgentSessionBinding) Edges() []ent.Edge {
 		edge.To("integration", Integration.Type).
 			Unique().
 			Immutable().
-			Field("integration_id"),
+			Field("integration_id").
+			Annotations(entsql.OnDelete(entsql.SetNull)),
 	}
 }
 
 func (AgentSessionBinding) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "agent_session_id"),
-		index.Fields("tenant_id", "integration_id", "source", "resource_kind", "resource_ref").
-			Unique().
-			StorageKey("agent_session_binding_one_per_integration_resource").
-			Annotations(entsql.IndexWhere("integration_id IS NOT NULL")),
-		index.Fields("tenant_id", "source", "resource_kind", "resource_ref").
-			Unique().
-			StorageKey("agent_session_binding_one_per_source_resource").
-			Annotations(entsql.IndexWhere("integration_id IS NULL")),
+		index.Fields("tenant_id", "provider", "provider_namespace", "provider_resource_ref").Unique(),
 	}
 }
 

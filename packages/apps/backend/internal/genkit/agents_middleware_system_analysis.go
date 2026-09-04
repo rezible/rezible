@@ -418,10 +418,10 @@ func relationshipSummary(relationship *ent.KnowledgeRelationship) rezai.Knowledg
 }
 func subjectAliasSummary(alias *ent.KnowledgeSubjectAlias) rezai.KnowledgeSubjectAliasSummary {
 	return rezai.KnowledgeSubjectAliasSummary{
-		ID:                       alias.ID,
-		Provider:                 alias.Provider,
-		ProviderSource:           alias.ProviderSource,
-		ProviderSubjectReference: alias.ProviderSubjectRef,
+		ID:                alias.ID,
+		Provider:          alias.Provider,
+		ProviderNamespace: alias.ProviderNamespace,
+		ResourceRef:       alias.ProviderResourceRef,
 	}
 }
 func evidenceSummary(evidence *ent.KnowledgeEvidence) rezai.KnowledgeEvidenceSummary {

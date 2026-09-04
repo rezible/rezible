@@ -150,7 +150,7 @@ func (h *integrationsHandler) ListIntegrationInstallTargets(ctx context.Context,
 func (h *integrationsHandler) InstallIntegrationFromTargets(ctx context.Context, req *oapi.InstallIntegrationFromTargetsRequest) (*oapi.InstallIntegrationFromTargetsResponse, error) {
 	var resp oapi.InstallIntegrationFromTargetsResponse
 
-	selectedRefs := mapset.NewSet(req.Body.Attributes.ExternalRefs...)
+	selectedRefs := mapset.NewSet(req.Body.Attributes.ResourceRefs...)
 	if selectedRefs.Cardinality() == 0 {
 		return nil, oapi.Error(ctx, "invalid params", fmt.Errorf("missing references"))
 	}
@@ -161,7 +161,8 @@ func (h *integrationsHandler) InstallIntegrationFromTargets(ctx context.Context,
 	}
 	selected := make([]rez.IntegrationInstallationTarget, 0, len(targets))
 	for _, target := range targets {
-		if selectedRefs.Contains(target.Config.ExternalRef()) {
+		ref := target.Config.InstallationTargetRef()
+		if ref.ProviderNamespace == req.Name && selectedRefs.Contains(ref.ResourceRef) {
 			selected = append(selected, target)
 		}
 	}

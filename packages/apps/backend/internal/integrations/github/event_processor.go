@@ -4,34 +4,28 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/go-github/v84/github"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 const zeroSHA = "0000000000000000000000000000000000000000"
 
 func (i *Integration) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
-	p := &eventProcessor{event: &prov}
-	return p.process()
+	return (&eventProcessor{event: &prov}).process()
 }
 
 type eventProcessor struct {
 	event *rez.ProviderEvent
 }
 
-const (
-	sourcePushEvent    = "push"
-	sourcePullEvent    = "pull_request"
-	sourceRepositories = "repositories"
-)
-
 func (p *eventProcessor) process() (ent.NormalizedEvents, error) {
-	switch p.event.ProviderSource {
+	switch p.event.ProviderEventSource {
 	case sourcePushEvent:
 		return p.processPushEvent()
 	case sourcePullEvent:
@@ -39,97 +33,110 @@ func (p *eventProcessor) process() (ent.NormalizedEvents, error) {
 	case sourceRepositories:
 		return p.processRepoObserved()
 	default:
-		return nil, fmt.Errorf("unknown provider source: %s", p.event.ProviderSource)
+		return nil, fmt.Errorf("unknown provider event source: %s", p.event.ProviderEventSource)
 	}
 }
 
 func (p *eventProcessor) processPushEvent() (ent.NormalizedEvents, error) {
 	var event github.PushEvent
-	if err := json.Unmarshal(p.event.Payload, &event); err != nil {
+	if err := json.Unmarshal(p.event.Attributes, &event); err != nil {
 		return nil, fmt.Errorf("unmarshal push event: %w", err)
 	}
-
 	if event.GetAfter() == zeroSHA {
 		return nil, nil
 	}
-
-	var occurredAt time.Time
-	if hc := event.GetHeadCommit(); hc != nil {
-		occurredAt = hc.GetTimestamp().Time
+	repository := event.GetRepo()
+	if repository == nil || repository.GetID() == 0 {
+		return nil, fmt.Errorf("push event missing repository id")
 	}
-
-	ProviderSubjectRef := p.event.ProviderSubjectRef
-	if ProviderSubjectRef == "" {
-		ProviderSubjectRef = fmt.Sprintf("github:%s:%s", event.GetRepo().GetFullName(), event.GetAfter())
+	occurredAt := p.event.ReceivedAt
+	if headCommit := event.GetHeadCommit(); headCommit != nil && !headCommit.GetTimestamp().Time.IsZero() {
+		occurredAt = headCommit.GetTimestamp().Time
 	}
-
-	attrs := projections.CodeChangeSubjectAttributes{
-		RepositoryExternalRef: event.GetRepo().GetFullName(),
-		DisplayName:           event.GetRef(),
+	repositoryObservation := projections.EntityObservation{
+		Ref: rez.ProviderResourceRef{
+			Provider:          providerName,
+			ProviderNamespace: p.event.ProviderNamespace,
+			ResourceRef:       strconv.FormatInt(repository.GetID(), 10),
+		},
+		Category:    kne.CategoryCode,
+		Kind:        "repository",
+		DisplayName: repository.GetFullName(),
+		Properties:  map[string]any{"url": repository.GetHTMLURL()},
+	}
+	attrs := projections.CodeChangeEventAttributes{
+		Repository:  repositoryObservation,
+		DisplayName: event.GetRef(),
 	}
 	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
 	if encodeErr != nil {
-		return nil, fmt.Errorf("encode change event observed attributes: %w", encodeErr)
+		return nil, fmt.Errorf("encode change event attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
-		Provider:           integrationName,
-		ProviderSource:     sourcePushEvent,
-		ProviderEventRef:   p.event.ProviderEventRef,
-		Kind:               ne.KindObserved,
-		SubjectKind:        projections.SubjectKindCodeChange.String(),
-		ProviderSubjectRef: ProviderSubjectRef,
-		OccurredAt:         occurredAt,
-		Attributes:         encodedAttrs,
+		Provider:            providerName,
+		ProviderNamespace:   p.event.ProviderNamespace,
+		ProviderResourceRef: fmt.Sprintf("change:%d:%s", repository.GetID(), event.GetAfter()),
+		ProviderEventSource: p.event.ProviderEventSource,
+		ProviderEventRef:    p.event.ProviderEventRef,
+		Kind:                projections.KindCodeChange,
+		OccurredAt:          occurredAt,
+		ReceivedAt:          p.event.ReceivedAt,
+		Attributes:          encodedAttrs,
 	}
-
 	return ent.NormalizedEvents{result}, nil
 }
 
 func (p *eventProcessor) processPullRequest() (ent.NormalizedEvents, error) {
 	var event github.PullRequestEvent
-	if err := json.Unmarshal(p.event.Payload, &event); err != nil {
-		return nil, fmt.Errorf("unmarshal pull_request event: %w", err)
+	if err := json.Unmarshal(p.event.Attributes, &event); err != nil {
+		return nil, fmt.Errorf("unmarshal pull request event: %w", err)
 	}
-
-	pr := event.GetPullRequest()
-	prNum := pr.GetNumber()
-
-	ProviderSubjectRef := p.event.ProviderSubjectRef
-	if ProviderSubjectRef == "" {
-		ProviderSubjectRef = fmt.Sprintf("github:%s:pr:%d", event.GetRepo().GetFullName(), prNum)
+	repository := event.GetRepo()
+	pullRequest := event.GetPullRequest()
+	if repository == nil || repository.GetID() == 0 || pullRequest == nil {
+		return nil, fmt.Errorf("pull request event missing repository or pull request")
 	}
-
-	attrs := projections.CodeChangeSubjectAttributes{
-		RepositoryExternalRef: event.GetRepo().GetFullName(),
-		DisplayName:           pr.GetTitle(),
+	repositoryObservation := projections.EntityObservation{
+		Ref: rez.ProviderResourceRef{
+			Provider:          providerName,
+			ProviderNamespace: p.event.ProviderNamespace,
+			ResourceRef:       strconv.FormatInt(repository.GetID(), 10),
+		},
+		Category:    kne.CategoryCode,
+		Kind:        "repository",
+		DisplayName: repository.GetFullName(),
+		Properties:  map[string]any{"url": repository.GetHTMLURL()},
+	}
+	attrs := projections.CodeChangeEventAttributes{
+		Repository:  repositoryObservation,
+		DisplayName: pullRequest.GetTitle(),
 	}
 	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
 	if encodeErr != nil {
-		return nil, fmt.Errorf("encode change event observed attributes: %w", encodeErr)
+		return nil, fmt.Errorf("encode pull request attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
-		Provider:           integrationName,
-		ProviderSource:     sourcePullEvent,
-		Kind:               ne.KindObserved,
-		SubjectKind:        projections.SubjectKindCodeChange.String(),
-		ProviderEventRef:   p.event.ProviderEventRef,
-		ProviderSubjectRef: ProviderSubjectRef,
-		OccurredAt:         pr.GetCreatedAt().Time,
-		Attributes:         encodedAttrs,
+		Provider:            providerName,
+		ProviderNamespace:   p.event.ProviderNamespace,
+		ProviderResourceRef: fmt.Sprintf("change:%d:pr:%d", repository.GetID(), pullRequest.GetNumber()),
+		ProviderEventSource: p.event.ProviderEventSource,
+		ProviderEventRef:    p.event.ProviderEventRef,
+		Kind:                projections.KindCodeChange,
+		OccurredAt:          pullRequest.GetCreatedAt().Time,
+		ReceivedAt:          p.event.ReceivedAt,
+		Attributes:          encodedAttrs,
 	}
-
 	return ent.NormalizedEvents{result}, nil
 }
 
 func (p *eventProcessor) processRepoObserved() (ent.NormalizedEvents, error) {
 	var payload githubRepositoryObservedPayload
-	if err := json.Unmarshal(p.event.Payload, &payload); err != nil {
+	if err := json.Unmarshal(p.event.Attributes, &payload); err != nil {
 		return nil, fmt.Errorf("unmarshal repository observed event: %w", err)
 	}
-	if payload.FullName == "" {
-		return nil, fmt.Errorf("repository observed payload missing full_name")
+	if payload.FullName == "" || payload.ID == 0 {
+		return nil, fmt.Errorf("repository observed payload missing repository identity")
 	}
-
 	occurredAt := payload.UpdatedAt
 	if occurredAt.IsZero() {
 		occurredAt = payload.CreatedAt
@@ -140,31 +147,28 @@ func (p *eventProcessor) processRepoObserved() (ent.NormalizedEvents, error) {
 	if occurredAt.IsZero() {
 		occurredAt = time.Now().UTC()
 	}
-
-	repositoryRef := payload.FullName
-
-	attrs := projections.CodeForgeSubjectAttributes{
-		DisplayName: repositoryRef,
+	attrs := projections.CodeForgeEventAttributes{
+		DisplayName: payload.FullName,
 		URL:         payload.HTMLURL,
 	}
 	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
 	if encodeErr != nil {
 		return nil, fmt.Errorf("encode repository observed attributes: %w", encodeErr)
 	}
+	receivedAt := p.event.ReceivedAt
+	if receivedAt.IsZero() {
+		receivedAt = occurredAt
+	}
 	result := &ent.NormalizedEvent{
-		Provider:           integrationName,
-		ProviderSource:     sourceRepositories,
-		Kind:               ne.KindObserved,
-		SubjectKind:        projections.SubjectKindCodeForge.String(),
-		ProviderEventRef:   p.event.ProviderEventRef,
-		ProviderSubjectRef: repositoryRef,
-		OccurredAt:         occurredAt,
-		ReceivedAt:         p.event.ReceivedAt,
-		Attributes:         encodedAttrs,
+		Provider:            providerName,
+		ProviderNamespace:   p.event.ProviderNamespace,
+		ProviderResourceRef: strconv.FormatInt(payload.ID, 10),
+		ProviderEventSource: p.event.ProviderEventSource,
+		ProviderEventRef:    p.event.ProviderEventRef,
+		Kind:                projections.KindCodeForge,
+		OccurredAt:          occurredAt,
+		ReceivedAt:          receivedAt,
+		Attributes:          encodedAttrs,
 	}
-	if result.ReceivedAt.IsZero() {
-		result.ReceivedAt = occurredAt
-	}
-
 	return ent.NormalizedEvents{result}, nil
 }

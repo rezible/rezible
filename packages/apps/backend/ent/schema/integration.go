@@ -27,10 +27,10 @@ func (Integration) Mixin() []ent.Mixin {
 func (Integration) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("provider_name"),
-		field.String("integration_name"),
+		field.String("provider").NotEmpty(),
+		field.String("name").NotEmpty(),
 		field.String("display_name"),
-		field.String("external_ref"),
+		field.String("provider_installation_ref").NotEmpty(),
 		field.JSON("installation_config", json.RawMessage{}).
 			SchemaType(schemaTypeJsonB),
 		field.JSON("user_settings", map[string]any{}).
@@ -41,9 +41,8 @@ func (Integration) Fields() []ent.Field {
 
 func (Integration) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "integration_name"),
-		index.Fields("tenant_id", "provider_name"),
-		index.Fields("tenant_id", "integration_name", "external_ref").Unique(),
+		index.Fields("tenant_id", "provider", "name", "provider_installation_ref").Unique(),
+		index.Fields("tenant_id", "provider", "name"),
 	}
 }
 

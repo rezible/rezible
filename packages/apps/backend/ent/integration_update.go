@@ -52,30 +52,30 @@ func (_u *IntegrationUpdate) SetUpdatedAt(v time.Time) *IntegrationUpdate {
 	return _u
 }
 
-// SetProviderName sets the "provider_name" field.
-func (_u *IntegrationUpdate) SetProviderName(v string) *IntegrationUpdate {
-	_u.mutation.SetProviderName(v)
+// SetProvider sets the "provider" field.
+func (_u *IntegrationUpdate) SetProvider(v string) *IntegrationUpdate {
+	_u.mutation.SetProvider(v)
 	return _u
 }
 
-// SetNillableProviderName sets the "provider_name" field if the given value is not nil.
-func (_u *IntegrationUpdate) SetNillableProviderName(v *string) *IntegrationUpdate {
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *IntegrationUpdate) SetNillableProvider(v *string) *IntegrationUpdate {
 	if v != nil {
-		_u.SetProviderName(*v)
+		_u.SetProvider(*v)
 	}
 	return _u
 }
 
-// SetIntegrationName sets the "integration_name" field.
-func (_u *IntegrationUpdate) SetIntegrationName(v string) *IntegrationUpdate {
-	_u.mutation.SetIntegrationName(v)
+// SetName sets the "name" field.
+func (_u *IntegrationUpdate) SetName(v string) *IntegrationUpdate {
+	_u.mutation.SetName(v)
 	return _u
 }
 
-// SetNillableIntegrationName sets the "integration_name" field if the given value is not nil.
-func (_u *IntegrationUpdate) SetNillableIntegrationName(v *string) *IntegrationUpdate {
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *IntegrationUpdate) SetNillableName(v *string) *IntegrationUpdate {
 	if v != nil {
-		_u.SetIntegrationName(*v)
+		_u.SetName(*v)
 	}
 	return _u
 }
@@ -94,16 +94,16 @@ func (_u *IntegrationUpdate) SetNillableDisplayName(v *string) *IntegrationUpdat
 	return _u
 }
 
-// SetExternalRef sets the "external_ref" field.
-func (_u *IntegrationUpdate) SetExternalRef(v string) *IntegrationUpdate {
-	_u.mutation.SetExternalRef(v)
+// SetProviderInstallationRef sets the "provider_installation_ref" field.
+func (_u *IntegrationUpdate) SetProviderInstallationRef(v string) *IntegrationUpdate {
+	_u.mutation.SetProviderInstallationRef(v)
 	return _u
 }
 
-// SetNillableExternalRef sets the "external_ref" field if the given value is not nil.
-func (_u *IntegrationUpdate) SetNillableExternalRef(v *string) *IntegrationUpdate {
+// SetNillableProviderInstallationRef sets the "provider_installation_ref" field if the given value is not nil.
+func (_u *IntegrationUpdate) SetNillableProviderInstallationRef(v *string) *IntegrationUpdate {
 	if v != nil {
-		_u.SetExternalRef(*v)
+		_u.SetProviderInstallationRef(*v)
 	}
 	return _u
 }
@@ -181,6 +181,21 @@ func (_u *IntegrationUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *IntegrationUpdate) check() error {
+	if v, ok := _u.mutation.Provider(); ok {
+		if err := integration.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Integration.provider": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Name(); ok {
+		if err := integration.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Integration.name": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ProviderInstallationRef(); ok {
+		if err := integration.ProviderInstallationRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_installation_ref", err: fmt.Errorf(`ent: validator failed for field "Integration.provider_installation_ref": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Integration.tenant"`)
 	}
@@ -211,17 +226,17 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.ProviderName(); ok {
-		_spec.SetField(integration.FieldProviderName, field.TypeString, value)
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(integration.FieldProvider, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.IntegrationName(); ok {
-		_spec.SetField(integration.FieldIntegrationName, field.TypeString, value)
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(integration.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.DisplayName(); ok {
 		_spec.SetField(integration.FieldDisplayName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ExternalRef(); ok {
-		_spec.SetField(integration.FieldExternalRef, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderInstallationRef(); ok {
+		_spec.SetField(integration.FieldProviderInstallationRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InstallationConfig(); ok {
 		_spec.SetField(integration.FieldInstallationConfig, field.TypeJSON, value)
@@ -281,30 +296,30 @@ func (_u *IntegrationUpdateOne) SetUpdatedAt(v time.Time) *IntegrationUpdateOne 
 	return _u
 }
 
-// SetProviderName sets the "provider_name" field.
-func (_u *IntegrationUpdateOne) SetProviderName(v string) *IntegrationUpdateOne {
-	_u.mutation.SetProviderName(v)
+// SetProvider sets the "provider" field.
+func (_u *IntegrationUpdateOne) SetProvider(v string) *IntegrationUpdateOne {
+	_u.mutation.SetProvider(v)
 	return _u
 }
 
-// SetNillableProviderName sets the "provider_name" field if the given value is not nil.
-func (_u *IntegrationUpdateOne) SetNillableProviderName(v *string) *IntegrationUpdateOne {
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *IntegrationUpdateOne) SetNillableProvider(v *string) *IntegrationUpdateOne {
 	if v != nil {
-		_u.SetProviderName(*v)
+		_u.SetProvider(*v)
 	}
 	return _u
 }
 
-// SetIntegrationName sets the "integration_name" field.
-func (_u *IntegrationUpdateOne) SetIntegrationName(v string) *IntegrationUpdateOne {
-	_u.mutation.SetIntegrationName(v)
+// SetName sets the "name" field.
+func (_u *IntegrationUpdateOne) SetName(v string) *IntegrationUpdateOne {
+	_u.mutation.SetName(v)
 	return _u
 }
 
-// SetNillableIntegrationName sets the "integration_name" field if the given value is not nil.
-func (_u *IntegrationUpdateOne) SetNillableIntegrationName(v *string) *IntegrationUpdateOne {
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *IntegrationUpdateOne) SetNillableName(v *string) *IntegrationUpdateOne {
 	if v != nil {
-		_u.SetIntegrationName(*v)
+		_u.SetName(*v)
 	}
 	return _u
 }
@@ -323,16 +338,16 @@ func (_u *IntegrationUpdateOne) SetNillableDisplayName(v *string) *IntegrationUp
 	return _u
 }
 
-// SetExternalRef sets the "external_ref" field.
-func (_u *IntegrationUpdateOne) SetExternalRef(v string) *IntegrationUpdateOne {
-	_u.mutation.SetExternalRef(v)
+// SetProviderInstallationRef sets the "provider_installation_ref" field.
+func (_u *IntegrationUpdateOne) SetProviderInstallationRef(v string) *IntegrationUpdateOne {
+	_u.mutation.SetProviderInstallationRef(v)
 	return _u
 }
 
-// SetNillableExternalRef sets the "external_ref" field if the given value is not nil.
-func (_u *IntegrationUpdateOne) SetNillableExternalRef(v *string) *IntegrationUpdateOne {
+// SetNillableProviderInstallationRef sets the "provider_installation_ref" field if the given value is not nil.
+func (_u *IntegrationUpdateOne) SetNillableProviderInstallationRef(v *string) *IntegrationUpdateOne {
 	if v != nil {
-		_u.SetExternalRef(*v)
+		_u.SetProviderInstallationRef(*v)
 	}
 	return _u
 }
@@ -423,6 +438,21 @@ func (_u *IntegrationUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *IntegrationUpdateOne) check() error {
+	if v, ok := _u.mutation.Provider(); ok {
+		if err := integration.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Integration.provider": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Name(); ok {
+		if err := integration.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Integration.name": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ProviderInstallationRef(); ok {
+		if err := integration.ProviderInstallationRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_installation_ref", err: fmt.Errorf(`ent: validator failed for field "Integration.provider_installation_ref": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Integration.tenant"`)
 	}
@@ -470,17 +500,17 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.ProviderName(); ok {
-		_spec.SetField(integration.FieldProviderName, field.TypeString, value)
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(integration.FieldProvider, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.IntegrationName(); ok {
-		_spec.SetField(integration.FieldIntegrationName, field.TypeString, value)
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(integration.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.DisplayName(); ok {
 		_spec.SetField(integration.FieldDisplayName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ExternalRef(); ok {
-		_spec.SetField(integration.FieldExternalRef, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderInstallationRef(); ok {
+		_spec.SetField(integration.FieldProviderInstallationRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InstallationConfig(); ok {
 		_spec.SetField(integration.FieldInstallationConfig, field.TypeJSON, value)

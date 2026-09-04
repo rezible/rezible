@@ -26,7 +26,7 @@ func (IntegrationEventSyncCursor) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("integration_id", uuid.UUID{}),
-		field.String("provider_source").NotEmpty(),
+		field.String("provider_event_source").NotEmpty(),
 		field.String("cursor").Optional(),
 		field.Time("last_synced_at").Default(time.Now),
 	}
@@ -34,7 +34,7 @@ func (IntegrationEventSyncCursor) Fields() []ent.Field {
 
 func (IntegrationEventSyncCursor) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "integration_id", "provider_source").Unique(),
+		index.Fields("tenant_id", "integration_id", "provider_event_source").Unique(),
 	}
 }
 
@@ -62,7 +62,7 @@ func (IntegrationEventSyncRun) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("integration_id", uuid.UUID{}),
-		field.JSON("source_cursors", map[string]string{}).Optional(),
+		field.JSON("provider_event_source_cursors", map[string]string{}).Optional(),
 		field.String("sync_reason").Default("manual"),
 		field.Time("started_at").Default(time.Now),
 		field.Time("finished_at").Optional().Nillable(),

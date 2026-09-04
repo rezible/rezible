@@ -180,9 +180,9 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "source", Type: field.TypeString},
-		{Name: "resource_kind", Type: field.TypeString},
-		{Name: "resource_ref", Type: field.TypeString},
+		{Name: "provider", Type: field.TypeString},
+		{Name: "provider_namespace", Type: field.TypeString},
+		{Name: "provider_resource_ref", Type: field.TypeString},
 		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "agent_session_id", Type: field.TypeUUID},
@@ -226,20 +226,9 @@ var (
 				Columns: []*schema.Column{AgentSessionBindingsColumns[9], AgentSessionBindingsColumns[8]},
 			},
 			{
-				Name:    "agent_session_binding_one_per_integration_resource",
-				Unique:  true,
-				Columns: []*schema.Column{AgentSessionBindingsColumns[9], AgentSessionBindingsColumns[10], AgentSessionBindingsColumns[3], AgentSessionBindingsColumns[4], AgentSessionBindingsColumns[5]},
-				Annotation: &entsql.IndexAnnotation{
-					Where: "integration_id IS NOT NULL",
-				},
-			},
-			{
-				Name:    "agent_session_binding_one_per_source_resource",
+				Name:    "agentsessionbinding_tenant_id_provider_provider_namespace_provider_resource_ref",
 				Unique:  true,
 				Columns: []*schema.Column{AgentSessionBindingsColumns[9], AgentSessionBindingsColumns[3], AgentSessionBindingsColumns[4], AgentSessionBindingsColumns[5]},
-				Annotation: &entsql.IndexAnnotation{
-					Where: "integration_id IS NULL",
-				},
 			},
 		},
 	}
@@ -1212,10 +1201,10 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "provider_name", Type: field.TypeString},
-		{Name: "integration_name", Type: field.TypeString},
+		{Name: "provider", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
 		{Name: "display_name", Type: field.TypeString},
-		{Name: "external_ref", Type: field.TypeString},
+		{Name: "provider_installation_ref", Type: field.TypeString},
 		{Name: "installation_config", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "user_settings", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -1240,19 +1229,14 @@ var (
 				Columns: []*schema.Column{IntegrationsColumns[9]},
 			},
 			{
-				Name:    "integration_tenant_id_integration_name",
-				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[9], IntegrationsColumns[4]},
+				Name:    "integration_tenant_id_provider_name_provider_installation_ref",
+				Unique:  true,
+				Columns: []*schema.Column{IntegrationsColumns[9], IntegrationsColumns[3], IntegrationsColumns[4], IntegrationsColumns[6]},
 			},
 			{
 				Name:    "integration_tenant_id_provider_name",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[9], IntegrationsColumns[3]},
-			},
-			{
-				Name:    "integration_tenant_id_integration_name_external_ref",
-				Unique:  true,
-				Columns: []*schema.Column{IntegrationsColumns[9], IntegrationsColumns[4], IntegrationsColumns[6]},
+				Columns: []*schema.Column{IntegrationsColumns[9], IntegrationsColumns[3], IntegrationsColumns[4]},
 			},
 		},
 	}
@@ -1261,7 +1245,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "provider_source", Type: field.TypeString},
+		{Name: "provider_event_source", Type: field.TypeString},
 		{Name: "cursor", Type: field.TypeString, Nullable: true},
 		{Name: "last_synced_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -1293,7 +1277,7 @@ var (
 				Columns: []*schema.Column{IntegrationEventSyncCursorsColumns[6]},
 			},
 			{
-				Name:    "integrationeventsynccursor_tenant_id_integration_id_provider_source",
+				Name:    "integrationeventsynccursor_tenant_id_integration_id_provider_event_source",
 				Unique:  true,
 				Columns: []*schema.Column{IntegrationEventSyncCursorsColumns[6], IntegrationEventSyncCursorsColumns[7], IntegrationEventSyncCursorsColumns[3]},
 			},
@@ -1302,7 +1286,7 @@ var (
 	// IntegrationEventSyncRunsColumns holds the columns for the "integration_event_sync_runs" table.
 	IntegrationEventSyncRunsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "source_cursors", Type: field.TypeJSON, Nullable: true},
+		{Name: "provider_event_source_cursors", Type: field.TypeJSON, Nullable: true},
 		{Name: "sync_reason", Type: field.TypeString, Default: "manual"},
 		{Name: "started_at", Type: field.TypeTime},
 		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
@@ -1554,10 +1538,10 @@ var (
 	// KnowledgeSubjectAliasColumns holds the columns for the "knowledge_subject_alias" table.
 	KnowledgeSubjectAliasColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "subject_kind", Type: field.TypeEnum, Enums: []string{"entity", "relationship"}},
 		{Name: "provider", Type: field.TypeString},
-		{Name: "provider_source", Type: field.TypeString},
-		{Name: "provider_subject_ref", Type: field.TypeString},
+		{Name: "provider_namespace", Type: field.TypeString},
+		{Name: "provider_resource_ref", Type: field.TypeString},
+		{Name: "subject_kind", Type: field.TypeEnum, Enums: []string{"entity", "relationship"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "entity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "relationship_id", Type: field.TypeUUID, Nullable: true},
@@ -1594,9 +1578,9 @@ var (
 				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[5]},
 			},
 			{
-				Name:    "knowledgesubjectalias_tenant_id_provider_provider_source_provider_subject_ref",
+				Name:    "knowledgesubjectalias_tenant_id_provider_provider_namespace_provider_resource_ref",
 				Unique:  true,
-				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[5], KnowledgeSubjectAliasColumns[2], KnowledgeSubjectAliasColumns[3], KnowledgeSubjectAliasColumns[4]},
+				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[5], KnowledgeSubjectAliasColumns[1], KnowledgeSubjectAliasColumns[2], KnowledgeSubjectAliasColumns[3]},
 			},
 			{
 				Name:    "knowledgesubjectalias_tenant_id_entity_id",
@@ -1688,17 +1672,18 @@ var (
 	// NormalizedEventsColumns holds the columns for the "normalized_events" table.
 	NormalizedEventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"received", "observed", "deleted"}},
 		{Name: "provider", Type: field.TypeString},
-		{Name: "provider_source", Type: field.TypeString},
+		{Name: "provider_namespace", Type: field.TypeString},
+		{Name: "provider_resource_ref", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeString},
+		{Name: "provider_event_source", Type: field.TypeString},
 		{Name: "provider_event_ref", Type: field.TypeString},
-		{Name: "provider_subject_ref", Type: field.TypeString},
-		{Name: "subject_kind", Type: field.TypeString},
 		{Name: "attributes", Type: field.TypeBytes},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "occurred_at", Type: field.TypeTime},
 		{Name: "received_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "integration_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "normalized_event_projection", Type: field.TypeUUID, Nullable: true},
 	}
 	// NormalizedEventsTable holds the schema information for the "normalized_events" table.
@@ -1714,8 +1699,14 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "normalized_events_normalized_event_projections_projection",
+				Symbol:     "normalized_events_integrations_integration",
 				Columns:    []*schema.Column{NormalizedEventsColumns[12]},
+				RefColumns: []*schema.Column{IntegrationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "normalized_events_normalized_event_projections_projection",
+				Columns:    []*schema.Column{NormalizedEventsColumns[13]},
 				RefColumns: []*schema.Column{NormalizedEventProjectionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -1727,14 +1718,14 @@ var (
 				Columns: []*schema.Column{NormalizedEventsColumns[11]},
 			},
 			{
-				Name:    "normalizedevent_tenant_id_provider_provider_source_provider_event_ref_provider_subject_ref",
+				Name:    "normalizedevent_tenant_id_provider_provider_namespace_provider_event_source_provider_event_ref_provider_resource_ref",
 				Unique:  true,
-				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[2], NormalizedEventsColumns[3], NormalizedEventsColumns[4], NormalizedEventsColumns[5]},
+				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[5], NormalizedEventsColumns[6], NormalizedEventsColumns[3]},
 			},
 			{
-				Name:    "normalizedevent_tenant_id_provider_provider_source_occurred_at",
+				Name:    "normalizedevent_tenant_id_provider_provider_namespace_provider_event_source_occurred_at",
 				Unique:  false,
-				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[2], NormalizedEventsColumns[3], NormalizedEventsColumns[9]},
+				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[5], NormalizedEventsColumns[9]},
 			},
 		},
 	}
@@ -3537,10 +3528,6 @@ func init() {
 	AgentSessionBindingsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	AgentSessionBindingsTable.ForeignKeys[1].RefTable = TenantsTable
 	AgentSessionBindingsTable.ForeignKeys[2].RefTable = IntegrationsTable
-	AgentSessionBindingsTable.Annotation = &entsql.Annotation{}
-	AgentSessionBindingsTable.Annotation.Checks = map[string]string{
-		"agent_session_binding_source_integration_consistency": "(source = 'rezible' AND integration_id IS NULL) OR (source <> 'rezible' AND integration_id IS NOT NULL)",
-	}
 	AgentTurnsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	AgentTurnsTable.ForeignKeys[1].RefTable = TenantsTable
 	AgentTurnsTable.ForeignKeys[2].RefTable = AgentMessagesTable
@@ -3619,7 +3606,8 @@ func init() {
 	MeetingSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSessionsTable.ForeignKeys[1].RefTable = MeetingSchedulesTable
 	NormalizedEventsTable.ForeignKeys[0].RefTable = TenantsTable
-	NormalizedEventsTable.ForeignKeys[1].RefTable = NormalizedEventProjectionsTable
+	NormalizedEventsTable.ForeignKeys[1].RefTable = IntegrationsTable
+	NormalizedEventsTable.ForeignKeys[2].RefTable = NormalizedEventProjectionsTable
 	NormalizedEventProjectionsTable.ForeignKeys[0].RefTable = TenantsTable
 	NormalizedEventProjectionsTable.ForeignKeys[1].RefTable = NormalizedEventsTable
 	NormalizedEventProjectionEntitiesTable.ForeignKeys[0].RefTable = TenantsTable

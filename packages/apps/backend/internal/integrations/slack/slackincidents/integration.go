@@ -70,7 +70,7 @@ func (i *Integration) WebhookHandler() http.Handler {
 }
 
 func (i *Integration) ValidateInstallationConfig(m []byte) (rez.IntegrationInstallationConfig, error) {
-	return slackintegration.GetValidatedConfig(m)
+	return i.appSvc.ValidateInstallationConfig(m)
 }
 
 func (i *Integration) ValidateUserSettings(m map[string]any) error {
@@ -104,7 +104,7 @@ func (ii *InstalledIntegration) Integration() *ent.Integration {
 }
 
 func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
-	return ii.config
+	return slackintegration.MakeInstallationConfig(integrationName, ii.config)
 }
 
 func (ii *InstalledIntegration) Capabilities() []string {

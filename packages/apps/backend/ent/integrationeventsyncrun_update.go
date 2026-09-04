@@ -46,15 +46,15 @@ func (_u *IntegrationEventSyncRunUpdate) SetNillableIntegrationID(v *uuid.UUID) 
 	return _u
 }
 
-// SetSourceCursors sets the "source_cursors" field.
-func (_u *IntegrationEventSyncRunUpdate) SetSourceCursors(v map[string]string) *IntegrationEventSyncRunUpdate {
-	_u.mutation.SetSourceCursors(v)
+// SetProviderEventSourceCursors sets the "provider_event_source_cursors" field.
+func (_u *IntegrationEventSyncRunUpdate) SetProviderEventSourceCursors(v map[string]string) *IntegrationEventSyncRunUpdate {
+	_u.mutation.SetProviderEventSourceCursors(v)
 	return _u
 }
 
-// ClearSourceCursors clears the value of the "source_cursors" field.
-func (_u *IntegrationEventSyncRunUpdate) ClearSourceCursors() *IntegrationEventSyncRunUpdate {
-	_u.mutation.ClearSourceCursors()
+// ClearProviderEventSourceCursors clears the value of the "provider_event_source_cursors" field.
+func (_u *IntegrationEventSyncRunUpdate) ClearProviderEventSourceCursors() *IntegrationEventSyncRunUpdate {
+	_u.mutation.ClearProviderEventSourceCursors()
 	return _u
 }
 
@@ -280,11 +280,11 @@ func (_u *IntegrationEventSyncRunUpdate) sqlSave(ctx context.Context) (_node int
 			}
 		}
 	}
-	if value, ok := _u.mutation.SourceCursors(); ok {
-		_spec.SetField(integrationeventsyncrun.FieldSourceCursors, field.TypeJSON, value)
+	if value, ok := _u.mutation.ProviderEventSourceCursors(); ok {
+		_spec.SetField(integrationeventsyncrun.FieldProviderEventSourceCursors, field.TypeJSON, value)
 	}
-	if _u.mutation.SourceCursorsCleared() {
-		_spec.ClearField(integrationeventsyncrun.FieldSourceCursors, field.TypeJSON)
+	if _u.mutation.ProviderEventSourceCursorsCleared() {
+		_spec.ClearField(integrationeventsyncrun.FieldProviderEventSourceCursors, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.SyncReason(); ok {
 		_spec.SetField(integrationeventsyncrun.FieldSyncReason, field.TypeString, value)
@@ -394,15 +394,15 @@ func (_u *IntegrationEventSyncRunUpdateOne) SetNillableIntegrationID(v *uuid.UUI
 	return _u
 }
 
-// SetSourceCursors sets the "source_cursors" field.
-func (_u *IntegrationEventSyncRunUpdateOne) SetSourceCursors(v map[string]string) *IntegrationEventSyncRunUpdateOne {
-	_u.mutation.SetSourceCursors(v)
+// SetProviderEventSourceCursors sets the "provider_event_source_cursors" field.
+func (_u *IntegrationEventSyncRunUpdateOne) SetProviderEventSourceCursors(v map[string]string) *IntegrationEventSyncRunUpdateOne {
+	_u.mutation.SetProviderEventSourceCursors(v)
 	return _u
 }
 
-// ClearSourceCursors clears the value of the "source_cursors" field.
-func (_u *IntegrationEventSyncRunUpdateOne) ClearSourceCursors() *IntegrationEventSyncRunUpdateOne {
-	_u.mutation.ClearSourceCursors()
+// ClearProviderEventSourceCursors clears the value of the "provider_event_source_cursors" field.
+func (_u *IntegrationEventSyncRunUpdateOne) ClearProviderEventSourceCursors() *IntegrationEventSyncRunUpdateOne {
+	_u.mutation.ClearProviderEventSourceCursors()
 	return _u
 }
 
@@ -658,11 +658,11 @@ func (_u *IntegrationEventSyncRunUpdateOne) sqlSave(ctx context.Context) (_node 
 			}
 		}
 	}
-	if value, ok := _u.mutation.SourceCursors(); ok {
-		_spec.SetField(integrationeventsyncrun.FieldSourceCursors, field.TypeJSON, value)
+	if value, ok := _u.mutation.ProviderEventSourceCursors(); ok {
+		_spec.SetField(integrationeventsyncrun.FieldProviderEventSourceCursors, field.TypeJSON, value)
 	}
-	if _u.mutation.SourceCursorsCleared() {
-		_spec.ClearField(integrationeventsyncrun.FieldSourceCursors, field.TypeJSON)
+	if _u.mutation.ProviderEventSourceCursorsCleared() {
+		_spec.ClearField(integrationeventsyncrun.FieldProviderEventSourceCursors, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.SyncReason(); ok {
 		_spec.SetField(integrationeventsyncrun.FieldSyncReason, field.TypeString, value)

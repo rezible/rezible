@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
 	rez "github.com/rezible/rezible"
 )
@@ -47,37 +48,35 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	deliveryRef := r.Header.Get("X-GitHub-Delivery")
 
-	ProviderSubjectRef := fmt.Sprintf("github:%s", eventType)
+	providerNamespace := ""
 	if eventType == sourcePushEvent {
 		var payload pushEventPayload
 		if jsonErr := json.Unmarshal(body, &payload); jsonErr != nil {
 			slog.Error("failed to unmarshal payload", "error", jsonErr.Error())
 		}
-		if payload.Repository.FullName != "" && payload.After != "" {
-			ProviderSubjectRef = fmt.Sprintf("github:%s:%s", payload.Repository.FullName, payload.After)
-		}
+		providerNamespace = fmt.Sprintf("%d", payload.Repository.Owner.ID)
 	} else if eventType == sourcePullEvent {
 		var payload pullRequestPayload
 		if jsonErr := json.Unmarshal(body, &payload); jsonErr != nil {
 			slog.Error("failed to unmarshal payload", "error", jsonErr.Error())
 		}
-		if payload.Repository.FullName != "" && payload.Number != 0 {
-			ProviderSubjectRef = fmt.Sprintf("github:%s:pr:%d", payload.Repository.FullName, payload.Number)
-		}
+		providerNamespace = fmt.Sprintf("%d", payload.Repository.Owner.ID)
 	} else {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	//} else if deliveryRef != "" {
-	//	ProviderSubjectRef = fmt.Sprintf("github:%s:%s", eventType, deliveryRef)
-	//}
+	if deliveryRef == "" || providerNamespace == "0" {
+		http.Error(w, "missing github event identity", http.StatusBadRequest)
+		return
+	}
 
 	pe := rez.ProviderEvent{
-		Provider:           integrationName,
-		ProviderSource:     eventType,
-		ProviderEventRef:   deliveryRef,
-		ProviderSubjectRef: ProviderSubjectRef,
-		Payload:            body,
+		Provider:            providerName,
+		ProviderNamespace:   providerNamespace,
+		ProviderEventSource: eventType,
+		ProviderEventRef:    deliveryRef,
+		Attributes:          body,
+		ReceivedAt:          time.Now().UTC(),
 	}
 
 	if ingestErr := h.provEvents.Ingest(r.Context(), pe); ingestErr != nil {
@@ -93,6 +92,9 @@ type pushEventPayload struct {
 	After      string `json:"after"`
 	Repository struct {
 		FullName string `json:"full_name"`
+		Owner    struct {
+			ID int64 `json:"id"`
+		} `json:"owner"`
 	} `json:"repository"`
 }
 
@@ -100,6 +102,9 @@ type pullRequestPayload struct {
 	Number     int `json:"number"`
 	Repository struct {
 		FullName string `json:"full_name"`
+		Owner    struct {
+			ID int64 `json:"id"`
+		} `json:"owner"`
 	} `json:"repository"`
 }
 

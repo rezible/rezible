@@ -28,8 +28,8 @@ type IntegrationEventSyncCursor struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// IntegrationID holds the value of the "integration_id" field.
 	IntegrationID uuid.UUID `json:"integration_id,omitempty"`
-	// ProviderSource holds the value of the "provider_source" field.
-	ProviderSource string `json:"provider_source,omitempty"`
+	// ProviderEventSource holds the value of the "provider_event_source" field.
+	ProviderEventSource string `json:"provider_event_source,omitempty"`
 	// Cursor holds the value of the "cursor" field.
 	Cursor string `json:"cursor,omitempty"`
 	// LastSyncedAt holds the value of the "last_synced_at" field.
@@ -80,7 +80,7 @@ func (*IntegrationEventSyncCursor) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case integrationeventsynccursor.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case integrationeventsynccursor.FieldProviderSource, integrationeventsynccursor.FieldCursor:
+		case integrationeventsynccursor.FieldProviderEventSource, integrationeventsynccursor.FieldCursor:
 			values[i] = new(sql.NullString)
 		case integrationeventsynccursor.FieldCreatedAt, integrationeventsynccursor.FieldUpdatedAt, integrationeventsynccursor.FieldLastSyncedAt:
 			values[i] = new(sql.NullTime)
@@ -131,11 +131,11 @@ func (_m *IntegrationEventSyncCursor) assignValues(columns []string, values []an
 			} else if value != nil {
 				_m.IntegrationID = *value
 			}
-		case integrationeventsynccursor.FieldProviderSource:
+		case integrationeventsynccursor.FieldProviderEventSource:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_source", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_event_source", values[i])
 			} else if value.Valid {
-				_m.ProviderSource = value.String
+				_m.ProviderEventSource = value.String
 			}
 		case integrationeventsynccursor.FieldCursor:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -207,8 +207,8 @@ func (_m *IntegrationEventSyncCursor) String() string {
 	builder.WriteString("integration_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IntegrationID))
 	builder.WriteString(", ")
-	builder.WriteString("provider_source=")
-	builder.WriteString(_m.ProviderSource)
+	builder.WriteString("provider_event_source=")
+	builder.WriteString(_m.ProviderEventSource)
 	builder.WriteString(", ")
 	builder.WriteString("cursor=")
 	builder.WriteString(_m.Cursor)

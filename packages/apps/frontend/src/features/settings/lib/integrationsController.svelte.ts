@@ -82,16 +82,16 @@ export class IntegrationsController {
 	installationsByName = $derived.by(() => {
 		const grouped = new SvelteMap<string, IntegrationInstallation[]>();
 		for (const intg of this.installed) {
-			const curr = grouped.get(intg.attributes.integrationName) ?? [];
-			grouped.set(intg.attributes.integrationName, [...curr, intg]);
+			const curr = grouped.get(intg.attributes.name) ?? [];
+			grouped.set(intg.attributes.name, [...curr, intg]);
 		}
 		return grouped;
 	});
 	installationsByProvider = $derived.by(() => {
 		const grouped = new Map<string, IntegrationInstallation[]>();
 		for (const intg of this.installed) {
-			const curr = grouped.get(intg.attributes.providerName) ?? [];
-			grouped.set(intg.attributes.providerName, [...curr, intg]);
+			const curr = grouped.get(intg.attributes.provider) ?? [];
+			grouped.set(intg.attributes.provider, [...curr, intg]);
 		}
 		return grouped;
 	});
@@ -135,8 +135,8 @@ export class IntegrationsController {
 	installationTargetsByName = $derived.by(() => {
 		const nameTargets = new Map<string, IntegrationInstallTarget[]>();
 		this.installationTargets.forEach((t) => {
-			const curr = nameTargets.get(t.integrationName) || [];
-			nameTargets.set(t.integrationName, [...curr, t]);
+			const curr = nameTargets.get(t.resourceRef.providerNamespace) || [];
+			nameTargets.set(t.resourceRef.providerNamespace, [...curr, t]);
 		});
 		return nameTargets;
 	});
@@ -169,10 +169,10 @@ export class IntegrationsController {
 		await this.deleteInstalledMut.mutateAsync({ path: { id } });
 	}
 
-	async installFromTargets(name: string, externalRefs: string[]) {
-		if (this.installationPending || externalRefs.length === 0) return;
+	async installFromTargets(name: string, resourceRefs: string[]) {
+		if (this.installationPending || resourceRefs.length === 0) return;
 		try {
-			const attributes = { externalRefs };
+			const attributes = { resourceRefs };
 			await this.selectIntegrationInstallTargetMut.mutateAsync({
 				path: { name },
 				body: { attributes },

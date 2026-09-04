@@ -44,10 +44,13 @@ func (s *IntegrationsServiceSuite) newService(tdb rez.Database, reg rez.Integrat
 }
 
 func (s *IntegrationsServiceSuite) installTestIntegration(ctx context.Context, svc *IntegrationsService, i rez.IntegrationDefinition, ref string) rez.InstalledIntegration {
+	config := &testInstalledIntegrationConfig{
+		TestRef:           ref,
+		ProviderNamespace: i.Name(),
+	}
 	target := rez.IntegrationInstallationTarget{
-		IntegrationName: i.Name(),
-		DisplayName:     i.DisplayName(),
-		Config:          &testInstalledIntegrationConfig{TestRef: ref},
+		DisplayName: i.DisplayName(),
+		Config:      config,
 	}
 	s.T().Logf("installing integration %+v", target)
 	ii, installErr := svc.InstallFromTarget(ctx, target)
@@ -74,14 +77,30 @@ func (s *IntegrationsServiceSuite) TestInstallIntegration() {
 	s.Require().NoError(cfgErr)
 
 	target := rez.IntegrationInstallationTarget{
-		IntegrationName: i.Name(),
-		DisplayName:     i.DisplayName(),
-		Config:          ic,
+		DisplayName: i.DisplayName(),
+		Config:      ic,
 	}
 	ii, installErr := svc.InstallFromTarget(ctx, target)
 	s.Require().NoError(installErr)
 
-	s.Require().Equal(cfg.TestRef, ii.Config().ExternalRef())
+	s.Require().Equal(cfg.TestRef, ii.Config().InstallationTargetRef().ResourceRef)
+}
+
+func (s *IntegrationsServiceSuite) TestInstallSameTargetUpdatesExistingInstallation() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+
+	i := &testIntegration{}
+	svc := s.newService(tdb, s.newRegistry(i))
+
+	first := s.installTestIntegration(ctx, svc, i, "same-target")
+	second := s.installTestIntegration(ctx, svc, i, "same-target")
+
+	s.Equal(first.Integration().ID, second.Integration().ID)
+	query := tdb.Client(ctx).Integration.Query()
+	count, countErr := query.Count(ctx)
+	s.Require().NoError(countErr)
+	s.Equal(1, count)
 }
 
 func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsSkipsIntegrationsWithoutTools() {
@@ -167,6 +186,7 @@ func (p *testIntegration) ValidateInstallationConfig(raw []byte) (rez.Integratio
 	if jsonErr := json.Unmarshal(raw, &cfg); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal test config: %w", jsonErr)
 	}
+	cfg.ProviderNamespace = p.Name()
 	return &cfg, nil
 }
 
@@ -204,15 +224,20 @@ func (i *testInstalledIntegration) Capabilities() []string {
 }
 
 type testInstalledIntegrationConfig struct {
-	TestRef string
+	TestRef           string
+	ProviderNamespace string
 }
 
 func (c *testInstalledIntegrationConfig) Encode() ([]byte, error) {
 	return json.Marshal(c)
 }
 
-func (c *testInstalledIntegrationConfig) ExternalRef() string {
-	return c.TestRef
+func (c *testInstalledIntegrationConfig) InstallationTargetRef() rez.ProviderResourceRef {
+	return rez.ProviderResourceRef{
+		Provider:          "testing",
+		ProviderNamespace: c.ProviderNamespace,
+		ResourceRef:       c.TestRef,
+	}
 }
 
 func newTestAgentTool(name string) ai.Tool {

@@ -19,7 +19,7 @@
 		const installationId =
 			typeof config.installation_id === "number" || typeof config.installation_id === "string"
 				? String(config.installation_id)
-				: curr.attributes.externalRef;
+				: curr.attributes.providerInstallationRef;
 		return { org, installationId };
 	};
 </script>
@@ -54,7 +54,7 @@
 				<Card.Title>{details?.org ?? installation.attributes.displayName}</Card.Title>
 				<Card.Action>
 					<Badge variant="outline"
-						>Installation {details?.installationId ?? installation.attributes.externalRef}</Badge
+						>Installation {details?.installationId ?? installation.attributes.providerInstallationRef}</Badge
 					>
 				</Card.Action>
 			</Card.Header>

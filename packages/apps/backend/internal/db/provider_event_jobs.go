@@ -6,7 +6,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/pkg/jobs"
-	"github.com/rezible/rezible/pkg/projections"
 	"github.com/riverqueue/river"
 )
 
@@ -47,9 +46,8 @@ func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Cont
 		return projectionErr
 	}
 	if s.db.IsTransientError(projectionErr) {
-		return projections.Retryable(projectionErr)
-	}
-	if projections.IsRetryable(projectionErr) {
+		return jobs.MarkRetryableError(projectionErr)
+	} else if jobs.IsRetryableError(projectionErr) {
 		return projectionErr
 	}
 	s.logger.ErrorContext(ctx, "fatal event projection error",

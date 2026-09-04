@@ -86,7 +86,10 @@ func (i *Integration) ValidateInstallationConfig(cfg []byte) (rez.IntegrationIns
 
 func (i *Integration) decodeValidateInstallationConfig(m []byte) (*InstallationConfig, error) {
 	var c InstallationConfig
-	return &c, json.Unmarshal(m, &c)
+	if err := json.Unmarshal(m, &c); err != nil {
+		return nil, err
+	}
+	return &c, c.Validate()
 }
 
 func (i *Integration) ValidateUserSettings(m map[string]any) error {

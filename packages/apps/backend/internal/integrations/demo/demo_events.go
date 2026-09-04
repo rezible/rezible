@@ -3,12 +3,13 @@ package demoprovider
 import (
 	"time"
 
+	rez "github.com/rezible/rezible"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 type demoEventPayload interface {
-	subjectRef() string
+	resourceRef() string
 	//toEvent() *ent.NormalizedEvent
 }
 
@@ -23,7 +24,7 @@ type userObservedPayload struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
-func (p userObservedPayload) subjectRef() string {
+func (p userObservedPayload) resourceRef() string {
 	return "demo:user:" + p.ExternalID
 }
 
@@ -45,7 +46,7 @@ type codeRepositoryObservedPayload struct {
 	ObservedAt time.Time `json:"observed_at"`
 }
 
-func (p codeRepositoryObservedPayload) subjectRef() string {
+func (p codeRepositoryObservedPayload) resourceRef() string {
 	return "demo:code_repositories:" + p.ExternalID
 }
 
@@ -59,20 +60,25 @@ var demoCodeRepositoryEvents = []codeRepositoryObservedPayload{
 }
 
 type codeChangeObservedPayload struct {
-	ExternalID            string                         `json:"external_id"`
-	RepositoryExternalRef string                         `json:"repository_external_ref"`
-	Title                 string                         `json:"title"`
-	MergedAt              time.Time                      `json:"merged_at"`
-	RelatedEntities       []projections.RelatedEntityRef `json:"related_entities,omitempty"`
+	ExternalID       string                          `json:"external_id"`
+	RepositoryRef    string                          `json:"repository_ref"`
+	Title            string                          `json:"title"`
+	MergedAt         time.Time                       `json:"merged_at"`
+	ImpactedEntities []projections.EntityObservation `json:"impacted_entities,omitempty"`
 }
 
-func (p codeChangeObservedPayload) subjectRef() string {
+func (p codeChangeObservedPayload) resourceRef() string {
 	return "demo:code_change:" + p.ExternalID
 }
 
-func relatedComponent(id string, category kne.Category, kind string, displayName string) projections.RelatedEntityRef {
-	return projections.RelatedEntityRef{
-		ExternalRef: componentRef(id),
+func relatedComponent(id string, category kne.Category, kind string, displayName string) projections.EntityObservation {
+	resourceRef := rez.ProviderResourceRef{
+		Provider:          providerName,
+		ProviderNamespace: integrationName,
+		ResourceRef:       componentRef(id),
+	}
+	return projections.EntityObservation{
+		Ref:         resourceRef,
 		Category:    category,
 		Kind:        kind,
 		DisplayName: displayName,
@@ -81,11 +87,11 @@ func relatedComponent(id string, category kne.Category, kind string, displayName
 
 var demoCodeChangeEvents = []codeChangeObservedPayload{
 	{
-		ExternalID:            "pr-1842",
-		RepositoryExternalRef: "rezible-commerce/search-api",
-		Title:                 "PR #1842 Tune search enrichment retry policy",
-		MergedAt:              time.Date(2026, 5, 12, 8, 42, 0, 0, time.UTC),
-		RelatedEntities: []projections.RelatedEntityRef{
+		ExternalID:    "pr-1842",
+		RepositoryRef: "rezible-commerce/search-api",
+		Title:         "PR #1842 Tune search enrichment retry policy",
+		MergedAt:      time.Date(2026, 5, 12, 8, 42, 0, 0, time.UTC),
+		ImpactedEntities: []projections.EntityObservation{
 			relatedComponent("search_api", kne.CategoryContainer, "service", "Search API"),
 			relatedComponent("elasticsearch_catalog", kne.CategoryContainer, "search_cluster", "Elasticsearch Catalog"),
 		},
@@ -93,7 +99,7 @@ var demoCodeChangeEvents = []codeChangeObservedPayload{
 }
 
 type incidentObservedPayload struct {
-	ExternalRef   string    `json:"external_ref"`
+	ResourceID    string    `json:"resource_id"`
 	Title         string    `json:"title"`
 	Summary       string    `json:"summary,omitempty"`
 	SeverityRef   string    `json:"severity_ref"`
@@ -102,13 +108,13 @@ type incidentObservedPayload struct {
 	ObservationID string    `json:"observation_id"`
 }
 
-func (p incidentObservedPayload) subjectRef() string {
-	return "demo:incident:" + p.ExternalRef
+func (p incidentObservedPayload) resourceRef() string {
+	return "demo:incident:" + p.ResourceID
 }
 
 var demoIncidentEvents = []incidentObservedPayload{
 	{
-		ExternalRef:   "checkout-search-timeouts",
+		ResourceID:    "checkout-search-timeouts",
 		Title:         "Checkout search lookups timing out",
 		Summary:       "Checkout requests that need product search enrichment are timing out for a subset of customers.",
 		SeverityRef:   "SEV-1",
@@ -117,7 +123,7 @@ var demoIncidentEvents = []incidentObservedPayload{
 		ObservationID: "checkout-search-timeouts-observed",
 	},
 	{
-		ExternalRef:   "catalog-search-stale-results",
+		ResourceID:    "catalog-search-stale-results",
 		Title:         "Catalog search returning stale results",
 		Summary:       "The catalog search index failed to refresh after the nightly product import.",
 		SeverityRef:   "SEV-2",
@@ -126,7 +132,7 @@ var demoIncidentEvents = []incidentObservedPayload{
 		ObservationID: "catalog-search-stale-results-observed",
 	},
 	{
-		ExternalRef:   "search-admin-dashboard-degraded",
+		ResourceID:    "search-admin-dashboard-degraded",
 		Title:         "Search admin dashboard degraded",
 		Summary:       "Internal teams are seeing slow loads and intermittent errors in search administration views.",
 		SeverityRef:   "SEV-3",
@@ -137,66 +143,66 @@ var demoIncidentEvents = []incidentObservedPayload{
 }
 
 type alertObservedPayload struct {
-	ExternalRef     string                         `json:"external_ref"`
-	Title           string                         `json:"title"`
-	Description     string                         `json:"description,omitempty"`
-	Definition      string                         `json:"definition,omitempty"`
-	OccurredAt      time.Time                      `json:"occurred_at"`
-	InstanceRef     string                         `json:"instance_ref"`
-	RelatedEntities []projections.RelatedEntityRef `json:"related_entities,omitempty"`
+	DefinitionRef    string                          `json:"definition_ref"`
+	Title            string                          `json:"title"`
+	Description      string                          `json:"description,omitempty"`
+	Definition       string                          `json:"definition,omitempty"`
+	OccurredAt       time.Time                       `json:"occurred_at"`
+	InstanceRef      string                          `json:"instance_ref"`
+	ObservedEntities []projections.EntityObservation `json:"observed_entities,omitempty"`
 }
 
-func (p alertObservedPayload) subjectRef() string {
+func (p alertObservedPayload) resourceRef() string {
 	return "demo:alert_instance:" + p.InstanceRef
 }
 
 var demoAlertEvents = []alertObservedPayload{
 	{
-		ExternalRef: "search-api-latency",
-		Title:       "Search API response time high",
-		Description: "p95 latency for the search API is above 2 seconds.",
-		Definition:  "avg(last_5m):p95:search.api.response_time > 2000",
-		OccurredAt:  time.Date(2026, 5, 12, 9, 15, 0, 0, time.UTC),
-		InstanceRef: "search-api-latency-20260512T091500Z",
-		RelatedEntities: []projections.RelatedEntityRef{
+		DefinitionRef: "search-api-latency",
+		Title:         "Search API response time high",
+		Description:   "p95 latency for the search API is above 2 seconds.",
+		Definition:    "avg(last_5m):p95:search.api.response_time > 2000",
+		OccurredAt:    time.Date(2026, 5, 12, 9, 15, 0, 0, time.UTC),
+		InstanceRef:   "search-api-latency-20260512T091500Z",
+		ObservedEntities: []projections.EntityObservation{
 			relatedComponent("search_api", kne.CategoryContainer, "service", "Search API"),
 			relatedComponent("checkout_service", kne.CategoryContainer, "service", "Checkout Listener"),
 		},
 	},
 	{
-		ExternalRef: "elasticsearch-cpu-critical",
-		Title:       "Elasticsearch cluster CPU critical",
-		Description: "Primary search cluster CPU is above 95 percent.",
-		Definition:  "avg(last_5m):avg:elasticsearch.cpu.utilization > 95",
-		OccurredAt:  time.Date(2026, 5, 12, 9, 28, 0, 0, time.UTC),
-		InstanceRef: "elasticsearch-cpu-critical-20260512T092800Z",
-		RelatedEntities: []projections.RelatedEntityRef{
+		DefinitionRef: "elasticsearch-cpu-critical",
+		Title:         "Elasticsearch cluster CPU critical",
+		Description:   "Primary search cluster CPU is above 95 percent.",
+		Definition:    "avg(last_5m):avg:elasticsearch.cpu.utilization > 95",
+		OccurredAt:    time.Date(2026, 5, 12, 9, 28, 0, 0, time.UTC),
+		InstanceRef:   "elasticsearch-cpu-critical-20260512T092800Z",
+		ObservedEntities: []projections.EntityObservation{
 			relatedComponent("elasticsearch_catalog", kne.CategoryContainer, "search_cluster", "Elasticsearch Catalog"),
 			relatedComponent("search_api", kne.CategoryContainer, "service", "Search API"),
 		},
 	},
 	{
-		ExternalRef: "search-index-build-failed",
-		Title:       "Search index build failed",
-		Description: "Nightly catalog search index rebuild exited with a failure.",
-		Definition:  "sum(last_1h):search.indexer.failures > 0",
-		OccurredAt:  time.Date(2026, 5, 13, 2, 10, 0, 0, time.UTC),
-		InstanceRef: "search-index-build-failed-20260513T021000Z",
+		DefinitionRef: "search-index-build-failed",
+		Title:         "Search index build failed",
+		Description:   "Nightly catalog search index rebuild exited with a failure.",
+		Definition:    "sum(last_1h):search.indexer.failures > 0",
+		OccurredAt:    time.Date(2026, 5, 13, 2, 10, 0, 0, time.UTC),
+		InstanceRef:   "search-index-build-failed-20260513T021000Z",
 	},
 	{
-		ExternalRef: "redis-search-cache-down",
-		Title:       "Redis search cache down",
-		Description: "Search cache node is unreachable from application hosts.",
-		Definition:  "min(last_5m):redis.search_cache.up < 1",
-		OccurredAt:  time.Date(2026, 5, 13, 14, 5, 0, 0, time.UTC),
-		InstanceRef: "redis-search-cache-down-20260513T140500Z",
+		DefinitionRef: "redis-search-cache-down",
+		Title:         "Redis search cache down",
+		Description:   "Search cache node is unreachable from application hosts.",
+		Definition:    "min(last_5m):redis.search_cache.up < 1",
+		OccurredAt:    time.Date(2026, 5, 13, 14, 5, 0, 0, time.UTC),
+		InstanceRef:   "redis-search-cache-down-20260513T140500Z",
 	},
 	{
-		ExternalRef: "search-query-backlog",
-		Title:       "Search query queue backing up",
-		Description: "Search query processing queue depth is above 5000 messages.",
-		Definition:  "avg(last_10m):search.query_queue.depth > 5000",
-		OccurredAt:  time.Date(2026, 5, 14, 4, 45, 0, 0, time.UTC),
-		InstanceRef: "search-query-backlog-20260514T044500Z",
+		DefinitionRef: "search-query-backlog",
+		Title:         "Search query queue backing up",
+		Description:   "Search query processing queue depth is above 5000 messages.",
+		Definition:    "avg(last_10m):search.query_queue.depth > 5000",
+		OccurredAt:    time.Date(2026, 5, 14, 4, 45, 0, 0, time.UTC),
+		InstanceRef:   "search-query-backlog-20260514T044500Z",
 	},
 }

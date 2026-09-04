@@ -27,14 +27,14 @@ type Integration struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// ProviderName holds the value of the "provider_name" field.
-	ProviderName string `json:"provider_name,omitempty"`
-	// IntegrationName holds the value of the "integration_name" field.
-	IntegrationName string `json:"integration_name,omitempty"`
+	// Provider holds the value of the "provider" field.
+	Provider string `json:"provider,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
 	// DisplayName holds the value of the "display_name" field.
 	DisplayName string `json:"display_name,omitempty"`
-	// ExternalRef holds the value of the "external_ref" field.
-	ExternalRef string `json:"external_ref,omitempty"`
+	// ProviderInstallationRef holds the value of the "provider_installation_ref" field.
+	ProviderInstallationRef string `json:"provider_installation_ref,omitempty"`
 	// InstallationConfig holds the value of the "installation_config" field.
 	InstallationConfig jsontext.Value `json:"installation_config,omitempty"`
 	// UserSettings holds the value of the "user_settings" field.
@@ -74,7 +74,7 @@ func (*Integration) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case integration.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case integration.FieldProviderName, integration.FieldIntegrationName, integration.FieldDisplayName, integration.FieldExternalRef:
+		case integration.FieldProvider, integration.FieldName, integration.FieldDisplayName, integration.FieldProviderInstallationRef:
 			values[i] = new(sql.NullString)
 		case integration.FieldCreatedAt, integration.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -119,17 +119,17 @@ func (_m *Integration) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case integration.FieldProviderName:
+		case integration.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_name", values[i])
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
 			} else if value.Valid {
-				_m.ProviderName = value.String
+				_m.Provider = value.String
 			}
-		case integration.FieldIntegrationName:
+		case integration.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field integration_name", values[i])
+				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				_m.IntegrationName = value.String
+				_m.Name = value.String
 			}
 		case integration.FieldDisplayName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -137,11 +137,11 @@ func (_m *Integration) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.DisplayName = value.String
 			}
-		case integration.FieldExternalRef:
+		case integration.FieldProviderInstallationRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field external_ref", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_installation_ref", values[i])
 			} else if value.Valid {
-				_m.ExternalRef = value.String
+				_m.ProviderInstallationRef = value.String
 			}
 		case integration.FieldInstallationConfig:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -209,17 +209,17 @@ func (_m *Integration) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("provider_name=")
-	builder.WriteString(_m.ProviderName)
+	builder.WriteString("provider=")
+	builder.WriteString(_m.Provider)
 	builder.WriteString(", ")
-	builder.WriteString("integration_name=")
-	builder.WriteString(_m.IntegrationName)
+	builder.WriteString("name=")
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("display_name=")
 	builder.WriteString(_m.DisplayName)
 	builder.WriteString(", ")
-	builder.WriteString("external_ref=")
-	builder.WriteString(_m.ExternalRef)
+	builder.WriteString("provider_installation_ref=")
+	builder.WriteString(_m.ProviderInstallationRef)
 	builder.WriteString(", ")
 	builder.WriteString("installation_config=")
 	builder.WriteString(fmt.Sprintf("%v", _m.InstallationConfig))

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/tenant"
@@ -32,39 +33,53 @@ func (_c *NormalizedEventCreate) SetTenantID(v int) *NormalizedEventCreate {
 	return _c
 }
 
-// SetKind sets the "kind" field.
-func (_c *NormalizedEventCreate) SetKind(v normalizedevent.Kind) *NormalizedEventCreate {
-	_c.mutation.SetKind(v)
-	return _c
-}
-
 // SetProvider sets the "provider" field.
 func (_c *NormalizedEventCreate) SetProvider(v string) *NormalizedEventCreate {
 	_c.mutation.SetProvider(v)
 	return _c
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (_c *NormalizedEventCreate) SetProviderSource(v string) *NormalizedEventCreate {
-	_c.mutation.SetProviderSource(v)
+// SetProviderNamespace sets the "provider_namespace" field.
+func (_c *NormalizedEventCreate) SetProviderNamespace(v string) *NormalizedEventCreate {
+	_c.mutation.SetProviderNamespace(v)
+	return _c
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (_c *NormalizedEventCreate) SetProviderResourceRef(v string) *NormalizedEventCreate {
+	_c.mutation.SetProviderResourceRef(v)
+	return _c
+}
+
+// SetIntegrationID sets the "integration_id" field.
+func (_c *NormalizedEventCreate) SetIntegrationID(v uuid.UUID) *NormalizedEventCreate {
+	_c.mutation.SetIntegrationID(v)
+	return _c
+}
+
+// SetNillableIntegrationID sets the "integration_id" field if the given value is not nil.
+func (_c *NormalizedEventCreate) SetNillableIntegrationID(v *uuid.UUID) *NormalizedEventCreate {
+	if v != nil {
+		_c.SetIntegrationID(*v)
+	}
+	return _c
+}
+
+// SetKind sets the "kind" field.
+func (_c *NormalizedEventCreate) SetKind(v string) *NormalizedEventCreate {
+	_c.mutation.SetKind(v)
+	return _c
+}
+
+// SetProviderEventSource sets the "provider_event_source" field.
+func (_c *NormalizedEventCreate) SetProviderEventSource(v string) *NormalizedEventCreate {
+	_c.mutation.SetProviderEventSource(v)
 	return _c
 }
 
 // SetProviderEventRef sets the "provider_event_ref" field.
 func (_c *NormalizedEventCreate) SetProviderEventRef(v string) *NormalizedEventCreate {
 	_c.mutation.SetProviderEventRef(v)
-	return _c
-}
-
-// SetProviderSubjectRef sets the "provider_subject_ref" field.
-func (_c *NormalizedEventCreate) SetProviderSubjectRef(v string) *NormalizedEventCreate {
-	_c.mutation.SetProviderSubjectRef(v)
-	return _c
-}
-
-// SetSubjectKind sets the "subject_kind" field.
-func (_c *NormalizedEventCreate) SetSubjectKind(v string) *NormalizedEventCreate {
-	_c.mutation.SetSubjectKind(v)
 	return _c
 }
 
@@ -117,6 +132,11 @@ func (_c *NormalizedEventCreate) SetNillableID(v *uuid.UUID) *NormalizedEventCre
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *NormalizedEventCreate) SetTenant(v *Tenant) *NormalizedEventCreate {
 	return _c.SetTenantID(v.ID)
+}
+
+// SetIntegration sets the "integration" edge to the Integration entity.
+func (_c *NormalizedEventCreate) SetIntegration(v *Integration) *NormalizedEventCreate {
+	return _c.SetIntegrationID(v.ID)
 }
 
 // SetProjectionID sets the "projection" edge to the NormalizedEventProjection entity by ID.
@@ -197,14 +217,6 @@ func (_c *NormalizedEventCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "NormalizedEvent.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.Kind(); !ok {
-		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "NormalizedEvent.kind"`)}
-	}
-	if v, ok := _c.mutation.Kind(); ok {
-		if err := normalizedevent.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.Provider(); !ok {
 		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "NormalizedEvent.provider"`)}
 	}
@@ -213,12 +225,31 @@ func (_c *NormalizedEventCreate) check() error {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.ProviderSource(); !ok {
-		return &ValidationError{Name: "provider_source", err: errors.New(`ent: missing required field "NormalizedEvent.provider_source"`)}
+	if _, ok := _c.mutation.ProviderNamespace(); !ok {
+		return &ValidationError{Name: "provider_namespace", err: errors.New(`ent: missing required field "NormalizedEvent.provider_namespace"`)}
 	}
-	if v, ok := _c.mutation.ProviderSource(); ok {
-		if err := normalizedevent.ProviderSourceValidator(v); err != nil {
-			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_source": %w`, err)}
+	if _, ok := _c.mutation.ProviderResourceRef(); !ok {
+		return &ValidationError{Name: "provider_resource_ref", err: errors.New(`ent: missing required field "NormalizedEvent.provider_resource_ref"`)}
+	}
+	if v, ok := _c.mutation.ProviderResourceRef(); ok {
+		if err := normalizedevent.ProviderResourceRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_resource_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_resource_ref": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.Kind(); !ok {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "NormalizedEvent.kind"`)}
+	}
+	if v, ok := _c.mutation.Kind(); ok {
+		if err := normalizedevent.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.ProviderEventSource(); !ok {
+		return &ValidationError{Name: "provider_event_source", err: errors.New(`ent: missing required field "NormalizedEvent.provider_event_source"`)}
+	}
+	if v, ok := _c.mutation.ProviderEventSource(); ok {
+		if err := normalizedevent.ProviderEventSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_source": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.ProviderEventRef(); !ok {
@@ -228,17 +259,6 @@ func (_c *NormalizedEventCreate) check() error {
 		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
 			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
 		}
-	}
-	if _, ok := _c.mutation.ProviderSubjectRef(); !ok {
-		return &ValidationError{Name: "provider_subject_ref", err: errors.New(`ent: missing required field "NormalizedEvent.provider_subject_ref"`)}
-	}
-	if v, ok := _c.mutation.ProviderSubjectRef(); ok {
-		if err := normalizedevent.ProviderSubjectRefValidator(v); err != nil {
-			return &ValidationError{Name: "provider_subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_subject_ref": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.SubjectKind(); !ok {
-		return &ValidationError{Name: "subject_kind", err: errors.New(`ent: missing required field "NormalizedEvent.subject_kind"`)}
 	}
 	if _, ok := _c.mutation.Attributes(); !ok {
 		return &ValidationError{Name: "attributes", err: errors.New(`ent: missing required field "NormalizedEvent.attributes"`)}
@@ -292,29 +312,29 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.Kind(); ok {
-		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
-		_node.Kind = value
-	}
 	if value, ok := _c.mutation.Provider(); ok {
 		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
 		_node.Provider = value
 	}
-	if value, ok := _c.mutation.ProviderSource(); ok {
-		_spec.SetField(normalizedevent.FieldProviderSource, field.TypeString, value)
-		_node.ProviderSource = value
+	if value, ok := _c.mutation.ProviderNamespace(); ok {
+		_spec.SetField(normalizedevent.FieldProviderNamespace, field.TypeString, value)
+		_node.ProviderNamespace = value
+	}
+	if value, ok := _c.mutation.ProviderResourceRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderResourceRef, field.TypeString, value)
+		_node.ProviderResourceRef = value
+	}
+	if value, ok := _c.mutation.Kind(); ok {
+		_spec.SetField(normalizedevent.FieldKind, field.TypeString, value)
+		_node.Kind = value
+	}
+	if value, ok := _c.mutation.ProviderEventSource(); ok {
+		_spec.SetField(normalizedevent.FieldProviderEventSource, field.TypeString, value)
+		_node.ProviderEventSource = value
 	}
 	if value, ok := _c.mutation.ProviderEventRef(); ok {
 		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
 		_node.ProviderEventRef = value
-	}
-	if value, ok := _c.mutation.ProviderSubjectRef(); ok {
-		_spec.SetField(normalizedevent.FieldProviderSubjectRef, field.TypeString, value)
-		_node.ProviderSubjectRef = value
-	}
-	if value, ok := _c.mutation.SubjectKind(); ok {
-		_spec.SetField(normalizedevent.FieldSubjectKind, field.TypeString, value)
-		_node.SubjectKind = value
 	}
 	if value, ok := _c.mutation.Attributes(); ok {
 		_spec.SetField(normalizedevent.FieldAttributes, field.TypeBytes, value)
@@ -348,6 +368,24 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.IntegrationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   normalizedevent.IntegrationTable,
+			Columns: []string{normalizedevent.IntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.NormalizedEvent
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.IntegrationID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ProjectionIDs(); len(nodes) > 0 {
@@ -420,6 +458,24 @@ type (
 	}
 )
 
+// SetIntegrationID sets the "integration_id" field.
+func (u *NormalizedEventUpsert) SetIntegrationID(v uuid.UUID) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldIntegrationID, v)
+	return u
+}
+
+// UpdateIntegrationID sets the "integration_id" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateIntegrationID() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldIntegrationID)
+	return u
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (u *NormalizedEventUpsert) ClearIntegrationID() *NormalizedEventUpsert {
+	u.SetNull(normalizedevent.FieldIntegrationID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -440,23 +496,23 @@ func (u *NormalizedEventUpsertOne) UpdateNewValues() *NormalizedEventUpsertOne {
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(normalizedevent.FieldTenantID)
 		}
-		if _, exists := u.create.mutation.Kind(); exists {
-			s.SetIgnore(normalizedevent.FieldKind)
-		}
 		if _, exists := u.create.mutation.Provider(); exists {
 			s.SetIgnore(normalizedevent.FieldProvider)
 		}
-		if _, exists := u.create.mutation.ProviderSource(); exists {
-			s.SetIgnore(normalizedevent.FieldProviderSource)
+		if _, exists := u.create.mutation.ProviderNamespace(); exists {
+			s.SetIgnore(normalizedevent.FieldProviderNamespace)
+		}
+		if _, exists := u.create.mutation.ProviderResourceRef(); exists {
+			s.SetIgnore(normalizedevent.FieldProviderResourceRef)
+		}
+		if _, exists := u.create.mutation.Kind(); exists {
+			s.SetIgnore(normalizedevent.FieldKind)
+		}
+		if _, exists := u.create.mutation.ProviderEventSource(); exists {
+			s.SetIgnore(normalizedevent.FieldProviderEventSource)
 		}
 		if _, exists := u.create.mutation.ProviderEventRef(); exists {
 			s.SetIgnore(normalizedevent.FieldProviderEventRef)
-		}
-		if _, exists := u.create.mutation.ProviderSubjectRef(); exists {
-			s.SetIgnore(normalizedevent.FieldProviderSubjectRef)
-		}
-		if _, exists := u.create.mutation.SubjectKind(); exists {
-			s.SetIgnore(normalizedevent.FieldSubjectKind)
 		}
 		if _, exists := u.create.mutation.Attributes(); exists {
 			s.SetIgnore(normalizedevent.FieldAttributes)
@@ -499,6 +555,27 @@ func (u *NormalizedEventUpsertOne) Update(set func(*NormalizedEventUpsert)) *Nor
 		set(&NormalizedEventUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetIntegrationID sets the "integration_id" field.
+func (u *NormalizedEventUpsertOne) SetIntegrationID(v uuid.UUID) *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetIntegrationID(v)
+	})
+}
+
+// UpdateIntegrationID sets the "integration_id" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateIntegrationID() *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateIntegrationID()
+	})
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (u *NormalizedEventUpsertOne) ClearIntegrationID() *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.ClearIntegrationID()
+	})
 }
 
 // Exec executes the query.
@@ -687,23 +764,23 @@ func (u *NormalizedEventUpsertBulk) UpdateNewValues() *NormalizedEventUpsertBulk
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(normalizedevent.FieldTenantID)
 			}
-			if _, exists := b.mutation.Kind(); exists {
-				s.SetIgnore(normalizedevent.FieldKind)
-			}
 			if _, exists := b.mutation.Provider(); exists {
 				s.SetIgnore(normalizedevent.FieldProvider)
 			}
-			if _, exists := b.mutation.ProviderSource(); exists {
-				s.SetIgnore(normalizedevent.FieldProviderSource)
+			if _, exists := b.mutation.ProviderNamespace(); exists {
+				s.SetIgnore(normalizedevent.FieldProviderNamespace)
+			}
+			if _, exists := b.mutation.ProviderResourceRef(); exists {
+				s.SetIgnore(normalizedevent.FieldProviderResourceRef)
+			}
+			if _, exists := b.mutation.Kind(); exists {
+				s.SetIgnore(normalizedevent.FieldKind)
+			}
+			if _, exists := b.mutation.ProviderEventSource(); exists {
+				s.SetIgnore(normalizedevent.FieldProviderEventSource)
 			}
 			if _, exists := b.mutation.ProviderEventRef(); exists {
 				s.SetIgnore(normalizedevent.FieldProviderEventRef)
-			}
-			if _, exists := b.mutation.ProviderSubjectRef(); exists {
-				s.SetIgnore(normalizedevent.FieldProviderSubjectRef)
-			}
-			if _, exists := b.mutation.SubjectKind(); exists {
-				s.SetIgnore(normalizedevent.FieldSubjectKind)
 			}
 			if _, exists := b.mutation.Attributes(); exists {
 				s.SetIgnore(normalizedevent.FieldAttributes)
@@ -747,6 +824,27 @@ func (u *NormalizedEventUpsertBulk) Update(set func(*NormalizedEventUpsert)) *No
 		set(&NormalizedEventUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetIntegrationID sets the "integration_id" field.
+func (u *NormalizedEventUpsertBulk) SetIntegrationID(v uuid.UUID) *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetIntegrationID(v)
+	})
+}
+
+// UpdateIntegrationID sets the "integration_id" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateIntegrationID() *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateIntegrationID()
+	})
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (u *NormalizedEventUpsertBulk) ClearIntegrationID() *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.ClearIntegrationID()
+	})
 }
 
 // Exec executes the query.

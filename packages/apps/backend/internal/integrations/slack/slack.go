@@ -18,11 +18,14 @@ type InstallationIds struct {
 	EnterpriseId string
 }
 
-func (i InstallationIds) asRef() string {
-	if i.EnterpriseId == "" {
-		return i.TeamId
+func (i InstallationIds) InstallationTargetResourceRef() string {
+	if i.TeamId != "" {
+		return "team:" + i.TeamId
 	}
-	return fmt.Sprintf("%s:%s", i.EnterpriseId, i.TeamId)
+	if i.EnterpriseId != "" {
+		return "enterprise:" + i.EnterpriseId
+	}
+	return ""
 }
 
 func GetAllUsersInConversation(ctx context.Context, cw *ClientWrapper, convId string) ([]string, error) {

@@ -25,15 +25,13 @@ CREATE INDEX "agentsession_tenant_id" ON "agent_sessions" ("tenant_id");
 -- create index "agentsession_tenant_id_agent_name_created_at" to table: "agent_sessions"
 CREATE INDEX "agentsession_tenant_id_agent_name_created_at" ON "agent_sessions" ("tenant_id", "agent_name", "created_at");
 -- create "agent_session_bindings" table
-CREATE TABLE "agent_session_bindings" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "source" character varying NOT NULL, "resource_kind" character varying NOT NULL, "resource_ref" character varying NOT NULL, "closed_at" timestamptz NULL, "metadata" jsonb NULL, "agent_session_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "agent_session_binding_source_integration_consistency" CHECK ((source = 'rezible' AND integration_id IS NULL) OR (source <> 'rezible' AND integration_id IS NOT NULL)));
+CREATE TABLE "agent_session_bindings" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "provider_namespace" character varying NOT NULL, "provider_resource_ref" character varying NOT NULL, "closed_at" timestamptz NULL, "metadata" jsonb NULL, "agent_session_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "agentsessionbinding_tenant_id" to table: "agent_session_bindings"
 CREATE INDEX "agentsessionbinding_tenant_id" ON "agent_session_bindings" ("tenant_id");
 -- create index "agentsessionbinding_tenant_id_agent_session_id" to table: "agent_session_bindings"
 CREATE INDEX "agentsessionbinding_tenant_id_agent_session_id" ON "agent_session_bindings" ("tenant_id", "agent_session_id");
--- create index "agent_session_binding_one_per_integration_resource" to table: "agent_session_bindings"
-CREATE UNIQUE INDEX "agent_session_binding_one_per_integration_resource" ON "agent_session_bindings" ("tenant_id", "integration_id", "source", "resource_kind", "resource_ref") WHERE integration_id IS NOT NULL;
--- create index "agent_session_binding_one_per_source_resource" to table: "agent_session_bindings"
-CREATE UNIQUE INDEX "agent_session_binding_one_per_source_resource" ON "agent_session_bindings" ("tenant_id", "source", "resource_kind", "resource_ref") WHERE integration_id IS NULL;
+-- create index "agentsessionbinding_tenant_id__b7df457d899c87ec57565071d8963d03" to table: "agent_session_bindings"
+CREATE UNIQUE INDEX "agentsessionbinding_tenant_id__b7df457d899c87ec57565071d8963d03" ON "agent_session_bindings" ("tenant_id", "provider", "provider_namespace", "provider_resource_ref");
 -- create "agent_turns" table
 CREATE TABLE "agent_turns" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "sequence" bigint NOT NULL, "river_job_id" bigint NOT NULL, "input_tool_resume" jsonb NULL, "status" character varying NOT NULL, "started_at" timestamptz NULL, "finished_at" timestamptz NULL, "finish_reason" character varying NOT NULL DEFAULT '', "error" character varying NULL, "agent_session_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "input_message_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "agentturn_tenant_id" to table: "agent_turns"
@@ -159,23 +157,21 @@ CREATE INDEX "incidenttype_tenant_id" ON "incident_types" ("tenant_id");
 -- create index "incidenttype_tenant_id_name" to table: "incident_types"
 CREATE UNIQUE INDEX "incidenttype_tenant_id_name" ON "incident_types" ("tenant_id", "name");
 -- create "integrations" table
-CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider_name" character varying NOT NULL, "integration_name" character varying NOT NULL, "display_name" character varying NOT NULL, "external_ref" character varying NOT NULL, "installation_config" jsonb NOT NULL, "user_settings" jsonb NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "name" character varying NOT NULL, "display_name" character varying NOT NULL, "provider_installation_ref" character varying NOT NULL, "installation_config" jsonb NOT NULL, "user_settings" jsonb NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "integration_tenant_id" to table: "integrations"
 CREATE INDEX "integration_tenant_id" ON "integrations" ("tenant_id");
--- create index "integration_tenant_id_integration_name" to table: "integrations"
-CREATE INDEX "integration_tenant_id_integration_name" ON "integrations" ("tenant_id", "integration_name");
+-- create index "integration_tenant_id_provider_name_provider_installation_ref" to table: "integrations"
+CREATE UNIQUE INDEX "integration_tenant_id_provider_name_provider_installation_ref" ON "integrations" ("tenant_id", "provider", "name", "provider_installation_ref");
 -- create index "integration_tenant_id_provider_name" to table: "integrations"
-CREATE INDEX "integration_tenant_id_provider_name" ON "integrations" ("tenant_id", "provider_name");
--- create index "integration_tenant_id_integration_name_external_ref" to table: "integrations"
-CREATE UNIQUE INDEX "integration_tenant_id_integration_name_external_ref" ON "integrations" ("tenant_id", "integration_name", "external_ref");
+CREATE INDEX "integration_tenant_id_provider_name" ON "integrations" ("tenant_id", "provider", "name");
 -- create "integration_event_sync_cursors" table
-CREATE TABLE "integration_event_sync_cursors" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider_source" character varying NOT NULL, "cursor" character varying NULL, "last_synced_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "integration_event_sync_cursors" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider_event_source" character varying NOT NULL, "cursor" character varying NULL, "last_synced_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "integrationeventsynccursor_tenant_id" to table: "integration_event_sync_cursors"
 CREATE INDEX "integrationeventsynccursor_tenant_id" ON "integration_event_sync_cursors" ("tenant_id");
--- create index "integrationeventsynccursor_ten_914d3d8b389cb5d930bdf0bb43683869" to table: "integration_event_sync_cursors"
-CREATE UNIQUE INDEX "integrationeventsynccursor_ten_914d3d8b389cb5d930bdf0bb43683869" ON "integration_event_sync_cursors" ("tenant_id", "integration_id", "provider_source");
+-- create index "integrationeventsynccursor_ten_a26c037e9b0ef05d669054c1b2d81229" to table: "integration_event_sync_cursors"
+CREATE UNIQUE INDEX "integrationeventsynccursor_ten_a26c037e9b0ef05d669054c1b2d81229" ON "integration_event_sync_cursors" ("tenant_id", "integration_id", "provider_event_source");
 -- create "integration_event_sync_runs" table
-CREATE TABLE "integration_event_sync_runs" ("id" uuid NOT NULL, "source_cursors" jsonb NULL, "sync_reason" character varying NOT NULL DEFAULT 'manual', "started_at" timestamptz NOT NULL, "finished_at" timestamptz NULL, "status" character varying NOT NULL, "events_pulled" bigint NOT NULL DEFAULT 0, "events_ingested" bigint NOT NULL DEFAULT 0, "duplicates" bigint NOT NULL DEFAULT 0, "failure_message" character varying NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "integration_event_sync_runs" ("id" uuid NOT NULL, "provider_event_source_cursors" jsonb NULL, "sync_reason" character varying NOT NULL DEFAULT 'manual', "started_at" timestamptz NOT NULL, "finished_at" timestamptz NULL, "status" character varying NOT NULL, "events_pulled" bigint NOT NULL DEFAULT 0, "events_ingested" bigint NOT NULL DEFAULT 0, "duplicates" bigint NOT NULL DEFAULT 0, "failure_message" character varying NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "integrationeventsyncrun_tenant_id" to table: "integration_event_sync_runs"
 CREATE INDEX "integrationeventsyncrun_tenant_id" ON "integration_event_sync_runs" ("tenant_id");
 -- create index "integrationeventsyncrun_tenant_id_integration_id_started_at" to table: "integration_event_sync_runs"
@@ -217,11 +213,11 @@ CREATE INDEX "knowledgerelationship_tenant_id_target_entity_id" ON "knowledge_re
 -- create index "knowledgerelationship_tenant_id_predicate" to table: "knowledge_relationships"
 CREATE INDEX "knowledgerelationship_tenant_id_predicate" ON "knowledge_relationships" ("tenant_id", "predicate");
 -- create "knowledge_subject_alias" table
-CREATE TABLE "knowledge_subject_alias" ("id" uuid NOT NULL, "subject_kind" character varying NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NULL, "relationship_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "knowledge_subject_alias_exactly_one_subject" CHECK ((subject_kind = 'entity' AND entity_id IS NOT NULL AND relationship_id IS NULL) OR (subject_kind = 'relationship' AND relationship_id IS NOT NULL AND entity_id IS NULL)));
+CREATE TABLE "knowledge_subject_alias" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_namespace" character varying NOT NULL, "provider_resource_ref" character varying NOT NULL, "subject_kind" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NULL, "relationship_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "knowledge_subject_alias_exactly_one_subject" CHECK ((subject_kind = 'entity' AND entity_id IS NOT NULL AND relationship_id IS NULL) OR (subject_kind = 'relationship' AND relationship_id IS NOT NULL AND entity_id IS NULL)));
 -- create index "knowledgesubjectalias_tenant_id" to table: "knowledge_subject_alias"
 CREATE INDEX "knowledgesubjectalias_tenant_id" ON "knowledge_subject_alias" ("tenant_id");
--- create index "knowledgesubjectalias_tenant_i_855375c347ac09b9e29dbdf061830b81" to table: "knowledge_subject_alias"
-CREATE UNIQUE INDEX "knowledgesubjectalias_tenant_i_855375c347ac09b9e29dbdf061830b81" ON "knowledge_subject_alias" ("tenant_id", "provider", "provider_source", "provider_subject_ref");
+-- create index "knowledgesubjectalias_tenant_i_63224b308164c14d49a6ab9ee6e09fbf" to table: "knowledge_subject_alias"
+CREATE UNIQUE INDEX "knowledgesubjectalias_tenant_i_63224b308164c14d49a6ab9ee6e09fbf" ON "knowledge_subject_alias" ("tenant_id", "provider", "provider_namespace", "provider_resource_ref");
 -- create index "knowledgesubjectalias_tenant_id_entity_id" to table: "knowledge_subject_alias"
 CREATE INDEX "knowledgesubjectalias_tenant_id_entity_id" ON "knowledge_subject_alias" ("tenant_id", "entity_id");
 -- create index "knowledgesubjectalias_tenant_id_relationship_id" to table: "knowledge_subject_alias"
@@ -235,13 +231,13 @@ CREATE TABLE "meeting_sessions" ("id" uuid NOT NULL, "title" character varying N
 -- create index "meetingsession_tenant_id" to table: "meeting_sessions"
 CREATE INDEX "meetingsession_tenant_id" ON "meeting_sessions" ("tenant_id");
 -- create "normalized_events" table
-CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "subject_kind" character varying NOT NULL, "attributes" bytea NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "normalized_event_projection" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_namespace" character varying NOT NULL, "provider_resource_ref" character varying NOT NULL, "kind" character varying NOT NULL, "provider_event_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "attributes" bytea NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NULL, "normalized_event_projection" uuid NULL, PRIMARY KEY ("id"));
 -- create index "normalizedevent_tenant_id" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id" ON "normalized_events" ("tenant_id");
--- create index "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433" to table: "normalized_events"
-CREATE UNIQUE INDEX "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433" ON "normalized_events" ("tenant_id", "provider", "provider_source", "provider_event_ref", "provider_subject_ref");
--- create index "normalizedevent_tenant_id_provider_provider_source_occurred_at" to table: "normalized_events"
-CREATE INDEX "normalizedevent_tenant_id_provider_provider_source_occurred_at" ON "normalized_events" ("tenant_id", "provider", "provider_source", "occurred_at");
+-- create index "normalizedevent_tenant_id_prov_90f96a3ac3cd6b50b4760368ebb3367b" to table: "normalized_events"
+CREATE UNIQUE INDEX "normalizedevent_tenant_id_prov_90f96a3ac3cd6b50b4760368ebb3367b" ON "normalized_events" ("tenant_id", "provider", "provider_namespace", "provider_event_source", "provider_event_ref", "provider_resource_ref");
+-- create index "normalizedevent_tenant_id_prov_10dd43e74e4eae61bb4f932ebd007126" to table: "normalized_events"
+CREATE INDEX "normalizedevent_tenant_id_prov_10dd43e74e4eae61bb4f932ebd007126" ON "normalized_events" ("tenant_id", "provider", "provider_namespace", "provider_event_source", "occurred_at");
 -- create "normalized_event_projections" table
 CREATE TABLE "normalized_event_projections" ("id" uuid NOT NULL, "completed_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "event_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "normalizedeventprojection_tenant_id" to table: "normalized_event_projections"
@@ -537,7 +533,7 @@ ALTER TABLE "meeting_schedules" ADD CONSTRAINT "meeting_schedules_tenants_tenant
 -- modify "meeting_sessions" table
 ALTER TABLE "meeting_sessions" ADD CONSTRAINT "meeting_sessions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "meeting_sessions_meeting_schedules_schedule" FOREIGN KEY ("meeting_session_schedule") REFERENCES "meeting_schedules" ("id") ON DELETE SET NULL;
 -- modify "normalized_events" table
-ALTER TABLE "normalized_events" ADD CONSTRAINT "normalized_events_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "normalized_events_normalized_event_projections_projection" FOREIGN KEY ("normalized_event_projection") REFERENCES "normalized_event_projections" ("id") ON DELETE SET NULL;
+ALTER TABLE "normalized_events" ADD CONSTRAINT "normalized_events_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "normalized_events_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE SET NULL, ADD CONSTRAINT "normalized_events_normalized_event_projections_projection" FOREIGN KEY ("normalized_event_projection") REFERENCES "normalized_event_projections" ("id") ON DELETE SET NULL;
 -- modify "normalized_event_projections" table
 ALTER TABLE "normalized_event_projections" ADD CONSTRAINT "normalized_event_projections_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "normalized_event_projections_normalized_events_event" FOREIGN KEY ("event_id") REFERENCES "normalized_events" ("id") ON DELETE NO ACTION;
 -- modify "normalized_event_projection_entities" table

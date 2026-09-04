@@ -3,11 +3,11 @@ package eventprojection
 import (
 	"time"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -19,11 +19,35 @@ func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsId
 
 	repoRef := "repo-1"
 	codeChangeRef := "code-change-1"
-	attrs := projections.CodeChangeSubjectAttributes{
-		RepositoryExternalRef: repoRef,
-		DisplayName:           "main@abc123",
+	repositoryResourceRef := rez.ProviderResourceRef{
+		Provider:          "test",
+		ProviderNamespace: "projection-tests",
+		ResourceRef:       repoRef,
 	}
-	event := s.createNormalizedEvent(tdb, projections.SubjectKindCodeChange, codeChangeRef, ne.KindObserved, occurredAt, attrs)
+	attrs := projections.CodeChangeEventAttributes{
+		Repository: projections.EntityObservation{
+			Ref:         repositoryResourceRef,
+			Category:    kne.CategoryCode,
+			Kind:        knowledgeEntityKindRepository,
+			DisplayName: "Repository One",
+		},
+		DisplayName: "main@abc123",
+		ImpactedEntities: []projections.EntityObservation{
+			{
+				Ref:         rez.ProviderResourceRef{Provider: "test", ProviderNamespace: "account-a", ResourceRef: "service-1"},
+				Category:    kne.CategoryContainer,
+				Kind:        "service",
+				DisplayName: "Service A",
+			},
+			{
+				Ref:         rez.ProviderResourceRef{Provider: "test", ProviderNamespace: "account-b", ResourceRef: "service-1"},
+				Category:    kne.CategoryContainer,
+				Kind:        "service",
+				DisplayName: "Service B",
+			},
+		},
+	}
+	event := s.createNormalizedEvent(tdb, projections.KindCodeChange, codeChangeRef, occurredAt, attrs)
 
 	_, projectErr := runProjection(ctx, service, event)
 	s.Require().NoError(projectErr)
@@ -32,27 +56,34 @@ func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsId
 	s.Require().NoError(projectErr)
 
 	client := tdb.Client(ctx)
-	queryEntities := client.KnowledgeEntity.Query().
-		Where(kne.Or(
-			kne.And(kne.CategoryEQ(kne.CategoryEvent), kne.Kind(knowledgeEntityKindCodeChange)),
-			kne.And(kne.CategoryEQ(kne.CategoryCode), kne.Kind(knowledgeEntityKindRepository)),
-		))
+	queryEntities := client.KnowledgeEntity.Query()
 	entityCount, entityErr := queryEntities.Count(ctx)
 	s.Require().NoError(entityErr)
-	s.Equal(2, entityCount)
+	s.Equal(4, entityCount)
 
 	queryRelations := client.KnowledgeRelationship.Query().
 		Where(knr.PredicateEQ(knr.PredicateTouches))
 	relationshipCount, relationshipErr := queryRelations.Count(ctx)
 	s.Require().NoError(relationshipErr)
 	s.Equal(1, relationshipCount)
+	impactRelationships, impactErr := client.KnowledgeRelationship.Query().
+		Where(knr.PredicateEQ(knr.PredicateImpacts)).
+		WithAliases().
+		All(ctx)
+	s.Require().NoError(impactErr)
+	s.Require().Len(impactRelationships, 2)
+	s.NotEqual(impactRelationships[0].Edges.Aliases[0].ProviderResourceRef, impactRelationships[1].Edges.Aliases[0].ProviderResourceRef)
+	for _, relationship := range impactRelationships {
+		s.Equal("rezible", relationship.Edges.Aliases[0].Provider)
+		s.Empty(relationship.Edges.Aliases[0].ProviderNamespace)
+	}
 
 	queryEvidence := client.KnowledgeEvidence.Query().
 		Where(ke.EventID(event.ID)).
 		WithSubjectAlias()
 	evidence, evidenceErr := queryEvidence.All(ctx)
 	s.Require().NoError(evidenceErr)
-	s.Len(evidence, 3)
+	s.Len(evidence, 7)
 
 	var relationshipEvidence *ent.KnowledgeEvidence
 	for _, item := range evidence {

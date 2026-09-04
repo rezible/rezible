@@ -16,7 +16,6 @@ import (
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	nep "github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/pkg/jobs"
-	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
 	"github.com/riverqueue/river"
@@ -26,9 +25,9 @@ import (
 )
 
 const (
-	pipelineTestProvider    = "test"
-	pipelineTestSource      = "pipeline-test"
-	pipelineTestSubjectKind = projections.SubjectKind("PipelineTestSubject")
+	pipelineTestProvider  = "test"
+	pipelineTestNamespace = "pipeline-account"
+	pipelineTestSource    = "pipeline-test"
 )
 
 type ProviderEventPipelineServiceSuite struct {
@@ -52,13 +51,12 @@ func (s *ProviderEventPipelineServiceSuite) newPipelineService(tdb rez.Database,
 func (s *ProviderEventPipelineServiceSuite) makeTestEvent() rez.ProviderEvent {
 	receivedAt := time.Date(2026, 6, 4, 9, 30, 0, 0, time.UTC)
 	return rez.ProviderEvent{
-		Provider:           pipelineTestProvider,
-		ProviderSource:     pipelineTestSource,
-		ProviderEventRef:   "delivery-" + uuid.NewString(),
-		ProviderSubjectRef: "subject-1",
-		ReceivedAt:         receivedAt,
-		Payload:            []byte(`{"summary":"received"}`),
-		ContentType:        "application/json",
+		Provider:            pipelineTestProvider,
+		ProviderNamespace:   pipelineTestNamespace,
+		ProviderEventSource: pipelineTestSource,
+		ProviderEventRef:    "delivery-" + uuid.NewString(),
+		ReceivedAt:          receivedAt,
+		Attributes:          []byte(`{"summary":"received"}`),
 	}
 }
 
@@ -75,14 +73,14 @@ func (s *ProviderEventPipelineServiceSuite) createPipelineNormalizedEvent(ctx co
 	ev := s.makeTestEvent()
 	normalized, err := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider(ev.Provider).
-		SetProviderSource(ev.ProviderSource).
+		SetProviderNamespace(ev.ProviderNamespace).
+		SetProviderEventSource(ev.ProviderEventSource).
 		SetProviderEventRef("normalized-" + uuid.NewString()).
-		SetProviderSubjectRef(ev.ProviderSubjectRef).
-		SetKind(ne.KindObserved).
-		SetSubjectKind(pipelineTestSubjectKind.String()).
+		SetProviderResourceRef("subject-1").
+		SetKind("pipeline_test").
 		SetOccurredAt(ev.ReceivedAt.Add(-time.Minute)).
 		SetReceivedAt(ev.ReceivedAt).
-		SetAttributes([]byte(fmt.Sprintf(`{"summary": "processed %s"}`, ev.ProviderSubjectRef))).
+		SetAttributes([]byte(`{"summary": "processed subject-1"}`)).
 		Save(ctx)
 	s.Require().NoError(err)
 	return normalized
@@ -138,10 +136,10 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 	normalized, normalizedErr := queryNormalized.Only(ctx)
 	s.Require().NoError(normalizedErr)
 	s.Equal(pipelineTestProvider, normalized.Provider)
-	s.Equal(pipelineTestSource, normalized.ProviderSource)
-	s.Equal(ev.ProviderSubjectRef, normalized.ProviderSubjectRef)
-	s.Equal(ne.KindObserved, normalized.Kind)
-	s.Equal(pipelineTestSubjectKind.String(), normalized.SubjectKind)
+	s.Equal(pipelineTestNamespace, normalized.ProviderNamespace)
+	s.Equal(pipelineTestSource, normalized.ProviderEventSource)
+	s.Equal("subject-1", normalized.ProviderResourceRef)
+	s.Equal("pipeline_test", normalized.Kind)
 	s.Equal(`{"summary": "processed subject-1"}`, string(normalized.Attributes))
 	s.Equal(normalized.ID, capturedProjectArgs.EventId)
 
@@ -164,7 +162,7 @@ func (s *ProviderEventPipelineServiceSuite) TestProcessProviderEventDoesNotReins
 	jobSvc.EXPECT().
 		InsertMany(mock.Anything, mock.Anything).
 		Return([]*rivertype.JobInsertResult{{}}, nil).
-		Twice()
+		Once()
 
 	svc := s.newPipelineService(tdb, jobSvc, nil)
 
@@ -178,6 +176,41 @@ func (s *ProviderEventPipelineServiceSuite) TestProcessProviderEventDoesNotReins
 	count, countErr := queryCount.Count(ctx)
 	s.Require().NoError(countErr)
 	s.Equal(1, count)
+}
+
+func (s *ProviderEventPipelineServiceSuite) TestNormalizedEventIdentityIncludesNamespaceAndResource() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+
+	jobSvc := mocks.NewMockJobService(s.T())
+	jobSvc.EXPECT().
+		InsertMany(mock.Anything, mock.Anything).
+		Run(func(_ context.Context, params []river.InsertManyParams) {
+			s.Len(params, 2)
+		}).
+		Return([]*rivertype.JobInsertResult{{}, {}}, nil).
+		Twice()
+
+	svc := s.newPipelineService(tdb, jobSvc, nil)
+	svc.processors = map[string]rez.ProviderEventProcessor{
+		pipelineTestProvider: multiResourcePipelineProcessor{},
+	}
+	event := s.makeTestEvent()
+	event.ProviderEventRef = "same-delivery"
+
+	processArgs := ProcessProviderEventArgs{Event: event}
+	s.Require().NoError(svc.HandleProcessEventJob(ctx, processArgs))
+
+	otherNamespaceEvent := event
+	otherNamespaceEvent.ProviderNamespace = "another-pipeline-account"
+	otherProcessArgs := ProcessProviderEventArgs{Event: otherNamespaceEvent}
+	s.Require().NoError(svc.HandleProcessEventJob(ctx, otherProcessArgs))
+
+	countQuery := tdb.Client(ctx).NormalizedEvent.Query()
+	countQuery.Where(ne.ProviderEventRef(event.ProviderEventRef))
+	count, countErr := countQuery.Count(ctx)
+	s.Require().NoError(countErr)
+	s.Equal(4, count)
 }
 
 func (s *ProviderEventPipelineServiceSuite) createProjectionResult(ctx context.Context, tdb rez.Database, eventId uuid.UUID) {
@@ -236,7 +269,7 @@ func (s *ProviderEventPipelineServiceSuite) TestRetryableProjectionFailureReturn
 
 	err := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID})
 	s.Require().Error(err)
-	s.True(projections.IsRetryable(err))
+	s.True(jobs.IsRetryableError(err))
 
 	_, projErr := s.getProjection(ctx, tdb, ev.ID)
 	s.True(ent.IsNotFound(projErr))
@@ -253,7 +286,7 @@ func (s *ProviderEventPipelineServiceSuite) TestTransientDatabaseProjectionFailu
 
 	err := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID})
 	s.Require().Error(err)
-	s.True(projections.IsRetryable(err))
+	s.True(jobs.IsRetryableError(err))
 
 	_, projErr := s.getProjection(ctx, tdb, ev.ID)
 	s.True(ent.IsNotFound(projErr))
@@ -308,15 +341,44 @@ type pipelineTestProcessor struct{}
 func (pipelineTestProcessor) ProcessProviderEvent(_ context.Context, ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
 	return ent.NormalizedEvents{
 		{
-			Provider:           ev.Provider,
-			ProviderSource:     ev.ProviderSource,
-			ProviderEventRef:   ev.ProviderEventRef,
-			ProviderSubjectRef: ev.ProviderSubjectRef,
-			Kind:               ne.KindObserved,
-			SubjectKind:        pipelineTestSubjectKind.String(),
-			OccurredAt:         ev.ReceivedAt.Add(-time.Minute),
-			ReceivedAt:         ev.ReceivedAt,
-			Attributes:         []byte(fmt.Sprintf(`{"summary": "processed %s"}`, ev.ProviderSubjectRef)),
+			Provider:            ev.Provider,
+			ProviderNamespace:   ev.ProviderNamespace,
+			ProviderEventSource: ev.ProviderEventSource,
+			ProviderEventRef:    ev.ProviderEventRef,
+			ProviderResourceRef: "subject-1",
+			Kind:                "pipeline_test",
+			OccurredAt:          ev.ReceivedAt.Add(-time.Minute),
+			ReceivedAt:          ev.ReceivedAt,
+			Attributes:          []byte(`{"summary": "processed subject-1"}`),
+		},
+	}, nil
+}
+
+type multiResourcePipelineProcessor struct{}
+
+func (multiResourcePipelineProcessor) ProcessProviderEvent(_ context.Context, ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
+	return ent.NormalizedEvents{
+		{
+			Provider:            ev.Provider,
+			ProviderNamespace:   ev.ProviderNamespace,
+			ProviderEventSource: ev.ProviderEventSource,
+			ProviderEventRef:    ev.ProviderEventRef,
+			ProviderResourceRef: "subject-1",
+			Kind:                "pipeline_test",
+			OccurredAt:          ev.ReceivedAt.Add(-time.Minute),
+			ReceivedAt:          ev.ReceivedAt,
+			Attributes:          []byte(`{"summary": "processed subject-1"}`),
+		},
+		{
+			Provider:            ev.Provider,
+			ProviderNamespace:   ev.ProviderNamespace,
+			ProviderEventSource: ev.ProviderEventSource,
+			ProviderEventRef:    ev.ProviderEventRef,
+			ProviderResourceRef: "subject-2",
+			Kind:                "pipeline_test",
+			OccurredAt:          ev.ReceivedAt.Add(-time.Minute),
+			ReceivedAt:          ev.ReceivedAt,
+			Attributes:          []byte(`{"summary": "processed subject-2"}`),
 		},
 	}, nil
 }
@@ -386,7 +448,7 @@ type retryablePipelineProjector struct{}
 
 func (p *retryablePipelineProjector) GetEventProjectorFunc(*ent.NormalizedEvent) (rez.EventProjectorFunc, bool) {
 	return func(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
-		return nil, projections.Retryable(errors.New("dependency not ready"))
+		return nil, jobs.MarkRetryableError(fmt.Errorf("dependency not ready"))
 	}, true
 }
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/slack-go/slack"
@@ -73,28 +74,31 @@ func (h *appEventHandler) OnEventsApiCallback(ctx context.Context, ev *slackeven
 	innerType := slackevents.EventsAPIType(inner.Type)
 	if h.respondEventTypes.Contains(innerType) {
 		fmt.Printf("handle callback event: %s\n", inner.Type)
-		publishErr := h.messages.Publish(ctx, &handleEventsApiCallbackEvent{
+		cbEv := &handleEventsApiCallbackEvent{
 			IntegrationName: h.integrationName,
 			Data:            data,
-		})
-		if publishErr != nil {
+		}
+		if publishErr := h.messages.Publish(ctx, cbEv); publishErr != nil {
 			return fmt.Errorf("publish callback event: %w", publishErr)
 		}
 	}
-	/*
-		if h.publishProviderEventTypes.Contains(innerType) {
-			pe := rez.ProviderEvent{
-				Provider:           h.integrationName,
-				ProviderSource:     "events_api",
-				ProviderSubjectRef: fmt.Sprintf("slack:event:%s", ev.EventID),
-				ProviderEventRef:   ev.EventID,
-				Payload:            data,
-			}
-			if ingestErr := h.provEvents.Ingest(ctx, pe); ingestErr != nil {
-				return fmt.Errorf("ingest event: %w", ingestErr)
-			}
+	if h.providerEventPipelinePublishEventTypes.Contains(innerType) {
+		namespace := ev.TeamID
+		if namespace == "" {
+			namespace = ev.EnterpriseID
 		}
-	*/
+		pe := rez.ProviderEvent{
+			Provider:            ProviderName,
+			ProviderNamespace:   namespace,
+			ProviderEventSource: "events_api",
+			ProviderEventRef:    ev.EventID,
+			Attributes:          data,
+			ReceivedAt:          time.Now().UTC(),
+		}
+		if ingestErr := h.eventPipeline.Ingest(ctx, pe); ingestErr != nil {
+			return fmt.Errorf("ingest event: %w", ingestErr)
+		}
+	}
 	return nil
 }
 

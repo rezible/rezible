@@ -1,6 +1,8 @@
 package projections
 
 import (
+	"crypto/sha256"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,30 +11,15 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 )
 
 type Event[T any] struct {
 	Event      *ent.NormalizedEvent
 	Attributes T
-}
-
-type EventDisplay struct {
-	Title       string
-	Description string
-}
-
-func GetEventDisplay(ev *ent.NormalizedEvent) (*EventDisplay, error) {
-	if ev == nil {
-		return nil, fmt.Errorf("normalized event is nil")
-	}
-	// TODO: actually convert
-	disp := &EventDisplay{
-		Title:       "TODO",
-		Description: "",
-	}
-	return disp, nil
 }
 
 func EncodeAttributes[A any](attrs A) ([]byte, error) {
@@ -46,7 +33,7 @@ func EncodeAttributes[A any](attrs A) ([]byte, error) {
 	return attrBytes, nil
 }
 
-func DecodeSubjectAttributes[A any](ev *ent.NormalizedEvent) (*Event[A], error) {
+func DecodeEventAttributes[A any](ev *ent.NormalizedEvent) (*Event[A], error) {
 	if ev == nil {
 		return nil, fmt.Errorf("normalized event is nil")
 	}
@@ -61,19 +48,6 @@ func DecodeSubjectAttributes[A any](ev *ent.NormalizedEvent) (*Event[A], error) 
 }
 
 var attributeValidator = newProjectionValidator()
-
-var ErrRetryableProjection = errors.New("retryable projection failure")
-
-func Retryable(err error) error {
-	if err == nil {
-		return ErrRetryableProjection
-	}
-	return fmt.Errorf("%w: %w", ErrRetryableProjection, err)
-}
-
-func IsRetryable(err error) bool {
-	return errors.Is(err, ErrRetryableProjection)
-}
 
 func newProjectionValidator() *validator.Validate {
 	validate := validator.New(validator.WithRequiredStructEnabled())
@@ -100,18 +74,26 @@ func validateAttributes[A any](attrs A) error {
 	return nil
 }
 
-type RelatedEntityRef struct {
-	ExternalRef string       `json:"external_ref" validate:"required"`
-	Category    kne.Category `json:"category" validate:"required"`
-	Kind        string       `json:"kind" validate:"required"`
-	DisplayName string       `json:"display_name" validate:"required"`
+type EntityObservation struct {
+	Ref         rez.ProviderResourceRef `json:"ref" validate:"required"`
+	Category    kne.Category            `json:"category" validate:"required"`
+	Kind        string                  `json:"kind" validate:"required"`
+	DisplayName string                  `json:"display_name" validate:"required"`
+	Description string                  `json:"description,omitempty"`
+	Properties  map[string]any          `json:"properties,omitempty"`
 }
 
-func SortRelatedEntityRefs(refs []RelatedEntityRef) []RelatedEntityRef {
-	sortedRefs := append([]RelatedEntityRef(nil), refs...)
-	slices.SortStableFunc(sortedRefs, func(left, right RelatedEntityRef) int {
-		if left.ExternalRef != right.ExternalRef {
-			return strings.Compare(left.ExternalRef, right.ExternalRef)
+func SortEntityObservations(observations []EntityObservation) []EntityObservation {
+	sorted := append([]EntityObservation(nil), observations...)
+	slices.SortStableFunc(sorted, func(left, right EntityObservation) int {
+		if left.Ref.Provider != right.Ref.Provider {
+			return strings.Compare(left.Ref.Provider, right.Ref.Provider)
+		}
+		if left.Ref.ProviderNamespace != right.Ref.ProviderNamespace {
+			return strings.Compare(left.Ref.ProviderNamespace, right.Ref.ProviderNamespace)
+		}
+		if left.Ref.ResourceRef != right.Ref.ResourceRef {
+			return strings.Compare(left.Ref.ResourceRef, right.Ref.ResourceRef)
 		}
 		if left.Category != right.Category {
 			return strings.Compare(left.Category.String(), right.Category.String())
@@ -121,5 +103,29 @@ func SortRelatedEntityRefs(refs []RelatedEntityRef) []RelatedEntityRef {
 		}
 		return strings.Compare(left.DisplayName, right.DisplayName)
 	})
-	return sortedRefs
+	return sorted
+}
+
+func DerivedRelationshipRef(predicate knr.Predicate, source, target rez.ProviderResourceRef) rez.ProviderResourceRef {
+	digest := sha256.New()
+	writeString := func(value string) {
+		var length [8]byte
+		binary.BigEndian.PutUint64(length[:], uint64(len(value)))
+		digest.Write(length[:])
+		digest.Write([]byte(value))
+	}
+
+	writeString("relationship:v1")
+	writeString(predicate.String())
+	writeString(source.Provider)
+	writeString(source.ProviderNamespace)
+	writeString(source.ResourceRef)
+	writeString(target.Provider)
+	writeString(target.ProviderNamespace)
+	writeString(target.ResourceRef)
+
+	return rez.ProviderResourceRef{
+		Provider:    "rezible",
+		ResourceRef: fmt.Sprintf("relationship:v1:%x", digest.Sum(nil)),
+	}
 }

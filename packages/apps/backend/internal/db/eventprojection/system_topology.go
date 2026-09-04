@@ -13,6 +13,7 @@ import (
 
 const (
 	knowledgeAssertionSystemComponentExists    = "system_component_exists"
+	knowledgeAssertionSystemEndpointObserved   = "system_relationship_endpoint_observed"
 	knowledgeAssertionSystemRelationshipExists = "system_relationship_exists"
 )
 
@@ -24,6 +25,16 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, e *p
 	maps.Copy(properties, attrs.Properties)
 	properties["component_kind"] = attrs.Kind
 
+	componentResourceRef := rez.ProviderResourceRef{
+		Provider:          event.Provider,
+		ProviderNamespace: event.ProviderNamespace,
+		ResourceRef:       event.ProviderResourceRef,
+	}
+	componentEntityRef := ent.KnowledgeEntityRef{
+		Category:            attrs.Category,
+		Kind:                attrs.Kind,
+		ProviderResourceRef: componentResourceRef,
+	}
 	evidence := ent.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event),
 		Assertion:   knowledgeAssertionSystemComponentExists,
@@ -33,11 +44,7 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, e *p
 			Description: attrs.Description,
 			Properties:  properties,
 		},
-		SubjectEntity: &ent.KnowledgeEntityRef{
-			Category:        attrs.Category,
-			Kind:            attrs.Kind,
-			SubjectAliasRef: event.KnowledgeSubjectAliasRef(),
-		},
+		SubjectEntity: &componentEntityRef,
 	}
 
 	if ingestErr := s.knowledge.IngestEvidence(ctx, event, evidence); ingestErr != nil {
@@ -51,42 +58,63 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 	attrs := e.Attributes
 
 	sourceEntityRef := ent.KnowledgeEntityRef{
-		Category: attrs.SourceCategory,
-		Kind:     attrs.SourceKind,
-		SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
-			Provider:           event.Provider,
-			ProviderSource:     event.ProviderSource,
-			ProviderSubjectRef: attrs.SourceExternalRef,
-		},
+		Category:            attrs.Source.Category,
+		Kind:                attrs.Source.Kind,
+		ProviderResourceRef: attrs.Source.Ref,
 	}
 
 	targetEntityRef := ent.KnowledgeEntityRef{
-		Category: attrs.TargetCategory,
-		Kind:     attrs.TargetKind,
-		SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
-			Provider:           event.Provider,
-			ProviderSource:     event.ProviderSource,
-			ProviderSubjectRef: attrs.TargetExternalRef,
+		Category:            attrs.Target.Category,
+		Kind:                attrs.Target.Kind,
+		ProviderResourceRef: attrs.Target.Ref,
+	}
+	evidenceKind := projectionEvidenceKind(event)
+	sourceEvidenceRef := ent.KnowledgeEvidenceRef{
+		Kind:        evidenceKind,
+		Assertion:   knowledgeAssertionSystemEndpointObserved,
+		EffectiveAt: event.OccurredAt,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
+			DisplayName: attrs.Source.DisplayName,
+			Description: attrs.Source.Description,
+			Properties:  attrs.Source.Properties,
 		},
+		SubjectEntity: &sourceEntityRef,
+	}
+	targetEvidenceRef := ent.KnowledgeEvidenceRef{
+		Kind:        evidenceKind,
+		Assertion:   knowledgeAssertionSystemEndpointObserved,
+		EffectiveAt: event.OccurredAt,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
+			DisplayName: attrs.Target.DisplayName,
+			Description: attrs.Target.Description,
+			Properties:  attrs.Target.Properties,
+		},
+		SubjectEntity: &targetEntityRef,
 	}
 
+	relationshipResourceRef := rez.ProviderResourceRef{
+		Provider:          event.Provider,
+		ProviderNamespace: event.ProviderNamespace,
+		ResourceRef:       event.ProviderResourceRef,
+	}
+	relationshipRef := ent.KnowledgeRelationshipRef{
+		Predicate:           attrs.Predicate,
+		ProviderResourceRef: relationshipResourceRef,
+		Source:              sourceEntityRef,
+		Target:              targetEntityRef,
+	}
 	relationshipEvidenceRef := ent.KnowledgeEvidenceRef{
-		Kind:        projectionEvidenceKind(event),
-		Assertion:   knowledgeAssertionSystemRelationshipExists,
-		EffectiveAt: event.OccurredAt,
-		SubjectRelationship: &ent.KnowledgeRelationshipRef{
-			Predicate:       attrs.Predicate,
-			SubjectAliasRef: event.KnowledgeSubjectAliasRef(),
-			Source:          sourceEntityRef,
-			Target:          targetEntityRef,
-		},
+		Kind:                evidenceKind,
+		Assertion:           knowledgeAssertionSystemRelationshipExists,
+		EffectiveAt:         event.OccurredAt,
+		SubjectRelationship: &relationshipRef,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.DisplayName,
 			Description: attrs.Description,
 			Properties:  attrs.Properties,
 		},
 	}
-	if ingestErr := s.knowledge.IngestEvidence(ctx, event, relationshipEvidenceRef); ingestErr != nil {
+	if ingestErr := s.knowledge.IngestEvidence(ctx, event, sourceEvidenceRef, targetEvidenceRef, relationshipEvidenceRef); ingestErr != nil {
 		return nil, fmt.Errorf("ingest system relationship evidence: %w", ingestErr)
 	}
 	return nil, nil

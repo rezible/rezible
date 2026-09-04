@@ -99,6 +99,10 @@ func (i *InstallationConfig) Encode() ([]byte, error) {
 	return json.Marshal(i)
 }
 
-func (i *InstallationConfig) ExternalRef() string {
-	return "demo"
+func (i *InstallationConfig) InstallationTargetRef() rez.ProviderResourceRef {
+	return rez.ProviderResourceRef{
+		Provider:          providerName,
+		ProviderNamespace: integrationName,
+		ResourceRef:       "demo",
+	}
 }

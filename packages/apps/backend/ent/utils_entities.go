@@ -2,14 +2,13 @@ package ent
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/firebase/genkit/go/ai"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	kev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
-	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	vc "github.com/rezible/rezible/ent/videoconference"
 )
@@ -58,43 +57,24 @@ func (ie IncidentEdges) GetPrimaryVideoConference() *VideoConference {
 	return VideoConferences(conferences).GetPrimary()
 }
 
-func (ev *NormalizedEvent) KnowledgeSubjectAliasRef() KnowledgeSubjectAliasRef {
-	return KnowledgeSubjectAliasRef{
-		Provider:           ev.Provider,
-		ProviderSource:     ev.ProviderSource,
-		ProviderSubjectRef: ev.ProviderSubjectRef,
-	}
-}
-
-type KnowledgeSubjectAliasRef struct {
-	Provider           string
-	ProviderSource     string
-	ProviderSubjectRef string
-}
-
-func (a KnowledgeSubjectAliasRef) ResourcePredicate() predicate.KnowledgeSubjectAlias {
-	return ksa.And(
-		ksa.Provider(a.Provider),
-		ksa.ProviderSource(a.ProviderSource),
-		ksa.ProviderSubjectRef(a.ProviderSubjectRef))
-}
-
-func (a KnowledgeSubjectAliasRef) LockKey() string {
-	return fmt.Sprintf("%s:%s:%s", a.Provider, a.ProviderSource, a.ProviderSubjectRef)
-}
-
 type (
+	ProviderResourceRef struct {
+		Provider          string `json:"provider"`
+		ProviderNamespace string `json:"provider_namespace"`
+		ResourceRef       string `json:"resource_ref"`
+	}
+
 	KnowledgeEntityRef struct {
-		Category        kne.Category
-		Kind            string
-		SubjectAliasRef KnowledgeSubjectAliasRef
+		Category            kne.Category
+		Kind                string
+		ProviderResourceRef ProviderResourceRef
 	}
 
 	KnowledgeRelationshipRef struct {
-		Predicate       knr.Predicate
-		SubjectAliasRef KnowledgeSubjectAliasRef
-		Source          KnowledgeEntityRef
-		Target          KnowledgeEntityRef
+		Predicate           knr.Predicate
+		ProviderResourceRef ProviderResourceRef
+		Source              KnowledgeEntityRef
+		Target              KnowledgeEntityRef
 	}
 
 	KnowledgeEvidenceRef struct {
@@ -106,6 +86,19 @@ type (
 		SubjectRelationship *KnowledgeRelationshipRef
 	}
 )
+
+func (ref ProviderResourceRef) Validate() error {
+	if strings.TrimSpace(ref.Provider) == "" {
+		return fmt.Errorf("provider is required")
+	}
+	if strings.TrimSpace(ref.ResourceRef) == "" {
+		return fmt.Errorf("resource_ref is required")
+	}
+	if ref.Provider != "rezible" && strings.TrimSpace(ref.ProviderNamespace) == "" {
+		return fmt.Errorf("provider_namespace is required for provider %q", ref.Provider)
+	}
+	return nil
+}
 
 func (aliases KnowledgeSubjectAliasSlice) LatestEvidence() *KnowledgeEvidence {
 	var latest *KnowledgeEvidence

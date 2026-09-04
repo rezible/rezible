@@ -119,7 +119,7 @@ func (s *EventsService) createAnnotation(ctx context.Context, anno *ent.EventAnn
 	eventId := anno.EventID
 	if eventId == uuid.Nil && anno.Edges.Event != nil {
 		eventQuery := s.db.Client(ctx).NormalizedEvent.Query().
-			Where(ne.ProviderSubjectRef(anno.Edges.Event.ProviderSubjectRef))
+			Where(ne.ProviderResourceRef(anno.Edges.Event.ProviderResourceRef))
 		existingId, eventErr := eventQuery.OnlyID(ctx)
 		if eventErr != nil && !ent.IsNotFound(eventErr) {
 			return nil, fmt.Errorf("failed to check for existing oncall event: %w", eventErr)

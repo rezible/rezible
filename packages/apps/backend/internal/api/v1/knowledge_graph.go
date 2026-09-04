@@ -7,10 +7,8 @@ import (
 
 	rez "github.com/rezible/rezible"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
-	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	kr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -42,11 +40,8 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphEntities(ctx context.Context, 
 	if request.Provider != "" {
 		preds = append(preds, kne.HasAliasesWith(ksa.Provider(request.Provider)))
 	}
-	if request.ProviderSource != "" {
-		preds = append(preds, kne.HasAliasesWith(ksa.HasEvidenceWith(knev.HasEventWith(ne.ProviderSource(request.ProviderSource)))))
-	}
-	if request.SubjectKind != "" {
-		preds = append(preds, kne.HasAliasesWith(ksa.HasEvidenceWith(knev.HasEventWith(ne.SubjectKind(request.SubjectKind)))))
+	if request.ProviderNamespace != "" {
+		preds = append(preds, kne.HasAliasesWith(ksa.ProviderNamespace(request.ProviderNamespace)))
 	}
 	listParams := request.ListParams()
 	listParams.Search = request.Search

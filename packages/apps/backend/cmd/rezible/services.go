@@ -127,7 +127,11 @@ func getServiceLifecyclesFor[Entrypoint rez.LifecycleService](i do.Injector) (se
 				return fmt.Errorf("failed to register integration package: %w", regErr)
 			}
 			if procPkg, isEventProcessor := pkg.(rez.ProviderEventProcessor); isEventProcessor {
-				eventProcessors[pkg.Name()] = procPkg
+				provider := pkg.Provider()
+				if _, exists := eventProcessors[provider]; exists {
+					return fmt.Errorf("failed to register event processor for provider %q: provider already registered", provider)
+				}
+				eventProcessors[provider] = procPkg
 			}
 			return nil
 		},

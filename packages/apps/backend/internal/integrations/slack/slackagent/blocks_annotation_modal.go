@@ -31,7 +31,7 @@ func (a *App) makeAnnotationModalView(ctx context.Context, meta *annotationModal
 	}
 
 	lookupAnno := ea.And(
-		ea.HasEventWith(ne.ProviderSubjectRef(meta.MsgId.String())),
+		ea.HasEventWith(ne.ProviderResourceRef("message:"+meta.MsgId.String())),
 		ea.CreatorID(userId))
 
 	curr, currErr := a.events.QueryAnnotation(ctx, lookupAnno)
@@ -91,7 +91,7 @@ func (a *App) getAnnotationModalAnnotation(ctx context.Context, view slack.View)
 
 	// TODO: convert this from event processor?
 	ev := &ent.NormalizedEvent{
-		ProviderSubjectRef: meta.MsgId.String(),
+		ProviderResourceRef: "message:" + meta.MsgId.String(),
 		//Kind:        "message",
 		//Timestamp:   meta.MsgId.getTimestamp(),
 		//Source:      "slack",

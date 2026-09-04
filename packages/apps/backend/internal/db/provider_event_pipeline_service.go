@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	stdsql "database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -50,16 +51,8 @@ func (s *ProviderEventPipelineService) Ingest(ctx context.Context, ev rez.Provid
 }
 
 func (s *ProviderEventPipelineService) queueIngest(ctx context.Context, ev rez.ProviderEvent) (bool, error) {
-	if ev.Provider == "" {
-		return false, fmt.Errorf("event provider is required")
-	} else if ev.ProviderSource == "" {
-		return false, fmt.Errorf("event provider_source is required")
-	} else if ev.ProviderSubjectRef == "" {
-		return false, fmt.Errorf("event subject_ref is required")
-	} else if len(ev.Payload) == 0 {
-		return false, fmt.Errorf("event payload is required")
-	} else if ev.ProviderEventRef == "" {
-		return false, fmt.Errorf("event provider_delivery_ref is required")
+	if err := s.validateProviderEvent(ev); err != nil {
+		return false, err
 	}
 
 	args := ProcessProviderEventArgs{Event: ev}
@@ -71,7 +64,7 @@ func (s *ProviderEventPipelineService) queueIngest(ctx context.Context, ev rez.P
 	return jobRes.UniqueSkippedAsDuplicate, nil
 }
 
-func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier rez.ProviderEventQuerier, sourceCursors rez.ProviderEventQuerySourceCursors) rez.ProviderEventSyncResult {
+func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier rez.ProviderEventQuerier, sourceCursors rez.ProviderEventSourceCursors) rez.ProviderEventSyncResult {
 	res := rez.ProviderEventSyncResult{
 		SourceCursorsAfter:  sourceCursors,
 		SourceSyncDurations: make(map[string]time.Duration),
@@ -106,8 +99,8 @@ func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier r
 			}
 			if i < len(batch) {
 				batchItem := batch[i]
-				if batchItem.SourceCursorAfter != nil {
-					res.SourceCursorsAfter[batchItem.Event.ProviderSource] = *batchItem.SourceCursorAfter
+				if batchItem.ProviderEventSourceCursorAfter != nil {
+					res.SourceCursorsAfter[batchItem.Event.ProviderEventSource] = *batchItem.ProviderEventSourceCursorAfter
 				}
 			}
 		}
@@ -122,6 +115,10 @@ func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier r
 		if result == nil {
 			break
 		}
+		if eventErr := s.validateProviderEvent(result.Event); eventErr != nil {
+			res.SyncErrors = append(res.SyncErrors, eventErr)
+			break
+		}
 		res.EventsPulled++
 		batch = append(batch, *result)
 		if len(batch) >= batchSize {
@@ -130,12 +127,36 @@ func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier r
 			}
 			batch = make([]rez.ProviderEventQueryResult, 0, batchSize)
 		}
-		if result.SourceCursorAfter == nil {
+		if result.ProviderEventSourceCursorAfter == nil {
 			break
 		}
 	}
 	flushBatch()
 	return res
+}
+
+func (s *ProviderEventPipelineService) validateProviderEvent(ev rez.ProviderEvent) error {
+	eventRef := rez.ProviderResourceRef{
+		Provider:          ev.Provider,
+		ProviderNamespace: ev.ProviderNamespace,
+		ResourceRef:       "event",
+	}
+	if refErr := eventRef.Validate(); refErr != nil {
+		return fmt.Errorf("invalid event provider identity: %w", refErr)
+	}
+	if ev.ProviderEventSource == "" {
+		return fmt.Errorf("event provider_event_source is required")
+	}
+	if len(ev.Attributes) == 0 {
+		return fmt.Errorf("event attributes are required")
+	}
+	if ev.ProviderEventRef == "" {
+		return fmt.Errorf("event provider_event_ref is required")
+	}
+	if ev.ReceivedAt.IsZero() {
+		return fmt.Errorf("event received_at is required")
+	}
+	return nil
 }
 
 type processProviderEventResult struct {
@@ -151,7 +172,7 @@ func (s *ProviderEventPipelineService) processProviderEvent(ctx context.Context,
 
 	proc, ok := s.processors[prov.Provider]
 	if !ok {
-		res.error = fmt.Errorf("no event processors registered for provider '%s'", prov.Provider)
+		res.error = fmt.Errorf("no event processor registered for provider '%s'", prov.Provider)
 		return res
 	}
 
@@ -173,47 +194,45 @@ func (s *ProviderEventPipelineService) processProviderEvent(ctx context.Context,
 	return res
 }
 
-var normalizedEventUniqueColumns = sql.ConflictColumns(
-	ne.FieldTenantID,
-	ne.FieldProvider,
-	ne.FieldProviderSource,
-	ne.FieldProviderEventRef,
-	ne.FieldProviderSubjectRef,
-)
-
 func (s *ProviderEventPipelineService) saveNormalizedEvents(ctx context.Context, evts ent.NormalizedEvents) error {
 	if len(evts) == 0 {
 		return nil
 	}
 
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		ids := make([]uuid.UUID, len(evts))
-		for i, ev := range evts {
-			ids[i] = ev.ID
-			if ids[i] == uuid.Nil {
-				ids[i] = uuid.New()
+		ids := make([]uuid.UUID, 0, len(evts))
+		for _, ev := range evts {
+			id := ev.ID
+			if id == uuid.Nil {
+				id = uuid.New()
 			}
-		}
-
-		insertBulk := tx.NormalizedEvent.MapCreateBulk(evts, func(c *ent.NormalizedEventCreate, i int) {
-			ev := evts[i]
-			c.SetID(ids[i]).
-				SetProvider(ev.Provider).
-				SetProviderSource(ev.ProviderSource).
-				SetProviderEventRef(ev.ProviderEventRef).
+			create := tx.NormalizedEvent.Create().
+				SetID(id).
 				SetKind(ev.Kind).
-				SetSubjectKind(ev.SubjectKind).
-				SetProviderSubjectRef(ev.ProviderSubjectRef).
+				SetProvider(ev.Provider).
+				SetProviderNamespace(ev.ProviderNamespace).
+				SetProviderResourceRef(ev.ProviderResourceRef).
+				SetProviderEventSource(ev.ProviderEventSource).
+				SetProviderEventRef(ev.ProviderEventRef).
 				SetOccurredAt(ev.OccurredAt).
 				SetReceivedAt(ev.ReceivedAt).
 				SetAttributes(ev.Attributes)
-		})
-
-		insertBulk.OnConflict(normalizedEventUniqueColumns).
-			DoNothing()
-
-		if insertErr := insertBulk.Exec(ctx); insertErr != nil {
-			return fmt.Errorf("insert normalized events: %w", insertErr)
+			insert := create.OnConflict(sql.ConflictColumns(
+				ne.FieldTenantID,
+				ne.FieldProvider,
+				ne.FieldProviderNamespace,
+				ne.FieldProviderEventSource,
+				ne.FieldProviderEventRef,
+				ne.FieldProviderResourceRef,
+			)).DoNothing()
+			_, insertErr := insert.ID(ctx)
+			if insertErr != nil {
+				if errors.Is(insertErr, stdsql.ErrNoRows) {
+					continue
+				}
+				return fmt.Errorf("insert normalized event: %w", insertErr)
+			}
+			ids = append(ids, id)
 		}
 
 		if len(ids) > 0 {
@@ -223,17 +242,11 @@ func (s *ProviderEventPipelineService) saveNormalizedEvents(ctx context.Context,
 					Args: jobs.ProjectNormalizedEvent{EventId: id},
 				}
 			}
-			res, jobErr := s.jobs.InsertMany(ctx, params)
+			_, jobErr := s.jobs.InsertMany(ctx, params)
 			if jobErr != nil {
 				return fmt.Errorf("inserting project events: %w", jobErr)
 			}
-			dups := 0
-			for _, r := range res {
-				if r.UniqueSkippedAsDuplicate {
-					dups++
-				}
-			}
-			slog.Debug("inserted projection jobs", "duplicates", dups, "new", len(ids)-dups)
+			slog.Debug("inserted projection jobs", "new", len(ids))
 		}
 		return nil
 	})
@@ -336,14 +349,14 @@ func (m *providerEventTelemetry) recordIngested(ctx context.Context, ev rez.Prov
 	}
 	m.ingested.Add(ctx, 1, metric.WithAttributes(
 		attribute.String("provider", ev.Provider),
-		attribute.String("provider_source", ev.ProviderSource),
+		attribute.String("provider_event_source", ev.ProviderEventSource),
 		attribute.Bool("success", err == nil),
 		attribute.Bool("duplicate", duplicate),
 	))
 	if duplicate {
 		m.logger.Info("skipped ingesting duplicate provider event",
 			"provider", ev.Provider,
-			"source", ev.ProviderSource,
+			"provider_event_source", ev.ProviderEventSource,
 		)
 	}
 }
@@ -355,7 +368,7 @@ func (m *providerEventTelemetry) recordProcessed(ctx context.Context, ev rez.Pro
 
 	attrs := []attribute.KeyValue{
 		attribute.String("provider", ev.Provider),
-		attribute.String("provider_source", ev.ProviderSource),
+		attribute.String("provider_event_source", ev.ProviderEventSource),
 		attribute.Bool("success", res.error == nil),
 		attribute.Bool("process_success", res.processSuccess),
 	}
@@ -363,8 +376,7 @@ func (m *providerEventTelemetry) recordProcessed(ctx context.Context, ev rez.Pro
 
 	logAttrs := []slog.Attr{
 		slog.Any("provider", ev.Provider),
-		slog.Any("source", ev.ProviderSource),
-		slog.Any("subject_ref", ev.ProviderSubjectRef),
+		slog.Any("provider_event_source", ev.ProviderEventSource),
 		slog.Any("error", res.error),
 	}
 	if res.error == nil {

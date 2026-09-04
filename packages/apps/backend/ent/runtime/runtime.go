@@ -210,6 +210,8 @@ func init() {
 	}
 	agentsessionbindingMixinFields2 := agentsessionbindingMixin[2].Fields()
 	_ = agentsessionbindingMixinFields2
+	agentsessionbindingMixinFields3 := agentsessionbindingMixin[3].Fields()
+	_ = agentsessionbindingMixinFields3
 	agentsessionbindingFields := schema.AgentSessionBinding{}.Fields()
 	_ = agentsessionbindingFields
 	// agentsessionbindingDescCreatedAt is the schema descriptor for created_at field.
@@ -222,18 +224,14 @@ func init() {
 	agentsessionbinding.DefaultUpdatedAt = agentsessionbindingDescUpdatedAt.Default.(func() time.Time)
 	// agentsessionbinding.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentsessionbinding.UpdateDefaultUpdatedAt = agentsessionbindingDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// agentsessionbindingDescSource is the schema descriptor for source field.
-	agentsessionbindingDescSource := agentsessionbindingFields[3].Descriptor()
-	// agentsessionbinding.SourceValidator is a validator for the "source" field. It is called by the builders before save.
-	agentsessionbinding.SourceValidator = agentsessionbindingDescSource.Validators[0].(func(string) error)
-	// agentsessionbindingDescResourceKind is the schema descriptor for resource_kind field.
-	agentsessionbindingDescResourceKind := agentsessionbindingFields[4].Descriptor()
-	// agentsessionbinding.ResourceKindValidator is a validator for the "resource_kind" field. It is called by the builders before save.
-	agentsessionbinding.ResourceKindValidator = agentsessionbindingDescResourceKind.Validators[0].(func(string) error)
-	// agentsessionbindingDescResourceRef is the schema descriptor for resource_ref field.
-	agentsessionbindingDescResourceRef := agentsessionbindingFields[5].Descriptor()
-	// agentsessionbinding.ResourceRefValidator is a validator for the "resource_ref" field. It is called by the builders before save.
-	agentsessionbinding.ResourceRefValidator = agentsessionbindingDescResourceRef.Validators[0].(func(string) error)
+	// agentsessionbindingDescProvider is the schema descriptor for provider field.
+	agentsessionbindingDescProvider := agentsessionbindingMixinFields3[0].Descriptor()
+	// agentsessionbinding.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
+	agentsessionbinding.ProviderValidator = agentsessionbindingDescProvider.Validators[0].(func(string) error)
+	// agentsessionbindingDescProviderResourceRef is the schema descriptor for provider_resource_ref field.
+	agentsessionbindingDescProviderResourceRef := agentsessionbindingMixinFields3[2].Descriptor()
+	// agentsessionbinding.ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
+	agentsessionbinding.ProviderResourceRefValidator = agentsessionbindingDescProviderResourceRef.Validators[0].(func(string) error)
 	// agentsessionbindingDescID is the schema descriptor for id field.
 	agentsessionbindingDescID := agentsessionbindingFields[0].Descriptor()
 	// agentsessionbinding.DefaultID holds the default value on creation for the id field.
@@ -760,6 +758,18 @@ func init() {
 	integration.DefaultUpdatedAt = integrationDescUpdatedAt.Default.(func() time.Time)
 	// integration.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	integration.UpdateDefaultUpdatedAt = integrationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// integrationDescProvider is the schema descriptor for provider field.
+	integrationDescProvider := integrationFields[1].Descriptor()
+	// integration.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
+	integration.ProviderValidator = integrationDescProvider.Validators[0].(func(string) error)
+	// integrationDescName is the schema descriptor for name field.
+	integrationDescName := integrationFields[2].Descriptor()
+	// integration.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	integration.NameValidator = integrationDescName.Validators[0].(func(string) error)
+	// integrationDescProviderInstallationRef is the schema descriptor for provider_installation_ref field.
+	integrationDescProviderInstallationRef := integrationFields[4].Descriptor()
+	// integration.ProviderInstallationRefValidator is a validator for the "provider_installation_ref" field. It is called by the builders before save.
+	integration.ProviderInstallationRefValidator = integrationDescProviderInstallationRef.Validators[0].(func(string) error)
 	// integrationDescUserSettings is the schema descriptor for user_settings field.
 	integrationDescUserSettings := integrationFields[6].Descriptor()
 	// integration.DefaultUserSettings holds the default value on creation for the user_settings field.
@@ -792,10 +802,10 @@ func init() {
 	integrationeventsynccursor.DefaultUpdatedAt = integrationeventsynccursorDescUpdatedAt.Default.(func() time.Time)
 	// integrationeventsynccursor.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	integrationeventsynccursor.UpdateDefaultUpdatedAt = integrationeventsynccursorDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// integrationeventsynccursorDescProviderSource is the schema descriptor for provider_source field.
-	integrationeventsynccursorDescProviderSource := integrationeventsynccursorFields[2].Descriptor()
-	// integrationeventsynccursor.ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
-	integrationeventsynccursor.ProviderSourceValidator = integrationeventsynccursorDescProviderSource.Validators[0].(func(string) error)
+	// integrationeventsynccursorDescProviderEventSource is the schema descriptor for provider_event_source field.
+	integrationeventsynccursorDescProviderEventSource := integrationeventsynccursorFields[2].Descriptor()
+	// integrationeventsynccursor.ProviderEventSourceValidator is a validator for the "provider_event_source" field. It is called by the builders before save.
+	integrationeventsynccursor.ProviderEventSourceValidator = integrationeventsynccursorDescProviderEventSource.Validators[0].(func(string) error)
 	// integrationeventsynccursorDescLastSyncedAt is the schema descriptor for last_synced_at field.
 	integrationeventsynccursorDescLastSyncedAt := integrationeventsynccursorFields[4].Descriptor()
 	// integrationeventsynccursor.DefaultLastSyncedAt holds the default value on creation for the last_synced_at field.
@@ -954,20 +964,18 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	knowledgesubjectaliasMixinFields2 := knowledgesubjectaliasMixin[2].Fields()
+	_ = knowledgesubjectaliasMixinFields2
 	knowledgesubjectaliasFields := schema.KnowledgeSubjectAlias{}.Fields()
 	_ = knowledgesubjectaliasFields
 	// knowledgesubjectaliasDescProvider is the schema descriptor for provider field.
-	knowledgesubjectaliasDescProvider := knowledgesubjectaliasFields[2].Descriptor()
+	knowledgesubjectaliasDescProvider := knowledgesubjectaliasMixinFields2[0].Descriptor()
 	// knowledgesubjectalias.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	knowledgesubjectalias.ProviderValidator = knowledgesubjectaliasDescProvider.Validators[0].(func(string) error)
-	// knowledgesubjectaliasDescProviderSource is the schema descriptor for provider_source field.
-	knowledgesubjectaliasDescProviderSource := knowledgesubjectaliasFields[3].Descriptor()
-	// knowledgesubjectalias.ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
-	knowledgesubjectalias.ProviderSourceValidator = knowledgesubjectaliasDescProviderSource.Validators[0].(func(string) error)
-	// knowledgesubjectaliasDescProviderSubjectRef is the schema descriptor for provider_subject_ref field.
-	knowledgesubjectaliasDescProviderSubjectRef := knowledgesubjectaliasFields[4].Descriptor()
-	// knowledgesubjectalias.ProviderSubjectRefValidator is a validator for the "provider_subject_ref" field. It is called by the builders before save.
-	knowledgesubjectalias.ProviderSubjectRefValidator = knowledgesubjectaliasDescProviderSubjectRef.Validators[0].(func(string) error)
+	// knowledgesubjectaliasDescProviderResourceRef is the schema descriptor for provider_resource_ref field.
+	knowledgesubjectaliasDescProviderResourceRef := knowledgesubjectaliasMixinFields2[2].Descriptor()
+	// knowledgesubjectalias.ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
+	knowledgesubjectalias.ProviderResourceRefValidator = knowledgesubjectaliasDescProviderResourceRef.Validators[0].(func(string) error)
 	// knowledgesubjectaliasDescID is the schema descriptor for id field.
 	knowledgesubjectaliasDescID := knowledgesubjectaliasFields[0].Descriptor()
 	// knowledgesubjectalias.DefaultID holds the default value on creation for the id field.
@@ -1031,26 +1039,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	normalizedeventMixinFields2 := normalizedeventMixin[2].Fields()
+	_ = normalizedeventMixinFields2
 	normalizedeventFields := schema.NormalizedEvent{}.Fields()
 	_ = normalizedeventFields
 	// normalizedeventDescProvider is the schema descriptor for provider field.
-	normalizedeventDescProvider := normalizedeventFields[2].Descriptor()
+	normalizedeventDescProvider := normalizedeventMixinFields2[0].Descriptor()
 	// normalizedevent.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	normalizedevent.ProviderValidator = normalizedeventDescProvider.Validators[0].(func(string) error)
-	// normalizedeventDescProviderSource is the schema descriptor for provider_source field.
-	normalizedeventDescProviderSource := normalizedeventFields[3].Descriptor()
-	// normalizedevent.ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
-	normalizedevent.ProviderSourceValidator = normalizedeventDescProviderSource.Validators[0].(func(string) error)
+	// normalizedeventDescProviderResourceRef is the schema descriptor for provider_resource_ref field.
+	normalizedeventDescProviderResourceRef := normalizedeventMixinFields2[2].Descriptor()
+	// normalizedevent.ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
+	normalizedevent.ProviderResourceRefValidator = normalizedeventDescProviderResourceRef.Validators[0].(func(string) error)
+	// normalizedeventDescKind is the schema descriptor for kind field.
+	normalizedeventDescKind := normalizedeventFields[2].Descriptor()
+	// normalizedevent.KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	normalizedevent.KindValidator = normalizedeventDescKind.Validators[0].(func(string) error)
+	// normalizedeventDescProviderEventSource is the schema descriptor for provider_event_source field.
+	normalizedeventDescProviderEventSource := normalizedeventFields[3].Descriptor()
+	// normalizedevent.ProviderEventSourceValidator is a validator for the "provider_event_source" field. It is called by the builders before save.
+	normalizedevent.ProviderEventSourceValidator = normalizedeventDescProviderEventSource.Validators[0].(func(string) error)
 	// normalizedeventDescProviderEventRef is the schema descriptor for provider_event_ref field.
 	normalizedeventDescProviderEventRef := normalizedeventFields[4].Descriptor()
 	// normalizedevent.ProviderEventRefValidator is a validator for the "provider_event_ref" field. It is called by the builders before save.
 	normalizedevent.ProviderEventRefValidator = normalizedeventDescProviderEventRef.Validators[0].(func(string) error)
-	// normalizedeventDescProviderSubjectRef is the schema descriptor for provider_subject_ref field.
-	normalizedeventDescProviderSubjectRef := normalizedeventFields[5].Descriptor()
-	// normalizedevent.ProviderSubjectRefValidator is a validator for the "provider_subject_ref" field. It is called by the builders before save.
-	normalizedevent.ProviderSubjectRefValidator = normalizedeventDescProviderSubjectRef.Validators[0].(func(string) error)
 	// normalizedeventDescCreatedAt is the schema descriptor for created_at field.
-	normalizedeventDescCreatedAt := normalizedeventFields[8].Descriptor()
+	normalizedeventDescCreatedAt := normalizedeventFields[6].Descriptor()
 	// normalizedevent.DefaultCreatedAt holds the default value on creation for the created_at field.
 	normalizedevent.DefaultCreatedAt = normalizedeventDescCreatedAt.Default.(func() time.Time)
 	// normalizedeventDescID is the schema descriptor for id field.

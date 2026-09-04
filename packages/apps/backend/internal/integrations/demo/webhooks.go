@@ -69,13 +69,13 @@ const (
 func (h *webhookHandler) handleDemoAlertEvent(ctx context.Context, body []byte) error {
 	now := time.Now().UTC()
 	payload := alertObservedPayload{
-		ExternalRef: "search-api-latency",
-		Title:       "Search API response time high",
-		Description: "p95 latency for the search API is above 2 seconds.",
-		Definition:  "avg(last_5m):p95:search.api.response_time > 2000",
-		OccurredAt:  now,
-		InstanceRef: fmt.Sprintf("search-api-latency-%s", now.String()),
-		RelatedEntities: []projections.RelatedEntityRef{
+		DefinitionRef: "search-api-latency",
+		Title:         "Search API response time high",
+		Description:   "p95 latency for the search API is above 2 seconds.",
+		Definition:    "avg(last_5m):p95:search.api.response_time > 2000",
+		OccurredAt:    now,
+		InstanceRef:   fmt.Sprintf("search-api-latency-%s", now.String()),
+		ObservedEntities: []projections.EntityObservation{
 			relatedComponent("search_api", kne.CategoryContainer, "service", "Search API"),
 		},
 	}

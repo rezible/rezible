@@ -33,27 +33,27 @@ func (_c *KnowledgeSubjectAliasCreate) SetTenantID(v int) *KnowledgeSubjectAlias
 	return _c
 }
 
-// SetSubjectKind sets the "subject_kind" field.
-func (_c *KnowledgeSubjectAliasCreate) SetSubjectKind(v knowledgesubjectalias.SubjectKind) *KnowledgeSubjectAliasCreate {
-	_c.mutation.SetSubjectKind(v)
-	return _c
-}
-
 // SetProvider sets the "provider" field.
 func (_c *KnowledgeSubjectAliasCreate) SetProvider(v string) *KnowledgeSubjectAliasCreate {
 	_c.mutation.SetProvider(v)
 	return _c
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (_c *KnowledgeSubjectAliasCreate) SetProviderSource(v string) *KnowledgeSubjectAliasCreate {
-	_c.mutation.SetProviderSource(v)
+// SetProviderNamespace sets the "provider_namespace" field.
+func (_c *KnowledgeSubjectAliasCreate) SetProviderNamespace(v string) *KnowledgeSubjectAliasCreate {
+	_c.mutation.SetProviderNamespace(v)
 	return _c
 }
 
-// SetProviderSubjectRef sets the "provider_subject_ref" field.
-func (_c *KnowledgeSubjectAliasCreate) SetProviderSubjectRef(v string) *KnowledgeSubjectAliasCreate {
-	_c.mutation.SetProviderSubjectRef(v)
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (_c *KnowledgeSubjectAliasCreate) SetProviderResourceRef(v string) *KnowledgeSubjectAliasCreate {
+	_c.mutation.SetProviderResourceRef(v)
+	return _c
+}
+
+// SetSubjectKind sets the "subject_kind" field.
+func (_c *KnowledgeSubjectAliasCreate) SetSubjectKind(v knowledgesubjectalias.SubjectKind) *KnowledgeSubjectAliasCreate {
+	_c.mutation.SetSubjectKind(v)
 	return _c
 }
 
@@ -181,14 +181,6 @@ func (_c *KnowledgeSubjectAliasCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "KnowledgeSubjectAlias.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.SubjectKind(); !ok {
-		return &ValidationError{Name: "subject_kind", err: errors.New(`ent: missing required field "KnowledgeSubjectAlias.subject_kind"`)}
-	}
-	if v, ok := _c.mutation.SubjectKind(); ok {
-		if err := knowledgesubjectalias.SubjectKindValidator(v); err != nil {
-			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeSubjectAlias.subject_kind": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.Provider(); !ok {
 		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "KnowledgeSubjectAlias.provider"`)}
 	}
@@ -197,20 +189,23 @@ func (_c *KnowledgeSubjectAliasCreate) check() error {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeSubjectAlias.provider": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.ProviderSource(); !ok {
-		return &ValidationError{Name: "provider_source", err: errors.New(`ent: missing required field "KnowledgeSubjectAlias.provider_source"`)}
+	if _, ok := _c.mutation.ProviderNamespace(); !ok {
+		return &ValidationError{Name: "provider_namespace", err: errors.New(`ent: missing required field "KnowledgeSubjectAlias.provider_namespace"`)}
 	}
-	if v, ok := _c.mutation.ProviderSource(); ok {
-		if err := knowledgesubjectalias.ProviderSourceValidator(v); err != nil {
-			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeSubjectAlias.provider_source": %w`, err)}
+	if _, ok := _c.mutation.ProviderResourceRef(); !ok {
+		return &ValidationError{Name: "provider_resource_ref", err: errors.New(`ent: missing required field "KnowledgeSubjectAlias.provider_resource_ref"`)}
+	}
+	if v, ok := _c.mutation.ProviderResourceRef(); ok {
+		if err := knowledgesubjectalias.ProviderResourceRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_resource_ref", err: fmt.Errorf(`ent: validator failed for field "KnowledgeSubjectAlias.provider_resource_ref": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.ProviderSubjectRef(); !ok {
-		return &ValidationError{Name: "provider_subject_ref", err: errors.New(`ent: missing required field "KnowledgeSubjectAlias.provider_subject_ref"`)}
+	if _, ok := _c.mutation.SubjectKind(); !ok {
+		return &ValidationError{Name: "subject_kind", err: errors.New(`ent: missing required field "KnowledgeSubjectAlias.subject_kind"`)}
 	}
-	if v, ok := _c.mutation.ProviderSubjectRef(); ok {
-		if err := knowledgesubjectalias.ProviderSubjectRefValidator(v); err != nil {
-			return &ValidationError{Name: "provider_subject_ref", err: fmt.Errorf(`ent: validator failed for field "KnowledgeSubjectAlias.provider_subject_ref": %w`, err)}
+	if v, ok := _c.mutation.SubjectKind(); ok {
+		if err := knowledgesubjectalias.SubjectKindValidator(v); err != nil {
+			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeSubjectAlias.subject_kind": %w`, err)}
 		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
@@ -253,21 +248,21 @@ func (_c *KnowledgeSubjectAliasCreate) createSpec() (*KnowledgeSubjectAlias, *sq
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.SubjectKind(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldSubjectKind, field.TypeEnum, value)
-		_node.SubjectKind = value
-	}
 	if value, ok := _c.mutation.Provider(); ok {
 		_spec.SetField(knowledgesubjectalias.FieldProvider, field.TypeString, value)
 		_node.Provider = value
 	}
-	if value, ok := _c.mutation.ProviderSource(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldProviderSource, field.TypeString, value)
-		_node.ProviderSource = value
+	if value, ok := _c.mutation.ProviderNamespace(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldProviderNamespace, field.TypeString, value)
+		_node.ProviderNamespace = value
 	}
-	if value, ok := _c.mutation.ProviderSubjectRef(); ok {
-		_spec.SetField(knowledgesubjectalias.FieldProviderSubjectRef, field.TypeString, value)
-		_node.ProviderSubjectRef = value
+	if value, ok := _c.mutation.ProviderResourceRef(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldProviderResourceRef, field.TypeString, value)
+		_node.ProviderResourceRef = value
+	}
+	if value, ok := _c.mutation.SubjectKind(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldSubjectKind, field.TypeEnum, value)
+		_node.SubjectKind = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -448,17 +443,17 @@ func (u *KnowledgeSubjectAliasUpsertOne) UpdateNewValues() *KnowledgeSubjectAlia
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(knowledgesubjectalias.FieldTenantID)
 		}
-		if _, exists := u.create.mutation.SubjectKind(); exists {
-			s.SetIgnore(knowledgesubjectalias.FieldSubjectKind)
-		}
 		if _, exists := u.create.mutation.Provider(); exists {
 			s.SetIgnore(knowledgesubjectalias.FieldProvider)
 		}
-		if _, exists := u.create.mutation.ProviderSource(); exists {
-			s.SetIgnore(knowledgesubjectalias.FieldProviderSource)
+		if _, exists := u.create.mutation.ProviderNamespace(); exists {
+			s.SetIgnore(knowledgesubjectalias.FieldProviderNamespace)
 		}
-		if _, exists := u.create.mutation.ProviderSubjectRef(); exists {
-			s.SetIgnore(knowledgesubjectalias.FieldProviderSubjectRef)
+		if _, exists := u.create.mutation.ProviderResourceRef(); exists {
+			s.SetIgnore(knowledgesubjectalias.FieldProviderResourceRef)
+		}
+		if _, exists := u.create.mutation.SubjectKind(); exists {
+			s.SetIgnore(knowledgesubjectalias.FieldSubjectKind)
 		}
 	}))
 	return u
@@ -719,17 +714,17 @@ func (u *KnowledgeSubjectAliasUpsertBulk) UpdateNewValues() *KnowledgeSubjectAli
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(knowledgesubjectalias.FieldTenantID)
 			}
-			if _, exists := b.mutation.SubjectKind(); exists {
-				s.SetIgnore(knowledgesubjectalias.FieldSubjectKind)
-			}
 			if _, exists := b.mutation.Provider(); exists {
 				s.SetIgnore(knowledgesubjectalias.FieldProvider)
 			}
-			if _, exists := b.mutation.ProviderSource(); exists {
-				s.SetIgnore(knowledgesubjectalias.FieldProviderSource)
+			if _, exists := b.mutation.ProviderNamespace(); exists {
+				s.SetIgnore(knowledgesubjectalias.FieldProviderNamespace)
 			}
-			if _, exists := b.mutation.ProviderSubjectRef(); exists {
-				s.SetIgnore(knowledgesubjectalias.FieldProviderSubjectRef)
+			if _, exists := b.mutation.ProviderResourceRef(); exists {
+				s.SetIgnore(knowledgesubjectalias.FieldProviderResourceRef)
+			}
+			if _, exists := b.mutation.SubjectKind(); exists {
+				s.SetIgnore(knowledgesubjectalias.FieldSubjectKind)
 			}
 		}
 	}))

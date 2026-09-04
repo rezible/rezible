@@ -66,9 +66,9 @@ func (_c *IntegrationEventSyncCursorCreate) SetIntegrationID(v uuid.UUID) *Integ
 	return _c
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (_c *IntegrationEventSyncCursorCreate) SetProviderSource(v string) *IntegrationEventSyncCursorCreate {
-	_c.mutation.SetProviderSource(v)
+// SetProviderEventSource sets the "provider_event_source" field.
+func (_c *IntegrationEventSyncCursorCreate) SetProviderEventSource(v string) *IntegrationEventSyncCursorCreate {
+	_c.mutation.SetProviderEventSource(v)
 	return _c
 }
 
@@ -206,12 +206,12 @@ func (_c *IntegrationEventSyncCursorCreate) check() error {
 	if _, ok := _c.mutation.IntegrationID(); !ok {
 		return &ValidationError{Name: "integration_id", err: errors.New(`ent: missing required field "IntegrationEventSyncCursor.integration_id"`)}
 	}
-	if _, ok := _c.mutation.ProviderSource(); !ok {
-		return &ValidationError{Name: "provider_source", err: errors.New(`ent: missing required field "IntegrationEventSyncCursor.provider_source"`)}
+	if _, ok := _c.mutation.ProviderEventSource(); !ok {
+		return &ValidationError{Name: "provider_event_source", err: errors.New(`ent: missing required field "IntegrationEventSyncCursor.provider_event_source"`)}
 	}
-	if v, ok := _c.mutation.ProviderSource(); ok {
-		if err := integrationeventsynccursor.ProviderSourceValidator(v); err != nil {
-			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "IntegrationEventSyncCursor.provider_source": %w`, err)}
+	if v, ok := _c.mutation.ProviderEventSource(); ok {
+		if err := integrationeventsynccursor.ProviderEventSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_source", err: fmt.Errorf(`ent: validator failed for field "IntegrationEventSyncCursor.provider_event_source": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.LastSyncedAt(); !ok {
@@ -268,9 +268,9 @@ func (_c *IntegrationEventSyncCursorCreate) createSpec() (*IntegrationEventSyncC
 		_spec.SetField(integrationeventsynccursor.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.ProviderSource(); ok {
-		_spec.SetField(integrationeventsynccursor.FieldProviderSource, field.TypeString, value)
-		_node.ProviderSource = value
+	if value, ok := _c.mutation.ProviderEventSource(); ok {
+		_spec.SetField(integrationeventsynccursor.FieldProviderEventSource, field.TypeString, value)
+		_node.ProviderEventSource = value
 	}
 	if value, ok := _c.mutation.Cursor(); ok {
 		_spec.SetField(integrationeventsynccursor.FieldCursor, field.TypeString, value)
@@ -404,15 +404,15 @@ func (u *IntegrationEventSyncCursorUpsert) UpdateIntegrationID() *IntegrationEve
 	return u
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (u *IntegrationEventSyncCursorUpsert) SetProviderSource(v string) *IntegrationEventSyncCursorUpsert {
-	u.Set(integrationeventsynccursor.FieldProviderSource, v)
+// SetProviderEventSource sets the "provider_event_source" field.
+func (u *IntegrationEventSyncCursorUpsert) SetProviderEventSource(v string) *IntegrationEventSyncCursorUpsert {
+	u.Set(integrationeventsynccursor.FieldProviderEventSource, v)
 	return u
 }
 
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *IntegrationEventSyncCursorUpsert) UpdateProviderSource() *IntegrationEventSyncCursorUpsert {
-	u.SetExcluded(integrationeventsynccursor.FieldProviderSource)
+// UpdateProviderEventSource sets the "provider_event_source" field to the value that was provided on create.
+func (u *IntegrationEventSyncCursorUpsert) UpdateProviderEventSource() *IntegrationEventSyncCursorUpsert {
+	u.SetExcluded(integrationeventsynccursor.FieldProviderEventSource)
 	return u
 }
 
@@ -539,17 +539,17 @@ func (u *IntegrationEventSyncCursorUpsertOne) UpdateIntegrationID() *Integration
 	})
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (u *IntegrationEventSyncCursorUpsertOne) SetProviderSource(v string) *IntegrationEventSyncCursorUpsertOne {
+// SetProviderEventSource sets the "provider_event_source" field.
+func (u *IntegrationEventSyncCursorUpsertOne) SetProviderEventSource(v string) *IntegrationEventSyncCursorUpsertOne {
 	return u.Update(func(s *IntegrationEventSyncCursorUpsert) {
-		s.SetProviderSource(v)
+		s.SetProviderEventSource(v)
 	})
 }
 
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *IntegrationEventSyncCursorUpsertOne) UpdateProviderSource() *IntegrationEventSyncCursorUpsertOne {
+// UpdateProviderEventSource sets the "provider_event_source" field to the value that was provided on create.
+func (u *IntegrationEventSyncCursorUpsertOne) UpdateProviderEventSource() *IntegrationEventSyncCursorUpsertOne {
 	return u.Update(func(s *IntegrationEventSyncCursorUpsert) {
-		s.UpdateProviderSource()
+		s.UpdateProviderEventSource()
 	})
 }
 
@@ -848,17 +848,17 @@ func (u *IntegrationEventSyncCursorUpsertBulk) UpdateIntegrationID() *Integratio
 	})
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (u *IntegrationEventSyncCursorUpsertBulk) SetProviderSource(v string) *IntegrationEventSyncCursorUpsertBulk {
+// SetProviderEventSource sets the "provider_event_source" field.
+func (u *IntegrationEventSyncCursorUpsertBulk) SetProviderEventSource(v string) *IntegrationEventSyncCursorUpsertBulk {
 	return u.Update(func(s *IntegrationEventSyncCursorUpsert) {
-		s.SetProviderSource(v)
+		s.SetProviderEventSource(v)
 	})
 }
 
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *IntegrationEventSyncCursorUpsertBulk) UpdateProviderSource() *IntegrationEventSyncCursorUpsertBulk {
+// UpdateProviderEventSource sets the "provider_event_source" field to the value that was provided on create.
+func (u *IntegrationEventSyncCursorUpsertBulk) UpdateProviderEventSource() *IntegrationEventSyncCursorUpsertBulk {
 	return u.Update(func(s *IntegrationEventSyncCursorUpsert) {
-		s.UpdateProviderSource()
+		s.UpdateProviderEventSource()
 	})
 }
 

@@ -3299,26 +3299,26 @@ func (m *AgentSessionMutation) ResetEdge(name string) error {
 // AgentSessionBindingMutation represents an operation that mutates the AgentSessionBinding nodes in the graph.
 type AgentSessionBindingMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	created_at           *time.Time
-	updated_at           *time.Time
-	source               *string
-	resource_kind        *string
-	resource_ref         *string
-	closed_at            *time.Time
-	metadata             *map[string]interface{}
-	clearedFields        map[string]struct{}
-	tenant               *int
-	clearedtenant        bool
-	agent_session        *uuid.UUID
-	clearedagent_session bool
-	integration          *uuid.UUID
-	clearedintegration   bool
-	done                 bool
-	oldValue             func(context.Context) (*AgentSessionBinding, error)
-	predicates           []predicate.AgentSessionBinding
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	created_at            *time.Time
+	updated_at            *time.Time
+	provider              *string
+	provider_namespace    *string
+	provider_resource_ref *string
+	closed_at             *time.Time
+	metadata              *map[string]interface{}
+	clearedFields         map[string]struct{}
+	tenant                *int
+	clearedtenant         bool
+	agent_session         *uuid.UUID
+	clearedagent_session  bool
+	integration           *uuid.UUID
+	clearedintegration    bool
+	done                  bool
+	oldValue              func(context.Context) (*AgentSessionBinding, error)
+	predicates            []predicate.AgentSessionBinding
 }
 
 var _ ent.Mutation = (*AgentSessionBindingMutation)(nil)
@@ -3533,6 +3533,114 @@ func (m *AgentSessionBindingMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetProvider sets the "provider" field.
+func (m *AgentSessionBindingMutation) SetProvider(s string) {
+	m.provider = &s
+}
+
+// Provider returns the value of the "provider" field in the mutation.
+func (m *AgentSessionBindingMutation) Provider() (r string, exists bool) {
+	v := m.provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProvider returns the old "provider" field's value of the AgentSessionBinding entity.
+// If the AgentSessionBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentSessionBindingMutation) OldProvider(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProvider requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
+	}
+	return oldValue.Provider, nil
+}
+
+// ResetProvider resets all changes to the "provider" field.
+func (m *AgentSessionBindingMutation) ResetProvider() {
+	m.provider = nil
+}
+
+// SetProviderNamespace sets the "provider_namespace" field.
+func (m *AgentSessionBindingMutation) SetProviderNamespace(s string) {
+	m.provider_namespace = &s
+}
+
+// ProviderNamespace returns the value of the "provider_namespace" field in the mutation.
+func (m *AgentSessionBindingMutation) ProviderNamespace() (r string, exists bool) {
+	v := m.provider_namespace
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderNamespace returns the old "provider_namespace" field's value of the AgentSessionBinding entity.
+// If the AgentSessionBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentSessionBindingMutation) OldProviderNamespace(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderNamespace is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderNamespace requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderNamespace: %w", err)
+	}
+	return oldValue.ProviderNamespace, nil
+}
+
+// ResetProviderNamespace resets all changes to the "provider_namespace" field.
+func (m *AgentSessionBindingMutation) ResetProviderNamespace() {
+	m.provider_namespace = nil
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (m *AgentSessionBindingMutation) SetProviderResourceRef(s string) {
+	m.provider_resource_ref = &s
+}
+
+// ProviderResourceRef returns the value of the "provider_resource_ref" field in the mutation.
+func (m *AgentSessionBindingMutation) ProviderResourceRef() (r string, exists bool) {
+	v := m.provider_resource_ref
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderResourceRef returns the old "provider_resource_ref" field's value of the AgentSessionBinding entity.
+// If the AgentSessionBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentSessionBindingMutation) OldProviderResourceRef(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderResourceRef is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderResourceRef requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderResourceRef: %w", err)
+	}
+	return oldValue.ProviderResourceRef, nil
+}
+
+// ResetProviderResourceRef resets all changes to the "provider_resource_ref" field.
+func (m *AgentSessionBindingMutation) ResetProviderResourceRef() {
+	m.provider_resource_ref = nil
+}
+
 // SetAgentSessionID sets the "agent_session_id" field.
 func (m *AgentSessionBindingMutation) SetAgentSessionID(u uuid.UUID) {
 	m.agent_session = &u
@@ -3616,114 +3724,6 @@ func (m *AgentSessionBindingMutation) IntegrationIDCleared() bool {
 func (m *AgentSessionBindingMutation) ResetIntegrationID() {
 	m.integration = nil
 	delete(m.clearedFields, agentsessionbinding.FieldIntegrationID)
-}
-
-// SetSource sets the "source" field.
-func (m *AgentSessionBindingMutation) SetSource(s string) {
-	m.source = &s
-}
-
-// Source returns the value of the "source" field in the mutation.
-func (m *AgentSessionBindingMutation) Source() (r string, exists bool) {
-	v := m.source
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSource returns the old "source" field's value of the AgentSessionBinding entity.
-// If the AgentSessionBinding object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentSessionBindingMutation) OldSource(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSource is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSource requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSource: %w", err)
-	}
-	return oldValue.Source, nil
-}
-
-// ResetSource resets all changes to the "source" field.
-func (m *AgentSessionBindingMutation) ResetSource() {
-	m.source = nil
-}
-
-// SetResourceKind sets the "resource_kind" field.
-func (m *AgentSessionBindingMutation) SetResourceKind(s string) {
-	m.resource_kind = &s
-}
-
-// ResourceKind returns the value of the "resource_kind" field in the mutation.
-func (m *AgentSessionBindingMutation) ResourceKind() (r string, exists bool) {
-	v := m.resource_kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldResourceKind returns the old "resource_kind" field's value of the AgentSessionBinding entity.
-// If the AgentSessionBinding object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentSessionBindingMutation) OldResourceKind(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldResourceKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldResourceKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldResourceKind: %w", err)
-	}
-	return oldValue.ResourceKind, nil
-}
-
-// ResetResourceKind resets all changes to the "resource_kind" field.
-func (m *AgentSessionBindingMutation) ResetResourceKind() {
-	m.resource_kind = nil
-}
-
-// SetResourceRef sets the "resource_ref" field.
-func (m *AgentSessionBindingMutation) SetResourceRef(s string) {
-	m.resource_ref = &s
-}
-
-// ResourceRef returns the value of the "resource_ref" field in the mutation.
-func (m *AgentSessionBindingMutation) ResourceRef() (r string, exists bool) {
-	v := m.resource_ref
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldResourceRef returns the old "resource_ref" field's value of the AgentSessionBinding entity.
-// If the AgentSessionBinding object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentSessionBindingMutation) OldResourceRef(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldResourceRef is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldResourceRef requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldResourceRef: %w", err)
-	}
-	return oldValue.ResourceRef, nil
-}
-
-// ResetResourceRef resets all changes to the "resource_ref" field.
-func (m *AgentSessionBindingMutation) ResetResourceRef() {
-	m.resource_ref = nil
 }
 
 // SetClosedAt sets the "closed_at" field.
@@ -3949,20 +3949,20 @@ func (m *AgentSessionBindingMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, agentsessionbinding.FieldUpdatedAt)
 	}
+	if m.provider != nil {
+		fields = append(fields, agentsessionbinding.FieldProvider)
+	}
+	if m.provider_namespace != nil {
+		fields = append(fields, agentsessionbinding.FieldProviderNamespace)
+	}
+	if m.provider_resource_ref != nil {
+		fields = append(fields, agentsessionbinding.FieldProviderResourceRef)
+	}
 	if m.agent_session != nil {
 		fields = append(fields, agentsessionbinding.FieldAgentSessionID)
 	}
 	if m.integration != nil {
 		fields = append(fields, agentsessionbinding.FieldIntegrationID)
-	}
-	if m.source != nil {
-		fields = append(fields, agentsessionbinding.FieldSource)
-	}
-	if m.resource_kind != nil {
-		fields = append(fields, agentsessionbinding.FieldResourceKind)
-	}
-	if m.resource_ref != nil {
-		fields = append(fields, agentsessionbinding.FieldResourceRef)
 	}
 	if m.closed_at != nil {
 		fields = append(fields, agentsessionbinding.FieldClosedAt)
@@ -3984,16 +3984,16 @@ func (m *AgentSessionBindingMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case agentsessionbinding.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case agentsessionbinding.FieldProvider:
+		return m.Provider()
+	case agentsessionbinding.FieldProviderNamespace:
+		return m.ProviderNamespace()
+	case agentsessionbinding.FieldProviderResourceRef:
+		return m.ProviderResourceRef()
 	case agentsessionbinding.FieldAgentSessionID:
 		return m.AgentSessionID()
 	case agentsessionbinding.FieldIntegrationID:
 		return m.IntegrationID()
-	case agentsessionbinding.FieldSource:
-		return m.Source()
-	case agentsessionbinding.FieldResourceKind:
-		return m.ResourceKind()
-	case agentsessionbinding.FieldResourceRef:
-		return m.ResourceRef()
 	case agentsessionbinding.FieldClosedAt:
 		return m.ClosedAt()
 	case agentsessionbinding.FieldMetadata:
@@ -4013,16 +4013,16 @@ func (m *AgentSessionBindingMutation) OldField(ctx context.Context, name string)
 		return m.OldCreatedAt(ctx)
 	case agentsessionbinding.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case agentsessionbinding.FieldProvider:
+		return m.OldProvider(ctx)
+	case agentsessionbinding.FieldProviderNamespace:
+		return m.OldProviderNamespace(ctx)
+	case agentsessionbinding.FieldProviderResourceRef:
+		return m.OldProviderResourceRef(ctx)
 	case agentsessionbinding.FieldAgentSessionID:
 		return m.OldAgentSessionID(ctx)
 	case agentsessionbinding.FieldIntegrationID:
 		return m.OldIntegrationID(ctx)
-	case agentsessionbinding.FieldSource:
-		return m.OldSource(ctx)
-	case agentsessionbinding.FieldResourceKind:
-		return m.OldResourceKind(ctx)
-	case agentsessionbinding.FieldResourceRef:
-		return m.OldResourceRef(ctx)
 	case agentsessionbinding.FieldClosedAt:
 		return m.OldClosedAt(ctx)
 	case agentsessionbinding.FieldMetadata:
@@ -4057,6 +4057,27 @@ func (m *AgentSessionBindingMutation) SetField(name string, value ent.Value) err
 		}
 		m.SetUpdatedAt(v)
 		return nil
+	case agentsessionbinding.FieldProvider:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProvider(v)
+		return nil
+	case agentsessionbinding.FieldProviderNamespace:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderNamespace(v)
+		return nil
+	case agentsessionbinding.FieldProviderResourceRef:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderResourceRef(v)
+		return nil
 	case agentsessionbinding.FieldAgentSessionID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
@@ -4070,27 +4091,6 @@ func (m *AgentSessionBindingMutation) SetField(name string, value ent.Value) err
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIntegrationID(v)
-		return nil
-	case agentsessionbinding.FieldSource:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSource(v)
-		return nil
-	case agentsessionbinding.FieldResourceKind:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetResourceKind(v)
-		return nil
-	case agentsessionbinding.FieldResourceRef:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetResourceRef(v)
 		return nil
 	case agentsessionbinding.FieldClosedAt:
 		v, ok := value.(time.Time)
@@ -4188,20 +4188,20 @@ func (m *AgentSessionBindingMutation) ResetField(name string) error {
 	case agentsessionbinding.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
+	case agentsessionbinding.FieldProvider:
+		m.ResetProvider()
+		return nil
+	case agentsessionbinding.FieldProviderNamespace:
+		m.ResetProviderNamespace()
+		return nil
+	case agentsessionbinding.FieldProviderResourceRef:
+		m.ResetProviderResourceRef()
+		return nil
 	case agentsessionbinding.FieldAgentSessionID:
 		m.ResetAgentSessionID()
 		return nil
 	case agentsessionbinding.FieldIntegrationID:
 		m.ResetIntegrationID()
-		return nil
-	case agentsessionbinding.FieldSource:
-		m.ResetSource()
-		return nil
-	case agentsessionbinding.FieldResourceKind:
-		m.ResetResourceKind()
-		return nil
-	case agentsessionbinding.FieldResourceRef:
-		m.ResetResourceRef()
 		return nil
 	case agentsessionbinding.FieldClosedAt:
 		m.ResetClosedAt()
@@ -24440,10 +24440,10 @@ type IntegrationMutation struct {
 	id                        *uuid.UUID
 	created_at                *time.Time
 	updated_at                *time.Time
-	provider_name             *string
-	integration_name          *string
+	provider                  *string
+	name                      *string
 	display_name              *string
-	external_ref              *string
+	provider_installation_ref *string
 	installation_config       *jsontext.Value
 	appendinstallation_config jsontext.Value
 	user_settings             *map[string]interface{}
@@ -24667,76 +24667,76 @@ func (m *IntegrationMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetProviderName sets the "provider_name" field.
-func (m *IntegrationMutation) SetProviderName(s string) {
-	m.provider_name = &s
+// SetProvider sets the "provider" field.
+func (m *IntegrationMutation) SetProvider(s string) {
+	m.provider = &s
 }
 
-// ProviderName returns the value of the "provider_name" field in the mutation.
-func (m *IntegrationMutation) ProviderName() (r string, exists bool) {
-	v := m.provider_name
+// Provider returns the value of the "provider" field in the mutation.
+func (m *IntegrationMutation) Provider() (r string, exists bool) {
+	v := m.provider
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderName returns the old "provider_name" field's value of the Integration entity.
+// OldProvider returns the old "provider" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldProviderName(ctx context.Context) (v string, err error) {
+func (m *IntegrationMutation) OldProvider(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderName is only allowed on UpdateOne operations")
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderName requires an ID field in the mutation")
+		return v, errors.New("OldProvider requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderName: %w", err)
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
 	}
-	return oldValue.ProviderName, nil
+	return oldValue.Provider, nil
 }
 
-// ResetProviderName resets all changes to the "provider_name" field.
-func (m *IntegrationMutation) ResetProviderName() {
-	m.provider_name = nil
+// ResetProvider resets all changes to the "provider" field.
+func (m *IntegrationMutation) ResetProvider() {
+	m.provider = nil
 }
 
-// SetIntegrationName sets the "integration_name" field.
-func (m *IntegrationMutation) SetIntegrationName(s string) {
-	m.integration_name = &s
+// SetName sets the "name" field.
+func (m *IntegrationMutation) SetName(s string) {
+	m.name = &s
 }
 
-// IntegrationName returns the value of the "integration_name" field in the mutation.
-func (m *IntegrationMutation) IntegrationName() (r string, exists bool) {
-	v := m.integration_name
+// Name returns the value of the "name" field in the mutation.
+func (m *IntegrationMutation) Name() (r string, exists bool) {
+	v := m.name
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldIntegrationName returns the old "integration_name" field's value of the Integration entity.
+// OldName returns the old "name" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldIntegrationName(ctx context.Context) (v string, err error) {
+func (m *IntegrationMutation) OldName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIntegrationName is only allowed on UpdateOne operations")
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIntegrationName requires an ID field in the mutation")
+		return v, errors.New("OldName requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIntegrationName: %w", err)
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
 	}
-	return oldValue.IntegrationName, nil
+	return oldValue.Name, nil
 }
 
-// ResetIntegrationName resets all changes to the "integration_name" field.
-func (m *IntegrationMutation) ResetIntegrationName() {
-	m.integration_name = nil
+// ResetName resets all changes to the "name" field.
+func (m *IntegrationMutation) ResetName() {
+	m.name = nil
 }
 
 // SetDisplayName sets the "display_name" field.
@@ -24775,40 +24775,40 @@ func (m *IntegrationMutation) ResetDisplayName() {
 	m.display_name = nil
 }
 
-// SetExternalRef sets the "external_ref" field.
-func (m *IntegrationMutation) SetExternalRef(s string) {
-	m.external_ref = &s
+// SetProviderInstallationRef sets the "provider_installation_ref" field.
+func (m *IntegrationMutation) SetProviderInstallationRef(s string) {
+	m.provider_installation_ref = &s
 }
 
-// ExternalRef returns the value of the "external_ref" field in the mutation.
-func (m *IntegrationMutation) ExternalRef() (r string, exists bool) {
-	v := m.external_ref
+// ProviderInstallationRef returns the value of the "provider_installation_ref" field in the mutation.
+func (m *IntegrationMutation) ProviderInstallationRef() (r string, exists bool) {
+	v := m.provider_installation_ref
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldExternalRef returns the old "external_ref" field's value of the Integration entity.
+// OldProviderInstallationRef returns the old "provider_installation_ref" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldExternalRef(ctx context.Context) (v string, err error) {
+func (m *IntegrationMutation) OldProviderInstallationRef(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExternalRef is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderInstallationRef is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExternalRef requires an ID field in the mutation")
+		return v, errors.New("OldProviderInstallationRef requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExternalRef: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderInstallationRef: %w", err)
 	}
-	return oldValue.ExternalRef, nil
+	return oldValue.ProviderInstallationRef, nil
 }
 
-// ResetExternalRef resets all changes to the "external_ref" field.
-func (m *IntegrationMutation) ResetExternalRef() {
-	m.external_ref = nil
+// ResetProviderInstallationRef resets all changes to the "provider_installation_ref" field.
+func (m *IntegrationMutation) ResetProviderInstallationRef() {
+	m.provider_installation_ref = nil
 }
 
 // SetInstallationConfig sets the "installation_config" field.
@@ -24982,17 +24982,17 @@ func (m *IntegrationMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, integration.FieldUpdatedAt)
 	}
-	if m.provider_name != nil {
-		fields = append(fields, integration.FieldProviderName)
+	if m.provider != nil {
+		fields = append(fields, integration.FieldProvider)
 	}
-	if m.integration_name != nil {
-		fields = append(fields, integration.FieldIntegrationName)
+	if m.name != nil {
+		fields = append(fields, integration.FieldName)
 	}
 	if m.display_name != nil {
 		fields = append(fields, integration.FieldDisplayName)
 	}
-	if m.external_ref != nil {
-		fields = append(fields, integration.FieldExternalRef)
+	if m.provider_installation_ref != nil {
+		fields = append(fields, integration.FieldProviderInstallationRef)
 	}
 	if m.installation_config != nil {
 		fields = append(fields, integration.FieldInstallationConfig)
@@ -25014,14 +25014,14 @@ func (m *IntegrationMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case integration.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case integration.FieldProviderName:
-		return m.ProviderName()
-	case integration.FieldIntegrationName:
-		return m.IntegrationName()
+	case integration.FieldProvider:
+		return m.Provider()
+	case integration.FieldName:
+		return m.Name()
 	case integration.FieldDisplayName:
 		return m.DisplayName()
-	case integration.FieldExternalRef:
-		return m.ExternalRef()
+	case integration.FieldProviderInstallationRef:
+		return m.ProviderInstallationRef()
 	case integration.FieldInstallationConfig:
 		return m.InstallationConfig()
 	case integration.FieldUserSettings:
@@ -25041,14 +25041,14 @@ func (m *IntegrationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldCreatedAt(ctx)
 	case integration.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case integration.FieldProviderName:
-		return m.OldProviderName(ctx)
-	case integration.FieldIntegrationName:
-		return m.OldIntegrationName(ctx)
+	case integration.FieldProvider:
+		return m.OldProvider(ctx)
+	case integration.FieldName:
+		return m.OldName(ctx)
 	case integration.FieldDisplayName:
 		return m.OldDisplayName(ctx)
-	case integration.FieldExternalRef:
-		return m.OldExternalRef(ctx)
+	case integration.FieldProviderInstallationRef:
+		return m.OldProviderInstallationRef(ctx)
 	case integration.FieldInstallationConfig:
 		return m.OldInstallationConfig(ctx)
 	case integration.FieldUserSettings:
@@ -25083,19 +25083,19 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case integration.FieldProviderName:
+	case integration.FieldProvider:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderName(v)
+		m.SetProvider(v)
 		return nil
-	case integration.FieldIntegrationName:
+	case integration.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetIntegrationName(v)
+		m.SetName(v)
 		return nil
 	case integration.FieldDisplayName:
 		v, ok := value.(string)
@@ -25104,12 +25104,12 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDisplayName(v)
 		return nil
-	case integration.FieldExternalRef:
+	case integration.FieldProviderInstallationRef:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetExternalRef(v)
+		m.SetProviderInstallationRef(v)
 		return nil
 	case integration.FieldInstallationConfig:
 		v, ok := value.(jsontext.Value)
@@ -25195,17 +25195,17 @@ func (m *IntegrationMutation) ResetField(name string) error {
 	case integration.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case integration.FieldProviderName:
-		m.ResetProviderName()
+	case integration.FieldProvider:
+		m.ResetProvider()
 		return nil
-	case integration.FieldIntegrationName:
-		m.ResetIntegrationName()
+	case integration.FieldName:
+		m.ResetName()
 		return nil
 	case integration.FieldDisplayName:
 		m.ResetDisplayName()
 		return nil
-	case integration.FieldExternalRef:
-		m.ResetExternalRef()
+	case integration.FieldProviderInstallationRef:
+		m.ResetProviderInstallationRef()
 		return nil
 	case integration.FieldInstallationConfig:
 		m.ResetInstallationConfig()
@@ -25294,22 +25294,22 @@ func (m *IntegrationMutation) ResetEdge(name string) error {
 // IntegrationEventSyncCursorMutation represents an operation that mutates the IntegrationEventSyncCursor nodes in the graph.
 type IntegrationEventSyncCursorMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	created_at         *time.Time
-	updated_at         *time.Time
-	provider_source    *string
-	cursor             *string
-	last_synced_at     *time.Time
-	clearedFields      map[string]struct{}
-	tenant             *int
-	clearedtenant      bool
-	integration        *uuid.UUID
-	clearedintegration bool
-	done               bool
-	oldValue           func(context.Context) (*IntegrationEventSyncCursor, error)
-	predicates         []predicate.IntegrationEventSyncCursor
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	created_at            *time.Time
+	updated_at            *time.Time
+	provider_event_source *string
+	cursor                *string
+	last_synced_at        *time.Time
+	clearedFields         map[string]struct{}
+	tenant                *int
+	clearedtenant         bool
+	integration           *uuid.UUID
+	clearedintegration    bool
+	done                  bool
+	oldValue              func(context.Context) (*IntegrationEventSyncCursor, error)
+	predicates            []predicate.IntegrationEventSyncCursor
 }
 
 var _ ent.Mutation = (*IntegrationEventSyncCursorMutation)(nil)
@@ -25560,40 +25560,40 @@ func (m *IntegrationEventSyncCursorMutation) ResetIntegrationID() {
 	m.integration = nil
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (m *IntegrationEventSyncCursorMutation) SetProviderSource(s string) {
-	m.provider_source = &s
+// SetProviderEventSource sets the "provider_event_source" field.
+func (m *IntegrationEventSyncCursorMutation) SetProviderEventSource(s string) {
+	m.provider_event_source = &s
 }
 
-// ProviderSource returns the value of the "provider_source" field in the mutation.
-func (m *IntegrationEventSyncCursorMutation) ProviderSource() (r string, exists bool) {
-	v := m.provider_source
+// ProviderEventSource returns the value of the "provider_event_source" field in the mutation.
+func (m *IntegrationEventSyncCursorMutation) ProviderEventSource() (r string, exists bool) {
+	v := m.provider_event_source
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderSource returns the old "provider_source" field's value of the IntegrationEventSyncCursor entity.
+// OldProviderEventSource returns the old "provider_event_source" field's value of the IntegrationEventSyncCursor entity.
 // If the IntegrationEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationEventSyncCursorMutation) OldProviderSource(ctx context.Context) (v string, err error) {
+func (m *IntegrationEventSyncCursorMutation) OldProviderEventSource(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderEventSource is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderSource requires an ID field in the mutation")
+		return v, errors.New("OldProviderEventSource requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderEventSource: %w", err)
 	}
-	return oldValue.ProviderSource, nil
+	return oldValue.ProviderEventSource, nil
 }
 
-// ResetProviderSource resets all changes to the "provider_source" field.
-func (m *IntegrationEventSyncCursorMutation) ResetProviderSource() {
-	m.provider_source = nil
+// ResetProviderEventSource resets all changes to the "provider_event_source" field.
+func (m *IntegrationEventSyncCursorMutation) ResetProviderEventSource() {
+	m.provider_event_source = nil
 }
 
 // SetCursor sets the "cursor" field.
@@ -25782,8 +25782,8 @@ func (m *IntegrationEventSyncCursorMutation) Fields() []string {
 	if m.integration != nil {
 		fields = append(fields, integrationeventsynccursor.FieldIntegrationID)
 	}
-	if m.provider_source != nil {
-		fields = append(fields, integrationeventsynccursor.FieldProviderSource)
+	if m.provider_event_source != nil {
+		fields = append(fields, integrationeventsynccursor.FieldProviderEventSource)
 	}
 	if m.cursor != nil {
 		fields = append(fields, integrationeventsynccursor.FieldCursor)
@@ -25807,8 +25807,8 @@ func (m *IntegrationEventSyncCursorMutation) Field(name string) (ent.Value, bool
 		return m.UpdatedAt()
 	case integrationeventsynccursor.FieldIntegrationID:
 		return m.IntegrationID()
-	case integrationeventsynccursor.FieldProviderSource:
-		return m.ProviderSource()
+	case integrationeventsynccursor.FieldProviderEventSource:
+		return m.ProviderEventSource()
 	case integrationeventsynccursor.FieldCursor:
 		return m.Cursor()
 	case integrationeventsynccursor.FieldLastSyncedAt:
@@ -25830,8 +25830,8 @@ func (m *IntegrationEventSyncCursorMutation) OldField(ctx context.Context, name 
 		return m.OldUpdatedAt(ctx)
 	case integrationeventsynccursor.FieldIntegrationID:
 		return m.OldIntegrationID(ctx)
-	case integrationeventsynccursor.FieldProviderSource:
-		return m.OldProviderSource(ctx)
+	case integrationeventsynccursor.FieldProviderEventSource:
+		return m.OldProviderEventSource(ctx)
 	case integrationeventsynccursor.FieldCursor:
 		return m.OldCursor(ctx)
 	case integrationeventsynccursor.FieldLastSyncedAt:
@@ -25873,12 +25873,12 @@ func (m *IntegrationEventSyncCursorMutation) SetField(name string, value ent.Val
 		}
 		m.SetIntegrationID(v)
 		return nil
-	case integrationeventsynccursor.FieldProviderSource:
+	case integrationeventsynccursor.FieldProviderEventSource:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderSource(v)
+		m.SetProviderEventSource(v)
 		return nil
 	case integrationeventsynccursor.FieldCursor:
 		v, ok := value.(string)
@@ -25967,8 +25967,8 @@ func (m *IntegrationEventSyncCursorMutation) ResetField(name string) error {
 	case integrationeventsynccursor.FieldIntegrationID:
 		m.ResetIntegrationID()
 		return nil
-	case integrationeventsynccursor.FieldProviderSource:
-		m.ResetProviderSource()
+	case integrationeventsynccursor.FieldProviderEventSource:
+		m.ResetProviderEventSource()
 		return nil
 	case integrationeventsynccursor.FieldCursor:
 		m.ResetCursor()
@@ -26075,29 +26075,29 @@ func (m *IntegrationEventSyncCursorMutation) ResetEdge(name string) error {
 // IntegrationEventSyncRunMutation represents an operation that mutates the IntegrationEventSyncRun nodes in the graph.
 type IntegrationEventSyncRunMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	source_cursors     *map[string]string
-	sync_reason        *string
-	started_at         *time.Time
-	finished_at        *time.Time
-	status             *integrationeventsyncrun.Status
-	events_pulled      *int
-	addevents_pulled   *int
-	events_ingested    *int
-	addevents_ingested *int
-	duplicates         *int
-	addduplicates      *int
-	failure_message    *string
-	clearedFields      map[string]struct{}
-	tenant             *int
-	clearedtenant      bool
-	integration        *uuid.UUID
-	clearedintegration bool
-	done               bool
-	oldValue           func(context.Context) (*IntegrationEventSyncRun, error)
-	predicates         []predicate.IntegrationEventSyncRun
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	provider_event_source_cursors *map[string]string
+	sync_reason                   *string
+	started_at                    *time.Time
+	finished_at                   *time.Time
+	status                        *integrationeventsyncrun.Status
+	events_pulled                 *int
+	addevents_pulled              *int
+	events_ingested               *int
+	addevents_ingested            *int
+	duplicates                    *int
+	addduplicates                 *int
+	failure_message               *string
+	clearedFields                 map[string]struct{}
+	tenant                        *int
+	clearedtenant                 bool
+	integration                   *uuid.UUID
+	clearedintegration            bool
+	done                          bool
+	oldValue                      func(context.Context) (*IntegrationEventSyncRun, error)
+	predicates                    []predicate.IntegrationEventSyncRun
 }
 
 var _ ent.Mutation = (*IntegrationEventSyncRunMutation)(nil)
@@ -26276,53 +26276,53 @@ func (m *IntegrationEventSyncRunMutation) ResetIntegrationID() {
 	m.integration = nil
 }
 
-// SetSourceCursors sets the "source_cursors" field.
-func (m *IntegrationEventSyncRunMutation) SetSourceCursors(value map[string]string) {
-	m.source_cursors = &value
+// SetProviderEventSourceCursors sets the "provider_event_source_cursors" field.
+func (m *IntegrationEventSyncRunMutation) SetProviderEventSourceCursors(value map[string]string) {
+	m.provider_event_source_cursors = &value
 }
 
-// SourceCursors returns the value of the "source_cursors" field in the mutation.
-func (m *IntegrationEventSyncRunMutation) SourceCursors() (r map[string]string, exists bool) {
-	v := m.source_cursors
+// ProviderEventSourceCursors returns the value of the "provider_event_source_cursors" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) ProviderEventSourceCursors() (r map[string]string, exists bool) {
+	v := m.provider_event_source_cursors
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSourceCursors returns the old "source_cursors" field's value of the IntegrationEventSyncRun entity.
+// OldProviderEventSourceCursors returns the old "provider_event_source_cursors" field's value of the IntegrationEventSyncRun entity.
 // If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationEventSyncRunMutation) OldSourceCursors(ctx context.Context) (v map[string]string, err error) {
+func (m *IntegrationEventSyncRunMutation) OldProviderEventSourceCursors(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceCursors is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderEventSourceCursors is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceCursors requires an ID field in the mutation")
+		return v, errors.New("OldProviderEventSourceCursors requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceCursors: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderEventSourceCursors: %w", err)
 	}
-	return oldValue.SourceCursors, nil
+	return oldValue.ProviderEventSourceCursors, nil
 }
 
-// ClearSourceCursors clears the value of the "source_cursors" field.
-func (m *IntegrationEventSyncRunMutation) ClearSourceCursors() {
-	m.source_cursors = nil
-	m.clearedFields[integrationeventsyncrun.FieldSourceCursors] = struct{}{}
+// ClearProviderEventSourceCursors clears the value of the "provider_event_source_cursors" field.
+func (m *IntegrationEventSyncRunMutation) ClearProviderEventSourceCursors() {
+	m.provider_event_source_cursors = nil
+	m.clearedFields[integrationeventsyncrun.FieldProviderEventSourceCursors] = struct{}{}
 }
 
-// SourceCursorsCleared returns if the "source_cursors" field was cleared in this mutation.
-func (m *IntegrationEventSyncRunMutation) SourceCursorsCleared() bool {
-	_, ok := m.clearedFields[integrationeventsyncrun.FieldSourceCursors]
+// ProviderEventSourceCursorsCleared returns if the "provider_event_source_cursors" field was cleared in this mutation.
+func (m *IntegrationEventSyncRunMutation) ProviderEventSourceCursorsCleared() bool {
+	_, ok := m.clearedFields[integrationeventsyncrun.FieldProviderEventSourceCursors]
 	return ok
 }
 
-// ResetSourceCursors resets all changes to the "source_cursors" field.
-func (m *IntegrationEventSyncRunMutation) ResetSourceCursors() {
-	m.source_cursors = nil
-	delete(m.clearedFields, integrationeventsyncrun.FieldSourceCursors)
+// ResetProviderEventSourceCursors resets all changes to the "provider_event_source_cursors" field.
+func (m *IntegrationEventSyncRunMutation) ResetProviderEventSourceCursors() {
+	m.provider_event_source_cursors = nil
+	delete(m.clearedFields, integrationeventsyncrun.FieldProviderEventSourceCursors)
 }
 
 // SetSyncReason sets the "sync_reason" field.
@@ -26794,8 +26794,8 @@ func (m *IntegrationEventSyncRunMutation) Fields() []string {
 	if m.integration != nil {
 		fields = append(fields, integrationeventsyncrun.FieldIntegrationID)
 	}
-	if m.source_cursors != nil {
-		fields = append(fields, integrationeventsyncrun.FieldSourceCursors)
+	if m.provider_event_source_cursors != nil {
+		fields = append(fields, integrationeventsyncrun.FieldProviderEventSourceCursors)
 	}
 	if m.sync_reason != nil {
 		fields = append(fields, integrationeventsyncrun.FieldSyncReason)
@@ -26833,8 +26833,8 @@ func (m *IntegrationEventSyncRunMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case integrationeventsyncrun.FieldIntegrationID:
 		return m.IntegrationID()
-	case integrationeventsyncrun.FieldSourceCursors:
-		return m.SourceCursors()
+	case integrationeventsyncrun.FieldProviderEventSourceCursors:
+		return m.ProviderEventSourceCursors()
 	case integrationeventsyncrun.FieldSyncReason:
 		return m.SyncReason()
 	case integrationeventsyncrun.FieldStartedAt:
@@ -26864,8 +26864,8 @@ func (m *IntegrationEventSyncRunMutation) OldField(ctx context.Context, name str
 		return m.OldTenantID(ctx)
 	case integrationeventsyncrun.FieldIntegrationID:
 		return m.OldIntegrationID(ctx)
-	case integrationeventsyncrun.FieldSourceCursors:
-		return m.OldSourceCursors(ctx)
+	case integrationeventsyncrun.FieldProviderEventSourceCursors:
+		return m.OldProviderEventSourceCursors(ctx)
 	case integrationeventsyncrun.FieldSyncReason:
 		return m.OldSyncReason(ctx)
 	case integrationeventsyncrun.FieldStartedAt:
@@ -26905,12 +26905,12 @@ func (m *IntegrationEventSyncRunMutation) SetField(name string, value ent.Value)
 		}
 		m.SetIntegrationID(v)
 		return nil
-	case integrationeventsyncrun.FieldSourceCursors:
+	case integrationeventsyncrun.FieldProviderEventSourceCursors:
 		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSourceCursors(v)
+		m.SetProviderEventSourceCursors(v)
 		return nil
 	case integrationeventsyncrun.FieldSyncReason:
 		v, ok := value.(string)
@@ -27037,8 +27037,8 @@ func (m *IntegrationEventSyncRunMutation) AddField(name string, value ent.Value)
 // mutation.
 func (m *IntegrationEventSyncRunMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(integrationeventsyncrun.FieldSourceCursors) {
-		fields = append(fields, integrationeventsyncrun.FieldSourceCursors)
+	if m.FieldCleared(integrationeventsyncrun.FieldProviderEventSourceCursors) {
+		fields = append(fields, integrationeventsyncrun.FieldProviderEventSourceCursors)
 	}
 	if m.FieldCleared(integrationeventsyncrun.FieldFinishedAt) {
 		fields = append(fields, integrationeventsyncrun.FieldFinishedAt)
@@ -27060,8 +27060,8 @@ func (m *IntegrationEventSyncRunMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *IntegrationEventSyncRunMutation) ClearField(name string) error {
 	switch name {
-	case integrationeventsyncrun.FieldSourceCursors:
-		m.ClearSourceCursors()
+	case integrationeventsyncrun.FieldProviderEventSourceCursors:
+		m.ClearProviderEventSourceCursors()
 		return nil
 	case integrationeventsyncrun.FieldFinishedAt:
 		m.ClearFinishedAt()
@@ -27083,8 +27083,8 @@ func (m *IntegrationEventSyncRunMutation) ResetField(name string) error {
 	case integrationeventsyncrun.FieldIntegrationID:
 		m.ResetIntegrationID()
 		return nil
-	case integrationeventsyncrun.FieldSourceCursors:
-		m.ResetSourceCursors()
+	case integrationeventsyncrun.FieldProviderEventSourceCursors:
+		m.ResetProviderEventSourceCursors()
 		return nil
 	case integrationeventsyncrun.FieldSyncReason:
 		m.ResetSyncReason()
@@ -30506,26 +30506,26 @@ func (m *KnowledgeRelationshipMutation) ResetEdge(name string) error {
 // KnowledgeSubjectAliasMutation represents an operation that mutates the KnowledgeSubjectAlias nodes in the graph.
 type KnowledgeSubjectAliasMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	subject_kind         *knowledgesubjectalias.SubjectKind
-	provider             *string
-	provider_source      *string
-	provider_subject_ref *string
-	clearedFields        map[string]struct{}
-	tenant               *int
-	clearedtenant        bool
-	entity               *uuid.UUID
-	clearedentity        bool
-	relationship         *uuid.UUID
-	clearedrelationship  bool
-	evidence             map[uuid.UUID]struct{}
-	removedevidence      map[uuid.UUID]struct{}
-	clearedevidence      bool
-	done                 bool
-	oldValue             func(context.Context) (*KnowledgeSubjectAlias, error)
-	predicates           []predicate.KnowledgeSubjectAlias
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	provider              *string
+	provider_namespace    *string
+	provider_resource_ref *string
+	subject_kind          *knowledgesubjectalias.SubjectKind
+	clearedFields         map[string]struct{}
+	tenant                *int
+	clearedtenant         bool
+	entity                *uuid.UUID
+	clearedentity         bool
+	relationship          *uuid.UUID
+	clearedrelationship   bool
+	evidence              map[uuid.UUID]struct{}
+	removedevidence       map[uuid.UUID]struct{}
+	clearedevidence       bool
+	done                  bool
+	oldValue              func(context.Context) (*KnowledgeSubjectAlias, error)
+	predicates            []predicate.KnowledgeSubjectAlias
 }
 
 var _ ent.Mutation = (*KnowledgeSubjectAliasMutation)(nil)
@@ -30668,42 +30668,6 @@ func (m *KnowledgeSubjectAliasMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetSubjectKind sets the "subject_kind" field.
-func (m *KnowledgeSubjectAliasMutation) SetSubjectKind(kk knowledgesubjectalias.SubjectKind) {
-	m.subject_kind = &kk
-}
-
-// SubjectKind returns the value of the "subject_kind" field in the mutation.
-func (m *KnowledgeSubjectAliasMutation) SubjectKind() (r knowledgesubjectalias.SubjectKind, exists bool) {
-	v := m.subject_kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSubjectKind returns the old "subject_kind" field's value of the KnowledgeSubjectAlias entity.
-// If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeSubjectAliasMutation) OldSubjectKind(ctx context.Context) (v knowledgesubjectalias.SubjectKind, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSubjectKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSubjectKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubjectKind: %w", err)
-	}
-	return oldValue.SubjectKind, nil
-}
-
-// ResetSubjectKind resets all changes to the "subject_kind" field.
-func (m *KnowledgeSubjectAliasMutation) ResetSubjectKind() {
-	m.subject_kind = nil
-}
-
 // SetProvider sets the "provider" field.
 func (m *KnowledgeSubjectAliasMutation) SetProvider(s string) {
 	m.provider = &s
@@ -30740,76 +30704,112 @@ func (m *KnowledgeSubjectAliasMutation) ResetProvider() {
 	m.provider = nil
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (m *KnowledgeSubjectAliasMutation) SetProviderSource(s string) {
-	m.provider_source = &s
+// SetProviderNamespace sets the "provider_namespace" field.
+func (m *KnowledgeSubjectAliasMutation) SetProviderNamespace(s string) {
+	m.provider_namespace = &s
 }
 
-// ProviderSource returns the value of the "provider_source" field in the mutation.
-func (m *KnowledgeSubjectAliasMutation) ProviderSource() (r string, exists bool) {
-	v := m.provider_source
+// ProviderNamespace returns the value of the "provider_namespace" field in the mutation.
+func (m *KnowledgeSubjectAliasMutation) ProviderNamespace() (r string, exists bool) {
+	v := m.provider_namespace
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderSource returns the old "provider_source" field's value of the KnowledgeSubjectAlias entity.
+// OldProviderNamespace returns the old "provider_namespace" field's value of the KnowledgeSubjectAlias entity.
 // If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeSubjectAliasMutation) OldProviderSource(ctx context.Context) (v string, err error) {
+func (m *KnowledgeSubjectAliasMutation) OldProviderNamespace(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderNamespace is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderSource requires an ID field in the mutation")
+		return v, errors.New("OldProviderNamespace requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderNamespace: %w", err)
 	}
-	return oldValue.ProviderSource, nil
+	return oldValue.ProviderNamespace, nil
 }
 
-// ResetProviderSource resets all changes to the "provider_source" field.
-func (m *KnowledgeSubjectAliasMutation) ResetProviderSource() {
-	m.provider_source = nil
+// ResetProviderNamespace resets all changes to the "provider_namespace" field.
+func (m *KnowledgeSubjectAliasMutation) ResetProviderNamespace() {
+	m.provider_namespace = nil
 }
 
-// SetProviderSubjectRef sets the "provider_subject_ref" field.
-func (m *KnowledgeSubjectAliasMutation) SetProviderSubjectRef(s string) {
-	m.provider_subject_ref = &s
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (m *KnowledgeSubjectAliasMutation) SetProviderResourceRef(s string) {
+	m.provider_resource_ref = &s
 }
 
-// ProviderSubjectRef returns the value of the "provider_subject_ref" field in the mutation.
-func (m *KnowledgeSubjectAliasMutation) ProviderSubjectRef() (r string, exists bool) {
-	v := m.provider_subject_ref
+// ProviderResourceRef returns the value of the "provider_resource_ref" field in the mutation.
+func (m *KnowledgeSubjectAliasMutation) ProviderResourceRef() (r string, exists bool) {
+	v := m.provider_resource_ref
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderSubjectRef returns the old "provider_subject_ref" field's value of the KnowledgeSubjectAlias entity.
+// OldProviderResourceRef returns the old "provider_resource_ref" field's value of the KnowledgeSubjectAlias entity.
 // If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeSubjectAliasMutation) OldProviderSubjectRef(ctx context.Context) (v string, err error) {
+func (m *KnowledgeSubjectAliasMutation) OldProviderResourceRef(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderSubjectRef is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderResourceRef is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderSubjectRef requires an ID field in the mutation")
+		return v, errors.New("OldProviderResourceRef requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderSubjectRef: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderResourceRef: %w", err)
 	}
-	return oldValue.ProviderSubjectRef, nil
+	return oldValue.ProviderResourceRef, nil
 }
 
-// ResetProviderSubjectRef resets all changes to the "provider_subject_ref" field.
-func (m *KnowledgeSubjectAliasMutation) ResetProviderSubjectRef() {
-	m.provider_subject_ref = nil
+// ResetProviderResourceRef resets all changes to the "provider_resource_ref" field.
+func (m *KnowledgeSubjectAliasMutation) ResetProviderResourceRef() {
+	m.provider_resource_ref = nil
+}
+
+// SetSubjectKind sets the "subject_kind" field.
+func (m *KnowledgeSubjectAliasMutation) SetSubjectKind(kk knowledgesubjectalias.SubjectKind) {
+	m.subject_kind = &kk
+}
+
+// SubjectKind returns the value of the "subject_kind" field in the mutation.
+func (m *KnowledgeSubjectAliasMutation) SubjectKind() (r knowledgesubjectalias.SubjectKind, exists bool) {
+	v := m.subject_kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSubjectKind returns the old "subject_kind" field's value of the KnowledgeSubjectAlias entity.
+// If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeSubjectAliasMutation) OldSubjectKind(ctx context.Context) (v knowledgesubjectalias.SubjectKind, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSubjectKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSubjectKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSubjectKind: %w", err)
+	}
+	return oldValue.SubjectKind, nil
+}
+
+// ResetSubjectKind resets all changes to the "subject_kind" field.
+func (m *KnowledgeSubjectAliasMutation) ResetSubjectKind() {
+	m.subject_kind = nil
 }
 
 // SetEntityID sets the "entity_id" field.
@@ -31083,17 +31083,17 @@ func (m *KnowledgeSubjectAliasMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, knowledgesubjectalias.FieldTenantID)
 	}
-	if m.subject_kind != nil {
-		fields = append(fields, knowledgesubjectalias.FieldSubjectKind)
-	}
 	if m.provider != nil {
 		fields = append(fields, knowledgesubjectalias.FieldProvider)
 	}
-	if m.provider_source != nil {
-		fields = append(fields, knowledgesubjectalias.FieldProviderSource)
+	if m.provider_namespace != nil {
+		fields = append(fields, knowledgesubjectalias.FieldProviderNamespace)
 	}
-	if m.provider_subject_ref != nil {
-		fields = append(fields, knowledgesubjectalias.FieldProviderSubjectRef)
+	if m.provider_resource_ref != nil {
+		fields = append(fields, knowledgesubjectalias.FieldProviderResourceRef)
+	}
+	if m.subject_kind != nil {
+		fields = append(fields, knowledgesubjectalias.FieldSubjectKind)
 	}
 	if m.entity != nil {
 		fields = append(fields, knowledgesubjectalias.FieldEntityID)
@@ -31111,14 +31111,14 @@ func (m *KnowledgeSubjectAliasMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case knowledgesubjectalias.FieldTenantID:
 		return m.TenantID()
-	case knowledgesubjectalias.FieldSubjectKind:
-		return m.SubjectKind()
 	case knowledgesubjectalias.FieldProvider:
 		return m.Provider()
-	case knowledgesubjectalias.FieldProviderSource:
-		return m.ProviderSource()
-	case knowledgesubjectalias.FieldProviderSubjectRef:
-		return m.ProviderSubjectRef()
+	case knowledgesubjectalias.FieldProviderNamespace:
+		return m.ProviderNamespace()
+	case knowledgesubjectalias.FieldProviderResourceRef:
+		return m.ProviderResourceRef()
+	case knowledgesubjectalias.FieldSubjectKind:
+		return m.SubjectKind()
 	case knowledgesubjectalias.FieldEntityID:
 		return m.EntityID()
 	case knowledgesubjectalias.FieldRelationshipID:
@@ -31134,14 +31134,14 @@ func (m *KnowledgeSubjectAliasMutation) OldField(ctx context.Context, name strin
 	switch name {
 	case knowledgesubjectalias.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case knowledgesubjectalias.FieldSubjectKind:
-		return m.OldSubjectKind(ctx)
 	case knowledgesubjectalias.FieldProvider:
 		return m.OldProvider(ctx)
-	case knowledgesubjectalias.FieldProviderSource:
-		return m.OldProviderSource(ctx)
-	case knowledgesubjectalias.FieldProviderSubjectRef:
-		return m.OldProviderSubjectRef(ctx)
+	case knowledgesubjectalias.FieldProviderNamespace:
+		return m.OldProviderNamespace(ctx)
+	case knowledgesubjectalias.FieldProviderResourceRef:
+		return m.OldProviderResourceRef(ctx)
+	case knowledgesubjectalias.FieldSubjectKind:
+		return m.OldSubjectKind(ctx)
 	case knowledgesubjectalias.FieldEntityID:
 		return m.OldEntityID(ctx)
 	case knowledgesubjectalias.FieldRelationshipID:
@@ -31162,13 +31162,6 @@ func (m *KnowledgeSubjectAliasMutation) SetField(name string, value ent.Value) e
 		}
 		m.SetTenantID(v)
 		return nil
-	case knowledgesubjectalias.FieldSubjectKind:
-		v, ok := value.(knowledgesubjectalias.SubjectKind)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSubjectKind(v)
-		return nil
 	case knowledgesubjectalias.FieldProvider:
 		v, ok := value.(string)
 		if !ok {
@@ -31176,19 +31169,26 @@ func (m *KnowledgeSubjectAliasMutation) SetField(name string, value ent.Value) e
 		}
 		m.SetProvider(v)
 		return nil
-	case knowledgesubjectalias.FieldProviderSource:
+	case knowledgesubjectalias.FieldProviderNamespace:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderSource(v)
+		m.SetProviderNamespace(v)
 		return nil
-	case knowledgesubjectalias.FieldProviderSubjectRef:
+	case knowledgesubjectalias.FieldProviderResourceRef:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderSubjectRef(v)
+		m.SetProviderResourceRef(v)
+		return nil
+	case knowledgesubjectalias.FieldSubjectKind:
+		v, ok := value.(knowledgesubjectalias.SubjectKind)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSubjectKind(v)
 		return nil
 	case knowledgesubjectalias.FieldEntityID:
 		v, ok := value.(uuid.UUID)
@@ -31274,17 +31274,17 @@ func (m *KnowledgeSubjectAliasMutation) ResetField(name string) error {
 	case knowledgesubjectalias.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case knowledgesubjectalias.FieldSubjectKind:
-		m.ResetSubjectKind()
-		return nil
 	case knowledgesubjectalias.FieldProvider:
 		m.ResetProvider()
 		return nil
-	case knowledgesubjectalias.FieldProviderSource:
-		m.ResetProviderSource()
+	case knowledgesubjectalias.FieldProviderNamespace:
+		m.ResetProviderNamespace()
 		return nil
-	case knowledgesubjectalias.FieldProviderSubjectRef:
-		m.ResetProviderSubjectRef()
+	case knowledgesubjectalias.FieldProviderResourceRef:
+		m.ResetProviderResourceRef()
+		return nil
+	case knowledgesubjectalias.FieldSubjectKind:
+		m.ResetSubjectKind()
 		return nil
 	case knowledgesubjectalias.FieldEntityID:
 		m.ResetEntityID()
@@ -33739,27 +33739,29 @@ func (m *MeetingSessionMutation) ResetEdge(name string) error {
 // NormalizedEventMutation represents an operation that mutates the NormalizedEvent nodes in the graph.
 type NormalizedEventMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	kind                 *normalizedevent.Kind
-	provider             *string
-	provider_source      *string
-	provider_event_ref   *string
-	provider_subject_ref *string
-	subject_kind         *string
-	attributes           *[]byte
-	created_at           *time.Time
-	occurred_at          *time.Time
-	received_at          *time.Time
-	clearedFields        map[string]struct{}
-	tenant               *int
-	clearedtenant        bool
-	projection           *uuid.UUID
-	clearedprojection    bool
-	done                 bool
-	oldValue             func(context.Context) (*NormalizedEvent, error)
-	predicates           []predicate.NormalizedEvent
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	provider              *string
+	provider_namespace    *string
+	provider_resource_ref *string
+	kind                  *string
+	provider_event_source *string
+	provider_event_ref    *string
+	attributes            *[]byte
+	created_at            *time.Time
+	occurred_at           *time.Time
+	received_at           *time.Time
+	clearedFields         map[string]struct{}
+	tenant                *int
+	clearedtenant         bool
+	integration           *uuid.UUID
+	clearedintegration    bool
+	projection            *uuid.UUID
+	clearedprojection     bool
+	done                  bool
+	oldValue              func(context.Context) (*NormalizedEvent, error)
+	predicates            []predicate.NormalizedEvent
 }
 
 var _ ent.Mutation = (*NormalizedEventMutation)(nil)
@@ -33902,42 +33904,6 @@ func (m *NormalizedEventMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetKind sets the "kind" field.
-func (m *NormalizedEventMutation) SetKind(n normalizedevent.Kind) {
-	m.kind = &n
-}
-
-// Kind returns the value of the "kind" field in the mutation.
-func (m *NormalizedEventMutation) Kind() (r normalizedevent.Kind, exists bool) {
-	v := m.kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKind returns the old "kind" field's value of the NormalizedEvent entity.
-// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldKind(ctx context.Context) (v normalizedevent.Kind, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKind: %w", err)
-	}
-	return oldValue.Kind, nil
-}
-
-// ResetKind resets all changes to the "kind" field.
-func (m *NormalizedEventMutation) ResetKind() {
-	m.kind = nil
-}
-
 // SetProvider sets the "provider" field.
 func (m *NormalizedEventMutation) SetProvider(s string) {
 	m.provider = &s
@@ -33974,40 +33940,197 @@ func (m *NormalizedEventMutation) ResetProvider() {
 	m.provider = nil
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (m *NormalizedEventMutation) SetProviderSource(s string) {
-	m.provider_source = &s
+// SetProviderNamespace sets the "provider_namespace" field.
+func (m *NormalizedEventMutation) SetProviderNamespace(s string) {
+	m.provider_namespace = &s
 }
 
-// ProviderSource returns the value of the "provider_source" field in the mutation.
-func (m *NormalizedEventMutation) ProviderSource() (r string, exists bool) {
-	v := m.provider_source
+// ProviderNamespace returns the value of the "provider_namespace" field in the mutation.
+func (m *NormalizedEventMutation) ProviderNamespace() (r string, exists bool) {
+	v := m.provider_namespace
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderSource returns the old "provider_source" field's value of the NormalizedEvent entity.
+// OldProviderNamespace returns the old "provider_namespace" field's value of the NormalizedEvent entity.
 // If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldProviderSource(ctx context.Context) (v string, err error) {
+func (m *NormalizedEventMutation) OldProviderNamespace(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderNamespace is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderSource requires an ID field in the mutation")
+		return v, errors.New("OldProviderNamespace requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderNamespace: %w", err)
 	}
-	return oldValue.ProviderSource, nil
+	return oldValue.ProviderNamespace, nil
 }
 
-// ResetProviderSource resets all changes to the "provider_source" field.
-func (m *NormalizedEventMutation) ResetProviderSource() {
-	m.provider_source = nil
+// ResetProviderNamespace resets all changes to the "provider_namespace" field.
+func (m *NormalizedEventMutation) ResetProviderNamespace() {
+	m.provider_namespace = nil
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (m *NormalizedEventMutation) SetProviderResourceRef(s string) {
+	m.provider_resource_ref = &s
+}
+
+// ProviderResourceRef returns the value of the "provider_resource_ref" field in the mutation.
+func (m *NormalizedEventMutation) ProviderResourceRef() (r string, exists bool) {
+	v := m.provider_resource_ref
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderResourceRef returns the old "provider_resource_ref" field's value of the NormalizedEvent entity.
+// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NormalizedEventMutation) OldProviderResourceRef(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderResourceRef is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderResourceRef requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderResourceRef: %w", err)
+	}
+	return oldValue.ProviderResourceRef, nil
+}
+
+// ResetProviderResourceRef resets all changes to the "provider_resource_ref" field.
+func (m *NormalizedEventMutation) ResetProviderResourceRef() {
+	m.provider_resource_ref = nil
+}
+
+// SetIntegrationID sets the "integration_id" field.
+func (m *NormalizedEventMutation) SetIntegrationID(u uuid.UUID) {
+	m.integration = &u
+}
+
+// IntegrationID returns the value of the "integration_id" field in the mutation.
+func (m *NormalizedEventMutation) IntegrationID() (r uuid.UUID, exists bool) {
+	v := m.integration
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIntegrationID returns the old "integration_id" field's value of the NormalizedEvent entity.
+// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NormalizedEventMutation) OldIntegrationID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIntegrationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIntegrationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIntegrationID: %w", err)
+	}
+	return oldValue.IntegrationID, nil
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (m *NormalizedEventMutation) ClearIntegrationID() {
+	m.integration = nil
+	m.clearedFields[normalizedevent.FieldIntegrationID] = struct{}{}
+}
+
+// IntegrationIDCleared returns if the "integration_id" field was cleared in this mutation.
+func (m *NormalizedEventMutation) IntegrationIDCleared() bool {
+	_, ok := m.clearedFields[normalizedevent.FieldIntegrationID]
+	return ok
+}
+
+// ResetIntegrationID resets all changes to the "integration_id" field.
+func (m *NormalizedEventMutation) ResetIntegrationID() {
+	m.integration = nil
+	delete(m.clearedFields, normalizedevent.FieldIntegrationID)
+}
+
+// SetKind sets the "kind" field.
+func (m *NormalizedEventMutation) SetKind(s string) {
+	m.kind = &s
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *NormalizedEventMutation) Kind() (r string, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the NormalizedEvent entity.
+// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NormalizedEventMutation) OldKind(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *NormalizedEventMutation) ResetKind() {
+	m.kind = nil
+}
+
+// SetProviderEventSource sets the "provider_event_source" field.
+func (m *NormalizedEventMutation) SetProviderEventSource(s string) {
+	m.provider_event_source = &s
+}
+
+// ProviderEventSource returns the value of the "provider_event_source" field in the mutation.
+func (m *NormalizedEventMutation) ProviderEventSource() (r string, exists bool) {
+	v := m.provider_event_source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderEventSource returns the old "provider_event_source" field's value of the NormalizedEvent entity.
+// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NormalizedEventMutation) OldProviderEventSource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderEventSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderEventSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderEventSource: %w", err)
+	}
+	return oldValue.ProviderEventSource, nil
+}
+
+// ResetProviderEventSource resets all changes to the "provider_event_source" field.
+func (m *NormalizedEventMutation) ResetProviderEventSource() {
+	m.provider_event_source = nil
 }
 
 // SetProviderEventRef sets the "provider_event_ref" field.
@@ -34044,78 +34167,6 @@ func (m *NormalizedEventMutation) OldProviderEventRef(ctx context.Context) (v st
 // ResetProviderEventRef resets all changes to the "provider_event_ref" field.
 func (m *NormalizedEventMutation) ResetProviderEventRef() {
 	m.provider_event_ref = nil
-}
-
-// SetProviderSubjectRef sets the "provider_subject_ref" field.
-func (m *NormalizedEventMutation) SetProviderSubjectRef(s string) {
-	m.provider_subject_ref = &s
-}
-
-// ProviderSubjectRef returns the value of the "provider_subject_ref" field in the mutation.
-func (m *NormalizedEventMutation) ProviderSubjectRef() (r string, exists bool) {
-	v := m.provider_subject_ref
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderSubjectRef returns the old "provider_subject_ref" field's value of the NormalizedEvent entity.
-// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldProviderSubjectRef(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderSubjectRef is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderSubjectRef requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderSubjectRef: %w", err)
-	}
-	return oldValue.ProviderSubjectRef, nil
-}
-
-// ResetProviderSubjectRef resets all changes to the "provider_subject_ref" field.
-func (m *NormalizedEventMutation) ResetProviderSubjectRef() {
-	m.provider_subject_ref = nil
-}
-
-// SetSubjectKind sets the "subject_kind" field.
-func (m *NormalizedEventMutation) SetSubjectKind(s string) {
-	m.subject_kind = &s
-}
-
-// SubjectKind returns the value of the "subject_kind" field in the mutation.
-func (m *NormalizedEventMutation) SubjectKind() (r string, exists bool) {
-	v := m.subject_kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSubjectKind returns the old "subject_kind" field's value of the NormalizedEvent entity.
-// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldSubjectKind(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSubjectKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSubjectKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubjectKind: %w", err)
-	}
-	return oldValue.SubjectKind, nil
-}
-
-// ResetSubjectKind resets all changes to the "subject_kind" field.
-func (m *NormalizedEventMutation) ResetSubjectKind() {
-	m.subject_kind = nil
 }
 
 // SetAttributes sets the "attributes" field.
@@ -34289,6 +34340,33 @@ func (m *NormalizedEventMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
+// ClearIntegration clears the "integration" edge to the Integration entity.
+func (m *NormalizedEventMutation) ClearIntegration() {
+	m.clearedintegration = true
+	m.clearedFields[normalizedevent.FieldIntegrationID] = struct{}{}
+}
+
+// IntegrationCleared reports if the "integration" edge to the Integration entity was cleared.
+func (m *NormalizedEventMutation) IntegrationCleared() bool {
+	return m.IntegrationIDCleared() || m.clearedintegration
+}
+
+// IntegrationIDs returns the "integration" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IntegrationID instead. It exists only for internal usage by the builders.
+func (m *NormalizedEventMutation) IntegrationIDs() (ids []uuid.UUID) {
+	if id := m.integration; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIntegration resets all changes to the "integration" edge.
+func (m *NormalizedEventMutation) ResetIntegration() {
+	m.integration = nil
+	m.clearedintegration = false
+}
+
 // SetProjectionID sets the "projection" edge to the NormalizedEventProjection entity by id.
 func (m *NormalizedEventMutation) SetProjectionID(id uuid.UUID) {
 	m.projection = &id
@@ -34362,27 +34440,30 @@ func (m *NormalizedEventMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NormalizedEventMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.tenant != nil {
 		fields = append(fields, normalizedevent.FieldTenantID)
-	}
-	if m.kind != nil {
-		fields = append(fields, normalizedevent.FieldKind)
 	}
 	if m.provider != nil {
 		fields = append(fields, normalizedevent.FieldProvider)
 	}
-	if m.provider_source != nil {
-		fields = append(fields, normalizedevent.FieldProviderSource)
+	if m.provider_namespace != nil {
+		fields = append(fields, normalizedevent.FieldProviderNamespace)
+	}
+	if m.provider_resource_ref != nil {
+		fields = append(fields, normalizedevent.FieldProviderResourceRef)
+	}
+	if m.integration != nil {
+		fields = append(fields, normalizedevent.FieldIntegrationID)
+	}
+	if m.kind != nil {
+		fields = append(fields, normalizedevent.FieldKind)
+	}
+	if m.provider_event_source != nil {
+		fields = append(fields, normalizedevent.FieldProviderEventSource)
 	}
 	if m.provider_event_ref != nil {
 		fields = append(fields, normalizedevent.FieldProviderEventRef)
-	}
-	if m.provider_subject_ref != nil {
-		fields = append(fields, normalizedevent.FieldProviderSubjectRef)
-	}
-	if m.subject_kind != nil {
-		fields = append(fields, normalizedevent.FieldSubjectKind)
 	}
 	if m.attributes != nil {
 		fields = append(fields, normalizedevent.FieldAttributes)
@@ -34406,18 +34487,20 @@ func (m *NormalizedEventMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case normalizedevent.FieldTenantID:
 		return m.TenantID()
-	case normalizedevent.FieldKind:
-		return m.Kind()
 	case normalizedevent.FieldProvider:
 		return m.Provider()
-	case normalizedevent.FieldProviderSource:
-		return m.ProviderSource()
+	case normalizedevent.FieldProviderNamespace:
+		return m.ProviderNamespace()
+	case normalizedevent.FieldProviderResourceRef:
+		return m.ProviderResourceRef()
+	case normalizedevent.FieldIntegrationID:
+		return m.IntegrationID()
+	case normalizedevent.FieldKind:
+		return m.Kind()
+	case normalizedevent.FieldProviderEventSource:
+		return m.ProviderEventSource()
 	case normalizedevent.FieldProviderEventRef:
 		return m.ProviderEventRef()
-	case normalizedevent.FieldProviderSubjectRef:
-		return m.ProviderSubjectRef()
-	case normalizedevent.FieldSubjectKind:
-		return m.SubjectKind()
 	case normalizedevent.FieldAttributes:
 		return m.Attributes()
 	case normalizedevent.FieldCreatedAt:
@@ -34437,18 +34520,20 @@ func (m *NormalizedEventMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case normalizedevent.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case normalizedevent.FieldKind:
-		return m.OldKind(ctx)
 	case normalizedevent.FieldProvider:
 		return m.OldProvider(ctx)
-	case normalizedevent.FieldProviderSource:
-		return m.OldProviderSource(ctx)
+	case normalizedevent.FieldProviderNamespace:
+		return m.OldProviderNamespace(ctx)
+	case normalizedevent.FieldProviderResourceRef:
+		return m.OldProviderResourceRef(ctx)
+	case normalizedevent.FieldIntegrationID:
+		return m.OldIntegrationID(ctx)
+	case normalizedevent.FieldKind:
+		return m.OldKind(ctx)
+	case normalizedevent.FieldProviderEventSource:
+		return m.OldProviderEventSource(ctx)
 	case normalizedevent.FieldProviderEventRef:
 		return m.OldProviderEventRef(ctx)
-	case normalizedevent.FieldProviderSubjectRef:
-		return m.OldProviderSubjectRef(ctx)
-	case normalizedevent.FieldSubjectKind:
-		return m.OldSubjectKind(ctx)
 	case normalizedevent.FieldAttributes:
 		return m.OldAttributes(ctx)
 	case normalizedevent.FieldCreatedAt:
@@ -34473,13 +34558,6 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
-	case normalizedevent.FieldKind:
-		v, ok := value.(normalizedevent.Kind)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKind(v)
-		return nil
 	case normalizedevent.FieldProvider:
 		v, ok := value.(string)
 		if !ok {
@@ -34487,12 +34565,40 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetProvider(v)
 		return nil
-	case normalizedevent.FieldProviderSource:
+	case normalizedevent.FieldProviderNamespace:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderSource(v)
+		m.SetProviderNamespace(v)
+		return nil
+	case normalizedevent.FieldProviderResourceRef:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderResourceRef(v)
+		return nil
+	case normalizedevent.FieldIntegrationID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIntegrationID(v)
+		return nil
+	case normalizedevent.FieldKind:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
+		return nil
+	case normalizedevent.FieldProviderEventSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderEventSource(v)
 		return nil
 	case normalizedevent.FieldProviderEventRef:
 		v, ok := value.(string)
@@ -34500,20 +34606,6 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProviderEventRef(v)
-		return nil
-	case normalizedevent.FieldProviderSubjectRef:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderSubjectRef(v)
-		return nil
-	case normalizedevent.FieldSubjectKind:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSubjectKind(v)
 		return nil
 	case normalizedevent.FieldAttributes:
 		v, ok := value.([]byte)
@@ -34575,7 +34667,11 @@ func (m *NormalizedEventMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *NormalizedEventMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(normalizedevent.FieldIntegrationID) {
+		fields = append(fields, normalizedevent.FieldIntegrationID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -34588,6 +34684,11 @@ func (m *NormalizedEventMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *NormalizedEventMutation) ClearField(name string) error {
+	switch name {
+	case normalizedevent.FieldIntegrationID:
+		m.ClearIntegrationID()
+		return nil
+	}
 	return fmt.Errorf("unknown NormalizedEvent nullable field %s", name)
 }
 
@@ -34598,23 +34699,26 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 	case normalizedevent.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case normalizedevent.FieldKind:
-		m.ResetKind()
-		return nil
 	case normalizedevent.FieldProvider:
 		m.ResetProvider()
 		return nil
-	case normalizedevent.FieldProviderSource:
-		m.ResetProviderSource()
+	case normalizedevent.FieldProviderNamespace:
+		m.ResetProviderNamespace()
+		return nil
+	case normalizedevent.FieldProviderResourceRef:
+		m.ResetProviderResourceRef()
+		return nil
+	case normalizedevent.FieldIntegrationID:
+		m.ResetIntegrationID()
+		return nil
+	case normalizedevent.FieldKind:
+		m.ResetKind()
+		return nil
+	case normalizedevent.FieldProviderEventSource:
+		m.ResetProviderEventSource()
 		return nil
 	case normalizedevent.FieldProviderEventRef:
 		m.ResetProviderEventRef()
-		return nil
-	case normalizedevent.FieldProviderSubjectRef:
-		m.ResetProviderSubjectRef()
-		return nil
-	case normalizedevent.FieldSubjectKind:
-		m.ResetSubjectKind()
 		return nil
 	case normalizedevent.FieldAttributes:
 		m.ResetAttributes()
@@ -34634,9 +34738,12 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NormalizedEventMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, normalizedevent.EdgeTenant)
+	}
+	if m.integration != nil {
+		edges = append(edges, normalizedevent.EdgeIntegration)
 	}
 	if m.projection != nil {
 		edges = append(edges, normalizedevent.EdgeProjection)
@@ -34652,6 +34759,10 @@ func (m *NormalizedEventMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
+	case normalizedevent.EdgeIntegration:
+		if id := m.integration; id != nil {
+			return []ent.Value{*id}
+		}
 	case normalizedevent.EdgeProjection:
 		if id := m.projection; id != nil {
 			return []ent.Value{*id}
@@ -34662,7 +34773,7 @@ func (m *NormalizedEventMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NormalizedEventMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	return edges
 }
 
@@ -34674,9 +34785,12 @@ func (m *NormalizedEventMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NormalizedEventMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, normalizedevent.EdgeTenant)
+	}
+	if m.clearedintegration {
+		edges = append(edges, normalizedevent.EdgeIntegration)
 	}
 	if m.clearedprojection {
 		edges = append(edges, normalizedevent.EdgeProjection)
@@ -34690,6 +34804,8 @@ func (m *NormalizedEventMutation) EdgeCleared(name string) bool {
 	switch name {
 	case normalizedevent.EdgeTenant:
 		return m.clearedtenant
+	case normalizedevent.EdgeIntegration:
+		return m.clearedintegration
 	case normalizedevent.EdgeProjection:
 		return m.clearedprojection
 	}
@@ -34702,6 +34818,9 @@ func (m *NormalizedEventMutation) ClearEdge(name string) error {
 	switch name {
 	case normalizedevent.EdgeTenant:
 		m.ClearTenant()
+		return nil
+	case normalizedevent.EdgeIntegration:
+		m.ClearIntegration()
 		return nil
 	case normalizedevent.EdgeProjection:
 		m.ClearProjection()
@@ -34716,6 +34835,9 @@ func (m *NormalizedEventMutation) ResetEdge(name string) error {
 	switch name {
 	case normalizedevent.EdgeTenant:
 		m.ResetTenant()
+		return nil
+	case normalizedevent.EdgeIntegration:
+		m.ResetIntegration()
 		return nil
 	case normalizedevent.EdgeProjection:
 		m.ResetProjection()

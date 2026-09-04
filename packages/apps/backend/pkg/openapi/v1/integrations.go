@@ -68,13 +68,13 @@ type (
 	}
 
 	IntegrationInstallationAttributes struct {
-		IntegrationName string         `json:"integrationName"`
-		ProviderName    string         `json:"providerName"`
-		DisplayName     string         `json:"displayName"`
-		ExternalRef     string         `json:"externalRef"`
-		SanitizedConfig map[string]any `json:"sanitizedConfig"`
-		UserSettings    map[string]any `json:"userSettings"`
-		Capabilities    []string       `json:"capabilities"`
+		Provider                string         `json:"provider"`
+		Name                    string         `json:"name"`
+		DisplayName             string         `json:"displayName"`
+		ProviderInstallationRef string         `json:"providerInstallationRef"`
+		SanitizedConfig         map[string]any `json:"sanitizedConfig"`
+		UserSettings            map[string]any `json:"userSettings"`
+		Capabilities            []string       `json:"capabilities"`
 	}
 
 	IntegrationOAuthInstallResult struct {
@@ -84,9 +84,8 @@ type (
 	}
 
 	IntegrationInstallTarget struct {
-		IntegrationName string `json:"integrationName"`
-		ExternalRef     string `json:"externalRef"`
-		DisplayName     string `json:"displayName"`
+		ResourceRef ProviderResourceRef `json:"resourceRef"`
+		DisplayName string              `json:"displayName"`
 	}
 
 	IntegrationOAuthFlow struct {
@@ -124,12 +123,12 @@ func IntegrationInstallationFromRez(ii rez.InstalledIntegration) IntegrationInst
 	//	slog.Warn("failed to encode integration config", "error", cfgErr.Error())
 	//}
 	attrs := IntegrationInstallationAttributes{
-		ProviderName:    intg.ProviderName,
-		IntegrationName: intg.IntegrationName,
-		DisplayName:     intg.DisplayName,
-		ExternalRef:     intg.ExternalRef,
-		UserSettings:    intg.UserSettings,
-		Capabilities:    ii.Capabilities(),
+		Provider:                intg.Provider,
+		Name:                    intg.Name,
+		DisplayName:             intg.DisplayName,
+		ProviderInstallationRef: intg.ProviderInstallationRef,
+		UserSettings:            intg.UserSettings,
+		Capabilities:            ii.Capabilities(),
 		//SanitizedConfig: cfg,
 	}
 	return IntegrationInstallation{Id: intg.ID, Attributes: attrs}
@@ -138,10 +137,10 @@ func IntegrationInstallationFromRez(ii rez.InstalledIntegration) IntegrationInst
 func IntegrationInstallTargetOptionsFromRez(targets []rez.IntegrationInstallationTarget) []IntegrationInstallTarget {
 	res := make([]IntegrationInstallTarget, len(targets))
 	for i, t := range targets {
+		ref := t.Config.InstallationTargetRef()
 		res[i] = IntegrationInstallTarget{
-			IntegrationName: t.IntegrationName,
-			DisplayName:     t.DisplayName,
-			ExternalRef:     t.Config.ExternalRef(),
+			ResourceRef: ProviderResourceRefFromRez(ref),
+			DisplayName: t.DisplayName,
 		}
 	}
 	return res
@@ -222,7 +221,7 @@ var InstallIntegrationFromTargets = huma.Operation{
 }
 
 type InstallIntegrationFromTargetsRequestAttributes struct {
-	ExternalRefs []string `json:"externalRefs"`
+	ResourceRefs []string `json:"resourceRefs"`
 }
 type InstallIntegrationFromTargetsRequest NameRequest[InstallIntegrationFromTargetsRequestAttributes]
 type InstallIntegrationFromTargetsResponse CollectionResponse[IntegrationInstallation]

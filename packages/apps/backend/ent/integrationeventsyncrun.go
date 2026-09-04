@@ -25,8 +25,8 @@ type IntegrationEventSyncRun struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// IntegrationID holds the value of the "integration_id" field.
 	IntegrationID uuid.UUID `json:"integration_id,omitempty"`
-	// SourceCursors holds the value of the "source_cursors" field.
-	SourceCursors map[string]string `json:"source_cursors,omitempty"`
+	// ProviderEventSourceCursors holds the value of the "provider_event_source_cursors" field.
+	ProviderEventSourceCursors map[string]string `json:"provider_event_source_cursors,omitempty"`
 	// SyncReason holds the value of the "sync_reason" field.
 	SyncReason string `json:"sync_reason,omitempty"`
 	// StartedAt holds the value of the "started_at" field.
@@ -87,7 +87,7 @@ func (*IntegrationEventSyncRun) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case integrationeventsyncrun.FieldSourceCursors:
+		case integrationeventsyncrun.FieldProviderEventSourceCursors:
 			values[i] = new([]byte)
 		case integrationeventsyncrun.FieldTenantID, integrationeventsyncrun.FieldEventsPulled, integrationeventsyncrun.FieldEventsIngested, integrationeventsyncrun.FieldDuplicates:
 			values[i] = new(sql.NullInt64)
@@ -130,12 +130,12 @@ func (_m *IntegrationEventSyncRun) assignValues(columns []string, values []any) 
 			} else if value != nil {
 				_m.IntegrationID = *value
 			}
-		case integrationeventsyncrun.FieldSourceCursors:
+		case integrationeventsyncrun.FieldProviderEventSourceCursors:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field source_cursors", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_event_source_cursors", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.SourceCursors); err != nil {
-					return fmt.Errorf("unmarshal field source_cursors: %w", err)
+				if err := json.Unmarshal(*value, &_m.ProviderEventSourceCursors); err != nil {
+					return fmt.Errorf("unmarshal field provider_event_source_cursors: %w", err)
 				}
 			}
 		case integrationeventsyncrun.FieldSyncReason:
@@ -239,8 +239,8 @@ func (_m *IntegrationEventSyncRun) String() string {
 	builder.WriteString("integration_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IntegrationID))
 	builder.WriteString(", ")
-	builder.WriteString("source_cursors=")
-	builder.WriteString(fmt.Sprintf("%v", _m.SourceCursors))
+	builder.WriteString("provider_event_source_cursors=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ProviderEventSourceCursors))
 	builder.WriteString(", ")
 	builder.WriteString("sync_reason=")
 	builder.WriteString(_m.SyncReason)

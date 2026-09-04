@@ -93,6 +93,18 @@ func (TimestampsMixin) Fields() []ent.Field {
 	}
 }
 
+type ProviderResourceReferenceMixin struct {
+	mixin.Schema
+}
+
+func (ProviderResourceReferenceMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.String("provider").NotEmpty().Immutable(),
+		field.String("provider_namespace").Immutable(),
+		field.String("provider_resource_ref").NotEmpty().Immutable(),
+	}
+}
+
 // ArchiveMixin implements the soft delete pattern for schemas.
 type ArchiveMixin struct {
 	mixin.Schema

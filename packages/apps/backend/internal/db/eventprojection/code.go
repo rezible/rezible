@@ -16,6 +16,7 @@ const (
 	knowledgeAssertionCodeRepositoryObserved = "code_repository_exists"
 	knowledgeAssertionCodeChangeObserved     = "code_change_observed"
 	knowledgeAssertionCodeChangeRepository   = "code_change_touched_repository"
+	knowledgeAssertionCodeEntityObserved     = "code_change_related_entity_observed"
 	knowledgeAssertionCodeChangeImpact       = "code_change_related_entity"
 )
 
@@ -23,6 +24,16 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 	properties := make(map[string]any)
 	if event.Attributes.URL != "" {
 		properties["url"] = event.Attributes.URL
+	}
+	repositoryResourceRef := rez.ProviderResourceRef{
+		Provider:          event.Event.Provider,
+		ProviderNamespace: event.Event.ProviderNamespace,
+		ResourceRef:       event.Event.ProviderResourceRef,
+	}
+	repositoryEntityRef := ent.KnowledgeEntityRef{
+		Category:            kne.CategoryCode,
+		Kind:                knowledgeEntityKindRepository,
+		ProviderResourceRef: repositoryResourceRef,
 	}
 	evidence := ent.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event.Event),
@@ -32,11 +43,7 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 			DisplayName: event.Attributes.DisplayName,
 			Properties:  properties,
 		},
-		SubjectEntity: &ent.KnowledgeEntityRef{
-			Category:        kne.CategoryCode,
-			Kind:            knowledgeEntityKindRepository,
-			SubjectAliasRef: event.Event.KnowledgeSubjectAliasRef(),
-		},
+		SubjectEntity: &repositoryEntityRef,
 	}
 
 	if ingestErr := s.knowledge.IngestEvidence(ctx, event.Event, evidence); ingestErr != nil {
@@ -47,13 +54,17 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 
 func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *projections.CodeChangeEvent) ([]rez.ProjectedEntityRef, error) {
 	attributes := event.Attributes
-
 	evidenceKind := projectionEvidenceKind(event.Event)
 
+	changeResourceRef := rez.ProviderResourceRef{
+		Provider:          event.Event.Provider,
+		ProviderNamespace: event.Event.ProviderNamespace,
+		ResourceRef:       event.Event.ProviderResourceRef,
+	}
 	changeRef := ent.KnowledgeEntityRef{
-		Category:        kne.CategoryEvent,
-		Kind:            knowledgeEntityKindCodeChange,
-		SubjectAliasRef: event.Event.KnowledgeSubjectAliasRef(),
+		Category:            kne.CategoryEvent,
+		Kind:                knowledgeEntityKindCodeChange,
+		ProviderResourceRef: changeResourceRef,
 	}
 	codeChangeEvidence := ent.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
@@ -65,47 +76,64 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		SubjectEntity: &changeRef,
 	}
 
-	repoAlias := event.Event.KnowledgeSubjectAliasRef()
-	repoAlias.ProviderSubjectRef = attributes.RepositoryExternalRef
 	repositoryRef := ent.KnowledgeEntityRef{
-		Category:        kne.CategoryCode,
-		Kind:            knowledgeEntityKindRepository,
-		SubjectAliasRef: repoAlias,
+		Category:            attributes.Repository.Category,
+		Kind:                attributes.Repository.Kind,
+		ProviderResourceRef: attributes.Repository.Ref,
 	}
 	repoEntityEvidence := ent.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionCodeRepositoryObserved,
 		EffectiveAt: event.Event.OccurredAt,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
-			DisplayName: attributes.RepositoryExternalRef,
+			DisplayName: attributes.Repository.DisplayName,
+			Description: attributes.Repository.Description,
+			Properties:  attributes.Repository.Properties,
 		},
 		SubjectEntity: &repositoryRef,
 	}
 
+	changeRepositoryResourceRef := projections.DerivedRelationshipRef(knr.PredicateTouches, changeResourceRef, attributes.Repository.Ref)
+	changeRepositoryRelationship := ent.KnowledgeRelationshipRef{
+		Predicate:           knr.PredicateTouches,
+		ProviderResourceRef: changeRepositoryResourceRef,
+		Source:              changeRef,
+		Target:              repositoryRef,
+	}
 	codeChangeRepoEvidence := ent.KnowledgeEvidenceRef{
-		Kind:        evidenceKind,
-		Assertion:   knowledgeAssertionCodeChangeRepository,
-		EffectiveAt: event.Event.OccurredAt,
-		SubjectRelationship: &ent.KnowledgeRelationshipRef{
-			Predicate: knr.PredicateTouches,
-			SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
-				Provider:           event.Event.Provider,
-				ProviderSource:     event.Event.ProviderSource,
-				ProviderSubjectRef: fmt.Sprintf("change:%s:%s", event.Event.ProviderSubjectRef, attributes.RepositoryExternalRef),
+		Kind:                evidenceKind,
+		Assertion:           knowledgeAssertionCodeChangeRepository,
+		EffectiveAt:         event.Event.OccurredAt,
+		SubjectRelationship: &changeRepositoryRelationship,
+	}
+
+	evidence := []ent.KnowledgeEvidenceRef{codeChangeEvidence, repoEntityEvidence, codeChangeRepoEvidence}
+
+	for _, related := range projections.SortEntityObservations(attributes.ImpactedEntities) {
+		relatedEntityRef := ent.KnowledgeEntityRef{
+			Category:            related.Category,
+			Kind:                related.Kind,
+			ProviderResourceRef: related.Ref,
+		}
+		relatedEntityEvidence := ent.KnowledgeEvidenceRef{
+			Kind:        evidenceKind,
+			Assertion:   knowledgeAssertionCodeEntityObserved,
+			EffectiveAt: event.Event.OccurredAt,
+			SubjectState: schematypes.KnowledgeGraphSubjectState{
+				DisplayName: related.DisplayName,
+				Description: related.Description,
+				Properties:  related.Properties,
 			},
-			Source: changeRef,
-			Target: repositoryRef,
-		},
-	}
-
-	evidence := []ent.KnowledgeEvidenceRef{
-		codeChangeEvidence,
-		repoEntityEvidence,
-		codeChangeRepoEvidence,
-	}
-
-	for _, related := range projections.SortRelatedEntityRefs(attributes.RelatedEntities) {
-		evidence = append(evidence, ent.KnowledgeEvidenceRef{
+			SubjectEntity: &relatedEntityRef,
+		}
+		impactResourceRef := projections.DerivedRelationshipRef(knr.PredicateImpacts, changeResourceRef, related.Ref)
+		impactRelationship := ent.KnowledgeRelationshipRef{
+			Predicate:           knr.PredicateImpacts,
+			ProviderResourceRef: impactResourceRef,
+			Source:              changeRef,
+			Target:              relatedEntityRef,
+		}
+		impactEvidence := ent.KnowledgeEvidenceRef{
 			Kind:        evidenceKind,
 			Assertion:   knowledgeAssertionCodeChangeImpact,
 			EffectiveAt: event.Event.OccurredAt,
@@ -113,25 +141,9 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 				DisplayName: related.DisplayName,
 				Properties:  map[string]any{"entity_kind": related.Kind},
 			},
-			SubjectRelationship: &ent.KnowledgeRelationshipRef{
-				Predicate: knr.PredicateImpacts,
-				SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
-					Provider:           event.Event.Provider,
-					ProviderSource:     event.Event.ProviderSource,
-					ProviderSubjectRef: fmt.Sprintf("impacted:%s:%s", event.Event.ProviderSubjectRef, related.ExternalRef),
-				},
-				Source: changeRef,
-				Target: ent.KnowledgeEntityRef{
-					Category: related.Category,
-					Kind:     related.Kind,
-					SubjectAliasRef: ent.KnowledgeSubjectAliasRef{
-						Provider:           event.Event.Provider,
-						ProviderSource:     event.Event.ProviderSource,
-						ProviderSubjectRef: related.ExternalRef,
-					},
-				},
-			},
-		})
+			SubjectRelationship: &impactRelationship,
+		}
+		evidence = append(evidence, relatedEntityEvidence, impactEvidence)
 	}
 
 	if ingestErr := s.knowledge.IngestEvidence(ctx, event.Event, evidence...); ingestErr != nil {

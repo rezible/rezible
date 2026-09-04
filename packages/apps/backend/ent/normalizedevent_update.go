@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
@@ -29,6 +30,31 @@ type NormalizedEventUpdate struct {
 func (_u *NormalizedEventUpdate) Where(ps ...predicate.NormalizedEvent) *NormalizedEventUpdate {
 	_u.mutation.Where(ps...)
 	return _u
+}
+
+// SetIntegrationID sets the "integration_id" field.
+func (_u *NormalizedEventUpdate) SetIntegrationID(v uuid.UUID) *NormalizedEventUpdate {
+	_u.mutation.SetIntegrationID(v)
+	return _u
+}
+
+// SetNillableIntegrationID sets the "integration_id" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableIntegrationID(v *uuid.UUID) *NormalizedEventUpdate {
+	if v != nil {
+		_u.SetIntegrationID(*v)
+	}
+	return _u
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (_u *NormalizedEventUpdate) ClearIntegrationID() *NormalizedEventUpdate {
+	_u.mutation.ClearIntegrationID()
+	return _u
+}
+
+// SetIntegration sets the "integration" edge to the Integration entity.
+func (_u *NormalizedEventUpdate) SetIntegration(v *Integration) *NormalizedEventUpdate {
+	return _u.SetIntegrationID(v.ID)
 }
 
 // SetProjectionID sets the "projection" edge to the NormalizedEventProjection entity by ID.
@@ -53,6 +79,12 @@ func (_u *NormalizedEventUpdate) SetProjection(v *NormalizedEventProjection) *No
 // Mutation returns the NormalizedEventMutation object of the builder.
 func (_u *NormalizedEventUpdate) Mutation() *NormalizedEventMutation {
 	return _u.mutation
+}
+
+// ClearIntegration clears the "integration" edge to the Integration entity.
+func (_u *NormalizedEventUpdate) ClearIntegration() *NormalizedEventUpdate {
+	_u.mutation.ClearIntegration()
+	return _u
 }
 
 // ClearProjection clears the "projection" edge to the NormalizedEventProjection entity.
@@ -114,6 +146,37 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 			}
 		}
 	}
+	if _u.mutation.IntegrationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   normalizedevent.IntegrationTable,
+			Columns: []string{normalizedevent.IntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.NormalizedEvent
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IntegrationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   normalizedevent.IntegrationTable,
+			Columns: []string{normalizedevent.IntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.NormalizedEvent
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.ProjectionCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -169,6 +232,31 @@ type NormalizedEventUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetIntegrationID sets the "integration_id" field.
+func (_u *NormalizedEventUpdateOne) SetIntegrationID(v uuid.UUID) *NormalizedEventUpdateOne {
+	_u.mutation.SetIntegrationID(v)
+	return _u
+}
+
+// SetNillableIntegrationID sets the "integration_id" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableIntegrationID(v *uuid.UUID) *NormalizedEventUpdateOne {
+	if v != nil {
+		_u.SetIntegrationID(*v)
+	}
+	return _u
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (_u *NormalizedEventUpdateOne) ClearIntegrationID() *NormalizedEventUpdateOne {
+	_u.mutation.ClearIntegrationID()
+	return _u
+}
+
+// SetIntegration sets the "integration" edge to the Integration entity.
+func (_u *NormalizedEventUpdateOne) SetIntegration(v *Integration) *NormalizedEventUpdateOne {
+	return _u.SetIntegrationID(v.ID)
+}
+
 // SetProjectionID sets the "projection" edge to the NormalizedEventProjection entity by ID.
 func (_u *NormalizedEventUpdateOne) SetProjectionID(id uuid.UUID) *NormalizedEventUpdateOne {
 	_u.mutation.SetProjectionID(id)
@@ -191,6 +279,12 @@ func (_u *NormalizedEventUpdateOne) SetProjection(v *NormalizedEventProjection) 
 // Mutation returns the NormalizedEventMutation object of the builder.
 func (_u *NormalizedEventUpdateOne) Mutation() *NormalizedEventMutation {
 	return _u.mutation
+}
+
+// ClearIntegration clears the "integration" edge to the Integration entity.
+func (_u *NormalizedEventUpdateOne) ClearIntegration() *NormalizedEventUpdateOne {
+	_u.mutation.ClearIntegration()
+	return _u
 }
 
 // ClearProjection clears the "projection" edge to the NormalizedEventProjection entity.
@@ -281,6 +375,37 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 				ps[i](selector)
 			}
 		}
+	}
+	if _u.mutation.IntegrationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   normalizedevent.IntegrationTable,
+			Columns: []string{normalizedevent.IntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.NormalizedEvent
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IntegrationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   normalizedevent.IntegrationTable,
+			Columns: []string{normalizedevent.IntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.NormalizedEvent
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.ProjectionCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -27,7 +27,9 @@ export type SystemMapSelection =
 	| { kind: "relationship"; relationship: KnowledgeGraphRelationship };
 
 const makeEntityLabel = ({ attributes: attrs }: KnowledgeGraphEntity) => {
-	return attrs.latestState?.displayName || attrs.aliases[0]?.attributes.providerSubjectRef || attrs.kind;
+	return (
+		attrs.latestState?.displayName || attrs.aliases[0]?.attributes.resourceRef.resourceRef || attrs.kind
+	);
 };
 
 export class SystemMapViewController {

@@ -24,7 +24,7 @@ const makeSuggestedIntegrations = (prefs: OrganizationPreferences, installed: In
 		// suggestions.add();
 	}
 
-	const installedNames = new Set(installed.map((intg) => intg.attributes.integrationName));
+	const installedNames = new Set(installed.map((intg) => intg.attributes.name));
 	return new Map(suggestions.map((name) => [name, installedNames.has(name)]));
 };
 

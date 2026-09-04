@@ -104,5 +104,8 @@ func (h *oauthHandler) ExtractInstallationConfigFromToken(t *oauth2.Token) (*Ins
 		cfg.WebhookChannelId = channelId.String()
 	}
 
+	if validateErr := cfg.Validate(); validateErr != nil {
+		return nil, validateErr
+	}
 	return cfg, nil
 }

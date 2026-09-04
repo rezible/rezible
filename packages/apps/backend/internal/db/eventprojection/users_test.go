@@ -6,12 +6,11 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	entuser "github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
-func (s *ProjectionServiceSuite) createUserProjectionEvent(tdb rez.Database, attrs projections.UserSubjectAttributes) *ent.NormalizedEvent {
+func (s *ProjectionServiceSuite) createUserProjectionEvent(tdb rez.Database, resourceRef string, attrs projections.UserEventAttributes) *ent.NormalizedEvent {
 	ctx := s.SeedTenantContext()
 	r := s.Require()
 	encoded, attrsErr := projections.EncodeAttributes(attrs)
@@ -19,11 +18,11 @@ func (s *ProjectionServiceSuite) createUserProjectionEvent(tdb rez.Database, att
 	occurredAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
 	createEvent := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider("test").
-		SetProviderSource("users").
+		SetProviderNamespace("projection-tests").
+		SetProviderResourceRef(resourceRef).
+		SetProviderEventSource("users").
 		SetProviderEventRef("user-event-" + uuid.NewString()).
-		SetProviderSubjectRef(attrs.ExternalRef).
-		SetKind(ne.KindObserved).
-		SetSubjectKind(projections.SubjectKindUser.String()).
+		SetKind(projections.KindUser).
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
 		SetAttributes(encoded)
@@ -39,14 +38,13 @@ func (s *ProjectionServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntit
 
 	projector := s.projectionService(tdb)
 
-	attrs := projections.UserSubjectAttributes{
-		ExternalRef: "user-1",
-		Name:        "Projected User",
-		Email:       "projected+" + uuid.NewString() + "@example.com",
-		ChatId:      "U123",
-		Timezone:    "Australia/Sydney",
+	attrs := projections.UserEventAttributes{
+		Name:     "Projected User",
+		Email:    "projected+" + uuid.NewString() + "@example.com",
+		ChatId:   "U123",
+		Timezone: "Australia/Sydney",
 	}
-	ev := s.createUserProjectionEvent(tdb, attrs)
+	ev := s.createUserProjectionEvent(tdb, "user-1", attrs)
 
 	r := s.Require()
 
@@ -78,12 +76,11 @@ func (s *ProjectionServiceSuite) TestUserProjectionReusesExistingEmailUser() {
 
 	projector := s.projectionService(tdb)
 
-	attrs := projections.UserSubjectAttributes{
-		ExternalRef: "user-2",
-		Name:        "Existing Updated",
-		Email:       email,
+	attrs := projections.UserEventAttributes{
+		Name:  "Existing Updated",
+		Email: email,
 	}
-	ev := s.createUserProjectionEvent(tdb, attrs)
+	ev := s.createUserProjectionEvent(tdb, "user-2", attrs)
 
 	_, projErr := runProjection(ctx, projector, ev)
 	r.NoError(projErr)
@@ -104,12 +101,11 @@ func (s *ProjectionServiceSuite) TestUserProjectionFailsWhenKnowledgeLinkConflic
 	r := s.Require()
 
 	userRef := "user-3"
-	firstAttrs := projections.UserSubjectAttributes{
-		ExternalRef: userRef,
-		Name:        "Linked User",
-		Email:       "linked+" + uuid.NewString() + "@example.com",
+	firstAttrs := projections.UserEventAttributes{
+		Name:  "Linked User",
+		Email: "linked+" + uuid.NewString() + "@example.com",
 	}
-	first := s.createUserProjectionEvent(tdb, firstAttrs)
+	first := s.createUserProjectionEvent(tdb, userRef, firstAttrs)
 
 	projector := s.projectionService(tdb)
 
@@ -122,12 +118,11 @@ func (s *ProjectionServiceSuite) TestUserProjectionFailsWhenKnowledgeLinkConflic
 		SetName("Email Owner")
 	r.NoError(createUser.Exec(ctx))
 
-	secondAttrs := projections.UserSubjectAttributes{
-		ExternalRef: userRef,
-		Name:        "Linked User",
-		Email:       conflictEmail,
+	secondAttrs := projections.UserEventAttributes{
+		Name:  "Linked User",
+		Email: conflictEmail,
 	}
-	second := s.createUserProjectionEvent(tdb, secondAttrs)
+	second := s.createUserProjectionEvent(tdb, userRef, secondAttrs)
 	evidenceBefore, queryEvidenceErr := tdb.Client(ctx).KnowledgeEvidence.Query().Count(ctx)
 	r.NoError(queryEvidenceErr)
 

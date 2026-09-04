@@ -11,8 +11,23 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
+
+type ProviderResourceRef struct {
+	Provider          string `json:"provider"`
+	ProviderNamespace string `json:"providerNamespace"`
+	ResourceRef       string `json:"resourceRef"`
+}
+
+func ProviderResourceRefFromRez(ref rez.ProviderResourceRef) ProviderResourceRef {
+	return ProviderResourceRef{
+		Provider:          ref.Provider,
+		ProviderNamespace: ref.ProviderNamespace,
+		ResourceRef:       ref.ResourceRef,
+	}
+}
 
 type Expandable[Attrs any] struct {
 	Id         uuid.UUID `json:"id"`

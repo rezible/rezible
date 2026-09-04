@@ -54,10 +54,10 @@ export class IntegrationProviderConfigController {
 		});
 	}
 
-	async startOAuthFlow(integrationName: string) {
+	async startOAuthFlow(name: string) {
 		if (this.loading) return;
 		try {
-			await this.oauth.startFlowFor(integrationName);
+			await this.oauth.startFlowFor(name);
 		} catch (e) {
 			this.setConfigError(e);
 		}

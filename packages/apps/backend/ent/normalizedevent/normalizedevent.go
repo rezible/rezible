@@ -3,7 +3,6 @@
 package normalizedevent
 
 import (
-	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -19,18 +18,20 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldKind holds the string denoting the kind field in the database.
-	FieldKind = "kind"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
-	// FieldProviderSource holds the string denoting the provider_source field in the database.
-	FieldProviderSource = "provider_source"
+	// FieldProviderNamespace holds the string denoting the provider_namespace field in the database.
+	FieldProviderNamespace = "provider_namespace"
+	// FieldProviderResourceRef holds the string denoting the provider_resource_ref field in the database.
+	FieldProviderResourceRef = "provider_resource_ref"
+	// FieldIntegrationID holds the string denoting the integration_id field in the database.
+	FieldIntegrationID = "integration_id"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
+	// FieldProviderEventSource holds the string denoting the provider_event_source field in the database.
+	FieldProviderEventSource = "provider_event_source"
 	// FieldProviderEventRef holds the string denoting the provider_event_ref field in the database.
 	FieldProviderEventRef = "provider_event_ref"
-	// FieldProviderSubjectRef holds the string denoting the provider_subject_ref field in the database.
-	FieldProviderSubjectRef = "provider_subject_ref"
-	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
-	FieldSubjectKind = "subject_kind"
 	// FieldAttributes holds the string denoting the attributes field in the database.
 	FieldAttributes = "attributes"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -41,6 +42,8 @@ const (
 	FieldReceivedAt = "received_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeIntegration holds the string denoting the integration edge name in mutations.
+	EdgeIntegration = "integration"
 	// EdgeProjection holds the string denoting the projection edge name in mutations.
 	EdgeProjection = "projection"
 	// Table holds the table name of the normalizedevent in the database.
@@ -52,6 +55,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// IntegrationTable is the table that holds the integration relation/edge.
+	IntegrationTable = "normalized_events"
+	// IntegrationInverseTable is the table name for the Integration entity.
+	// It exists in this package in order to avoid circular dependency with the "integration" package.
+	IntegrationInverseTable = "integrations"
+	// IntegrationColumn is the table column denoting the integration relation/edge.
+	IntegrationColumn = "integration_id"
 	// ProjectionTable is the table that holds the projection relation/edge.
 	ProjectionTable = "normalized_events"
 	// ProjectionInverseTable is the table name for the NormalizedEventProjection entity.
@@ -65,12 +75,13 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldKind,
 	FieldProvider,
-	FieldProviderSource,
+	FieldProviderNamespace,
+	FieldProviderResourceRef,
+	FieldIntegrationID,
+	FieldKind,
+	FieldProviderEventSource,
 	FieldProviderEventRef,
-	FieldProviderSubjectRef,
-	FieldSubjectKind,
 	FieldAttributes,
 	FieldCreatedAt,
 	FieldOccurredAt,
@@ -108,41 +119,19 @@ var (
 	Policy ent.Policy
 	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	ProviderValidator func(string) error
-	// ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
-	ProviderSourceValidator func(string) error
+	// ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
+	ProviderResourceRefValidator func(string) error
+	// KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	KindValidator func(string) error
+	// ProviderEventSourceValidator is a validator for the "provider_event_source" field. It is called by the builders before save.
+	ProviderEventSourceValidator func(string) error
 	// ProviderEventRefValidator is a validator for the "provider_event_ref" field. It is called by the builders before save.
 	ProviderEventRefValidator func(string) error
-	// ProviderSubjectRefValidator is a validator for the "provider_subject_ref" field. It is called by the builders before save.
-	ProviderSubjectRefValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// Kind defines the type for the "kind" enum field.
-type Kind string
-
-// Kind values.
-const (
-	KindReceived Kind = "received"
-	KindObserved Kind = "observed"
-	KindDeleted  Kind = "deleted"
-)
-
-func (k Kind) String() string {
-	return string(k)
-}
-
-// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
-func KindValidator(k Kind) error {
-	switch k {
-	case KindReceived, KindObserved, KindDeleted:
-		return nil
-	default:
-		return fmt.Errorf("normalizedevent: invalid enum value for kind field: %q", k)
-	}
-}
 
 // OrderOption defines the ordering options for the NormalizedEvent queries.
 type OrderOption func(*sql.Selector)
@@ -157,34 +146,39 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByKind orders the results by the kind field.
-func ByKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKind, opts...).ToFunc()
-}
-
 // ByProvider orders the results by the provider field.
 func ByProvider(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProvider, opts...).ToFunc()
 }
 
-// ByProviderSource orders the results by the provider_source field.
-func ByProviderSource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderSource, opts...).ToFunc()
+// ByProviderNamespace orders the results by the provider_namespace field.
+func ByProviderNamespace(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderNamespace, opts...).ToFunc()
+}
+
+// ByProviderResourceRef orders the results by the provider_resource_ref field.
+func ByProviderResourceRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderResourceRef, opts...).ToFunc()
+}
+
+// ByIntegrationID orders the results by the integration_id field.
+func ByIntegrationID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIntegrationID, opts...).ToFunc()
+}
+
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
+}
+
+// ByProviderEventSource orders the results by the provider_event_source field.
+func ByProviderEventSource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderEventSource, opts...).ToFunc()
 }
 
 // ByProviderEventRef orders the results by the provider_event_ref field.
 func ByProviderEventRef(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderEventRef, opts...).ToFunc()
-}
-
-// ByProviderSubjectRef orders the results by the provider_subject_ref field.
-func ByProviderSubjectRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderSubjectRef, opts...).ToFunc()
-}
-
-// BySubjectKind orders the results by the subject_kind field.
-func BySubjectKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSubjectKind, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -209,6 +203,13 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByIntegrationField orders the results by integration field.
+func ByIntegrationField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIntegrationStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByProjectionField orders the results by projection field.
 func ByProjectionField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -220,6 +221,13 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newIntegrationStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IntegrationInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, IntegrationTable, IntegrationColumn),
 	)
 }
 func newProjectionStep() *sqlgraph.Step {

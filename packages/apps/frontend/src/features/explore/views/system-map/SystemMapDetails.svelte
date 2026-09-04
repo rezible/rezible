@@ -16,7 +16,7 @@
 	const classification = $derived(entity?.attributes.kind ?? relationship?.attributes.predicate);
 	const title = $derived(
 		state?.displayName ||
-			(entity?.attributes.aliases[0]?.attributes.providerSubjectRef ??
+			(entity?.attributes.aliases[0]?.attributes.resourceRef.resourceRef ??
 				relationship?.attributes.predicate) ||
 			"Knowledge detail"
 	);
@@ -64,7 +64,8 @@
 				<div class="flex flex-wrap gap-1">
 					{#each attributes?.aliases ?? [] as alias (alias.id)}
 						<Badge variant="outline">
-							{alias.attributes.provider} · {alias.attributes.providerSource}
+							{alias.attributes.resourceRef.provider} · {alias.attributes.resourceRef
+								.providerNamespace} · {alias.attributes.resourceRef.resourceRef}
 						</Badge>
 					{/each}
 				</div>

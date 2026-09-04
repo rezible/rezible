@@ -18,14 +18,14 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
-	FieldSubjectKind = "subject_kind"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
-	// FieldProviderSource holds the string denoting the provider_source field in the database.
-	FieldProviderSource = "provider_source"
-	// FieldProviderSubjectRef holds the string denoting the provider_subject_ref field in the database.
-	FieldProviderSubjectRef = "provider_subject_ref"
+	// FieldProviderNamespace holds the string denoting the provider_namespace field in the database.
+	FieldProviderNamespace = "provider_namespace"
+	// FieldProviderResourceRef holds the string denoting the provider_resource_ref field in the database.
+	FieldProviderResourceRef = "provider_resource_ref"
+	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
+	FieldSubjectKind = "subject_kind"
 	// FieldEntityID holds the string denoting the entity_id field in the database.
 	FieldEntityID = "entity_id"
 	// FieldRelationshipID holds the string denoting the relationship_id field in the database.
@@ -74,10 +74,10 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldSubjectKind,
 	FieldProvider,
-	FieldProviderSource,
-	FieldProviderSubjectRef,
+	FieldProviderNamespace,
+	FieldProviderResourceRef,
+	FieldSubjectKind,
 	FieldEntityID,
 	FieldRelationshipID,
 }
@@ -102,10 +102,8 @@ var (
 	Policy ent.Policy
 	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	ProviderValidator func(string) error
-	// ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
-	ProviderSourceValidator func(string) error
-	// ProviderSubjectRefValidator is a validator for the "provider_subject_ref" field. It is called by the builders before save.
-	ProviderSubjectRefValidator func(string) error
+	// ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
+	ProviderResourceRefValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -146,24 +144,24 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// BySubjectKind orders the results by the subject_kind field.
-func BySubjectKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSubjectKind, opts...).ToFunc()
-}
-
 // ByProvider orders the results by the provider field.
 func ByProvider(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProvider, opts...).ToFunc()
 }
 
-// ByProviderSource orders the results by the provider_source field.
-func ByProviderSource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderSource, opts...).ToFunc()
+// ByProviderNamespace orders the results by the provider_namespace field.
+func ByProviderNamespace(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderNamespace, opts...).ToFunc()
 }
 
-// ByProviderSubjectRef orders the results by the provider_subject_ref field.
-func ByProviderSubjectRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderSubjectRef, opts...).ToFunc()
+// ByProviderResourceRef orders the results by the provider_resource_ref field.
+func ByProviderResourceRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderResourceRef, opts...).ToFunc()
+}
+
+// BySubjectKind orders the results by the subject_kind field.
+func BySubjectKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubjectKind, opts...).ToFunc()
 }
 
 // ByEntityID orders the results by the entity_id field.

@@ -21,6 +21,16 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 	event := e.Event
 	attributes := e.Attributes
 
+	userResourceRef := rez.ProviderResourceRef{
+		Provider:          event.Provider,
+		ProviderNamespace: event.ProviderNamespace,
+		ResourceRef:       event.ProviderResourceRef,
+	}
+	userEntityRef := ent.KnowledgeEntityRef{
+		Category:            kne.CategoryActor,
+		Kind:                knowledgeEntityKindUser,
+		ProviderResourceRef: userResourceRef,
+	}
 	userObservedEvidence := ent.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event),
 		Assertion:   knowledgeAssertionUserProfileObserved,
@@ -30,16 +40,12 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 			Description: "",
 			Properties:  nil,
 		},
-		SubjectEntity: &ent.KnowledgeEntityRef{
-			Category:        kne.CategoryActor,
-			Kind:            knowledgeEntityKindUser,
-			SubjectAliasRef: event.KnowledgeSubjectAliasRef(),
-		},
+		SubjectEntity: &userEntityRef,
 	}
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		subj, ingestErr := s.knowledge.IngestSubjectEvidence(ctx, event, userObservedEvidence)
+		subj, ingestErr := s.ingestSubjectEvidence(ctx, event, userObservedEvidence)
 		if ingestErr != nil {
 			return fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
 		} else if subj.EntityID == nil {
@@ -60,7 +66,7 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 	})
 }
 
-func (s *ProjectionService) setUserFromProjection(ctx context.Context, knowledgeEntityId uuid.UUID, attrs projections.UserSubjectAttributes) (uuid.UUID, error) {
+func (s *ProjectionService) setUserFromProjection(ctx context.Context, knowledgeEntityId uuid.UUID, attrs projections.UserEventAttributes) (uuid.UUID, error) {
 	linkedPred := user.KnowledgeEntityID(knowledgeEntityId)
 	if attrs.Email != "" {
 		linkedPred = user.Or(linkedPred, user.Email(attrs.Email))

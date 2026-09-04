@@ -115,21 +115,28 @@ func (s *AppService[A]) OAuth2Config() *oauth2.Config {
 	return s.oauthHandler.OAuth2Config()
 }
 
+func (s *AppService[A]) ValidateInstallationConfig(raw []byte) (rez.IntegrationInstallationConfig, error) {
+	credentials, configErr := GetValidatedConfig(raw)
+	if configErr != nil {
+		return nil, configErr
+	}
+	return MakeInstallationConfig(s.integrationName, credentials), nil
+}
+
 func (s *AppService[A]) RetrieveInstallationTargetOptions(ctx context.Context, t *oauth2.Token) ([]rez.IntegrationInstallationTarget, error) {
 	cfg, cfgErr := s.oauthHandler.ExtractInstallationConfigFromToken(t)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("extract config: %w", cfgErr)
 	}
 	targets := []rez.IntegrationInstallationTarget{{
-		IntegrationName: s.integrationName,
-		DisplayName:     cfg.DisplayName(),
-		Config:          cfg,
+		DisplayName: cfg.DisplayName(),
+		Config:      MakeInstallationConfig(s.integrationName, cfg),
 	}}
 	return targets, nil
 }
 
 func (s *AppService[A]) createInstallationContext(ctx context.Context, ids InstallationIds) (*ent.Integration, context.Context, error) {
-	lookupIntegrationsPred := in.And(in.IntegrationName(s.integrationName), in.ExternalRef(ids.asRef()))
+	lookupIntegrationsPred := in.And(in.Name(s.integrationName), in.ProviderInstallationRef(ids.InstallationTargetResourceRef()))
 	intg, lookupErr := s.intgs.LookupInstallation(execution.NewSystemContext(ctx), lookupIntegrationsPred)
 	if lookupErr != nil {
 		return nil, ctx, fmt.Errorf("listing configured integrations: %w", lookupErr)

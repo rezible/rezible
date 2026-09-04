@@ -85,7 +85,7 @@ ALTER TABLE "normalized_event_projection_entities" DROP CONSTRAINT "normalized_e
 -- reverse: modify "normalized_event_projections" table
 ALTER TABLE "normalized_event_projections" DROP CONSTRAINT "normalized_event_projections_normalized_events_event", DROP CONSTRAINT "normalized_event_projections_tenants_tenant";
 -- reverse: modify "normalized_events" table
-ALTER TABLE "normalized_events" DROP CONSTRAINT "normalized_events_normalized_event_projections_projection", DROP CONSTRAINT "normalized_events_tenants_tenant";
+ALTER TABLE "normalized_events" DROP CONSTRAINT "normalized_events_normalized_event_projections_projection", DROP CONSTRAINT "normalized_events_integrations_integration", DROP CONSTRAINT "normalized_events_tenants_tenant";
 -- reverse: modify "meeting_sessions" table
 ALTER TABLE "meeting_sessions" DROP CONSTRAINT "meeting_sessions_meeting_schedules_schedule", DROP CONSTRAINT "meeting_sessions_tenants_tenant";
 -- reverse: modify "meeting_schedules" table
@@ -380,10 +380,10 @@ DROP TABLE "normalized_event_projection_entities";
 DROP INDEX "normalizedeventprojection_tenant_id";
 -- reverse: create "normalized_event_projections" table
 DROP TABLE "normalized_event_projections";
--- reverse: create index "normalizedevent_tenant_id_provider_provider_source_occurred_at" to table: "normalized_events"
-DROP INDEX "normalizedevent_tenant_id_provider_provider_source_occurred_at";
--- reverse: create index "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433" to table: "normalized_events"
-DROP INDEX "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433";
+-- reverse: create index "normalizedevent_tenant_id_prov_10dd43e74e4eae61bb4f932ebd007126" to table: "normalized_events"
+DROP INDEX "normalizedevent_tenant_id_prov_10dd43e74e4eae61bb4f932ebd007126";
+-- reverse: create index "normalizedevent_tenant_id_prov_90f96a3ac3cd6b50b4760368ebb3367b" to table: "normalized_events"
+DROP INDEX "normalizedevent_tenant_id_prov_90f96a3ac3cd6b50b4760368ebb3367b";
 -- reverse: create index "normalizedevent_tenant_id" to table: "normalized_events"
 DROP INDEX "normalizedevent_tenant_id";
 -- reverse: create "normalized_events" table
@@ -400,8 +400,8 @@ DROP TABLE "meeting_schedules";
 DROP INDEX "knowledgesubjectalias_tenant_id_relationship_id";
 -- reverse: create index "knowledgesubjectalias_tenant_id_entity_id" to table: "knowledge_subject_alias"
 DROP INDEX "knowledgesubjectalias_tenant_id_entity_id";
--- reverse: create index "knowledgesubjectalias_tenant_i_855375c347ac09b9e29dbdf061830b81" to table: "knowledge_subject_alias"
-DROP INDEX "knowledgesubjectalias_tenant_i_855375c347ac09b9e29dbdf061830b81";
+-- reverse: create index "knowledgesubjectalias_tenant_i_63224b308164c14d49a6ab9ee6e09fbf" to table: "knowledge_subject_alias"
+DROP INDEX "knowledgesubjectalias_tenant_i_63224b308164c14d49a6ab9ee6e09fbf";
 -- reverse: create index "knowledgesubjectalias_tenant_id" to table: "knowledge_subject_alias"
 DROP INDEX "knowledgesubjectalias_tenant_id";
 -- reverse: create "knowledge_subject_alias" table
@@ -448,18 +448,16 @@ DROP INDEX "integrationeventsyncrun_tenant_id_integration_id_started_at";
 DROP INDEX "integrationeventsyncrun_tenant_id";
 -- reverse: create "integration_event_sync_runs" table
 DROP TABLE "integration_event_sync_runs";
--- reverse: create index "integrationeventsynccursor_ten_914d3d8b389cb5d930bdf0bb43683869" to table: "integration_event_sync_cursors"
-DROP INDEX "integrationeventsynccursor_ten_914d3d8b389cb5d930bdf0bb43683869";
+-- reverse: create index "integrationeventsynccursor_ten_a26c037e9b0ef05d669054c1b2d81229" to table: "integration_event_sync_cursors"
+DROP INDEX "integrationeventsynccursor_ten_a26c037e9b0ef05d669054c1b2d81229";
 -- reverse: create index "integrationeventsynccursor_tenant_id" to table: "integration_event_sync_cursors"
 DROP INDEX "integrationeventsynccursor_tenant_id";
 -- reverse: create "integration_event_sync_cursors" table
 DROP TABLE "integration_event_sync_cursors";
--- reverse: create index "integration_tenant_id_integration_name_external_ref" to table: "integrations"
-DROP INDEX "integration_tenant_id_integration_name_external_ref";
 -- reverse: create index "integration_tenant_id_provider_name" to table: "integrations"
 DROP INDEX "integration_tenant_id_provider_name";
--- reverse: create index "integration_tenant_id_integration_name" to table: "integrations"
-DROP INDEX "integration_tenant_id_integration_name";
+-- reverse: create index "integration_tenant_id_provider_name_provider_installation_ref" to table: "integrations"
+DROP INDEX "integration_tenant_id_provider_name_provider_installation_ref";
 -- reverse: create index "integration_tenant_id" to table: "integrations"
 DROP INDEX "integration_tenant_id";
 -- reverse: create "integrations" table
@@ -588,10 +586,8 @@ DROP INDEX "agentturn_agent_session_id_sequence";
 DROP INDEX "agentturn_tenant_id";
 -- reverse: create "agent_turns" table
 DROP TABLE "agent_turns";
--- reverse: create index "agent_session_binding_one_per_source_resource" to table: "agent_session_bindings"
-DROP INDEX "agent_session_binding_one_per_source_resource";
--- reverse: create index "agent_session_binding_one_per_integration_resource" to table: "agent_session_bindings"
-DROP INDEX "agent_session_binding_one_per_integration_resource";
+-- reverse: create index "agentsessionbinding_tenant_id__b7df457d899c87ec57565071d8963d03" to table: "agent_session_bindings"
+DROP INDEX "agentsessionbinding_tenant_id__b7df457d899c87ec57565071d8963d03";
 -- reverse: create index "agentsessionbinding_tenant_id_agent_session_id" to table: "agent_session_bindings"
 DROP INDEX "agentsessionbinding_tenant_id_agent_session_id";
 -- reverse: create index "agentsessionbinding_tenant_id" to table: "agent_session_bindings"

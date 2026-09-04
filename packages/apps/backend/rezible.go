@@ -2,6 +2,7 @@ package rez
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"iter"
 	"log/slog"
@@ -195,7 +196,6 @@ type (
 		GetView(context.Context, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
 
 		IngestEvidence(context.Context, *ent.NormalizedEvent, ...ent.KnowledgeEvidenceRef) error
-		IngestSubjectEvidence(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error)
 	}
 )
 
@@ -246,27 +246,27 @@ type (
 	}
 )
 
+type ProviderResourceRef = ent.ProviderResourceRef
+
 type (
 	ProviderEvent struct {
-		Provider           string
-		ProviderSource     string
-		ProviderSubjectRef string
-		ProviderEventRef   string
-		ReceivedAt         time.Time
-		Payload            []byte
-		ContentType        string
-		RequestMetadata    map[string]string
+		Provider            string
+		ProviderNamespace   string
+		ProviderEventSource string
+		ProviderEventRef    string
+		Attributes          json.RawMessage
+		ReceivedAt          time.Time
 	}
 
 	ProviderEventQueryResult struct {
-		Event             ProviderEvent
-		SourceCursorAfter *string
+		Event                          ProviderEvent
+		ProviderEventSourceCursorAfter *string
 	}
 
-	ProviderEventQuerySourceCursors map[string]string
+	ProviderEventSourceCursors map[string]string
 
 	ProviderEventQuerier interface {
-		QueryProviderEvents(context.Context, ProviderEventQuerySourceCursors) iter.Seq2[*ProviderEventQueryResult, error]
+		QueryProviderEvents(context.Context, ProviderEventSourceCursors) iter.Seq2[*ProviderEventQueryResult, error]
 	}
 
 	ProviderEventProcessor interface {
@@ -292,8 +292,8 @@ type (
 
 	ProviderEventSyncResult struct {
 		SourceSyncDurations map[string]time.Duration
+		SourceCursorsAfter  ProviderEventSourceCursors
 		SyncErrors          []error
-		SourceCursorsAfter  ProviderEventQuerySourceCursors
 		EventsPulled        int
 		EventsIngested      int
 		NumDuplicates       int
@@ -301,9 +301,14 @@ type (
 
 	ProviderEventPipelineService interface {
 		Ingest(context.Context, ProviderEvent) error
-		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventQuerySourceCursors) ProviderEventSyncResult
+		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSourceCursors) ProviderEventSyncResult
 	}
 )
+
+func (c ProviderEventSourceCursors) GetForSource(source string) (string, bool) {
+	sc, ok := c[source]
+	return sc, ok || len(c) == 0
+}
 
 type (
 	IntegrationDefinition interface {
@@ -322,7 +327,7 @@ type (
 
 	IntegrationInstallationConfig interface {
 		Encode() ([]byte, error)
-		ExternalRef() string
+		InstallationTargetRef() ProviderResourceRef
 	}
 
 	InstalledIntegration interface {
@@ -358,15 +363,14 @@ type (
 	}
 
 	CompleteIntegrationOAuth2FlowResult struct {
-		InstallationTargetSelectionRequired bool
 		Installed                           []InstalledIntegration
+		InstallationTargetSelectionRequired bool
 		InstallationTargetOptions           []IntegrationInstallationTarget
 	}
 
 	IntegrationInstallationTarget struct {
-		IntegrationName string
-		DisplayName     string
-		Config          IntegrationInstallationConfig
+		DisplayName string
+		Config      IntegrationInstallationConfig
 	}
 
 	GetAvailableAgentToolsParams struct {
@@ -592,10 +596,8 @@ type (
 	}
 
 	AgentSessionBindingParams struct {
+		ProviderResourceRef
 		IntegrationID *uuid.UUID
-		Source        string
-		ResourceKind  string
-		ResourceRef   string
 		Metadata      map[string]any
 	}
 

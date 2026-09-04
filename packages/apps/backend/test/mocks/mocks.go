@@ -841,80 +841,6 @@ func (_c *MockKnowledgeGraphService_IngestEvidence_Call) RunAndReturn(run func(c
 	return _c
 }
 
-// IngestSubjectEvidence provides a mock function for the type MockKnowledgeGraphService
-func (_mock *MockKnowledgeGraphService) IngestSubjectEvidence(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRef ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error) {
-	ret := _mock.Called(context1, normalizedEvent, knowledgeEvidenceRef)
-
-	if len(ret) == 0 {
-		panic("no return value specified for IngestSubjectEvidence")
-	}
-
-	var r0 *ent.KnowledgeSubjectAlias
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error)); ok {
-		return returnFunc(context1, normalizedEvent, knowledgeEvidenceRef)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) *ent.KnowledgeSubjectAlias); ok {
-		r0 = returnFunc(context1, normalizedEvent, knowledgeEvidenceRef)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.KnowledgeSubjectAlias)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.NormalizedEvent, ent.KnowledgeEvidenceRef) error); ok {
-		r1 = returnFunc(context1, normalizedEvent, knowledgeEvidenceRef)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockKnowledgeGraphService_IngestSubjectEvidence_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IngestSubjectEvidence'
-type MockKnowledgeGraphService_IngestSubjectEvidence_Call struct {
-	*mock.Call
-}
-
-// IngestSubjectEvidence is a helper method to define mock.On call
-//   - context1 context.Context
-//   - normalizedEvent *ent.NormalizedEvent
-//   - knowledgeEvidenceRef ent.KnowledgeEvidenceRef
-func (_e *MockKnowledgeGraphService_Expecter) IngestSubjectEvidence(context1 interface{}, normalizedEvent interface{}, knowledgeEvidenceRef interface{}) *MockKnowledgeGraphService_IngestSubjectEvidence_Call {
-	return &MockKnowledgeGraphService_IngestSubjectEvidence_Call{Call: _e.mock.On("IngestSubjectEvidence", context1, normalizedEvent, knowledgeEvidenceRef)}
-}
-
-func (_c *MockKnowledgeGraphService_IngestSubjectEvidence_Call) Run(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRef ent.KnowledgeEvidenceRef)) *MockKnowledgeGraphService_IngestSubjectEvidence_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 *ent.NormalizedEvent
-		if args[1] != nil {
-			arg1 = args[1].(*ent.NormalizedEvent)
-		}
-		var arg2 ent.KnowledgeEvidenceRef
-		if args[2] != nil {
-			arg2 = args[2].(ent.KnowledgeEvidenceRef)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockKnowledgeGraphService_IngestSubjectEvidence_Call) Return(knowledgeSubjectAlias *ent.KnowledgeSubjectAlias, err error) *MockKnowledgeGraphService_IngestSubjectEvidence_Call {
-	_c.Call.Return(knowledgeSubjectAlias, err)
-	return _c
-}
-
-func (_c *MockKnowledgeGraphService_IngestSubjectEvidence_Call) RunAndReturn(run func(context1 context.Context, normalizedEvent *ent.NormalizedEvent, knowledgeEvidenceRef ent.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error)) *MockKnowledgeGraphService_IngestSubjectEvidence_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // ListEntities provides a mock function for the type MockKnowledgeGraphService
 func (_mock *MockKnowledgeGraphService) ListEntities(context1 context.Context, listKnowledgeGraphEntitiesParams rez.ListKnowledgeGraphEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error) {
 	ret := _mock.Called(context1, listKnowledgeGraphEntitiesParams)
@@ -2453,16 +2379,16 @@ func (_c *MockProviderEventPipelineService_Ingest_Call) RunAndReturn(run func(co
 }
 
 // SyncEvents provides a mock function for the type MockProviderEventPipelineService
-func (_mock *MockProviderEventPipelineService) SyncEvents(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventQuerySourceCursors rez.ProviderEventQuerySourceCursors) rez.ProviderEventSyncResult {
-	ret := _mock.Called(context1, providerEventQuerier, providerEventQuerySourceCursors)
+func (_mock *MockProviderEventPipelineService) SyncEvents(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventSourceCursors rez.ProviderEventSourceCursors) rez.ProviderEventSyncResult {
+	ret := _mock.Called(context1, providerEventQuerier, providerEventSourceCursors)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SyncEvents")
 	}
 
 	var r0 rez.ProviderEventSyncResult
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ProviderEventQuerier, rez.ProviderEventQuerySourceCursors) rez.ProviderEventSyncResult); ok {
-		r0 = returnFunc(context1, providerEventQuerier, providerEventQuerySourceCursors)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ProviderEventQuerier, rez.ProviderEventSourceCursors) rez.ProviderEventSyncResult); ok {
+		r0 = returnFunc(context1, providerEventQuerier, providerEventSourceCursors)
 	} else {
 		r0 = ret.Get(0).(rez.ProviderEventSyncResult)
 	}
@@ -2477,12 +2403,12 @@ type MockProviderEventPipelineService_SyncEvents_Call struct {
 // SyncEvents is a helper method to define mock.On call
 //   - context1 context.Context
 //   - providerEventQuerier rez.ProviderEventQuerier
-//   - providerEventQuerySourceCursors rez.ProviderEventQuerySourceCursors
-func (_e *MockProviderEventPipelineService_Expecter) SyncEvents(context1 interface{}, providerEventQuerier interface{}, providerEventQuerySourceCursors interface{}) *MockProviderEventPipelineService_SyncEvents_Call {
-	return &MockProviderEventPipelineService_SyncEvents_Call{Call: _e.mock.On("SyncEvents", context1, providerEventQuerier, providerEventQuerySourceCursors)}
+//   - providerEventSourceCursors rez.ProviderEventSourceCursors
+func (_e *MockProviderEventPipelineService_Expecter) SyncEvents(context1 interface{}, providerEventQuerier interface{}, providerEventSourceCursors interface{}) *MockProviderEventPipelineService_SyncEvents_Call {
+	return &MockProviderEventPipelineService_SyncEvents_Call{Call: _e.mock.On("SyncEvents", context1, providerEventQuerier, providerEventSourceCursors)}
 }
 
-func (_c *MockProviderEventPipelineService_SyncEvents_Call) Run(run func(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventQuerySourceCursors rez.ProviderEventQuerySourceCursors)) *MockProviderEventPipelineService_SyncEvents_Call {
+func (_c *MockProviderEventPipelineService_SyncEvents_Call) Run(run func(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventSourceCursors rez.ProviderEventSourceCursors)) *MockProviderEventPipelineService_SyncEvents_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -2492,9 +2418,9 @@ func (_c *MockProviderEventPipelineService_SyncEvents_Call) Run(run func(context
 		if args[1] != nil {
 			arg1 = args[1].(rez.ProviderEventQuerier)
 		}
-		var arg2 rez.ProviderEventQuerySourceCursors
+		var arg2 rez.ProviderEventSourceCursors
 		if args[2] != nil {
-			arg2 = args[2].(rez.ProviderEventQuerySourceCursors)
+			arg2 = args[2].(rez.ProviderEventSourceCursors)
 		}
 		run(
 			arg0,
@@ -2510,7 +2436,7 @@ func (_c *MockProviderEventPipelineService_SyncEvents_Call) Return(providerEvent
 	return _c
 }
 
-func (_c *MockProviderEventPipelineService_SyncEvents_Call) RunAndReturn(run func(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventQuerySourceCursors rez.ProviderEventQuerySourceCursors) rez.ProviderEventSyncResult) *MockProviderEventPipelineService_SyncEvents_Call {
+func (_c *MockProviderEventPipelineService_SyncEvents_Call) RunAndReturn(run func(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventSourceCursors rez.ProviderEventSourceCursors) rez.ProviderEventSyncResult) *MockProviderEventPipelineService_SyncEvents_Call {
 	_c.Call.Return(run)
 	return _c
 }

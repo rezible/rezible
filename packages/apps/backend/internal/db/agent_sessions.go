@@ -90,9 +90,20 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 
 	metadata := make(map[string]any, len(params.Metadata))
 	maps.Copy(metadata, params.Metadata)
+	for i, binding := range params.Bindings {
+		if validateErr := binding.ProviderResourceRef.Validate(); validateErr != nil {
+			return nil, fmt.Errorf("%w: binding %d: %v", rez.ErrInvalidInput, i, validateErr)
+		}
+	}
 
 	var session *ent.AgentSession
 	return session, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		for i, binding := range params.Bindings {
+			if validateErr := s.validateSessionBindingIntegration(ctx, binding.ProviderResourceRef, binding.IntegrationID); validateErr != nil {
+				return fmt.Errorf("binding %d: %w", i, validateErr)
+			}
+		}
+
 		createSession := tx.AgentSession.Create().
 			SetAgentName(name).
 			SetInput(sessionInput).
@@ -132,13 +143,27 @@ func (s *AgentSessionService) setSessionBindingParams(m *ent.AgentSessionBinding
 	} else {
 		m.SetIntegrationID(*params.IntegrationID)
 	}
-	m.SetSource(strings.TrimSpace(params.Source))
-	m.SetResourceKind(strings.TrimSpace(params.ResourceKind))
-	m.SetResourceRef(strings.TrimSpace(params.ResourceRef))
+	m.SetProvider(params.Provider)
+	m.SetProviderNamespace(params.ProviderNamespace)
+	m.SetProviderResourceRef(params.ResourceRef)
 
 	metadata := make(map[string]any, len(params.Metadata))
 	maps.Copy(metadata, params.Metadata)
 	m.SetMetadata(metadata)
+}
+
+func (s *AgentSessionService) validateSessionBindingIntegration(ctx context.Context, ref rez.ProviderResourceRef, integrationID *uuid.UUID) error {
+	if integrationID == nil {
+		return nil
+	}
+	intg, queryErr := s.db.Client(ctx).Integration.Get(ctx, *integrationID)
+	if queryErr != nil {
+		return fmt.Errorf("load integration: %w", queryErr)
+	}
+	if intg.Provider != ref.Provider {
+		return fmt.Errorf("%w: binding provider %q does not match integration provider %q", rez.ErrInvalidInput, ref.Provider, intg.Provider)
+	}
+	return nil
 }
 
 func (s *AgentSessionService) ListAgentSessionBindings(ctx context.Context, params rez.ListAgentSessionBindingsParams) (ent.AgentSessionBindings, error) {
@@ -159,17 +184,53 @@ func (s *AgentSessionService) SetAgentSessionBinding(ctx context.Context, bindin
 	var binding *ent.AgentSessionBinding
 	return binding, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		var mutator ent.EntityMutator[*ent.AgentSessionBinding, *ent.AgentSessionBindingMutation]
+		var existing *ent.AgentSessionBinding
 		if bindingId == uuid.Nil {
 			mutator = tx.AgentSessionBinding.Create().SetID(uuid.New())
 		} else {
-			mutator = tx.AgentSessionBinding.UpdateOneID(bindingId)
+			var queryErr error
+			existing, queryErr = tx.AgentSessionBinding.Get(ctx, bindingId)
+			if queryErr != nil {
+				return fmt.Errorf("load binding: %w", queryErr)
+			}
+			mutator = existing.Update()
 		}
 
 		setFn(mutator.Mutation())
+		mutation := mutator.Mutation()
+		ref := rez.ProviderResourceRef{}
+		var integrationID *uuid.UUID
+		if existing != nil {
+			ref.Provider = existing.Provider
+			ref.ProviderNamespace = existing.ProviderNamespace
+			ref.ResourceRef = existing.ProviderResourceRef
+			integrationID = existing.IntegrationID
+		}
+		if provider, ok := mutation.Provider(); ok {
+			ref.Provider = provider
+		}
+		if namespace, ok := mutation.ProviderNamespace(); ok {
+			ref.ProviderNamespace = namespace
+		}
+		if resourceRef, ok := mutation.ProviderResourceRef(); ok {
+			ref.ResourceRef = resourceRef
+		}
+		if id, ok := mutation.IntegrationID(); ok {
+			integrationID = &id
+		}
+		if mutation.IntegrationIDCleared() {
+			integrationID = nil
+		}
+		if validateErr := ref.Validate(); validateErr != nil {
+			return fmt.Errorf("%w: binding: %v", rez.ErrInvalidInput, validateErr)
+		}
+		if validateErr := s.validateSessionBindingIntegration(ctx, ref, integrationID); validateErr != nil {
+			return validateErr
+		}
 
 		saved, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("create binding: %w", saveErr)
+			return fmt.Errorf("set binding: %w", saveErr)
 		}
 		binding = saved.Unwrap()
 		return nil

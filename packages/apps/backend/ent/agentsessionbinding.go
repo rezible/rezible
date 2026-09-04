@@ -28,16 +28,16 @@ type AgentSessionBinding struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Provider holds the value of the "provider" field.
+	Provider string `json:"provider,omitempty"`
+	// ProviderNamespace holds the value of the "provider_namespace" field.
+	ProviderNamespace string `json:"provider_namespace,omitempty"`
+	// ProviderResourceRef holds the value of the "provider_resource_ref" field.
+	ProviderResourceRef string `json:"provider_resource_ref,omitempty"`
 	// AgentSessionID holds the value of the "agent_session_id" field.
 	AgentSessionID uuid.UUID `json:"agent_session_id,omitempty"`
 	// IntegrationID holds the value of the "integration_id" field.
 	IntegrationID *uuid.UUID `json:"integration_id,omitempty"`
-	// Source holds the value of the "source" field.
-	Source string `json:"source,omitempty"`
-	// ResourceKind holds the value of the "resource_kind" field.
-	ResourceKind string `json:"resource_kind,omitempty"`
-	// ResourceRef holds the value of the "resource_ref" field.
-	ResourceRef string `json:"resource_ref,omitempty"`
 	// ClosedAt holds the value of the "closed_at" field.
 	ClosedAt *time.Time `json:"closed_at,omitempty"`
 	// Metadata holds the value of the "metadata" field.
@@ -105,7 +105,7 @@ func (*AgentSessionBinding) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case agentsessionbinding.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case agentsessionbinding.FieldSource, agentsessionbinding.FieldResourceKind, agentsessionbinding.FieldResourceRef:
+		case agentsessionbinding.FieldProvider, agentsessionbinding.FieldProviderNamespace, agentsessionbinding.FieldProviderResourceRef:
 			values[i] = new(sql.NullString)
 		case agentsessionbinding.FieldCreatedAt, agentsessionbinding.FieldUpdatedAt, agentsessionbinding.FieldClosedAt:
 			values[i] = new(sql.NullTime)
@@ -150,6 +150,24 @@ func (_m *AgentSessionBinding) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
+		case agentsessionbinding.FieldProvider:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
+			} else if value.Valid {
+				_m.Provider = value.String
+			}
+		case agentsessionbinding.FieldProviderNamespace:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_namespace", values[i])
+			} else if value.Valid {
+				_m.ProviderNamespace = value.String
+			}
+		case agentsessionbinding.FieldProviderResourceRef:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_resource_ref", values[i])
+			} else if value.Valid {
+				_m.ProviderResourceRef = value.String
+			}
 		case agentsessionbinding.FieldAgentSessionID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field agent_session_id", values[i])
@@ -162,24 +180,6 @@ func (_m *AgentSessionBinding) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				_m.IntegrationID = new(uuid.UUID)
 				*_m.IntegrationID = *value.S.(*uuid.UUID)
-			}
-		case agentsessionbinding.FieldSource:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source", values[i])
-			} else if value.Valid {
-				_m.Source = value.String
-			}
-		case agentsessionbinding.FieldResourceKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field resource_kind", values[i])
-			} else if value.Valid {
-				_m.ResourceKind = value.String
-			}
-		case agentsessionbinding.FieldResourceRef:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field resource_ref", values[i])
-			} else if value.Valid {
-				_m.ResourceRef = value.String
 			}
 		case agentsessionbinding.FieldClosedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -256,6 +256,15 @@ func (_m *AgentSessionBinding) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
+	builder.WriteString("provider=")
+	builder.WriteString(_m.Provider)
+	builder.WriteString(", ")
+	builder.WriteString("provider_namespace=")
+	builder.WriteString(_m.ProviderNamespace)
+	builder.WriteString(", ")
+	builder.WriteString("provider_resource_ref=")
+	builder.WriteString(_m.ProviderResourceRef)
+	builder.WriteString(", ")
 	builder.WriteString("agent_session_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentSessionID))
 	builder.WriteString(", ")
@@ -263,15 +272,6 @@ func (_m *AgentSessionBinding) String() string {
 		builder.WriteString("integration_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
-	builder.WriteString(", ")
-	builder.WriteString("source=")
-	builder.WriteString(_m.Source)
-	builder.WriteString(", ")
-	builder.WriteString("resource_kind=")
-	builder.WriteString(_m.ResourceKind)
-	builder.WriteString(", ")
-	builder.WriteString("resource_ref=")
-	builder.WriteString(_m.ResourceRef)
 	builder.WriteString(", ")
 	if v := _m.ClosedAt; v != nil {
 		builder.WriteString("closed_at=")

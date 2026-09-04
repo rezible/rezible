@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/tenant"
@@ -22,18 +23,20 @@ type NormalizedEvent struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// Kind of activity represented by the event.
-	Kind normalizedevent.Kind `json:"kind,omitempty"`
-	// Integration provider that produced the event, such as slack or github.
+	// Provider holds the value of the "provider" field.
 	Provider string `json:"provider,omitempty"`
+	// ProviderNamespace holds the value of the "provider_namespace" field.
+	ProviderNamespace string `json:"provider_namespace,omitempty"`
+	// ProviderResourceRef holds the value of the "provider_resource_ref" field.
+	ProviderResourceRef string `json:"provider_resource_ref,omitempty"`
+	// IntegrationID holds the value of the "integration_id" field.
+	IntegrationID *uuid.UUID `json:"integration_id,omitempty"`
+	// Normalized kind of the primary subject this event is about.
+	Kind string `json:"kind,omitempty"`
 	// Provider-specific event stream or webhook source the event came from.
-	ProviderSource string `json:"provider_source,omitempty"`
+	ProviderEventSource string `json:"provider_event_source,omitempty"`
 	// Stable provider reference for the source event, used with the provider fields for idempotency.
 	ProviderEventRef string `json:"provider_event_ref,omitempty"`
-	// Stable provider reference for the primary subject this event is about.
-	ProviderSubjectRef string `json:"provider_subject_ref,omitempty"`
-	// Provider-neutral type of the primary subject this event is about.
-	SubjectKind string `json:"subject_kind,omitempty"`
 	// Normalized JSON attributes for this event kind.
 	Attributes []byte `json:"attributes,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -53,11 +56,13 @@ type NormalizedEvent struct {
 type NormalizedEventEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// Integration holds the value of the integration edge.
+	Integration *Integration `json:"integration,omitempty"`
 	// Projection holds the value of the projection edge.
 	Projection *NormalizedEventProjection `json:"projection,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -71,12 +76,23 @@ func (e NormalizedEventEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// IntegrationOrErr returns the Integration value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e NormalizedEventEdges) IntegrationOrErr() (*Integration, error) {
+	if e.Integration != nil {
+		return e.Integration, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: integration.Label}
+	}
+	return nil, &NotLoadedError{edge: "integration"}
+}
+
 // ProjectionOrErr returns the Projection value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e NormalizedEventEdges) ProjectionOrErr() (*NormalizedEventProjection, error) {
 	if e.Projection != nil {
 		return e.Projection, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: normalizedeventprojection.Label}
 	}
 	return nil, &NotLoadedError{edge: "projection"}
@@ -87,11 +103,13 @@ func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case normalizedevent.FieldIntegrationID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case normalizedevent.FieldAttributes:
 			values[i] = new([]byte)
 		case normalizedevent.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case normalizedevent.FieldKind, normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldProviderEventRef, normalizedevent.FieldProviderSubjectRef, normalizedevent.FieldSubjectKind:
+		case normalizedevent.FieldProvider, normalizedevent.FieldProviderNamespace, normalizedevent.FieldProviderResourceRef, normalizedevent.FieldKind, normalizedevent.FieldProviderEventSource, normalizedevent.FieldProviderEventRef:
 			values[i] = new(sql.NullString)
 		case normalizedevent.FieldCreatedAt, normalizedevent.FieldOccurredAt, normalizedevent.FieldReceivedAt:
 			values[i] = new(sql.NullTime)
@@ -126,41 +144,48 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case normalizedevent.FieldKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field kind", values[i])
-			} else if value.Valid {
-				_m.Kind = normalizedevent.Kind(value.String)
-			}
 		case normalizedevent.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider", values[i])
 			} else if value.Valid {
 				_m.Provider = value.String
 			}
-		case normalizedevent.FieldProviderSource:
+		case normalizedevent.FieldProviderNamespace:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_source", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_namespace", values[i])
 			} else if value.Valid {
-				_m.ProviderSource = value.String
+				_m.ProviderNamespace = value.String
+			}
+		case normalizedevent.FieldProviderResourceRef:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_resource_ref", values[i])
+			} else if value.Valid {
+				_m.ProviderResourceRef = value.String
+			}
+		case normalizedevent.FieldIntegrationID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field integration_id", values[i])
+			} else if value.Valid {
+				_m.IntegrationID = new(uuid.UUID)
+				*_m.IntegrationID = *value.S.(*uuid.UUID)
+			}
+		case normalizedevent.FieldKind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field kind", values[i])
+			} else if value.Valid {
+				_m.Kind = value.String
+			}
+		case normalizedevent.FieldProviderEventSource:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_event_source", values[i])
+			} else if value.Valid {
+				_m.ProviderEventSource = value.String
 			}
 		case normalizedevent.FieldProviderEventRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_event_ref", values[i])
 			} else if value.Valid {
 				_m.ProviderEventRef = value.String
-			}
-		case normalizedevent.FieldProviderSubjectRef:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_subject_ref", values[i])
-			} else if value.Valid {
-				_m.ProviderSubjectRef = value.String
-			}
-		case normalizedevent.FieldSubjectKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field subject_kind", values[i])
-			} else if value.Valid {
-				_m.SubjectKind = value.String
 			}
 		case normalizedevent.FieldAttributes:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -211,6 +236,11 @@ func (_m *NormalizedEvent) QueryTenant() *TenantQuery {
 	return NewNormalizedEventClient(_m.config).QueryTenant(_m)
 }
 
+// QueryIntegration queries the "integration" edge of the NormalizedEvent entity.
+func (_m *NormalizedEvent) QueryIntegration() *IntegrationQuery {
+	return NewNormalizedEventClient(_m.config).QueryIntegration(_m)
+}
+
 // QueryProjection queries the "projection" edge of the NormalizedEvent entity.
 func (_m *NormalizedEvent) QueryProjection() *NormalizedEventProjectionQuery {
 	return NewNormalizedEventClient(_m.config).QueryProjection(_m)
@@ -242,23 +272,28 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
-	builder.WriteString(", ")
 	builder.WriteString("provider=")
 	builder.WriteString(_m.Provider)
 	builder.WriteString(", ")
-	builder.WriteString("provider_source=")
-	builder.WriteString(_m.ProviderSource)
+	builder.WriteString("provider_namespace=")
+	builder.WriteString(_m.ProviderNamespace)
+	builder.WriteString(", ")
+	builder.WriteString("provider_resource_ref=")
+	builder.WriteString(_m.ProviderResourceRef)
+	builder.WriteString(", ")
+	if v := _m.IntegrationID; v != nil {
+		builder.WriteString("integration_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("kind=")
+	builder.WriteString(_m.Kind)
+	builder.WriteString(", ")
+	builder.WriteString("provider_event_source=")
+	builder.WriteString(_m.ProviderEventSource)
 	builder.WriteString(", ")
 	builder.WriteString("provider_event_ref=")
 	builder.WriteString(_m.ProviderEventRef)
-	builder.WriteString(", ")
-	builder.WriteString("provider_subject_ref=")
-	builder.WriteString(_m.ProviderSubjectRef)
-	builder.WriteString(", ")
-	builder.WriteString("subject_kind=")
-	builder.WriteString(_m.SubjectKind)
 	builder.WriteString(", ")
 	builder.WriteString("attributes=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Attributes))

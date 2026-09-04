@@ -169,6 +169,7 @@ func (KnowledgeSubjectAlias) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		ProviderResourceReferenceMixin{},
 	}
 }
 
@@ -179,10 +180,6 @@ func (KnowledgeSubjectAlias) Fields() []ent.Field {
 		field.Enum("subject_kind").
 			Values("entity", "relationship").
 			Immutable(),
-
-		field.String("provider").NotEmpty().Immutable(),
-		field.String("provider_source").NotEmpty().Immutable(),
-		field.String("provider_subject_ref").NotEmpty().Immutable(),
 
 		field.UUID("entity_id", uuid.UUID{}).
 			Optional().
@@ -195,12 +192,7 @@ func (KnowledgeSubjectAlias) Fields() []ent.Field {
 
 func (KnowledgeSubjectAlias) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields(
-			"tenant_id",
-			"provider",
-			"provider_source",
-			"provider_subject_ref",
-		).Unique(),
+		index.Fields("tenant_id", "provider", "provider_namespace", "provider_resource_ref").Unique(),
 		index.Fields("tenant_id", "entity_id"),
 		index.Fields("tenant_id", "relationship_id"),
 	}

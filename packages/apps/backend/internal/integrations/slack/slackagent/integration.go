@@ -69,7 +69,7 @@ func (i *Integration) RetrieveInstallationTargetOptions(ctx context.Context, t *
 }
 
 func (i *Integration) ValidateInstallationConfig(cfg []byte) (rez.IntegrationInstallationConfig, error) {
-	return slackintegration.GetValidatedConfig(cfg)
+	return i.appSvc.ValidateInstallationConfig(cfg)
 }
 
 func (i *Integration) ValidateUserSettings(m map[string]any) error {
@@ -102,7 +102,7 @@ func (ii *InstalledIntegration) ProviderName() string {
 }
 
 func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
-	return ii.config
+	return slackintegration.MakeInstallationConfig(integrationName, ii.config)
 }
 
 func (ii *InstalledIntegration) Capabilities() []string {

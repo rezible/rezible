@@ -22,14 +22,14 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldProviderName holds the string denoting the provider_name field in the database.
-	FieldProviderName = "provider_name"
-	// FieldIntegrationName holds the string denoting the integration_name field in the database.
-	FieldIntegrationName = "integration_name"
+	// FieldProvider holds the string denoting the provider field in the database.
+	FieldProvider = "provider"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
 	// FieldDisplayName holds the string denoting the display_name field in the database.
 	FieldDisplayName = "display_name"
-	// FieldExternalRef holds the string denoting the external_ref field in the database.
-	FieldExternalRef = "external_ref"
+	// FieldProviderInstallationRef holds the string denoting the provider_installation_ref field in the database.
+	FieldProviderInstallationRef = "provider_installation_ref"
 	// FieldInstallationConfig holds the string denoting the installation_config field in the database.
 	FieldInstallationConfig = "installation_config"
 	// FieldUserSettings holds the string denoting the user_settings field in the database.
@@ -53,10 +53,10 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldProviderName,
-	FieldIntegrationName,
+	FieldProvider,
+	FieldName,
 	FieldDisplayName,
-	FieldExternalRef,
+	FieldProviderInstallationRef,
 	FieldInstallationConfig,
 	FieldUserSettings,
 }
@@ -85,6 +85,12 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
+	ProviderValidator func(string) error
+	// NameValidator is a validator for the "name" field. It is called by the builders before save.
+	NameValidator func(string) error
+	// ProviderInstallationRefValidator is a validator for the "provider_installation_ref" field. It is called by the builders before save.
+	ProviderInstallationRefValidator func(string) error
 	// DefaultUserSettings holds the default value on creation for the "user_settings" field.
 	DefaultUserSettings map[string]interface{}
 	// DefaultID holds the default value on creation for the "id" field.
@@ -114,14 +120,14 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByProviderName orders the results by the provider_name field.
-func ByProviderName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderName, opts...).ToFunc()
+// ByProvider orders the results by the provider field.
+func ByProvider(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProvider, opts...).ToFunc()
 }
 
-// ByIntegrationName orders the results by the integration_name field.
-func ByIntegrationName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIntegrationName, opts...).ToFunc()
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
 // ByDisplayName orders the results by the display_name field.
@@ -129,9 +135,9 @@ func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDisplayName, opts...).ToFunc()
 }
 
-// ByExternalRef orders the results by the external_ref field.
-func ByExternalRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExternalRef, opts...).ToFunc()
+// ByProviderInstallationRef orders the results by the provider_installation_ref field.
+func ByProviderInstallationRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderInstallationRef, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

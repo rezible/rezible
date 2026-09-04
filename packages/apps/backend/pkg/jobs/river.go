@@ -2,6 +2,8 @@ package jobs
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
@@ -62,4 +64,17 @@ func DefineWorkerFunc[A river.JobArgs](work func(context.Context, A) error) Work
 	return DefineWorker[A](river.WorkFunc(func(ctx context.Context, job *river.Job[A]) error {
 		return work(ctx, job.Args)
 	}))
+}
+
+var ErrRetryable = errors.New("retryable job failure")
+
+func MarkRetryableError(err error) error {
+	if err == nil {
+		return ErrRetryable
+	}
+	return fmt.Errorf("%w: %w", ErrRetryable, err)
+}
+
+func IsRetryableError(err error) bool {
+	return errors.Is(err, ErrRetryable)
 }

@@ -8532,6 +8532,25 @@ func (c *NormalizedEventClient) QueryTenant(_m *NormalizedEvent) *TenantQuery {
 	return query
 }
 
+// QueryIntegration queries the integration edge of a NormalizedEvent.
+func (c *NormalizedEventClient) QueryIntegration(_m *NormalizedEvent) *IntegrationQuery {
+	query := (&IntegrationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, id),
+			sqlgraph.To(integration.Table, integration.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, normalizedevent.IntegrationTable, normalizedevent.IntegrationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Integration
+		step.Edge.Schema = schemaConfig.NormalizedEvent
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryProjection queries the projection edge of a NormalizedEvent.
 func (c *NormalizedEventClient) QueryProjection(_m *NormalizedEvent) *NormalizedEventProjectionQuery {
 	query := (&NormalizedEventProjectionClient{config: c.config}).Query()

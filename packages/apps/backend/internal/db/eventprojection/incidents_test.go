@@ -13,7 +13,6 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	inctype "github.com/rezible/rezible/ent/incidenttype"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test/mocks"
@@ -36,17 +35,17 @@ func (s *ProjectionServiceSuite) incidentService(tdb rez.Database, events *[]rez
 	return service
 }
 
-func (s *ProjectionServiceSuite) createIncidentProjectionEvent(tdb rez.Database, subjectRef string, occurredAt time.Time, attrs projections.IncidentSubjectAttributes) *ent.NormalizedEvent {
+func (s *ProjectionServiceSuite) createIncidentProjectionEvent(tdb rez.Database, subjectRef string, occurredAt time.Time, attrs projections.IncidentEventAttributes) *ent.NormalizedEvent {
 	ctx := s.SeedTenantContext()
 	encoded, err := projections.EncodeAttributes(attrs)
 	s.Require().NoError(err)
 	event, err := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider("test").
-		SetProviderSource("incidents").
+		SetProviderNamespace("projection-tests").
+		SetProviderResourceRef(subjectRef).
+		SetProviderEventSource("incidents").
 		SetProviderEventRef("incident-event-" + uuid.NewString()).
-		SetProviderSubjectRef(subjectRef).
-		SetKind(ne.KindObserved).
-		SetSubjectKind(projections.SubjectKindIncident.String()).
+		SetKind(projections.KindIncident).
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
 		SetAttributes(encoded).
@@ -64,12 +63,11 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 	projector.incidents = s.incidentService(tdb, &events)
 
 	openedAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
-	attrs := projections.IncidentSubjectAttributes{
+	attrs := projections.IncidentEventAttributes{
 		Title:       "Search outage",
 		Summary:     "Search requests are failing.",
 		SeverityRef: "SEV-1",
 		TypeRef:     "Customer Impact",
-		ExternalRef: "foo-bar-2",
 		OpenedAt:    openedAt,
 	}
 	first := s.createIncidentProjectionEvent(tdb, "incident-1", openedAt, attrs)
@@ -123,8 +121,7 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionDoesNotPanicForDemoCatalo
 	eventID := uuid.MustParse("d1be3113-c03a-45f0-adcb-1191041c3b02")
 	createdAt := time.Date(2026, 6, 19, 10, 4, 46, 429693000, time.UTC)
 	occurredAt := time.Date(2026, 4, 18, 2, 30, 0, 0, time.UTC)
-	attrs, attrsErr := json.Marshal(projections.IncidentSubjectAttributes{
-		ExternalRef: "foo-bar",
+	attrs, attrsErr := json.Marshal(projections.IncidentEventAttributes{
 		Title:       "Catalog search returning stale results",
 		Summary:     "The catalog search index failed to refresh after the nightly product import.",
 		SeverityRef: "SEV-2",
@@ -134,12 +131,12 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionDoesNotPanicForDemoCatalo
 	s.Require().NoError(attrsErr)
 	createEvent := client.NormalizedEvent.Create().
 		SetID(eventID).
-		SetKind(ne.KindObserved).
+		SetKind(projections.KindIncident).
 		SetProvider("demo").
-		SetProviderSource("incidents").
+		SetProviderNamespace("demo").
+		SetProviderResourceRef("demo:incident:catalog-search-stale-results").
+		SetProviderEventSource("incidents").
 		SetProviderEventRef("demo:incidents:catalog-search-stale-results-observed").
-		SetProviderSubjectRef("demo:incident:catalog-search-stale-results").
-		SetSubjectKind(projections.SubjectKindIncident.String()).
 		SetAttributes(attrs).
 		SetCreatedAt(createdAt).
 		SetOccurredAt(occurredAt).

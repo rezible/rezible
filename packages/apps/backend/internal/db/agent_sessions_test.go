@@ -254,11 +254,13 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionCreatesRequestedBinding
 		Return(makeJobInsertResult(101), nil).
 		Once()
 
+	bindingRef := rez.ProviderResourceRef{
+		Provider:    "rezible",
+		ResourceRef: resourceRef,
+	}
 	bindingParams := rez.AgentSessionBindingParams{
-		Source:       "rezible",
-		ResourceKind: "incident",
-		ResourceRef:  resourceRef,
-		Metadata:     map[string]any{"origin": "test"},
+		ProviderResourceRef: bindingRef,
+		Metadata:            map[string]any{"origin": "test"},
 	}
 	params := rez.CreateAgentSessionParams{
 		AgentName: "test-agent",
@@ -271,15 +273,135 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionCreatesRequestedBinding
 	s.Require().NotNil(session)
 
 	bindingPreds := []predicate.AgentSessionBinding{
-		asb.Source(bindingParams.Source),
-		asb.ResourceKind(bindingParams.ResourceKind),
-		asb.ResourceRef(resourceRef),
+		asb.Provider(bindingParams.Provider),
+		asb.ProviderNamespace(bindingParams.ProviderNamespace),
+		asb.ProviderResourceRef(resourceRef),
 	}
 	binding, bindingErr := h.service.LookupAgentSessionBinding(ctx, bindingPreds...)
 	s.Require().NoError(bindingErr)
 	s.Equal(session.ID, binding.AgentSessionID)
 	s.Nil(binding.IntegrationID)
 	s.Equal("test", binding.Metadata["origin"])
+}
+
+func (s *AgentSessionServiceSuite) TestCreateAgentSessionRejectsExternalBindingWithoutNamespace() {
+	ctx := s.SeedTenantContext()
+	h := s.newAgentSessionTestHarness()
+	params := rez.CreateAgentSessionParams{
+		AgentName: "test-agent",
+		Input:     testAgentInput{Foo: "bar"},
+		Bindings: []rez.AgentSessionBindingParams{{
+			ProviderResourceRef: rez.ProviderResourceRef{Provider: "slack", ResourceRef: "thread:C123:123.456"},
+		}},
+	}
+
+	session, createErr := h.service.CreateAgentSession(ctx, params)
+	s.Nil(session)
+	s.ErrorIs(createErr, rez.ErrInvalidInput)
+	s.Zero(h.tdb.Client(ctx).AgentSession.Query().CountX(ctx))
+	s.Zero(h.tdb.Client(ctx).AgentSessionBinding.Query().CountX(ctx))
+}
+
+func (s *AgentSessionServiceSuite) TestCreateAgentSessionRejectsIntegrationProviderMismatchAtomically() {
+	ctx := s.SeedTenantContext()
+	h := s.newAgentSessionTestHarness()
+	intg := h.tdb.Client(ctx).Integration.Create().
+		SetProvider("github").
+		SetName("github").
+		SetDisplayName("GitHub").
+		SetProviderInstallationRef("org-1").
+		SetInstallationConfig([]byte(`{}`)).
+		SaveX(ctx)
+	params := rez.CreateAgentSessionParams{
+		AgentName: "test-agent",
+		Input:     testAgentInput{Foo: "bar"},
+		Bindings: []rez.AgentSessionBindingParams{{
+			ProviderResourceRef: rez.ProviderResourceRef{
+				Provider:          "slack",
+				ProviderNamespace: "T123",
+				ResourceRef:       "thread:C123:123.456",
+			},
+			IntegrationID: &intg.ID,
+		}},
+	}
+
+	session, createErr := h.service.CreateAgentSession(ctx, params)
+	s.Nil(session)
+	s.ErrorIs(createErr, rez.ErrInvalidInput)
+	s.Zero(h.tdb.Client(ctx).AgentSession.Query().CountX(ctx))
+	s.Zero(h.tdb.Client(ctx).AgentSessionBinding.Query().CountX(ctx))
+}
+
+func (s *AgentSessionServiceSuite) TestSetAgentSessionBindingCreatesBindingAfterSession() {
+	ctx := s.SeedTenantContext()
+	h := s.newAgentSessionTestHarness()
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{Foo: "bar"})
+	intg := h.tdb.Client(ctx).Integration.Create().
+		SetProvider("slack").
+		SetName("slack_agent").
+		SetDisplayName("Slack Agent").
+		SetProviderInstallationRef("team:T123").
+		SetInstallationConfig([]byte(`{}`)).
+		SaveX(ctx)
+	opaqueRef := " thread:C123:123.456 "
+
+	binding, setErr := h.service.SetAgentSessionBinding(ctx, uuid.Nil, func(m *ent.AgentSessionBindingMutation) {
+		m.SetAgentSessionID(session.ID)
+		m.SetIntegrationID(intg.ID)
+		m.SetProvider("slack")
+		m.SetProviderNamespace("T123")
+		m.SetProviderResourceRef(opaqueRef)
+		m.SetMetadata(map[string]any{"origin": "follow-up"})
+	})
+	s.Require().NoError(setErr)
+	s.Require().NotNil(binding)
+	s.Equal(session.ID, binding.AgentSessionID)
+	s.Equal(opaqueRef, binding.ProviderResourceRef)
+	s.Equal("follow-up", binding.Metadata["origin"])
+
+	updated, updateErr := h.service.SetAgentSessionBinding(ctx, binding.ID, func(m *ent.AgentSessionBindingMutation) {
+		m.SetMetadata(map[string]any{"origin": "updated"})
+	})
+	s.Require().NoError(updateErr)
+	s.Equal("updated", updated.Metadata["origin"])
+	s.Equal(opaqueRef, updated.ProviderResourceRef)
+}
+
+func (s *AgentSessionServiceSuite) TestSetAgentSessionBindingValidatesNewBinding() {
+	ctx := s.SeedTenantContext()
+	h := s.newAgentSessionTestHarness()
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{Foo: "bar"})
+
+	binding, setErr := h.service.SetAgentSessionBinding(ctx, uuid.Nil, func(m *ent.AgentSessionBindingMutation) {
+		m.SetAgentSessionID(session.ID)
+		m.SetProvider("slack")
+		m.SetProviderResourceRef("thread:C123:123.456")
+	})
+	s.Nil(binding)
+	s.ErrorIs(setErr, rez.ErrInvalidInput)
+	s.Zero(h.tdb.Client(ctx).AgentSessionBinding.Query().CountX(ctx))
+}
+
+func (s *AgentSessionServiceSuite) TestSetAgentSessionBindingKeepsNamespacesDistinct() {
+	ctx := s.SeedTenantContext()
+	h := s.newAgentSessionTestHarness()
+	firstSession := s.createAgentSession(ctx, h.tdb, testAgentInput{Foo: "first"})
+	secondSession := s.createAgentSession(ctx, h.tdb, testAgentInput{Foo: "second"})
+	createBinding := func(sessionID uuid.UUID, namespace string) (*ent.AgentSessionBinding, error) {
+		return h.service.SetAgentSessionBinding(ctx, uuid.Nil, func(m *ent.AgentSessionBindingMutation) {
+			m.SetAgentSessionID(sessionID)
+			m.SetProvider("slack")
+			m.SetProviderNamespace(namespace)
+			m.SetProviderResourceRef("thread:C123:123.456")
+		})
+	}
+
+	first, firstErr := createBinding(firstSession.ID, "T123")
+	s.Require().NoError(firstErr)
+	second, secondErr := createBinding(secondSession.ID, "T456")
+	s.Require().NoError(secondErr)
+	s.NotEqual(first.ID, second.ID)
+	s.Equal(2, h.tdb.Client(ctx).AgentSessionBinding.Query().CountX(ctx))
 }
 
 func (s *AgentSessionServiceSuite) TestCreateAgentSessionRollsBackWhenJobInsertFails() {

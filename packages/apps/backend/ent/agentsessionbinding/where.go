@@ -72,6 +72,21 @@ func UpdatedAt(v time.Time) predicate.AgentSessionBinding {
 	return predicate.AgentSessionBinding(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// Provider applies equality check predicate on the "provider" field. It's identical to ProviderEQ.
+func Provider(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldEQ(FieldProvider, v))
+}
+
+// ProviderNamespace applies equality check predicate on the "provider_namespace" field. It's identical to ProviderNamespaceEQ.
+func ProviderNamespace(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldEQ(FieldProviderNamespace, v))
+}
+
+// ProviderResourceRef applies equality check predicate on the "provider_resource_ref" field. It's identical to ProviderResourceRefEQ.
+func ProviderResourceRef(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldEQ(FieldProviderResourceRef, v))
+}
+
 // AgentSessionID applies equality check predicate on the "agent_session_id" field. It's identical to AgentSessionIDEQ.
 func AgentSessionID(v uuid.UUID) predicate.AgentSessionBinding {
 	return predicate.AgentSessionBinding(sql.FieldEQ(FieldAgentSessionID, v))
@@ -80,21 +95,6 @@ func AgentSessionID(v uuid.UUID) predicate.AgentSessionBinding {
 // IntegrationID applies equality check predicate on the "integration_id" field. It's identical to IntegrationIDEQ.
 func IntegrationID(v uuid.UUID) predicate.AgentSessionBinding {
 	return predicate.AgentSessionBinding(sql.FieldEQ(FieldIntegrationID, v))
-}
-
-// Source applies equality check predicate on the "source" field. It's identical to SourceEQ.
-func Source(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldEQ(FieldSource, v))
-}
-
-// ResourceKind applies equality check predicate on the "resource_kind" field. It's identical to ResourceKindEQ.
-func ResourceKind(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldEQ(FieldResourceKind, v))
-}
-
-// ResourceRef applies equality check predicate on the "resource_ref" field. It's identical to ResourceRefEQ.
-func ResourceRef(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldEQ(FieldResourceRef, v))
 }
 
 // ClosedAt applies equality check predicate on the "closed_at" field. It's identical to ClosedAtEQ.
@@ -202,6 +202,201 @@ func UpdatedAtLTE(v time.Time) predicate.AgentSessionBinding {
 	return predicate.AgentSessionBinding(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
+// ProviderEQ applies the EQ predicate on the "provider" field.
+func ProviderEQ(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldEQ(FieldProvider, v))
+}
+
+// ProviderNEQ applies the NEQ predicate on the "provider" field.
+func ProviderNEQ(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldNEQ(FieldProvider, v))
+}
+
+// ProviderIn applies the In predicate on the "provider" field.
+func ProviderIn(vs ...string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldIn(FieldProvider, vs...))
+}
+
+// ProviderNotIn applies the NotIn predicate on the "provider" field.
+func ProviderNotIn(vs ...string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldNotIn(FieldProvider, vs...))
+}
+
+// ProviderGT applies the GT predicate on the "provider" field.
+func ProviderGT(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldGT(FieldProvider, v))
+}
+
+// ProviderGTE applies the GTE predicate on the "provider" field.
+func ProviderGTE(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldGTE(FieldProvider, v))
+}
+
+// ProviderLT applies the LT predicate on the "provider" field.
+func ProviderLT(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldLT(FieldProvider, v))
+}
+
+// ProviderLTE applies the LTE predicate on the "provider" field.
+func ProviderLTE(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldLTE(FieldProvider, v))
+}
+
+// ProviderContains applies the Contains predicate on the "provider" field.
+func ProviderContains(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldContains(FieldProvider, v))
+}
+
+// ProviderHasPrefix applies the HasPrefix predicate on the "provider" field.
+func ProviderHasPrefix(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldHasPrefix(FieldProvider, v))
+}
+
+// ProviderHasSuffix applies the HasSuffix predicate on the "provider" field.
+func ProviderHasSuffix(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldHasSuffix(FieldProvider, v))
+}
+
+// ProviderEqualFold applies the EqualFold predicate on the "provider" field.
+func ProviderEqualFold(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldEqualFold(FieldProvider, v))
+}
+
+// ProviderContainsFold applies the ContainsFold predicate on the "provider" field.
+func ProviderContainsFold(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldContainsFold(FieldProvider, v))
+}
+
+// ProviderNamespaceEQ applies the EQ predicate on the "provider_namespace" field.
+func ProviderNamespaceEQ(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldEQ(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceNEQ applies the NEQ predicate on the "provider_namespace" field.
+func ProviderNamespaceNEQ(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldNEQ(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceIn applies the In predicate on the "provider_namespace" field.
+func ProviderNamespaceIn(vs ...string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldIn(FieldProviderNamespace, vs...))
+}
+
+// ProviderNamespaceNotIn applies the NotIn predicate on the "provider_namespace" field.
+func ProviderNamespaceNotIn(vs ...string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldNotIn(FieldProviderNamespace, vs...))
+}
+
+// ProviderNamespaceGT applies the GT predicate on the "provider_namespace" field.
+func ProviderNamespaceGT(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldGT(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceGTE applies the GTE predicate on the "provider_namespace" field.
+func ProviderNamespaceGTE(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldGTE(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceLT applies the LT predicate on the "provider_namespace" field.
+func ProviderNamespaceLT(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldLT(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceLTE applies the LTE predicate on the "provider_namespace" field.
+func ProviderNamespaceLTE(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldLTE(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceContains applies the Contains predicate on the "provider_namespace" field.
+func ProviderNamespaceContains(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldContains(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceHasPrefix applies the HasPrefix predicate on the "provider_namespace" field.
+func ProviderNamespaceHasPrefix(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldHasPrefix(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceHasSuffix applies the HasSuffix predicate on the "provider_namespace" field.
+func ProviderNamespaceHasSuffix(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldHasSuffix(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceEqualFold applies the EqualFold predicate on the "provider_namespace" field.
+func ProviderNamespaceEqualFold(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldEqualFold(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceContainsFold applies the ContainsFold predicate on the "provider_namespace" field.
+func ProviderNamespaceContainsFold(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldContainsFold(FieldProviderNamespace, v))
+}
+
+// ProviderResourceRefEQ applies the EQ predicate on the "provider_resource_ref" field.
+func ProviderResourceRefEQ(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldEQ(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefNEQ applies the NEQ predicate on the "provider_resource_ref" field.
+func ProviderResourceRefNEQ(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldNEQ(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefIn applies the In predicate on the "provider_resource_ref" field.
+func ProviderResourceRefIn(vs ...string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldIn(FieldProviderResourceRef, vs...))
+}
+
+// ProviderResourceRefNotIn applies the NotIn predicate on the "provider_resource_ref" field.
+func ProviderResourceRefNotIn(vs ...string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldNotIn(FieldProviderResourceRef, vs...))
+}
+
+// ProviderResourceRefGT applies the GT predicate on the "provider_resource_ref" field.
+func ProviderResourceRefGT(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldGT(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefGTE applies the GTE predicate on the "provider_resource_ref" field.
+func ProviderResourceRefGTE(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldGTE(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefLT applies the LT predicate on the "provider_resource_ref" field.
+func ProviderResourceRefLT(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldLT(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefLTE applies the LTE predicate on the "provider_resource_ref" field.
+func ProviderResourceRefLTE(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldLTE(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefContains applies the Contains predicate on the "provider_resource_ref" field.
+func ProviderResourceRefContains(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldContains(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefHasPrefix applies the HasPrefix predicate on the "provider_resource_ref" field.
+func ProviderResourceRefHasPrefix(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldHasPrefix(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefHasSuffix applies the HasSuffix predicate on the "provider_resource_ref" field.
+func ProviderResourceRefHasSuffix(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldHasSuffix(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefEqualFold applies the EqualFold predicate on the "provider_resource_ref" field.
+func ProviderResourceRefEqualFold(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldEqualFold(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefContainsFold applies the ContainsFold predicate on the "provider_resource_ref" field.
+func ProviderResourceRefContainsFold(v string) predicate.AgentSessionBinding {
+	return predicate.AgentSessionBinding(sql.FieldContainsFold(FieldProviderResourceRef, v))
+}
+
 // AgentSessionIDEQ applies the EQ predicate on the "agent_session_id" field.
 func AgentSessionIDEQ(v uuid.UUID) predicate.AgentSessionBinding {
 	return predicate.AgentSessionBinding(sql.FieldEQ(FieldAgentSessionID, v))
@@ -250,201 +445,6 @@ func IntegrationIDIsNil() predicate.AgentSessionBinding {
 // IntegrationIDNotNil applies the NotNil predicate on the "integration_id" field.
 func IntegrationIDNotNil() predicate.AgentSessionBinding {
 	return predicate.AgentSessionBinding(sql.FieldNotNull(FieldIntegrationID))
-}
-
-// SourceEQ applies the EQ predicate on the "source" field.
-func SourceEQ(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldEQ(FieldSource, v))
-}
-
-// SourceNEQ applies the NEQ predicate on the "source" field.
-func SourceNEQ(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldNEQ(FieldSource, v))
-}
-
-// SourceIn applies the In predicate on the "source" field.
-func SourceIn(vs ...string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldIn(FieldSource, vs...))
-}
-
-// SourceNotIn applies the NotIn predicate on the "source" field.
-func SourceNotIn(vs ...string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldNotIn(FieldSource, vs...))
-}
-
-// SourceGT applies the GT predicate on the "source" field.
-func SourceGT(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldGT(FieldSource, v))
-}
-
-// SourceGTE applies the GTE predicate on the "source" field.
-func SourceGTE(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldGTE(FieldSource, v))
-}
-
-// SourceLT applies the LT predicate on the "source" field.
-func SourceLT(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldLT(FieldSource, v))
-}
-
-// SourceLTE applies the LTE predicate on the "source" field.
-func SourceLTE(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldLTE(FieldSource, v))
-}
-
-// SourceContains applies the Contains predicate on the "source" field.
-func SourceContains(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldContains(FieldSource, v))
-}
-
-// SourceHasPrefix applies the HasPrefix predicate on the "source" field.
-func SourceHasPrefix(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldHasPrefix(FieldSource, v))
-}
-
-// SourceHasSuffix applies the HasSuffix predicate on the "source" field.
-func SourceHasSuffix(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldHasSuffix(FieldSource, v))
-}
-
-// SourceEqualFold applies the EqualFold predicate on the "source" field.
-func SourceEqualFold(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldEqualFold(FieldSource, v))
-}
-
-// SourceContainsFold applies the ContainsFold predicate on the "source" field.
-func SourceContainsFold(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldContainsFold(FieldSource, v))
-}
-
-// ResourceKindEQ applies the EQ predicate on the "resource_kind" field.
-func ResourceKindEQ(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldEQ(FieldResourceKind, v))
-}
-
-// ResourceKindNEQ applies the NEQ predicate on the "resource_kind" field.
-func ResourceKindNEQ(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldNEQ(FieldResourceKind, v))
-}
-
-// ResourceKindIn applies the In predicate on the "resource_kind" field.
-func ResourceKindIn(vs ...string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldIn(FieldResourceKind, vs...))
-}
-
-// ResourceKindNotIn applies the NotIn predicate on the "resource_kind" field.
-func ResourceKindNotIn(vs ...string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldNotIn(FieldResourceKind, vs...))
-}
-
-// ResourceKindGT applies the GT predicate on the "resource_kind" field.
-func ResourceKindGT(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldGT(FieldResourceKind, v))
-}
-
-// ResourceKindGTE applies the GTE predicate on the "resource_kind" field.
-func ResourceKindGTE(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldGTE(FieldResourceKind, v))
-}
-
-// ResourceKindLT applies the LT predicate on the "resource_kind" field.
-func ResourceKindLT(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldLT(FieldResourceKind, v))
-}
-
-// ResourceKindLTE applies the LTE predicate on the "resource_kind" field.
-func ResourceKindLTE(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldLTE(FieldResourceKind, v))
-}
-
-// ResourceKindContains applies the Contains predicate on the "resource_kind" field.
-func ResourceKindContains(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldContains(FieldResourceKind, v))
-}
-
-// ResourceKindHasPrefix applies the HasPrefix predicate on the "resource_kind" field.
-func ResourceKindHasPrefix(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldHasPrefix(FieldResourceKind, v))
-}
-
-// ResourceKindHasSuffix applies the HasSuffix predicate on the "resource_kind" field.
-func ResourceKindHasSuffix(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldHasSuffix(FieldResourceKind, v))
-}
-
-// ResourceKindEqualFold applies the EqualFold predicate on the "resource_kind" field.
-func ResourceKindEqualFold(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldEqualFold(FieldResourceKind, v))
-}
-
-// ResourceKindContainsFold applies the ContainsFold predicate on the "resource_kind" field.
-func ResourceKindContainsFold(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldContainsFold(FieldResourceKind, v))
-}
-
-// ResourceRefEQ applies the EQ predicate on the "resource_ref" field.
-func ResourceRefEQ(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldEQ(FieldResourceRef, v))
-}
-
-// ResourceRefNEQ applies the NEQ predicate on the "resource_ref" field.
-func ResourceRefNEQ(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldNEQ(FieldResourceRef, v))
-}
-
-// ResourceRefIn applies the In predicate on the "resource_ref" field.
-func ResourceRefIn(vs ...string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldIn(FieldResourceRef, vs...))
-}
-
-// ResourceRefNotIn applies the NotIn predicate on the "resource_ref" field.
-func ResourceRefNotIn(vs ...string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldNotIn(FieldResourceRef, vs...))
-}
-
-// ResourceRefGT applies the GT predicate on the "resource_ref" field.
-func ResourceRefGT(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldGT(FieldResourceRef, v))
-}
-
-// ResourceRefGTE applies the GTE predicate on the "resource_ref" field.
-func ResourceRefGTE(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldGTE(FieldResourceRef, v))
-}
-
-// ResourceRefLT applies the LT predicate on the "resource_ref" field.
-func ResourceRefLT(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldLT(FieldResourceRef, v))
-}
-
-// ResourceRefLTE applies the LTE predicate on the "resource_ref" field.
-func ResourceRefLTE(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldLTE(FieldResourceRef, v))
-}
-
-// ResourceRefContains applies the Contains predicate on the "resource_ref" field.
-func ResourceRefContains(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldContains(FieldResourceRef, v))
-}
-
-// ResourceRefHasPrefix applies the HasPrefix predicate on the "resource_ref" field.
-func ResourceRefHasPrefix(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldHasPrefix(FieldResourceRef, v))
-}
-
-// ResourceRefHasSuffix applies the HasSuffix predicate on the "resource_ref" field.
-func ResourceRefHasSuffix(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldHasSuffix(FieldResourceRef, v))
-}
-
-// ResourceRefEqualFold applies the EqualFold predicate on the "resource_ref" field.
-func ResourceRefEqualFold(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldEqualFold(FieldResourceRef, v))
-}
-
-// ResourceRefContainsFold applies the ContainsFold predicate on the "resource_ref" field.
-func ResourceRefContainsFold(v string) predicate.AgentSessionBinding {
-	return predicate.AgentSessionBinding(sql.FieldContainsFold(FieldResourceRef, v))
 }
 
 // ClosedAtEQ applies the EQ predicate on the "closed_at" field.

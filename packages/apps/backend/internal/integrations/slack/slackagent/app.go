@@ -103,7 +103,7 @@ func (a *App) findMessageIdForAlertEvent(ctx context.Context, alertID uuid.UUID)
 }
 
 func (a *App) GetIntegrationClientWrapper(ctx context.Context, preds ...predicate.Integration) (*slackintegration.ClientWrapper, error) {
-	preds = append(preds, in.IntegrationName(integrationName))
+	preds = append(preds, in.Name(integrationName))
 	intg, intgErr := a.intgs.LookupInstallation(ctx, in.And(preds...))
 	if intgErr != nil {
 		return nil, fmt.Errorf("query slack agent integration: %w", intgErr)
@@ -114,8 +114,7 @@ func (a *App) GetIntegrationClientWrapper(ctx context.Context, preds ...predicat
 func (a *App) lookupAiAgentSessionBinding(ctx context.Context, sessionId uuid.UUID) (*ent.AgentSessionBinding, error) {
 	preds := []predicate.AgentSessionBinding{
 		asb.AgentSessionID(sessionId),
-		asb.Source(slackAgentBindingSource),
-		asb.ResourceKind(slackAgentBindingResourceKindThread),
+		asb.Provider(slackintegration.ProviderName),
 	}
 	binding, bindingErr := a.agents.LookupAgentSessionBinding(ctx, preds...)
 	if bindingErr != nil {

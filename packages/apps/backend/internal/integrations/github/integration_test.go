@@ -52,14 +52,14 @@ func TestExtractIntegrationOptionsFromToken(t *testing.T) {
 		{
 			ID:      new(int64(456)),
 			AppID:   new(int64(123)),
-			Account: &github.User{Login: new("myorg")},
+			Account: &github.User{ID: new(int64(789)), Login: new("myorg")},
 		},
 	}
 
 	options, err := intg.makeInstallationTargetOptions(installations)
 	require.NoError(t, err)
 	require.Len(t, options, 1)
-	assert.Equal(t, "456", options[0].Config.ExternalRef())
+	assert.Equal(t, "789", options[0].Config.InstallationTargetRef().ResourceRef)
 	assert.Equal(t, "myorg", options[0].DisplayName)
 }
 
@@ -74,12 +74,12 @@ func TestExtractIntegrationOptionsFromToken_NoInstallations(t *testing.T) {
 func TestExtractIntegrationOptionsFromToken_MultipleInstallations(t *testing.T) {
 	intg := &Integration{}
 	installations := []*github.Installation{
-		{ID: new(int64(1)), Account: &github.User{Login: new("org-one")}},
-		{ID: new(int64(2)), Account: &github.User{Login: new("org-two")}},
+		{ID: new(int64(1)), Account: &github.User{ID: new(int64(101)), Login: new("org-one")}},
+		{ID: new(int64(2)), Account: &github.User{ID: new(int64(102)), Login: new("org-two")}},
 	}
 	options, err := intg.makeInstallationTargetOptions(installations)
 	require.NoError(t, err)
 	require.Len(t, options, 2)
-	assert.Equal(t, "1", options[0].Config.ExternalRef())
-	assert.Equal(t, "2", options[1].Config.ExternalRef())
+	assert.Equal(t, "101", options[0].Config.InstallationTargetRef().ResourceRef)
+	assert.Equal(t, "102", options[1].Config.InstallationTargetRef().ResourceRef)
 }

@@ -104,7 +104,7 @@ func (a *App) InteractionCallbackHandlers() map[slack.InteractionType]slackinteg
 func (a *App) getEnabledIntegrationClient(ctx context.Context) (*slackintegration.ClientWrapper, error) {
 	// TODO: cache?
 	queryInstall := a.db.Client(ctx).Integration.Query().
-		Where(integration.IntegrationName(integrationName))
+		Where(integration.Name(integrationName))
 	intg, intgErr := queryInstall.All(ctx)
 	if intgErr != nil && !ent.IsNotFound(intgErr) {
 		return nil, fmt.Errorf("failed to query: %w", intgErr)

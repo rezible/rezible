@@ -18,7 +18,16 @@
 
 	let svcAccParseError = $state<string>();
 	let svcAccFileName = $state<string>();
+	let customerId = $state("");
+	let serviceAccountCredentials = $state<unknown>();
 	let videoConferenceEnabled = $state(Boolean(ctrl.userSettings.EnableVideoConference));
+
+	const updateInstallConfig = () => {
+		ctrl.setInstallConfig(
+			{ CustomerID: customerId.trim(), ServiceAccountCredentials: serviceAccountCredentials },
+			Boolean(customerId.trim() && serviceAccountCredentials)
+		);
+	};
 
 	const updateVideoConferenceSetting = (enabled: boolean) => {
 		videoConferenceEnabled = enabled;
@@ -44,7 +53,8 @@
 				return;
 			}
 			svcAccFileName = file.name;
-			ctrl.setInstallConfig({ ServiceAccountCredentials: parsed }, true);
+			serviceAccountCredentials = parsed;
+			updateInstallConfig();
 		} catch {
 			svcAccParseError =
 				"Could not parse JSON file. Check that this is a valid service account credentials file.";
@@ -81,6 +91,18 @@
 					>
 				</div>
 			{:else}
+				<div class="space-y-2">
+					<Label for="google-customer-id">Google Workspace customer ID</Label>
+					<Input
+						id="google-customer-id"
+						placeholder="C0123abc"
+						value={customerId}
+						oninput={(e) => {
+							customerId = e.currentTarget.value;
+							updateInstallConfig();
+						}}
+					/>
+				</div>
 				<div class="space-y-2">
 					<Label for="google-service-account-file">Service account credentials</Label>
 					<div

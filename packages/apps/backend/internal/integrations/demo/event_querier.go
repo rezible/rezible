@@ -8,7 +8,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/pkg/integrations"
 )
 
 func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
@@ -23,7 +22,7 @@ func newEventQuerier(ci *InstalledIntegration) *eventQuerier {
 	return &eventQuerier{ii: ci}
 }
 
-func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.ProviderEventQuerySourceCursors) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.ProviderEventSourceCursors) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	demoComponents := makeDemoTopologyComponents()
 	demoRelationships := makeDemoTopologyRelationships(demoComponents)
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
@@ -44,9 +43,9 @@ func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.Prov
 	}
 }
 
-func makeEventPuller[P demoEventPayload](cursors rez.ProviderEventQuerySourceCursors, yield func(*rez.ProviderEventQueryResult, error) bool, source string, payloads []P) func() bool {
+func makeEventPuller[P demoEventPayload](cursors rez.ProviderEventSourceCursors, yield func(*rez.ProviderEventQueryResult, error) bool, source string, payloads []P) func() bool {
 	return func() bool {
-		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, source); shouldQuery {
+		if cursor, shouldQuery := cursors.GetForSource(source); shouldQuery {
 			for ev, evErr := range pullPayloadEvents(source, payloads, cursor) {
 				if !yield(ev, evErr) {
 					return false
@@ -60,7 +59,7 @@ func makeEventPuller[P demoEventPayload](cursors rez.ProviderEventQuerySourceCur
 func pullPayloadEvents[P demoEventPayload](source string, items []P, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		for _, p := range items {
-			cursorAfter := p.subjectRef()
+			cursorAfter := p.resourceRef()
 			if cursor != "" && cursorAfter <= cursor {
 				continue
 			}
@@ -70,15 +69,14 @@ func pullPayloadEvents[P demoEventPayload](source string, items []P, cursor stri
 				return
 			}
 			ev := rez.ProviderEvent{
-				Provider:           integrationName,
-				ProviderSource:     source,
-				ProviderEventRef:   p.subjectRef(),
-				ProviderSubjectRef: p.subjectRef(),
-				ReceivedAt:         demoObservedAt,
-				Payload:            enc,
-				ContentType:        "application/json",
+				Provider:            providerName,
+				ProviderNamespace:   integrationName,
+				ProviderEventSource: source,
+				ProviderEventRef:    p.resourceRef(),
+				ReceivedAt:          demoObservedAt,
+				Attributes:          enc,
 			}
-			res := &rez.ProviderEventQueryResult{Event: ev, SourceCursorAfter: new(cursorAfter)}
+			res := &rez.ProviderEventQueryResult{Event: ev, ProviderEventSourceCursorAfter: new(cursorAfter)}
 			if !yield(res, nil) {
 				return
 			}

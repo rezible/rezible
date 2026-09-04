@@ -13,11 +13,6 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-func GetSourceQueryCursor(cursors map[string]string, source string) (string, bool) {
-	sc, ok := cursors[source]
-	return sc, ok || len(cursors) == 0
-}
-
 type Registry struct {
 	pkgsMu            sync.RWMutex
 	nameMap           map[string]rez.IntegrationDefinition
@@ -81,9 +76,9 @@ type IntegrationWithProviderEventQuerier interface {
 
 func (r *Registry) GetProviderEventQuerier(ii rez.InstalledIntegration) (rez.ProviderEventQuerier, error) {
 	intg := ii.Integration()
-	pkg, valid := r.nameMap[intg.IntegrationName]
+	pkg, valid := r.nameMap[intg.Name]
 	if !valid {
-		return nil, fmt.Errorf("unknown integration package: %s", intg.IntegrationName)
+		return nil, fmt.Errorf("unknown integration package: %s", intg.Name)
 	}
 	if querierPkg, ok := pkg.(IntegrationWithProviderEventQuerier); ok {
 		return querierPkg.MakeProviderEventQuerier(intg)
@@ -113,7 +108,7 @@ type IntegrationWithAgentToolProvider interface {
 func (r *Registry) GetAvailableAgentTools(ctx context.Context, intgs []rez.InstalledIntegration, params rez.GetAvailableAgentToolsParams) (map[rez.IntegrationDefinition][]ai.Tool, error) {
 	packageMap := make(map[string][]rez.InstalledIntegration)
 	for _, ii := range intgs {
-		pkgName := ii.Integration().IntegrationName
+		pkgName := ii.Integration().Name
 		packageMap[pkgName] = append(packageMap[pkgName], ii)
 	}
 

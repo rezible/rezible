@@ -61,6 +61,24 @@ func (_c *AgentSessionBindingCreate) SetNillableUpdatedAt(v *time.Time) *AgentSe
 	return _c
 }
 
+// SetProvider sets the "provider" field.
+func (_c *AgentSessionBindingCreate) SetProvider(v string) *AgentSessionBindingCreate {
+	_c.mutation.SetProvider(v)
+	return _c
+}
+
+// SetProviderNamespace sets the "provider_namespace" field.
+func (_c *AgentSessionBindingCreate) SetProviderNamespace(v string) *AgentSessionBindingCreate {
+	_c.mutation.SetProviderNamespace(v)
+	return _c
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (_c *AgentSessionBindingCreate) SetProviderResourceRef(v string) *AgentSessionBindingCreate {
+	_c.mutation.SetProviderResourceRef(v)
+	return _c
+}
+
 // SetAgentSessionID sets the "agent_session_id" field.
 func (_c *AgentSessionBindingCreate) SetAgentSessionID(v uuid.UUID) *AgentSessionBindingCreate {
 	_c.mutation.SetAgentSessionID(v)
@@ -78,24 +96,6 @@ func (_c *AgentSessionBindingCreate) SetNillableIntegrationID(v *uuid.UUID) *Age
 	if v != nil {
 		_c.SetIntegrationID(*v)
 	}
-	return _c
-}
-
-// SetSource sets the "source" field.
-func (_c *AgentSessionBindingCreate) SetSource(v string) *AgentSessionBindingCreate {
-	_c.mutation.SetSource(v)
-	return _c
-}
-
-// SetResourceKind sets the "resource_kind" field.
-func (_c *AgentSessionBindingCreate) SetResourceKind(v string) *AgentSessionBindingCreate {
-	_c.mutation.SetResourceKind(v)
-	return _c
-}
-
-// SetResourceRef sets the "resource_ref" field.
-func (_c *AgentSessionBindingCreate) SetResourceRef(v string) *AgentSessionBindingCreate {
-	_c.mutation.SetResourceRef(v)
 	return _c
 }
 
@@ -220,32 +220,27 @@ func (_c *AgentSessionBindingCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "AgentSessionBinding.updated_at"`)}
 	}
+	if _, ok := _c.mutation.Provider(); !ok {
+		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "AgentSessionBinding.provider"`)}
+	}
+	if v, ok := _c.mutation.Provider(); ok {
+		if err := agentsessionbinding.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "AgentSessionBinding.provider": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.ProviderNamespace(); !ok {
+		return &ValidationError{Name: "provider_namespace", err: errors.New(`ent: missing required field "AgentSessionBinding.provider_namespace"`)}
+	}
+	if _, ok := _c.mutation.ProviderResourceRef(); !ok {
+		return &ValidationError{Name: "provider_resource_ref", err: errors.New(`ent: missing required field "AgentSessionBinding.provider_resource_ref"`)}
+	}
+	if v, ok := _c.mutation.ProviderResourceRef(); ok {
+		if err := agentsessionbinding.ProviderResourceRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_resource_ref", err: fmt.Errorf(`ent: validator failed for field "AgentSessionBinding.provider_resource_ref": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.AgentSessionID(); !ok {
 		return &ValidationError{Name: "agent_session_id", err: errors.New(`ent: missing required field "AgentSessionBinding.agent_session_id"`)}
-	}
-	if _, ok := _c.mutation.Source(); !ok {
-		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "AgentSessionBinding.source"`)}
-	}
-	if v, ok := _c.mutation.Source(); ok {
-		if err := agentsessionbinding.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "AgentSessionBinding.source": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.ResourceKind(); !ok {
-		return &ValidationError{Name: "resource_kind", err: errors.New(`ent: missing required field "AgentSessionBinding.resource_kind"`)}
-	}
-	if v, ok := _c.mutation.ResourceKind(); ok {
-		if err := agentsessionbinding.ResourceKindValidator(v); err != nil {
-			return &ValidationError{Name: "resource_kind", err: fmt.Errorf(`ent: validator failed for field "AgentSessionBinding.resource_kind": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.ResourceRef(); !ok {
-		return &ValidationError{Name: "resource_ref", err: errors.New(`ent: missing required field "AgentSessionBinding.resource_ref"`)}
-	}
-	if v, ok := _c.mutation.ResourceRef(); ok {
-		if err := agentsessionbinding.ResourceRefValidator(v); err != nil {
-			return &ValidationError{Name: "resource_ref", err: fmt.Errorf(`ent: validator failed for field "AgentSessionBinding.resource_ref": %w`, err)}
-		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentSessionBinding.tenant"`)}
@@ -298,17 +293,17 @@ func (_c *AgentSessionBindingCreate) createSpec() (*AgentSessionBinding, *sqlgra
 		_spec.SetField(agentsessionbinding.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.Source(); ok {
-		_spec.SetField(agentsessionbinding.FieldSource, field.TypeString, value)
-		_node.Source = value
+	if value, ok := _c.mutation.Provider(); ok {
+		_spec.SetField(agentsessionbinding.FieldProvider, field.TypeString, value)
+		_node.Provider = value
 	}
-	if value, ok := _c.mutation.ResourceKind(); ok {
-		_spec.SetField(agentsessionbinding.FieldResourceKind, field.TypeString, value)
-		_node.ResourceKind = value
+	if value, ok := _c.mutation.ProviderNamespace(); ok {
+		_spec.SetField(agentsessionbinding.FieldProviderNamespace, field.TypeString, value)
+		_node.ProviderNamespace = value
 	}
-	if value, ok := _c.mutation.ResourceRef(); ok {
-		_spec.SetField(agentsessionbinding.FieldResourceRef, field.TypeString, value)
-		_node.ResourceRef = value
+	if value, ok := _c.mutation.ProviderResourceRef(); ok {
+		_spec.SetField(agentsessionbinding.FieldProviderResourceRef, field.TypeString, value)
+		_node.ProviderResourceRef = value
 	}
 	if value, ok := _c.mutation.ClosedAt(); ok {
 		_spec.SetField(agentsessionbinding.FieldClosedAt, field.TypeTime, value)
@@ -504,20 +499,20 @@ func (u *AgentSessionBindingUpsertOne) UpdateNewValues() *AgentSessionBindingUps
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(agentsessionbinding.FieldTenantID)
 		}
+		if _, exists := u.create.mutation.Provider(); exists {
+			s.SetIgnore(agentsessionbinding.FieldProvider)
+		}
+		if _, exists := u.create.mutation.ProviderNamespace(); exists {
+			s.SetIgnore(agentsessionbinding.FieldProviderNamespace)
+		}
+		if _, exists := u.create.mutation.ProviderResourceRef(); exists {
+			s.SetIgnore(agentsessionbinding.FieldProviderResourceRef)
+		}
 		if _, exists := u.create.mutation.AgentSessionID(); exists {
 			s.SetIgnore(agentsessionbinding.FieldAgentSessionID)
 		}
 		if _, exists := u.create.mutation.IntegrationID(); exists {
 			s.SetIgnore(agentsessionbinding.FieldIntegrationID)
-		}
-		if _, exists := u.create.mutation.Source(); exists {
-			s.SetIgnore(agentsessionbinding.FieldSource)
-		}
-		if _, exists := u.create.mutation.ResourceKind(); exists {
-			s.SetIgnore(agentsessionbinding.FieldResourceKind)
-		}
-		if _, exists := u.create.mutation.ResourceRef(); exists {
-			s.SetIgnore(agentsessionbinding.FieldResourceRef)
 		}
 	}))
 	return u
@@ -806,20 +801,20 @@ func (u *AgentSessionBindingUpsertBulk) UpdateNewValues() *AgentSessionBindingUp
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(agentsessionbinding.FieldTenantID)
 			}
+			if _, exists := b.mutation.Provider(); exists {
+				s.SetIgnore(agentsessionbinding.FieldProvider)
+			}
+			if _, exists := b.mutation.ProviderNamespace(); exists {
+				s.SetIgnore(agentsessionbinding.FieldProviderNamespace)
+			}
+			if _, exists := b.mutation.ProviderResourceRef(); exists {
+				s.SetIgnore(agentsessionbinding.FieldProviderResourceRef)
+			}
 			if _, exists := b.mutation.AgentSessionID(); exists {
 				s.SetIgnore(agentsessionbinding.FieldAgentSessionID)
 			}
 			if _, exists := b.mutation.IntegrationID(); exists {
 				s.SetIgnore(agentsessionbinding.FieldIntegrationID)
-			}
-			if _, exists := b.mutation.Source(); exists {
-				s.SetIgnore(agentsessionbinding.FieldSource)
-			}
-			if _, exists := b.mutation.ResourceKind(); exists {
-				s.SetIgnore(agentsessionbinding.FieldResourceKind)
-			}
-			if _, exists := b.mutation.ResourceRef(); exists {
-				s.SetIgnore(agentsessionbinding.FieldResourceRef)
 			}
 		}
 	}))

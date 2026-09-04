@@ -142,14 +142,14 @@ func IntegrationIDNotIn(vs ...uuid.UUID) predicate.IntegrationEventSyncRun {
 	return predicate.IntegrationEventSyncRun(sql.FieldNotIn(FieldIntegrationID, vs...))
 }
 
-// SourceCursorsIsNil applies the IsNil predicate on the "source_cursors" field.
-func SourceCursorsIsNil() predicate.IntegrationEventSyncRun {
-	return predicate.IntegrationEventSyncRun(sql.FieldIsNull(FieldSourceCursors))
+// ProviderEventSourceCursorsIsNil applies the IsNil predicate on the "provider_event_source_cursors" field.
+func ProviderEventSourceCursorsIsNil() predicate.IntegrationEventSyncRun {
+	return predicate.IntegrationEventSyncRun(sql.FieldIsNull(FieldProviderEventSourceCursors))
 }
 
-// SourceCursorsNotNil applies the NotNil predicate on the "source_cursors" field.
-func SourceCursorsNotNil() predicate.IntegrationEventSyncRun {
-	return predicate.IntegrationEventSyncRun(sql.FieldNotNull(FieldSourceCursors))
+// ProviderEventSourceCursorsNotNil applies the NotNil predicate on the "provider_event_source_cursors" field.
+func ProviderEventSourceCursorsNotNil() predicate.IntegrationEventSyncRun {
+	return predicate.IntegrationEventSyncRun(sql.FieldNotNull(FieldProviderEventSourceCursors))
 }
 
 // SyncReasonEQ applies the EQ predicate on the "sync_reason" field.

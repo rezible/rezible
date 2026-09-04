@@ -77,9 +77,9 @@ func IntegrationID(v uuid.UUID) predicate.IntegrationEventSyncCursor {
 	return predicate.IntegrationEventSyncCursor(sql.FieldEQ(FieldIntegrationID, v))
 }
 
-// ProviderSource applies equality check predicate on the "provider_source" field. It's identical to ProviderSourceEQ.
-func ProviderSource(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldEQ(FieldProviderSource, v))
+// ProviderEventSource applies equality check predicate on the "provider_event_source" field. It's identical to ProviderEventSourceEQ.
+func ProviderEventSource(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldEQ(FieldProviderEventSource, v))
 }
 
 // Cursor applies equality check predicate on the "cursor" field. It's identical to CursorEQ.
@@ -212,69 +212,69 @@ func IntegrationIDNotIn(vs ...uuid.UUID) predicate.IntegrationEventSyncCursor {
 	return predicate.IntegrationEventSyncCursor(sql.FieldNotIn(FieldIntegrationID, vs...))
 }
 
-// ProviderSourceEQ applies the EQ predicate on the "provider_source" field.
-func ProviderSourceEQ(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldEQ(FieldProviderSource, v))
+// ProviderEventSourceEQ applies the EQ predicate on the "provider_event_source" field.
+func ProviderEventSourceEQ(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldEQ(FieldProviderEventSource, v))
 }
 
-// ProviderSourceNEQ applies the NEQ predicate on the "provider_source" field.
-func ProviderSourceNEQ(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldNEQ(FieldProviderSource, v))
+// ProviderEventSourceNEQ applies the NEQ predicate on the "provider_event_source" field.
+func ProviderEventSourceNEQ(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldNEQ(FieldProviderEventSource, v))
 }
 
-// ProviderSourceIn applies the In predicate on the "provider_source" field.
-func ProviderSourceIn(vs ...string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldIn(FieldProviderSource, vs...))
+// ProviderEventSourceIn applies the In predicate on the "provider_event_source" field.
+func ProviderEventSourceIn(vs ...string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldIn(FieldProviderEventSource, vs...))
 }
 
-// ProviderSourceNotIn applies the NotIn predicate on the "provider_source" field.
-func ProviderSourceNotIn(vs ...string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldNotIn(FieldProviderSource, vs...))
+// ProviderEventSourceNotIn applies the NotIn predicate on the "provider_event_source" field.
+func ProviderEventSourceNotIn(vs ...string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldNotIn(FieldProviderEventSource, vs...))
 }
 
-// ProviderSourceGT applies the GT predicate on the "provider_source" field.
-func ProviderSourceGT(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldGT(FieldProviderSource, v))
+// ProviderEventSourceGT applies the GT predicate on the "provider_event_source" field.
+func ProviderEventSourceGT(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldGT(FieldProviderEventSource, v))
 }
 
-// ProviderSourceGTE applies the GTE predicate on the "provider_source" field.
-func ProviderSourceGTE(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldGTE(FieldProviderSource, v))
+// ProviderEventSourceGTE applies the GTE predicate on the "provider_event_source" field.
+func ProviderEventSourceGTE(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldGTE(FieldProviderEventSource, v))
 }
 
-// ProviderSourceLT applies the LT predicate on the "provider_source" field.
-func ProviderSourceLT(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldLT(FieldProviderSource, v))
+// ProviderEventSourceLT applies the LT predicate on the "provider_event_source" field.
+func ProviderEventSourceLT(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldLT(FieldProviderEventSource, v))
 }
 
-// ProviderSourceLTE applies the LTE predicate on the "provider_source" field.
-func ProviderSourceLTE(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldLTE(FieldProviderSource, v))
+// ProviderEventSourceLTE applies the LTE predicate on the "provider_event_source" field.
+func ProviderEventSourceLTE(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldLTE(FieldProviderEventSource, v))
 }
 
-// ProviderSourceContains applies the Contains predicate on the "provider_source" field.
-func ProviderSourceContains(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldContains(FieldProviderSource, v))
+// ProviderEventSourceContains applies the Contains predicate on the "provider_event_source" field.
+func ProviderEventSourceContains(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldContains(FieldProviderEventSource, v))
 }
 
-// ProviderSourceHasPrefix applies the HasPrefix predicate on the "provider_source" field.
-func ProviderSourceHasPrefix(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldHasPrefix(FieldProviderSource, v))
+// ProviderEventSourceHasPrefix applies the HasPrefix predicate on the "provider_event_source" field.
+func ProviderEventSourceHasPrefix(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldHasPrefix(FieldProviderEventSource, v))
 }
 
-// ProviderSourceHasSuffix applies the HasSuffix predicate on the "provider_source" field.
-func ProviderSourceHasSuffix(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldHasSuffix(FieldProviderSource, v))
+// ProviderEventSourceHasSuffix applies the HasSuffix predicate on the "provider_event_source" field.
+func ProviderEventSourceHasSuffix(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldHasSuffix(FieldProviderEventSource, v))
 }
 
-// ProviderSourceEqualFold applies the EqualFold predicate on the "provider_source" field.
-func ProviderSourceEqualFold(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldEqualFold(FieldProviderSource, v))
+// ProviderEventSourceEqualFold applies the EqualFold predicate on the "provider_event_source" field.
+func ProviderEventSourceEqualFold(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldEqualFold(FieldProviderEventSource, v))
 }
 
-// ProviderSourceContainsFold applies the ContainsFold predicate on the "provider_source" field.
-func ProviderSourceContainsFold(v string) predicate.IntegrationEventSyncCursor {
-	return predicate.IntegrationEventSyncCursor(sql.FieldContainsFold(FieldProviderSource, v))
+// ProviderEventSourceContainsFold applies the ContainsFold predicate on the "provider_event_source" field.
+func ProviderEventSourceContainsFold(v string) predicate.IntegrationEventSyncCursor {
+	return predicate.IntegrationEventSyncCursor(sql.FieldContainsFold(FieldProviderEventSource, v))
 }
 
 // CursorEQ applies the EQ predicate on the "cursor" field.

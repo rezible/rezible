@@ -85,8 +85,8 @@ func (w *IntegrationEventsSyncWorker) Work(ctx context.Context, job *river.Job[j
 	return nil
 }
 
-func (w *IntegrationEventsSyncWorker) lookupSourceSyncCursors(ctx context.Context, args jobs.SyncIntegrationSourceEvents) (rez.ProviderEventQuerySourceCursors, error) {
-	sourceCursors := rez.ProviderEventQuerySourceCursors{}
+func (w *IntegrationEventsSyncWorker) lookupSourceSyncCursors(ctx context.Context, args jobs.SyncIntegrationSourceEvents) (rez.ProviderEventSourceCursors, error) {
+	sourceCursors := rez.ProviderEventSourceCursors{}
 	for _, src := range args.Sources {
 		// TODO: look up cursors from last sync
 		sourceCursors[src] = ""
@@ -107,7 +107,7 @@ func (w *IntegrationEventsSyncWorker) saveSyncResult(ctx context.Context, args j
 		SetStartedAt(startedAt).
 		SetFinishedAt(time.Now().UTC()).
 		SetStatus(iesr.StatusSuccess).
-		SetSourceCursors(res.SourceCursorsAfter).
+		SetProviderEventSourceCursors(res.SourceCursorsAfter).
 		SetEventsPulled(res.EventsPulled).
 		SetEventsIngested(res.EventsIngested).
 		SetDuplicates(res.NumDuplicates)

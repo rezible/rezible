@@ -12,14 +12,14 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	asb "github.com/rezible/rezible/ent/agentsessionbinding"
+	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
 const (
-	slackAgentBindingSource             = "slack"
-	slackAgentBindingResourceKindThread = "thread"
+	slackAgentBindingProvider = "slack"
 )
 
 type agentThreadBindingResource struct {
@@ -28,13 +28,14 @@ type agentThreadBindingResource struct {
 }
 
 func (r *agentThreadBindingResource) makeRef() string {
-	return r.ChannelId + ":" + r.ThreadTs
+	return "thread:" + r.ChannelId + ":" + r.ThreadTs
 }
 
 func (a *App) getBoundThreadResource(binding *ent.AgentSessionBinding) (*agentThreadBindingResource, error) {
-	channelID, threadTs, ok := strings.Cut(binding.ResourceRef, ":")
+	resourceRef := strings.TrimPrefix(binding.ProviderResourceRef, "thread:")
+	channelID, threadTs, ok := strings.Cut(resourceRef, ":")
 	if !ok || channelID == "" || threadTs == "" {
-		return nil, fmt.Errorf("invalid slack thread resource ref %q", binding.ResourceRef)
+		return nil, fmt.Errorf("invalid slack thread resource ref %q", binding.ProviderResourceRef)
 	}
 	return &agentThreadBindingResource{ChannelId: channelID, ThreadTs: threadTs}, nil
 }
@@ -42,9 +43,8 @@ func (a *App) getBoundThreadResource(binding *ent.AgentSessionBinding) (*agentTh
 func (a *App) lookupSlackThreadBinding(ctx context.Context, integrationID uuid.UUID, res *agentThreadBindingResource) (*ent.AgentSessionBinding, error) {
 	return a.agents.LookupAgentSessionBinding(ctx,
 		asb.IntegrationID(integrationID),
-		asb.Source(slackAgentBindingSource),
-		asb.ResourceKind(slackAgentBindingResourceKindThread),
-		asb.ResourceRef(res.makeRef()),
+		asb.Provider(slackAgentBindingProvider),
+		asb.ProviderResourceRef(res.makeRef()),
 	)
 }
 
@@ -79,11 +79,24 @@ func (a *App) onAgentMentionedByUser(ctx context.Context, usr *ent.User, intg *e
 const agentSessionMetadataIntegrationKey = "source_integration"
 
 func (a *App) startBoundAgentThread(ctx context.Context, intg *ent.Integration, userId uuid.UUID, res *agentThreadBindingResource, msg string) error {
+	credentials, credentialsErr := slackintegration.GetValidatedConfig(intg.InstallationConfig)
+	if credentialsErr != nil {
+		return fmt.Errorf("decode slack installation config: %w", credentialsErr)
+	}
+	providerNamespace := ""
+	if credentials.Team != nil {
+		providerNamespace = credentials.Team.Id
+	} else if credentials.Enterprise != nil {
+		providerNamespace = credentials.Enterprise.Id
+	}
+	bindingRef := rez.ProviderResourceRef{
+		Provider:          slackAgentBindingProvider,
+		ProviderNamespace: providerNamespace,
+		ResourceRef:       res.makeRef(),
+	}
 	bindingParams := rez.AgentSessionBindingParams{
-		IntegrationID: new(intg.ID),
-		Source:        slackAgentBindingSource,
-		ResourceKind:  slackAgentBindingResourceKindThread,
-		ResourceRef:   res.makeRef(),
+		ProviderResourceRef: bindingRef,
+		IntegrationID:       new(intg.ID),
 	}
 	createSessionParams := rez.CreateAgentSessionParams{
 		AgentName: rezai.ChatAgent.Name,

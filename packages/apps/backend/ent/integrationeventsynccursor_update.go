@@ -66,16 +66,16 @@ func (_u *IntegrationEventSyncCursorUpdate) SetNillableIntegrationID(v *uuid.UUI
 	return _u
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (_u *IntegrationEventSyncCursorUpdate) SetProviderSource(v string) *IntegrationEventSyncCursorUpdate {
-	_u.mutation.SetProviderSource(v)
+// SetProviderEventSource sets the "provider_event_source" field.
+func (_u *IntegrationEventSyncCursorUpdate) SetProviderEventSource(v string) *IntegrationEventSyncCursorUpdate {
+	_u.mutation.SetProviderEventSource(v)
 	return _u
 }
 
-// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
-func (_u *IntegrationEventSyncCursorUpdate) SetNillableProviderSource(v *string) *IntegrationEventSyncCursorUpdate {
+// SetNillableProviderEventSource sets the "provider_event_source" field if the given value is not nil.
+func (_u *IntegrationEventSyncCursorUpdate) SetNillableProviderEventSource(v *string) *IntegrationEventSyncCursorUpdate {
 	if v != nil {
-		_u.SetProviderSource(*v)
+		_u.SetProviderEventSource(*v)
 	}
 	return _u
 }
@@ -174,9 +174,9 @@ func (_u *IntegrationEventSyncCursorUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *IntegrationEventSyncCursorUpdate) check() error {
-	if v, ok := _u.mutation.ProviderSource(); ok {
-		if err := integrationeventsynccursor.ProviderSourceValidator(v); err != nil {
-			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "IntegrationEventSyncCursor.provider_source": %w`, err)}
+	if v, ok := _u.mutation.ProviderEventSource(); ok {
+		if err := integrationeventsynccursor.ProviderEventSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_source", err: fmt.Errorf(`ent: validator failed for field "IntegrationEventSyncCursor.provider_event_source": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -212,8 +212,8 @@ func (_u *IntegrationEventSyncCursorUpdate) sqlSave(ctx context.Context) (_node 
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(integrationeventsynccursor.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.ProviderSource(); ok {
-		_spec.SetField(integrationeventsynccursor.FieldProviderSource, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderEventSource(); ok {
+		_spec.SetField(integrationeventsynccursor.FieldProviderEventSource, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Cursor(); ok {
 		_spec.SetField(integrationeventsynccursor.FieldCursor, field.TypeString, value)
@@ -313,16 +313,16 @@ func (_u *IntegrationEventSyncCursorUpdateOne) SetNillableIntegrationID(v *uuid.
 	return _u
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (_u *IntegrationEventSyncCursorUpdateOne) SetProviderSource(v string) *IntegrationEventSyncCursorUpdateOne {
-	_u.mutation.SetProviderSource(v)
+// SetProviderEventSource sets the "provider_event_source" field.
+func (_u *IntegrationEventSyncCursorUpdateOne) SetProviderEventSource(v string) *IntegrationEventSyncCursorUpdateOne {
+	_u.mutation.SetProviderEventSource(v)
 	return _u
 }
 
-// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
-func (_u *IntegrationEventSyncCursorUpdateOne) SetNillableProviderSource(v *string) *IntegrationEventSyncCursorUpdateOne {
+// SetNillableProviderEventSource sets the "provider_event_source" field if the given value is not nil.
+func (_u *IntegrationEventSyncCursorUpdateOne) SetNillableProviderEventSource(v *string) *IntegrationEventSyncCursorUpdateOne {
 	if v != nil {
-		_u.SetProviderSource(*v)
+		_u.SetProviderEventSource(*v)
 	}
 	return _u
 }
@@ -434,9 +434,9 @@ func (_u *IntegrationEventSyncCursorUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *IntegrationEventSyncCursorUpdateOne) check() error {
-	if v, ok := _u.mutation.ProviderSource(); ok {
-		if err := integrationeventsynccursor.ProviderSourceValidator(v); err != nil {
-			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "IntegrationEventSyncCursor.provider_source": %w`, err)}
+	if v, ok := _u.mutation.ProviderEventSource(); ok {
+		if err := integrationeventsynccursor.ProviderEventSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_source", err: fmt.Errorf(`ent: validator failed for field "IntegrationEventSyncCursor.provider_event_source": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -489,8 +489,8 @@ func (_u *IntegrationEventSyncCursorUpdateOne) sqlSave(ctx context.Context) (_no
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(integrationeventsynccursor.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.ProviderSource(); ok {
-		_spec.SetField(integrationeventsynccursor.FieldProviderSource, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderEventSource(); ok {
+		_spec.SetField(integrationeventsynccursor.FieldProviderEventSource, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Cursor(); ok {
 		_spec.SetField(integrationeventsynccursor.FieldCursor, field.TypeString, value)

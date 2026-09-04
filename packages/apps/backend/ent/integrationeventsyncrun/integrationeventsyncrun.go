@@ -21,8 +21,8 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldIntegrationID holds the string denoting the integration_id field in the database.
 	FieldIntegrationID = "integration_id"
-	// FieldSourceCursors holds the string denoting the source_cursors field in the database.
-	FieldSourceCursors = "source_cursors"
+	// FieldProviderEventSourceCursors holds the string denoting the provider_event_source_cursors field in the database.
+	FieldProviderEventSourceCursors = "provider_event_source_cursors"
 	// FieldSyncReason holds the string denoting the sync_reason field in the database.
 	FieldSyncReason = "sync_reason"
 	// FieldStartedAt holds the string denoting the started_at field in the database.
@@ -66,7 +66,7 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldIntegrationID,
-	FieldSourceCursors,
+	FieldProviderEventSourceCursors,
 	FieldSyncReason,
 	FieldStartedAt,
 	FieldFinishedAt,

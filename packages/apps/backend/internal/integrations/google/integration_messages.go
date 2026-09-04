@@ -31,7 +31,7 @@ func (i *Integration) registerMessageHandlers() error {
 }
 
 func (h *eventHandler) withInstallation(ctx context.Context, fn func(*InstalledIntegration) error) error {
-	intgs, lookupErr := h.integrations.ListAllInstalled(ctx, integration.IntegrationName(integrationName))
+	intgs, lookupErr := h.integrations.ListAllInstalled(ctx, integration.Name(integrationName))
 	if lookupErr != nil && !ent.IsNotFound(lookupErr) {
 		return fmt.Errorf("error looking up Integration: %w", lookupErr)
 	}

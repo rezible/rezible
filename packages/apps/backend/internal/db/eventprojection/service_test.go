@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/user"
@@ -50,23 +49,23 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 func runProjection(ctx context.Context, service rez.EventProjectionService, event *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
 	projector, ok := service.GetEventProjectorFunc(event)
 	if !ok {
-		return nil, fmt.Errorf("unsupported subject kind %q", event.SubjectKind)
+		return nil, fmt.Errorf("unsupported event kind %q", event.Kind)
 	}
 	return projector(ctx, event)
 }
 
-func (s *ProjectionServiceSuite) createNormalizedEvent(tdb rez.Database, subjectKind projections.SubjectKind, providerSubjectRef string, kind ne.Kind, occurredAt time.Time, attributes any) *ent.NormalizedEvent {
+func (s *ProjectionServiceSuite) createNormalizedEvent(tdb rez.Database, kind string, providerResourceRef string, occurredAt time.Time, attributes any) *ent.NormalizedEvent {
 	ctx := s.SeedTenantContext()
 	encodedAttributes, encodeErr := projections.EncodeAttributes(attributes)
 	s.Require().NoError(encodeErr)
 
 	create := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider("test").
-		SetProviderSource("projection").
+		SetProviderNamespace("projection-tests").
+		SetProviderResourceRef(providerResourceRef).
+		SetProviderEventSource("projection").
 		SetProviderEventRef("event-" + uuid.NewString()).
-		SetProviderSubjectRef(providerSubjectRef).
 		SetKind(kind).
-		SetSubjectKind(subjectKind.String()).
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt.Add(time.Minute)).
 		SetAttributes(encodedAttributes)
@@ -82,52 +81,49 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 	service := s.projectionService(tdb)
 	now := time.Now().UTC()
 
-	for _, component := range []projections.SystemComponentSubjectAttributes{
-		{ExternalRef: "api", Category: kne.CategoryContainer, Kind: "service", DisplayName: "API"},
-		{ExternalRef: "database", Category: kne.CategoryContainer, Kind: "database", DisplayName: "Database"},
-	} {
-		event := s.createNormalizedEvent(
-			tdb,
-			projections.SubjectKindSystemComponent,
-			component.ExternalRef,
-			ne.KindObserved,
-			now,
-			component,
-		)
-		_, projectionErr := runProjection(ctx, service, event)
-		s.Require().NoError(projectionErr)
+	sourceRef := rez.ProviderResourceRef{
+		Provider:          "test",
+		ProviderNamespace: "projection-tests",
+		ResourceRef:       "api",
 	}
-
-	relationship := projections.SystemRelationshipSubjectAttributes{
-		ExternalRef:       "api-uses-database",
-		Predicate:         knr.PredicateUses,
-		DisplayName:       "uses",
-		SourceExternalRef: "api",
-		SourceCategory:    kne.CategoryContainer,
-		SourceKind:        "service",
-		SourceDisplayName: "API",
-		TargetExternalRef: "database",
-		TargetCategory:    kne.CategoryContainer,
-		TargetKind:        "database",
-		TargetDisplayName: "Database",
+	targetRef := rez.ProviderResourceRef{
+		Provider:          "test",
+		ProviderNamespace: "projection-tests",
+		ResourceRef:       "database",
+	}
+	relationship := projections.SystemRelationshipEventAttributes{
+		Predicate:   knr.PredicateUses,
+		DisplayName: "uses",
+		Source: projections.EntityObservation{
+			Ref:         sourceRef,
+			Category:    kne.CategoryContainer,
+			Kind:        "service",
+			DisplayName: "API",
+		},
+		Target: projections.EntityObservation{
+			Ref:         targetRef,
+			Category:    kne.CategoryContainer,
+			Kind:        "database",
+			DisplayName: "Database",
+		},
 	}
 	event := s.createNormalizedEvent(
 		tdb,
-		projections.SubjectKindSystemRelationship,
-		relationship.ExternalRef,
-		ne.KindObserved,
+		projections.KindSystemRelationship,
+		"api-uses-database",
 		now,
 		relationship,
 	)
 	_, projectionErr := runProjection(ctx, service, event)
 	s.Require().NoError(projectionErr)
 
-	s.Equal(2, tdb.Client(ctx).KnowledgeEntity.Query().
-		Where(kne.CategoryEQ(kne.CategoryContainer), kne.KindIn("service", "database")).
-		CountX(ctx))
-	s.Equal(1, tdb.Client(ctx).KnowledgeRelationship.Query().
-		Where(knr.PredicateEQ(knr.PredicateUses)).
-		CountX(ctx))
+	entityQuery := tdb.Client(ctx).KnowledgeEntity.Query()
+	entityQuery.Where(kne.CategoryEQ(kne.CategoryContainer), kne.KindIn("service", "database"))
+	s.Equal(2, entityQuery.CountX(ctx))
+	relationshipQuery := tdb.Client(ctx).KnowledgeRelationship.Query()
+	relationshipQuery.Where(knr.PredicateEQ(knr.PredicateUses))
+	s.Equal(1, relationshipQuery.CountX(ctx))
+	s.Equal(3, tdb.Client(ctx).KnowledgeEvidence.Query().CountX(ctx))
 }
 
 func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() {
@@ -135,43 +131,57 @@ func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() 
 	tdb := s.CreateTestDatabase()
 	service := s.projectionService(tdb)
 	suffix := uuid.NewString()
-	attributes := projections.TeamMembershipSubjectAttributes{
-		Team: projections.TeamSubjectAttributes{
-			ExternalRef: "slack:group-" + suffix,
-			Name:        "Platform",
-			Slug:        "platform-" + suffix,
+	teamRef := rez.ProviderResourceRef{
+		Provider:          "slack",
+		ProviderNamespace: "workspace",
+		ResourceRef:       "group-" + suffix,
+	}
+	userRef := rez.ProviderResourceRef{
+		Provider:          "slack",
+		ProviderNamespace: "workspace",
+		ResourceRef:       "user-" + suffix,
+	}
+	attributes := projections.TeamMembershipEventAttributes{
+		Team: projections.TeamMembershipTeamAttributes{
+			ProviderResourceRef: teamRef,
+			Name:                "Platform",
+			Slug:                "platform-" + suffix,
 		},
-		User: projections.UserSubjectAttributes{
-			ExternalRef: "slack:user-" + suffix,
-			Name:        "Avery",
-			Email:       suffix + "@example.com",
-			ChatId:      "user-" + suffix,
+		User: projections.TeamMembershipUserAttributes{
+			ProviderResourceRef: userRef,
+			Name:                "Avery",
+			Email:               suffix + "@example.com",
+			ChatId:              "user-" + suffix,
 		},
 		Role: "member",
 	}
 	event := s.createNormalizedEvent(
 		tdb,
-		projections.SubjectKindTeamMembership,
+		projections.KindTeamMembership,
 		"slack:group-"+suffix+":user-"+suffix,
-		ne.KindObserved,
 		time.Now().UTC(),
 		attributes,
 	)
 	_, projectionErr := runProjection(ctx, service, event)
 	s.Require().NoError(projectionErr)
 
-	createdUser := tdb.Client(ctx).User.Query().Where(user.Email(attributes.User.Email)).OnlyX(ctx)
-	createdTeam := tdb.Client(ctx).Team.Query().Where(team.Slug(attributes.Team.Slug)).OnlyX(ctx)
+	userQuery := tdb.Client(ctx).User.Query()
+	userQuery.Where(user.Email(attributes.User.Email))
+	createdUser := userQuery.OnlyX(ctx)
+	teamQuery := tdb.Client(ctx).Team.Query()
+	teamQuery.Where(team.Slug(attributes.Team.Slug))
+	createdTeam := teamQuery.OnlyX(ctx)
 	s.NotNil(createdUser.KnowledgeEntityID)
 	s.NotNil(createdTeam.KnowledgeEntityID)
-	s.Equal(1, tdb.Client(ctx).TeamMembership.Query().
-		Where(teammembership.TeamID(createdTeam.ID), teammembership.UserID(createdUser.ID)).
-		CountX(ctx))
-	s.Equal(1, tdb.Client(ctx).KnowledgeRelationship.Query().
-		Where(
-			knr.PredicateEQ(knr.PredicateMemberOf),
-			knr.SourceEntityID(*createdUser.KnowledgeEntityID),
-			knr.TargetEntityID(*createdTeam.KnowledgeEntityID),
-		).
-		CountX(ctx))
+	membershipQuery := tdb.Client(ctx).TeamMembership.Query()
+	membershipQuery.Where(teammembership.TeamID(createdTeam.ID), teammembership.UserID(createdUser.ID))
+	s.Equal(1, membershipQuery.CountX(ctx))
+	relationshipQuery := tdb.Client(ctx).KnowledgeRelationship.Query()
+	relationshipQuery.Where(
+		knr.PredicateEQ(knr.PredicateMemberOf),
+		knr.SourceEntityID(*createdUser.KnowledgeEntityID),
+		knr.TargetEntityID(*createdTeam.KnowledgeEntityID),
+	)
+	s.Equal(1, relationshipQuery.CountX(ctx))
+	s.Equal(3, tdb.Client(ctx).KnowledgeEvidence.Query().CountX(ctx))
 }

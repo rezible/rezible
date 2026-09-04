@@ -15,7 +15,6 @@ import (
 	kev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	saentity "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
@@ -62,11 +61,11 @@ func (s *SystemAnalysisServiceSuite) createNormalizedEvent(tdb rez.Database, sub
 	s.Require().NoError(encodeErr)
 	create := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider("test").
-		SetProviderSource("system-analysis-tests").
+		SetProviderNamespace("system-analysis-tests").
+		SetProviderResourceRef(subjectRef).
+		SetProviderEventSource("system-analysis-tests").
 		SetProviderEventRef(uuid.NewString()).
-		SetProviderSubjectRef(subjectRef).
-		SetKind(ne.KindObserved).
-		SetSubjectKind(projections.SubjectKindSystemComponent.String()).
+		SetKind(projections.KindSystemComponent).
 		SetOccurredAt(now).
 		SetReceivedAt(now).
 		SetAttributes(encodedAttributes)
@@ -100,13 +99,13 @@ func (s *SystemAnalysisServiceSuite) createGraphFixture(tdb rez.Database) system
 	createAlias := client.KnowledgeSubjectAlias.Create().
 		SetSubjectKind(ksa.SubjectKindEntity).
 		SetProvider("test").
-		SetProviderSource("system-analysis-tests").
-		SetProviderSubjectRef("service:" + uuid.NewString()).
+		SetProviderNamespace("system-analysis-tests").
+		SetProviderResourceRef("service:" + uuid.NewString()).
 		SetEntityID(source.ID)
 	alias, aliasErr := createAlias.Save(ctx)
 	s.Require().NoError(aliasErr)
 	createEvidence := client.KnowledgeEvidence.Create().
-		SetEventID(s.createNormalizedEvent(tdb, alias.ProviderSubjectRef).ID).
+		SetEventID(s.createNormalizedEvent(tdb, alias.ProviderResourceRef).ID).
 		SetSubjectAliasID(alias.ID).
 		SetKind(kev.KindObserved).
 		SetAssertion("component_exists").

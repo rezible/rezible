@@ -68,9 +68,8 @@ func (i *Integration) makeInstallationTargetOptions(installations []*gh.Installa
 			return nil, fmt.Errorf("make installation config: %w", cfgErr)
 		}
 		options = append(options, rez.IntegrationInstallationTarget{
-			IntegrationName: integrationName,
-			DisplayName:     cfg.Org,
-			Config:          cfg,
+			DisplayName: cfg.Org,
+			Config:      cfg,
 		})
 	}
 	return options, nil

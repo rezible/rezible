@@ -9,7 +9,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/pkg/integrations"
+	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/slack-go/slack"
 )
@@ -27,20 +27,30 @@ type eventQuerier struct {
 	client *slack.Client
 }
 
+func (q *eventQuerier) providerNamespace() string {
+	if q.ii.config.Team != nil {
+		return q.ii.config.Team.Id
+	}
+	if q.ii.config.Enterprise != nil {
+		return q.ii.config.Enterprise.Id
+	}
+	return ""
+}
+
 func (q *eventQuerier) Integration() *ent.Integration {
 	return q.ii.intg
 }
 
-func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.ProviderEventQuerySourceCursors) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.ProviderEventSourceCursors) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
-		if usersCursor, ok := integrations.GetSourceQueryCursor(cursors, sourceUsers); ok {
+		if usersCursor, ok := cursors.GetForSource(sourceUsers); ok {
 			for ev, err := range q.pullUserObservedEvents(ctx, usersCursor) {
 				if !yield(ev, err) {
 					return
 				}
 			}
 		}
-		if teamsCursor, ok := integrations.GetSourceQueryCursor(cursors, sourceTeams); ok {
+		if teamsCursor, ok := cursors.GetForSource(sourceTeams); ok {
 			for ev, err := range q.pullTeamObservedEvents(ctx, teamsCursor) {
 				if !yield(ev, err) {
 					return
@@ -68,13 +78,12 @@ type userObservedPayload struct {
 	UpdatedAt slack.JSONTime `json:"updated_at"`
 }
 
-func (p userObservedPayload) makeSubjectAttributes() projections.UserSubjectAttributes {
-	return projections.UserSubjectAttributes{
-		ExternalRef: p.SlackID,
-		Name:        p.Name,
-		Email:       p.Email,
-		ChatId:      p.SlackID,
-		Timezone:    p.Timezone,
+func (p userObservedPayload) makeEventAttributes() projections.UserEventAttributes {
+	return projections.UserEventAttributes{
+		Name:     p.Name,
+		Email:    p.Email,
+		ChatId:   p.SlackID,
+		Timezone: p.Timezone,
 	}
 }
 
@@ -84,7 +93,7 @@ func makeTeamObservedPayload(g slack.UserGroup) teamObservedPayload {
 		chatChannelID = g.Prefs.Channels[0]
 	}
 	return teamObservedPayload{
-		ExternalRef:   g.ID,
+		SlackID:       g.ID,
 		Name:          g.Name,
 		Slug:          g.Handle,
 		ChatChannelID: chatChannelID,
@@ -94,7 +103,7 @@ func makeTeamObservedPayload(g slack.UserGroup) teamObservedPayload {
 }
 
 type teamObservedPayload struct {
-	ExternalRef   string         `json:"external_ref"`
+	SlackID       string         `json:"slack_id"`
 	Name          string         `json:"name"`
 	Slug          string         `json:"slug"`
 	ChatChannelID string         `json:"chat_channel_id,omitempty"`
@@ -102,12 +111,12 @@ type teamObservedPayload struct {
 	Deleted       bool           `json:"deleted"`
 }
 
-func (p teamObservedPayload) makeSubjectAttributes() projections.TeamSubjectAttributes {
-	return projections.TeamSubjectAttributes{
-		ExternalRef:   p.ExternalRef,
+func (p teamObservedPayload) makeEventAttributes() projections.TeamEventAttributes {
+	return projections.TeamEventAttributes{
 		Name:          p.Name,
 		Slug:          p.Slug,
 		ChatChannelId: p.ChatChannelID,
+		Deleted:       p.Deleted,
 	}
 }
 
@@ -141,13 +150,12 @@ func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string
 			}
 
 			events = append(events, rez.ProviderEvent{
-				Provider:           integrationName,
-				ProviderSource:     sourceUsers,
-				ProviderEventRef:   fmt.Sprintf("%s:%s:%s", teamId, u.ID, u.Updated),
-				ProviderSubjectRef: fmt.Sprintf("slack:%s", u.ID),
-				ReceivedAt:         time.Now(),
-				Payload:            payload,
-				ContentType:        "application/json",
+				Provider:            slackintegration.ProviderName,
+				ProviderNamespace:   q.providerNamespace(),
+				ProviderEventSource: sourceUsers,
+				ProviderEventRef:    fmt.Sprintf("%s:%s:%s", teamId, u.ID, u.Updated),
+				ReceivedAt:          time.Now(),
+				Attributes:          payload,
 			})
 		}
 
@@ -161,7 +169,7 @@ func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string
 		}
 		nextCursor := fmt.Sprintf("%d", time.Now().UTC().Unix())
 		for _, event := range events {
-			if !yield(&rez.ProviderEventQueryResult{Event: event, SourceCursorAfter: &nextCursor}, nil) {
+			if !yield(&rez.ProviderEventQueryResult{Event: event, ProviderEventSourceCursorAfter: &nextCursor}, nil) {
 				return
 			}
 		}
@@ -206,15 +214,14 @@ func (q *eventQuerier) pullTeamObservedEvents(ctx context.Context, cursor string
 			}
 
 			teamEvent := rez.ProviderEvent{
-				Provider:           integrationName,
-				ProviderSource:     sourceTeams,
-				ProviderEventRef:   fmt.Sprintf("%s:%s:%d", teamID, group.ID, group.DateUpdate),
-				ProviderSubjectRef: group.ID,
-				ReceivedAt:         time.Now().UTC(),
-				Payload:            teamPayloadBytes,
-				ContentType:        "application/json",
+				Provider:            slackintegration.ProviderName,
+				ProviderNamespace:   q.providerNamespace(),
+				ProviderEventSource: sourceTeams,
+				ProviderEventRef:    fmt.Sprintf("%s:%s:%d", teamID, group.ID, group.DateUpdate),
+				ReceivedAt:          time.Now().UTC(),
+				Attributes:          teamPayloadBytes,
 			}
-			if !yield(&rez.ProviderEventQueryResult{Event: teamEvent, SourceCursorAfter: &nextCursor}, nil) {
+			if !yield(&rez.ProviderEventQueryResult{Event: teamEvent, ProviderEventSourceCursorAfter: &nextCursor}, nil) {
 				return
 			}
 			if teamPayload.Deleted {
@@ -235,15 +242,14 @@ func (q *eventQuerier) pullTeamObservedEvents(ctx context.Context, cursor string
 					return
 				}
 				membershipEvent := rez.ProviderEvent{
-					Provider:           integrationName,
-					ProviderSource:     sourceTeamMemberships,
-					ProviderEventRef:   fmt.Sprintf("%s:%s:%s:%d", teamID, group.ID, userID, group.DateUpdate),
-					ProviderSubjectRef: fmt.Sprintf("slack:%s:%s", group.ID, userID),
-					ReceivedAt:         time.Now().UTC(),
-					Payload:            membershipPayloadBytes,
-					ContentType:        "application/json",
+					Provider:            slackintegration.ProviderName,
+					ProviderNamespace:   q.providerNamespace(),
+					ProviderEventSource: sourceTeamMemberships,
+					ProviderEventRef:    fmt.Sprintf("%s:%s:%s:%d", teamID, group.ID, userID, group.DateUpdate),
+					ReceivedAt:          time.Now().UTC(),
+					Attributes:          membershipPayloadBytes,
 				}
-				if !yield(&rez.ProviderEventQueryResult{Event: membershipEvent, SourceCursorAfter: &nextCursor}, nil) {
+				if !yield(&rez.ProviderEventQueryResult{Event: membershipEvent, ProviderEventSourceCursorAfter: &nextCursor}, nil) {
 					return
 				}
 			}

@@ -10,8 +10,11 @@ import (
 )
 
 const (
-	providerName    = "github"
-	integrationName = "github"
+	providerName       = "github"
+	integrationName    = "github"
+	sourcePushEvent    = "push"
+	sourcePullEvent    = "pull_request"
+	sourceRepositories = "repositories"
 )
 
 type Integration struct {

@@ -24,8 +24,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldIntegrationID holds the string denoting the integration_id field in the database.
 	FieldIntegrationID = "integration_id"
-	// FieldProviderSource holds the string denoting the provider_source field in the database.
-	FieldProviderSource = "provider_source"
+	// FieldProviderEventSource holds the string denoting the provider_event_source field in the database.
+	FieldProviderEventSource = "provider_event_source"
 	// FieldCursor holds the string denoting the cursor field in the database.
 	FieldCursor = "cursor"
 	// FieldLastSyncedAt holds the string denoting the last_synced_at field in the database.
@@ -59,7 +59,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldIntegrationID,
-	FieldProviderSource,
+	FieldProviderEventSource,
 	FieldCursor,
 	FieldLastSyncedAt,
 }
@@ -88,8 +88,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
-	ProviderSourceValidator func(string) error
+	// ProviderEventSourceValidator is a validator for the "provider_event_source" field. It is called by the builders before save.
+	ProviderEventSourceValidator func(string) error
 	// DefaultLastSyncedAt holds the default value on creation for the "last_synced_at" field.
 	DefaultLastSyncedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -124,9 +124,9 @@ func ByIntegrationID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIntegrationID, opts...).ToFunc()
 }
 
-// ByProviderSource orders the results by the provider_source field.
-func ByProviderSource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderSource, opts...).ToFunc()
+// ByProviderEventSource orders the results by the provider_event_source field.
+func ByProviderEventSource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderEventSource, opts...).ToFunc()
 }
 
 // ByCursor orders the results by the cursor field.

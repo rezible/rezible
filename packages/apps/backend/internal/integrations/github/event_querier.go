@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"iter"
 	"sort"
+	"strconv"
 	"time"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/pkg/integrations"
 )
 
 func (i *Integration) MakeProviderEventQuerier(cfg rez.IntegrationsConfigGithub, intg *ent.Integration) (rez.ProviderEventQuerier, error) {
@@ -34,9 +34,9 @@ func (q *eventQuerier) Integration() *ent.Integration {
 	return q.ii.intg
 }
 
-func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.ProviderEventQuerySourceCursors) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.ProviderEventSourceCursors) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
-		if reposCursor, ok := integrations.GetSourceQueryCursor(cursors, sourceRepositories); ok {
+		if reposCursor, ok := cursors.GetForSource(sourceRepositories); ok {
 			for ev, evErr := range q.pullRepositoryEvents(ctx, reposCursor) {
 				yield(ev, evErr)
 			}
@@ -95,15 +95,14 @@ func (q *eventQuerier) pullRepositoryEvents(ctx context.Context, cursorAfter str
 
 			res := &rez.ProviderEventQueryResult{
 				Event: rez.ProviderEvent{
-					Provider:           integrationName,
-					ProviderSource:     sourceRepositories,
-					ProviderSubjectRef: "github:" + payload.FullName,
-					ProviderEventRef:   fmt.Sprintf("github:repositories:%s:%s", deliveryRefID, receivedAt.Format(time.RFC3339Nano)),
-					ReceivedAt:         receivedAt,
-					Payload:            body,
-					ContentType:        "application/json",
+					Provider:            providerName,
+					ProviderNamespace:   strconv.FormatInt(q.ii.config.AccountID, 10),
+					ProviderEventSource: sourceRepositories,
+					ProviderEventRef:    fmt.Sprintf("github:repositories:%s:%s", deliveryRefID, receivedAt.Format(time.RFC3339Nano)),
+					ReceivedAt:          receivedAt,
+					Attributes:          body,
 				},
-				SourceCursorAfter: new(cursor),
+				ProviderEventSourceCursorAfter: new(cursor),
 			}
 
 			if !yield(res, nil) {
