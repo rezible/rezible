@@ -8,11 +8,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentturn"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationinvestigation"
 	sae "github.com/rezible/rezible/ent/systemanalysisentity"
 	saentry "github.com/rezible/rezible/ent/systemanalysisentry"
 	saentries "github.com/rezible/rezible/ent/systemanalysisentrysubject"
@@ -79,49 +80,44 @@ func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTim
 	}
 
 	fixture := investigationFixture{analysisID: analysis.ID, situationID: createdSituation.ID}
-	seed := rezai.EvalScenarioSeed{
-		Input:            rezai.InvestigationAgentInput{SituationID: fixture.situationID},
-		SystemAnalysisID: &analysis.ID,
+	raw, err := json.Marshal(rezai.InvestigationAgentInput{SituationID: fixture.situationID})
+	if err != nil {
+		return fixture, rezai.EvalScenarioSeed{}, err
 	}
-	return fixture, seed, nil
+	createSession := client.AgentSession.Create().SetAgentName(rezai.InvestigationAgent.Name).SetInput(raw).SetSystemAnalysisID(analysis.ID)
+	session, err := createSession.Save(ctx)
+	if err != nil {
+		return fixture, rezai.EvalScenarioSeed{}, err
+	}
+	createTurn := client.AgentTurn.Create().SetID(uuid.New()).SetAgentSessionID(session.ID).SetSequence(1).SetRiverJobID(0).SetStatus(agentturn.StatusRunning)
+	turn, err := createTurn.Save(ctx)
+	if err != nil {
+		return fixture, rezai.EvalScenarioSeed{}, err
+	}
+	createInvestigation := client.SituationInvestigation.Create().SetSituationID(fixture.situationID).
+		SetSystemAnalysisID(analysis.ID).SetAgentSessionID(session.ID).SetRequestedRevision(1).SetRequestedTurnID(turn.ID)
+	if err := createInvestigation.Exec(ctx); err != nil {
+		return fixture, rezai.EvalScenarioSeed{}, err
+	}
+	return fixture, rezai.EvalScenarioSeed{Session: session, Turn: turn}, nil
 }
 
-func decodeSituationInvestigationReport(result *rez.AiAgentInvocationResult) (*schematypes.SituationInvestigationReport, rezai.EvalCheck) {
-	check := rezai.EvalCheck{
-		ID:       "report_artifact",
-		Expected: "valid situation_investigation_report JSON artifact",
+func loadSituationInvestigationReport(ctx context.Context, client *ent.Client, situationID uuid.UUID) (*schematypes.SituationInvestigationReport, rezai.EvalCheck, error) {
+	check := rezai.EvalCheck{ID: "accepted_report", Expected: "a persisted investigation report"}
+	query := client.SituationInvestigation.Query().Where(situationinvestigation.SituationID(situationID))
+	inv, err := query.Only(ctx)
+	if err != nil {
+		return nil, check, err
 	}
-	if result == nil {
-		check.Summary = "The agent returned no invocation result."
-		return nil, check
+	if inv.CompletedRevision == 0 {
+		check.Summary = "No investigation report was accepted."
+		return nil, check, nil
 	}
-
-	for _, artifact := range result.State.Artifacts {
-		if artifact == nil || artifact.Name != "situation_investigation_report" {
-			continue
-		}
-		for _, part := range artifact.Parts {
-			if part == nil || strings.TrimSpace(part.Text) == "" {
-				continue
-			}
-			rawReport := strings.TrimSpace(part.Text)
-			var report schematypes.SituationInvestigationReport
-			if decodeErr := json.Unmarshal([]byte(rawReport), &report); decodeErr != nil {
-				check.Summary = "The situation investigation report artifact contains malformed JSON."
-				check.Observed = rawReport
-				return nil, check
-			}
-			normalizeReport(&report)
-			check.Passed = true
-			check.Summary = "The situation investigation report artifact contains valid JSON."
-			return &report, check
-		}
-		check.Summary = "The situation investigation report artifact contains no nonblank content."
-		return nil, check
-	}
-
-	check.Summary = "The situation investigation report artifact was not created."
-	return nil, check
+	report := inv.Report
+	normalizeReport(&report)
+	check.Passed = true
+	check.Summary = "The investigation report was accepted."
+	return &report, check, nil
 }
 
 func normalizeReport(report *schematypes.SituationInvestigationReport) {

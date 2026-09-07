@@ -122,3 +122,25 @@ func (InvokeAgentTurn) InsertOpts() river.InsertOpts {
 		},
 	}
 }
+
+type ReconcileSituationInvestigation struct {
+	SituationID uuid.UUID `json:"situation_id"`
+}
+
+func (ReconcileSituationInvestigation) Kind() string {
+	return "reconcile-situation-investigation"
+}
+
+type CloseInactiveAlertEpisodes struct{}
+
+func (CloseInactiveAlertEpisodes) Kind() string {
+	return "close-inactive-alert-episodes"
+}
+func (CloseInactiveAlertEpisodes) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: UniqueStateNonCompleted,
+		},
+	}
+}

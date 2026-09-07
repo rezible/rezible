@@ -27,6 +27,8 @@ const (
 	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
+	// FieldEvidenceRevision holds the string denoting the evidence_revision field in the database.
+	FieldEvidenceRevision = "evidence_revision"
 	// FieldSummary holds the string denoting the summary field in the database.
 	FieldSummary = "summary"
 	// FieldStatus holds the string denoting the status field in the database.
@@ -94,6 +96,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldKnowledgeEntityID,
 	FieldTitle,
+	FieldEvidenceRevision,
 	FieldSummary,
 	FieldStatus,
 	FieldOpenedAt,
@@ -127,6 +130,10 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
+	// DefaultEvidenceRevision holds the default value on creation for the "evidence_revision" field.
+	DefaultEvidenceRevision int
+	// EvidenceRevisionValidator is a validator for the "evidence_revision" field. It is called by the builders before save.
+	EvidenceRevisionValidator func(int) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -211,6 +218,11 @@ func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
+}
+
+// ByEvidenceRevision orders the results by the evidence_revision field.
+func ByEvidenceRevision(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEvidenceRevision, opts...).ToFunc()
 }
 
 // BySummary orders the results by the summary field.

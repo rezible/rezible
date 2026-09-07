@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/riverqueue/river"
 
 	"github.com/samber/do/v2"
 
@@ -187,6 +190,7 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.KnowledgeGraphService](i),
+			do.MustInvoke[rez.AlertService](i),
 		)
 	}),
 
@@ -218,6 +222,7 @@ var provideIntegrations = do.Package(
 	do.Lazy(func(i do.Injector) (*slackagent.App, error) {
 		return slackagent.MakeApp(
 			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IntegrationService](i),
@@ -377,7 +382,17 @@ var provideDatabaseServices = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.AlertService, error) {
-		return db.NewAlertService(do.MustInvoke[rez.Database](i))
+		return db.NewAlertService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.SituationService](i),
+		)
+	}),
+
+	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.CloseInactiveAlertEpisodes], error) {
+		return db.NewCloseInactiveAlertEpisodesWorker(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.SituationService](i),
+		), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.PlaybookService, error) {
@@ -405,8 +420,17 @@ var provideDatabaseServices = do.Package(
 		return db.NewSituationService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.AgentSessionService](i),
 		)
+	}),
+
+	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.ReconcileSituationInvestigation], error) {
+		return db.NewReconcileSituationInvestigationWorker(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.SituationService](i),
+			do.MustInvoke[rez.AgentSessionService](i),
+		), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.SystemHazardService, error) {
@@ -468,6 +492,8 @@ func makeServiceFuncJobWorkerProvider[S any](fn func(S) jobs.WorkerDefinition) d
 }
 
 var defaultJobWorkerProviders = []do.Provider[jobs.WorkerDefinition]{
+	makeJobWorkerProvider[jobs.ReconcileSituationInvestigation](),
+	makeJobWorkerProvider[jobs.CloseInactiveAlertEpisodes](),
 	makeJobWorkerProvider[jobs.StartAgentSession](),
 	makeJobWorkerProvider[jobs.InvokeAgentTurn](),
 	makeJobWorkerProvider[jobs.SyncIntegrationSourceEvents](),
@@ -532,7 +558,14 @@ var provideJobsDefinition = do.Package(
 		return defs, nil
 	}),
 	do.Lazy(func(i do.Injector) ([]*jobs.PeriodicJob, error) {
-		return []*jobs.PeriodicJob{}, nil
+		closeAlertEpisodes := river.NewPeriodicJob(
+			river.PeriodicInterval(time.Minute),
+			func() (river.JobArgs, *river.InsertOpts) {
+				return jobs.CloseInactiveAlertEpisodes{}, nil
+			},
+			nil,
+		)
+		return []*jobs.PeriodicJob{closeAlertEpisodes}, nil
 	}),
 	do.Lazy(func(i do.Injector) (jobs.Definition, error) {
 		return jobs.Definition{

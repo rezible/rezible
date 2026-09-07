@@ -3,11 +3,15 @@ package genkit
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
+
+	"github.com/google/uuid"
 
 	"github.com/firebase/genkit/go/ai"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentturn"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
@@ -27,8 +31,25 @@ func (s testEvalScenario) Definition() rezai.EvalScenarioDefinition {
 	}
 }
 
-func (testEvalScenario) Seed(context.Context, *ent.Client) (rezai.EvalScenarioSeed, error) {
-	return rezai.EvalScenarioSeed{Input: testAgentInput{}}, nil
+func (s testEvalScenario) Seed(ctx context.Context, client *ent.Client) (rezai.EvalScenarioSeed, error) {
+	createSession := client.AgentSession.Create().
+		SetAgentName(s.agentName).
+		SetInput([]byte(`{}`))
+	session, sessionErr := createSession.Save(ctx)
+	if sessionErr != nil {
+		return rezai.EvalScenarioSeed{}, fmt.Errorf("create session: %w", sessionErr)
+	}
+	createTurn := client.AgentTurn.Create().
+		SetID(uuid.New()).
+		SetAgentSessionID(session.ID).
+		SetSequence(1).
+		SetRiverJobID(0).
+		SetStatus(agentturn.StatusRunning)
+	turn, turnErr := createTurn.Save(ctx)
+	if turnErr != nil {
+		return rezai.EvalScenarioSeed{}, fmt.Errorf("create turn: %w", turnErr)
+	}
+	return rezai.EvalScenarioSeed{Session: session, Turn: turn}, nil
 }
 
 func (s testEvalScenario) Grade(context.Context, *ent.Client, *rez.AiAgentInvocationResult) (rezai.EvalScenarioGrade, error) {

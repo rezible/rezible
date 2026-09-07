@@ -1443,6 +1443,12 @@ func init() {
 	situationDescTitle := situationFields[2].Descriptor()
 	// situation.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	situation.TitleValidator = situationDescTitle.Validators[0].(func(string) error)
+	// situationDescEvidenceRevision is the schema descriptor for evidence_revision field.
+	situationDescEvidenceRevision := situationFields[3].Descriptor()
+	// situation.DefaultEvidenceRevision holds the default value on creation for the evidence_revision field.
+	situation.DefaultEvidenceRevision = situationDescEvidenceRevision.Default.(int)
+	// situation.EvidenceRevisionValidator is a validator for the "evidence_revision" field. It is called by the builders before save.
+	situation.EvidenceRevisionValidator = situationDescEvidenceRevision.Validators[0].(func(int) error)
 	// situationDescID is the schema descriptor for id field.
 	situationDescID := situationFields[0].Descriptor()
 	// situation.DefaultID holds the default value on creation for the id field.
@@ -1507,6 +1513,18 @@ func init() {
 	situationinvestigation.DefaultUpdatedAt = situationinvestigationDescUpdatedAt.Default.(func() time.Time)
 	// situationinvestigation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	situationinvestigation.UpdateDefaultUpdatedAt = situationinvestigationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// situationinvestigationDescCompletedRevision is the schema descriptor for completed_revision field.
+	situationinvestigationDescCompletedRevision := situationinvestigationFields[4].Descriptor()
+	// situationinvestigation.DefaultCompletedRevision holds the default value on creation for the completed_revision field.
+	situationinvestigation.DefaultCompletedRevision = situationinvestigationDescCompletedRevision.Default.(int)
+	// situationinvestigation.CompletedRevisionValidator is a validator for the "completed_revision" field. It is called by the builders before save.
+	situationinvestigation.CompletedRevisionValidator = situationinvestigationDescCompletedRevision.Validators[0].(func(int) error)
+	// situationinvestigationDescRequestedRevision is the schema descriptor for requested_revision field.
+	situationinvestigationDescRequestedRevision := situationinvestigationFields[5].Descriptor()
+	// situationinvestigation.DefaultRequestedRevision holds the default value on creation for the requested_revision field.
+	situationinvestigation.DefaultRequestedRevision = situationinvestigationDescRequestedRevision.Default.(int)
+	// situationinvestigation.RequestedRevisionValidator is a validator for the "requested_revision" field. It is called by the builders before save.
+	situationinvestigation.RequestedRevisionValidator = situationinvestigationDescRequestedRevision.Validators[0].(func(int) error)
 	// situationinvestigationDescID is the schema descriptor for id field.
 	situationinvestigationDescID := situationinvestigationFields[0].Descriptor()
 	// situationinvestigation.DefaultID holds the default value on creation for the id field.

@@ -19,6 +19,7 @@ import (
 )
 
 type App struct {
+	db       rez.Database
 	cfg      rez.Config
 	jobs     rez.JobService
 	messages rez.MessageService
@@ -34,8 +35,9 @@ type AppSuite struct {
 	test.Suite
 }
 
-func MakeApp(cfg rez.Config, jobSvc rez.JobService, msgs rez.MessageService, intgs rez.IntegrationService, users rez.UserService, agents rez.AgentSessionService, events rez.EventsService, responseClassifier rezai.ClassifyAgentThreadResponseWorkflowRunner) (*App, error) {
+func MakeApp(cfg rez.Config, db rez.Database, jobSvc rez.JobService, msgs rez.MessageService, intgs rez.IntegrationService, users rez.UserService, agents rez.AgentSessionService, events rez.EventsService, responseClassifier rezai.ClassifyAgentThreadResponseWorkflowRunner) (*App, error) {
 	h := &App{
+		db:                 db,
 		cfg:                cfg,
 		jobs:               jobSvc,
 		messages:           msgs,

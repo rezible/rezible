@@ -41,7 +41,13 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 
 	knowledge, _ := db.NewKnowledgeGraphService(tdb)
 
-	service, err := NewProjectionService(tdb, users, incidents, knowledge)
+	situationMessages := mocks.NewMockMessageService(s.T())
+	situationMessages.EXPECT().AddHandlers(mock.Anything).Return(nil).Once()
+	situations, err := db.NewSituationService(tdb, situationMessages, mocks.NewMockJobService(s.T()), mocks.NewMockAgentSessionService(s.T()))
+	s.Require().NoError(err)
+	alerts, err := db.NewAlertService(tdb, situations)
+	s.Require().NoError(err)
+	service, err := NewProjectionService(tdb, users, incidents, knowledge, alerts)
 	s.Require().NoError(err)
 	return service
 }

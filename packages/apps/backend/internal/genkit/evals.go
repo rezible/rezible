@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/firebase/genkit/go/core"
 	"github.com/firebase/genkit/go/core/api"
 	"github.com/firebase/genkit/go/genkit"
-	"github.com/google/uuid"
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
@@ -204,32 +205,17 @@ func (r *evaluationRun) seed(ctx context.Context) (context.Context, error) {
 
 	seed, seedErr := r.scenario.Seed(ctx, client)
 	if seedErr != nil {
-		return nil, seedErr
-	} else if seed.Input == nil {
-		return nil, fmt.Errorf("scenario returned nil agent input")
+		return nil, fmt.Errorf("seed scenario: %w", seedErr)
+	}
+	if seed.Session == nil || seed.Turn == nil {
+		return nil, fmt.Errorf("scenario must seed a session and turn")
 	}
 
-	raw, inputErr := json.Marshal(seed.Input)
-	if inputErr != nil {
-		return nil, fmt.Errorf("marshal agent input: %w", inputErr)
+	if _, inputErr := r.service.ai.ValidateAgentSessionInput(r.result.Agent.Name, seed.Session.Input); inputErr != nil {
+		return nil, fmt.Errorf("validate seed input: %w", inputErr)
 	}
-	if _, inputErr = r.service.ai.ValidateAgentSessionInput(r.result.Agent.Name, raw); inputErr != nil {
-		return nil, fmt.Errorf("validate agent input: %w", inputErr)
-	}
-
-	r.session = &ent.AgentSession{
-		ID:               uuid.New(),
-		TenantID:         tenant.ID,
-		AgentName:        r.result.Agent.Name,
-		Input:            raw,
-		SystemAnalysisID: seed.SystemAnalysisID,
-	}
-	r.turn = &ent.AgentTurn{
-		ID:             uuid.New(),
-		TenantID:       tenant.ID,
-		AgentSessionID: r.session.ID,
-		Sequence:       1,
-	}
+	r.session = seed.Session
+	r.turn = seed.Turn
 
 	return ctx, nil
 }

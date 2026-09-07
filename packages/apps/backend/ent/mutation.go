@@ -50021,6 +50021,8 @@ type SituationMutation struct {
 	created_at                *time.Time
 	updated_at                *time.Time
 	title                     *string
+	evidence_revision         *int
+	addevidence_revision      *int
 	summary                   *string
 	status                    *situation.Status
 	opened_at                 *time.Time
@@ -50326,6 +50328,62 @@ func (m *SituationMutation) OldTitle(ctx context.Context) (v string, err error) 
 // ResetTitle resets all changes to the "title" field.
 func (m *SituationMutation) ResetTitle() {
 	m.title = nil
+}
+
+// SetEvidenceRevision sets the "evidence_revision" field.
+func (m *SituationMutation) SetEvidenceRevision(i int) {
+	m.evidence_revision = &i
+	m.addevidence_revision = nil
+}
+
+// EvidenceRevision returns the value of the "evidence_revision" field in the mutation.
+func (m *SituationMutation) EvidenceRevision() (r int, exists bool) {
+	v := m.evidence_revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEvidenceRevision returns the old "evidence_revision" field's value of the Situation entity.
+// If the Situation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SituationMutation) OldEvidenceRevision(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEvidenceRevision is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEvidenceRevision requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEvidenceRevision: %w", err)
+	}
+	return oldValue.EvidenceRevision, nil
+}
+
+// AddEvidenceRevision adds i to the "evidence_revision" field.
+func (m *SituationMutation) AddEvidenceRevision(i int) {
+	if m.addevidence_revision != nil {
+		*m.addevidence_revision += i
+	} else {
+		m.addevidence_revision = &i
+	}
+}
+
+// AddedEvidenceRevision returns the value that was added to the "evidence_revision" field in this mutation.
+func (m *SituationMutation) AddedEvidenceRevision() (r int, exists bool) {
+	v := m.addevidence_revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetEvidenceRevision resets all changes to the "evidence_revision" field.
+func (m *SituationMutation) ResetEvidenceRevision() {
+	m.evidence_revision = nil
+	m.addevidence_revision = nil
 }
 
 // SetSummary sets the "summary" field.
@@ -50782,7 +50840,7 @@ func (m *SituationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SituationMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.tenant != nil {
 		fields = append(fields, situation.FieldTenantID)
 	}
@@ -50797,6 +50855,9 @@ func (m *SituationMutation) Fields() []string {
 	}
 	if m.title != nil {
 		fields = append(fields, situation.FieldTitle)
+	}
+	if m.evidence_revision != nil {
+		fields = append(fields, situation.FieldEvidenceRevision)
 	}
 	if m.summary != nil {
 		fields = append(fields, situation.FieldSummary)
@@ -50831,6 +50892,8 @@ func (m *SituationMutation) Field(name string) (ent.Value, bool) {
 		return m.KnowledgeEntityID()
 	case situation.FieldTitle:
 		return m.Title()
+	case situation.FieldEvidenceRevision:
+		return m.EvidenceRevision()
 	case situation.FieldSummary:
 		return m.Summary()
 	case situation.FieldStatus:
@@ -50860,6 +50923,8 @@ func (m *SituationMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldKnowledgeEntityID(ctx)
 	case situation.FieldTitle:
 		return m.OldTitle(ctx)
+	case situation.FieldEvidenceRevision:
+		return m.OldEvidenceRevision(ctx)
 	case situation.FieldSummary:
 		return m.OldSummary(ctx)
 	case situation.FieldStatus:
@@ -50914,6 +50979,13 @@ func (m *SituationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTitle(v)
 		return nil
+	case situation.FieldEvidenceRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEvidenceRevision(v)
+		return nil
 	case situation.FieldSummary:
 		v, ok := value.(string)
 		if !ok {
@@ -50957,6 +51029,9 @@ func (m *SituationMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *SituationMutation) AddedFields() []string {
 	var fields []string
+	if m.addevidence_revision != nil {
+		fields = append(fields, situation.FieldEvidenceRevision)
+	}
 	return fields
 }
 
@@ -50965,6 +51040,8 @@ func (m *SituationMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *SituationMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case situation.FieldEvidenceRevision:
+		return m.AddedEvidenceRevision()
 	}
 	return nil, false
 }
@@ -50974,6 +51051,13 @@ func (m *SituationMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *SituationMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case situation.FieldEvidenceRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddEvidenceRevision(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Situation numeric field %s", name)
 }
@@ -51036,6 +51120,9 @@ func (m *SituationMutation) ResetField(name string) error {
 		return nil
 	case situation.FieldTitle:
 		m.ResetTitle()
+		return nil
+	case situation.FieldEvidenceRevision:
+		m.ResetEvidenceRevision()
 		return nil
 	case situation.FieldSummary:
 		m.ResetSummary()
@@ -52415,10 +52502,16 @@ type SituationInvestigationMutation struct {
 	id                     *uuid.UUID
 	created_at             *time.Time
 	updated_at             *time.Time
+	completed_revision     *int
+	addcompleted_revision  *int
+	requested_revision     *int
+	addrequested_revision  *int
 	report                 *schematypes.SituationInvestigationReport
 	clearedFields          map[string]struct{}
 	tenant                 *int
 	clearedtenant          bool
+	requested_turn         *uuid.UUID
+	clearedrequested_turn  bool
 	situation              *uuid.UUID
 	clearedsituation       bool
 	system_analysis        *uuid.UUID
@@ -52750,6 +52843,167 @@ func (m *SituationInvestigationMutation) ResetAgentSessionID() {
 	m.agent_session = nil
 }
 
+// SetCompletedRevision sets the "completed_revision" field.
+func (m *SituationInvestigationMutation) SetCompletedRevision(i int) {
+	m.completed_revision = &i
+	m.addcompleted_revision = nil
+}
+
+// CompletedRevision returns the value of the "completed_revision" field in the mutation.
+func (m *SituationInvestigationMutation) CompletedRevision() (r int, exists bool) {
+	v := m.completed_revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompletedRevision returns the old "completed_revision" field's value of the SituationInvestigation entity.
+// If the SituationInvestigation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SituationInvestigationMutation) OldCompletedRevision(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompletedRevision is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompletedRevision requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompletedRevision: %w", err)
+	}
+	return oldValue.CompletedRevision, nil
+}
+
+// AddCompletedRevision adds i to the "completed_revision" field.
+func (m *SituationInvestigationMutation) AddCompletedRevision(i int) {
+	if m.addcompleted_revision != nil {
+		*m.addcompleted_revision += i
+	} else {
+		m.addcompleted_revision = &i
+	}
+}
+
+// AddedCompletedRevision returns the value that was added to the "completed_revision" field in this mutation.
+func (m *SituationInvestigationMutation) AddedCompletedRevision() (r int, exists bool) {
+	v := m.addcompleted_revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCompletedRevision resets all changes to the "completed_revision" field.
+func (m *SituationInvestigationMutation) ResetCompletedRevision() {
+	m.completed_revision = nil
+	m.addcompleted_revision = nil
+}
+
+// SetRequestedRevision sets the "requested_revision" field.
+func (m *SituationInvestigationMutation) SetRequestedRevision(i int) {
+	m.requested_revision = &i
+	m.addrequested_revision = nil
+}
+
+// RequestedRevision returns the value of the "requested_revision" field in the mutation.
+func (m *SituationInvestigationMutation) RequestedRevision() (r int, exists bool) {
+	v := m.requested_revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequestedRevision returns the old "requested_revision" field's value of the SituationInvestigation entity.
+// If the SituationInvestigation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SituationInvestigationMutation) OldRequestedRevision(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequestedRevision is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequestedRevision requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequestedRevision: %w", err)
+	}
+	return oldValue.RequestedRevision, nil
+}
+
+// AddRequestedRevision adds i to the "requested_revision" field.
+func (m *SituationInvestigationMutation) AddRequestedRevision(i int) {
+	if m.addrequested_revision != nil {
+		*m.addrequested_revision += i
+	} else {
+		m.addrequested_revision = &i
+	}
+}
+
+// AddedRequestedRevision returns the value that was added to the "requested_revision" field in this mutation.
+func (m *SituationInvestigationMutation) AddedRequestedRevision() (r int, exists bool) {
+	v := m.addrequested_revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRequestedRevision resets all changes to the "requested_revision" field.
+func (m *SituationInvestigationMutation) ResetRequestedRevision() {
+	m.requested_revision = nil
+	m.addrequested_revision = nil
+}
+
+// SetRequestedTurnID sets the "requested_turn_id" field.
+func (m *SituationInvestigationMutation) SetRequestedTurnID(u uuid.UUID) {
+	m.requested_turn = &u
+}
+
+// RequestedTurnID returns the value of the "requested_turn_id" field in the mutation.
+func (m *SituationInvestigationMutation) RequestedTurnID() (r uuid.UUID, exists bool) {
+	v := m.requested_turn
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequestedTurnID returns the old "requested_turn_id" field's value of the SituationInvestigation entity.
+// If the SituationInvestigation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SituationInvestigationMutation) OldRequestedTurnID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequestedTurnID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequestedTurnID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequestedTurnID: %w", err)
+	}
+	return oldValue.RequestedTurnID, nil
+}
+
+// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
+func (m *SituationInvestigationMutation) ClearRequestedTurnID() {
+	m.requested_turn = nil
+	m.clearedFields[situationinvestigation.FieldRequestedTurnID] = struct{}{}
+}
+
+// RequestedTurnIDCleared returns if the "requested_turn_id" field was cleared in this mutation.
+func (m *SituationInvestigationMutation) RequestedTurnIDCleared() bool {
+	_, ok := m.clearedFields[situationinvestigation.FieldRequestedTurnID]
+	return ok
+}
+
+// ResetRequestedTurnID resets all changes to the "requested_turn_id" field.
+func (m *SituationInvestigationMutation) ResetRequestedTurnID() {
+	m.requested_turn = nil
+	delete(m.clearedFields, situationinvestigation.FieldRequestedTurnID)
+}
+
 // SetReport sets the "report" field.
 func (m *SituationInvestigationMutation) SetReport(sir schematypes.SituationInvestigationReport) {
 	m.report = &sir
@@ -52824,6 +53078,33 @@ func (m *SituationInvestigationMutation) TenantIDs() (ids []int) {
 func (m *SituationInvestigationMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
+}
+
+// ClearRequestedTurn clears the "requested_turn" edge to the AgentTurn entity.
+func (m *SituationInvestigationMutation) ClearRequestedTurn() {
+	m.clearedrequested_turn = true
+	m.clearedFields[situationinvestigation.FieldRequestedTurnID] = struct{}{}
+}
+
+// RequestedTurnCleared reports if the "requested_turn" edge to the AgentTurn entity was cleared.
+func (m *SituationInvestigationMutation) RequestedTurnCleared() bool {
+	return m.RequestedTurnIDCleared() || m.clearedrequested_turn
+}
+
+// RequestedTurnIDs returns the "requested_turn" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RequestedTurnID instead. It exists only for internal usage by the builders.
+func (m *SituationInvestigationMutation) RequestedTurnIDs() (ids []uuid.UUID) {
+	if id := m.requested_turn; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRequestedTurn resets all changes to the "requested_turn" edge.
+func (m *SituationInvestigationMutation) ResetRequestedTurn() {
+	m.requested_turn = nil
+	m.clearedrequested_turn = false
 }
 
 // ClearSituation clears the "situation" edge to the Situation entity.
@@ -52941,7 +53222,7 @@ func (m *SituationInvestigationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SituationInvestigationMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 10)
 	if m.tenant != nil {
 		fields = append(fields, situationinvestigation.FieldTenantID)
 	}
@@ -52959,6 +53240,15 @@ func (m *SituationInvestigationMutation) Fields() []string {
 	}
 	if m.agent_session != nil {
 		fields = append(fields, situationinvestigation.FieldAgentSessionID)
+	}
+	if m.completed_revision != nil {
+		fields = append(fields, situationinvestigation.FieldCompletedRevision)
+	}
+	if m.requested_revision != nil {
+		fields = append(fields, situationinvestigation.FieldRequestedRevision)
+	}
+	if m.requested_turn != nil {
+		fields = append(fields, situationinvestigation.FieldRequestedTurnID)
 	}
 	if m.report != nil {
 		fields = append(fields, situationinvestigation.FieldReport)
@@ -52983,6 +53273,12 @@ func (m *SituationInvestigationMutation) Field(name string) (ent.Value, bool) {
 		return m.SystemAnalysisID()
 	case situationinvestigation.FieldAgentSessionID:
 		return m.AgentSessionID()
+	case situationinvestigation.FieldCompletedRevision:
+		return m.CompletedRevision()
+	case situationinvestigation.FieldRequestedRevision:
+		return m.RequestedRevision()
+	case situationinvestigation.FieldRequestedTurnID:
+		return m.RequestedTurnID()
 	case situationinvestigation.FieldReport:
 		return m.Report()
 	}
@@ -53006,6 +53302,12 @@ func (m *SituationInvestigationMutation) OldField(ctx context.Context, name stri
 		return m.OldSystemAnalysisID(ctx)
 	case situationinvestigation.FieldAgentSessionID:
 		return m.OldAgentSessionID(ctx)
+	case situationinvestigation.FieldCompletedRevision:
+		return m.OldCompletedRevision(ctx)
+	case situationinvestigation.FieldRequestedRevision:
+		return m.OldRequestedRevision(ctx)
+	case situationinvestigation.FieldRequestedTurnID:
+		return m.OldRequestedTurnID(ctx)
 	case situationinvestigation.FieldReport:
 		return m.OldReport(ctx)
 	}
@@ -53059,6 +53361,27 @@ func (m *SituationInvestigationMutation) SetField(name string, value ent.Value) 
 		}
 		m.SetAgentSessionID(v)
 		return nil
+	case situationinvestigation.FieldCompletedRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompletedRevision(v)
+		return nil
+	case situationinvestigation.FieldRequestedRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequestedRevision(v)
+		return nil
+	case situationinvestigation.FieldRequestedTurnID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequestedTurnID(v)
+		return nil
 	case situationinvestigation.FieldReport:
 		v, ok := value.(schematypes.SituationInvestigationReport)
 		if !ok {
@@ -53074,6 +53397,12 @@ func (m *SituationInvestigationMutation) SetField(name string, value ent.Value) 
 // this mutation.
 func (m *SituationInvestigationMutation) AddedFields() []string {
 	var fields []string
+	if m.addcompleted_revision != nil {
+		fields = append(fields, situationinvestigation.FieldCompletedRevision)
+	}
+	if m.addrequested_revision != nil {
+		fields = append(fields, situationinvestigation.FieldRequestedRevision)
+	}
 	return fields
 }
 
@@ -53082,6 +53411,10 @@ func (m *SituationInvestigationMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *SituationInvestigationMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case situationinvestigation.FieldCompletedRevision:
+		return m.AddedCompletedRevision()
+	case situationinvestigation.FieldRequestedRevision:
+		return m.AddedRequestedRevision()
 	}
 	return nil, false
 }
@@ -53091,6 +53424,20 @@ func (m *SituationInvestigationMutation) AddedField(name string) (ent.Value, boo
 // type.
 func (m *SituationInvestigationMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case situationinvestigation.FieldCompletedRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCompletedRevision(v)
+		return nil
+	case situationinvestigation.FieldRequestedRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRequestedRevision(v)
+		return nil
 	}
 	return fmt.Errorf("unknown SituationInvestigation numeric field %s", name)
 }
@@ -53099,6 +53446,9 @@ func (m *SituationInvestigationMutation) AddField(name string, value ent.Value) 
 // mutation.
 func (m *SituationInvestigationMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(situationinvestigation.FieldRequestedTurnID) {
+		fields = append(fields, situationinvestigation.FieldRequestedTurnID)
+	}
 	if m.FieldCleared(situationinvestigation.FieldReport) {
 		fields = append(fields, situationinvestigation.FieldReport)
 	}
@@ -53116,6 +53466,9 @@ func (m *SituationInvestigationMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *SituationInvestigationMutation) ClearField(name string) error {
 	switch name {
+	case situationinvestigation.FieldRequestedTurnID:
+		m.ClearRequestedTurnID()
+		return nil
 	case situationinvestigation.FieldReport:
 		m.ClearReport()
 		return nil
@@ -53145,6 +53498,15 @@ func (m *SituationInvestigationMutation) ResetField(name string) error {
 	case situationinvestigation.FieldAgentSessionID:
 		m.ResetAgentSessionID()
 		return nil
+	case situationinvestigation.FieldCompletedRevision:
+		m.ResetCompletedRevision()
+		return nil
+	case situationinvestigation.FieldRequestedRevision:
+		m.ResetRequestedRevision()
+		return nil
+	case situationinvestigation.FieldRequestedTurnID:
+		m.ResetRequestedTurnID()
+		return nil
 	case situationinvestigation.FieldReport:
 		m.ResetReport()
 		return nil
@@ -53154,9 +53516,12 @@ func (m *SituationInvestigationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SituationInvestigationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.tenant != nil {
 		edges = append(edges, situationinvestigation.EdgeTenant)
+	}
+	if m.requested_turn != nil {
+		edges = append(edges, situationinvestigation.EdgeRequestedTurn)
 	}
 	if m.situation != nil {
 		edges = append(edges, situationinvestigation.EdgeSituation)
@@ -53178,6 +53543,10 @@ func (m *SituationInvestigationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
+	case situationinvestigation.EdgeRequestedTurn:
+		if id := m.requested_turn; id != nil {
+			return []ent.Value{*id}
+		}
 	case situationinvestigation.EdgeSituation:
 		if id := m.situation; id != nil {
 			return []ent.Value{*id}
@@ -53196,7 +53565,7 @@ func (m *SituationInvestigationMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SituationInvestigationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	return edges
 }
 
@@ -53208,9 +53577,12 @@ func (m *SituationInvestigationMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SituationInvestigationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedtenant {
 		edges = append(edges, situationinvestigation.EdgeTenant)
+	}
+	if m.clearedrequested_turn {
+		edges = append(edges, situationinvestigation.EdgeRequestedTurn)
 	}
 	if m.clearedsituation {
 		edges = append(edges, situationinvestigation.EdgeSituation)
@@ -53230,6 +53602,8 @@ func (m *SituationInvestigationMutation) EdgeCleared(name string) bool {
 	switch name {
 	case situationinvestigation.EdgeTenant:
 		return m.clearedtenant
+	case situationinvestigation.EdgeRequestedTurn:
+		return m.clearedrequested_turn
 	case situationinvestigation.EdgeSituation:
 		return m.clearedsituation
 	case situationinvestigation.EdgeSystemAnalysis:
@@ -53246,6 +53620,9 @@ func (m *SituationInvestigationMutation) ClearEdge(name string) error {
 	switch name {
 	case situationinvestigation.EdgeTenant:
 		m.ClearTenant()
+		return nil
+	case situationinvestigation.EdgeRequestedTurn:
+		m.ClearRequestedTurn()
 		return nil
 	case situationinvestigation.EdgeSituation:
 		m.ClearSituation()
@@ -53266,6 +53643,9 @@ func (m *SituationInvestigationMutation) ResetEdge(name string) error {
 	switch name {
 	case situationinvestigation.EdgeTenant:
 		m.ResetTenant()
+		return nil
+	case situationinvestigation.EdgeRequestedTurn:
+		m.ResetRequestedTurn()
 		return nil
 	case situationinvestigation.EdgeSituation:
 		m.ResetSituation()

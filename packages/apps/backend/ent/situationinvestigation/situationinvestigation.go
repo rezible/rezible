@@ -28,10 +28,18 @@ const (
 	FieldSystemAnalysisID = "system_analysis_id"
 	// FieldAgentSessionID holds the string denoting the agent_session_id field in the database.
 	FieldAgentSessionID = "agent_session_id"
+	// FieldCompletedRevision holds the string denoting the completed_revision field in the database.
+	FieldCompletedRevision = "completed_revision"
+	// FieldRequestedRevision holds the string denoting the requested_revision field in the database.
+	FieldRequestedRevision = "requested_revision"
+	// FieldRequestedTurnID holds the string denoting the requested_turn_id field in the database.
+	FieldRequestedTurnID = "requested_turn_id"
 	// FieldReport holds the string denoting the report field in the database.
 	FieldReport = "report"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeRequestedTurn holds the string denoting the requested_turn edge name in mutations.
+	EdgeRequestedTurn = "requested_turn"
 	// EdgeSituation holds the string denoting the situation edge name in mutations.
 	EdgeSituation = "situation"
 	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
@@ -47,6 +55,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// RequestedTurnTable is the table that holds the requested_turn relation/edge.
+	RequestedTurnTable = "situation_investigations"
+	// RequestedTurnInverseTable is the table name for the AgentTurn entity.
+	// It exists in this package in order to avoid circular dependency with the "agentturn" package.
+	RequestedTurnInverseTable = "agent_turns"
+	// RequestedTurnColumn is the table column denoting the requested_turn relation/edge.
+	RequestedTurnColumn = "requested_turn_id"
 	// SituationTable is the table that holds the situation relation/edge.
 	SituationTable = "situation_investigations"
 	// SituationInverseTable is the table name for the Situation entity.
@@ -79,6 +94,9 @@ var Columns = []string{
 	FieldSituationID,
 	FieldSystemAnalysisID,
 	FieldAgentSessionID,
+	FieldCompletedRevision,
+	FieldRequestedRevision,
+	FieldRequestedTurnID,
 	FieldReport,
 }
 
@@ -106,6 +124,14 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultCompletedRevision holds the default value on creation for the "completed_revision" field.
+	DefaultCompletedRevision int
+	// CompletedRevisionValidator is a validator for the "completed_revision" field. It is called by the builders before save.
+	CompletedRevisionValidator func(int) error
+	// DefaultRequestedRevision holds the default value on creation for the "requested_revision" field.
+	DefaultRequestedRevision int
+	// RequestedRevisionValidator is a validator for the "requested_revision" field. It is called by the builders before save.
+	RequestedRevisionValidator func(int) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -148,10 +174,32 @@ func ByAgentSessionID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentSessionID, opts...).ToFunc()
 }
 
+// ByCompletedRevision orders the results by the completed_revision field.
+func ByCompletedRevision(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCompletedRevision, opts...).ToFunc()
+}
+
+// ByRequestedRevision orders the results by the requested_revision field.
+func ByRequestedRevision(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRequestedRevision, opts...).ToFunc()
+}
+
+// ByRequestedTurnID orders the results by the requested_turn_id field.
+func ByRequestedTurnID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRequestedTurnID, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByRequestedTurnField orders the results by requested_turn field.
+func ByRequestedTurnField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRequestedTurnStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -180,6 +228,13 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newRequestedTurnStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RequestedTurnInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, RequestedTurnTable, RequestedTurnColumn),
 	)
 }
 func newSituationStep() *sqlgraph.Step {

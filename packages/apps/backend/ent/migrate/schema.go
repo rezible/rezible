@@ -2492,6 +2492,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "title", Type: field.TypeString},
+		{Name: "evidence_revision", Type: field.TypeInt, Default: 1},
 		{Name: "summary", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"open", "closed"}, Default: "open"},
 		{Name: "opened_at", Type: field.TypeTime},
@@ -2508,13 +2509,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "situations_tenants_tenant",
-				Columns:    []*schema.Column{SituationsColumns[9]},
+				Columns:    []*schema.Column{SituationsColumns[10]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "situations_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{SituationsColumns[10]},
+				Columns:    []*schema.Column{SituationsColumns[11]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -2523,17 +2524,17 @@ var (
 			{
 				Name:    "situation_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SituationsColumns[9]},
+				Columns: []*schema.Column{SituationsColumns[10]},
 			},
 			{
 				Name:    "situation_tenant_id_knowledge_entity_id",
 				Unique:  true,
-				Columns: []*schema.Column{SituationsColumns[9], SituationsColumns[10]},
+				Columns: []*schema.Column{SituationsColumns[10], SituationsColumns[11]},
 			},
 			{
 				Name:    "situation_tenant_id_status_opened_at",
 				Unique:  false,
-				Columns: []*schema.Column{SituationsColumns[9], SituationsColumns[5], SituationsColumns[6]},
+				Columns: []*schema.Column{SituationsColumns[10], SituationsColumns[6], SituationsColumns[7]},
 			},
 		},
 	}
@@ -2617,10 +2618,13 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "completed_revision", Type: field.TypeInt, Default: 0},
+		{Name: "requested_revision", Type: field.TypeInt, Default: 0},
 		{Name: "report", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "agent_session_id", Type: field.TypeUUID, Unique: true},
 		{Name: "situation_id", Type: field.TypeUUID, Unique: true},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "requested_turn_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "system_analysis_id", Type: field.TypeUUID, Unique: true},
 	}
 	// SituationInvestigationsTable holds the schema information for the "situation_investigations" table.
@@ -2631,25 +2635,31 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "situation_investigations_agent_sessions_situation_investigation",
-				Columns:    []*schema.Column{SituationInvestigationsColumns[4]},
+				Columns:    []*schema.Column{SituationInvestigationsColumns[6]},
 				RefColumns: []*schema.Column{AgentSessionsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "situation_investigations_situations_investigation",
-				Columns:    []*schema.Column{SituationInvestigationsColumns[5]},
+				Columns:    []*schema.Column{SituationInvestigationsColumns[7]},
 				RefColumns: []*schema.Column{SituationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "situation_investigations_tenants_tenant",
-				Columns:    []*schema.Column{SituationInvestigationsColumns[6]},
+				Columns:    []*schema.Column{SituationInvestigationsColumns[8]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
+				Symbol:     "situation_investigations_agent_turns_requested_turn",
+				Columns:    []*schema.Column{SituationInvestigationsColumns[9]},
+				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
 				Symbol:     "situation_investigations_system_analyses_situation_investigation",
-				Columns:    []*schema.Column{SituationInvestigationsColumns[7]},
+				Columns:    []*schema.Column{SituationInvestigationsColumns[10]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -2658,22 +2668,22 @@ var (
 			{
 				Name:    "situationinvestigation_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SituationInvestigationsColumns[6]},
+				Columns: []*schema.Column{SituationInvestigationsColumns[8]},
 			},
 			{
 				Name:    "situationinvestigation_tenant_id_situation_id",
 				Unique:  true,
-				Columns: []*schema.Column{SituationInvestigationsColumns[6], SituationInvestigationsColumns[5]},
+				Columns: []*schema.Column{SituationInvestigationsColumns[8], SituationInvestigationsColumns[7]},
 			},
 			{
 				Name:    "situationinvestigation_tenant_id_system_analysis_id",
 				Unique:  true,
-				Columns: []*schema.Column{SituationInvestigationsColumns[6], SituationInvestigationsColumns[7]},
+				Columns: []*schema.Column{SituationInvestigationsColumns[8], SituationInvestigationsColumns[10]},
 			},
 			{
 				Name:    "situationinvestigation_tenant_id_agent_session_id",
 				Unique:  true,
-				Columns: []*schema.Column{SituationInvestigationsColumns[6], SituationInvestigationsColumns[4]},
+				Columns: []*schema.Column{SituationInvestigationsColumns[8], SituationInvestigationsColumns[6]},
 			},
 		},
 	}
@@ -4021,7 +4031,8 @@ func init() {
 	SituationInvestigationsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	SituationInvestigationsTable.ForeignKeys[1].RefTable = SituationsTable
 	SituationInvestigationsTable.ForeignKeys[2].RefTable = TenantsTable
-	SituationInvestigationsTable.ForeignKeys[3].RefTable = SystemAnalysesTable
+	SituationInvestigationsTable.ForeignKeys[3].RefTable = AgentTurnsTable
+	SituationInvestigationsTable.ForeignKeys[4].RefTable = SystemAnalysesTable
 	SystemAnalysesTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemAnalysesTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	SystemAnalysesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable

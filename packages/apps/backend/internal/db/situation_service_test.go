@@ -2,28 +2,27 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"log/slog"
-	"sync"
 	"testing"
 	"time"
 
-	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
-	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/sync/errgroup"
 )
 
 type SituationServiceSuite struct {
@@ -43,17 +42,17 @@ type situationServiceHarness struct {
 }
 
 func (s *SituationServiceSuite) newHarness(tdb rez.Database) *situationServiceHarness {
-	jobs := mocks.NewMockJobService(s.T())
+	jobSvc := mocks.NewMockJobService(s.T())
 	agents := &AgentSessionService{
 		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 		db:     tdb,
-		jobs:   jobs,
+		jobs:   jobSvc,
 	}
 	return &situationServiceHarness{
 		tdb:        tdb,
-		jobs:       jobs,
+		jobs:       jobSvc,
 		agents:     agents,
-		situations: &SituationService{db: tdb, agents: agents},
+		situations: &SituationService{db: tdb, agents: agents, jobs: jobSvc},
 		hazards:    &SystemHazardService{db: tdb},
 	}
 }
@@ -80,7 +79,14 @@ func (s *SituationServiceSuite) createEpisode(ctx context.Context, client *ent.C
 
 func (s *SituationServiceSuite) expectStartAgentSession(h *situationServiceHarness) {
 	h.jobs.EXPECT().
-		Insert(mock.Anything, mock.Anything, (*river.InsertOpts)(nil)).
+		Insert(mock.Anything, mock.IsType(jobs.StartAgentSession{}), (*river.InsertOpts)(nil)).
+		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 1001}}, nil).
+		Once()
+}
+
+func (s *SituationServiceSuite) expectReconciliation(h *situationServiceHarness) {
+	h.jobs.EXPECT().
+		Insert(mock.Anything, mock.IsType(jobs.ReconcileSituationInvestigation{}), (*river.InsertOpts)(nil)).
 		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 1001}}, nil).
 		Once()
 }
@@ -178,7 +184,9 @@ func (s *SituationServiceSuite) TestSituationMayExistWithoutInvestigationAndInve
 
 	_, missingErr := h.situations.GetSituationInvestigation(ctx, sit.ID)
 	s.True(ent.IsNotFound(missingErr))
+	s.expectReconciliation(h)
 	s.expectStartAgentSession(h)
+
 	investigation, createErr := h.situations.CreateSituationInvestigation(ctx, rez.CreateSituationInvestigationParams{SituationID: sit.ID})
 	s.Require().NoError(createErr)
 	s.Equal(sit.ID, investigation.SituationID)
@@ -201,51 +209,56 @@ func (s *SituationServiceSuite) TestConcurrentSituationInvestigationCreationLeav
 	tdb := s.CreateTestDatabase()
 	h := s.newHarness(tdb)
 	sit := s.createSituation(ctx, h, "Checkout degradation")
+
+	s.expectReconciliation(h)
 	s.expectStartAgentSession(h)
 
 	results := make(chan *ent.SituationInvestigation, 2)
-	errs := make(chan error, 2)
-	var wg sync.WaitGroup
+	var g errgroup.Group
 	for range 2 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			investigation, createErr := h.situations.CreateSituationInvestigation(ctx, rez.CreateSituationInvestigationParams{SituationID: sit.ID})
+		g.Go(func() error {
+			params := rez.CreateSituationInvestigationParams{SituationID: sit.ID}
+			investigation, createErr := h.situations.CreateSituationInvestigation(ctx, params)
 			results <- investigation
-			errs <- createErr
-		}()
+			return createErr
+		})
 	}
-	wg.Wait()
+	err := g.Wait()
 	close(results)
-	close(errs)
-	for createErr := range errs {
-		s.Require().NoError(createErr)
-	}
-	s.Equal(1, tdb.Client(ctx).SituationInvestigation.Query().CountX(ctx))
-	s.Equal(1, tdb.Client(ctx).SystemAnalysis.Query().CountX(ctx))
-	s.Equal(1, tdb.Client(ctx).AgentSession.Query().CountX(ctx))
+	s.Require().NoError(err)
+	client := tdb.Client(ctx)
+	s.Equal(1, client.SituationInvestigation.Query().CountX(ctx))
+	s.Equal(1, client.SystemAnalysis.Query().CountX(ctx))
+	s.Equal(1, client.AgentSession.Query().CountX(ctx))
 }
 
-func (s *SituationServiceSuite) TestSituationInvestigationReportPersistenceUsesRenamedArtifactAndType() {
+func (s *SituationServiceSuite) TestSituationInvestigationReportPersistenceWhileRunning() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
 	h := s.newHarness(tdb)
 	sit := s.createSituation(ctx, h, "Checkout degradation")
+	s.expectReconciliation(h)
 	s.expectStartAgentSession(h)
-	investigation, createErr := h.situations.CreateSituationInvestigation(ctx, rez.CreateSituationInvestigationParams{SituationID: sit.ID})
-	s.Require().NoError(createErr)
-	report := schematypes.SituationInvestigationReport{Text: "The database is saturated."}
-	reportJSON, jsonErr := json.Marshal(report)
-	s.Require().NoError(jsonErr)
-	tdb.Client(ctx).AgentArtifact.Create().
-		SetAgentSessionID(investigation.AgentSessionID).
-		SetName("situation_investigation_report").
-		SetParts([]*ai.Part{ai.NewJSONPart(string(reportJSON))}).
-		SaveX(ctx)
 
-	s.NoError(h.situations.onAgentTurnFinished(ctx, &rezai.EventOnAgentTurnFinished{AgentSessionId: investigation.AgentSessionID}))
-	updated := tdb.Client(ctx).SituationInvestigation.GetX(ctx, investigation.ID)
+	inv, err := h.situations.CreateSituationInvestigation(ctx, rez.CreateSituationInvestigationParams{SituationID: sit.ID})
+	s.Require().NoError(err)
+
+	createTurn := tdb.Client(ctx).AgentTurn.Create().
+		SetID(uuid.New()).
+		SetAgentSessionID(inv.AgentSessionID).
+		SetSequence(1).
+		SetRiverJobID(1002).
+		SetStatus(agentturn.StatusRunning)
+	turn := createTurn.SaveX(ctx)
+	tdb.Client(ctx).SituationInvestigation.UpdateOneID(inv.ID).
+		SetRequestedTurnID(turn.ID).
+		SetRequestedRevision(1).
+		SaveX(ctx)
+	report := schematypes.SituationInvestigationReport{Text: "The database is saturated."}
+	updated, reportErr := h.situations.SetSituationInvestigationReport(ctx, rez.SetSituationInvestigationReportParams{AgentTurnID: turn.ID, Report: report})
+	s.Require().NoError(reportErr)
 	s.Equal(report.Text, updated.Report.Text)
+	s.Equal(1, updated.CompletedRevision)
 }
 
 func (s *SituationServiceSuite) TestSystemHazardRetirementAndRiskAssessmentRevisions() {

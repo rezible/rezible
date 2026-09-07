@@ -87,6 +87,21 @@ func AgentSessionID(v uuid.UUID) predicate.SituationInvestigation {
 	return predicate.SituationInvestigation(sql.FieldEQ(FieldAgentSessionID, v))
 }
 
+// CompletedRevision applies equality check predicate on the "completed_revision" field. It's identical to CompletedRevisionEQ.
+func CompletedRevision(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldEQ(FieldCompletedRevision, v))
+}
+
+// RequestedRevision applies equality check predicate on the "requested_revision" field. It's identical to RequestedRevisionEQ.
+func RequestedRevision(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldEQ(FieldRequestedRevision, v))
+}
+
+// RequestedTurnID applies equality check predicate on the "requested_turn_id" field. It's identical to RequestedTurnIDEQ.
+func RequestedTurnID(v uuid.UUID) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldEQ(FieldRequestedTurnID, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.SituationInvestigation {
 	return predicate.SituationInvestigation(sql.FieldEQ(FieldTenantID, v))
@@ -247,6 +262,116 @@ func AgentSessionIDNotIn(vs ...uuid.UUID) predicate.SituationInvestigation {
 	return predicate.SituationInvestigation(sql.FieldNotIn(FieldAgentSessionID, vs...))
 }
 
+// CompletedRevisionEQ applies the EQ predicate on the "completed_revision" field.
+func CompletedRevisionEQ(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldEQ(FieldCompletedRevision, v))
+}
+
+// CompletedRevisionNEQ applies the NEQ predicate on the "completed_revision" field.
+func CompletedRevisionNEQ(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldNEQ(FieldCompletedRevision, v))
+}
+
+// CompletedRevisionIn applies the In predicate on the "completed_revision" field.
+func CompletedRevisionIn(vs ...int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldIn(FieldCompletedRevision, vs...))
+}
+
+// CompletedRevisionNotIn applies the NotIn predicate on the "completed_revision" field.
+func CompletedRevisionNotIn(vs ...int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldNotIn(FieldCompletedRevision, vs...))
+}
+
+// CompletedRevisionGT applies the GT predicate on the "completed_revision" field.
+func CompletedRevisionGT(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldGT(FieldCompletedRevision, v))
+}
+
+// CompletedRevisionGTE applies the GTE predicate on the "completed_revision" field.
+func CompletedRevisionGTE(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldGTE(FieldCompletedRevision, v))
+}
+
+// CompletedRevisionLT applies the LT predicate on the "completed_revision" field.
+func CompletedRevisionLT(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldLT(FieldCompletedRevision, v))
+}
+
+// CompletedRevisionLTE applies the LTE predicate on the "completed_revision" field.
+func CompletedRevisionLTE(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldLTE(FieldCompletedRevision, v))
+}
+
+// RequestedRevisionEQ applies the EQ predicate on the "requested_revision" field.
+func RequestedRevisionEQ(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldEQ(FieldRequestedRevision, v))
+}
+
+// RequestedRevisionNEQ applies the NEQ predicate on the "requested_revision" field.
+func RequestedRevisionNEQ(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldNEQ(FieldRequestedRevision, v))
+}
+
+// RequestedRevisionIn applies the In predicate on the "requested_revision" field.
+func RequestedRevisionIn(vs ...int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldIn(FieldRequestedRevision, vs...))
+}
+
+// RequestedRevisionNotIn applies the NotIn predicate on the "requested_revision" field.
+func RequestedRevisionNotIn(vs ...int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldNotIn(FieldRequestedRevision, vs...))
+}
+
+// RequestedRevisionGT applies the GT predicate on the "requested_revision" field.
+func RequestedRevisionGT(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldGT(FieldRequestedRevision, v))
+}
+
+// RequestedRevisionGTE applies the GTE predicate on the "requested_revision" field.
+func RequestedRevisionGTE(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldGTE(FieldRequestedRevision, v))
+}
+
+// RequestedRevisionLT applies the LT predicate on the "requested_revision" field.
+func RequestedRevisionLT(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldLT(FieldRequestedRevision, v))
+}
+
+// RequestedRevisionLTE applies the LTE predicate on the "requested_revision" field.
+func RequestedRevisionLTE(v int) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldLTE(FieldRequestedRevision, v))
+}
+
+// RequestedTurnIDEQ applies the EQ predicate on the "requested_turn_id" field.
+func RequestedTurnIDEQ(v uuid.UUID) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldEQ(FieldRequestedTurnID, v))
+}
+
+// RequestedTurnIDNEQ applies the NEQ predicate on the "requested_turn_id" field.
+func RequestedTurnIDNEQ(v uuid.UUID) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldNEQ(FieldRequestedTurnID, v))
+}
+
+// RequestedTurnIDIn applies the In predicate on the "requested_turn_id" field.
+func RequestedTurnIDIn(vs ...uuid.UUID) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldIn(FieldRequestedTurnID, vs...))
+}
+
+// RequestedTurnIDNotIn applies the NotIn predicate on the "requested_turn_id" field.
+func RequestedTurnIDNotIn(vs ...uuid.UUID) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldNotIn(FieldRequestedTurnID, vs...))
+}
+
+// RequestedTurnIDIsNil applies the IsNil predicate on the "requested_turn_id" field.
+func RequestedTurnIDIsNil() predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldIsNull(FieldRequestedTurnID))
+}
+
+// RequestedTurnIDNotNil applies the NotNil predicate on the "requested_turn_id" field.
+func RequestedTurnIDNotNil() predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(sql.FieldNotNull(FieldRequestedTurnID))
+}
+
 // ReportIsNil applies the IsNil predicate on the "report" field.
 func ReportIsNil() predicate.SituationInvestigation {
 	return predicate.SituationInvestigation(sql.FieldIsNull(FieldReport))
@@ -277,6 +402,35 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.SituationInvestigation {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SituationInvestigation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRequestedTurn applies the HasEdge predicate on the "requested_turn" edge.
+func HasRequestedTurn() predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, RequestedTurnTable, RequestedTurnColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentTurn
+		step.Edge.Schema = schemaConfig.SituationInvestigation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRequestedTurnWith applies the HasEdge predicate on the "requested_turn" edge with a given conditions (other predicates).
+func HasRequestedTurnWith(preds ...predicate.AgentTurn) predicate.SituationInvestigation {
+	return predicate.SituationInvestigation(func(s *sql.Selector) {
+		step := newRequestedTurnStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentTurn
 		step.Edge.Schema = schemaConfig.SituationInvestigation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -617,10 +617,17 @@ func (s *AgentSessionServiceSuite) TestWorkerFailsTurnWhenAgentReturnsNilResult(
 	h.ai.EXPECT().
 		InvokeAgentTurn(mock.Anything, mock.Anything).
 		Return(nil, nil).
-		Once()
+		Times(3)
 
-	workErr := h.turnWorker.Work(ctx, makeAgentTurnJob(turn, 1))
-	s.Require().NoError(workErr)
+	for attempt := 1; attempt <= 3; attempt++ {
+		workErr := h.turnWorker.Work(ctx, makeAgentTurnJob(turn, attempt))
+		s.Require().ErrorContains(workErr, "agent returned no result")
+		persisted := h.tdb.Client(ctx).AgentTurn.GetX(ctx, turn.ID)
+		if attempt < 3 {
+			s.Equal(at.StatusQueued, persisted.Status)
+			s.Nil(persisted.FinishedAt)
+		}
+	}
 
 	turn, turnErr := h.tdb.Client(ctx).AgentTurn.Get(ctx, turn.ID)
 	s.Require().NoError(turnErr)
@@ -631,7 +638,7 @@ func (s *AgentSessionServiceSuite) TestWorkerFailsTurnWhenAgentReturnsNilResult(
 	s.NotNil(turn.FinishedAt)
 }
 
-func (s *AgentSessionServiceSuite) TestWorkerTerminalizesRunningRedeliveryWithoutInvokingAgent() {
+func (s *AgentSessionServiceSuite) TestWorkerDoesNotMutateConcurrentRunningDelivery() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
@@ -649,21 +656,16 @@ func (s *AgentSessionServiceSuite) TestWorkerTerminalizesRunningRedeliveryWithou
 	})
 
 	workErr := h.turnWorker.Work(ctx, makeAgentTurnJob(turn, 2))
-	s.Require().NoError(workErr)
+	s.Require().ErrorIs(workErr, errAgentTurnAlreadyRunning)
 
 	var turnErr error
 	turn, turnErr = h.tdb.Client(ctx).AgentTurn.Get(ctx, turn.ID)
 	s.Require().NoError(turnErr)
-	s.Equal(at.StatusFailed, turn.Status)
-	s.NotNil(turn.Error)
-	s.Equal(string(aix.AgentFinishReasonFailed), turn.FinishReason)
-	s.NotNil(turn.FinishedAt)
+	s.Equal(at.StatusRunning, turn.Status)
+	s.Nil(turn.Error)
+	s.Nil(turn.FinishedAt)
 	s.Empty(h.ai.Calls)
-	s.Require().Len(h.msgs.Calls, 1)
-	updated, isTurnUpdate := h.msgs.Calls[0].Arguments.Get(1).(rezai.AgentTurnUpdated)
-	s.True(isTurnUpdate)
-	s.Equal(at.StatusFailed, updated.Status)
-	s.Equal(string(aix.AgentFinishReasonFailed), updated.FinishReason)
+	s.Empty(h.msgs.Calls)
 }
 
 func (s *AgentSessionServiceSuite) TestAbortAgentTurnIsIdempotent() {

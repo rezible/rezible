@@ -104,6 +104,10 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 			return fmt.Errorf("upsert alert: %w", alertErr)
 		}
 
+		if _, eventErr := s.alerts.RecordAlertEvent(ctx, alertID, event.Event); eventErr != nil {
+			return fmt.Errorf("contribute alert event: %w", eventErr)
+		}
+
 		projected = append(projected, rez.ProjectedEntityRef{
 			Kind: knowledgeEntityKindAlert,
 			Id:   alertID,

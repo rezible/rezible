@@ -12903,6 +12903,25 @@ func (c *SituationInvestigationClient) QueryTenant(_m *SituationInvestigation) *
 	return query
 }
 
+// QueryRequestedTurn queries the requested_turn edge of a SituationInvestigation.
+func (c *SituationInvestigationClient) QueryRequestedTurn(_m *SituationInvestigation) *AgentTurnQuery {
+	query := (&AgentTurnClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationinvestigation.Table, situationinvestigation.FieldID, id),
+			sqlgraph.To(agentturn.Table, agentturn.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationinvestigation.RequestedTurnTable, situationinvestigation.RequestedTurnColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentTurn
+		step.Edge.Schema = schemaConfig.SituationInvestigation
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QuerySituation queries the situation edge of a SituationInvestigation.
 func (c *SituationInvestigationClient) QuerySituation(_m *SituationInvestigation) *SituationQuery {
 	query := (&SituationClient{config: c.config}).Query()

@@ -75,6 +75,20 @@ func (_c *SituationCreate) SetTitle(v string) *SituationCreate {
 	return _c
 }
 
+// SetEvidenceRevision sets the "evidence_revision" field.
+func (_c *SituationCreate) SetEvidenceRevision(v int) *SituationCreate {
+	_c.mutation.SetEvidenceRevision(v)
+	return _c
+}
+
+// SetNillableEvidenceRevision sets the "evidence_revision" field if the given value is not nil.
+func (_c *SituationCreate) SetNillableEvidenceRevision(v *int) *SituationCreate {
+	if v != nil {
+		_c.SetEvidenceRevision(*v)
+	}
+	return _c
+}
+
 // SetSummary sets the "summary" field.
 func (_c *SituationCreate) SetSummary(v string) *SituationCreate {
 	_c.mutation.SetSummary(v)
@@ -261,6 +275,10 @@ func (_c *SituationCreate) defaults() error {
 		v := situation.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.EvidenceRevision(); !ok {
+		v := situation.DefaultEvidenceRevision
+		_c.mutation.SetEvidenceRevision(v)
+	}
 	if _, ok := _c.mutation.Status(); !ok {
 		v := situation.DefaultStatus
 		_c.mutation.SetStatus(v)
@@ -295,6 +313,14 @@ func (_c *SituationCreate) check() error {
 	if v, ok := _c.mutation.Title(); ok {
 		if err := situation.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Situation.title": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.EvidenceRevision(); !ok {
+		return &ValidationError{Name: "evidence_revision", err: errors.New(`ent: missing required field "Situation.evidence_revision"`)}
+	}
+	if v, ok := _c.mutation.EvidenceRevision(); ok {
+		if err := situation.EvidenceRevisionValidator(v); err != nil {
+			return &ValidationError{Name: "evidence_revision", err: fmt.Errorf(`ent: validator failed for field "Situation.evidence_revision": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Status(); !ok {
@@ -367,6 +393,10 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(situation.FieldTitle, field.TypeString, value)
 		_node.Title = value
+	}
+	if value, ok := _c.mutation.EvidenceRevision(); ok {
+		_spec.SetField(situation.FieldEvidenceRevision, field.TypeInt, value)
+		_node.EvidenceRevision = value
 	}
 	if value, ok := _c.mutation.Summary(); ok {
 		_spec.SetField(situation.FieldSummary, field.TypeString, value)
@@ -563,6 +593,24 @@ func (u *SituationUpsert) UpdateTitle() *SituationUpsert {
 	return u
 }
 
+// SetEvidenceRevision sets the "evidence_revision" field.
+func (u *SituationUpsert) SetEvidenceRevision(v int) *SituationUpsert {
+	u.Set(situation.FieldEvidenceRevision, v)
+	return u
+}
+
+// UpdateEvidenceRevision sets the "evidence_revision" field to the value that was provided on create.
+func (u *SituationUpsert) UpdateEvidenceRevision() *SituationUpsert {
+	u.SetExcluded(situation.FieldEvidenceRevision)
+	return u
+}
+
+// AddEvidenceRevision adds v to the "evidence_revision" field.
+func (u *SituationUpsert) AddEvidenceRevision(v int) *SituationUpsert {
+	u.Add(situation.FieldEvidenceRevision, v)
+	return u
+}
+
 // SetSummary sets the "summary" field.
 func (u *SituationUpsert) SetSummary(v string) *SituationUpsert {
 	u.Set(situation.FieldSummary, v)
@@ -734,6 +782,27 @@ func (u *SituationUpsertOne) SetTitle(v string) *SituationUpsertOne {
 func (u *SituationUpsertOne) UpdateTitle() *SituationUpsertOne {
 	return u.Update(func(s *SituationUpsert) {
 		s.UpdateTitle()
+	})
+}
+
+// SetEvidenceRevision sets the "evidence_revision" field.
+func (u *SituationUpsertOne) SetEvidenceRevision(v int) *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetEvidenceRevision(v)
+	})
+}
+
+// AddEvidenceRevision adds v to the "evidence_revision" field.
+func (u *SituationUpsertOne) AddEvidenceRevision(v int) *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.AddEvidenceRevision(v)
+	})
+}
+
+// UpdateEvidenceRevision sets the "evidence_revision" field to the value that was provided on create.
+func (u *SituationUpsertOne) UpdateEvidenceRevision() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateEvidenceRevision()
 	})
 }
 
@@ -1088,6 +1157,27 @@ func (u *SituationUpsertBulk) SetTitle(v string) *SituationUpsertBulk {
 func (u *SituationUpsertBulk) UpdateTitle() *SituationUpsertBulk {
 	return u.Update(func(s *SituationUpsert) {
 		s.UpdateTitle()
+	})
+}
+
+// SetEvidenceRevision sets the "evidence_revision" field.
+func (u *SituationUpsertBulk) SetEvidenceRevision(v int) *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetEvidenceRevision(v)
+	})
+}
+
+// AddEvidenceRevision adds v to the "evidence_revision" field.
+func (u *SituationUpsertBulk) AddEvidenceRevision(v int) *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.AddEvidenceRevision(v)
+	})
+}
+
+// UpdateEvidenceRevision sets the "evidence_revision" field to the value that was provided on create.
+func (u *SituationUpsertBulk) UpdateEvidenceRevision() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateEvidenceRevision()
 	})
 }
 

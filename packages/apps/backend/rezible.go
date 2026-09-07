@@ -716,6 +716,8 @@ type (
 		GetAlert(context.Context, uuid.UUID) (*ent.AlertDefinition, error)
 		GetAlertInstance(context.Context, uuid.UUID) (*ent.AlertInstance, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
+		
+		RecordAlertEvent(context.Context, uuid.UUID, *ent.NormalizedEvent) (*ent.AlertInstance, error)
 	}
 )
 
@@ -725,9 +727,10 @@ type (
 	}
 
 	CreateSituationParams struct {
-		Title    string
-		Summary  string
-		OpenedAt time.Time
+		Title                  string
+		Summary                string
+		OpenedAt               time.Time
+		FoundingAlertEpisodeID *uuid.UUID
 	}
 
 	CloseSituationParams struct {
@@ -745,8 +748,15 @@ type (
 	}
 
 	SetSituationInvestigationReportParams struct {
-		AgentSessionID uuid.UUID
-		Report         schematypes.SituationInvestigationReport
+		AgentTurnID uuid.UUID
+		Report      schematypes.SituationInvestigationReport
+		Assessments []SituationInvestigationHazardAssessment
+	}
+
+	SituationInvestigationHazardAssessment struct {
+		SystemHazardID uuid.UUID                        `json:"systemHazardId"`
+		Status         situationhazardassessment.Status `json:"status"`
+		Summary        string                           `json:"summary"`
 	}
 
 	ListSituationHazardAssessmentsParams struct {
@@ -771,6 +781,9 @@ type (
 		GetSituation(context.Context, uuid.UUID) (*ent.Situation, error)
 		CloseSituation(context.Context, CloseSituationParams) (*ent.Situation, error)
 		LinkAlertEpisodeToSituation(context.Context, LinkAlertEpisodeToSituationParams) (*ent.AlertEpisode, error)
+
+		RecordSituationEvidence(context.Context, uuid.UUID) error
+		StabilizeSituation(context.Context, uuid.UUID) error
 
 		CreateSituationInvestigation(context.Context, CreateSituationInvestigationParams) (*ent.SituationInvestigation, error)
 		GetSituationInvestigation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)

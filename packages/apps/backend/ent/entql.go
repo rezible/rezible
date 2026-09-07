@@ -1206,6 +1206,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			situation.FieldUpdatedAt:         {Type: field.TypeTime, Column: situation.FieldUpdatedAt},
 			situation.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: situation.FieldKnowledgeEntityID},
 			situation.FieldTitle:             {Type: field.TypeString, Column: situation.FieldTitle},
+			situation.FieldEvidenceRevision:  {Type: field.TypeInt, Column: situation.FieldEvidenceRevision},
 			situation.FieldSummary:           {Type: field.TypeString, Column: situation.FieldSummary},
 			situation.FieldStatus:            {Type: field.TypeEnum, Column: situation.FieldStatus},
 			situation.FieldOpenedAt:          {Type: field.TypeTime, Column: situation.FieldOpenedAt},
@@ -1248,13 +1249,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "SituationInvestigation",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			situationinvestigation.FieldTenantID:         {Type: field.TypeInt, Column: situationinvestigation.FieldTenantID},
-			situationinvestigation.FieldCreatedAt:        {Type: field.TypeTime, Column: situationinvestigation.FieldCreatedAt},
-			situationinvestigation.FieldUpdatedAt:        {Type: field.TypeTime, Column: situationinvestigation.FieldUpdatedAt},
-			situationinvestigation.FieldSituationID:      {Type: field.TypeUUID, Column: situationinvestigation.FieldSituationID},
-			situationinvestigation.FieldSystemAnalysisID: {Type: field.TypeUUID, Column: situationinvestigation.FieldSystemAnalysisID},
-			situationinvestigation.FieldAgentSessionID:   {Type: field.TypeUUID, Column: situationinvestigation.FieldAgentSessionID},
-			situationinvestigation.FieldReport:           {Type: field.TypeJSON, Column: situationinvestigation.FieldReport},
+			situationinvestigation.FieldTenantID:          {Type: field.TypeInt, Column: situationinvestigation.FieldTenantID},
+			situationinvestigation.FieldCreatedAt:         {Type: field.TypeTime, Column: situationinvestigation.FieldCreatedAt},
+			situationinvestigation.FieldUpdatedAt:         {Type: field.TypeTime, Column: situationinvestigation.FieldUpdatedAt},
+			situationinvestigation.FieldSituationID:       {Type: field.TypeUUID, Column: situationinvestigation.FieldSituationID},
+			situationinvestigation.FieldSystemAnalysisID:  {Type: field.TypeUUID, Column: situationinvestigation.FieldSystemAnalysisID},
+			situationinvestigation.FieldAgentSessionID:    {Type: field.TypeUUID, Column: situationinvestigation.FieldAgentSessionID},
+			situationinvestigation.FieldCompletedRevision: {Type: field.TypeInt, Column: situationinvestigation.FieldCompletedRevision},
+			situationinvestigation.FieldRequestedRevision: {Type: field.TypeInt, Column: situationinvestigation.FieldRequestedRevision},
+			situationinvestigation.FieldRequestedTurnID:   {Type: field.TypeUUID, Column: situationinvestigation.FieldRequestedTurnID},
+			situationinvestigation.FieldReport:            {Type: field.TypeJSON, Column: situationinvestigation.FieldReport},
 		},
 	}
 	graph.Nodes[60] = &sqlgraph.Node{
@@ -4176,6 +4180,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"SituationInvestigation",
 		"Tenant",
+	)
+	graph.MustAddE(
+		"requested_turn",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationinvestigation.RequestedTurnTable,
+			Columns: []string{situationinvestigation.RequestedTurnColumn},
+			Bidi:    false,
+		},
+		"SituationInvestigation",
+		"AgentTurn",
 	)
 	graph.MustAddE(
 		"situation",
@@ -12129,6 +12145,11 @@ func (f *SituationFilter) WhereTitle(p entql.StringP) {
 	f.Where(p.Field(situation.FieldTitle))
 }
 
+// WhereEvidenceRevision applies the entql int predicate on the evidence_revision field.
+func (f *SituationFilter) WhereEvidenceRevision(p entql.IntP) {
+	f.Where(p.Field(situation.FieldEvidenceRevision))
+}
+
 // WhereSummary applies the entql string predicate on the summary field.
 func (f *SituationFilter) WhereSummary(p entql.StringP) {
 	f.Where(p.Field(situation.FieldSummary))
@@ -12459,6 +12480,21 @@ func (f *SituationInvestigationFilter) WhereAgentSessionID(p entql.ValueP) {
 	f.Where(p.Field(situationinvestigation.FieldAgentSessionID))
 }
 
+// WhereCompletedRevision applies the entql int predicate on the completed_revision field.
+func (f *SituationInvestigationFilter) WhereCompletedRevision(p entql.IntP) {
+	f.Where(p.Field(situationinvestigation.FieldCompletedRevision))
+}
+
+// WhereRequestedRevision applies the entql int predicate on the requested_revision field.
+func (f *SituationInvestigationFilter) WhereRequestedRevision(p entql.IntP) {
+	f.Where(p.Field(situationinvestigation.FieldRequestedRevision))
+}
+
+// WhereRequestedTurnID applies the entql [16]byte predicate on the requested_turn_id field.
+func (f *SituationInvestigationFilter) WhereRequestedTurnID(p entql.ValueP) {
+	f.Where(p.Field(situationinvestigation.FieldRequestedTurnID))
+}
+
 // WhereReport applies the entql json.RawMessage predicate on the report field.
 func (f *SituationInvestigationFilter) WhereReport(p entql.BytesP) {
 	f.Where(p.Field(situationinvestigation.FieldReport))
@@ -12472,6 +12508,20 @@ func (f *SituationInvestigationFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *SituationInvestigationFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasRequestedTurn applies a predicate to check if query has an edge requested_turn.
+func (f *SituationInvestigationFilter) WhereHasRequestedTurn() {
+	f.Where(entql.HasEdge("requested_turn"))
+}
+
+// WhereHasRequestedTurnWith applies a predicate to check if query has an edge requested_turn with a given conditions (other predicates).
+func (f *SituationInvestigationFilter) WhereHasRequestedTurnWith(preds ...predicate.AgentTurn) {
+	f.Where(entql.HasEdgeWith("requested_turn", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

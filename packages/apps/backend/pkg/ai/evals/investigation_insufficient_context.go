@@ -32,9 +32,12 @@ func (s *InvestigationInsufficientContext) Seed(ctx context.Context, client *ent
 }
 
 func (s *InvestigationInsufficientContext) Grade(ctx context.Context, client *ent.Client, result *rez.AiAgentInvocationResult) (rezai.EvalScenarioGrade, error) {
-	report, artifactCheck := decodeSituationInvestigationReport(result)
+	report, reportCheck, err := loadSituationInvestigationReport(ctx, client, s.fixture.situationID)
+	if err != nil {
+		return rezai.EvalScenarioGrade{}, err
+	}
 	if report == nil {
-		return rezai.EvalScenarioGrade{Checks: []rezai.EvalCheck{artifactCheck}}, nil
+		return rezai.EvalScenarioGrade{Checks: []rezai.EvalCheck{reportCheck}}, nil
 	}
 
 	state, stateErr := queryAnalysisState(ctx, client, s.fixture.analysisID)
@@ -69,7 +72,7 @@ func (s *InvestigationInsufficientContext) Grade(ctx context.Context, client *en
 	}
 
 	checks := []rezai.EvalCheck{
-		artifactCheck,
+		reportCheck,
 		reportTextCheck(report),
 		limitationsCheck,
 		nextActionCheck(report),

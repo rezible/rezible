@@ -48,29 +48,41 @@ func (w *StartAgentSessionWorker) Timeout(*river.Job[jobs.StartAgentSession]) ti
 func (w *StartAgentSessionWorker) Work(ctx context.Context, job *river.Job[jobs.StartAgentSession]) error {
 	logger := w.logger.With("session_id", job.Args.SessionID)
 
-	sess, sessErr := w.db.Client(ctx).AgentSession.Get(ctx, job.Args.SessionID)
-	if sessErr != nil {
-		if ent.IsNotFound(sessErr) {
-			return river.JobCancel(fmt.Errorf("agent turn no longer exists"))
+	return w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := acquireAgentSessionTurnLock(ctx, w.db, job.Args.SessionID); lockErr != nil {
+			return lockErr
 		}
-		return fmt.Errorf("get session: %w", sessErr)
-	}
-	logger.Info("making initial agent turn input")
 
-	initialInput, initErr := w.ai.MakeInitialAgentTurnInput(ctx, sess)
-	if initErr != nil {
-		return fmt.Errorf("prepare agent session: %w", initErr)
-	} else if initialInput == nil {
-		return fmt.Errorf("prepare agent session: nil result")
-	}
-	logger.Info("requesting initial agent turn")
+		sess, sessErr := tx.AgentSession.Get(ctx, job.Args.SessionID)
+		if sessErr != nil {
+			if ent.IsNotFound(sessErr) {
+				return river.JobCancel(fmt.Errorf("agent turn no longer exists"))
+			}
+			return fmt.Errorf("get session: %w", sessErr)
+		}
+		hasTurns, queryTurnsErr := sess.QueryTurns().Exist(ctx)
+		if queryTurnsErr != nil {
+			return fmt.Errorf("query existing turns: %w", queryTurnsErr)
+		} else if hasTurns {
+			return nil
+		}
+		logger.Info("making initial agent turn input")
 
-	turn, turnErr := w.aiSess.RequestAgentTurn(ctx, sess.ID, &rez.RequestAgentTurnParams{Input: initialInput})
-	if turnErr != nil {
-		return fmt.Errorf("request agent turn: %w", turnErr)
-	}
-	logger.Info("requested initial agent turn", "turn_id", turn.ID)
-	return nil
+		initialInput, initErr := w.ai.MakeInitialAgentTurnInput(ctx, sess)
+		if initErr != nil {
+			return fmt.Errorf("make initial agent turn input: %w", initErr)
+		} else if initialInput == nil {
+			return fmt.Errorf("prepare agent session: nil result")
+		}
+		logger.Info("requesting initial agent turn")
+
+		turn, turnErr := w.aiSess.RequestAgentTurn(ctx, sess.ID, &rez.RequestAgentTurnParams{Input: initialInput})
+		if turnErr != nil {
+			return fmt.Errorf("request agent turn: %w", turnErr)
+		}
+		logger.Info("requested initial agent turn", "turn_id", turn.ID)
+		return nil
+	})
 }
 
 type InvokeAgentTurnWorker struct {
@@ -111,8 +123,8 @@ func (w *InvokeAgentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.In
 		if errors.Is(claimErr, &river.JobCancelError{}) || errors.Is(claimErr, &river.JobSnoozeError{}) {
 			return claimErr
 		}
-		if errors.Is(claimErr, errAgentTurnAlreadyRunning) {
-			return w.saveInvocationResult(ctx, job, nil, nil, claimErr)
+		if errors.Is(claimErr, errAgentTurnAlreadyRunning) && job.Attempt < job.MaxAttempts {
+			return claimErr
 		}
 		if job.Attempt >= job.MaxAttempts {
 			return w.saveInvocationResult(ctx, job, nil, nil, claimErr)
@@ -126,6 +138,16 @@ func (w *InvokeAgentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.In
 	result, invokeErr := w.invokeTurn(ctx, *claim)
 	if resultErr := w.saveInvocationResult(ctx, job, claim, result, invokeErr); resultErr != nil {
 		return fmt.Errorf("save result: %w", resultErr)
+	}
+	if invokeErr == nil {
+		if result != nil {
+			invokeErr = result.Error
+		} else {
+			invokeErr = fmt.Errorf("agent returned no result")
+		}
+	}
+	if invokeErr != nil {
+		return invokeErr
 	}
 	if result != nil {
 		turnFinishedEvent := rezai.EventOnAgentTurnFinished{
@@ -355,7 +377,8 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 			return river.JobCancel(fmt.Errorf("stale agent turn job"))
 		}
 
-		if turn.Status != at.StatusRunning {
+		isQueued := turn.Status == at.StatusQueued && claim == nil && invokeErr != nil && job.Attempt >= job.MaxAttempts
+		if turn.Status != at.StatusRunning && !isQueued {
 			switch turn.Status {
 			case at.StatusCompleted, at.StatusFailed:
 				return nil
@@ -369,8 +392,15 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 			SetFinishedAt(time.Now().UTC())
 
 		setErrorFn := func(msg string) {
-			u.SetStatus(at.StatusFailed)
-			u.SetFinishReason(string(aix.AgentFinishReasonFailed))
+			var finishReason string
+			if job.Attempt < job.MaxAttempts {
+				u.SetStatus(at.StatusQueued)
+				u.ClearFinishedAt()
+			} else {
+				finishReason = string(aix.AgentFinishReasonFailed)
+				u.SetStatus(at.StatusFailed)
+			}
+			u.SetFinishReason(finishReason)
 			u.SetError(msg)
 		}
 
@@ -391,7 +421,7 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 			return fmt.Errorf("save agent turn result: %w", updateErr)
 		}
 
-		if result == nil {
+		if result == nil || updatedTurn.Status != at.StatusCompleted {
 			return nil
 		}
 

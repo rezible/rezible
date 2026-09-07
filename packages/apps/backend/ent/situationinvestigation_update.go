@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
@@ -51,6 +53,68 @@ func (_u *SituationInvestigationUpdate) SetUpdatedAt(v time.Time) *SituationInve
 	return _u
 }
 
+// SetCompletedRevision sets the "completed_revision" field.
+func (_u *SituationInvestigationUpdate) SetCompletedRevision(v int) *SituationInvestigationUpdate {
+	_u.mutation.ResetCompletedRevision()
+	_u.mutation.SetCompletedRevision(v)
+	return _u
+}
+
+// SetNillableCompletedRevision sets the "completed_revision" field if the given value is not nil.
+func (_u *SituationInvestigationUpdate) SetNillableCompletedRevision(v *int) *SituationInvestigationUpdate {
+	if v != nil {
+		_u.SetCompletedRevision(*v)
+	}
+	return _u
+}
+
+// AddCompletedRevision adds value to the "completed_revision" field.
+func (_u *SituationInvestigationUpdate) AddCompletedRevision(v int) *SituationInvestigationUpdate {
+	_u.mutation.AddCompletedRevision(v)
+	return _u
+}
+
+// SetRequestedRevision sets the "requested_revision" field.
+func (_u *SituationInvestigationUpdate) SetRequestedRevision(v int) *SituationInvestigationUpdate {
+	_u.mutation.ResetRequestedRevision()
+	_u.mutation.SetRequestedRevision(v)
+	return _u
+}
+
+// SetNillableRequestedRevision sets the "requested_revision" field if the given value is not nil.
+func (_u *SituationInvestigationUpdate) SetNillableRequestedRevision(v *int) *SituationInvestigationUpdate {
+	if v != nil {
+		_u.SetRequestedRevision(*v)
+	}
+	return _u
+}
+
+// AddRequestedRevision adds value to the "requested_revision" field.
+func (_u *SituationInvestigationUpdate) AddRequestedRevision(v int) *SituationInvestigationUpdate {
+	_u.mutation.AddRequestedRevision(v)
+	return _u
+}
+
+// SetRequestedTurnID sets the "requested_turn_id" field.
+func (_u *SituationInvestigationUpdate) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpdate {
+	_u.mutation.SetRequestedTurnID(v)
+	return _u
+}
+
+// SetNillableRequestedTurnID sets the "requested_turn_id" field if the given value is not nil.
+func (_u *SituationInvestigationUpdate) SetNillableRequestedTurnID(v *uuid.UUID) *SituationInvestigationUpdate {
+	if v != nil {
+		_u.SetRequestedTurnID(*v)
+	}
+	return _u
+}
+
+// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
+func (_u *SituationInvestigationUpdate) ClearRequestedTurnID() *SituationInvestigationUpdate {
+	_u.mutation.ClearRequestedTurnID()
+	return _u
+}
+
 // SetReport sets the "report" field.
 func (_u *SituationInvestigationUpdate) SetReport(v schematypes.SituationInvestigationReport) *SituationInvestigationUpdate {
 	_u.mutation.SetReport(v)
@@ -71,9 +135,20 @@ func (_u *SituationInvestigationUpdate) ClearReport() *SituationInvestigationUpd
 	return _u
 }
 
+// SetRequestedTurn sets the "requested_turn" edge to the AgentTurn entity.
+func (_u *SituationInvestigationUpdate) SetRequestedTurn(v *AgentTurn) *SituationInvestigationUpdate {
+	return _u.SetRequestedTurnID(v.ID)
+}
+
 // Mutation returns the SituationInvestigationMutation object of the builder.
 func (_u *SituationInvestigationUpdate) Mutation() *SituationInvestigationMutation {
 	return _u.mutation
+}
+
+// ClearRequestedTurn clears the "requested_turn" edge to the AgentTurn entity.
+func (_u *SituationInvestigationUpdate) ClearRequestedTurn() *SituationInvestigationUpdate {
+	_u.mutation.ClearRequestedTurn()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -120,6 +195,16 @@ func (_u *SituationInvestigationUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *SituationInvestigationUpdate) check() error {
+	if v, ok := _u.mutation.CompletedRevision(); ok {
+		if err := situationinvestigation.CompletedRevisionValidator(v); err != nil {
+			return &ValidationError{Name: "completed_revision", err: fmt.Errorf(`ent: validator failed for field "SituationInvestigation.completed_revision": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.RequestedRevision(); ok {
+		if err := situationinvestigation.RequestedRevisionValidator(v); err != nil {
+			return &ValidationError{Name: "requested_revision", err: fmt.Errorf(`ent: validator failed for field "SituationInvestigation.requested_revision": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SituationInvestigation.tenant"`)
 	}
@@ -159,11 +244,54 @@ func (_u *SituationInvestigationUpdate) sqlSave(ctx context.Context) (_node int,
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(situationinvestigation.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := _u.mutation.CompletedRevision(); ok {
+		_spec.SetField(situationinvestigation.FieldCompletedRevision, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedCompletedRevision(); ok {
+		_spec.AddField(situationinvestigation.FieldCompletedRevision, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.RequestedRevision(); ok {
+		_spec.SetField(situationinvestigation.FieldRequestedRevision, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedRequestedRevision(); ok {
+		_spec.AddField(situationinvestigation.FieldRequestedRevision, field.TypeInt, value)
+	}
 	if value, ok := _u.mutation.Report(); ok {
 		_spec.SetField(situationinvestigation.FieldReport, field.TypeJSON, value)
 	}
 	if _u.mutation.ReportCleared() {
 		_spec.ClearField(situationinvestigation.FieldReport, field.TypeJSON)
+	}
+	if _u.mutation.RequestedTurnCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationinvestigation.RequestedTurnTable,
+			Columns: []string{situationinvestigation.RequestedTurnColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationInvestigation
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RequestedTurnIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationinvestigation.RequestedTurnTable,
+			Columns: []string{situationinvestigation.RequestedTurnColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationInvestigation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationInvestigation
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
@@ -209,6 +337,68 @@ func (_u *SituationInvestigationUpdateOne) SetUpdatedAt(v time.Time) *SituationI
 	return _u
 }
 
+// SetCompletedRevision sets the "completed_revision" field.
+func (_u *SituationInvestigationUpdateOne) SetCompletedRevision(v int) *SituationInvestigationUpdateOne {
+	_u.mutation.ResetCompletedRevision()
+	_u.mutation.SetCompletedRevision(v)
+	return _u
+}
+
+// SetNillableCompletedRevision sets the "completed_revision" field if the given value is not nil.
+func (_u *SituationInvestigationUpdateOne) SetNillableCompletedRevision(v *int) *SituationInvestigationUpdateOne {
+	if v != nil {
+		_u.SetCompletedRevision(*v)
+	}
+	return _u
+}
+
+// AddCompletedRevision adds value to the "completed_revision" field.
+func (_u *SituationInvestigationUpdateOne) AddCompletedRevision(v int) *SituationInvestigationUpdateOne {
+	_u.mutation.AddCompletedRevision(v)
+	return _u
+}
+
+// SetRequestedRevision sets the "requested_revision" field.
+func (_u *SituationInvestigationUpdateOne) SetRequestedRevision(v int) *SituationInvestigationUpdateOne {
+	_u.mutation.ResetRequestedRevision()
+	_u.mutation.SetRequestedRevision(v)
+	return _u
+}
+
+// SetNillableRequestedRevision sets the "requested_revision" field if the given value is not nil.
+func (_u *SituationInvestigationUpdateOne) SetNillableRequestedRevision(v *int) *SituationInvestigationUpdateOne {
+	if v != nil {
+		_u.SetRequestedRevision(*v)
+	}
+	return _u
+}
+
+// AddRequestedRevision adds value to the "requested_revision" field.
+func (_u *SituationInvestigationUpdateOne) AddRequestedRevision(v int) *SituationInvestigationUpdateOne {
+	_u.mutation.AddRequestedRevision(v)
+	return _u
+}
+
+// SetRequestedTurnID sets the "requested_turn_id" field.
+func (_u *SituationInvestigationUpdateOne) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpdateOne {
+	_u.mutation.SetRequestedTurnID(v)
+	return _u
+}
+
+// SetNillableRequestedTurnID sets the "requested_turn_id" field if the given value is not nil.
+func (_u *SituationInvestigationUpdateOne) SetNillableRequestedTurnID(v *uuid.UUID) *SituationInvestigationUpdateOne {
+	if v != nil {
+		_u.SetRequestedTurnID(*v)
+	}
+	return _u
+}
+
+// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
+func (_u *SituationInvestigationUpdateOne) ClearRequestedTurnID() *SituationInvestigationUpdateOne {
+	_u.mutation.ClearRequestedTurnID()
+	return _u
+}
+
 // SetReport sets the "report" field.
 func (_u *SituationInvestigationUpdateOne) SetReport(v schematypes.SituationInvestigationReport) *SituationInvestigationUpdateOne {
 	_u.mutation.SetReport(v)
@@ -229,9 +419,20 @@ func (_u *SituationInvestigationUpdateOne) ClearReport() *SituationInvestigation
 	return _u
 }
 
+// SetRequestedTurn sets the "requested_turn" edge to the AgentTurn entity.
+func (_u *SituationInvestigationUpdateOne) SetRequestedTurn(v *AgentTurn) *SituationInvestigationUpdateOne {
+	return _u.SetRequestedTurnID(v.ID)
+}
+
 // Mutation returns the SituationInvestigationMutation object of the builder.
 func (_u *SituationInvestigationUpdateOne) Mutation() *SituationInvestigationMutation {
 	return _u.mutation
+}
+
+// ClearRequestedTurn clears the "requested_turn" edge to the AgentTurn entity.
+func (_u *SituationInvestigationUpdateOne) ClearRequestedTurn() *SituationInvestigationUpdateOne {
+	_u.mutation.ClearRequestedTurn()
+	return _u
 }
 
 // Where appends a list predicates to the SituationInvestigationUpdate builder.
@@ -291,6 +492,16 @@ func (_u *SituationInvestigationUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *SituationInvestigationUpdateOne) check() error {
+	if v, ok := _u.mutation.CompletedRevision(); ok {
+		if err := situationinvestigation.CompletedRevisionValidator(v); err != nil {
+			return &ValidationError{Name: "completed_revision", err: fmt.Errorf(`ent: validator failed for field "SituationInvestigation.completed_revision": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.RequestedRevision(); ok {
+		if err := situationinvestigation.RequestedRevisionValidator(v); err != nil {
+			return &ValidationError{Name: "requested_revision", err: fmt.Errorf(`ent: validator failed for field "SituationInvestigation.requested_revision": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SituationInvestigation.tenant"`)
 	}
@@ -347,11 +558,54 @@ func (_u *SituationInvestigationUpdateOne) sqlSave(ctx context.Context) (_node *
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(situationinvestigation.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := _u.mutation.CompletedRevision(); ok {
+		_spec.SetField(situationinvestigation.FieldCompletedRevision, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedCompletedRevision(); ok {
+		_spec.AddField(situationinvestigation.FieldCompletedRevision, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.RequestedRevision(); ok {
+		_spec.SetField(situationinvestigation.FieldRequestedRevision, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedRequestedRevision(); ok {
+		_spec.AddField(situationinvestigation.FieldRequestedRevision, field.TypeInt, value)
+	}
 	if value, ok := _u.mutation.Report(); ok {
 		_spec.SetField(situationinvestigation.FieldReport, field.TypeJSON, value)
 	}
 	if _u.mutation.ReportCleared() {
 		_spec.ClearField(situationinvestigation.FieldReport, field.TypeJSON)
+	}
+	if _u.mutation.RequestedTurnCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationinvestigation.RequestedTurnTable,
+			Columns: []string{situationinvestigation.RequestedTurnColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationInvestigation
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RequestedTurnIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationinvestigation.RequestedTurnTable,
+			Columns: []string{situationinvestigation.RequestedTurnColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentturn.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationInvestigation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationInvestigation
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

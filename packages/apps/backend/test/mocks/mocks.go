@@ -6,6 +6,7 @@ package mocks
 
 import (
 	"context"
+	"time"
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
@@ -5154,6 +5155,63 @@ func (_c *MockAgentSessionService_SetAgentSessionBinding_Call) RunAndReturn(run 
 	return _c
 }
 
+// StartAgentSession provides a mock function for the type MockAgentSessionService
+func (_mock *MockAgentSessionService) StartAgentSession(context1 context.Context, uUID uuid.UUID) error {
+	ret := _mock.Called(context1, uUID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StartAgentSession")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(context1, uUID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockAgentSessionService_StartAgentSession_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StartAgentSession'
+type MockAgentSessionService_StartAgentSession_Call struct {
+	*mock.Call
+}
+
+// StartAgentSession is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+func (_e *MockAgentSessionService_Expecter) StartAgentSession(context1 interface{}, uUID interface{}) *MockAgentSessionService_StartAgentSession_Call {
+	return &MockAgentSessionService_StartAgentSession_Call{Call: _e.mock.On("StartAgentSession", context1, uUID)}
+}
+
+func (_c *MockAgentSessionService_StartAgentSession_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockAgentSessionService_StartAgentSession_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAgentSessionService_StartAgentSession_Call) Return(err error) *MockAgentSessionService_StartAgentSession_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockAgentSessionService_StartAgentSession_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) error) *MockAgentSessionService_StartAgentSession_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockAlertService creates a new instance of MockAlertService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockAlertService(t interface {
@@ -5179,6 +5237,137 @@ type MockAlertService_Expecter struct {
 
 func (_m *MockAlertService) EXPECT() *MockAlertService_Expecter {
 	return &MockAlertService_Expecter{mock: &_m.Mock}
+}
+
+// CloseInactiveAlertEpisodes provides a mock function for the type MockAlertService
+func (_mock *MockAlertService) CloseInactiveAlertEpisodes(context1 context.Context, time1 time.Time) error {
+	ret := _mock.Called(context1, time1)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CloseInactiveAlertEpisodes")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time) error); ok {
+		r0 = returnFunc(context1, time1)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockAlertService_CloseInactiveAlertEpisodes_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CloseInactiveAlertEpisodes'
+type MockAlertService_CloseInactiveAlertEpisodes_Call struct {
+	*mock.Call
+}
+
+// CloseInactiveAlertEpisodes is a helper method to define mock.On call
+//   - context1 context.Context
+//   - time1 time.Time
+func (_e *MockAlertService_Expecter) CloseInactiveAlertEpisodes(context1 interface{}, time1 interface{}) *MockAlertService_CloseInactiveAlertEpisodes_Call {
+	return &MockAlertService_CloseInactiveAlertEpisodes_Call{Call: _e.mock.On("CloseInactiveAlertEpisodes", context1, time1)}
+}
+
+func (_c *MockAlertService_CloseInactiveAlertEpisodes_Call) Run(run func(context1 context.Context, time1 time.Time)) *MockAlertService_CloseInactiveAlertEpisodes_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 time.Time
+		if args[1] != nil {
+			arg1 = args[1].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAlertService_CloseInactiveAlertEpisodes_Call) Return(err error) *MockAlertService_CloseInactiveAlertEpisodes_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockAlertService_CloseInactiveAlertEpisodes_Call) RunAndReturn(run func(context1 context.Context, time1 time.Time) error) *MockAlertService_CloseInactiveAlertEpisodes_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ContributeAlertEvent provides a mock function for the type MockAlertService
+func (_mock *MockAlertService) RecordAlertEvent(context1 context.Context, uUID uuid.UUID, normalizedEvent *ent.NormalizedEvent) (*ent.AlertInstance, error) {
+	ret := _mock.Called(context1, uUID, normalizedEvent)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ContributeAlertEvent")
+	}
+
+	var r0 *ent.AlertInstance
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *ent.NormalizedEvent) (*ent.AlertInstance, error)); ok {
+		return returnFunc(context1, uUID, normalizedEvent)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *ent.NormalizedEvent) *ent.AlertInstance); ok {
+		r0 = returnFunc(context1, uUID, normalizedEvent)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.AlertInstance)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *ent.NormalizedEvent) error); ok {
+		r1 = returnFunc(context1, uUID, normalizedEvent)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAlertService_ContributeAlertEvent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ContributeAlertEvent'
+type MockAlertService_ContributeAlertEvent_Call struct {
+	*mock.Call
+}
+
+// ContributeAlertEvent is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+//   - normalizedEvent *ent.NormalizedEvent
+func (_e *MockAlertService_Expecter) ContributeAlertEvent(context1 interface{}, uUID interface{}, normalizedEvent interface{}) *MockAlertService_ContributeAlertEvent_Call {
+	return &MockAlertService_ContributeAlertEvent_Call{Call: _e.mock.On("ContributeAlertEvent", context1, uUID, normalizedEvent)}
+}
+
+func (_c *MockAlertService_ContributeAlertEvent_Call) Run(run func(context1 context.Context, uUID uuid.UUID, normalizedEvent *ent.NormalizedEvent)) *MockAlertService_ContributeAlertEvent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *ent.NormalizedEvent
+		if args[2] != nil {
+			arg2 = args[2].(*ent.NormalizedEvent)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAlertService_ContributeAlertEvent_Call) Return(alertInstance *ent.AlertInstance, err error) *MockAlertService_ContributeAlertEvent_Call {
+	_c.Call.Return(alertInstance, err)
+	return _c
+}
+
+func (_c *MockAlertService_ContributeAlertEvent_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, normalizedEvent *ent.NormalizedEvent) (*ent.AlertInstance, error)) *MockAlertService_ContributeAlertEvent_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // GetAlert provides a mock function for the type MockAlertService

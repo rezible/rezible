@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentsession"
+	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationinvestigation"
@@ -36,6 +37,12 @@ type SituationInvestigation struct {
 	SystemAnalysisID uuid.UUID `json:"system_analysis_id,omitempty"`
 	// AgentSessionID holds the value of the "agent_session_id" field.
 	AgentSessionID uuid.UUID `json:"agent_session_id,omitempty"`
+	// CompletedRevision holds the value of the "completed_revision" field.
+	CompletedRevision int `json:"completed_revision,omitempty"`
+	// RequestedRevision holds the value of the "requested_revision" field.
+	RequestedRevision int `json:"requested_revision,omitempty"`
+	// RequestedTurnID holds the value of the "requested_turn_id" field.
+	RequestedTurnID *uuid.UUID `json:"requested_turn_id,omitempty"`
 	// Report holds the value of the "report" field.
 	Report schematypes.SituationInvestigationReport `json:"report,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -48,6 +55,8 @@ type SituationInvestigation struct {
 type SituationInvestigationEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// RequestedTurn holds the value of the requested_turn edge.
+	RequestedTurn *AgentTurn `json:"requested_turn,omitempty"`
 	// Situation holds the value of the situation edge.
 	Situation *Situation `json:"situation,omitempty"`
 	// SystemAnalysis holds the value of the system_analysis edge.
@@ -56,7 +65,7 @@ type SituationInvestigationEdges struct {
 	AgentSession *AgentSession `json:"agent_session,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -70,12 +79,23 @@ func (e SituationInvestigationEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// RequestedTurnOrErr returns the RequestedTurn value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SituationInvestigationEdges) RequestedTurnOrErr() (*AgentTurn, error) {
+	if e.RequestedTurn != nil {
+		return e.RequestedTurn, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: agentturn.Label}
+	}
+	return nil, &NotLoadedError{edge: "requested_turn"}
+}
+
 // SituationOrErr returns the Situation value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e SituationInvestigationEdges) SituationOrErr() (*Situation, error) {
 	if e.Situation != nil {
 		return e.Situation, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: situation.Label}
 	}
 	return nil, &NotLoadedError{edge: "situation"}
@@ -86,7 +106,7 @@ func (e SituationInvestigationEdges) SituationOrErr() (*Situation, error) {
 func (e SituationInvestigationEdges) SystemAnalysisOrErr() (*SystemAnalysis, error) {
 	if e.SystemAnalysis != nil {
 		return e.SystemAnalysis, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: systemanalysis.Label}
 	}
 	return nil, &NotLoadedError{edge: "system_analysis"}
@@ -97,7 +117,7 @@ func (e SituationInvestigationEdges) SystemAnalysisOrErr() (*SystemAnalysis, err
 func (e SituationInvestigationEdges) AgentSessionOrErr() (*AgentSession, error) {
 	if e.AgentSession != nil {
 		return e.AgentSession, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: agentsession.Label}
 	}
 	return nil, &NotLoadedError{edge: "agent_session"}
@@ -108,9 +128,11 @@ func (*SituationInvestigation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case situationinvestigation.FieldRequestedTurnID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case situationinvestigation.FieldReport:
 			values[i] = new([]byte)
-		case situationinvestigation.FieldTenantID:
+		case situationinvestigation.FieldTenantID, situationinvestigation.FieldCompletedRevision, situationinvestigation.FieldRequestedRevision:
 			values[i] = new(sql.NullInt64)
 		case situationinvestigation.FieldCreatedAt, situationinvestigation.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -173,6 +195,25 @@ func (_m *SituationInvestigation) assignValues(columns []string, values []any) e
 			} else if value != nil {
 				_m.AgentSessionID = *value
 			}
+		case situationinvestigation.FieldCompletedRevision:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field completed_revision", values[i])
+			} else if value.Valid {
+				_m.CompletedRevision = int(value.Int64)
+			}
+		case situationinvestigation.FieldRequestedRevision:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field requested_revision", values[i])
+			} else if value.Valid {
+				_m.RequestedRevision = int(value.Int64)
+			}
+		case situationinvestigation.FieldRequestedTurnID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field requested_turn_id", values[i])
+			} else if value.Valid {
+				_m.RequestedTurnID = new(uuid.UUID)
+				*_m.RequestedTurnID = *value.S.(*uuid.UUID)
+			}
 		case situationinvestigation.FieldReport:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field report", values[i])
@@ -197,6 +238,11 @@ func (_m *SituationInvestigation) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the SituationInvestigation entity.
 func (_m *SituationInvestigation) QueryTenant() *TenantQuery {
 	return NewSituationInvestigationClient(_m.config).QueryTenant(_m)
+}
+
+// QueryRequestedTurn queries the "requested_turn" edge of the SituationInvestigation entity.
+func (_m *SituationInvestigation) QueryRequestedTurn() *AgentTurnQuery {
+	return NewSituationInvestigationClient(_m.config).QueryRequestedTurn(_m)
 }
 
 // QuerySituation queries the "situation" edge of the SituationInvestigation entity.
@@ -254,6 +300,17 @@ func (_m *SituationInvestigation) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("agent_session_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentSessionID))
+	builder.WriteString(", ")
+	builder.WriteString("completed_revision=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CompletedRevision))
+	builder.WriteString(", ")
+	builder.WriteString("requested_revision=")
+	builder.WriteString(fmt.Sprintf("%v", _m.RequestedRevision))
+	builder.WriteString(", ")
+	if v := _m.RequestedTurnID; v != nil {
+		builder.WriteString("requested_turn_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("report=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Report))

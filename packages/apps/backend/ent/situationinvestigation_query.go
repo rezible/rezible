@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentsession"
+	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
@@ -30,6 +31,7 @@ type SituationInvestigationQuery struct {
 	inters             []Interceptor
 	predicates         []predicate.SituationInvestigation
 	withTenant         *TenantQuery
+	withRequestedTurn  *AgentTurnQuery
 	withSituation      *SituationQuery
 	withSystemAnalysis *SystemAnalysisQuery
 	withAgentSession   *AgentSessionQuery
@@ -88,6 +90,31 @@ func (_q *SituationInvestigationQuery) QueryTenant() *TenantQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SituationInvestigation
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRequestedTurn chains the current query on the "requested_turn" edge.
+func (_q *SituationInvestigationQuery) QueryRequestedTurn() *AgentTurnQuery {
+	query := (&AgentTurnClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationinvestigation.Table, situationinvestigation.FieldID, selector),
+			sqlgraph.To(agentturn.Table, agentturn.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationinvestigation.RequestedTurnTable, situationinvestigation.RequestedTurnColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentTurn
 		step.Edge.Schema = schemaConfig.SituationInvestigation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -363,6 +390,7 @@ func (_q *SituationInvestigationQuery) Clone() *SituationInvestigationQuery {
 		inters:             append([]Interceptor{}, _q.inters...),
 		predicates:         append([]predicate.SituationInvestigation{}, _q.predicates...),
 		withTenant:         _q.withTenant.Clone(),
+		withRequestedTurn:  _q.withRequestedTurn.Clone(),
 		withSituation:      _q.withSituation.Clone(),
 		withSystemAnalysis: _q.withSystemAnalysis.Clone(),
 		withAgentSession:   _q.withAgentSession.Clone(),
@@ -381,6 +409,17 @@ func (_q *SituationInvestigationQuery) WithTenant(opts ...func(*TenantQuery)) *S
 		opt(query)
 	}
 	_q.withTenant = query
+	return _q
+}
+
+// WithRequestedTurn tells the query-builder to eager-load the nodes that are connected to
+// the "requested_turn" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationInvestigationQuery) WithRequestedTurn(opts ...func(*AgentTurnQuery)) *SituationInvestigationQuery {
+	query := (&AgentTurnClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withRequestedTurn = query
 	return _q
 }
 
@@ -501,8 +540,9 @@ func (_q *SituationInvestigationQuery) sqlAll(ctx context.Context, hooks ...quer
 	var (
 		nodes       = []*SituationInvestigation{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
+			_q.withRequestedTurn != nil,
 			_q.withSituation != nil,
 			_q.withSystemAnalysis != nil,
 			_q.withAgentSession != nil,
@@ -534,6 +574,12 @@ func (_q *SituationInvestigationQuery) sqlAll(ctx context.Context, hooks ...quer
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *SituationInvestigation, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withRequestedTurn; query != nil {
+		if err := _q.loadRequestedTurn(ctx, query, nodes, nil,
+			func(n *SituationInvestigation, e *AgentTurn) { n.Edges.RequestedTurn = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -580,6 +626,38 @@ func (_q *SituationInvestigationQuery) loadTenant(ctx context.Context, query *Te
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *SituationInvestigationQuery) loadRequestedTurn(ctx context.Context, query *AgentTurnQuery, nodes []*SituationInvestigation, init func(*SituationInvestigation), assign func(*SituationInvestigation, *AgentTurn)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*SituationInvestigation)
+	for i := range nodes {
+		if nodes[i].RequestedTurnID == nil {
+			continue
+		}
+		fk := *nodes[i].RequestedTurnID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(agentturn.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "requested_turn_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -707,6 +785,9 @@ func (_q *SituationInvestigationQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(situationinvestigation.FieldTenantID)
+		}
+		if _q.withRequestedTurn != nil {
+			_spec.Node.AddColumnOnce(situationinvestigation.FieldRequestedTurnID)
 		}
 		if _q.withSituation != nil {
 			_spec.Node.AddColumnOnce(situationinvestigation.FieldSituationID)

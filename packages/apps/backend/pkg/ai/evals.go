@@ -3,8 +3,6 @@ package ai
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
@@ -30,8 +28,8 @@ type (
 	}
 
 	EvalScenarioSeed struct {
-		Input            AgentInput
-		SystemAnalysisID *uuid.UUID
+		Session *ent.AgentSession
+		Turn    *ent.AgentTurn
 	}
 
 	EvalScenarioGrade struct {

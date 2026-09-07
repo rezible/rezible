@@ -55,7 +55,7 @@ ALTER TABLE "system_analysis_entities" DROP CONSTRAINT "system_analysis_entities
 -- reverse: modify "system_analyses" table
 ALTER TABLE "system_analyses" DROP CONSTRAINT "system_analyses_knowledge_entities_subject_entity", DROP CONSTRAINT "system_analyses_knowledge_entities_scope_entity", DROP CONSTRAINT "system_analyses_tenants_tenant";
 -- reverse: modify "situation_investigations" table
-ALTER TABLE "situation_investigations" DROP CONSTRAINT "situation_investigations_syste_52632ceba408743d2e982d0892645996", DROP CONSTRAINT "situation_investigations_tenants_tenant", DROP CONSTRAINT "situation_investigations_situations_investigation", DROP CONSTRAINT "situation_investigations_agent_sessions_situation_investigation";
+ALTER TABLE "situation_investigations" DROP CONSTRAINT "situation_investigations_syste_52632ceba408743d2e982d0892645996", DROP CONSTRAINT "situation_investigations_agent_turns_requested_turn", DROP CONSTRAINT "situation_investigations_tenants_tenant", DROP CONSTRAINT "situation_investigations_situations_investigation", DROP CONSTRAINT "situation_investigations_agent_sessions_situation_investigation";
 -- reverse: modify "situation_hazard_assessments" table
 ALTER TABLE "situation_hazard_assessments" DROP CONSTRAINT "situation_hazard_assessments_s_4cfd09fc46fb5f66a4f31cc2a855fdad", DROP CONSTRAINT "situation_hazard_assessments_agent_turns_agent_turn", DROP CONSTRAINT "situation_hazard_assessments_users_user", DROP CONSTRAINT "situation_hazard_assessments_tenants_tenant", DROP CONSTRAINT "situation_hazard_assessments_situations_hazard_assessments";
 -- reverse: modify "situations" table

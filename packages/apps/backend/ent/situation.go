@@ -31,6 +31,8 @@ type Situation struct {
 	KnowledgeEntityID uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
+	// EvidenceRevision holds the value of the "evidence_revision" field.
+	EvidenceRevision int `json:"evidence_revision,omitempty"`
 	// Summary holds the value of the "summary" field.
 	Summary string `json:"summary,omitempty"`
 	// Status holds the value of the "status" field.
@@ -120,7 +122,7 @@ func (*Situation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case situation.FieldTenantID:
+		case situation.FieldTenantID, situation.FieldEvidenceRevision:
 			values[i] = new(sql.NullInt64)
 		case situation.FieldTitle, situation.FieldSummary, situation.FieldStatus, situation.FieldCloseReason:
 			values[i] = new(sql.NullString)
@@ -178,6 +180,12 @@ func (_m *Situation) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
 				_m.Title = value.String
+			}
+		case situation.FieldEvidenceRevision:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field evidence_revision", values[i])
+			} else if value.Valid {
+				_m.EvidenceRevision = int(value.Int64)
 			}
 		case situation.FieldSummary:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -286,6 +294,9 @@ func (_m *Situation) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)
+	builder.WriteString(", ")
+	builder.WriteString("evidence_revision=")
+	builder.WriteString(fmt.Sprintf("%v", _m.EvidenceRevision))
 	builder.WriteString(", ")
 	builder.WriteString("summary=")
 	builder.WriteString(_m.Summary)

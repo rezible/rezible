@@ -37,6 +37,7 @@ func (Situation) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("knowledge_entity_id", uuid.UUID{}).Immutable(),
 		field.String("title").NotEmpty(),
+		field.Int("evidence_revision").Positive().Default(1),
 		field.Text("summary").Optional(),
 		field.Enum("status").Values("open", "closed").Default("open"),
 		field.Time("opened_at"),
@@ -83,6 +84,9 @@ func (SituationInvestigation) Fields() []ent.Field {
 		field.UUID("situation_id", uuid.UUID{}).Immutable(),
 		field.UUID("system_analysis_id", uuid.UUID{}).Immutable(),
 		field.UUID("agent_session_id", uuid.UUID{}).Immutable(),
+		field.Int("completed_revision").NonNegative().Default(0),
+		field.Int("requested_revision").NonNegative().Default(0),
+		field.UUID("requested_turn_id", uuid.UUID{}).Optional().Nillable(),
 		field.JSON("report", schematypes.SituationInvestigationReport{}).
 			SchemaType(schemaTypeJsonB).
 			Optional(),
@@ -91,6 +95,9 @@ func (SituationInvestigation) Fields() []ent.Field {
 
 func (SituationInvestigation) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("requested_turn", AgentTurn.Type).
+			Unique().
+			Field("requested_turn_id"),
 		edge.From("situation", Situation.Type).
 			Ref("investigation").
 			Unique().

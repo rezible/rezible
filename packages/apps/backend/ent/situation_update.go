@@ -68,6 +68,27 @@ func (_u *SituationUpdate) SetNillableTitle(v *string) *SituationUpdate {
 	return _u
 }
 
+// SetEvidenceRevision sets the "evidence_revision" field.
+func (_u *SituationUpdate) SetEvidenceRevision(v int) *SituationUpdate {
+	_u.mutation.ResetEvidenceRevision()
+	_u.mutation.SetEvidenceRevision(v)
+	return _u
+}
+
+// SetNillableEvidenceRevision sets the "evidence_revision" field if the given value is not nil.
+func (_u *SituationUpdate) SetNillableEvidenceRevision(v *int) *SituationUpdate {
+	if v != nil {
+		_u.SetEvidenceRevision(*v)
+	}
+	return _u
+}
+
+// AddEvidenceRevision adds value to the "evidence_revision" field.
+func (_u *SituationUpdate) AddEvidenceRevision(v int) *SituationUpdate {
+	_u.mutation.AddEvidenceRevision(v)
+	return _u
+}
+
 // SetSummary sets the "summary" field.
 func (_u *SituationUpdate) SetSummary(v string) *SituationUpdate {
 	_u.mutation.SetSummary(v)
@@ -307,6 +328,11 @@ func (_u *SituationUpdate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Situation.title": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.EvidenceRevision(); ok {
+		if err := situation.EvidenceRevisionValidator(v); err != nil {
+			return &ValidationError{Name: "evidence_revision", err: fmt.Errorf(`ent: validator failed for field "Situation.evidence_revision": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := situation.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Situation.status": %w`, err)}
@@ -352,6 +378,12 @@ func (_u *SituationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(situation.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.EvidenceRevision(); ok {
+		_spec.SetField(situation.FieldEvidenceRevision, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedEvidenceRevision(); ok {
+		_spec.AddField(situation.FieldEvidenceRevision, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Summary(); ok {
 		_spec.SetField(situation.FieldSummary, field.TypeString, value)
@@ -559,6 +591,27 @@ func (_u *SituationUpdateOne) SetNillableTitle(v *string) *SituationUpdateOne {
 	if v != nil {
 		_u.SetTitle(*v)
 	}
+	return _u
+}
+
+// SetEvidenceRevision sets the "evidence_revision" field.
+func (_u *SituationUpdateOne) SetEvidenceRevision(v int) *SituationUpdateOne {
+	_u.mutation.ResetEvidenceRevision()
+	_u.mutation.SetEvidenceRevision(v)
+	return _u
+}
+
+// SetNillableEvidenceRevision sets the "evidence_revision" field if the given value is not nil.
+func (_u *SituationUpdateOne) SetNillableEvidenceRevision(v *int) *SituationUpdateOne {
+	if v != nil {
+		_u.SetEvidenceRevision(*v)
+	}
+	return _u
+}
+
+// AddEvidenceRevision adds value to the "evidence_revision" field.
+func (_u *SituationUpdateOne) AddEvidenceRevision(v int) *SituationUpdateOne {
+	_u.mutation.AddEvidenceRevision(v)
 	return _u
 }
 
@@ -814,6 +867,11 @@ func (_u *SituationUpdateOne) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Situation.title": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.EvidenceRevision(); ok {
+		if err := situation.EvidenceRevisionValidator(v); err != nil {
+			return &ValidationError{Name: "evidence_revision", err: fmt.Errorf(`ent: validator failed for field "Situation.evidence_revision": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := situation.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Situation.status": %w`, err)}
@@ -876,6 +934,12 @@ func (_u *SituationUpdateOne) sqlSave(ctx context.Context) (_node *Situation, er
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(situation.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.EvidenceRevision(); ok {
+		_spec.SetField(situation.FieldEvidenceRevision, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedEvidenceRevision(); ok {
+		_spec.AddField(situation.FieldEvidenceRevision, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Summary(); ok {
 		_spec.SetField(situation.FieldSummary, field.TypeString, value)
