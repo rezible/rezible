@@ -62,6 +62,8 @@ const (
 	EdgeTasks = "tasks"
 	// EdgeTagAssignments holds the string denoting the tag_assignments edge name in mutations.
 	EdgeTagAssignments = "tag_assignments"
+	// EdgeSituations holds the string denoting the situations edge name in mutations.
+	EdgeSituations = "situations"
 	// EdgeImpacts holds the string denoting the impacts edge name in mutations.
 	EdgeImpacts = "impacts"
 	// EdgeDebriefs holds the string denoting the debriefs edge name in mutations.
@@ -149,6 +151,11 @@ const (
 	// TagAssignmentsInverseTable is the table name for the IncidentTag entity.
 	// It exists in this package in order to avoid circular dependency with the "incidenttag" package.
 	TagAssignmentsInverseTable = "incident_tags"
+	// SituationsTable is the table that holds the situations relation/edge. The primary key declared below.
+	SituationsTable = "incident_situations"
+	// SituationsInverseTable is the table name for the Situation entity.
+	// It exists in this package in order to avoid circular dependency with the "situation" package.
+	SituationsInverseTable = "situations"
 	// ImpactsTable is the table that holds the impacts relation/edge.
 	ImpactsTable = "incident_impacts"
 	// ImpactsInverseTable is the table name for the IncidentImpact entity.
@@ -220,6 +227,9 @@ var (
 	// TagAssignmentsPrimaryKey and TagAssignmentsColumn2 are the table columns denoting the
 	// primary key for the tag_assignments relation (M2M).
 	TagAssignmentsPrimaryKey = []string{"incident_id", "incident_tag_id"}
+	// SituationsPrimaryKey and SituationsColumn2 are the table columns denoting the
+	// primary key for the situations relation (M2M).
+	SituationsPrimaryKey = []string{"incident_id", "situation_id"}
 	// ReviewSessionsPrimaryKey and ReviewSessionsColumn2 are the table columns denoting the
 	// primary key for the review_sessions relation (M2M).
 	ReviewSessionsPrimaryKey = []string{"incident_id", "meeting_session_id"}
@@ -451,6 +461,20 @@ func ByTagAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// BySituationsCount orders the results by situations count.
+func BySituationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSituationsStep(), opts...)
+	}
+}
+
+// BySituations orders the results by situations terms.
+func BySituations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSituationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByImpactsCount orders the results by impacts count.
 func ByImpactsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -616,6 +640,13 @@ func newTagAssignmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TagAssignmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, TagAssignmentsTable, TagAssignmentsPrimaryKey...),
+	)
+}
+func newSituationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SituationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, SituationsTable, SituationsPrimaryKey...),
 	)
 }
 func newImpactsStep() *sqlgraph.Step {

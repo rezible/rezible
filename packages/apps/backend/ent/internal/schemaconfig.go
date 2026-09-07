@@ -24,6 +24,7 @@ type SchemaConfig struct {
 	IncidentLinkedIncidents                   string // Incident-linked_incidents->Incident table.
 	IncidentFieldSelections                   string // Incident-field_selections->IncidentFieldOption table.
 	IncidentTagAssignments                    string // Incident-tag_assignments->IncidentTag table.
+	IncidentSituations                        string // Incident-situations->Situation table.
 	IncidentReviewSessions                    string // Incident-review_sessions->MeetingSession table.
 	IncidentDebrief                           string // IncidentDebrief table.
 	IncidentDebriefMessage                    string // IncidentDebriefMessage table.

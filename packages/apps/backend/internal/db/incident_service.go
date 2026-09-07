@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"

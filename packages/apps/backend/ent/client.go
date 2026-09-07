@@ -3709,6 +3709,25 @@ func (c *IncidentClient) QueryTagAssignments(_m *Incident) *IncidentTagQuery {
 	return query
 }
 
+// QuerySituations queries the situations edge of a Incident.
+func (c *IncidentClient) QuerySituations(_m *Incident) *SituationQuery {
+	query := (&SituationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(situation.Table, situation.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, incident.SituationsTable, incident.SituationsPrimaryKey...),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Situation
+		step.Edge.Schema = schemaConfig.IncidentSituations
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryImpacts queries the impacts edge of a Incident.
 func (c *IncidentClient) QueryImpacts(_m *Incident) *IncidentImpactQuery {
 	query := (&IncidentImpactClient{config: c.config}).Query()
@@ -12521,6 +12540,25 @@ func (c *SituationClient) QueryHazardAssessments(_m *Situation) *SituationHazard
 	return query
 }
 
+// QueryIncidents queries the incidents edge of a Situation.
+func (c *SituationClient) QueryIncidents(_m *Situation) *IncidentQuery {
+	query := (&IncidentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, id),
+			sqlgraph.To(incident.Table, incident.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, situation.IncidentsTable, situation.IncidentsPrimaryKey...),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentSituations
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *SituationClient) Hooks() []Hook {
 	hooks := c.hooks.Situation
@@ -16451,6 +16489,7 @@ var (
 		Incident:                              tableSchemas[0],
 		IncidentFieldSelections:               tableSchemas[0],
 		IncidentTagAssignments:                tableSchemas[0],
+		IncidentSituations:                    tableSchemas[0],
 		IncidentReviewSessions:                tableSchemas[0],
 		IncidentDebrief:                       tableSchemas[0],
 		IncidentDebriefMessage:                tableSchemas[0],

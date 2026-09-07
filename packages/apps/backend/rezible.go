@@ -716,7 +716,7 @@ type (
 		GetAlert(context.Context, uuid.UUID) (*ent.AlertDefinition, error)
 		GetAlertInstance(context.Context, uuid.UUID) (*ent.AlertInstance, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
-		
+
 		RecordAlertEvent(context.Context, uuid.UUID, *ent.NormalizedEvent) (*ent.AlertInstance, error)
 	}
 )

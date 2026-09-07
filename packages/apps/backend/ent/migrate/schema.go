@@ -3481,6 +3481,31 @@ var (
 			},
 		},
 	}
+	// IncidentSituationsColumns holds the columns for the "incident_situations" table.
+	IncidentSituationsColumns = []*schema.Column{
+		{Name: "incident_id", Type: field.TypeUUID},
+		{Name: "situation_id", Type: field.TypeUUID},
+	}
+	// IncidentSituationsTable holds the schema information for the "incident_situations" table.
+	IncidentSituationsTable = &schema.Table{
+		Name:       "incident_situations",
+		Columns:    IncidentSituationsColumns,
+		PrimaryKey: []*schema.Column{IncidentSituationsColumns[0], IncidentSituationsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_situations_incident_id",
+				Columns:    []*schema.Column{IncidentSituationsColumns[0]},
+				RefColumns: []*schema.Column{IncidentsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "incident_situations_situation_id",
+				Columns:    []*schema.Column{IncidentSituationsColumns[1]},
+				RefColumns: []*schema.Column{SituationsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// IncidentReviewSessionsColumns holds the columns for the "incident_review_sessions" table.
 	IncidentReviewSessionsColumns = []*schema.Column{
 		{Name: "incident_id", Type: field.TypeUUID},
@@ -3859,6 +3884,7 @@ var (
 		VideoConferencesTable,
 		IncidentFieldSelectionsTable,
 		IncidentTagAssignmentsTable,
+		IncidentSituationsTable,
 		IncidentReviewSessionsTable,
 		IncidentDebriefQuestionIncidentFieldsTable,
 		IncidentDebriefQuestionIncidentRolesTable,
@@ -4079,6 +4105,8 @@ func init() {
 	IncidentFieldSelectionsTable.ForeignKeys[1].RefTable = IncidentFieldOptionsTable
 	IncidentTagAssignmentsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentTagAssignmentsTable.ForeignKeys[1].RefTable = IncidentTagsTable
+	IncidentSituationsTable.ForeignKeys[0].RefTable = IncidentsTable
+	IncidentSituationsTable.ForeignKeys[1].RefTable = SituationsTable
 	IncidentReviewSessionsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentReviewSessionsTable.ForeignKeys[1].RefTable = MeetingSessionsTable
 	IncidentDebriefQuestionIncidentFieldsTable.ForeignKeys[0].RefTable = IncidentDebriefQuestionsTable

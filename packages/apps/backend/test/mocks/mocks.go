@@ -6,7 +6,6 @@ package mocks
 
 import (
 	"context"
-	"time"
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
@@ -5155,63 +5154,6 @@ func (_c *MockAgentSessionService_SetAgentSessionBinding_Call) RunAndReturn(run 
 	return _c
 }
 
-// StartAgentSession provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) StartAgentSession(context1 context.Context, uUID uuid.UUID) error {
-	ret := _mock.Called(context1, uUID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for StartAgentSession")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
-		r0 = returnFunc(context1, uUID)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
-}
-
-// MockAgentSessionService_StartAgentSession_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StartAgentSession'
-type MockAgentSessionService_StartAgentSession_Call struct {
-	*mock.Call
-}
-
-// StartAgentSession is a helper method to define mock.On call
-//   - context1 context.Context
-//   - uUID uuid.UUID
-func (_e *MockAgentSessionService_Expecter) StartAgentSession(context1 interface{}, uUID interface{}) *MockAgentSessionService_StartAgentSession_Call {
-	return &MockAgentSessionService_StartAgentSession_Call{Call: _e.mock.On("StartAgentSession", context1, uUID)}
-}
-
-func (_c *MockAgentSessionService_StartAgentSession_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockAgentSessionService_StartAgentSession_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockAgentSessionService_StartAgentSession_Call) Return(err error) *MockAgentSessionService_StartAgentSession_Call {
-	_c.Call.Return(err)
-	return _c
-}
-
-func (_c *MockAgentSessionService_StartAgentSession_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) error) *MockAgentSessionService_StartAgentSession_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // NewMockAlertService creates a new instance of MockAlertService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockAlertService(t interface {
@@ -5237,137 +5179,6 @@ type MockAlertService_Expecter struct {
 
 func (_m *MockAlertService) EXPECT() *MockAlertService_Expecter {
 	return &MockAlertService_Expecter{mock: &_m.Mock}
-}
-
-// CloseInactiveAlertEpisodes provides a mock function for the type MockAlertService
-func (_mock *MockAlertService) CloseInactiveAlertEpisodes(context1 context.Context, time1 time.Time) error {
-	ret := _mock.Called(context1, time1)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CloseInactiveAlertEpisodes")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time) error); ok {
-		r0 = returnFunc(context1, time1)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
-}
-
-// MockAlertService_CloseInactiveAlertEpisodes_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CloseInactiveAlertEpisodes'
-type MockAlertService_CloseInactiveAlertEpisodes_Call struct {
-	*mock.Call
-}
-
-// CloseInactiveAlertEpisodes is a helper method to define mock.On call
-//   - context1 context.Context
-//   - time1 time.Time
-func (_e *MockAlertService_Expecter) CloseInactiveAlertEpisodes(context1 interface{}, time1 interface{}) *MockAlertService_CloseInactiveAlertEpisodes_Call {
-	return &MockAlertService_CloseInactiveAlertEpisodes_Call{Call: _e.mock.On("CloseInactiveAlertEpisodes", context1, time1)}
-}
-
-func (_c *MockAlertService_CloseInactiveAlertEpisodes_Call) Run(run func(context1 context.Context, time1 time.Time)) *MockAlertService_CloseInactiveAlertEpisodes_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 time.Time
-		if args[1] != nil {
-			arg1 = args[1].(time.Time)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockAlertService_CloseInactiveAlertEpisodes_Call) Return(err error) *MockAlertService_CloseInactiveAlertEpisodes_Call {
-	_c.Call.Return(err)
-	return _c
-}
-
-func (_c *MockAlertService_CloseInactiveAlertEpisodes_Call) RunAndReturn(run func(context1 context.Context, time1 time.Time) error) *MockAlertService_CloseInactiveAlertEpisodes_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// ContributeAlertEvent provides a mock function for the type MockAlertService
-func (_mock *MockAlertService) RecordAlertEvent(context1 context.Context, uUID uuid.UUID, normalizedEvent *ent.NormalizedEvent) (*ent.AlertInstance, error) {
-	ret := _mock.Called(context1, uUID, normalizedEvent)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ContributeAlertEvent")
-	}
-
-	var r0 *ent.AlertInstance
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *ent.NormalizedEvent) (*ent.AlertInstance, error)); ok {
-		return returnFunc(context1, uUID, normalizedEvent)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *ent.NormalizedEvent) *ent.AlertInstance); ok {
-		r0 = returnFunc(context1, uUID, normalizedEvent)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.AlertInstance)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *ent.NormalizedEvent) error); ok {
-		r1 = returnFunc(context1, uUID, normalizedEvent)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockAlertService_ContributeAlertEvent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ContributeAlertEvent'
-type MockAlertService_ContributeAlertEvent_Call struct {
-	*mock.Call
-}
-
-// ContributeAlertEvent is a helper method to define mock.On call
-//   - context1 context.Context
-//   - uUID uuid.UUID
-//   - normalizedEvent *ent.NormalizedEvent
-func (_e *MockAlertService_Expecter) ContributeAlertEvent(context1 interface{}, uUID interface{}, normalizedEvent interface{}) *MockAlertService_ContributeAlertEvent_Call {
-	return &MockAlertService_ContributeAlertEvent_Call{Call: _e.mock.On("ContributeAlertEvent", context1, uUID, normalizedEvent)}
-}
-
-func (_c *MockAlertService_ContributeAlertEvent_Call) Run(run func(context1 context.Context, uUID uuid.UUID, normalizedEvent *ent.NormalizedEvent)) *MockAlertService_ContributeAlertEvent_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		var arg2 *ent.NormalizedEvent
-		if args[2] != nil {
-			arg2 = args[2].(*ent.NormalizedEvent)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockAlertService_ContributeAlertEvent_Call) Return(alertInstance *ent.AlertInstance, err error) *MockAlertService_ContributeAlertEvent_Call {
-	_c.Call.Return(alertInstance, err)
-	return _c
-}
-
-func (_c *MockAlertService_ContributeAlertEvent_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, normalizedEvent *ent.NormalizedEvent) (*ent.AlertInstance, error)) *MockAlertService_ContributeAlertEvent_Call {
-	_c.Call.Return(run)
-	return _c
 }
 
 // GetAlert provides a mock function for the type MockAlertService
@@ -5638,6 +5449,80 @@ func (_c *MockAlertService_ListAlerts_Call) Return(listResult *ent.ListResult[en
 }
 
 func (_c *MockAlertService_ListAlerts_Call) RunAndReturn(run func(context1 context.Context, listAlertsParams rez.ListAlertsParams) (*ent.ListResult[ent.AlertDefinition], error)) *MockAlertService_ListAlerts_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RecordAlertEvent provides a mock function for the type MockAlertService
+func (_mock *MockAlertService) RecordAlertEvent(context1 context.Context, uUID uuid.UUID, normalizedEvent *ent.NormalizedEvent) (*ent.AlertInstance, error) {
+	ret := _mock.Called(context1, uUID, normalizedEvent)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RecordAlertEvent")
+	}
+
+	var r0 *ent.AlertInstance
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *ent.NormalizedEvent) (*ent.AlertInstance, error)); ok {
+		return returnFunc(context1, uUID, normalizedEvent)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *ent.NormalizedEvent) *ent.AlertInstance); ok {
+		r0 = returnFunc(context1, uUID, normalizedEvent)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.AlertInstance)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *ent.NormalizedEvent) error); ok {
+		r1 = returnFunc(context1, uUID, normalizedEvent)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAlertService_RecordAlertEvent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RecordAlertEvent'
+type MockAlertService_RecordAlertEvent_Call struct {
+	*mock.Call
+}
+
+// RecordAlertEvent is a helper method to define mock.On call
+//   - context1 context.Context
+//   - uUID uuid.UUID
+//   - normalizedEvent *ent.NormalizedEvent
+func (_e *MockAlertService_Expecter) RecordAlertEvent(context1 interface{}, uUID interface{}, normalizedEvent interface{}) *MockAlertService_RecordAlertEvent_Call {
+	return &MockAlertService_RecordAlertEvent_Call{Call: _e.mock.On("RecordAlertEvent", context1, uUID, normalizedEvent)}
+}
+
+func (_c *MockAlertService_RecordAlertEvent_Call) Run(run func(context1 context.Context, uUID uuid.UUID, normalizedEvent *ent.NormalizedEvent)) *MockAlertService_RecordAlertEvent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *ent.NormalizedEvent
+		if args[2] != nil {
+			arg2 = args[2].(*ent.NormalizedEvent)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAlertService_RecordAlertEvent_Call) Return(alertInstance *ent.AlertInstance, err error) *MockAlertService_RecordAlertEvent_Call {
+	_c.Call.Return(alertInstance, err)
+	return _c
+}
+
+func (_c *MockAlertService_RecordAlertEvent_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, normalizedEvent *ent.NormalizedEvent) (*ent.AlertInstance, error)) *MockAlertService_RecordAlertEvent_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -5992,6 +5877,63 @@ func (_c *MockIncidentService_GetIncidentSeverity_Call) RunAndReturn(run func(co
 	return _c
 }
 
+// LinkSituationToIncident provides a mock function for the type MockIncidentService
+func (_mock *MockIncidentService) LinkSituationToIncident(context1 context.Context, incidentSituationParams rez.IncidentSituationParams) error {
+	ret := _mock.Called(context1, incidentSituationParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LinkSituationToIncident")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.IncidentSituationParams) error); ok {
+		r0 = returnFunc(context1, incidentSituationParams)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockIncidentService_LinkSituationToIncident_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LinkSituationToIncident'
+type MockIncidentService_LinkSituationToIncident_Call struct {
+	*mock.Call
+}
+
+// LinkSituationToIncident is a helper method to define mock.On call
+//   - context1 context.Context
+//   - incidentSituationParams rez.IncidentSituationParams
+func (_e *MockIncidentService_Expecter) LinkSituationToIncident(context1 interface{}, incidentSituationParams interface{}) *MockIncidentService_LinkSituationToIncident_Call {
+	return &MockIncidentService_LinkSituationToIncident_Call{Call: _e.mock.On("LinkSituationToIncident", context1, incidentSituationParams)}
+}
+
+func (_c *MockIncidentService_LinkSituationToIncident_Call) Run(run func(context1 context.Context, incidentSituationParams rez.IncidentSituationParams)) *MockIncidentService_LinkSituationToIncident_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.IncidentSituationParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.IncidentSituationParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIncidentService_LinkSituationToIncident_Call) Return(err error) *MockIncidentService_LinkSituationToIncident_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockIncidentService_LinkSituationToIncident_Call) RunAndReturn(run func(context1 context.Context, incidentSituationParams rez.IncidentSituationParams) error) *MockIncidentService_LinkSituationToIncident_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListIncidentRoles provides a mock function for the type MockIncidentService
 func (_mock *MockIncidentService) ListIncidentRoles(context1 context.Context) ([]*ent.IncidentRole, error) {
 	ret := _mock.Called(context1)
@@ -6112,6 +6054,74 @@ func (_c *MockIncidentService_ListIncidentSeverities_Call) Return(incidentSeveri
 }
 
 func (_c *MockIncidentService_ListIncidentSeverities_Call) RunAndReturn(run func(context1 context.Context) ([]*ent.IncidentSeverity, error)) *MockIncidentService_ListIncidentSeverities_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListIncidentSituations provides a mock function for the type MockIncidentService
+func (_mock *MockIncidentService) ListIncidentSituations(context1 context.Context, listIncidentSituationsParams rez.ListIncidentSituationsParams) (*ent.ListResult[ent.Situation], error) {
+	ret := _mock.Called(context1, listIncidentSituationsParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListIncidentSituations")
+	}
+
+	var r0 *ent.ListResult[ent.Situation]
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListIncidentSituationsParams) (*ent.ListResult[ent.Situation], error)); ok {
+		return returnFunc(context1, listIncidentSituationsParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListIncidentSituationsParams) *ent.ListResult[ent.Situation]); ok {
+		r0 = returnFunc(context1, listIncidentSituationsParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.ListResult[ent.Situation])
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListIncidentSituationsParams) error); ok {
+		r1 = returnFunc(context1, listIncidentSituationsParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockIncidentService_ListIncidentSituations_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListIncidentSituations'
+type MockIncidentService_ListIncidentSituations_Call struct {
+	*mock.Call
+}
+
+// ListIncidentSituations is a helper method to define mock.On call
+//   - context1 context.Context
+//   - listIncidentSituationsParams rez.ListIncidentSituationsParams
+func (_e *MockIncidentService_Expecter) ListIncidentSituations(context1 interface{}, listIncidentSituationsParams interface{}) *MockIncidentService_ListIncidentSituations_Call {
+	return &MockIncidentService_ListIncidentSituations_Call{Call: _e.mock.On("ListIncidentSituations", context1, listIncidentSituationsParams)}
+}
+
+func (_c *MockIncidentService_ListIncidentSituations_Call) Run(run func(context1 context.Context, listIncidentSituationsParams rez.ListIncidentSituationsParams)) *MockIncidentService_ListIncidentSituations_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ListIncidentSituationsParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ListIncidentSituationsParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIncidentService_ListIncidentSituations_Call) Return(listResult *ent.ListResult[ent.Situation], err error) *MockIncidentService_ListIncidentSituations_Call {
+	_c.Call.Return(listResult, err)
+	return _c
+}
+
+func (_c *MockIncidentService_ListIncidentSituations_Call) RunAndReturn(run func(context1 context.Context, listIncidentSituationsParams rez.ListIncidentSituationsParams) (*ent.ListResult[ent.Situation], error)) *MockIncidentService_ListIncidentSituations_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -6304,6 +6314,74 @@ func (_c *MockIncidentService_ListIncidents_Call) Return(listResult *ent.ListRes
 }
 
 func (_c *MockIncidentService_ListIncidents_Call) RunAndReturn(run func(context1 context.Context, listIncidentsParams rez.ListIncidentsParams) (*ent.ListResult[ent.Incident], error)) *MockIncidentService_ListIncidents_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListSituationIncidents provides a mock function for the type MockIncidentService
+func (_mock *MockIncidentService) ListSituationIncidents(context1 context.Context, listSituationIncidentsParams rez.ListSituationIncidentsParams) (*ent.ListResult[ent.Incident], error) {
+	ret := _mock.Called(context1, listSituationIncidentsParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListSituationIncidents")
+	}
+
+	var r0 *ent.ListResult[ent.Incident]
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListSituationIncidentsParams) (*ent.ListResult[ent.Incident], error)); ok {
+		return returnFunc(context1, listSituationIncidentsParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListSituationIncidentsParams) *ent.ListResult[ent.Incident]); ok {
+		r0 = returnFunc(context1, listSituationIncidentsParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.ListResult[ent.Incident])
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListSituationIncidentsParams) error); ok {
+		r1 = returnFunc(context1, listSituationIncidentsParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockIncidentService_ListSituationIncidents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListSituationIncidents'
+type MockIncidentService_ListSituationIncidents_Call struct {
+	*mock.Call
+}
+
+// ListSituationIncidents is a helper method to define mock.On call
+//   - context1 context.Context
+//   - listSituationIncidentsParams rez.ListSituationIncidentsParams
+func (_e *MockIncidentService_Expecter) ListSituationIncidents(context1 interface{}, listSituationIncidentsParams interface{}) *MockIncidentService_ListSituationIncidents_Call {
+	return &MockIncidentService_ListSituationIncidents_Call{Call: _e.mock.On("ListSituationIncidents", context1, listSituationIncidentsParams)}
+}
+
+func (_c *MockIncidentService_ListSituationIncidents_Call) Run(run func(context1 context.Context, listSituationIncidentsParams rez.ListSituationIncidentsParams)) *MockIncidentService_ListSituationIncidents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ListSituationIncidentsParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ListSituationIncidentsParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIncidentService_ListSituationIncidents_Call) Return(listResult *ent.ListResult[ent.Incident], err error) *MockIncidentService_ListSituationIncidents_Call {
+	_c.Call.Return(listResult, err)
+	return _c
+}
+
+func (_c *MockIncidentService_ListSituationIncidents_Call) RunAndReturn(run func(context1 context.Context, listSituationIncidentsParams rez.ListSituationIncidentsParams) (*ent.ListResult[ent.Incident], error)) *MockIncidentService_ListSituationIncidents_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -6526,6 +6604,63 @@ func (_c *MockIncidentService_SetIncidentMilestone_Call) Return(incidentMileston
 }
 
 func (_c *MockIncidentService_SetIncidentMilestone_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)) *MockIncidentService_SetIncidentMilestone_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UnlinkSituationFromIncident provides a mock function for the type MockIncidentService
+func (_mock *MockIncidentService) UnlinkSituationFromIncident(context1 context.Context, incidentSituationParams rez.IncidentSituationParams) error {
+	ret := _mock.Called(context1, incidentSituationParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UnlinkSituationFromIncident")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.IncidentSituationParams) error); ok {
+		r0 = returnFunc(context1, incidentSituationParams)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockIncidentService_UnlinkSituationFromIncident_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UnlinkSituationFromIncident'
+type MockIncidentService_UnlinkSituationFromIncident_Call struct {
+	*mock.Call
+}
+
+// UnlinkSituationFromIncident is a helper method to define mock.On call
+//   - context1 context.Context
+//   - incidentSituationParams rez.IncidentSituationParams
+func (_e *MockIncidentService_Expecter) UnlinkSituationFromIncident(context1 interface{}, incidentSituationParams interface{}) *MockIncidentService_UnlinkSituationFromIncident_Call {
+	return &MockIncidentService_UnlinkSituationFromIncident_Call{Call: _e.mock.On("UnlinkSituationFromIncident", context1, incidentSituationParams)}
+}
+
+func (_c *MockIncidentService_UnlinkSituationFromIncident_Call) Run(run func(context1 context.Context, incidentSituationParams rez.IncidentSituationParams)) *MockIncidentService_UnlinkSituationFromIncident_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.IncidentSituationParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.IncidentSituationParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIncidentService_UnlinkSituationFromIncident_Call) Return(err error) *MockIncidentService_UnlinkSituationFromIncident_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockIncidentService_UnlinkSituationFromIncident_Call) RunAndReturn(run func(context1 context.Context, incidentSituationParams rez.IncidentSituationParams) error) *MockIncidentService_UnlinkSituationFromIncident_Call {
 	_c.Call.Return(run)
 	return _c
 }

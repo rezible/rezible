@@ -56,6 +56,7 @@ func (Situation) Edges() []ent.Edge {
 		edge.To("alert_episodes", AlertEpisode.Type),
 		edge.To("investigation", SituationInvestigation.Type).Unique(),
 		edge.To("hazard_assessments", SituationHazardAssessment.Type),
+		edge.From("incidents", Incident.Type).Ref("situations"),
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alertepisode"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
@@ -226,6 +227,21 @@ func (_u *SituationUpdate) AddHazardAssessments(v ...*SituationHazardAssessment)
 	return _u.AddHazardAssessmentIDs(ids...)
 }
 
+// AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
+func (_u *SituationUpdate) AddIncidentIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.AddIncidentIDs(ids...)
+	return _u
+}
+
+// AddIncidents adds the "incidents" edges to the Incident entity.
+func (_u *SituationUpdate) AddIncidents(v ...*Incident) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddIncidentIDs(ids...)
+}
+
 // Mutation returns the SituationMutation object of the builder.
 func (_u *SituationUpdate) Mutation() *SituationMutation {
 	return _u.mutation
@@ -277,6 +293,27 @@ func (_u *SituationUpdate) RemoveHazardAssessments(v ...*SituationHazardAssessme
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveHazardAssessmentIDs(ids...)
+}
+
+// ClearIncidents clears all "incidents" edges to the Incident entity.
+func (_u *SituationUpdate) ClearIncidents() *SituationUpdate {
+	_u.mutation.ClearIncidents()
+	return _u
+}
+
+// RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
+func (_u *SituationUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.RemoveIncidentIDs(ids...)
+	return _u
+}
+
+// RemoveIncidents removes "incidents" edges to Incident entities.
+func (_u *SituationUpdate) RemoveIncidents(v ...*Incident) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveIncidentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -536,6 +573,54 @@ func (_u *SituationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.IncidentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   situation.IncidentsTable,
+			Columns: situation.IncidentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   situation.IncidentsTable,
+			Columns: situation.IncidentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   situation.IncidentsTable,
+			Columns: situation.IncidentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.Situation
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -752,6 +837,21 @@ func (_u *SituationUpdateOne) AddHazardAssessments(v ...*SituationHazardAssessme
 	return _u.AddHazardAssessmentIDs(ids...)
 }
 
+// AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
+func (_u *SituationUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.AddIncidentIDs(ids...)
+	return _u
+}
+
+// AddIncidents adds the "incidents" edges to the Incident entity.
+func (_u *SituationUpdateOne) AddIncidents(v ...*Incident) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddIncidentIDs(ids...)
+}
+
 // Mutation returns the SituationMutation object of the builder.
 func (_u *SituationUpdateOne) Mutation() *SituationMutation {
 	return _u.mutation
@@ -803,6 +903,27 @@ func (_u *SituationUpdateOne) RemoveHazardAssessments(v ...*SituationHazardAsses
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveHazardAssessmentIDs(ids...)
+}
+
+// ClearIncidents clears all "incidents" edges to the Incident entity.
+func (_u *SituationUpdateOne) ClearIncidents() *SituationUpdateOne {
+	_u.mutation.ClearIncidents()
+	return _u
+}
+
+// RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
+func (_u *SituationUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.RemoveIncidentIDs(ids...)
+	return _u
+}
+
+// RemoveIncidents removes "incidents" edges to Incident entities.
+func (_u *SituationUpdateOne) RemoveIncidents(v ...*Incident) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveIncidentIDs(ids...)
 }
 
 // Where appends a list predicates to the SituationUpdate builder.
@@ -1087,6 +1208,54 @@ func (_u *SituationUpdateOne) sqlSave(ctx context.Context) (_node *Situation, er
 			},
 		}
 		edge.Schema = _u.schemaConfig.SituationHazardAssessment
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IncidentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   situation.IncidentsTable,
+			Columns: situation.IncidentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   situation.IncidentsTable,
+			Columns: situation.IncidentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   situation.IncidentsTable,
+			Columns: situation.IncidentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

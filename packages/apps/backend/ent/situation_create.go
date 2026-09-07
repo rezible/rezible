@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alertepisode"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
@@ -222,6 +223,21 @@ func (_c *SituationCreate) AddHazardAssessments(v ...*SituationHazardAssessment)
 		ids[i] = v[i].ID
 	}
 	return _c.AddHazardAssessmentIDs(ids...)
+}
+
+// AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
+func (_c *SituationCreate) AddIncidentIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddIncidentIDs(ids...)
+	return _c
+}
+
+// AddIncidents adds the "incidents" edges to the Incident entity.
+func (_c *SituationCreate) AddIncidents(v ...*Incident) *SituationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddIncidentIDs(ids...)
 }
 
 // Mutation returns the SituationMutation object of the builder.
@@ -500,6 +516,23 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.SituationHazardAssessment
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.IncidentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   situation.IncidentsTable,
+			Columns: situation.IncidentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.IncidentSituations
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

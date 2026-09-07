@@ -49,6 +49,8 @@ const (
 	EdgeInvestigation = "investigation"
 	// EdgeHazardAssessments holds the string denoting the hazard_assessments edge name in mutations.
 	EdgeHazardAssessments = "hazard_assessments"
+	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
+	EdgeIncidents = "incidents"
 	// Table holds the table name of the situation in the database.
 	Table = "situations"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -86,6 +88,11 @@ const (
 	HazardAssessmentsInverseTable = "situation_hazard_assessments"
 	// HazardAssessmentsColumn is the table column denoting the hazard_assessments relation/edge.
 	HazardAssessmentsColumn = "situation_id"
+	// IncidentsTable is the table that holds the incidents relation/edge. The primary key declared below.
+	IncidentsTable = "incident_situations"
+	// IncidentsInverseTable is the table name for the Incident entity.
+	// It exists in this package in order to avoid circular dependency with the "incident" package.
+	IncidentsInverseTable = "incidents"
 )
 
 // Columns holds all SQL columns for situation fields.
@@ -103,6 +110,12 @@ var Columns = []string{
 	FieldClosedAt,
 	FieldCloseReason,
 }
+
+var (
+	// IncidentsPrimaryKey and IncidentsColumn2 are the table columns denoting the
+	// primary key for the incidents relation (M2M).
+	IncidentsPrimaryKey = []string{"incident_id", "situation_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -298,6 +311,20 @@ func ByHazardAssessments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 		sqlgraph.OrderByNeighborTerms(s, newHazardAssessmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByIncidentsCount orders the results by incidents count.
+func ByIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIncidentsStep(), opts...)
+	}
+}
+
+// ByIncidents orders the results by incidents terms.
+func ByIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIncidentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -331,5 +358,12 @@ func newHazardAssessmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(HazardAssessmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, HazardAssessmentsTable, HazardAssessmentsColumn),
+	)
+}
+func newIncidentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IncidentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
 	)
 }

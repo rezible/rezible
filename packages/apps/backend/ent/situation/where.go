@@ -687,6 +687,35 @@ func HasHazardAssessmentsWith(preds ...predicate.SituationHazardAssessment) pred
 	})
 }
 
+// HasIncidents applies the HasEdge predicate on the "incidents" edge.
+func HasIncidents() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentSituations
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIncidentsWith applies the HasEdge predicate on the "incidents" edge with a given conditions (other predicates).
+func HasIncidentsWith(preds ...predicate.Incident) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newIncidentsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentSituations
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Situation) predicate.Situation {
 	return predicate.Situation(sql.AndPredicates(predicates...))

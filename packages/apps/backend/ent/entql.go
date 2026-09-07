@@ -2274,6 +2274,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"IncidentTag",
 	)
 	graph.MustAddE(
+		"situations",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.SituationsTable,
+			Columns: incident.SituationsPrimaryKey,
+			Bidi:    false,
+		},
+		"Incident",
+		"Situation",
+	)
+	graph.MustAddE(
 		"impacts",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -4108,6 +4120,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Situation",
 		"SituationHazardAssessment",
+	)
+	graph.MustAddE(
+		"incidents",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   situation.IncidentsTable,
+			Columns: situation.IncidentsPrimaryKey,
+			Bidi:    false,
+		},
+		"Situation",
+		"Incident",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -7027,6 +7051,20 @@ func (f *IncidentFilter) WhereHasTagAssignments() {
 // WhereHasTagAssignmentsWith applies a predicate to check if query has an edge tag_assignments with a given conditions (other predicates).
 func (f *IncidentFilter) WhereHasTagAssignmentsWith(preds ...predicate.IncidentTag) {
 	f.Where(entql.HasEdgeWith("tag_assignments", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSituations applies a predicate to check if query has an edge situations.
+func (f *IncidentFilter) WhereHasSituations() {
+	f.Where(entql.HasEdge("situations"))
+}
+
+// WhereHasSituationsWith applies a predicate to check if query has an edge situations with a given conditions (other predicates).
+func (f *IncidentFilter) WhereHasSituationsWith(preds ...predicate.Situation) {
+	f.Where(entql.HasEdgeWith("situations", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -12239,6 +12277,20 @@ func (f *SituationFilter) WhereHasHazardAssessments() {
 // WhereHasHazardAssessmentsWith applies a predicate to check if query has an edge hazard_assessments with a given conditions (other predicates).
 func (f *SituationFilter) WhereHasHazardAssessmentsWith(preds ...predicate.SituationHazardAssessment) {
 	f.Where(entql.HasEdgeWith("hazard_assessments", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasIncidents applies a predicate to check if query has an edge incidents.
+func (f *SituationFilter) WhereHasIncidents() {
+	f.Where(entql.HasEdge("incidents"))
+}
+
+// WhereHasIncidentsWith applies a predicate to check if query has an edge incidents with a given conditions (other predicates).
+func (f *SituationFilter) WhereHasIncidentsWith(preds ...predicate.Incident) {
+	f.Where(entql.HasEdgeWith("incidents", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

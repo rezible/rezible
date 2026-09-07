@@ -11886,6 +11886,9 @@ type IncidentMutation struct {
 	tag_assignments          map[uuid.UUID]struct{}
 	removedtag_assignments   map[uuid.UUID]struct{}
 	clearedtag_assignments   bool
+	situations               map[uuid.UUID]struct{}
+	removedsituations        map[uuid.UUID]struct{}
+	clearedsituations        bool
 	impacts                  map[uuid.UUID]struct{}
 	removedimpacts           map[uuid.UUID]struct{}
 	clearedimpacts           bool
@@ -12973,6 +12976,60 @@ func (m *IncidentMutation) ResetTagAssignments() {
 	m.removedtag_assignments = nil
 }
 
+// AddSituationIDs adds the "situations" edge to the Situation entity by ids.
+func (m *IncidentMutation) AddSituationIDs(ids ...uuid.UUID) {
+	if m.situations == nil {
+		m.situations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.situations[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSituations clears the "situations" edge to the Situation entity.
+func (m *IncidentMutation) ClearSituations() {
+	m.clearedsituations = true
+}
+
+// SituationsCleared reports if the "situations" edge to the Situation entity was cleared.
+func (m *IncidentMutation) SituationsCleared() bool {
+	return m.clearedsituations
+}
+
+// RemoveSituationIDs removes the "situations" edge to the Situation entity by IDs.
+func (m *IncidentMutation) RemoveSituationIDs(ids ...uuid.UUID) {
+	if m.removedsituations == nil {
+		m.removedsituations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.situations, ids[i])
+		m.removedsituations[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSituations returns the removed IDs of the "situations" edge to the Situation entity.
+func (m *IncidentMutation) RemovedSituationsIDs() (ids []uuid.UUID) {
+	for id := range m.removedsituations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SituationsIDs returns the "situations" edge IDs in the mutation.
+func (m *IncidentMutation) SituationsIDs() (ids []uuid.UUID) {
+	for id := range m.situations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSituations resets all changes to the "situations" edge.
+func (m *IncidentMutation) ResetSituations() {
+	m.situations = nil
+	m.clearedsituations = false
+	m.removedsituations = nil
+}
+
 // AddImpactIDs adds the "impacts" edge to the IncidentImpact entity by ids.
 func (m *IncidentMutation) AddImpactIDs(ids ...uuid.UUID) {
 	if m.impacts == nil {
@@ -13624,7 +13681,7 @@ func (m *IncidentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IncidentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 19)
 	if m.tenant != nil {
 		edges = append(edges, incident.EdgeTenant)
 	}
@@ -13660,6 +13717,9 @@ func (m *IncidentMutation) AddedEdges() []string {
 	}
 	if m.tag_assignments != nil {
 		edges = append(edges, incident.EdgeTagAssignments)
+	}
+	if m.situations != nil {
+		edges = append(edges, incident.EdgeSituations)
 	}
 	if m.impacts != nil {
 		edges = append(edges, incident.EdgeImpacts)
@@ -13748,6 +13808,12 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incident.EdgeSituations:
+		ids := make([]ent.Value, 0, len(m.situations))
+		for id := range m.situations {
+			ids = append(ids, id)
+		}
+		return ids
 	case incident.EdgeImpacts:
 		ids := make([]ent.Value, 0, len(m.impacts))
 		for id := range m.impacts {
@@ -13790,7 +13856,7 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IncidentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 19)
 	if m.removedmilestones != nil {
 		edges = append(edges, incident.EdgeMilestones)
 	}
@@ -13811,6 +13877,9 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	}
 	if m.removedtag_assignments != nil {
 		edges = append(edges, incident.EdgeTagAssignments)
+	}
+	if m.removedsituations != nil {
+		edges = append(edges, incident.EdgeSituations)
 	}
 	if m.removedimpacts != nil {
 		edges = append(edges, incident.EdgeImpacts)
@@ -13879,6 +13948,12 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incident.EdgeSituations:
+		ids := make([]ent.Value, 0, len(m.removedsituations))
+		for id := range m.removedsituations {
+			ids = append(ids, id)
+		}
+		return ids
 	case incident.EdgeImpacts:
 		ids := make([]ent.Value, 0, len(m.removedimpacts))
 		for id := range m.removedimpacts {
@@ -13921,7 +13996,7 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IncidentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 19)
 	if m.clearedtenant {
 		edges = append(edges, incident.EdgeTenant)
 	}
@@ -13957,6 +14032,9 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	}
 	if m.clearedtag_assignments {
 		edges = append(edges, incident.EdgeTagAssignments)
+	}
+	if m.clearedsituations {
+		edges = append(edges, incident.EdgeSituations)
 	}
 	if m.clearedimpacts {
 		edges = append(edges, incident.EdgeImpacts)
@@ -14007,6 +14085,8 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 		return m.clearedtasks
 	case incident.EdgeTagAssignments:
 		return m.clearedtag_assignments
+	case incident.EdgeSituations:
+		return m.clearedsituations
 	case incident.EdgeImpacts:
 		return m.clearedimpacts
 	case incident.EdgeDebriefs:
@@ -14085,6 +14165,9 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 		return nil
 	case incident.EdgeTagAssignments:
 		m.ResetTagAssignments()
+		return nil
+	case incident.EdgeSituations:
+		m.ResetSituations()
 		return nil
 	case incident.EdgeImpacts:
 		m.ResetImpacts()
@@ -50041,6 +50124,9 @@ type SituationMutation struct {
 	hazard_assessments        map[uuid.UUID]struct{}
 	removedhazard_assessments map[uuid.UUID]struct{}
 	clearedhazard_assessments bool
+	incidents                 map[uuid.UUID]struct{}
+	removedincidents          map[uuid.UUID]struct{}
+	clearedincidents          bool
 	done                      bool
 	oldValue                  func(context.Context) (*Situation, error)
 	predicates                []predicate.Situation
@@ -50806,6 +50892,60 @@ func (m *SituationMutation) ResetHazardAssessments() {
 	m.removedhazard_assessments = nil
 }
 
+// AddIncidentIDs adds the "incidents" edge to the Incident entity by ids.
+func (m *SituationMutation) AddIncidentIDs(ids ...uuid.UUID) {
+	if m.incidents == nil {
+		m.incidents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.incidents[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIncidents clears the "incidents" edge to the Incident entity.
+func (m *SituationMutation) ClearIncidents() {
+	m.clearedincidents = true
+}
+
+// IncidentsCleared reports if the "incidents" edge to the Incident entity was cleared.
+func (m *SituationMutation) IncidentsCleared() bool {
+	return m.clearedincidents
+}
+
+// RemoveIncidentIDs removes the "incidents" edge to the Incident entity by IDs.
+func (m *SituationMutation) RemoveIncidentIDs(ids ...uuid.UUID) {
+	if m.removedincidents == nil {
+		m.removedincidents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.incidents, ids[i])
+		m.removedincidents[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIncidents returns the removed IDs of the "incidents" edge to the Incident entity.
+func (m *SituationMutation) RemovedIncidentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedincidents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IncidentsIDs returns the "incidents" edge IDs in the mutation.
+func (m *SituationMutation) IncidentsIDs() (ids []uuid.UUID) {
+	for id := range m.incidents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIncidents resets all changes to the "incidents" edge.
+func (m *SituationMutation) ResetIncidents() {
+	m.incidents = nil
+	m.clearedincidents = false
+	m.removedincidents = nil
+}
+
 // Where appends a list predicates to the SituationMutation builder.
 func (m *SituationMutation) Where(ps ...predicate.Situation) {
 	m.predicates = append(m.predicates, ps...)
@@ -51145,7 +51285,7 @@ func (m *SituationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SituationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, situation.EdgeTenant)
 	}
@@ -51160,6 +51300,9 @@ func (m *SituationMutation) AddedEdges() []string {
 	}
 	if m.hazard_assessments != nil {
 		edges = append(edges, situation.EdgeHazardAssessments)
+	}
+	if m.incidents != nil {
+		edges = append(edges, situation.EdgeIncidents)
 	}
 	return edges
 }
@@ -51192,18 +51335,27 @@ func (m *SituationMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case situation.EdgeIncidents:
+		ids := make([]ent.Value, 0, len(m.incidents))
+		for id := range m.incidents {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SituationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedalert_episodes != nil {
 		edges = append(edges, situation.EdgeAlertEpisodes)
 	}
 	if m.removedhazard_assessments != nil {
 		edges = append(edges, situation.EdgeHazardAssessments)
+	}
+	if m.removedincidents != nil {
+		edges = append(edges, situation.EdgeIncidents)
 	}
 	return edges
 }
@@ -51224,13 +51376,19 @@ func (m *SituationMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case situation.EdgeIncidents:
+		ids := make([]ent.Value, 0, len(m.removedincidents))
+		for id := range m.removedincidents {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SituationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, situation.EdgeTenant)
 	}
@@ -51245,6 +51403,9 @@ func (m *SituationMutation) ClearedEdges() []string {
 	}
 	if m.clearedhazard_assessments {
 		edges = append(edges, situation.EdgeHazardAssessments)
+	}
+	if m.clearedincidents {
+		edges = append(edges, situation.EdgeIncidents)
 	}
 	return edges
 }
@@ -51263,6 +51424,8 @@ func (m *SituationMutation) EdgeCleared(name string) bool {
 		return m.clearedinvestigation
 	case situation.EdgeHazardAssessments:
 		return m.clearedhazard_assessments
+	case situation.EdgeIncidents:
+		return m.clearedincidents
 	}
 	return false
 }
@@ -51302,6 +51465,9 @@ func (m *SituationMutation) ResetEdge(name string) error {
 		return nil
 	case situation.EdgeHazardAssessments:
 		m.ResetHazardAssessments()
+		return nil
+	case situation.EdgeIncidents:
+		m.ResetIncidents()
 		return nil
 	}
 	return fmt.Errorf("unknown Situation edge %s", name)

@@ -492,6 +492,8 @@ CREATE INDEX "videoconference_meeting_session_id_status" ON "video_conferences" 
 CREATE TABLE "incident_field_selections" ("incident_id" uuid NOT NULL, "incident_field_option_id" uuid NOT NULL, PRIMARY KEY ("incident_id", "incident_field_option_id"));
 -- create "incident_tag_assignments" table
 CREATE TABLE "incident_tag_assignments" ("incident_id" uuid NOT NULL, "incident_tag_id" uuid NOT NULL, PRIMARY KEY ("incident_id", "incident_tag_id"));
+-- create "incident_situations" table
+CREATE TABLE "incident_situations" ("incident_id" uuid NOT NULL, "situation_id" uuid NOT NULL, PRIMARY KEY ("incident_id", "situation_id"));
 -- create "incident_review_sessions" table
 CREATE TABLE "incident_review_sessions" ("incident_id" uuid NOT NULL, "meeting_session_id" uuid NOT NULL, PRIMARY KEY ("incident_id", "meeting_session_id"));
 -- create "incident_debrief_question_incident_fields" table
@@ -666,6 +668,8 @@ ALTER TABLE "video_conferences" ADD CONSTRAINT "video_conferences_incidents_vide
 ALTER TABLE "incident_field_selections" ADD CONSTRAINT "incident_field_selections_incident_id" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE CASCADE, ADD CONSTRAINT "incident_field_selections_incident_field_option_id" FOREIGN KEY ("incident_field_option_id") REFERENCES "incident_field_options" ("id") ON DELETE CASCADE;
 -- modify "incident_tag_assignments" table
 ALTER TABLE "incident_tag_assignments" ADD CONSTRAINT "incident_tag_assignments_incident_id" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE CASCADE, ADD CONSTRAINT "incident_tag_assignments_incident_tag_id" FOREIGN KEY ("incident_tag_id") REFERENCES "incident_tags" ("id") ON DELETE CASCADE;
+-- modify "incident_situations" table
+ALTER TABLE "incident_situations" ADD CONSTRAINT "incident_situations_incident_id" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE CASCADE, ADD CONSTRAINT "incident_situations_situation_id" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE CASCADE;
 -- modify "incident_review_sessions" table
 ALTER TABLE "incident_review_sessions" ADD CONSTRAINT "incident_review_sessions_incident_id" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE CASCADE, ADD CONSTRAINT "incident_review_sessions_meeting_session_id" FOREIGN KEY ("meeting_session_id") REFERENCES "meeting_sessions" ("id") ON DELETE CASCADE;
 -- modify "incident_debrief_question_incident_fields" table
