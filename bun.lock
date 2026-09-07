@@ -27,6 +27,7 @@
         "@tiptap/pm": "catalog:documents",
         "@tiptap/starter-kit": "catalog:documents",
         "@tiptap/suggestion": "catalog:documents",
+        "crossws": "^0.4.4",
         "paseto-ts": "^2.0.6",
         "pg": "^8.16.0",
         "uuid": "^14.0.1",

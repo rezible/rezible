@@ -2,4 +2,3 @@ name: "rezible"
 
 include:
   - devenv/docker-compose.yaml
-  - packages/apps/docker-compose.yaml

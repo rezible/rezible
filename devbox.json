@@ -3,7 +3,7 @@
   "packages": {
     "bun":                         "latest",
     "just":                        "latest",
-    "process-compose":             "latest",
+    "process-compose":             "1.120.0",
     "github:peterldowns/localias": "",
     "dotenvx":                     "latest",
     "wget":                        "latest",

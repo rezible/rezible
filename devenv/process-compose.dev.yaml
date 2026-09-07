@@ -1,0 +1,17 @@
+version: "0.5"
+
+processes:
+  backend:
+    availability:
+      restart: on_failure
+      max_restarts: 2
+
+  frontend:
+    availability:
+      restart: on_failure
+      max_restarts: 2
+
+  documents-server:
+    availability:
+      restart: on_failure
+      max_restarts: 2

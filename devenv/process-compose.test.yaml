@@ -1,0 +1,35 @@
+version: "0.5"
+
+processes:
+  postgres-test-ready:
+    description: Ensure the shared tmpfs PostgreSQL test server is healthy
+    command: just dev::ensure-infra postgres-test
+
+  backend-tests:
+    description: Run backend tests
+    command: just backend::test-selection
+    depends_on:
+      postgres-test-ready:
+        condition: process_completed_successfully
+
+  frontend-check:
+    description: Type-check the frontend
+    command: just frontend::run check
+
+  documents-tests:
+    description: Run documents server tests
+    command: just documents-server::test
+
+  tests-complete:
+    description: Complete after the entire test suite passes
+    command: "true"
+    availability:
+      exit_on_end: true
+      exit_on_skipped: true
+    depends_on:
+      backend-tests:
+        condition: process_completed_successfully
+      frontend-check:
+        condition: process_completed_successfully
+      documents-tests:
+        condition: process_completed_successfully

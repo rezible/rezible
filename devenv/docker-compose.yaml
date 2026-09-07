@@ -35,6 +35,7 @@ services:
 
   postgres-test:
     <<: *postgres-resources
+    profiles: ["test"]
     image: postgres:17
     restart: unless-stopped
     ports: ["${POSTGRES_TEST_PORT:-7014}:5432"]

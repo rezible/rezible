@@ -47,7 +47,14 @@ func makeServerCli() *cli.Command {
 				Name:  "serve",
 				Usage: "Run rezible server",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return runLifecycleServices[*http.Server](ctx, i)
+					return withConfig(i, func(cfg rez.Config) error {
+						if cfg.HttpServer.Auth.EnableDevSkipMode {
+							if seedErr := seedDevelopmentIdentity(ctx, i); seedErr != nil {
+								return seedErr
+							}
+						}
+						return runLifecycleServices[*http.Server](ctx, i)
+					})
 				},
 			},
 			{

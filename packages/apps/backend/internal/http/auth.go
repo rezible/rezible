@@ -115,8 +115,8 @@ func (v *requestAuthValidator) extractRequestSession(w http.ResponseWriter, r *h
 	return nil, rez.ErrAuthSessionMissing
 }
 
-func (v *requestAuthValidator) setDevSessionOverride(w http.ResponseWriter, r *http.Request) (*ent.UserAuthSession, error) {
-	devSess := &rez.UserAuthProviderSession{
+func NewDevelopmentSessionIdentity() *rez.UserAuthProviderSession {
+	return &rez.UserAuthProviderSession{
 		User: ent.User{
 			Email:          "test@dev.rezible.com",
 			Name:           "Dev User",
@@ -128,8 +128,11 @@ func (v *requestAuthValidator) setDevSessionOverride(w http.ResponseWriter, r *h
 		},
 		ExpiresAt: time.Now().Add(time.Hour),
 	}
+}
+
+func (v *requestAuthValidator) setDevSessionOverride(w http.ResponseWriter, r *http.Request) (*ent.UserAuthSession, error) {
 	slog.Warn("Authenticating with development override")
-	sess, sessErr := v.sessions.CreateFromUserAuthResponse(r.Context(), devSess)
+	sess, sessErr := v.sessions.CreateFromUserAuthResponse(r.Context(), NewDevelopmentSessionIdentity())
 	if sessErr != nil {
 		return nil, sessErr
 	}

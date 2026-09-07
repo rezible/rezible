@@ -168,6 +168,9 @@ func (s *Server) makeRequestLoggerMiddleware(concise bool) func(http.Handler) ht
 
 		// Optionally, filter out some request logs.
 		Skip: func(req *http.Request, respStatus int) bool {
+			if req.URL.Path == "/health" {
+				return true
+			}
 			return respStatus == 404 || respStatus == 405
 		},
 

@@ -1,72 +1,63 @@
+version: "0.5"
+is_strict: true
+ordered_shutdown: true
+
 environment: [".env", ".env.workspace"]
 
 processes:
-  postgres:
-    command: just dev run-service postgres
-    is_daemon: true
-    readiness_probe:
-      exec:
-        command: docker compose exec -it postgres pg_isready
-      period_seconds: 3
+  postgres-ready:
+    description: Ensure the shared development PostgreSQL server is healthy
+    command: just dev::ensure-infra postgres
 
-  postgres-test:
-    command: just dev run-service postgres-test
-    is_daemon: true
-    readiness_probe:
-      exec:
-        command: docker compose exec -T postgres-test pg_isready
-      period_seconds: 3
-
-  dex:
-    command: just dev run-service dex
-    is_daemon: true
-    availability:
-      restart: on_failure
-      max_restarts: 1
-    readiness_probe:
-      exec:
-        command: wget -q --spider "http://localhost:${AUTH_PORT}/.well-known/openid-configuration"
-      period_seconds: 3
+  dex-ready:
+    description: Ensure the shared Dex identity provider is healthy
+    command: just dev::ensure-infra dex
 
   telemetry:
-    command: just dev run-service telemetry
-    is_daemon: true
-    disabled: ${DEV_TELEMETRY_DISABLED:-true}
-    availability:
-      restart: on_failure
-      max_restarts: 1
-    readiness_probe:
-      exec:
-        command: wget -q --spider "http://localhost:${GRAFANA_PORT}/api/health"
-      period_seconds: 5
+    description: Ensure the shared local telemetry stack is healthy
+    command: just dev::ensure-infra telemetry
 
   alertmanager:
-    command: just dev run-service alertmanager
-    is_daemon: true
-    disabled: ${DEV_ALERTMANAGER_DISABLED:-true}
-    availability:
-      restart: on_failure
-      max_restarts: 1
-    readiness_probe:
-      exec:
-        command: wget -q --spider "http://localhost:${ALERTMANAGER_PORT}/-/ready"
-      period_seconds: 5
+    description: Ensure the shared Alertmanager is healthy
+    command: just dev::ensure-infra alertmanager
 
   backend:
-    command: just backend dev
-    availability:
-      restart: always
+    description: Run the backend development server
+    command: just backend::dev
     depends_on:
-      postgres:
-        condition: process_healthy
+      postgres-ready:
+        condition: process_completed_successfully
+      dex-ready:
+        condition: process_completed_successfully
+    readiness_probe:
+      exec:
+        command: wget -q -O /dev/null "http://localhost:${BACKEND_PORT}/health"
+      period_seconds: 1
+      timeout_seconds: 2
+      failure_threshold: 30
 
   frontend:
-    command: just frontend dev
-    availability:
-      restart: always
+    description: Run the frontend development server
+    command: just frontend::dev
+    depends_on:
+      backend:
+        condition: process_healthy
+    readiness_probe:
+      exec:
+        command: wget -q -O /dev/null "http://localhost:${APP_PORT}/"
+      period_seconds: 1
+      timeout_seconds: 2
+      failure_threshold: 30
 
   documents-server:
-    command: just documents-server dev
-    availability:
-      restart: on_failure
-      max_restarts: 1
+    description: Run the collaborative documents development server
+    command: just documents-server::dev
+    depends_on:
+      postgres-ready:
+        condition: process_completed_successfully
+    readiness_probe:
+      exec:
+        command: wget -q -O /dev/null "http://localhost:7002/health"
+      period_seconds: 1
+      timeout_seconds: 2
+      failure_threshold: 30

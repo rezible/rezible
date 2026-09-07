@@ -6,7 +6,7 @@
     ]
   },
   "scripts": {
-    "test-backend": { "command": "just backend::test" },
-    "codegen": { "command":  "just backend::codegen packages::generate-api-client" }
+    "test-backend": { "command": "just test backend" },
+    "codegen": { "command": "just codegen" }
   }
 }

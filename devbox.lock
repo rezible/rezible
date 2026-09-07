@@ -227,51 +227,41 @@
         }
       }
     },
-    "process-compose@latest": {
-      "last_modified": "2026-05-03T08:31:49Z",
-      "resolved": "github:NixOS/nixpkgs/90c100cb48d61a0316b9479bb03f1be36d34b92a#process-compose",
+    "process-compose@1.120.0": {
+      "last_modified": "2026-08-27T07:16:00Z",
+      "resolved": "github:NixOS/nixpkgs/c27cdad491a991b11ed731760aa2ef8db0cb0410#process-compose",
       "source": "devbox-search",
-      "version": "1.110.0",
+      "version": "1.120.0",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/gfjj3wamba8yy8g43mj12f41z75jn3y7-process-compose-1.110.0",
+              "path": "/nix/store/lm69y4badkbglz1brkq9ayx0494hhz4i-process-compose-1.120.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/gfjj3wamba8yy8g43mj12f41z75jn3y7-process-compose-1.110.0"
+          "store_path": "/nix/store/lm69y4badkbglz1brkq9ayx0494hhz4i-process-compose-1.120.0"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/kmvmb0skkv86f0b82522z85zfzviv7f6-process-compose-1.110.0",
+              "path": "/nix/store/pmxvh6a9apvm3l316y48macxzp5h1f3n-process-compose-1.120.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/kmvmb0skkv86f0b82522z85zfzviv7f6-process-compose-1.110.0"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/958nwgb4z5ywbb3q2y8g6p60f52ps5c5-process-compose-1.110.0",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/958nwgb4z5ywbb3q2y8g6p60f52ps5c5-process-compose-1.110.0"
+          "store_path": "/nix/store/pmxvh6a9apvm3l316y48macxzp5h1f3n-process-compose-1.120.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/wn7gkgzq7ri40f4yfbm0sw4f1p4q90jd-process-compose-1.110.0",
+              "path": "/nix/store/1p3zcm9yznzk20l9v1kskgs9f3wfqvmn-process-compose-1.120.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/wn7gkgzq7ri40f4yfbm0sw4f1p4q90jd-process-compose-1.110.0"
+          "store_path": "/nix/store/1p3zcm9yznzk20l9v1kskgs9f3wfqvmn-process-compose-1.120.0"
         }
       }
     },

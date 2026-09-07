@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,7 +11,6 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/user"
-	uas "github.com/rezible/rezible/ent/userauthsession"
 	"github.com/rezible/rezible/pkg/execution"
 )
 
@@ -50,16 +48,6 @@ func (s *AuthSessionService) CreateFromUserAuthResponse(ctx context.Context, ps 
 			if roleErr := createAdminRole.Exec(ctx); roleErr != nil {
 				return fmt.Errorf("create admin role: %w", roleErr)
 			}
-		}
-
-		deleteExisting := tx.UserAuthSession.Delete().
-			Where(uas.And(uas.OrganizationID(org.ID), uas.UserID(usr.ID)))
-		numDeleted, delErr := deleteExisting.Exec(ctx)
-		if delErr != nil {
-			return fmt.Errorf("delete existing session: %w", delErr)
-		}
-		if numDeleted > 0 {
-			slog.Debug("deleted existing sessions", "count", numDeleted)
 		}
 
 		create := tx.UserAuthSession.Create().

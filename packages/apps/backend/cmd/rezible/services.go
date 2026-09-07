@@ -8,7 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/organizationrole"
+	"github.com/rezible/rezible/internal/http"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/samber/do/v2"
 	"golang.org/x/sync/errgroup"
@@ -47,6 +52,66 @@ func runLifecycleServices[Entrypoint rez.LifecycleService](ctx context.Context, 
 	}
 
 	return lifecycles.run(ctx)
+}
+
+func seedDevelopmentIdentity(ctx context.Context, i do.Injector) error {
+	sessions := do.MustInvoke[rez.AuthSessionService](i)
+	orgs := do.MustInvoke[rez.OrganizationService](i)
+
+	devIdentity := http.NewDevelopmentSessionIdentity()
+
+	sess, sessionErr := sessions.CreateFromUserAuthResponse(ctx, devIdentity)
+	if sessionErr != nil {
+		return fmt.Errorf("seed development identity: %w", sessionErr)
+	}
+	ctx = execution.NewTenantContext(ctx, sess.TenantID)
+
+	org, orgErr := orgs.Get(ctx, organization.ID(sess.OrganizationID))
+	if orgErr != nil {
+		return fmt.Errorf("load development organization: %w", orgErr)
+	}
+
+	client := do.MustInvoke[rez.Database](i).Client(ctx)
+
+	queryOrgRole := client.OrganizationRole.Query().
+		Where(organizationrole.OrganizationID(org.ID), organizationrole.UserID(sess.UserID))
+	role, queryRoleErr := queryOrgRole.Only(ctx)
+	if queryRoleErr != nil && !ent.IsNotFound(queryRoleErr) {
+		return fmt.Errorf("load development admin role: %w", queryRoleErr)
+	}
+
+	var roleErr error
+	if role == nil {
+		createRole := client.OrganizationRole.Create().
+			SetOrganizationID(org.ID).
+			SetUserID(sess.UserID).
+			SetRole(organizationrole.RoleAdmin)
+		roleErr = createRole.Exec(ctx)
+	} else if role.Role != organizationrole.RoleAdmin {
+		updateRole := role.Update().
+			SetRole(organizationrole.RoleAdmin)
+		roleErr = updateRole.Exec(ctx)
+	}
+	if roleErr != nil {
+		return fmt.Errorf("set development admin role: %w", roleErr)
+	}
+
+	var prefsErr error
+	if org.Edges.Preferences == nil {
+		prefsErr = client.OrganizationPreferences.Create().
+			SetOrganizationID(org.ID).
+			SetInitialSetupAt(time.Now().UTC()).
+			Exec(ctx)
+	} else if org.Edges.Preferences.InitialSetupAt.IsZero() {
+		prefsErr = org.Edges.Preferences.Update().
+			SetInitialSetupAt(time.Now().UTC()).
+			Exec(ctx)
+	}
+	if prefsErr != nil {
+		return fmt.Errorf("complete development organization setup: %w", prefsErr)
+	}
+
+	return nil
 }
 
 type serviceLifecycles map[string]rez.ServiceLifecycle

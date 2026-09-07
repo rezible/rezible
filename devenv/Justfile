@@ -5,46 +5,57 @@ export dbAdminUser := env("POSTGRES_ADMIN_USER")
 export dbAppUser := env("POSTGRES_APP_USER")
 
 workspace_env_file := join(parent_directory(source_directory()), ".env.workspace")
-postgresContainerId := `docker compose ps -q postgres`
-
-branchId := replace_regex(`git branch --show-current`, "[^a-z0-9]", "")
-dbName := "rezible-"+branchId
+process_compose_file := source_dir() / "process-compose.yaml"
+process_compose_dev_file := source_dir() / "process-compose.dev.yaml"
+process_compose_test_file := source_dir() / "process-compose.test.yaml"
+process_compose_inspect_file := source_dir() / "process-compose.inspect.yaml"
+infra_lock_file := "/tmp/rezible-infra.lock"
 
 [doc("Install dependencies & start services")]
 [working-directory("..")]
 @setup:
     just backend::install
     bun install
-    just dev::setup-workspace --force
+    just dev::setup-workspace
 
 [default]
 [doc("Run all services & dependencies using process-compose")]
 [working-directory("..")]
-@start:
-    process-compose -f {{source_dir() / "process-compose.yaml"}}
+start target="all":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    pc=(process-compose --no-server -f "{{ process_compose_file }}" -f "{{ process_compose_dev_file }}" up)
+    case "{{ target }}" in
+      all)       "${pc[@]}" frontend documents-server ;;
+      backend)   "${pc[@]}" backend ;;
+      frontend)  "${pc[@]}" frontend ;;
+      documents) "${pc[@]}" documents-server ;;
+      telemetry) "${pc[@]}" frontend documents-server telemetry ;;
+      *) echo "unknown development target: {{ target }}" >&2; exit 2 ;;
+    esac
 
 workspace_already_setup := path_exists(workspace_env_file)
 error_workspace_already_setup := "workspace already set up - run with --force to override"
 
-[doc("Setup development environment")]
 [arg("force", long="force", value="true")]
 [arg("no-migrate", long="no-migrate", value="false")]
+[doc("Setup development environment")]
 @setup-workspace force="false" no-migrate="false":
-    if [[ "{{workspace_already_setup}}" == "true" ]]; then \
-      if [[ "{{force}}" == "false" ]]; then \
-        echo "{{error_workspace_already_setup}}"; \
+    if [[ "{{ workspace_already_setup }}" == "true" ]]; then \
+      if [[ "{{ force }}" == "false" ]]; then \
+        echo "{{ error_workspace_already_setup }}"; \
         exit 1; \
       fi; \
-      rm "{{workspace_env_file}}"; \
-      docker compose down --remove-orphans -v postgres; \
     fi
     just _write-workspace-env
-    docker compose up --wait && sleep 1
+    just ensure-infra postgres
+    if [[ "{{ force }}" == "true" ]]; then just drop-workspace-db; fi
     just setup-workspace-db
-    if [[ "{{no-migrate}}" == "false" ]]; then \
+    if [[ "{{ no-migrate }}" == "false" ]]; then \
       just migrate-workspace-db; \
     fi
     just set-domains
+    just ensure-localias
 
 [working-directory("..")]
 @migrate-workspace-db:
@@ -54,72 +65,139 @@ error_workspace_already_setup := "workspace already set up - run with --force to
 
 _write-workspace-env:
     #!/usr/bin/env bun
-    await Bun.write("{{workspace_env_file}}", [
-      "WORKSPACE_ID={{branchId}}",
-      "POSTGRES_APP_DB={{dbName}}",
+    const run = (args: string[]) => {
+      const result = Bun.spawnSync(args);
+      if (result.exitCode !== 0) throw new Error(result.stderr.toString());
+      return result.stdout.toString().trim();
+    };
+    const branch = run(["git", "branch", "--show-current"]);
+    const identity = branch || run(["git", "rev-parse", "HEAD"]);
+    const slug = identity.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 36) || "detached";
+    const hash = new Bun.CryptoHasher("sha256").update(identity).digest("hex").slice(0, 8);
+    const workspaceId = `${slug}-${hash}`;
+    await Bun.write("{{ workspace_env_file }}", [
+      `WORKSPACE_ID=${workspaceId}`,
+      `POSTGRES_APP_DB=rezible-${workspaceId}`,
     ].join("\n"))
+
+drop-workspace-db:
+    #!/usr/bin/env bun
+    import { SQL } from "bun";
+    const database = process.env.POSTGRES_APP_DB!;
+    const adminUser = process.env.POSTGRES_ADMIN_USER!;
+    const port = process.env.POSTGRES_PORT!;
+    const pg = new SQL(`postgres://${adminUser}:${adminUser}@localhost:${port}/postgres`);
+    await pg.unsafe(`DROP DATABASE IF EXISTS "${database}" WITH (FORCE)`);
+    await pg.close();
 
 test-db:
     #!/usr/bin/env bun
     import { SQL } from "bun";
-    (async () => {
-        const adminConn = `postgres://{{dbAdminUser}}:{{dbAdminUser}}@localhost:{{dbPort}}`;
-        const adminPg = new SQL(adminConn);
-        console.log(`query: (${adminConn})`, await adminPg.unsafe(`SELECT 1`));
-    })()
+    const adminConn = `postgres://{{ dbAdminUser }}:{{ dbAdminUser }}@localhost:{{ dbPort }}`;
+    const adminPg = new SQL(adminConn);
+    console.log(`query: (${adminConn})`, await adminPg.unsafe(`SELECT 1`));
 
 setup-workspace-db:
     #!/usr/bin/env bun
     import { SQL } from "bun";
-    (async () => {
-        const adminConn = `postgres://{{dbAdminUser}}:{{dbAdminUser}}@localhost:{{dbPort}}`;
-        const adminPg = new SQL(adminConn);
+    const adminConn = `postgres://{{ dbAdminUser }}:{{ dbAdminUser }}@localhost:{{ dbPort }}`;
+    const adminPg = new SQL(adminConn);
+    try {
+        await adminPg.unsafe(`CREATE USER {{ dbAppUser }} WITH PASSWORD '{{ dbAppUser }}';`);
+    } catch (e) {}
+    try {
+        await adminPg.unsafe(`CREATE DATABASE "${process.env.POSTGRES_APP_DB}"`);
+        console.log(`created database ${process.env.POSTGRES_APP_DB}`);
+    } catch (e) {}
+    const statements = [
+        `GRANT CONNECT ON DATABASE "${process.env.POSTGRES_APP_DB}" TO {{ dbAppUser }}`,
+        `CREATE SCHEMA IF NOT EXISTS river`,
+        `CREATE SCHEMA IF NOT EXISTS rezible`,
+        `GRANT USAGE ON SCHEMA rezible TO {{ dbAppUser }}`,
+        `GRANT USAGE ON SCHEMA river TO {{ dbAppUser }}`,
+        `ALTER DEFAULT PRIVILEGES IN SCHEMA rezible GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {{ dbAppUser }}`,
+        `ALTER DEFAULT PRIVILEGES IN SCHEMA rezible GRANT USAGE, SELECT ON SEQUENCES TO {{ dbAppUser }}`,
+        `ALTER DEFAULT PRIVILEGES IN SCHEMA river GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {{ dbAppUser }}`,
+        `ALTER DEFAULT PRIVILEGES IN SCHEMA river GRANT USAGE, SELECT ON SEQUENCES TO {{ dbAppUser }}`,
+        `ALTER ROLE {{ dbAppUser }} SET search_path TO rezible, river`,
+    ];
+    const userPg = new SQL(`${adminConn}/${process.env.POSTGRES_APP_DB}`);
+    for (const s of statements) {
         try {
-            await adminPg.unsafe(`CREATE USER {{dbAppUser}} WITH PASSWORD '{{dbAppUser}}';`);
-        } catch (e) {}
-        try {
-            await adminPg.unsafe(`CREATE DATABASE "{{dbName}}"`);
-            console.log("created database {{dbName}}");
-        } catch (e) {return}
-        const statements = [
-            `GRANT CONNECT ON DATABASE "{{dbName}}" TO {{dbAppUser}}`,
-            `CREATE SCHEMA IF NOT EXISTS river`,
-            `CREATE SCHEMA IF NOT EXISTS rezible`,
-            `GRANT USAGE ON SCHEMA rezible TO {{dbAppUser}}`,
-            `GRANT USAGE ON SCHEMA river TO {{dbAppUser}}`,
-            `ALTER DEFAULT PRIVILEGES IN SCHEMA rezible GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {{dbAppUser}}`,
-            `ALTER DEFAULT PRIVILEGES IN SCHEMA rezible GRANT USAGE, SELECT ON SEQUENCES TO {{dbAppUser}}`,
-            `ALTER DEFAULT PRIVILEGES IN SCHEMA river GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {{dbAppUser}}`,
-            `ALTER DEFAULT PRIVILEGES IN SCHEMA river GRANT USAGE, SELECT ON SEQUENCES TO {{dbAppUser}}`,
-            `ALTER ROLE {{dbAppUser}} SET search_path TO rezible, river`,
-        ];
-        const userPg = new SQL(`${adminConn}/{{dbName}}`);
-        for (const s of statements) {
-            try {
-                await userPg.unsafe(`${s};`);
-            } catch (e) {
-                console.error(`setting up user/db:\n "${s}"\n\t`, e.message);
-            }
+            await userPg.unsafe(`${s};`);
+        } catch (e) {
+            console.error(`setting up user/db:\n "${s}"\n\t`, e.message);
         }
-    })()
+    }
+    await userPg.close();
+    await adminPg.close();
 
-[doc("Run a docker compose service & follow the logs")]
-@run-service SERVICE:
-    docker compose up {{SERVICE}} --wait && docker compose logs --follow {{SERVICE}}
+[doc("Ensure a shared infrastructure service is running and healthy")]
+[working-directory("..")]
+@ensure-infra SERVICE:
+    flock "{{ infra_lock_file }}" docker compose up -d --wait {{ SERVICE }}
 
-@restart-service SERVICE:
-    docker compose restart {{SERVICE}}
+[doc("Stop shared infrastructure; may disrupt other worktrees")]
+[working-directory("..")]
+@infra-stop *SERVICES:
+    if [[ "{{ SERVICES }}" == "" ]]; then echo "name the shared services to stop" >&2; exit 2; fi
+    flock "{{ infra_lock_file }}" docker compose stop {{ SERVICES }}
 
-@stop-service SERVICE:
-    docker compose down {{SERVICE}}
+[doc("Run the repository test suite or one test target")]
+[working-directory("..")]
+test target="all" *ARGS:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    pc=(process-compose --no-server -f "{{ process_compose_file }}" -f "{{ process_compose_test_file }}")
+    case "{{ target }}" in
+      all)       "${pc[@]}" up tests-complete -t=false ;;
+      backend)   "${pc[@]}" run backend-tests -- {{ ARGS }} ;;
+      frontend)  "${pc[@]}" run frontend-check ;;
+      documents) "${pc[@]}" run documents-tests ;;
+      *) echo "unknown test target: {{ target }}" >&2; exit 2 ;;
+    esac
 
-@start-services:
-    docker compose up --wait
-
-_app_domain := trim_start_match(env("APP_URL"), "https://")
-_api_domain := trim_start_match(env("API_URL"), "https://")
-_auth_domain := trim_start_match(env("AUTH_URL"), "https://")
 @set-domains:
-    localias set {{_app_domain}} ${APP_PORT}
-    localias set {{_api_domain}} ${BACKEND_PORT}
-    localias set {{_auth_domain}} ${AUTH_PORT}
+    localias set {{ trim_start_match(env("APP_URL"), "https://") }} ${APP_PORT}
+    localias set {{ trim_start_match(env("API_URL"), "https://") }} ${BACKEND_PORT}
+    localias set {{ trim_start_match(env("AUTH_URL"), "https://") }} ${AUTH_PORT}
+
+@ensure-localias:
+    if ! localias status | grep -q 'daemon running'; then localias start; fi
+
+@assert-app-ports-free:
+    #!/usr/bin/env bun
+    for (const port of [Number(process.env.APP_PORT), Number(process.env.BACKEND_PORT), 7002]) {
+      try {
+        const listener = Bun.listen({ hostname: "127.0.0.1", port, socket: { data() {} } });
+        listener.stop(true);
+      } catch {
+        console.error(`application port ${port} is already in use`);
+        process.exit(1);
+      }
+    }
+
+[arg("height", long="height")]
+[arg("output", long="output")]
+[arg("script", long="script")]
+[arg("wait_for", long="wait-for")]
+[arg("width", long="width")]
+[doc("Start a temporary application stack and capture the frontend")]
+[working-directory("..")]
+@inspect route script="" wait_for="main" width="1440" height="900" output="":
+    mkdir -p packages/apps/frontend/.artifacts/ui
+    INSPECT_ROUTE={{ quote(route) }} \
+      INSPECT_SCRIPT={{ quote(script) }} \
+      INSPECT_WAIT_FOR={{ quote(wait_for) }} \
+      INSPECT_WIDTH={{ quote(width) }} \
+      INSPECT_HEIGHT={{ quote(height) }} \
+      INSPECT_OUTPUT={{ quote(output) }} \
+      process-compose \
+        --no-server \
+        -L packages/apps/frontend/.artifacts/ui/services.log \
+        --log-no-color \
+        --logs-truncate \
+        -f "{{ process_compose_file }}" \
+        -f "{{ process_compose_inspect_file }}" \
+          up capture \
+            -t=false

@@ -9,3 +9,4 @@ devenv/*.crt
 **/AGENTS.md
 **/.codex
 .genkit/
+packages/apps/frontend/.artifacts/

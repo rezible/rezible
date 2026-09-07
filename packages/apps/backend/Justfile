@@ -9,7 +9,6 @@ export DOCUMENTS__PROXY__ENABLED := "false"
 
 export HTTP__PORT := env("BACKEND_PORT")
 export HTTP__BASE_PATH := ""
-export HTTP__AUTH__ENABLE_DEV_SKIP_MODE := env("SKIP_AUTH", "false")
 export HTTP__AUTH__SESSION_SECRET := "superduuuuuuuuuuuuuuuuupersecret"
 export HTTP__AUTH__OIDC__ISSUER := env("AUTH_URL")
 export HTTP__AUTH__OIDC__CLIENT_ID := "test-client"
@@ -36,7 +35,7 @@ export OTEL_EXPORTER_OTLP_ENDPOINT := "http://localhost:" + env("OTEL_GRPC_PORT"
 export OTEL_EXPORTER_OTLP_PROTOCOL := "grpc"
 
 _default:
-  @just --list
+    @just --list
 
 install:
     go mod tidy
@@ -44,34 +43,37 @@ install:
 format:
     go fmt ./...
 
-@dev:
-    go tool reflex --decoration=none -r '\.go' -s -- sh -c 'go run ./cmd/rezible serve'
+@dev *ARGS:
+    go tool reflex --decoration=none -r '\.go' -s -- sh -c 'go run ./cmd/rezible serve {{ ARGS }}'
 
 @run *ARGS:
-    go run ./cmd/rezible {{ARGS}}
+    go run ./cmd/rezible {{ ARGS }}
 
 @test *ARGS:
-    POSTGRES_HOST='{{testPostgresHost}}' \
-      POSTGRES_PORT='{{testPostgresPort}}' \
-      POSTGRES_APP_DB='{{testPostgresDatabase}}' \
-      POSTGRES__HOST='{{testPostgresHost}}' \
-      POSTGRES__PORT='{{testPostgresPort}}' \
-      POSTGRES__DATABASE='{{testPostgresDatabase}}' \
-      go test {{ARGS}}
+    POSTGRES_HOST='{{ testPostgresHost }}' \
+      POSTGRES_PORT='{{ testPostgresPort }}' \
+      POSTGRES_APP_DB='{{ testPostgresDatabase }}' \
+      POSTGRES__HOST='{{ testPostgresHost }}' \
+      POSTGRES__PORT='{{ testPostgresPort }}' \
+      POSTGRES__DATABASE='{{ testPostgresDatabase }}' \
+      go test {{ ARGS }}
 
 exclude_test_packages_pattern := "/ent/"
 
 @test-all *ARGS:
-    just test {{ARGS}} $(go list ./... | grep -v '{{exclude_test_packages_pattern}}')
+    just test {{ ARGS }} $(go list ./... | grep -v '{{ exclude_test_packages_pattern }}')
+
+@test-selection *ARGS:
+    if [[ "{{ ARGS }}" == "" ]]; then just test-all; else just test {{ ARGS }}; fi
 
 @test-package PACKAGE *ARGS:
-    just test '{{PACKAGE}}' {{ARGS}}
+    just test '{{ PACKAGE }}' {{ ARGS }}
 
 @test-pattern PATTERN:
-    just test $(go list ./... | grep -v '{{exclude_test_packages_pattern}}') -run {{PATTERN}}
+    just test $(go list ./... | grep -v '{{ exclude_test_packages_pattern }}') -run {{ PATTERN }}
 
 @genkit *ARGS:
-    bunx genkit-cli@1.42.0 --no-update-notification {{ARGS}}
+    bunx genkit-cli@1.42.0 --no-update-notification {{ ARGS }}
 
 [env("GENKIT_ENV", "dev")]
 [env("GENKIT_REFLECTION_V2_SERVER", "true")]
@@ -79,9 +81,9 @@ exclude_test_packages_pattern := "/ent/"
     just genkit start --experimental-reflection-v2 -- go run ./cmd/rezible ai dev
 
 @send-demo-webhook KIND="alert":
-    curl -i -X POST "http://localhost:{{HTTP__PORT}}{{HTTP__BASE_PATH}}/webhooks/demo" \
+    curl -i -X POST "http://localhost:{{ HTTP__PORT }}{{ HTTP__BASE_PATH }}/webhooks/demo" \
       -H "Content-Type: application/json" \
-      -d '{"kind": "{{KIND}}", "foo":"bar"}'
+      -d '{"kind": "{{ KIND }}", "foo":"bar"}'
 
 @codegen:
     go generate ./...
@@ -96,7 +98,7 @@ exclude_test_packages_pattern := "/ent/"
     go generate ./test/mocks
 
 @gen-migration NAME:
-    just run migrations create '{{NAME}}'
+    just run migrations create '{{ NAME }}'
 
 @apply-migrations:
     just run migrations apply
