@@ -265,31 +265,34 @@ func (s *KnowledgeGraphService) SummarizeEntityNeighborhood(ctx context.Context,
 func (s *KnowledgeGraphService) GetView(ctx context.Context, params rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error) {
 	depth := min(maxKnowledgeViewDepth, max(1, params.Depth))
 
-	rootId := params.EntityID
+	view := &rez.KnowledgeGraphView{
+		RootID:        params.EntityID,
+		Entities:      ent.KnowledgeEntities{},
+		Relationships: ent.KnowledgeRelationships{},
+	}
 
-	if rootId == uuid.Nil {
+	if view.RootID == uuid.Nil {
 		// TODO: find entity with the most relationships
 		queryPopular := s.db.Client(ctx).KnowledgeRelationship.Query().
 			Where()
 		rel, relErr := queryPopular.First(ctx)
 		if relErr != nil {
+			if ent.IsNotFound(relErr) {
+				return view, nil
+			}
 			return nil, fmt.Errorf("query popular graph relationship: %w", relErr)
 		}
-		rootId = rel.SourceEntityID
+		view.RootID = rel.SourceEntityID
 	}
 
-	rootEntity, rootErr := s.entityQueryWithEvidence(ctx, rootId).Only(ctx)
+	rootEntity, rootErr := s.entityQueryWithEvidence(ctx, view.RootID).Only(ctx)
 	if rootErr != nil {
 		return nil, fmt.Errorf("query root entity: %w", rootErr)
 	}
+	view.Entities = append(view.Entities, rootEntity)
 
 	entityIDs := mapset.NewSet[uuid.UUID](rootEntity.ID)
-	entities := ent.KnowledgeEntities{rootEntity}
-
 	relationshipIDs := mapset.NewSet[uuid.UUID]()
-	relationships := ent.KnowledgeRelationships{}
-
-	truncated := false
 
 	queryFrontier := func(ids []uuid.UUID) ([]uuid.UUID, error) {
 		queryRels := s.db.Client(ctx).KnowledgeRelationship.Query().
@@ -313,11 +316,11 @@ func (s *KnowledgeGraphService) GetView(ctx context.Context, params rez.GetKnowl
 		nextEntityIDs := mapset.NewSet[uuid.UUID]()
 		for _, rel := range matchedRelationships {
 			if relationshipIDs.Cardinality() >= maxKnowledgeViewRelationships {
-				truncated = true
+				view.Truncated = true
 				break
 			}
 			if relationshipIDs.Add(rel.ID) {
-				relationships = append(relationships, rel)
+				view.Relationships = append(view.Relationships, rel)
 				if !entityIDs.Contains(rel.SourceEntityID) {
 					nextEntityIDs.Add(rel.SourceEntityID)
 				}
@@ -325,7 +328,7 @@ func (s *KnowledgeGraphService) GetView(ctx context.Context, params rez.GetKnowl
 					nextEntityIDs.Add(rel.TargetEntityID)
 				}
 				if entityIDs.Cardinality()+nextEntityIDs.Cardinality() >= maxKnowledgeViewEntities {
-					truncated = true
+					view.Truncated = true
 					break
 				}
 			}
@@ -342,7 +345,7 @@ func (s *KnowledgeGraphService) GetView(ctx context.Context, params rez.GetKnowl
 			}
 			for _, e := range nextEntities {
 				if entityIDs.Add(e.ID) {
-					entities = append(entities, e)
+					view.Entities = append(view.Entities, e)
 				}
 			}
 		}
@@ -350,7 +353,7 @@ func (s *KnowledgeGraphService) GetView(ctx context.Context, params rez.GetKnowl
 		return nextIDs, nil
 	}
 
-	frontierIDs := []uuid.UUID{rootId}
+	frontierIDs := []uuid.UUID{view.RootID}
 	for level := 0; level <= depth && len(frontierIDs) > 0; level++ {
 		nextIDs, queryFrontierErr := queryFrontier(frontierIDs)
 		if queryFrontierErr != nil {
@@ -359,10 +362,5 @@ func (s *KnowledgeGraphService) GetView(ctx context.Context, params rez.GetKnowl
 		frontierIDs = nextIDs
 	}
 
-	return &rez.KnowledgeGraphView{
-		RootID:        rootId,
-		Entities:      entities,
-		Relationships: relationships,
-		Truncated:     truncated,
-	}, nil
+	return view, nil
 }

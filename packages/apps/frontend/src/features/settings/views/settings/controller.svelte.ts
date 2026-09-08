@@ -8,7 +8,6 @@ import { onDestroy } from "svelte";
 import RiPlugLine from "remixicon-svelte/icons/plug-line";
 import RiBuilding2Line from "remixicon-svelte/icons/building-2-line";
 import RiUserSettingsLine from "remixicon-svelte/icons/user-settings-line";
-import RiFireLine from "remixicon-svelte/icons/fire-line";
 import RiRobot2Line from "remixicon-svelte/icons/robot-2-line";
 import RiTeamLine from "remixicon-svelte/icons/team-line";
 
@@ -30,10 +29,6 @@ const makeSettingsSidebar = (isAdmin: boolean): AppSidebarModel => ({
 			items: [{ label: "User", href: "/settings/user", icon: RiUserSettingsLine }],
 		},
 		...(isAdmin ? sidebarAdminGroups : []),
-		{
-			label: "Operations",
-			items: [{ label: "Incidents", href: "/settings/incidents", icon: RiFireLine }],
-		},
 		{
 			label: "App",
 			items: [

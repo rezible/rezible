@@ -24,6 +24,22 @@ export type AddIncidentDebriefUserMessageResponseBody = {
     data: IncidentDebriefMessage;
 };
 
+export type AddSituationHazardAssessmentRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: AttributesStruct;
+};
+
+export type AddSituationHazardAssessmentResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SituationHazardAssessment;
+};
+
 export type AddSystemAnalysisEdgeAttributes = {
     descriptionOverride?: string;
     hidden?: boolean;
@@ -258,6 +274,12 @@ export type AlertMetrics = {
     interrupts: number;
     nightInterrupts: number;
     triggers: number;
+};
+
+export type AttributesStruct = {
+    status: 'suspected' | 'confirmed' | 'disproven';
+    summary: string;
+    systemHazardId: string;
 };
 
 export type CollectionResponseBodyAiAgentConfig = {
@@ -1247,6 +1269,14 @@ export type GetRetrospectiveResponseBody = {
     data: Retrospective;
 };
 
+export type GetSituationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Situation;
+};
+
 export type GetSystemAnalysisResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1995,6 +2025,24 @@ export type PaginatedResponseBodyRetrospectiveComment = {
     pagination: Pagination;
 };
 
+export type PaginatedResponseBodySituation = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Situation>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodySituationHazardAssessment = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<SituationHazardAssessment>;
+    pagination: Pagination;
+};
+
 export type PaginatedResponseBodySystemAnalysisEdge = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2209,6 +2257,80 @@ export type SendOncallShiftHandoverResponseBody = {
      */
     readonly $schema?: string;
     data: OncallShiftHandover;
+};
+
+export type Situation = {
+    attributes: SituationAttributes;
+    id: string;
+};
+
+export type SituationAlertEpisode = {
+    attributes: SituationAlertEpisodeAttrs;
+    id: string;
+};
+
+export type SituationAlertEpisodeAlert = {
+    id: string;
+    title: string;
+};
+
+export type SituationAlertEpisodeAttrs = {
+    alertDefinition?: SituationAlertEpisodeAlert;
+    closedAt?: string;
+    lastObservedAt: string;
+    startedAt: string;
+    status: 'open' | 'closed';
+};
+
+export type SituationAttributes = {
+    alertEpisodes: Array<SituationAlertEpisode>;
+    closeReason?: 'stabilized' | 'dismissed';
+    closedAt?: string;
+    evidenceRevision: number;
+    investigation?: SituationInvestigation;
+    knowledgeEntityId: string;
+    openedAt: string;
+    status: 'open' | 'closed';
+    summary: string;
+    title: string;
+    updatedAt: string;
+};
+
+export type SituationHazardAssessment = {
+    attributes: SituationHazardAssessmentAttrs;
+    id: string;
+};
+
+export type SituationHazardAssessmentAttrs = {
+    agentTurnId?: string;
+    assessedAt: string;
+    revision: number;
+    status: 'suspected' | 'confirmed' | 'disproven';
+    summary: string;
+    systemHazardId: string;
+    userId?: string;
+};
+
+export type SituationInvestigation = {
+    attributes: SituationInvestigationAttrs;
+    id: string;
+};
+
+export type SituationInvestigationAttrs = {
+    completedRevision: number;
+    evidenceRevision: number;
+    report?: SituationInvestigationReport;
+    requestedRevision: number;
+    updatedAt: string;
+};
+
+export type SituationInvestigationReport = {
+    bestNextStep?: string;
+    likelyCause?: string;
+    limitations?: Array<string>;
+    recommendedActions?: Array<string>;
+    suggestedChecks?: Array<string>;
+    text: string;
 };
 
 export type StartIntegrationOAuthFlowResponseBody = {
@@ -9411,6 +9533,201 @@ export type CreateRetrospectiveReviewResponses = {
 };
 
 export type CreateRetrospectiveReviewResponse = CreateRetrospectiveReviewResponses[keyof CreateRetrospectiveReviewResponses];
+
+export type ListSituationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        pageSize?: number;
+        search?: string;
+        status?: 'open' | 'closed';
+        openedAfter?: string;
+    };
+    url: '/situations';
+};
+
+export type ListSituationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListSituationsError = ListSituationsErrors[keyof ListSituationsErrors];
+
+export type ListSituationsResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodySituation;
+};
+
+export type ListSituationsResponse = ListSituationsResponses[keyof ListSituationsResponses];
+
+export type GetSituationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}';
+};
+
+export type GetSituationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSituationError = GetSituationErrors[keyof GetSituationErrors];
+
+export type GetSituationResponses = {
+    /**
+     * OK
+     */
+    200: GetSituationResponseBody;
+};
+
+export type GetSituationResponse = GetSituationResponses[keyof GetSituationResponses];
+
+export type ListSituationHazardAssessmentsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        page?: number;
+        pageSize?: number;
+    };
+    url: '/situations/{id}/hazard_assessments';
+};
+
+export type ListSituationHazardAssessmentsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListSituationHazardAssessmentsError = ListSituationHazardAssessmentsErrors[keyof ListSituationHazardAssessmentsErrors];
+
+export type ListSituationHazardAssessmentsResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodySituationHazardAssessment;
+};
+
+export type ListSituationHazardAssessmentsResponse = ListSituationHazardAssessmentsResponses[keyof ListSituationHazardAssessmentsResponses];
+
+export type AddSituationHazardAssessmentData = {
+    body: AddSituationHazardAssessmentRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}/hazard_assessments';
+};
+
+export type AddSituationHazardAssessmentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type AddSituationHazardAssessmentError = AddSituationHazardAssessmentErrors[keyof AddSituationHazardAssessmentErrors];
+
+export type AddSituationHazardAssessmentResponses = {
+    /**
+     * OK
+     */
+    200: AddSituationHazardAssessmentResponseBody;
+};
+
+export type AddSituationHazardAssessmentResponse = AddSituationHazardAssessmentResponses[keyof AddSituationHazardAssessmentResponses];
 
 export type GetSystemAnalysisData = {
     body?: never;

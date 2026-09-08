@@ -26,6 +26,7 @@ type Handler struct {
 	*retrospectivesHandler
 	*systemAnalysisHandler
 	*knowledgeGraphHandler
+	*situationsHandler
 	*teamsHandler
 	*usersHandler
 }
@@ -52,6 +53,7 @@ func NewHandler(
 	retros rez.RetrospectiveService,
 	systemAnalysis rez.SystemAnalysisService,
 	knowledge rez.KnowledgeGraphService,
+	situations rez.SituationService,
 ) (*Handler, error) {
 	h := &Handler{
 		alertsHandler:             newAlertsHandler(alerts),
@@ -74,6 +76,7 @@ func NewHandler(
 		retrospectivesHandler:     newRetrospectivesHandler(users, incidents, retros, documents),
 		systemAnalysisHandler:     newSystemAnalysisHandler(systemAnalysis),
 		knowledgeGraphHandler:     newKnowledgeGraphHandler(knowledge),
+		situationsHandler:         newSituationsHandler(situations, users),
 		teamsHandler:              newTeamsHandler(db),
 		usersHandler:              newUsersHandler(users),
 	}

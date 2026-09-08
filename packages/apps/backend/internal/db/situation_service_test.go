@@ -107,6 +107,43 @@ func (s *SituationServiceSuite) TestCreateSituationCreatesKnowledgeEntityInSameT
 	s.NoError(edgeErr)
 }
 
+func (s *SituationServiceSuite) TestListSituationsFiltersByStatusAndSearch() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	h := s.newHarness(tdb)
+	openSituation := s.createSituation(ctx, h, "Checkout degradation")
+	closedSituation := s.createSituation(ctx, h, "Payment provider outage")
+	_, closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
+		SituationID: closedSituation.ID,
+		Reason:      situation.CloseReasonStabilized,
+	})
+	s.Require().NoError(closeErr)
+
+	openList, openListErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{
+		Status: situation.StatusOpen,
+	})
+	s.Require().NoError(openListErr)
+	openIds := make([]uuid.UUID, len(openList.Data))
+	for i, sit := range openList.Data {
+		openIds[i] = sit.ID
+	}
+	s.ElementsMatch([]uuid.UUID{openSituation.ID}, openIds)
+
+	closedList, closedListErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{
+		Status: situation.StatusClosed,
+	})
+	s.Require().NoError(closedListErr)
+	s.Len(closedList.Data, 1)
+	s.Equal(closedSituation.ID, closedList.Data[0].ID)
+
+	searchList, searchErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{
+		Search: "checkout",
+	})
+	s.Require().NoError(searchErr)
+	s.Len(searchList.Data, 1)
+	s.Equal(openSituation.ID, searchList.Data[0].ID)
+}
+
 func (s *SituationServiceSuite) TestSituationCloseIsIdempotentAndNeverReopens() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()

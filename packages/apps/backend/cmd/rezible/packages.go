@@ -392,7 +392,7 @@ var provideDatabaseServices = do.Package(
 		return db.NewCloseInactiveAlertEpisodesWorker(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.SituationService](i),
-		), nil
+		)
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.PlaybookService, error) {
@@ -460,6 +460,7 @@ var provideHttpServer = do.Package(
 			do.MustInvoke[rez.RetrospectiveService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphService](i),
+			do.MustInvoke[rez.SituationService](i),
 		)
 	}),
 

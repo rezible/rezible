@@ -223,7 +223,7 @@ func NewReconcileSituationInvestigationWorker(db rez.Database, s rez.SituationSe
 }
 
 type ReconcileSituationInvestigationWorker struct {
-	jobs.Worker[jobs.ReconcileSituationInvestigation]
+	jobs.WorkerDefaults[jobs.ReconcileSituationInvestigation]
 	db         rez.Database
 	situations rez.SituationService
 	agents     rez.AgentSessionService

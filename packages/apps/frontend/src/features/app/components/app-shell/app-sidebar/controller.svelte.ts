@@ -9,23 +9,16 @@ import {
 	type AppSidebarModel,
 } from "$lib/app-shell.svelte";
 
-import RiHome2Line from "remixicon-svelte/icons/home-2-line";
-import RiShieldUserLine from "remixicon-svelte/icons/shield-user-line";
 import RiRadarLine from "remixicon-svelte/icons/radar-line";
+import RiPulseLine from "remixicon-svelte/icons/pulse-line";
 import RiConnectorLine from "remixicon-svelte/icons/connector-line";
-import RiFireLine from "remixicon-svelte/icons/fire-line";
-import RiAlarmWarningLine from "remixicon-svelte/icons/alarm-warning-line";
-import RiUserLine from "remixicon-svelte/icons/user-line";
-import RiTeamLine from "remixicon-svelte/icons/team-line";
-import RiSettings3Line from "remixicon-svelte/icons/settings-3-line";
-import RiRobot2Line from "remixicon-svelte/icons/robot-2-line";
 
 const isActive = (href: string, pathname: string) => {
 	if (href === "/" || pathname === "/") return pathname === href;
 	return pathname === href || pathname.startsWith(`${href}/`);
 };
 
-const makeActiveStatus = (pathname: string, groups: AppSidebarGroup[], footerItems?: AppSidebarItem[]) => {
+const makeActiveStatus = (pathname: string, groups: AppSidebarGroup[]) => {
 	let deepestActiveItem = "";
 	let activeSubItems = new Map<string, Set<string>>();
 
@@ -40,10 +33,7 @@ const makeActiveStatus = (pathname: string, groups: AppSidebarGroup[], footerIte
 		activeSubItems.set(item.href, subActive);
 	};
 
-	groups.forEach((group) => {
-		group.items.forEach(checkItemActive);
-	});
-	footerItems?.forEach(checkItemActive);
+	groups.forEach(g => g.items.forEach(checkItemActive));
 
 	return { deepestActiveItem, activeSubItems };
 };
@@ -68,32 +58,14 @@ const filterGroups = (groups: AppSidebarGroup[] | undefined, query?: string) => 
 const defaultSidebarModel: AppSidebarModel = {
 	groups: [
 		{
-			items: [{ label: "Home", href: "/", icon: RiHome2Line }],
-		},
-		{
-			label: "Operations",
+			label: "General",
 			items: [
-				{ label: "Incidents", href: "/incidents", icon: RiFireLine },
-				{ label: "Oncall", href: "/oncall", icon: RiShieldUserLine },
-			],
-		},
-		{
-			label: "System",
-			items: [
-				{ label: "Explore", href: "/explore", icon: RiConnectorLine },
-				{ label: "Events", href: "/events", icon: RiRadarLine },
-				{ label: "Agent Sessions", href: "/ai/sessions", icon: RiRobot2Line },
-			],
-		},
-		{
-			label: "People",
-			items: [
-				{ label: "Users", href: "/users", icon: RiUserLine },
-				{ label: "Teams", href: "/teams", icon: RiTeamLine },
+				{ label: "Dashboard", href: "/", icon: RiRadarLine },
+				{ label: "Signals", href: "/signals", icon: RiPulseLine },
+				{ label: "System Map", href: "/map", icon: RiConnectorLine },
 			],
 		},
 	],
-	footerItems: [{ label: "Settings", href: "/settings", icon: RiSettings3Line }],
 };
 
 class AppSidebarController {
@@ -120,7 +92,7 @@ class AppSidebarController {
 		this.showSearch ? filterGroups(this.model.groups, this.normalizedQuery) : this.model.groups
 	);
 
-	activeStatus = $derived(makeActiveStatus(page.url.pathname, this.groups, this.model.footerItems));
+	activeStatus = $derived(makeActiveStatus(page.url.pathname, this.groups));
 }
 
 const ctx = new Context<AppSidebarController>("AppSidebarController");

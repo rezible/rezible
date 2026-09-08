@@ -38,6 +38,36 @@ components:
       required:
         - data
       type: object
+    AddSituationHazardAssessmentRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/AddSituationHazardAssessmentRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/AttributesStruct"
+      required:
+        - attributes
+      type: object
+    AddSituationHazardAssessmentResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/AddSituationHazardAssessmentResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SituationHazardAssessment"
+      required:
+        - data
+      type: object
     AddSystemAnalysisEdgeAttributes:
       additionalProperties: false
       properties:
@@ -579,6 +609,24 @@ components:
         - accurateUnknown
         - docsAvailable
         - docsNeedsUpdate
+      type: object
+    AttributesStruct:
+      additionalProperties: false
+      properties:
+        status:
+          enum:
+            - suspected
+            - confirmed
+            - disproven
+          type: string
+        summary:
+          type: string
+        systemHazardId:
+          type: string
+      required:
+        - systemHazardId
+        - status
+        - summary
       type: object
     CollectionResponseBodyAiAgentConfig:
       additionalProperties: false
@@ -2562,6 +2610,21 @@ components:
       required:
         - data
       type: object
+    GetSituationResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetSituationResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Situation"
+      required:
+        - data
+      type: object
     GetSystemAnalysisResponseBody:
       additionalProperties: false
       properties:
@@ -4389,6 +4452,46 @@ components:
         - data
         - pagination
       type: object
+    PaginatedResponseBodySituation:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodySituation.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/Situation"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodySituationHazardAssessment:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodySituationHazardAssessment.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/SituationHazardAssessment"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
     PaginatedResponseBodySystemAnalysisEdge:
       additionalProperties: false
       properties:
@@ -4851,6 +4954,209 @@ components:
           $ref: "#/components/schemas/OncallShiftHandover"
       required:
         - data
+      type: object
+    Situation:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/SituationAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    SituationAlertEpisode:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/SituationAlertEpisodeAttrs"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    SituationAlertEpisodeAlert:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+      required:
+        - id
+        - title
+      type: object
+    SituationAlertEpisodeAttrs:
+      additionalProperties: false
+      properties:
+        alertDefinition:
+          $ref: "#/components/schemas/SituationAlertEpisodeAlert"
+        closedAt:
+          format: date-time
+          type: string
+        lastObservedAt:
+          format: date-time
+          type: string
+        startedAt:
+          format: date-time
+          type: string
+        status:
+          enum:
+            - open
+            - closed
+          type: string
+      required:
+        - status
+        - startedAt
+        - lastObservedAt
+      type: object
+    SituationAttributes:
+      additionalProperties: false
+      properties:
+        alertEpisodes:
+          items:
+            $ref: "#/components/schemas/SituationAlertEpisode"
+          type: array
+        closeReason:
+          enum:
+            - stabilized
+            - dismissed
+          type: string
+        closedAt:
+          format: date-time
+          type: string
+        evidenceRevision:
+          format: int64
+          type: integer
+        investigation:
+          $ref: "#/components/schemas/SituationInvestigation"
+        knowledgeEntityId:
+          type: string
+        openedAt:
+          format: date-time
+          type: string
+        status:
+          enum:
+            - open
+            - closed
+          type: string
+        summary:
+          type: string
+        title:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - title
+        - summary
+        - status
+        - evidenceRevision
+        - knowledgeEntityId
+        - alertEpisodes
+        - openedAt
+        - updatedAt
+      type: object
+    SituationHazardAssessment:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/SituationHazardAssessmentAttrs"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    SituationHazardAssessmentAttrs:
+      additionalProperties: false
+      properties:
+        agentTurnId:
+          type: string
+        assessedAt:
+          format: date-time
+          type: string
+        revision:
+          format: int64
+          type: integer
+        status:
+          enum:
+            - suspected
+            - confirmed
+            - disproven
+          type: string
+        summary:
+          type: string
+        systemHazardId:
+          type: string
+        userId:
+          type: string
+      required:
+        - systemHazardId
+        - revision
+        - status
+        - summary
+        - assessedAt
+      type: object
+    SituationInvestigation:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/SituationInvestigationAttrs"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    SituationInvestigationAttrs:
+      additionalProperties: false
+      properties:
+        completedRevision:
+          format: int64
+          type: integer
+        evidenceRevision:
+          format: int64
+          type: integer
+        report:
+          $ref: "#/components/schemas/SituationInvestigationReport"
+        requestedRevision:
+          format: int64
+          type: integer
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - requestedRevision
+        - completedRevision
+        - evidenceRevision
+        - updatedAt
+      type: object
+    SituationInvestigationReport:
+      additionalProperties: false
+      properties:
+        bestNextStep:
+          type: string
+        likelyCause:
+          type: string
+        limitations:
+          items:
+            type: string
+          type: array
+        recommendedActions:
+          items:
+            type: string
+          type: array
+        suggestedChecks:
+          items:
+            type: string
+          type: array
+        text:
+          type: string
+      required:
+        - text
       type: object
     StartIntegrationOAuthFlowResponseBody:
       additionalProperties: false
@@ -14458,6 +14764,279 @@ paths:
       summary: Create a Retrospective Review
       tags:
         - Retrospectives
+  /situations:
+    get:
+      operationId: list-situations
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: search
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: status
+          schema:
+            enum:
+              - open
+              - closed
+            type: string
+        - explode: false
+          in: query
+          name: openedAfter
+          schema:
+            format: date-time
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodySituation"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Situations
+      tags:
+        - Situations
+  /situations/{id}:
+    get:
+      operationId: get-situation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetSituationResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Situation
+      tags:
+        - Situations
+  /situations/{id}/hazard_assessments:
+    get:
+      operationId: list-situation-hazard-assessments
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodySituationHazardAssessment"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Situation Hazard Assessments
+      tags:
+        - Situations
+    post:
+      operationId: add-situation-hazard-assessment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddSituationHazardAssessmentRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddSituationHazardAssessmentResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Add Situation Hazard Assessment
+      tags:
+        - Situations
   /system_analysis/{id}:
     get:
       operationId: get-system-analysis

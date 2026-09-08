@@ -49,11 +49,22 @@ func (s *SituationService) addMessageHandlers(msgs rez.MessageService) error {
 func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSituationsParams) (*ent.ListResult[ent.Situation], error) {
 	query := s.db.Client(ctx).Situation.Query().
 		WithKnowledgeEntity().
-		WithAlertEpisodes().
+		WithAlertEpisodes(func(query *ent.AlertEpisodeQuery) {
+			query.WithAlertDefinition()
+		}).
 		WithInvestigation(func(query *ent.SituationInvestigationQuery) {
 			query.WithSystemAnalysis().WithAgentSession()
 		}).
 		Order(situation.ByOpenedAt(params.GetOrder()), situation.ByID(params.GetOrder()))
+	if search := strings.TrimSpace(params.Search); search != "" {
+		query = query.Where(situation.TitleContainsFold(search))
+	}
+	if params.Status != "" {
+		query = query.Where(situation.StatusEQ(params.Status))
+	}
+	if params.OpenedAfter != nil {
+		query = query.Where(situation.OpenedAtGTE(*params.OpenedAfter))
+	}
 	return ent.DoListQuery[ent.Situation, *ent.SituationQuery](ctx, query, params.ListParams)
 }
 
@@ -61,7 +72,9 @@ func (s *SituationService) GetSituation(ctx context.Context, id uuid.UUID) (*ent
 	query := s.db.Client(ctx).Situation.Query().
 		Where(situation.ID(id)).
 		WithKnowledgeEntity().
-		WithAlertEpisodes().
+		WithAlertEpisodes(func(query *ent.AlertEpisodeQuery) {
+			query.WithAlertDefinition()
+		}).
 		WithInvestigation(func(query *ent.SituationInvestigationQuery) {
 			query.WithSystemAnalysis().WithAgentSession()
 		})
@@ -284,7 +297,7 @@ func (s *SituationService) StabilizeSituation(ctx context.Context, id uuid.UUID)
 		}
 
 		lookupSituation := tx.Situation.Query().
-			Where(situation.IDEQ(id)).
+			Where(situation.ID(id)).
 			WithAlertEpisodes()
 		sit, situationErr := lookupSituation.Only(ctx)
 		if situationErr != nil {
@@ -293,21 +306,22 @@ func (s *SituationService) StabilizeSituation(ctx context.Context, id uuid.UUID)
 		if sit.Status != situation.StatusOpen {
 			return nil
 		}
+
 		episodes, episodesErr := sit.Edges.AlertEpisodesOrErr()
 		if episodesErr != nil {
 			return fmt.Errorf("situation alert episodes: %w", episodesErr)
 		}
 		var closedAt *time.Time
-		for _, episode := range episodes {
-			if episode.Status != ae.StatusClosed || episode.ClosedAt == nil {
-				return nil
+		for _, ep := range episodes {
+			if ep.Status != ae.StatusClosed || ep.ClosedAt == nil {
+				continue
 			}
-			if closedAt == nil || episode.ClosedAt.After(*closedAt) {
-				closedAt = episode.ClosedAt
+			if closedAt == nil || ep.ClosedAt.After(*closedAt) {
+				closedAt = ep.ClosedAt
 			}
 		}
 		if closedAt != nil {
-			update := sit.Update().
+			update := tx.Situation.UpdateOneID(id).
 				SetStatus(situation.StatusClosed).
 				SetCloseReason(situation.CloseReasonStabilized).
 				SetClosedAt(*closedAt)

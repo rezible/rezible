@@ -4,16 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 )
 
 type (
-	JobArgs              = river.JobArgs
-	Job[A JobArgs]       = river.Job[A]
-	Worker[Args JobArgs] = river.Worker[Args]
-	PeriodicJob          = river.PeriodicJob
+	JobArgs                   = river.JobArgs
+	Job[A JobArgs]            = river.Job[A]
+	PeriodicJob               = river.PeriodicJob
+	Worker[A JobArgs]         = river.Worker[A]
+	WorkerDefaults[A JobArgs] = river.WorkerDefaults[A]
 
 	Definition struct {
 		Workers      []WorkerDefinition
@@ -67,6 +69,10 @@ func DefineWorkerFunc[A river.JobArgs](work func(context.Context, A) error) Work
 }
 
 var ErrRetryable = errors.New("retryable job failure")
+
+// DefaultWorkerTimeout is a sane default for workers that do not derive their
+// timeout from configuration.
+const DefaultWorkerTimeout = 15 * time.Minute
 
 func MarkRetryableError(err error) error {
 	if err == nil {

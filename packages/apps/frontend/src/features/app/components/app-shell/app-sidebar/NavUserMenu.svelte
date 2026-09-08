@@ -9,30 +9,40 @@
 	import RiNotification2 from "remixicon-svelte/icons/notification-2-line";
 	import RiLogoutBoxRLine from "remixicon-svelte/icons/logout-box-r-line";
 	import RiArrowUpSLine from "remixicon-svelte/icons/arrow-drop-up-fill";
+	import RiSettings3Line from "remixicon-svelte/icons/settings-3-line";
 
 	const auth = useUserSessionState();
 	const user = $derived(auth.user);
+	const org = $derived(auth.org);
 </script>
 
 {#snippet userMenuContent()}
-	<!-- <DropdownMenu.Label class="p-0 font-normal">
+	<DropdownMenu.Label class="p-0 font-normal">
 		<div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
 			<Avatar.Root class="size-7 rounded-lg">
 				<UserAvatar kind="user" id={auth.user?.id || ""} size={28} />
 			</Avatar.Root>
 			<div class="grid flex-1 text-start text-sm leading-tight">
+				<span class="text-muted-foreground text-xs">{org?.attributes.name}</span>
 				<span class="truncate font-medium">{user?.attributes.name}</span>
 				<span class="truncate text-xs">{user?.attributes.email}</span>
 			</div>
 		</div>
-	</DropdownMenu.Label> -->
+	</DropdownMenu.Label>
 
 	<DropdownMenu.Separator />
 
 	<DropdownMenu.Group>
+		<a href="/settings">
+			<DropdownMenu.Item>
+				<RiSettings3Line />
+				Settings
+			</DropdownMenu.Item>
+		</a>
 		<a href="/settings/user">
 			<DropdownMenu.Item>
-				<RiUserSettingsLine /> Preferences
+				<RiUserSettingsLine />
+				Preferences
 			</DropdownMenu.Item>
 		</a>
 		<DropdownMenu.Item>

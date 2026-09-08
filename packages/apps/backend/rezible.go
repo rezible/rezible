@@ -724,6 +724,8 @@ type (
 type (
 	ListSituationsParams struct {
 		ent.ListParams
+		Status      situation.Status
+		OpenedAfter *time.Time
 	}
 
 	CreateSituationParams struct {

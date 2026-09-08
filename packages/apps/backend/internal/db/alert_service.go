@@ -161,12 +161,12 @@ func (s *AlertService) RecordAlertEvent(ctx context.Context, definitionID uuid.U
 	})
 }
 
-func NewCloseInactiveAlertEpisodesWorker(db rez.Database, situations rez.SituationService) *CloseInactiveAlertEpisodesWorker {
-	return &CloseInactiveAlertEpisodesWorker{db: db, situations: situations}
+func NewCloseInactiveAlertEpisodesWorker(db rez.Database, situations rez.SituationService) (*CloseInactiveAlertEpisodesWorker, error) {
+	return &CloseInactiveAlertEpisodesWorker{db: db, situations: situations}, nil
 }
 
 type CloseInactiveAlertEpisodesWorker struct {
-	jobs.Worker[jobs.CloseInactiveAlertEpisodes]
+	jobs.WorkerDefaults[jobs.CloseInactiveAlertEpisodes]
 	db         rez.Database
 	situations rez.SituationService
 }
@@ -176,44 +176,44 @@ func (w *CloseInactiveAlertEpisodesWorker) Work(ctx context.Context, job *jobs.J
 	now := time.Now().UTC()
 	query := w.db.Client(systemCtx).AlertEpisode.Query().
 		Where(ale.StatusEQ(ale.StatusOpen), ale.LastObservedAtLT(now.Add(-alertEpisodeInactivity)))
-	openEpisodes, queryOpenErr := query.All(execution.NewSystemContext(ctx))
+	openEpisodes, queryOpenErr := query.All(systemCtx)
 	if queryOpenErr != nil {
-		return queryOpenErr
+		return fmt.Errorf("querying open alert episodes: %w", queryOpenErr)
 	}
+
 	for _, candidate := range openEpisodes {
 		tenantCtx := execution.NewTenantContext(ctx, candidate.TenantID)
-		if closeErr := w.maybeCloseOpenEpisode(tenantCtx, now, candidate); closeErr != nil {
+		if closeErr := w.maybeCloseOpenEpisode(tenantCtx, now, candidate.ID); closeErr != nil {
 			return fmt.Errorf("close inactive episode %s: %w", candidate.ID, closeErr)
 		}
 	}
+
 	return nil
 }
 
-func (w *CloseInactiveAlertEpisodesWorker) maybeCloseOpenEpisode(ctx context.Context, now time.Time, ep *ent.AlertEpisode) error {
+func (w *CloseInactiveAlertEpisodesWorker) maybeCloseOpenEpisode(ctx context.Context, now time.Time, id uuid.UUID) error {
 	return w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if err := w.db.AcquireTxLocks(ctx, alertDefinitionLockNamespace, ep.AlertDefinitionID.String()); err != nil {
-			return err
-		}
-		if err := w.db.AcquireTxLocks(ctx, alertEpisodeLockNamespace, ep.ID.String()); err != nil {
-			return err
+		if epLock := w.db.AcquireTxLocks(ctx, alertEpisodeLockNamespace, id.String()); epLock != nil {
+			return fmt.Errorf("alert episode lock: %w", epLock)
 		}
 		queryCandidate := tx.AlertEpisode.Query().
-			Where(ale.ID(ep.ID), ale.StatusEQ(ale.StatusOpen), ale.LastObservedAtGT(now.Add(-alertEpisodeInactivity)))
-		episode, queryCandidateErr := queryCandidate.Only(ctx)
+			Where(ale.ID(id), ale.StatusEQ(ale.StatusOpen), ale.LastObservedAtGT(now.Add(-alertEpisodeInactivity)))
+		shouldClose, queryCandidateErr := queryCandidate.Exist(ctx)
 		if queryCandidateErr != nil {
-			if ent.IsNotFound(queryCandidateErr) {
-				return nil
-			}
-			return queryCandidateErr
+			return fmt.Errorf("lookup alert episode: %w", queryCandidateErr)
 		}
-		update := ep.Update().
+		if !shouldClose {
+			return nil
+		}
+		update := tx.AlertEpisode.UpdateOneID(id).
 			SetStatus(ale.StatusClosed).
-			SetClosedAt(episode.LastObservedAt.Add(alertEpisodeInactivity))
-		if updateErr := update.Exec(ctx); updateErr != nil {
-			return fmt.Errorf("failed to update episode %s: %w", ep.ID, updateErr)
+			SetClosedAt(now)
+		updated, updateErr := update.Save(ctx)
+		if updateErr != nil {
+			return fmt.Errorf("failed to update episode %s: %w", id, updateErr)
 		}
-		if episode.SituationID != nil {
-			return w.situations.StabilizeSituation(ctx, *episode.SituationID)
+		if updated.SituationID != nil {
+			return w.situations.StabilizeSituation(ctx, *updated.SituationID)
 		}
 		return nil
 	})

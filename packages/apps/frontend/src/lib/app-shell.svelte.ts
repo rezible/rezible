@@ -24,7 +24,6 @@ export type AppSidebarModel = {
 	isDefault?: boolean;
 	search?: AppSidebarSearch;
 	groups: AppSidebarGroup[];
-	footerItems?: AppSidebarItem[];
 };
 
 export type PageBreadcrumb = {

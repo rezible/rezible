@@ -9,16 +9,12 @@
 	import { initUserSessionState } from "$lib/user-session.svelte";
 	import { initUserOncallInformationState } from "$lib/userOncall.svelte";
 	import { Spinner } from "$src/components/ui/spinner";
-	import IncidentCreateDialog, {
-		initIncidentCreateDialogController,
-	} from "$features/incidents/components/create-incident-dialog";
 
 	const { children } = $props();
 
 	const shell = initAppShell();
 	const sess = initUserSessionState();
 	initUserOncallInformationState();
-	initIncidentCreateDialogController();
 </script>
 
 <svelte:head>
@@ -34,7 +30,7 @@
 		{/if}
 		<main class="antialiased flex flex-col flex-1 min-w-0 min-h-0 h-dvh overflow-hidden">
 			{#if sess.isSetup}
-				<div class="flex w-full justify-between items-center h-14 bg-surface-200 border-b px-3">
+				<div class="bg-card flex w-full justify-between items-center h-14 border-b px-3">
 					<PageHeader />
 				</div>
 			{/if}
@@ -43,7 +39,6 @@
 				{@render children()}
 			</div>
 		</main>
-		<IncidentCreateDialog />
 	</Sidebar.Provider>
 {:else}
 	<div class="w-full h-dvh grid place-items-center">

@@ -20,7 +20,7 @@
 	<span>invalid alert</span>
 {:else}
 	<a
-		href={resolve("/alerts/[id]/[[view=alertView]]", { id: alert.id })}
+		href={resolve("/signals/[id]/[[view=signalView]]", { id: alert.id })}
 		class="grid gap-2 rounded-md border bg-muted/20 p-3 transition hover:border-primary/40 hover:bg-muted/40"
 	>
 		<div class="flex flex-wrap items-center gap-2">

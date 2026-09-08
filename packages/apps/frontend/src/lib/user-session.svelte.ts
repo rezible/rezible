@@ -57,8 +57,9 @@ const parseAuthSessionQueryResponse = ({
 	return res;
 };
 
+const DefaultRoute = resolve("/");
 const LoginRoute = resolve("/login");
-const InitialSetupRouteId = resolve("/settings/initial-setup");
+const InitialSetupRoute = resolve("/settings/initial-setup");
 const ConnectIntegrationRoutePrefix = resolve("/(integrations)/connect");
 const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSetup: boolean) => {
 	if (!routeId) return null;
@@ -68,17 +69,51 @@ const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSe
 		return isLoginRoute ? null : LoginRoute;
 	}
 
-	const isInitialSetupRoute = routeId.startsWith(InitialSetupRouteId);
+	const isInitialSetupRoute = routeId.startsWith(InitialSetupRoute);
 	const isConnectIntegrationRoute = routeId.startsWith(ConnectIntegrationRoutePrefix);
 	if (!isSetup) {
-		return isInitialSetupRoute || isConnectIntegrationRoute ? null : InitialSetupRouteId;
+		return isInitialSetupRoute || isConnectIntegrationRoute ? null : InitialSetupRoute;
 	}
 	if (isSetup && isInitialSetupRoute) {
-		return "/settings";
+		return resolve("/settings");
 	}
 
-	return isLoginRoute ? "/" : null;
+	return isLoginRoute ? consumeReturnLocation() : null;
 };
+
+/**
+ * Safe return-location storage for authentication recovery.
+ *
+ * The last valid product location is kept in sessionStorage so a user who
+ * re-authenticates mid-session lands back where they were. Stored locations
+ * are validated before use; anything invalid or unsafe falls back to the
+ * dashboard.
+ */
+const returnLocationSessionStorageKey = "rezible.return-location";
+
+const isSafeReturnLocation = (location: string | null): location is string => {
+	if (!location) return false;
+	if (!location.startsWith("/") || location.startsWith("//")) return false;
+	if (location.startsWith("/api/") || location.startsWith("/login")) return false;
+	return true;
+};
+
+const recordReturnLocation = (pathname: string | null) => {
+	if (!isSafeReturnLocation(pathname)) return;
+	try {
+		sessionStorage.setItem(returnLocationSessionStorageKey, pathname);
+	} catch {}
+};
+
+const consumeReturnLocation = (): string => {
+	try {
+		const stored = sessionStorage.getItem(returnLocationSessionStorageKey);
+		sessionStorage.removeItem(returnLocationSessionStorageKey);
+		if (isSafeReturnLocation(stored)) return stored;
+	} catch {} // storage unavailable; the dashboard fallback applies
+	return DefaultRoute;
+};
+
 
 export class UserSessionState {
 	private query = createQuery(() => getUserSessionOptions());
@@ -98,10 +133,17 @@ export class UserSessionState {
 
 	isAuthenticated = $derived(!!this.session && !this.error);
 	isSetup = $derived(this.isAuthenticated && !this.org?.attributes.setupRequired);
+	private isReady = $derived(this.isAuthenticated && this.isSetup);
+	private returnLocation = $derived(this.isReady ? page.url.pathname : null);
 
 	constructor() {
 		this.startSessionExpiryCheck();
 		this.addNavigationGuards();
+		this.trackReturnLocation();
+	}
+
+	private trackReturnLocation() {
+		watch(() => (this.returnLocation), recordReturnLocation);
 	}
 
 	private redirectTo = $derived(
