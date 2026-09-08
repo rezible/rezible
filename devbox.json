@@ -32,8 +32,7 @@
   },
   "shell": {
     "init_hook": [
-      "unset DEVELOPER_DIR",
-      "cp \"$(localias debug cert)\" ./devenv/localias-ca.crt"
+      "unset DEVELOPER_DIR"
     ]
   }
 }

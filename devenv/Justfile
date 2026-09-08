@@ -163,6 +163,7 @@ test target="all" *ARGS:
     localias set {{ trim_start_match(env("AUTH_URL"), "https://") }} ${AUTH_PORT}
 
 @ensure-localias:
+    cp "$(localias debug cert)" ./localias-ca.crt
     if ! localias status | grep -q 'daemon running'; then localias start; fi
 
 @assert-app-ports-free:
