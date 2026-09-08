@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
-
-	"github.com/riverqueue/river"
 
 	"github.com/samber/do/v2"
 
@@ -25,7 +22,7 @@ import (
 	"github.com/rezible/rezible/internal/opentelemetry"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/pgtestdb"
-	postgresriver "github.com/rezible/rezible/internal/postgres/river"
+	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/integrations"
@@ -34,40 +31,83 @@ import (
 )
 
 func makePackageInjector() do.Injector {
-	opts := &do.InjectorOpts{}
-	return do.NewWithOpts(opts)
+	return do.NewWithOpts(&do.InjectorOpts{})
 }
 
-func initPackages(ctx context.Context, i do.Injector) error {
-	makePackageProvider(ctx)(i)
-	return nil
+func with[T any](i do.Injector, fn func(T) error) error {
+	t, invErr := do.Invoke[T](i)
+	if invErr != nil {
+		return fmt.Errorf("failed to invoke %T: %w", t, invErr)
+	}
+	return fn(t)
 }
 
-type Provider = func(do.Injector)
-
-func makePackageProvider(ctx context.Context) Provider {
-	return do.Package(
-		makeConfigProvider(ctx),
-		provideRegistries,
-		makeOpenTelemetryProvider(ctx),
-		makePostgresProvider(ctx),
-		makeGenkitProvider(ctx),
-		provideRiverJobService,
-		provideWatermillMessageService,
-		provideDatabaseServices,
-		provideIntegrations,
-		provideJobsDefinition,
-		provideHttpServer,
-	)
-}
-
-func makeConfigProvider(ctx context.Context) Provider {
-	return do.Lazy(func(i do.Injector) (rez.Config, error) {
-		return koanf.LoadConfig(ctx, koanf.Options{LoadEnvironment: true})
+func useEnvironmentConfig(ctx context.Context, i do.Injector) {
+	do.Provide(i, func(i do.Injector) (rez.Config, error) {
+		return koanf.LoadConfig(ctx, koanf.Options{
+			LoadEnvironment: true,
+		})
 	})
 }
 
-var provideRegistries = do.Package(
+func useOpenTelemetry(ctx context.Context, i do.Injector) {
+	do.Provide(i, func(i do.Injector) (rez.TelemetryService, error) {
+		return opentelemetry.NewOpenTelemetryService(ctx, do.MustInvoke[rez.Config](i))
+	})
+}
+
+func usePostgresTestDatabase(i do.Injector) {
+	do.Provide(i, func(i do.Injector) (*pgtestdb.Database, error) {
+		return pgtestdb.New(do.MustInvoke[rez.Config](i).Postgres)
+	})
+
+	do.Override(i, func(i do.Injector) (rez.PostgresConfig, error) {
+		return do.MustInvoke[*pgtestdb.Database](i).Config(), nil
+	})
+}
+
+func usePostgresDatabase(ctx context.Context, i do.Injector) {
+	do.Provide(i, func(i do.Injector) (rez.PostgresConfig, error) {
+		return do.MustInvoke[rez.Config](i).Postgres, nil
+	})
+
+	do.Provide(i, func(i do.Injector) (*postgres.ConnectionPool, error) {
+		return postgres.MakePgxPool(ctx, do.MustInvoke[rez.PostgresConfig](i), false)
+	})
+
+	do.Provide(i, func(i do.Injector) (*postgres.MigrationService, error) {
+		mgPool, mgPoolErr := postgres.MakePgxPool(ctx, do.MustInvoke[rez.PostgresConfig](i), true)
+		if mgPoolErr != nil {
+			return nil, fmt.Errorf("admin pgx pool: %w", mgPoolErr)
+		}
+		return postgres.NewMigrationService(mgPool)
+	})
+
+	do.Provide(i, func(i do.Injector) (rez.Database, error) {
+		return postgres.NewPgxPoolDatabaseClient(do.MustInvoke[*postgres.ConnectionPool](i))
+	})
+}
+
+func useGenkitAiService(ctx context.Context, i do.Injector) {
+	do.Provide(i, func(i do.Injector) (rez.AiService, error) {
+		svc := genkit.NewAiService(do.MustInvoke[rez.Config](i))
+		opts := do.MustInvoke[[]genkit.AiServiceOption](i)
+		return svc, svc.Init(ctx, opts...)
+	})
+}
+
+var useBasePackages = do.Package(
+	useRegistries,
+	useRiverJobService,
+	useWatermillMessageService,
+	useGenkit,
+	useDatabaseServices,
+	useIntegrations,
+	useDefaultMessageHandlers,
+	useJobDefinitions,
+)
+
+var useRegistries = do.Package(
 	do.Lazy(func(i do.Injector) (rez.IntegrationRegistry, error) {
 		return integrations.NewRegistry(), nil
 	}),
@@ -77,101 +117,56 @@ var provideRegistries = do.Package(
 	}),
 )
 
-func makeOpenTelemetryProvider(ctx context.Context) Provider {
-	return do.Lazy(func(i do.Injector) (rez.TelemetryService, error) {
-		return opentelemetry.NewOpenTelemetryService(ctx, do.MustInvoke[rez.Config](i))
-	})
+var useGenkit = do.Package(
+	do.Lazy(func(i do.Injector) (rezai.ClassifyAgentThreadResponseWorkflowRunner, error) {
+		return rezai.GetWorkflowRunner(do.MustInvoke[rez.AiService](i), rezai.ClassifyAgentThreadResponseWorkflow)
+	}),
+
+	do.Lazy(func(i do.Injector) ([]genkit.AiServiceOption, error) {
+		analysisMw := genkit.WithSystemAnalysisAgentMiddleware(
+			do.MustInvoke[rez.SystemAnalysisService](i),
+			do.MustInvoke[rez.KnowledgeGraphService](i),
+		)
+		situationSvc := do.MustInvoke[rez.SituationService](i)
+		opts := []genkit.AiServiceOption{
+			genkit.WithAgent(genkit.NewChatAgent()),
+			genkit.WithAgent(genkit.NewInvestigationAgent(situationSvc), analysisMw),
+			genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
+		}
+		return opts, nil
+	}),
+
+	do.Lazy(func(i do.Injector) (*genkit.EvaluationService, error) {
+		return genkit.NewEvaluationService(do.MustInvoke[rez.Database](i), do.MustInvoke[*genkit.AiService](i)), nil
+	}),
+	do.Bind[*genkit.EvaluationService, rezai.EvalScenarioRunner](),
+
+	do.Lazy(func(i do.Injector) (*genkit.DevServer, error) {
+		return genkit.NewDevServer(do.MustInvoke[*genkit.AiService](i), do.MustInvoke[*genkit.EvaluationService](i))
+	}),
+)
+
+type jobsRegistrar interface {
+	Init(jobs.Definition) error
 }
 
-func useTestDatabase(i do.Injector) {
-	do.Override(i, func(i do.Injector) (rez.PostgresConfig, error) {
-		return do.InvokeNamed[rez.PostgresConfig](i, "pgcfg-test")
-	})
-}
-
-func makePostgresProvider(ctx context.Context) Provider {
-	return do.Package(
-		do.Lazy(func(i do.Injector) (*pgtestdb.Database, error) {
-			return pgtestdb.New(do.MustInvoke[rez.Config](i).Postgres)
-		}),
-		do.LazyNamed("pgcfg-test", func(i do.Injector) (rez.PostgresConfig, error) {
-			return do.MustInvoke[*pgtestdb.Database](i).Config(), nil
-		}),
-
-		do.Lazy(func(i do.Injector) (rez.PostgresConfig, error) {
-			return do.MustInvoke[rez.Config](i).Postgres, nil
-		}),
-
-		do.Lazy(func(i do.Injector) (rez.MigrationService, error) {
-			mgPool, mgPoolErr := postgres.MakePgxPool(ctx, do.MustInvoke[rez.PostgresConfig](i), true)
-			if mgPoolErr != nil {
-				return nil, fmt.Errorf("admin pgx pool: %w", mgPoolErr)
-			}
-			return postgres.NewMigrationService(mgPool)
-		}),
-
-		do.Lazy(func(i do.Injector) (*postgres.ConnectionPool, error) {
-			return postgres.MakePgxPool(ctx, do.MustInvoke[rez.PostgresConfig](i), false)
-		}),
-
-		do.Lazy(func(i do.Injector) (rez.Database, error) {
-			return postgres.NewPgxPoolDatabaseClient(do.MustInvoke[*postgres.ConnectionPool](i))
-		}),
-	)
-}
-
-func makeGenkitProvider(ctx context.Context) Provider {
-	return do.Package(
-		do.Lazy(func(i do.Injector) (rezai.ClassifyAgentThreadResponseWorkflowRunner, error) {
-			return rezai.GetWorkflowRunner(do.MustInvoke[rez.AiService](i), rezai.ClassifyAgentThreadResponseWorkflow)
-		}),
-
-		do.Lazy(func(i do.Injector) ([]genkit.AiServiceOption, error) {
-			//intgToolsMw := genkit.WithIntegrationToolsAgentMiddleware(do.MustInvoke[rez.IntegrationService](i))
-			analysisMw := genkit.WithSystemAnalysisAgentMiddleware(
-				do.MustInvoke[rez.SystemAnalysisService](i),
-				do.MustInvoke[rez.KnowledgeGraphService](i),
-			)
-			situationSvc := do.MustInvoke[rez.SituationService](i)
-			opts := []genkit.AiServiceOption{
-				genkit.WithAgent(genkit.NewChatAgent()),
-				genkit.WithAgent(genkit.NewInvestigationAgent(situationSvc), analysisMw),
-				genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
-			}
-			return opts, nil
-		}),
-
-		do.Lazy(func(i do.Injector) (*genkit.AiService, error) {
-			svc := genkit.NewAiService(do.MustInvoke[rez.Config](i))
-			opts := do.MustInvoke[[]genkit.AiServiceOption](i)
-			return svc, svc.Init(ctx, opts...)
-		}),
-		do.Bind[*genkit.AiService, rez.AiService](),
-
-		do.Lazy(func(i do.Injector) (*genkit.EvaluationService, error) {
-			return genkit.NewEvaluationService(do.MustInvoke[rez.Database](i), do.MustInvoke[*genkit.AiService](i)), nil
-		}),
-		do.Bind[*genkit.EvaluationService, rezai.EvalScenarioRunner](),
-
-		do.Lazy(func(i do.Injector) (*genkit.DevServer, error) {
-			return genkit.NewDevServer(do.MustInvoke[*genkit.AiService](i), do.MustInvoke[*genkit.EvaluationService](i))
-		}),
-	)
-}
-
-var provideRiverJobService = do.Package(
-	do.Lazy(func(i do.Injector) (*postgresriver.JobService, error) {
-		return postgresriver.NewJobService(
+var useRiverJobService = do.Package(
+	do.Lazy(func(i do.Injector) (*river.JobService, error) {
+		return river.NewJobService(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[*postgres.ConnectionPool](i),
 			do.MustInvoke[rez.TelemetryService](i),
 		)
 	}),
-	do.Bind[*postgresriver.JobService, rez.JobService](),
-	do.Bind[*postgresriver.JobService, jobs.Registrar](),
+	do.Bind[*river.JobService, rez.JobService](),
+	do.Bind[*river.JobService, jobsRegistrar](),
 )
 
-var provideWatermillMessageService = do.Package(
+type messageHandlerRegistrar interface {
+	AddHandlers(...rez.MessageEventHandler) error
+}
+
+var useWatermillMessageService = do.Package(
 	do.Lazy(func(i do.Injector) (watermill.Transport, error) {
 		return nil, nil
 	}),
@@ -182,9 +177,10 @@ var provideWatermillMessageService = do.Package(
 		)
 	}),
 	do.Bind[*watermill.MessageService, rez.MessageService](),
+	do.Bind[*watermill.MessageService, messageHandlerRegistrar](),
 )
 
-var provideIntegrations = do.Package(
+var useIntegrations = do.Package(
 	do.Lazy(func(i do.Injector) (rez.EventProjectionService, error) {
 		return eventprojection.NewProjectionService(
 			do.MustInvoke[rez.Database](i),
@@ -263,9 +259,30 @@ var provideIntegrations = do.Package(
 		deps := do.MustInvoke[*slackintegration.AppServiceDependencies](i)
 		return app.MakeIntegration(deps)
 	}),
+
+	do.Lazy(func(i do.Injector) ([]rez.IntegrationDefinition, error) {
+		var defs []rez.IntegrationDefinition
+		cfg := do.MustInvoke[rez.Config](i)
+		if cfg.App.DebugMode {
+			defs = append(defs, do.MustInvoke[*demoprovider.Integration](i))
+		}
+		if cfg.Integrations.Google.Enabled {
+			defs = append(defs, do.MustInvoke[*google.Integration](i))
+		}
+		if cfg.Integrations.Github.Enabled {
+			defs = append(defs, do.MustInvoke[*github.Integration](i))
+		}
+		if cfg.Integrations.Slack.Agent.Enabled {
+			defs = append(defs, do.MustInvoke[*slackagent.Integration](i))
+		}
+		if cfg.Integrations.Slack.Incidents.Enabled {
+			defs = append(defs, do.MustInvoke[*slackincidents.Integration](i))
+		}
+		return defs, nil
+	}),
 )
 
-var provideDatabaseServices = do.Package(
+var useDatabaseServices = do.Package(
 	do.Lazy(func(i do.Injector) (*db.ProviderEventPipelineService, error) {
 		return db.NewProviderEventPipelineService(
 			do.MustInvoke[rez.TelemetryService](i),
@@ -433,7 +450,21 @@ var provideDatabaseServices = do.Package(
 	}),
 )
 
-var provideHttpServer = do.Package(
+func provideLifecycleServicesWith[T rez.LifecycleService](i do.Injector) ([]rez.LifecycleService, error) {
+	svcs := []rez.LifecycleService{
+		do.MustInvoke[*river.JobService](i),
+		do.MustInvoke[*watermill.MessageService](i),
+	}
+	for _, intg := range do.MustInvoke[[]rez.IntegrationDefinition](i) {
+		if ls, ok := intg.(rez.LifecycleService); ok {
+			svcs = append(svcs, ls)
+		}
+	}
+	svcs = append(svcs, do.MustInvoke[T](i))
+	return svcs, nil
+}
+
+var useHttpServer = do.Package(
 	do.Lazy(func(i do.Injector) (oapiv1.Handler, error) {
 		return apiv1.NewHandler(
 			do.MustInvoke[rez.Database](i),
@@ -473,31 +504,30 @@ var provideHttpServer = do.Package(
 			do.MustInvoke[http.WebhookHandlers](i),
 		)
 	}),
+
+	do.Lazy(func(i do.Injector) ([]rez.LifecycleService, error) {
+		return provideLifecycleServicesWith[*http.Server](i)
+	}),
 )
 
-func getMessageHandlersFor[T any](i do.Injector) []rez.MessageEventHandler {
-	var t T
-	switch any(t).(type) {
-	case *http.Server:
-		{
-			handlers := do.MustInvoke[*db.SituationService](i).GetMessageHandlers()
-			handlers = append(handlers, do.MustInvoke[*google.Integration](i).GetMessageHandlers()...)
-			cfg := do.MustInvoke[rez.Config](i)
-			if cfg.Integrations.Slack.Incidents.Enabled {
-				handlers = append(handlers, do.MustInvoke[*slackincidents.Integration](i).GetMessageHandlers()...)
-			}
-			if cfg.Integrations.Slack.Agent.Enabled {
-				handlers = append(handlers, do.MustInvoke[*slackagent.Integration](i).GetMessageHandlers()...)
-			}
-			return handlers
-		}
-	case *genkit.DevServer:
-		{
-			return do.MustInvoke[*db.SituationService](i).GetMessageHandlers()
+var useGenkitDevServer = do.Package(
+	do.Lazy(func(i do.Injector) ([]rez.LifecycleService, error) {
+		return provideLifecycleServicesWith[*genkit.DevServer](i)
+	}),
+)
+
+var useDefaultMessageHandlers = do.Lazy(func(i do.Injector) ([]rez.MessageEventHandler, error) {
+	type ProvidesMessageHandlers interface {
+		GetMessageHandlers() []rez.MessageEventHandler
+	}
+	handlers := do.MustInvoke[*db.SituationService](i).GetMessageHandlers()
+	for _, pkg := range do.MustInvoke[[]rez.IntegrationDefinition](i) {
+		if hp, ok := pkg.(ProvidesMessageHandlers); ok {
+			handlers = append(handlers, hp.GetMessageHandlers()...)
 		}
 	}
-	return nil
-}
+	return handlers, nil
+})
 
 func makeJobWorkerProvider[A jobs.JobArgs]() do.Provider[jobs.WorkerDefinition] {
 	return func(i do.Injector) (jobs.WorkerDefinition, error) {
@@ -534,7 +564,7 @@ var defaultJobWorkerProviders = []do.Provider[jobs.WorkerDefinition]{
 	makeServiceFuncJobWorkerProvider(slackincidents.NewSendIncidentMilestoneMessageWorker),
 }
 
-var provideJobsDefinition = do.Package(
+var useJobDefinitions = do.Package(
 	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.StartAgentSession], error) {
 		return db.NewStartAgentSessionWorker(
 			do.MustInvoke[rez.Config](i).AI,
@@ -578,14 +608,9 @@ var provideJobsDefinition = do.Package(
 		return defs, nil
 	}),
 	do.Lazy(func(i do.Injector) ([]*jobs.PeriodicJob, error) {
-		closeAlertEpisodes := river.NewPeriodicJob(
-			river.PeriodicInterval(time.Minute),
-			func() (river.JobArgs, *river.InsertOpts) {
-				return jobs.CloseInactiveAlertEpisodes{}, nil
-			},
-			nil,
-		)
-		return []*jobs.PeriodicJob{closeAlertEpisodes}, nil
+		return []*jobs.PeriodicJob{
+			jobs.CloseInactiveAlertEpisodesPeriodicJob,
+		}, nil
 	}),
 	do.Lazy(func(i do.Injector) (jobs.Definition, error) {
 		return jobs.Definition{

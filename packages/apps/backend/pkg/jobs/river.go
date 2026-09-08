@@ -21,10 +21,6 @@ type (
 		Workers      []WorkerDefinition
 		PeriodicJobs []*PeriodicJob
 	}
-
-	Registrar interface {
-		Init(Definition) error
-	}
 )
 
 var (

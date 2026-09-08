@@ -37,7 +37,7 @@ func (i *Integration) Provider() string {
 }
 
 func (i *Integration) Lifecycle() *rez.ServiceLifecycle {
-	return i.appSvc.Lifecycle()
+	return i.appSvc.MakeServiceLifecycle()
 }
 
 func (i *Integration) GetMessageHandlers() []rez.MessageEventHandler {

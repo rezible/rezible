@@ -12,8 +12,6 @@ import (
 	"github.com/urfave/cli/v3"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/internal/genkit"
-	"github.com/rezible/rezible/internal/http"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/ai/evals"
 	"github.com/rezible/rezible/pkg/execution"
@@ -37,7 +35,12 @@ func makeServerCli() *cli.Command {
 		Name:  "rezible",
 		Usage: "backend server control",
 		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-			return ctx, initPackages(ctx, i)
+			useBasePackages(i)
+			useEnvironmentConfig(ctx, i)
+			useOpenTelemetry(ctx, i)
+			usePostgresDatabase(ctx, i)
+			useGenkitAiService(ctx, i)
+			return ctx, nil
 		},
 		After: func(ctx context.Context, command *cli.Command) error {
 			return shutdownInjector(ctx, i)
@@ -47,7 +50,8 @@ func makeServerCli() *cli.Command {
 				Name:  "serve",
 				Usage: "Run rezible server",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return runLifecycleServices[*http.Server](ctx, i)
+					useHttpServer(i)
+					return runLifecycleServices(ctx, i)
 				},
 			},
 			{
@@ -125,7 +129,7 @@ func makeServerCli() *cli.Command {
 				Name:  "ai",
 				Usage: "commands for working with rezible ai",
 				Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-					useTestDatabase(i)
+					usePostgresTestDatabase(i)
 					return ctx, nil
 				},
 				Commands: []*cli.Command{
@@ -133,7 +137,8 @@ func makeServerCli() *cli.Command {
 						Name:  "dev",
 						Usage: "Run ai dev server",
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							return runLifecycleServices[*genkit.DevServer](ctx, i)
+							useGenkitDevServer(i)
+							return runLifecycleServices(ctx, i)
 						},
 					},
 					{

@@ -187,6 +187,7 @@ type (
 		} `cfg:"app"`
 	}
 	IntegrationsConfigGoogle struct {
+		Enabled bool `cfg:"enabled"`
 	}
 )
 

@@ -1,6 +1,8 @@
 package jobs
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 )
@@ -144,3 +146,11 @@ func (CloseInactiveAlertEpisodes) InsertOpts() river.InsertOpts {
 		},
 	}
 }
+
+var CloseInactiveAlertEpisodesPeriodicJob = river.NewPeriodicJob(
+	river.PeriodicInterval(time.Minute),
+	func() (river.JobArgs, *river.InsertOpts) {
+		return CloseInactiveAlertEpisodes{}, nil
+	},
+	nil,
+)

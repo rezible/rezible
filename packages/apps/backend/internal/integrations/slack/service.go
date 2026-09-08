@@ -104,7 +104,7 @@ func (s *AppService[A]) WebhookHandler() http.Handler {
 	return s.webhookHandler
 }
 
-func (s *AppService[A]) Lifecycle() *rez.ServiceLifecycle {
+func (s *AppService[A]) MakeServiceLifecycle() *rez.ServiceLifecycle {
 	if s.socketModeListener != nil {
 		return s.socketModeListener.Lifecycle()
 	}
