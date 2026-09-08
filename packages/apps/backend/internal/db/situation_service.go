@@ -3,19 +3,20 @@ package db
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
-	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ae "github.com/rezible/rezible/ent/alertepisode"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/situation"
-	sha "github.com/rezible/rezible/ent/situationhazardassessment"
+	siti "github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/pkg/messages"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 const (
@@ -26,22 +27,23 @@ const (
 )
 
 type SituationService struct {
-	db     rez.Database
-	jobs   rez.JobService
-	agents rez.AgentSessionService
+	db        rez.Database
+	jobs      rez.JobService
+	agents    rez.AgentSessionService
+	knowledge rez.KnowledgeGraphService
 }
 
-func NewSituationService(db rez.Database, msgs rez.MessageService, jobs rez.JobService, agents rez.AgentSessionService) (*SituationService, error) {
-	s := &SituationService{db: db, agents: agents, jobs: jobs}
+func NewSituationService(db rez.Database, jobs rez.JobService, agents rez.AgentSessionService, knowledge rez.KnowledgeGraphService) (*SituationService, error) {
+	s := &SituationService{db: db, agents: agents, jobs: jobs, knowledge: knowledge}
 
-	if handlersErr := s.addMessageHandlers(msgs); handlersErr != nil {
-		return nil, fmt.Errorf("adding handlers: %w", handlersErr)
-	}
+	//if handlersErr := s.AddMessageHandlers(msgs); handlersErr != nil {
+	//	return nil, fmt.Errorf("adding handlers: %w", handlersErr)
+	//}
 
 	return s, nil
 }
 
-func (s *SituationService) addMessageHandlers(msgs rez.MessageService) error {
+func (s *SituationService) AddMessageHandlers(msgs rez.MessageService) error {
 	return msgs.AddHandlers(
 		messages.NewEventHandler("db.SituationService.onAgentTurnUpdated", s.onAgentTurnUpdated))
 }
@@ -49,12 +51,8 @@ func (s *SituationService) addMessageHandlers(msgs rez.MessageService) error {
 func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSituationsParams) (*ent.ListResult[ent.Situation], error) {
 	query := s.db.Client(ctx).Situation.Query().
 		WithKnowledgeEntity().
-		WithAlertEpisodes(func(query *ent.AlertEpisodeQuery) {
-			query.WithAlertDefinition()
-		}).
-		WithInvestigation(func(query *ent.SituationInvestigationQuery) {
-			query.WithSystemAnalysis().WithAgentSession()
-		}).
+		WithAlertEpisodes().
+		WithInvestigation().
 		Order(situation.ByOpenedAt(params.GetOrder()), situation.ByID(params.GetOrder()))
 	if search := strings.TrimSpace(params.Search); search != "" {
 		query = query.Where(situation.TitleContainsFold(search))
@@ -72,12 +70,8 @@ func (s *SituationService) GetSituation(ctx context.Context, id uuid.UUID) (*ent
 	query := s.db.Client(ctx).Situation.Query().
 		Where(situation.ID(id)).
 		WithKnowledgeEntity().
-		WithAlertEpisodes(func(query *ent.AlertEpisodeQuery) {
-			query.WithAlertDefinition()
-		}).
-		WithInvestigation(func(query *ent.SituationInvestigationQuery) {
-			query.WithSystemAnalysis().WithAgentSession()
-		})
+		WithAlertEpisodes().
+		WithInvestigation()
 	return query.Only(ctx)
 }
 
@@ -93,16 +87,19 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 
 	var created *ent.Situation
 	return created, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		createEntity := tx.KnowledgeEntity.Create().
-			SetCategory(kne.CategoryEvent).
-			SetKind(situationKnowledgeEntityKind)
-		knowledgeEntity, entityErr := createEntity.Save(ctx)
-		if entityErr != nil {
-			return fmt.Errorf("create situation knowledge entity: %w", entityErr)
+		situationId := uuid.New()
+		ka, kaErr := s.knowledge.ResolveInternalEntity(ctx, rez.KnowledgeEntityRef{
+			Category:            kne.CategoryEvent,
+			Kind:                situationKnowledgeEntityKind,
+			ProviderResourceRef: projections.InternalEntityResourceRef(situationId),
+		})
+		if kaErr != nil || ka.EntityID == nil {
+			return fmt.Errorf("create situation knowledge entity: %w", kaErr)
 		}
 
 		createSituation := tx.Situation.Create().
-			SetKnowledgeEntityID(knowledgeEntity.ID).
+			SetID(situationId).
+			SetKnowledgeEntityID(*ka.EntityID).
 			SetTitle(title).
 			SetStatus(situation.StatusOpen).
 			SetOpenedAt(openedAt)
@@ -112,18 +109,6 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 		createdSituation, saveErr := createSituation.Save(ctx)
 		if saveErr != nil {
 			return fmt.Errorf("create situation: %w", saveErr)
-		}
-
-		if params.FoundingAlertEpisodeID != nil {
-			if locksErr := s.db.AcquireTxLocks(ctx, alertEpisodeLockNamespace, params.FoundingAlertEpisodeID.String()); locksErr != nil {
-				return fmt.Errorf("get alert episode lock: %w", locksErr)
-			}
-			updateEpisode := tx.AlertEpisode.UpdateOneID(*params.FoundingAlertEpisodeID).
-				Where(ae.SituationIDIsNil()).
-				SetSituationID(createdSituation.ID)
-			if updateErr := updateEpisode.Exec(ctx); updateErr != nil {
-				return fmt.Errorf("failed to update alert episode: %w", updateErr)
-			}
 		}
 
 		created = createdSituation.Unwrap()
@@ -170,136 +155,75 @@ func (s *SituationService) CloseSituation(ctx context.Context, params rez.CloseS
 	})
 }
 
-func (s *SituationService) LinkAlertEpisodeToSituation(ctx context.Context, params rez.LinkAlertEpisodeToSituationParams) (*ent.AlertEpisode, error) {
-	if params.AlertEpisodeID == uuid.Nil || params.SituationID == uuid.Nil {
-		return nil, fmt.Errorf("%w: alert episode and situation ids are required", rez.ErrInvalidInput)
-	}
-
-	var linked *ent.AlertEpisode
-	return linked, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if lockErr := s.db.AcquireTxLocks(ctx, alertEpisodeLockNamespace, params.AlertEpisodeID.String()); lockErr != nil {
-			return fmt.Errorf("lock alert episode: %w", lockErr)
-		}
-
-		episode, queryErr := tx.AlertEpisode.Get(ctx, params.AlertEpisodeID)
-		if queryErr != nil {
-			return fmt.Errorf("get alert episode: %w", queryErr)
-		}
-		if episode.SituationID != nil {
-			if *episode.SituationID == params.SituationID {
-				linked = episode.Unwrap()
-				return nil
-			}
-			return fmt.Errorf("%w: alert episode is already linked to another situation", rez.ErrConflict)
-		}
-
-		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, params.SituationID.String()); lockErr != nil {
+func (s *SituationService) AddSituationEvidenceItem(ctx context.Context, id uuid.UUID, params rez.SituationEvidenceItemParams) error {
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, id.String()); lockErr != nil {
 			return fmt.Errorf("lock situation: %w", lockErr)
 		}
-		linkedSituation, situationErr := tx.Situation.Get(ctx, params.SituationID)
+
+		sit, situationErr := tx.Situation.Get(ctx, id)
 		if situationErr != nil {
 			return fmt.Errorf("get situation: %w", situationErr)
 		}
-		if linkedSituation.Status != situation.StatusOpen {
-			return fmt.Errorf("%w: alert episode links may target only an open situation", rez.ErrConflict)
+
+		relEnt := s.makeSituationEvidenceRelationshipEntity(params)
+		if relEnt == nil {
+			return fmt.Errorf("invalid evidence item")
+		}
+		if knrErr := s.ingestKnowledgeRelationship(ctx, sit, *relEnt); knrErr != nil {
+			return fmt.Errorf("ingest situation evidence item knowledge relationship: %w", knrErr)
 		}
 
-		update := tx.AlertEpisode.UpdateOneID(params.AlertEpisodeID).
-			SetSituationID(params.SituationID)
-		updated, updateErr := update.Save(ctx)
-		if updateErr != nil {
-			return fmt.Errorf("link alert episode to situation: %w", updateErr)
+		if sit.Status == situation.StatusOpen {
+			if evidenceErr := s.NotifySituationEvidenceItemUpdated(ctx, id, params); evidenceErr != nil {
+				return fmt.Errorf("situation evidence: %w", evidenceErr)
+			}
+		} else {
+			//return fmt.Errorf("%w: evidence links may target only an open situation", rez.ErrConflict)
 		}
 
-		if evidenceErr := s.RecordSituationEvidence(ctx, params.SituationID); evidenceErr != nil {
-			return fmt.Errorf("situation evidence: %w", evidenceErr)
-		}
-
-		linked = updated.Unwrap()
 		return nil
 	})
 }
 
-func (s *SituationService) ListSituationHazardAssessments(ctx context.Context, params rez.ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error) {
-	order := params.GetOrder()
-	query := s.db.Client(ctx).SituationHazardAssessment.Query().
-		Order(sha.ByAssessedAt(order), sha.ByRevision(order), sha.ByID(order))
-	if params.SituationID != uuid.Nil {
-		query.Where(sha.SituationID(params.SituationID))
-	}
-	if params.SystemHazardID != uuid.Nil {
-		query.Where(sha.SystemHazardID(params.SystemHazardID))
-	}
-	return ent.DoListQuery[ent.SituationHazardAssessment, *ent.SituationHazardAssessmentQuery](ctx, query, params.ListParams)
-}
-
-var validSituationHazardAssessmentStatus = mapset.NewSet(sha.StatusSuspected, sha.StatusConfirmed, sha.StatusDisproven)
-
-func (s *SituationService) AddSituationHazardAssessment(ctx context.Context, params rez.AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error) {
-	if params.SituationID == uuid.Nil || params.SystemHazardID == uuid.Nil {
-		return nil, fmt.Errorf("%w: situation and system hazard ids are required", rez.ErrInvalidInput)
-	}
-	if (params.UserID == nil) == (params.AgentTurnID == nil) {
-		return nil, fmt.Errorf("%w: exactly one assessor is required", rez.ErrInvalidInput)
-	}
-	if !validSituationHazardAssessmentStatus.Contains(params.Status) {
-		return nil, fmt.Errorf("%w: invalid situation hazard assessment status", rez.ErrInvalidInput)
-	}
-	summary := strings.TrimSpace(params.Summary)
-	if summary == "" {
-		return nil, fmt.Errorf("%w: assessment summary is required", rez.ErrInvalidInput)
-	}
-	assessedAt := params.AssessedAt
-	if assessedAt.IsZero() {
-		assessedAt = time.Now().UTC()
-	}
-
-	var assessment *ent.SituationHazardAssessment
-	return assessment, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		pairKey := params.SituationID.String() + "\x1f" + params.SystemHazardID.String()
-		if lockErr := s.db.AcquireTxLocks(ctx, situationHazardAssessmentLockNamespace, pairKey); lockErr != nil {
-			return fmt.Errorf("lock situation hazard pair: %w", lockErr)
+func (s *SituationService) NotifySituationEvidenceItemUpdated(ctx context.Context, id uuid.UUID, params rez.SituationEvidenceItemParams) error {
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if situationLockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, id.String()); situationLockErr != nil {
+			return fmt.Errorf("get situation lock: %w", situationLockErr)
 		}
 
-		nextRevision := 1
-		latestQuery := tx.SituationHazardAssessment.Query().
-			Where(sha.SituationID(params.SituationID), sha.SystemHazardID(params.SystemHazardID)).
-			Order(sha.ByRevision(sql.OrderDesc()))
-		latest, latestErr := latestQuery.First(ctx)
-		if latestErr == nil {
-			nextRevision = latest.Revision + 1
-		} else if !ent.IsNotFound(latestErr) {
-			return fmt.Errorf("get latest situation hazard assessment: %w", latestErr)
+		er := s.makeSituationEvidenceRelationshipEntity(params)
+		if er == nil {
+			return fmt.Errorf("invalid evidence item")
 		}
 
-		createAssessment := tx.SituationHazardAssessment.Create().
-			SetSituationID(params.SituationID).
-			SetSystemHazardID(params.SystemHazardID).
-			SetRevision(nextRevision).
-			SetStatus(params.Status).
-			SetSummary(summary).
-			SetAssessedAt(assessedAt).
-			SetNillableUserID(params.UserID).
-			SetNillableAgentTurnID(params.AgentTurnID)
-		created, saveErr := createAssessment.Save(ctx)
-		if saveErr != nil {
-			return fmt.Errorf("add situation hazard assessment: %w", saveErr)
+		updateRevision := tx.Situation.UpdateOneID(id).
+			AddEvidenceRevision(1)
+		if updateRevisionErr := updateRevision.Exec(ctx); updateRevisionErr != nil {
+			return fmt.Errorf("update evidence revision: %w", updateRevisionErr)
 		}
-		assessment = created.Unwrap()
+
+		lookupInvestigation := tx.SituationInvestigation.Query().
+			Where(siti.SituationID(id))
+		investigationExists, queryInvestigationErr := lookupInvestigation.Exist(ctx)
+		if queryInvestigationErr != nil {
+			return fmt.Errorf("lookup investigation: %w", queryInvestigationErr)
+		}
+		if investigationExists {
+			return s.requestInvestigationReconcile(ctx, id)
+		}
+
 		return nil
 	})
 }
 
-func (s *SituationService) StabilizeSituation(ctx context.Context, id uuid.UUID) error {
+func (s *SituationService) NotifySituationEvidenceItemStabilized(ctx context.Context, id uuid.UUID, params rez.SituationEvidenceItemParams) error {
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, id.String()); lockErr != nil {
 			return fmt.Errorf("get situation lock: %w", lockErr)
 		}
 
-		lookupSituation := tx.Situation.Query().
-			Where(situation.ID(id)).
-			WithAlertEpisodes()
-		sit, situationErr := lookupSituation.Only(ctx)
+		sit, situationErr := tx.Situation.Get(ctx, id)
 		if situationErr != nil {
 			return fmt.Errorf("get situation: %w", situationErr)
 		}
@@ -307,24 +231,25 @@ func (s *SituationService) StabilizeSituation(ctx context.Context, id uuid.UUID)
 			return nil
 		}
 
-		episodes, episodesErr := sit.Edges.AlertEpisodesOrErr()
-		if episodesErr != nil {
-			return fmt.Errorf("situation alert episodes: %w", episodesErr)
-		}
-		var closedAt *time.Time
-		for _, ep := range episodes {
-			if ep.Status != ae.StatusClosed || ep.ClosedAt == nil {
-				continue
+		var allItemsClosed bool
+		lastItemClosedAt := time.Now().UTC()
+		if params.AlertEpisodeID != nil {
+			ep, epErr := tx.AlertEpisode.Get(ctx, *params.AlertEpisodeID)
+			if epErr != nil {
+				return fmt.Errorf("situation alert episode: %w", epErr)
 			}
-			if closedAt == nil || ep.ClosedAt.After(*closedAt) {
-				closedAt = ep.ClosedAt
+			if ep.Status == ae.StatusClosed && ep.ClosedAt != nil {
+				lastItemClosedAt = *ep.ClosedAt
 			}
 		}
-		if closedAt != nil {
+
+		// TODO: check all linked evidence items
+
+		if allItemsClosed {
 			update := tx.Situation.UpdateOneID(id).
 				SetStatus(situation.StatusClosed).
 				SetCloseReason(situation.CloseReasonStabilized).
-				SetClosedAt(*closedAt)
+				SetClosedAt(lastItemClosedAt)
 			if updateErr := update.Exec(ctx); updateErr != nil {
 				return fmt.Errorf("update situation: %w", updateErr)
 			}
@@ -332,3 +257,219 @@ func (s *SituationService) StabilizeSituation(ctx context.Context, id uuid.UUID)
 		return nil
 	})
 }
+
+func (s *SituationService) RemoveSituationEvidenceItem(ctx context.Context, id uuid.UUID, params rez.SituationEvidenceItemParams) error {
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, id.String()); lockErr != nil {
+			return fmt.Errorf("lock situation: %w", lockErr)
+		}
+
+		sit, situationErr := tx.Situation.Get(ctx, id)
+		if situationErr != nil {
+			return fmt.Errorf("get situation: %w", situationErr)
+		}
+
+		relRef := s.makeSituationEvidenceRelationshipEntity(params)
+		if relRef == nil {
+			return fmt.Errorf("invalid evidence item")
+		}
+		slog.Debug("todo: remove evidence item relationship", "ref", relRef)
+
+		if sit.Status == situation.StatusOpen {
+			if evidenceErr := s.NotifySituationEvidenceItemStabilized(ctx, id, params); evidenceErr != nil {
+				return fmt.Errorf("situation evidence: %w", evidenceErr)
+			}
+		} else {
+			//return fmt.Errorf("%w: evidence links may target only an open situation", rez.ErrConflict)
+		}
+
+		return nil
+	})
+}
+
+func (s *SituationService) makeSituationEvidenceRelationshipEntity(params rez.SituationEvidenceItemParams) *situationKnowledgeRelationshipEntity {
+	if params.AlertEpisodeID != nil {
+		return &situationKnowledgeRelationshipEntity{
+			id:       *params.AlertEpisodeID,
+			category: kne.CategoryEvent,
+			kind:     "alert_episode",
+			pred:     knr.PredicateIndicates,
+		}
+	} else if params.IncidentID != nil {
+		return &situationKnowledgeRelationshipEntity{
+			id:       *params.IncidentID,
+			category: kne.CategoryEvent,
+			kind:     "incident",
+			pred:     knr.PredicateRespondsTo,
+		}
+	}
+	return nil
+}
+
+type situationKnowledgeRelationshipEntity struct {
+	id       uuid.UUID
+	category kne.Category
+	kind     string
+	pred     knr.Predicate
+	isTarget bool
+}
+
+func (s *SituationService) ingestKnowledgeRelationship(ctx context.Context, sit *ent.Situation, p situationKnowledgeRelationshipEntity) error {
+	entityRef := rez.KnowledgeEntityRef{
+		Category:            p.category,
+		Kind:                p.kind,
+		ProviderResourceRef: projections.InternalEntityResourceRef(p.id),
+		LinkingAttributes:   projections.KnowledgeEntityLinkingAttributes{ID: p.id},
+	}
+
+	situationEntityRef := rez.KnowledgeEntityRef{
+		Category:            kne.CategoryEvent,
+		Kind:                "situation",
+		ProviderResourceRef: projections.InternalEntityResourceRef(sit.ID),
+		LinkingAttributes:   projections.KnowledgeEntityLinkingAttributes{ID: sit.ID},
+	}
+
+	relationshipRef := &rez.KnowledgeRelationshipRef{
+		ProviderResourceRef: projections.InternalRelationshipResourceRef(p.id, sit.ID),
+		Source:              entityRef,
+		Predicate:           p.pred,
+		Target:              situationEntityRef,
+	}
+	if p.isTarget {
+		relationshipRef.Source = situationEntityRef
+		relationshipRef.Target = entityRef
+	}
+
+	if _, relErr := s.knowledge.ResolveInternalRelationship(ctx, *relationshipRef); relErr != nil {
+		return fmt.Errorf("ingest situation evidence item: %w", relErr)
+	}
+	return nil
+}
+
+/*
+func (s *SituationService) ingestSituationClassifiedAsHazard(ctx context.Context, situationID, systemHazardID uuid.UUID) error {
+	client := s.db.Client(ctx)
+	situation, situationErr := client.Situation.Get(ctx, situationID)
+	if situationErr != nil {
+		return fmt.Errorf("get situation: %w", situationErr)
+	}
+	hazard, hazardErr := client.SystemHazard.Get(ctx, systemHazardID)
+	if hazardErr != nil {
+		return fmt.Errorf("get system hazard: %w", hazardErr)
+	}
+	if hazard.KnowledgeEntityID == nil {
+		return fmt.Errorf("%w: system hazard has no knowledge entity", rez.ErrConflict)
+	}
+	ref := situationClassifiedAsHazardRef(
+		situationProjectionEndpoints{situationID: situation.ID, knowledgeEntityID: situation.KnowledgeEntityID},
+		situationProjectionEndpoints{systemHazardID: hazard.ID, knowledgeEntityID: *hazard.KnowledgeEntityID},
+	)
+	return s.knowledge.IngestInternalSubject(ctx, ref)
+}
+*/
+
+/*
+func systemHazardEntityRef(hazard situationProjectionEndpoints) rez.KnowledgeEntityRef {
+	return internalEntityRef("system-hazard/"+hazard.systemHazardID.String(), kne.CategoryConcern, systemHazardKnowledgeEntityKind, hazard.knowledgeEntityID)
+}
+
+func situationEntityRef(situation situationProjectionEndpoints) rez.KnowledgeEntityRef {
+	return internalEntityRef("situation/"+situation.situationID.String(), kne.CategoryEvent, situationKnowledgeEntityKind, situation.knowledgeEntityID)
+}
+
+func incidentEntityRef(incident situationProjectionEndpoints) rez.KnowledgeEntityRef {
+	return internalEntityRef("incident/"+incident.incidentID.String(), kne.CategoryEvent, incidentKnowledgeEntityKind, incident.knowledgeEntityID)
+}
+
+func situationHazardClassificationResourceRef(situationID, systemHazardID uuid.UUID) string {
+	return "situation-hazard-classification/" + situationID.String() + "/" + systemHazardID.String()
+}
+
+func incidentRespondsToSituationResourceRef(incidentID, situationID uuid.UUID) string {
+	return "incident-responds-to-situation/" + incidentID.String() + "/" + situationID.String()
+}
+
+func situationClassifiedAsHazardRef(situation, hazard situationProjectionEndpoints) rez.KnowledgeSubjectRef {
+	return internalRelationshipRef("situation-hazard-classification/"+situation.situationID.String()+"/"+hazard.systemHazardID.String(), knr.PredicateClassifiedAs, situationEntityRef(situation), systemHazardEntityRef(hazard))
+}
+
+func incidentRespondsToSituationRef(incident, situation situationProjectionEndpoints) rez.KnowledgeSubjectRef {
+	return internalRelationshipRef("incident-responds-to-situation/"+incident.incidentID.String()+"/"+situation.situationID.String(), knr.PredicateRespondsTo, incidentEntityRef(incident), situationEntityRef(situation))
+}
+*/
+
+/*
+func (s *SituationService) RebuildSituationProjection(ctx context.Context) error {
+	client := s.db.Client(ctx)
+	projectionAliasQuery := client.KnowledgeSubjectAlias.Query().
+		Where(
+			ksa.ProviderEQ(internalProvider),
+			ksa.SubjectKindEQ(ksa.SubjectKindRelationship),
+		)
+	projectionAliases, aliasesErr := projectionAliasQuery.All(ctx)
+	if aliasesErr != nil {
+		return fmt.Errorf("load situation projection aliases: %w", aliasesErr)
+	}
+	for _, alias := range projectionAliases {
+		ref := rez.ProviderResourceRef{
+			Provider:          alias.Provider,
+			ProviderNamespace: alias.ProviderNamespace,
+			ResourceRef:       alias.ProviderResourceRef,
+		}
+		if removeErr := s.knowledge.RemoveInternalSubject(ctx, ref); removeErr != nil {
+			return fmt.Errorf("remove situation projection %q: %w", alias.ProviderResourceRef, removeErr)
+		}
+	}
+
+	episodeQuery := client.AlertEpisode.Query().Where(ae.SituationIDNotNil())
+	episodes, episodesErr := episodeQuery.All(ctx)
+	if episodesErr != nil {
+		return fmt.Errorf("load linked alert episodes: %w", episodesErr)
+	}
+	for _, episode := range episodes {
+		if ingestErr := s.ingestAlertEpisodeIndicatesSituation(ctx, episode.ID, *episode.SituationID); ingestErr != nil {
+			return fmt.Errorf("rebuild alert episode situation link: %w", ingestErr)
+		}
+	}
+
+	assessments, assessmentsErr := client.SituationHazardAssessment.Query().
+		Order(sha.ByAssessedAt(sql.OrderDesc()), sha.ByRevision(sql.OrderDesc()), sha.ByID(sql.OrderDesc())).
+		All(ctx)
+	if assessmentsErr != nil {
+		return fmt.Errorf("load situation hazard assessments: %w", assessmentsErr)
+	}
+	latestStatus := make(map[string]sha.Status)
+	latestConfirmed := make(map[string]uuid.UUID)
+	for _, assessment := range assessments {
+		key := assessment.SituationID.String() + "\x1f" + assessment.SystemHazardID.String()
+		if _, exists := latestStatus[key]; exists {
+			continue
+		}
+		latestStatus[key] = assessment.Status
+		if assessment.Status == sha.StatusConfirmed {
+			latestConfirmed[key] = assessment.SystemHazardID
+		}
+	}
+	for key, systemHazardID := range latestConfirmed {
+		situationID := uuid.MustParse(strings.Split(key, "\x1f")[0])
+		if ingestErr := s.ingestSituationClassifiedAsHazard(ctx, situationID, systemHazardID); ingestErr != nil {
+			return fmt.Errorf("rebuild situation hazard classification: %w", ingestErr)
+		}
+	}
+
+	incidentsQuery := client.Incident.Query().WithSituations()
+	incidents, incidentsErr := incidentsQuery.All(ctx)
+	if incidentsErr != nil {
+		return fmt.Errorf("load incident situations: %w", incidentsErr)
+	}
+	for _, incident := range incidents {
+		situations, _ := incident.Edges.SituationsOrErr()
+		for _, situation := range situations {
+			if ingestErr := s.IngestIncidentRespondsToSituation(ctx, incident.ID, situation.ID); ingestErr != nil {
+				return fmt.Errorf("rebuild incident situation link: %w", ingestErr)
+			}
+		}
+	}
+	return nil
+}
+*/

@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
 )
@@ -50,6 +51,26 @@ func (_u *AlertEpisodeUpdate) SetNillableCreatedAt(v *time.Time) *AlertEpisodeUp
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AlertEpisodeUpdate) SetUpdatedAt(v time.Time) *AlertEpisodeUpdate {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *AlertEpisodeUpdate) SetKnowledgeEntityID(v uuid.UUID) *AlertEpisodeUpdate {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *AlertEpisodeUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertEpisodeUpdate {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
+	}
+	return _u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (_u *AlertEpisodeUpdate) ClearKnowledgeEntityID() *AlertEpisodeUpdate {
+	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
@@ -135,6 +156,11 @@ func (_u *AlertEpisodeUpdate) ClearClosedAt() *AlertEpisodeUpdate {
 	return _u
 }
 
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *AlertEpisodeUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertEpisodeUpdate {
+	return _u.SetKnowledgeEntityID(v.ID)
+}
+
 // AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
 func (_u *AlertEpisodeUpdate) AddInstanceIDs(ids ...uuid.UUID) *AlertEpisodeUpdate {
 	_u.mutation.AddInstanceIDs(ids...)
@@ -158,6 +184,12 @@ func (_u *AlertEpisodeUpdate) SetSituation(v *Situation) *AlertEpisodeUpdate {
 // Mutation returns the AlertEpisodeMutation object of the builder.
 func (_u *AlertEpisodeUpdate) Mutation() *AlertEpisodeMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *AlertEpisodeUpdate) ClearKnowledgeEntity() *AlertEpisodeUpdate {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
 }
 
 // ClearInstances clears all "instances" edges to the AlertInstance entity.
@@ -284,6 +316,37 @@ func (_u *AlertEpisodeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if _u.mutation.ClosedAtCleared() {
 		_spec.ClearField(alertepisode.FieldClosedAt, field.TypeTime)
 	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertepisode.KnowledgeEntityTable,
+			Columns: []string{alertepisode.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisode
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertepisode.KnowledgeEntityTable,
+			Columns: []string{alertepisode.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisode
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -407,6 +470,26 @@ func (_u *AlertEpisodeUpdateOne) SetUpdatedAt(v time.Time) *AlertEpisodeUpdateOn
 	return _u
 }
 
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *AlertEpisodeUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *AlertEpisodeUpdateOne {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *AlertEpisodeUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertEpisodeUpdateOne {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
+	}
+	return _u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (_u *AlertEpisodeUpdateOne) ClearKnowledgeEntityID() *AlertEpisodeUpdateOne {
+	_u.mutation.ClearKnowledgeEntityID()
+	return _u
+}
+
 // SetSituationID sets the "situation_id" field.
 func (_u *AlertEpisodeUpdateOne) SetSituationID(v uuid.UUID) *AlertEpisodeUpdateOne {
 	_u.mutation.SetSituationID(v)
@@ -489,6 +572,11 @@ func (_u *AlertEpisodeUpdateOne) ClearClosedAt() *AlertEpisodeUpdateOne {
 	return _u
 }
 
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *AlertEpisodeUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *AlertEpisodeUpdateOne {
+	return _u.SetKnowledgeEntityID(v.ID)
+}
+
 // AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
 func (_u *AlertEpisodeUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *AlertEpisodeUpdateOne {
 	_u.mutation.AddInstanceIDs(ids...)
@@ -512,6 +600,12 @@ func (_u *AlertEpisodeUpdateOne) SetSituation(v *Situation) *AlertEpisodeUpdateO
 // Mutation returns the AlertEpisodeMutation object of the builder.
 func (_u *AlertEpisodeUpdateOne) Mutation() *AlertEpisodeMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *AlertEpisodeUpdateOne) ClearKnowledgeEntity() *AlertEpisodeUpdateOne {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
 }
 
 // ClearInstances clears all "instances" edges to the AlertInstance entity.
@@ -667,6 +761,37 @@ func (_u *AlertEpisodeUpdateOne) sqlSave(ctx context.Context) (_node *AlertEpiso
 	}
 	if _u.mutation.ClosedAtCleared() {
 		_spec.ClearField(alertepisode.FieldClosedAt, field.TypeTime)
+	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertepisode.KnowledgeEntityTable,
+			Columns: []string{alertepisode.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisode
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertepisode.KnowledgeEntityTable,
+			Columns: []string{alertepisode.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisode
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{

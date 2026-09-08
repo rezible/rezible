@@ -11,6 +11,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentturn"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
@@ -39,21 +40,26 @@ type situationServiceHarness struct {
 	agents     *AgentSessionService
 	situations *SituationService
 	hazards    *SystemHazardService
+	knowledge  *KnowledgeGraphService
 }
 
 func (s *SituationServiceSuite) newHarness(tdb rez.Database) *situationServiceHarness {
 	jobSvc := mocks.NewMockJobService(s.T())
-	agents := &AgentSessionService{
+	agentsSvc := &AgentSessionService{
 		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 		db:     tdb,
 		jobs:   jobSvc,
 	}
+	kg, _ := NewKnowledgeGraphService(tdb)
+	sits, _ := NewSituationService(tdb, jobSvc, agentsSvc, kg)
+	haz, _ := NewSystemHazardService(tdb, kg)
 	return &situationServiceHarness{
 		tdb:        tdb,
 		jobs:       jobSvc,
-		agents:     agents,
-		situations: &SituationService{db: tdb, agents: agents, jobs: jobSvc},
-		hazards:    &SystemHazardService{db: tdb},
+		agents:     agentsSvc,
+		knowledge:  kg,
+		situations: sits,
+		hazards:    haz,
 	}
 }
 
@@ -70,8 +76,13 @@ func (s *SituationServiceSuite) createSituation(ctx context.Context, h *situatio
 func (s *SituationServiceSuite) createEpisode(ctx context.Context, client *ent.Client) *ent.AlertEpisode {
 	definition := client.AlertDefinition.Create().SetTitle("Checkout alert").SaveX(ctx)
 	now := time.Now().UTC()
+	entity := client.KnowledgeEntity.Create().
+		SetCategory(kne.CategoryEvent).
+		SetKind("alert_episode").
+		SaveX(ctx)
 	return client.AlertEpisode.Create().
 		SetAlertDefinitionID(definition.ID).
+		SetKnowledgeEntityID(entity.ID).
 		SetStartedAt(now).
 		SetLastObservedAt(now).
 		SaveX(ctx)
@@ -172,47 +183,6 @@ func (s *SituationServiceSuite) TestSituationCloseIsIdempotentAndNeverReopens() 
 	s.ErrorIs(conflictErr, rez.ErrConflict)
 }
 
-func (s *SituationServiceSuite) TestAlertEpisodeLinkIsSetOnceAndClosedSituationsCannotReceiveNewLinks() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	h := s.newHarness(tdb)
-	client := tdb.Client(ctx)
-	sit := s.createSituation(ctx, h, "Checkout degradation")
-	episode := s.createEpisode(ctx, client)
-
-	linked, linkErr := h.situations.LinkAlertEpisodeToSituation(ctx, rez.LinkAlertEpisodeToSituationParams{
-		AlertEpisodeID: episode.ID,
-		SituationID:    sit.ID,
-	})
-	s.Require().NoError(linkErr)
-	s.Equal(sit.ID, *linked.SituationID)
-	_, repeatErr := h.situations.LinkAlertEpisodeToSituation(ctx, rez.LinkAlertEpisodeToSituationParams{
-		AlertEpisodeID: episode.ID,
-		SituationID:    sit.ID,
-	})
-	s.NoError(repeatErr)
-
-	other := s.createSituation(ctx, h, "Another situation")
-	_, moveErr := h.situations.LinkAlertEpisodeToSituation(ctx, rez.LinkAlertEpisodeToSituationParams{
-		AlertEpisodeID: episode.ID,
-		SituationID:    other.ID,
-	})
-	s.ErrorIs(moveErr, rez.ErrConflict)
-
-	closed := s.createSituation(ctx, h, "Closed situation")
-	_, closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
-		SituationID: closed.ID,
-		Reason:      situation.CloseReasonDismissed,
-	})
-	s.Require().NoError(closeErr)
-	closedEpisode := s.createEpisode(ctx, client)
-	_, closedLinkErr := h.situations.LinkAlertEpisodeToSituation(ctx, rez.LinkAlertEpisodeToSituationParams{
-		AlertEpisodeID: closedEpisode.ID,
-		SituationID:    closed.ID,
-	})
-	s.ErrorIs(closedLinkErr, rez.ErrConflict)
-}
-
 func (s *SituationServiceSuite) TestSituationMayExistWithoutInvestigationAndInvestigationCreatesAnalysisAndSession() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
@@ -224,7 +194,7 @@ func (s *SituationServiceSuite) TestSituationMayExistWithoutInvestigationAndInve
 	s.expectReconciliation(h)
 	s.expectStartAgentSession(h)
 
-	investigation, createErr := h.situations.CreateSituationInvestigation(ctx, rez.CreateSituationInvestigationParams{SituationID: sit.ID})
+	investigation, createErr := h.situations.CreateSituationInvestigation(ctx, sit.ID)
 	s.Require().NoError(createErr)
 	s.Equal(sit.ID, investigation.SituationID)
 	s.Equal(1, tdb.Client(ctx).SituationInvestigation.Query().CountX(ctx))
@@ -236,7 +206,7 @@ func (s *SituationServiceSuite) TestSituationMayExistWithoutInvestigationAndInve
 	analysis := tdb.Client(ctx).SystemAnalysis.GetX(ctx, *session.SystemAnalysisID)
 	s.Equal(sit.KnowledgeEntityID, *analysis.SubjectEntityID)
 
-	repeated, repeatErr := h.situations.CreateSituationInvestigation(ctx, rez.CreateSituationInvestigationParams{SituationID: sit.ID})
+	repeated, repeatErr := h.situations.CreateSituationInvestigation(ctx, sit.ID)
 	s.Require().NoError(repeatErr)
 	s.Equal(investigation.ID, repeated.ID)
 }
@@ -254,8 +224,7 @@ func (s *SituationServiceSuite) TestConcurrentSituationInvestigationCreationLeav
 	var g errgroup.Group
 	for range 2 {
 		g.Go(func() error {
-			params := rez.CreateSituationInvestigationParams{SituationID: sit.ID}
-			investigation, createErr := h.situations.CreateSituationInvestigation(ctx, params)
+			investigation, createErr := h.situations.CreateSituationInvestigation(ctx, sit.ID)
 			results <- investigation
 			return createErr
 		})
@@ -277,7 +246,7 @@ func (s *SituationServiceSuite) TestSituationInvestigationReportPersistenceWhile
 	s.expectReconciliation(h)
 	s.expectStartAgentSession(h)
 
-	inv, err := h.situations.CreateSituationInvestigation(ctx, rez.CreateSituationInvestigationParams{SituationID: sit.ID})
+	inv, err := h.situations.CreateSituationInvestigation(ctx, sit.ID)
 	s.Require().NoError(err)
 
 	createTurn := tdb.Client(ctx).AgentTurn.Create().
@@ -332,7 +301,7 @@ func (s *SituationServiceSuite) TestSystemHazardRetirementAndRiskAssessmentRevis
 	s.Require().NoError(latestErr)
 	s.Equal(second.ID, latest.ID)
 
-	retired, retireErr := h.hazards.RetireSystemHazard(ctx, rez.RetireSystemHazardParams{SystemHazardID: hazard.ID})
+	retired, retireErr := h.hazards.RetireSystemHazard(ctx, hazard.ID)
 	s.Require().NoError(retireErr)
 	s.Equal("retired", string(retired.Status))
 }

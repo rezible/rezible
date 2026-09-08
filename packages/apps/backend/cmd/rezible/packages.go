@@ -327,6 +327,7 @@ var provideDatabaseServices = do.Package(
 		return db.NewIncidentService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.SituationService](i),
 		)
 	}),
 
@@ -385,6 +386,7 @@ var provideDatabaseServices = do.Package(
 		return db.NewAlertService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.SituationService](i),
+			do.MustInvoke[rez.KnowledgeGraphService](i),
 		)
 	}),
 
@@ -419,9 +421,9 @@ var provideDatabaseServices = do.Package(
 	do.Lazy(func(i do.Injector) (rez.SituationService, error) {
 		return db.NewSituationService(
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.AgentSessionService](i),
+			do.MustInvoke[rez.KnowledgeGraphService](i),
 		)
 	}),
 
@@ -434,7 +436,7 @@ var provideDatabaseServices = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.SystemHazardService, error) {
-		return db.NewSystemHazardService(do.MustInvoke[rez.Database](i))
+		return db.NewSystemHazardService(do.MustInvoke[rez.Database](i), do.MustInvoke[rez.KnowledgeGraphService](i))
 	}),
 )
 

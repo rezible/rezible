@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/systemhazard"
@@ -30,6 +31,7 @@ type SystemHazardQuery struct {
 	inters                   []Interceptor
 	predicates               []predicate.SystemHazard
 	withTenant               *TenantQuery
+	withKnowledgeEntity      *KnowledgeEntityQuery
 	withRiskAssessments      *SystemHazardRiskAssessmentQuery
 	withSituationAssessments *SituationHazardAssessmentQuery
 	modifiers                []func(*sql.Selector)
@@ -87,6 +89,31 @@ func (_q *SystemHazardQuery) QueryTenant() *TenantQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemHazard
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryKnowledgeEntity chains the current query on the "knowledge_entity" edge.
+func (_q *SystemHazardQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, selector),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemhazard.KnowledgeEntityTable, systemhazard.KnowledgeEntityColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.SystemHazard
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -337,6 +364,7 @@ func (_q *SystemHazardQuery) Clone() *SystemHazardQuery {
 		inters:                   append([]Interceptor{}, _q.inters...),
 		predicates:               append([]predicate.SystemHazard{}, _q.predicates...),
 		withTenant:               _q.withTenant.Clone(),
+		withKnowledgeEntity:      _q.withKnowledgeEntity.Clone(),
 		withRiskAssessments:      _q.withRiskAssessments.Clone(),
 		withSituationAssessments: _q.withSituationAssessments.Clone(),
 		// clone intermediate query.
@@ -354,6 +382,17 @@ func (_q *SystemHazardQuery) WithTenant(opts ...func(*TenantQuery)) *SystemHazar
 		opt(query)
 	}
 	_q.withTenant = query
+	return _q
+}
+
+// WithKnowledgeEntity tells the query-builder to eager-load the nodes that are connected to
+// the "knowledge_entity" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemHazardQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *SystemHazardQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withKnowledgeEntity = query
 	return _q
 }
 
@@ -463,8 +502,9 @@ func (_q *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*SystemHazard{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
+			_q.withKnowledgeEntity != nil,
 			_q.withRiskAssessments != nil,
 			_q.withSituationAssessments != nil,
 		}
@@ -495,6 +535,12 @@ func (_q *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *SystemHazard, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withKnowledgeEntity; query != nil {
+		if err := _q.loadKnowledgeEntity(ctx, query, nodes, nil,
+			func(n *SystemHazard, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -541,6 +587,38 @@ func (_q *SystemHazardQuery) loadTenant(ctx context.Context, query *TenantQuery,
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *SystemHazardQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *KnowledgeEntity)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*SystemHazard)
+	for i := range nodes {
+		if nodes[i].KnowledgeEntityID == nil {
+			continue
+		}
+		fk := *nodes[i].KnowledgeEntityID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgeentity.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "knowledge_entity_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -641,6 +719,9 @@ func (_q *SystemHazardQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(systemhazard.FieldTenantID)
+		}
+		if _q.withKnowledgeEntity != nil {
+			_spec.Node.AddColumnOnce(systemhazard.FieldKnowledgeEntityID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

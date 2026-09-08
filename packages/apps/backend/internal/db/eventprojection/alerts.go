@@ -19,13 +19,14 @@ const (
 	knowledgeAssertionAlertObservesEntity     = "alert_observes_entity"
 )
 
-func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event *projections.AlertInstanceEvent) ([]rez.ProjectedEntityRef, error) {
-	attributes := event.Attributes
+func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *projections.AlertInstanceEvent) ([]rez.ProjectedEntityRef, error) {
+	event := e.Event
+	attrs := e.Attributes
 
 	alertResourceRef := rez.ProviderResourceRef{
-		Provider:          event.Event.Provider,
-		ProviderNamespace: event.Event.ProviderNamespace,
-		ResourceRef:       event.Event.ProviderResourceRef,
+		Provider:          event.Provider,
+		ProviderNamespace: event.ProviderNamespace,
+		ResourceRef:       event.ProviderResourceRef,
 	}
 	alertEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategorySignal,
@@ -33,22 +34,22 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 		ProviderResourceRef: alertResourceRef,
 	}
 	alertEntityEvidence := rez.KnowledgeEvidenceRef{
-		Kind:        projectionEvidenceKind(event.Event),
+		Kind:        projectionEvidenceKind(event),
 		Assertion:   knowledgeAssertionAlertDefinitionObserved,
-		EffectiveAt: event.Event.OccurredAt,
+		EffectiveAt: event.OccurredAt,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
-			DisplayName: attributes.Title,
-			Description: attributes.Description,
+			DisplayName: attrs.Title,
+			Description: attrs.Description,
 			Properties: map[string]any{
-				"definition": attributes.Definition,
+				"definition": attrs.Definition,
 			},
 		},
 		SubjectEntity: &alertEntityRef,
 	}
 
-	evidenceKind := projectionEvidenceKind(event.Event)
-	supportingEvidence := make([]rez.KnowledgeEvidenceRef, 0, len(attributes.ObservedEntities)*2)
-	for _, observed := range projections.SortEntityObservations(attributes.ObservedEntities) {
+	evidenceKind := projectionEvidenceKind(event)
+	supportingEvidence := make([]rez.KnowledgeEvidenceRef, 0, len(attrs.ObservedEntities)*2)
+	for _, observed := range projections.SortEntityObservations(attrs.ObservedEntities) {
 		observedEntityRef := rez.KnowledgeEntityRef{
 			Category:            observed.Category,
 			Kind:                observed.Kind,
@@ -57,7 +58,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 		entityEvidence := rez.KnowledgeEvidenceRef{
 			Kind:        evidenceKind,
 			Assertion:   knowledgeAssertionAlertEntityObserved,
-			EffectiveAt: event.Event.OccurredAt,
+			EffectiveAt: event.OccurredAt,
 			SubjectState: schematypes.KnowledgeGraphSubjectState{
 				DisplayName: observed.DisplayName,
 				Description: observed.Description,
@@ -74,7 +75,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 		relationshipEvidence := rez.KnowledgeEvidenceRef{
 			Kind:                evidenceKind,
 			Assertion:           knowledgeAssertionAlertObservesEntity,
-			EffectiveAt:         event.Event.OccurredAt,
+			EffectiveAt:         event.OccurredAt,
 			SubjectRelationship: &relationshipRef,
 			SubjectState: schematypes.KnowledgeGraphSubjectState{
 				DisplayName: "Observes " + observed.DisplayName,
@@ -85,32 +86,32 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, event 
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		subj, ingestErr := s.ingestSubjectEvidence(ctx, event.Event, alertEntityEvidence, supportingEvidence...)
+		subj, ingestErr := s.ingestSubjectEvidence(ctx, event, alertEntityEvidence, supportingEvidence...)
 		if ingestErr != nil {
 			return fmt.Errorf("alert knowledge evidence: %w", ingestErr)
 		} else if subj.EntityID == nil {
 			return fmt.Errorf("nil subject entity")
 		}
 
-		upsertAlert := tx.AlertDefinition.Create().
+		upsertDefinition := tx.AlertDefinition.Create().
 			SetKnowledgeEntityID(*subj.EntityID).
-			SetTitle(attributes.Title).
-			SetDescription(attributes.Description).
-			SetDefinition(attributes.Definition).
+			SetTitle(attrs.Title).
+			SetDescription(attrs.Description).
+			SetDefinition(attrs.Definition).
 			OnConflictColumns(ad.FieldTenantID, ad.FieldKnowledgeEntityID).
 			UpdateNewValues()
-		alertID, alertErr := upsertAlert.ID(ctx)
+		definitionId, alertErr := upsertDefinition.ID(ctx)
 		if alertErr != nil {
 			return fmt.Errorf("upsert alert: %w", alertErr)
 		}
 
-		if _, eventErr := s.alerts.RecordAlertEvent(ctx, alertID, event.Event); eventErr != nil {
+		if _, eventErr := s.alerts.RecordAlertDefinitionInstance(ctx, definitionId, event); eventErr != nil {
 			return fmt.Errorf("contribute alert event: %w", eventErr)
 		}
 
 		projected = append(projected, rez.ProjectedEntityRef{
 			Kind: knowledgeEntityKindAlert,
-			Id:   alertID,
+			Id:   definitionId,
 		})
 
 		return nil

@@ -170,6 +170,11 @@ type (
 		Target              KnowledgeEntityRef
 	}
 
+	KnowledgeSubjectRef struct {
+		Entity       *KnowledgeEntityRef
+		Relationship *KnowledgeRelationshipRef
+	}
+
 	KnowledgeEvidenceRef struct {
 		Kind                ke.Kind
 		Assertion           string
@@ -251,6 +256,8 @@ type (
 		GetView(context.Context, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
 
 		IngestEvidence(context.Context, *ent.NormalizedEvent, ...KnowledgeEvidenceRef) error
+		ResolveInternalEntity(context.Context, KnowledgeEntityRef) (*ent.KnowledgeSubjectAlias, error)
+		ResolveInternalRelationship(context.Context, KnowledgeRelationshipRef) (*ent.KnowledgeSubjectAlias, error)
 	}
 )
 
@@ -717,7 +724,7 @@ type (
 		GetAlertInstance(context.Context, uuid.UUID) (*ent.AlertInstance, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
 
-		RecordAlertEvent(context.Context, uuid.UUID, *ent.NormalizedEvent) (*ent.AlertInstance, error)
+		RecordAlertDefinitionInstance(context.Context, uuid.UUID, *ent.NormalizedEvent) (*ent.AlertInstance, error)
 	}
 )
 
@@ -729,24 +736,20 @@ type (
 	}
 
 	CreateSituationParams struct {
-		Title                  string
-		Summary                string
-		OpenedAt               time.Time
-		FoundingAlertEpisodeID *uuid.UUID
+		Title         string
+		Summary       string
+		OpenedAt      time.Time
+		EvidenceItems []SituationEvidenceItemParams
+	}
+
+	SituationEvidenceItemParams struct {
+		AlertEpisodeID *uuid.UUID
+		IncidentID     *uuid.UUID
 	}
 
 	CloseSituationParams struct {
 		SituationID uuid.UUID
 		Reason      situation.CloseReason
-	}
-
-	LinkAlertEpisodeToSituationParams struct {
-		AlertEpisodeID uuid.UUID
-		SituationID    uuid.UUID
-	}
-
-	CreateSituationInvestigationParams struct {
-		SituationID uuid.UUID
 	}
 
 	SetSituationInvestigationReportParams struct {
@@ -782,12 +785,12 @@ type (
 		CreateSituation(context.Context, CreateSituationParams) (*ent.Situation, error)
 		GetSituation(context.Context, uuid.UUID) (*ent.Situation, error)
 		CloseSituation(context.Context, CloseSituationParams) (*ent.Situation, error)
-		LinkAlertEpisodeToSituation(context.Context, LinkAlertEpisodeToSituationParams) (*ent.AlertEpisode, error)
 
-		RecordSituationEvidence(context.Context, uuid.UUID) error
-		StabilizeSituation(context.Context, uuid.UUID) error
+		AddSituationEvidenceItem(context.Context, uuid.UUID, SituationEvidenceItemParams) error
+		NotifySituationEvidenceItemUpdated(context.Context, uuid.UUID, SituationEvidenceItemParams) error
+		RemoveSituationEvidenceItem(context.Context, uuid.UUID, SituationEvidenceItemParams) error
 
-		CreateSituationInvestigation(context.Context, CreateSituationInvestigationParams) (*ent.SituationInvestigation, error)
+		CreateSituationInvestigation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)
 		GetSituationInvestigation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)
 		SetSituationInvestigationReport(context.Context, SetSituationInvestigationReportParams) (*ent.SituationInvestigation, error)
 
@@ -801,10 +804,6 @@ type (
 		Title                 string
 		Description           string
 		PotentialConsequences string
-	}
-
-	RetireSystemHazardParams struct {
-		SystemHazardID uuid.UUID
 	}
 
 	AddSystemHazardRiskAssessmentParams struct {
@@ -824,7 +823,7 @@ type (
 	SystemHazardService interface {
 		CreateSystemHazard(context.Context, CreateSystemHazardParams) (*ent.SystemHazard, error)
 		GetSystemHazard(context.Context, uuid.UUID) (*ent.SystemHazard, error)
-		RetireSystemHazard(context.Context, RetireSystemHazardParams) (*ent.SystemHazard, error)
+		RetireSystemHazard(context.Context, uuid.UUID) (*ent.SystemHazard, error)
 
 		AddSystemHazardRiskAssessment(context.Context, AddSystemHazardRiskAssessmentParams) (*ent.SystemHazardRiskAssessment, error)
 		ListSystemHazardRiskAssessments(context.Context, ListSystemHazardRiskAssessmentsParams) (*ent.ListResult[ent.SystemHazardRiskAssessment], error)

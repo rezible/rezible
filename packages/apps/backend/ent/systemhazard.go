@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/systemhazard"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -25,6 +26,8 @@ type SystemHazard struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
+	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Description holds the value of the "description" field.
@@ -43,13 +46,15 @@ type SystemHazard struct {
 type SystemHazardEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// KnowledgeEntity holds the value of the knowledge_entity edge.
+	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// RiskAssessments holds the value of the risk_assessments edge.
 	RiskAssessments []*SystemHazardRiskAssessment `json:"risk_assessments,omitempty"`
 	// SituationAssessments holds the value of the situation_assessments edge.
 	SituationAssessments []*SituationHazardAssessment `json:"situation_assessments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -63,10 +68,21 @@ func (e SystemHazardEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemHazardEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
+	if e.KnowledgeEntity != nil {
+		return e.KnowledgeEntity, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: knowledgeentity.Label}
+	}
+	return nil, &NotLoadedError{edge: "knowledge_entity"}
+}
+
 // RiskAssessmentsOrErr returns the RiskAssessments value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemHazardEdges) RiskAssessmentsOrErr() ([]*SystemHazardRiskAssessment, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.RiskAssessments, nil
 	}
 	return nil, &NotLoadedError{edge: "risk_assessments"}
@@ -75,7 +91,7 @@ func (e SystemHazardEdges) RiskAssessmentsOrErr() ([]*SystemHazardRiskAssessment
 // SituationAssessmentsOrErr returns the SituationAssessments value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemHazardEdges) SituationAssessmentsOrErr() ([]*SituationHazardAssessment, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.SituationAssessments, nil
 	}
 	return nil, &NotLoadedError{edge: "situation_assessments"}
@@ -86,6 +102,8 @@ func (*SystemHazard) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemhazard.FieldKnowledgeEntityID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case systemhazard.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case systemhazard.FieldTitle, systemhazard.FieldDescription, systemhazard.FieldPotentialConsequences, systemhazard.FieldStatus:
@@ -133,6 +151,13 @@ func (_m *SystemHazard) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
+		case systemhazard.FieldKnowledgeEntityID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field knowledge_entity_id", values[i])
+			} else if value.Valid {
+				_m.KnowledgeEntityID = new(uuid.UUID)
+				*_m.KnowledgeEntityID = *value.S.(*uuid.UUID)
+			}
 		case systemhazard.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
@@ -173,6 +198,11 @@ func (_m *SystemHazard) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the SystemHazard entity.
 func (_m *SystemHazard) QueryTenant() *TenantQuery {
 	return NewSystemHazardClient(_m.config).QueryTenant(_m)
+}
+
+// QueryKnowledgeEntity queries the "knowledge_entity" edge of the SystemHazard entity.
+func (_m *SystemHazard) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	return NewSystemHazardClient(_m.config).QueryKnowledgeEntity(_m)
 }
 
 // QueryRiskAssessments queries the "risk_assessments" edge of the SystemHazard entity.
@@ -216,6 +246,11 @@ func (_m *SystemHazard) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := _m.KnowledgeEntityID; v != nil {
+		builder.WriteString("knowledge_entity_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)

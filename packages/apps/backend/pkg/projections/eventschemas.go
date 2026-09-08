@@ -1,14 +1,38 @@
 package projections
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 )
+
+func InternalEntityResourceRef(id uuid.UUID) rez.ProviderResourceRef {
+	return rez.ProviderResourceRef{
+		Provider:    "rezible",
+		ResourceRef: id.String(),
+	}
+}
+
+func InternalRelationshipResourceRef(sourceId uuid.UUID, targetId uuid.UUID) rez.ProviderResourceRef {
+	return rez.ProviderResourceRef{
+		Provider:    "rezible",
+		ResourceRef: fmt.Sprintf("%s:%s", sourceId.String(), targetId.String()),
+	}
+}
+
+type KnowledgeEntityLinkingAttributes struct {
+	ID uuid.UUID
+}
+
+func (l KnowledgeEntityLinkingAttributes) Values() map[string]string {
+	return map[string]string{"id": l.ID.String()}
+}
 
 type (
 	CodeForgeEvent = Event[CodeForgeEventAttributes]

@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/tenant"
@@ -31,6 +32,7 @@ type AlertEpisodeQuery struct {
 	inters              []Interceptor
 	predicates          []predicate.AlertEpisode
 	withTenant          *TenantQuery
+	withKnowledgeEntity *KnowledgeEntityQuery
 	withAlertDefinition *AlertDefinitionQuery
 	withInstances       *AlertInstanceQuery
 	withSituation       *SituationQuery
@@ -89,6 +91,31 @@ func (_q *AlertEpisodeQuery) QueryTenant() *TenantQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.AlertEpisode
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryKnowledgeEntity chains the current query on the "knowledge_entity" edge.
+func (_q *AlertEpisodeQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertepisode.Table, alertepisode.FieldID, selector),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertepisode.KnowledgeEntityTable, alertepisode.KnowledgeEntityColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.AlertEpisode
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -364,6 +391,7 @@ func (_q *AlertEpisodeQuery) Clone() *AlertEpisodeQuery {
 		inters:              append([]Interceptor{}, _q.inters...),
 		predicates:          append([]predicate.AlertEpisode{}, _q.predicates...),
 		withTenant:          _q.withTenant.Clone(),
+		withKnowledgeEntity: _q.withKnowledgeEntity.Clone(),
 		withAlertDefinition: _q.withAlertDefinition.Clone(),
 		withInstances:       _q.withInstances.Clone(),
 		withSituation:       _q.withSituation.Clone(),
@@ -382,6 +410,17 @@ func (_q *AlertEpisodeQuery) WithTenant(opts ...func(*TenantQuery)) *AlertEpisod
 		opt(query)
 	}
 	_q.withTenant = query
+	return _q
+}
+
+// WithKnowledgeEntity tells the query-builder to eager-load the nodes that are connected to
+// the "knowledge_entity" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AlertEpisodeQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *AlertEpisodeQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withKnowledgeEntity = query
 	return _q
 }
 
@@ -502,8 +541,9 @@ func (_q *AlertEpisodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*AlertEpisode{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
+			_q.withKnowledgeEntity != nil,
 			_q.withAlertDefinition != nil,
 			_q.withInstances != nil,
 			_q.withSituation != nil,
@@ -535,6 +575,12 @@ func (_q *AlertEpisodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *AlertEpisode, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withKnowledgeEntity; query != nil {
+		if err := _q.loadKnowledgeEntity(ctx, query, nodes, nil,
+			func(n *AlertEpisode, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -582,6 +628,38 @@ func (_q *AlertEpisodeQuery) loadTenant(ctx context.Context, query *TenantQuery,
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *AlertEpisodeQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*AlertEpisode, init func(*AlertEpisode), assign func(*AlertEpisode, *KnowledgeEntity)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*AlertEpisode)
+	for i := range nodes {
+		if nodes[i].KnowledgeEntityID == nil {
+			continue
+		}
+		fk := *nodes[i].KnowledgeEntityID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgeentity.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "knowledge_entity_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -713,6 +791,9 @@ func (_q *AlertEpisodeQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(alertepisode.FieldTenantID)
+		}
+		if _q.withKnowledgeEntity != nil {
+			_spec.Node.AddColumnOnce(alertepisode.FieldKnowledgeEntityID)
 		}
 		if _q.withAlertDefinition != nil {
 			_spec.Node.AddColumnOnce(alertepisode.FieldAlertDefinitionID)

@@ -23,6 +23,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
+	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -33,6 +35,8 @@ const (
 	FieldStatus = "status"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
+	EdgeKnowledgeEntity = "knowledge_entity"
 	// EdgeRiskAssessments holds the string denoting the risk_assessments edge name in mutations.
 	EdgeRiskAssessments = "risk_assessments"
 	// EdgeSituationAssessments holds the string denoting the situation_assessments edge name in mutations.
@@ -46,6 +50,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
+	KnowledgeEntityTable = "system_hazards"
+	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
+	KnowledgeEntityInverseTable = "knowledge_entities"
+	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
+	KnowledgeEntityColumn = "knowledge_entity_id"
 	// RiskAssessmentsTable is the table that holds the risk_assessments relation/edge.
 	RiskAssessmentsTable = "system_hazard_risk_assessments"
 	// RiskAssessmentsInverseTable is the table name for the SystemHazardRiskAssessment entity.
@@ -68,6 +79,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldKnowledgeEntityID,
 	FieldTitle,
 	FieldDescription,
 	FieldPotentialConsequences,
@@ -153,6 +165,11 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
+func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKnowledgeEntityID, opts...).ToFunc()
+}
+
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
@@ -177,6 +194,13 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByKnowledgeEntityField orders the results by knowledge_entity field.
+func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -212,6 +236,13 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newKnowledgeEntityStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(KnowledgeEntityInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 	)
 }
 func newRiskAssessmentsStep() *sqlgraph.Step {

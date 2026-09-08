@@ -30,7 +30,7 @@ func (s *IncidentServiceSuite) newService(tdb rez.Database) *IncidentService {
 	msgs.EXPECT().AddHandlers(mock.Anything).Return(nil)
 	msgs.EXPECT().Publish(mock.Anything, mock.Anything).Return(nil).Maybe()
 
-	svc, err := NewIncidentService(tdb, msgs)
+	svc, err := NewIncidentService(tdb, msgs, nil)
 	s.Require().NoError(err)
 	return svc
 }

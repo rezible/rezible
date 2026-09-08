@@ -17,6 +17,7 @@ func (SystemHazard) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
+		KnowledgeEntityLinkMixin{},
 	}
 }
 

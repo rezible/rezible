@@ -89,6 +89,7 @@ func (AlertEpisode) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
+		KnowledgeEntityLinkMixin{},
 	}
 }
 

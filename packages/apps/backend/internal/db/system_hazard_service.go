@@ -10,16 +10,19 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/systemhazard"
-	"github.com/rezible/rezible/ent/systemhazardriskassessment"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	sh "github.com/rezible/rezible/ent/systemhazard"
+	shra "github.com/rezible/rezible/ent/systemhazardriskassessment"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 type SystemHazardService struct {
-	db rez.Database
+	db        rez.Database
+	knowledge rez.KnowledgeGraphService
 }
 
-func NewSystemHazardService(db rez.Database) (*SystemHazardService, error) {
-	return &SystemHazardService{db: db}, nil
+func NewSystemHazardService(db rez.Database, knowledge rez.KnowledgeGraphService) (*SystemHazardService, error) {
+	return &SystemHazardService{db: db, knowledge: knowledge}, nil
 }
 
 func (s *SystemHazardService) CreateSystemHazard(ctx context.Context, params rez.CreateSystemHazardParams) (*ent.SystemHazard, error) {
@@ -28,53 +31,75 @@ func (s *SystemHazardService) CreateSystemHazard(ctx context.Context, params rez
 		return nil, fmt.Errorf("%w: system hazard title is required", rez.ErrInvalidInput)
 	}
 
-	createHazard := s.db.Client(ctx).SystemHazard.Create().
-		SetTitle(title).
-		SetStatus(systemhazard.StatusActive)
-	if description := strings.TrimSpace(params.Description); description != "" {
-		createHazard.SetDescription(description)
-	}
-	if consequences := strings.TrimSpace(params.PotentialConsequences); consequences != "" {
-		createHazard.SetPotentialConsequences(consequences)
-	}
-	return createHazard.Save(ctx)
+	var created *ent.SystemHazard
+	return created, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		hazardId := uuid.New()
+		ka, kaErr := s.knowledge.ResolveInternalEntity(ctx, rez.KnowledgeEntityRef{
+			Category:            kne.CategoryConcern,
+			Kind:                "system_hazard",
+			ProviderResourceRef: projections.InternalEntityResourceRef(hazardId),
+		})
+		if kaErr != nil || ka.EntityID == nil {
+			return fmt.Errorf("create situation knowledge entity: %w", kaErr)
+		}
+
+		createHazard := tx.SystemHazard.Create().
+			SetID(hazardId).
+			SetKnowledgeEntityID(*ka.EntityID).
+			SetTitle(title).
+			SetStatus(sh.StatusActive)
+		if description := strings.TrimSpace(params.Description); description != "" {
+			createHazard.SetDescription(description)
+		}
+		if consequences := strings.TrimSpace(params.PotentialConsequences); consequences != "" {
+			createHazard.SetPotentialConsequences(consequences)
+		}
+		createdHazard, saveErr := createHazard.Save(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("create system hazard: %w", saveErr)
+		}
+		created = createdHazard.Unwrap()
+		return nil
+	})
 }
 
 func (s *SystemHazardService) GetSystemHazard(ctx context.Context, id uuid.UUID) (*ent.SystemHazard, error) {
 	return s.db.Client(ctx).SystemHazard.Query().
-		Where(systemhazard.ID(id)).
+		Where(sh.ID(id)).
 		WithRiskAssessments(func(query *ent.SystemHazardRiskAssessmentQuery) {
-			query.Order(systemhazardriskassessment.ByRevision(sql.OrderAsc()))
+			query.Order(shra.ByRevision(sql.OrderAsc()))
 		}).
 		Only(ctx)
 }
 
 const systemHazardLockNamespace = "system_hazard"
 
-func (s *SystemHazardService) RetireSystemHazard(ctx context.Context, params rez.RetireSystemHazardParams) (*ent.SystemHazard, error) {
-	if params.SystemHazardID == uuid.Nil {
+func (s *SystemHazardService) RetireSystemHazard(ctx context.Context, id uuid.UUID) (*ent.SystemHazard, error) {
+	if id == uuid.Nil {
 		return nil, fmt.Errorf("%w: system hazard id is required", rez.ErrInvalidInput)
 	}
 
 	var retired *ent.SystemHazard
 	return retired, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if lockErr := s.db.AcquireTxLocks(ctx, systemHazardLockNamespace, params.SystemHazardID.String()); lockErr != nil {
+		if lockErr := s.db.AcquireTxLocks(ctx, systemHazardLockNamespace, id.String()); lockErr != nil {
 			return fmt.Errorf("lock system hazard: %w", lockErr)
 		}
-		current, queryErr := tx.SystemHazard.Query().Where(systemhazard.ID(params.SystemHazardID)).Only(ctx)
+
+		current, queryErr := tx.SystemHazard.Get(ctx, id)
 		if queryErr != nil {
 			return fmt.Errorf("get system hazard: %w", queryErr)
 		}
-		if current.Status == systemhazard.StatusRetired {
+		if current.Status == sh.StatusRetired {
 			retired = current.Unwrap()
 			return nil
 		}
-		updated, updateErr := tx.SystemHazard.UpdateOneID(params.SystemHazardID).
-			SetStatus(systemhazard.StatusRetired).
-			Save(ctx)
+		update := current.Update().
+			SetStatus(sh.StatusRetired)
+		updated, updateErr := update.Save(ctx)
 		if updateErr != nil {
 			return fmt.Errorf("retire system hazard: %w", updateErr)
 		}
+
 		retired = updated.Unwrap()
 		return nil
 	})
@@ -104,11 +129,11 @@ func (s *SystemHazardService) AddSystemHazardRiskAssessment(ctx context.Context,
 			return fmt.Errorf("get system hazard: %w", hazardErr)
 		}
 
+		lookupByRevision := tx.SystemHazardRiskAssessment.Query().
+			Where(shra.SystemHazardID(params.SystemHazardID)).
+			Order(shra.ByRevision(sql.OrderDesc()))
+		latest, latestErr := lookupByRevision.First(ctx)
 		nextRevision := 1
-		latest, latestErr := tx.SystemHazardRiskAssessment.Query().
-			Where(systemhazardriskassessment.SystemHazardID(params.SystemHazardID)).
-			Order(systemhazardriskassessment.ByRevision(sql.OrderDesc())).
-			First(ctx)
 		if latestErr == nil {
 			nextRevision = latest.Revision + 1
 		} else if !ent.IsNotFound(latestErr) {
@@ -136,20 +161,17 @@ func (s *SystemHazardService) AddSystemHazardRiskAssessment(ctx context.Context,
 
 func (s *SystemHazardService) ListSystemHazardRiskAssessments(ctx context.Context, params rez.ListSystemHazardRiskAssessmentsParams) (*ent.ListResult[ent.SystemHazardRiskAssessment], error) {
 	query := s.db.Client(ctx).SystemHazardRiskAssessment.Query().
-		Order(
-			systemhazardriskassessment.ByRevision(params.GetOrder()),
-			systemhazardriskassessment.ByID(params.GetOrder()),
-		)
+		Order(shra.ByRevision(params.GetOrder()), shra.ByID(params.GetOrder()))
 	if params.SystemHazardID != uuid.Nil {
-		query.Where(systemhazardriskassessment.SystemHazardID(params.SystemHazardID))
+		query.Where(shra.SystemHazardID(params.SystemHazardID))
 	}
 	return ent.DoListQuery[ent.SystemHazardRiskAssessment, *ent.SystemHazardRiskAssessmentQuery](ctx, query, params.ListParams)
 }
 
 func (s *SystemHazardService) GetLatestSystemHazardRiskAssessment(ctx context.Context, systemHazardID uuid.UUID) (*ent.SystemHazardRiskAssessment, error) {
 	return s.db.Client(ctx).SystemHazardRiskAssessment.Query().
-		Where(systemhazardriskassessment.SystemHazardID(systemHazardID)).
-		Order(systemhazardriskassessment.ByRevision(sql.OrderDesc())).
+		Where(shra.SystemHazardID(systemHazardID)).
+		Order(shra.ByRevision(sql.OrderDesc())).
 		WithSystemHazard().
 		First(ctx)
 }

@@ -2267,6 +2267,25 @@ func (c *AlertEpisodeClient) QueryTenant(_m *AlertEpisode) *TenantQuery {
 	return query
 }
 
+// QueryKnowledgeEntity queries the knowledge_entity edge of a AlertEpisode.
+func (c *AlertEpisodeClient) QueryKnowledgeEntity(_m *AlertEpisode) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertepisode.Table, alertepisode.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertepisode.KnowledgeEntityTable, alertepisode.KnowledgeEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.AlertEpisode
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAlertDefinition queries the alert_definition edge of a AlertEpisode.
 func (c *AlertEpisodeClient) QueryAlertDefinition(_m *AlertEpisode) *AlertDefinitionQuery {
 	query := (&AlertDefinitionClient{config: c.config}).Query()
@@ -14251,6 +14270,25 @@ func (c *SystemHazardClient) QueryTenant(_m *SystemHazard) *TenantQuery {
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemHazard
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeEntity queries the knowledge_entity edge of a SystemHazard.
+func (c *SystemHazardClient) QueryKnowledgeEntity(_m *SystemHazard) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemhazard.KnowledgeEntityTable, systemhazard.KnowledgeEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.SystemHazard
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

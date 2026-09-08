@@ -7,12 +7,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/pkg/projections"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ald "github.com/rezible/rezible/ent/alertdefinition"
 	ale "github.com/rezible/rezible/ent/alertepisode"
 	ali "github.com/rezible/rezible/ent/alertinstance"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 )
@@ -20,10 +22,11 @@ import (
 type AlertService struct {
 	db         rez.Database
 	situations rez.SituationService
+	knowledge  rez.KnowledgeGraphService
 }
 
-func NewAlertService(db rez.Database, situations rez.SituationService) (*AlertService, error) {
-	s := &AlertService{db: db, situations: situations}
+func NewAlertService(db rez.Database, situations rez.SituationService, knowledge rez.KnowledgeGraphService) (*AlertService, error) {
+	s := &AlertService{db: db, situations: situations, knowledge: knowledge}
 
 	return s, nil
 }
@@ -59,7 +62,7 @@ func (s *AlertService) GetAlertMetrics(ctx context.Context, params rez.GetAlertM
 const alertEpisodeInactivity = 30 * time.Minute
 const alertDefinitionLockNamespace = "alert_definition"
 
-func (s *AlertService) RecordAlertEvent(ctx context.Context, definitionID uuid.UUID, event *ent.NormalizedEvent) (*ent.AlertInstance, error) {
+func (s *AlertService) RecordAlertDefinitionInstance(ctx context.Context, definitionID uuid.UUID, event *ent.NormalizedEvent) (*ent.AlertInstance, error) {
 	var result *ent.AlertInstance
 	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if locksErr := s.db.AcquireTxLocks(ctx, alertDefinitionLockNamespace, definitionID.String()); locksErr != nil {
@@ -70,77 +73,15 @@ func (s *AlertService) RecordAlertEvent(ctx context.Context, definitionID uuid.U
 		existing, lookupExistingErr := existingQuery.Only(ctx)
 		if lookupExistingErr != nil && !ent.IsNotFound(lookupExistingErr) {
 			return fmt.Errorf("lookup existing definition: %w", lookupExistingErr)
-		} else if lookupExistingErr == nil {
+		}
+		if existing != nil && lookupExistingErr == nil {
 			result = existing.Unwrap()
 			return nil
 		}
 
-		queryAlertDefinition := tx.AlertDefinition.Query().
-			Where(ald.ID(definitionID)).
-			WithEpisodes(func(q *ent.AlertEpisodeQuery) {
-				q.Where(ale.StatusEQ(ale.StatusOpen))
-			})
-		definition, queryDefinitionErr := queryAlertDefinition.Only(ctx)
-		if queryDefinitionErr != nil {
-			return fmt.Errorf("query alert definition: %w", queryDefinitionErr)
-		}
-		var episode *ent.AlertEpisode
-		if len(definition.Edges.Episodes) > 0 {
-			episode = definition.Edges.Episodes[0]
-			if episodeLockErr := s.db.AcquireTxLocks(ctx, alertEpisodeLockNamespace, episode.ID.String()); episodeLockErr != nil {
-				return fmt.Errorf("get lock for episode: %w", episodeLockErr)
-			}
-			boundary := episode.LastObservedAt.Add(alertEpisodeInactivity)
-			if event.OccurredAt.After(boundary) {
-				update := episode.Update().
-					SetStatus(ale.StatusClosed).
-					SetClosedAt(boundary)
-				if updateEpisodeErr := update.Exec(ctx); updateEpisodeErr != nil {
-					return fmt.Errorf("failed to update existing episode: %w", updateEpisodeErr)
-				}
-				if episode.SituationID != nil {
-					if err := s.situations.StabilizeSituation(ctx, *episode.SituationID); err != nil {
-						return err
-					}
-				}
-				episode = nil
-			}
-		}
-
-		isFounding := episode == nil
-
-		if isFounding {
-			create := tx.AlertEpisode.Create().
-				SetAlertDefinitionID(definitionID).
-				SetStartedAt(event.OccurredAt).
-				SetLastObservedAt(event.OccurredAt)
-			createdEpisode, createEpisodeErr := create.Save(ctx)
-			if createEpisodeErr != nil {
-				return createEpisodeErr
-			}
-			episode = createdEpisode
-
-			params := rez.CreateSituationParams{
-				Title:                  definition.Title,
-				OpenedAt:               event.OccurredAt,
-				FoundingAlertEpisodeID: &episode.ID,
-			}
-			sit, situationErr := s.situations.CreateSituation(ctx, params)
-			if situationErr != nil {
-				return fmt.Errorf("create situation: %w", situationErr)
-			}
-			episode.SituationID = &sit.ID
-		} else {
-			update := episode.Update()
-			if event.OccurredAt.Before(episode.StartedAt) {
-				update.SetStartedAt(event.OccurredAt)
-			}
-			if event.OccurredAt.After(episode.LastObservedAt) {
-				update.SetLastObservedAt(event.OccurredAt)
-			}
-			if updateEpisodeErr := update.Exec(ctx); updateEpisodeErr != nil {
-				return fmt.Errorf("update episode: %w", updateEpisodeErr)
-			}
+		episode, episodeErr := s.resolveAlertEpisode(ctx, definitionID, event.OccurredAt)
+		if episodeErr != nil {
+			return fmt.Errorf("resolve alert episode: %w", episodeErr)
 		}
 
 		createInstance := tx.AlertInstance.Create().
@@ -151,12 +92,107 @@ func (s *AlertService) RecordAlertEvent(ctx context.Context, definitionID uuid.U
 			return fmt.Errorf("save alert instance: %w", saveErr)
 		}
 
-		if !isFounding && episode.SituationID != nil {
-			if evidenceErr := s.situations.RecordSituationEvidence(ctx, *episode.SituationID); evidenceErr != nil {
-				return fmt.Errorf("situation evidence: %w", evidenceErr)
+		result = instance.Unwrap()
+		return nil
+	})
+}
+
+func (s *AlertService) resolveAlertEpisode(ctx context.Context, definitionID uuid.UUID, occurredAt time.Time) (*ent.AlertEpisode, error) {
+	var result *ent.AlertEpisode
+	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if locksErr := s.db.AcquireTxLocks(ctx, alertDefinitionLockNamespace, definitionID.String()); locksErr != nil {
+			return fmt.Errorf("get locks: %w", locksErr)
+		}
+		queryAlertDefinition := tx.AlertDefinition.Query().
+			Where(ald.ID(definitionID)).
+			WithEpisodes(func(q *ent.AlertEpisodeQuery) {
+				q.Where(ale.StatusEQ(ale.StatusOpen))
+			})
+		definition, queryDefinitionErr := queryAlertDefinition.Only(ctx)
+		if queryDefinitionErr != nil {
+			return fmt.Errorf("query alert definition: %w", queryDefinitionErr)
+		}
+
+		var episode *ent.AlertEpisode
+		if len(definition.Edges.Episodes) > 0 {
+			episode = definition.Edges.Episodes[0]
+			if episodeLockErr := s.db.AcquireTxLocks(ctx, alertEpisodeLockNamespace, episode.ID.String()); episodeLockErr != nil {
+				return fmt.Errorf("get lock for episode: %w", episodeLockErr)
+			}
+			boundary := episode.LastObservedAt.Add(alertEpisodeInactivity)
+			if occurredAt.After(boundary) {
+				prevSituationID := episode.SituationID
+				setClosed := episode.Update().
+					SetStatus(ale.StatusClosed).
+					SetClosedAt(boundary)
+				if updateEpisodeErr := setClosed.Exec(ctx); updateEpisodeErr != nil {
+					return fmt.Errorf("failed to update existing episode: %w", updateEpisodeErr)
+				}
+				if prevSituationID != nil {
+					params := rez.SituationEvidenceItemParams{AlertEpisodeID: &episode.ID}
+					if situationErr := s.situations.RemoveSituationEvidenceItem(ctx, *prevSituationID, params); situationErr != nil {
+						return fmt.Errorf("remove alert episode situation link: %w", situationErr)
+					}
+				}
+				episode = nil
 			}
 		}
-		result = instance.Unwrap()
+
+		if episode != nil {
+			update := episode.Update()
+			if occurredAt.Before(episode.StartedAt) {
+				update.SetStartedAt(occurredAt)
+			}
+			if occurredAt.After(episode.LastObservedAt) {
+				update.SetLastObservedAt(occurredAt)
+			}
+			if updateEpisodeErr := update.Exec(ctx); updateEpisodeErr != nil {
+				return fmt.Errorf("update episode: %w", updateEpisodeErr)
+			}
+
+			if sitId := episode.SituationID; sitId != nil {
+				params := rez.SituationEvidenceItemParams{AlertEpisodeID: &episode.ID}
+				if evidenceErr := s.situations.NotifySituationEvidenceItemUpdated(ctx, *sitId, params); evidenceErr != nil {
+					return fmt.Errorf("situation evidence: %w", evidenceErr)
+				}
+			}
+		} else {
+			episodeId := uuid.New()
+			ka, kaErr := s.knowledge.ResolveInternalEntity(ctx, rez.KnowledgeEntityRef{
+				Category:            kne.CategoryEvent,
+				Kind:                "alert_episode",
+				ProviderResourceRef: projections.InternalEntityResourceRef(episodeId),
+			})
+			if kaErr != nil || ka.EntityID == nil {
+				return fmt.Errorf("create alert episode knowledge entity: %w", kaErr)
+			}
+			create := tx.AlertEpisode.Create().
+				SetAlertDefinitionID(definitionID).
+				SetKnowledgeEntityID(*ka.EntityID).
+				SetStartedAt(occurredAt).
+				SetLastObservedAt(occurredAt)
+			createdEpisode, createEpisodeErr := create.Save(ctx)
+			if createEpisodeErr != nil {
+				return createEpisodeErr
+			}
+			episode = createdEpisode
+
+			situationEvidenceItem := rez.SituationEvidenceItemParams{
+				AlertEpisodeID: &episodeId,
+			}
+			params := rez.CreateSituationParams{
+				Title:         definition.Title,
+				OpenedAt:      occurredAt,
+				EvidenceItems: []rez.SituationEvidenceItemParams{situationEvidenceItem},
+			}
+			sit, situationErr := s.situations.CreateSituation(ctx, params)
+			if situationErr != nil {
+				return fmt.Errorf("create situation: %w", situationErr)
+			}
+			episode.SituationID = &sit.ID
+		}
+
+		result = episode.Unwrap()
 		return nil
 	})
 }
@@ -212,8 +248,11 @@ func (w *CloseInactiveAlertEpisodesWorker) maybeCloseOpenEpisode(ctx context.Con
 		if updateErr != nil {
 			return fmt.Errorf("failed to update episode %s: %w", id, updateErr)
 		}
-		if updated.SituationID != nil {
-			return w.situations.StabilizeSituation(ctx, *updated.SituationID)
+		if sitId := updated.SituationID; sitId != nil {
+			params := rez.SituationEvidenceItemParams{AlertEpisodeID: &id}
+			if evidenceErr := w.situations.NotifySituationEvidenceItemUpdated(ctx, *sitId, params); evidenceErr != nil {
+				return fmt.Errorf("situation evidence: %w", evidenceErr)
+			}
 		}
 		return nil
 	})

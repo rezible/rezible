@@ -23,6 +23,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
+	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldAlertDefinitionID holds the string denoting the alert_definition_id field in the database.
 	FieldAlertDefinitionID = "alert_definition_id"
 	// FieldSituationID holds the string denoting the situation_id field in the database.
@@ -37,6 +39,8 @@ const (
 	FieldClosedAt = "closed_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
+	EdgeKnowledgeEntity = "knowledge_entity"
 	// EdgeAlertDefinition holds the string denoting the alert_definition edge name in mutations.
 	EdgeAlertDefinition = "alert_definition"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
@@ -52,6 +56,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
+	KnowledgeEntityTable = "alert_episodes"
+	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
+	KnowledgeEntityInverseTable = "knowledge_entities"
+	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
+	KnowledgeEntityColumn = "knowledge_entity_id"
 	// AlertDefinitionTable is the table that holds the alert_definition relation/edge.
 	AlertDefinitionTable = "alert_episodes"
 	// AlertDefinitionInverseTable is the table name for the AlertDefinition entity.
@@ -81,6 +92,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldKnowledgeEntityID,
 	FieldAlertDefinitionID,
 	FieldSituationID,
 	FieldStatus,
@@ -166,6 +178,11 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
+func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKnowledgeEntityID, opts...).ToFunc()
+}
+
 // ByAlertDefinitionID orders the results by the alert_definition_id field.
 func ByAlertDefinitionID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAlertDefinitionID, opts...).ToFunc()
@@ -203,6 +220,13 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByKnowledgeEntityField orders the results by knowledge_entity field.
+func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByAlertDefinitionField orders the results by alert_definition field.
 func ByAlertDefinitionField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -235,6 +259,13 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newKnowledgeEntityStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(KnowledgeEntityInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 	)
 }
 func newAlertDefinitionStep() *sqlgraph.Step {

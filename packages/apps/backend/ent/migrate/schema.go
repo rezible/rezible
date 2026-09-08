@@ -360,6 +360,7 @@ var (
 		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "alert_definition_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "situation_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AlertEpisodesTable holds the schema information for the "alert_episodes" table.
@@ -381,8 +382,14 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "alert_episodes_situations_alert_episodes",
+				Symbol:     "alert_episodes_knowledge_entities_knowledge_entity",
 				Columns:    []*schema.Column{AlertEpisodesColumns[9]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "alert_episodes_situations_alert_episodes",
+				Columns:    []*schema.Column{AlertEpisodesColumns[10]},
 				RefColumns: []*schema.Column{SituationsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -392,6 +399,11 @@ var (
 				Name:    "alertepisode_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{AlertEpisodesColumns[8]},
+			},
+			{
+				Name:    "alertepisode_tenant_id_knowledge_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{AlertEpisodesColumns[8], AlertEpisodesColumns[9]},
 			},
 			{
 				Name:    "alertepisode_tenant_id_alert_definition_id",
@@ -404,7 +416,7 @@ var (
 			{
 				Name:    "alertepisode_tenant_id_situation_id",
 				Unique:  false,
-				Columns: []*schema.Column{AlertEpisodesColumns[8], AlertEpisodesColumns[9]},
+				Columns: []*schema.Column{AlertEpisodesColumns[8], AlertEpisodesColumns[10]},
 			},
 		},
 	}
@@ -3009,6 +3021,7 @@ var (
 		{Name: "potential_consequences", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "retired"}, Default: "active"},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SystemHazardsTable holds the schema information for the "system_hazards" table.
 	SystemHazardsTable = &schema.Table{
@@ -3022,12 +3035,23 @@ var (
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "system_hazards_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{SystemHazardsColumns[8]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "systemhazard_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{SystemHazardsColumns[7]},
+			},
+			{
+				Name:    "systemhazard_tenant_id_knowledge_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{SystemHazardsColumns[7], SystemHazardsColumns[8]},
 			},
 			{
 				Name:    "systemhazard_tenant_id_status_title",
@@ -3919,7 +3943,8 @@ func init() {
 	AlertDefinitionsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	AlertEpisodesTable.ForeignKeys[0].RefTable = AlertDefinitionsTable
 	AlertEpisodesTable.ForeignKeys[1].RefTable = TenantsTable
-	AlertEpisodesTable.ForeignKeys[2].RefTable = SituationsTable
+	AlertEpisodesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	AlertEpisodesTable.ForeignKeys[3].RefTable = SituationsTable
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertFeedbacksTable.ForeignKeys[1].RefTable = AlertInstancesTable
 	AlertInstancesTable.ForeignKeys[0].RefTable = AlertEpisodesTable
@@ -4080,6 +4105,7 @@ func init() {
 	SystemAnalysisRelationshipsTable.ForeignKeys[1].RefTable = SystemAnalysesTable
 	SystemAnalysisRelationshipsTable.ForeignKeys[2].RefTable = KnowledgeRelationshipsTable
 	SystemHazardsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemHazardsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	SystemHazardRiskAssessmentsTable.ForeignKeys[0].RefTable = SystemHazardsTable
 	SystemHazardRiskAssessmentsTable.ForeignKeys[1].RefTable = TenantsTable
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable

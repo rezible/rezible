@@ -23,14 +23,16 @@ import (
 )
 
 type IncidentService struct {
-	db   rez.Database
-	msgs rez.MessageService
+	db         rez.Database
+	msgs       rez.MessageService
+	situations rez.SituationService
 }
 
-func NewIncidentService(db rez.Database, msgs rez.MessageService) (*IncidentService, error) {
+func NewIncidentService(db rez.Database, msgs rez.MessageService, situations rez.SituationService) (*IncidentService, error) {
 	svc := &IncidentService{
-		db:   db,
-		msgs: msgs,
+		db:         db,
+		msgs:       msgs,
+		situations: situations,
 	}
 
 	if msgsErr := svc.registerMessageHandlers(); msgsErr != nil {
@@ -130,8 +132,16 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 	}
 	isCreate := id == uuid.Nil && curr == nil
 
-	var generatedUniqueSlug string
-	if curr == nil {
+	var mutator ent.EntityMutator[*ent.Incident, *ent.IncidentMutation]
+	if isCreate {
+		mutator = client.Incident.Create().SetID(uuid.New())
+	} else {
+		mutator = client.Incident.UpdateOne(curr)
+	}
+	mut := mutator.Mutation()
+	setFn(mut)
+
+	if isCreate {
 		m := client.Incident.Create().Mutation()
 		setFn(m)
 		openedAt := time.Now()
@@ -142,31 +152,51 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		if slugErr != nil {
 			return nil, fmt.Errorf("generate unique slug: %w", slugErr)
 		}
-		generatedUniqueSlug = incSlug
+		mut.SetSlug(incSlug)
 	}
 
-	var mutator ent.EntityMutator[*ent.Incident, *ent.IncidentMutation]
-	if curr == nil {
-		mutator = client.Incident.Create().SetID(uuid.New())
-	} else {
-		mutator = client.Incident.UpdateOne(curr)
-	}
-	incidentMut := mutator.Mutation()
-	setFn(incidentMut)
-	if generatedUniqueSlug != "" {
-		incidentMut.SetSlug(generatedUniqueSlug)
-	}
 	updated, saveErr := mutator.Save(ctx)
 	if saveErr != nil {
 		return nil, fmt.Errorf("save incident: %w", saveErr)
 	}
+	incidentId := updated.ID
 
-	updatedEvent := rez.EventOnIncidentUpdated{
-		Created:    isCreate,
-		IncidentId: updated.ID,
+	if sitErr := s.updateIncidentMutationSituation(ctx, incidentId, mut); sitErr != nil {
+		return nil, fmt.Errorf("update incident situation: %w", sitErr)
 	}
-	publish := func(publishCtx context.Context) {
-		if pubEvErr := s.msgs.Publish(publishCtx, updatedEvent); pubEvErr != nil {
+
+	s.publishIncidentUpdatedEvent(ctx, rez.EventOnIncidentUpdated{
+		Created:    isCreate,
+		IncidentId: incidentId,
+	})
+
+	return s.Get(ctx, incident.ID(incidentId))
+}
+
+func (s *IncidentService) updateIncidentMutationSituation(ctx context.Context, id uuid.UUID, mut *ent.IncidentMutation) error {
+	itemParams := rez.SituationEvidenceItemParams{
+		IncidentID: &id,
+	}
+	if addedSituationIds := mut.SituationsIDs(); len(addedSituationIds) > 0 {
+		for _, sitId := range addedSituationIds {
+			if situationErr := s.situations.AddSituationEvidenceItem(ctx, sitId, itemParams); situationErr != nil {
+				return fmt.Errorf("add incident situation link: %w", situationErr)
+			}
+		}
+	}
+	if removedSituationIds := mut.RemovedSituationsIDs(); len(removedSituationIds) > 0 {
+		for _, sitId := range removedSituationIds {
+			if situationErr := s.situations.RemoveSituationEvidenceItem(ctx, sitId, itemParams); situationErr != nil {
+				return fmt.Errorf("remove incident situation link: %w", situationErr)
+			}
+		}
+	}
+	return nil
+}
+
+func (s *IncidentService) publishIncidentUpdatedEvent(ctx context.Context, ev rez.EventOnIncidentUpdated) {
+	publish := func(ctx context.Context) {
+		if pubEvErr := s.msgs.Publish(ctx, ev); pubEvErr != nil {
 			slog.Error("failed to publish incident update event message", "error", pubEvErr)
 		}
 	}
@@ -183,7 +213,6 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 	} else {
 		publish(ctx)
 	}
-	return s.Get(ctx, incident.ID(updated.ID))
 }
 
 func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error) {

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/systemhazard"
@@ -50,6 +51,26 @@ func (_u *SystemHazardUpdate) SetNillableCreatedAt(v *time.Time) *SystemHazardUp
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *SystemHazardUpdate) SetUpdatedAt(v time.Time) *SystemHazardUpdate {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *SystemHazardUpdate) SetKnowledgeEntityID(v uuid.UUID) *SystemHazardUpdate {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *SystemHazardUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *SystemHazardUpdate {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
+	}
+	return _u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (_u *SystemHazardUpdate) ClearKnowledgeEntityID() *SystemHazardUpdate {
+	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
@@ -121,6 +142,11 @@ func (_u *SystemHazardUpdate) SetNillableStatus(v *systemhazard.Status) *SystemH
 	return _u
 }
 
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SystemHazardUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *SystemHazardUpdate {
+	return _u.SetKnowledgeEntityID(v.ID)
+}
+
 // AddRiskAssessmentIDs adds the "risk_assessments" edge to the SystemHazardRiskAssessment entity by IDs.
 func (_u *SystemHazardUpdate) AddRiskAssessmentIDs(ids ...uuid.UUID) *SystemHazardUpdate {
 	_u.mutation.AddRiskAssessmentIDs(ids...)
@@ -154,6 +180,12 @@ func (_u *SystemHazardUpdate) AddSituationAssessments(v ...*SituationHazardAsses
 // Mutation returns the SystemHazardMutation object of the builder.
 func (_u *SystemHazardUpdate) Mutation() *SystemHazardMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SystemHazardUpdate) ClearKnowledgeEntity() *SystemHazardUpdate {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
 }
 
 // ClearRiskAssessments clears all "risk_assessments" edges to the SystemHazardRiskAssessment entity.
@@ -300,6 +332,37 @@ func (_u *SystemHazardUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(systemhazard.FieldStatus, field.TypeEnum, value)
 	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemhazard.KnowledgeEntityTable,
+			Columns: []string{systemhazard.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemHazard
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemhazard.KnowledgeEntityTable,
+			Columns: []string{systemhazard.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemHazard
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.RiskAssessmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -440,6 +503,26 @@ func (_u *SystemHazardUpdateOne) SetUpdatedAt(v time.Time) *SystemHazardUpdateOn
 	return _u
 }
 
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *SystemHazardUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *SystemHazardUpdateOne {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *SystemHazardUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *SystemHazardUpdateOne {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
+	}
+	return _u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (_u *SystemHazardUpdateOne) ClearKnowledgeEntityID() *SystemHazardUpdateOne {
+	_u.mutation.ClearKnowledgeEntityID()
+	return _u
+}
+
 // SetTitle sets the "title" field.
 func (_u *SystemHazardUpdateOne) SetTitle(v string) *SystemHazardUpdateOne {
 	_u.mutation.SetTitle(v)
@@ -508,6 +591,11 @@ func (_u *SystemHazardUpdateOne) SetNillableStatus(v *systemhazard.Status) *Syst
 	return _u
 }
 
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SystemHazardUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *SystemHazardUpdateOne {
+	return _u.SetKnowledgeEntityID(v.ID)
+}
+
 // AddRiskAssessmentIDs adds the "risk_assessments" edge to the SystemHazardRiskAssessment entity by IDs.
 func (_u *SystemHazardUpdateOne) AddRiskAssessmentIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
 	_u.mutation.AddRiskAssessmentIDs(ids...)
@@ -541,6 +629,12 @@ func (_u *SystemHazardUpdateOne) AddSituationAssessments(v ...*SituationHazardAs
 // Mutation returns the SystemHazardMutation object of the builder.
 func (_u *SystemHazardUpdateOne) Mutation() *SystemHazardMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SystemHazardUpdateOne) ClearKnowledgeEntity() *SystemHazardUpdateOne {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
 }
 
 // ClearRiskAssessments clears all "risk_assessments" edges to the SystemHazardRiskAssessment entity.
@@ -716,6 +810,37 @@ func (_u *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHaza
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(systemhazard.FieldStatus, field.TypeEnum, value)
+	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemhazard.KnowledgeEntityTable,
+			Columns: []string{systemhazard.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemHazard
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemhazard.KnowledgeEntityTable,
+			Columns: []string{systemhazard.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemHazard
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.RiskAssessmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{

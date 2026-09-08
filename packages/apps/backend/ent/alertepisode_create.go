@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -58,6 +59,20 @@ func (_c *AlertEpisodeCreate) SetUpdatedAt(v time.Time) *AlertEpisodeCreate {
 func (_c *AlertEpisodeCreate) SetNillableUpdatedAt(v *time.Time) *AlertEpisodeCreate {
 	if v != nil {
 		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_c *AlertEpisodeCreate) SetKnowledgeEntityID(v uuid.UUID) *AlertEpisodeCreate {
+	_c.mutation.SetKnowledgeEntityID(v)
+	return _c
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_c *AlertEpisodeCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertEpisodeCreate {
+	if v != nil {
+		_c.SetKnowledgeEntityID(*v)
 	}
 	return _c
 }
@@ -139,6 +154,11 @@ func (_c *AlertEpisodeCreate) SetNillableID(v *uuid.UUID) *AlertEpisodeCreate {
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *AlertEpisodeCreate) SetTenant(v *Tenant) *AlertEpisodeCreate {
 	return _c.SetTenantID(v.ID)
+}
+
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_c *AlertEpisodeCreate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertEpisodeCreate {
+	return _c.SetKnowledgeEntityID(v.ID)
 }
 
 // SetAlertDefinition sets the "alert_definition" edge to the AlertDefinition entity.
@@ -344,6 +364,24 @@ func (_c *AlertEpisodeCreate) createSpec() (*AlertEpisode, *sqlgraph.CreateSpec)
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertepisode.KnowledgeEntityTable,
+			Columns: []string{alertepisode.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AlertEpisode
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.KnowledgeEntityID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.AlertDefinitionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -470,6 +508,24 @@ func (u *AlertEpisodeUpsert) SetUpdatedAt(v time.Time) *AlertEpisodeUpsert {
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
 func (u *AlertEpisodeUpsert) UpdateUpdatedAt() *AlertEpisodeUpsert {
 	u.SetExcluded(alertepisode.FieldUpdatedAt)
+	return u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *AlertEpisodeUpsert) SetKnowledgeEntityID(v uuid.UUID) *AlertEpisodeUpsert {
+	u.Set(alertepisode.FieldKnowledgeEntityID, v)
+	return u
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *AlertEpisodeUpsert) UpdateKnowledgeEntityID() *AlertEpisodeUpsert {
+	u.SetExcluded(alertepisode.FieldKnowledgeEntityID)
+	return u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *AlertEpisodeUpsert) ClearKnowledgeEntityID() *AlertEpisodeUpsert {
+	u.SetNull(alertepisode.FieldKnowledgeEntityID)
 	return u
 }
 
@@ -624,6 +680,27 @@ func (u *AlertEpisodeUpsertOne) SetUpdatedAt(v time.Time) *AlertEpisodeUpsertOne
 func (u *AlertEpisodeUpsertOne) UpdateUpdatedAt() *AlertEpisodeUpsertOne {
 	return u.Update(func(s *AlertEpisodeUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *AlertEpisodeUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *AlertEpisodeUpsertOne {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *AlertEpisodeUpsertOne) UpdateKnowledgeEntityID() *AlertEpisodeUpsertOne {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.UpdateKnowledgeEntityID()
+	})
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *AlertEpisodeUpsertOne) ClearKnowledgeEntityID() *AlertEpisodeUpsertOne {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.ClearKnowledgeEntityID()
 	})
 }
 
@@ -957,6 +1034,27 @@ func (u *AlertEpisodeUpsertBulk) SetUpdatedAt(v time.Time) *AlertEpisodeUpsertBu
 func (u *AlertEpisodeUpsertBulk) UpdateUpdatedAt() *AlertEpisodeUpsertBulk {
 	return u.Update(func(s *AlertEpisodeUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *AlertEpisodeUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *AlertEpisodeUpsertBulk {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *AlertEpisodeUpsertBulk) UpdateKnowledgeEntityID() *AlertEpisodeUpsertBulk {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.UpdateKnowledgeEntityID()
+	})
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *AlertEpisodeUpsertBulk) ClearKnowledgeEntityID() *AlertEpisodeUpsertBulk {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.ClearKnowledgeEntityID()
 	})
 }
 

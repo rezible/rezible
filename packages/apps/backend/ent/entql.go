@@ -235,6 +235,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			alertepisode.FieldTenantID:          {Type: field.TypeInt, Column: alertepisode.FieldTenantID},
 			alertepisode.FieldCreatedAt:         {Type: field.TypeTime, Column: alertepisode.FieldCreatedAt},
 			alertepisode.FieldUpdatedAt:         {Type: field.TypeTime, Column: alertepisode.FieldUpdatedAt},
+			alertepisode.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: alertepisode.FieldKnowledgeEntityID},
 			alertepisode.FieldAlertDefinitionID: {Type: field.TypeUUID, Column: alertepisode.FieldAlertDefinitionID},
 			alertepisode.FieldSituationID:       {Type: field.TypeUUID, Column: alertepisode.FieldSituationID},
 			alertepisode.FieldStatus:            {Type: field.TypeEnum, Column: alertepisode.FieldStatus},
@@ -1386,6 +1387,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemhazard.FieldTenantID:              {Type: field.TypeInt, Column: systemhazard.FieldTenantID},
 			systemhazard.FieldCreatedAt:             {Type: field.TypeTime, Column: systemhazard.FieldCreatedAt},
 			systemhazard.FieldUpdatedAt:             {Type: field.TypeTime, Column: systemhazard.FieldUpdatedAt},
+			systemhazard.FieldKnowledgeEntityID:     {Type: field.TypeUUID, Column: systemhazard.FieldKnowledgeEntityID},
 			systemhazard.FieldTitle:                 {Type: field.TypeString, Column: systemhazard.FieldTitle},
 			systemhazard.FieldDescription:           {Type: field.TypeString, Column: systemhazard.FieldDescription},
 			systemhazard.FieldPotentialConsequences: {Type: field.TypeString, Column: systemhazard.FieldPotentialConsequences},
@@ -1888,6 +1890,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"AlertEpisode",
 		"Tenant",
+	)
+	graph.MustAddE(
+		"knowledge_entity",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertepisode.KnowledgeEntityTable,
+			Columns: []string{alertepisode.KnowledgeEntityColumn},
+			Bidi:    false,
+		},
+		"AlertEpisode",
+		"KnowledgeEntity",
 	)
 	graph.MustAddE(
 		"alert_definition",
@@ -4530,6 +4544,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Tenant",
 	)
 	graph.MustAddE(
+		"knowledge_entity",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemhazard.KnowledgeEntityTable,
+			Columns: []string{systemhazard.KnowledgeEntityColumn},
+			Bidi:    false,
+		},
+		"SystemHazard",
+		"KnowledgeEntity",
+	)
+	graph.MustAddE(
 		"risk_assessments",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -6055,6 +6081,11 @@ func (f *AlertEpisodeFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(alertepisode.FieldUpdatedAt))
 }
 
+// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
+func (f *AlertEpisodeFilter) WhereKnowledgeEntityID(p entql.ValueP) {
+	f.Where(p.Field(alertepisode.FieldKnowledgeEntityID))
+}
+
 // WhereAlertDefinitionID applies the entql [16]byte predicate on the alert_definition_id field.
 func (f *AlertEpisodeFilter) WhereAlertDefinitionID(p entql.ValueP) {
 	f.Where(p.Field(alertepisode.FieldAlertDefinitionID))
@@ -6093,6 +6124,20 @@ func (f *AlertEpisodeFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *AlertEpisodeFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
+func (f *AlertEpisodeFilter) WhereHasKnowledgeEntity() {
+	f.Where(entql.HasEdge("knowledge_entity"))
+}
+
+// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
+func (f *AlertEpisodeFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -13415,6 +13460,11 @@ func (f *SystemHazardFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(systemhazard.FieldUpdatedAt))
 }
 
+// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
+func (f *SystemHazardFilter) WhereKnowledgeEntityID(p entql.ValueP) {
+	f.Where(p.Field(systemhazard.FieldKnowledgeEntityID))
+}
+
 // WhereTitle applies the entql string predicate on the title field.
 func (f *SystemHazardFilter) WhereTitle(p entql.StringP) {
 	f.Where(p.Field(systemhazard.FieldTitle))
@@ -13443,6 +13493,20 @@ func (f *SystemHazardFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *SystemHazardFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
+func (f *SystemHazardFilter) WhereHasKnowledgeEntity() {
+	f.Where(entql.HasEdge("knowledge_entity"))
+}
+
+// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
+func (f *SystemHazardFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

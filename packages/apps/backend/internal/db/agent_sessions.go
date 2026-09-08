@@ -39,7 +39,6 @@ func NewAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc re
 		jobs:   jobSvc,
 		msgs:   msgs,
 	}
-
 	return s, nil
 }
 

@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/alertepisode"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -27,6 +28,8 @@ type AlertEpisode struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
+	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// AlertDefinitionID holds the value of the "alert_definition_id" field.
 	AlertDefinitionID uuid.UUID `json:"alert_definition_id,omitempty"`
 	// SituationID holds the value of the "situation_id" field.
@@ -49,6 +52,8 @@ type AlertEpisode struct {
 type AlertEpisodeEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// KnowledgeEntity holds the value of the knowledge_entity edge.
+	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// AlertDefinition holds the value of the alert_definition edge.
 	AlertDefinition *AlertDefinition `json:"alert_definition,omitempty"`
 	// Instances holds the value of the instances edge.
@@ -57,7 +62,7 @@ type AlertEpisodeEdges struct {
 	Situation *Situation `json:"situation,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -71,12 +76,23 @@ func (e AlertEpisodeEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AlertEpisodeEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
+	if e.KnowledgeEntity != nil {
+		return e.KnowledgeEntity, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: knowledgeentity.Label}
+	}
+	return nil, &NotLoadedError{edge: "knowledge_entity"}
+}
+
 // AlertDefinitionOrErr returns the AlertDefinition value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e AlertEpisodeEdges) AlertDefinitionOrErr() (*AlertDefinition, error) {
 	if e.AlertDefinition != nil {
 		return e.AlertDefinition, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: alertdefinition.Label}
 	}
 	return nil, &NotLoadedError{edge: "alert_definition"}
@@ -85,7 +101,7 @@ func (e AlertEpisodeEdges) AlertDefinitionOrErr() (*AlertDefinition, error) {
 // InstancesOrErr returns the Instances value or an error if the edge
 // was not loaded in eager-loading.
 func (e AlertEpisodeEdges) InstancesOrErr() ([]*AlertInstance, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Instances, nil
 	}
 	return nil, &NotLoadedError{edge: "instances"}
@@ -96,7 +112,7 @@ func (e AlertEpisodeEdges) InstancesOrErr() ([]*AlertInstance, error) {
 func (e AlertEpisodeEdges) SituationOrErr() (*Situation, error) {
 	if e.Situation != nil {
 		return e.Situation, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: situation.Label}
 	}
 	return nil, &NotLoadedError{edge: "situation"}
@@ -107,7 +123,7 @@ func (*AlertEpisode) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case alertepisode.FieldSituationID:
+		case alertepisode.FieldKnowledgeEntityID, alertepisode.FieldSituationID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case alertepisode.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -155,6 +171,13 @@ func (_m *AlertEpisode) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
+			}
+		case alertepisode.FieldKnowledgeEntityID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field knowledge_entity_id", values[i])
+			} else if value.Valid {
+				_m.KnowledgeEntityID = new(uuid.UUID)
+				*_m.KnowledgeEntityID = *value.S.(*uuid.UUID)
 			}
 		case alertepisode.FieldAlertDefinitionID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -212,6 +235,11 @@ func (_m *AlertEpisode) QueryTenant() *TenantQuery {
 	return NewAlertEpisodeClient(_m.config).QueryTenant(_m)
 }
 
+// QueryKnowledgeEntity queries the "knowledge_entity" edge of the AlertEpisode entity.
+func (_m *AlertEpisode) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	return NewAlertEpisodeClient(_m.config).QueryKnowledgeEntity(_m)
+}
+
 // QueryAlertDefinition queries the "alert_definition" edge of the AlertEpisode entity.
 func (_m *AlertEpisode) QueryAlertDefinition() *AlertDefinitionQuery {
 	return NewAlertEpisodeClient(_m.config).QueryAlertDefinition(_m)
@@ -258,6 +286,11 @@ func (_m *AlertEpisode) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := _m.KnowledgeEntityID; v != nil {
+		builder.WriteString("knowledge_entity_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("alert_definition_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AlertDefinitionID))

@@ -42,29 +42,29 @@ type (
 	}
 
 	SituationInvestigation struct {
-		Id         uuid.UUID                    `json:"id"`
+		Id         uuid.UUID                   `json:"id"`
 		Attributes SituationInvestigationAttrs `json:"attributes"`
 	}
 
 	SituationInvestigationAttrs struct {
-		RequestedRevision int                            `json:"requestedRevision"`
-		CompletedRevision int                            `json:"completedRevision"`
-		EvidenceRevision  int                            `json:"evidenceRevision"`
-		Report            *SituationInvestigationReport  `json:"report,omitempty"`
-		UpdatedAt         time.Time                      `json:"updatedAt"`
+		RequestedRevision int                           `json:"requestedRevision"`
+		CompletedRevision int                           `json:"completedRevision"`
+		EvidenceRevision  int                           `json:"evidenceRevision"`
+		Report            *SituationInvestigationReport `json:"report,omitempty"`
+		UpdatedAt         time.Time                     `json:"updatedAt"`
 	}
 
 	SituationAlertEpisode struct {
-		Id         uuid.UUID                     `json:"id"`
-		Attributes SituationAlertEpisodeAttrs   `json:"attributes"`
+		Id         uuid.UUID                  `json:"id"`
+		Attributes SituationAlertEpisodeAttrs `json:"attributes"`
 	}
 
 	SituationAlertEpisodeAttrs struct {
-		Status          string                       `json:"status" enum:"open,closed"`
-		AlertDefinition *SituationAlertEpisodeAlert  `json:"alertDefinition,omitempty"`
-		StartedAt       time.Time                    `json:"startedAt"`
-		LastObservedAt  time.Time                    `json:"lastObservedAt"`
-		ClosedAt        *time.Time                   `json:"closedAt,omitempty"`
+		Status          string                      `json:"status" enum:"open,closed"`
+		AlertDefinition *SituationAlertEpisodeAlert `json:"alertDefinition,omitempty"`
+		StartedAt       time.Time                   `json:"startedAt"`
+		LastObservedAt  time.Time                   `json:"lastObservedAt"`
+		ClosedAt        *time.Time                  `json:"closedAt,omitempty"`
 	}
 
 	SituationAlertEpisodeAlert struct {
@@ -73,8 +73,8 @@ type (
 	}
 
 	SituationHazardAssessment struct {
-		Id         uuid.UUID                           `json:"id"`
-		Attributes SituationHazardAssessmentAttrs     `json:"attributes"`
+		Id         uuid.UUID                      `json:"id"`
+		Attributes SituationHazardAssessmentAttrs `json:"attributes"`
 	}
 
 	SituationHazardAssessmentAttrs struct {
@@ -88,22 +88,22 @@ type (
 	}
 
 	Situation struct {
-		Id         uuid.UUID            `json:"id"`
+		Id         uuid.UUID           `json:"id"`
 		Attributes SituationAttributes `json:"attributes"`
 	}
 
 	SituationAttributes struct {
-		Title             string                      `json:"title"`
-		Summary           string                      `json:"summary"`
-		Status            string                      `json:"status" enum:"open,closed"`
-		CloseReason       *string                     `json:"closeReason,omitempty" enum:"stabilized,dismissed"`
-		EvidenceRevision  int                         `json:"evidenceRevision"`
-		KnowledgeEntityId uuid.UUID                   `json:"knowledgeEntityId"`
-		AlertEpisodes     []SituationAlertEpisode     `json:"alertEpisodes"`
-		Investigation     *SituationInvestigation     `json:"investigation,omitempty"`
-		OpenedAt          time.Time                   `json:"openedAt"`
-		ClosedAt          *time.Time                  `json:"closedAt,omitempty"`
-		UpdatedAt         time.Time                   `json:"updatedAt"`
+		Title             string                  `json:"title"`
+		Summary           string                  `json:"summary"`
+		Status            string                  `json:"status" enum:"open,closed"`
+		CloseReason       *string                 `json:"closeReason,omitempty" enum:"stabilized,dismissed"`
+		EvidenceRevision  int                     `json:"evidenceRevision"`
+		KnowledgeEntityId uuid.UUID               `json:"knowledgeEntityId"`
+		AlertEpisodes     []SituationAlertEpisode `json:"alertEpisodes"`
+		Investigation     *SituationInvestigation `json:"investigation,omitempty"`
+		OpenedAt          time.Time               `json:"openedAt"`
+		ClosedAt          *time.Time              `json:"closedAt,omitempty"`
+		UpdatedAt         time.Time               `json:"updatedAt"`
 	}
 )
 
@@ -197,9 +197,9 @@ var ListSituations = openapi.Operation{
 
 type ListSituationsRequest struct {
 	PaginationRequest
-	Search      string    `query:"search" required:"false" nullable:"false"`
+	Search      string           `query:"search" required:"false" nullable:"false"`
 	Status      situation.Status `query:"status" required:"false" enum:"open,closed"`
-	OpenedAfter time.Time `query:"openedAfter" required:"false" format:"date-time"`
+	OpenedAfter time.Time        `query:"openedAfter" required:"false" format:"date-time"`
 }
 type ListSituationsResponse PaginatedResponse[Situation]
 
@@ -243,9 +243,9 @@ type AddSituationHazardAssessmentRequest struct {
 	IdRequest
 	Body struct {
 		Attributes struct {
-			SystemHazardId uuid.UUID                              `json:"systemHazardId"`
-			Status         situationhazardassessment.Status       `json:"status" enum:"suspected,confirmed,disproven"`
-			Summary        string                                 `json:"summary"`
+			SystemHazardId uuid.UUID                        `json:"systemHazardId"`
+			Status         situationhazardassessment.Status `json:"status" enum:"suspected,confirmed,disproven"`
+			Summary        string                           `json:"summary"`
 		} `json:"attributes"`
 	}
 }

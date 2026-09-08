@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/systemhazard"
 	"github.com/rezible/rezible/ent/systemhazardriskassessment"
@@ -57,6 +58,20 @@ func (_c *SystemHazardCreate) SetUpdatedAt(v time.Time) *SystemHazardCreate {
 func (_c *SystemHazardCreate) SetNillableUpdatedAt(v *time.Time) *SystemHazardCreate {
 	if v != nil {
 		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_c *SystemHazardCreate) SetKnowledgeEntityID(v uuid.UUID) *SystemHazardCreate {
+	_c.mutation.SetKnowledgeEntityID(v)
+	return _c
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_c *SystemHazardCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *SystemHazardCreate {
+	if v != nil {
+		_c.SetKnowledgeEntityID(*v)
 	}
 	return _c
 }
@@ -126,6 +141,11 @@ func (_c *SystemHazardCreate) SetNillableID(v *uuid.UUID) *SystemHazardCreate {
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *SystemHazardCreate) SetTenant(v *Tenant) *SystemHazardCreate {
 	return _c.SetTenantID(v.ID)
+}
+
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_c *SystemHazardCreate) SetKnowledgeEntity(v *KnowledgeEntity) *SystemHazardCreate {
+	return _c.SetKnowledgeEntityID(v.ID)
 }
 
 // AddRiskAssessmentIDs adds the "risk_assessments" edge to the SystemHazardRiskAssessment entity by IDs.
@@ -332,6 +352,24 @@ func (_c *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec)
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemhazard.KnowledgeEntityTable,
+			Columns: []string{systemhazard.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SystemHazard
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.KnowledgeEntityID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.RiskAssessmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -439,6 +477,24 @@ func (u *SystemHazardUpsert) SetUpdatedAt(v time.Time) *SystemHazardUpsert {
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
 func (u *SystemHazardUpsert) UpdateUpdatedAt() *SystemHazardUpsert {
 	u.SetExcluded(systemhazard.FieldUpdatedAt)
+	return u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SystemHazardUpsert) SetKnowledgeEntityID(v uuid.UUID) *SystemHazardUpsert {
+	u.Set(systemhazard.FieldKnowledgeEntityID, v)
+	return u
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SystemHazardUpsert) UpdateKnowledgeEntityID() *SystemHazardUpsert {
+	u.SetExcluded(systemhazard.FieldKnowledgeEntityID)
+	return u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *SystemHazardUpsert) ClearKnowledgeEntityID() *SystemHazardUpsert {
+	u.SetNull(systemhazard.FieldKnowledgeEntityID)
 	return u
 }
 
@@ -578,6 +634,27 @@ func (u *SystemHazardUpsertOne) SetUpdatedAt(v time.Time) *SystemHazardUpsertOne
 func (u *SystemHazardUpsertOne) UpdateUpdatedAt() *SystemHazardUpsertOne {
 	return u.Update(func(s *SystemHazardUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SystemHazardUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *SystemHazardUpsertOne {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SystemHazardUpsertOne) UpdateKnowledgeEntityID() *SystemHazardUpsertOne {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.UpdateKnowledgeEntityID()
+	})
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *SystemHazardUpsertOne) ClearKnowledgeEntityID() *SystemHazardUpsertOne {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.ClearKnowledgeEntityID()
 	})
 }
 
@@ -894,6 +971,27 @@ func (u *SystemHazardUpsertBulk) SetUpdatedAt(v time.Time) *SystemHazardUpsertBu
 func (u *SystemHazardUpsertBulk) UpdateUpdatedAt() *SystemHazardUpsertBulk {
 	return u.Update(func(s *SystemHazardUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SystemHazardUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *SystemHazardUpsertBulk {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SystemHazardUpsertBulk) UpdateKnowledgeEntityID() *SystemHazardUpsertBulk {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.UpdateKnowledgeEntityID()
+	})
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *SystemHazardUpsertBulk) ClearKnowledgeEntityID() *SystemHazardUpsertBulk {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.ClearKnowledgeEntityID()
 	})
 }
 

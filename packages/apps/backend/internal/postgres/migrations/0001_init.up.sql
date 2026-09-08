@@ -51,9 +51,11 @@ CREATE INDEX "alertdefinition_tenant_id" ON "alert_definitions" ("tenant_id");
 -- create index "alertdefinition_tenant_id_knowledge_entity_id" to table: "alert_definitions"
 CREATE UNIQUE INDEX "alertdefinition_tenant_id_knowledge_entity_id" ON "alert_definitions" ("tenant_id", "knowledge_entity_id");
 -- create "alert_episodes" table
-CREATE TABLE "alert_episodes" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "status" character varying NOT NULL DEFAULT 'open', "started_at" timestamptz NOT NULL, "last_observed_at" timestamptz NOT NULL, "closed_at" timestamptz NULL, "alert_definition_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "situation_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "alert_episodes" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "status" character varying NOT NULL DEFAULT 'open', "started_at" timestamptz NOT NULL, "last_observed_at" timestamptz NOT NULL, "closed_at" timestamptz NULL, "alert_definition_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, "situation_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "alertepisode_tenant_id" to table: "alert_episodes"
 CREATE INDEX "alertepisode_tenant_id" ON "alert_episodes" ("tenant_id");
+-- create index "alertepisode_tenant_id_knowledge_entity_id" to table: "alert_episodes"
+CREATE UNIQUE INDEX "alertepisode_tenant_id_knowledge_entity_id" ON "alert_episodes" ("tenant_id", "knowledge_entity_id");
 -- create index "alertepisode_tenant_id_alert_definition_id" to table: "alert_episodes"
 CREATE UNIQUE INDEX "alertepisode_tenant_id_alert_definition_id" ON "alert_episodes" ("tenant_id", "alert_definition_id") WHERE status = 'open';
 -- create index "alertepisode_tenant_id_situation_id" to table: "alert_episodes"
@@ -425,9 +427,11 @@ CREATE UNIQUE INDEX "systemanalysisrelationship_ten_4ca9378453889ae93a25a749d875
 -- create index "systemanalysisrelationship_tenant_id_knowledge_relationship_id" to table: "system_analysis_relationships"
 CREATE INDEX "systemanalysisrelationship_tenant_id_knowledge_relationship_id" ON "system_analysis_relationships" ("tenant_id", "knowledge_relationship_id");
 -- create "system_hazards" table
-CREATE TABLE "system_hazards" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "title" character varying NOT NULL, "description" text NULL, "potential_consequences" text NULL, "status" character varying NOT NULL DEFAULT 'active', "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "system_hazards" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "title" character varying NOT NULL, "description" text NULL, "potential_consequences" text NULL, "status" character varying NOT NULL DEFAULT 'active', "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "systemhazard_tenant_id" to table: "system_hazards"
 CREATE INDEX "systemhazard_tenant_id" ON "system_hazards" ("tenant_id");
+-- create index "systemhazard_tenant_id_knowledge_entity_id" to table: "system_hazards"
+CREATE UNIQUE INDEX "systemhazard_tenant_id_knowledge_entity_id" ON "system_hazards" ("tenant_id", "knowledge_entity_id");
 -- create index "systemhazard_tenant_id_status_title" to table: "system_hazards"
 CREATE INDEX "systemhazard_tenant_id_status_title" ON "system_hazards" ("tenant_id", "status", "title");
 -- create "system_hazard_risk_assessments" table
@@ -531,7 +535,7 @@ ALTER TABLE "agent_turns" ADD CONSTRAINT "agent_turns_agent_sessions_turns" FORE
 -- modify "alert_definitions" table
 ALTER TABLE "alert_definitions" ADD CONSTRAINT "alert_definitions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_definitions_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
 -- modify "alert_episodes" table
-ALTER TABLE "alert_episodes" ADD CONSTRAINT "alert_episodes_alert_definitions_episodes" FOREIGN KEY ("alert_definition_id") REFERENCES "alert_definitions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_episodes_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_episodes_situations_alert_episodes" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE SET NULL;
+ALTER TABLE "alert_episodes" ADD CONSTRAINT "alert_episodes_alert_definitions_episodes" FOREIGN KEY ("alert_definition_id") REFERENCES "alert_definitions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_episodes_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_episodes_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "alert_episodes_situations_alert_episodes" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE SET NULL;
 -- modify "alert_feedbacks" table
 ALTER TABLE "alert_feedbacks" ADD CONSTRAINT "alert_feedbacks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_feedbacks_alert_instances_alert_instance" FOREIGN KEY ("alert_instance_id") REFERENCES "alert_instances" ("id") ON DELETE NO ACTION;
 -- modify "alert_instances" table
@@ -647,7 +651,7 @@ ALTER TABLE "system_analysis_entry_subjects" ADD CONSTRAINT "system_analysis_ent
 -- modify "system_analysis_relationships" table
 ALTER TABLE "system_analysis_relationships" ADD CONSTRAINT "system_analysis_relationships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_relationships_system_analyses_analysis" FOREIGN KEY ("analysis_id") REFERENCES "system_analyses" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_relationships__b7ca708fb4a6c01cc857332c522e01e3" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE NO ACTION;
 -- modify "system_hazards" table
-ALTER TABLE "system_hazards" ADD CONSTRAINT "system_hazards_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+ALTER TABLE "system_hazards" ADD CONSTRAINT "system_hazards_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_hazards_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
 -- modify "system_hazard_risk_assessments" table
 ALTER TABLE "system_hazard_risk_assessments" ADD CONSTRAINT "system_hazard_risk_assessments_system_hazards_risk_assessments" FOREIGN KEY ("system_hazard_id") REFERENCES "system_hazards" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_hazard_risk_assessments_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "tasks" table
