@@ -45,7 +45,7 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 			DisplayName: attributes.Title,
 			Description: attributes.Summary,
 		},
-		SubjectEntity: &incidentEntityRef,
+		Subject: rez.KnowledgeSubjectRef{Entity: &incidentEntityRef},
 	}
 
 	var projected []rez.ProjectedEntityRef

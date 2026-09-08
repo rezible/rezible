@@ -41,7 +41,7 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 			Description: "",
 			Properties:  nil,
 		},
-		SubjectEntity: &userEntityRef,
+		Subject: rez.KnowledgeSubjectRef{Entity: &userEntityRef},
 	}
 
 	var projected []rez.ProjectedEntityRef

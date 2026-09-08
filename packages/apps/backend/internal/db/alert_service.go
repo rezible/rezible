@@ -158,11 +158,12 @@ func (s *AlertService) resolveAlertEpisode(ctx context.Context, definitionID uui
 			}
 		} else {
 			episodeId := uuid.New()
-			ka, kaErr := s.knowledge.ResolveInternalEntity(ctx, rez.KnowledgeEntityRef{
+			episodeEntityRef := &rez.KnowledgeEntityRef{
 				Category:            kne.CategoryEvent,
 				Kind:                "alert_episode",
 				ProviderResourceRef: projections.InternalEntityResourceRef(episodeId),
-			})
+			}
+			ka, kaErr := s.knowledge.ResolveInternalSubject(ctx, rez.KnowledgeSubjectRef{Entity: episodeEntityRef})
 			if kaErr != nil || ka.EntityID == nil {
 				return fmt.Errorf("create alert episode knowledge entity: %w", kaErr)
 			}

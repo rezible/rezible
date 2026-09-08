@@ -8,7 +8,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
-	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -72,26 +71,4 @@ func projectionEvidenceKind(event *ent.NormalizedEvent) ke.Kind {
 		}
 	}
 	return ke.KindObserved
-}
-
-func (s *ProjectionService) ingestSubjectEvidence(ctx context.Context, event *ent.NormalizedEvent, evidence rez.KnowledgeEvidenceRef, supportingEvidence ...rez.KnowledgeEvidenceRef) (*ent.KnowledgeSubjectAlias, error) {
-	refs := append(supportingEvidence, evidence)
-	if err := s.knowledge.IngestEvidence(ctx, event, refs...); err != nil {
-		return nil, err
-	}
-	var ref rez.ProviderResourceRef
-	if evidence.SubjectEntity != nil {
-		ref = evidence.SubjectEntity.ProviderResourceRef
-	} else if evidence.SubjectRelationship != nil {
-		ref = evidence.SubjectRelationship.ProviderResourceRef
-	}
-	query := s.db.Client(ctx).KnowledgeSubjectAlias.Query()
-	query.Where(
-		ksa.Provider(ref.Provider),
-		ksa.ProviderNamespace(ref.ProviderNamespace),
-		ksa.ProviderResourceRef(ref.ResourceRef),
-	)
-	query.WithEntity()
-	query.WithRelationship()
-	return query.Only(ctx)
 }

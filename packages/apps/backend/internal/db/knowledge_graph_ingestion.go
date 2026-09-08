@@ -295,36 +295,49 @@ func (s *KnowledgeGraphService) resolveRelationshipFromRef(ctx context.Context, 
 
 var knowledgeEvidenceUniqueColumns = sql.ConflictColumns(ke.FieldTenantID, ke.FieldEventID, ke.FieldSubjectAliasID)
 
-func (s *KnowledgeGraphService) ingestEvidenceRefs(ctx context.Context, eventID uuid.UUID, kind ksa.SubjectKind, refs []rez.KnowledgeEvidenceRef) error {
+func (s *KnowledgeGraphService) resolveSubjectAliasFromRef(ctx context.Context, ref rez.KnowledgeSubjectRef, resolveRelEndpoints bool) (*resolvedSubjectAlias, error) {
+	if ref.Entity != nil {
+		return s.resolveEntityFromRef(ctx, *ref.Entity)
+	}
+
+	if refErr := ref.Relationship.ProviderResourceRef.Validate(); refErr != nil {
+		return nil, fmt.Errorf("validate resource ref: %w", refErr)
+	}
+
+	var source *resolvedSubjectAlias
+	var target *resolvedSubjectAlias
+	var endpointErr error
+	if resolveRelEndpoints {
+		source, endpointErr = s.resolveEntityFromRef(ctx, ref.Relationship.Source)
+		if endpointErr != nil {
+			return nil, fmt.Errorf("source: %w", errNoExistingEndpointEntityAlias)
+		}
+		target, endpointErr = s.resolveEntityFromRef(ctx, ref.Relationship.Target)
+		if endpointErr != nil {
+			return nil, fmt.Errorf("target: %w", errNoExistingEndpointEntityAlias)
+		}
+	} else {
+		source, endpointErr = s.lookupExistingEntityAlias(ctx, ref.Relationship.Source)
+		if endpointErr != nil || source == nil {
+			return nil, fmt.Errorf("source: %w", errNoExistingEndpointEntityAlias)
+		}
+		target, endpointErr = s.lookupExistingEntityAlias(ctx, ref.Relationship.Target)
+		if endpointErr != nil || target == nil {
+			return nil, fmt.Errorf("target: %w", errNoExistingEndpointEntityAlias)
+		}
+	}
+
+	return s.resolveRelationshipFromRef(ctx, *ref.Relationship, source, target)
+}
+
+func (s *KnowledgeGraphService) ingestEvidenceRefs(ctx context.Context, eventID uuid.UUID, refs []rez.KnowledgeEvidenceRef) error {
 	if len(refs) == 0 {
 		return nil
-	}
-	resolveAlias := func(ctx context.Context, ref rez.KnowledgeEvidenceRef) (*resolvedSubjectAlias, error) {
-		return s.resolveEntityFromRef(ctx, *ref.SubjectEntity)
-	}
-	if kind == ksa.SubjectKindRelationship {
-		resolveAlias = func(ctx context.Context, ref rez.KnowledgeEvidenceRef) (*resolvedSubjectAlias, error) {
-			rr := ref.SubjectRelationship
-			if refErr := rr.ProviderResourceRef.Validate(); refErr != nil {
-				return nil, fmt.Errorf("validate resource ref: %w", refErr)
-			}
-
-			source, sourceErr := s.lookupExistingEntityAlias(ctx, rr.Source)
-			if sourceErr != nil || source == nil {
-				return nil, fmt.Errorf("source: %w", errNoExistingEndpointEntityAlias)
-			}
-			target, targetErr := s.lookupExistingEntityAlias(ctx, rr.Target)
-			if targetErr != nil || target == nil {
-				return nil, fmt.Errorf("resolve target: %w", errNoExistingEndpointEntityAlias)
-			}
-
-			return s.resolveRelationshipFromRef(ctx, *ref.SubjectRelationship, source, target)
-		}
 	}
 	evClient := s.db.Client(ctx).KnowledgeEvidence
 	builders := make([]*ent.KnowledgeEvidenceCreate, 0, len(refs))
 	for _, ref := range refs {
-		resolved, aliasErr := resolveAlias(ctx, ref)
+		resolved, aliasErr := s.resolveSubjectAliasFromRef(ctx, ref.Subject, false)
 		if aliasErr != nil {
 			return fmt.Errorf("resolve subject alias: %w", aliasErr)
 		}
@@ -369,18 +382,19 @@ func (k *knowledgeEntityIdentityLockKeys) addEntity(ref rez.KnowledgeEntityRef) 
 	return nil
 }
 
-func (k *knowledgeEntityIdentityLockKeys) collect(refs []rez.KnowledgeEvidenceRef) error {
+func (k *knowledgeEntityIdentityLockKeys) collectSubjects(refs []rez.KnowledgeEvidenceRef) error {
 	for _, ref := range refs {
+		subj := ref.Subject
 		switch {
-		case ref.SubjectEntity != nil && ref.SubjectRelationship == nil:
-			if entityErr := k.addEntity(*ref.SubjectEntity); entityErr != nil {
+		case subj.Entity != nil && subj.Relationship == nil:
+			if entityErr := k.addEntity(*subj.Entity); entityErr != nil {
 				return fmt.Errorf("entity: %w", entityErr)
 			}
-		case ref.SubjectRelationship != nil && ref.SubjectEntity == nil:
-			if sourceErr := k.addEntity(ref.SubjectRelationship.Source); sourceErr != nil {
+		case subj.Relationship != nil && subj.Entity == nil:
+			if sourceErr := k.addEntity(subj.Relationship.Source); sourceErr != nil {
 				return fmt.Errorf("relationship source entity: %w", sourceErr)
 			}
-			if targetErr := k.addEntity(ref.SubjectRelationship.Target); targetErr != nil {
+			if targetErr := k.addEntity(subj.Relationship.Target); targetErr != nil {
 				return fmt.Errorf("relationship target entity: %w", targetErr)
 			}
 		}
@@ -392,42 +406,55 @@ func (s *KnowledgeGraphService) IngestEvidence(ctx context.Context, event *ent.N
 	if len(refs) == 0 {
 		return nil
 	}
+
+	ik := &knowledgeEntityIdentityLockKeys{}
+	if lockKeysErr := ik.collectSubjects(refs); lockKeysErr != nil {
+		return fmt.Errorf("get entity identity lock keys: %w", lockKeysErr)
+	}
+
 	entityRefs := make([]rez.KnowledgeEvidenceRef, 0, len(refs))
 	relationshipRefs := make([]rez.KnowledgeEvidenceRef, 0, len(refs))
 	for _, ref := range refs {
+		subj := ref.Subject
 		switch {
-		case ref.SubjectEntity != nil && ref.SubjectRelationship == nil:
+		case subj.Entity != nil && subj.Relationship == nil:
 			entityRefs = append(entityRefs, ref)
-		case ref.SubjectRelationship != nil && ref.SubjectEntity == nil:
+		case subj.Relationship != nil && subj.Entity == nil:
 			relationshipRefs = append(relationshipRefs, ref)
 		default:
 			return fmt.Errorf("evidence must contain exactly one entity or relationship")
 		}
 	}
 
-	ik := &knowledgeEntityIdentityLockKeys{}
-	if lockKeysErr := ik.collect(refs); lockKeysErr != nil {
-		return fmt.Errorf("get entity identity lock keys: %w", lockKeysErr)
-	}
-
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if lockErr := s.db.AcquireTxLocks(ctx, knowledgeEntityIdentityLockNamespace, ik.keys...); lockErr != nil {
 			return fmt.Errorf("lock knowledge entity identities: %w", lockErr)
 		}
-		if entsErr := s.ingestEvidenceRefs(ctx, event.ID, ksa.SubjectKindEntity, entityRefs); entsErr != nil {
+		if entsErr := s.ingestEvidenceRefs(ctx, event.ID, entityRefs); entsErr != nil {
 			return fmt.Errorf("entities: %w", entsErr)
 		}
-		if relsErr := s.ingestEvidenceRefs(ctx, event.ID, ksa.SubjectKindRelationship, relationshipRefs); relsErr != nil {
+		if relsErr := s.ingestEvidenceRefs(ctx, event.ID, relationshipRefs); relsErr != nil {
 			return fmt.Errorf("relationships: %w", relsErr)
 		}
 		return nil
 	})
 }
 
-func (s *KnowledgeGraphService) ResolveInternalEntity(ctx context.Context, ref rez.KnowledgeEntityRef) (*ent.KnowledgeSubjectAlias, error) {
+func (s *KnowledgeGraphService) ResolveInternalSubject(ctx context.Context, ref rez.KnowledgeSubjectRef) (*ent.KnowledgeSubjectAlias, error) {
 	ik := &knowledgeEntityIdentityLockKeys{}
-	if entityErr := ik.addEntity(ref); entityErr != nil {
-		return nil, fmt.Errorf("entity: %w", entityErr)
+	if ref.Entity != nil {
+		if entityErr := ik.addEntity(*ref.Entity); entityErr != nil {
+			return nil, fmt.Errorf("entity: %w", entityErr)
+		}
+	} else if ref.Relationship != nil {
+		if sourceErr := ik.addEntity(ref.Relationship.Source); sourceErr != nil {
+			return nil, fmt.Errorf("relationship source entity: %w", sourceErr)
+		}
+		if targetErr := ik.addEntity(ref.Relationship.Target); targetErr != nil {
+			return nil, fmt.Errorf("relationship target entity: %w", targetErr)
+		}
+	} else {
+		return nil, fmt.Errorf("invalid subject")
 	}
 
 	var alias *ent.KnowledgeSubjectAlias
@@ -436,53 +463,16 @@ func (s *KnowledgeGraphService) ResolveInternalEntity(ctx context.Context, ref r
 			return fmt.Errorf("lock knowledge entity identities: %w", lockErr)
 		}
 
-		ea, entityErr := s.resolveEntityFromRef(ctx, ref)
-		if entityErr != nil {
-			return fmt.Errorf("subject entity: %w", entityErr)
+		resolvedAlias, resolveErr := s.resolveSubjectAliasFromRef(ctx, ref, true)
+		if resolveErr != nil {
+			return fmt.Errorf("resolve alias: %w", resolveErr)
 		}
 
-		entAlias, aliasErr := tx.KnowledgeSubjectAlias.Get(ctx, ea.aliasId)
+		subjAlias, aliasErr := tx.KnowledgeSubjectAlias.Get(ctx, resolvedAlias.aliasId)
 		if aliasErr != nil {
 			return fmt.Errorf("get knowledge subject alias: %w", aliasErr)
 		}
-		alias = entAlias.Unwrap()
-		return nil
-	})
-}
-
-func (s *KnowledgeGraphService) ResolveInternalRelationship(ctx context.Context, ref rez.KnowledgeRelationshipRef) (*ent.KnowledgeSubjectAlias, error) {
-	ik := &knowledgeEntityIdentityLockKeys{}
-	if sourceErr := ik.addEntity(ref.Source); sourceErr != nil {
-		return nil, fmt.Errorf("relationship source entity: %w", sourceErr)
-	}
-	if targetErr := ik.addEntity(ref.Target); targetErr != nil {
-		return nil, fmt.Errorf("relationship target entity: %w", targetErr)
-	}
-
-	var alias *ent.KnowledgeSubjectAlias
-	return alias, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if lockErr := s.db.AcquireTxLocks(ctx, knowledgeEntityIdentityLockNamespace, ik.keys...); lockErr != nil {
-			return fmt.Errorf("lock knowledge entity identities: %w", lockErr)
-		}
-
-		source, sourceErr := s.resolveEntityFromRef(ctx, ref.Source)
-		if sourceErr != nil {
-			return fmt.Errorf("relationship source entity: %w", sourceErr)
-		}
-		target, targetErr := s.resolveEntityFromRef(ctx, ref.Target)
-		if targetErr != nil {
-			return fmt.Errorf("relationship target entity: %w", targetErr)
-		}
-		ra, relErr := s.resolveRelationshipFromRef(ctx, ref, source, target)
-		if relErr != nil {
-			return fmt.Errorf("resolve relationship: %w", relErr)
-		}
-
-		relAlias, aliasErr := tx.KnowledgeSubjectAlias.Get(ctx, ra.aliasId)
-		if aliasErr != nil {
-			return fmt.Errorf("get knowledge subject alias: %w", aliasErr)
-		}
-		alias = relAlias.Unwrap()
+		alias = subjAlias.Unwrap()
 		return nil
 	})
 }

@@ -42,7 +42,7 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 			DisplayName: event.Attributes.DisplayName,
 			Properties:  properties,
 		},
-		SubjectEntity: &repositoryEntityRef,
+		Subject: rez.KnowledgeSubjectRef{Entity: &repositoryEntityRef},
 	}
 
 	if ingestErr := s.knowledge.IngestEvidence(ctx, event.Event, evidence); ingestErr != nil {
@@ -72,7 +72,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attributes.DisplayName,
 		},
-		SubjectEntity: &changeRef,
+		Subject: rez.KnowledgeSubjectRef{Entity: &changeRef},
 	}
 
 	repositoryRef := rez.KnowledgeEntityRef{
@@ -89,7 +89,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 			Description: attributes.Repository.Description,
 			Properties:  attributes.Repository.Properties,
 		},
-		SubjectEntity: &repositoryRef,
+		Subject: rez.KnowledgeSubjectRef{Entity: &repositoryRef},
 	}
 
 	changeRepositoryResourceRef := projections.DerivedRelationshipRef(knr.PredicateTouches, changeResourceRef, attributes.Repository.Ref)
@@ -100,10 +100,10 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		Target:              repositoryRef,
 	}
 	codeChangeRepoEvidence := rez.KnowledgeEvidenceRef{
-		Kind:                evidenceKind,
-		Assertion:           knowledgeAssertionCodeChangeRepository,
-		EffectiveAt:         event.Event.OccurredAt,
-		SubjectRelationship: &changeRepositoryRelationship,
+		Kind:        evidenceKind,
+		Assertion:   knowledgeAssertionCodeChangeRepository,
+		EffectiveAt: event.Event.OccurredAt,
+		Subject:     rez.KnowledgeSubjectRef{Relationship: &changeRepositoryRelationship},
 	}
 
 	evidence := []rez.KnowledgeEvidenceRef{codeChangeEvidence, repoEntityEvidence, codeChangeRepoEvidence}
@@ -123,7 +123,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 				Description: related.Description,
 				Properties:  related.Properties,
 			},
-			SubjectEntity: &relatedEntityRef,
+			Subject: rez.KnowledgeSubjectRef{Entity: &relatedEntityRef},
 		}
 		impactResourceRef := projections.DerivedRelationshipRef(knr.PredicateImpacts, changeResourceRef, related.Ref)
 		impactRelationship := rez.KnowledgeRelationshipRef{
@@ -140,7 +140,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 				DisplayName: related.DisplayName,
 				Properties:  map[string]any{"entity_kind": related.Kind},
 			},
-			SubjectRelationship: &impactRelationship,
+			Subject: rez.KnowledgeSubjectRef{Relationship: &impactRelationship},
 		}
 		evidence = append(evidence, relatedEntityEvidence, impactEvidence)
 	}

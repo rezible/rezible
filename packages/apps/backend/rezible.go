@@ -176,12 +176,11 @@ type (
 	}
 
 	KnowledgeEvidenceRef struct {
-		Kind                ke.Kind
-		Assertion           string
-		EffectiveAt         time.Time
-		SubjectState        schematypes.KnowledgeGraphSubjectState
-		SubjectEntity       *KnowledgeEntityRef
-		SubjectRelationship *KnowledgeRelationshipRef
+		Kind         ke.Kind
+		Assertion    string
+		EffectiveAt  time.Time
+		SubjectState schematypes.KnowledgeGraphSubjectState
+		Subject      KnowledgeSubjectRef
 	}
 
 	ListKnowledgeGraphEntitiesParams struct {
@@ -256,8 +255,7 @@ type (
 		GetView(context.Context, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
 
 		IngestEvidence(context.Context, *ent.NormalizedEvent, ...KnowledgeEvidenceRef) error
-		ResolveInternalEntity(context.Context, KnowledgeEntityRef) (*ent.KnowledgeSubjectAlias, error)
-		ResolveInternalRelationship(context.Context, KnowledgeRelationshipRef) (*ent.KnowledgeSubjectAlias, error)
+		ResolveInternalSubject(context.Context, KnowledgeSubjectRef) (*ent.KnowledgeSubjectAlias, error)
 	}
 )
 

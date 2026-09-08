@@ -88,11 +88,12 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 	var created *ent.Situation
 	return created, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		situationId := uuid.New()
-		ka, kaErr := s.knowledge.ResolveInternalEntity(ctx, rez.KnowledgeEntityRef{
+		situationEntityRef := &rez.KnowledgeEntityRef{
 			Category:            kne.CategoryEvent,
 			Kind:                situationKnowledgeEntityKind,
 			ProviderResourceRef: projections.InternalEntityResourceRef(situationId),
-		})
+		}
+		ka, kaErr := s.knowledge.ResolveInternalSubject(ctx, rez.KnowledgeSubjectRef{Entity: situationEntityRef})
 		if kaErr != nil || ka.EntityID == nil {
 			return fmt.Errorf("create situation knowledge entity: %w", kaErr)
 		}
@@ -340,7 +341,9 @@ func (s *SituationService) ingestKnowledgeRelationship(ctx context.Context, sit 
 		relationshipRef.Target = entityRef
 	}
 
-	if _, relErr := s.knowledge.ResolveInternalRelationship(ctx, *relationshipRef); relErr != nil {
+	subjRef := rez.KnowledgeSubjectRef{Relationship: relationshipRef}
+
+	if _, relErr := s.knowledge.ResolveInternalSubject(ctx, subjRef); relErr != nil {
 		return fmt.Errorf("ingest situation evidence item: %w", relErr)
 	}
 	return nil

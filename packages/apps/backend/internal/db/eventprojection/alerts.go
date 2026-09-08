@@ -44,7 +44,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 				"definition": attrs.Definition,
 			},
 		},
-		SubjectEntity: &alertEntityRef,
+		Subject: rez.KnowledgeSubjectRef{Entity: &alertEntityRef},
 	}
 
 	evidenceKind := projectionEvidenceKind(event)
@@ -64,7 +64,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 				Description: observed.Description,
 				Properties:  observed.Properties,
 			},
-			SubjectEntity: &observedEntityRef,
+			Subject: rez.KnowledgeSubjectRef{Entity: &observedEntityRef},
 		}
 		relationshipRef := rez.KnowledgeRelationshipRef{
 			Predicate:           knr.PredicateObserves,
@@ -73,10 +73,10 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 			Target:              observedEntityRef,
 		}
 		relationshipEvidence := rez.KnowledgeEvidenceRef{
-			Kind:                evidenceKind,
-			Assertion:           knowledgeAssertionAlertObservesEntity,
-			EffectiveAt:         event.OccurredAt,
-			SubjectRelationship: &relationshipRef,
+			Kind:        evidenceKind,
+			Assertion:   knowledgeAssertionAlertObservesEntity,
+			EffectiveAt: event.OccurredAt,
+			Subject:     rez.KnowledgeSubjectRef{Relationship: &relationshipRef},
 			SubjectState: schematypes.KnowledgeGraphSubjectState{
 				DisplayName: "Observes " + observed.DisplayName,
 			},

@@ -43,7 +43,7 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, e *p
 			Description: attrs.Description,
 			Properties:  properties,
 		},
-		SubjectEntity: &componentEntityRef,
+		Subject: rez.KnowledgeSubjectRef{Entity: &componentEntityRef},
 	}
 
 	if ingestErr := s.knowledge.IngestEvidence(ctx, event, evidence); ingestErr != nil {
@@ -77,7 +77,7 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 			Description: attrs.Source.Description,
 			Properties:  attrs.Source.Properties,
 		},
-		SubjectEntity: &sourceEntityRef,
+		Subject: rez.KnowledgeSubjectRef{Entity: &sourceEntityRef},
 	}
 	targetEvidenceRef := rez.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
@@ -88,7 +88,7 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 			Description: attrs.Target.Description,
 			Properties:  attrs.Target.Properties,
 		},
-		SubjectEntity: &targetEntityRef,
+		Subject: rez.KnowledgeSubjectRef{Entity: &targetEntityRef},
 	}
 
 	relationshipResourceRef := rez.ProviderResourceRef{
@@ -103,10 +103,10 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 		Target:              targetEntityRef,
 	}
 	relationshipEvidenceRef := rez.KnowledgeEvidenceRef{
-		Kind:                evidenceKind,
-		Assertion:           knowledgeAssertionSystemRelationshipExists,
-		EffectiveAt:         event.OccurredAt,
-		SubjectRelationship: &relationshipRef,
+		Kind:        evidenceKind,
+		Assertion:   knowledgeAssertionSystemRelationshipExists,
+		EffectiveAt: event.OccurredAt,
+		Subject:     rez.KnowledgeSubjectRef{Relationship: &relationshipRef},
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.DisplayName,
 			Description: attrs.Description,

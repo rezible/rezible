@@ -34,11 +34,12 @@ func (s *SystemHazardService) CreateSystemHazard(ctx context.Context, params rez
 	var created *ent.SystemHazard
 	return created, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		hazardId := uuid.New()
-		ka, kaErr := s.knowledge.ResolveInternalEntity(ctx, rez.KnowledgeEntityRef{
+		hazardEntityRef := &rez.KnowledgeEntityRef{
 			Category:            kne.CategoryConcern,
 			Kind:                "system_hazard",
 			ProviderResourceRef: projections.InternalEntityResourceRef(hazardId),
-		})
+		}
+		ka, kaErr := s.knowledge.ResolveInternalSubject(ctx, rez.KnowledgeSubjectRef{Entity: hazardEntityRef})
 		if kaErr != nil || ka.EntityID == nil {
 			return fmt.Errorf("create situation knowledge entity: %w", kaErr)
 		}

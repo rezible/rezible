@@ -1113,55 +1113,55 @@ func (_c *MockKnowledgeGraphService_QueryEntityNeighborhood_Call) RunAndReturn(r
 	return _c
 }
 
-// ResolveInternalEntity provides a mock function for the type MockKnowledgeGraphService
-func (_mock *MockKnowledgeGraphService) ResolveInternalEntity(context1 context.Context, knowledgeEntityRef rez.KnowledgeEntityRef) (*ent.KnowledgeSubjectAlias, error) {
-	ret := _mock.Called(context1, knowledgeEntityRef)
+// ResolveInternalSubject provides a mock function for the type MockKnowledgeGraphService
+func (_mock *MockKnowledgeGraphService) ResolveInternalSubject(context1 context.Context, knowledgeSubjectRef rez.KnowledgeSubjectRef) (*ent.KnowledgeSubjectAlias, error) {
+	ret := _mock.Called(context1, knowledgeSubjectRef)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ResolveInternalEntity")
+		panic("no return value specified for ResolveInternalSubject")
 	}
 
 	var r0 *ent.KnowledgeSubjectAlias
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.KnowledgeEntityRef) (*ent.KnowledgeSubjectAlias, error)); ok {
-		return returnFunc(context1, knowledgeEntityRef)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.KnowledgeSubjectRef) (*ent.KnowledgeSubjectAlias, error)); ok {
+		return returnFunc(context1, knowledgeSubjectRef)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.KnowledgeEntityRef) *ent.KnowledgeSubjectAlias); ok {
-		r0 = returnFunc(context1, knowledgeEntityRef)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.KnowledgeSubjectRef) *ent.KnowledgeSubjectAlias); ok {
+		r0 = returnFunc(context1, knowledgeSubjectRef)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.KnowledgeSubjectAlias)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.KnowledgeEntityRef) error); ok {
-		r1 = returnFunc(context1, knowledgeEntityRef)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.KnowledgeSubjectRef) error); ok {
+		r1 = returnFunc(context1, knowledgeSubjectRef)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockKnowledgeGraphService_ResolveInternalEntity_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResolveInternalEntity'
-type MockKnowledgeGraphService_ResolveInternalEntity_Call struct {
+// MockKnowledgeGraphService_ResolveInternalSubject_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResolveInternalSubject'
+type MockKnowledgeGraphService_ResolveInternalSubject_Call struct {
 	*mock.Call
 }
 
-// ResolveInternalEntity is a helper method to define mock.On call
+// ResolveInternalSubject is a helper method to define mock.On call
 //   - context1 context.Context
-//   - knowledgeEntityRef rez.KnowledgeEntityRef
-func (_e *MockKnowledgeGraphService_Expecter) ResolveInternalEntity(context1 interface{}, knowledgeEntityRef interface{}) *MockKnowledgeGraphService_ResolveInternalEntity_Call {
-	return &MockKnowledgeGraphService_ResolveInternalEntity_Call{Call: _e.mock.On("ResolveInternalEntity", context1, knowledgeEntityRef)}
+//   - knowledgeSubjectRef rez.KnowledgeSubjectRef
+func (_e *MockKnowledgeGraphService_Expecter) ResolveInternalSubject(context1 interface{}, knowledgeSubjectRef interface{}) *MockKnowledgeGraphService_ResolveInternalSubject_Call {
+	return &MockKnowledgeGraphService_ResolveInternalSubject_Call{Call: _e.mock.On("ResolveInternalSubject", context1, knowledgeSubjectRef)}
 }
 
-func (_c *MockKnowledgeGraphService_ResolveInternalEntity_Call) Run(run func(context1 context.Context, knowledgeEntityRef rez.KnowledgeEntityRef)) *MockKnowledgeGraphService_ResolveInternalEntity_Call {
+func (_c *MockKnowledgeGraphService_ResolveInternalSubject_Call) Run(run func(context1 context.Context, knowledgeSubjectRef rez.KnowledgeSubjectRef)) *MockKnowledgeGraphService_ResolveInternalSubject_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.KnowledgeEntityRef
+		var arg1 rez.KnowledgeSubjectRef
 		if args[1] != nil {
-			arg1 = args[1].(rez.KnowledgeEntityRef)
+			arg1 = args[1].(rez.KnowledgeSubjectRef)
 		}
 		run(
 			arg0,
@@ -1171,80 +1171,12 @@ func (_c *MockKnowledgeGraphService_ResolveInternalEntity_Call) Run(run func(con
 	return _c
 }
 
-func (_c *MockKnowledgeGraphService_ResolveInternalEntity_Call) Return(knowledgeSubjectAlias *ent.KnowledgeSubjectAlias, err error) *MockKnowledgeGraphService_ResolveInternalEntity_Call {
+func (_c *MockKnowledgeGraphService_ResolveInternalSubject_Call) Return(knowledgeSubjectAlias *ent.KnowledgeSubjectAlias, err error) *MockKnowledgeGraphService_ResolveInternalSubject_Call {
 	_c.Call.Return(knowledgeSubjectAlias, err)
 	return _c
 }
 
-func (_c *MockKnowledgeGraphService_ResolveInternalEntity_Call) RunAndReturn(run func(context1 context.Context, knowledgeEntityRef rez.KnowledgeEntityRef) (*ent.KnowledgeSubjectAlias, error)) *MockKnowledgeGraphService_ResolveInternalEntity_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// ResolveInternalRelationship provides a mock function for the type MockKnowledgeGraphService
-func (_mock *MockKnowledgeGraphService) ResolveInternalRelationship(context1 context.Context, knowledgeRelationshipRef rez.KnowledgeRelationshipRef) (*ent.KnowledgeSubjectAlias, error) {
-	ret := _mock.Called(context1, knowledgeRelationshipRef)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ResolveInternalRelationship")
-	}
-
-	var r0 *ent.KnowledgeSubjectAlias
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.KnowledgeRelationshipRef) (*ent.KnowledgeSubjectAlias, error)); ok {
-		return returnFunc(context1, knowledgeRelationshipRef)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.KnowledgeRelationshipRef) *ent.KnowledgeSubjectAlias); ok {
-		r0 = returnFunc(context1, knowledgeRelationshipRef)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.KnowledgeSubjectAlias)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.KnowledgeRelationshipRef) error); ok {
-		r1 = returnFunc(context1, knowledgeRelationshipRef)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockKnowledgeGraphService_ResolveInternalRelationship_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResolveInternalRelationship'
-type MockKnowledgeGraphService_ResolveInternalRelationship_Call struct {
-	*mock.Call
-}
-
-// ResolveInternalRelationship is a helper method to define mock.On call
-//   - context1 context.Context
-//   - knowledgeRelationshipRef rez.KnowledgeRelationshipRef
-func (_e *MockKnowledgeGraphService_Expecter) ResolveInternalRelationship(context1 interface{}, knowledgeRelationshipRef interface{}) *MockKnowledgeGraphService_ResolveInternalRelationship_Call {
-	return &MockKnowledgeGraphService_ResolveInternalRelationship_Call{Call: _e.mock.On("ResolveInternalRelationship", context1, knowledgeRelationshipRef)}
-}
-
-func (_c *MockKnowledgeGraphService_ResolveInternalRelationship_Call) Run(run func(context1 context.Context, knowledgeRelationshipRef rez.KnowledgeRelationshipRef)) *MockKnowledgeGraphService_ResolveInternalRelationship_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 rez.KnowledgeRelationshipRef
-		if args[1] != nil {
-			arg1 = args[1].(rez.KnowledgeRelationshipRef)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockKnowledgeGraphService_ResolveInternalRelationship_Call) Return(knowledgeSubjectAlias *ent.KnowledgeSubjectAlias, err error) *MockKnowledgeGraphService_ResolveInternalRelationship_Call {
-	_c.Call.Return(knowledgeSubjectAlias, err)
-	return _c
-}
-
-func (_c *MockKnowledgeGraphService_ResolveInternalRelationship_Call) RunAndReturn(run func(context1 context.Context, knowledgeRelationshipRef rez.KnowledgeRelationshipRef) (*ent.KnowledgeSubjectAlias, error)) *MockKnowledgeGraphService_ResolveInternalRelationship_Call {
+func (_c *MockKnowledgeGraphService_ResolveInternalSubject_Call) RunAndReturn(run func(context1 context.Context, knowledgeSubjectRef rez.KnowledgeSubjectRef) (*ent.KnowledgeSubjectAlias, error)) *MockKnowledgeGraphService_ResolveInternalSubject_Call {
 	_c.Call.Return(run)
 	return _c
 }

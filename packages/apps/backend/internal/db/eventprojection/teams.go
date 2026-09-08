@@ -44,7 +44,7 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 				"chat_channel_id": attrs.ChatChannelId,
 			},
 		},
-		SubjectEntity: &teamEntityRef,
+		Subject: rez.KnowledgeSubjectRef{Entity: &teamEntityRef},
 	}
 
 	var projected []rez.ProjectedEntityRef
@@ -122,7 +122,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.User.Name,
 		},
-		SubjectEntity: &userEntity,
+		Subject: rez.KnowledgeSubjectRef{Entity: &userEntity},
 	}
 	teamEvidenceRef := rez.KnowledgeEvidenceRef{
 		Kind:        kind,
@@ -135,7 +135,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 				"chat_channel_id": attrs.Team.ChatChannelId,
 			},
 		},
-		SubjectEntity: &teamEntity,
+		Subject: rez.KnowledgeSubjectRef{Entity: &teamEntity},
 	}
 
 	membershipResourceRef := rez.ProviderResourceRef{
@@ -157,7 +157,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 			DisplayName: "Member of " + attrs.Team.Name,
 			Properties:  map[string]any{"role": attrs.Role},
 		},
-		SubjectRelationship: &membershipRelationship,
+		Subject: rez.KnowledgeSubjectRef{Relationship: &membershipRelationship},
 	}
 
 	var projected []rez.ProjectedEntityRef

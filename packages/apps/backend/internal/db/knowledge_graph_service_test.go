@@ -80,7 +80,7 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: "Old API name",
 		},
-		SubjectEntity: &apiEntityRef,
+		Subject: rez.KnowledgeSubjectRef{Entity: &apiEntityRef},
 	}
 	s.Require().NoError(service.IngestEvidence(ctx, apiEvent, oldEvidence))
 	apiAliasQuery := tdb.Client(ctx).KnowledgeSubjectAlias.Query()
@@ -101,11 +101,11 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 		ProviderResourceRef: databaseRef,
 	}
 	databaseEvidence := rez.KnowledgeEvidenceRef{
-		Kind:          ke.KindObserved,
-		Assertion:     "component_exists",
-		EffectiveAt:   now.Add(-time.Hour),
-		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "Database"},
-		SubjectEntity: &databaseEntityRef,
+		Kind:         ke.KindObserved,
+		Assertion:    "component_exists",
+		EffectiveAt:  now.Add(-time.Hour),
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "Database"},
+		Subject:      rez.KnowledgeSubjectRef{Entity: &databaseEntityRef},
 	}
 	databaseEvent := s.createEvent(tdb, databaseRef.ResourceRef, now.Add(-time.Hour))
 	s.Require().NoError(service.IngestEvidence(ctx, databaseEvent, databaseEvidence))
@@ -118,11 +118,11 @@ func (s *KnowledgeGraphServiceSuite) TestCurrentStateAndBoundedView() {
 		Target:              databaseEntityRef,
 	}
 	relEvidence := rez.KnowledgeEvidenceRef{
-		Kind:                ke.KindObserved,
-		Assertion:           "relationship_exists",
-		EffectiveAt:         now,
-		SubjectState:        schematypes.KnowledgeGraphSubjectState{DisplayName: "uses"},
-		SubjectRelationship: &relationshipRef,
+		Kind:         ke.KindObserved,
+		Assertion:    "relationship_exists",
+		EffectiveAt:  now,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "uses"},
+		Subject:      rez.KnowledgeSubjectRef{Relationship: &relationshipRef},
 	}
 	relEvent := s.createEvent(tdb, relRef.ResourceRef, now)
 	s.Require().NoError(service.IngestEvidence(ctx, relEvent, relEvidence))
@@ -153,11 +153,11 @@ func (s *KnowledgeGraphServiceSuite) TestBoundedViewIncludesIsolatedRootEntity()
 		ProviderResourceRef: ref,
 	}
 	evidence := rez.KnowledgeEvidenceRef{
-		Kind:          ke.KindObserved,
-		Assertion:     "component_exists",
-		EffectiveAt:   now,
-		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "API"},
-		SubjectEntity: &entityRef,
+		Kind:         ke.KindObserved,
+		Assertion:    "component_exists",
+		EffectiveAt:  now,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "API"},
+		Subject:      rez.KnowledgeSubjectRef{Entity: &entityRef},
 	}
 	event := s.createEvent(tdb, ref.ResourceRef, now)
 	s.Require().NoError(service.IngestEvidence(ctx, event, evidence))
@@ -209,11 +209,11 @@ func (s *KnowledgeGraphServiceSuite) TestKnowledgeSubjectAliasCannotMapOneResour
 		ProviderResourceRef: sharedRef,
 	}
 	evidence := rez.KnowledgeEvidenceRef{
-		Kind:          ke.KindObserved,
-		Assertion:     "user_observed",
-		EffectiveAt:   time.Now().UTC(),
-		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "Second"},
-		SubjectEntity: &entityRef,
+		Kind:         ke.KindObserved,
+		Assertion:    "user_observed",
+		EffectiveAt:  time.Now().UTC(),
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "Second"},
+		Subject:      rez.KnowledgeSubjectRef{Entity: &entityRef},
 	}
 	event := s.createEvent(tdb, "event:shared-resource", evidence.EffectiveAt)
 	s.Require().Error(secondAliasErr)
@@ -250,14 +250,14 @@ func (s *KnowledgeGraphServiceSuite) TestEntityAliasesMatchLinkingAttributes() {
 		},
 	}
 	firstEvidence := rez.KnowledgeEvidenceRef{
-		Kind:          ke.KindObserved,
-		Assertion:     "user_observed",
-		EffectiveAt:   now,
-		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "Alice"},
-		SubjectEntity: &firstRef,
+		Kind:         ke.KindObserved,
+		Assertion:    "user_observed",
+		EffectiveAt:  now,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "Alice"},
+		Subject:      rez.KnowledgeSubjectRef{Entity: &firstRef},
 	}
 	secondEvidence := firstEvidence
-	secondEvidence.SubjectEntity = &secondRef
+	secondEvidence.Subject.Entity = &secondRef
 	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(tdb, "event:first", now), firstEvidence))
 	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(tdb, "event:second", now.Add(time.Minute)), secondEvidence))
 
@@ -283,11 +283,11 @@ func (s *KnowledgeGraphServiceSuite) TestEntityLinkingAttributeConflictRollsBack
 	}
 	makeEvidence := func(ref *rez.KnowledgeEntityRef) rez.KnowledgeEvidenceRef {
 		return rez.KnowledgeEvidenceRef{
-			Kind:          ke.KindObserved,
-			Assertion:     "user_observed",
-			EffectiveAt:   now,
-			SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "User"},
-			SubjectEntity: ref,
+			Kind:         ke.KindObserved,
+			Assertion:    "user_observed",
+			EffectiveAt:  now,
+			SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "User"},
+			Subject:      rez.KnowledgeSubjectRef{Entity: ref},
 		}
 	}
 	firstRef := makeRef("first", map[string]string{"user.email": "first@example.com"})
@@ -332,19 +332,19 @@ func (s *KnowledgeGraphServiceSuite) TestRelationshipAliasesConvergeThroughLinke
 	}
 	entityEvidence := func(ref *rez.KnowledgeEntityRef, name string) rez.KnowledgeEvidenceRef {
 		return rez.KnowledgeEvidenceRef{
-			Kind:          ke.KindObserved,
-			Assertion:     "entity_observed",
-			EffectiveAt:   now,
-			SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: name},
-			SubjectEntity: ref,
+			Kind:         ke.KindObserved,
+			Assertion:    "entity_observed",
+			EffectiveAt:  now,
+			SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: name},
+			Subject:      rez.KnowledgeSubjectRef{Entity: ref},
 		}
 	}
 	relationshipEvidence := func(ref *rez.KnowledgeRelationshipRef) rez.KnowledgeEvidenceRef {
 		return rez.KnowledgeEvidenceRef{
-			Kind:                ke.KindObserved,
-			Assertion:           "relationship_observed",
-			EffectiveAt:         now,
-			SubjectRelationship: ref,
+			Kind:        ke.KindObserved,
+			Assertion:   "relationship_observed",
+			EffectiveAt: now,
+			Subject:     rez.KnowledgeSubjectRef{Relationship: ref},
 		}
 	}
 	s.Require().NoError(service.IngestEvidence(ctx, s.createEvent(tdb, "event:relationship:one", now),
@@ -397,17 +397,17 @@ func (s *KnowledgeGraphServiceSuite) TestRelationshipIngestionRollsBackWhenEndpo
 		Target:              targetRef,
 	}
 	sourceEvidence := rez.KnowledgeEvidenceRef{
-		Kind:          ke.KindObserved,
-		Assertion:     "source_observed",
-		EffectiveAt:   now,
-		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "API"},
-		SubjectEntity: &sourceRef,
+		Kind:         ke.KindObserved,
+		Assertion:    "source_observed",
+		EffectiveAt:  now,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "API"},
+		Subject:      rez.KnowledgeSubjectRef{Entity: &sourceRef},
 	}
 	relationshipEvidence := rez.KnowledgeEvidenceRef{
-		Kind:                ke.KindObserved,
-		Assertion:           "relationship_observed",
-		EffectiveAt:         now,
-		SubjectRelationship: &relationshipRef,
+		Kind:        ke.KindObserved,
+		Assertion:   "relationship_observed",
+		EffectiveAt: now,
+		Subject:     rez.KnowledgeSubjectRef{Relationship: &relationshipRef},
 	}
 	event := s.createEvent(tdb, relationshipRef.ProviderResourceRef.ResourceRef, now)
 
@@ -444,24 +444,24 @@ func (s *KnowledgeGraphServiceSuite) TestRelationshipIngestionEvidenceBacksEndpo
 		Target:              targetRef,
 	}
 	sourceEvidence := rez.KnowledgeEvidenceRef{
-		Kind:          ke.KindObserved,
-		Assertion:     "source_observed",
-		EffectiveAt:   now,
-		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "API"},
-		SubjectEntity: &sourceRef,
+		Kind:         ke.KindObserved,
+		Assertion:    "source_observed",
+		EffectiveAt:  now,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "API"},
+		Subject:      rez.KnowledgeSubjectRef{Entity: &sourceRef},
 	}
 	targetEvidence := rez.KnowledgeEvidenceRef{
-		Kind:          ke.KindObserved,
-		Assertion:     "target_observed",
-		EffectiveAt:   now,
-		SubjectState:  schematypes.KnowledgeGraphSubjectState{DisplayName: "Primary database"},
-		SubjectEntity: &targetRef,
+		Kind:         ke.KindObserved,
+		Assertion:    "target_observed",
+		EffectiveAt:  now,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "Primary database"},
+		Subject:      rez.KnowledgeSubjectRef{Entity: &targetRef},
 	}
 	relationshipEvidence := rez.KnowledgeEvidenceRef{
-		Kind:                ke.KindObserved,
-		Assertion:           "relationship_observed",
-		EffectiveAt:         now,
-		SubjectRelationship: &relationshipRef,
+		Kind:        ke.KindObserved,
+		Assertion:   "relationship_observed",
+		EffectiveAt: now,
+		Subject:     rez.KnowledgeSubjectRef{Relationship: &relationshipRef},
 	}
 	event := s.createEvent(tdb, relationshipRef.ProviderResourceRef.ResourceRef, now)
 
