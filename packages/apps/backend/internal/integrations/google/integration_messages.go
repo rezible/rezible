@@ -12,22 +12,15 @@ import (
 
 type eventHandler struct {
 	integrations rez.IntegrationService
-	messages     rez.MessageService
 	incidents    rez.IncidentService
 }
 
-func (i *Integration) registerMessageHandlers() error {
+func (i *Integration) GetMessageHandlers() []rez.MessageEventHandler {
 	mh := &eventHandler{
 		integrations: i.integrations,
-		messages:     i.messages,
 		incidents:    i.incidents,
 	}
-	eventsErr := i.messages.AddHandlers(
-		messages.NewEventHandler("Google.OnIncidentUpdate", mh.onIncidentUpdate))
-	if eventsErr != nil {
-		return fmt.Errorf("events: %w", eventsErr)
-	}
-	return nil
+	return []rez.MessageEventHandler{messages.NewEventHandler("Google.OnIncidentUpdate", mh.onIncidentUpdate)}
 }
 
 func (h *eventHandler) withInstallation(ctx context.Context, fn func(*InstalledIntegration) error) error {

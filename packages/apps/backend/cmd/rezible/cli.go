@@ -47,21 +47,14 @@ func makeServerCli() *cli.Command {
 				Name:  "serve",
 				Usage: "Run rezible server",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return withConfig(i, func(cfg rez.Config) error {
-						if cfg.HttpServer.Auth.EnableDevSkipMode {
-							if seedErr := seedDevelopmentIdentity(ctx, i); seedErr != nil {
-								return seedErr
-							}
-						}
-						return runLifecycleServices[*http.Server](ctx, i)
-					})
+					return runLifecycleServices[*http.Server](ctx, i)
 				},
 			},
 			{
 				Name:  "print-config",
 				Usage: "print loaded configuration",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return withConfig(i, func(cfg rez.Config) error {
+					return with(i, func(cfg rez.Config) error {
 						fmt.Println(cfg.Format())
 						return nil
 					})
@@ -98,7 +91,7 @@ func makeServerCli() *cli.Command {
 							Config:    cli.StringConfig{TrimSpace: true},
 						}},
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							return withMigrationService(i, func(ms rez.MigrationService) error {
+							return with(i, func(ms rez.MigrationService) error {
 								return ms.Run(ctx, cmd.StringArg("direction"))
 							})
 						},
@@ -112,7 +105,7 @@ func makeServerCli() *cli.Command {
 							Config:    cli.StringConfig{TrimSpace: true},
 						}},
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							return withMigrationService(i, func(ms rez.MigrationService) error {
+							return with(i, func(ms rez.MigrationService) error {
 								return ms.CreateSchemaMigration(ctx, cmd.StringArg("name"))
 							})
 						},
@@ -121,7 +114,7 @@ func makeServerCli() *cli.Command {
 						Name:  "update-checksum",
 						Usage: "Update the database migrations checksum file",
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							return withMigrationService(i, func(ms rez.MigrationService) error {
+							return with(i, func(ms rez.MigrationService) error {
 								return ms.UpdateChecksum()
 							})
 						},
@@ -166,7 +159,7 @@ func makeServerCli() *cli.Command {
 									Config:    cli.StringConfig{TrimSpace: true},
 								}},
 								Action: func(ctx context.Context, cmd *cli.Command) error {
-									return withAiEvaluationService(i, func(svc rezai.EvalScenarioRunner) error {
+									return with(i, func(svc rezai.EvalScenarioRunner) error {
 										result, runErr := svc.RunNamedScenario(ctx, cmd.StringArg("name"))
 										if runErr != nil || result == nil {
 											return fmt.Errorf("failed to run scenario: %w", runErr)

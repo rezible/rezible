@@ -44,69 +44,6 @@ func (_m *MockMessageService) EXPECT() *MockMessageService_Expecter {
 	return &MockMessageService_Expecter{mock: &_m.Mock}
 }
 
-// AddHandlers provides a mock function for the type MockMessageService
-func (_mock *MockMessageService) AddHandlers(messageEventHandlers ...rez.MessageEventHandler) error {
-	// rez.MessageEventHandler
-	_va := make([]interface{}, len(messageEventHandlers))
-	for _i := range messageEventHandlers {
-		_va[_i] = messageEventHandlers[_i]
-	}
-	var _ca []interface{}
-	_ca = append(_ca, _va...)
-	ret := _mock.Called(_ca...)
-
-	if len(ret) == 0 {
-		panic("no return value specified for AddHandlers")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(...rez.MessageEventHandler) error); ok {
-		r0 = returnFunc(messageEventHandlers...)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
-}
-
-// MockMessageService_AddHandlers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddHandlers'
-type MockMessageService_AddHandlers_Call struct {
-	*mock.Call
-}
-
-// AddHandlers is a helper method to define mock.On call
-//   - messageEventHandlers ...rez.MessageEventHandler
-func (_e *MockMessageService_Expecter) AddHandlers(messageEventHandlers ...interface{}) *MockMessageService_AddHandlers_Call {
-	return &MockMessageService_AddHandlers_Call{Call: _e.mock.On("AddHandlers",
-		append([]interface{}{}, messageEventHandlers...)...)}
-}
-
-func (_c *MockMessageService_AddHandlers_Call) Run(run func(messageEventHandlers ...rez.MessageEventHandler)) *MockMessageService_AddHandlers_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 []rez.MessageEventHandler
-		variadicArgs := make([]rez.MessageEventHandler, len(args)-0)
-		for i, a := range args[0:] {
-			if a != nil {
-				variadicArgs[i] = a.(rez.MessageEventHandler)
-			}
-		}
-		arg0 = variadicArgs
-		run(
-			arg0...,
-		)
-	})
-	return _c
-}
-
-func (_c *MockMessageService_AddHandlers_Call) Return(err error) *MockMessageService_AddHandlers_Call {
-	_c.Call.Return(err)
-	return _c
-}
-
-func (_c *MockMessageService_AddHandlers_Call) RunAndReturn(run func(messageEventHandlers ...rez.MessageEventHandler) error) *MockMessageService_AddHandlers_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // Publish provides a mock function for the type MockMessageService
 func (_mock *MockMessageService) Publish(context1 context.Context, v any) error {
 	ret := _mock.Called(context1, v)

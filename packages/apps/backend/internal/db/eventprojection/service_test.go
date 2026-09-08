@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/internal/db"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
@@ -35,7 +34,6 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 	users, _ := db.NewUserService(tdb, mocks.NewMockOrganizationService(s.T()))
 
 	messageService := mocks.NewMockMessageService(s.T())
-	messageService.EXPECT().AddHandlers(mock.Anything).Return(nil).Once()
 
 	incidents, _ := db.NewIncidentService(tdb, messageService, nil)
 

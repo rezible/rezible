@@ -2,7 +2,6 @@ package slackintegration
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -25,6 +24,7 @@ type (
 )
 
 type App interface {
+	GetMessageHandlers() []rez.MessageEventHandler
 	IntegrationName() string
 	Config() rez.IntegrationsConfigSlackApp
 	OAuthScopes() []string
@@ -53,14 +53,32 @@ type AppService[A App] struct {
 	interactionCallbackHandlers map[slack.InteractionType]InteractionCallbackHandler
 }
 
-func NewAppService[A App](app A, msgs rez.MessageService, intgs rez.IntegrationService, users rez.UserService, eventPipeline rez.ProviderEventPipelineService) (*AppService[A], error) {
+type AppServiceDependencies struct {
+	msgs          rez.MessageService
+	jobSvc        rez.JobService
+	intgs         rez.IntegrationService
+	users         rez.UserService
+	eventPipeline rez.ProviderEventPipelineService
+}
+
+func NewServiceDependencies(
+	msgs rez.MessageService,
+	jobSvc rez.JobService,
+	intgs rez.IntegrationService,
+	users rez.UserService,
+	eventPipeline rez.ProviderEventPipelineService,
+) (*AppServiceDependencies, error) {
+	return &AppServiceDependencies{msgs, jobSvc, intgs, users, eventPipeline}, nil
+}
+
+func NewAppService[A App](app A, d *AppServiceDependencies) (*AppService[A], error) {
 	cfg := app.Config()
 	s := &AppService[A]{
 		app:                         app,
 		integrationName:             app.IntegrationName(),
-		msgs:                        msgs,
-		intgs:                       intgs,
-		users:                       users,
+		msgs:                        d.msgs,
+		intgs:                       d.intgs,
+		users:                       d.users,
 		oauthHandler:                newOAuthHandler(cfg.OAuthClientId, cfg.OAuthClientSecret, app.OAuthScopes()),
 		webhookHandler:              http.NotFoundHandler(),
 		slashCommandHandlers:        app.SlashCommandHandlers(),
@@ -69,11 +87,7 @@ func NewAppService[A App](app A, msgs rez.MessageService, intgs rez.IntegrationS
 	}
 
 	if cfg.Enabled {
-		if msgErr := s.registerMessageHandlers(); msgErr != nil {
-			return nil, fmt.Errorf("register message handlers: %w", msgErr)
-		}
-
-		eventHandler := makeAppEventHandler(app, msgs, eventPipeline)
+		eventHandler := makeAppEventHandler(app, d.msgs, d.eventPipeline)
 
 		if cfg.EnableSocketMode {
 			socketModeClient := slack.New(cfg.BotToken, slack.OptionAppLevelToken(cfg.AppToken))
@@ -97,17 +111,15 @@ func (s *AppService[A]) Lifecycle() *rez.ServiceLifecycle {
 	return nil
 }
 
-func (s *AppService[A]) App() A {
-	return s.app
+func (s *AppService[A]) Config() rez.IntegrationsConfigSlackApp {
+	return s.app.Config()
 }
 
-func (s *AppService[A]) registerMessageHandlers() error {
-	return errors.Join(
-		s.msgs.AddHandlers(
-			messages.NewEventHandler(s.integrationName+".slash_command", s.handleSlashCommand),
-			messages.NewEventHandler(s.integrationName+".interaction_callback", s.handleInteractionCallback),
-			messages.NewEventHandler(s.integrationName+".events_api_callback", s.handleEventsApiCallbackEvent),
-		),
+func (s *AppService[A]) GetMessageHandlers() []rez.MessageEventHandler {
+	return append(s.app.GetMessageHandlers(),
+		messages.NewEventHandler(s.integrationName+".slash_command", s.handleSlashCommand),
+		messages.NewEventHandler(s.integrationName+".interaction_callback", s.handleInteractionCallback),
+		messages.NewEventHandler(s.integrationName+".events_api_callback", s.handleEventsApiCallbackEvent),
 	)
 }
 

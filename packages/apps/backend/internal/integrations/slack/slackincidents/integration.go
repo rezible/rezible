@@ -21,12 +21,12 @@ type Integration struct {
 	appSvc *slackintegration.AppService[*App]
 }
 
-func (i *Integration) Lifecycle() *rez.ServiceLifecycle {
-	return i.appSvc.Lifecycle()
-}
-
 func (i *Integration) Name() string {
 	return integrationName
+}
+
+func (i *Integration) Provider() string {
+	return slackintegration.ProviderName
 }
 
 func (i *Integration) DisplayName() string {
@@ -37,8 +37,12 @@ func (i *Integration) Description() string {
 	return "Manage Rezible Incidents in Slack"
 }
 
-func (i *Integration) Provider() string {
-	return slackintegration.ProviderName
+func (i *Integration) Lifecycle() *rez.ServiceLifecycle {
+	return i.appSvc.Lifecycle()
+}
+
+func (i *Integration) GetMessageHandlers() []rez.MessageEventHandler {
+	return i.appSvc.GetMessageHandlers()
 }
 
 func (i *Integration) Capabilities() []string {
@@ -46,7 +50,7 @@ func (i *Integration) Capabilities() []string {
 }
 
 func (i *Integration) IsAvailable() (bool, error) {
-	return i.appSvc.App().Config().Enabled, nil
+	return i.appSvc.Config().Enabled, nil
 }
 
 func (i *Integration) OAuthInstallRequired() bool {

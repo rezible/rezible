@@ -36,16 +36,13 @@ type SituationService struct {
 func NewSituationService(db rez.Database, jobs rez.JobService, agents rez.AgentSessionService, knowledge rez.KnowledgeGraphService) (*SituationService, error) {
 	s := &SituationService{db: db, agents: agents, jobs: jobs, knowledge: knowledge}
 
-	//if handlersErr := s.AddMessageHandlers(msgs); handlersErr != nil {
-	//	return nil, fmt.Errorf("adding handlers: %w", handlersErr)
-	//}
-
 	return s, nil
 }
 
-func (s *SituationService) AddMessageHandlers(msgs rez.MessageService) error {
-	return msgs.AddHandlers(
-		messages.NewEventHandler("db.SituationService.onAgentTurnUpdated", s.onAgentTurnUpdated))
+func (s *SituationService) GetMessageHandlers() []rez.MessageEventHandler {
+	return []rez.MessageEventHandler{
+		messages.NewEventHandler("db.SituationService.onAgentTurnUpdated", s.onAgentTurnUpdated),
+	}
 }
 
 func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSituationsParams) (*ent.ListResult[ent.Situation], error) {

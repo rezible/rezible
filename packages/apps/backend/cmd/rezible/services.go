@@ -12,7 +12,7 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/internal/http"
-	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/internal/watermill"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/samber/do/v2"
@@ -21,40 +21,34 @@ import (
 	rez "github.com/rezible/rezible"
 )
 
-func withConfig(i do.Injector, fn func(rez.Config) error) error {
-	cfg, cfgErr := do.Invoke[rez.Config](i)
-	if cfgErr != nil {
-		return fmt.Errorf("invoke config: %w", cfgErr)
+func with[T any](i do.Injector, fn func(T) error) error {
+	t, invErr := do.Invoke[T](i)
+	if invErr != nil {
+		return fmt.Errorf("failed to invoke %T: %w", t, invErr)
 	}
-	return fn(cfg)
+	return fn(t)
 }
 
-func withMigrationService(i do.Injector, fn func(rez.MigrationService) error) error {
-	ms, msErr := do.Invoke[rez.MigrationService](i)
-	if msErr != nil {
-		return fmt.Errorf("invoke migration service: %w", msErr)
-	}
-	return fn(ms)
-}
-
-func withAiEvaluationService(i do.Injector, fn func(rezai.EvalScenarioRunner) error) error {
-	svc, svcErr := do.Invoke[rezai.EvalScenarioRunner](i)
-	if svcErr != nil {
-		return fmt.Errorf("invoke evaluation service: %w", svcErr)
-	}
-	return fn(svc)
-}
-
+// TODO: maybe pass some do.Provider overlay for app/service dependencies? eg job workers, message handlers, etc
 func runLifecycleServices[Entrypoint rez.LifecycleService](ctx context.Context, i do.Injector) error {
 	lifecycles, lifecyclesErr := getServiceLifecyclesFor[Entrypoint](i)
 	if lifecyclesErr != nil {
 		return fmt.Errorf("get service lifecycles: %w", lifecyclesErr)
 	}
 
+	if seedErr := seedDevelopmentIdentity(ctx, i); seedErr != nil {
+		return seedErr
+	}
+
 	return lifecycles.run(ctx)
 }
 
 func seedDevelopmentIdentity(ctx context.Context, i do.Injector) error {
+	cfg := do.MustInvoke[rez.Config](i)
+	if !cfg.HttpServer.Auth.EnableDevSkipMode {
+		return nil
+	}
+
 	sessions := do.MustInvoke[rez.AuthSessionService](i)
 	orgs := do.MustInvoke[rez.OrganizationService](i)
 
@@ -212,6 +206,10 @@ func getServiceLifecyclesFor[Entrypoint rez.LifecycleService](i do.Injector) (se
 
 	b.addInitHook("initJobs", func(r jobs.Registrar) error {
 		return r.Init(do.MustInvoke[jobs.Definition](i))
+	})
+
+	b.addInitHook("initMessageHandlers", func(ms *watermill.MessageService) error {
+		return ms.AddHandlers(getMessageHandlersFor[Entrypoint](i)...)
 	})
 
 	return services, b.runFor[Entrypoint]()

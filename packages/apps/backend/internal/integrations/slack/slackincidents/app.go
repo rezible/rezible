@@ -22,25 +22,29 @@ type App struct {
 	incidents rez.IncidentService
 }
 
-func MakeApp(cfg rez.Config, db rez.Database, msgs rez.MessageService, js rez.JobService, incidents rez.IncidentService) (*App, error) {
-	h := &App{
+func MakeApp(cfg rez.Config, db rez.Database, msgs rez.MessageService, js rez.JobService, incidents rez.IncidentService) *App {
+	return &App{
 		cfg:       cfg,
 		db:        db,
 		messages:  msgs,
 		jobs:      js,
 		incidents: incidents,
 	}
-	if msgsErr := h.registerMessageHandlers(); msgsErr != nil {
-		return nil, fmt.Errorf("message handlers: %w", msgsErr)
-	}
-	return h, nil
 }
 
-func (a *App) registerMessageHandlers() error {
-	return a.messages.AddHandlers(
+func (a *App) MakeIntegration(deps *slackintegration.AppServiceDependencies) (*Integration, error) {
+	svc, svcErr := slackintegration.NewAppService(a, deps)
+	if svcErr != nil {
+		return nil, fmt.Errorf("make app service: %w", svcErr)
+	}
+	return MakeIntegration(svc), nil
+}
+
+func (a *App) GetMessageHandlers() []rez.MessageEventHandler {
+	return []rez.MessageEventHandler{
 		messages.NewEventHandler("slack.incidents.updated", a.onIncidentUpdated),
 		messages.NewEventHandler("slack.incidents.milestone_updated", a.onIncidentMilestoneUpdated),
-	)
+	}
 }
 
 func (a *App) IntegrationName() string {

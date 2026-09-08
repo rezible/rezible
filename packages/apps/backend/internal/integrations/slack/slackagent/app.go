@@ -19,14 +19,13 @@ import (
 )
 
 type App struct {
-	db       rez.Database
-	cfg      rez.Config
-	jobs     rez.JobService
-	messages rez.MessageService
-	intgs    rez.IntegrationService
-	users    rez.UserService
-	agents   rez.AgentSessionService
-	events   rez.EventsService
+	db     rez.Database
+	cfg    rez.Config
+	jobs   rez.JobService
+	intgs  rez.IntegrationService
+	users  rez.UserService
+	agents rez.AgentSessionService
+	events rez.EventsService
 
 	responseClassifier rezai.ClassifyAgentThreadResponseWorkflowRunner
 }
@@ -35,28 +34,31 @@ type AppSuite struct {
 	test.Suite
 }
 
-func MakeApp(cfg rez.Config, db rez.Database, jobSvc rez.JobService, msgs rez.MessageService, intgs rez.IntegrationService, users rez.UserService, agents rez.AgentSessionService, events rez.EventsService, responseClassifier rezai.ClassifyAgentThreadResponseWorkflowRunner) (*App, error) {
-	h := &App{
+func MakeApp(cfg rez.Config, db rez.Database, jobSvc rez.JobService, intgs rez.IntegrationService, users rez.UserService, agents rez.AgentSessionService, events rez.EventsService, responseClassifier rezai.ClassifyAgentThreadResponseWorkflowRunner) *App {
+	return &App{
 		db:                 db,
 		cfg:                cfg,
 		jobs:               jobSvc,
-		messages:           msgs,
 		intgs:              intgs,
 		users:              users,
 		agents:             agents,
 		events:             events,
 		responseClassifier: responseClassifier,
 	}
-
-	if msgsErr := h.registerMessageHandlers(); msgsErr != nil {
-		return nil, fmt.Errorf("message handlers: %w", msgsErr)
-	}
-	return h, nil
 }
 
-func (a *App) registerMessageHandlers() error {
-	return a.messages.AddHandlers(
-		messages.NewEventHandler("slackagent.OnAiAgentTurnFinished", a.onAiAgentTurnFinished))
+func (a *App) MakeIntegration(deps *slackintegration.AppServiceDependencies) (*Integration, error) {
+	svc, svcErr := slackintegration.NewAppService(a, deps)
+	if svcErr != nil {
+		return nil, fmt.Errorf("make app service: %w", svcErr)
+	}
+	return MakeIntegration(svc), nil
+}
+
+func (a *App) GetMessageHandlers() []rez.MessageEventHandler {
+	return []rez.MessageEventHandler{
+		messages.NewEventHandler("slackagent.OnAiAgentTurnFinished", a.onAiAgentTurnFinished),
+	}
 }
 
 func (a *App) IntegrationName() string {

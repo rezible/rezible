@@ -12,6 +12,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
+	mapset "github.com/deckarep/golang-set/v2"
 	wotelfloss "github.com/dentech-floss/watermill-opentelemetry-go-extra/pkg/opentelemetry"
 	"github.com/google/uuid"
 	wotel "github.com/voi-oss/watermill-opentelemetry/pkg/opentelemetry"
@@ -142,8 +143,19 @@ func (ms *MessageService) setupEventProcessor() error {
 }
 
 func (ms *MessageService) AddHandlers(handlers ...rez.MessageEventHandler) error {
-	for _, h := range handlers {
-		if _, hErr := ms.eventProc.AddHandler(h); hErr != nil {
+	names := mapset.NewSetFromMapKeys(ms.router.Handlers())
+	for _, handler := range handlers {
+		if handler == nil {
+			return errors.New("cannot add nil message handler")
+		}
+		handlerName := handler.HandlerName()
+		if handlerName == "" {
+			return errors.New("cannot add message handler with empty name")
+		}
+		if !names.Add(handlerName) {
+			return fmt.Errorf("message handler %q is duplicated", handlerName)
+		}
+		if _, hErr := ms.eventProc.AddHandler(handler); hErr != nil {
 			return fmt.Errorf("failed adding handler: %w", hErr)
 		}
 	}

@@ -27,7 +27,6 @@ func TestIncidentServiceSuite(t *testing.T) {
 
 func (s *IncidentServiceSuite) newService(tdb rez.Database) *IncidentService {
 	msgs := mocks.NewMockMessageService(s.T())
-	msgs.EXPECT().AddHandlers(mock.Anything).Return(nil)
 	msgs.EXPECT().Publish(mock.Anything, mock.Anything).Return(nil).Maybe()
 
 	svc, err := NewIncidentService(tdb, msgs, nil)

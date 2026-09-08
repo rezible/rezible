@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/pkg/messages"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -16,37 +15,18 @@ import (
 
 type RetrospectiveService struct {
 	db        rez.Database
-	msgs      rez.MessageService
 	incidents rez.IncidentService
 }
 
 func NewRetrospectiveService(
 	db rez.Database,
-	msgs rez.MessageService,
 	incidents rez.IncidentService,
 ) (*RetrospectiveService, error) {
 	svc := &RetrospectiveService{
 		db:        db,
-		msgs:      msgs,
 		incidents: incidents,
 	}
-
-	if msgsErr := svc.registerMessageHandlers(); msgsErr != nil {
-		return nil, fmt.Errorf("message handlers: %w", msgsErr)
-	}
-
 	return svc, nil
-}
-
-func (s *RetrospectiveService) registerMessageHandlers() error {
-	return s.msgs.AddHandlers(
-		messages.NewEventHandler("retrospectives.on_incident_updated", s.onIncidentUpdated),
-	)
-}
-
-func (s *RetrospectiveService) onIncidentUpdated(ctx context.Context, evt *rez.EventOnIncidentUpdated) error {
-	// TODO: update retrospective
-	return nil
 }
 
 func (s *RetrospectiveService) Get(ctx context.Context, p predicate.Retrospective) (*ent.Retrospective, error) {

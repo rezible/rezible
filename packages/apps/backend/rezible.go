@@ -116,7 +116,6 @@ type (
 	}
 
 	MessageService interface {
-		AddHandlers(...MessageEventHandler) error
 		Publish(context.Context, any) error
 		Subscribe(context.Context, *MessageEventSubscriptionOpts, ...MessageEventHandler) error
 	}

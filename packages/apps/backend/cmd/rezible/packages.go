@@ -175,12 +175,13 @@ var provideWatermillMessageService = do.Package(
 	do.Lazy(func(i do.Injector) (watermill.Transport, error) {
 		return nil, nil
 	}),
-	do.Lazy(func(i do.Injector) (rez.MessageService, error) {
+	do.Lazy(func(i do.Injector) (*watermill.MessageService, error) {
 		return watermill.NewMessageService(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[watermill.Transport](i),
 		)
 	}),
+	do.Bind[*watermill.MessageService, rez.MessageService](),
 )
 
 var provideIntegrations = do.Package(
@@ -213,9 +214,18 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.EventsService](i),
+		)
+	}),
+
+	do.Lazy(func(i do.Injector) (*slackintegration.AppServiceDependencies, error) {
+		return slackintegration.NewServiceDependencies(
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.UserService](i),
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
 		)
 	}),
 
@@ -224,27 +234,18 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.AgentSessionService](i),
 			do.MustInvoke[rez.EventsService](i),
 			do.MustInvoke[rezai.ClassifyAgentThreadResponseWorkflowRunner](i),
-		)
+		), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (*slackagent.Integration, error) {
-		svc, svcErr := slackintegration.NewAppService(
-			do.MustInvoke[*slackagent.App](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i),
-		)
-		if svcErr != nil {
-			return nil, fmt.Errorf("making slackagent app service: %w", svcErr)
-		}
-		return slackagent.MakeIntegration(svc), nil
+		app := do.MustInvoke[*slackagent.App](i)
+		deps := do.MustInvoke[*slackintegration.AppServiceDependencies](i)
+		return app.MakeIntegration(deps)
 	}),
 
 	do.Lazy(func(i do.Injector) (*slackincidents.App, error) {
@@ -254,21 +255,13 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.IncidentService](i),
-		)
+		), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (*slackincidents.Integration, error) {
-		svc, svcErr := slackintegration.NewAppService(
-			do.MustInvoke[*slackincidents.App](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.ProviderEventPipelineService](i),
-		)
-		if svcErr != nil {
-			return nil, fmt.Errorf("making slackincidents app service: %w", svcErr)
-		}
-		return slackincidents.MakeIntegration(svc), nil
+		app := do.MustInvoke[*slackincidents.App](i)
+		deps := do.MustInvoke[*slackintegration.AppServiceDependencies](i)
+		return app.MakeIntegration(deps)
 	}),
 )
 
@@ -377,7 +370,6 @@ var provideDatabaseServices = do.Package(
 	do.Lazy(func(i do.Injector) (rez.RetrospectiveService, error) {
 		return db.NewRetrospectiveService(
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IncidentService](i),
 		)
 	}),
@@ -418,7 +410,7 @@ var provideDatabaseServices = do.Package(
 		)
 	}),
 
-	do.Lazy(func(i do.Injector) (rez.SituationService, error) {
+	do.Lazy(func(i do.Injector) (*db.SituationService, error) {
 		return db.NewSituationService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
@@ -426,6 +418,7 @@ var provideDatabaseServices = do.Package(
 			do.MustInvoke[rez.KnowledgeGraphService](i),
 		)
 	}),
+	do.Bind[*db.SituationService, rez.SituationService](),
 
 	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.ReconcileSituationInvestigation], error) {
 		return db.NewReconcileSituationInvestigationWorker(
@@ -481,6 +474,30 @@ var provideHttpServer = do.Package(
 		)
 	}),
 )
+
+func getMessageHandlersFor[T any](i do.Injector) []rez.MessageEventHandler {
+	var t T
+	switch any(t).(type) {
+	case *http.Server:
+		{
+			handlers := do.MustInvoke[*db.SituationService](i).GetMessageHandlers()
+			handlers = append(handlers, do.MustInvoke[*google.Integration](i).GetMessageHandlers()...)
+			cfg := do.MustInvoke[rez.Config](i)
+			if cfg.Integrations.Slack.Incidents.Enabled {
+				handlers = append(handlers, do.MustInvoke[*slackincidents.Integration](i).GetMessageHandlers()...)
+			}
+			if cfg.Integrations.Slack.Agent.Enabled {
+				handlers = append(handlers, do.MustInvoke[*slackagent.Integration](i).GetMessageHandlers()...)
+			}
+			return handlers
+		}
+	case *genkit.DevServer:
+		{
+			return do.MustInvoke[*db.SituationService](i).GetMessageHandlers()
+		}
+	}
+	return nil
+}
 
 func makeJobWorkerProvider[A jobs.JobArgs]() do.Provider[jobs.WorkerDefinition] {
 	return func(i do.Injector) (jobs.WorkerDefinition, error) {

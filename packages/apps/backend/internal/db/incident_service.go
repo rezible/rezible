@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"math/rand"
@@ -19,7 +18,6 @@ import (
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/pkg/messages"
 )
 
 type IncidentService struct {
@@ -34,18 +32,7 @@ func NewIncidentService(db rez.Database, msgs rez.MessageService, situations rez
 		msgs:       msgs,
 		situations: situations,
 	}
-
-	if msgsErr := svc.registerMessageHandlers(); msgsErr != nil {
-		return nil, fmt.Errorf("failed registering message handlers: %w", msgsErr)
-	}
-
 	return svc, nil
-}
-
-func (s *IncidentService) registerMessageHandlers() error {
-	eventsErr := s.msgs.AddHandlers(
-		messages.NewEventHandler("db.IncidentService.OnIncidentUpdate", s.onIncidentUpdate))
-	return errors.Join(eventsErr)
 }
 
 func (s *IncidentService) onIncidentUpdate(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {

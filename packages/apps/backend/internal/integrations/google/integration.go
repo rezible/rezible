@@ -19,7 +19,6 @@ const (
 type Integration struct {
 	users        rez.UserService
 	integrations rez.IntegrationService
-	messages     rez.MessageService
 	incidents    rez.IncidentService
 	events       rez.EventsService
 }
@@ -28,20 +27,14 @@ func MakeIntegration(
 	cfg rez.Config,
 	users rez.UserService,
 	integrations rez.IntegrationService,
-	messages rez.MessageService,
 	incidents rez.IncidentService,
 	events rez.EventsService,
 ) (*Integration, error) {
 	i := &Integration{
 		users:        users,
 		integrations: integrations,
-		messages:     messages,
 		incidents:    incidents,
 		events:       events,
-	}
-
-	if msgsErr := i.registerMessageHandlers(); msgsErr != nil {
-		return nil, fmt.Errorf("registering message handlers: %w", msgsErr)
 	}
 
 	return i, nil
