@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
@@ -36,7 +35,16 @@ func makeConnectionString(cfg rez.PostgresConfig, admin bool) string {
 	return strings.Join(dsn, " ")
 }
 
-type ConnectionPool = pgxpool.Pool
+type ConnectionPool struct {
+	*pgxpool.Pool
+}
+
+func (p *ConnectionPool) Shutdown() error {
+	if p != nil && p.Pool != nil {
+		p.Close()
+	}
+	return nil
+}
 
 func MakePgxPool(ctx context.Context, cfg rez.PostgresConfig, admin bool) (*ConnectionPool, error) {
 	parsedCfg, parseErr := pgxpool.ParseConfig(makeConnectionString(cfg, admin))
@@ -52,7 +60,8 @@ func MakePgxPool(ctx context.Context, cfg rez.PostgresConfig, admin bool) (*Conn
 		return nil, fmt.Errorf("create: %w", poolErr)
 	}
 	if pingErr := pool.Ping(ctx); pingErr != nil {
-		slog.Error("failed to ping postgres", "error", pingErr)
+		pool.Close()
+		return nil, fmt.Errorf("ping postgres: %w", pingErr)
 	}
-	return pool, nil
+	return &ConnectionPool{Pool: pool}, nil
 }

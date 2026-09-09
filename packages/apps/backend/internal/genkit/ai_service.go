@@ -4,9 +4,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
-	"log/slog"
 	"slices"
-	"time"
 
 	"github.com/firebase/genkit/go/ai"
 	gkapi "github.com/firebase/genkit/go/core/api"
@@ -155,32 +153,4 @@ func (s *AiService) GetWorkflowRunner(name string) (rez.AiWorkflowRunner, error)
 		return nil, fmt.Errorf("workflow not found: %s", name)
 	}
 	return wr, nil
-}
-
-type DevServer struct {
-	aiSvc   *AiService
-	evalSvc *EvaluationService
-}
-
-func NewDevServer(ai *AiService, evalSvc *EvaluationService) (*DevServer, error) {
-	if !IsDevMode() {
-		return nil, fmt.Errorf("dev mode not enabled")
-	}
-	return &DevServer{aiSvc: ai, evalSvc: evalSvc}, nil
-}
-
-func (s *DevServer) Lifecycle() *rez.ServiceLifecycle {
-	return &rez.ServiceLifecycle{
-		StartFns: []rez.LifecycleFunc{
-			func(ctx context.Context) error {
-				slog.Info("starting genkit dev server")
-				<-ctx.Done()
-				return nil
-			},
-		},
-		StopFn: func(ctx context.Context) error {
-			time.Sleep(time.Millisecond * 100)
-			return nil
-		},
-	}
 }

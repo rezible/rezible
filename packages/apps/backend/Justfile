@@ -78,7 +78,7 @@ exclude_test_packages_pattern := "/ent/"
 [env("GENKIT_ENV", "dev")]
 [env("GENKIT_REFLECTION_V2_SERVER", "true")]
 @run-genkit-dev:
-    just genkit start --experimental-reflection-v2 -- go run ./cmd/rezible ai dev
+    just genkit start --experimental-reflection-v2 -- go run ./cmd/rezible serve
 
 @send-demo-webhook KIND="alert":
     curl -i -X POST "http://localhost:{{ HTTP__PORT }}{{ HTTP__BASE_PATH }}/webhooks/demo" \

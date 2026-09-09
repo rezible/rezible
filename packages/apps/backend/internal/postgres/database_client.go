@@ -28,8 +28,8 @@ type DatabaseClient struct {
 
 type PgxPool = pgxpool.Pool
 
-func NewPgxPoolDatabaseClient(pool *pgxpool.Pool) (*DatabaseClient, error) {
-	return newDatabaseClient(entpgx.NewPgxPoolDriver(pool)), nil
+func NewPgxPoolDatabaseClient(pool *ConnectionPool) (*DatabaseClient, error) {
+	return newDatabaseClient(entpgx.NewPgxPoolDriver(pool.Pool)), nil
 }
 
 func NewStdDatabaseClient(db *sql.DB) *DatabaseClient {
@@ -169,9 +169,8 @@ func closeDatabaseResource(name string, c io.Closer) {
 }
 
 func (dbc *DatabaseClient) Shutdown() error {
-	if dbc.client != nil {
-		closeDatabaseResource("db client", dbc.client)
-	}
+	// The pool is owned by ConnectionPool. Ent's Close method closes its driver,
+	// which would also stop River while it is still draining.
 	return nil
 }
 

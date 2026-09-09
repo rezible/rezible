@@ -37,8 +37,11 @@ func (i *Integration) Description() string {
 	return "Manage Rezible Incidents in Slack"
 }
 
-func (i *Integration) Lifecycle() *rez.ServiceLifecycle {
-	return i.appSvc.MakeServiceLifecycle()
+func (i *Integration) LifecycleService() rez.LifecycleService {
+	if i.appSvc.HasLifecycle() {
+		return i.appSvc
+	}
+	return nil
 }
 
 func (i *Integration) GetMessageHandlers() []rez.MessageEventHandler {

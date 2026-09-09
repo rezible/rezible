@@ -2,9 +2,11 @@ package slackintegration
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"sync"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -15,6 +17,7 @@ import (
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"golang.org/x/oauth2"
+	"golang.org/x/sync/errgroup"
 )
 
 type (
@@ -104,10 +107,39 @@ func (s *AppService[A]) WebhookHandler() http.Handler {
 	return s.webhookHandler
 }
 
-func (s *AppService[A]) MakeServiceLifecycle() *rez.ServiceLifecycle {
-	if s.socketModeListener != nil {
-		return s.socketModeListener.Lifecycle()
+func (s *AppService[A]) HasLifecycle() bool {
+	return s.socketModeListener != nil
+}
+
+func (s *AppService[A]) Run(ctx context.Context, ready chan<- struct{}) error {
+	if s.socketModeListener == nil {
+		return fmt.Errorf("socketModeListener is nil")
 	}
+
+	group, groupCtx := errgroup.WithContext(ctx)
+
+	group.Go(func() error {
+		return s.socketModeListener.runClient(groupCtx)
+	})
+
+	var readyOnce sync.Once
+	onSocketListenerConnected := func() {
+		readyOnce.Do(func() {
+			close(ready)
+		})
+	}
+
+	group.Go(func() error {
+		return s.socketModeListener.runEventConsumerLoop(groupCtx, onSocketListenerConnected)
+	})
+
+	if runErr := group.Wait(); runErr != nil && !(errors.Is(runErr, context.Canceled) && ctx.Err() != nil) {
+		return runErr
+	}
+	return nil
+}
+
+func (s *AppService[A]) Shutdown(context.Context) error {
 	return nil
 }
 

@@ -36,8 +36,11 @@ func (i *Integration) Provider() string {
 	return slackintegration.ProviderName
 }
 
-func (i *Integration) Lifecycle() *rez.ServiceLifecycle {
-	return i.appSvc.MakeServiceLifecycle()
+func (i *Integration) LifecycleService() rez.LifecycleService {
+	if i.appSvc.HasLifecycle() {
+		return i.appSvc
+	}
+	return nil
 }
 
 func (i *Integration) GetMessageHandlers() []rez.MessageEventHandler {

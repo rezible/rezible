@@ -34,11 +34,12 @@ func (s *DatabaseSuite) TestCreatesAndRemovesMigratedDatabase() {
 	s.Require().NoError(client.Client(ctx).Tenant.Create().Exec(ctx))
 	databaseName := database.Config().Database
 	s.Require().NoError(client.Shutdown())
+	s.Require().NoError(pool.Shutdown())
 	s.Require().NoError(database.Shutdown())
 
 	adminPool, adminPoolErr := postgres.MakePgxPool(s.T().Context(), s.Config().Postgres, true)
 	s.Require().NoError(adminPoolErr)
-	defer adminPool.Close()
+	defer adminPool.Shutdown()
 	var exists bool
 	queryErr := adminPool.QueryRow(s.T().Context(), "SELECT EXISTS (SELECT FROM pg_database WHERE datname = $1)", databaseName).Scan(&exists)
 	s.Require().NoError(queryErr)

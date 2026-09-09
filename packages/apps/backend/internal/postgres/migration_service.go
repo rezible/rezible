@@ -43,18 +43,16 @@ var postgresMigrateConfig = &postgresmigrate.Config{
 }
 
 type MigrationService struct {
-	pool   *PgxPool
+	pool   *ConnectionPool
 	driver dialect.Driver
 }
 
-func NewMigrationService(pool *PgxPool) (*MigrationService, error) {
-	return &MigrationService{pool: pool, driver: entpgx.NewPgxPoolDriver(pool)}, nil
+func NewMigrationService(pool *ConnectionPool) (*MigrationService, error) {
+	return &MigrationService{pool: pool, driver: entpgx.NewPgxPoolDriver(pool.Pool)}, nil
 }
 
 func (m *MigrationService) Shutdown() {
-	if m.pool != nil {
-		m.pool.Close()
-	}
+	_ = m.pool.Shutdown()
 }
 
 func (m *MigrationService) UpdateChecksum() error {
@@ -111,7 +109,7 @@ func (m *MigrationService) Run(ctx context.Context, direction string) error {
 	}
 
 	slog.Info("Running river migrations " + direction)
-	riverErr := river.RunMigration(ctx, m.pool, direction)
+	riverErr := river.RunMigration(ctx, m.pool.Pool, direction)
 	if riverErr != nil {
 		return fmt.Errorf("river migration: %w", riverErr)
 	}
@@ -125,7 +123,7 @@ func (m *MigrationService) withDbFromPool(fn func(db *sql.DB) error) error {
 	if m.pool == nil {
 		return fmt.Errorf("pool is nil")
 	}
-	db := stdlib.OpenDBFromPool(m.pool)
+	db := stdlib.OpenDBFromPool(m.pool.Pool)
 	defer closeDatabaseResource("db from pool", db)
 	return fn(db)
 }

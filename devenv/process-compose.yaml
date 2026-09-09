@@ -31,7 +31,7 @@ processes:
         condition: process_completed_successfully
     readiness_probe:
       exec:
-        command: wget -q -O /dev/null "http://localhost:${BACKEND_PORT}/health"
+        command: wget -q -O /dev/null "http://localhost:${BACKEND_PORT}/ready"
       period_seconds: 1
       timeout_seconds: 2
       failure_threshold: 30

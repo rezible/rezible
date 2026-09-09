@@ -9,7 +9,10 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
+	"sync/atomic"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httplog/v3"
 
@@ -25,21 +28,36 @@ import (
 type (
 	Server struct {
 		cfg    rez.HttpServerConfig
-		router *chi.Mux
 		logger *slog.Logger
+
+		server *http.Server
+
+		listenerMu    sync.Mutex
+		listenerReady atomic.Bool
 	}
+
 	WebhookHandlers map[string]http.Handler
+
+	HealthCheckFunc = func(context.Context) map[string]error
 )
 
-func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionService, oapiV1Handler oapiv1.Handler, webhooks WebhookHandlers) (*Server, error) {
+const (
+	healthCheckPath    = "/health"
+	readinessCheckPath = "/ready"
+)
+
+func NewServer(
+	cfg rez.Config,
+	ts rez.TelemetryService,
+	sess rez.AuthSessionService,
+	oapiV1Handler oapiv1.Handler,
+	webhooks WebhookHandlers,
+	healthFn HealthCheckFunc,
+) (*Server, error) {
 	s := &Server{
 		cfg:    cfg.HttpServer,
 		logger: slog.Default().WithGroup("http"),
 	}
-
-	s.router = chi.NewRouter()
-	s.router.Use(s.makeSetRootExecutionContextMiddleware())
-	s.router.Use(s.makeRequestLoggerMiddleware(cfg.App.DebugMode))
 
 	var documentsProxyUrl *url.URL
 	if cfg.Documents.Proxy.Enabled {
@@ -50,9 +68,10 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionServ
 		documentsProxyUrl = proxyUrl
 	}
 
-	handler := chi.NewRouter()
+	router := chi.NewMux()
 
-	handler.Get("/health", s.makeHealthCheckHandler())
+	router.Get(healthCheckPath, s.makeHealthCheckHandler(healthFn))
+	router.Get(readinessCheckPath, s.makeReadyCheckHandler())
 
 	webhooksHandler := chi.NewMux()
 	for prefix, wh := range webhooks {
@@ -60,14 +79,14 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionServ
 		slog.Debug("mounting webhook handler", "route", route)
 		webhooksHandler.Mount(route, wh)
 	}
-	handler.Mount("/webhooks", webhooksHandler)
+	router.Mount("/webhooks", webhooksHandler)
 
 	asc := newAppAuthSessionCookie(cfg.App.FrontendApiPath)
 	oidcAuthHandler, authErr := oidc.NewUserAuthHandler(cfg, sess, asc)
 	if authErr != nil {
 		return nil, fmt.Errorf("user auth: %w", authErr)
 	}
-	handler.Mount("/auth", oidcAuthHandler)
+	router.Mount("/auth", oidcAuthHandler)
 
 	rv := newRequestAuthValidator(sess, asc)
 	if cfg.HttpServer.Auth.EnableDevSkipMode {
@@ -75,7 +94,7 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionServ
 		rv.devSessionOverride = true
 	}
 	// api routes with auth check
-	handler.Group(func(ar chi.Router) {
+	router.Group(func(ar chi.Router) {
 		ar.Use(rv.AuthSessionMiddleware)
 
 		ar.Mount(oapiv1.VersionPrefix, s.makeOpenApiHandler(ts, oapiV1Handler))
@@ -85,9 +104,27 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, sess rez.AuthSessionServ
 		}
 	})
 
-	s.router.Mount(ensureSlashPrefix(s.cfg.BasePath), http.StripPrefix(s.cfg.BasePath, handler))
+	s.server = s.makeServer(cfg, router)
 
 	return s, nil
+}
+
+func (s *Server) makeServer(cfg rez.Config, r *chi.Mux) *http.Server {
+	handler := chi.NewRouter()
+	handler.Use(s.makeSetRootExecutionContextMiddleware())
+	handler.Use(s.makeRequestLoggerMiddleware(cfg.App.DebugMode))
+	handler.Mount(ensureSlashPrefix(s.cfg.BasePath), http.StripPrefix(s.cfg.BasePath, r))
+	return &http.Server{
+		Addr:    net.JoinHostPort(s.cfg.Host, s.cfg.Port),
+		Handler: handler,
+	}
+}
+
+func ensureSlashPrefix(s string) string {
+	if !strings.HasPrefix(s, "/") {
+		return "/" + s
+	}
+	return s
 }
 
 func authScopesSatisfied(authScopes []string, secOpts oapiv1.SecurityMethodOptions) bool {
@@ -155,41 +192,53 @@ func (s *Server) makeSetRootExecutionContextMiddleware() func(http.Handler) http
 	}
 }
 
+func (s *Server) makeHealthCheckHandler(hc HealthCheckFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		checkErrors := hc(r.Context())
+		if len(checkErrors) > 0 {
+			slog.Debug("health check errors", "errors", checkErrors)
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
+	}
+}
+
+func (s *Server) makeReadyCheckHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !s.listenerReady.Load() {
+			http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
 func (s *Server) makeRequestLoggerMiddleware(concise bool) func(http.Handler) http.Handler {
 	logFormat := httplog.SchemaECS.Concise(concise)
 	isDebugHeaderSet := func(r *http.Request) bool {
 		return r.Header.Get("Debug") == "reveal-body-logs"
 	}
 
+	skipPaths := mapset.NewThreadUnsafeSet(healthCheckPath, readinessCheckPath)
 	return httplog.RequestLogger(s.logger, &httplog.Options{
 		Level:         slog.LevelInfo,
 		Schema:        logFormat,
 		RecoverPanics: true,
 
-		// Optionally, filter out some request logs.
 		Skip: func(req *http.Request, respStatus int) bool {
-			if req.URL.Path == "/health" {
+			if skipPaths.Contains(req.URL.Path) {
 				return true
 			}
 			return respStatus == 404 || respStatus == 405
 		},
 
-		// Optionally, log selected request/response headers explicitly.
 		LogRequestHeaders:  []string{"Origin"},
 		LogResponseHeaders: []string{},
 
-		// Optionally, enable logging of request/response body based on custom conditions.
-		// Useful for debugging payload issues in development.
 		LogRequestBody:  isDebugHeaderSet,
 		LogResponseBody: isDebugHeaderSet,
 	})
-}
-
-func ensureSlashPrefix(s string) string {
-	if !strings.HasPrefix(s, "/") {
-		return "/" + s
-	}
-	return s
 }
 
 func (s *Server) makeDocumentsProxyHandler(serverUrl *url.URL) http.Handler {
@@ -214,41 +263,50 @@ func (s *Server) makeDocumentsProxyHandler(serverUrl *url.URL) http.Handler {
 	return chi.Chain(setAuthHeaders).Handler(proxy)
 }
 
-func (s *Server) makeHealthCheckHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
+func (s *Server) Run(ctx context.Context, ready chan<- struct{}) error {
+	s.server.BaseContext = func(net.Listener) context.Context {
+		return ctx
 	}
+
+	listener, listenerErr := s.makeListener()
+	if listenerErr != nil {
+		return fmt.Errorf("listener: %w", listenerErr)
+	}
+	close(ready)
+
+	slog.Info("HTTP server listening", "addr", s.server.Addr)
+
+	if serveErr := s.server.Serve(listener); !errors.Is(serveErr, http.ErrServerClosed) {
+		return fmt.Errorf("HTTP server: %w", serveErr)
+	}
+	return nil
 }
 
-func (s *Server) Lifecycle() *rez.ServiceLifecycle {
-	server := &http.Server{
-		Addr:    net.JoinHostPort(s.cfg.Host, s.cfg.Port),
-		Handler: s.router,
+func (s *Server) makeListener() (net.Listener, error) {
+	s.listenerMu.Lock()
+	defer s.listenerMu.Unlock()
+	if s.listenerReady.Load() {
+		return nil, fmt.Errorf("HTTP server is already started")
 	}
-
-	runFn := func(ctx context.Context) error {
-		server.BaseContext = func(net.Listener) context.Context {
-			return ctx
-		}
-		slog.Info("HTTP server listening", "addr", server.Addr)
-
-		if srvErr := server.ListenAndServe(); !errors.Is(srvErr, http.ErrServerClosed) {
-			return fmt.Errorf("HTTP server: %w", srvErr)
-		}
-		return nil
+	l, listenerErr := net.Listen("tcp", s.server.Addr)
+	if listenerErr != nil {
+		return nil, fmt.Errorf("listener: %w", listenerErr)
 	}
-	stopFn := func(ctx context.Context) error {
+	s.listenerReady.Store(true)
+	return l, nil
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	s.listenerMu.Lock()
+	defer s.listenerMu.Unlock()
+	s.listenerReady.Store(false)
+	if s.server != nil {
 		slog.Info("HTTP server shutting down")
-		if shutdownErr := server.Shutdown(ctx); shutdownErr != nil {
-			return errors.Join(fmt.Errorf("shutdown HTTP server: %w", shutdownErr), server.Close())
+		if shutdownErr := s.server.Shutdown(ctx); shutdownErr != nil {
+			return errors.Join(fmt.Errorf("shutdown HTTP server: %w", shutdownErr), s.server.Close())
 		}
-		return nil
 	}
-
-	return &rez.ServiceLifecycle{
-		StartFns: []rez.LifecycleFunc{runFn},
-		StopFn:   stopFn,
-	}
+	return nil
 }
 
 var (

@@ -44,13 +44,11 @@ var (
 )
 
 type (
-	LifecycleFunc    = func(context.Context) error
-	ServiceLifecycle struct {
-		StartFns []LifecycleFunc
-		StopFn   LifecycleFunc
-	}
+	// LifecycleService runs until it is shut down or fails. Run closes ready
+	// exactly once after the service can accept work.
 	LifecycleService interface {
-		Lifecycle() *ServiceLifecycle
+		Run(context.Context, chan<- struct{}) error
+		Shutdown(context.Context) error
 	}
 )
 

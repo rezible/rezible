@@ -66,7 +66,7 @@ func NewJobService(cfg rez.Config, pool *pgxpool.Pool, tel rez.TelemetryService)
 	return s, nil
 }
 
-func (s *JobService) Init(def jobs.Definition) error {
+func (s *JobService) RegisterWorkers(def jobs.Definition) error {
 	if s.client != nil {
 		return fmt.Errorf("job service is already initialized")
 	}
@@ -102,33 +102,21 @@ func (s *JobService) getClient() (*riverClient, error) {
 	return s.client, nil
 }
 
-func (s *JobService) Lifecycle() *rez.ServiceLifecycle {
-	runFn := func(ctx context.Context) error {
-		client, clientErr := s.getClient()
-		if clientErr != nil {
-			return clientErr
-		}
-		clientCtx := execution.NewRootContext(ctx, execution.KindSystem, execution.SourceJob)
-		if startErr := client.Start(clientCtx); startErr != nil {
-			return fmt.Errorf("start river client: %w", startErr)
-		}
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-client.Stopped():
-			if ctx.Err() == nil {
-				return fmt.Errorf("river client stopped unexpectedly")
-			}
-			return nil
-		}
+func (s *JobService) Run(ctx context.Context, ready chan<- struct{}) error {
+	client, clientErr := s.getClient()
+	if clientErr != nil {
+		return clientErr
 	}
-	return &rez.ServiceLifecycle{
-		StartFns: []rez.LifecycleFunc{runFn},
-		StopFn:   s.stop,
+	clientCtx := execution.NewRootContext(ctx, execution.KindSystem, execution.SourceJob)
+	if startErr := client.Start(clientCtx); startErr != nil {
+		return fmt.Errorf("start river client: %w", startErr)
 	}
+	close(ready)
+	<-client.Stopped()
+	return nil
 }
 
-func (s *JobService) stop(ctx context.Context) error {
+func (s *JobService) Shutdown(ctx context.Context) error {
 	if client, _ := s.getClient(); client != nil {
 		return s.client.Stop(ctx)
 	}

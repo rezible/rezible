@@ -10,8 +10,6 @@ import (
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
-
-	rez "github.com/rezible/rezible"
 )
 
 type socketModeListener struct {
@@ -26,14 +24,11 @@ func makeSocketModeListener(client *slack.Client, evth *appEventHandler) *socket
 	}
 }
 
-func (l *socketModeListener) Lifecycle() *rez.ServiceLifecycle {
-	slog.Info("Listening for slack events in socket mode")
-	return &rez.ServiceLifecycle{
-		StartFns: []rez.LifecycleFunc{l.client.RunContext, l.runEventConsumerLoop},
-	}
+func (l *socketModeListener) runClient(ctx context.Context) error {
+	return l.client.RunContext(ctx)
 }
 
-func (l *socketModeListener) runEventConsumerLoop(ctx context.Context) (runErr error) {
+func (l *socketModeListener) runEventConsumerLoop(ctx context.Context, onConnected func()) (runErr error) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			runErr = fmt.Errorf("panic handling Slack socket-mode event: %v\n%s", panicErr, debug.Stack())
@@ -44,6 +39,11 @@ func (l *socketModeListener) runEventConsumerLoop(ctx context.Context) (runErr e
 		case evt, ok := <-l.client.Events:
 			if !ok {
 				return errors.New("socket-mode events channel closed")
+			}
+			if evt.Type == socketmode.EventTypeConnected {
+				onConnected()
+				slog.Info("Slack socket-mode listener connected")
+				continue
 			}
 			l.onEvent(ctx, &evt)
 		case <-ctx.Done():

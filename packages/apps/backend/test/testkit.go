@@ -109,6 +109,9 @@ func (s *Suite) CreateTestDatabase() rez.Database {
 		if closeErr := db.Shutdown(); closeErr != nil {
 			s.T().Logf("failed to close database client: %v", closeErr)
 		}
+		if closeErr := pool.Shutdown(); closeErr != nil {
+			s.T().Logf("failed to close database pool: %v", closeErr)
+		}
 	})
 
 	return db

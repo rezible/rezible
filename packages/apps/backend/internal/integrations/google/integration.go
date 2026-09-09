@@ -17,6 +17,7 @@ const (
 )
 
 type Integration struct {
+	cfg          rez.IntegrationsConfigGoogle
 	users        rez.UserService
 	integrations rez.IntegrationService
 	incidents    rez.IncidentService
@@ -31,6 +32,7 @@ func MakeIntegration(
 	events rez.EventsService,
 ) (*Integration, error) {
 	i := &Integration{
+		cfg:          cfg.Integrations.Google,
 		users:        users,
 		integrations: integrations,
 		incidents:    incidents,
@@ -66,7 +68,7 @@ func (i *Integration) MaxInstalls() *int {
 
 func (i *Integration) IsAvailable() (bool, error) {
 	// TODO: check config
-	return true, nil
+	return i.cfg.Enabled, nil
 }
 
 func (i *Integration) OAuthInstallRequired() bool {

@@ -145,8 +145,8 @@ func (m *migrator) Migrate(ctx context.Context, db *sql.DB, cfg pgtestdb.Config)
 	if poolErr != nil {
 		return fmt.Errorf("connect for river migrations: %w", poolErr)
 	}
-	defer pool.Close()
-	return river.RunMigration(ctx, pool, "up")
+	defer pool.Shutdown()
+	return river.RunMigration(ctx, pool.Pool, "up")
 }
 
 // testLifecycle adapts pgtestdb's testing interface for non-test callers. The
