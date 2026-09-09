@@ -240,16 +240,29 @@ export type AiAgentConfig = {
     name: string;
 };
 
-export type Alert = {
-    attributes: AlertAttributes;
+export type AlertDefinition = {
+    attributes: AlertDefinitionAttributes;
     id: string;
 };
 
-export type AlertAttributes = {
+export type AlertDefinitionAttributes = {
     definition: string;
     description: string;
     roster?: ExpandableOncallRosterAttributes;
     title: string;
+};
+
+export type AlertEpisode = {
+    attributes: AlertEpisodeAttributes;
+    id: string;
+};
+
+export type AlertEpisodeAttributes = {
+    closedAt?: string;
+    definition?: AlertDefinition;
+    lastObservedAt: string;
+    startedAt: string;
+    status: 'open' | 'closed';
 };
 
 export type AlertIncidentLink = {
@@ -1021,20 +1034,20 @@ export type GetAgentSessionResponseBody = {
     data: AgentSession;
 };
 
+export type GetAlertDefinitionResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AlertDefinition;
+};
+
 export type GetAlertMetricsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
     data: AlertMetrics;
-};
-
-export type GetAlertResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Alert;
 };
 
 export type GetDocumentSessionResponseBody = {
@@ -1341,7 +1354,7 @@ export type Incident = {
 export type IncidentAttributes = {
     chatChannel: IncidentChatChannel;
     closedAt: string;
-    currentStatus: 'started' | 'mitigated' | 'resolved' | 'closed';
+    currentStatus: 'started' | 'mitigated' | 'resolved';
     fieldSelections: Array<IncidentFieldSelection>;
     linkedIncidents: Array<IncidentLink>;
     openedAt: string;
@@ -1890,12 +1903,12 @@ export type PaginatedResponseBodyAgentTurn = {
     pagination: Pagination;
 };
 
-export type PaginatedResponseBodyAlert = {
+export type PaginatedResponseBodyAlertDefinition = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Alert>;
+    data: Array<AlertDefinition>;
     pagination: Pagination;
 };
 
@@ -2264,26 +2277,8 @@ export type Situation = {
     id: string;
 };
 
-export type SituationAlertEpisode = {
-    attributes: SituationAlertEpisodeAttrs;
-    id: string;
-};
-
-export type SituationAlertEpisodeAlert = {
-    id: string;
-    title: string;
-};
-
-export type SituationAlertEpisodeAttrs = {
-    alertDefinition?: SituationAlertEpisodeAlert;
-    closedAt?: string;
-    lastObservedAt: string;
-    startedAt: string;
-    status: 'open' | 'closed';
-};
-
 export type SituationAttributes = {
-    alertEpisodes: Array<SituationAlertEpisode>;
+    alertEpisodes: Array<AlertEpisode>;
     closeReason?: 'stabilized' | 'dismissed';
     closedAt?: string;
     evidenceRevision: number;
@@ -3776,7 +3771,7 @@ export type ListAlertsResponses = {
     /**
      * OK
      */
-    200: PaginatedResponseBodyAlert;
+    200: PaginatedResponseBodyAlertDefinition;
 };
 
 export type ListAlertsResponse = ListAlertsResponses[keyof ListAlertsResponses];
@@ -3823,7 +3818,7 @@ export type GetAlertResponses = {
     /**
      * OK
      */
-    200: GetAlertResponseBody;
+    200: GetAlertDefinitionResponseBody;
 };
 
 export type GetAlertResponse = GetAlertResponses[keyof GetAlertResponses];
@@ -4499,6 +4494,7 @@ export type ListEventsData = {
     query?: {
         page?: number;
         pageSize?: number;
+        kind?: string;
         from?: string;
         to?: string;
         withProjection?: boolean;
@@ -6151,6 +6147,8 @@ export type ListIncidentsData = {
         page?: number;
         pageSize?: number;
         search?: string;
+        statuses?: Array<'started' | 'mitigated' | 'resolved'>;
+        severityId?: string;
     };
     url: '/incidents';
 };

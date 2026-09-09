@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/pkg/execution"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -37,13 +36,10 @@ func (h *eventsHandler) GetEvent(ctx context.Context, req *oapi.GetEventRequest)
 func (h *eventsHandler) ListEvents(ctx context.Context, req *oapi.ListEventsRequest) (*oapi.ListEventsResponse, error) {
 	params := rez.ListEventsParams{
 		ListParams:     req.ListParams(),
+		Kind:           req.Kind,
+		From:           req.From,
+		To:             req.To,
 		WithProjection: req.WithProjection,
-	}
-	if !req.From.IsZero() {
-		params.Predicates = append(params.Predicates, ne.OccurredAtGTE(req.From))
-	}
-	if !req.To.IsZero() {
-		params.Predicates = append(params.Predicates, ne.OccurredAtLTE(req.To))
 	}
 
 	results, eventsErr := h.events.ListEvents(ctx, params)

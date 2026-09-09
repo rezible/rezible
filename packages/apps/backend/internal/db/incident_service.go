@@ -62,7 +62,7 @@ func (s *IncidentService) allQueryEdges(q *ent.IncidentQuery) {
 		raq.WithRole().WithUser()
 	})
 	q.WithMilestones(func(mq *ent.IncidentMilestoneQuery) {
-		mq.Order(ent.Desc(imodel.FieldTimestamp))
+		mq.Order(ent.Desc(imodel.FieldTimestamp), ent.Desc(imodel.FieldID))
 		mq.WithUser()
 	})
 	q.WithVideoConferences()
@@ -79,7 +79,13 @@ func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListInci
 	query := s.db.Client(ctx).Incident.Query()
 	query.Order(incident.ByOpenedAt(params.GetOrder()), incident.ByID(params.GetOrder()))
 	if search := strings.TrimSpace(params.Search); search != "" {
-		query.Where(incident.Or(incident.TitleContainsFold(search), incident.SummaryContainsFold(search)))
+		query.Where(incident.Or(incident.TitleContainsFold(search), incident.SummaryContainsFold(search), incident.SlugContainsFold(search)))
+	}
+	if params.SeverityId != uuid.Nil {
+		query.Where(incident.SeverityID(params.SeverityId))
+	}
+	if len(params.Statuses) > 0 {
+		// TODO: we should use some materialised view since status really just means "latest milestone status"
 	}
 	if !params.OpenedAfter.IsZero() {
 		query.Where(incident.OpenedAtGT(params.OpenedAfter))

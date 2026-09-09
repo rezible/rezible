@@ -33,7 +33,7 @@ const makeActiveStatus = (pathname: string, groups: AppSidebarGroup[]) => {
 		activeSubItems.set(item.href, subActive);
 	};
 
-	groups.forEach(g => g.items.forEach(checkItemActive));
+	groups.forEach((g) => g.items.forEach(checkItemActive));
 
 	return { deepestActiveItem, activeSubItems };
 };
@@ -60,7 +60,9 @@ const defaultSidebarModel: AppSidebarModel = {
 		{
 			label: "General",
 			items: [
-				{ label: "Dashboard", href: "/", icon: RiRadarLine },
+				{ label: "Home", href: "/", icon: RiRadarLine },
+				{ label: "Incidents", href: "/incidents", icon: RiPulseLine },
+				{ label: "Situations", href: "/situations", icon: RiRadarLine },
 				{ label: "Signals", href: "/signals", icon: RiPulseLine },
 				{ label: "System Map", href: "/map", icon: RiConnectorLine },
 			],

@@ -30,12 +30,14 @@
 	};
 </script>
 
-<div class="flex flex-col max-h-full" class:max-w-xl={dense}>
-	<div class="flex flex-col gap-1 min-h-0 flex-0 overflow-auto pb-1 pr-1">
+<div class="flex min-h-0 flex-1 flex-col max-h-full" class:max-w-xl={dense}>
+	<div class="flex flex-col gap-1 min-h-0 flex-1 overflow-auto pb-1 pr-1">
 		{@render children()}
 	</div>
 
-	<div class="flex flex-wrap items-center justify-between gap-2 pt-2 text-sm text-muted-foreground">
+	<div
+		class="flex shrink-0 flex-wrap items-center justify-between gap-2 pt-2 text-sm text-muted-foreground"
+	>
 		<div class="flex items-center gap-2">
 			<span>{rangeStart}–{rangeEnd} of {total}</span>
 			{#if fetching}
@@ -63,13 +65,7 @@
 				</Select.Root>
 			</label>
 
-			<Pagination.Root
-				class="w-auto"
-				count={total}
-				perPage={pageSize}
-				{page}
-				{onPageChange}
-			>
+			<Pagination.Root class="w-auto" count={total} perPage={pageSize} {page} {onPageChange}>
 				{#snippet children({ pages, currentPage })}
 					{@const isFirstPage = currentPage <= 1}
 					{@const isLastPage = currentPage * pageSize >= total}
@@ -79,15 +75,15 @@
 						</Pagination.Item>
 						{#each pages as page (page.key)}
 							<Pagination.Item>
-							{#if page.type === "ellipsis"}
-								<Pagination.Ellipsis />
-							{:else}
-								<Pagination.Link
-									{page} 
-									disabled={fetching}
-									isActive={page.value === currentPage}
-								/>
-							{/if}
+								{#if page.type === "ellipsis"}
+									<Pagination.Ellipsis />
+								{:else}
+									<Pagination.Link
+										{page}
+										disabled={fetching}
+										isActive={page.value === currentPage}
+									/>
+								{/if}
 							</Pagination.Item>
 						{/each}
 						<Pagination.Item>

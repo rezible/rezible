@@ -513,18 +513,18 @@ components:
         - displayName
         - model
       type: object
-    Alert:
+    AlertDefinition:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/AlertAttributes"
+          $ref: "#/components/schemas/AlertDefinitionAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    AlertAttributes:
+    AlertDefinitionAttributes:
       additionalProperties: false
       properties:
         definition:
@@ -539,6 +539,41 @@ components:
         - title
         - description
         - definition
+      type: object
+    AlertEpisode:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/AlertEpisodeAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    AlertEpisodeAttributes:
+      additionalProperties: false
+      properties:
+        closedAt:
+          format: date-time
+          type: string
+        definition:
+          $ref: "#/components/schemas/AlertDefinition"
+        lastObservedAt:
+          format: date-time
+          type: string
+        startedAt:
+          format: date-time
+          type: string
+        status:
+          enum:
+            - open
+            - closed
+          type: string
+      required:
+        - status
+        - startedAt
+        - lastObservedAt
       type: object
     AlertIncidentLink:
       additionalProperties: false
@@ -2145,6 +2180,21 @@ components:
       required:
         - data
       type: object
+    GetAlertDefinitionResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetAlertDefinitionResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/AlertDefinition"
+      required:
+        - data
+      type: object
     GetAlertMetricsResponseBody:
       additionalProperties: false
       properties:
@@ -2157,21 +2207,6 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/AlertMetrics"
-      required:
-        - data
-      type: object
-    GetAlertResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetAlertResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/Alert"
       required:
         - data
       type: object
@@ -2754,7 +2789,6 @@ components:
             - started
             - mitigated
             - resolved
-            - closed
           type: string
         fieldSelections:
           items:
@@ -4152,19 +4186,19 @@ components:
         - data
         - pagination
       type: object
-    PaginatedResponseBodyAlert:
+    PaginatedResponseBodyAlertDefinition:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/PaginatedResponseBodyAlert.json
+            - /v1/schemas/PaginatedResponseBodyAlertDefinition.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/Alert"
+            $ref: "#/components/schemas/AlertDefinition"
           type: array
         pagination:
           $ref: "#/components/schemas/Pagination"
@@ -4966,58 +5000,12 @@ components:
         - id
         - attributes
       type: object
-    SituationAlertEpisode:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SituationAlertEpisodeAttrs"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SituationAlertEpisodeAlert:
-      additionalProperties: false
-      properties:
-        id:
-          type: string
-        title:
-          type: string
-      required:
-        - id
-        - title
-      type: object
-    SituationAlertEpisodeAttrs:
-      additionalProperties: false
-      properties:
-        alertDefinition:
-          $ref: "#/components/schemas/SituationAlertEpisodeAlert"
-        closedAt:
-          format: date-time
-          type: string
-        lastObservedAt:
-          format: date-time
-          type: string
-        startedAt:
-          format: date-time
-          type: string
-        status:
-          enum:
-            - open
-            - closed
-          type: string
-      required:
-        - status
-        - startedAt
-        - lastObservedAt
-      type: object
     SituationAttributes:
       additionalProperties: false
       properties:
         alertEpisodes:
           items:
-            $ref: "#/components/schemas/SituationAlertEpisode"
+            $ref: "#/components/schemas/AlertEpisode"
           type: array
         closeReason:
           enum:
@@ -7577,7 +7565,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedResponseBodyAlert"
+                $ref: "#/components/schemas/PaginatedResponseBodyAlertDefinition"
           description: OK
         "400":
           content:
@@ -7632,7 +7620,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetAlertResponseBody"
+                $ref: "#/components/schemas/GetAlertDefinitionResponseBody"
           description: OK
         "400":
           content:
@@ -8537,6 +8525,11 @@ paths:
             maximum: 50
             minimum: 1
             type: integer
+        - explode: false
+          in: query
+          name: kind
+          schema:
+            type: string
         - explode: false
           in: query
           name: from
@@ -10587,6 +10580,22 @@ paths:
         - explode: false
           in: query
           name: search
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: statuses
+          schema:
+            items:
+              enum:
+                - started
+                - mitigated
+                - resolved
+              type: string
+            type: array
+        - explode: false
+          in: query
+          name: severityId
           schema:
             type: string
       responses:

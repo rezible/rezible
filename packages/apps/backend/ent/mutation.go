@@ -52791,7 +52791,7 @@ type SituationInvestigationMutation struct {
 	addcompleted_revision  *int
 	requested_revision     *int
 	addrequested_revision  *int
-	report                 *schematypes.SituationInvestigationReport
+	report                 **schematypes.SituationInvestigationReport
 	clearedFields          map[string]struct{}
 	tenant                 *int
 	clearedtenant          bool
@@ -53290,12 +53290,12 @@ func (m *SituationInvestigationMutation) ResetRequestedTurnID() {
 }
 
 // SetReport sets the "report" field.
-func (m *SituationInvestigationMutation) SetReport(sir schematypes.SituationInvestigationReport) {
+func (m *SituationInvestigationMutation) SetReport(sir *schematypes.SituationInvestigationReport) {
 	m.report = &sir
 }
 
 // Report returns the value of the "report" field in the mutation.
-func (m *SituationInvestigationMutation) Report() (r schematypes.SituationInvestigationReport, exists bool) {
+func (m *SituationInvestigationMutation) Report() (r *schematypes.SituationInvestigationReport, exists bool) {
 	v := m.report
 	if v == nil {
 		return
@@ -53306,7 +53306,7 @@ func (m *SituationInvestigationMutation) Report() (r schematypes.SituationInvest
 // OldReport returns the old "report" field's value of the SituationInvestigation entity.
 // If the SituationInvestigation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SituationInvestigationMutation) OldReport(ctx context.Context) (v schematypes.SituationInvestigationReport, err error) {
+func (m *SituationInvestigationMutation) OldReport(ctx context.Context) (v *schematypes.SituationInvestigationReport, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReport is only allowed on UpdateOne operations")
 	}
@@ -53668,7 +53668,7 @@ func (m *SituationInvestigationMutation) SetField(name string, value ent.Value) 
 		m.SetRequestedTurnID(v)
 		return nil
 	case situationinvestigation.FieldReport:
-		v, ok := value.(schematypes.SituationInvestigationReport)
+		v, ok := value.(*schematypes.SituationInvestigationReport)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

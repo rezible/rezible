@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { page } from "$app/state";
+	import type { PageProps } from "./$types";
 	import UserView from "$features/users/views/user";
+
+	const { params }: PageProps = $props();
 </script>
 
-<UserView id={page.params.id ?? ""} />
+<UserView id={params.id} />

@@ -1,62 +1,35 @@
 import { Context } from "runed";
-import { type ListEventsData, type EventAttributes, listEventsOptions } from "$lib/api";
-import { subMonths, subWeeks } from "date-fns";
+import { useSearchParams } from "runed/kit";
+import { onMount } from "svelte";
+import { page } from "$app/state";
 import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
+import { eventFilterSchema, filteredEventsOptions, type EventFilters } from "$features/events/lib/filters";
 
-export type DateRangeOption = { label: string; value: "shift" | "7d" | "30d" | "custom" };
+class EventsListController {
+	constructor() {
+		onMount(() => {
+			return () => this.params.cleanup();
+		});
+	}
 
-const last7Days = () => ({ from: subWeeks(new Date(), 1), to: new Date(), periodType: "day" });
-const lastMonth = () => ({ from: subMonths(new Date(), 1), to: new Date(), periodType: "day" });
-
-export type EventKind = EventAttributes["kind"];
-
-export type FilterOptions = {
-	rosterId?: string;
-	eventKinds?: EventKind[];
-	annotated?: boolean;
-};
-
-export class EventsListFiltersState {
-	dateRangeOption = $state<DateRangeOption["value"]>("7d");
-	customDateRangeValue = $state(last7Days());
-
-	dateRange = $derived.by(() => {
-		switch (this.dateRangeOption) {
-			case "7d":
-				return last7Days();
-			case "30d":
-				return lastMonth();
-			case "custom":
-				return this.customDateRangeValue;
-		}
+	private params = useSearchParams(eventFilterSchema, {
+		debounce: 300,
+		noScroll: true,
 	});
 
-	eventKinds = $state<EventKind[]>();
-
-	queryData = $derived<ListEventsData["query"]>({
-		// from: this.dateRange.from?.toISOString(),
-		// to: this.dateRange.to?.toISOString(),
-		withProjection: true,
-	});
-	queryEnabled = $derived(true);
-}
-
-export class EventsListController {
-	filters = new EventsListFiltersState();
+	filters = $derived(eventFilterSchema.parse(this.params));
+	private committed = $derived(eventFilterSchema.parse(Object.fromEntries(page.url.searchParams)));
+	private filterKey = $derived(JSON.stringify(this.committed));
 
 	paginatedEventsQuery = createPaginatedQuery({
-		queryOptions: (pagination) => ({
-			...listEventsOptions({ query: {...this.filters.queryData, ...pagination} }),
-			enabled: this.filters.queryEnabled,
-		}),
-		resetWhen: () => [
-			$state.snapshot(this.filters.queryData),
-		],
+		queryOptions: (pagination) =>
+			filteredEventsOptions(this.committed, { ...pagination, withProjection: true }),
+		resetWhen: () => this.filterKey,
 	});
 
-	private query = $derived(this.paginatedEventsQuery.query);
-	events = $derived(this.query.data?.data ?? []);
-	isLoading = $derived(this.query.isLoading);
+	query = $derived(this.paginatedEventsQuery.query);
+	setFilters = (values: Partial<EventFilters>) => this.params.update(values);
+	resetFilters = () => this.setFilters(eventFilterSchema.parse({}));
 }
 
 const ctx = new Context<EventsListController>("EventsListController");

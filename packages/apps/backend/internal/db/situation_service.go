@@ -67,7 +67,9 @@ func (s *SituationService) GetSituation(ctx context.Context, id uuid.UUID) (*ent
 	query := s.db.Client(ctx).Situation.Query().
 		Where(situation.ID(id)).
 		WithKnowledgeEntity().
-		WithAlertEpisodes().
+		WithAlertEpisodes(func(q *ent.AlertEpisodeQuery) {
+			q.WithAlertDefinition().Order(ae.ByStartedAt(), ae.ByID())
+		}).
 		WithInvestigation()
 	return query.Only(ctx)
 }

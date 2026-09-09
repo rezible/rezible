@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { page } from "$app/state";
+	import type { PageProps } from "./$types";
 	import { SessionDetailView } from "$features/ai/views/session-detail";
+
+	const { params }: PageProps = $props();
 </script>
 
-<SessionDetailView sessionId={page.params.id ?? ""} />
+<SessionDetailView sessionId={params.id} />

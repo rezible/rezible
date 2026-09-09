@@ -13,26 +13,27 @@ import (
 )
 
 type AlertsHandler interface {
-	ListAlerts(context.Context, *ListAlertsRequest) (*ListAlertsResponse, error)
-	GetAlert(context.Context, *GetAlertRequest) (*GetAlertResponse, error)
+	ListAlertDefinitions(context.Context, *ListAlertDefinitionsRequest) (*ListAlertDefinitionsResponse, error)
+	GetAlertDefinition(context.Context, *GetAlertDefinitionRequest) (*GetAlertDefinitionResponse, error)
+
 	GetAlertMetrics(context.Context, *GetAlertMetricsRequest) (*GetAlertMetricsResponse, error)
 	ListAlertIncidentLinks(context.Context, *ListAlertIncidentLinksRequest) (*ListAlertIncidentLinksResponse, error)
 }
 
 func (o operations) RegisterAlerts(api huma.API) {
-	huma.Register(api, ListAlerts, o.ListAlerts)
-	huma.Register(api, GetAlert, o.GetAlert)
+	huma.Register(api, ListAlerts, o.ListAlertDefinitions)
+	huma.Register(api, GetAlert, o.GetAlertDefinition)
 	huma.Register(api, GetAlertMetrics, o.GetAlertMetrics)
 	huma.Register(api, ListAlertIncidentLinks, o.ListAlertIncidentLinks)
 }
 
 type (
-	Alert struct {
-		Id         uuid.UUID       `json:"id"`
-		Attributes AlertAttributes `json:"attributes"`
+	AlertDefinition struct {
+		Id         uuid.UUID                 `json:"id"`
+		Attributes AlertDefinitionAttributes `json:"attributes"`
 	}
 
-	AlertAttributes struct {
+	AlertDefinitionAttributes struct {
 		Title       string                              `json:"title"`
 		Description string                              `json:"description"`
 		Definition  string                              `json:"definition"`
@@ -47,6 +48,19 @@ type (
 	AlertInstanceAttributes struct {
 		Timestamp time.Time              `json:"timestamp"`
 		Feedback  *AlertInstanceFeedback `json:"feedback,omitempty"`
+	}
+
+	AlertEpisode struct {
+		Id         uuid.UUID              `json:"id"`
+		Attributes AlertEpisodeAttributes `json:"attributes"`
+	}
+
+	AlertEpisodeAttributes struct {
+		Status         string           `json:"status" enum:"open,closed"`
+		Definition     *AlertDefinition `json:"definition,omitempty"`
+		StartedAt      time.Time        `json:"startedAt"`
+		LastObservedAt time.Time        `json:"lastObservedAt"`
+		ClosedAt       *time.Time       `json:"closedAt,omitempty"`
 	}
 
 	AlertInstanceFeedback struct {
@@ -82,17 +96,27 @@ type (
 	}
 )
 
-func AlertFromEnt(a *ent.AlertDefinition) Alert {
-	attrs := AlertAttributes{
+func AlertDefinitionFromEnt(a *ent.AlertDefinition) AlertDefinition {
+	attrs := AlertDefinitionAttributes{
 		Title:       a.Title,
 		Description: a.Description,
 		Definition:  a.Definition,
 	}
 
-	return Alert{
-		Id:         a.ID,
-		Attributes: attrs,
+	return AlertDefinition{Id: a.ID, Attributes: attrs}
+}
+
+func AlertEpisodeFromEnt(ep *ent.AlertEpisode) AlertEpisode {
+	attrs := AlertEpisodeAttributes{
+		Status:         string(ep.Status),
+		StartedAt:      ep.StartedAt,
+		LastObservedAt: ep.LastObservedAt,
+		ClosedAt:       ep.ClosedAt,
 	}
+	if def := ep.Edges.AlertDefinition; def != nil {
+		attrs.Definition = new(AlertDefinitionFromEnt(def))
+	}
+	return AlertEpisode{Id: ep.ID, Attributes: attrs}
 }
 
 func AlertMetricsFromEnt(m *ent.AlertMetrics) AlertMetrics {
@@ -123,11 +147,11 @@ var ListAlerts = openapi.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListAlertsRequest struct {
+type ListAlertDefinitionsRequest struct {
 	PaginationRequest
 	Search string `query:"search" required:"false" nullable:"false"`
 }
-type ListAlertsResponse PaginatedResponse[Alert]
+type ListAlertDefinitionsResponse PaginatedResponse[AlertDefinition]
 
 var GetAlert = openapi.Operation{
 	OperationID: "get-alert",
@@ -138,10 +162,10 @@ var GetAlert = openapi.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetAlertRequest struct {
+type GetAlertDefinitionRequest struct {
 	IdRequest
 }
-type GetAlertResponse ItemResponse[Alert]
+type GetAlertDefinitionResponse ItemResponse[AlertDefinition]
 
 var GetAlertMetrics = openapi.Operation{
 	OperationID: "get-alert-metrics",

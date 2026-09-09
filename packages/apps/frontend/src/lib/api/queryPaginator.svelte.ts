@@ -16,16 +16,16 @@ export type PageSize = (typeof pageSizeOptions)[number];
 const defaultPage = 1;
 const defaultPageSize: PageSize = 25;
 
-const paramsSchema = z.object({
+const paginationParamsSchema = z.object({
 	page: z.number().default(defaultPage),
 	pageSize: z.number().default(defaultPageSize),
 });
 
 export class QueryPaginator {
-	private params: ReturnUseSearchParams<typeof paramsSchema>;
+	private params: ReturnUseSearchParams<typeof paginationParamsSchema>;
 
 	constructor(source: "local" | "url" = "local", resetParams?: Getter<any>) {
-		this.params = useSearchParams(paramsSchema, {
+		this.params = useSearchParams(paginationParamsSchema, {
 			updateURL: source === "url",
 		});
 		if (resetParams) {
@@ -84,7 +84,7 @@ export const createPaginatedQuery = <
 }: {
 	source?: "local" | "url";
 	resetWhen?: Getter<unknown>;
-	queryOptions: (pagination: z.infer<typeof paramsSchema>) => CreateQueryOptions<TQueryData, ErrorModel, TData, TQueryKey>;
+	queryOptions: (pagination: z.infer<typeof paginationParamsSchema>) => CreateQueryOptions<TQueryData, ErrorModel, TData, TQueryKey>;
 	keepPreviousQueryData?: boolean;
 }) => {
 	const paginator = new QueryPaginator(source, resetWhen);
@@ -101,3 +101,41 @@ export const createPaginatedQuery = <
 
 	return { paginator, query };
 }
+
+export const createPaginatedQuerySimple = <
+	TQueryData extends PaginatedQueryResult,
+	TData extends PaginatedQueryResult = TQueryData,
+	TQueryKey extends QueryKey = QueryKey,
+	TQueryParams extends object = Record<string, never>,
+>({
+	source = "url",
+	queryParams,
+	optsFn,
+	keepPreviousQueryData = true,
+}: {
+	source?: "local" | "url";
+	queryParams: Getter<TQueryParams>;
+	optsFn: (
+		query: TQueryParams & z.infer<typeof paginationParamsSchema>
+	) => CreateQueryOptions<TQueryData, ErrorModel, TData, TQueryKey>;
+	keepPreviousQueryData?: boolean;
+}) => {
+	const paginator = new QueryPaginator(source);
+	const placeholderData = keepPreviousQueryData ? keepPreviousData : undefined;
+
+	const query = createQuery(() => ({
+		...optsFn({...paginator.queryParams, ...queryParams()}),
+		placeholderData,
+	}));
+
+	watch(
+		() => JSON.stringify(queryParams()),
+		() => paginator.resetPage(), { lazy: true },
+	);
+	watch(
+		() => [query.data?.pagination, query.isPlaceholderData] as const,
+		([pagination, placeholder]) => paginator.reconcile(pagination, placeholder),
+	);
+
+	return { paginator, query };
+};

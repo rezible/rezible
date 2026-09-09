@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { page } from "$app/state";
+	import type { PageProps } from "./$types";
 	import MeetingScheduleView from "$features/meetings/views/meeting-schedule";
+
+	const { params }: PageProps = $props();
 </script>
 
-<MeetingScheduleView id={page.params.id || ""} />
+<MeetingScheduleView id={params.id} />

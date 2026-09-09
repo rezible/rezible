@@ -244,7 +244,7 @@ func (s *SituationService) SetSituationInvestigationReport(ctx context.Context, 
 		}
 
 		updateInv := inv.Update().
-			SetReport(params.Report).
+			SetReport(new(params.Report)).
 			SetCompletedRevision(inv.RequestedRevision)
 		updatedInv, updateInvErr := updateInv.Save(ctx)
 		if updateInvErr != nil {

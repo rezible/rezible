@@ -11,12 +11,10 @@
 
 	const session = useUserSessionState();
 
-	const authorized = $derived(session.ready && session.isAdmin);
+	const authorized = $derived(session.isAuthenticated && session.isAdmin);
 
 	$effect(() => {
-		if (session.ready && !session.isAdmin) {
-			goto("/");
-		}
+		if (session.isAuthenticated && !session.isAdmin) goto("/");
 	});
 </script>
 

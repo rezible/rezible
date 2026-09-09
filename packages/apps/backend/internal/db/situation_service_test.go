@@ -377,3 +377,17 @@ func (s *SituationServiceSuite) TestSituationServiceTenantIsolation() {
 	_, hazardErr := h.hazards.GetSystemHazard(otherCtx, uuid.New())
 	s.True(ent.IsNotFound(hazardErr))
 }
+
+func (s *SituationServiceSuite) TestGetSituationLoadsSignalDefinition() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	h := s.newHarness(tdb)
+	sit := s.createSituation(ctx, h, "Signal detail")
+	episode := s.createEpisode(ctx, tdb.Client(ctx))
+	tdb.Client(ctx).AlertEpisode.UpdateOneID(episode.ID).SetSituationID(sit.ID).SaveX(ctx)
+	loaded, err := h.situations.GetSituation(ctx, sit.ID)
+	s.Require().NoError(err)
+	s.Require().Len(loaded.Edges.AlertEpisodes, 1)
+	s.Require().NotNil(loaded.Edges.AlertEpisodes[0].Edges.AlertDefinition)
+	s.Equal("Checkout alert", loaded.Edges.AlertEpisodes[0].Edges.AlertDefinition.Title)
+}

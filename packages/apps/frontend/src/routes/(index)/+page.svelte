@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SituationsDashboardView from "$features/situations/views/dashboard";
+	import HomeView from "$features/home/views/home";
 </script>
 
-<SituationsDashboardView />
+<HomeView />

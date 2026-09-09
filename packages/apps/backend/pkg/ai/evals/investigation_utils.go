@@ -113,11 +113,10 @@ func loadSituationInvestigationReport(ctx context.Context, client *ent.Client, s
 		check.Summary = "No investigation report was accepted."
 		return nil, check, nil
 	}
-	report := inv.Report
-	normalizeReport(&report)
+	normalizeReport(inv.Report)
 	check.Passed = true
 	check.Summary = "The investigation report was accepted."
-	return &report, check, nil
+	return inv.Report, check, nil
 }
 
 func normalizeReport(report *schematypes.SituationInvestigationReport) {

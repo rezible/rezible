@@ -88,7 +88,7 @@ func (SituationInvestigation) Fields() []ent.Field {
 		field.Int("completed_revision").NonNegative().Default(0),
 		field.Int("requested_revision").NonNegative().Default(0),
 		field.UUID("requested_turn_id", uuid.UUID{}).Optional().Nillable(),
-		field.JSON("report", schematypes.SituationInvestigationReport{}).
+		field.JSON("report", &schematypes.SituationInvestigationReport{}).
 			SchemaType(schemaTypeJsonB).
 			Optional(),
 	}

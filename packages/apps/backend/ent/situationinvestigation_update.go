@@ -116,16 +116,8 @@ func (_u *SituationInvestigationUpdate) ClearRequestedTurnID() *SituationInvesti
 }
 
 // SetReport sets the "report" field.
-func (_u *SituationInvestigationUpdate) SetReport(v schematypes.SituationInvestigationReport) *SituationInvestigationUpdate {
+func (_u *SituationInvestigationUpdate) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpdate {
 	_u.mutation.SetReport(v)
-	return _u
-}
-
-// SetNillableReport sets the "report" field if the given value is not nil.
-func (_u *SituationInvestigationUpdate) SetNillableReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpdate {
-	if v != nil {
-		_u.SetReport(*v)
-	}
 	return _u
 }
 
@@ -400,16 +392,8 @@ func (_u *SituationInvestigationUpdateOne) ClearRequestedTurnID() *SituationInve
 }
 
 // SetReport sets the "report" field.
-func (_u *SituationInvestigationUpdateOne) SetReport(v schematypes.SituationInvestigationReport) *SituationInvestigationUpdateOne {
+func (_u *SituationInvestigationUpdateOne) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpdateOne {
 	_u.mutation.SetReport(v)
-	return _u
-}
-
-// SetNillableReport sets the "report" field if the given value is not nil.
-func (_u *SituationInvestigationUpdateOne) SetNillableReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpdateOne {
-	if v != nil {
-		_u.SetReport(*v)
-	}
 	return _u
 }
 

@@ -16,14 +16,12 @@
 		started: "Started",
 		mitigated: "Mitigated",
 		resolved: "Resolved",
-		closed: "Closed",
 	};
 
 	const statusClasses: Record<IncidentStatus, string> = {
 		started: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
 		mitigated: "border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-300",
 		resolved: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-		closed: "border-muted-foreground/30 bg-muted text-muted-foreground",
 	};
 
 	const query = createQuery(() => getIncidentOptions({ path: { id: entity.entityId } }));

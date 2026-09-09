@@ -37,7 +37,7 @@ type (
 		Title                  string                   `json:"title"`
 		Summary                string                   `json:"summary"`
 		Slug                   string                   `json:"slug"`
-		CurrentStatus          string                   `json:"currentStatus" enum:"started,mitigated,resolved,closed"`
+		CurrentStatus          string                   `json:"currentStatus" enum:"started,mitigated,resolved"`
 		OpenedAt               time.Time                `json:"openedAt"`
 		ClosedAt               time.Time                `json:"closedAt"`
 		RetrospectiveId        *uuid.UUID               `json:"retrospectiveId,omitempty"`
@@ -143,7 +143,11 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 		attr.PrimaryVideoConference = new(VideoConferenceFromEnt(primaryVc))
 	}
 
-	attr.CurrentStatus = currentStatusFromEnt(inc)
+	status := im.KindOpened
+	if latestMilestone := inc.Edges.GetLatestMilestone(); latestMilestone != nil {
+		status = latestMilestone.Kind
+	}
+	attr.CurrentStatus = status.String()
 
 	return Incident{Id: inc.ID, Attributes: attr}
 }
@@ -159,19 +163,6 @@ func IncidentFieldSelectionFromEnt(opt *ent.IncidentFieldOption) IncidentFieldSe
 		FieldName: field.Name,
 		Option:    IncidentFieldOptionFromEnt(opt),
 	}
-}
-
-func currentStatusFromEnt(inc *ent.Incident) string {
-	status := "started"
-	for _, milestone := range inc.Edges.Milestones {
-		switch milestone.Kind {
-		case im.KindMitigation:
-			return "mitigated"
-		case im.KindResolution:
-			return "resolved"
-		}
-	}
-	return status
 }
 
 func IncidentRoleAssignmentFromEnt(assn *ent.IncidentRoleAssignment) IncidentRoleAssignment {
@@ -199,7 +190,9 @@ var ListIncidents = huma.Operation{
 
 type ListIncidentsRequest struct {
 	PaginationRequest
-	Search string `query:"search" required:"false" nullable:"false"`
+	Search     string    `query:"search" required:"false" nullable:"false"`
+	Statuses   []string  `query:"statuses" required:"false" enum:"started,mitigated,resolved"`
+	SeverityId uuid.UUID `query:"severityId" required:"false"`
 }
 type ListIncidentsResponse PaginatedResponse[Incident]
 

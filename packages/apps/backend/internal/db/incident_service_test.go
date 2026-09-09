@@ -6,6 +6,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
@@ -13,8 +17,6 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type IncidentServiceSuite struct {

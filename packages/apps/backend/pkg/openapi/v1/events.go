@@ -113,6 +113,7 @@ var ListEvents = huma.Operation{
 
 type ListEventsRequest struct {
 	PaginationRequest
+	Kind           string    `query:"kind" required:"false"`
 	From           time.Time `query:"from"`
 	To             time.Time `query:"to"`
 	WithProjection bool      `query:"withProjection"`

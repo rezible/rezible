@@ -474,6 +474,9 @@ type (
 
 	ListEventsParams struct {
 		ent.ListParams
+		Kind                 string
+		From                 time.Time
+		To                   time.Time
 		Predicates           []predicate.NormalizedEvent
 		WithProjection       bool
 		WithAnnotations      bool
@@ -850,6 +853,8 @@ type (
 
 	ListIncidentsParams struct {
 		ent.ListParams
+		Statuses     []string
+		SeverityId   uuid.UUID
 		UserId       uuid.UUID
 		OpenedAfter  time.Time
 		OpenedBefore time.Time

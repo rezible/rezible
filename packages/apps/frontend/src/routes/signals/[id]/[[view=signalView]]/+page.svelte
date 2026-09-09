@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { page } from "$app/state";
+	import type { PageProps } from "./$types";
 	import AlertView from "$features/signals/views/signal";
+
+	const { params }: PageProps = $props();
 </script>
 
-<AlertView id={page.params.id || ""} />
+<AlertView id={params.id} />

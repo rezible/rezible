@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { page } from "$app/state";
+	import type { PageProps } from "./$types";
 	import EventView from "$features/events/views/event";
+
+	const { params }: PageProps = $props();
 </script>
 
-<EventView id={page.params.id || ""} />
+<EventView id={params.id} />

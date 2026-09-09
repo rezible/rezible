@@ -4,53 +4,45 @@
 	import type { ErrorModel } from "$lib/api";
 	import LoadingIndicator from "$components/layout/loading-indicator/LoadingIndicator.svelte";
 	import InlineAlert from "$components/layout/error-alert/ErrorAlert.svelte";
+	import { Button } from "$components/ui/button";
 
 	type Props = {
 		query: CreateQueryResult<{ data: QueryData }, ErrorModel>;
-		view: Snippet<[QueryData]>;
+		view?: Snippet<[QueryData]>;
 		loading?: Snippet;
 		error?: Snippet<[ErrorModel]>;
+		feedbackOnly?: boolean;
 	};
-	const { query, view, loading, error }: Props = $props();
+	const { query, view, loading, error, feedbackOnly = false }: Props = $props();
 </script>
 
-<!--
-{#snippet defaultErrorView(err: ErrorModel)}
-	{#if err.status}
-		<Card classes={{ root: "mb-2" }}>
-			{#snippet header()}
-				<Header title="Error {err.status} {err.title}" classes={{ title: "text-danger text-xl" }} />
-			{/snippet}
-			{#snippet contents()}
-				<div class="pb-3 flex flex-col">
-					<span class="text-lg">{err.detail}</span>
-					{#each err.errors ?? [] as d}
-						<div>
-							<span>{d.location ? `[${d.location}: "${d.value}"]: ` : ""}</span>
-							<span class="text-neutral-content">{d.message}</span>
-						</div>
-					{/each}
-				</div>
-			{/snippet}
-		</Card>
-	{:else}
-		<span>error: {query.error}</span>
-	{/if}
-{/snippet}
--->
-
-{#if query.isLoading}
+{#if query.isPending && !query.data}
 	{#if loading}
 		{@render loading()}
 	{:else}
 		<LoadingIndicator />
 	{/if}
-{:else if query.isError}
-	{#if error}
-		{@render error(query.error as ErrorModel)}
-	{:else}
-		<InlineAlert error={query.error} />
+{:else if query.isError && !query.data}
+	<div role="alert" class="space-y-2">
+		{#if error}
+			{@render error(query.error as ErrorModel)}
+		{:else}
+			<InlineAlert error={query.error} />
+		{/if}
+		<Button variant="outline" size="sm" onclick={() => query.refetch()}>Try again</Button>
+	</div>
+{:else}
+	{#if query.isFetching}
+		<p role="status" class="px-3 text-xs text-muted-foreground">Refreshing…</p>
 	{/if}
-{:else if query.isSuccess}
-	{@render view(query.data.data)}
+	{#if query.isError && query.data}
+		<div role="alert" class="space-y-2 p-3">
+			<p class="text-sm text-destructive">Refresh failed. Showing previously loaded data.</p>
+			<InlineAlert error={query.error} />
+			<Button variant="outline" size="sm" onclick={() => query.refetch()}>Try again</Button>
+		</div>
+	{/if}
+	{#if !feedbackOnly && query.data && view}
+		{@render view(query.data.data)}
+	{/if}
 {/if}

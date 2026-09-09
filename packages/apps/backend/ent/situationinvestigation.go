@@ -44,7 +44,7 @@ type SituationInvestigation struct {
 	// RequestedTurnID holds the value of the "requested_turn_id" field.
 	RequestedTurnID *uuid.UUID `json:"requested_turn_id,omitempty"`
 	// Report holds the value of the "report" field.
-	Report schematypes.SituationInvestigationReport `json:"report,omitempty"`
+	Report *schematypes.SituationInvestigationReport `json:"report,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SituationInvestigationQuery when eager-loading is set.
 	Edges        SituationInvestigationEdges `json:"edges"`

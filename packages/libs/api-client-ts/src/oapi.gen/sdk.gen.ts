@@ -1148,6 +1148,7 @@ export const updateIncidentMilestone = <ThrowOnError extends boolean = false>(op
  * List Incidents
  */
 export const listIncidents = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentsData, ThrowOnError>): RequestResult<ListIncidentsResponses, ListIncidentsErrors, ThrowOnError> => (options?.client ?? client).get<ListIncidentsResponses, ListIncidentsErrors, ThrowOnError>({
+    querySerializer: { parameters: { statuses: { array: { explode: false } } } },
     security: [{
             key: 'app-cookie',
             scheme: 'bearer',

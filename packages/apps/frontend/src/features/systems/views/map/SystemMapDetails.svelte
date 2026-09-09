@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import { Badge } from "$components/ui/badge";
 	import * as Button from "$components/ui/button";
 	import * as Card from "$components/ui/card";
@@ -14,9 +15,7 @@
 
 	const inspected = $derived(view.inspector);
 	const entity = $derived(inspected?.kind === "entity" ? inspected.entity : undefined);
-	const relationship = $derived(
-		inspected?.kind === "relationship" ? inspected.relationship : undefined
-	);
+	const relationship = $derived(inspected?.kind === "relationship" ? inspected.relationship : undefined);
 	const attributes = $derived(entity?.attributes ?? relationship?.attributes);
 	const state = $derived(attributes?.latestState);
 	const classification = $derived(entity?.attributes.kind ?? relationship?.attributes.predicate);
@@ -51,11 +50,10 @@
 		];
 	});
 
-	// A situation subject's operational surface is the Situation Dashboard.
 	const situationHref = $derived.by(() => {
 		if (entity?.attributes.kind !== "situation") return undefined;
 		const name = entity.attributes.latestState?.displayName;
-		return name ? `/?q=${encodeURIComponent(name)}` : "/";
+		return resolve("/situations") + (name ? `?search=${encodeURIComponent(name)}` : "");
 	});
 </script>
 
@@ -151,8 +149,8 @@
 			{#if state && Object.keys(state).length === 0 && !state.description}
 				<Separator />
 				<p class="text-muted-foreground text-xs">
-					No observed state is recorded for this subject yet. Missing detail here is not
-					evidence that nothing is wrong.
+					No observed state is recorded for this subject yet. Missing detail here is not evidence
+					that nothing is wrong.
 				</p>
 			{/if}
 		</Card.Content>

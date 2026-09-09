@@ -15,8 +15,8 @@ func newAlertsHandler(alerts rez.AlertService) *alertsHandler {
 	return &alertsHandler{alerts: alerts}
 }
 
-func (h *alertsHandler) ListAlerts(ctx context.Context, req *oapi.ListAlertsRequest) (*oapi.ListAlertsResponse, error) {
-	var resp oapi.ListAlertsResponse
+func (h *alertsHandler) ListAlertDefinitions(ctx context.Context, req *oapi.ListAlertDefinitionsRequest) (*oapi.ListAlertDefinitionsResponse, error) {
+	var resp oapi.ListAlertDefinitionsResponse
 
 	params := rez.ListAlertsParams{
 		ListParams: req.ListParams(),
@@ -27,19 +27,19 @@ func (h *alertsHandler) ListAlerts(ctx context.Context, req *oapi.ListAlertsRequ
 		return nil, oapi.Error(ctx, "failed to list alerts", alertsErr)
 	}
 
-	resp.Body = oapi.ConvertPaginatedResultBody(alerts, oapi.AlertFromEnt)
+	resp.Body = oapi.ConvertPaginatedResultBody(alerts, oapi.AlertDefinitionFromEnt)
 
 	return &resp, nil
 }
 
-func (h *alertsHandler) GetAlert(ctx context.Context, req *oapi.GetAlertRequest) (*oapi.GetAlertResponse, error) {
-	var resp oapi.GetAlertResponse
+func (h *alertsHandler) GetAlertDefinition(ctx context.Context, req *oapi.GetAlertDefinitionRequest) (*oapi.GetAlertDefinitionResponse, error) {
+	var resp oapi.GetAlertDefinitionResponse
 
 	alert, getErr := h.alerts.GetAlert(ctx, req.Id)
 	if getErr != nil {
 		return nil, oapi.Error(ctx, "get alert", getErr)
 	}
-	resp.Body.Data = oapi.AlertFromEnt(alert)
+	resp.Body.Data = oapi.AlertDefinitionFromEnt(alert)
 
 	return &resp, nil
 }

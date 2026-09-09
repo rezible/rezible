@@ -125,16 +125,8 @@ func (_c *SituationInvestigationCreate) SetNillableRequestedTurnID(v *uuid.UUID)
 }
 
 // SetReport sets the "report" field.
-func (_c *SituationInvestigationCreate) SetReport(v schematypes.SituationInvestigationReport) *SituationInvestigationCreate {
+func (_c *SituationInvestigationCreate) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationCreate {
 	_c.mutation.SetReport(v)
-	return _c
-}
-
-// SetNillableReport sets the "report" field if the given value is not nil.
-func (_c *SituationInvestigationCreate) SetNillableReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationCreate {
-	if v != nil {
-		_c.SetReport(*v)
-	}
 	return _c
 }
 
@@ -572,7 +564,7 @@ func (u *SituationInvestigationUpsert) ClearRequestedTurnID() *SituationInvestig
 }
 
 // SetReport sets the "report" field.
-func (u *SituationInvestigationUpsert) SetReport(v schematypes.SituationInvestigationReport) *SituationInvestigationUpsert {
+func (u *SituationInvestigationUpsert) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpsert {
 	u.Set(situationinvestigation.FieldReport, v)
 	return u
 }
@@ -741,7 +733,7 @@ func (u *SituationInvestigationUpsertOne) ClearRequestedTurnID() *SituationInves
 }
 
 // SetReport sets the "report" field.
-func (u *SituationInvestigationUpsertOne) SetReport(v schematypes.SituationInvestigationReport) *SituationInvestigationUpsertOne {
+func (u *SituationInvestigationUpsertOne) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpsertOne {
 	return u.Update(func(s *SituationInvestigationUpsert) {
 		s.SetReport(v)
 	})
@@ -1080,7 +1072,7 @@ func (u *SituationInvestigationUpsertBulk) ClearRequestedTurnID() *SituationInve
 }
 
 // SetReport sets the "report" field.
-func (u *SituationInvestigationUpsertBulk) SetReport(v schematypes.SituationInvestigationReport) *SituationInvestigationUpsertBulk {
+func (u *SituationInvestigationUpsertBulk) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpsertBulk {
 	return u.Update(func(s *SituationInvestigationUpsert) {
 		s.SetReport(v)
 	})

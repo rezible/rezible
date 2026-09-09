@@ -42,6 +42,15 @@ func (s *EventsService) ListEvents(ctx context.Context, params rez.ListEventsPar
 
 	query.Order(ne.ByOccurredAt(params.GetOrder()), ne.ByID(params.GetOrder()))
 	query.Where(params.Predicates...)
+	if params.Kind != "" {
+		query.Where(ne.KindEQ(params.Kind))
+	}
+	if !params.From.IsZero() {
+		query.Where(ne.OccurredAtGTE(params.From))
+	}
+	if !params.To.IsZero() {
+		query.Where(ne.OccurredAtLTE(params.To))
+	}
 
 	if params.WithAnnotations {
 		//query.WithAnnotations(func(q *ent.EventAnnotationQuery) {

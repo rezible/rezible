@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
-	import { listAlertsOptions, type Alert, type ListAlertsData } from "$lib/api";
+	import { listAlertsOptions, type AlertDefinition, type ListAlertsData } from "$lib/api";
 	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
@@ -24,7 +24,7 @@
 	<SearchInput bind:value={searchValue} />
 {/snippet}
 
-{#snippet alertListItem(a: Alert)}
+{#snippet alertListItem(a: AlertDefinition)}
 	<a href={resolve(`/signals/${a.id}`)}>
 		<span>{a.attributes.title}</span>
 	</a>
@@ -33,7 +33,7 @@
 <FilterPage {filters}>
 	<PaginatedQueryListBox {...paginatedAlertsQuery}>
 		<LoadingQueryWrapper query={paginatedAlertsQuery.query}>
-			{#snippet view(alerts: Alert[])}
+			{#snippet view(alerts: AlertDefinition[])}
 				{#each alerts as a (a.id)}
 					{@render alertListItem(a)}
 				{:else}

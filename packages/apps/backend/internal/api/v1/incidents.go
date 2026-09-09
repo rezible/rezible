@@ -31,6 +31,8 @@ func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListInci
 
 	params := rez.ListIncidentsParams{
 		ListParams: req.ListParams(),
+		Statuses:   req.Statuses,
+		SeverityId: req.SeverityId,
 	}
 	params.Search = req.Search
 	incs, listErr := h.incidents.ListIncidents(ctx, params)
