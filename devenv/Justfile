@@ -8,7 +8,6 @@ workspace_env_file := join(parent_directory(source_directory()), ".env.workspace
 process_compose_file := source_dir() / "process-compose.yaml"
 process_compose_dev_file := source_dir() / "process-compose.dev.yaml"
 process_compose_test_file := source_dir() / "process-compose.test.yaml"
-process_compose_inspect_file := source_dir() / "process-compose.inspect.yaml"
 infra_lock_file := "/tmp/rezible-infra.lock"
 
 [doc("Install dependencies & start services")]
@@ -165,40 +164,3 @@ test target="all" *ARGS:
 @ensure-localias:
     cp "$(localias debug cert)" ./localias-ca.crt
     if ! localias status | grep -q 'daemon running'; then localias start; fi
-
-@assert-app-ports-free:
-    #!/usr/bin/env bun
-    for (const port of [Number(process.env.APP_PORT), Number(process.env.BACKEND_PORT), 7002]) {
-      try {
-        const listener = Bun.listen({ hostname: "127.0.0.1", port, socket: { data() {} } });
-        listener.stop(true);
-      } catch {
-        console.error(`application port ${port} is already in use`);
-        process.exit(1);
-      }
-    }
-
-[arg("height", long="height")]
-[arg("output", long="output")]
-[arg("script", long="script")]
-[arg("wait_for", long="wait-for")]
-[arg("width", long="width")]
-[doc("Start a temporary application stack and capture the frontend")]
-[working-directory("..")]
-@inspect route script="" wait_for="main" width="1440" height="900" output="":
-    mkdir -p packages/apps/frontend/.artifacts/ui
-    INSPECT_ROUTE={{ quote(route) }} \
-      INSPECT_SCRIPT={{ quote(script) }} \
-      INSPECT_WAIT_FOR={{ quote(wait_for) }} \
-      INSPECT_WIDTH={{ quote(width) }} \
-      INSPECT_HEIGHT={{ quote(height) }} \
-      INSPECT_OUTPUT={{ quote(output) }} \
-      process-compose \
-        --no-server \
-        -L packages/apps/frontend/.artifacts/ui/services.log \
-        --log-no-color \
-        --logs-truncate \
-        -f "{{ process_compose_file }}" \
-        -f "{{ process_compose_inspect_file }}" \
-          up capture \
-            -t=false

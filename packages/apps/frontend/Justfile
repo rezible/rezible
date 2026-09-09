@@ -9,23 +9,5 @@ build:
 dev:
     bun run dev
 
-capture *ARGS:
-    bun run scripts/inspect.ts {{ ARGS }}
-
-[arg("height", long="height")]
-[arg("output", long="output")]
-[arg("script", long="script")]
-[arg("wait_for", long="wait-for")]
-[arg("width", long="width")]
-[doc("Start a temporary stack and capture an authenticated UI screenshot")]
-[working-directory("../../..")]
-inspect route script="" wait_for="main" width="1440" height="900" output="":
-    just dev inspect {{ quote(route) }} \
-      --wait-for {{ quote(wait_for) }} \
-      --width {{ quote(width) }} \
-      --height {{ quote(height) }} \
-      {{ if script != "" { "--script " + quote(script) } else { "" } }} \
-      {{ if output != "" { "--output " + quote(output) } else { "" } }}
-
 @run *ARGS:
     bun run {{ ARGS }}
