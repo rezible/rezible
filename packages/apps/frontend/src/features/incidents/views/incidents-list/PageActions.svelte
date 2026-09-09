@@ -2,15 +2,15 @@
 	import { mdiPlus } from "@mdi/js";
 	import Icon from "$components/common/icon/Icon.svelte";
 	import { Button } from "$components/ui/button";
-	import { useIncidentCreateDialog } from "$features/incidents/components/create-incident-dialog";
 
-	const incidentDialog = useIncidentCreateDialog();
+	// import { useIncidentCreateDialog } from "$features/incidents/components/create-incident-dialog";
+	// const incidentDialog = useIncidentCreateDialog();
 </script>
 
 <div class="flex gap-2">
 	<Button
 		onclick={() => {
-			incidentDialog.openCreate();
+			// incidentDialog.openCreate();
 		}}
 	>
 		Create Incident
