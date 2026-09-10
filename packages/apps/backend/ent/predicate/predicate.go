@@ -27,6 +27,9 @@ type AlertDefinition func(*sql.Selector)
 // AlertEpisode is the predicate function for alertepisode builders.
 type AlertEpisode func(*sql.Selector)
 
+// AlertEpisodeSituation is the predicate function for alertepisodesituation builders.
+type AlertEpisodeSituation func(*sql.Selector)
+
 // AlertFeedback is the predicate function for alertfeedback builders.
 type AlertFeedback func(*sql.Selector)
 

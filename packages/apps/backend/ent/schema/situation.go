@@ -53,10 +53,14 @@ func (Situation) Edges() []ent.Edge {
 			Required().
 			Immutable().
 			Field("knowledge_entity_id"),
-		edge.To("alert_episodes", AlertEpisode.Type),
-		edge.To("investigation", SituationInvestigation.Type).Unique(),
+		edge.To("investigation", SituationInvestigation.Type).
+			Unique(),
+		edge.From("alert_episodes", AlertEpisode.Type).
+			Ref("situations").
+			Through("alert_episode_links", AlertEpisodeSituation.Type),
 		edge.To("hazard_assessments", SituationHazardAssessment.Type),
-		edge.From("incidents", Incident.Type).Ref("situations"),
+		edge.From("incidents", Incident.Type).
+			Ref("situations"),
 	}
 }
 
@@ -125,6 +129,37 @@ func (SituationInvestigation) Indexes() []ent.Index {
 		index.Fields("tenant_id", "situation_id").Unique(),
 		index.Fields("tenant_id", "system_analysis_id").Unique(),
 		index.Fields("tenant_id", "agent_session_id").Unique(),
+	}
+}
+
+// AlertEpisodeSituation is the tenant-scoped association between alert evidence and situations.
+type AlertEpisodeSituation struct {
+	ent.Schema
+}
+
+func (AlertEpisodeSituation) Mixin() []ent.Mixin {
+	return []ent.Mixin{BaseMixin{}, TenantMixin{}}
+}
+
+func (AlertEpisodeSituation) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.New()).Default(uuid.New),
+		field.UUID("alert_episode_id", uuid.UUID{}),
+		field.UUID("situation_id", uuid.UUID{}),
+	}
+}
+
+func (AlertEpisodeSituation) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("alert_episode", AlertEpisode.Type).Required().Unique().Field("alert_episode_id"),
+		edge.To("situation", Situation.Type).Required().Unique().Field("situation_id"),
+	}
+}
+
+func (AlertEpisodeSituation) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "alert_episode_id", "situation_id").Unique(),
+		index.Fields("tenant_id", "situation_id"),
 	}
 }
 

@@ -97,7 +97,6 @@ func (AlertEpisode) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("alert_definition_id", uuid.UUID{}).Immutable(),
-		field.UUID("situation_id", uuid.UUID{}).Optional().Nillable(),
 		field.Enum("status").Values("open", "closed").Default("open"),
 		field.Time("started_at"),
 		field.Time("last_observed_at"),
@@ -114,10 +113,8 @@ func (AlertEpisode) Edges() []ent.Edge {
 			Immutable().
 			Field("alert_definition_id"),
 		edge.To("instances", AlertInstance.Type),
-		edge.From("situation", Situation.Type).
-			Ref("alert_episodes").
-			Unique().
-			Field("situation_id"),
+		edge.To("situations", Situation.Type).
+			Through("situation_links", AlertEpisodeSituation.Type),
 	}
 }
 
@@ -126,7 +123,6 @@ func (AlertEpisode) Indexes() []ent.Index {
 		index.Fields("tenant_id", "alert_definition_id").
 			Unique().
 			Annotations(entsql.IndexWhere("status = 'open'")),
-		index.Fields("tenant_id", "situation_id"),
 	}
 }
 

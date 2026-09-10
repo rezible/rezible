@@ -384,7 +384,10 @@ func (s *SituationServiceSuite) TestGetSituationLoadsSignalDefinition() {
 	h := s.newHarness(tdb)
 	sit := s.createSituation(ctx, h, "Signal detail")
 	episode := s.createEpisode(ctx, tdb.Client(ctx))
-	tdb.Client(ctx).AlertEpisode.UpdateOneID(episode.ID).SetSituationID(sit.ID).SaveX(ctx)
+	createLink := tdb.Client(ctx).AlertEpisodeSituation.Create().
+		SetAlertEpisodeID(episode.ID).
+		SetSituationID(sit.ID)
+	createLink.SaveX(ctx)
 	loaded, err := h.situations.GetSituation(ctx, sit.ID)
 	s.Require().NoError(err)
 	s.Require().Len(loaded.Edges.AlertEpisodes, 1)

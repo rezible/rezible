@@ -10,7 +10,8 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	ae "github.com/rezible/rezible/ent/alertepisode"
+	ale "github.com/rezible/rezible/ent/alertepisode"
+	ales "github.com/rezible/rezible/ent/alertepisodesituation"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/situation"
@@ -68,7 +69,7 @@ func (s *SituationService) GetSituation(ctx context.Context, id uuid.UUID) (*ent
 		Where(situation.ID(id)).
 		WithKnowledgeEntity().
 		WithAlertEpisodes(func(q *ent.AlertEpisodeQuery) {
-			q.WithAlertDefinition().Order(ae.ByStartedAt(), ae.ByID())
+			q.WithAlertDefinition().Order(ale.ByStartedAt(), ale.ByID())
 		}).
 		WithInvestigation()
 	return query.Only(ctx)
@@ -84,36 +85,63 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 		openedAt = time.Now().UTC()
 	}
 
-	var created *ent.Situation
-	return created, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	var result *ent.Situation
+	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		situationId := uuid.New()
-		situationEntityRef := &rez.KnowledgeEntityRef{
-			Category:            kne.CategoryEvent,
-			Kind:                situationKnowledgeEntityKind,
-			ProviderResourceRef: projections.InternalEntityResourceRef(situationId),
-		}
-		ka, kaErr := s.knowledge.ResolveInternalSubject(ctx, rez.KnowledgeSubjectRef{Entity: situationEntityRef})
-		if kaErr != nil || ka.EntityID == nil {
-			return fmt.Errorf("create situation knowledge entity: %w", kaErr)
+
+		knEntId, knEntErr := s.resolveSituationKnowledgeEntityId(ctx, situationId)
+		if knEntErr != nil {
+			return fmt.Errorf("resolve knowledge entity: %w", knEntErr)
 		}
 
 		createSituation := tx.Situation.Create().
 			SetID(situationId).
-			SetKnowledgeEntityID(*ka.EntityID).
+			SetKnowledgeEntityID(knEntId).
 			SetTitle(title).
 			SetStatus(situation.StatusOpen).
 			SetOpenedAt(openedAt)
 		if summary := strings.TrimSpace(params.Summary); summary != "" {
 			createSituation.SetSummary(summary)
 		}
-		createdSituation, saveErr := createSituation.Save(ctx)
+		created, saveErr := createSituation.Save(ctx)
 		if saveErr != nil {
 			return fmt.Errorf("create situation: %w", saveErr)
 		}
 
-		created = createdSituation.Unwrap()
+		for _, item := range params.EvidenceItems {
+			if item.AlertEpisodeID == nil && item.IncidentID == nil {
+				return fmt.Errorf("invalid evidence item")
+			}
+			if item.AlertEpisodeID != nil {
+				createLink := tx.AlertEpisodeSituation.Create().
+					SetAlertEpisodeID(*item.AlertEpisodeID).
+					SetSituationID(situationId)
+				if createLinkErr := createLink.Exec(ctx); createLinkErr != nil {
+					return fmt.Errorf("create alert episode situation link: %w", createLinkErr)
+				}
+			}
+			evRelEnt := s.makeSituationEvidenceRelationshipEntity(item)
+			if relErr := s.ingestKnowledgeRelationship(ctx, created.ID, *evRelEnt); relErr != nil {
+				return fmt.Errorf("ingest knowledge relationship: %w", relErr)
+			}
+		}
+
+		result = created.Unwrap()
 		return nil
 	})
+}
+
+func (s *SituationService) resolveSituationKnowledgeEntityId(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	situationEntityRef := &rez.KnowledgeEntityRef{
+		Category:            kne.CategoryEvent,
+		Kind:                situationKnowledgeEntityKind,
+		ProviderResourceRef: projections.InternalEntityResourceRef(id),
+	}
+	alias, resErr := s.knowledge.ResolveInternalSubject(ctx, rez.KnowledgeSubjectRef{Entity: situationEntityRef})
+	if resErr != nil || alias.EntityID == nil {
+		return uuid.Nil, fmt.Errorf("create situation knowledge entity: %w", resErr)
+	}
+	return *alias.EntityID, nil
 }
 
 func (s *SituationService) CloseSituation(ctx context.Context, params rez.CloseSituationParams) (*ent.Situation, error) {
@@ -170,7 +198,23 @@ func (s *SituationService) AddSituationEvidenceItem(ctx context.Context, id uuid
 		if relEnt == nil {
 			return fmt.Errorf("invalid evidence item")
 		}
-		if knrErr := s.ingestKnowledgeRelationship(ctx, sit, *relEnt); knrErr != nil {
+		if params.AlertEpisodeID != nil {
+			queryEpLink := tx.AlertEpisodeSituation.Query().
+				Where(ales.AlertEpisodeID(*params.AlertEpisodeID), ales.SituationID(id))
+			linkExists, queryExistsErr := queryEpLink.Exist(ctx)
+			if queryExistsErr != nil {
+				return fmt.Errorf("check situation evidence link: %w", queryExistsErr)
+			}
+			if !linkExists {
+				createLink := tx.AlertEpisodeSituation.Create().
+					SetAlertEpisodeID(*params.AlertEpisodeID).
+					SetSituationID(id)
+				if createLinkErr := createLink.Exec(ctx); createLinkErr != nil {
+					return fmt.Errorf("create situation evidence link: %w", createLinkErr)
+				}
+			}
+		}
+		if knrErr := s.ingestKnowledgeRelationship(ctx, sit.ID, *relEnt); knrErr != nil {
 			return fmt.Errorf("ingest situation evidence item knowledge relationship: %w", knrErr)
 		}
 
@@ -238,7 +282,7 @@ func (s *SituationService) NotifySituationEvidenceItemStabilized(ctx context.Con
 			if epErr != nil {
 				return fmt.Errorf("situation alert episode: %w", epErr)
 			}
-			if ep.Status == ae.StatusClosed && ep.ClosedAt != nil {
+			if ep.Status == ale.StatusClosed && ep.ClosedAt != nil {
 				lastItemClosedAt = *ep.ClosedAt
 			}
 		}
@@ -272,6 +316,13 @@ func (s *SituationService) RemoveSituationEvidenceItem(ctx context.Context, id u
 		relRef := s.makeSituationEvidenceRelationshipEntity(params)
 		if relRef == nil {
 			return fmt.Errorf("invalid evidence item")
+		}
+		if params.AlertEpisodeID != nil {
+			deleteEpisodeLink := tx.AlertEpisodeSituation.Delete().
+				Where(ales.AlertEpisodeID(*params.AlertEpisodeID), ales.SituationID(id))
+			if _, delErr := deleteEpisodeLink.Exec(ctx); delErr != nil {
+				return fmt.Errorf("remove situation evidence link: %w", delErr)
+			}
 		}
 		slog.Debug("todo: remove evidence item relationship", "ref", relRef)
 
@@ -314,7 +365,7 @@ type situationKnowledgeRelationshipEntity struct {
 	isTarget bool
 }
 
-func (s *SituationService) ingestKnowledgeRelationship(ctx context.Context, sit *ent.Situation, p situationKnowledgeRelationshipEntity) error {
+func (s *SituationService) ingestKnowledgeRelationship(ctx context.Context, sitId uuid.UUID, p situationKnowledgeRelationshipEntity) error {
 	entityRef := rez.KnowledgeEntityRef{
 		Category:            p.category,
 		Kind:                p.kind,
@@ -325,12 +376,12 @@ func (s *SituationService) ingestKnowledgeRelationship(ctx context.Context, sit 
 	situationEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryEvent,
 		Kind:                "situation",
-		ProviderResourceRef: projections.InternalEntityResourceRef(sit.ID),
-		LinkingAttributes:   projections.KnowledgeEntityLinkingAttributes{ID: sit.ID},
+		ProviderResourceRef: projections.InternalEntityResourceRef(sitId),
+		LinkingAttributes:   projections.KnowledgeEntityLinkingAttributes{ID: sitId},
 	}
 
 	relationshipRef := &rez.KnowledgeRelationshipRef{
-		ProviderResourceRef: projections.InternalRelationshipResourceRef(p.id, sit.ID),
+		ProviderResourceRef: projections.InternalRelationshipResourceRef(p.id, sitId),
 		Source:              entityRef,
 		Predicate:           p.pred,
 		Target:              situationEntityRef,

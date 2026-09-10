@@ -128,30 +128,29 @@ func (s *SituationService) AddSituationHazardAssessment(ctx context.Context, par
 	if !validSituationHazardAssessmentStatus.Contains(params.Status) {
 		return nil, fmt.Errorf("%w: invalid situation hazard assessment status", rez.ErrInvalidInput)
 	}
+
 	summary := strings.TrimSpace(params.Summary)
 	if summary == "" {
 		return nil, fmt.Errorf("%w: assessment summary is required", rez.ErrInvalidInput)
 	}
+
 	assessedAt := params.AssessedAt
 	if assessedAt.IsZero() {
 		assessedAt = time.Now().UTC()
 	}
 
+	situationId := params.SituationID
+
 	var assessment *ent.SituationHazardAssessment
 	return assessment, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		pairKey := params.SituationID.String() + "\x1f" + params.SystemHazardID.String()
+		pairKey := situationId.String() + "\x1f" + params.SystemHazardID.String()
 		if lockErr := s.db.AcquireTxLocks(ctx, situationHazardAssessmentLockNamespace, pairKey); lockErr != nil {
 			return fmt.Errorf("lock situation hazard pair: %w", lockErr)
 		}
 
-		sit, sitErr := tx.Situation.Get(ctx, params.SituationID)
-		if sitErr != nil {
-			return fmt.Errorf("lookup situation: %w", sitErr)
-		}
-
 		nextRevision := 1
 		latestQuery := tx.SituationHazardAssessment.Query().
-			Where(sha.SituationID(params.SituationID), sha.SystemHazardID(params.SystemHazardID)).
+			Where(sha.SituationID(situationId), sha.SystemHazardID(params.SystemHazardID)).
 			Order(sha.ByRevision(sql.OrderDesc()))
 		latest, latestErr := latestQuery.First(ctx)
 		if latestErr == nil {
@@ -161,7 +160,7 @@ func (s *SituationService) AddSituationHazardAssessment(ctx context.Context, par
 		}
 
 		createAssessment := tx.SituationHazardAssessment.Create().
-			SetSituationID(params.SituationID).
+			SetSituationID(situationId).
 			SetSystemHazardID(params.SystemHazardID).
 			SetRevision(nextRevision).
 			SetStatus(params.Status).
@@ -175,19 +174,19 @@ func (s *SituationService) AddSituationHazardAssessment(ctx context.Context, par
 		}
 		assessment = created.Unwrap()
 
+		hazardRelEnt := &situationKnowledgeRelationshipEntity{
+			id:       params.SystemHazardID,
+			category: kne.CategoryConcern,
+			kind:     "system_hazard",
+			pred:     knr.PredicateClassifiedAs,
+			isTarget: true,
+		}
 		if params.Status == sha.StatusConfirmed {
-			hazardRelEnt := &situationKnowledgeRelationshipEntity{
-				id:       params.SystemHazardID,
-				category: kne.CategoryConcern,
-				kind:     "system_hazard",
-				pred:     knr.PredicateClassifiedAs,
-				isTarget: true,
-			}
-			if relErr := s.ingestKnowledgeRelationship(ctx, sit, *hazardRelEnt); relErr != nil {
+			if relErr := s.ingestKnowledgeRelationship(ctx, situationId, *hazardRelEnt); relErr != nil {
 				return fmt.Errorf("ingest situation hazard assessment: %w", relErr)
 			}
 		} else {
-			// TODO: remove relationship
+			// TODO: remove knowledge relationship ?
 		}
 		return nil
 	})
@@ -351,7 +350,7 @@ func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *j
 		}
 
 		episodesQuery := tx.AlertEpisode.Query().
-			Where(ale.SituationID(situationId)).
+			Where(ale.HasSituationsWith(situation.ID(situationId))).
 			WithAlertDefinition().
 			WithInstances(func(q *ent.AlertInstanceQuery) {
 				q.WithEvent()

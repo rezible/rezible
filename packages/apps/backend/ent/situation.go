@@ -63,9 +63,11 @@ type SituationEdges struct {
 	HazardAssessments []*SituationHazardAssessment `json:"hazard_assessments,omitempty"`
 	// Incidents holds the value of the incidents edge.
 	Incidents []*Incident `json:"incidents,omitempty"`
+	// AlertEpisodeLinks holds the value of the alert_episode_links edge.
+	AlertEpisodeLinks []*AlertEpisodeSituation `json:"alert_episode_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -126,6 +128,15 @@ func (e SituationEdges) IncidentsOrErr() ([]*Incident, error) {
 		return e.Incidents, nil
 	}
 	return nil, &NotLoadedError{edge: "incidents"}
+}
+
+// AlertEpisodeLinksOrErr returns the AlertEpisodeLinks value or an error if the edge
+// was not loaded in eager-loading.
+func (e SituationEdges) AlertEpisodeLinksOrErr() ([]*AlertEpisodeSituation, error) {
+	if e.loadedTypes[6] {
+		return e.AlertEpisodeLinks, nil
+	}
+	return nil, &NotLoadedError{edge: "alert_episode_links"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -271,6 +282,11 @@ func (_m *Situation) QueryHazardAssessments() *SituationHazardAssessmentQuery {
 // QueryIncidents queries the "incidents" edge of the Situation entity.
 func (_m *Situation) QueryIncidents() *IncidentQuery {
 	return NewSituationClient(_m.config).QueryIncidents(_m)
+}
+
+// QueryAlertEpisodeLinks queries the "alert_episode_links" edge of the Situation entity.
+func (_m *Situation) QueryAlertEpisodeLinks() *AlertEpisodeSituationQuery {
+	return NewSituationClient(_m.config).QueryAlertEpisodeLinks(_m)
 }
 
 // Update returns a builder for updating this Situation.

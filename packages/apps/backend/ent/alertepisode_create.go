@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/alertepisode"
+	"github.com/rezible/rezible/ent/alertepisodesituation"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situation"
@@ -80,20 +81,6 @@ func (_c *AlertEpisodeCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertE
 // SetAlertDefinitionID sets the "alert_definition_id" field.
 func (_c *AlertEpisodeCreate) SetAlertDefinitionID(v uuid.UUID) *AlertEpisodeCreate {
 	_c.mutation.SetAlertDefinitionID(v)
-	return _c
-}
-
-// SetSituationID sets the "situation_id" field.
-func (_c *AlertEpisodeCreate) SetSituationID(v uuid.UUID) *AlertEpisodeCreate {
-	_c.mutation.SetSituationID(v)
-	return _c
-}
-
-// SetNillableSituationID sets the "situation_id" field if the given value is not nil.
-func (_c *AlertEpisodeCreate) SetNillableSituationID(v *uuid.UUID) *AlertEpisodeCreate {
-	if v != nil {
-		_c.SetSituationID(*v)
-	}
 	return _c
 }
 
@@ -181,9 +168,34 @@ func (_c *AlertEpisodeCreate) AddInstances(v ...*AlertInstance) *AlertEpisodeCre
 	return _c.AddInstanceIDs(ids...)
 }
 
-// SetSituation sets the "situation" edge to the Situation entity.
-func (_c *AlertEpisodeCreate) SetSituation(v *Situation) *AlertEpisodeCreate {
-	return _c.SetSituationID(v.ID)
+// AddSituationIDs adds the "situations" edge to the Situation entity by IDs.
+func (_c *AlertEpisodeCreate) AddSituationIDs(ids ...uuid.UUID) *AlertEpisodeCreate {
+	_c.mutation.AddSituationIDs(ids...)
+	return _c
+}
+
+// AddSituations adds the "situations" edges to the Situation entity.
+func (_c *AlertEpisodeCreate) AddSituations(v ...*Situation) *AlertEpisodeCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSituationIDs(ids...)
+}
+
+// AddSituationLinkIDs adds the "situation_links" edge to the AlertEpisodeSituation entity by IDs.
+func (_c *AlertEpisodeCreate) AddSituationLinkIDs(ids ...uuid.UUID) *AlertEpisodeCreate {
+	_c.mutation.AddSituationLinkIDs(ids...)
+	return _c
+}
+
+// AddSituationLinks adds the "situation_links" edges to the AlertEpisodeSituation entity.
+func (_c *AlertEpisodeCreate) AddSituationLinks(v ...*AlertEpisodeSituation) *AlertEpisodeCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSituationLinkIDs(ids...)
 }
 
 // Mutation returns the AlertEpisodeMutation object of the builder.
@@ -417,22 +429,45 @@ func (_c *AlertEpisodeCreate) createSpec() (*AlertEpisode, *sqlgraph.CreateSpec)
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SituationIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SituationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alertepisode.SituationTable,
-			Columns: []string{alertepisode.SituationColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   alertepisode.SituationsTable,
+			Columns: alertepisode.SituationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.AlertEpisode
+		edge.Schema = _c.schemaConfig.AlertEpisodeSituation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.SituationID = &nodes[0]
+		createE := &AlertEpisodeSituationCreate{config: _c.config, mutation: newAlertEpisodeSituationMutation(_c.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SituationLinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   alertepisode.SituationLinksTable,
+			Columns: []string{alertepisode.SituationLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisodesituation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AlertEpisodeSituation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -526,24 +561,6 @@ func (u *AlertEpisodeUpsert) UpdateKnowledgeEntityID() *AlertEpisodeUpsert {
 // ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
 func (u *AlertEpisodeUpsert) ClearKnowledgeEntityID() *AlertEpisodeUpsert {
 	u.SetNull(alertepisode.FieldKnowledgeEntityID)
-	return u
-}
-
-// SetSituationID sets the "situation_id" field.
-func (u *AlertEpisodeUpsert) SetSituationID(v uuid.UUID) *AlertEpisodeUpsert {
-	u.Set(alertepisode.FieldSituationID, v)
-	return u
-}
-
-// UpdateSituationID sets the "situation_id" field to the value that was provided on create.
-func (u *AlertEpisodeUpsert) UpdateSituationID() *AlertEpisodeUpsert {
-	u.SetExcluded(alertepisode.FieldSituationID)
-	return u
-}
-
-// ClearSituationID clears the value of the "situation_id" field.
-func (u *AlertEpisodeUpsert) ClearSituationID() *AlertEpisodeUpsert {
-	u.SetNull(alertepisode.FieldSituationID)
 	return u
 }
 
@@ -701,27 +718,6 @@ func (u *AlertEpisodeUpsertOne) UpdateKnowledgeEntityID() *AlertEpisodeUpsertOne
 func (u *AlertEpisodeUpsertOne) ClearKnowledgeEntityID() *AlertEpisodeUpsertOne {
 	return u.Update(func(s *AlertEpisodeUpsert) {
 		s.ClearKnowledgeEntityID()
-	})
-}
-
-// SetSituationID sets the "situation_id" field.
-func (u *AlertEpisodeUpsertOne) SetSituationID(v uuid.UUID) *AlertEpisodeUpsertOne {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.SetSituationID(v)
-	})
-}
-
-// UpdateSituationID sets the "situation_id" field to the value that was provided on create.
-func (u *AlertEpisodeUpsertOne) UpdateSituationID() *AlertEpisodeUpsertOne {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.UpdateSituationID()
-	})
-}
-
-// ClearSituationID clears the value of the "situation_id" field.
-func (u *AlertEpisodeUpsertOne) ClearSituationID() *AlertEpisodeUpsertOne {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.ClearSituationID()
 	})
 }
 
@@ -1055,27 +1051,6 @@ func (u *AlertEpisodeUpsertBulk) UpdateKnowledgeEntityID() *AlertEpisodeUpsertBu
 func (u *AlertEpisodeUpsertBulk) ClearKnowledgeEntityID() *AlertEpisodeUpsertBulk {
 	return u.Update(func(s *AlertEpisodeUpsert) {
 		s.ClearKnowledgeEntityID()
-	})
-}
-
-// SetSituationID sets the "situation_id" field.
-func (u *AlertEpisodeUpsertBulk) SetSituationID(v uuid.UUID) *AlertEpisodeUpsertBulk {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.SetSituationID(v)
-	})
-}
-
-// UpdateSituationID sets the "situation_id" field to the value that was provided on create.
-func (u *AlertEpisodeUpsertBulk) UpdateSituationID() *AlertEpisodeUpsertBulk {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.UpdateSituationID()
-	})
-}
-
-// ClearSituationID clears the value of the "situation_id" field.
-func (u *AlertEpisodeUpsertBulk) ClearSituationID() *AlertEpisodeUpsertBulk {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.ClearSituationID()
 	})
 }
 

@@ -82,11 +82,6 @@ func AlertDefinitionID(v uuid.UUID) predicate.AlertEpisode {
 	return predicate.AlertEpisode(sql.FieldEQ(FieldAlertDefinitionID, v))
 }
 
-// SituationID applies equality check predicate on the "situation_id" field. It's identical to SituationIDEQ.
-func SituationID(v uuid.UUID) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldEQ(FieldSituationID, v))
-}
-
 // StartedAt applies equality check predicate on the "started_at" field. It's identical to StartedAtEQ.
 func StartedAt(v time.Time) predicate.AlertEpisode {
 	return predicate.AlertEpisode(sql.FieldEQ(FieldStartedAt, v))
@@ -250,36 +245,6 @@ func AlertDefinitionIDIn(vs ...uuid.UUID) predicate.AlertEpisode {
 // AlertDefinitionIDNotIn applies the NotIn predicate on the "alert_definition_id" field.
 func AlertDefinitionIDNotIn(vs ...uuid.UUID) predicate.AlertEpisode {
 	return predicate.AlertEpisode(sql.FieldNotIn(FieldAlertDefinitionID, vs...))
-}
-
-// SituationIDEQ applies the EQ predicate on the "situation_id" field.
-func SituationIDEQ(v uuid.UUID) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldEQ(FieldSituationID, v))
-}
-
-// SituationIDNEQ applies the NEQ predicate on the "situation_id" field.
-func SituationIDNEQ(v uuid.UUID) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldNEQ(FieldSituationID, v))
-}
-
-// SituationIDIn applies the In predicate on the "situation_id" field.
-func SituationIDIn(vs ...uuid.UUID) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldIn(FieldSituationID, vs...))
-}
-
-// SituationIDNotIn applies the NotIn predicate on the "situation_id" field.
-func SituationIDNotIn(vs ...uuid.UUID) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldNotIn(FieldSituationID, vs...))
-}
-
-// SituationIDIsNil applies the IsNil predicate on the "situation_id" field.
-func SituationIDIsNil() predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldIsNull(FieldSituationID))
-}
-
-// SituationIDNotNil applies the NotNil predicate on the "situation_id" field.
-func SituationIDNotNil() predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldNotNull(FieldSituationID))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
@@ -548,27 +513,56 @@ func HasInstancesWith(preds ...predicate.AlertInstance) predicate.AlertEpisode {
 	})
 }
 
-// HasSituation applies the HasEdge predicate on the "situation" edge.
-func HasSituation() predicate.AlertEpisode {
+// HasSituations applies the HasEdge predicate on the "situations" edge.
+func HasSituations() predicate.AlertEpisode {
 	return predicate.AlertEpisode(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, SituationTable, SituationColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, SituationsTable, SituationsPrimaryKey...),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Situation
-		step.Edge.Schema = schemaConfig.AlertEpisode
+		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSituationWith applies the HasEdge predicate on the "situation" edge with a given conditions (other predicates).
-func HasSituationWith(preds ...predicate.Situation) predicate.AlertEpisode {
+// HasSituationsWith applies the HasEdge predicate on the "situations" edge with a given conditions (other predicates).
+func HasSituationsWith(preds ...predicate.Situation) predicate.AlertEpisode {
 	return predicate.AlertEpisode(func(s *sql.Selector) {
-		step := newSituationStep()
+		step := newSituationsStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Situation
-		step.Edge.Schema = schemaConfig.AlertEpisode
+		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSituationLinks applies the HasEdge predicate on the "situation_links" edge.
+func HasSituationLinks() predicate.AlertEpisode {
+	return predicate.AlertEpisode(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, SituationLinksTable, SituationLinksColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AlertEpisodeSituation
+		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSituationLinksWith applies the HasEdge predicate on the "situation_links" edge with a given conditions (other predicates).
+func HasSituationLinksWith(preds ...predicate.AlertEpisodeSituation) predicate.AlertEpisode {
+	return predicate.AlertEpisode(func(s *sql.Selector) {
+		step := newSituationLinksStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AlertEpisodeSituation
+		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

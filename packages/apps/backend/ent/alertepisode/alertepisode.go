@@ -27,8 +27,6 @@ const (
 	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldAlertDefinitionID holds the string denoting the alert_definition_id field in the database.
 	FieldAlertDefinitionID = "alert_definition_id"
-	// FieldSituationID holds the string denoting the situation_id field in the database.
-	FieldSituationID = "situation_id"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldStartedAt holds the string denoting the started_at field in the database.
@@ -45,8 +43,10 @@ const (
 	EdgeAlertDefinition = "alert_definition"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
 	EdgeInstances = "instances"
-	// EdgeSituation holds the string denoting the situation edge name in mutations.
-	EdgeSituation = "situation"
+	// EdgeSituations holds the string denoting the situations edge name in mutations.
+	EdgeSituations = "situations"
+	// EdgeSituationLinks holds the string denoting the situation_links edge name in mutations.
+	EdgeSituationLinks = "situation_links"
 	// Table holds the table name of the alertepisode in the database.
 	Table = "alert_episodes"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -77,13 +77,18 @@ const (
 	InstancesInverseTable = "alert_instances"
 	// InstancesColumn is the table column denoting the instances relation/edge.
 	InstancesColumn = "alert_episode_id"
-	// SituationTable is the table that holds the situation relation/edge.
-	SituationTable = "alert_episodes"
-	// SituationInverseTable is the table name for the Situation entity.
+	// SituationsTable is the table that holds the situations relation/edge. The primary key declared below.
+	SituationsTable = "alert_episode_situations"
+	// SituationsInverseTable is the table name for the Situation entity.
 	// It exists in this package in order to avoid circular dependency with the "situation" package.
-	SituationInverseTable = "situations"
-	// SituationColumn is the table column denoting the situation relation/edge.
-	SituationColumn = "situation_id"
+	SituationsInverseTable = "situations"
+	// SituationLinksTable is the table that holds the situation_links relation/edge.
+	SituationLinksTable = "alert_episode_situations"
+	// SituationLinksInverseTable is the table name for the AlertEpisodeSituation entity.
+	// It exists in this package in order to avoid circular dependency with the "alertepisodesituation" package.
+	SituationLinksInverseTable = "alert_episode_situations"
+	// SituationLinksColumn is the table column denoting the situation_links relation/edge.
+	SituationLinksColumn = "alert_episode_id"
 )
 
 // Columns holds all SQL columns for alertepisode fields.
@@ -94,12 +99,17 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldKnowledgeEntityID,
 	FieldAlertDefinitionID,
-	FieldSituationID,
 	FieldStatus,
 	FieldStartedAt,
 	FieldLastObservedAt,
 	FieldClosedAt,
 }
+
+var (
+	// SituationsPrimaryKey and SituationsColumn2 are the table columns denoting the
+	// primary key for the situations relation (M2M).
+	SituationsPrimaryKey = []string{"alert_episode_id", "situation_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -188,11 +198,6 @@ func ByAlertDefinitionID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAlertDefinitionID, opts...).ToFunc()
 }
 
-// BySituationID orders the results by the situation_id field.
-func BySituationID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSituationID, opts...).ToFunc()
-}
-
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
@@ -248,10 +253,31 @@ func ByInstances(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// BySituationField orders the results by situation field.
-func BySituationField(field string, opts ...sql.OrderTermOption) OrderOption {
+// BySituationsCount orders the results by situations count.
+func BySituationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSituationStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newSituationsStep(), opts...)
+	}
+}
+
+// BySituations orders the results by situations terms.
+func BySituations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSituationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySituationLinksCount orders the results by situation_links count.
+func BySituationLinksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSituationLinksStep(), opts...)
+	}
+}
+
+// BySituationLinks orders the results by situation_links terms.
+func BySituationLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSituationLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -282,10 +308,17 @@ func newInstancesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
 	)
 }
-func newSituationStep() *sqlgraph.Step {
+func newSituationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SituationInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, SituationTable, SituationColumn),
+		sqlgraph.To(SituationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, SituationsTable, SituationsPrimaryKey...),
+	)
+}
+func newSituationLinksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SituationLinksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SituationLinksTable, SituationLinksColumn),
 	)
 }

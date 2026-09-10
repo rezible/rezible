@@ -14,6 +14,8 @@ type SchemaConfig struct {
 	AgentTurn                                 string // AgentTurn table.
 	AlertDefinition                           string // AlertDefinition table.
 	AlertEpisode                              string // AlertEpisode table.
+	AlertEpisodeSituations                    string // AlertEpisode-situations->Situation table.
+	AlertEpisodeSituation                     string // AlertEpisodeSituation table.
 	AlertFeedback                             string // AlertFeedback table.
 	AlertInstance                             string // AlertInstance table.
 	AlertMetrics                              string // AlertMetrics table.

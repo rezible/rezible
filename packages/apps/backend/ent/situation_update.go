@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alertepisode"
+	"github.com/rezible/rezible/ent/alertepisodesituation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
@@ -242,6 +243,21 @@ func (_u *SituationUpdate) AddIncidents(v ...*Incident) *SituationUpdate {
 	return _u.AddIncidentIDs(ids...)
 }
 
+// AddAlertEpisodeLinkIDs adds the "alert_episode_links" edge to the AlertEpisodeSituation entity by IDs.
+func (_u *SituationUpdate) AddAlertEpisodeLinkIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.AddAlertEpisodeLinkIDs(ids...)
+	return _u
+}
+
+// AddAlertEpisodeLinks adds the "alert_episode_links" edges to the AlertEpisodeSituation entity.
+func (_u *SituationUpdate) AddAlertEpisodeLinks(v ...*AlertEpisodeSituation) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAlertEpisodeLinkIDs(ids...)
+}
+
 // Mutation returns the SituationMutation object of the builder.
 func (_u *SituationUpdate) Mutation() *SituationMutation {
 	return _u.mutation
@@ -314,6 +330,27 @@ func (_u *SituationUpdate) RemoveIncidents(v ...*Incident) *SituationUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveIncidentIDs(ids...)
+}
+
+// ClearAlertEpisodeLinks clears all "alert_episode_links" edges to the AlertEpisodeSituation entity.
+func (_u *SituationUpdate) ClearAlertEpisodeLinks() *SituationUpdate {
+	_u.mutation.ClearAlertEpisodeLinks()
+	return _u
+}
+
+// RemoveAlertEpisodeLinkIDs removes the "alert_episode_links" edge to AlertEpisodeSituation entities by IDs.
+func (_u *SituationUpdate) RemoveAlertEpisodeLinkIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.RemoveAlertEpisodeLinkIDs(ids...)
+	return _u
+}
+
+// RemoveAlertEpisodeLinks removes "alert_episode_links" edges to AlertEpisodeSituation entities.
+func (_u *SituationUpdate) RemoveAlertEpisodeLinks(v ...*AlertEpisodeSituation) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAlertEpisodeLinkIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -448,49 +485,70 @@ func (_u *SituationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.AlertEpisodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   situation.AlertEpisodesTable,
-			Columns: []string{situation.AlertEpisodesColumn},
+			Columns: situation.AlertEpisodesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertEpisode
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
+		createE := &AlertEpisodeSituationCreate{config: _u.config, mutation: newAlertEpisodeSituationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAlertEpisodesIDs(); len(nodes) > 0 && !_u.mutation.AlertEpisodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   situation.AlertEpisodesTable,
-			Columns: []string{situation.AlertEpisodesColumn},
+			Columns: situation.AlertEpisodesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertEpisode
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AlertEpisodeSituationCreate{config: _u.config, mutation: newAlertEpisodeSituationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.AlertEpisodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   situation.AlertEpisodesTable,
-			Columns: []string{situation.AlertEpisodesColumn},
+			Columns: situation.AlertEpisodesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertEpisode
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AlertEpisodeSituationCreate{config: _u.config, mutation: newAlertEpisodeSituationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
@@ -616,6 +674,54 @@ func (_u *SituationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AlertEpisodeLinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.AlertEpisodeLinksTable,
+			Columns: []string{situation.AlertEpisodeLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisodesituation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAlertEpisodeLinksIDs(); len(nodes) > 0 && !_u.mutation.AlertEpisodeLinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.AlertEpisodeLinksTable,
+			Columns: []string{situation.AlertEpisodeLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisodesituation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AlertEpisodeLinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.AlertEpisodeLinksTable,
+			Columns: []string{situation.AlertEpisodeLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisodesituation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -852,6 +958,21 @@ func (_u *SituationUpdateOne) AddIncidents(v ...*Incident) *SituationUpdateOne {
 	return _u.AddIncidentIDs(ids...)
 }
 
+// AddAlertEpisodeLinkIDs adds the "alert_episode_links" edge to the AlertEpisodeSituation entity by IDs.
+func (_u *SituationUpdateOne) AddAlertEpisodeLinkIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.AddAlertEpisodeLinkIDs(ids...)
+	return _u
+}
+
+// AddAlertEpisodeLinks adds the "alert_episode_links" edges to the AlertEpisodeSituation entity.
+func (_u *SituationUpdateOne) AddAlertEpisodeLinks(v ...*AlertEpisodeSituation) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAlertEpisodeLinkIDs(ids...)
+}
+
 // Mutation returns the SituationMutation object of the builder.
 func (_u *SituationUpdateOne) Mutation() *SituationMutation {
 	return _u.mutation
@@ -924,6 +1045,27 @@ func (_u *SituationUpdateOne) RemoveIncidents(v ...*Incident) *SituationUpdateOn
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveIncidentIDs(ids...)
+}
+
+// ClearAlertEpisodeLinks clears all "alert_episode_links" edges to the AlertEpisodeSituation entity.
+func (_u *SituationUpdateOne) ClearAlertEpisodeLinks() *SituationUpdateOne {
+	_u.mutation.ClearAlertEpisodeLinks()
+	return _u
+}
+
+// RemoveAlertEpisodeLinkIDs removes the "alert_episode_links" edge to AlertEpisodeSituation entities by IDs.
+func (_u *SituationUpdateOne) RemoveAlertEpisodeLinkIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.RemoveAlertEpisodeLinkIDs(ids...)
+	return _u
+}
+
+// RemoveAlertEpisodeLinks removes "alert_episode_links" edges to AlertEpisodeSituation entities.
+func (_u *SituationUpdateOne) RemoveAlertEpisodeLinks(v ...*AlertEpisodeSituation) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAlertEpisodeLinkIDs(ids...)
 }
 
 // Where appends a list predicates to the SituationUpdate builder.
@@ -1088,49 +1230,70 @@ func (_u *SituationUpdateOne) sqlSave(ctx context.Context) (_node *Situation, er
 	}
 	if _u.mutation.AlertEpisodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   situation.AlertEpisodesTable,
-			Columns: []string{situation.AlertEpisodesColumn},
+			Columns: situation.AlertEpisodesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertEpisode
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
+		createE := &AlertEpisodeSituationCreate{config: _u.config, mutation: newAlertEpisodeSituationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAlertEpisodesIDs(); len(nodes) > 0 && !_u.mutation.AlertEpisodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   situation.AlertEpisodesTable,
-			Columns: []string{situation.AlertEpisodesColumn},
+			Columns: situation.AlertEpisodesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertEpisode
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AlertEpisodeSituationCreate{config: _u.config, mutation: newAlertEpisodeSituationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.AlertEpisodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   situation.AlertEpisodesTable,
-			Columns: []string{situation.AlertEpisodesColumn},
+			Columns: situation.AlertEpisodesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertEpisode
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AlertEpisodeSituationCreate{config: _u.config, mutation: newAlertEpisodeSituationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
@@ -1256,6 +1419,54 @@ func (_u *SituationUpdateOne) sqlSave(ctx context.Context) (_node *Situation, er
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AlertEpisodeLinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.AlertEpisodeLinksTable,
+			Columns: []string{situation.AlertEpisodeLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisodesituation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAlertEpisodeLinksIDs(); len(nodes) > 0 && !_u.mutation.AlertEpisodeLinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.AlertEpisodeLinksTable,
+			Columns: []string{situation.AlertEpisodeLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisodesituation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AlertEpisodeLinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.AlertEpisodeLinksTable,
+			Columns: []string{situation.AlertEpisodeLinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisodesituation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisodeSituation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

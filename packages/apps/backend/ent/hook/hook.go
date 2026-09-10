@@ -93,6 +93,18 @@ func (f AlertEpisodeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertEpisodeMutation", m)
 }
 
+// The AlertEpisodeSituationFunc type is an adapter to allow the use of ordinary
+// function as AlertEpisodeSituation mutator.
+type AlertEpisodeSituationFunc func(context.Context, *ent.AlertEpisodeSituationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AlertEpisodeSituationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AlertEpisodeSituationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertEpisodeSituationMutation", m)
+}
+
 // The AlertFeedbackFunc type is an adapter to allow the use of ordinary
 // function as AlertFeedback mutator.
 type AlertFeedbackFunc func(context.Context, *ent.AlertFeedbackMutation) (ent.Value, error)
