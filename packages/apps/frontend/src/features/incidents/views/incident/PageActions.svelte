@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { mdiChevronDown, mdiCalendar, mdiPresentationPlay } from "@mdi/js";
+	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
+	import RiSlideshowLine from "remixicon-svelte/icons/slideshow-line";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/common/icon/Icon.svelte";
 </script>
 
 <div class="flex gap-2">
 	<Button color="default">
 		Present
-		<Icon data={mdiPresentationPlay} />
+		<RiSlideshowLine class="" aria-hidden="true" />
 	</Button>
 
 	<!-- <Button variant="fill-light" color="default">
 		Schedule Review Meeting
-		<Icon data={mdiCalendar} />
+		<RiCalendarLine class="" aria-hidden="true" />
 	</Button>
 
 	<Button variant="fill-light" color="default">
 		More Actions
-		<Icon data={mdiChevronDown} />
+		<RiArrowDownSLine class="" aria-hidden="true" />
 	</Button> -->
 </div>

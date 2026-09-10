@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Icon from "$components/common/icon/Icon.svelte";
-	import { mdiShape } from "@mdi/js";
+	import RiShapeLine from "remixicon-svelte/icons/shape-line";
 	import TiptapEditor from "$src/components/tiptap-editor/TiptapEditor.svelte";
 	import { createMutation } from "@tanstack/svelte-query";
 	import { onMount } from "svelte";
@@ -22,11 +21,7 @@
 	import DateTimePickerField from "$src/components/forms/date-time-field/DateTimePickerField.svelte";
 
 	import { createMentionEditor } from "$src/components/tiptap-editor/editors";
-	import {
-		getIconForIncidentMilestoneKind,
-		getNextOrderedMilestone,
-		getPreviousOrderedMilestone,
-	} from "./milestones";
+	import { getNextOrderedMilestone, getPreviousOrderedMilestone } from "./milestones";
 	import { useIncidentView } from "$features/incidents/views/incident";
 	import { watch } from "runed";
 	import { useIncidentTimelineController } from "../controller.svelte";
@@ -173,14 +168,13 @@
 	/>
 
 	<span>kind field</span>
-	<!-- <Field label="Kind" icon={mdiShape}>
+	<!-- <Field label="Kind" icon={RiShapeLine}>
 		<ToggleGroup bind:value={kind} variant="fill" inset class="w-full">
 			{#each milestoneKindOptions as opt}
 				{#if !opt.unique || !existingKinds.has(opt.value)}
 					<ToggleOption value={opt.value}>
 						<Tooltip title={opt.hint}>
 							<span class="flex items-center justify-center gap-2 px-2">
-								<Icon data={getIconForIncidentMilestoneKind(opt.value)} />
 								{opt.label}
 							</span>
 						</Tooltip>

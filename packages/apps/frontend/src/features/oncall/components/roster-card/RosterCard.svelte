@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import type { OncallRoster } from "$lib/api";
-	import { mdiChevronRight } from "@mdi/js";
+	import RiArrowRightSLine from "remixicon-svelte/icons/arrow-right-s-line";
 	import { Button } from "$components/ui/button";
 
 	type Props = {
@@ -16,7 +16,7 @@
 			<Avatar kind="roster" size={32} id={roster.id} />
 		</svelte:fragment>
 		<div slot="actions">
-			<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
+			<Button icon={RiArrowRightSLine} class="p-2 text-surface-content/50" />
 		</div>
 	</ListItem-->
 </a>

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { mdiChevronRight, mdiPencil } from "@mdi/js";
+	import RiArrowRightSLine from "remixicon-svelte/icons/arrow-right-s-line";
+	import RiPencilLine from "remixicon-svelte/icons/pencil-line";
 	import Header from "$src/components/layout/header/Header.svelte";
 	import { Button } from "$components/ui/button";
 </script>

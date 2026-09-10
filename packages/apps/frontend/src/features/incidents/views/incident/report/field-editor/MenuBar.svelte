@@ -1,30 +1,30 @@
 <script lang="ts">
-	import {
-		mdiCodeBlockTags,
-		mdiCodeTags,
-		mdiFormatBold,
-		mdiFormatItalic,
-		mdiFormatListBulleted,
-		mdiFormatListNumbered,
-		mdiFormatQuoteOpen,
-		mdiText,
-		mdiFormatHeader1,
-		mdiFormatHeader2,
-		mdiChevronDown,
-		mdiFormatListCheckbox,
-	} from "@mdi/js";
-	import Icon from "$components/common/icon/Icon.svelte";
 	import { Button } from "$components/ui/button";
+	import type { Component } from "svelte";
+
+	import RiCodeBoxLine from "remixicon-svelte/icons/code-box-line";
+	import RiCodeLine from "remixicon-svelte/icons/code-line";
+	import RiBold from "remixicon-svelte/icons/bold";
+	import RiItalic from "remixicon-svelte/icons/italic";
+	import RiListUnordered from "remixicon-svelte/icons/list-unordered";
+	import RiListOrdered from "remixicon-svelte/icons/list-ordered";
+	import RiDoubleQuotesL from "remixicon-svelte/icons/double-quotes-l";
+	import RiText from "remixicon-svelte/icons/text";
+	import RiH1 from "remixicon-svelte/icons/h-1";
+	import RiH2 from "remixicon-svelte/icons/h-2";
+	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
+	import RiListCheck2 from "remixicon-svelte/icons/list-check-2";
+	
 	import { activeEditor, activeStatus } from "../activeEditor.svelte";
 
 	const getIconForStatus = () => {
-		if (activeStatus.paragraph) return mdiText;
-		if (activeStatus.heading1) return mdiFormatHeader1;
-		if (activeStatus.heading2) return mdiFormatHeader2;
-		return mdiText;
+		if (activeStatus.paragraph) return RiText;
+		if (activeStatus.heading1) return RiH1;
+		if (activeStatus.heading2) return RiH2;
+		return RiText;
 	};
 	// let lastFocusedStatus = $state()
-	let formatIcon = $state(mdiText);
+	let formatIcon = $state(RiText);
 	$effect(() => {
 		if (!activeStatus.focused) return;
 		formatIcon = getIconForStatus();
@@ -49,32 +49,32 @@
 			variant={open ? "fill-light" : "text"}
 			rounded={false}
 		>
-			<Icon data={mdiChevronDown} />
+			<RiArrowDownSLine class="" aria-hidden="true" />
 
 			<Menu {open} on:close={toggleOff}>
 				{@render formatMenuItem(
 					"Regular Text",
 					activeStatus.paragraph,
-					mdiText,
+					RiText,
 					runCmd((c) => c.setParagraph())
 				)}
 				{@render formatMenuItem(
 					"Heading",
 					activeStatus.heading1,
-					mdiFormatHeader1,
+					RiH1,
 					runCmd((c) => c.toggleHeading({ level: 1 }))
 				)}
 				{@render formatMenuItem(
 					"Subheading",
 					activeStatus.heading2,
-					mdiFormatHeader2,
+					RiH2,
 					runCmd((c) => c.toggleHeading({ level: 2 }))
 				)}
 			</Menu>
 		</Button>
 	</Toggle-->
 
-	{#snippet markButton(tooltip: string, active: boolean, icon: string, cmd: VoidFunction)}
+	{#snippet markButton(tooltip: string, active: boolean, icon: Component, cmd: VoidFunction)}
 		<Button color={active ? "secondary" : "default"} onclick={() => cmd()}>{tooltip}</Button>
 	{/snippet}
 
@@ -82,19 +82,19 @@
 		{@render markButton(
 			"Bold",
 			activeStatus.bold,
-			mdiFormatBold,
+			RiBold,
 			runCmd((cmd) => cmd.toggleMark("bold"))
 		)}
 		{@render markButton(
 			"Italic",
 			activeStatus.italic,
-			mdiFormatItalic,
+			RiItalic,
 			runCmd((cmd) => cmd.toggleMark("italic"))
 		)}
 		{@render markButton(
 			"Code",
 			activeStatus.code,
-			mdiCodeTags,
+			RiCodeLine,
 			runCmd((cmd) => cmd.toggleMark("code"))
 		)}
 	</div>
@@ -104,13 +104,13 @@
 		{@render markButton(
 			"Code Block",
 			activeStatus.codeBlock,
-			mdiCodeBlockTags,
+			RiCodeBoxLine,
 			runCmd((cmd) => cmd.toggleCodeBlock())
 		)}
 		{@render markButton(
 			"Quote",
 			activeStatus.blockquote,
-			mdiFormatQuoteOpen,
+			RiDoubleQuotesL,
 			runCmd((cmd) => cmd.toggleBlockquote())
 		)}
 	</div>
@@ -119,26 +119,26 @@
 		{@render markButton(
 			"Numbered List",
 			activeStatus.orderedList,
-			mdiFormatListNumbered,
+			RiListOrdered,
 			runCmd((cmd) => cmd.toggleOrderedList())
 		)}
 		{@render markButton(
 			"Bullet List",
 			activeStatus.bulletList,
-			mdiFormatListBulleted,
+			RiListUnordered,
 			runCmd((cmd) => cmd.toggleBulletList())
 		)}
 		{@render markButton(
 			"Task List",
 			activeStatus.taskList,
-			mdiFormatListCheckbox,
+			RiListCheck2,
 			runCmd((cmd) => cmd.toggleTaskList())
 		)}
 	</div>
 	-->
 
 	<!--Button
-		icon={mdiBug}
+		icon={RiBugLine}
 		rounded={false}
 		onclick={() => {
 			if (activeEditor.editor) console.log(activeEditor.editor.getJSON());

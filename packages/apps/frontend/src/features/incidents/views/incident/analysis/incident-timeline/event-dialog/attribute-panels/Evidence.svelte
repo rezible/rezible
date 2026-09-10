@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { Component } from "svelte";
 	import { v4 as uuidv4 } from "uuid";
-	import { mdiPlus, mdiSlack, mdiWeb } from "@mdi/js";
-	import Icon from "$components/common/icon/Icon.svelte";
+	import RiAddLine from "remixicon-svelte/icons/add-line";
 	import { Button } from "$components/ui/button";
 	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import Slack from "./data-sources/Slack.svelte";
@@ -12,16 +11,16 @@
 
 	const attributes = useEventDialogAttributes();
 
-	type MenuOption<T> = { label: string; value: T; icon: string };
+	type MenuOption<T> = { label: string; value: T; };
 
 	type DataSourceComponent = Component<{ dataValue: string }, Record<string, never>, "dataValue">;
 	type DataSourceMenuOption = MenuOption<string> & { component: DataSourceComponent };
 	const dataSourceOptions: DataSourceMenuOption[] = [
-		{ value: "slack", label: "Slack", icon: mdiSlack, component: Slack },
-		// { value: "github", label: "Github", icon: mdiGithub, component: Github },
-		// { value: "metric", label: "Metric", icon: mdiMetric, component: Metric },
-		// { value: "log", label: "Log", icon: mdiLog, component: Log },
-		{ value: "url", label: "Web URL", icon: mdiWeb, component: Url },
+		{ value: "slack", label: "Slack", component: Slack },
+		// { value: "github", label: "Github", icon: RiGithubFill, component: Github },
+		// { value: "metric", label: "Metric", icon: RiLineChartLine, component: Metric },
+		// { value: "log", label: "Log", icon: RiFileList3Line, component: Log },
+		{ value: "url", label: "Web URL", component: Url },
 	];
 
 	let editing = $state<TimelineEntryEvidence>();
@@ -94,8 +93,8 @@
 				noShadow
 			>
 				<div slot="actions">
-					<Button icon={mdiPencil} iconOnly onclick={() => setEditing(ev)} />
-					<Button icon={mdiTrashCan} iconOnly onclick={() => confirmDelete(ev)} />
+					<Button icon={RiPencilLine} iconOnly onclick={() => setEditing(ev)} />
+					<Button icon={RiDeleteBinLine} iconOnly onclick={() => confirmDelete(ev)} />
 				</div>
 			</ListItem> -->
 		{/each}
@@ -103,7 +102,7 @@
 		<Button color="primary" onclick={setAddingNew}>
 			<span class="flex items-center gap-2 text-primary-content">
 				Add Evidence
-				<Icon data={mdiPlus} />
+				<RiAddLine class="" aria-hidden="true" />
 			</span>
 		</Button>
 	{/if}

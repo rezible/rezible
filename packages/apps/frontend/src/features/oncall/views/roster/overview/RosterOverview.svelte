@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { mdiChartBar } from "@mdi/js";
-	import Icon from "$components/common/icon/Icon.svelte";
+	import RiBarChart2Line from "remixicon-svelte/icons/bar-chart-2-line";
 	import { getOncallRosterMetricsOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import Header from "$src/components/layout/header/Header.svelte";
@@ -23,7 +22,7 @@
 		<div class="p-2 flex flex-col gap-2 border border-surface-content/10 rounded p-2">
 			<Header title="Key Metrics" subheading="Last 30 days" classes={{ root: "text-lg font-medium" }}>
 				{#snippet avatar()}
-					<Icon data={mdiChartBar} size={38} classes={{ root: "text-primary-300" }} />
+					<RiBarChart2Line aria-hidden="true" />
 				{/snippet}
 			</Header>
 
@@ -31,15 +30,15 @@
 				<div class="flex gap-2 flex-wrap">
 					<!-- <MetricCard
 						title="Health Score"
-						icon={mdiHeartPulse}
+						icon={RiHeartPulseLine}
 						metric={metrics.healthScore}
 						comparison={{ value: .44 }}
 					/>
-					<MetricCard title="Incidents" icon={mdiFire} metric={metrics.incidents} />
-					<MetricCard title="Alerts" icon={mdiBellAlert} metric={metrics.alerts} />
+					<MetricCard title="Incidents" icon={RiFireLine} metric={metrics.incidents} />
+					<MetricCard title="Alerts" icon={RiNotification2Line} metric={metrics.alerts} />
 					<MetricCard
 						title="Alert Actionability"
-						icon={mdiBellBadge}
+						icon={RiNotificationBadgeLine}
 						metric="{metrics.alertActionability * 100}%"
 					/> -->
 				</div>

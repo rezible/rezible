@@ -10,8 +10,7 @@
 		differenceInMinutes,
 	} from "date-fns";
 	import ShiftProgressCircle from "./ShiftProgressCircle.svelte";
-	import Icon from "$components/common/icon/Icon.svelte";
-	import { mdiChevronRight } from "@mdi/js";
+	import RiArrowRightSLine from "remixicon-svelte/icons/arrow-right-s-line";
 	import { cn } from "$lib/utils";
 	import { Button } from "$components/ui/button";
 
@@ -107,7 +106,7 @@
 		<Button href="/shifts/{shift.id}">
 			<span class="flex items-center group-hover:text-success">
 				View
-				<Icon data={mdiChevronRight} />
+				<RiArrowRightSLine class="" aria-hidden="true" />
 			</span>
 		</Button>
 	</div>

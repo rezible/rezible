@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/common/icon/Icon.svelte";
-	import { mdiChevronDown, mdiChevronUp } from "@mdi/js";
+	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
+	import RiArrowUpSLine from "remixicon-svelte/icons/arrow-up-s-line";
 
 	import { initIncidentAnalysisController } from "./controller.svelte";
 	import { initSystemAnalysisController, SystemAnalysisDiagram } from "$components/system-analysis";
@@ -29,6 +29,7 @@
 </div>
 
 {#snippet toggleTimelineButton(hide: boolean)}
+	{@const ButtonIcon = hide ? RiArrowDownSLine : RiArrowUpSLine}
 	<div
 		class="absolute left-2 flex items-center h-10"
 		class:top-2={hide}
@@ -42,7 +43,7 @@
 			}}
 		>
 			{hide ? "Hide" : "Show"} Timeline
-			<Icon data={hide ? mdiChevronDown : mdiChevronUp} />
+			<ButtonIcon aria-hidden="true" />
 		</Button>
 	</div>
 {/snippet}

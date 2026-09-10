@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { createMutation } from "@tanstack/svelte-query";
-	import { mdiSend, mdiPhoneForward } from "@mdi/js";
+	import RiSendPlaneLine from "remixicon-svelte/icons/send-plane-line";
 	import { sendOncallShiftHandoverMutation } from "$lib/api";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/common/icon/Icon.svelte";
 	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import { useOncallShiftViewController } from "$features/oncall/views/shift";
 	import { ShiftHandoverEditorState } from "$features/oncall/components/shift-handover-content/state.svelte";
@@ -49,7 +48,7 @@
 				{nextUser?.attributes.name ?? ""}
 				<Avatar kind="user" size={22} id={nextUser?.id ?? ""} />
 			</span>
-			<Icon data={mdiSend} />
+			<RiSendPlaneLine class="" aria-hidden="true" />
 		{/if}
 	</span>
 </Button>

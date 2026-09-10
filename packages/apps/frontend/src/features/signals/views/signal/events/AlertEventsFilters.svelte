@@ -1,6 +1,6 @@
 <script lang="ts">
 	import RosterSelectField from "$src/components/forms/roster-select-field/RosterSelectField.svelte";
-	import { mdiCalendarRange } from "@mdi/js";
+	import RiCalendarLine from "remixicon-svelte/icons/calendar-line";
 
 	type Props = {
 		rosterId?: string;
@@ -21,7 +21,7 @@
 		classes={{
 			field: { root: "gap-0", container: "pl-0 flex items-center h-full", prepend: "[&>span]:mr-2" },
 		}}
-		icon={mdiCalendarRange}
+		icon={RiCalendarLine}
 		bind:value={dateRange}
 	/> -->
 </div>

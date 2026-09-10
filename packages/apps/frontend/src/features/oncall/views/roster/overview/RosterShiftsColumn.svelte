@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/common/icon/Icon.svelte";
 	import { listOncallShiftsOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import Header from "$src/components/layout/header/Header.svelte";
-	import { mdiArrowRight } from "@mdi/js";
+	import RiArrowRightLine from "remixicon-svelte/icons/arrow-right-line";
 	import ShiftCard from "$features/oncall/components/shift-card/ShiftCard.svelte";
 	import { useOncallRosterViewController } from "$features/oncall/views/roster";
 
@@ -25,7 +24,7 @@
 			{#snippet actions()}
 				<Button href={`/rosters/${rosterId}/shifts`}>
 					View All
-					<Icon data={mdiArrowRight} classes={{ root: "ml-1 h-4 w-4" }} />
+					<RiArrowRightLine aria-hidden="true" />
 				</Button>
 			{/snippet}
 		</Header>

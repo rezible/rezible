@@ -106,7 +106,7 @@
 					</ToggleGroup>
 				</Field>
 				{#if formData.repeats !== "once"}
-					<Icon data={mdiArrowRight} classes={{ root: "text-secondary" }} />
+					<RiArrowRightLine aria-hidden="true" />
 				{/if}
 			</div>
 

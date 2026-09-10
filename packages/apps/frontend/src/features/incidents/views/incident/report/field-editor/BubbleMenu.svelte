@@ -5,7 +5,8 @@
 <script lang="ts">
 	import { Editor } from "$src/components/tiptap-editor/TiptapEditor.svelte";
 	import { Button } from "$components/ui/button";
-	import { mdiComment, mdiMarker } from "@mdi/js";
+	import RiChat1Line from "remixicon-svelte/icons/chat-1-line";
+	import RiMarkPenLine from "remixicon-svelte/icons/mark-pen-line";
 	import { PluginKey, type Selection } from "@tiptap/pm/state";
 	import { BubbleMenuPlugin } from "@tiptap/extension-bubble-menu";
 	import { onMount } from "svelte";

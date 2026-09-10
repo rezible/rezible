@@ -70,7 +70,7 @@
 </script>
 
 <!--div>
-	<Field let:id icon={mdiCalendar} {label}>
+	<Field let:id icon={RiCalendarLine} {label}>
 		<span slot="prepend">
 			<input type="hidden" {name} value={current} />
 		</span>

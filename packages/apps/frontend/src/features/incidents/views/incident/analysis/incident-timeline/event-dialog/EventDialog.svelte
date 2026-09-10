@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { mdiMagicStaff } from "@mdi/js";
+	import RiMagicLine from "remixicon-svelte/icons/magic-line";
 
-	import Icon from "$components/common/icon/Icon.svelte";
 	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import EventAttributesEditor from "./EventAttributesEditor.svelte";
 	import { useEventDialog } from "./controller.svelte";
@@ -26,7 +25,7 @@
 			<Button variant="fill-light" color="secondary">
 				<span class="flex gap-2 items-center">
 					AI Draft
-					<Icon data={mdiMagicStaff} />
+					<RiMagicLine class="" aria-hidden="true" />
 				</span>
 			</Button>
 		</div>

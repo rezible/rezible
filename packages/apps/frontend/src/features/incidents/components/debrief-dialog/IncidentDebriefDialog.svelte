@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mdiClose } from "@mdi/js";
+	import RiCloseLine from "remixicon-svelte/icons/close-line";
 	import type { IncidentDebrief } from "$lib/api";
 	import { Button } from "$components/ui/button";
 	import IncidentDebriefView from "./IncidentDebriefView.svelte";
@@ -24,7 +24,7 @@
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title="Debrief">
 			{#snippet actions()}
-				<Button onclick={() => close({ force: true })} iconOnly icon={mdiClose} />
+				<Button onclick={() => close({ force: true })} iconOnly icon={RiCloseLine} />
 			{/snippet}
 		</Header>
 	</div>

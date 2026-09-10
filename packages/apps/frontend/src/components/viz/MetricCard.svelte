@@ -1,17 +1,17 @@
 <script lang="ts">
-	import Icon from "$components/common/icon/Icon.svelte";
+	import type { Component } from "svelte";
 	import { formatDuration } from "date-fns";
 	import MetricComparisonLabel, { type MetricComparison } from "./MetricComparisonLabel.svelte";
 
 	type Props = {
 		title: string;
-		icon: string;
+		icon: Component;
 		metric: number | string;
 		format?: "percentage" | "duration" | "raw";
 		comparison?: MetricComparison;
 	};
 
-	const { title, icon, metric, format = "percentage", comparison }: Props = $props();
+	const { title, icon: MetricIcon, metric, format = "percentage", comparison }: Props = $props();
 
 	const formattedMetric = $derived.by(() => {
 		if (typeof metric === "string" || format === "raw") return metric;
@@ -25,7 +25,7 @@
 >
 	<div class="w-full flex justify-between gap-8 items-center">
 		<span class="text-neutral-content/60 leading-none">{title}</span>
-		<span class=""><Icon data={icon} /></span>
+		<span class=""><MetricIcon aria-hidden="true" /></span>
 	</div>
 	<div class="w-full flex gap-4 items-center justify-between">
 		<span class="text-3xl font-bold">{formattedMetric}</span>

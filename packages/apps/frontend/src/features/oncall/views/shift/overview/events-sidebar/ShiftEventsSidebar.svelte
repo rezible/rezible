@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mdiFilter } from "@mdi/js";
+	import RiFilterLine from "remixicon-svelte/icons/filter-line";
 	import { Button } from "$components/ui/button";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
 	import ShiftEventsList from "./ShiftEventsList.svelte";

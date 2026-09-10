@@ -2,7 +2,7 @@
 	import type { OncallShiftMetrics } from "$lib/api";
 	import ChartWithStats from "$components/viz/ChartWithStats.svelte";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
-	import { mdiFilter } from "@mdi/js";
+	import RiFilterLine from "remixicon-svelte/icons/filter-line";
 	import SectionCard from "./SectionCard.svelte";
 	import { Button } from "$components/ui/button";
 	import Header from "$src/components/layout/header/Header.svelte";

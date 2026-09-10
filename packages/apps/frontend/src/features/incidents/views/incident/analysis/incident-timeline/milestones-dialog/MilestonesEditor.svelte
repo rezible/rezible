@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { mdiFlagPlus, mdiPencil, mdiTrashCan } from "@mdi/js";
+	import RiFlagLine from "remixicon-svelte/icons/flag-line";
+	import RiPencilLine from "remixicon-svelte/icons/pencil-line";
+	import RiDeleteBinLine from "remixicon-svelte/icons/delete-bin-line";
 	import {
 		deleteIncidentMilestoneMutation,
 		listIncidentMilestonesOptions,
@@ -12,11 +14,10 @@
 	import { useMilestonesDialog } from "./controller.svelte";
 
 	import MilestoneAttributesEditor from "./MilestoneAttributesEditor.svelte";
-	import { getIconForIncidentMilestoneKind, orderedMilestones } from "./milestones";
+	import { orderedMilestones } from "./milestones";
 
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/common/icon/Icon.svelte";
 
 	const milestonesDialog = useMilestonesDialog();
 
@@ -84,14 +85,14 @@
 						<div slot="actions">
 							<Button
 								iconOnly
-								icon={mdiPencil}
+								icon={RiPencilLine}
 								onclick={() => {
 									onEditClick(ms);
 								}}
 							/>
 							<Button
 								iconOnly
-								icon={mdiTrashCan}
+								icon={RiDeleteBinLine}
 								onclick={() => {
 									onDeleteClick(ms);
 								}}
@@ -103,7 +104,7 @@
 				<Button onclick={onAddClick}>
 					<span class="flex gap-2 items-center">
 						Add Milestone
-						<Icon data={mdiFlagPlus} />
+						<RiFlagLine class="" aria-hidden="true" />
 					</span>
 				</Button>
 			</div>

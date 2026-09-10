@@ -4,7 +4,7 @@
 		type IncidentDebrief,
 		type IncidentDebriefMessage,
 	} from "$lib/api";
-	import { mdiArrowRight } from "@mdi/js";
+	import RiArrowRightLine from "remixicon-svelte/icons/arrow-right-line";
 	import { createMutation } from "@tanstack/svelte-query";
 	import { Button } from "$components/ui/button";
 

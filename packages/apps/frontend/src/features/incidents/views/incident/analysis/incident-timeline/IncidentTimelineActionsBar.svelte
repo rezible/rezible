@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { mdiFlagPlus, mdiTimelinePlus } from "@mdi/js";
+	import RiFlagLine from "remixicon-svelte/icons/flag-line";
+	import RiAddLine from "remixicon-svelte/icons/add-line";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/common/icon/Icon.svelte";
 
 	import { useMilestonesDialog } from "./milestones-dialog/controller.svelte";
 	import { useEventDialog } from "./event-dialog/controller.svelte";
@@ -21,14 +21,14 @@
 	>
 		<span class="flex items-center gap-2">
 			<span class="group-hover:inline hidden">Edit Milestones</span>
-			<Icon data={mdiFlagPlus} classes={{ root: "" }} />
+			<RiFlagLine aria-hidden="true" />
 		</span>
 	</Button>
 
 	<Button color="primary" onclick={() => eventDialog.setCreating()}>
 		<span class="flex items-center gap-2">
 			<span class="group-hover:inline hidden">Create Event</span>
-			<Icon data={mdiTimelinePlus} classes={{ root: "-rotate-90" }} />
+			<RiAddLine aria-hidden="true" />
 		</span>
 	</Button>
 </div>

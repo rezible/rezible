@@ -20,7 +20,7 @@
 						<span>-</span>
 					</div>
 					<div slot="actions">
-						<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
+						<Button icon={RiArrowRightSLine} class="p-2 text-surface-content/50" />
 					</div>
 				</ListItem> -->
 		</div>

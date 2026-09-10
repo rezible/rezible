@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { mdiAccount } from "@mdi/js";
-	import Icon from "$components/common/icon/Icon.svelte";
-
 	type Props = {
 		dataValue: string;
 	};
@@ -11,7 +8,6 @@
 
 	type Message = {
 		id: string;
-		avatar: string;
 		username: string;
 		content: string;
 	};
@@ -19,7 +15,6 @@
 		all: [
 			{
 				id: "foo",
-				avatar: mdiAccount,
 				username: "User Name",
 				content: "message content",
 			},
@@ -57,7 +52,7 @@
 				on:click={e => {e.preventDefault(); onSelected(msg.id)}}
 			>
 				<div slot="avatar" class="flex flex-col">
-					<Icon data={msg.avatar} />
+					<svelte:component this={msg.avatar} aria-hidden="true" />
 				</div>
 				<span slot="title" class="text-sm text-neutral-50 block">
 					{msg.username}

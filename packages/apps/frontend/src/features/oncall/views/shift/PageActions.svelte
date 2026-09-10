@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/common/icon/Icon.svelte";
-	import { mdiChevronLeft, mdiChevronRight } from "@mdi/js";
+	import RiArrowLeftSLine from "remixicon-svelte/icons/arrow-left-s-line";
+	import RiArrowRightSLine from "remixicon-svelte/icons/arrow-right-s-line";
 
 	type Props = {
 		previousId?: string;
@@ -13,7 +13,7 @@
 <div class="flex gap-2">
 	{#if previousId}
 		<Button href="/shifts/{previousId}">
-			<Icon data={mdiChevronLeft} />
+			<RiArrowLeftSLine class="" aria-hidden="true" />
 			<span class="">Previous Shift</span>
 		</Button>
 	{/if}
@@ -21,7 +21,7 @@
 	{#if nextId}
 		<Button href="/shifts/{nextId}">
 			<span class="">Next Shift</span>
-			<Icon data={mdiChevronRight} />
+			<RiArrowRightSLine class="" aria-hidden="true" />
 		</Button>
 	{/if}
 </div>

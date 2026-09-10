@@ -3,8 +3,7 @@
 	import { v4 as uuidv4 } from "uuid";
 	import { SvelteMap } from "svelte/reactivity";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/common/icon/Icon.svelte";
-	import { mdiPlus } from "@mdi/js";
+	import RiAddLine from "remixicon-svelte/icons/add-line";
 	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import { useEventDialogAttributes } from "./attributes.svelte";
 
@@ -135,7 +134,7 @@
 		<Button color="primary" onclick={() => (selecting = true)}>
 			<span class="flex items-center gap-2 text-primary-content">
 				Add Entity
-				<Icon data={mdiPlus} />
+				<RiAddLine class="" aria-hidden="true" />
 			</span>
 		</Button>
 	{/if}

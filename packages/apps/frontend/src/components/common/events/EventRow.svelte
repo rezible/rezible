@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Event, EventAnnotation } from "$lib/api";
-	import { mdiMenuDown } from "@mdi/js";
-	import Icon from "$components/common/icon/Icon.svelte";
+	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
 	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import { formatDate } from "date-fns";
 
@@ -29,7 +28,7 @@
 		>
 			<div class="flex gap-1 justify-between">
 				<Avatar kind="user" id={anno.attributes.creator.id} size={14} />
-				<Icon data={mdiMenuDown} size={14} />
+				<RiArrowDownSLine class="" aria-hidden="true" />
 			</div>
 			<div class="text-neutral-content/80 leading-none text-start truncate w-full">
 				{anno.attributes.notes}

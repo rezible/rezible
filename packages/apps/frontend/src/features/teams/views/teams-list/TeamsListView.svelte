@@ -25,7 +25,7 @@
 				<Avatar kind="team" size={32} id={team.id} />
 			</svelte:fragment>
 			<div slot="actions">
-				<Icon data={mdiChevronRight} size={24} classes={{root: "text-surface-content/50"}} />
+				<RiArrowRightSLine class="text-surface-content/50" aria-hidden="true" />
 			</div>
 		</ListItem-->
 	</a>

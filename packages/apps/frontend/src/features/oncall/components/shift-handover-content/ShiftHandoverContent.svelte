@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { mdiFormatBold, mdiFormatListBulleted } from "@mdi/js";
+	import RiBold from "remixicon-svelte/icons/bold";
+	import RiListUnordered from "remixicon-svelte/icons/list-unordered";
 	import { ShiftHandoverEditorState, type HandoverEditorSection } from "./state.svelte";
 	import TiptapEditor from "$src/components/tiptap-editor/TiptapEditor.svelte";
 	import type { ChainedCommands } from "@tiptap/core";

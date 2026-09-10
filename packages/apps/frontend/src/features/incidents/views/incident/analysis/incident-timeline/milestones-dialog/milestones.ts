@@ -1,30 +1,9 @@
 import type { IncidentMilestone, IncidentMilestoneAttributes } from "$lib/api";
 import { parseAbsolute, parseAbsoluteToLocal, type ZonedDateTime } from "@internationalized/date";
-import {
-	mdiAlertDecagram,
-	mdiAccountAlert,
-	mdiAccountEye,
-	mdiFireExtinguisher,
-	mdiTimelineClock,
-} from "@mdi/js";
 
 const kindOrder = ["impact", "detection", "investigation", "mitigation", "resolution"] as const;
 
 type IncidentMilestoneKind = IncidentMilestoneAttributes["kind"];
-export const getIconForIncidentMilestoneKind = (kind: IncidentMilestoneKind) => {
-	switch (kind) {
-		case "impact":
-			return mdiAlertDecagram;
-		case "detection":
-			return mdiAccountAlert;
-		case "investigation":
-			return mdiAccountEye;
-		case "mitigation":
-			return mdiFireExtinguisher;
-		case "resolution":
-			return mdiTimelineClock;
-	}
-};
 
 export const orderedMilestones = (ms: IncidentMilestone[]): IncidentMilestone[] => {
 	return ms.toSorted((a, b) => {

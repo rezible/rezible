@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { fly } from "svelte/transition";
-	import { mdiCircleMedium } from "@mdi/js";
-	import Icon from "$components/common/icon/Icon.svelte";
+	import RiCircleFill from "remixicon-svelte/icons/circle-fill";
 	import Header from "$src/components/layout/header/Header.svelte";
 
 	import { initIncidentSidebarController } from "./controller.svelte";
@@ -16,7 +15,7 @@
 		{#snippet title()}
 			<span class="flex text-lg gap-1 items-center">
 				Collaboration
-				<Icon data={mdiCircleMedium} classes={{ root: "opacity-70", path: controller.ctxColor }} />
+				<RiCircleFill aria-hidden="true" />
 			</span>
 		{/snippet}
 		{#snippet subheading()}

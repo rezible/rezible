@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/common/icon/Icon.svelte";
-	import { mdiChevronRight } from "@mdi/js";
+	import RiArrowRightSLine from "remixicon-svelte/icons/arrow-right-s-line";
 	import { listOncallShiftsOptions, type OncallShift } from "$lib/api";
 	import { formatDate, isFuture, isPast } from "date-fns";
 	import { getLocalTimeZone, parseAbsoluteToLocal } from "@internationalized/date";
@@ -60,7 +59,7 @@
 						<div class="text-sm text-surface-600">{formatDate(start, "yyyy-LL-dd")}</div>
 					</div>
 					<div class="justify-items-end">
-						<Icon data={mdiChevronRight} />
+						<RiArrowRightSLine class="" aria-hidden="true" />
 					</div>
 				</div>
 			</a>

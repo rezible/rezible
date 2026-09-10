@@ -1,5 +1,8 @@
 <script lang="ts" generics="T">
-	import { mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
+	import RiCheckLine from "remixicon-svelte/icons/check-line";
+	import RiPencilLine from "remixicon-svelte/icons/pencil-line";
+	import RiAddLine from "remixicon-svelte/icons/add-line";
+	import RiDeleteBinLine from "remixicon-svelte/icons/delete-bin-line";
 
 	type Props = {
 		title: string;
@@ -54,7 +57,7 @@
 				on:clear={() => {clearEditing()}}
 			>
 				<span slot="append">
-					<Button icon={mdiCheck} onclick={confirmEdit} />
+					<Button icon={RiCheckLine} onclick={confirmEdit} />
 				</span>
 			</TextField>
 		{:else}
@@ -65,8 +68,8 @@
 				noShadow
 			>
 				<div slot="actions">
-					<Button icon={mdiPencil} iconOnly onclick={() => {setEditing(i)}} />
-					<Button icon={mdiTrashCan} iconOnly onclick={() => {confirmDelete(i)}} />
+					<Button icon={RiPencilLine} iconOnly onclick={() => {setEditing(i)}} />
+					<Button icon={RiDeleteBinLine} iconOnly onclick={() => {confirmDelete(i)}} />
 				</div>
 			</ListItem>
 		{/if}
@@ -78,7 +81,7 @@
 	>
 		<span slot="append">
 			<Button
-				icon={mdiPlus}
+				icon={RiAddLine}
 				class="text-surface-content/50 p-2"
 				onclick={confirmAdd}
 				disabled={!newValue}

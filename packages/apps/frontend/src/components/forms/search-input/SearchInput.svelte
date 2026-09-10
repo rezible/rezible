@@ -15,6 +15,6 @@
 	labelPlacement="top"
 	on:change={(e) => (value = coerceValue(e.detail.inputValue))}
 	debounceChange={300}
-	iconRight={mdiMagnify}
+	iconRight={RiSearchLine}
 	...fieldProps
 /-->

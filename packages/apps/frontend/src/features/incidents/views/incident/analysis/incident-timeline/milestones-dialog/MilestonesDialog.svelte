@@ -2,7 +2,7 @@
 	import { Button } from "$components/ui/button";
 	import { useMilestonesDialog } from "./controller.svelte";
 	import MilestonesEditor from "./MilestonesEditor.svelte";
-	import { mdiClose } from "@mdi/js";
+	import RiCloseLine from "remixicon-svelte/icons/close-line";
 
 	const milestonesDialog = useMilestonesDialog();
 	const editAction = $derived(milestonesDialog.editingMilestone ? "Edit" : "Create");

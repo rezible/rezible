@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { mdiPlus } from "@mdi/js";
-	import Icon from "$components/common/icon/Icon.svelte";
+	import RiAddLine from "remixicon-svelte/icons/add-line";
 	import { Button } from "$components/ui/button";
 
 	// import { useIncidentCreateDialog } from "$features/incidents/components/create-incident-dialog";
@@ -14,6 +13,6 @@
 		}}
 	>
 		Create Incident
-		<Icon data={mdiPlus} />
+		<RiAddLine class="" aria-hidden="true" />
 	</Button>
 </div>

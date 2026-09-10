@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { mdiPlus } from "@mdi/js";
+	import RiAddLine from "remixicon-svelte/icons/add-line";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/common/icon/Icon.svelte";
 	import { v4 as uuidv4 } from "uuid";
 	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import { SvelteMap } from "svelte/reactivity";
@@ -117,8 +116,8 @@
 				noShadow
 			>
 				<div slot="actions" class="flex gap-2 items-center">
-					<Button icon={mdiTrashCan} iconOnly onclick={() => confirmRemoveFactor(f)} />
-					<Button icon={mdiPencil} iconOnly onclick={() => setEditing(f)} />
+					<Button icon={RiDeleteBinLine} iconOnly onclick={() => confirmRemoveFactor(f)} />
+					<Button icon={RiPencilLine} iconOnly onclick={() => setEditing(f)} />
 				</div>
 			</ListItem> -->
 		{/each}
@@ -126,7 +125,7 @@
 		<Button color="primary" onclick={() => setEditing()}>
 			<span class="flex items-center gap-2 text-primary-content">
 				Add Factor
-				<Icon data={mdiPlus} />
+				<RiAddLine class="" aria-hidden="true" />
 			</span>
 		</Button>
 	{/if}

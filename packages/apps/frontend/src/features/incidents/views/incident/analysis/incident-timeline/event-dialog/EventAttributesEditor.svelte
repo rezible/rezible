@@ -1,6 +1,11 @@
 <script lang="ts">
 	import type { Component } from "svelte";
-	import { mdiGraphOutline, mdiLayers, mdiLink, mdiStateMachine } from "@mdi/js";
+	
+	import RiNodeTree from "remixicon-svelte/icons/node-tree";
+	import RiStackLine from "remixicon-svelte/icons/stack-line";
+	import RiLink from "remixicon-svelte/icons/link";
+	import RiFlowChart from "remixicon-svelte/icons/flow-chart";
+
 	import Header from "$src/components/layout/header/Header.svelte";
 
 	import EventDetailsPanel from "./attribute-panels/EventDetails.svelte";
@@ -30,7 +35,7 @@
 				{@render componentTraitPanel(
 					"Decision Context",
 					"Document the options, constraints, and reasoning behind this choice",
-					mdiGraphOutline,
+					RiNodeTree,
 					DecisionContextPanel
 				)}
 			{/if}
@@ -38,28 +43,28 @@
 			{@render componentTraitPanel(
 				"Contributing Factors",
 				"Identify pressures and conditions that shaped this event",
-				mdiLayers,
+				RiStackLine,
 				ContributingFactorsPanel
 			)}
 
 			{@render componentTraitPanel(
 				"Evidence & Links",
 				"Add links to logs, metrics, discussions, and other supporting information",
-				mdiLink,
+				RiLink,
 				EvidencePanel
 			)}
 
 			{@render componentTraitPanel(
 				"System Context",
 				"Document the relevant system components and their conditions at this time",
-				mdiStateMachine,
+				RiFlowChart,
 				SystemContextPanel
 			)}
 		</div>
 	</div>
 </div>
 
-{#snippet componentTraitPanel(title: string, subheading: string, icon: string, PanelComponent: Component)}
+{#snippet componentTraitPanel(title: string, subheading: string, icon: Component, PanelComponent: Component)}
 	<div class="p-2 border rounded">
 		<!-- <Collapse open classes={{ root: "overflow-x-hidden", content: "p-2" }}>
 		<ListItem

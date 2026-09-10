@@ -1,11 +1,9 @@
 <script lang="ts">
-	import {
-		mdiLineScan,
-		mdiPhoneAlert,
-		mdiMoonWaxingCrescent,
-		mdiClipboardText,
-		mdiCalendarRange,
-	} from "@mdi/js";
+	import RiScanLine from "remixicon-svelte/icons/scan-line";
+	import RiPhoneFindLine from "remixicon-svelte/icons/phone-find-line";
+	import RiMoonLine from "remixicon-svelte/icons/moon-line";
+	import RiClipboardLine from "remixicon-svelte/icons/clipboard-line";
+	import RiCalendarLine from "remixicon-svelte/icons/calendar-line";
 	import { CalendarDate, getLocalTimeZone, now, type DateTimeDuration } from "@internationalized/date";
 	import MetricCard from "$src/components/viz/MetricCard.svelte";
 	import { useAlertViewController } from "$features/signals/views/signal";
@@ -53,33 +51,29 @@
 		value={dateRange} 
 		on:change={e => (dateRange = e.detail)} 
 		label="Date Range"
-		icon={mdiCalendarRange}
+		icon={RiCalendarLine}
 	/> -->
 
 	{#if metrics}
 		<div class="flex flex-col">
 			<h1>Events</h1>
 			<div class="flex gap-2 mb-2">
-				<MetricCard title="Trigger Events" icon={mdiLineScan} metric={metrics.triggers} />
-				<MetricCard title="Interrupts" icon={mdiPhoneAlert} metric={metrics.interrupts} />
-				<MetricCard
-					title="Night Interrupts"
-					icon={mdiMoonWaxingCrescent}
-					metric={metrics.nightInterrupts}
-				/>
+				<MetricCard title="Trigger Events" icon={RiScanLine} metric={metrics.triggers} />
+				<MetricCard title="Interrupts" icon={RiPhoneFindLine} metric={metrics.interrupts} />
+				<MetricCard title="Night Interrupts" icon={RiMoonLine} metric={metrics.nightInterrupts} />
 			</div>
 
 			<h1>Feedback</h1>
 			<div class="flex gap-2">
-				<MetricCard title="Feedback Given" icon={mdiClipboardText} metric={metrics.feedbacks} />
+				<MetricCard title="Feedback Given" icon={RiClipboardLine} metric={metrics.feedbacks} />
 				<MetricCard
 					title="Actionable"
-					icon={mdiClipboardText}
+					icon={RiClipboardLine}
 					metric={actionability}
 					format="percentage"
 				/>
-				<MetricCard title="Accurate (Yes/No/Unknown)" icon={mdiClipboardText} metric={accuracy} />
-				<MetricCard title="Documentation Available" icon={mdiClipboardText} metric={documentation} />
+				<MetricCard title="Accurate (Yes/No/Unknown)" icon={RiClipboardLine} metric={accuracy} />
+				<MetricCard title="Documentation Available" icon={RiClipboardLine} metric={documentation} />
 			</div>
 		</div>
 	{/if}

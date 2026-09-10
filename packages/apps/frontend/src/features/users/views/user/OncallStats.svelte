@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { mdiChevronRight, mdiFire, mdiPhone } from "@mdi/js";
+	import RiArrowRightSLine from "remixicon-svelte/icons/arrow-right-s-line";
+	import RiFireLine from "remixicon-svelte/icons/fire-line";
+	import RiPhoneLine from "remixicon-svelte/icons/phone-line";
 	import { formatDuration, minutesToHours, differenceInMinutes } from "date-fns";
 	import type { OncallShift } from "$lib/api";
 	import MetricCard from "$components/viz/MetricCard.svelte";
@@ -36,8 +38,8 @@
 	<Header title="Oncall" classes={{ title: "text-2xl", root: "" }} />
 
 	<div class="flex gap-2 flex-wrap">
-		<MetricCard title="Total Shifts" icon={mdiPhone} metric={totalShifts} />
-		<MetricCard title="Total Incidents" icon={mdiFire} metric={totalShifts} />
+		<MetricCard title="Total Shifts" icon={RiPhoneLine} metric={totalShifts} />
+		<MetricCard title="Total Incidents" icon={RiFireLine} metric={totalShifts} />
 	</div>
 
 	<div class="w-full h-0 border-b mt-2 mb-1"></div>
@@ -68,7 +70,7 @@
 				>
 			</svelte:fragment>
 			<div slot="actions">
-				<Icon data={mdiChevronRight} />
+				<RiArrowRightSLine class="" aria-hidden="true" />
 			</div>
 		</ListItem> -->
 	</a>

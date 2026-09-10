@@ -3,15 +3,16 @@
 		value: number;
 		averageMargin?: number;
 		positive?: boolean;
-		icon?: string;
 		deltaLabel?: string;
 		hint?: string;
 	};
 </script>
 
 <script lang="ts">
-	import { mdiArrowBottomRightThin, mdiArrowTopRightThin, mdiCircleMedium } from "@mdi/js";
-	import Icon from "$components/common/icon/Icon.svelte";
+	import type { Component } from "svelte";
+	import RiArrowRightDownLine from "remixicon-svelte/icons/arrow-right-down-line";
+	import RiArrowRightUpLine from "remixicon-svelte/icons/arrow-right-up-line";
+	import RiCircleFill from "remixicon-svelte/icons/circle-fill";
 
 	type Props = {
 		metricValue: number;
@@ -37,12 +38,12 @@
 		return "avg";
 	});
 
-	const deltaIcons: Record<DeltaCategory, string> = {
-		above: mdiArrowTopRightThin,
-		below: mdiArrowBottomRightThin,
-		avg: "",
+	const deltaIcons: Record<DeltaCategory, Component | undefined> = {
+		above: RiArrowRightUpLine,
+		below: RiArrowRightDownLine,
+		avg: undefined,
 	};
-	const deltaIcon = $derived(deltaIcons[category]);
+	const DeltaIcon = $derived(deltaIcons[category]);
 	const deltaText = $derived.by(() => {
 		if (category === "avg") return "Average";
 		if (comparison.value === 0 || format === "raw") return `${metricValue}`;
@@ -61,13 +62,13 @@
 
 <div class="flex flex-col items-center gap-2 py-1 px-2 border rounded-full {categoryClasses}">
 	<div class="flex gap-1 text-sm items-center">
-		{#if deltaIcon}<Icon data={deltaIcon} size={18} />{/if}
+		{#if DeltaIcon}<DeltaIcon class="size-[18px]" aria-hidden="true" />{/if}
 		<span>{deltaText}</span>
 	</div>
 
 	{#if comparison.hint}
 		<div class="text-warning">
-			<Icon data={mdiCircleMedium} size={16} classes={{ root: "border rounded-full border-warning" }} />
+			<RiCircleFill class="size-4 border rounded-full border-warning" aria-hidden="true" />
 			<!--div class="text-sm text-gray-500 mt-1">
 				Potential sleep disruptions
 			</div-->

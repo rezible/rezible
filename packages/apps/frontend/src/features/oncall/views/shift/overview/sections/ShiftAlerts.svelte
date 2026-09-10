@@ -9,7 +9,7 @@
 
 	import * as echarts from "echarts";
 	import EChart, { type ChartProps } from "$components/viz/echart/EChart.svelte";
-	import { mdiFilter } from "@mdi/js";
+	import RiFilterLine from "remixicon-svelte/icons/filter-line";
 	import SectionCard from "./SectionCard.svelte";
 	import Header from "$src/components/layout/header/Header.svelte";
 	import { useOncallShiftViewController } from "$features/oncall/views/shift";

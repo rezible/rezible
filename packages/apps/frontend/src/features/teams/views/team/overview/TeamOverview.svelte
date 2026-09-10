@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mdiSlack } from "@mdi/js";
+	import RiSlackLine from "remixicon-svelte/icons/slack-line";
 	import TeamUsersTable from "./TeamUsersTable.svelte";
 	import TeamRostersTable from "./TeamRostersTable.svelte";
 	import { initTeamOverviewController } from "./controller.svelte";
@@ -18,7 +18,7 @@
 		<!-- <SelectField
 			label="Slack Channel"
 			labelPlacement="top"
-			icon={mdiSlack}
+			icon={RiSlackLine}
 			readonly
 			options={slackChannelOptions}
 			value={slackChannel}

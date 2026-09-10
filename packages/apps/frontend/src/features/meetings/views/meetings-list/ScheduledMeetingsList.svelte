@@ -31,7 +31,7 @@
 							noShadow
 						>
 							<div slot="actions" class="group-hover:text-primary">
-								<Icon data={mdiChevronRight} />
+								<RiArrowRightSLine class="" aria-hidden="true" />
 							</div>
 						</ListItem> -->
 					</a>

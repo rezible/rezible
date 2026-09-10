@@ -59,7 +59,7 @@
 			on:change={(e) => {
 				updateDateRange(e.detail);
 			}}
-			icon={mdiCalendarRange}
+			icon={RiCalendarLine}
 		/-->
 	</div>
 {/snippet}

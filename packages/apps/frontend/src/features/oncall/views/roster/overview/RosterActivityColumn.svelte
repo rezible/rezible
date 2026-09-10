@@ -1,16 +1,13 @@
 <script lang="ts">
-	import {
-		mdiFilter,
-		mdiFire,
-		mdiClipboardList,
-		mdiBookOpenVariant,
-		mdiHandshake,
-		mdiAlertCircle,
-		mdiArrowRight,
-	} from "@mdi/js";
+	import RiFilterLine from "remixicon-svelte/icons/filter-line";
+	import RiFireLine from "remixicon-svelte/icons/fire-line";
+	import RiTodoLine from "remixicon-svelte/icons/todo-line";
+	import RiBookOpenLine from "remixicon-svelte/icons/book-open-line";
+	import RiShakeHandsLine from "remixicon-svelte/icons/shake-hands-line";
+	import RiErrorWarningLine from "remixicon-svelte/icons/error-warning-line";
+	import RiArrowRightLine from "remixicon-svelte/icons/arrow-right-line";
 	import { Button } from "$components/ui/button";
 	import Header from "$src/components/layout/header/Header.svelte";
-	import Icon from "$components/common/icon/Icon.svelte";
 	import type { User } from "$lib/api";
 	import { formatRelative } from "date-fns";
 	import { useOncallRosterViewController } from "$features/oncall/views/roster";
@@ -31,15 +28,15 @@
 	const getActivityIcon = (type: string) => {
 		switch (type) {
 			case "incident":
-				return mdiFire;
+				return RiFireLine;
 			case "handover":
-				return mdiHandshake;
+				return RiShakeHandsLine;
 			case "playbook":
-				return mdiBookOpenVariant;
+				return RiBookOpenLine;
 			case "backlog":
-				return mdiClipboardList;
+				return RiTodoLine;
 			default:
-				return mdiAlertCircle;
+				return RiErrorWarningLine;
 		}
 	};
 
@@ -76,7 +73,7 @@
 			{#snippet actions()}
 				<Button href={`/rosters/${rosterId}/activity`}>
 					View All
-					<Icon data={mdiArrowRight} classes={{ root: "ml-1 h-4 w-4" }} />
+					<RiArrowRightLine aria-hidden="true" />
 				</Button>
 			{/snippet}
 		</Header>
@@ -84,12 +81,10 @@
 
 	<div class="flex-1 flex flex-col px-0 overflow-y-auto">
 		{#each recentActivity as activity}
+			{@const ActivityIcon = getActivityIcon(activity.type)}
 			<div class="p-4 flex items-start gap-3 border-b first:border-t">
 				<div class="mt-1">
-					<Icon
-						data={getActivityIcon(activity.type)}
-						classes={{ root: `h-5 w-5 ${getActivityColor(activity.type)}` }}
-					/>
+					<ActivityIcon aria-hidden="true" />
 				</div>
 
 				<div class="flex-1 flex justify-between">

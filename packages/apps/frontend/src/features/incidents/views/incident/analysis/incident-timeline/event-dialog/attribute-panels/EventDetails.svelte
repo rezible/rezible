@@ -1,5 +1,9 @@
 <script lang="ts">
-	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiFlag } from "@mdi/js";
+	import RiSearchLine from "remixicon-svelte/icons/search-line";
+	import RiErrorWarningLine from "remixicon-svelte/icons/error-warning-line";
+	import RiBookOpenLine from "remixicon-svelte/icons/book-open-line";
+	import RiBrainLine from "remixicon-svelte/icons/brain-line";
+	import RiFlagLine from "remixicon-svelte/icons/flag-line";
 	import { onMount } from "svelte";
 	import DateTimePickerField from "$src/components/forms/date-time-field/DateTimePickerField.svelte";
 	import { useEventDialogAttributes } from "./attributes.svelte";
@@ -10,25 +14,25 @@
 		{
 			label: "Observation",
 			value: "observation",
-			icon: mdiMagnify,
+			icon: RiSearchLine,
 			hint: "What was noticed or detected",
 		},
 		{
 			label: "Action",
 			value: "action",
-			icon: mdiExclamation,
+			icon: RiErrorWarningLine,
 			hint: "Steps taken or changes made",
 		},
 		{
 			label: "Decision",
 			value: "decision",
-			icon: mdiBook,
+			icon: RiBookOpenLine,
 			hint: "Choices made and their rationale",
 		},
 		{
 			label: "Context",
 			value: "context",
-			icon: mdiBrain,
+			icon: RiBrainLine,
 			hint: "Background information or ongoing conditions",
 		},
 	];
@@ -54,7 +58,7 @@
 				<ToggleOption value={opt.value}>
 					<Tooltip title={opt.hint}>
 						<span class="flex items-center justify-center gap-2 px-2">
-							<Icon data={opt.icon} />
+							<svelte:component this={opt.icon} aria-hidden="true" />
 							{opt.label}
 						</span>
 					</Tooltip>
@@ -64,7 +68,7 @@
 	</Field> -->
 
 	<span>key event toggle</span>
-	<!-- <Field label="Key Event" let:id icon={mdiFlag}>
+	<!-- <Field label="Key Event" let:id icon={RiFlagLine}>
 		<Switch {id} bind:value={eventAttributes.isKey} />
 	</Field> -->
 

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { RetrospectiveReportSection } from "$lib/api";
-	import { mdiCircleMedium } from "@mdi/js";
+	import RiCircleFill from "remixicon-svelte/icons/circle-fill";
 	import { onMount } from "svelte";
-	import Icon from "$components/common/icon/Icon.svelte";
 	import { cn } from "$lib/utils";
 
 	type Props = {
@@ -89,7 +88,7 @@
 						<!-- dot -->
 						<div class="text-surface-content z-1 h-6 w-6 font-sm ml-[2px]">
 							{#if i < 0}
-								<Icon data={mdiCircleMedium} size={11} />
+								<RiCircleFill class="" aria-hidden="true" />
 							{/if}
 						</div>
 						<div
