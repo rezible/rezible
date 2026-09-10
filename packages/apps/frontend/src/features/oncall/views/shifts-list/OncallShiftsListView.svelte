@@ -43,7 +43,7 @@
 		>
 			<div slot="actions" let:selection class="flex items-center">
 				{#if !selection.selected || (Array.isArray(selection.selected) && selection.selected.length === 0)}
-					<div class="text-sm text-danger">Nothing selected</div>
+					<div class="text-sm text-destructive">Nothing selected</div>
 				{/if}
 			</div>
 		</MultiSelectField-->
@@ -56,7 +56,7 @@
 			labelPlacement="top"
 			{periodTypes}
 			bind:value={dateRange}
-			on:change={(e) => {
+			onchange={(e) => {
 				updateDateRange(e.detail);
 			}}
 			icon={RiCalendarLine}
@@ -72,7 +72,7 @@
 					<ShiftCard {shift} />
 				{:else}
 					<div class="grid place-items-center flex-1">
-						<span class="text-surface-content/80">No Shifts Found</span>
+						<span class="text-foreground/80">No Shifts Found</span>
 					</div>
 				{/each}
 			{/snippet}

@@ -14,7 +14,7 @@
 
 <div
 	data-is-selected={selected}
-	class="node border bg-surface-100 data-[is-selected=true]:bg-surface-200 rounded-lg p-3 group"
+	class="node border bg-card data-[is-selected=true]:bg-muted rounded-lg p-3 group"
 >
 	<span>{entityState?.displayName ?? "Unknown entity"}</span>
 	{#if data.attachmentCount}

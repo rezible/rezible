@@ -11,7 +11,7 @@
 </script>
 
 <div
-	class="w-fit group flex flex-col gap-2 justify-center mx-auto p-1 rounded-lg border border-surface bg-surface-100/20"
+	class="w-fit group flex flex-col gap-2 justify-center mx-auto p-1 rounded-lg border border-muted bg-card/20"
 >
 	<Button
 		color="primary"

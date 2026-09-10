@@ -75,7 +75,7 @@
 	bind:open
 	loading={isPending}
 	persistent
-	on:close={resetMeetingState}
+	onclose={resetMeetingState}
 	classes={{ root: "py-2", dialog: "max-h-full min-h-0 flex flex-col" }}
 >
 	<div slot="header" class="border-b p-2 flex justify-between items-center">
@@ -123,7 +123,7 @@
 	<div slot="actions">
 		<ConfirmChangeButtons
 			loading={isPending}
-			saveEnabled={parsedForm?.success}
+			saveEnabled={parsedForm?.primary}
 			onConfirm={() => tryCreateMeeting()}
 			onClose={() => {
 				open = false;
@@ -186,7 +186,7 @@
 			<DatePickerField 
 				label="End after"
 				value={formData.untilDate.toDate()}
-				on:change={e => (onUntilDateChange(e.detail))}
+				onchange={e => (onUntilDateChange(e.detail))}
 			/>
 		</div>
 	{/if}

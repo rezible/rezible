@@ -8,12 +8,12 @@
 </script>
 
 <div class="flex flex-col max-h-full max-w-xl border p-2">
-	<span class="uppercase font-semibold text-surface-content/90">Users</span>
+	<span class="uppercase font-semibold text-foreground/90">Users</span>
 
 	<PaginatedQueryListBox dense {...controller.paginatedUsersQuery}>
 		{#each controller.users as user (user.id)}
 			<a
-				class="flex gap-2 items-center rounded border border-surface-content/10 p-2"
+				class="flex gap-2 items-center rounded border border-foreground/10 p-2"
 				href={resolve(`/users/${user.id}`)}
 			>
 				<Avatar kind="user" size={20} id={user.id} />

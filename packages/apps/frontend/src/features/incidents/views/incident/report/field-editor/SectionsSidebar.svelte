@@ -59,7 +59,7 @@
 	<div class="flex flex-row grow justify-evenly pl-1">
 		<!-- progress bar container -->
 		<div
-			class="w-[1px] flex flex-col justify-evenly bg-surface-content/25 overflow-y-clip -mr-2"
+			class="w-[1px] flex flex-col justify-evenly bg-foreground/25 overflow-y-clip -mr-2"
 			style="--scrollAmount: {scrollAmount}%; --windowHeight: {windowHeight}px"
 			bind:this={progressBarContainerEl}
 		>
@@ -67,7 +67,7 @@
 			<div
 				class={cn(
 					"flex flex-[var(--scrollAmount)]",
-					"after:h-[var(--windowHeight)] after:self-end after:bg-surface-content/25 after:content-[''] after:w-[1px] after:ml-[-0.5px] pl-[0.5px]"
+					"after:h-[var(--windowHeight)] after:self-end after:bg-foreground/25 after:content-[''] after:w-[1px] after:ml-[-0.5px] pl-[0.5px]"
 				)}
 			></div>
 
@@ -86,7 +86,7 @@
 					<!--div class="grid grid-cols-2 items-center"-->
 					<div class="flex flex-row">
 						<!-- dot -->
-						<div class="text-surface-content z-1 h-6 w-6 font-sm ml-[2px]">
+						<div class="text-foreground z-1 h-6 w-6 font-sm ml-[2px]">
 							{#if i < 0}
 								<RiCircleFill class="" aria-hidden="true" />
 							{/if}

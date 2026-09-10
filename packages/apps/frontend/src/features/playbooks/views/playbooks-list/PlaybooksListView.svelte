@@ -31,7 +31,7 @@
 					{@render playbookListItem(pb)}
 				{:else}
 					<div class="grid place-items-center flex-1">
-						<span class="text-surface-content/80">No Playbooks Found</span>
+						<span class="text-foreground/80">No Playbooks Found</span>
 					</div>
 				{/each}
 			{/snippet}

@@ -18,7 +18,7 @@
 			{@const userTz = getLocalTimeZone()}
 
 			<div
-				class="border-surface-content/20 bg-neutral/30"
+				class="border-foreground/20 bg-neutral/30"
 				role="group"
 				onmouseenter={() => (hoveringTimezone = userTz)}
 				onmouseleave={() => (hoveringTimezone = undefined)}
@@ -29,7 +29,7 @@
 							<Avatar kind="user" size={32} id={usr.id} />
 						{/snippet}
 						{#snippet actions()}
-							<div class="flex flex-col text-surface-content">
+							<div class="flex flex-col text-foreground">
 								<div class="">{userTz}</div>
 							</div>
 						{/snippet}
@@ -47,7 +47,7 @@
 				{/snippet}
 			</div>
 		{:else}
-			<div class="text-surface-600 italic p-2">No users assigned to this roster</div>
+			<div class="text-muted italic p-2">No users assigned to this roster</div>
 		{/each}
 	</div>
 

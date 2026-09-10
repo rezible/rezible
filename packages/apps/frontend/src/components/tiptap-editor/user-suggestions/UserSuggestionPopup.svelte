@@ -44,14 +44,14 @@
 	};
 </script>
 
-<div class="flex flex-col gap-1 border bg-surface-100">
+<div class="flex flex-col gap-1 border bg-card">
 	{#if items.length === 0}
 		<div class="mx-2">No result</div>
 	{:else}
 		{#each items as item, i}
 			<button
 				onclick={() => acceptUser(i)}
-				class={cn("px-2", highlighted === i ? "bg-accent text-accent-content" : "")}
+				class={cn("px-2", highlighted === i ? "bg-primary text-primary-foreground" : "")}
 			>
 				{item}
 			</button>

@@ -40,7 +40,7 @@
 
 	{#if view.loading}
 		<Card.Root>
-			<Card.Content class="py-8 text-sm text-surface-content/70">Loading roster draft…</Card.Content>
+			<Card.Content class="py-8 text-sm text-foreground/70">Loading roster draft…</Card.Content>
 		</Card.Root>
 	{:else}
 		<div class="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
@@ -157,10 +157,10 @@
 									onclick={() => view.selectSchedule(schedule.key)}
 								>
 									<span class="font-medium">{schedule.name || "Untitled Schedule"}</span>
-									<span class="text-surface-content/70"
+									<span class="text-foreground/70"
 										>{schedule.timezone || "No timezone"}</span
 									>
-									<span class="text-surface-content/60">
+									<span class="text-foreground/60">
 										{schedule.participants.length} participant{schedule.participants
 											.length === 1
 											? ""
@@ -281,7 +281,7 @@
 														{participantUser?.attributes.name ??
 															participant.userId}
 													</div>
-													<div class="text-surface-content/70">
+													<div class="text-foreground/70">
 														{participantUser?.attributes.email ??
 															"User details loading"}
 													</div>
@@ -327,7 +327,7 @@
 											</div>
 										{:else}
 											<div
-												class="border-border text-surface-content/70 border border-dashed p-4 text-xs"
+												class="border-border text-foreground/70 border border-dashed p-4 text-xs"
 											>
 												No participants assigned to this schedule yet.
 											</div>
@@ -348,19 +348,19 @@
 					</Card.Header>
 					<Card.Content class="space-y-3 text-xs">
 						<div class="flex items-center justify-between gap-3">
-							<span class="text-surface-content/70">Mode</span>
+							<span class="text-foreground/70">Mode</span>
 							<span class="font-medium capitalize">{view.mode}</span>
 						</div>
 						<div class="flex items-center justify-between gap-3">
-							<span class="text-surface-content/70">Unsaved Changes</span>
+							<span class="text-foreground/70">Unsaved Changes</span>
 							<span class="font-medium">{view.hasUnsavedChanges ? "Yes" : "No"}</span>
 						</div>
 						<div class="flex items-center justify-between gap-3">
-							<span class="text-surface-content/70">Roster Id</span>
+							<span class="text-foreground/70">Roster Id</span>
 							<span class="font-medium">{view.rosterId ?? "New roster"}</span>
 						</div>
 						<div class="flex items-center justify-between gap-3">
-							<span class="text-surface-content/70">Schedule Count</span>
+							<span class="text-foreground/70">Schedule Count</span>
 							<span class="font-medium">{view.draft.schedules.length}</span>
 						</div>
 					</Card.Content>

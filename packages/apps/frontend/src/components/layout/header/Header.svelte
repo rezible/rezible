@@ -29,7 +29,7 @@
 		{/if}
 
 		{#if typeof subheading === "string"}
-			<div class={cn("text-sm text-surface-content/50", classes.subheading)}>{subheading}</div>
+			<div class={cn("text-sm text-foreground/50", classes.subheading)}>{subheading}</div>
 		{:else}
 			{@render subheading?.()}
 		{/if}

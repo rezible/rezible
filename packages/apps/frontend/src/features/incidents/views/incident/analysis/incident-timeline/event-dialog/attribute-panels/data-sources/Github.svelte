@@ -11,9 +11,9 @@
 
 <!-- <TextField label="Link New Item" classes={{ input: "text-sm" }}>
 	<div slot="prepend">
-		<RiLink class="text-surface-content/50 mr-2" aria-hidden="true" />
+		<RiLink class="text-foreground/50 mr-2" aria-hidden="true" />
 	</div>
 	<span slot="append">
-		<Button class="text-surface-content/50 p-2" />
+		<Button class="text-foreground/50 p-2" />
 	</span>
 </TextField> -->

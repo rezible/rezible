@@ -51,7 +51,7 @@
 	};
 
 	const selectClasses =
-		"py-2 px-3 block border-base-content rounded-lg text-md focus:border-accent focus:ring-accent-content dark:bg-neutral dark:border-base-100 dark:text-neutral-content dark:placeholder-base-content dark:focus:ring-neutral";
+		"py-2 px-3 block border-foreground rounded-lg text-md focus:border-primary focus:ring-primary-foreground dark:bg-neutral dark:border-border dark:text-muted-foreground dark:placeholder-foreground dark:focus:ring-neutral";
 
 	const rangeMinDate = $derived(rangeMin?.toDate());
 	const isMinDate = $derived(rangeMinDate && isSameDay(value.date, rangeMinDate));
@@ -100,7 +100,7 @@
 		{/if}
 
 		<div class="p-2 w-96">
-			<DateSelect selected={value.date} periodType={PeriodType.Day} on:dateChange={(e) => {value.date = e.detail; console.log(e)}} {disabledDates} />
+			<DateSelect selected={value.date} periodType={PeriodType.Day} ondateChange={(e) => {value.date = e.detail; console.log(e)}} {disabledDates} />
 
 			<div class="flex items-center justify-center gap-2 border-t pt-2">
 				{#if exactTime}

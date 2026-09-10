@@ -50,9 +50,9 @@
 		return `${Math.round(Math.abs(delta * 100 - 100))}%`;
 	});
 
-	const aboveClasses = "text-danger-500 border-danger-900/70";
-	const belowClasses = "text-success-500 border-success-900";
-	const averageClasses = "text-neutral-content/40 border-neutral-content/20";
+	const aboveClasses = "text-destructive border-destructive/80/70";
+	const belowClasses = "text-primary border-primary/30";
+	const averageClasses = "text-muted-foreground/40 border-muted-foreground/20";
 	const categoryClasses = $derived.by(() => {
 		if (category === "above") return !!comparison.positive ? belowClasses : aboveClasses;
 		if (category === "below") return !!comparison.positive ? aboveClasses : belowClasses;
@@ -67,8 +67,8 @@
 	</div>
 
 	{#if comparison.hint}
-		<div class="text-warning">
-			<RiCircleFill class="size-4 border rounded-full border-warning" aria-hidden="true" />
+		<div class="text-primary">
+			<RiCircleFill class="size-4 border rounded-full border-primary" aria-hidden="true" />
 			<!--div class="text-sm text-gray-500 mt-1">
 				Potential sleep disruptions
 			</div-->

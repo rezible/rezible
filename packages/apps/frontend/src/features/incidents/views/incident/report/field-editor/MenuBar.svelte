@@ -34,7 +34,7 @@
 	const runCmd = $derived(activeEditor.tryRunCommand);
 </script>
 
-<div class="flex items-center w-full divide-x divide-surface-100 h-8">
+<div class="flex items-center w-full divide-x divide-card h-8">
 	{#snippet formatMenuItem(name: string, active: boolean, icon: string, cmd: VoidFunction)}
 		<!-- <MenuItem {icon} onclick={() => cmd()} selected={active}>
 			{name}
@@ -51,7 +51,7 @@
 		>
 			<RiArrowDownSLine class="" aria-hidden="true" />
 
-			<Menu {open} on:close={toggleOff}>
+			<Menu {open} onclose={toggleOff}>
 				{@render formatMenuItem(
 					"Regular Text",
 					activeStatus.paragraph,

@@ -14,7 +14,7 @@
 	};
 </script>
 
-<div class="flex flex-col h-full border border-surface-content/10 rounded">
+<div class="flex flex-col h-full border border-foreground/10 rounded">
 	<div class="h-fit pt-2 flex flex-col gap-2">
 		<Header title="Shift Events" subheading="Showing All" classes={{ root: "px-2" }}>
 			{#snippet actions()}
@@ -28,7 +28,7 @@
 	</div>
 
 	<div class="p-2">
-		<!-- <ToggleGroup bind:value={display} inset variant="fill-surface" rounded>
+		<!-- <ToggleGroup bind:value={display} inset variant="fill-muted" rounded>
 			<ToggleOption value="list">List</ToggleOption>
 			<ToggleOption value="heatmap">Heatmap</ToggleOption>
 		</ToggleGroup> -->

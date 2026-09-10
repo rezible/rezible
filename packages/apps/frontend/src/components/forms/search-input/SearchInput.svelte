@@ -13,7 +13,7 @@
 <!--TextField
 	label="Search"
 	labelPlacement="top"
-	on:change={(e) => (value = coerceValue(e.detail.inputValue))}
+	onchange={(e) => (value = coerceValue(e.detail.inputValue))}
 	debounceChange={300}
 	iconRight={RiSearchLine}
 	...fieldProps

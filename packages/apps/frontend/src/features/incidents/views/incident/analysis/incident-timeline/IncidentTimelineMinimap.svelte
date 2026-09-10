@@ -84,7 +84,7 @@
 				width={eventRectWidth}
 				height="100%"
 				shape-rendering="crispEdges"
-				class="cursor-pointer fill-accent"
+				class="cursor-pointer fill-primary"
 				fill-opacity="30%"
 				style="stroke: transparent; stroke-width: 2;"
 			></rect>

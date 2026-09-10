@@ -18,7 +18,7 @@
 	const nextShift = $derived(shifts?.at(0));
 </script>
 
-<div class="flex flex-col h-full border border-surface-content/10 rounded">
+<div class="flex flex-col h-full border border-foreground/10 rounded">
 	<div class="h-fit p-2 flex flex-col gap-2">
 		<Header title="Shifts" classes={{ root: "", title: "text-xl" }}>
 			{#snippet actions()}

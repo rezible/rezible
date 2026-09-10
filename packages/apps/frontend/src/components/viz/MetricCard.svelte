@@ -21,10 +21,10 @@
 </script>
 
 <div
-	class="flex flex-col gap-3 border rounded py-3 px-4 border-neutral-content/10 bg-neutral-900/30 min-w-64"
+	class="flex flex-col gap-3 border rounded py-3 px-4 border-muted-foreground/10 bg-neutral-900/30 min-w-64"
 >
 	<div class="w-full flex justify-between gap-8 items-center">
-		<span class="text-neutral-content/60 leading-none">{title}</span>
+		<span class="text-muted-foreground/60 leading-none">{title}</span>
 		<span class=""><MetricIcon aria-hidden="true" /></span>
 	</div>
 	<div class="w-full flex gap-4 items-center justify-between">

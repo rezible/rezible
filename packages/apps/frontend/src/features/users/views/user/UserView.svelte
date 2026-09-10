@@ -25,7 +25,7 @@
 				<div class="">
 					<span class="">🌐</span>
 					<span>{view.timeZone}</span>
-					<span class="text-surface-content">({view.userLocalTime})</span>
+					<span class="text-foreground">({view.userLocalTime})</span>
 				</div>
 				<div class="">
 					<span class="">✉️</span>

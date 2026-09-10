@@ -19,14 +19,14 @@
 {#if shift}
 	<a
 		href="/shifts/{shift.id}"
-		class="flex items-center gap-4 px-4 bg-success-900/50 rounded-lg hover:bg-success-900/40"
+		class="flex items-center gap-4 px-4 bg-primary/30/50 rounded-lg hover:bg-primary/30/40"
 	>
 		<div class="flex flex-col">
 			<span class="text-xs">Currently Oncall</span>
 			<div class="flex items-center align-middle gap-2">
 				<Avatar kind="user" size={14} id={shift.id} />
 				<span class="text-sm font-semibold">{shift.attributes.user.attributes.name}</span>
-				<span class="text-xs text-surface-content/70 align-middle">({userLocalTime})</span>
+				<span class="text-xs text-foreground/70 align-middle">({userLocalTime})</span>
 			</div>
 		</div>
 		<div class="">
@@ -37,7 +37,7 @@
 
 <a
 	href="/teams/{teamId}"
-	class="flex items-center gap-4 px-4 bg-accent-900/50 rounded-lg hover:bg-accent-900/40 h-full"
+	class="flex items-center gap-4 px-4 bg-primary-900/50 rounded-lg hover:bg-primary-900/40 h-full"
 >
 	<div class="flex flex-col">
 		<span class="text-xs">Team</span>

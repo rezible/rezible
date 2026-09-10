@@ -65,7 +65,7 @@
 				<Avatar kind="roster" size={32} id={roster.id} />
 			</svelte:fragment>
 			<svelte:fragment slot="subheading">
-				<span class="text-surface-content"
+				<span class="text-foreground"
 					><span class="font-bold">{shift.attributes.role}</span> for {duration}</span
 				>
 			</svelte:fragment>

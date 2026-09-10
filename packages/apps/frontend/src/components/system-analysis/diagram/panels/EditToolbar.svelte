@@ -52,7 +52,7 @@
 	<ViewportPortal target="front">
 		{#if transform}
 			<div
-				class="pointer-events-auto absolute border rounded-lg bg-surface-100 p-1 z-[1001]"
+				class="pointer-events-auto absolute border rounded-lg bg-card p-1 z-[1001]"
 				style:transform
 			>
 				<Button onclick={confirmDelete}>delete</Button>

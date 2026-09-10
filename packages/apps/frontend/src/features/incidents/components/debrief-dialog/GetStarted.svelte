@@ -31,7 +31,7 @@
 		});
 </script>
 
-<div class="p-2 text-surface-content overflow-y-auto shrink" class:hidden={start.isSuccess}>
+<div class="p-2 text-foreground overflow-y-auto shrink" class:hidden={start.isSuccess}>
 	<p class="">
 		A post-incident debrief brings teams together to learn from service disruptions and make our systems
 		more resilient.
@@ -55,7 +55,7 @@
 	</ul>
 </div>
 
-<div class="bg-success-900/50 textcontent p-4 rounded-lg">
+<div class="bg-primary/30/50 textcontent p-4 rounded-lg">
 	<p class="text-sm">Best Practice: Complete the debrief within 72 hours while details are fresh.</p>
 </div>
 
@@ -67,7 +67,7 @@
 
 {#if start.isPending}
 	<div class="flex items-center gap-2 w-fit shrink overflow-hidden">
-		<span class="text-accent-100">Thinking</span>
+		<span class="text-primary-100">Thinking</span>
 		<LoadingIndicator />
 	</div>
 {:else if start.isError}

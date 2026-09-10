@@ -72,7 +72,7 @@
 	};
 </script>
 
-<div class="flex flex-col gap-1 bg-surface-100">
+<div class="flex flex-col gap-1 bg-card">
 	{#snippet systemContextEditor(node: SystemAnalysisNode)}
 		{@const attrs = node.attributes.knowledgeEntity.attributes}
 		<span class="text-lg">{attrs.latestState?.displayName ?? "Unknown entity"}</span>

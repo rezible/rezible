@@ -17,9 +17,9 @@
 	let showFilters = $state(false);
 
 	const colors = [
-		"oklch(var(--color-danger))",
-		"oklch(var(--color-warning))",
-		"oklch(var(--color-success))",
+		"oklch(var(--color-destructive))",
+		"oklch(var(--color-primary))",
+		"oklch(var(--color-primary))",
 		"oklch(var(--color-info))",
 	];
 

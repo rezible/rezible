@@ -34,7 +34,7 @@
 			<span class="{small ? 'text-lg' : 'text-2xl'} font-semibold self-end">
 				{valueText}
 				{#if outOf}
-					<span class="text-xs font-bold text-surface-content/50">/ {outOf}</span>
+					<span class="text-xs font-bold text-foreground/50">/ {outOf}</span>
 				{/if}
 			</span>
 			{#if comparison && typeof value === "number"}

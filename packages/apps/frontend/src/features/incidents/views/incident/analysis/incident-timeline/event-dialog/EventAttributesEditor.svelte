@@ -74,7 +74,7 @@
 			{icon}
 			classes={{ root: "pl-0" }}
 			avatar={{
-				class: "bg-surface-content/50 text-surface-100/90",
+				class: "bg-foreground/50 text-card/90",
 			}}
 			class="flex-1"
 			noShadow

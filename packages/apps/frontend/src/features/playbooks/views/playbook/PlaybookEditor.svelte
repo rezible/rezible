@@ -32,7 +32,7 @@
 </script>
 
 <div
-	class="flex-1 border border-surface-content/15 bg-surface-content/5 p-2 rounded-lg cursor-text w-full"
+	class="flex-1 border border-foreground/15 bg-foreground/5 p-2 rounded-lg cursor-text w-full"
 	tabindex="-1"
 	spellcheck="false"
 	onfocus={onEditorContainerFocused}

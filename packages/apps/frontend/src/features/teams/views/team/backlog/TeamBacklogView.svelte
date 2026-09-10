@@ -12,15 +12,15 @@
 		{@const attr = task.attributes}
 		<div>
 			<span>task: {attr.name}</span>
-			<!-- <ListItem title={attr.name} classes={{ root: "hover:bg-surface-200", title: "text-lg" }}>
+			<!-- <ListItem title={attr.name} classes={{ root: "hover:bg-muted", title: "text-lg" }}>
 					<div slot="subheading">
-						<span class="text-surface-content/80">{attr.description}</span>
+						<span class="text-foreground/80">{attr.description}</span>
 					</div>
 					<div slot="avatar">
 						<span>-</span>
 					</div>
 					<div slot="actions">
-						<Button icon={RiArrowRightSLine} class="p-2 text-surface-content/50" />
+						<Button icon={RiArrowRightSLine} class="p-2 text-foreground/50" />
 					</div>
 				</ListItem> -->
 		</div>

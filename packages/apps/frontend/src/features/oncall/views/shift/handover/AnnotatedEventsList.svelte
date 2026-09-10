@@ -55,7 +55,7 @@
 	};
 </script>
 
-<div class="flex flex-col h-full border border-surface-content/10">
+<div class="flex flex-col h-full border border-foreground/10">
 	<div class="h-fit p-2 flex flex-col gap-2">
 		<Header title="Annotated Shift Events" subheading="" />
 	</div>

@@ -25,7 +25,7 @@
 				<Avatar kind="team" size={32} id={team.id} />
 			</svelte:fragment>
 			<div slot="actions">
-				<RiArrowRightSLine class="text-surface-content/50" aria-hidden="true" />
+				<RiArrowRightSLine class="text-foreground/50" aria-hidden="true" />
 			</div>
 		</ListItem-->
 	</a>
@@ -39,7 +39,7 @@
 					{@render teamCard(team)}
 				{:else}
 					<div class="grid place-items-center flex-1">
-						<span class="text-surface-content/80">No Teams Found</span>
+						<span class="text-foreground/80">No Teams Found</span>
 					</div>
 				{/each}
 			{/snippet}

@@ -37,7 +37,7 @@
 		class:hidden={hideTimeline === hide}
 	>
 		<Button
-			color={hide ? "default" : "accent"}
+			color={hide ? "default" : "primary"}
 			onclick={() => {
 				hideTimeline = hide;
 			}}

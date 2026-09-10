@@ -48,8 +48,8 @@
 		{#each messages as msg, i}
 			{@const isSelected = dataValue === msg.id}
 			<ListItem 
-				classes={{ root: cls("!elevation-0", isSelected ? "bg-surface-300/40" : "hover:bg-surface-300/20") }} 
-				on:click={e => {e.preventDefault(); onSelected(msg.id)}}
+				classes={{ root: cls("!elevation-0", isSelected ? "bg-background/40" : "hover:bg-background/20") }} 
+				onclick={e => {e.preventDefault(); onSelected(msg.id)}}
 			>
 				<div slot="avatar" class="flex flex-col">
 					<svelte:component this={msg.avatar} aria-hidden="true" />
@@ -61,7 +61,7 @@
 					{msg.content}
 				</span>
 				<svelte:fragment slot="actions">
-					<Checkbox circle checked={isSelected} size="lg" on:change={() => {onSelected(msg.id)}} />
+					<Checkbox circle checked={isSelected} size="lg" onchange={() => {onSelected(msg.id)}} />
 				</svelte:fragment>
 			</ListItem>
 		{/each}

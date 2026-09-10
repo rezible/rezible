@@ -53,7 +53,7 @@
 	};
 </script>
 
-<div class="flex flex-col gap-1 bg-surface-100">
+<div class="flex flex-col gap-1 bg-card">
 	{#if editFactor}
 		<div class="flex flex-col gap-2 border rounded p-2">
 			<span>type select</span>
@@ -65,11 +65,11 @@
 			>
 				<svelte:fragment slot="option" let:option let:index let:selected let:highlightIndex>
 					<MenuItem
-						on:click={() => {
+						onclick={() => {
 							console.log("selected", option);
 						}}
 						class={cls(
-							index === highlightIndex && "bg-surface-content/5",
+							index === highlightIndex && "bg-foreground/5",
 							option === selected && "font-semibold",
 							option.group ? "px-4" : "px-2"
 						)}
@@ -77,7 +77,7 @@
 					>
 						<div>
 							<div>{option.label}</div>
-							<div class="text-sm text-surface-content/50">
+							<div class="text-sm text-foreground/50">
 								{option.examples}
 							</div>
 						</div>
@@ -111,7 +111,7 @@
 				title={f.attributes.description}
 				subheading={categoryName}
 				classes={{ root: "pl-0" }}
-				avatar={{ class: "bg-surface-content/50 text-surface-100/90" }}
+				avatar={{ class: "bg-foreground/50 text-card/90" }}
 				class="flex-1"
 				noShadow
 			>

@@ -73,7 +73,7 @@
 							<div class="ml-4 flex flex-col">
 								<span class="text-lg font-semibold self-end">
 									{stat.value}
-									<span class="text-xs text-surface-content/50">/ 10</span>
+									<span class="text-xs text-foreground/50">/ 10</span>
 								</span>
 								{#if stat.comparison}
 									<MetricComparisonLabel comparison={stat.comparison} metricValue={stat.value} format="raw" />

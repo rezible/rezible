@@ -54,10 +54,10 @@
 	});
 </script>
 
-<div class="border border-accent rounded-lg p-2 flex flex-col gap-2">
+<div class="border border-primary rounded-lg p-2 flex flex-col gap-2">
 	<Header title="New Discussion" subheading="drafting" />
 
-	<div class="border border-neutral-200 bg-surface-300 cursor-text p-1">
+	<div class="border border-neutral-200 bg-background cursor-text p-1">
 		{#if draftEditor}
 			<TiptapEditor bind:editor={draftEditor} />
 		{/if}

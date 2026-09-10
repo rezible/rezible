@@ -21,12 +21,12 @@
 		width={size/4}
 		value={progress}
 		track
-		class={cls("text-success [--track-color:theme(colors.success/10%)]")}
+		class={cls("text-primary [--track-color:theme(colors.primary/10%)]")}
 	>
 	</ProgressCircle>
 	<div
 		slot="title"
-		class="bg-neutral border text-sm text-surface-content p-2 rounded-lg"
+		class="bg-neutral border text-sm text-foreground p-2 rounded-lg"
 	>
 		<div class="flex flex-col gap-2">
 			<span>{timeLeft} left</span>

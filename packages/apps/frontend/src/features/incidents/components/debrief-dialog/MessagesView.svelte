@@ -59,7 +59,7 @@
 {/snippet}
 
 {#snippet assistantMessage(msg: IncidentDebriefMessage)}
-	<div class="flex gap-2 px-2 w-2/3 border-accent border-s">
+	<div class="flex gap-2 px-2 w-2/3 border-primary border-s">
 		<!-- <UxAvatar class="border" icon={} /> -->
 		<div class="rounded p-2 border self-end bg-neutral">
 			<span>{msg.attributes.body}</span>

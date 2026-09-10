@@ -7,6 +7,7 @@
   },
   "scripts": {
     "test-backend": { "command": "just test backend" },
+    "dev": { "command": "HTTP__AUTH__ENABLE_DEV_SKIP_MODE=true just dev" },
     "codegen": { "command": "just codegen" }
   }
 }

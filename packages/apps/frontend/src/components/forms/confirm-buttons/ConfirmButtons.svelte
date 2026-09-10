@@ -36,7 +36,7 @@
 			{closeText}
 		{/if}
 	</Button>
-	<Button color="warning" onclick={onConfirm} disabled={!saveEnabled || disabled}>
+	<Button color="primary" onclick={onConfirm} disabled={!saveEnabled || disabled}>
 		{#if confirmButtonContent}
 			{@render confirmButtonContent()}
 		{:else}

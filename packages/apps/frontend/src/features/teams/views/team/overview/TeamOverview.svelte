@@ -12,7 +12,7 @@
 
 <div class="flex gap-2 p-2">
 	<div class="flex flex-col gap-2 w-fit border p-2">
-		<span class="uppercase font-semibold text-surface-content/90">Details</span>
+		<span class="uppercase font-semibold text-foreground/90">Details</span>
 
 		<span>slack channel</span>
 		<!-- <SelectField

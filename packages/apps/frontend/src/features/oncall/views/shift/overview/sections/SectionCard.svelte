@@ -4,6 +4,6 @@
 	const { children }: { children: Snippet } = $props();
 </script>
 
-<div class="flex flex-col gap-2 w-full p-2 rounded border border-surface-content/10">
+<div class="flex flex-col gap-2 w-full p-2 rounded border border-foreground/10">
 	{@render children()}
 </div>

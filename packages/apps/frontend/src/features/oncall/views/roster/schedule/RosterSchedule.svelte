@@ -51,12 +51,11 @@
 			{@const start = parseAbsoluteToLocal(shift.attributes.startAt).toDate()}
 			<a href="/shifts/{shift.id}" class="block">
 				<div
-					class="flex items-center gap-4 bg-surface-100 hover:bg-surface-content/10 p-3 rounded-lg justify-between border"
-					class:border-success-900={isActive(shift)}
+					class={`flex items-center gap-4 bg-card hover:bg-foreground/10 p-3 rounded-lg justify-between border ${isActive(shift) ? "border-primary/30" : ""}`}
 				>
 					<div class="flex flex-col flex-1">
 						<span class="font-medium">{shift.attributes.user.attributes.name}</span>
-						<div class="text-sm text-surface-600">{formatDate(start, "yyyy-LL-dd")}</div>
+						<div class="text-sm text-muted">{formatDate(start, "yyyy-LL-dd")}</div>
 					</div>
 					<div class="justify-items-end">
 						<RiArrowRightSLine class="" aria-hidden="true" />

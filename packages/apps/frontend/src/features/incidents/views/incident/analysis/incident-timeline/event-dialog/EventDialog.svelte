@@ -14,7 +14,7 @@
 
 <!-- <Dialog
 	open={eventDialog.open}
-	on:close={() => eventDialog.clear}
+	onclose={() => eventDialog.clear}
 	persistent
 	portal
 	classes={{ root: "p-8", dialog: "flex flex-col w-full max-w-7xl max-h-full h-fit" }}

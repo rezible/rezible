@@ -78,7 +78,7 @@
 
 <div class="flex h-8">
 	<div class="flex-1 flex h-8 items-end">
-		<span class="text-lg text-surface-content/80">{section.title}</span>
+		<span class="text-lg text-foreground/80">{section.title}</span>
 	</div>
 	<div class="">
 		{#if activeEditor.field === section.field}
@@ -88,7 +88,7 @@
 </div>
 
 <div
-	class="border border-surface-content/15 bg-surface-content/5 p-2 px-3 mt-1"
+	class="border border-foreground/15 bg-foreground/5 p-2 px-3 mt-1"
 	tabindex="-1"
 	spellcheck="false"
 	onfocus={onEditorContainerFocused}

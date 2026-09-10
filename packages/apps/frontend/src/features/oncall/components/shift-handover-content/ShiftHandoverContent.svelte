@@ -47,7 +47,7 @@
 					</div>
 				{/if}
 
-				<div class="p-2 border border-surface-content/10 bg-surface-200/50">
+				<div class="p-2 border border-foreground/10 bg-muted/50">
 					{@render editorSection(i, section)}
 				</div>
 			</div>
@@ -58,7 +58,7 @@
 {#snippet editorSection(idx: number, section: HandoverEditorSection)}
 	{@const isActive = handoverState.activeEditor == section.editor && focusIdx === idx}
 	{#if !section.editor}
-		<span class="text-surface-content/80">N/A</span>
+		<span class="text-foreground/80">N/A</span>
 	{:else}
 		<div
 			class="h-fit"

@@ -80,7 +80,7 @@
 	<svelte:fragment slot="option" let:option let:index let:selected let:highlightIndex>
 		<MenuItem
 			class={cls(
-				index === highlightIndex && "bg-surface-content/5",
+				index === highlightIndex && "bg-foreground/5",
 				option === selected && "font-semibold",
 				option.group ? "px-4" : "px-2",
 			)}

@@ -48,7 +48,7 @@
 
 	const defaultClasses = "";
 	const activeClasses =
-		"bg-success-900/20 border-success-100/10 hover:bg-success-900/30 hover:border-success-100/20";
+		"bg-primary/30/20 border-primary/20/10 hover:bg-primary/30/30 hover:border-primary/20/20";
 </script>
 
 <div class={cn("p-2 flex flex-col gap-2 rounded border", isActive ? activeClasses : defaultClasses)}>
@@ -61,7 +61,7 @@
 				</a>
 			{/if}
 
-			<div class="text-sm uppercase font-semibold text-surface-content/80">
+			<div class="text-sm uppercase font-semibold text-foreground/80">
 				<span>{start}</span>
 				-
 				<span>{end}</span>
@@ -72,8 +72,8 @@
 			<div class="flex gap-2 items-center">
 				<span
 					class={cn(
-						"text-sm uppercase font-bold text-surface-content/60",
-						isActive && "text-success-600"
+						"text-sm uppercase font-bold text-foreground/60",
+						isActive && "text-primary"
 					)}
 				>
 					{#if isActive}
@@ -99,12 +99,12 @@
 			<Avatar kind="user" size={18} id={user.id} />
 			<span class="font-semibold">{user.attributes.name ?? "user"}</span>
 		</a>
-		<span class="font-normal text-sm uppercase text-surface-content/60">{attr.role ?? "role"}</span>
+		<span class="font-normal text-sm uppercase text-foreground/60">{attr.role ?? "role"}</span>
 	</div>
 
 	<div class="flex justify-end max-w-lg">
 		<Button href="/shifts/{shift.id}">
-			<span class="flex items-center group-hover:text-success">
+			<span class="flex items-center group-hover:text-primary">
 				View
 				<RiArrowRightSLine class="" aria-hidden="true" />
 			</span>

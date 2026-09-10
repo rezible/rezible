@@ -12,12 +12,12 @@
 </script>
 
 <Label
-	class="hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-accent-600 has-[[aria-checked=true]]:bg-accent-50 dark:has-[[aria-checked=true]]:border-accent-900 dark:has-[[aria-checked=true]]:bg-accent-950"
+	class="hover:bg-primary/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-primary-600 has-[[aria-checked=true]]:bg-primary-50 dark:has-[[aria-checked=true]]:border-primary-900 dark:has-[[aria-checked=true]]:bg-primary-950"
 >
 	<Checkbox
 		{id}
 		bind:checked
-		class="data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-white dark:data-[state=checked]:border-primary dark:data-[state=checked]:bg-primary"
+		class="data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-white dark:data-[state=checked]:border-primary dark:data-[state=checked]:bg-primary"
 	/>
 	<div class="grid gap-1.5 font-normal">
 		<p class="text-sm leading-none font-medium">{label}</p>

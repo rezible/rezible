@@ -49,7 +49,7 @@
 	<!-- <DateRangeField 
 		classes={{field: {root: "w-fit"}}} 
 		value={dateRange} 
-		on:change={e => (dateRange = e.detail)} 
+		onchange={e => (dateRange = e.detail)} 
 		label="Date Range"
 		icon={RiCalendarLine}
 	/> -->

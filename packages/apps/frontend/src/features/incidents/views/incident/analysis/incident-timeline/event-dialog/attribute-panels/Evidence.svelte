@@ -50,7 +50,7 @@
 	};
 </script>
 
-<div class="flex flex-col gap-1 bg-surface-100">
+<div class="flex flex-col gap-1 bg-card">
 	{#if adding}
 		<span>data source select field</span>
 		<!-- <SelectField bind:value={adding.source} options={dataSourceOptions} label="Data Source" /> -->

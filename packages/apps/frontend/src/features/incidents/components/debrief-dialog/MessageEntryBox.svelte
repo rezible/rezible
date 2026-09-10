@@ -40,11 +40,11 @@
 <div class="flex flex-row gap-1">
 	<textarea
 		{disabled}
-		class="min-h-2 max-h-20 leading-6 w-full border p-2 resize-none bg-surface-100 focus:outline-none"
+		class="min-h-2 max-h-20 leading-6 w-full border p-2 resize-none bg-card focus:outline-none"
 		style="field-sizing: content"
 		bind:value></textarea>
 
-	<Button color="accent" disabled={disabled || !value} class="flex-row-reverse" onclick={sendMessage}>
+	<Button color="primary" disabled={disabled || !value} class="flex-row-reverse" onclick={sendMessage}>
 		Send
 	</Button>
 </div>

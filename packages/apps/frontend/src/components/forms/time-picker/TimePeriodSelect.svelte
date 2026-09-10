@@ -58,7 +58,7 @@
 	onchange={(e) => {
 		handleChange(e.currentTarget.value as Period);
 	}}
-	class="w-[48px] h-6 text-center font-mono text-base tabular-nums caret-transparent bg-surface-200/50 focus:bg-primary focus:text-primary-content [&::-webkit-inner-spin-button]:appearance-none"
+	class="w-[48px] h-6 text-center font-mono text-base tabular-nums caret-transparent bg-muted/50 focus:bg-primary focus:text-primary-content [&::-webkit-inner-spin-button]:appearance-none"
 >
 	<option selected={period === "AM"} value="AM">AM</option>
 	<option selected={period === "PM"} value="PM">PM</option>

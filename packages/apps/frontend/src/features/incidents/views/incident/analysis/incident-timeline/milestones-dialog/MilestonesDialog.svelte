@@ -11,7 +11,7 @@
 
 <!-- <Dialog
 	open={milestonesDialog.open}
-	on:close={() => milestonesDialog.close()}
+	onclose={() => milestonesDialog.close()}
 	portal
 	persistent
 	classes={{ root: "p-8", dialog: "flex flex-col w-full max-w-5xl max-h-full h-fit" }}

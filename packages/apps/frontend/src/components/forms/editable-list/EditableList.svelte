@@ -47,14 +47,14 @@
 </script>
 
 <!--div class="flex flex-col gap-2 border p-2">
-	<span class="text-surface-content">{title}</span>
+	<span class="text-foreground">{title}</span>
 
 	{#each values as val, i}
 		{#if editIdx !== undefined && editIdx === i}
 			<TextField dense clearable label={`Editing "${val}"`}
 				bind:value={editValue}
-				on:keydown={e => e.key === "Enter" && confirmEdit()}
-				on:clear={() => {clearEditing()}}
+				onkeydown={e => e.key === "Enter" && confirmEdit()}
+				onclear={() => {clearEditing()}}
 			>
 				<span slot="append">
 					<Button icon={RiCheckLine} onclick={confirmEdit} />
@@ -77,12 +77,12 @@
 
 	<TextField dense clearable label={addLabel}
 		bind:value={newValue}
-		on:keydown={e => e.key === "Enter" && confirmAdd()}
+		onkeydown={e => e.key === "Enter" && confirmAdd()}
 	>
 		<span slot="append">
 			<Button
 				icon={RiAddLine}
-				class="text-surface-content/50 p-2"
+				class="text-foreground/50 p-2"
 				onclick={confirmAdd}
 				disabled={!newValue}
 			/>

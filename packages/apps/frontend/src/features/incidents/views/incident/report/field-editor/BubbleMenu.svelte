@@ -104,7 +104,7 @@
 <div
 	bind:this={bubbleMenuElement}
 	style="visibility: hidden"
-	class="flex flex-col gap-2 bg-surface-300 rounded-full border"
+	class="flex flex-col gap-2 bg-background rounded-full border"
 >
 	<Button onclick={onCommentButtonClicked}>comment</Button>
 

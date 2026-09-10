@@ -107,7 +107,7 @@
 					<Label for="google-service-account-file">Service account credentials</Label>
 					<div
 						role="region"
-						class="rounded-md border border-dashed p-4 text-sm transition-colors [&.is-dragging]:border-primary [&.is-dragging]:bg-accent"
+						class="rounded-md border border-dashed p-4 text-sm transition-colors [&.is-dragging]:border-primary [&.is-dragging]:bg-primary"
 						ondragover={(e) => {
 							e.preventDefault();
 							e.currentTarget.classList.add("is-dragging");

@@ -21,7 +21,7 @@
 <ViewportPortal target="front">
 	{#if !!addingEntity}
 		<div
-			class="absolute border rounded-lg bg-surface-100 p-1 z-10 opacity-75"
+			class="absolute border rounded-lg bg-card p-1 z-10 opacity-75"
 			style="left: {pos.x}px; top: {pos.y}px"
 		>
 			<span>adding: {entityState?.displayName ?? "Unknown entity"}</span>

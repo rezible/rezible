@@ -16,7 +16,7 @@
 			<Avatar kind="roster" size={32} id={roster.id} />
 		</svelte:fragment>
 		<div slot="actions">
-			<Button icon={RiArrowRightSLine} class="p-2 text-surface-content/50" />
+			<Button icon={RiArrowRightSLine} class="p-2 text-foreground/50" />
 		</div>
 	</ListItem-->
 </a>

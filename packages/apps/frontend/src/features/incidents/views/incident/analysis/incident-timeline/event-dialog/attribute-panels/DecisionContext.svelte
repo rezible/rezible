@@ -5,7 +5,7 @@
 	const attributes = useEventDialogAttributes();
 </script>
 
-<div class="flex flex-col gap-1 bg-surface-100">
+<div class="flex flex-col gap-1 bg-card">
 	<EditableList
 		title="Options Considered"
 		addLabel="Add Option"
@@ -19,7 +19,7 @@
 	/>
 
 	<div class="flex flex-col gap-2 border p-2">
-		<span class="text-surface-content">Decision Rationale</span>
+		<span class="text-foreground">Decision Rationale</span>
 
 		<span>rationale field</span>
 		<!-- <TextField 
