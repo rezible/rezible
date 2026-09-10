@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
@@ -56,9 +57,7 @@ func (d AgentDefinition[I, S]) ValidateInput(raw []byte) (*I, error) {
 
 type (
 	InvestigationAgentSessionInput struct {
-		SituationID     uuid.UUID `json:"situation_id"`
-		InvestigationID uuid.UUID `json:"investigation_id"`
-		Query           *string   `json:"query"`
+		Query *string `json:"query"`
 	}
 
 	InvestigationAgentTurnInput struct {
@@ -74,11 +73,8 @@ type (
 )
 
 func (i InvestigationAgentSessionInput) Validate() error {
-	if i.SituationID == uuid.Nil {
-		return fmt.Errorf("invalid situation id %s", i.SituationID)
-	}
-	if i.InvestigationID == uuid.Nil {
-		return fmt.Errorf("investigation id is required")
+	if i.Query != nil && strings.TrimSpace(*i.Query) == "" {
+		return fmt.Errorf("empty query")
 	}
 	return nil
 }

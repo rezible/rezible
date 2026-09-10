@@ -221,7 +221,6 @@ func (i testAgentInput) Validate() error {
 func (s *AgentSessionServiceSuite) TestCreateAgentSessionCreatesQueuedStartAtomically() {
 	ctx := s.SeedTenantContext()
 	h := s.newAgentSessionTestHarness()
-	analysis := h.tdb.Client(ctx).SystemAnalysis.Create().SaveX(ctx)
 
 	h.jobs.EXPECT().
 		Insert(mock.Anything, mock.IsType(jobs.StartAgentSession{}), mock.Anything).
@@ -229,18 +228,15 @@ func (s *AgentSessionServiceSuite) TestCreateAgentSessionCreatesQueuedStartAtomi
 		Once()
 
 	params := rez.CreateAgentSessionParams{
-		AgentName:        "test-agent",
-		Input:            testAgentInput{Foo: "bar"},
-		SystemAnalysisID: &analysis.ID,
-		Metadata:         map[string]any{"baz": "123"},
+		AgentName: "test-agent",
+		Input:     testAgentInput{Foo: "bar"},
+		Metadata:  map[string]any{"baz": "123"},
 	}
 
 	session, createErr := h.service.CreateAgentSession(ctx, params)
 	s.Require().NoError(createErr)
 	s.Require().NotNil(session)
 	s.Equal("test-agent", session.AgentName)
-	s.Require().NotNil(session.SystemAnalysisID)
-	s.Equal(analysis.ID, *session.SystemAnalysisID)
 	s.Equal("123", session.Metadata["baz"])
 }
 

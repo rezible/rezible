@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/schema"
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/rezible/rezible/ent/entpgx"
 
 	rez "github.com/rezible/rezible"
@@ -52,7 +53,9 @@ func NewMigrationService(pool *ConnectionPool) (*MigrationService, error) {
 }
 
 func (m *MigrationService) Shutdown() {
-	_ = m.pool.Shutdown()
+	if poolErr := m.pool.Shutdown(); poolErr != nil {
+		fmt.Printf("Error shutting down migration service: %v", poolErr)
+	}
 }
 
 func (m *MigrationService) UpdateChecksum() error {
@@ -99,16 +102,21 @@ func (m *MigrationService) CreateSchemaMigration(ctx context.Context, name strin
 	})
 }
 
-func (m *MigrationService) Run(ctx context.Context, direction string) error {
+const (
+	MigrationDirectionUp   = rez.MigrationDirection("up")
+	MigrationDirectionDown = rez.MigrationDirection("down")
+)
+
+func (m *MigrationService) Run(ctx context.Context, direction rez.MigrationDirection) error {
 	schemaErr := m.withDbFromPool(func(db *sql.DB) error {
-		slog.Info("Running ent schema migrations " + direction)
+		slog.Info("Running ent schema migrations " + string(direction))
 		return m.runSchemaMigration(ctx, db, direction)
 	})
 	if schemaErr != nil && !errors.Is(schemaErr, migratelib.ErrNoChange) {
 		return fmt.Errorf("schema migration: %w", schemaErr)
 	}
 
-	slog.Info("Running river migrations " + direction)
+	slog.Info("Running river migrations " + string(direction))
 	riverErr := river.RunMigration(ctx, m.pool.Pool, direction)
 	if riverErr != nil {
 		return fmt.Errorf("river migration: %w", riverErr)
@@ -128,18 +136,21 @@ func (m *MigrationService) withDbFromPool(fn func(db *sql.DB) error) error {
 	return fn(db)
 }
 
-func (m *MigrationService) runSchemaMigration(ctx context.Context, db *sql.DB, direction string) error {
-	migrateUp := direction == "up"
-	if !migrateUp && direction != "down" {
+var validSchemaMigrationDirections = mapset.NewSet(MigrationDirectionUp, MigrationDirectionDown)
+
+func (m *MigrationService) runSchemaMigration(ctx context.Context, db *sql.DB, direction rez.MigrationDirection) error {
+	if !validSchemaMigrationDirections.Contains(direction) {
 		return fmt.Errorf("unsupported migration direction: %s", direction)
 	}
+
 	conn, connErr := db.Conn(ctx)
 	if connErr != nil {
 		return fmt.Errorf("connect to postgres: %w", connErr)
 	}
 	defer closeDatabaseResource("db conn", conn)
+
 	return m.withMigrator(ctx, conn, func(m *migratelib.Migrate) error {
-		if migrateUp {
+		if direction == MigrationDirectionUp {
 			return m.Up()
 		}
 		return m.Down()

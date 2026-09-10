@@ -83,15 +83,13 @@ func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTim
 	investigationID := uuid.New()
 
 	input := rezai.InvestigationAgentSessionInput{
-		SituationID:     fixture.situationID,
-		InvestigationID: investigationID,
-		Query:           new("Assess the operational situation."),
+		Query: new("Assess the operational situation."),
 	}
 	raw, err := json.Marshal(input)
 	if err != nil {
 		return fixture, rezai.EvalScenarioSeed{}, err
 	}
-	createSession := client.AgentSession.Create().SetAgentName(rezai.InvestigationAgent.Name).SetInput(raw).SetSystemAnalysisID(analysis.ID)
+	createSession := client.AgentSession.Create().SetAgentName(rezai.InvestigationAgent.Name).SetInput(raw)
 	session, err := createSession.Save(ctx)
 	if err != nil {
 		return fixture, rezai.EvalScenarioSeed{}, err

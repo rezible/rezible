@@ -106,7 +106,6 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 		createSession := tx.AgentSession.Create().
 			SetAgentName(name).
 			SetInput(sessionInput).
-			SetNillableSystemAnalysisID(params.SystemAnalysisID).
 			SetScopes(params.PermissionScopes).
 			SetMetadata(metadata)
 		createdSession, createErr := createSession.Save(ctx)

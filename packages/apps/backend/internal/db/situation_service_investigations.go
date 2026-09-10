@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -15,6 +16,7 @@ import (
 	ale "github.com/rezible/rezible/ent/alertepisode"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
 	siti "github.com/rezible/rezible/ent/situationinvestigation"
@@ -29,10 +31,10 @@ func (s *SituationService) CreateSituationInvestigation(ctx context.Context, par
 		return nil, fmt.Errorf("%w: situation id is required", rez.ErrInvalidInput)
 	}
 
-	var agentQuery *string
-	if params.Prompt != nil {
-		if cleaned := strings.TrimSpace(*params.Prompt); cleaned != "" {
-			agentQuery = &cleaned
+	agentInput := rezai.InvestigationAgentSessionInput{}
+	if params.Query != nil {
+		if cleaned := strings.TrimSpace(*params.Query); cleaned != "" {
+			agentInput.Query = new(cleaned)
 		}
 	}
 
@@ -44,10 +46,31 @@ func (s *SituationService) CreateSituationInvestigation(ctx context.Context, par
 
 		querySituation := tx.Situation.Query().
 			Where(situation.IDEQ(situationId)).
-			WithInvestigations()
+			WithInvestigations(func(q *ent.SituationInvestigationQuery) {
+				q.WithAgentSession()
+			})
 		current, queryErr := querySituation.Only(ctx)
 		if queryErr != nil {
 			return fmt.Errorf("get situation: %w", queryErr)
+		}
+
+		currentInvs, currentInvsErr := current.Edges.InvestigationsOrErr()
+		if currentInvsErr != nil {
+			return fmt.Errorf("existing investigations: %w", currentInvsErr)
+		}
+		for _, currInv := range currentInvs {
+			invSess, invSessErr := currInv.Edges.AgentSessionOrErr()
+			if invSessErr != nil {
+				return fmt.Errorf("existing investigation agent session: %w", invSessErr)
+			}
+			// check if a session with this query has been started already
+			var sessInput rezai.InvestigationAgentSessionInput
+			if jsonErr := json.Unmarshal(invSess.Input, &sessInput); jsonErr == nil {
+				if s.agentSessionInputsEqual(agentInput, sessInput) {
+					investigation = currInv.Unwrap()
+					return nil
+				}
+			}
 		}
 
 		createAnalysis := tx.SystemAnalysis.Create().
@@ -63,16 +86,9 @@ func (s *SituationService) CreateSituationInvestigation(ctx context.Context, par
 			return fmt.Errorf("seed system analysis entity: %w", entityErr)
 		}
 
-		investigationID := uuid.New()
-		agentInput := rezai.InvestigationAgentSessionInput{
-			SituationID:     situationId,
-			InvestigationID: investigationID,
-			Query:           agentQuery,
-		}
 		sessionParams := rez.CreateAgentSessionParams{
-			AgentName:        rezai.InvestigationAgent.Name,
-			Input:            agentInput,
-			SystemAnalysisID: &analysis.ID,
+			AgentName: rezai.InvestigationAgent.Name,
+			Input:     agentInput,
 		}
 		session, sessionErr := s.agents.CreateAgentSession(ctx, sessionParams)
 		if sessionErr != nil {
@@ -80,7 +96,6 @@ func (s *SituationService) CreateSituationInvestigation(ctx context.Context, par
 		}
 
 		createInvestigation := tx.SituationInvestigation.Create().
-			SetID(investigationID).
 			SetSituationID(situationId).
 			SetSystemAnalysisID(analysis.ID).
 			SetAgentSessionID(session.ID)
@@ -96,6 +111,13 @@ func (s *SituationService) CreateSituationInvestigation(ctx context.Context, par
 		investigation = created.Unwrap()
 		return nil
 	})
+}
+
+func (s *SituationService) agentSessionInputsEqual(inp1, inp2 rezai.InvestigationAgentSessionInput) bool {
+	if inp1.Query == nil || inp2.Query == nil {
+		return (inp1.Query == nil) != (inp2.Query == nil)
+	}
+	return *inp1.Query == *inp2.Query
 }
 
 func (s *SituationService) requestReconcileInvestigations(ctx context.Context, ids ...uuid.UUID) error {
@@ -118,9 +140,13 @@ func (s *SituationService) requestReconcileInvestigations(ctx context.Context, i
 	return nil
 }
 
-func (s *SituationService) GetSituationInvestigation(ctx context.Context, situationID uuid.UUID) (*ent.SituationInvestigation, error) {
+func (s *SituationService) GetInvestigationForSituation(ctx context.Context, situationID uuid.UUID) (*ent.SituationInvestigation, error) {
+	return s.LookupSituationInvestigation(ctx, siti.SituationID(situationID))
+}
+
+func (s *SituationService) LookupSituationInvestigation(ctx context.Context, preds ...predicate.SituationInvestigation) (*ent.SituationInvestigation, error) {
 	return s.db.Client(ctx).SituationInvestigation.Query().
-		Where(siti.SituationID(situationID)).
+		Where(preds...).
 		WithSituation().
 		WithSystemAnalysis().
 		WithAgentSession().

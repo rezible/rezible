@@ -38,6 +38,7 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 	tdb := s.CreateTestDatabase()
 	client := tdb.Client(ctx)
 	service := s.projectionService(tdb)
+
 	attrs := projections.AlertInstanceEventAttributes{
 		Title:       "Search latency high",
 		Description: "p95 latency above threshold",

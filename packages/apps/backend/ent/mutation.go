@@ -2122,8 +2122,6 @@ type AgentSessionMutation struct {
 	clearedFields                  map[string]struct{}
 	tenant                         *int
 	clearedtenant                  bool
-	system_analysis                *uuid.UUID
-	clearedsystem_analysis         bool
 	turns                          map[uuid.UUID]struct{}
 	removedturns                   map[uuid.UUID]struct{}
 	clearedturns                   bool
@@ -2478,55 +2476,6 @@ func (m *AgentSessionMutation) ResetInput() {
 	m.input = nil
 }
 
-// SetSystemAnalysisID sets the "system_analysis_id" field.
-func (m *AgentSessionMutation) SetSystemAnalysisID(u uuid.UUID) {
-	m.system_analysis = &u
-}
-
-// SystemAnalysisID returns the value of the "system_analysis_id" field in the mutation.
-func (m *AgentSessionMutation) SystemAnalysisID() (r uuid.UUID, exists bool) {
-	v := m.system_analysis
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSystemAnalysisID returns the old "system_analysis_id" field's value of the AgentSession entity.
-// If the AgentSession object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentSessionMutation) OldSystemAnalysisID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSystemAnalysisID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSystemAnalysisID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSystemAnalysisID: %w", err)
-	}
-	return oldValue.SystemAnalysisID, nil
-}
-
-// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
-func (m *AgentSessionMutation) ClearSystemAnalysisID() {
-	m.system_analysis = nil
-	m.clearedFields[agentsession.FieldSystemAnalysisID] = struct{}{}
-}
-
-// SystemAnalysisIDCleared returns if the "system_analysis_id" field was cleared in this mutation.
-func (m *AgentSessionMutation) SystemAnalysisIDCleared() bool {
-	_, ok := m.clearedFields[agentsession.FieldSystemAnalysisID]
-	return ok
-}
-
-// ResetSystemAnalysisID resets all changes to the "system_analysis_id" field.
-func (m *AgentSessionMutation) ResetSystemAnalysisID() {
-	m.system_analysis = nil
-	delete(m.clearedFields, agentsession.FieldSystemAnalysisID)
-}
-
 // SetMetadata sets the "metadata" field.
 func (m *AgentSessionMutation) SetMetadata(value map[string]interface{}) {
 	m.metadata = &value
@@ -2601,33 +2550,6 @@ func (m *AgentSessionMutation) TenantIDs() (ids []int) {
 func (m *AgentSessionMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
-}
-
-// ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
-func (m *AgentSessionMutation) ClearSystemAnalysis() {
-	m.clearedsystem_analysis = true
-	m.clearedFields[agentsession.FieldSystemAnalysisID] = struct{}{}
-}
-
-// SystemAnalysisCleared reports if the "system_analysis" edge to the SystemAnalysis entity was cleared.
-func (m *AgentSessionMutation) SystemAnalysisCleared() bool {
-	return m.SystemAnalysisIDCleared() || m.clearedsystem_analysis
-}
-
-// SystemAnalysisIDs returns the "system_analysis" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SystemAnalysisID instead. It exists only for internal usage by the builders.
-func (m *AgentSessionMutation) SystemAnalysisIDs() (ids []uuid.UUID) {
-	if id := m.system_analysis; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetSystemAnalysis resets all changes to the "system_analysis" edge.
-func (m *AgentSessionMutation) ResetSystemAnalysis() {
-	m.system_analysis = nil
-	m.clearedsystem_analysis = false
 }
 
 // AddTurnIDs adds the "turns" edge to the AgentTurn entity by ids.
@@ -2919,7 +2841,7 @@ func (m *AgentSessionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentSessionMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, agentsession.FieldTenantID)
 	}
@@ -2937,9 +2859,6 @@ func (m *AgentSessionMutation) Fields() []string {
 	}
 	if m.input != nil {
 		fields = append(fields, agentsession.FieldInput)
-	}
-	if m.system_analysis != nil {
-		fields = append(fields, agentsession.FieldSystemAnalysisID)
 	}
 	if m.metadata != nil {
 		fields = append(fields, agentsession.FieldMetadata)
@@ -2964,8 +2883,6 @@ func (m *AgentSessionMutation) Field(name string) (ent.Value, bool) {
 		return m.Scopes()
 	case agentsession.FieldInput:
 		return m.Input()
-	case agentsession.FieldSystemAnalysisID:
-		return m.SystemAnalysisID()
 	case agentsession.FieldMetadata:
 		return m.Metadata()
 	}
@@ -2989,8 +2906,6 @@ func (m *AgentSessionMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldScopes(ctx)
 	case agentsession.FieldInput:
 		return m.OldInput(ctx)
-	case agentsession.FieldSystemAnalysisID:
-		return m.OldSystemAnalysisID(ctx)
 	case agentsession.FieldMetadata:
 		return m.OldMetadata(ctx)
 	}
@@ -3044,13 +2959,6 @@ func (m *AgentSessionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetInput(v)
 		return nil
-	case agentsession.FieldSystemAnalysisID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSystemAnalysisID(v)
-		return nil
 	case agentsession.FieldMetadata:
 		v, ok := value.(map[string]interface{})
 		if !ok {
@@ -3091,9 +2999,6 @@ func (m *AgentSessionMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AgentSessionMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(agentsession.FieldSystemAnalysisID) {
-		fields = append(fields, agentsession.FieldSystemAnalysisID)
-	}
 	if m.FieldCleared(agentsession.FieldMetadata) {
 		fields = append(fields, agentsession.FieldMetadata)
 	}
@@ -3111,9 +3016,6 @@ func (m *AgentSessionMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AgentSessionMutation) ClearField(name string) error {
 	switch name {
-	case agentsession.FieldSystemAnalysisID:
-		m.ClearSystemAnalysisID()
-		return nil
 	case agentsession.FieldMetadata:
 		m.ClearMetadata()
 		return nil
@@ -3143,9 +3045,6 @@ func (m *AgentSessionMutation) ResetField(name string) error {
 	case agentsession.FieldInput:
 		m.ResetInput()
 		return nil
-	case agentsession.FieldSystemAnalysisID:
-		m.ResetSystemAnalysisID()
-		return nil
 	case agentsession.FieldMetadata:
 		m.ResetMetadata()
 		return nil
@@ -3155,12 +3054,9 @@ func (m *AgentSessionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentSessionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, agentsession.EdgeTenant)
-	}
-	if m.system_analysis != nil {
-		edges = append(edges, agentsession.EdgeSystemAnalysis)
 	}
 	if m.turns != nil {
 		edges = append(edges, agentsession.EdgeTurns)
@@ -3186,10 +3082,6 @@ func (m *AgentSessionMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case agentsession.EdgeTenant:
 		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case agentsession.EdgeSystemAnalysis:
-		if id := m.system_analysis; id != nil {
 			return []ent.Value{*id}
 		}
 	case agentsession.EdgeTurns:
@@ -3226,7 +3118,7 @@ func (m *AgentSessionMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentSessionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.removedturns != nil {
 		edges = append(edges, agentsession.EdgeTurns)
 	}
@@ -3276,12 +3168,9 @@ func (m *AgentSessionMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentSessionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, agentsession.EdgeTenant)
-	}
-	if m.clearedsystem_analysis {
-		edges = append(edges, agentsession.EdgeSystemAnalysis)
 	}
 	if m.clearedturns {
 		edges = append(edges, agentsession.EdgeTurns)
@@ -3307,8 +3196,6 @@ func (m *AgentSessionMutation) EdgeCleared(name string) bool {
 	switch name {
 	case agentsession.EdgeTenant:
 		return m.clearedtenant
-	case agentsession.EdgeSystemAnalysis:
-		return m.clearedsystem_analysis
 	case agentsession.EdgeTurns:
 		return m.clearedturns
 	case agentsession.EdgeMessages:
@@ -3330,9 +3217,6 @@ func (m *AgentSessionMutation) ClearEdge(name string) error {
 	case agentsession.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case agentsession.EdgeSystemAnalysis:
-		m.ClearSystemAnalysis()
-		return nil
 	case agentsession.EdgeSituationInvestigation:
 		m.ClearSituationInvestigation()
 		return nil
@@ -3346,9 +3230,6 @@ func (m *AgentSessionMutation) ResetEdge(name string) error {
 	switch name {
 	case agentsession.EdgeTenant:
 		m.ResetTenant()
-		return nil
-	case agentsession.EdgeSystemAnalysis:
-		m.ResetSystemAnalysis()
 		return nil
 	case agentsession.EdgeTurns:
 		m.ResetTurns()
@@ -54715,9 +54596,6 @@ type SystemAnalysisMutation struct {
 	entries                        map[uuid.UUID]struct{}
 	removedentries                 map[uuid.UUID]struct{}
 	clearedentries                 bool
-	agent_sessions                 map[uuid.UUID]struct{}
-	removedagent_sessions          map[uuid.UUID]struct{}
-	clearedagent_sessions          bool
 	situation_investigation        *uuid.UUID
 	clearedsituation_investigation bool
 	done                           bool
@@ -55327,60 +55205,6 @@ func (m *SystemAnalysisMutation) ResetEntries() {
 	m.removedentries = nil
 }
 
-// AddAgentSessionIDs adds the "agent_sessions" edge to the AgentSession entity by ids.
-func (m *SystemAnalysisMutation) AddAgentSessionIDs(ids ...uuid.UUID) {
-	if m.agent_sessions == nil {
-		m.agent_sessions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.agent_sessions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAgentSessions clears the "agent_sessions" edge to the AgentSession entity.
-func (m *SystemAnalysisMutation) ClearAgentSessions() {
-	m.clearedagent_sessions = true
-}
-
-// AgentSessionsCleared reports if the "agent_sessions" edge to the AgentSession entity was cleared.
-func (m *SystemAnalysisMutation) AgentSessionsCleared() bool {
-	return m.clearedagent_sessions
-}
-
-// RemoveAgentSessionIDs removes the "agent_sessions" edge to the AgentSession entity by IDs.
-func (m *SystemAnalysisMutation) RemoveAgentSessionIDs(ids ...uuid.UUID) {
-	if m.removedagent_sessions == nil {
-		m.removedagent_sessions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.agent_sessions, ids[i])
-		m.removedagent_sessions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAgentSessions returns the removed IDs of the "agent_sessions" edge to the AgentSession entity.
-func (m *SystemAnalysisMutation) RemovedAgentSessionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedagent_sessions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AgentSessionsIDs returns the "agent_sessions" edge IDs in the mutation.
-func (m *SystemAnalysisMutation) AgentSessionsIDs() (ids []uuid.UUID) {
-	for id := range m.agent_sessions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAgentSessions resets all changes to the "agent_sessions" edge.
-func (m *SystemAnalysisMutation) ResetAgentSessions() {
-	m.agent_sessions = nil
-	m.clearedagent_sessions = false
-	m.removedagent_sessions = nil
-}
-
 // SetSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by id.
 func (m *SystemAnalysisMutation) SetSituationInvestigationID(id uuid.UUID) {
 	m.situation_investigation = &id
@@ -55662,7 +55486,7 @@ func (m *SystemAnalysisMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemAnalysisMutation) AddedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 7)
 	if m.tenant != nil {
 		edges = append(edges, systemanalysis.EdgeTenant)
 	}
@@ -55680,9 +55504,6 @@ func (m *SystemAnalysisMutation) AddedEdges() []string {
 	}
 	if m.entries != nil {
 		edges = append(edges, systemanalysis.EdgeEntries)
-	}
-	if m.agent_sessions != nil {
-		edges = append(edges, systemanalysis.EdgeAgentSessions)
 	}
 	if m.situation_investigation != nil {
 		edges = append(edges, systemanalysis.EdgeSituationInvestigation)
@@ -55724,12 +55545,6 @@ func (m *SystemAnalysisMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case systemanalysis.EdgeAgentSessions:
-		ids := make([]ent.Value, 0, len(m.agent_sessions))
-		for id := range m.agent_sessions {
-			ids = append(ids, id)
-		}
-		return ids
 	case systemanalysis.EdgeSituationInvestigation:
 		if id := m.situation_investigation; id != nil {
 			return []ent.Value{*id}
@@ -55740,7 +55555,7 @@ func (m *SystemAnalysisMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemAnalysisMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 7)
 	if m.removedanalysis_entities != nil {
 		edges = append(edges, systemanalysis.EdgeAnalysisEntities)
 	}
@@ -55749,9 +55564,6 @@ func (m *SystemAnalysisMutation) RemovedEdges() []string {
 	}
 	if m.removedentries != nil {
 		edges = append(edges, systemanalysis.EdgeEntries)
-	}
-	if m.removedagent_sessions != nil {
-		edges = append(edges, systemanalysis.EdgeAgentSessions)
 	}
 	return edges
 }
@@ -55778,19 +55590,13 @@ func (m *SystemAnalysisMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case systemanalysis.EdgeAgentSessions:
-		ids := make([]ent.Value, 0, len(m.removedagent_sessions))
-		for id := range m.removedagent_sessions {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemAnalysisMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 7)
 	if m.clearedtenant {
 		edges = append(edges, systemanalysis.EdgeTenant)
 	}
@@ -55808,9 +55614,6 @@ func (m *SystemAnalysisMutation) ClearedEdges() []string {
 	}
 	if m.clearedentries {
 		edges = append(edges, systemanalysis.EdgeEntries)
-	}
-	if m.clearedagent_sessions {
-		edges = append(edges, systemanalysis.EdgeAgentSessions)
 	}
 	if m.clearedsituation_investigation {
 		edges = append(edges, systemanalysis.EdgeSituationInvestigation)
@@ -55834,8 +55637,6 @@ func (m *SystemAnalysisMutation) EdgeCleared(name string) bool {
 		return m.clearedanalysis_relationships
 	case systemanalysis.EdgeEntries:
 		return m.clearedentries
-	case systemanalysis.EdgeAgentSessions:
-		return m.clearedagent_sessions
 	case systemanalysis.EdgeSituationInvestigation:
 		return m.clearedsituation_investigation
 	}
@@ -55883,9 +55684,6 @@ func (m *SystemAnalysisMutation) ResetEdge(name string) error {
 		return nil
 	case systemanalysis.EdgeEntries:
 		m.ResetEntries()
-		return nil
-	case systemanalysis.EdgeAgentSessions:
-		m.ResetAgentSessions()
 		return nil
 	case systemanalysis.EdgeSituationInvestigation:
 		m.ResetSituationInvestigation()

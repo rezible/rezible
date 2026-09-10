@@ -224,9 +224,12 @@ type agentInvocationContext struct {
 
 type agentInvocationContextKey struct{}
 
-func getAgentInvocationContext(ctx context.Context) (*agentInvocationContext, bool) {
-	c, ok := ctx.Value(agentInvocationContextKey{}).(*agentInvocationContext)
-	return c, ok
+func getAgentInvocationContext(ctx context.Context) *agentInvocationContext {
+	invCtx, ok := ctx.Value(agentInvocationContextKey{}).(*agentInvocationContext)
+	if !ok || invCtx == nil || invCtx.Session == nil {
+		return nil
+	}
+	return invCtx
 }
 
 func (w *agentWrapper[I, S]) Invoke(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error) {

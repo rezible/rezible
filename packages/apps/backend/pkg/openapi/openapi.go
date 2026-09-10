@@ -7,6 +7,7 @@ import (
 //go:generate go run -mod=mod generate.go
 
 type (
+	OpenAPI    = huma.OpenAPI
 	API        = huma.API
 	Context    = huma.Context
 	Config     = huma.Config

@@ -224,13 +224,14 @@ func (s *AlertService) createAlertEpisode(ctx context.Context, params createAler
 		}
 
 		create := client.AlertEpisode.Create().
+			SetID(episodeId).
 			SetAlertDefinitionID(params.AlertDef.ID).
 			SetKnowledgeEntityID(knowlEntId).
 			SetStartedAt(params.OccurredAt).
 			SetLastObservedAt(params.OccurredAt)
 		createdEpisode, createEpisodeErr := create.Save(ctx)
 		if createEpisodeErr != nil {
-			return createEpisodeErr
+			return fmt.Errorf("create episode: %w", createEpisodeErr)
 		}
 		created = createdEpisode
 

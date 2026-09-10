@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -71,10 +72,28 @@ func MakeApi(h Handler, middlewares ...openapi.Middleware) openapi.API {
 	return api
 }
 
-func MakeOpenApiSpec() *huma.OpenAPI {
-	return makeUnhandledApi().OpenAPI()
-}
-
 func makeUnhandledApi() openapi.API {
 	return MakeApi(operations{})
+}
+
+type SpecFormat string
+
+const (
+	SpecFormatJSON SpecFormat = "json"
+	SpecFormatYAML SpecFormat = "yaml"
+)
+
+func encodeSpec(f SpecFormat, spec *openapi.OpenAPI) ([]byte, error) {
+	switch f {
+	case SpecFormatJSON:
+		return spec.MarshalJSON()
+	case SpecFormatYAML:
+		return spec.YAML()
+	default:
+		return nil, fmt.Errorf("invalid spec format")
+	}
+}
+
+func GetEncodedSpec(f SpecFormat) ([]byte, error) {
+	return encodeSpec(f, makeUnhandledApi().OpenAPI())
 }

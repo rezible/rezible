@@ -106,7 +106,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 		}
 
 		if _, eventErr := s.alerts.RecordAlertDefinitionInstance(ctx, definitionId, event); eventErr != nil {
-			return fmt.Errorf("contribute alert event: %w", eventErr)
+			return fmt.Errorf("record alert definition instance: %w", eventErr)
 		}
 
 		projected = append(projected, rez.ProjectedEntityRef{

@@ -29,9 +29,6 @@ func (AgentSession) Fields() []ent.Field {
 		field.String("agent_name").NotEmpty(),
 		field.Strings("scopes").Default([]string{}),
 		field.Bytes("input"),
-		field.UUID("system_analysis_id", uuid.UUID{}).
-			Optional().
-			Nillable(),
 		field.JSON("metadata", map[string]any{}).
 			SchemaType(schemaTypeJsonB).
 			Optional(),
@@ -40,9 +37,6 @@ func (AgentSession) Fields() []ent.Field {
 
 func (AgentSession) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("system_analysis", SystemAnalysis.Type).
-			Unique().
-			Field("system_analysis_id"),
 		edge.To("turns", AgentTurn.Type),
 		edge.To("messages", AgentMessage.Type),
 		edge.To("artifacts", AgentArtifact.Type),

@@ -2,12 +2,12 @@ package genkit
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
+	siti "github.com/rezible/rezible/ent/situationinvestigation"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -16,14 +16,30 @@ import (
 
 type InvestigationAgent struct {
 	situations rez.SituationService
+	analyses   rez.SystemAnalysisService
+	knowledge  rez.KnowledgeGraphService
 }
 
-func NewInvestigationAgent(situations rez.SituationService) *InvestigationAgent {
-	return &InvestigationAgent{situations: situations}
+func NewInvestigationAgent(situations rez.SituationService, analyses rez.SystemAnalysisService, knowledge rez.KnowledgeGraphService) *InvestigationAgent {
+	return &InvestigationAgent{situations: situations, analyses: analyses, knowledge: knowledge}
 }
 
 func (a *InvestigationAgent) agentDefinition() rezai.InvestigationAgentDefinition {
 	return rezai.InvestigationAgent
+}
+
+func (a *InvestigationAgent) makeMiddleware() []ai.Middleware {
+	resolveInvocationSystemAnalysisID := func(ctx context.Context) (uuid.UUID, error) {
+		inv, invErr := a.resolveInvocationSituationInvestigation(ctx)
+		if invErr != nil {
+			return uuid.Nil, invErr
+		}
+		return inv.SystemAnalysisID, nil
+	}
+	return []ai.Middleware{
+		newSystemAnalysisMiddleware(a.analyses, a.knowledge, resolveInvocationSystemAnalysisID),
+		&situationInvestigationReportMiddleware{situations: a.situations},
+	}
 }
 
 func (a *InvestigationAgent) makeInitialTurnInput(ctx context.Context, input rezai.InvestigationAgentSessionInput) (*rez.AiAgentTurnInput, error) {
@@ -32,22 +48,33 @@ func (a *InvestigationAgent) makeInitialTurnInput(ctx context.Context, input rez
 	}, nil
 }
 
+func (a *InvestigationAgent) resolveInvocationSituationInvestigation(ctx context.Context) (*ent.SituationInvestigation, error) {
+	invCtx := getAgentInvocationContext(ctx)
+	if invCtx == nil {
+		return nil, fmt.Errorf("agent session context does not exist")
+	}
+	inv, lookupInvErr := a.situations.LookupSituationInvestigation(ctx, siti.AgentSessionID(invCtx.Session.ID))
+	if lookupInvErr != nil || inv == nil {
+		return nil, fmt.Errorf("get investigation for agent session: %w", lookupInvErr)
+	}
+	return inv, nil
+}
+
 func (a *InvestigationAgent) updateInitialTurnMessage(ctx context.Context, input rezai.InvestigationAgentSessionInput) (string, error) {
-	sit, situationErr := a.situations.GetSituation(ctx, input.SituationID)
+	inv, invErr := a.resolveInvocationSituationInvestigation(ctx)
+	if invErr != nil {
+		return "", fmt.Errorf("get investigation: %w", invErr)
+	}
+
+	sit, situationErr := inv.Edges.SituationOrErr()
 	if situationErr != nil {
-		return "", fmt.Errorf("get situation: %w", situationErr)
+		return "", fmt.Errorf("situation: %w", situationErr)
 	}
 
 	return fmt.Sprintf(`Title: %s
 Summary: %s
 Status: %s
 Opened at: %s`, sit.Title, sit.Summary, sit.Status, sit.OpenedAt.Format("2006-01-02T15:04:05Z07:00")), nil
-}
-
-func (a *InvestigationAgent) makeMiddleware() []ai.Middleware {
-	return []ai.Middleware{
-		&situationInvestigationReportMiddleware{situations: a.situations},
-	}
 }
 
 func (a *InvestigationAgent) getCustomState(context.Context, *ent.AgentSession) (*rezai.InvestigationAgentState, error) {
@@ -71,19 +98,16 @@ func (m *situationInvestigationReportMiddleware) Name() string {
 }
 
 func (m *situationInvestigationReportMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
-	invCtx, ok := getAgentInvocationContext(ctx)
-	if !ok || invCtx.Turn == nil {
-		return nil, fmt.Errorf("missing agent invocation context")
-	}
-	var input rezai.InvestigationAgentSessionInput
-	if jsonErr := json.Unmarshal(invCtx.Session.Input, &input); jsonErr != nil {
-		return nil, fmt.Errorf("unmarshal session input: %w", jsonErr)
+	invCtx := getAgentInvocationContext(ctx)
+	if invCtx == nil {
+		return nil, fmt.Errorf("agent session context does not exist")
 	}
 
-	inv, invErr := m.situations.GetSituationInvestigation(ctx, input.InvestigationID)
-	if invErr != nil {
-		return nil, fmt.Errorf("get investigation: %w", invErr)
+	inv, lookupInvErr := m.situations.LookupSituationInvestigation(ctx, siti.AgentSessionID(invCtx.Session.ID))
+	if lookupInvErr != nil || inv == nil {
+		return nil, fmt.Errorf("get investigation for agent session: %w", lookupInvErr)
 	}
+
 	hooks := &ai.Hooks{}
 
 	requested := inv.RequestedTurnID != nil && *inv.RequestedTurnID == invCtx.Turn.ID
@@ -91,7 +115,7 @@ func (m *situationInvestigationReportMiddleware) New(ctx context.Context) (*ai.H
 		hooks.WrapGenerate = makeSystemTextInjectorFn("situation_report", "This is a conversational follow-up. The existing investigation report is: "+inv.Report.Text)
 	} else {
 		hooks.Tools = append(hooks.Tools, makeDefinedTool(rezai.SaveSituationInvestigationReportTool, m.updateReportToolFunc))
-		hooks.WrapGenerate = m.makeGenerateWrapper(invCtx.Turn.ID, input.SituationID, input.InvestigationID)
+		hooks.WrapGenerate = m.makeGenerateWrapper(invCtx.Turn.ID, inv.SituationID, inv.ID)
 	}
 	return hooks, nil
 }
@@ -103,7 +127,7 @@ func (m *situationInvestigationReportMiddleware) makeGenerateWrapper(turnId uuid
 			return nil, respErr
 		}
 		if response != nil && len(response.ToolRequests()) == 0 {
-			current, getInvErr := m.situations.GetSituationInvestigation(ctx, investigationID)
+			current, getInvErr := m.situations.GetInvestigationForSituation(ctx, investigationID)
 			if getInvErr != nil {
 				return nil, getInvErr
 			}
@@ -116,13 +140,13 @@ func (m *situationInvestigationReportMiddleware) makeGenerateWrapper(turnId uuid
 }
 
 func (m *situationInvestigationReportMiddleware) updateReportToolFunc(ctx context.Context, input rezai.SaveSituationInvestigationReportToolInput) (*rezai.SaveSituationInvestigationReportToolOutput, error) {
-	invocation, ok := getAgentInvocationContext(ctx)
-	if !ok || invocation.Turn == nil {
+	invCtx := getAgentInvocationContext(ctx)
+	if invCtx == nil || invCtx.Turn == nil {
 		return nil, fmt.Errorf("missing agent invocation context")
 	}
 
 	params := rez.SetSituationInvestigationReportParams{
-		AgentTurnID: invocation.Turn.ID,
+		AgentTurnID: invCtx.Turn.ID,
 		Report:      input.Report,
 		Assessments: input.Assessments,
 	}

@@ -1359,25 +1359,6 @@ func (c *AgentSessionClient) QueryTenant(_m *AgentSession) *TenantQuery {
 	return query
 }
 
-// QuerySystemAnalysis queries the system_analysis edge of a AgentSession.
-func (c *AgentSessionClient) QuerySystemAnalysis(_m *AgentSession) *SystemAnalysisQuery {
-	query := (&SystemAnalysisClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentsession.Table, agentsession.FieldID, id),
-			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentsession.SystemAnalysisTable, agentsession.SystemAnalysisColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysis
-		step.Edge.Schema = schemaConfig.AgentSession
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryTurns queries the turns edge of a AgentSession.
 func (c *AgentSessionClient) QueryTurns(_m *AgentSession) *AgentTurnQuery {
 	query := (&AgentTurnClient{config: c.config}).Query()
@@ -13515,25 +13496,6 @@ func (c *SystemAnalysisClient) QueryEntries(_m *SystemAnalysis) *SystemAnalysisE
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysisEntry
 		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAgentSessions queries the agent_sessions edge of a SystemAnalysis.
-func (c *SystemAnalysisClient) QueryAgentSessions(_m *SystemAnalysis) *AgentSessionQuery {
-	query := (&AgentSessionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
-			sqlgraph.To(agentsession.Table, agentsession.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AgentSessionsTable, systemanalysis.AgentSessionsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AgentSession
-		step.Edge.Schema = schemaConfig.AgentSession
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}

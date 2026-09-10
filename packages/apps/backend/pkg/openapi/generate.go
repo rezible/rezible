@@ -10,11 +10,11 @@ import (
 )
 
 func main() {
-	spec, specErr := oapiv1.MakeOpenApiSpec().YAML()
+	spec, specErr := oapiv1.GetEncodedSpec(oapiv1.SpecFormatYAML)
 	if specErr != nil {
 		log.Fatalf("failed to get spec: %v", specErr)
 	}
-	if writeErr := os.WriteFile("./v1/openapi.yaml", []byte(spec), 0644); writeErr != nil {
+	if writeErr := os.WriteFile("./v1/openapi.yaml", spec, 0644); writeErr != nil {
 		log.Fatalf("failed to write spec: %v", writeErr)
 	}
 }

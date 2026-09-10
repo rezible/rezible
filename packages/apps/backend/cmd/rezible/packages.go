@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/samber/do/v2"
 
 	rez "github.com/rezible/rezible"
-	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/db/eventprojection"
 	"github.com/rezible/rezible/internal/genkit"
@@ -30,8 +30,6 @@ import (
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
-type WithProvider func(context.Context) func(do.Injector)
-
 func withEnvironmentConfig(ctx context.Context) func(do.Injector) {
 	return do.Package(
 		do.Lazy(func(i do.Injector) (rez.Config, error) {
@@ -50,10 +48,6 @@ func withOpenTelemetry(ctx context.Context) func(do.Injector) {
 	)
 }
 
-func postgresTestDatabaseConfig(i do.Injector) (rez.PostgresConfig, error) {
-	return do.MustInvoke[*pgtestdb.Database](i).Config(), nil
-}
-
 func withPostgresDatabase(ctx context.Context) func(do.Injector) {
 	return do.Package(
 		do.Lazy(func(i do.Injector) (rez.PostgresConfig, error) {
@@ -68,18 +62,22 @@ func withPostgresDatabase(ctx context.Context) func(do.Injector) {
 			return postgres.MakePgxPool(ctx, do.MustInvoke[rez.PostgresConfig](i), false)
 		}),
 
-		do.Lazy(func(i do.Injector) (*postgres.MigrationService, error) {
+		do.Lazy(func(i do.Injector) (rez.Database, error) {
+			return postgres.NewPgxPoolDatabaseClient(do.MustInvoke[*postgres.ConnectionPool](i))
+		}),
+
+		do.Lazy(func(i do.Injector) (rez.MigrationService, error) {
 			mgPool, mgPoolErr := postgres.MakePgxPool(ctx, do.MustInvoke[rez.PostgresConfig](i), true)
 			if mgPoolErr != nil {
 				return nil, fmt.Errorf("admin pgx pool: %w", mgPoolErr)
 			}
 			return postgres.NewMigrationService(mgPool)
 		}),
-
-		do.Lazy(func(i do.Injector) (rez.Database, error) {
-			return postgres.NewPgxPoolDatabaseClient(do.MustInvoke[*postgres.ConnectionPool](i))
-		}),
 	)
+}
+
+func providePostgresTestDatabaseConfig(i do.Injector) (rez.PostgresConfig, error) {
+	return do.MustInvoke[*pgtestdb.Database](i).Config(), nil
 }
 
 func withGenkitAiService(ctx context.Context) func(do.Injector) {
@@ -96,6 +94,7 @@ var basePackages = do.Package(
 	pkgRiver,
 	pkgWatermill,
 	pkgGenkit,
+	pkgOpenApi,
 	pkgHttp,
 	pkgIntegrations,
 	pkgDatabase,
@@ -107,14 +106,15 @@ var pkgGenkit = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) ([]genkit.AiServiceOption, error) {
-		analysisMw := genkit.WithSystemAnalysisAgentMiddleware(
+		chatAgent := genkit.NewChatAgent()
+		investigationAgent := genkit.NewInvestigationAgent(
+			do.MustInvoke[rez.SituationService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphService](i),
 		)
-		situationSvc := do.MustInvoke[rez.SituationService](i)
 		opts := []genkit.AiServiceOption{
-			genkit.WithAgent(genkit.NewChatAgent()),
-			genkit.WithAgent(genkit.NewInvestigationAgent(situationSvc), analysisMw),
+			genkit.WithAgent(chatAgent),
+			genkit.WithAgent(investigationAgent),
 			genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
 		}
 		return opts, nil
@@ -460,7 +460,7 @@ var pkgDatabase = do.Package(
 	}),
 )
 
-var pkgHttp = do.Package(
+var pkgOpenApi = do.Package(
 	do.Lazy(func(i do.Injector) (oapiv1.Handler, error) {
 		return apiv1.NewHandler(
 			do.MustInvoke[rez.Database](i),
@@ -485,7 +485,9 @@ var pkgHttp = do.Package(
 			do.MustInvoke[rez.SituationService](i),
 		)
 	}),
+)
 
+var pkgHttp = do.Package(
 	do.Lazy(func(i do.Injector) (*http.Server, error) {
 		return http.NewServer(
 			do.MustInvoke[rez.Config](i),

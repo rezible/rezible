@@ -471,35 +471,6 @@ func HasEntriesWith(preds ...predicate.SystemAnalysisEntry) predicate.SystemAnal
 	})
 }
 
-// HasAgentSessions applies the HasEdge predicate on the "agent_sessions" edge.
-func HasAgentSessions() predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, AgentSessionsTable, AgentSessionsColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentSession
-		step.Edge.Schema = schemaConfig.AgentSession
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAgentSessionsWith applies the HasEdge predicate on the "agent_sessions" edge with a given conditions (other predicates).
-func HasAgentSessionsWith(preds ...predicate.AgentSession) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(func(s *sql.Selector) {
-		step := newAgentSessionsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentSession
-		step.Edge.Schema = schemaConfig.AgentSession
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasSituationInvestigation applies the HasEdge predicate on the "situation_investigation" edge.
 func HasSituationInvestigation() predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {

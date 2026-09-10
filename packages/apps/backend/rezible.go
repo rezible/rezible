@@ -50,6 +50,10 @@ type (
 		Run(context.Context, chan<- struct{}) error
 		Shutdown(context.Context) error
 	}
+
+	LifecycleServiceProvider interface {
+		LifecycleService() LifecycleService
+	}
 )
 
 type (
@@ -61,10 +65,12 @@ type (
 		Shutdown() error
 	}
 
+	MigrationDirection string
+
 	MigrationService interface {
 		GetCurrentStatus(context.Context) (*MigrationStatus, error)
 		CreateSchemaMigration(ctx context.Context, name string) error
-		Run(ctx context.Context, direction string) error
+		Run(context.Context, MigrationDirection) error
 		UpdateChecksum() error
 	}
 
@@ -648,7 +654,6 @@ type (
 		AgentName        string
 		PermissionScopes []string
 		Input            ValidatingInput
-		SystemAnalysisID *uuid.UUID
 		Metadata         map[string]any
 		Bindings         []AgentSessionBindingParams
 	}
@@ -747,7 +752,7 @@ type (
 
 	CreateSituationInvestigationParams struct {
 		SituationID uuid.UUID
-		Prompt      *string
+		Query       *string
 	}
 
 	CloseSituationParams struct {
@@ -794,7 +799,8 @@ type (
 		RemoveSituationEvidenceItem(context.Context, uuid.UUID, SituationEvidenceItemParams) error
 
 		CreateSituationInvestigation(context.Context, CreateSituationInvestigationParams) (*ent.SituationInvestigation, error)
-		GetSituationInvestigation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)
+		GetInvestigationForSituation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)
+		LookupSituationInvestigation(context.Context, ...predicate.SituationInvestigation) (*ent.SituationInvestigation, error)
 		SetSituationInvestigationReport(context.Context, SetSituationInvestigationReportParams) (*ent.SituationInvestigation, error)
 
 		ListSituationHazardAssessments(context.Context, ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error)

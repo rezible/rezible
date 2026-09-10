@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"slices"
 	"time"
@@ -15,6 +17,7 @@ import (
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
+	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/samber/do/v2"
@@ -22,61 +25,108 @@ import (
 	rez "github.com/rezible/rezible"
 )
 
-type appService struct {
-	service          rez.LifecycleService
-	cancelServiceCtx context.CancelFunc
-	chStarted        <-chan error
-}
+type (
+	Package         = func(do.Injector)
+	Provider[T any] = do.Provider[T]
+	InitProvider    = func(context.Context) Package
 
-type application struct {
-	i            do.Injector
-	cancelRunCtx context.CancelFunc
-	services     []appService
-}
+	Application struct {
+		i            do.Injector
+		cancelRunCtx context.CancelFunc
+		services     []appService
+	}
 
-func newApplication() *application {
+	appService struct {
+		service          rez.LifecycleService
+		cancelServiceCtx context.CancelFunc
+		chStarted        <-chan error
+	}
+)
+
+func NewApplication() *Application {
 	i := do.NewWithOpts(&do.InjectorOpts{}, basePackages)
-	return &application{i: i}
+	return &Application{i: i}
 }
 
-func (a *application) init(ctx context.Context, provs ...WithProvider) {
+func (a *Application) Init(ctx context.Context, provs ...InitProvider) (context.Context, error) {
+	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
+
 	for _, p := range provs {
 		p(ctx)(a.i)
 	}
+
+	return ctx, nil
 }
 
-func (a *application) use(p func(do.Injector)) {
-	p(a.i)
-}
-
-func (a *application) override[T any](prov do.Provider[T]) {
+func (a *Application) Override[T any](prov Provider[T]) {
 	do.Override(a.i, prov)
 }
 
-func (a *application) with[T any](fn func(T) error) error {
+func (a *Application) invoke[T any]() (T, error) {
 	t, invErr := do.Invoke[T](a.i)
+	if invErr != nil {
+		return t, fmt.Errorf("failed to invoke %T: %w", t, invErr)
+	}
+	return t, nil
+}
+
+func (a *Application) mustInvoke[T any]() T {
+	return do.MustInvoke[T](a.i)
+}
+
+func (a *Application) With[T any](fn func(T) error) error {
+	t, invErr := a.invoke[T]()
 	if invErr != nil {
 		return fmt.Errorf("failed to invoke %T: %w", t, invErr)
 	}
 	return fn(t)
 }
 
-func (a *application) Run[S rez.LifecycleService](ctx context.Context) error {
+func (a *Application) RunLifecycle[S rez.LifecycleService](ctx context.Context) error {
 	if bootstrapErr := a.setup(ctx); bootstrapErr != nil {
 		return fmt.Errorf("bootstrap: %w", bootstrapErr)
 	}
-	return a.runLifecycleServices(ctx, a.invokeLifecycleServices(do.MustInvoke[S](a.i)))
+	return a.runLifecycleServices(ctx, a.invokeLifecycleServices(a.mustInvoke[S]()))
 }
 
-func (a *application) invokeLifecycleServices(runSvcs ...rez.LifecycleService) []rez.LifecycleService {
+func (a *Application) RunAiEvalScenario(ctx context.Context, evalName string, writer io.Writer) error {
+	return a.With(func(svc rezai.EvalScenarioRunner) error {
+		result, runErr := svc.RunNamedScenario(ctx, evalName)
+		if runErr != nil || result == nil {
+			return fmt.Errorf("failed to run scenario: %w", runErr)
+		}
+		encoder := json.NewEncoder(writer)
+		encoder.SetIndent("", "  ")
+		if jsonErr := encoder.Encode(result); jsonErr != nil {
+			return fmt.Errorf("encode evaluation result: %w", jsonErr)
+		}
+		if result.Status != rezai.EvalRunStatusPassed {
+			return fmt.Errorf("evaluation %s", result.Status)
+		}
+		return nil
+	})
+}
+
+func (a *Application) Shutdown(ctx context.Context) error {
+	cancelCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+	defer cancel()
+	shutdown := a.i.ShutdownWithContext(cancelCtx)
+	var shutdownErr error
+	for sd, sErr := range shutdown.Errors {
+		if !errors.Is(sErr, context.Canceled) {
+			fmt.Printf("\n\t[%s] ERROR: %s\n", sd.Service, sErr.Error())
+			shutdownErr = errors.Join(shutdownErr, sErr)
+		}
+	}
+	return shutdownErr
+}
+
+func (a *Application) invokeLifecycleServices(runSvcs ...rez.LifecycleService) []rez.LifecycleService {
 	svcs := []rez.LifecycleService{
-		do.MustInvoke[*river.JobService](a.i),
-		do.MustInvoke[*watermill.MessageService](a.i),
+		a.mustInvoke[*river.JobService](),
+		a.mustInvoke[*watermill.MessageService](),
 	}
-	type lifecycleServiceProvider interface {
-		LifecycleService() rez.LifecycleService
-	}
-	for _, intg := range getAvailableIntegrationsWith[lifecycleServiceProvider](a.i) {
+	for _, intg := range a.getAvailableIntegrationsWith[rez.LifecycleServiceProvider]() {
 		if ls := intg.LifecycleService(); ls != nil {
 			svcs = append(svcs, ls)
 		}
@@ -85,11 +135,11 @@ func (a *application) invokeLifecycleServices(runSvcs ...rez.LifecycleService) [
 	return svcs
 }
 
-func getServiceName(s rez.LifecycleService) string {
+func (a *Application) getServiceName(s rez.LifecycleService) string {
 	return fmt.Sprintf("%T", s)
 }
 
-func (a *application) runLifecycleServices(ctx context.Context, services []rez.LifecycleService) (runErr error) {
+func (a *Application) runLifecycleServices(ctx context.Context, services []rez.LifecycleService) (runErr error) {
 	slog.Info("=== Starting Services ===")
 	runCtx, cancelRunCtx := context.WithCancel(context.WithoutCancel(ctx))
 	a.cancelRunCtx = cancelRunCtx
@@ -110,7 +160,7 @@ func (a *application) runLifecycleServices(ctx context.Context, services []rez.L
 	return a.waitForServices(ctx)
 }
 
-func (a *application) startServices(ctx context.Context, services []rez.LifecycleService) error {
+func (a *Application) startServices(ctx context.Context, services []rez.LifecycleService) error {
 	startupCtx, cancelStartupCtx := context.WithTimeout(ctx, 30*time.Second)
 	defer cancelStartupCtx()
 
@@ -139,7 +189,7 @@ func (a *application) startServices(ctx context.Context, services []rez.Lifecycl
 	}
 
 	for _, svc := range services {
-		svcName := getServiceName(svc)
+		svcName := a.getServiceName(svc)
 		serviceCtx, cancelServiceFn := context.WithCancel(ctx)
 		chStarted := make(chan error, 1)
 		chReady := make(chan struct{})
@@ -166,7 +216,7 @@ func (a *application) startServices(ctx context.Context, services []rez.Lifecycl
 	return nil
 }
 
-func (a *application) waitForServices(ctx context.Context) error {
+func (a *Application) waitForServices(ctx context.Context) error {
 	serviceExit := make(chan error, len(a.services))
 	waitForService := func(s appService) {
 		if serviceErr := <-s.chStarted; serviceErr != nil {
@@ -188,12 +238,12 @@ func (a *application) waitForServices(ctx context.Context) error {
 	}
 }
 
-func (a *application) shutdownServices(ctx context.Context) error {
+func (a *Application) shutdownServices(ctx context.Context) error {
 	var shutdownErr error
 	stopCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
 	defer cancel()
 	for _, running := range slices.Backward(a.services) {
-		svcName := getServiceName(running.service)
+		svcName := a.getServiceName(running.service)
 		if stopErr := running.service.Shutdown(stopCtx); stopErr != nil {
 			shutdownErr = errors.Join(shutdownErr, fmt.Errorf("shutdown %s: %w", svcName, stopErr))
 			slog.Error("service shutdown failed",
@@ -209,21 +259,7 @@ func (a *application) shutdownServices(ctx context.Context) error {
 	return shutdownErr
 }
 
-func (a *application) shutdown(ctx context.Context) error {
-	cancelCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
-	defer cancel()
-	shutdown := a.i.ShutdownWithContext(cancelCtx)
-	var shutdownErr error
-	for sd, sErr := range shutdown.Errors {
-		if !errors.Is(sErr, context.Canceled) {
-			fmt.Printf("\n\t[%s] ERROR: %s\n", sd.Service, sErr.Error())
-			shutdownErr = errors.Join(shutdownErr, sErr)
-		}
-	}
-	return shutdownErr
-}
-
-func (a *application) setup(ctx context.Context) error {
+func (a *Application) setup(ctx context.Context) error {
 	if intgsErr := a.registerIntegrations(); intgsErr != nil {
 		return fmt.Errorf("register integrations: %w", intgsErr)
 	}
@@ -243,8 +279,8 @@ func (a *application) setup(ctx context.Context) error {
 	return nil
 }
 
-func getAvailableIntegrationsWith[T any](i do.Injector) []T {
-	ir := do.MustInvoke[rez.IntegrationRegistry](i)
+func (a *Application) getAvailableIntegrationsWith[T any]() []T {
+	ir := a.mustInvoke[rez.IntegrationRegistry]()
 	var pt []T
 	for _, intg := range ir.GetAvailable() {
 		if ls, hasLifecycle := intg.(T); hasLifecycle {
@@ -254,10 +290,10 @@ func getAvailableIntegrationsWith[T any](i do.Injector) []T {
 	return pt
 }
 
-func (a *application) registerIntegrations() error {
-	intgReg := do.MustInvoke[rez.IntegrationRegistry](a.i)
-	eventProcessors := do.MustInvoke[rez.ProviderEventProcessorRegistry](a.i)
-	for _, def := range do.MustInvoke[[]rez.IntegrationDefinition](a.i) {
+func (a *Application) registerIntegrations() error {
+	intgReg := a.mustInvoke[rez.IntegrationRegistry]()
+	eventProcessors := a.mustInvoke[rez.ProviderEventProcessorRegistry]()
+	for _, def := range a.mustInvoke[[]rez.IntegrationDefinition]() {
 		if regErr := intgReg.Register(def); regErr != nil {
 			return fmt.Errorf("failed to register integration package: %w", regErr)
 		}
@@ -272,7 +308,7 @@ func (a *application) registerIntegrations() error {
 	return nil
 }
 
-func (a *application) registerJobWorkers() error {
+func (a *Application) registerJobWorkers() error {
 	workerProviders := makeDefaultJobWorkerProviders()
 	workerDefs := make([]jobs.WorkerDefinition, len(workerProviders))
 	for idx, provider := range workerProviders {
@@ -287,35 +323,35 @@ func (a *application) registerJobWorkers() error {
 		jobs.CloseInactiveAlertEpisodesPeriodicJob,
 	}
 
-	r := do.MustInvoke[JobsRegistrar](a.i)
+	r := a.mustInvoke[JobsRegistrar]()
 	return r.RegisterWorkers(jobs.Definition{
 		Workers:      workerDefs,
 		PeriodicJobs: periodicJobs,
 	})
 }
 
-func (a *application) registerMessageHandlers() error {
-	handlers := do.MustInvoke[*db.SituationService](a.i).GetMessageHandlers()
+func (a *Application) registerMessageHandlers() error {
+	handlers := a.mustInvoke[*db.SituationService]().GetMessageHandlers()
 
 	type ProvidesMessageHandlers interface {
 		GetMessageHandlers() []rez.MessageEventHandler
 	}
-	for _, mhIntg := range getAvailableIntegrationsWith[ProvidesMessageHandlers](a.i) {
+	for _, mhIntg := range a.getAvailableIntegrationsWith[ProvidesMessageHandlers]() {
 		handlers = append(handlers, mhIntg.GetMessageHandlers()...)
 	}
 
-	r := do.MustInvoke[MessageHandlerRegistrar](a.i)
+	r := a.mustInvoke[MessageHandlerRegistrar]()
 	return r.AddHandlers(handlers...)
 }
 
-func (a *application) seedDevelopmentIdentity(ctx context.Context) error {
-	cfg := do.MustInvoke[rez.Config](a.i)
+func (a *Application) seedDevelopmentIdentity(ctx context.Context) error {
+	cfg := a.mustInvoke[rez.Config]()
 	if !cfg.HttpServer.Auth.EnableDevSkipMode {
 		return nil
 	}
 
-	sessions := do.MustInvoke[rez.AuthSessionService](a.i)
-	orgs := do.MustInvoke[rez.OrganizationService](a.i)
+	sessions := a.mustInvoke[rez.AuthSessionService]()
+	orgs := a.mustInvoke[rez.OrganizationService]()
 
 	devIdentity := http.NewDevelopmentSessionIdentity()
 
@@ -330,7 +366,7 @@ func (a *application) seedDevelopmentIdentity(ctx context.Context) error {
 		return fmt.Errorf("load development organization: %w", orgErr)
 	}
 
-	client := do.MustInvoke[rez.Database](a.i).Client(ctx)
+	client := a.mustInvoke[rez.Database]().Client(ctx)
 
 	queryOrgRole := client.OrganizationRole.Query().
 		Where(organizationrole.OrganizationID(org.ID), organizationrole.UserID(sess.UserID))

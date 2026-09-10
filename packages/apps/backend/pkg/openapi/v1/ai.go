@@ -210,7 +210,6 @@ func AgentSessionFromEnt(session *ent.AgentSession) AgentSession {
 		PermissionScopes: session.Scopes,
 		CreatedAt:        session.CreatedAt,
 		UpdatedAt:        session.UpdatedAt,
-		SystemAnalysisId: session.SystemAnalysisID,
 	}
 	return AgentSession{Id: session.ID, Attributes: attrs}
 }

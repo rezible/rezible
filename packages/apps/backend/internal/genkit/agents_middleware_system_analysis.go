@@ -29,19 +29,16 @@ A system analysis is attached to this session. Use its tools to gather graph con
 </system-analysis>`
 )
 
-func WithSystemAnalysisAgentMiddleware(sa rez.SystemAnalysisService, kg rez.KnowledgeGraphService) AgentMiddlewareConstructorFn {
-	return func(string) ai.Middleware {
-		return newSystemAnalysisMiddleware(sa, kg)
-	}
-}
+type systemAnalysisIdResolverFn = func(context.Context) (uuid.UUID, error)
 
 type systemAnalysisMiddleware struct {
-	analyses  rez.SystemAnalysisService
-	knowledge rez.KnowledgeGraphService
+	analyses           rez.SystemAnalysisService
+	knowledge          rez.KnowledgeGraphService
+	analysisIdResolver systemAnalysisIdResolverFn
 }
 
-func newSystemAnalysisMiddleware(analyses rez.SystemAnalysisService, knowledge rez.KnowledgeGraphService) *systemAnalysisMiddleware {
-	return &systemAnalysisMiddleware{analyses: analyses, knowledge: knowledge}
+func newSystemAnalysisMiddleware(analyses rez.SystemAnalysisService, knowledge rez.KnowledgeGraphService, analysisIdResolver systemAnalysisIdResolverFn) *systemAnalysisMiddleware {
+	return &systemAnalysisMiddleware{analyses: analyses, knowledge: knowledge, analysisIdResolver: analysisIdResolver}
 }
 
 func (m *systemAnalysisMiddleware) Name() string {
@@ -49,8 +46,8 @@ func (m *systemAnalysisMiddleware) Name() string {
 }
 
 func (m *systemAnalysisMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
-	if _, analysisErr := m.getSessionSystemAnalysisID(ctx); analysisErr != nil {
-		return nil, analysisErr
+	if _, analysisErr := m.resolveSessionSystemAnalysisID(ctx); analysisErr != nil {
+		return nil, fmt.Errorf("get session system analysis: %w", analysisErr)
 	}
 	return &ai.Hooks{
 		WrapGenerate: makeSystemTextInjectorFn(systemAnalysisInstructionsMarker, systemAnalysisInstructions),
@@ -64,19 +61,22 @@ func (m *systemAnalysisMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 	}, nil
 }
 
-func (m *systemAnalysisMiddleware) getSessionSystemAnalysisID(ctx context.Context) (uuid.UUID, error) {
-	aic, ctxOk := getAgentInvocationContext(ctx)
-	if !ctxOk || aic == nil || aic.Session == nil {
-		return uuid.Nil, fmt.Errorf("agent session context does not exist")
+func (m *systemAnalysisMiddleware) resolveSessionSystemAnalysisID(ctx context.Context) (uuid.UUID, error) {
+	if m.analysisIdResolver == nil {
+		return uuid.Nil, fmt.Errorf("system analysis resolver is required")
 	}
-	if aic.Session.SystemAnalysisID == nil || *aic.Session.SystemAnalysisID == uuid.Nil {
-		return uuid.Nil, fmt.Errorf("system analysis middleware requires an invocation session with a system analysis")
+	analysisID, resolveErr := m.analysisIdResolver(ctx)
+	if resolveErr != nil {
+		return uuid.Nil, fmt.Errorf("resolve system analysis: %w", resolveErr)
 	}
-	return *aic.Session.SystemAnalysisID, nil
+	if analysisID == uuid.Nil {
+		return uuid.Nil, fmt.Errorf("system analysis resolver returned an empty id")
+	}
+	return analysisID, nil
 }
 
 func (m *systemAnalysisMiddleware) resolveExplorationEntityId(ctx context.Context, entityID *string) (uuid.UUID, error) {
-	analysisID, analysisIDErr := m.getSessionSystemAnalysisID(ctx)
+	analysisID, analysisIDErr := m.resolveSessionSystemAnalysisID(ctx)
 	if analysisIDErr != nil {
 		return uuid.Nil, fmt.Errorf("load analysis: %w", analysisIDErr)
 	}
@@ -276,7 +276,7 @@ func (m *systemAnalysisMiddleware) includeAnalysisSubjectsToolFunc(ctx context.C
 		}
 	}
 
-	analysisID, analysisIDErr := m.getSessionSystemAnalysisID(ctx)
+	analysisID, analysisIDErr := m.resolveSessionSystemAnalysisID(ctx)
 	if analysisIDErr != nil {
 		return nil, fmt.Errorf("loading session analysis: %w", analysisIDErr)
 	}
@@ -312,7 +312,7 @@ func (m *systemAnalysisMiddleware) recordAnalysisFindingToolFunc(ctx context.Con
 		return nil, fmt.Errorf("include subject setters: %w", subjectSettersErr)
 	}
 
-	analysisID, analysisIDErr := m.getSessionSystemAnalysisID(ctx)
+	analysisID, analysisIDErr := m.resolveSessionSystemAnalysisID(ctx)
 	if analysisIDErr != nil {
 		return nil, fmt.Errorf("loading session analysis: %w", analysisIDErr)
 	}

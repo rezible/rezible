@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -11,61 +10,58 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/http"
-	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/ai/evals"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 	"github.com/urfave/cli/v3"
-
-	"github.com/rezible/rezible/pkg/execution"
 )
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
-	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
 
-	if runErr := makeServerCli().Run(ctx, os.Args); runErr != nil {
-		log.Fatalf("error: %v", runErr)
+	serverCli := makeServerCli(NewApplication())
+
+	if runErr := serverCli.Run(ctx, os.Args); runErr != nil {
+		log.Fatalf("run: %v", runErr)
 	}
 }
 
-func makeServerCli() *cli.Command {
-	app := newApplication()
-
+func makeServerCli(app *Application) *cli.Command {
+	serverInitProviders := []InitProvider{
+		withEnvironmentConfig,
+		withOpenTelemetry,
+		withPostgresDatabase,
+		withGenkitAiService,
+	}
 	return &cli.Command{
 		Name:  "rezible",
 		Usage: "backend server control",
 		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-			app.init(ctx,
-				withEnvironmentConfig,
-				withOpenTelemetry,
-				withPostgresDatabase,
-				withGenkitAiService)
-			return ctx, nil
+			return app.Init(ctx, serverInitProviders...)
 		},
 		Commands: makeCliCommands(app),
 		After: func(ctx context.Context, command *cli.Command) error {
-			return app.shutdown(ctx)
+			return app.Shutdown(ctx)
 		},
 	}
 }
 
-func makeCliCommands(app *application) []*cli.Command {
+func makeCliCommands(app *Application) []*cli.Command {
 	return []*cli.Command{
 		{
 			Name:  "serve",
 			Usage: "Run rezible server",
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-				return app.Run[*http.Server](ctx)
+				return app.RunLifecycle[*http.Server](ctx)
 			},
 		},
 		{
 			Name:  "print-config",
 			Usage: "print loaded configuration",
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-				return app.with(func(cfg rez.Config) error {
-					fmt.Println(cfg.Format())
-					return nil
+				return app.With(func(cfg rez.Config) error {
+					_, printErr := fmt.Fprintln(cmd.Writer, cfg.Format())
+					return printErr
 				})
 			},
 		},
@@ -74,16 +70,18 @@ func makeCliCommands(app *application) []*cli.Command {
 			Usage: "Print the OpenAPI spec",
 			Flags: []cli.Flag{&cli.BoolFlag{Name: "json"}},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-				api := oapiv1.MakeOpenApiSpec()
-				marshalFn := api.YAML
+				specFmt := oapiv1.SpecFormatYAML
 				if cmd.Bool("json") {
-					marshalFn = api.MarshalJSON
+					specFmt = oapiv1.SpecFormatJSON
 				}
-				spec, marshalErr := marshalFn()
-				if spec != nil {
-					fmt.Printf("%s", spec)
+				spec, marshalErr := oapiv1.GetEncodedSpec(specFmt)
+				if marshalErr != nil {
+					return fmt.Errorf("encoded spec: %w", marshalErr)
 				}
-				return marshalErr
+				if _, writeErr := cmd.Writer.Write(spec); writeErr != nil {
+					return fmt.Errorf("writing spec: %w", writeErr)
+				}
+				return nil
 			},
 		},
 		{
@@ -100,8 +98,8 @@ func makeCliCommands(app *application) []*cli.Command {
 						Config:    cli.StringConfig{TrimSpace: true},
 					}},
 					Action: func(ctx context.Context, cmd *cli.Command) error {
-						return app.with(func(ms rez.MigrationService) error {
-							return ms.Run(ctx, cmd.StringArg("direction"))
+						return app.With(func(ms rez.MigrationService) error {
+							return ms.Run(ctx, rez.MigrationDirection(cmd.StringArg("direction")))
 						})
 					},
 				},
@@ -114,7 +112,7 @@ func makeCliCommands(app *application) []*cli.Command {
 						Config:    cli.StringConfig{TrimSpace: true},
 					}},
 					Action: func(ctx context.Context, cmd *cli.Command) error {
-						return app.with(func(ms rez.MigrationService) error {
+						return app.With(func(ms rez.MigrationService) error {
 							return ms.CreateSchemaMigration(ctx, cmd.StringArg("name"))
 						})
 					},
@@ -123,7 +121,7 @@ func makeCliCommands(app *application) []*cli.Command {
 					Name:  "update-checksum",
 					Usage: "Update the database migrations checksum file",
 					Action: func(ctx context.Context, cmd *cli.Command) error {
-						return app.with(func(ms rez.MigrationService) error {
+						return app.With(func(ms rez.MigrationService) error {
 							return ms.UpdateChecksum()
 						})
 					},
@@ -134,7 +132,7 @@ func makeCliCommands(app *application) []*cli.Command {
 			Name:  "ai",
 			Usage: "commands for working with rezible ai",
 			Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-				app.override(postgresTestDatabaseConfig)
+				app.Override[rez.PostgresConfig](providePostgresTestDatabaseConfig)
 				return ctx, nil
 			},
 			Commands: []*cli.Command{
@@ -161,21 +159,7 @@ func makeCliCommands(app *application) []*cli.Command {
 								Config:    cli.StringConfig{TrimSpace: true},
 							}},
 							Action: func(ctx context.Context, cmd *cli.Command) error {
-								return app.with(func(svc rezai.EvalScenarioRunner) error {
-									result, runErr := svc.RunNamedScenario(ctx, cmd.StringArg("name"))
-									if runErr != nil || result == nil {
-										return fmt.Errorf("failed to run scenario: %w", runErr)
-									}
-									encoder := json.NewEncoder(cmd.Writer)
-									encoder.SetIndent("", "  ")
-									if jsonErr := encoder.Encode(result); jsonErr != nil {
-										return fmt.Errorf("encode evaluation result: %w", jsonErr)
-									}
-									if result.Status != rezai.EvalRunStatusPassed {
-										return fmt.Errorf("evaluation %s", result.Status)
-									}
-									return nil
-								})
+								return app.RunAiEvalScenario(ctx, cmd.StringArg("name"), cmd.Writer)
 							},
 						},
 					},
