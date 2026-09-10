@@ -5,7 +5,7 @@
 		base: "h-5 gap-1.5 rounded-full border border-transparent px-2 py-0.5 text-xs font-medium transition-colors duration-150 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&>svg]:size-3! focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring group/badge inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap [&>svg]:pointer-events-none",
 		variants: {
 			variant: {
-				default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
+				default: "border-border bg-transparent text-foreground [a]:hover:bg-accent",
 				secondary: "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
 				destructive:
 					"bg-destructive/10 [a]:hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 text-destructive dark:bg-destructive/20",

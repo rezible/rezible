@@ -8,8 +8,16 @@
 	import { Button } from "$components/ui/button/index.js";
 	import { Input } from "$components/ui/input/index.js";
 	import * as Table from "$components/ui/table/index.js";
+	import * as Sidebar from "$components/ui/sidebar/index.js";
+	import * as Tabs from "$components/ui/tabs/index.js";
+	import { Toggle } from "$components/ui/toggle/index.js";
+	import { Checkbox } from "$components/ui/checkbox/index.js";
+	import * as RadioGroup from "$components/ui/radio-group/index.js";
+	import { Switch } from "$components/ui/switch/index.js";
 
 	let dialogOpen = $state(false);
+	let checkboxChecked = $state(true);
+	let switchChecked = $state(true);
 </script>
 
 <svelte:head><title>Visual identity specimen</title></svelte:head>
@@ -41,6 +49,7 @@
 						>
 					</div>
 					<div class="mt-5 flex flex-wrap gap-2">
+						<Badge>Neutral default</Badge>
 						<Badge variant="success">Resolved</Badge>
 						<Badge variant="warning">Watching</Badge>
 						<Badge variant="danger">Degraded</Badge>
@@ -76,6 +85,37 @@
 						</label>
 					</div>
 				</div>
+
+				<div class="border-border bg-card rounded-md border p-5">
+					<h2 class="text-sm font-semibold">Selection and focus</h2>
+					<div class="mt-4 flex flex-wrap items-center gap-3">
+						<Toggle variant="outline" pressed>Toggle on</Toggle>
+						<label class="flex items-center gap-2 text-sm"
+							><Checkbox bind:checked={checkboxChecked} />Checkbox</label
+						>
+						<RadioGroup.Root value="selected" class="flex items-center gap-2">
+							<RadioGroup.Item value="selected" aria-label="Selected radio" />
+							<span class="text-sm">Radio</span>
+						</RadioGroup.Root>
+						<label class="flex items-center gap-2 text-sm"
+							><Switch bind:checked={switchChecked} />Switch</label
+						>
+					</div>
+					<div class="mt-5 space-y-3">
+						<Tabs.Root value="filled">
+							<Tabs.List>
+								<Tabs.Trigger value="filled">Filled tab</Tabs.Trigger>
+								<Tabs.Trigger value="line">Line tab</Tabs.Trigger>
+							</Tabs.List>
+						</Tabs.Root>
+						<Tabs.Root value="line">
+							<Tabs.List variant="line">
+								<Tabs.Trigger value="line">Active line tab</Tabs.Trigger>
+								<Tabs.Trigger value="other">Other tab</Tabs.Trigger>
+							</Tabs.List>
+						</Tabs.Root>
+					</div>
+				</div>
 			</div>
 
 			<div class="border-border bg-card rounded-md border p-5">
@@ -84,27 +124,16 @@
 					class="bg-sidebar text-sidebar-foreground mt-4 rounded-md p-2"
 					aria-label="Specimen navigation"
 				>
-					<a
-						class="text-sidebar-foreground hover:bg-sidebar-accent flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium"
-						href="/"
-					>
-						<span class="bg-sidebar-primary size-2 rounded-full" aria-hidden="true"
-						></span>Overview
-					</a>
-					<a
-						class="bg-sidebar-accent text-sidebar-accent-foreground flex h-10 items-center gap-2 rounded-md border-l-2 border-sidebar-primary px-3 text-sm font-medium"
-						href="/design-system"
-					>
-						<span class="bg-sidebar-primary size-2 rounded-full" aria-hidden="true"
-						></span>Analysis
-					</a>
-					<a
-						class="text-sidebar-foreground hover:bg-sidebar-accent flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium"
-						href="/design-system"
-					>
-						<span class="bg-sidebar-primary size-2 rounded-full" aria-hidden="true"></span>Report
-						with a deliberately long label
-					</a>
+					<Sidebar.Menu>
+						<Sidebar.MenuItem><Sidebar.MenuButton>Overview</Sidebar.MenuButton></Sidebar.MenuItem>
+						<Sidebar.MenuItem
+							><Sidebar.MenuButton isActive>Analysis</Sidebar.MenuButton></Sidebar.MenuItem
+						>
+						<Sidebar.MenuItem
+							><Sidebar.MenuButton>Report with a deliberately long label</Sidebar.MenuButton
+							></Sidebar.MenuItem
+						>
+					</Sidebar.Menu>
 				</nav>
 				<Button class="mt-4" variant="outline" onclick={() => (dialogOpen = true)}
 					>Open overlay</Button
@@ -116,7 +145,7 @@
 			<div class="flex items-baseline justify-between gap-4">
 				<div>
 					<h2 class="text-sm font-semibold">Recent activity</h2>
-					<p class="text-muted-foreground mt-1 text-xs">Flat white surface with tabular times.</p>
+					<p class="text-muted-foreground mt-1 text-xs">Card surface with tabular times.</p>
 				</div>
 				<Badge variant="success">3 healthy</Badge>
 			</div>
@@ -130,7 +159,7 @@
 						></Table.Header
 					>
 					<Table.Body>
-						<Table.Row
+						<Table.Row data-state="selected"
 							><Table.Cell class="font-medium">Checkout search timeouts</Table.Cell><Table.Cell
 								><Badge variant="success">Resolved</Badge></Table.Cell
 							><Table.Cell class="text-muted-foreground text-right">14:07</Table.Cell
@@ -153,6 +182,27 @@
 						>
 					</Table.Body>
 				</Table.Root>
+			</div>
+		</section>
+
+		<section class="border-border bg-card rounded-md border p-5">
+			<h2 class="text-sm font-semibold">Chart palette</h2>
+			<div class="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
+				<div class="flex items-center gap-2">
+					<span class="bg-chart-1 size-3 rounded-full"></span>Series 1
+				</div>
+				<div class="flex items-center gap-2">
+					<span class="bg-chart-2 size-3 rounded-full"></span>Series 2
+				</div>
+				<div class="flex items-center gap-2">
+					<span class="bg-chart-3 size-3 rounded-full"></span>Series 3
+				</div>
+				<div class="flex items-center gap-2">
+					<span class="bg-chart-4 size-3 rounded-full"></span>Series 4
+				</div>
+				<div class="flex items-center gap-2">
+					<span class="bg-chart-5 size-3 rounded-full"></span>Series 5
+				</div>
 			</div>
 		</section>
 	</div>

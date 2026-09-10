@@ -70,7 +70,7 @@
 				{#snippet child({ props })}
 					<Sidebar.MenuButton
 						size="default"
-						class="data-[state=open]:bg-sidebar-primary data-[state=open]:text-sidebar-primary-foreground"
+						class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 						{...props}
 					>
 						<Avatar.Root

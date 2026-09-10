@@ -7,7 +7,7 @@
 		base: "focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:border-destructive rounded-md border border-transparent bg-clip-padding text-sm font-medium [&_svg:not([class*='size-'])]:size-4 group/button inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-colors duration-150 select-none disabled:pointer-events-none disabled:bg-muted disabled:text-foreground-disabled [&_svg]:pointer-events-none [&_svg]:shrink-0",
 		variants: {
 			variant: {
-				default: "bg-primary text-primary-foreground hover:bg-primary/90",
+				default: "bg-primary text-primary-foreground hover:bg-primary-hover",
 				outline: "border-input bg-card text-foreground hover:bg-accent aria-expanded:bg-accent",
 				secondary:
 					"bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
