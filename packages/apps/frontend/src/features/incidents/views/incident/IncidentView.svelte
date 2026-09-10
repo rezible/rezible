@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { registerPageDescriptor } from "$lib/app-shell.svelte";
-	import type { IncidentViewRouteParam } from "$params/incidentView";
 	import { initIncidentViewController } from "./controller.svelte";
 
-	import TabbedViewContainer from "$components/layout/tabbed-view-container/TabbedViewContainer.svelte";
+	import ViewRail from "$components/layout/view-rail/ViewRail.svelte";
 	import IncidentPageActions from "./PageActions.svelte";
 	import IncidentSidebar from "./sidebar/IncidentSidebar.svelte";
 	import IncidentOverview from "./overview/IncidentOverview.svelte";
@@ -13,9 +12,8 @@
 
 	type Props = {
 		slug: string;
-		param: IncidentViewRouteParam;
 	};
-	const { slug, param }: Props = $props();
+	const { slug }: Props = $props();
 
 	const controller = initIncidentViewController(() => slug);
 
@@ -26,9 +24,10 @@
 	}));
 </script>
 
-<TabbedViewContainer
+<ViewRail
 	route="/incidents/[slug]/[[view=incidentView]]"
-	tabs={[
+	label="Incident views"
+	entries={[
 		{ label: "Overview", component: IncidentOverview, params: { slug } },
 		{ label: "Analysis", component: IncidentAnalysis, params: { slug, view: "analysis" } },
 		{ label: "Report", component: IncidentReport, params: { slug, view: "report" } },

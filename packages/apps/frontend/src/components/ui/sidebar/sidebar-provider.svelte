@@ -14,6 +14,7 @@
 		ref = $bindable(null),
 		open = $bindable(true),
 		onOpenChange = () => {},
+		viewRail = false,
 		class: className,
 		style,
 		children,
@@ -21,6 +22,7 @@
 	}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
 		open?: boolean;
 		onOpenChange?: (open: boolean) => void;
+		viewRail?: boolean;
 	} = $props();
 
 	const sidebar = setSidebar({
@@ -32,6 +34,11 @@
 			// This sets the cookie to keep the sidebar state.
 			document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
 		},
+		railActive: () => viewRail ?? false,
+	});
+
+	$effect(() => {
+		if (!viewRail) sidebar.railOpen = false;
 	});
 </script>
 

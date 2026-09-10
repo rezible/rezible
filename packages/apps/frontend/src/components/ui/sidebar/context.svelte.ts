@@ -18,20 +18,35 @@ export type SidebarStateProps = {
 	 * the sub-components and any `bind:` references.
 	 */
 	setOpen: (open: boolean) => void;
+	railActive?: Getter<boolean>;
 };
 
 class SidebarState {
-	readonly props: SidebarStateProps;
-	open = $derived.by(() => this.props.open());
-	openMobile = $state(false);
-	setOpen: SidebarStateProps["setOpen"];
 	#isMobile: IsMobile;
-	state = $derived.by(() => (this.open ? "expanded" : "collapsed"));
+	setOpen: SidebarStateProps["setOpen"];
 
-	constructor(props: SidebarStateProps) {
+	constructor(readonly props: SidebarStateProps) {
 		this.setOpen = props.setOpen;
 		this.#isMobile = new IsMobile();
-		this.props = props;
+	}
+
+	railOpen = $state(false);
+	openMobile = $state(false);
+
+	get open() {
+		return this.props.open();
+	}
+
+	get railActive() {
+		return this.props.railActive?.() ?? false;
+	}
+
+	get effectiveOpen() {
+		return this.railActive ? this.railOpen : this.open;
+	}
+
+	get state() {
+		return this.effectiveOpen ? "expanded" : "collapsed";
 	}
 
 	// Convenience getter for checking if the sidebar is mobile
@@ -53,7 +68,9 @@ class SidebarState {
 	};
 
 	toggle = () => {
-		return this.#isMobile.current ? (this.openMobile = !this.openMobile) : this.setOpen(!this.open);
+		if (this.#isMobile.current) return (this.openMobile = !this.openMobile);
+		if (this.railActive) return (this.railOpen = !this.railOpen);
+		return this.setOpen(!this.open);
 	};
 }
 

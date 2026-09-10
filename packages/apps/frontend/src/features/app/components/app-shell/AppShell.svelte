@@ -24,7 +24,7 @@
 <ModeWatcher />
 
 {#if sess.ready}
-	<Sidebar.Provider>
+	<Sidebar.Provider viewRail={shell.viewRail}>
 		{#if sess.isSetup}
 			<AppSidebar variant="sidebar" />
 		{/if}
@@ -35,7 +35,13 @@
 				</div>
 			{/if}
 
-			<div id="scroll-body" class="flex-1 flex min-h-0 overflow-y-auto p-3">
+			<div
+				id="scroll-body"
+				class:overflow-hidden={shell.viewRail}
+				class:overflow-y-auto={!shell.viewRail}
+				class:p-3={!shell.viewRail}
+				class="flex-1 flex min-h-0"
+			>
 				{@render children()}
 			</div>
 		</main>

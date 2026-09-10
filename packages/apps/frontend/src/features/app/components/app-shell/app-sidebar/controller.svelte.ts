@@ -78,7 +78,7 @@ class AppSidebarController {
 
 	private sidebarState = useSidebar();
 
-	isOpen = $derived(this.sidebarState.open);
+	isOpen = $derived(this.sidebarState.effectiveOpen);
 	collapsed = $derived(this.sidebarState.state === "collapsed");
 
 	isDefault = $derived(!this.shell.childSidebar);

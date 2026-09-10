@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { useAppShell } from "$lib/app-shell.svelte";
+	import * as Sidebar from "$components/ui/sidebar";
 	import * as Breadcrumb from "$components/ui/breadcrumb";
 	import type { ResolvedPathname } from "$app/types";
 
@@ -31,27 +32,31 @@
 </script>
 
 {#if descriptor}
-	<div class="flex items-center gap-2 text-lg">
-		<Breadcrumb.Root>
-			<Breadcrumb.List>
-				{#each descriptor.parents ?? [] as parent (parent.path)}
+	<div class="flex min-w-0 flex-1 items-center justify-between gap-4">
+		<div class="flex min-w-0 items-center gap-2 text-lg">
+			{#if shell.viewRail}
+				<Sidebar.Trigger />
+			{/if}
+			<Breadcrumb.Root>
+				<Breadcrumb.List>
+					{#each descriptor.parents ?? [] as parent (parent.path)}
+						<Breadcrumb.Item>
+							<Breadcrumb.Link href={parent.path}>{parent.label}</Breadcrumb.Link>
+						</Breadcrumb.Item>
+						<Breadcrumb.Separator />
+					{/each}
 					<Breadcrumb.Item>
-						<Breadcrumb.Link href={parent.path}>{parent.label}</Breadcrumb.Link>
+						<h1 bind:this={heading} tabindex="-1" class="outline-none">
+							<Breadcrumb.Page>{descriptor.title}</Breadcrumb.Page>
+						</h1>
 					</Breadcrumb.Item>
-					<Breadcrumb.Separator />
-				{/each}
-				<Breadcrumb.Item>
-					<h1 bind:this={heading} tabindex="-1" class="outline-none">
-						<Breadcrumb.Page>{descriptor.title}</Breadcrumb.Page>
-					</h1>
-				</Breadcrumb.Item>
-			</Breadcrumb.List>
-		</Breadcrumb.Root>
-	</div>
-{/if}
-
-{#if pageActions}
-	<div class="flex items-center">
-		<pageActions.component {...pageActions.props} />
+				</Breadcrumb.List>
+			</Breadcrumb.Root>
+		</div>
+		{#if pageActions}
+			<div class="flex shrink-0 items-center">
+				<pageActions.component {...pageActions.props} />
+			</div>
+		{/if}
 	</div>
 {/if}
