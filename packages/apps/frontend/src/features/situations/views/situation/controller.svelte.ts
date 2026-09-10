@@ -8,13 +8,14 @@ class SituationController {
 	query = createQuery(() => getSituationOptions({ path: { id: this.id } }));
 
 	constructor(idFn: Getter<string>) {
-		watch(idFn, id => {this.id = id});
+		watch(idFn, (id) => {
+			this.id = id;
+		});
 	}
 
 	situation = $derived(this.query.data?.data);
-	private mapHrefParams = $derived({ focus: this.situation?.attributes.knowledgeEntityId || "" })
+	private mapHrefParams = $derived({ focus: this.situation?.attributes.knowledgeEntityId || "" });
 	mapHref = $derived(`${resolve("/map")}?${new URLSearchParams(this.mapHrefParams)}`);
-	report = $derived(this.situation?.attributes.investigation?.attributes.report);
 }
 
 const ctx = new Context<SituationController>("SituationController");

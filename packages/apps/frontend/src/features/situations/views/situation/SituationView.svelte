@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
-	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { Badge } from "$components/ui/badge";
 	import { Button } from "$components/ui/button";
 	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import type { SituationInvestigationReport } from "$lib/api";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initSituationController } from "./controller.svelte";
 
 	type Props = {
@@ -14,16 +15,11 @@
 
 	const controller = initSituationController(() => id);
 	const attrs = $derived(controller.situation?.attributes);
-	const report = $derived(controller.report);
-	const reportSections = $derived.by(() => {
-		if (!report) return [];
-
-		return [
-			{ title: "Recommended actions", items: report.recommendedActions },
-			{ title: "Suggested checks", items: report.suggestedChecks },
-			{ title: "Limitations", items: report.limitations },
-		];
-	});
+	const reportSections = (report: SituationInvestigationReport) => [
+		{ title: "Recommended actions", items: report.recommendedActions },
+		{ title: "Suggested checks", items: report.suggestedChecks },
+		{ title: "Limitations", items: report.limitations },
+	];
 	registerPageDescriptor(() => ({
 		title: attrs?.title ?? "Situation",
 		breadcrumbs: [{ title: "Situations", path: resolve("/situations") }],
@@ -86,7 +82,7 @@
 						{#if alertDef}
 							<a
 								class="font-medium text-primary hover:underline"
-								href={resolve("/signals/[id]/[[view=signalView]]", {id: alertDef.id})}
+								href={resolve("/signals/[id]/[[view=signalView]]", { id: alertDef.id })}
 							>
 								{alertDef.attributes.title || "Signal"}
 							</a>
@@ -109,54 +105,59 @@
 				<p class="px-4 pb-4 text-sm text-muted-foreground">No contributing signals recorded.</p>
 			{/each}
 		</section>
-		<section class="space-y-4 rounded-lg border border-border bg-card p-4" aria-labelledby="report-title">
+		<section class="rounded-lg border border-border bg-card" aria-labelledby="investigations-title">
 			<div>
-				<h2 id="report-title" class="font-semibold">Investigation report</h2>
-				<p class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-					<span>Current evidence revision: {attrs.evidenceRevision}</span>
-					{#if report && attrs.investigation}
-						<span>Report covers revision: {attrs.investigation.attributes.completedRevision}</span>
-					{/if}
-				</p>
+				<h2 id="investigations-title" class="p-4 font-semibold">
+					Investigations
+					<span class="font-normal text-muted-foreground">{attrs.investigations.length}</span>
+				</h2>
 			</div>
-			{#if report}
-				{#if attrs.investigation}
-					<p class="text-xs text-muted-foreground">
-						Updated {new Date(attrs.investigation.attributes.updatedAt).toLocaleString()}
-					</p>
-				{/if}
-				{#if report.text}
-					<p class="whitespace-pre-wrap text-sm">{report.text}</p>
-				{/if}
-				{#if report.likelyCause}
-					<div>
-						<h3 class="mb-1 text-sm font-medium">Likely cause</h3>
-						<p class="whitespace-pre-wrap text-sm">{report.likelyCause}</p>
+			{#each attrs.investigations as investigation (investigation.id)}
+				{@const investigationAttrs = investigation.attributes}
+				{@const report = investigationAttrs.report}
+				<article class="space-y-4 border-t border-border p-4">
+					<div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+						<span>Current evidence revision: {attrs.evidenceRevision}</span>
+						<span>Report covers revision: {investigationAttrs.completedRevision}</span>
+						<span>Updated {new Date(investigationAttrs.updatedAt).toLocaleString()}</span>
 					</div>
-				{/if}
-				{#if report.bestNextStep}
-					<div>
-						<h3 class="mb-1 text-sm font-medium">Best next step</h3>
-						<p class="whitespace-pre-wrap text-sm">{report.bestNextStep}</p>
-					</div>
-				{/if}
-				{#each reportSections as section (section.title)}
-					{#if section.items?.length}
-						<div>
-							<h3 class="mb-1 text-sm font-medium">{section.title}</h3>
-							<ul class="list-disc space-y-1 pl-5 text-sm">
-								{#each section.items as item, index (index)}
-									<li class="whitespace-pre-wrap">
-										{item}
-									</li>
-								{/each}
-							</ul>
-						</div>
+					{#if report}
+						{#if report.text}
+							<p class="whitespace-pre-wrap text-sm">{report.text}</p>
+						{/if}
+						{#if report.likelyCause}
+							<div>
+								<h3 class="mb-1 text-sm font-medium">Likely cause</h3>
+								<p class="whitespace-pre-wrap text-sm">{report.likelyCause}</p>
+							</div>
+						{/if}
+						{#if report.bestNextStep}
+							<div>
+								<h3 class="mb-1 text-sm font-medium">Best next step</h3>
+								<p class="whitespace-pre-wrap text-sm">{report.bestNextStep}</p>
+							</div>
+						{/if}
+						{#each reportSections(report) as section (section.title)}
+							{#if section.items?.length}
+								<div>
+									<h3 class="mb-1 text-sm font-medium">{section.title}</h3>
+									<ul class="list-disc space-y-1 pl-5 text-sm">
+										{#each section.items as item, index (index)}
+											<li class="whitespace-pre-wrap">{item}</li>
+										{/each}
+									</ul>
+								</div>
+							{/if}
+						{/each}
+					{:else}
+						<p class="text-sm text-muted-foreground">No investigation report recorded.</p>
 					{/if}
-				{/each}
+				</article>
 			{:else}
-				<p class="text-sm text-muted-foreground">No investigation report recorded.</p>
-			{/if}
+				<p class="border-t border-border p-4 text-sm text-muted-foreground">
+					No investigations recorded.
+				</p>
+			{/each}
 		</section>
 	{/if}
 </div>

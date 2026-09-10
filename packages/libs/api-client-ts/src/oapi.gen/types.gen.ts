@@ -2282,7 +2282,7 @@ export type SituationAttributes = {
     closeReason?: 'stabilized' | 'dismissed';
     closedAt?: string;
     evidenceRevision: number;
-    investigation?: SituationInvestigation;
+    investigations: Array<SituationInvestigation>;
     knowledgeEntityId: string;
     openedAt: string;
     status: 'open' | 'closed';
