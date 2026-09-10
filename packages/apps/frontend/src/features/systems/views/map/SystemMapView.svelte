@@ -22,6 +22,7 @@
 	import RiRestartLine from "remixicon-svelte/icons/restart-line";
 	import RiListView from "remixicon-svelte/icons/list-view";
 	import RiPieChartLine from "remixicon-svelte/icons/pie-chart-line";
+	import { mode } from "mode-watcher";
 	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import {
 		initSystemMapViewController,
@@ -36,7 +37,7 @@
 
 	const view = initSystemMapViewController();
 
-	const colorMode = $derived<ColorMode>("dark");
+	const colorMode = $derived<ColorMode>(mode.current === "dark" ? "dark" : "light");
 	const flowSettings: SvelteFlowProps = {
 		nodeTypes: {
 			default: SystemMapEntityNode,
@@ -195,7 +196,7 @@
 				</Alert.Root>
 			</div>
 		{:else if view.displayMode === "list"}
-			<div class="absolute inset-0 overflow-y-auto p-4">
+			<div class="bg-card absolute inset-0 overflow-y-auto p-4">
 				<section class="space-y-2">
 					<h2 class="text-foreground text-sm font-medium">
 						Subjects ({view.displayEntities.length})
@@ -271,6 +272,7 @@
 			<SvelteFlow
 				{...flowSettings}
 				{colorMode}
+				class="rezible-flow"
 				bind:nodes={view.nodes}
 				bind:edges={view.edges}
 				bind:viewport={view.viewport}

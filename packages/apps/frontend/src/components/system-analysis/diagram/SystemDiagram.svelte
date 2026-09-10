@@ -25,10 +25,11 @@
 	} from "./topology-components";
 
 	import { ContextMenu, EditToolbar, SelectionInspector, ActionsBar } from "./panels";
+	import { mode } from "mode-watcher";
 
 	const diagram = useSystemDiagram();
 
-	const colorMode = $derived<ColorMode>("dark");
+	const colorMode = $derived<ColorMode>(mode.current === "dark" ? "dark" : "light");
 
 	const flowSettings: SvelteFlowProps = {
 		connectionLineComponent: ConnectionLine,
@@ -64,6 +65,7 @@
 <SvelteFlow
 	{...flowSettings}
 	{colorMode}
+	class="rezible-flow"
 	bind:nodes={diagram.nodes}
 	bind:edges={diagram.edges}
 	bind:viewport

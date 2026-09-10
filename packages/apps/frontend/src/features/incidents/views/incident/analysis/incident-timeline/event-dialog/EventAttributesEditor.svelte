@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Component } from "svelte";
-	
+
 	import RiNodeTree from "remixicon-svelte/icons/node-tree";
 	import RiStackLine from "remixicon-svelte/icons/stack-line";
 	import RiLink from "remixicon-svelte/icons/link";

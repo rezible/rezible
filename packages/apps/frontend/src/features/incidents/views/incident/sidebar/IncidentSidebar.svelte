@@ -15,12 +15,13 @@
 		{#snippet title()}
 			<span class="flex text-lg gap-1 items-center">
 				Collaboration
-				<RiCircleFill aria-hidden="true" />
+				<RiCircleFill class="size-4" aria-hidden="true" />
 			</span>
 		{/snippet}
 		{#snippet subheading()}
 			{#if controller.connectionError}
-				<span class="text-destructive/70">Connection Error: {controller.connectionError.message}</span>
+				<span class="text-destructive/70">Connection Error: {controller.connectionError.message}</span
+				>
 			{/if}
 		{/snippet}
 	</Header>

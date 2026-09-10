@@ -71,10 +71,7 @@
 		<div class="flex flex-col items-end">
 			<div class="flex gap-2 items-center">
 				<span
-					class={cn(
-						"text-sm uppercase font-bold text-foreground/60",
-						isActive && "text-primary"
-					)}
+					class={cn("text-sm uppercase font-bold text-foreground/60", isActive && "text-primary")}
 				>
 					{#if isActive}
 						Active

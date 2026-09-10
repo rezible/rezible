@@ -7,6 +7,7 @@
 	import { Label } from "$components/ui/label";
 	import * as NativeSelect from "$components/ui/native-select";
 	import { Switch } from "$components/ui/switch";
+	import { resetMode, setMode, userPrefersMode } from "mode-watcher";
 	import { resolve } from "$app/paths";
 	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initUserSettingsController } from "./controller.svelte";
@@ -69,12 +70,21 @@
 			<Card.Content>
 				<div class="grid max-w-xs gap-1.5">
 					<Label for="user-theme">Theme</Label>
-					<span>theme switcher</span>
+					<NativeSelect.Root
+						id="user-theme"
+						value={userPrefersMode.current}
+						onchange={(event) => {
+							const value = event.currentTarget.value;
+							if (value === "system") resetMode();
+							else if (value === "light" || value === "dark") setMode(value);
+						}}
+					>
+						<NativeSelect.Option value="system">System</NativeSelect.Option>
+						<NativeSelect.Option value="light">Light</NativeSelect.Option>
+						<NativeSelect.Option value="dark">Dark</NativeSelect.Option>
+					</NativeSelect.Root>
 				</div>
 			</Card.Content>
-			<Card.Footer>
-				<Button onclick={() => alert("save")} disabled={view.saving}>Save appearance</Button>
-			</Card.Footer>
 		</Card.Root>
 
 		<Card.Root>

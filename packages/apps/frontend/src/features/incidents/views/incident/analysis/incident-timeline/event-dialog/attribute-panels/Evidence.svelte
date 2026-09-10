@@ -11,7 +11,7 @@
 
 	const attributes = useEventDialogAttributes();
 
-	type MenuOption<T> = { label: string; value: T; };
+	type MenuOption<T> = { label: string; value: T };
 
 	type DataSourceComponent = Component<{ dataValue: string }, Record<string, never>, "dataValue">;
 	type DataSourceMenuOption = MenuOption<string> & { component: DataSourceComponent };

@@ -14,7 +14,6 @@
 	import RiH2 from "remixicon-svelte/icons/h-2";
 	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
 	import RiListCheck2 from "remixicon-svelte/icons/list-check-2";
-	
 	import { activeEditor, activeStatus } from "../activeEditor.svelte";
 
 	const getIconForStatus = () => {
