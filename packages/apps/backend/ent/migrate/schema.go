@@ -2677,7 +2677,7 @@ var (
 		{Name: "requested_revision", Type: field.TypeInt, Default: 0},
 		{Name: "report", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "agent_session_id", Type: field.TypeUUID, Unique: true},
-		{Name: "situation_id", Type: field.TypeUUID, Unique: true},
+		{Name: "situation_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "requested_turn_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "system_analysis_id", Type: field.TypeUUID, Unique: true},
@@ -2695,7 +2695,7 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "situation_investigations_situations_investigation",
+				Symbol:     "situation_investigations_situations_investigations",
 				Columns:    []*schema.Column{SituationInvestigationsColumns[7]},
 				RefColumns: []*schema.Column{SituationsColumns[0]},
 				OnDelete:   schema.NoAction,
@@ -2727,7 +2727,7 @@ var (
 			},
 			{
 				Name:    "situationinvestigation_tenant_id_situation_id",
-				Unique:  true,
+				Unique:  false,
 				Columns: []*schema.Column{SituationInvestigationsColumns[8], SituationInvestigationsColumns[7]},
 			},
 			{

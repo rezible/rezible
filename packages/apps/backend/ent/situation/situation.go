@@ -43,10 +43,10 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
 	EdgeKnowledgeEntity = "knowledge_entity"
+	// EdgeInvestigations holds the string denoting the investigations edge name in mutations.
+	EdgeInvestigations = "investigations"
 	// EdgeAlertEpisodes holds the string denoting the alert_episodes edge name in mutations.
 	EdgeAlertEpisodes = "alert_episodes"
-	// EdgeInvestigation holds the string denoting the investigation edge name in mutations.
-	EdgeInvestigation = "investigation"
 	// EdgeHazardAssessments holds the string denoting the hazard_assessments edge name in mutations.
 	EdgeHazardAssessments = "hazard_assessments"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
@@ -69,18 +69,18 @@ const (
 	KnowledgeEntityInverseTable = "knowledge_entities"
 	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
 	KnowledgeEntityColumn = "knowledge_entity_id"
+	// InvestigationsTable is the table that holds the investigations relation/edge.
+	InvestigationsTable = "situation_investigations"
+	// InvestigationsInverseTable is the table name for the SituationInvestigation entity.
+	// It exists in this package in order to avoid circular dependency with the "situationinvestigation" package.
+	InvestigationsInverseTable = "situation_investigations"
+	// InvestigationsColumn is the table column denoting the investigations relation/edge.
+	InvestigationsColumn = "situation_id"
 	// AlertEpisodesTable is the table that holds the alert_episodes relation/edge. The primary key declared below.
 	AlertEpisodesTable = "alert_episode_situations"
 	// AlertEpisodesInverseTable is the table name for the AlertEpisode entity.
 	// It exists in this package in order to avoid circular dependency with the "alertepisode" package.
 	AlertEpisodesInverseTable = "alert_episodes"
-	// InvestigationTable is the table that holds the investigation relation/edge.
-	InvestigationTable = "situation_investigations"
-	// InvestigationInverseTable is the table name for the SituationInvestigation entity.
-	// It exists in this package in order to avoid circular dependency with the "situationinvestigation" package.
-	InvestigationInverseTable = "situation_investigations"
-	// InvestigationColumn is the table column denoting the investigation relation/edge.
-	InvestigationColumn = "situation_id"
 	// HazardAssessmentsTable is the table that holds the hazard_assessments relation/edge.
 	HazardAssessmentsTable = "situation_hazard_assessments"
 	// HazardAssessmentsInverseTable is the table name for the SituationHazardAssessment entity.
@@ -287,6 +287,20 @@ func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOpti
 	}
 }
 
+// ByInvestigationsCount orders the results by investigations count.
+func ByInvestigationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newInvestigationsStep(), opts...)
+	}
+}
+
+// ByInvestigations orders the results by investigations terms.
+func ByInvestigations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newInvestigationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByAlertEpisodesCount orders the results by alert_episodes count.
 func ByAlertEpisodesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -298,13 +312,6 @@ func ByAlertEpisodesCount(opts ...sql.OrderTermOption) OrderOption {
 func ByAlertEpisodes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newAlertEpisodesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByInvestigationField orders the results by investigation field.
-func ByInvestigationField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newInvestigationStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -363,18 +370,18 @@ func newKnowledgeEntityStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 	)
 }
+func newInvestigationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(InvestigationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, InvestigationsTable, InvestigationsColumn),
+	)
+}
 func newAlertEpisodesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AlertEpisodesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, AlertEpisodesTable, AlertEpisodesPrimaryKey...),
-	)
-}
-func newInvestigationStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(InvestigationInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, InvestigationTable, InvestigationColumn),
 	)
 }
 func newHazardAssessmentsStep() *sqlgraph.Step {

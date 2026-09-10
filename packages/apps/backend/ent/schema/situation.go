@@ -53,8 +53,7 @@ func (Situation) Edges() []ent.Edge {
 			Required().
 			Immutable().
 			Field("knowledge_entity_id"),
-		edge.To("investigation", SituationInvestigation.Type).
-			Unique(),
+		edge.To("investigations", SituationInvestigation.Type),
 		edge.From("alert_episodes", AlertEpisode.Type).
 			Ref("situations").
 			Through("alert_episode_links", AlertEpisodeSituation.Type),
@@ -104,7 +103,7 @@ func (SituationInvestigation) Edges() []ent.Edge {
 			Unique().
 			Field("requested_turn_id"),
 		edge.From("situation", Situation.Type).
-			Ref("investigation").
+			Ref("investigations").
 			Unique().
 			Required().
 			Immutable().
@@ -126,7 +125,7 @@ func (SituationInvestigation) Edges() []ent.Edge {
 
 func (SituationInvestigation) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "situation_id").Unique(),
+		index.Fields("tenant_id", "situation_id"),
 		index.Fields("tenant_id", "system_analysis_id").Unique(),
 		index.Fields("tenant_id", "agent_session_id").Unique(),
 	}

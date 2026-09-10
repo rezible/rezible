@@ -136,7 +136,7 @@ func (_q *SituationInvestigationQuery) QuerySituation() *SituationQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(situationinvestigation.Table, situationinvestigation.FieldID, selector),
 			sqlgraph.To(situation.Table, situation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, situationinvestigation.SituationTable, situationinvestigation.SituationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, situationinvestigation.SituationTable, situationinvestigation.SituationColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Situation

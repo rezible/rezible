@@ -26,13 +26,13 @@ func (a *InvestigationAgent) agentDefinition() rezai.InvestigationAgentDefinitio
 	return rezai.InvestigationAgent
 }
 
-func (a *InvestigationAgent) makeInitialTurnInput(ctx context.Context, input rezai.InvestigationAgentInput) (*rez.AiAgentTurnInput, error) {
+func (a *InvestigationAgent) makeInitialTurnInput(ctx context.Context, input rezai.InvestigationAgentSessionInput) (*rez.AiAgentTurnInput, error) {
 	return &rez.AiAgentTurnInput{
 		Message: ai.NewUserTextMessage("Investigate this situation."),
 	}, nil
 }
 
-func (a *InvestigationAgent) updateInitialTurnMessage(ctx context.Context, input rezai.InvestigationAgentInput) (string, error) {
+func (a *InvestigationAgent) updateInitialTurnMessage(ctx context.Context, input rezai.InvestigationAgentSessionInput) (string, error) {
 	sit, situationErr := a.situations.GetSituation(ctx, input.SituationID)
 	if situationErr != nil {
 		return "", fmt.Errorf("get situation: %w", situationErr)
@@ -75,12 +75,12 @@ func (m *situationInvestigationReportMiddleware) New(ctx context.Context) (*ai.H
 	if !ok || invCtx.Turn == nil {
 		return nil, fmt.Errorf("missing agent invocation context")
 	}
-	var input rezai.InvestigationAgentInput
+	var input rezai.InvestigationAgentSessionInput
 	if jsonErr := json.Unmarshal(invCtx.Session.Input, &input); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal session input: %w", jsonErr)
 	}
 
-	inv, invErr := m.situations.GetSituationInvestigation(ctx, input.SituationID)
+	inv, invErr := m.situations.GetSituationInvestigation(ctx, input.InvestigationID)
 	if invErr != nil {
 		return nil, fmt.Errorf("get investigation: %w", invErr)
 	}
@@ -91,19 +91,19 @@ func (m *situationInvestigationReportMiddleware) New(ctx context.Context) (*ai.H
 		hooks.WrapGenerate = makeSystemTextInjectorFn("situation_report", "This is a conversational follow-up. The existing investigation report is: "+inv.Report.Text)
 	} else {
 		hooks.Tools = append(hooks.Tools, makeDefinedTool(rezai.SaveSituationInvestigationReportTool, m.updateReportToolFunc))
-		hooks.WrapGenerate = m.makeGenerateWrapper(invCtx.Turn.ID, input.SituationID)
+		hooks.WrapGenerate = m.makeGenerateWrapper(invCtx.Turn.ID, input.SituationID, input.InvestigationID)
 	}
 	return hooks, nil
 }
 
-func (m *situationInvestigationReportMiddleware) makeGenerateWrapper(turnId uuid.UUID, situationId uuid.UUID) wrapGenerateFn {
+func (m *situationInvestigationReportMiddleware) makeGenerateWrapper(turnId uuid.UUID, situationId uuid.UUID, investigationID uuid.UUID) wrapGenerateFn {
 	return func(ctx context.Context, params *ai.GenerateParams, next ai.GenerateNext) (*ai.ModelResponse, error) {
 		response, respErr := next(ctx, params)
 		if respErr != nil {
 			return nil, respErr
 		}
 		if response != nil && len(response.ToolRequests()) == 0 {
-			current, getInvErr := m.situations.GetSituationInvestigation(ctx, situationId)
+			current, getInvErr := m.situations.GetSituationInvestigation(ctx, investigationID)
 			if getInvErr != nil {
 				return nil, getInvErr
 			}

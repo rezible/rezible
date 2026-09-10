@@ -38,17 +38,17 @@ type (
 	}
 
 	SituationAttributes struct {
-		Title             string                  `json:"title"`
-		Summary           string                  `json:"summary"`
-		Status            string                  `json:"status" enum:"open,closed"`
-		CloseReason       *string                 `json:"closeReason,omitempty" enum:"stabilized,dismissed"`
-		EvidenceRevision  int                     `json:"evidenceRevision"`
-		KnowledgeEntityId uuid.UUID               `json:"knowledgeEntityId"`
-		AlertEpisodes     []AlertEpisode          `json:"alertEpisodes"`
-		Investigation     *SituationInvestigation `json:"investigation,omitempty"`
-		OpenedAt          time.Time               `json:"openedAt"`
-		ClosedAt          *time.Time              `json:"closedAt,omitempty"`
-		UpdatedAt         time.Time               `json:"updatedAt"`
+		Title             string                   `json:"title"`
+		Summary           string                   `json:"summary"`
+		Status            string                   `json:"status" enum:"open,closed"`
+		CloseReason       *string                  `json:"closeReason,omitempty" enum:"stabilized,dismissed"`
+		EvidenceRevision  int                      `json:"evidenceRevision"`
+		KnowledgeEntityId uuid.UUID                `json:"knowledgeEntityId"`
+		AlertEpisodes     []AlertEpisode           `json:"alertEpisodes"`
+		Investigations    []SituationInvestigation `json:"investigations"`
+		OpenedAt          time.Time                `json:"openedAt"`
+		ClosedAt          *time.Time               `json:"closedAt,omitempty"`
+		UpdatedAt         time.Time                `json:"updatedAt"`
 	}
 
 	SituationInvestigationReport struct {
@@ -147,8 +147,9 @@ func SituationFromEnt(s *ent.Situation) Situation {
 		reason := string(*s.CloseReason)
 		attrs.CloseReason = &reason
 	}
-	if inv := s.Edges.Investigation; inv != nil {
-		attrs.Investigation = SituationInvestigationFromEnt(inv, s.EvidenceRevision)
+	attrs.Investigations = make([]SituationInvestigation, 0, len(s.Edges.Investigations))
+	for _, inv := range s.Edges.Investigations {
+		attrs.Investigations = append(attrs.Investigations, *SituationInvestigationFromEnt(inv, s.EvidenceRevision))
 	}
 	return Situation{Id: s.ID, Attributes: attrs}
 }

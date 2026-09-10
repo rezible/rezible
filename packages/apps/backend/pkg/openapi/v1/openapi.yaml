@@ -5018,8 +5018,10 @@ components:
         evidenceRevision:
           format: int64
           type: integer
-        investigation:
-          $ref: "#/components/schemas/SituationInvestigation"
+        investigations:
+          items:
+            $ref: "#/components/schemas/SituationInvestigation"
+          type: array
         knowledgeEntityId:
           type: string
         openedAt:
@@ -5044,6 +5046,7 @@ components:
         - evidenceRevision
         - knowledgeEntityId
         - alertEpisodes
+        - investigations
         - openedAt
         - updatedAt
       type: object

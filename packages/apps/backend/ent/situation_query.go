@@ -35,8 +35,8 @@ type SituationQuery struct {
 	predicates            []predicate.Situation
 	withTenant            *TenantQuery
 	withKnowledgeEntity   *KnowledgeEntityQuery
+	withInvestigations    *SituationInvestigationQuery
 	withAlertEpisodes     *AlertEpisodeQuery
-	withInvestigation     *SituationInvestigationQuery
 	withHazardAssessments *SituationHazardAssessmentQuery
 	withIncidents         *IncidentQuery
 	withAlertEpisodeLinks *AlertEpisodeSituationQuery
@@ -127,6 +127,31 @@ func (_q *SituationQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 	return query
 }
 
+// QueryInvestigations chains the current query on the "investigations" edge.
+func (_q *SituationQuery) QueryInvestigations() *SituationInvestigationQuery {
+	query := (&SituationInvestigationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, selector),
+			sqlgraph.To(situationinvestigation.Table, situationinvestigation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, situation.InvestigationsTable, situation.InvestigationsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SituationInvestigation
+		step.Edge.Schema = schemaConfig.SituationInvestigation
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryAlertEpisodes chains the current query on the "alert_episodes" edge.
 func (_q *SituationQuery) QueryAlertEpisodes() *AlertEpisodeQuery {
 	query := (&AlertEpisodeClient{config: _q.config}).Query()
@@ -146,31 +171,6 @@ func (_q *SituationQuery) QueryAlertEpisodes() *AlertEpisodeQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AlertEpisode
 		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryInvestigation chains the current query on the "investigation" edge.
-func (_q *SituationQuery) QueryInvestigation() *SituationInvestigationQuery {
-	query := (&SituationInvestigationClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(situation.Table, situation.FieldID, selector),
-			sqlgraph.To(situationinvestigation.Table, situationinvestigation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, situation.InvestigationTable, situation.InvestigationColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SituationInvestigation
-		step.Edge.Schema = schemaConfig.SituationInvestigation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -446,8 +446,8 @@ func (_q *SituationQuery) Clone() *SituationQuery {
 		predicates:            append([]predicate.Situation{}, _q.predicates...),
 		withTenant:            _q.withTenant.Clone(),
 		withKnowledgeEntity:   _q.withKnowledgeEntity.Clone(),
+		withInvestigations:    _q.withInvestigations.Clone(),
 		withAlertEpisodes:     _q.withAlertEpisodes.Clone(),
-		withInvestigation:     _q.withInvestigation.Clone(),
 		withHazardAssessments: _q.withHazardAssessments.Clone(),
 		withIncidents:         _q.withIncidents.Clone(),
 		withAlertEpisodeLinks: _q.withAlertEpisodeLinks.Clone(),
@@ -480,6 +480,17 @@ func (_q *SituationQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery
 	return _q
 }
 
+// WithInvestigations tells the query-builder to eager-load the nodes that are connected to
+// the "investigations" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationQuery) WithInvestigations(opts ...func(*SituationInvestigationQuery)) *SituationQuery {
+	query := (&SituationInvestigationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withInvestigations = query
+	return _q
+}
+
 // WithAlertEpisodes tells the query-builder to eager-load the nodes that are connected to
 // the "alert_episodes" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *SituationQuery) WithAlertEpisodes(opts ...func(*AlertEpisodeQuery)) *SituationQuery {
@@ -488,17 +499,6 @@ func (_q *SituationQuery) WithAlertEpisodes(opts ...func(*AlertEpisodeQuery)) *S
 		opt(query)
 	}
 	_q.withAlertEpisodes = query
-	return _q
-}
-
-// WithInvestigation tells the query-builder to eager-load the nodes that are connected to
-// the "investigation" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SituationQuery) WithInvestigation(opts ...func(*SituationInvestigationQuery)) *SituationQuery {
-	query := (&SituationInvestigationClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withInvestigation = query
 	return _q
 }
 
@@ -622,8 +622,8 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 		loadedTypes = [7]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
+			_q.withInvestigations != nil,
 			_q.withAlertEpisodes != nil,
-			_q.withInvestigation != nil,
 			_q.withHazardAssessments != nil,
 			_q.withIncidents != nil,
 			_q.withAlertEpisodeLinks != nil,
@@ -664,16 +664,19 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 			return nil, err
 		}
 	}
+	if query := _q.withInvestigations; query != nil {
+		if err := _q.loadInvestigations(ctx, query, nodes,
+			func(n *Situation) { n.Edges.Investigations = []*SituationInvestigation{} },
+			func(n *Situation, e *SituationInvestigation) {
+				n.Edges.Investigations = append(n.Edges.Investigations, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
 	if query := _q.withAlertEpisodes; query != nil {
 		if err := _q.loadAlertEpisodes(ctx, query, nodes,
 			func(n *Situation) { n.Edges.AlertEpisodes = []*AlertEpisode{} },
 			func(n *Situation, e *AlertEpisode) { n.Edges.AlertEpisodes = append(n.Edges.AlertEpisodes, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withInvestigation; query != nil {
-		if err := _q.loadInvestigation(ctx, query, nodes, nil,
-			func(n *Situation, e *SituationInvestigation) { n.Edges.Investigation = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -763,6 +766,36 @@ func (_q *SituationQuery) loadKnowledgeEntity(ctx context.Context, query *Knowle
 	}
 	return nil
 }
+func (_q *SituationQuery) loadInvestigations(ctx context.Context, query *SituationInvestigationQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationInvestigation)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Situation)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(situationinvestigation.FieldSituationID)
+	}
+	query.Where(predicate.SituationInvestigation(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(situation.InvestigationsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.SituationID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "situation_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 func (_q *SituationQuery) loadAlertEpisodes(ctx context.Context, query *AlertEpisodeQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *AlertEpisode)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Situation)
@@ -822,33 +855,6 @@ func (_q *SituationQuery) loadAlertEpisodes(ctx context.Context, query *AlertEpi
 		for kn := range nodes {
 			assign(kn, n)
 		}
-	}
-	return nil
-}
-func (_q *SituationQuery) loadInvestigation(ctx context.Context, query *SituationInvestigationQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationInvestigation)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Situation)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(situationinvestigation.FieldSituationID)
-	}
-	query.Where(predicate.SituationInvestigation(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(situation.InvestigationColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.SituationID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "situation_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

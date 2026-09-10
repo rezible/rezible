@@ -381,7 +381,7 @@ func (_c *SituationInvestigationCreate) createSpec() (*SituationInvestigation, *
 	}
 	if nodes := _c.mutation.SituationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   situationinvestigation.SituationTable,
 			Columns: []string{situationinvestigation.SituationColumn},

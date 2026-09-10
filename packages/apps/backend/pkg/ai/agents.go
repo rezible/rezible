@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
 
@@ -54,22 +55,46 @@ func (d AgentDefinition[I, S]) ValidateInput(raw []byte) (*I, error) {
 }
 
 type (
-	InvestigationAgentInput struct {
-		SituationID uuid.UUID `json:"situation_id"`
+	InvestigationAgentSessionInput struct {
+		SituationID     uuid.UUID `json:"situation_id"`
+		InvestigationID uuid.UUID `json:"investigation_id"`
+		Query           *string   `json:"query"`
+	}
+
+	InvestigationAgentTurnInput struct {
+		Situation     *ent.Situation
+		AlertEpisodes ent.AlertEpisodes
 	}
 
 	InvestigationAgentState struct {
 		ReportReady bool `json:"report_ready"`
 	}
 
-	InvestigationAgentDefinition = AgentDefinition[InvestigationAgentInput, InvestigationAgentState]
+	InvestigationAgentDefinition = AgentDefinition[InvestigationAgentSessionInput, InvestigationAgentState]
 )
 
-func (i InvestigationAgentInput) Validate() error {
+func (i InvestigationAgentSessionInput) Validate() error {
 	if i.SituationID == uuid.Nil {
 		return fmt.Errorf("invalid situation id %s", i.SituationID)
 	}
+	if i.InvestigationID == uuid.Nil {
+		return fmt.Errorf("investigation id is required")
+	}
 	return nil
+}
+
+func (i InvestigationAgentTurnInput) MakeTurnInput() (*rez.AiAgentTurnInput, error) {
+	sit := i.Situation
+	if i.Situation == nil {
+		return nil, fmt.Errorf("missing situation")
+	}
+	evJson, jsonErr := json.Marshal(i.AlertEpisodes)
+	if jsonErr != nil {
+		return nil, fmt.Errorf("marshal episodes: %w", jsonErr)
+	}
+	msgText := fmt.Sprintf("Investigate this situation and save its report with save_situation_investigation_report.\nTitle: %s\nSummary: %s\nEvidence revision: %d\nAlert evidence: %s",
+		sit.Title, sit.Summary, sit.EvidenceRevision, evJson)
+	return &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(msgText)}, nil
 }
 
 var InvestigationAgent = InvestigationAgentDefinition{

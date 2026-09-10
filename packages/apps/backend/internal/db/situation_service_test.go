@@ -189,12 +189,13 @@ func (s *SituationServiceSuite) TestSituationMayExistWithoutInvestigationAndInve
 	h := s.newHarness(tdb)
 	sit := s.createSituation(ctx, h, "Checkout degradation")
 
-	_, missingErr := h.situations.GetSituationInvestigation(ctx, sit.ID)
+	_, missingErr := h.situations.GetSituationInvestigation(ctx, uuid.New())
 	s.True(ent.IsNotFound(missingErr))
 	s.expectReconciliation(h)
 	s.expectStartAgentSession(h)
 
-	investigation, createErr := h.situations.CreateSituationInvestigation(ctx, sit.ID)
+	params := rez.CreateSituationInvestigationParams{SituationID: sit.ID, Prompt: new("Assess operational impact.")}
+	investigation, createErr := h.situations.CreateSituationInvestigation(ctx, params)
 	s.Require().NoError(createErr)
 	s.Equal(sit.ID, investigation.SituationID)
 	s.Equal(1, tdb.Client(ctx).SituationInvestigation.Query().CountX(ctx))
@@ -206,9 +207,11 @@ func (s *SituationServiceSuite) TestSituationMayExistWithoutInvestigationAndInve
 	analysis := tdb.Client(ctx).SystemAnalysis.GetX(ctx, *session.SystemAnalysisID)
 	s.Equal(sit.KnowledgeEntityID, *analysis.SubjectEntityID)
 
-	repeated, repeatErr := h.situations.CreateSituationInvestigation(ctx, sit.ID)
+	params2 := rez.CreateSituationInvestigationParams{SituationID: sit.ID, Prompt: new("Assess contributing factors.")}
+	repeated, repeatErr := h.situations.CreateSituationInvestigation(ctx, params2)
 	s.Require().NoError(repeatErr)
-	s.Equal(investigation.ID, repeated.ID)
+	s.NotEqual(investigation.ID, repeated.ID)
+	s.Equal(2, tdb.Client(ctx).SituationInvestigation.Query().CountX(ctx))
 }
 
 func (s *SituationServiceSuite) TestConcurrentSituationInvestigationCreationLeavesOneInvestigationAnalysisAndSession() {
@@ -224,7 +227,8 @@ func (s *SituationServiceSuite) TestConcurrentSituationInvestigationCreationLeav
 	var g errgroup.Group
 	for range 2 {
 		g.Go(func() error {
-			investigation, createErr := h.situations.CreateSituationInvestigation(ctx, sit.ID)
+			params := rez.CreateSituationInvestigationParams{SituationID: sit.ID, Prompt: new("Assess operational impact.")}
+			investigation, createErr := h.situations.CreateSituationInvestigation(ctx, params)
 			results <- investigation
 			return createErr
 		})
@@ -233,7 +237,7 @@ func (s *SituationServiceSuite) TestConcurrentSituationInvestigationCreationLeav
 	close(results)
 	s.Require().NoError(err)
 	client := tdb.Client(ctx)
-	s.Equal(1, client.SituationInvestigation.Query().CountX(ctx))
+	s.Equal(2, client.SituationInvestigation.Query().CountX(ctx))
 	s.Equal(1, client.SystemAnalysis.Query().CountX(ctx))
 	s.Equal(1, client.AgentSession.Query().CountX(ctx))
 }
@@ -246,7 +250,8 @@ func (s *SituationServiceSuite) TestSituationInvestigationReportPersistenceWhile
 	s.expectReconciliation(h)
 	s.expectStartAgentSession(h)
 
-	inv, err := h.situations.CreateSituationInvestigation(ctx, sit.ID)
+	params := rez.CreateSituationInvestigationParams{SituationID: sit.ID, Prompt: new("Assess operational impact.")}
+	inv, err := h.situations.CreateSituationInvestigation(ctx, params)
 	s.Require().NoError(err)
 
 	createTurn := tdb.Client(ctx).AgentTurn.Create().

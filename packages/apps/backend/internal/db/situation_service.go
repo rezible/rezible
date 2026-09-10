@@ -15,7 +15,7 @@ import (
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/situation"
-	siti "github.com/rezible/rezible/ent/situationinvestigation"
+	si "github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/pkg/messages"
 	"github.com/rezible/rezible/pkg/projections"
 )
@@ -50,7 +50,7 @@ func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSi
 	query := s.db.Client(ctx).Situation.Query().
 		WithKnowledgeEntity().
 		WithAlertEpisodes().
-		WithInvestigation().
+		WithInvestigations().
 		Order(situation.ByOpenedAt(params.GetOrder()), situation.ByID(params.GetOrder()))
 	if search := strings.TrimSpace(params.Search); search != "" {
 		query = query.Where(situation.TitleContainsFold(search))
@@ -71,7 +71,7 @@ func (s *SituationService) GetSituation(ctx context.Context, id uuid.UUID) (*ent
 		WithAlertEpisodes(func(q *ent.AlertEpisodeQuery) {
 			q.WithAlertDefinition().Order(ale.ByStartedAt(), ale.ByID())
 		}).
-		WithInvestigation()
+		WithInvestigations()
 	return query.Only(ctx)
 }
 
@@ -236,8 +236,8 @@ func (s *SituationService) NotifySituationEvidenceItemUpdated(ctx context.Contex
 			return fmt.Errorf("get situation lock: %w", situationLockErr)
 		}
 
-		er := s.makeSituationEvidenceRelationshipEntity(params)
-		if er == nil {
+		evEnt := s.makeSituationEvidenceRelationshipEntity(params)
+		if evEnt == nil {
 			return fmt.Errorf("invalid evidence item")
 		}
 
@@ -247,14 +247,15 @@ func (s *SituationService) NotifySituationEvidenceItemUpdated(ctx context.Contex
 			return fmt.Errorf("update evidence revision: %w", updateRevisionErr)
 		}
 
-		lookupInvestigation := tx.SituationInvestigation.Query().
-			Where(siti.SituationID(id))
-		investigationExists, queryInvestigationErr := lookupInvestigation.Exist(ctx)
-		if queryInvestigationErr != nil {
-			return fmt.Errorf("lookup investigation: %w", queryInvestigationErr)
+		queryInvestigations := tx.SituationInvestigation.Query().
+			Where(si.SituationID(id))
+		invIds, queryInvestigationsErr := queryInvestigations.IDs(ctx)
+		if queryInvestigationsErr != nil {
+			return fmt.Errorf("query investigations: %w", queryInvestigationsErr)
 		}
-		if investigationExists {
-			return s.requestInvestigationReconcile(ctx, id)
+
+		if reqReconcileErr := s.requestReconcileInvestigations(ctx, invIds...); reqReconcileErr != nil {
+			return fmt.Errorf("request reconcile investigations: %w", reqReconcileErr)
 		}
 
 		return nil

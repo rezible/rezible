@@ -745,6 +745,11 @@ type (
 		IncidentID     *uuid.UUID
 	}
 
+	CreateSituationInvestigationParams struct {
+		SituationID uuid.UUID
+		Prompt      *string
+	}
+
 	CloseSituationParams struct {
 		SituationID uuid.UUID
 		Reason      situation.CloseReason
@@ -788,7 +793,7 @@ type (
 		NotifySituationEvidenceItemUpdated(context.Context, uuid.UUID, SituationEvidenceItemParams) error
 		RemoveSituationEvidenceItem(context.Context, uuid.UUID, SituationEvidenceItemParams) error
 
-		CreateSituationInvestigation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)
+		CreateSituationInvestigation(context.Context, CreateSituationInvestigationParams) (*ent.SituationInvestigation, error)
 		GetSituationInvestigation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)
 		SetSituationInvestigationReport(context.Context, SetSituationInvestigationReportParams) (*ent.SituationInvestigation, error)
 

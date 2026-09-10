@@ -600,6 +600,35 @@ func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.Situat
 	})
 }
 
+// HasInvestigations applies the HasEdge predicate on the "investigations" edge.
+func HasInvestigations() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InvestigationsTable, InvestigationsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationInvestigation
+		step.Edge.Schema = schemaConfig.SituationInvestigation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInvestigationsWith applies the HasEdge predicate on the "investigations" edge with a given conditions (other predicates).
+func HasInvestigationsWith(preds ...predicate.SituationInvestigation) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newInvestigationsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationInvestigation
+		step.Edge.Schema = schemaConfig.SituationInvestigation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasAlertEpisodes applies the HasEdge predicate on the "alert_episodes" edge.
 func HasAlertEpisodes() predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
@@ -621,35 +650,6 @@ func HasAlertEpisodesWith(preds ...predicate.AlertEpisode) predicate.Situation {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AlertEpisode
 		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasInvestigation applies the HasEdge predicate on the "investigation" edge.
-func HasInvestigation() predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, InvestigationTable, InvestigationColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationInvestigation
-		step.Edge.Schema = schemaConfig.SituationInvestigation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasInvestigationWith applies the HasEdge predicate on the "investigation" edge with a given conditions (other predicates).
-func HasInvestigationWith(preds ...predicate.SituationInvestigation) predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := newInvestigationStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationInvestigation
-		step.Edge.Schema = schemaConfig.SituationInvestigation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -126,7 +126,7 @@ func (InvokeAgentTurn) InsertOpts() river.InsertOpts {
 }
 
 type ReconcileSituationInvestigation struct {
-	SituationID uuid.UUID `json:"situation_id"`
+	InvestigationID uuid.UUID `json:"investigation_id"`
 }
 
 func (ReconcileSituationInvestigation) Kind() string {

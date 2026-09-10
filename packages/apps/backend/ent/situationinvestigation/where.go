@@ -445,7 +445,7 @@ func HasSituation() predicate.SituationInvestigation {
 	return predicate.SituationInvestigation(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, SituationTable, SituationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, SituationTable, SituationColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Situation

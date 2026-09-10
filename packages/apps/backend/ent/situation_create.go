@@ -177,6 +177,21 @@ func (_c *SituationCreate) SetKnowledgeEntity(v *KnowledgeEntity) *SituationCrea
 	return _c.SetKnowledgeEntityID(v.ID)
 }
 
+// AddInvestigationIDs adds the "investigations" edge to the SituationInvestigation entity by IDs.
+func (_c *SituationCreate) AddInvestigationIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddInvestigationIDs(ids...)
+	return _c
+}
+
+// AddInvestigations adds the "investigations" edges to the SituationInvestigation entity.
+func (_c *SituationCreate) AddInvestigations(v ...*SituationInvestigation) *SituationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddInvestigationIDs(ids...)
+}
+
 // AddAlertEpisodeIDs adds the "alert_episodes" edge to the AlertEpisode entity by IDs.
 func (_c *SituationCreate) AddAlertEpisodeIDs(ids ...uuid.UUID) *SituationCreate {
 	_c.mutation.AddAlertEpisodeIDs(ids...)
@@ -190,25 +205,6 @@ func (_c *SituationCreate) AddAlertEpisodes(v ...*AlertEpisode) *SituationCreate
 		ids[i] = v[i].ID
 	}
 	return _c.AddAlertEpisodeIDs(ids...)
-}
-
-// SetInvestigationID sets the "investigation" edge to the SituationInvestigation entity by ID.
-func (_c *SituationCreate) SetInvestigationID(id uuid.UUID) *SituationCreate {
-	_c.mutation.SetInvestigationID(id)
-	return _c
-}
-
-// SetNillableInvestigationID sets the "investigation" edge to the SituationInvestigation entity by ID if the given value is not nil.
-func (_c *SituationCreate) SetNillableInvestigationID(id *uuid.UUID) *SituationCreate {
-	if id != nil {
-		_c = _c.SetInvestigationID(*id)
-	}
-	return _c
-}
-
-// SetInvestigation sets the "investigation" edge to the SituationInvestigation entity.
-func (_c *SituationCreate) SetInvestigation(v *SituationInvestigation) *SituationCreate {
-	return _c.SetInvestigationID(v.ID)
 }
 
 // AddHazardAssessmentIDs adds the "hazard_assessments" edge to the SituationHazardAssessment entity by IDs.
@@ -486,6 +482,23 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 		_node.KnowledgeEntityID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.InvestigationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.InvestigationsTable,
+			Columns: []string{situation.InvestigationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationinvestigation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationInvestigation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.AlertEpisodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -507,23 +520,6 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
 			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.InvestigationIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   situation.InvestigationTable,
-			Columns: []string{situation.InvestigationColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationinvestigation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.SituationInvestigation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}

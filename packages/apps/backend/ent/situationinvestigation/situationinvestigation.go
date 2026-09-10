@@ -241,7 +241,7 @@ func newSituationStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SituationInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, true, SituationTable, SituationColumn),
+		sqlgraph.Edge(sqlgraph.M2O, true, SituationTable, SituationColumn),
 	)
 }
 func newSystemAnalysisStep() *sqlgraph.Step {

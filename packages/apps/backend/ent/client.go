@@ -12720,6 +12720,25 @@ func (c *SituationClient) QueryKnowledgeEntity(_m *Situation) *KnowledgeEntityQu
 	return query
 }
 
+// QueryInvestigations queries the investigations edge of a Situation.
+func (c *SituationClient) QueryInvestigations(_m *Situation) *SituationInvestigationQuery {
+	query := (&SituationInvestigationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, id),
+			sqlgraph.To(situationinvestigation.Table, situationinvestigation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, situation.InvestigationsTable, situation.InvestigationsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SituationInvestigation
+		step.Edge.Schema = schemaConfig.SituationInvestigation
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAlertEpisodes queries the alert_episodes edge of a Situation.
 func (c *SituationClient) QueryAlertEpisodes(_m *Situation) *AlertEpisodeQuery {
 	query := (&AlertEpisodeClient{config: c.config}).Query()
@@ -12733,25 +12752,6 @@ func (c *SituationClient) QueryAlertEpisodes(_m *Situation) *AlertEpisodeQuery {
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AlertEpisode
 		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryInvestigation queries the investigation edge of a Situation.
-func (c *SituationClient) QueryInvestigation(_m *Situation) *SituationInvestigationQuery {
-	query := (&SituationInvestigationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(situation.Table, situation.FieldID, id),
-			sqlgraph.To(situationinvestigation.Table, situationinvestigation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, situation.InvestigationTable, situation.InvestigationColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SituationInvestigation
-		step.Edge.Schema = schemaConfig.SituationInvestigation
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -13224,7 +13224,7 @@ func (c *SituationInvestigationClient) QuerySituation(_m *SituationInvestigation
 		step := sqlgraph.NewStep(
 			sqlgraph.From(situationinvestigation.Table, situationinvestigation.FieldID, id),
 			sqlgraph.To(situation.Table, situation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, situationinvestigation.SituationTable, situationinvestigation.SituationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, situationinvestigation.SituationTable, situationinvestigation.SituationColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Situation

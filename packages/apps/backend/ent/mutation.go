@@ -50873,11 +50873,12 @@ type SituationMutation struct {
 	clearedtenant              bool
 	knowledge_entity           *uuid.UUID
 	clearedknowledge_entity    bool
+	investigations             map[uuid.UUID]struct{}
+	removedinvestigations      map[uuid.UUID]struct{}
+	clearedinvestigations      bool
 	alert_episodes             map[uuid.UUID]struct{}
 	removedalert_episodes      map[uuid.UUID]struct{}
 	clearedalert_episodes      bool
-	investigation              *uuid.UUID
-	clearedinvestigation       bool
 	hazard_assessments         map[uuid.UUID]struct{}
 	removedhazard_assessments  map[uuid.UUID]struct{}
 	clearedhazard_assessments  bool
@@ -51505,6 +51506,60 @@ func (m *SituationMutation) ResetKnowledgeEntity() {
 	m.clearedknowledge_entity = false
 }
 
+// AddInvestigationIDs adds the "investigations" edge to the SituationInvestigation entity by ids.
+func (m *SituationMutation) AddInvestigationIDs(ids ...uuid.UUID) {
+	if m.investigations == nil {
+		m.investigations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.investigations[ids[i]] = struct{}{}
+	}
+}
+
+// ClearInvestigations clears the "investigations" edge to the SituationInvestigation entity.
+func (m *SituationMutation) ClearInvestigations() {
+	m.clearedinvestigations = true
+}
+
+// InvestigationsCleared reports if the "investigations" edge to the SituationInvestigation entity was cleared.
+func (m *SituationMutation) InvestigationsCleared() bool {
+	return m.clearedinvestigations
+}
+
+// RemoveInvestigationIDs removes the "investigations" edge to the SituationInvestigation entity by IDs.
+func (m *SituationMutation) RemoveInvestigationIDs(ids ...uuid.UUID) {
+	if m.removedinvestigations == nil {
+		m.removedinvestigations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.investigations, ids[i])
+		m.removedinvestigations[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedInvestigations returns the removed IDs of the "investigations" edge to the SituationInvestigation entity.
+func (m *SituationMutation) RemovedInvestigationsIDs() (ids []uuid.UUID) {
+	for id := range m.removedinvestigations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// InvestigationsIDs returns the "investigations" edge IDs in the mutation.
+func (m *SituationMutation) InvestigationsIDs() (ids []uuid.UUID) {
+	for id := range m.investigations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetInvestigations resets all changes to the "investigations" edge.
+func (m *SituationMutation) ResetInvestigations() {
+	m.investigations = nil
+	m.clearedinvestigations = false
+	m.removedinvestigations = nil
+}
+
 // AddAlertEpisodeIDs adds the "alert_episodes" edge to the AlertEpisode entity by ids.
 func (m *SituationMutation) AddAlertEpisodeIDs(ids ...uuid.UUID) {
 	if m.alert_episodes == nil {
@@ -51557,45 +51612,6 @@ func (m *SituationMutation) ResetAlertEpisodes() {
 	m.alert_episodes = nil
 	m.clearedalert_episodes = false
 	m.removedalert_episodes = nil
-}
-
-// SetInvestigationID sets the "investigation" edge to the SituationInvestigation entity by id.
-func (m *SituationMutation) SetInvestigationID(id uuid.UUID) {
-	m.investigation = &id
-}
-
-// ClearInvestigation clears the "investigation" edge to the SituationInvestigation entity.
-func (m *SituationMutation) ClearInvestigation() {
-	m.clearedinvestigation = true
-}
-
-// InvestigationCleared reports if the "investigation" edge to the SituationInvestigation entity was cleared.
-func (m *SituationMutation) InvestigationCleared() bool {
-	return m.clearedinvestigation
-}
-
-// InvestigationID returns the "investigation" edge ID in the mutation.
-func (m *SituationMutation) InvestigationID() (id uuid.UUID, exists bool) {
-	if m.investigation != nil {
-		return *m.investigation, true
-	}
-	return
-}
-
-// InvestigationIDs returns the "investigation" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// InvestigationID instead. It exists only for internal usage by the builders.
-func (m *SituationMutation) InvestigationIDs() (ids []uuid.UUID) {
-	if id := m.investigation; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetInvestigation resets all changes to the "investigation" edge.
-func (m *SituationMutation) ResetInvestigation() {
-	m.investigation = nil
-	m.clearedinvestigation = false
 }
 
 // AddHazardAssessmentIDs adds the "hazard_assessments" edge to the SituationHazardAssessment entity by ids.
@@ -52106,11 +52122,11 @@ func (m *SituationMutation) AddedEdges() []string {
 	if m.knowledge_entity != nil {
 		edges = append(edges, situation.EdgeKnowledgeEntity)
 	}
+	if m.investigations != nil {
+		edges = append(edges, situation.EdgeInvestigations)
+	}
 	if m.alert_episodes != nil {
 		edges = append(edges, situation.EdgeAlertEpisodes)
-	}
-	if m.investigation != nil {
-		edges = append(edges, situation.EdgeInvestigation)
 	}
 	if m.hazard_assessments != nil {
 		edges = append(edges, situation.EdgeHazardAssessments)
@@ -52136,16 +52152,18 @@ func (m *SituationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.knowledge_entity; id != nil {
 			return []ent.Value{*id}
 		}
+	case situation.EdgeInvestigations:
+		ids := make([]ent.Value, 0, len(m.investigations))
+		for id := range m.investigations {
+			ids = append(ids, id)
+		}
+		return ids
 	case situation.EdgeAlertEpisodes:
 		ids := make([]ent.Value, 0, len(m.alert_episodes))
 		for id := range m.alert_episodes {
 			ids = append(ids, id)
 		}
 		return ids
-	case situation.EdgeInvestigation:
-		if id := m.investigation; id != nil {
-			return []ent.Value{*id}
-		}
 	case situation.EdgeHazardAssessments:
 		ids := make([]ent.Value, 0, len(m.hazard_assessments))
 		for id := range m.hazard_assessments {
@@ -52171,6 +52189,9 @@ func (m *SituationMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SituationMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 7)
+	if m.removedinvestigations != nil {
+		edges = append(edges, situation.EdgeInvestigations)
+	}
 	if m.removedalert_episodes != nil {
 		edges = append(edges, situation.EdgeAlertEpisodes)
 	}
@@ -52190,6 +52211,12 @@ func (m *SituationMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *SituationMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case situation.EdgeInvestigations:
+		ids := make([]ent.Value, 0, len(m.removedinvestigations))
+		for id := range m.removedinvestigations {
+			ids = append(ids, id)
+		}
+		return ids
 	case situation.EdgeAlertEpisodes:
 		ids := make([]ent.Value, 0, len(m.removedalert_episodes))
 		for id := range m.removedalert_episodes {
@@ -52227,11 +52254,11 @@ func (m *SituationMutation) ClearedEdges() []string {
 	if m.clearedknowledge_entity {
 		edges = append(edges, situation.EdgeKnowledgeEntity)
 	}
+	if m.clearedinvestigations {
+		edges = append(edges, situation.EdgeInvestigations)
+	}
 	if m.clearedalert_episodes {
 		edges = append(edges, situation.EdgeAlertEpisodes)
-	}
-	if m.clearedinvestigation {
-		edges = append(edges, situation.EdgeInvestigation)
 	}
 	if m.clearedhazard_assessments {
 		edges = append(edges, situation.EdgeHazardAssessments)
@@ -52253,10 +52280,10 @@ func (m *SituationMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case situation.EdgeKnowledgeEntity:
 		return m.clearedknowledge_entity
+	case situation.EdgeInvestigations:
+		return m.clearedinvestigations
 	case situation.EdgeAlertEpisodes:
 		return m.clearedalert_episodes
-	case situation.EdgeInvestigation:
-		return m.clearedinvestigation
 	case situation.EdgeHazardAssessments:
 		return m.clearedhazard_assessments
 	case situation.EdgeIncidents:
@@ -52277,9 +52304,6 @@ func (m *SituationMutation) ClearEdge(name string) error {
 	case situation.EdgeKnowledgeEntity:
 		m.ClearKnowledgeEntity()
 		return nil
-	case situation.EdgeInvestigation:
-		m.ClearInvestigation()
-		return nil
 	}
 	return fmt.Errorf("unknown Situation unique edge %s", name)
 }
@@ -52294,11 +52318,11 @@ func (m *SituationMutation) ResetEdge(name string) error {
 	case situation.EdgeKnowledgeEntity:
 		m.ResetKnowledgeEntity()
 		return nil
+	case situation.EdgeInvestigations:
+		m.ResetInvestigations()
+		return nil
 	case situation.EdgeAlertEpisodes:
 		m.ResetAlertEpisodes()
-		return nil
-	case situation.EdgeInvestigation:
-		m.ResetInvestigation()
 		return nil
 	case situation.EdgeHazardAssessments:
 		m.ResetHazardAssessments()
