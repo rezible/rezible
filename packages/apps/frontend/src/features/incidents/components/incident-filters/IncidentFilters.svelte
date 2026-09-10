@@ -10,11 +10,7 @@
 		severities?: IncidentSeverity[];
 	};
 
-	let {
-		filters,
-		onchange,
-		severities = [],
-	}: Props = $props();
+	let { filters, onchange, severities = [] }: Props = $props();
 
 	const id = $props.id();
 	const severityOptions = $derived([

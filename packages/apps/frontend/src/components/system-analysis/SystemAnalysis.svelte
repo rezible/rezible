@@ -8,16 +8,16 @@
 
 {#snippet unattachedEntries(entries: SystemAnalysisEntry[])}
 	{#if entries.length}
-			<section class="max-h-36 overflow-auto border-t border-border bg-card p-3">
-				<h3 class="text-sm font-semibold">Unattached analysis entries</h3>
-				{#each entries as entry (entry.id)}
-					{@const {kind, title} = entry.attributes}
-					<div class="mt-1 text-xs">
-						<span class="text-muted-foreground">{kind}</span> · {title}
-					</div>
-				{/each}
-			</section>
-		{/if}
+		<section class="max-h-36 overflow-auto border-t border-border bg-card p-3">
+			<h3 class="text-sm font-semibold">Unattached analysis entries</h3>
+			{#each entries as entry (entry.id)}
+				{@const { kind, title } = entry.attributes}
+				<div class="mt-1 text-xs">
+					<span class="text-muted-foreground">{kind}</span> · {title}
+				</div>
+			{/each}
+		</section>
+	{/if}
 {/snippet}
 
 {#if controller.graphError}
@@ -26,7 +26,9 @@
 			<p>Could not load this analysis graph.</p>
 			<button
 				class="mt-2 underline"
-				onclick={() => {controller.refreshAll()}}>Retry</button
+				onclick={() => {
+					controller.refreshAll();
+				}}>Retry</button
 			>
 		</div>
 	</div>

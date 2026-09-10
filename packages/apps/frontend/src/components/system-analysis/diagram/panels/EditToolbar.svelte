@@ -11,7 +11,7 @@
 
 	const analysis = useSystemAnalysisController();
 	const diagram = useSystemDiagram();
-	
+
 	const { getNodesBounds } = useSvelteFlow();
 
 	const { node, edge } = $derived(diagram.selected);

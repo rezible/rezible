@@ -4,7 +4,7 @@
 
 	type Props = { selected: { node?: Node; edge?: Edge } };
 	let { selected }: Props = $props();
-	
+
 	const analysis = useSystemAnalysisController();
 	const entries = $derived(
 		selected.node

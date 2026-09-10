@@ -53,9 +53,7 @@ export class IncidentCreateDialogController {
 		);
 	}
 
-	parsedForm = $derived(
-		this.open ? CreateIncidentFormSchema.safeParse(this.form) : null
-	);
+	parsedForm = $derived(this.open ? CreateIncidentFormSchema.safeParse(this.form) : null);
 
 	fieldErrors = $derived(
 		this.parsedForm && !this.parsedForm.success ? this.parsedForm.error.flatten().fieldErrors : {}

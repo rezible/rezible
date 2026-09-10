@@ -114,7 +114,6 @@ const consumeReturnLocation = (): string => {
 	return DefaultRoute;
 };
 
-
 export class UserSessionState {
 	private query = createQuery(() => getUserSessionOptions());
 	private loaded = $derived(this.query.isFetched);
@@ -143,7 +142,7 @@ export class UserSessionState {
 	}
 
 	private trackReturnLocation() {
-		watch(() => (this.returnLocation), recordReturnLocation);
+		watch(() => this.returnLocation, recordReturnLocation);
 	}
 
 	private redirectTo = $derived(

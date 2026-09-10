@@ -169,8 +169,8 @@
 				<Alert.Root class="w-fit max-w-md">
 					<Alert.Title>That subject is not on the map</Alert.Title>
 					<Alert.Description>
-						The linked subject could not be found or you are not authorized to see it. Search
-						for a subject to explore its neighborhood.
+						The linked subject could not be found or you are not authorized to see it. Search for
+						a subject to explore its neighborhood.
 					</Alert.Description>
 					<Alert.Action>
 						<Button.Root variant="outline" size="sm" onclick={() => view.reset()}>
@@ -197,7 +197,9 @@
 		{:else if view.displayMode === "list"}
 			<div class="absolute inset-0 overflow-y-auto p-4">
 				<section class="space-y-2">
-					<h2 class="text-foreground text-sm font-medium">Subjects ({view.displayEntities.length})</h2>
+					<h2 class="text-foreground text-sm font-medium">
+						Subjects ({view.displayEntities.length})
+					</h2>
 					<Table.Root>
 						<Table.Header>
 							<Table.Row>
@@ -210,7 +212,9 @@
 						<Table.Body>
 							{#each view.displayEntities as entity (entity.id)}
 								<Table.Row
-									class={view.selectedId === entity.id ? "cursor-pointer bg-muted" : "cursor-pointer"}
+									class={view.selectedId === entity.id
+										? "cursor-pointer bg-muted"
+										: "cursor-pointer"}
 									onclick={() => view.selectEntity(entity)}
 								>
 									<Table.Cell class="font-medium">{makeEntityLabel(entity)}</Table.Cell>
@@ -240,11 +244,9 @@
 						<Table.Body>
 							{#each view.displayRelationships as relationship (relationship.id)}
 								<Table.Row
-									class={
-										view.inspectedRelationship?.id === relationship.id
-											? "cursor-pointer bg-muted"
-											: "cursor-pointer"
-									}
+									class={view.inspectedRelationship?.id === relationship.id
+										? "cursor-pointer bg-muted"
+										: "cursor-pointer"}
 									onclick={() => view.selectRelationship(relationship)}
 								>
 									<Table.Cell>
@@ -256,7 +258,9 @@
 									<Table.Cell>
 										{view.entityLabel(relationship.attributes.targetEntityId)}
 									</Table.Cell>
-									<Table.Cell>{formatFreshness(relationship.attributes.updatedAt)}</Table.Cell>
+									<Table.Cell
+										>{formatFreshness(relationship.attributes.updatedAt)}</Table.Cell
+									>
 								</Table.Row>
 							{/each}
 						</Table.Body>
@@ -285,13 +289,17 @@
 				<Panel position="bottom-left">
 					<div class="flex flex-col gap-2">
 						{#if view.loading}
-							<div class="bg-background border-border flex items-center gap-2 border px-3 py-2 text-sm shadow-sm">
+							<div
+								class="bg-background border-border flex items-center gap-2 border px-3 py-2 text-sm shadow-sm"
+							>
 								<Spinner />
 								Loading neighborhood…
 							</div>
 						{/if}
 						{#if view.truncated}
-							<div class="bg-background border-border max-w-xs border px-3 py-2 text-sm shadow-sm">
+							<div
+								class="bg-background border-border max-w-xs border px-3 py-2 text-sm shadow-sm"
+							>
 								<Badge variant="outline" class="mb-1">Partial coverage</Badge>
 								<p class="text-muted-foreground text-xs">
 									This neighborhood is larger than the map loads at once. Expand specific

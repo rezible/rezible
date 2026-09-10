@@ -38,9 +38,7 @@ const paramsSchema = z.object({
 
 export const makeEntityLabel = ({ attributes: attrs }: KnowledgeGraphEntity) => {
 	return (
-		attrs.latestState?.displayName ||
-		attrs.aliases[0]?.attributes.resourceRef.resourceRef ||
-		attrs.kind
+		attrs.latestState?.displayName || attrs.aliases[0]?.attributes.resourceRef.resourceRef || attrs.kind
 	);
 };
 
@@ -139,13 +137,12 @@ export class SystemMapViewController {
 		if (this.kindFilter !== "") {
 			const visible = new Set(this.displayEntities.map((entity) => entity.id));
 			relationships = relationships.filter(
-				(rel) => visible.has(rel.attributes.sourceEntityId) && visible.has(rel.attributes.targetEntityId)
+				(rel) =>
+					visible.has(rel.attributes.sourceEntityId) && visible.has(rel.attributes.targetEntityId)
 			);
 		}
 		if (this.predicateFilter !== "") {
-			relationships = relationships.filter(
-				(rel) => rel.attributes.predicate === this.predicateFilter
-			);
+			relationships = relationships.filter((rel) => rel.attributes.predicate === this.predicateFilter);
 		}
 		return relationships;
 	});
@@ -176,7 +173,11 @@ export class SystemMapViewController {
 
 	setKindFilter(kind: string) {
 		this.params.kind = kind;
-		if (this.selected?.kind === "entity" && kind !== "" && this.selected.entity.attributes.kind !== kind) {
+		if (
+			this.selected?.kind === "entity" &&
+			kind !== "" &&
+			this.selected.entity.attributes.kind !== kind
+		) {
 			this.clearSelection();
 		}
 	}
@@ -222,7 +223,8 @@ export class SystemMapViewController {
 
 	/** What the inspector shows: an explicit relationship inspection or the URL-selected subject. */
 	inspector = $derived.by<SystemMapSelection | undefined>(() => {
-		if (this.inspectedRelationship) return { kind: "relationship", relationship: this.inspectedRelationship };
+		if (this.inspectedRelationship)
+			return { kind: "relationship", relationship: this.inspectedRelationship };
 		return this.selected;
 	});
 
@@ -258,10 +260,7 @@ export class SystemMapViewController {
 		this.searchOpen = false;
 	}
 
-	private mergeView(
-		entities: KnowledgeGraphEntity[],
-		relationships: KnowledgeGraphRelationship[]
-	) {
+	private mergeView(entities: KnowledgeGraphEntity[], relationships: KnowledgeGraphRelationship[]) {
 		for (const entity of entities) {
 			if (this.entities.size >= maxEntities && !this.entities.has(entity.id)) break;
 			this.entities.set(entity.id, entity);

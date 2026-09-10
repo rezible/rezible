@@ -28,8 +28,8 @@
 		<div data-preview="situations">
 			{#each query.data.data as item (item.id)}
 				<Row situation={item} />
-				{:else}
-					<p class="p-6 text-center text-sm text-muted-foreground">No matching situations.</p>
+			{:else}
+				<p class="p-6 text-center text-sm text-muted-foreground">No matching situations.</p>
 			{/each}
 		</div>
 	{/if}

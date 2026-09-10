@@ -22,10 +22,7 @@
 		{:else if query.error}
 			<div class="text-destructive">
 				Could not load sessions.
-				<Button
-					variant="outline"
-					onclick={() => query.refetch()}>Retry</Button
-				>
+				<Button variant="outline" onclick={() => query.refetch()}>Retry</Button>
 			</div>
 		{:else if !controller.sessions.length}
 			<p class="text-muted-foreground">No sessions found.</p>
@@ -62,7 +59,9 @@
 									</div>
 								</td>
 								<td class="p-2">
-									{attrs.permissionScopes.length ? attrs.permissionScopes.join(", ") : "None"}
+									{attrs.permissionScopes.length
+										? attrs.permissionScopes.join(", ")
+										: "None"}
 								</td>
 								<td class="p-2">{attrs.systemAnalysisId ? "Linked" : "—"}</td>
 							</tr>

@@ -8,10 +8,7 @@
 		onchange: (values: Partial<SituationFilters>) => void;
 	};
 
-	let {
-		filters,
-		onchange,
-	}: Props = $props();
+	let { filters, onchange }: Props = $props();
 
 	const id = $props.id();
 </script>

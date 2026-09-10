@@ -26,7 +26,7 @@
 			focusedPath = pathname;
 			heading.focus();
 		}
-	}
+	};
 	$effect(() => maybeMoveNavigationFocus(page.url.pathname));
 </script>
 

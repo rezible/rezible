@@ -20,12 +20,12 @@ export const incidentFilterSchema = z.object({
 
 export type IncidentFilters = z.infer<typeof incidentFilterSchema>;
 
-export const incidentQueryFilters = ({search, status, severityId}: IncidentFilters): ListIncidentsData["query"] => ({
+export const incidentQueryFilters = ({
+	search,
+	status,
+	severityId,
+}: IncidentFilters): ListIncidentsData["query"] => ({
 	search: search.trim() || undefined,
-	statuses: status === "any" 
-		? undefined 
-		: status === "active" 
-			? ["started", "mitigated"] 
-			: [status],
+	statuses: status === "any" ? undefined : status === "active" ? ["started", "mitigated"] : [status],
 	severityId: severityId || undefined,
 });

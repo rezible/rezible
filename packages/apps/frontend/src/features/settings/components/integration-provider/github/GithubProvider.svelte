@@ -54,7 +54,8 @@
 				<Card.Title>{details?.org ?? installation.attributes.displayName}</Card.Title>
 				<Card.Action>
 					<Badge variant="outline"
-						>Installation {details?.installationId ?? installation.attributes.providerInstallationRef}</Badge
+						>Installation {details?.installationId ??
+							installation.attributes.providerInstallationRef}</Badge
 					>
 				</Card.Action>
 			</Card.Header>

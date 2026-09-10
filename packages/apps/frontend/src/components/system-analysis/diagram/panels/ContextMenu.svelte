@@ -22,9 +22,7 @@
 {#if !!props}
 	<ContextMenu title="Diagram Actions" containerRect={props.containerRect} clickPos={props.clickPos}>
 		{#if props.nodeId}
-			<Button onclick={deleteNode}>
-				Delete Entity
-			</Button>
+			<Button onclick={deleteNode}>Delete Entity</Button>
 		{:else if props.edgeId}
 			<span>relationship</span>
 		{:else}

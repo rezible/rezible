@@ -11,9 +11,9 @@
 
 	const formatTime = (value?: string) => (value ? new Date(value).toLocaleString() : "—");
 
-	const getLiveOverlayModelsForTurn = ({models}: LiveOverlay, turnId?: string) => {
+	const getLiveOverlayModelsForTurn = ({ models }: LiveOverlay, turnId?: string) => {
 		if (!turnId) return [];
-		return [...models.values()].filter((m) => m.turnId === turnId)
+		return [...models.values()].filter((m) => m.turnId === turnId);
 	};
 
 	const controller = initSessionDetailController(() => sessionId);
@@ -32,16 +32,18 @@
 			<header class="mb-3 flex flex-wrap justify-between gap-2 text-sm">
 				<strong>Turn {attrs.sequence}</strong>
 				<span>
-					{attrs.status} · {timeRange} {finishReason}
+					{attrs.status} · {timeRange}
+					{finishReason}
 				</span>
 			</header>
 			{#if attrs.error}
 				{@const turnErrJson = JSON.stringify(attrs.error, null, 2)}
-				<pre class="mb-3 whitespace-pre-wrap bg-destructive/10 p-2 text-xs text-destructive">{turnErrJson}</pre>
+				<pre
+					class="mb-3 whitespace-pre-wrap bg-destructive/10 p-2 text-xs text-destructive">{turnErrJson}</pre>
 			{/if}
 		{/if}
 		{#each group.messages as message (message.id)}
-			{@const {attributes: attrs} = message}
+			{@const { attributes: attrs } = message}
 			<article class="mb-2 border-l-2 border-border pl-3 text-sm">
 				<div class="mb-1 text-xs text-muted-foreground">
 					{attrs.role} · message {attrs.sequence}
@@ -67,7 +69,7 @@
 		<Button variant="outline" onclick={controller.retry}>Retry</Button>
 	</div>
 {:else if controller.session}
-	{@const {id: sessionId, attributes: attrs} = controller.session}
+	{@const { id: sessionId, attributes: attrs } = controller.session}
 	<div class="flex h-full min-h-0 flex-col gap-4 p-4">
 		<header class="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
 			<div>
@@ -83,7 +85,7 @@
 				</div>
 			</div>
 		</header>
-		
+
 		{#if controller.historyIncomplete}
 			<div class="text-xs text-muted-foreground">Loading complete history…</div>
 		{/if}
@@ -120,7 +122,7 @@
 
 			<Tabs.Content value="artifacts" class="min-h-0 grow overflow-auto py-3">
 				{#each artifacts as artifact (artifact.id)}
-					{@const {name, parts} = artifact.attributes}
+					{@const { name, parts } = artifact.attributes}
 					<article class="mb-3 border border-border p-3">
 						<h2 class="mb-2 font-medium">{name}</h2>
 						<MessageParts {parts} />

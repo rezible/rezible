@@ -29,7 +29,13 @@ export class QueryPaginator {
 			updateURL: source === "url",
 		});
 		if (resetParams) {
-			watch(resetParams, () => {this.resetPage()}, { lazy: true });
+			watch(
+				resetParams,
+				() => {
+					this.resetPage();
+				},
+				{ lazy: true }
+			);
 		}
 	}
 
@@ -47,44 +53,49 @@ export class QueryPaginator {
 
 	setPage(page: number) {
 		this.params.page = page;
-	};
+	}
 
 	setPageSize(size: number) {
 		this.params.update({
 			pageSize: size,
 			page: defaultPage,
 		});
-	};
+	}
 
 	resetPage() {
 		this.setPage(defaultPage);
-	};
+	}
 
 	reconcile(pagination?: ResponsePagination, placeholder = false) {
 		if (!pagination || placeholder) return;
-        const lastPage = Math.max(defaultPage, Math.ceil(pagination.total / pagination.pageSize));
-        if (this.page > lastPage) this.params.page = lastPage;
-	};
+		const lastPage = Math.max(defaultPage, Math.ceil(pagination.total / pagination.pageSize));
+		if (this.page > lastPage) this.params.page = lastPage;
+	}
 }
 
 export type PaginatedQueryResult = {
-    pagination: ResponsePagination;
+	pagination: ResponsePagination;
 };
-export type PaginatedQuery<R extends PaginatedQueryResult = PaginatedQueryResult> = CreateQueryResult<R, ErrorModel>;
+export type PaginatedQuery<R extends PaginatedQueryResult = PaginatedQueryResult> = CreateQueryResult<
+	R,
+	ErrorModel
+>;
 
 export const createPaginatedQuery = <
 	TQueryData extends PaginatedQueryResult,
 	TData extends PaginatedQueryResult = TQueryData,
 	TQueryKey extends QueryKey = QueryKey,
 >({
-	source = "url", 
-	resetWhen, 
+	source = "url",
+	resetWhen,
 	queryOptions,
 	keepPreviousQueryData = true,
 }: {
 	source?: "local" | "url";
 	resetWhen?: Getter<unknown>;
-	queryOptions: (pagination: z.infer<typeof paginationParamsSchema>) => CreateQueryOptions<TQueryData, ErrorModel, TData, TQueryKey>;
+	queryOptions: (
+		pagination: z.infer<typeof paginationParamsSchema>
+	) => CreateQueryOptions<TQueryData, ErrorModel, TData, TQueryKey>;
 	keepPreviousQueryData?: boolean;
 }) => {
 	const paginator = new QueryPaginator(source, resetWhen);
@@ -96,11 +107,11 @@ export const createPaginatedQuery = <
 
 	watch(
 		() => [query.data?.pagination, query.isPlaceholderData] as const,
-		([pagination, placeholder]) => paginator.reconcile(pagination, placeholder),
+		([pagination, placeholder]) => paginator.reconcile(pagination, placeholder)
 	);
 
 	return { paginator, query };
-}
+};
 
 export const createPaginatedQuerySimple = <
 	TQueryData extends PaginatedQueryResult,
@@ -124,17 +135,18 @@ export const createPaginatedQuerySimple = <
 	const placeholderData = keepPreviousQueryData ? keepPreviousData : undefined;
 
 	const query = createQuery(() => ({
-		...optsFn({...paginator.queryParams, ...queryParams()}),
+		...optsFn({ ...paginator.queryParams, ...queryParams() }),
 		placeholderData,
 	}));
 
 	watch(
 		() => JSON.stringify(queryParams()),
-		() => paginator.resetPage(), { lazy: true },
+		() => paginator.resetPage(),
+		{ lazy: true }
 	);
 	watch(
 		() => [query.data?.pagination, query.isPlaceholderData] as const,
-		([pagination, placeholder]) => paginator.reconcile(pagination, placeholder),
+		([pagination, placeholder]) => paginator.reconcile(pagination, placeholder)
 	);
 
 	return { paginator, query };

@@ -13,12 +13,7 @@
 <div class="min-h-0 flex-1 overflow-y-auto p-4">
 	<div class="mb-3 flex items-center justify-between gap-3">
 		<p class="text-sm text-muted-foreground">Latest operational activity</p>
-		<Button
-			variant="outline"
-			size="sm"
-			onclick={controller.refresh}
-			disabled={controller.refreshing}
-		>
+		<Button variant="outline" size="sm" onclick={controller.refresh} disabled={controller.refreshing}>
 			Refresh
 		</Button>
 	</div>

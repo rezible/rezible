@@ -22,7 +22,7 @@
 		const top = yOverflows ? naiveY - size.height : naiveY;
 
 		return { left, top };
-	}
+	};
 
 	let ref = $state<HTMLElement>(null!);
 	const refSize = new ElementSize(() => ref);

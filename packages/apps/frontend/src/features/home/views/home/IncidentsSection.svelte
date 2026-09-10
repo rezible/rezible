@@ -30,12 +30,7 @@
 	{#if controller.metadataQuery.isError}
 		<p class="px-3 pt-2 text-xs text-destructive">
 			Severity options could not be loaded.
-			<button
-				class="underline"
-				onclick={() => controller.metadataQuery.refetch()}
-			>
-				Try again
-			</button>
+			<button class="underline" onclick={() => controller.metadataQuery.refetch()}> Try again </button>
 		</p>
 	{/if}
 	<LoadingQueryWrapper {query} feedbackOnly />
@@ -43,8 +38,8 @@
 		<div data-preview="incidents">
 			{#each query.data.data as item (item.id)}
 				<Row incident={item} />
-				{:else}
-					<p class="p-6 text-center text-sm text-muted-foreground">No matching incidents.</p>
+			{:else}
+				<p class="p-6 text-center text-sm text-muted-foreground">No matching incidents.</p>
 			{/each}
 		</div>
 	{/if}

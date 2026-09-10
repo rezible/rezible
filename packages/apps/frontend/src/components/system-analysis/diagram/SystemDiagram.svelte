@@ -17,19 +17,14 @@
 
 	import { useSystemDiagram } from "./diagramController.svelte";
 
-	import { 
+	import {
 		ComponentNode,
 		RelationshipEdge,
 		ConnectionLine,
 		AddingEntityGhostNode,
 	} from "./topology-components";
 
-	import { 
-		ContextMenu,
-		EditToolbar,
-		SelectionInspector,
-		ActionsBar,
-	} from "./panels";
+	import { ContextMenu, EditToolbar, SelectionInspector, ActionsBar } from "./panels";
 
 	const diagram = useSystemDiagram();
 
@@ -86,13 +81,13 @@
 	onedgeclick={(e) => diagram.handleEdgeClicked(e)}
 >
 	<Background {...backgroundSettings} />
-	
+
 	<Controls {...controlsSettings} />
-	
+
 	<MiniMap {...minimapSettings} />
-	
+
 	<ContextMenu />
-	
+
 	<EditToolbar />
 
 	<AddingEntityGhostNode />

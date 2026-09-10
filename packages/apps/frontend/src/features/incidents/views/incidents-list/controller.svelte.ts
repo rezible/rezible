@@ -29,9 +29,10 @@ class IncidentsListViewController {
 
 	metadataQuery = createQuery(() => getIncidentMetadataOptions());
 	paginatedIncidentsQuery = createPaginatedQuery({
-		queryOptions: (pagination) => listIncidentsOptions({
-			query: { ...incidentQueryFilters(this.committed), ...pagination },
-		}),
+		queryOptions: (pagination) =>
+			listIncidentsOptions({
+				query: { ...incidentQueryFilters(this.committed), ...pagination },
+			}),
 		resetWhen: () => this.filterKey,
 	});
 

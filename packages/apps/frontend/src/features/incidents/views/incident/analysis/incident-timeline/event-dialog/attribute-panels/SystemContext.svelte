@@ -7,7 +7,7 @@
 	import { mdiPlus } from "@mdi/js";
 	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import { useEventDialogAttributes } from "./attributes.svelte";
-	
+
 	import { useSystemAnalysisController } from "$components/system-analysis";
 	import type { TimelineEntrySystemContext, TimelineEntrySystemContextAttributes } from "../../entry-model";
 
